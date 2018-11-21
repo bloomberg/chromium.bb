@@ -12,12 +12,24 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
+#include "third_party/blink/renderer/platform/memory_coordinator.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
+
+class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
+                              public MemoryCoordinatorClient {
+  USING_GARBAGE_COLLECTED_MIXIN(OnPurgeMemoryListener);
+
+  void OnPurgeMemory() override {
+    ParkableStringManager::Instance().ParkAllIfRendererBackgrounded(
+        ParkableStringImpl::ParkingMode::kAlways);
+  }
+};
 
 ParkableStringManager& ParkableStringManager::Instance() {
   DCHECK(IsMainThread());
@@ -25,9 +37,10 @@ ParkableStringManager& ParkableStringManager::Instance() {
   return instance;
 }
 
-ParkableStringManager::~ParkableStringManager() {}
+ParkableStringManager::~ParkableStringManager() = default;
 
 void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
+  DCHECK(IsMainThread());
   backgrounded_ = backgrounded;
 
   if (backgrounded_) {
@@ -37,7 +50,8 @@ void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
     task_runner->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ParkableStringManager::ParkAllIfRendererBackgrounded,
-                       base::Unretained(this)),
+                       base::Unretained(this),
+                       ParkableStringImpl::ParkingMode::kAlways),
         base::TimeDelta::FromSeconds(kParkingDelayInSeconds));
     // We only want to record statistics in the following case: a foreground tab
     // goes to background, and stays in background until the stats are recorded,
@@ -46,11 +60,15 @@ void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
     // To that end:
     // 1. Don't post a recording task if one has been posted and hasn't run yet.
     // 2. Any background -> foreground transition between now and the
-    //    recording task running cancels stats recording.
+    //    recording task running cancels the task.
+    //
+    // Also drop strings that can be dropped cheaply in this task, to prevent
+    // used-once strings from increasing memory usage.
     if (!waiting_to_record_stats_) {
       task_runner->PostDelayedTask(
           FROM_HERE,
-          base::BindOnce(&ParkableStringManager::RecordStatistics,
+          base::BindOnce(&ParkableStringManager::
+                             DropStringsWithCompressedDataAndRecordStatistics,
                          base::Unretained(this)),
           base::TimeDelta::FromSeconds(kParkingDelayInSeconds +
                                        kStatisticsRecordingDelayInSeconds));
@@ -66,6 +84,7 @@ void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
 }
 
 bool ParkableStringManager::IsRendererBackgrounded() const {
+  DCHECK(IsMainThread());
   return backgrounded_;
 }
 
@@ -79,6 +98,7 @@ bool ParkableStringManager::ShouldPark(const StringImpl& string) {
 
 scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
     scoped_refptr<StringImpl>&& string) {
+  DCHECK(IsMainThread());
   StringImpl* raw_ptr = string.get();
   auto it = unparked_strings_.find(raw_ptr);
   if (it != unparked_strings_.end())
@@ -125,8 +145,10 @@ void ParkableStringManager::OnUnparked(ParkableStringImpl* was_parked_string,
   unparked_strings_.insert(new_unparked_string, was_parked_string);
 }
 
-void ParkableStringManager::ParkAllIfRendererBackgrounded() {
+void ParkableStringManager::ParkAllIfRendererBackgrounded(
+    ParkableStringImpl::ParkingMode mode) {
   DCHECK(IsMainThread());
+
   if (!IsRendererBackgrounded())
     return;
 
@@ -137,22 +159,39 @@ void ParkableStringManager::ParkAllIfRendererBackgrounded() {
   for (ParkableStringImpl* str : parked_strings_)
     total_size += str->CharactersSizeInBytes();
 
-  for (ParkableStringImpl* str : unparked_strings_.Values()) {
-    str->Park();  // Parking is asynchronous.
+  // Parking may be synchronous, need to copy values first.
+  // In case of synchronous parking, |ParkableStringImpl::Park()| calls
+  // |OnParked()|, which moves the string from |unparked_strings_|
+  // to |parked_strings_|, hence the need to copy values first.
+  //
+  // Efficiency: In practice, either we are parking strings for the first time,
+  // and |unparked_strings_| can contain a few 10s of strings (and we will
+  // trigger expensive compression), or this is a subsequent one, and
+  // |unparked_strings_| will have few entries.
+  WTF::Vector<ParkableStringImpl*> unparked;
+  unparked.ReserveCapacity(unparked_strings_.size());
+  for (ParkableStringImpl* str : unparked_strings_.Values())
+    unparked.push_back(str);
+
+  for (ParkableStringImpl* str : unparked) {
+    str->Park(mode);
     total_size += str->CharactersSizeInBytes();
   }
 
-  size_t total_size_kb = total_size / 1000;
-  UMA_HISTOGRAM_COUNTS_100000("Memory.MovableStringsTotalSizeKb",
-                              total_size_kb);
-  UMA_HISTOGRAM_COUNTS_1000("Memory.MovableStringsCount", Size());
+  // Only collect stats for "full" parking calls.
+  if (mode == ParkableStringImpl::ParkingMode::kAlways) {
+    size_t total_size_kb = total_size / 1000;
+    UMA_HISTOGRAM_COUNTS_100000("Memory.MovableStringsTotalSizeKb",
+                                total_size_kb);
+    UMA_HISTOGRAM_COUNTS_1000("Memory.MovableStringsCount", Size());
+  }
 }
 
 size_t ParkableStringManager::Size() const {
   return parked_strings_.size() + unparked_strings_.size();
 }
 
-void ParkableStringManager::RecordStatistics() {
+void ParkableStringManager::DropStringsWithCompressedDataAndRecordStatistics() {
   DCHECK(IsMainThread());
   DCHECK(waiting_to_record_stats_);
   waiting_to_record_stats_ = false;
@@ -161,6 +200,11 @@ void ParkableStringManager::RecordStatistics() {
   // See |SetRendererBackgrounded()|, is |should_record_stats_| is true then the
   // renderer is still backgrounded_.
   DCHECK(IsRendererBackgrounded());
+
+  // We are in the background, drop all the ParkableStrings we can without
+  // costing any CPU (as we already have the compressed representation).
+  ParkAllIfRendererBackgrounded(
+      ParkableStringImpl::ParkingMode::kIfCompressedDataExists);
 
   size_t total_size = 0, total_before_compression_size = 0;
   size_t total_compressed_size = 0;
@@ -202,6 +246,10 @@ ParkableStringManager::ParkableStringManager()
       waiting_to_record_stats_(false),
       should_record_stats_(false),
       unparked_strings_(),
-      parked_strings_() {}
+      parked_strings_() {
+  // No need to ever unregister, as the only ParkableStringManager instance
+  // lives forever.
+  MemoryCoordinator::Instance().RegisterClient(new OnPurgeMemoryListener());
+}
 
 }  // namespace blink

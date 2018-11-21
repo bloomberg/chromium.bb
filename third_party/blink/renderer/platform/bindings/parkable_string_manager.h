@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
@@ -18,7 +19,6 @@
 namespace blink {
 
 class ParkableString;
-class ParkableStringImpl;
 
 const base::Feature kCompressParkableStringsInBackground{
     "CompressParkableStringsInBackground", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -37,7 +37,6 @@ class PLATFORM_EXPORT ParkableStringManager {
   bool IsRendererBackgrounded() const;
   // Number of parked and unparked strings. Public for testing.
   size_t Size() const;
-  void ResetForTesting();
 
   // Whether a string is parkable or not. Can be called from any thread.
   static bool ShouldPark(const StringImpl& string);
@@ -49,6 +48,7 @@ class PLATFORM_EXPORT ParkableStringManager {
  private:
   friend class ParkableString;
   friend class ParkableStringImpl;
+  friend class OnPurgeMemoryListener;
 
   scoped_refptr<ParkableStringImpl> Add(scoped_refptr<StringImpl>&&);
   void Remove(ParkableStringImpl*, StringImpl*);
@@ -56,8 +56,9 @@ class PLATFORM_EXPORT ParkableStringManager {
   void OnParked(ParkableStringImpl*, StringImpl*);
   void OnUnparked(ParkableStringImpl*, StringImpl*);
 
-  void ParkAllIfRendererBackgrounded();
-  void RecordStatistics();
+  void ParkAllIfRendererBackgrounded(ParkableStringImpl::ParkingMode mode);
+  void DropStringsWithCompressedDataAndRecordStatistics();
+  void ResetForTesting();
 
   ParkableStringManager();
 
@@ -68,6 +69,8 @@ class PLATFORM_EXPORT ParkableStringManager {
       unparked_strings_;
   HashSet<ParkableStringImpl*, PtrHash<ParkableStringImpl>> parked_strings_;
 
+  friend class ParkableStringTest;
+  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, SynchronousCompression);
   DISALLOW_COPY_AND_ASSIGN(ParkableStringManager);
 };
 
