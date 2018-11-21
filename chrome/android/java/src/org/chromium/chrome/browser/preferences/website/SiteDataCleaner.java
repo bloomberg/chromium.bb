@@ -17,6 +17,7 @@ public class SiteDataCleaner {
         String origin = site.getAddress().getOrigin();
         WebsitePreferenceBridge.nativeClearCookieData(origin);
         WebsitePreferenceBridge.nativeClearBannerData(origin);
+        WebsitePreferenceBridge.nativeClearMediaLicenses(origin);
 
         // Clear the permissions.
         for (@ContentSettingException.Type int type = 0;

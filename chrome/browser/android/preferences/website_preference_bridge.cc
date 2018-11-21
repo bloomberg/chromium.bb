@@ -24,6 +24,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/engagement/important_sites_util.h"
+#include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -266,6 +267,10 @@ ChooserContextBase* GetChooserContext(ContentSettingsType type) {
       NOTREACHED();
       return nullptr;
   }
+}
+
+bool OriginMatcher(const url::Origin& origin, const GURL& other) {
+  return origin == url::Origin::Create(other);
 }
 
 }  // anonymous namespace
@@ -808,6 +813,18 @@ static void JNI_WebsitePreferenceBridge_ClearBannerData(
   GetHostContentSettingsMap(false)->SetWebsiteSettingDefaultScope(
       GURL(ConvertJavaStringToUTF8(env, jorigin)), GURL(),
       CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(), nullptr);
+}
+
+static void JNI_WebsitePreferenceBridge_ClearMediaLicenses(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jorigin) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  url::Origin origin =
+      url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin)));
+  ClearMediaDrmLicenses(profile->GetPrefs(), base::Time(), base::Time::Max(),
+                        base::BindRepeating(&OriginMatcher, origin),
+                        base::DoNothing());
 }
 
 static jboolean JNI_WebsitePreferenceBridge_IsPermissionControlledByDSE(
