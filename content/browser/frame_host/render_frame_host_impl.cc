@@ -611,7 +611,7 @@ class FileChooserImpl : public blink::mojom::FileChooser,
     proxy_ = nullptr;
     if (!render_frame_host_)
       return;
-    std::move(callback_).Run(FileChooserResult::New());
+    std::move(callback_).Run(nullptr);
   }
 
  private:
