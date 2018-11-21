@@ -16,7 +16,7 @@
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync_sessions/local_session_event_router.h"
 #include "components/sync_sessions/session_sync_prefs.h"
-#include "components/sync_sessions/session_sync_service.h"
+#include "components/sync_sessions/session_sync_service_impl.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -158,6 +158,6 @@ SessionSyncServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<sync_sessions::SessionSyncService>(
+  return std::make_unique<sync_sessions::SessionSyncServiceImpl>(
       ::GetChannel(), std::make_unique<SyncSessionsClientImpl>(browser_state));
 }

@@ -22,7 +22,7 @@
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync_sessions/session_sync_prefs.h"
-#include "components/sync_sessions/session_sync_service.h"
+#include "components/sync_sessions/session_sync_service_impl.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 
 #if defined(OS_ANDROID)
@@ -156,6 +156,6 @@ SessionSyncServiceFactory::~SessionSyncServiceFactory() {}
 KeyedService* SessionSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new sync_sessions::SessionSyncService(
+  return new sync_sessions::SessionSyncServiceImpl(
       chrome::GetChannel(), std::make_unique<SyncSessionsClientImpl>(profile));
 }

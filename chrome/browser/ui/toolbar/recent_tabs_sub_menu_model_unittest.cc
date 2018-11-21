@@ -39,7 +39,7 @@
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/model/data_type_activation_request.h"
-#include "components/sync_sessions/session_sync_service.h"
+#include "components/sync_sessions/session_sync_service_impl.h"
 #include "components/sync_sessions/synced_session.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -167,7 +167,9 @@ class RecentTabsSubMenuModelTest
   void RegisterRecentTabs(RecentTabsBuilderTestHelper* helper) {
     helper->ExportToSessionSync(
         sync_processor_.get(),
-        session_sync_service_->GetUnderlyingOpenTabsUIDelegateForTest());
+        static_cast<sync_sessions::SessionSyncServiceImpl*>(
+            session_sync_service_)
+            ->GetUnderlyingOpenTabsUIDelegateForTest());
   }
 
  private:
