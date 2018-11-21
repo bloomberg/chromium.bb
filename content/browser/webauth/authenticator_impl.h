@@ -183,6 +183,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   GetAssertionCallback get_assertion_response_callback_;
   std::string client_data_json_;
   blink::mojom::AttestationConveyancePreference attestation_preference_;
+  url::Origin caller_origin_;
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;
   // If the "appid" extension is in use then this is the SHA-256 hash of a U2F
