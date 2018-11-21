@@ -40,6 +40,9 @@ extern NSString* const ManageAddressAccessibilityIdentifier;
 // Unavailable. Use |initWithProfiles:|.
 - (instancetype)init NS_UNAVAILABLE;
 
+// Updates the |profiles| being presented.
+- (void)reloadWithProfiles:(std::vector<autofill::AutofillProfile*>)profiles;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_ADDRESS_MEDIATOR_H_

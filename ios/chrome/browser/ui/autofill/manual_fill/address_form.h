@@ -7,6 +7,8 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/address.h"
 
+#include <vector>
+
 namespace autofill {
 class AutofillProfile;
 }
@@ -17,6 +19,11 @@ class AutofillProfile;
 
 // Convenience initializer from an autofill::AutofillProfile.
 - (instancetype)initWithProfile:(const autofill::AutofillProfile&)profile;
+
+// Converts a list of |autofill::AutofillProfile| into a list of
+// |ManualFillAddress|.
++ (NSArray<ManualFillAddress*>*)manualFillAddressesFromProfiles:
+    (std::vector<autofill::AutofillProfile*>)profiles;
 
 @end
 

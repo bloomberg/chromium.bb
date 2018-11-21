@@ -8,6 +8,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_list_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_mediator.h"
@@ -25,7 +26,14 @@
 #error "This file requires ARC support."
 #endif
 
-@interface CardCoordinator ()<CardListDelegate>
+@interface CardCoordinator () <CardListDelegate, PersonalDataManagerObserver> {
+  // Personal data manager to be observed.
+  autofill::PersonalDataManager* _personalDataManager;
+
+  // C++ to ObjC bridge for PersonalDataManagerObserver.
+  std::unique_ptr<autofill::PersonalDataManagerObserverBridge>
+      _personalDataManagerObserver;
+}
 
 // The view controller presented above the keyboard where the user can select
 // one of their cards.
@@ -58,15 +66,16 @@ initWithBaseViewController:(UIViewController*)viewController
     _cardViewController = [[CardViewController alloc] init];
     _cardViewController.contentInsetsAlwaysEqualToSafeArea = YES;
 
-    autofill::PersonalDataManager* personalDataManager =
+    _personalDataManager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
+    DCHECK(_personalDataManager);
+
+    _personalDataManagerObserver.reset(
+        new autofill::PersonalDataManagerObserverBridge(self));
+    _personalDataManager->AddObserver(_personalDataManagerObserver.get());
 
     std::vector<autofill::CreditCard*> cards =
-        personalDataManager->GetCreditCardsToSuggest(true);
-
-    // TODO(crbug.com/845472): add observer using
-    // PersonalDataManagerObserverBridge and refresh data when personal data
-    // changes. Applies to addresses too.
+        _personalDataManager->GetCreditCardsToSuggest(true);
 
     _cardMediator = [[ManualFillCardMediator alloc] initWithCards:cards];
     _cardMediator.navigationDelegate = self;
@@ -79,6 +88,12 @@ initWithBaseViewController:(UIViewController*)viewController
               resultDelegate:_cardMediator];
   }
   return self;
+}
+
+- (void)dealloc {
+  if (_personalDataManager) {
+    _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
+  }
 }
 
 #pragma mark - FallbackCoordinator
@@ -109,6 +124,15 @@ initWithBaseViewController:(UIViewController*)viewController
     [weakSelf.cardRequester requestFullCreditCard:*autofillCreditCard
                            withBaseViewController:weakSelf.baseViewController];
   }];
+}
+
+#pragma mark - PersonalDataManagerObserver
+
+- (void)onPersonalDataChanged {
+  std::vector<autofill::CreditCard*> cards =
+      _personalDataManager->GetCreditCardsToSuggest(true);
+
+  [self.cardMediator reloadWithCards:cards];
 }
 
 @end

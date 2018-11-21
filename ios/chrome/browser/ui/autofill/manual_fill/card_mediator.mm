@@ -78,6 +78,14 @@ NSString* const ManageCardsAccessibilityIdentifier =
   return nil;
 }
 
+- (void)reloadWithCards:(std::vector<autofill::CreditCard*>)cards {
+  self.cards = cards;
+  if (self.consumer) {
+    [self postCardsToConsumer];
+    [self postActionsToConsumer];
+  }
+}
+
 #pragma mark - Private
 
 // Posts the cards to the consumer.

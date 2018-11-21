@@ -48,6 +48,9 @@ extern NSString* const OtherCardsAccessibilityIdentifier;
 // Finds the original autofill::CreditCard from given |GUID|.
 - (const autofill::CreditCard*)findCreditCardfromGUID:(NSString*)GUID;
 
+// Updates the |cards| being presented.
+- (void)reloadWithCards:(std::vector<autofill::CreditCard*>)cards;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_CARD_MEDIATOR_H_

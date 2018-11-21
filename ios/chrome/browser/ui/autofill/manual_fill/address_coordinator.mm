@@ -9,6 +9,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_list_delegate.h"
@@ -23,7 +24,15 @@
 #error "This file requires ARC support."
 #endif
 
-@interface AddressCoordinator ()<AddressListDelegate>
+@interface AddressCoordinator () <AddressListDelegate,
+                                  PersonalDataManagerObserver> {
+  // Personal data manager to be observed.
+  autofill::PersonalDataManager* _personalDataManager;
+
+  // C++ to ObjC bridge for PersonalDataManagerObserver.
+  std::unique_ptr<autofill::PersonalDataManagerObserverBridge>
+      _personalDataManagerObserver;
+}
 
 // The view controller presented above the keyboard where the user can select
 // a field from one of their addresses.
@@ -52,11 +61,16 @@ initWithBaseViewController:(UIViewController*)viewController
     _addressViewController = [[AddressViewController alloc] init];
     _addressViewController.contentInsetsAlwaysEqualToSafeArea = YES;
 
-    autofill::PersonalDataManager* personalDataManager =
+    _personalDataManager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
+    DCHECK(_personalDataManager);
+
+    _personalDataManagerObserver.reset(
+        new autofill::PersonalDataManagerObserverBridge(self));
+    _personalDataManager->AddObserver(_personalDataManagerObserver.get());
 
     std::vector<autofill::AutofillProfile*> profiles =
-        personalDataManager->GetProfilesToSuggest();
+        _personalDataManager->GetProfilesToSuggest();
 
     _addressMediator =
         [[ManualFillAddressMediator alloc] initWithProfiles:profiles];
@@ -65,6 +79,12 @@ initWithBaseViewController:(UIViewController*)viewController
     _addressMediator.consumer = _addressViewController;
   }
   return self;
+}
+
+- (void)dealloc {
+  if (_personalDataManager) {
+    _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
+  }
 }
 
 #pragma mark - FallbackCoordinator
@@ -80,6 +100,15 @@ initWithBaseViewController:(UIViewController*)viewController
   [self dismissIfNecessaryThenDoCompletion:^{
     [delegate openAddressSettings];
   }];
+}
+
+#pragma mark - PersonalDataManagerObserver
+
+- (void)onPersonalDataChanged {
+  std::vector<autofill::AutofillProfile*> profiles =
+      _personalDataManager->GetProfilesToSuggest();
+
+  [self.addressMediator reloadWithProfiles:profiles];
 }
 
 @end
