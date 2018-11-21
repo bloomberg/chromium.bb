@@ -677,3 +677,54 @@ testcase.driveRecoverDirtyFiles = function() {
     },
   ]);
 };
+
+/**
+ * Verify that "Available Offline" is available from the gear menu for a drive
+ * file before the context menu has been opened.
+ */
+testcase.driveAvailableOfflineGearMenu = function() {
+  const pinnedMenuQuery = '#file-context-menu:not([hidden]) ' +
+      'cr-menu-item[command="#toggle-pinned"]:not([disabled])';
+  let appId;
+  let steps = [
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next, []);
+    },
+    // Select a file in drive.
+    function(result) {
+      appId = result.windowId;
+      remoteCall.callRemoteTestUtil(
+          'selectFile', appId, ['hello.txt'], this.next);
+    },
+    // Wait for the entry to be selected.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'selectFile failed');
+      remoteCall.waitForElement(appId, '.table-row[selected]').then(this.next);
+    },
+    // Click on the icon of the file to check select it
+    function(result) {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId,
+          ['#file-list .table-row[selected] .detail-checkmark'], this.next);
+    },
+    // Ensure gear button is available
+    function(result) {
+      remoteCall.waitForElement(appId, '#selection-menu-button')
+          .then(this.next);
+    },
+    // Cick on gear menu and ensure "Avaialble Offline" is shown.
+    function(result) {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#selection-menu-button'], this.next);
+    },
+    // Check that "Available Offline" is shown in the menu/
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, pinnedMenuQuery).then(this.next);
+    },
+    function(result) {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ];
+  StepsRunner.run(steps);
+};

@@ -477,22 +477,25 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DriveSpecific, /* drive_specific.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("driveOpenSidebarOffline").DisableDriveFs(),
-                      TestCase("driveOpenSidebarOffline").EnableDriveFs(),
-                      TestCase("driveOpenSidebarSharedWithMe").DisableDriveFs(),
-                      TestCase("driveOpenSidebarSharedWithMe").EnableDriveFs(),
-                      TestCase("driveAutoCompleteQuery").DisableDriveFs(),
-                      TestCase("driveAutoCompleteQuery").EnableDriveFs(),
-                      TestCase("drivePinFileMobileNetwork").DisableDriveFs(),
-                      TestCase("drivePinFileMobileNetwork").EnableDriveFs(),
-                      TestCase("driveClickFirstSearchResult").DisableDriveFs(),
-                      TestCase("driveClickFirstSearchResult").EnableDriveFs(),
-                      TestCase("drivePressEnterToSearch").DisableDriveFs(),
-                      TestCase("drivePressEnterToSearch").EnableDriveFs(),
-                      TestCase("drivePressCtrlAFromSearch").DisableDriveFs(),
-                      TestCase("drivePressCtrlAFromSearch").EnableDriveFs(),
-                      TestCase("driveBackupPhotos").DisableDriveFs(),
-                      TestCase("driveBackupPhotos").EnableDriveFs()));
+    ::testing::Values(
+        TestCase("driveOpenSidebarOffline").DisableDriveFs(),
+        TestCase("driveOpenSidebarOffline").EnableDriveFs(),
+        TestCase("driveOpenSidebarSharedWithMe").DisableDriveFs(),
+        TestCase("driveOpenSidebarSharedWithMe").EnableDriveFs(),
+        TestCase("driveAutoCompleteQuery").DisableDriveFs(),
+        TestCase("driveAutoCompleteQuery").EnableDriveFs(),
+        TestCase("drivePinFileMobileNetwork").DisableDriveFs(),
+        TestCase("drivePinFileMobileNetwork").EnableDriveFs(),
+        TestCase("driveClickFirstSearchResult").DisableDriveFs(),
+        TestCase("driveClickFirstSearchResult").EnableDriveFs(),
+        TestCase("drivePressEnterToSearch").DisableDriveFs(),
+        TestCase("drivePressEnterToSearch").EnableDriveFs(),
+        TestCase("drivePressCtrlAFromSearch").DisableDriveFs(),
+        TestCase("drivePressCtrlAFromSearch").EnableDriveFs(),
+        TestCase("driveBackupPhotos").DisableDriveFs(),
+        TestCase("driveBackupPhotos").EnableDriveFs(),
+        TestCase("driveAvailableOfflineGearMenu").DisableDriveFs(),
+        TestCase("driveAvailableOfflineGearMenu").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Transfer, /* transfer.js */
