@@ -209,8 +209,6 @@ js_library("import_history") {
   deps = [
     ":metadata_proxy",
     "../../common/js:importer_common",
-    "../../common/js:metrics",
-    "../../common/js:metrics_events",
     "../../common/js:util",
   ]
 }
