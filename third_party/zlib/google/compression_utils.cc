@@ -11,6 +11,7 @@
 
 #include "base/bit_cast.h"
 #include "base/logging.h"
+#include "base/process/memory.h"
 #include "base/sys_byteorder.h"
 
 #if defined(USE_SYSTEM_ZLIB)
@@ -130,10 +131,11 @@ bool GzipCompress(base::StringPiece input, std::string* output) {
 
   uLongf compressed_data_size =
       kGzipZlibHeaderDifferenceBytes + compressBound(input_size);
-  Bytef* compressed_data =
-      reinterpret_cast<Bytef*>(malloc(compressed_data_size));
-  if (!compressed_data)
+  Bytef* compressed_data;
+  if (!base::UncheckedMalloc(compressed_data_size,
+                             reinterpret_cast<void**>(&compressed_data))) {
     return false;
+  }
 
   if (GzipCompressHelper(compressed_data, &compressed_data_size,
                          bit_cast<const Bytef*>(input.data()),
