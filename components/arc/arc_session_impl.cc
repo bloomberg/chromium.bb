@@ -5,6 +5,7 @@
 #include "components/arc/arc_session_impl.h"
 
 #include <fcntl.h>
+#include <grp.h>
 #include <poll.h>
 #include <unistd.h>
 
@@ -13,6 +14,7 @@
 
 #include "ash/public/cpp/default_scale_factor_retriever.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
@@ -38,6 +40,9 @@
 namespace arc {
 
 namespace {
+
+constexpr char kArcBridgeSocketPath[] = "/run/chrome/arc_bridge.sock";
+constexpr char kArcBridgeSocketGroup[] = "arc-bridge";
 
 chromeos::SessionManagerClient* GetSessionManagerClient() {
   // If the DBusThreadManager or the SessionManagerClient aren't available,
@@ -136,11 +141,17 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
   ~ArcSessionDelegateImpl() override = default;
 
   // ArcSessionImpl::Delegate override.
+  void CreateSocket(CreateSocketCallback callback) override;
+
   base::ScopedFD ConnectMojo(base::ScopedFD socket_fd,
                              ConnectMojoCallback callback) override;
   void GetLcdDensity(GetLcdDensityCallback callback) override;
 
  private:
+  // Synchronously create a UNIX domain socket. This is designed to run on a
+  // blocking thread. Unlinks any existing files at socket address.
+  static base::ScopedFD CreateSocketInternal();
+
   // Synchronously accepts a connection on |server_endpoint| and then processes
   // the connected socket's file descriptor. This is designed to run on a
   // blocking thread.
@@ -171,6 +182,13 @@ ArcSessionDelegateImpl::ArcSessionDelegateImpl(
     : arc_bridge_service_(arc_bridge_service),
       default_scale_factor_retriever_(retriever),
       weak_factory_(this) {}
+
+void ArcSessionDelegateImpl::CreateSocket(CreateSocketCallback callback) {
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&ArcSessionDelegateImpl::CreateSocketInternal),
+      std::move(callback));
+}
 
 base::ScopedFD ArcSessionDelegateImpl::ConnectMojo(
     base::ScopedFD socket_fd,
@@ -203,6 +221,51 @@ void ArcSessionDelegateImpl::GetLcdDensity(GetLcdDensityCallback callback) {
             GetLcdDensityForDeviceScaleFactor(default_scale_factor));
       },
       std::move(callback)));
+}
+
+// static
+base::ScopedFD ArcSessionDelegateImpl::CreateSocketInternal() {
+  auto endpoint = mojo::NamedPlatformChannel({kArcBridgeSocketPath});
+  // TODO(cmtm): use NamedPlatformChannel to bootstrap mojo connection after
+  // libchrome uprev in android.
+  base::ScopedFD socket_fd =
+      endpoint.TakeServerEndpoint().TakePlatformHandle().TakeFD();
+  if (!socket_fd.is_valid()) {
+    LOG(ERROR) << "Socket creation failed";
+    return socket_fd;
+  }
+
+  // Change permissions on the socket.
+  struct group arc_bridge_group;
+  struct group* arc_bridge_group_res = nullptr;
+  int ret = 0;
+  char buf[10000];
+  do {
+    ret = getgrnam_r(kArcBridgeSocketGroup, &arc_bridge_group, buf, sizeof(buf),
+                     &arc_bridge_group_res);
+  } while (ret == EINTR);
+  if (ret != 0) {
+    LOG(ERROR) << "getgrnam_r: " << strerror_r(ret, buf, sizeof(buf));
+    return base::ScopedFD();
+  }
+
+  if (!arc_bridge_group_res) {
+    LOG(ERROR) << "Group '" << kArcBridgeSocketGroup << "' not found";
+    return base::ScopedFD();
+  }
+
+  if (chown(kArcBridgeSocketPath, -1, arc_bridge_group.gr_gid) < 0) {
+    PLOG(ERROR) << "chown failed";
+    return base::ScopedFD();
+  }
+
+  if (!base::SetPosixFilePermissions(base::FilePath(kArcBridgeSocketPath),
+                                     0660)) {
+    PLOG(ERROR) << "Could not set permissions: " << kArcBridgeSocketPath;
+    return base::ScopedFD();
+  }
+
+  return socket_fd;
 }
 
 // static
@@ -391,6 +454,28 @@ void ArcSessionImpl::DoUpgrade() {
   VLOG(2) << "Upgrading an existing ARC mini instance";
   state_ = State::STARTING_FULL_INSTANCE;
 
+  delegate_->CreateSocket(base::BindOnce(&ArcSessionImpl::OnSocketCreated,
+                                         weak_factory_.GetWeakPtr()));
+}
+
+void ArcSessionImpl::OnSocketCreated(base::ScopedFD socket_fd) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_EQ(state_, State::STARTING_FULL_INSTANCE);
+
+  if (stop_requested_) {
+    // The ARC instance has started to run. Request to stop.
+    VLOG(1) << "Stop() called while creating socket";
+    StopArcInstance();
+    return;
+  }
+
+  if (!socket_fd.is_valid()) {
+    LOG(ERROR) << "ARC: Error creating socket";
+    OnStopped(ArcStopReason::GENERIC_BOOT_FAILURE);
+    return;
+  }
+
+  VLOG(2) << "Socket is created. Starting ARC container";
   login_manager::UpgradeArcContainerRequest request;
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   DCHECK(user_manager->GetPrimaryUser());
@@ -437,10 +522,13 @@ void ArcSessionImpl::DoUpgrade() {
         upgrade_params_.demo_session_apps_path.value());
   }
 
+  request.set_create_socket_in_chrome(true);
+
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   client->UpgradeArcContainer(
       request,
-      base::BindOnce(&ArcSessionImpl::OnUpgraded, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ArcSessionImpl::OnUpgraded, weak_factory_.GetWeakPtr(),
+                     std::move(socket_fd)),
       base::BindOnce(&ArcSessionImpl::OnUpgradeError,
                      weak_factory_.GetWeakPtr()));
 }
