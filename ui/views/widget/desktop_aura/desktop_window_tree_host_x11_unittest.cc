@@ -79,7 +79,12 @@ class ShapedNonClientFrameView : public NonClientFrameView {
       const gfx::Rect& client_bounds) const override {
     return client_bounds;
   }
-  int NonClientHitTest(const gfx::Point& point) override { return HTNOWHERE; }
+  int NonClientHitTest(const gfx::Point& point) override {
+    // Fake bottom for non client event test.
+    if (point == gfx::Point(500, 500))
+      return HTBOTTOM;
+    return HTNOWHERE;
+  }
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
     int right = size.width();
     int bottom = size.height();
@@ -168,11 +173,15 @@ void RunAllPendingInMessageLoop() {
 
 class DesktopWindowTreeHostX11Test : public ViewsTestBase {
  public:
-  DesktopWindowTreeHostX11Test() {
-  }
+  DesktopWindowTreeHostX11Test()
+      : event_source_(ui::PlatformEventSource::GetInstance()) {}
   ~DesktopWindowTreeHostX11Test() override {}
 
   void SetUp() override {
+    std::vector<int> pointer_devices;
+    pointer_devices.push_back(kPointerDeviceId);
+    ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(pointer_devices);
+
     ViewsTestBase::SetUp();
 
     // Make X11 synchronous for our display connection. This does not force the
@@ -185,7 +194,17 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
+  void DispatchSingleEventToWidget(XEvent* event, Widget* widget) {
+    DCHECK_EQ(GenericEvent, event->type);
+    XIDeviceEvent* device_event =
+        static_cast<XIDeviceEvent*>(event->xcookie.data);
+    device_event->event =
+        widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
+    event_source_.Dispatch(event);
+  }
+
  private:
+  ui::test::PlatformEventSourceTestAPI event_source_;
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11Test);
 };
 
@@ -501,18 +520,8 @@ class MouseEventRecorder : public ui::EventHandler {
 class DesktopWindowTreeHostX11HighDPITest
     : public DesktopWindowTreeHostX11Test {
  public:
-  DesktopWindowTreeHostX11HighDPITest()
-      : event_source_(ui::PlatformEventSource::GetInstance()) {}
+  DesktopWindowTreeHostX11HighDPITest() {}
   ~DesktopWindowTreeHostX11HighDPITest() override {}
-
-  void DispatchSingleEventToWidget(XEvent* event, Widget* widget) {
-    DCHECK_EQ(GenericEvent, event->type);
-    XIDeviceEvent* device_event =
-        static_cast<XIDeviceEvent*>(event->xcookie.data);
-    device_event->event =
-        widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-    event_source_.Dispatch(event);
-  }
 
   void PretendCapture(views::Widget* capture_widget) {
     DesktopWindowTreeHostX11* capture_host = nullptr;
@@ -529,14 +538,10 @@ class DesktopWindowTreeHostX11HighDPITest
   void SetUp() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "2");
-    std::vector<int> pointer_devices;
-    pointer_devices.push_back(kPointerDeviceId);
-    ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(pointer_devices);
 
     DesktopWindowTreeHostX11Test::SetUp();
   }
 
-  ui::test::PlatformEventSourceTestAPI event_source_;
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11HighDPITest);
 };
 
@@ -595,6 +600,54 @@ TEST_F(DesktopWindowTreeHostX11HighDPITest,
   PretendCapture(nullptr);
   first.GetNativeWindow()->RemovePreTargetHandler(&first_recorder);
   second.GetNativeWindow()->RemovePreTargetHandler(&second_recorder);
+}
+
+TEST_F(DesktopWindowTreeHostX11Test, MouseNCEvents) {
+  std::unique_ptr<Widget> widget = CreateWidget(new ShapedWidgetDelegate());
+  widget->Show();
+
+  ui::X11EventSource::GetInstance()->DispatchXEvents();
+
+  widget->SetBounds(gfx::Rect(100, 100, 501, 501));
+  ui::X11EventSource::GetInstance()->DispatchXEvents();
+
+  MouseEventRecorder recorder;
+  widget->GetNativeWindow()->AddPreTargetHandler(&recorder);
+
+  ui::ScopedXI2Event event;
+  event.InitGenericButtonEvent(kPointerDeviceId, ui::ET_MOUSE_PRESSED,
+                               gfx::Point(500, 500), ui::EF_LEFT_MOUSE_BUTTON);
+
+  DispatchSingleEventToWidget(event, widget.get());
+  ASSERT_EQ(1u, recorder.mouse_events().size());
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, recorder.mouse_events()[0].type());
+  EXPECT_TRUE(recorder.mouse_events()[0].flags() & ui::EF_IS_NON_CLIENT);
+
+  widget->GetNativeWindow()->RemovePreTargetHandler(&recorder);
+}
+
+TEST_F(DesktopWindowTreeHostX11HighDPITest, MouseNCEvents) {
+  std::unique_ptr<Widget> widget = CreateWidget(new ShapedWidgetDelegate());
+  widget->Show();
+
+  ui::X11EventSource::GetInstance()->DispatchXEvents();
+
+  widget->SetBounds(gfx::Rect(100, 100, 1000, 1000));
+  ui::X11EventSource::GetInstance()->DispatchXEvents();
+
+  MouseEventRecorder recorder;
+  widget->GetNativeWindow()->AddPreTargetHandler(&recorder);
+
+  ui::ScopedXI2Event event;
+  event.InitGenericButtonEvent(kPointerDeviceId, ui::ET_MOUSE_PRESSED,
+                               gfx::Point(1001, 1001),
+                               ui::EF_LEFT_MOUSE_BUTTON);
+  DispatchSingleEventToWidget(event, widget.get());
+  ASSERT_EQ(1u, recorder.mouse_events().size());
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, recorder.mouse_events()[0].type());
+  EXPECT_TRUE(recorder.mouse_events()[0].flags() & ui::EF_IS_NON_CLIENT);
+
+  widget->GetNativeWindow()->RemovePreTargetHandler(&recorder);
 }
 
 }  // namespace views

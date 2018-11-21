@@ -1819,8 +1819,10 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   // WindowTreeHost that hosts ash.
   if (content_window() && content_window()->delegate()) {
     int flags = event->flags();
+    gfx::Point location_in_dip = event->location();
+    GetRootTransform().TransformPointReverse(&location_in_dip);
     int hit_test_code =
-        content_window()->delegate()->GetNonClientComponent(event->location());
+        content_window()->delegate()->GetNonClientComponent(location_in_dip);
     if (hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE)
       flags |= ui::EF_IS_NON_CLIENT;
     event->set_flags(flags);
