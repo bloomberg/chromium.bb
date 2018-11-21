@@ -42,6 +42,8 @@ PATHOLOGICAL_MOBILE_SITES = Tag(
     'pathological_mobile_sites', 'Pathological mobile sites')
 POLYMER = Tag(
     'polymer', 'Polymer stories')
+REPAINT_DESKTOP = Tag(
+    'repaint_desktop', 'Repaint desktop stories')
 SIMPLE_MOBILE_SITES = Tag(
     'simple_mobile_sites', 'Simple mobile sites')
 TOP_REAL_WORLD_DESKTOP = Tag(

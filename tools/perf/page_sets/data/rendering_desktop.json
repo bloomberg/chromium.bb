@@ -234,6 +234,36 @@
         "pinterest_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
         },
+        "repaint_amazon_2018": {
+            "DEFAULT": "rendering_desktop_fdde4c2d8b.wprgo"
+        },
+        "repaint_cnn_2018": {
+            "DEFAULT": "rendering_desktop_fdde4c2d8b.wprgo"
+        },
+        "repaint_facebook_2018": {
+            "DEFAULT": "rendering_desktop_fdde4c2d8b.wprgo"
+        },
+        "repaint_google_search_2018": {
+            "DEFAULT": "rendering_desktop_fdde4c2d8b.wprgo"
+        },
+        "repaint_instagram_2018": {
+            "DEFAULT": "rendering_desktop_fdde4c2d8b.wprgo"
+        },
+        "repaint_reddit_2018": {
+            "DEFAULT": "rendering_desktop_fdde4c2d8b.wprgo"
+        },
+        "repaint_theverge_2018": {
+            "DEFAULT": "rendering_desktop_fdde4c2d8b.wprgo"
+        },
+        "repaint_twitter_2018": {
+            "DEFAULT": "rendering_desktop_fdde4c2d8b.wprgo"
+        },
+        "repaint_wikipedia_2018": {
+            "DEFAULT": "rendering_desktop_fdde4c2d8b.wprgo"
+        },
+        "repaint_yahoo_homepage_2018": {
+            "DEFAULT": "rendering_desktop_fdde4c2d8b.wprgo"
+        },
         "runway": {
             "DEFAULT": "rendering_desktop_004.wprgo"
         },
