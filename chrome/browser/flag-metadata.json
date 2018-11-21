@@ -1138,7 +1138,7 @@
   },
   {
     "name": "enable-experimental-productivity-features",
-    // "owners": [ "your-team" ],
+    "owners": [ "feature-control@chromium.org" ],
     "expiry_milestone": 76
   },
   {
