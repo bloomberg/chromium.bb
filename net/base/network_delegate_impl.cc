@@ -91,7 +91,7 @@ bool NetworkDelegateImpl::OnCanAccessFile(
   return false;
 }
 
-bool NetworkDelegateImpl::OnCanEnablePrivacyMode(
+bool NetworkDelegateImpl::OnForcePrivacyMode(
     const GURL& url,
     const GURL& site_for_cookies) const {
   return false;

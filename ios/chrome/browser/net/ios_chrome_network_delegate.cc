@@ -122,7 +122,7 @@ bool IOSChromeNetworkDelegate::OnCanAccessFile(
   return true;
 }
 
-bool IOSChromeNetworkDelegate::OnCanEnablePrivacyMode(
+bool IOSChromeNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
     const GURL& site_for_cookies) const {
   // Null during tests, or when we're running in the system context.

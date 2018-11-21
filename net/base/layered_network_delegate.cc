@@ -227,14 +227,14 @@ void LayeredNetworkDelegate::OnCanAccessFileInternal(
     const base::FilePath& original_path,
     const base::FilePath& absolute_path) const {}
 
-bool LayeredNetworkDelegate::OnCanEnablePrivacyMode(
+bool LayeredNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
     const GURL& site_for_cookies) const {
-  return OnCanEnablePrivacyModeInternal(url, site_for_cookies) ||
-         nested_network_delegate_->CanEnablePrivacyMode(url, site_for_cookies);
+  return OnForcePrivacyModeInternal(url, site_for_cookies) ||
+         nested_network_delegate_->ForcePrivacyMode(url, site_for_cookies);
 }
 
-bool LayeredNetworkDelegate::OnCanEnablePrivacyModeInternal(
+bool LayeredNetworkDelegate::OnForcePrivacyModeInternal(
     const GURL& url,
     const GURL& site_for_cookies) const {
   return false;
