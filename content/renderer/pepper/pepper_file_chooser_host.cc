@@ -47,20 +47,22 @@ class PepperFileChooserHost::CompletionHandler {
   }
 
   void DidChooseFiles(blink::mojom::FileChooserResultPtr result) {
-    DCHECK(result);
     if (host_.get()) {
-      std::vector<blink::mojom::FileChooserFileInfoPtr> mojo_files =
-          std::move(result->files);
       std::vector<PepperFileChooserHost::ChosenFileInfo> files;
-      for (size_t i = 0; i < mojo_files.size(); i++) {
-        base::FilePath file_path = mojo_files[i]->get_native_file()->file_path;
-        // Drop files of which names can not be converted to Unicode. We
-        // can't expose such files in Flash.
-        if (blink::FilePathToWebString(file_path).IsEmpty())
-          continue;
-        files.push_back(PepperFileChooserHost::ChosenFileInfo(
-            file_path,
-            base::UTF16ToUTF8(mojo_files[i]->get_native_file()->display_name)));
+      if (result) {
+        std::vector<blink::mojom::FileChooserFileInfoPtr> mojo_files =
+            std::move(result->files);
+        for (size_t i = 0; i < mojo_files.size(); i++) {
+          base::FilePath file_path =
+              mojo_files[i]->get_native_file()->file_path;
+          // Drop files of which names can not be converted to Unicode. We
+          // can't expose such files in Flash.
+          if (blink::FilePathToWebString(file_path).IsEmpty())
+            continue;
+          files.push_back(PepperFileChooserHost::ChosenFileInfo(
+              file_path, base::UTF16ToUTF8(
+                             mojo_files[i]->get_native_file()->display_name)));
+        }
       }
       host_->StoreChosenFiles(files);
     }

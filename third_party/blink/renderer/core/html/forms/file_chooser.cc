@@ -103,8 +103,11 @@ void FileChooser::EnumerateChosenDirectory() {
 }
 
 void FileChooser::DidChooseFiles(mojom::blink::FileChooserResultPtr result) {
-  DCHECK(result);
-  FileChooserFileInfoList files = std::move(result->files);
+  // TODO(tkent): If |result| is nullptr, we should not clear the
+  // already-selected files in <input type=file> like other browsers.
+  FileChooserFileInfoList files;
+  if (result)
+    files = std::move(result->files);
   // FIXME: This is inelegant. We should not be looking at params_ here.
   if (params_->selected_files.size() == files.size()) {
     bool was_changed = false;
@@ -129,8 +132,10 @@ void FileChooser::DidChooseFiles(mojom::blink::FileChooserResultPtr result) {
     }
   }
 
-  if (client_)
-    client_->FilesChosen(std::move(files), result->base_directory);
+  if (client_) {
+    client_->FilesChosen(std::move(files),
+                         result ? result->base_directory : base::FilePath());
+  }
   DidCloseChooser();
 }
 
