@@ -971,6 +971,15 @@ bool RTCPeerConnectionHandler::Initialize(
   configuration_.set_experiment_cpu_load_estimator(
       base::FeatureList::IsEnabled(media::kNewEncodeCpuLoadEstimator));
 
+  // Configure optional SRTP configurations enabled via the command line.
+  configuration_.crypto_options = webrtc::CryptoOptions{};
+  configuration_.crypto_options->srtp.enable_gcm_crypto_suites =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebRtcSrtpAesGcm);
+  configuration_.crypto_options->srtp.enable_encrypted_rtp_header_extensions =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebRtcSrtpEncryptedHeaders);
+
   // Copy all the relevant constraints into |config|.
   CopyConstraintsIntoRtcConfiguration(options, &configuration_);
 
