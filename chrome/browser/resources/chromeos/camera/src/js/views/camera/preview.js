@@ -61,7 +61,7 @@ cca.views.camera.Preview = function(onNewStreamNeeded, onAspectRatio) {
 
   /**
    * Promise for the current applying focus.
-   * @type {Promise<>}
+   * @type {?Promise}
    * @private
    */
   this.focus_ = null;
@@ -89,7 +89,7 @@ cca.views.camera.Preview.prototype.toString = function() {
 /**
  * Sets video element's source.
  * @param {MediaStream} stream Stream to be the source.
- * @return {!Promise<>} Promise for the operation.
+ * @return {!Promise} Promise for the operation.
  */
 cca.views.camera.Preview.prototype.setSource_ = function(stream) {
   return new Promise((resolve) => {
@@ -133,7 +133,7 @@ cca.views.camera.Preview.prototype.setSource_ = function(stream) {
 /**
  * Starts the preview with the source stream.
  * @param {MediaStream} stream Stream to be the source.
- * @return {!Promise<>} Promise for the operation.
+ * @return {!Promise} Promise for the operation.
  */
 cca.views.camera.Preview.prototype.start = function(stream) {
   return this.setSource_(stream).then(() => {

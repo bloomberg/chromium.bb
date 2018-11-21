@@ -291,7 +291,8 @@ cca.views.GalleryBase.prototype.onPictureAdded = function(picture) {
 };
 
 /**
- * Adds the picture to DOM. Should be overriden by inheriting classes.
+ * Adds the picture to DOM.
+ * @abstract
  * @param {cca.models.Gallery.Picture} picture Model's picture to be added.
  * @protected
  */

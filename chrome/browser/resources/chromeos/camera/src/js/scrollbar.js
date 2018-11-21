@@ -11,8 +11,7 @@ var cca = cca || {};
 
 /**
  * Creates a scroll bar for a scrollable area.
- *
- * @param {cca.util.SmoothScroller} scoller Scroller for the scrollable
+ * @param {cca.util.SmoothScroller} scroller Scroller for the scrollable
  *     element.
  * @constructor
  */
@@ -128,6 +127,7 @@ cca.ScrollBar.prototype.onMouseUp_ = function(event) {
 };
 
 /**
+ * @abstract
  * @return {number} Total client size in pixels.
  * @protected
  */
@@ -136,6 +136,7 @@ cca.ScrollBar.prototype.getClientTotal = function() {
 };
 
 /**
+ * @abstract
  * @return {number} Total scroll size in pixels.
  * @protected
  */
@@ -144,6 +145,7 @@ cca.ScrollBar.prototype.getScrollTotal = function() {
 };
 
 /**
+ * @abstract
  * @param {Event} event Event.
  * @return {number} Total client position for the event in pixels.
  * @protected
@@ -153,6 +155,7 @@ cca.ScrollBar.prototype.getClientPosition = function(event) {
 };
 
 /**
+ * @abstract
  * @param {Event} event Event.
  * @return {number} Total screen position for the event in pixels.
  * @protected
@@ -162,6 +165,7 @@ cca.ScrollBar.prototype.getScreenPosition = function(event) {
 };
 
 /**
+ * @abstract
  * @return {number} Scroll position in pixels.
  * @protected
  */
@@ -171,6 +175,7 @@ cca.ScrollBar.prototype.getScrollPosition = function() {
 
 /**
  * Sets the scroll position.
+ * @abstract
  * @param {number} value Position in pixels.
  * @protected
  */
@@ -180,7 +185,7 @@ cca.ScrollBar.prototype.setScrollPosition = function(value) {
 
 /**
  * Sets geometry of the scroll bar's thumb.
- *
+ * @abstract
  * @param {number} position Position of the thumb in pixels.
  * @param {number} size Size of the thumb in pixels.
  * @protected
@@ -258,8 +263,7 @@ cca.ScrollBar.prototype.redraw_ = function() {
 
 /**
  * Creates a horizontal scroll bar.
- *
- * @param {cca.util.SmoothScroller} scoller Scroller for the scrollable
+ * @param {cca.util.SmoothScroller} scroller Scroller for the scrollable
  *     element.
  * @constructor
  * @extends {cca.ScrollBar}

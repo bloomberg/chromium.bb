@@ -15,7 +15,7 @@ var cca = cca || {};
 cca.models = cca.models || {};
 
 /**
- * Creates the Gallery view controller.
+ * Creates the gallery model controller.
  * @constructor
  */
 cca.models.Gallery = function() {
@@ -164,7 +164,7 @@ cca.models.Gallery.prototype.load = function(observers) {
 /**
  * Loads the pictures from the storages and adds them to the pictures model.
  * @param {Array.<FileEntry>} pictureEntries Picture entries.
- * @param {Object{string, FileEntry}} thumbnailEntriesByName Thumbanil entries
+ * @param {Object.<string, FileEntry>} thumbnailEntriesByName Thumbanil entries
  *     mapped by thumbnail names.
  * @return {!Promise<Array.<cca.models.Gallery.Picture>>} Promise for the
  *     pictures.
@@ -234,7 +234,7 @@ cca.models.Gallery.prototype.checkLastPicture = function() {
  * Deletes the picture in the pictures' model.
  * @param {cca.models.Gallery.Picture} picture Picture to be deleted.
  * @param {boolean=} pictureEntryDeleted Whether the picture-entry was deleted.
- * @return {!Promise<>} Promise for the operation.
+ * @return {!Promise} Promise for the operation.
  */
 cca.models.Gallery.prototype.deletePicture = function(
     picture, pictureEntryDeleted) {
@@ -261,7 +261,7 @@ cca.models.Gallery.prototype.deletePicture = function(
  * Exports the picture to the external storage.
  * @param {cca.models.Gallery.Picture} picture Picture to be exported.
  * @param {FileEntry} entry Target file entry.
- * @return {!Promise<>} Promise for the operation.
+ * @return {!Promise} Promise for the operation.
  */
 cca.models.Gallery.prototype.exportPicture = function(picture, entry) {
   return new Promise((resolve, reject) => {
@@ -308,7 +308,7 @@ cca.models.Gallery.prototype.notifyObservers_ = function(fn, picture) {
  * Saves a picture that will also be added to the pictures' model.
  * @param {Blob} blob Data of the picture to be added.
  * @param {boolean} isMotionPicture Picture to be added is a video.
- * @return {!Promise<>} Promise for the operation.
+ * @return {!Promise} Promise for the operation.
  */
 cca.models.Gallery.prototype.savePicture = function(blob, isMotionPicture) {
   // TODO(yuli): models.Gallery listens to models.FileSystem's file-added event

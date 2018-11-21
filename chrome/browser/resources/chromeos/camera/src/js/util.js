@@ -18,7 +18,7 @@ cca.util = cca.util || {};
  * Gets the clockwise rotation and flip that can orient a photo to its upright
  * position.
  * @param {Blob} blob JPEG blob that might contain EXIF orientation field.
- * @return {Promise<Object{rotation: number, flip: boolean}>}
+ * @return {Promise<Object.<number, boolean>>}
  */
 cca.util.getPhotoOrientation = function(blob) {
   let getOrientation = new Promise((resolve, reject) => {
