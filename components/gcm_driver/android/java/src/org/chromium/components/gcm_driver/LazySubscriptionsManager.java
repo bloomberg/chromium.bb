@@ -194,8 +194,6 @@ public class LazySubscriptionsManager {
      *  @return The messages stored. Returns an empty list in case of failure.
      */
     public static GCMMessage[] readMessages(String subscriptionId) {
-        // TODO(https://crbug.com/882887): Make sure to delete subscription
-        // information when the token goes.
         Context context = ContextUtils.getApplicationContext();
         SharedPreferences sharedPrefs =
                 context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
