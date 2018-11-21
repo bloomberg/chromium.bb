@@ -820,7 +820,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                         const URLRow& row,
                         const RedirectList& redirects,
                         base::Time visit_time) override;
-  void NotifyURLsModified(const URLRows& rows) override;
+  void NotifyURLsModified(const URLRows& changed_urls,
+                          bool is_from_expiration) override;
   void NotifyURLsDeleted(DeletionInfo deletion_info) override;
 
   // Deleting all history ------------------------------------------------------

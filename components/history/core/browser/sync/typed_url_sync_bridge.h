@@ -55,7 +55,8 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
                     const RedirectList& redirects,
                     base::Time visit_time) override;
   void OnURLsModified(HistoryBackend* history_backend,
-                      const URLRows& changed_urls) override;
+                      const URLRows& changed_urls,
+                      bool is_from_expiration) override;
   void OnURLsDeleted(HistoryBackend* history_backend,
                      bool all_history,
                      bool expired,

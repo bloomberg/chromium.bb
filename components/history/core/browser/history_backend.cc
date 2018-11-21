@@ -915,7 +915,7 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
   //
   // TODO(brettw) bug 1140015: Add an "add page" notification so the history
   // views can keep in sync.
-  NotifyURLsModified(changed_urls);
+  NotifyURLsModified(changed_urls, /*is_from_expiration=*/false);
   ScheduleCommit();
 }
 
@@ -961,7 +961,7 @@ void HistoryBackend::SetPageTitle(const GURL& url,
   // Broadcast notifications for any URLs that have changed. This will
   // update the in-memory database and the InMemoryURLIndex.
   if (!changed_urls.empty()) {
-    NotifyURLsModified(changed_urls);
+    NotifyURLsModified(changed_urls, /*is_from_expiration=*/false);
     ScheduleCommit();
   }
 }
@@ -1037,7 +1037,7 @@ size_t HistoryBackend::UpdateURLs(const URLRows& urls) {
   // will update the in-memory database and the InMemoryURLIndex.
   size_t num_updated_records = changed_urls.size();
   if (num_updated_records) {
-    NotifyURLsModified(changed_urls);
+    NotifyURLsModified(changed_urls, /*is_from_expiration=*/false);
     ScheduleCommit();
   }
   return num_updated_records;
@@ -2641,12 +2641,13 @@ void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
     delegate_->NotifyURLVisited(transition, row, redirects, visit_time);
 }
 
-void HistoryBackend::NotifyURLsModified(const URLRows& rows) {
+void HistoryBackend::NotifyURLsModified(const URLRows& changed_urls,
+                                        bool is_from_expiration) {
   for (HistoryBackendObserver& observer : observers_)
-    observer.OnURLsModified(this, rows);
+    observer.OnURLsModified(this, changed_urls, is_from_expiration);
 
   if (delegate_)
-    delegate_->NotifyURLsModified(rows);
+    delegate_->NotifyURLsModified(changed_urls);
 }
 
 void HistoryBackend::NotifyURLsDeleted(DeletionInfo deletion_info) {

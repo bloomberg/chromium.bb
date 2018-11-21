@@ -366,7 +366,8 @@ void TypedURLSyncBridge::OnURLVisited(HistoryBackend* history_backend,
 }
 
 void TypedURLSyncBridge::OnURLsModified(HistoryBackend* history_backend,
-                                        const URLRows& changed_urls) {
+                                        const URLRows& changed_urls,
+                                        bool is_from_expiration) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(sync_metadata_database_);
 
