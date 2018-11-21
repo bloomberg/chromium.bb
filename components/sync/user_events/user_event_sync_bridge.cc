@@ -322,8 +322,6 @@ void UserEventSyncBridge::OnStoreCreated(
     return;
   }
 
-  // TODO(vitaliii): Garbage collect old user consents if sync is disabled.
-
   store_ = std::move(store);
   store_->ReadAllMetadata(base::BindOnce(
       &UserEventSyncBridge::OnReadAllMetadata, weak_ptr_factory_.GetWeakPtr()));
