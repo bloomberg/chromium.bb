@@ -4,6 +4,7 @@
 
 #import "ios/web/public/test/web_test_with_web_state.h"
 
+#include "base/ios/ios_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
@@ -15,6 +16,7 @@
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
+#import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_state_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,6 +24,7 @@
 #endif
 
 using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForActionTimeout;
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
 
@@ -73,6 +76,55 @@ void WebTestWithWebState::AddTransientItem(const GURL& url) {
   GetWebController(web_state())
       .webStateImpl->GetNavigationManagerImpl()
       .AddTransientItem(url);
+}
+
+bool WebTestWithWebState::LoadHtmlWithoutSubresources(const std::string& html) {
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
+    return LoadHtml(html);
+  }
+  NSString* block_all = @"[{"
+                         "  \"trigger\": {"
+                         "    \"url-filter\": \".*\""
+                         "  },"
+                         "  \"action\": {"
+                         "    \"type\": \"block\""
+                         "  }"
+                         "}]";
+  __block WKContentRuleList* content_rule_list = nil;
+  __block NSError* error = nil;
+  __block BOOL rule_compilation_completed = NO;
+  [WKContentRuleListStore.defaultStore
+      compileContentRuleListForIdentifier:@"block_everything"
+                   encodedContentRuleList:block_all
+                        completionHandler:^(WKContentRuleList* rule_list,
+                                            NSError* err) {
+                          error = err;
+                          content_rule_list = rule_list;
+                          rule_compilation_completed = YES;
+                        }];
+
+  bool success = WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^{
+    return rule_compilation_completed;
+  });
+  if (!success) {
+    DLOG(WARNING) << "ContentRuleList compilation timed out.";
+    return false;
+  }
+  if (error) {
+    DLOG(WARNING) << "ContentRuleList compilation failed with error: "
+                  << base::SysNSStringToUTF8(error.description);
+    ;
+    return false;
+  }
+  DCHECK(content_rule_list);
+  web::WKWebViewConfigurationProvider& configuration_provider =
+      web::WKWebViewConfigurationProvider::FromBrowserState(GetBrowserState());
+  WKWebViewConfiguration* configuration =
+      configuration_provider.GetWebViewConfiguration();
+  [configuration.userContentController addContentRuleList:content_rule_list];
+  bool result = LoadHtml(html);
+  [configuration.userContentController removeContentRuleList:content_rule_list];
+  return result;
 }
 
 void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
