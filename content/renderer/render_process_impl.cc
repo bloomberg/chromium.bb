@@ -197,6 +197,15 @@ RenderProcessImpl::RenderProcessImpl(
     v8::V8::EnableWebAssemblyTrapHandler(use_v8_trap_handler);
   }
 #endif
+#if defined(OS_MACOSX) && defined(ARCH_CPU_X86_64)
+  if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
+    // On macOS, Crashpad uses exception ports to handle signals in a different
+    // process. As we cannot just pass a callback to this other process, we ask
+    // V8 to install its own signal handler to deal with WebAssembly traps.
+    bool use_v8_signal_handler = true;
+    v8::V8::EnableWebAssemblyTrapHandler(use_v8_signal_handler);
+  }
+#endif  // defined(OS_MACOSX) && defined(ARCH_CPU_X86_64)
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
