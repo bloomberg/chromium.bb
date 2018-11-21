@@ -251,6 +251,8 @@ base::scoped_nsobject<NSMenuItem> BuildViewMenu(
                     .submenu({
                         Item(IDS_VIEW_SOURCE_MAC).command_id(IDC_VIEW_SOURCE),
                         Item(IDS_DEV_TOOLS_MAC).command_id(IDC_DEV_TOOLS),
+                        Item(IDS_DEV_TOOLS_ELEMENTS_MAC)
+                            .command_id(IDC_DEV_TOOLS_INSPECT),
                         Item(IDS_DEV_TOOLS_CONSOLE_MAC)
                             .command_id(IDC_DEV_TOOLS_CONSOLE),
                         Item(IDS_ALLOW_JAVASCRIPT_APPLE_EVENTS_MAC)
