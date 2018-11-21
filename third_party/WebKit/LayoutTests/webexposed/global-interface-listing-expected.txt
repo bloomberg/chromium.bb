@@ -1087,6 +1087,16 @@ interface ConstantSourceNode : AudioScheduledSourceNode
     attribute @@toStringTag
     getter offset
     method constructor
+interface ContactInfo
+    attribute @@toStringTag
+    getter email
+    getter name
+    getter tel
+    method constructor
+interface ContactsManager
+    attribute @@toStringTag
+    method constructor
+    method select
 interface ConvolverNode : AudioNode
     attribute @@toStringTag
     getter buffer
@@ -4697,6 +4707,7 @@ interface Navigator
     getter appVersion
     getter clipboard
     getter connection
+    getter contacts
     getter cookieEnabled
     getter credentials
     getter deviceMemory
