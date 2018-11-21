@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -85,6 +86,7 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -2098,9 +2100,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS:
-      password_manager_util::UserTriggeredShowAllSavedPasswordsFromContextMenu(
-          autofill::ChromeAutofillClient::FromWebContents(
-              source_web_contents_));
+      NavigateToManagePasswordsPage(GetBrowser());
+      password_manager::metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
+          password_manager::metrics_util::
+              SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU);
       break;
 
     case IDC_CONTENT_CONTEXT_PICTUREINPICTURE:

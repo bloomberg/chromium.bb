@@ -525,15 +525,8 @@ bool ChromeAutofillClient::ShouldShowSigninPromo() {
 }
 
 void ChromeAutofillClient::ExecuteCommand(int id) {
-  if (id == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
-#if !defined(OS_ANDROID)
-    NavigateToManagePasswordsPage(
-        chrome::FindBrowserWithWebContents(web_contents()));
-#else
-    chrome::android::PreferencesLauncher::ShowPasswordSettings(web_contents());
-#endif
-  } else if (id == autofill::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
 #if defined(OS_ANDROID)
+  if (id == autofill::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
     auto* window = web_contents()->GetNativeView()->GetWindowAndroid();
     if (window) {
       chrome::android::SigninPromoUtilAndroid::
@@ -541,8 +534,8 @@ void ChromeAutofillClient::ExecuteCommand(int id) {
               window,
               signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
     }
-#endif
   }
+#endif
 }
 
 Profile* ChromeAutofillClient::GetProfile() const {

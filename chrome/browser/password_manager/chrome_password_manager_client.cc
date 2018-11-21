@@ -25,6 +25,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
@@ -87,6 +89,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
@@ -874,16 +877,25 @@ favicon::FaviconService* ChromePasswordManagerClient::GetFaviconService() {
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
-void ChromePasswordManagerClient::UpdateFormManagers() {
-  password_manager_.UpdateFormManagers();
-}
-
 bool ChromePasswordManagerClient::IsUnderAdvancedProtection() const {
 #if defined(FULL_SAFE_BROWSING)
   return safe_browsing::AdvancedProtectionStatusManager::
       IsUnderAdvancedProtection(profile_);
 #else
   return false;
+#endif
+}
+
+void ChromePasswordManagerClient::UpdateFormManagers() {
+  password_manager_.UpdateFormManagers();
+}
+
+void ChromePasswordManagerClient::NavigateToManagePasswordsPage() {
+#if defined(OS_ANDROID)
+  chrome::android::PreferencesLauncher::ShowPasswordSettings(web_contents());
+#else
+  ::NavigateToManagePasswordsPage(
+      chrome::FindBrowserWithWebContents(web_contents()));
 #endif
 }
 
