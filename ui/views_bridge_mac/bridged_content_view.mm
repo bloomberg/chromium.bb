@@ -1611,6 +1611,9 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (id)accessibilityFocusedUIElement {
+  // This function should almost-never be called because when |self| is the
+  // first responder for the key NSWindow, BridgedNativeWidgetHostImpl's
+  // AccessibilityFocusOverrider will override the accessibility focus query.
   if (!bridge_)
     return nil;
   return [bridge_->host_helper()->GetNativeViewAccessible()

@@ -18,7 +18,6 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme_mac.h"
-#include "ui/views/cocoa/scoped_accessibility_focus.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -91,6 +90,7 @@ BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(NativeWidgetMac* owner)
     : widget_id_(++g_last_bridged_native_widget_id),
       native_widget_mac_(owner),
       root_view_id_(ui::NSViewIds::GetNewId()),
+      accessibility_focus_overrider_(this),
       host_mojo_binding_(this) {
   DCHECK(GetIdToWidgetHostImplMap().find(widget_id_) ==
          GetIdToWidgetHostImplMap().end());
@@ -99,7 +99,6 @@ BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(NativeWidgetMac* owner)
 }
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
-  scoped_accessibility_focus_.reset();
   DCHECK(children_.empty());
   if (bridge_factory_host_) {
     bridge_ptr_.reset();
@@ -599,6 +598,7 @@ void BridgedNativeWidgetHostImpl::SetKeyboardAccessible(bool enabled) {
 
 void BridgedNativeWidgetHostImpl::OnIsFirstResponderChanged(
     bool is_first_responder) {
+  accessibility_focus_overrider_.SetViewIsFirstResponder(is_first_responder);
   if (is_first_responder) {
     root_view_->GetWidget()->GetFocusManager()->RestoreFocusedView();
   } else {
@@ -789,13 +789,7 @@ void BridgedNativeWidgetHostImpl::OnWindowKeyStatusChanged(
     bool is_key,
     bool is_content_first_responder,
     bool full_keyboard_access_enabled) {
-  if (is_key) {
-    scoped_accessibility_focus_ =
-        std::make_unique<ScopedAccessibilityFocus>(this);
-  } else {
-    scoped_accessibility_focus_.reset();
-  }
-
+  accessibility_focus_overrider_.SetWindowIsKey(is_key);
   is_window_key_ = is_key;
   Widget* widget = native_widget_mac_->GetWidget();
   if (!widget->OnNativeWidgetActivationChanged(is_key))
@@ -1071,6 +1065,13 @@ ui::EventDispatchDetails BridgedNativeWidgetHostImpl::DispatchKeyEventPostIME(
     native_widget_mac_->GetWidget()->OnKeyEvent(key);
   CallDispatchKeyEventPostIMEAck(key, std::move(ack_callback));
   return ui::EventDispatchDetails();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidgetHostImpl, AccessibilityFocusOverrider::Client:
+
+id BridgedNativeWidgetHostImpl::GetAccessibilityFocusedUIElement() {
+  return [GetNativeViewAccessible() accessibilityFocusedUIElement];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

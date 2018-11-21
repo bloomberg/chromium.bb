@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
+#include "ui/base/cocoa/accessibility_focus_overrider.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
@@ -72,6 +73,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       public TextInputManager::Observer,
       public ui::GestureProviderClient,
       public ui::AcceleratedWidgetMacNSView,
+      public ui::AccessibilityFocusOverrider::Client,
       public IPC::Sender {
  public:
   // The view will associate itself with the given widget. The native view must
@@ -297,7 +299,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void UpdateNSViewAndDisplayProperties();
 
   // RenderWidgetHostNSViewClientHelper implementation.
-  BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;
+  id GetRootBrowserAccessibilityElement() override;
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
                             const ui::LatencyInfo& latency_info) override;
   void ForwardKeyboardEventWithCommands(
@@ -397,6 +399,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // AcceleratedWidgetMacNSView implementation.
   void AcceleratedWidgetCALayerParamsUpdated() override;
+
+  // ui::AccessibilityFocusOverrider::Client:
+  id GetAccessibilityFocusedUIElement() override;
 
   void SetShowingContextMenu(bool showing) override;
 
@@ -533,6 +538,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Cached copy of the display information pushed to us from the NSView.
   display::Display display_;
 
+  // Whether or not the NSView's NSWindow is the key window.
+  bool is_window_key_ = false;
+
   // Whether or not the NSView is first responder.
   bool is_first_responder_ = false;
 
@@ -618,6 +626,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // requests surfaces be synchronized via
   // EnsureSurfaceSynchronizedForLayoutTest().
   uint32_t latest_capture_sequence_number_ = 0u;
+
+  // Used to force the NSApplication's focused accessibility element to be the
+  // content::BrowserAccessibilityCocoa accessibility tree when the NSView for
+  // this is focused.
+  ui::AccessibilityFocusOverrider accessibility_focus_overrider_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;
