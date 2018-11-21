@@ -364,6 +364,7 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "fullscreenhandwriting",
       base::FeatureList::IsEnabled(
           features::kEnableFullscreenHandwritingVirtualKeyboard)));
+  features->AppendString(GenerateFeatureFlag("virtualkeyboardmdui", true));
   features->AppendString(GenerateFeatureFlag(
       "imeservice", base::FeatureList::IsEnabled(
                         chromeos::features::kImeServiceConnectable)));
