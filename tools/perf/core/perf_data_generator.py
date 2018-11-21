@@ -81,7 +81,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'num_shards': 7
         }
       ],
-      'platform': 'android-webview',
+      'platform': 'android-webview-google',
       'dimension': {
         'pool': 'chrome.tests.perf-webview-fyi',
         'os': 'Android',
@@ -120,7 +120,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'num_shards': 25
         }
       ],
-      'platform': 'android-webview',
+      'platform': 'android-webview-google',
       'dimension': {
         'pool': 'chrome.tests.perf-webview',
         'os': 'Android',
@@ -904,10 +904,8 @@ def generate_telemetry_args(tester_config):
     browser_name = 'reference'
   elif tester_config['platform'] == 'android':
     browser_name = 'android-chromium'
-  elif tester_config['platform'] == 'android-chrome':
-    browser_name = 'android-chrome'
-  elif tester_config['platform'] == 'android-webview':
-    browser_name = 'android-webview'
+  elif tester_config['platform'].startswith('android-'):
+    browser_name = tester_config['platform']
   elif (tester_config['platform'] == 'win'
     and tester_config['target_bits'] == 64):
     browser_name = 'release_x64'
@@ -920,7 +918,7 @@ def generate_telemetry_args(tester_config):
     '--upload-results'
   ]
 
-  if browser_name == 'android-webview':
+  if browser_name.startswith('android-webview'):
     test_args.append(
         '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk')
 
