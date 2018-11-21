@@ -3041,6 +3041,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Bad Rationalization"/>
 </enum>
 
+<enum name="AutofillSaveCardRequestExpirationDateReason">
+  <int value="0" label="Has empty month only"/>
+  <int value="1" label="Has empty year only"/>
+  <int value="2" label="Has both empty month and year"/>
+  <int value="3" label="Has expired expiration date"/>
+</enum>
+
 <enum name="AutofillSaveCreditCardPrompt">
   <int value="0" label="Show requested"/>
   <int value="1" label="Shown"/>

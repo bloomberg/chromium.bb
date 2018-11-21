@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -189,6 +190,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
       DetectedValue::USER_PROVIDED_EXPIRATION_DATE) {
     upload_decision_metrics_ |=
         AutofillMetrics::USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE;
+    LogSaveCardRequestExpirationDateReasonMetric();
     should_request_expiration_date_from_user_ = true;
   }
 
@@ -692,29 +694,41 @@ int CreditCardSaveManager::GetDetectedValues() const {
     detected_values |= DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT;
   }
 
-  // If we are missing expiration date month or expiration year, signal that
-  // expiration date will be explicitly requested in the offer-to-save bubble.
   if (base::FeatureList::IsEnabled(
           features::kAutofillUpstreamEditableExpirationDate)) {
+    // If expiration date month or expiration year are missing, signal that
+    // expiration date will be explicitly requested in the offer-to-save bubble.
     if (!upload_request_.card
              .GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), app_locale_)
              .empty()) {
       detected_values |= DetectedValue::CARD_EXPIRATION_MONTH;
     }
-    // Set |USER_PROVIDED_EXPIRATION_DATE| if any of
-    // |CREDIT_CARD_EXP_4_DIGIT_YEAR| or |CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR| is
-    // set.
     if (!(upload_request_.card
               .GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale_)
-              .empty()) ||
-        !(upload_request_.card
-              .GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR),
-                       app_locale_)
               .empty())) {
       detected_values |= DetectedValue::CARD_EXPIRATION_YEAR;
     }
-    if (!(detected_values & DetectedValue::CARD_EXPIRATION_MONTH) ||
-        !(detected_values & DetectedValue::CARD_EXPIRATION_YEAR)) {
+
+    // Set |USER_PROVIDED_EXPIRATION_DATE| if expiration date is detected as
+    // expired or missing.
+    if (detected_values & DetectedValue::CARD_EXPIRATION_MONTH &&
+        detected_values & DetectedValue::CARD_EXPIRATION_YEAR) {
+      int month_value = 0, year_value = 0;
+      bool parsable =
+          base::StringToInt(
+              upload_request_.card.GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH),
+                                           app_locale_),
+              &month_value) &&
+          base::StringToInt(
+              upload_request_.card.GetInfo(
+                  AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale_),
+              &year_value);
+      DCHECK(parsable);
+      if (!IsValidCreditCardExpirationDate(year_value, month_value,
+                                           AutofillClock::Now())) {
+        detected_values |= DetectedValue::USER_PROVIDED_EXPIRATION_DATE;
+      }
+    } else {
       detected_values |= DetectedValue::USER_PROVIDED_EXPIRATION_DATE;
     }
   }
@@ -849,6 +863,47 @@ void CreditCardSaveManager::LogCardUploadDecisions(
       client_->GetUkmRecorder(), client_->GetUkmSourceId(),
       pending_upload_request_origin_.GetURL(), upload_decision_metrics);
   pending_upload_request_origin_ = url::Origin();
+}
+
+void CreditCardSaveManager::LogSaveCardRequestExpirationDateReasonMetric() {
+  bool is_month_empty =
+      upload_request_.card
+          .GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), app_locale_)
+          .empty();
+  bool is_year_empty =
+      upload_request_.card
+          .GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale_)
+          .empty();
+
+  if (is_month_empty && is_year_empty) {
+    AutofillMetrics::LogSaveCardRequestExpirationDateReasonMetric(
+        AutofillMetrics::SaveCardRequestExpirationDateReasonMetric::
+            kMonthAndYearMissing);
+  } else if (is_month_empty) {
+    AutofillMetrics::LogSaveCardRequestExpirationDateReasonMetric(
+        AutofillMetrics::SaveCardRequestExpirationDateReasonMetric::
+            kMonthMissingOnly);
+  } else if (is_year_empty) {
+    AutofillMetrics::LogSaveCardRequestExpirationDateReasonMetric(
+        AutofillMetrics::SaveCardRequestExpirationDateReasonMetric::
+            kYearMissingOnly);
+  } else {
+    int month = 0, year = 0;
+    bool parsable =
+        base::StringToInt(
+            upload_request_.card.GetInfo(
+                AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale_),
+            &year) &&
+        base::StringToInt(upload_request_.card.GetInfo(
+                              AutofillType(CREDIT_CARD_EXP_MONTH), app_locale_),
+                          &month);
+    DCHECK(parsable);
+    // Month and year are not empty, so they must be expired.
+    DCHECK(!IsValidCreditCardExpirationDate(year, month, AutofillClock::Now()));
+    AutofillMetrics::LogSaveCardRequestExpirationDateReasonMetric(
+        AutofillMetrics::SaveCardRequestExpirationDateReasonMetric::
+            kExpirationDatePresentButExpired);
+  }
 }
 
 }  // namespace autofill

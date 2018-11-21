@@ -1247,8 +1247,9 @@ IN_PROC_BROWSER_TEST_F(
   SetUploadDetailsRpcPaymentsAccepts();
 
   // Submitting the form should still show the upload save bubble and legal
-  // footer, along with a textfield specifically requesting the cardholder name.
-  // (Must wait for response from Payments before accessing the controller.)
+  // footer, along with a pair of dropdowns specifically requesting the
+  // expiration date. (Must wait for response from Payments before accessing
+  // the controller.)
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
@@ -1257,7 +1258,59 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(
       FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW));
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR)
+                  ->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH)
+                  ->visible());
+}
+
+// Tests the upload save bubble. Ensures that the bubble surfaces a pair of
+// dropdowns requesting expiration date if expiration date is expired.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_SubmittingFormWithExpiredExpirationDateRequestsExpirationDate) {
+  // Enable the EditableExpirationDate experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should still show the upload save bubble and legal
+  // footer, along with a pair of dropdowns specifically requesting the
+  // expiration date. (Must wait for response from Payments before accessing
+  // the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitFormWithExpiredExpirationDate();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR)
+                  ->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH)
+                  ->visible());
+}
+
+// Tests the upload save bubble. Ensures that the bubble is not shown when
+// expiration date is passed, but the flag is disabled.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_ShouldNotOfferToSaveIfSubmittingExpiredExpirationDateAndExpOff) {
+  // Disable the EditableExpirationDate experiment.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+
+  // The credit card will not be imported if the expiration date is expired and
+  // experiment is off.
+  FillAndSubmitFormWithExpiredExpirationDate();
+  EXPECT_FALSE(GetSaveCardBubbleViews());
 }
 
 // Tests the upload save bubble. Ensures that the bubble is not shown when
@@ -1299,6 +1352,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 
   // Assert that expiration date was not explicitly requested in the bubble.
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW));
+  EXPECT_FALSE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR));
+  EXPECT_FALSE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH));
 }
 
 // Tests the upload save bubble. Ensures that if the expiration date drop down
@@ -1325,10 +1382,12 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(
       FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW));
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR));
   EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH));
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR)
+                  ->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH)
+                  ->visible());
 
   // [Save] button is disabled by default when requesting expiration date,
   // because there are no preselected values in the dropdown lists.
@@ -1382,10 +1441,12 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(
       FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW));
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR));
   EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH));
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR)
+                  ->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH)
+                  ->visible());
 
   views::LabelButton* save_button = static_cast<views::LabelButton*>(
       FindViewInBubbleById(DialogViewId::OK_BUTTON));

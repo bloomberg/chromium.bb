@@ -1516,6 +1516,28 @@ TEST_F(FormDataImporterTest,
                                       AutofillMetrics::HAS_CARD_NUMBER_ONLY, 1);
 }
 
+// Tests that an expired credit card is extracted when editable expiration date
+// experiment on.
+TEST_F(FormDataImporterTest,
+       ImportCreditCard_ExpiredExpiryDate_EditableExpirationExpOn) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+  FormData form;
+  form.origin = GURL("https://wwww.foo.com");
+
+  AddFullCreditCardForm(&form, "Smalls Biggie", "4111-1111-1111-1111", "01",
+                        "2000");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  std::unique_ptr<CreditCard> imported_credit_card;
+  base::HistogramTester histogram_tester;
+  EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  histogram_tester.ExpectUniqueSample("Autofill.SubmittedCardState",
+                                      AutofillMetrics::HAS_CARD_NUMBER_ONLY, 1);
+}
+
 // Tests that a valid credit card is extracted when the option text for month
 // select can't be parsed but its value can.
 TEST_F(FormDataImporterTest, ImportCreditCard_MonthSelectInvalidText) {
