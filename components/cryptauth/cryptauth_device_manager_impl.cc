@@ -145,16 +145,24 @@ SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
                                 &software_feature_state) ||
         static_cast<SoftwareFeatureState>(software_feature_state) !=
             SoftwareFeatureState::kSupported) {
-      PA_LOG(ERROR) << "A feature is marked as enabled but not as supported: "
-                    << software_feature_key;
-      RecordDeviceSyncSoftwareFeaturesResult(false /* success */,
-                                             software_feature);
+      if (software_feature == cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) {
+        // Allow this known special-case for legacy purposes; fall-through to
+        // logic which marks this device as enabled.
+        PA_LOG(VERBOSE) << "Encountered legacy case: feature EASY_UNLOCK_HOST "
+                           "is marked as supported but not enabled. Setting as "
+                           "enabled.";
+      } else {
+        PA_LOG(ERROR) << "A feature is marked as enabled but not as supported: "
+                      << software_feature_key << ". Not setting as enabled.";
+        RecordDeviceSyncSoftwareFeaturesResult(false /* success */,
+                                               software_feature);
 
-      continue;
-    } else {
-      RecordDeviceSyncSoftwareFeaturesResult(true /* success */,
-                                             software_feature);
+        continue;
+      }
     }
+
+    RecordDeviceSyncSoftwareFeaturesResult(true /* success */,
+                                           software_feature);
 
     dictionary->SetInteger(software_feature_key,
                            static_cast<int>(SoftwareFeatureState::kEnabled));
