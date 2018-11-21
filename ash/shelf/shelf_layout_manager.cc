@@ -349,14 +349,23 @@ void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event,
   }
 }
 
-void ShelfLayoutManager::ProcessGestureEventOnWindow(ui::GestureEvent* event,
-                                                     aura::Window* target) {
+void ShelfLayoutManager::ProcessGestureEventOfAutoHideShelf(
+    ui::GestureEvent* event,
+    aura::Window* target) {
+  const bool is_shelf_window = IsShelfWindow(target);
   // Skip event processing if shelf widget is fully visible to let the default
   // event dispatching do its work.
-  if (IsVisible() || in_shutdown_)
+  if (IsVisible() || in_shutdown_) {
+    // Tap outside of the AUTO_HIDE_SHOWN shelf should hide it.
+    if (!IsShelfWindow(target) && visibility_state() == SHELF_AUTO_HIDE &&
+        state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN &&
+        event->type() == ui::ET_GESTURE_TAP) {
+      UpdateAutoHideState();
+    }
     return;
+  }
 
-  if (IsShelfWindow(target)) {
+  if (is_shelf_window) {
     ui::GestureEvent event_in_screen(*event);
     gfx::Point location_in_screen(event->location());
     ::wm::ConvertPointToScreen(target, &location_in_screen);

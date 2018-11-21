@@ -113,9 +113,10 @@ class ASH_EXPORT ShelfLayoutManager
   // Updates the auto-hide state for mouse events.
   void UpdateAutoHideForMouseEvent(ui::MouseEvent* event, aura::Window* target);
 
-  // Process the gesture events on |target|.
-  void ProcessGestureEventOnWindow(ui::GestureEvent* event,
-                                   aura::Window* target);
+  // Called by AutoHideEventHandler to process the gesture events when shelf is
+  // auto hide.
+  void ProcessGestureEventOfAutoHideShelf(ui::GestureEvent* event,
+                                          aura::Window* target);
 
   ShelfVisibilityState visibility_state() const {
     return state_.visibility_state;

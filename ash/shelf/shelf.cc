@@ -45,7 +45,7 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
         event, static_cast<aura::Window*>(event->target()));
   }
   void OnGestureEvent(ui::GestureEvent* event) override {
-    shelf_layout_manager_->ProcessGestureEventOnWindow(
+    shelf_layout_manager_->ProcessGestureEventOfAutoHideShelf(
         event, static_cast<aura::Window*>(event->target()));
   }
 
