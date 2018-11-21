@@ -92,6 +92,13 @@ class BackgroundFetchDelegateProxy::Core
       std::unique_ptr<BackgroundFetchDescription> fetch_description) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+    // If there are multiple clients created we might have registered the wrong
+    // one with the delegate by overwriting it. This check makes sure that we
+    // register the correct client until multiple clients are supported.
+    // TODO(crbug.com/907075): Support multiple clients.
+    if (delegate_ && delegate_->client().get() != this)
+      delegate_->SetDelegateClient(GetWeakPtrOnUI());
+
     if (delegate_)
       delegate_->CreateDownloadJob(std::move(fetch_description));
   }
