@@ -771,7 +771,10 @@ TEST(GURLTest, SchemeIsBlob) {
   EXPECT_FALSE(GURL("http://bar/").SchemeIsBlob());
 }
 
-TEST(GURLTest, ContentAndPathForNonStandardURLs) {
+// Tests that the 'content' of the URL is properly extracted. This can be
+// complex in cases such as multiple schemes (view-source:http:) or for
+// javascript URLs. See GURL::GetContent for more details.
+TEST(GURLTest, ContentForNonStandardURLs) {
   struct TestCase {
     const char* url;
     const char* expected;
@@ -779,12 +782,18 @@ TEST(GURLTest, ContentAndPathForNonStandardURLs) {
       {"null", ""},
       {"not-a-standard-scheme:this is arbitrary content",
        "this is arbitrary content"},
+
+      // When there are multiple schemes, only the first is excluded from the
+      // content. Note also that for e.g. 'http://', the '//' is part of the
+      // content not the scheme.
       {"view-source:http://example.com/path", "http://example.com/path"},
       {"blob:http://example.com/GUID", "http://example.com/GUID"},
       {"blob://http://example.com/GUID", "//http://example.com/GUID"},
       {"blob:http://user:password@example.com/GUID",
        "http://user:password@example.com/GUID"},
 
+      // The octothorpe character ('#') marks the end of the URL content, and
+      // the start of the fragment. It should not be included in the content.
       {"http://www.example.com/GUID#ref", "www.example.com/GUID"},
       {"http://me:secret@example.com/GUID/#ref", "me:secret@example.com/GUID/"},
       {"data:text/html,Question?<div style=\"color: #bad\">idea</div>",
@@ -804,6 +813,9 @@ TEST(GURLTest, ContentAndPathForNonStandardURLs) {
   }
 }
 
+// Tests that the URL path is properly extracted for unusual URLs. This can be
+// complex in cases such as multiple schemes (view-source:http:) or when
+// octothorpes ('#') are involved.
 TEST(GURLTest, PathForNonStandardURLs) {
   struct TestCase {
     const char* url;
