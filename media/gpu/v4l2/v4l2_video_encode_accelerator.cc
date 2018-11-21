@@ -210,16 +210,14 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
       return false;
     }
 
-    auto input_layout = VideoFrameLayout::Create(
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(config.input_format),
-        visible_size_);
+    auto input_layout =
+        VideoFrameLayout::Create(config.input_format, visible_size_);
     if (!input_layout) {
       VLOGF(1) << "Invalid image processor input layout";
       return false;
     }
-    auto output_layout = VideoFrameLayout::Create(
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(device_input_format_),
-        input_allocated_size_);
+    auto output_layout =
+        VideoFrameLayout::Create(device_input_format_, input_allocated_size_);
     if (!output_layout) {
       VLOGF(1) << "Invalid image processor output layout";
       return false;
