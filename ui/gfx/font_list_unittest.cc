@@ -232,13 +232,7 @@ TEST(FontListTest, Fonts_DeriveWithSizeDelta) {
   EXPECT_EQ("Courier New|13|italic|normal", FontToString(derived_fonts[1]));
 }
 
-// TODO(865540): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_Fonts_GetHeight_GetBaseline DISABLED_Fonts_GetHeight_GetBaseline
-#else
-#define MAYBE_Fonts_GetHeight_GetBaseline Fonts_GetHeight_GetBaseline
-#endif
-TEST(FontListTest, MAYBE_Fonts_GetHeight_GetBaseline) {
+TEST(FontListTest, Fonts_GetHeight_GetBaseline) {
   // If a font list has only one font, the height and baseline must be the same.
   Font font1(kTestFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kTestFontName),
@@ -249,12 +243,11 @@ TEST(FontListTest, MAYBE_Fonts_GetHeight_GetBaseline) {
 
   // If there are two different fonts, the font list returns the max value
   // for the baseline (ascent) and height.
+  // NOTE: On most platforms, kCJKFontName has different metrics than
+  // kTestFontName, but on Android it does not.
   Font font2(kCJKFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kCJKFontName),
             base::ToLowerASCII(font2.GetActualFontNameForTesting()));
-  EXPECT_NE(font1.GetBaseline(), font2.GetBaseline());
-  // TODO(ananta): Find a size and font pair with reliably distinct descents.
-  EXPECT_NE(font1.GetHeight(), font2.GetHeight());
   std::vector<Font> fonts;
   fonts.push_back(font1);
   fonts.push_back(font2);
