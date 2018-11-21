@@ -20,6 +20,10 @@ public class ModalDialogProperties {
     public static final ReadableObjectPropertyKey<ModalDialogView.Controller> CONTROLLER =
             new ReadableObjectPropertyKey<>();
 
+    /** The content description of the dialog for accessibility. */
+    public static final ReadableObjectPropertyKey<String> CONTENT_DESCRIPTION =
+            new ReadableObjectPropertyKey<>();
+
     /** The title of the dialog. */
     public static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
 
@@ -59,8 +63,8 @@ public class ModalDialogProperties {
     public static final WritableBooleanPropertyKey TITLE_SCROLLABLE =
             new WritableBooleanPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {CONTROLLER, TITLE, TITLE_ICON, MESSAGE, CUSTOM_VIEW,
-                    POSITIVE_BUTTON_TEXT, POSITIVE_BUTTON_DISABLED, NEGATIVE_BUTTON_TEXT,
-                    NEGATIVE_BUTTON_DISABLED, CANCEL_ON_TOUCH_OUTSIDE, TITLE_SCROLLABLE};
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {CONTROLLER, CONTENT_DESCRIPTION,
+            TITLE, TITLE_ICON, MESSAGE, CUSTOM_VIEW, POSITIVE_BUTTON_TEXT, POSITIVE_BUTTON_DISABLED,
+            NEGATIVE_BUTTON_TEXT, NEGATIVE_BUTTON_DISABLED, CANCEL_ON_TOUCH_OUTSIDE,
+            TITLE_SCROLLABLE};
 }

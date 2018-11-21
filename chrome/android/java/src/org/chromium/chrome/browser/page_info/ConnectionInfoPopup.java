@@ -26,8 +26,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
+import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.vr.UiUnsupportedMode;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -191,10 +195,14 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogView.Con
         ScrollView scrollView = new ScrollView(mContext);
         scrollView.addView(mContainer);
 
-        ModalDialogView.Params params = new ModalDialogView.Params();
-        params.customView = scrollView;
-        params.cancelOnTouchOutside = true;
-        mDialog = new ModalDialogView(this, params);
+        PropertyModel model = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                                      .with(ModalDialogProperties.CONTROLLER, this)
+                                      .with(ModalDialogProperties.CUSTOM_VIEW, scrollView)
+                                      .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                                      .build();
+
+        mDialog = new ModalDialogView(mContext);
+        PropertyModelChangeProcessor.create(model, mDialog, new ModalDialogViewBinder());
         mModalDialogManager.showDialog(mDialog, ModalDialogManager.ModalDialogType.APP, true);
     }
 

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -28,8 +29,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
@@ -680,12 +684,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
             return;
         }
 
-        ModalDialogView.Params dialogParams = new ModalDialogView.Params();
-        dialogParams.title = suggestion.getDisplayText();
-        dialogParams.message = mContext.getString(R.string.omnibox_confirm_delete);
-        dialogParams.positiveButtonTextId = R.string.ok;
-        dialogParams.negativeButtonTextId = R.string.cancel;
-
         ModalDialogView.Controller dialogController = new ModalDialogView.Controller() {
             @Override
             public void onDismiss(int dismissalCause) {
@@ -706,7 +704,23 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
             }
         };
 
-        mSuggestionDeleteDialog = new ModalDialogView(dialogController, dialogParams);
+        Resources resources = mContext.getResources();
+        PropertyModel model =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CONTROLLER, dialogController)
+                        .with(ModalDialogProperties.TITLE, suggestion.getDisplayText())
+                        .with(ModalDialogProperties.MESSAGE, resources,
+                                R.string.omnibox_confirm_delete)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources, R.string.ok)
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                R.string.cancel)
+                        .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                        .build();
+
+        mSuggestionDeleteDialog = new ModalDialogView(mContext);
+        PropertyModelChangeProcessor.create(
+                model, mSuggestionDeleteDialog, new ModalDialogViewBinder());
+
         // Prevent updates to the shown omnibox suggestions list while the dialog is open.
         stopAutocomplete(false);
         manager.showDialog(mSuggestionDeleteDialog, ModalDialogManager.ModalDialogType.APP);

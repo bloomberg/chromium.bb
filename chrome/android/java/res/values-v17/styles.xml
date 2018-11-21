@@ -123,8 +123,6 @@
         <item name="android:windowFrame">@null</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:backgroundDimAmount">0.5</item>
-        <item name="android:windowMinWidthMajor">100%</item>
-        <item name="android:windowMinWidthMinor">100%</item>
         <item name="buttonBarStyle">@style/ModalDialogButtonBarStyle</item>
         <item name="buttonBarButtonStyle">@style/ModalDialogButtonStyle</item>
         <item name="android:windowSoftInputMode">adjustResize|stateHidden</item>

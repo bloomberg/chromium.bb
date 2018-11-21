@@ -23,7 +23,11 @@ import android.widget.ScrollView;
 
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
@@ -173,10 +177,15 @@ class PageInfoDialog {
     }
 
     private ModalDialogView createModalDialog(View container) {
-        ModalDialogView.Params params = new ModalDialogView.Params();
-        params.customView = container;
-        params.cancelOnTouchOutside = true;
-        return new ModalDialogView(mController, params);
+        PropertyModel model = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                                      .with(ModalDialogProperties.CONTROLLER, mController)
+                                      .with(ModalDialogProperties.CUSTOM_VIEW, container)
+                                      .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                                      .build();
+
+        ModalDialogView dialogView = new ModalDialogView(container.getContext());
+        PropertyModelChangeProcessor.create(model, dialogView, new ModalDialogViewBinder());
+        return dialogView;
     }
 
     private ViewGroup createSheetContainer(Context context, View tabView) {

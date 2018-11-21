@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.incognito;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -18,8 +19,12 @@ import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager.ModalDialogType;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
+import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
@@ -49,13 +54,20 @@ public class IncognitoDisclosureActivity extends AppCompatActivity {
                 contentView.findViewById(R.id.incognito_disclosure_close_incognito_checkbox);
         checkBox.setOnCheckedChangeListener((view, isChecked) -> mCloseIncognitoTabs = isChecked);
 
-        ModalDialogView.Params params = new ModalDialogView.Params();
-        params.customView = contentView;
-        params.title = getString(R.string.incognito_disclosure_title);
-        params.positiveButtonText = getString(R.string.ok_got_it);
-        params.negativeButtonText = getString(R.string.cancel);
+        Resources resources = getResources();
+        PropertyModel model = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                                      .with(ModalDialogProperties.CONTROLLER, mDialogController)
+                                      .with(ModalDialogProperties.TITLE, resources,
+                                              R.string.incognito_disclosure_title)
+                                      .with(ModalDialogProperties.CUSTOM_VIEW, contentView)
+                                      .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
+                                              R.string.ok_got_it)
+                                      .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                              R.string.cancel)
+                                      .build();
 
-        ModalDialogView dialog = new ModalDialogView(mDialogController, params);
+        ModalDialogView dialog = new ModalDialogView(this);
+        PropertyModelChangeProcessor.create(model, dialog, new ModalDialogViewBinder());
 
         new ModalDialogManager(new AppModalPresenter(this), ModalDialogType.APP)
                 .showDialog(dialog, ModalDialogType.APP);

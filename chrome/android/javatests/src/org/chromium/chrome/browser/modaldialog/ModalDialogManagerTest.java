@@ -17,6 +17,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
 
+import android.content.res.Resources;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.filters.SmallTest;
@@ -38,6 +39,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager.ModalDialogType;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -762,11 +765,20 @@ public class ModalDialogManagerTest {
                     }
                 }
             };
-            final ModalDialogView.Params p = new ModalDialogView.Params();
-            p.title = Integer.toString(index);
-            p.positiveButtonTextId = R.string.ok;
-            p.negativeButtonTextId = R.string.cancel;
-            return new ModalDialogView(controller, p);
+            Resources resources = mActivity.getResources();
+            final PropertyModel model =
+                    new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                            .with(ModalDialogProperties.CONTROLLER, controller)
+                            .with(ModalDialogProperties.TITLE, Integer.toString(index))
+                            .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
+                                    R.string.ok)
+                            .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                    R.string.cancel)
+                            .build();
+
+            ModalDialogView dialogView = new ModalDialogView(mActivity);
+            PropertyModelChangeProcessor.create(model, dialogView, new ModalDialogViewBinder());
+            return dialogView;
         });
     }
 
