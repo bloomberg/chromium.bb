@@ -142,10 +142,6 @@ extern const base::Feature kDisallowUnsafeHttpDownloads;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kDisallowUnsafeHttpDownloadsParamName[];
 
-#if !defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kDoodlesOnLocalNtp;
-#endif
-
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDownloadsLocationChange;
@@ -393,8 +389,6 @@ extern const base::Feature kThirdPartyModulesBlocking;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kTopSitesFromSiteEngagement;
-
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kUseGoogleLocalNtp;
 
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)

@@ -2780,6 +2780,17 @@ const char kDoodlesOnLocalNtpDescription[] =
     "Show doodles on the local New Tab page if Google is the default search "
     "engine.";
 
+const char kSearchSuggestionsOnLocalNtpName[] =
+    "Enable search suggestions on the local NTP";
+const char kSearchSuggestionsOnLocalNtpDescription[] =
+    "Show search suggestions on the local New Tab page if Google is the "
+    "default search engine.";
+
+const char kPromosOnLocalNtpName[] = "Enable promos on the local NTP";
+const char kPromosOnLocalNtpDescription[] =
+    "Show promos on the local New Tab page if Google is the "
+    "default search engine.";
+
 const char kEnableAudioFocusName[] = "Manage audio focus across tabs";
 const char kEnableAudioFocusDescription[] =
     "Manage audio focus across tabs to improve the audio mixing.";

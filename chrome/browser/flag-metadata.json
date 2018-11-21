@@ -668,8 +668,8 @@
   },
   {
     "name": "doodles-on-local-ntp",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "kmilka", "ramyan" ],
+    "expiry_milestone": 74
   },
   {
     "name": "double-tap-to-zoom-in-tablet-mode",
@@ -2470,23 +2470,23 @@
   },
   {
     "name": "ntp-backgrounds",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "kmilka", "ramyan" ],
+    "expiry_milestone": 73
   },
   {
     "name": "ntp-custom-links",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "kristipark", "ramyan" ],
+    "expiry_milestone": 73
   },
   {
     "name": "ntp-icons",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "kristipark", "ramyan" ],
+    "expiry_milestone": 73
   },
   {
     "name": "ntp-ui-md",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "kmilka", "ramyan" ],
+    "expiry_milestone": 73
   },
   {
     "name": "num-raster-threads",
@@ -2774,6 +2774,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "promos-on-local-ntp",
+    "owners": ["kmilka", "ramyan"],
+    "expiry_milestone": 74
+  },
+  {
     "name": "protect-sync-credential",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -2852,6 +2857,11 @@
     "name": "save-previous-document-resources-until",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "search-suggestions-on-local-ntp",
+    "owners": ["kmilka", "ramyan"],
+    "expiry_milestone": 74
   },
   {
     "name": "service-worker-payment-apps",
@@ -3160,8 +3170,8 @@
   },
   {
     "name": "use-google-local-ntp",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ramyan" ],
+    "expiry_milestone": 75
   },
   {
     "name": "use-monitor-color-space",
