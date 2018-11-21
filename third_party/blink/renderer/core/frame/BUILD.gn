@@ -44,7 +44,6 @@ blink_core_sources("frame") {
     "dom_window.h",
     "dom_window_base64.cc",
     "dom_window_base64.h",
-    "dom_window_event_handlers.h",
     "dom_window_timers.cc",
     "dom_window_timers.h",
     "embedded_content_view.h",
@@ -184,5 +183,6 @@ blink_core_sources("frame") {
     "web_local_frame_impl.h",
     "web_view_frame_widget.cc",
     "web_view_frame_widget.h",
+    "window_event_handlers.h",
   ]
 }
