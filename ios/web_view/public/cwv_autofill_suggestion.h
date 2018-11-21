@@ -60,10 +60,10 @@ CWV_EXPORT
 // credit card network icon.
 @property(nonatomic, readonly, nullable) UIImage* icon;
 
-// YES if this is a password autofill suggestion.
-@property(nonatomic, readonly) BOOL isPasswordSuggestion;
-
 - (instancetype)init NS_UNAVAILABLE;
+
+// YES if this is a password autofill suggestion.
+- (BOOL)isPasswordSuggestion;
 
 @end
 
