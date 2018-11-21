@@ -178,8 +178,8 @@ This is achieved by having every `App` field (other than `App.app_type` and
 `App.app_id`) be optional. Either optional in the Mojo sense, with type `T?`
 instead of a plain `T`, or if that isn't possible in Mojo (e.g. for integer or
 enum fields), as a semantic convention above the Mojo layer: 0 is reserved to
-mean "unknown". For example, the `App.show_in_launcher` field is a `Ternary`,
-not a `bool`.
+mean "unknown". For example, the `App.show_in_launcher` field is a
+`OptionalBool`, not a `bool`.
 
 An `App.readiness` field represents whether an app is installed (i.e. ready to
 launch), uninstalled or otherwise disabled. "An app was just installed" is
@@ -188,7 +188,7 @@ represented by a delta whose `readiness` is `kReady` and the old state's
 level, the `AppUpdate` wrapper type (see below) can provide helper
 `WasJustInstalled` methods.
 
-The `App`, `Readiness` and `Ternary` types are:
+The `App`, `Readiness` and `OptionalBool` types are:
 
     struct App {
       AppType app_type;
@@ -199,7 +199,7 @@ The `App`, `Readiness` and `Ternary` types are:
       Readiness readiness;
       string? name;
       IconKey? icon_key;
-      Ternary show_in_launcher;
+      OptionalBool show_in_launcher;
       // etc.
     };
 
@@ -212,10 +212,10 @@ The `App`, `Readiness` and `Ternary` types are:
       kUninstalledByUser,
     };
 
-    enum Ternary {
+    enum OptionalBool {
       kUnknown = 0,
-      kNo,
-      kYes,
+      kFalse,
+      kTrue,
     };
 
     // struct IconKey is discussed in the "App Icon Factory" section.
