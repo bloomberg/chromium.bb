@@ -175,9 +175,15 @@ test(test => {
                                      accelerationIncludingGravity: null,
                                      rotationRate: null,
                                      interval: null});
-  assert_equals(event.acceleration, null);
-  assert_equals(event.accelerationIncludingGravity, null);
-  assert_equals(event.rotationRate, null);
+  assert_equals(event.acceleration.x, null);
+  assert_equals(event.acceleration.y, null);
+  assert_equals(event.acceleration.z, null);
+  assert_equals(event.accelerationIncludingGravity.x, null);
+  assert_equals(event.accelerationIncludingGravity.y, null);
+  assert_equals(event.accelerationIncludingGravity.z, null);
+  assert_equals(event.rotationRate.alpha, null);
+  assert_equals(event.rotationRate.beta, null);
+  assert_equals(event.rotationRate.gamma, null);
   assert_equals(event.interval, 0);
 }, "Tests all values are null.");
 
