@@ -647,7 +647,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl.presubmit_support, 'DoPresubmitChecks', PresubmitMock)
     self.mock(git_cl.checkout, 'GitCheckout', GitCheckoutMock)
     GitCheckoutMock.reset()
-    self.mock(git_cl.upload, 'RealMain', self.fail)
     self.mock(git_cl.watchlists, 'Watchlists', WatchlistsMock)
     self.mock(git_cl.auth, 'get_authenticator_for_host', AuthenticatorMock)
     self.mock(git_cl.gerrit_util, 'GetChangeDetail',

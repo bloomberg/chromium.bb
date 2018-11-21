@@ -44,7 +44,6 @@ except ImportError:
 
 from third_party import colorama
 from third_party import httplib2
-from third_party import upload
 import auth
 import checkout
 import clang_format
@@ -4059,9 +4058,6 @@ def get_cl_statuses(changes, fine_grained, max_processes=None):
 
   See GetStatus() for a list of possible statuses.
   """
-  # Silence upload.py otherwise it becomes unwieldy.
-  upload.verbosity = 0
-
   if not changes:
     raise StopIteration()
 
