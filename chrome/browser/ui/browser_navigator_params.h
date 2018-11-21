@@ -267,6 +267,11 @@ struct NavigateParams {
   content::WasActivatedOption was_activated =
       content::WasActivatedOption::kUnknown;
 
+  // If this navigation was initiated from a link that specified the
+  // hrefTranslate attribute, this contains the attribute's value (a BCP47
+  // language code). Empty otherwise.
+  std::string href_translate;
+
  private:
   NavigateParams();
   DISALLOW_COPY_AND_ASSIGN(NavigateParams);

@@ -392,6 +392,7 @@ void NavigatorImpl::RequestOpenURL(
     bool should_replace_current_entry,
     bool user_gesture,
     blink::WebTriggeringEventInfo triggering_event_info,
+    const std::string& href_translate,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   // Note: This can be called for subframes (even when OOPIFs are not possible)
   // if the disposition calls for a different window.
@@ -463,6 +464,7 @@ void NavigatorImpl::RequestOpenURL(
   }
 
   params.blob_url_loader_factory = std::move(blob_url_loader_factory);
+  params.href_translate = href_translate;
 
   GetContentClient()->browser()->OverrideNavigationParams(
       current_site_instance, &params.transition, &params.is_renderer_initiated,
