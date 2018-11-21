@@ -8,6 +8,12 @@ import("//third_party/feed/java_sources.gni")
 import("//third_party/feed/proto_sources.gni")
 import("//third_party/protobuf/proto_library.gni")
 
+android_resources("sharedstream_resources") {
+  resource_dirs =
+      [ "src/src/main/java/com/google/android/libraries/feed/sharedstream/res" ]
+  custom_package = "com.google.android.libraries.feed.sharedstream"
+}
+
 android_resources("piet_resources") {
   resource_dirs =
       [ "src/src/main/java/com/google/android/libraries/feed/piet/res" ]
@@ -16,6 +22,9 @@ android_resources("piet_resources") {
 
 android_resources("basicstream_internal_viewholders_resources") {
   resource_dirs = [ "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/viewholders/res" ]
+  deps = [
+    ":sharedstream_resources",
+  ]
   custom_package =
       "com.google.android.libraries.feed.basicstream.internal.viewholders"
 }
