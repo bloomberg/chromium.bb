@@ -86,20 +86,24 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
     // Whether this format is supported.
     bool enabled = false;
 
-    // Whether to use glTexStorage2D or glTexImage2D.
-    bool use_storage = false;
+    // Whether this format supports TexStorage2D.
+    bool supports_storage = false;
 
     // Whether to allow SHARED_IMAGE_USAGE_SCANOUT.
     bool allow_scanout = false;
 
-    // GL internal_format/format/type triplet.
-    GLuint internal_format = 0;
     GLenum gl_format = 0;
     GLenum gl_type = 0;
-
     const gles2::Texture::CompatibilitySwizzle* swizzle = nullptr;
-    GLuint adjusted_internal_format = 0;
     GLenum adjusted_format = 0;
+
+    // The internalformat portion of the format/type/internalformat triplet
+    // used when calling TexImage2D
+    GLuint image_internal_format = 0;
+
+    // The internalformat portion of the format/type/internalformat triplet
+    // used when calling TexStorage2D
+    GLuint storage_internal_format = 0;
 
     // GL target to use for scanout images.
     GLenum target_for_scanout = GL_TEXTURE_2D;

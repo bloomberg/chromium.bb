@@ -418,43 +418,33 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     if (!viz::GLSupportsFormat(format) ||
         viz::IsResourceFormatCompressed(format))
       continue;
-    if (enable_texture_storage) {
-      GLuint internal_format = viz::TextureStorageFormat(format);
-      if (validators->texture_internal_format_storage.IsValid(
-              internal_format)) {
-        info.enabled = true;
-        info.use_storage = true;
-        info.internal_format = internal_format;
-        info.gl_format = gles2::TextureManager::ExtractFormatFromStorageFormat(
-            info.internal_format);
-        info.gl_type = gles2::TextureManager::ExtractTypeFromStorageFormat(
-            internal_format);
-        info.swizzle = gles2::TextureManager::GetCompatibilitySwizzle(
-            feature_info.get(), info.gl_format);
-        info.adjusted_internal_format =
-            gles2::TextureManager::AdjustTexStorageFormat(feature_info.get(),
-                                                          internal_format);
-      }
+    GLuint image_internal_format = viz::GLInternalFormat(format);
+    GLenum gl_format = viz::GLDataFormat(format);
+    GLenum gl_type = viz::GLDataType(format);
+    if (validators->texture_internal_format.IsValid(image_internal_format) &&
+        validators->texture_format.IsValid(gl_format) &&
+        validators->pixel_type.IsValid(gl_type)) {
+      info.enabled = true;
+      info.gl_format = gl_format;
+      info.gl_type = gl_type;
+      info.swizzle = gles2::TextureManager::GetCompatibilitySwizzle(
+          feature_info.get(), gl_format);
+      info.image_internal_format =
+          gles2::TextureManager::AdjustTexInternalFormat(feature_info.get(),
+                                                         image_internal_format);
+      info.adjusted_format =
+          gles2::TextureManager::AdjustTexFormat(feature_info.get(), gl_format);
     }
-    if (!info.enabled) {
-      GLuint internal_format = viz::GLInternalFormat(format);
-      GLenum gl_format = viz::GLDataFormat(format);
-      GLenum gl_type = viz::GLDataType(format);
-      if (validators->texture_internal_format.IsValid(internal_format) &&
-          validators->texture_format.IsValid(gl_format) &&
-          validators->pixel_type.IsValid(gl_type)) {
-        info.enabled = true;
-        info.use_storage = false;
-        info.internal_format = internal_format;
-        info.gl_format = gl_format;
-        info.gl_type = gl_type;
-        info.swizzle = gles2::TextureManager::GetCompatibilitySwizzle(
-            feature_info.get(), gl_format);
-        info.adjusted_internal_format =
-            gles2::TextureManager::AdjustTexInternalFormat(feature_info.get(),
-                                                           internal_format);
-        info.adjusted_format = gles2::TextureManager::AdjustTexFormat(
-            feature_info.get(), gl_format);
+    if (!info.enabled)
+      continue;
+    if (enable_texture_storage) {
+      GLuint storage_internal_format = viz::TextureStorageFormat(format);
+      if (validators->texture_internal_format_storage.IsValid(
+              storage_internal_format)) {
+        info.supports_storage = true;
+        info.storage_internal_format =
+            gles2::TextureManager::AdjustTexStorageFormat(
+                feature_info.get(), storage_internal_format);
       }
     }
     if (!info.enabled || !enable_scanout_images ||
@@ -538,8 +528,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     level_info_internal_format = image->GetInternalFormat();
     if (color_space.IsValid())
       image->SetColorSpace(color_space);
-  } else if (format_info.use_storage) {
-    api->glTexStorage2DEXTFn(target, 1, format_info.adjusted_internal_format,
+  } else if (format_info.supports_storage) {
+    api->glTexStorage2DEXTFn(target, 1, format_info.storage_internal_format,
                              size.width(), size.height());
   } else {
     // Need to unbind any GL_PIXEL_UNPACK_BUFFER for the nullptr in
@@ -552,7 +542,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
       if (bound_pixel_unpack_buffer)
         api->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
     }
-    api->glTexImage2DFn(target, 0, format_info.adjusted_internal_format,
+    api->glTexImage2DFn(target, 0, format_info.image_internal_format,
                         size.width(), size.height(), 0,
                         format_info.adjusted_format, format_info.gl_type,
                         nullptr);
