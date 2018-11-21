@@ -674,6 +674,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
         base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
     apm_config.gain_controller2.fixed_digital.gain_db = 0.f;
 
+    apm_config.gain_controller2.adaptive_digital.enabled = true;
+
     const bool use_peaks_not_rms = base::GetFieldTrialParamByFeatureAsBool(
         features::kWebRtcHybridAgc, "use_peaks_not_rms", false);
     using Shortcut =
