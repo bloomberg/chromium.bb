@@ -76,7 +76,6 @@ TetherComponentImpl::Factory* TetherComponentImpl::Factory::factory_instance_ =
 
 // static
 std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::NewInstance(
-    cryptauth::CryptAuthService* cryptauth_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostFetcher* tether_host_fetcher,
@@ -93,9 +92,9 @@ std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::NewInstance(
     factory_instance_ = new Factory();
 
   return factory_instance_->BuildInstance(
-      cryptauth_service, device_sync_client, secure_channel_client,
-      tether_host_fetcher, notification_presenter,
-      gms_core_notifications_state_tracker, pref_service, network_state_handler,
+      device_sync_client, secure_channel_client, tether_host_fetcher,
+      notification_presenter, gms_core_notifications_state_tracker,
+      pref_service, network_state_handler,
       managed_network_configuration_handler, network_connect,
       network_connection_handler, adapter, session_manager);
 }
@@ -115,7 +114,6 @@ void TetherComponentImpl::RegisterProfilePrefs(
 }
 
 std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::BuildInstance(
-    cryptauth::CryptAuthService* cryptauth_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostFetcher* tether_host_fetcher,
@@ -129,15 +127,14 @@ std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::BuildInstance(
     scoped_refptr<device::BluetoothAdapter> adapter,
     session_manager::SessionManager* session_manager) {
   return base::WrapUnique(new TetherComponentImpl(
-      cryptauth_service, device_sync_client, secure_channel_client,
-      tether_host_fetcher, notification_presenter,
-      gms_core_notifications_state_tracker, pref_service, network_state_handler,
+      device_sync_client, secure_channel_client, tether_host_fetcher,
+      notification_presenter, gms_core_notifications_state_tracker,
+      pref_service, network_state_handler,
       managed_network_configuration_handler, network_connect,
       network_connection_handler, adapter, session_manager));
 }
 
 TetherComponentImpl::TetherComponentImpl(
-    cryptauth::CryptAuthService* cryptauth_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostFetcher* tether_host_fetcher,
