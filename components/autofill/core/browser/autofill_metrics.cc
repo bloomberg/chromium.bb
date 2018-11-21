@@ -730,6 +730,14 @@ void AutofillMetrics::LogCreditCardFillingInfoBarMetric(InfoBarMetric metric) {
 }
 
 // static
+void AutofillMetrics::LogSaveCardRequestExpirationDateReasonMetric(
+    SaveCardRequestExpirationDateReasonMetric reason) {
+  DCHECK_LE(reason, SaveCardRequestExpirationDateReasonMetric::kMaxValue);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.SaveCardRequestExpirationDateReason",
+                            reason);
+}
+
+// static
 void AutofillMetrics::LogSaveCardPromptMetric(
     SaveCardPromptMetric metric,
     bool is_uploading,

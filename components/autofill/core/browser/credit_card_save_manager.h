@@ -220,6 +220,9 @@ class CreditCardSaveManager {
   // |AutofillMetrics::CardUploadDecisionMetric|.
   void LogCardUploadDecisions(int upload_decision_metrics);
 
+  // Logs the reason why expiration date was explicitly requested.
+  void LogSaveCardRequestExpirationDateReasonMetric();
+
   // For testing.
   void SetEventObserverForTesting(ObserverForTest* observer) {
     observer_for_testing_ = observer;

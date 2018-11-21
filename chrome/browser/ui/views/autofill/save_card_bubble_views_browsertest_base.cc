@@ -328,6 +328,24 @@ void SaveCardBubbleViewsBrowserTestBase::
 }
 
 // Should be called for credit_card_upload_form_address_and_cc.html.
+void SaveCardBubbleViewsBrowserTestBase::
+    FillAndSubmitFormWithExpiredExpirationDate() {
+  content::WebContents* web_contents = GetActiveWebContents();
+  const std::string click_fill_button_js =
+      "(function() { document.getElementById('fill_form').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_button_js));
+
+  const std::string click_fill_expired_expiration_date_button_js =
+      "(function() { "
+      "document.getElementById('fill_expired_expiration_date').click(); "
+      "})();";
+  ASSERT_TRUE(content::ExecuteScript(
+      web_contents, click_fill_expired_expiration_date_button_js));
+
+  SubmitForm();
+}
+
+// Should be called for credit_card_upload_form_address_and_cc.html.
 void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitFormWithoutAddress() {
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_fill_button_js =
