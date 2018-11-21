@@ -228,6 +228,9 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         native_lib_placeholders = [ "libdummy.so" ]
       }
     }
+    if (invoker.add_unwind_tables_in_apk) {
+      shared_library_for_unwind_asset = "monochrome"
+    }
 
     alternative_android_sdk_dep = webview_framework_dep
     app_as_shared_lib = true
