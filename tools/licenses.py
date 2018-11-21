@@ -195,7 +195,7 @@ SPECIAL_CASES = {
     },
     os.path.join('third_party', 'blink'): {
         "Name": "Blink",
-        "URL": "https://wwww.chromium.org/",
+        "URL": "https://www.chromium.org/",
         "License": "BSD and LGPL v2 and LGPL v2.1",
         # Absolute path here is resolved as relative to the source root.
         "License File": "/LICENSE",
