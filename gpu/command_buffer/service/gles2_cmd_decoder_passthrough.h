@@ -399,7 +399,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     }
 
     // Copy into the destination
-    DCHECK(*length < bufsize);
+    DCHECK(*length <= bufsize);
     std::copy(scratch_params, scratch_params + *length, params);
 
     return error::kNoError;
