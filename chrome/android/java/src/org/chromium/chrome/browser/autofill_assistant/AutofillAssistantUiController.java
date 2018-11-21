@@ -23,6 +23,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -136,6 +137,11 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @Override
+    public void onSuggestionSelected(String suggestion) {
+        nativeOnSuggestionSelected(mUiControllerAndroid, suggestion);
+    }
+
+    @Override
     public void onAddressSelected(String guid) {
         nativeOnAddressSelected(mUiControllerAndroid, guid);
     }
@@ -222,6 +228,21 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         }
 
         mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.updateScripts(scriptHandles));
+    }
+
+    @CalledByNative
+    private void onChoose(String[] suggestions) {
+        // An empty suggestion list is supported. Selection can still be forced. onForceChoose
+        // should be a no-op in this case.
+        if (suggestions.length == 0) return;
+
+        mUiDelegateHolder.performUiOperation(
+                uiDelegate -> uiDelegate.showSuggestions(Arrays.asList(suggestions)));
+    }
+
+    @CalledByNative
+    private void onForceChoose() {
+        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.clearCarousel());
     }
 
     @CalledByNative
@@ -449,6 +470,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             long nativeUiControllerAndroid, float distanceXRatio, float distanceYRatio);
     private native void nativeUpdateTouchableArea(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
+    private native void nativeOnSuggestionSelected(
+            long nativeUiControllerAndroid, String selection);
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnShowDetails(long nativeUiControllerAndroid, boolean canContinue);

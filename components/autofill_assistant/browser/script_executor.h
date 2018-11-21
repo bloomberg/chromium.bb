@@ -85,6 +85,9 @@ class ScriptExecutor : public ActionDelegate {
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
       const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) override;
+  void Choose(const std::vector<std::string>& suggestions,
+              base::OnceCallback<void(const std::string&)> callback) override;
+  void ForceChoose(const std::string&) override;
   void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) override;
   void FillAddressForm(const autofill::AutofillProfile* profile,
@@ -139,6 +142,8 @@ class ScriptExecutor : public ActionDelegate {
   void ProcessAction(Action* action);
   void GetNextActions();
   void OnProcessedAction(std::unique_ptr<ProcessedActionProto> action);
+  void OnChosen(base::OnceCallback<void(const std::string&)> callback,
+                const std::string& chosen);
 
   std::string script_path_;
   std::string last_server_payload_;

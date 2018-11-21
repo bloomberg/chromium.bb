@@ -104,6 +104,33 @@ void ScriptExecutor::GetPaymentInformation(
       supported_basic_card_networks);
 }
 
+void ScriptExecutor::Choose(
+    const std::vector<std::string>& suggestions,
+    base::OnceCallback<void(const std::string&)> callback) {
+  if (!touchable_elements_.empty()) {
+    // Choose reproduces the end-of-script appearance and behavior during script
+    // execution. This includes allowing access to touchable elements, set
+    // through a previous call to the focus action with touchable_elements set.
+    delegate_->SetTouchableElementArea(touchable_elements_);
+    delegate_->GetUiController()->HideOverlay();
+
+    // The touchable_elements_ currently set in the script is reset, so that it
+    // won't affect the real end of the script.
+    touchable_elements_.clear();
+
+    // The touchable element and overlays are cleared again in
+    // ScriptExecutor::OnChosen
+  }
+  delegate_->GetUiController()->Choose(
+      suggestions,
+      base::BindOnce(&ScriptExecutor::OnChosen, weak_ptr_factory_.GetWeakPtr(),
+                     std::move(callback)));
+}
+
+void ScriptExecutor::ForceChoose(const std::string& result) {
+  delegate_->GetUiController()->ForceChoose(result);
+}
+
 void ScriptExecutor::ChooseAddress(
     base::OnceCallback<void(const std::string&)> callback) {
   delegate_->GetUiController()->ChooseAddress(std::move(callback));
@@ -342,6 +369,16 @@ void ScriptExecutor::OnProcessedAction(
   }
 
   ProcessNextAction();
+}
+
+void ScriptExecutor::OnChosen(
+    base::OnceCallback<void(const std::string&)> callback,
+    const std::string& choice) {
+  // This simulates the beginning of a script and removes any touchable element
+  // area set by Choose().
+  delegate_->GetUiController()->ShowOverlay();
+  delegate_->ClearTouchableElementArea();
+  std::move(callback).Run(choice);
 }
 
 }  // namespace autofill_assistant

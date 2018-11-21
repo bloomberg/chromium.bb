@@ -29,6 +29,8 @@ jumbo_static_library("browser") {
     "actions/highlight_element_action.h",
     "actions/navigate_action.cc",
     "actions/navigate_action.h",
+    "actions/prompt_action.cc",
+    "actions/prompt_action.h",
     "actions/reset_action.cc",
     "actions/reset_action.h",
     "actions/select_option_action.cc",

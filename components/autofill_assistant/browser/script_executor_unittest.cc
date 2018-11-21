@@ -72,6 +72,9 @@ class ScriptExecutorTest : public testing::Test,
 
   ClientMemory* GetClientMemory() override { return &memory_; }
 
+  void SetTouchableElementArea(
+      const std::vector<std::vector<std::string>>& elements) {}
+
   const std::map<std::string, std::string>& GetParameters() override {
     return parameters_;
   }
