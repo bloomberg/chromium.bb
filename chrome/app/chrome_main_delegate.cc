@@ -805,12 +805,11 @@ void ChromeMainDelegate::PreSandboxStartup() {
   if (chrome::ProcessNeedsProfileDir(process_type)) {
     InitializeUserDataDir(base::CommandLine::ForCurrentProcess());
 #if defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL_CHILD)
-    if (downgrade::IsMSIInstall()) {
-      downgrade::MoveUserDataForFirstRunAfterDowngrade();
-      base::FilePath user_data_dir;
-      if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
-        downgrade::UpdateLastVersion(user_data_dir);
-    }
+    // TODO(grt): Enable this codepath for all desktop platforms.
+    downgrade::MoveUserDataForFirstRunAfterDowngrade();
+    base::FilePath user_data_dir;
+    if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+      downgrade::UpdateLastVersion(user_data_dir);
 #endif
   }
 

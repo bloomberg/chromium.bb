@@ -35,9 +35,6 @@ base::Version GetLastVersion(const base::FilePath& user_data_dir);
 // and may be safely called when no such directories exist.
 void DeleteMovedUserDataSoon();
 
-// Returns true if Chrome is installed by MSI.
-bool IsMSIInstall();
-
 }  // namespace downgrade
 
 #endif  // CHROME_BROWSER_DOWNGRADE_USER_DATA_DOWNGRADE_H_
