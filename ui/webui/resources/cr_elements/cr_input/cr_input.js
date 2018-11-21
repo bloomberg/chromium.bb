@@ -284,8 +284,14 @@ Polymer({
       this.focus();
   },
 
-  /** @private */
-  onValueChanged_: function() {
+  /**
+   * @param {string} newValue
+   * @param {string} oldValue
+   * @private
+   */
+  onValueChanged_: function(newValue, oldValue) {
+    if (!newValue && !oldValue)
+      return;
     if (this.autoValidate)
       this.validate();
   },
