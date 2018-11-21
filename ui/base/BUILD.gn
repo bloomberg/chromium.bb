@@ -91,6 +91,8 @@ jumbo_component("base") {
     "clipboard/clipboard_win.cc",
     "clipboard/clipboard_win.h",
     "clipboard/custom_data_helper_mac.mm",
+    "cocoa/accessibility_focus_overrider.h",
+    "cocoa/accessibility_focus_overrider.mm",
     "cocoa/animation_utils.h",
     "cocoa/appkit_utils.h",
     "cocoa/appkit_utils.mm",

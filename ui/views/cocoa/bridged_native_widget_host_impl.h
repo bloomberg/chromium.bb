@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
+#include "ui/base/cocoa/accessibility_focus_overrider.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/views/cocoa/bridge_factory_host.h"
@@ -37,7 +38,6 @@ namespace views {
 
 class BridgedNativeWidgetImpl;
 class NativeWidgetMac;
-class ScopedAccessibilityFocus;
 
 // The portion of NativeWidgetMac that lives in the browser process. This
 // communicates to the BridgedNativeWidgetImpl, which interacts with the Cocoa
@@ -49,6 +49,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
       public DialogObserver,
       public FocusChangeListener,
       public ui::internal::InputMethodDelegate,
+      public ui::AccessibilityFocusOverrider::Client,
       public ui::LayerDelegate,
       public ui::LayerOwner,
       public ui::AcceleratedWidgetMacNSView {
@@ -311,6 +312,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
       ui::KeyEvent* key,
       base::OnceCallback<void(bool)> ack_callback) override;
 
+  // ui::AccessibilityFocusOverrider::Client:
+  id GetAccessibilityFocusedUIElement() override;
+
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -348,6 +352,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
       remote_window_accessible_;
   base::scoped_nsobject<NSAccessibilityRemoteUIElement> remote_view_accessible_;
 
+  // Used to force the NSApplication's focused accessibility element to be the
+  // views::Views accessibility tree when the NSView for this is focused.
+  ui::AccessibilityFocusOverrider accessibility_focus_overrider_;
+
   // TODO(ccameron): Rather than instantiate a BridgedNativeWidgetImpl here,
   // we will instantiate a mojo BridgedNativeWidgetImpl interface to a Cocoa
   // instance that may be in another process.
@@ -380,10 +388,6 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   gfx::Rect window_bounds_before_fullscreen_;
 
   std::unique_ptr<ui::RecyclableCompositorMac> compositor_;
-
-  // When allocated, this object will swizzle calls to -[NSApplication
-  // accessibilityFocusedUIElement] to return GetNativeViewAccessible.
-  std::unique_ptr<ScopedAccessibilityFocus> scoped_accessibility_focus_;
 
   // Properties used by Set/GetNativeWindowProperty.
   std::map<std::string, void*> native_window_properties_;

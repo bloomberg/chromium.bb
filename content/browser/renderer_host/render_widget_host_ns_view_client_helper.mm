@@ -24,9 +24,7 @@ class ForwardingClientHelper : public RenderWidgetHostNSViewClientHelper {
   }
 
   // RenderWidgetHostNSViewClientHelper implementation.
-  BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override {
-    return nullptr;
-  }
+  id GetRootBrowserAccessibilityElement() override { return nil; }
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
                             const ui::LatencyInfo& latency_info) override {
     const blink::WebKeyboardEvent* web_event =

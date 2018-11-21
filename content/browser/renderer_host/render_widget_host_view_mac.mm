@@ -19,6 +19,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/viz/common/switches.h"
+#import "content/browser/accessibility/browser_accessibility_cocoa.h"
+#import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/input/motion_event_web.h"
@@ -131,6 +133,35 @@ void RenderWidgetHostViewMac::AcceleratedWidgetCALayerParamsUpdated() {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// views::AccessibilityFocusOverrider::Client:
+id RenderWidgetHostViewMac::GetAccessibilityFocusedUIElement() {
+  // If content is overlayed with a focused popup from native UI code, this
+  // getter must return the current menu item as the focused element, rather
+  // than the focus within the content. An example of this occurs with the
+  // Autofill feature, where focus is actually still in the textbox although
+  // the UX acts as if focus is in the popup.
+  gfx::NativeViewAccessible popup_focus_override =
+      ui::AXPlatformNode::GetPopupFocusOverride();
+  if (popup_focus_override)
+    return popup_focus_override;
+
+  BrowserAccessibilityManager* manager =
+      host()->GetRootBrowserAccessibilityManager();
+  if (manager) {
+    BrowserAccessibility* focused_item = manager->GetFocus();
+    DCHECK(focused_item);
+    if (focused_item) {
+      BrowserAccessibilityCocoa* focused_item_cocoa =
+          ToBrowserAccessibilityCocoa(focused_item);
+      DCHECK(focused_item_cocoa);
+      if (focused_item_cocoa)
+        return focused_item_cocoa;
+    }
+  }
+  return nil;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, public:
 
@@ -147,6 +178,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       gesture_provider_(ui::GetGestureProviderConfig(
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
                         this),
+      accessibility_focus_overrider_(this),
       weak_factory_(this) {
   // The NSView is on the other side of |ns_view_bridge_|.
   ns_view_bridge_local_ =
@@ -1395,9 +1427,10 @@ MouseWheelPhaseHandler* RenderWidgetHostViewMac::GetMouseWheelPhaseHandler() {
 // RenderWidgetHostNSViewClientHelper and mojom::RenderWidgetHostNSViewClient
 // implementation:
 
-BrowserAccessibilityManager*
-RenderWidgetHostViewMac::GetRootBrowserAccessibilityManager() {
-  return host()->GetRootBrowserAccessibilityManager();
+id RenderWidgetHostViewMac::GetRootBrowserAccessibilityElement() {
+  if (auto* manager = host()->GetRootBrowserAccessibilityManager())
+    return ToBrowserAccessibilityCocoa(manager->GetRoot());
+  return nil;
 }
 
 bool RenderWidgetHostViewMac::SyncIsRenderViewHost(bool* is_render_view) {
@@ -1424,6 +1457,7 @@ void RenderWidgetHostViewMac::OnFirstResponderChanged(bool is_first_responder) {
   if (is_first_responder_ == is_first_responder)
     return;
   is_first_responder_ = is_first_responder;
+  accessibility_focus_overrider_.SetViewIsFirstResponder(is_first_responder_);
   if (is_first_responder_) {
     host()->GotFocus();
     SetTextInputActive(true);
@@ -1434,7 +1468,12 @@ void RenderWidgetHostViewMac::OnFirstResponderChanged(bool is_first_responder) {
 }
 
 void RenderWidgetHostViewMac::OnWindowIsKeyChanged(bool is_key) {
-  SetActive(is_key);
+  if (is_window_key_ == is_key)
+    return;
+  is_window_key_ = is_key;
+  accessibility_focus_overrider_.SetWindowIsKey(is_window_key_);
+  if (is_first_responder_)
+    SetActive(is_key);
 }
 
 void RenderWidgetHostViewMac::OnBoundsInWindowChanged(

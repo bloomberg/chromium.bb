@@ -34,8 +34,8 @@ struct NativeWebKeyboardEvent;
 // communicate with the RenderWidgetHostViewMac (potentially in another
 // process). Unlike mojom::RenderWidgetHostNSViewClient, this object is always
 // instantiated in the local process. This is to implement functions that
-// cannot be sent across mojo (e.g, GetRootBrowserAccessibilityManager), or
-// to avoid unnecessary translation of event types.
+// cannot be sent across mojo or to avoid unnecessary translation of event
+// types.
 class RenderWidgetHostNSViewClientHelper {
  public:
   // Create a RenderWidgetHostNSViewClientHelper that will only implement
@@ -47,10 +47,9 @@ class RenderWidgetHostNSViewClientHelper {
   RenderWidgetHostNSViewClientHelper() {}
   virtual ~RenderWidgetHostNSViewClientHelper() {}
 
-  // Return the RenderWidget's BrowserAccessibilityManager.
-  // TODO(ccameron): This returns nullptr for non-local NSViews. A scheme for
-  // non-local accessibility needs to be developed.
-  virtual BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() = 0;
+  // Return the RenderWidget's BrowserAccessibilityManager's root accessibility
+  // node.
+  virtual id GetRootBrowserAccessibilityElement() = 0;
 
   // Forward a keyboard event to the RenderWidgetHost that is currently handling
   // the key-down event.

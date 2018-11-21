@@ -34,8 +34,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
-using content::BrowserAccessibility;
-using content::BrowserAccessibilityManager;
 using content::EditCommand;
 using content::InputEvent;
 using content::NativeWebKeyboardEvent;
@@ -1248,7 +1246,7 @@ void ExtractUnderlines(NSAttributedString* string,
   DCHECK_EQ([self window], [notification object]);
   if ([responderDelegate_ respondsToSelector:@selector(windowDidBecomeKey)])
     [responderDelegate_ windowDidBecomeKey];
-  if ([self window].isKeyWindow && [[self window] firstResponder] == self)
+  if ([self window].isKeyWindow)
     client_->OnWindowIsKeyChanged(true);
 }
 
@@ -1263,8 +1261,7 @@ void ExtractUnderlines(NSAttributedString* string,
   if ([NSApp isActive] && ([NSApp keyWindow] == [self window]))
     return;
 
-  if ([[self window] firstResponder] == self)
-    client_->OnWindowIsKeyChanged(false);
+  client_->OnWindowIsKeyChanged(false);
 }
 
 - (BOOL)becomeFirstResponder {
@@ -1370,17 +1367,14 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
-  BrowserAccessibilityManager* manager =
-      clientHelper_->GetRootBrowserAccessibilityManager();
-
+  id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
   // Contents specifies document view of RenderWidgetHostViewCocoa provided by
   // BrowserAccessibilityManager. Children includes all subviews in addition to
   // contents. Currently we do not have subviews besides the document view.
   if (([attribute isEqualToString:NSAccessibilityChildrenAttribute] ||
        [attribute isEqualToString:NSAccessibilityContentsAttribute]) &&
-      manager) {
-    return [NSArray
-        arrayWithObjects:ToBrowserAccessibilityCocoa(manager->GetRoot()), nil];
+      root_element) {
+    return [NSArray arrayWithObjects:root_element, nil];
   } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
     return NSAccessibilityScrollAreaRole;
   }
@@ -1396,31 +1390,26 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-  BrowserAccessibilityManager* manager =
-      clientHelper_->GetRootBrowserAccessibilityManager();
-  if (!manager)
+  id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
+  if (!root_element)
     return self;
   NSPoint pointInWindow =
       ui::ConvertPointFromScreenToWindow([self window], point);
   NSPoint localPoint = [self convertPoint:pointInWindow fromView:nil];
   localPoint.y = NSHeight([self bounds]) - localPoint.y;
-  BrowserAccessibilityCocoa* root =
-      ToBrowserAccessibilityCocoa(manager->GetRoot());
-  id obj = [root accessibilityHitTest:localPoint];
+  id obj = [root_element accessibilityHitTest:localPoint];
   return obj;
 }
 
 - (BOOL)accessibilityIsIgnored {
-  BrowserAccessibilityManager* manager =
-      clientHelper_->GetRootBrowserAccessibilityManager();
-  return !manager;
+  id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
+  return !root_element;
 }
 
 - (NSUInteger)accessibilityGetIndexOf:(id)child {
-  BrowserAccessibilityManager* manager =
-      clientHelper_->GetRootBrowserAccessibilityManager();
+  id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
   // Only child is root.
-  if (manager && ToBrowserAccessibilityCocoa(manager->GetRoot()) == child) {
+  if (root_element == child) {
     return 0;
   } else {
     return NSNotFound;
@@ -1428,29 +1417,9 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (id)accessibilityFocusedUIElement {
-  // If content is overlayed with a focused popup from native UI code, this
-  // getter must return the current menu item as the focused element, rather
-  // than the focus within the content. An example of this occurs with the
-  // Autofill feature, where focus is actually still in the textbox although
-  // the UX acts as if focus is in the popup.
-  gfx::NativeViewAccessible popup_focus_override =
-      ui::AXPlatformNode::GetPopupFocusOverride();
-  if (popup_focus_override)
-    return popup_focus_override;
-
-  BrowserAccessibilityManager* manager =
-      clientHelper_->GetRootBrowserAccessibilityManager();
-  if (manager) {
-    BrowserAccessibility* focused_item = manager->GetFocus();
-    DCHECK(focused_item);
-    if (focused_item) {
-      BrowserAccessibilityCocoa* focused_item_cocoa =
-          ToBrowserAccessibilityCocoa(focused_item);
-      DCHECK(focused_item_cocoa);
-      if (focused_item_cocoa)
-        return focused_item_cocoa;
-    }
-  }
+  // This function should almost-never be called because when |self| is the
+  // first responder for the key NSWindow, RenderWidgetHostViewMac's
+  // AccessibilityFocusOverrider will override the accessibility focus query.
   return [super accessibilityFocusedUIElement];
 }
 
@@ -1793,6 +1762,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   [self sendWindowFrameInScreenToClient];
   [self sendViewBoundsInWindowToClient];
   [self updateScreenProperties];
+  client_->OnWindowIsKeyChanged([[self window] isKeyWindow]);
   client_->OnFirstResponderChanged([[self window] firstResponder] == self);
 
   // If we switch windows (or are removed from the view hierarchy), cancel any
