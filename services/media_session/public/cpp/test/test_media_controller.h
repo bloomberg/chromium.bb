@@ -28,7 +28,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   void AddObserver(mojom::MediaSessionObserverPtr) override;
   void PreviousTrack() override;
   void NextTrack() override;
-  void Seek(base::TimeDelta seek_time) override {}
+  void Seek(base::TimeDelta seek_time) override;
 
   int toggle_suspend_resume_count() const {
     return toggle_suspend_resume_count_;
@@ -37,12 +37,16 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   int add_observer_count() const { return add_observer_count_; }
   int previous_track_count() const { return previous_track_count_; }
   int next_track_count() const { return next_track_count_; }
+  int seek_backward_count() const { return seek_backward_count_; }
+  int seek_forward_count() const { return seek_forward_count_; }
 
  private:
   int toggle_suspend_resume_count_ = 0;
   int add_observer_count_ = 0;
   int previous_track_count_ = 0;
   int next_track_count_ = 0;
+  int seek_backward_count_ = 0;
+  int seek_forward_count_ = 0;
 
   mojo::Binding<mojom::MediaController> binding_{this};
 

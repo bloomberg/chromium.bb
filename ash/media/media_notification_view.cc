@@ -62,6 +62,7 @@ MediaNotificationView::MediaNotificationView(
   AddChildView(button_row_);
 
   CreateMediaButton(vector_icons::kMediaPreviousTrackIcon);
+  CreateMediaButton(vector_icons::kMediaSeekBackwardIcon);
 
   // |play_pause_button_| toggles playback.
   play_pause_button_ = views::CreateVectorToggleImageButton(this);
@@ -74,6 +75,7 @@ MediaNotificationView::MediaNotificationView(
                                        kMediaButtonIconSize, play_button_color);
   button_row_->AddChildView(play_pause_button_);
 
+  CreateMediaButton(vector_icons::kMediaSeekForwardIcon);
   CreateMediaButton(vector_icons::kMediaNextTrackIcon);
 
   // TODO(beccahughes): Add remaining UI for notification.
