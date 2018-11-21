@@ -54,14 +54,6 @@ PopupBlockerTabHelper::PopupBlockerTabHelper(content::WebContents* web_contents)
 PopupBlockerTabHelper::~PopupBlockerTabHelper() {
 }
 
-void PopupBlockerTabHelper::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void PopupBlockerTabHelper::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void PopupBlockerTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // Clear all page actions, blocked content notifications and browser actions
@@ -101,8 +93,7 @@ void PopupBlockerTabHelper::AddBlockedPopup(
       std::move(*params), window_features, block_type);
   TabSpecificContentSettings::FromWebContents(web_contents())->
       OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
-  for (auto& observer : observers_)
-    observer.BlockedPopupAdded(id, blocked_popups_[id]->params.url);
+  manager_.NotifyObservers(id, blocked_popups_[id]->params.url);
 
 #if defined(OS_ANDROID)
   // Should replace existing popup infobars, with an updated count of how many

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/url_list_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -42,7 +43,7 @@ const int kDisallowRadioButtonIndex = 1;
 }  // namespace
 
 class FramebustBlockBrowserTest : public InProcessBrowserTest,
-                                  public FramebustBlockTabHelper::Observer {
+                                  public UrlListManager::Observer {
  public:
   FramebustBlockBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(
@@ -55,11 +56,12 @@ class FramebustBlockBrowserTest : public InProcessBrowserTest,
     ASSERT_TRUE(embedded_test_server()->Start());
     current_browser_ = InProcessBrowserTest::browser();
     FramebustBlockTabHelper::FromWebContents(GetWebContents())
+        ->manager()
         ->AddObserver(this);
   }
 
-  // FramebustBlockTabHelper::Observer:
-  void OnBlockedUrlAdded(const GURL& blocked_url) override {
+  // UrlListManager::Observer:
+  void BlockedUrlAdded(int32_t id, const GURL& blocked_url) override {
     if (!blocked_url_added_closure_.is_null())
       std::move(blocked_url_added_closure_).Run();
   }
