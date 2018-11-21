@@ -367,20 +367,22 @@ TEST_F(DataReductionProxyRequestOptionsTest, GetSessionKeyFromRequestHeaders) {
     std::string chrome_proxy_header_key;
     std::string chrome_proxy_header_value;
     std::string expected_session_key;
+    bool expect_result;
   } tests[] = {
-      {"chrome-proxy", "something=something_else, s=123, key=value", "123"},
+      {"chrome-proxy", "something=something_else, s=123, key=value", "123",
+       true},
       {"chrome-proxy", "something=something_else, s= 123  456 , key=value",
-       "123  456"},
+       "123  456", true},
       {"chrome-proxy", "something=something_else, s=123456,    key=value",
-       "123456"},
+       "123456", true},
       {"chrome-proxy", "something=something else, s=123456,    key=value",
-       "123456"},
-      {"chrome-proxy", "something=something else, s=123456  ", "123456"},
-      {"chrome-proxy", "something=something_else, s=, key=value", ""},
-      {"chrome-proxy", "something=something_else, key=value", ""},
-      {"chrome-proxy", "s=123", "123"},
-      {"chrome-proxy", " s = 123 ", "123"},
-      {"some_other_header", "s=123", ""},
+       "123456", true},
+      {"chrome-proxy", "something=something else, s=123456  ", "123456", true},
+      {"chrome-proxy", "something=something_else, s=, key=value", "", false},
+      {"chrome-proxy", "something=something_else, key=value", "", false},
+      {"chrome-proxy", "s=123", "123", true},
+      {"chrome-proxy", " s = 123 ", "123", true},
+      {"some_other_header", "s=123", "", false},
   };
 
   for (const auto& test : tests) {
@@ -390,11 +392,55 @@ TEST_F(DataReductionProxyRequestOptionsTest, GetSessionKeyFromRequestHeaders) {
                               test.chrome_proxy_header_value);
     request_headers.SetHeader("some_random_header_after", "some_random_key");
 
-    std::string session_key =
+    base::Optional<std::string> session_key =
         request_options()->GetSessionKeyFromRequestHeaders(request_headers);
-    EXPECT_EQ(test.expected_session_key, session_key)
-        << test.chrome_proxy_header_key << ":"
-        << test.chrome_proxy_header_value;
+    EXPECT_EQ(test.expect_result, session_key.has_value());
+    if (test.expect_result) {
+      EXPECT_EQ(test.expected_session_key, session_key)
+          << test.chrome_proxy_header_key << ":"
+          << test.chrome_proxy_header_value;
+    }
+  }
+}
+
+TEST_F(DataReductionProxyRequestOptionsTest, GetPageIdFromRequestHeaders) {
+  const struct {
+    std::string chrome_proxy_header_key;
+    std::string chrome_proxy_header_value;
+    uint64_t expected_page_id;
+    bool expect_result;
+  } tests[] = {
+      {"chrome-proxy", "something=something_else, pid=123, key=value", 123,
+       true},
+      {"chrome-proxy", "something=something_else, pid= 123 , key=value", 123,
+       true},
+      {"chrome-proxy", "something=something_else, pid=123456,    key=value",
+       123456, true},
+      {"chrome-proxy", "something=something else, pid=123456,    key=value",
+       123456, true},
+      {"chrome-proxy", "something=something else, pid=123456  ", 123456, true},
+      {"chrome-proxy", "something=something_else, pid=, key=value", 0, false},
+      {"chrome-proxy", "something=something_else, key=value", 0, false},
+      {"chrome-proxy", "pid=123", 123, true},
+      {"chrome-proxy", " pid = 123 ", 123, true},
+      {"some_other_header", "pid=123", 0, false},
+  };
+
+  for (const auto& test : tests) {
+    net::HttpRequestHeaders request_headers;
+    request_headers.SetHeader("some_random_header_before", "some_random_key");
+    request_headers.SetHeader(test.chrome_proxy_header_key,
+                              test.chrome_proxy_header_value);
+    request_headers.SetHeader("some_random_header_after", "some_random_key");
+
+    base::Optional<uint64_t> page_id =
+        request_options()->GetPageIdFromRequestHeaders(request_headers);
+    EXPECT_EQ(test.expect_result, page_id.has_value());
+    if (test.expect_result) {
+      EXPECT_EQ(test.expected_page_id, page_id)
+          << test.chrome_proxy_header_key << ":"
+          << test.chrome_proxy_header_value;
+    }
   }
 }
 

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/safe_sprintf.h"
@@ -36,6 +37,17 @@ namespace {
 
 std::string FormatOption(const std::string& name, const std::string& value) {
   return name + "=" + value;
+}
+
+bool ParseChromeProxyHeader(const net::HttpRequestHeaders& request_headers,
+                            base::StringPairs* kv_pairs) {
+  std::string chrome_proxy_header_value;
+  return request_headers.GetHeader(chrome_proxy_header(),
+                                   &chrome_proxy_header_value) &&
+         base::SplitStringIntoKeyValuePairs(chrome_proxy_header_value,
+                                            '=',  // Key-value delimiter
+                                            ',',  // Key-value pair delimiter
+                                            kv_pairs);
 }
 
 }  // namespace
@@ -248,20 +260,13 @@ void DataReductionProxyRequestOptions::RegenerateRequestHeaderValue() {
   }
 }
 
-std::string DataReductionProxyRequestOptions::GetSessionKeyFromRequestHeaders(
-    const net::HttpRequestHeaders& request_headers) const {
-  std::string chrome_proxy_header_value;
+// static
+base::Optional<std::string>
+DataReductionProxyRequestOptions::GetSessionKeyFromRequestHeaders(
+    const net::HttpRequestHeaders& request_headers) {
   base::StringPairs kv_pairs;
-  // Return if the request does not have request headers or if they can't be
-  // parsed into key-value pairs.
-  if (!request_headers.GetHeader(chrome_proxy_header(),
-                                 &chrome_proxy_header_value) ||
-      !base::SplitStringIntoKeyValuePairs(chrome_proxy_header_value,
-                                          '=',  // Key-value delimiter
-                                          ',',  // Key-value pair delimiter
-                                          &kv_pairs)) {
-    return "";
-  }
+  if (!ParseChromeProxyHeader(request_headers, &kv_pairs))
+    return base::nullopt;
 
   for (const auto& kv_pair : kv_pairs) {
     // Delete leading and trailing white space characters from the key before
@@ -272,7 +277,32 @@ std::string DataReductionProxyRequestOptions::GetSessionKeyFromRequestHeaders(
           .as_string();
     }
   }
-  return "";
+  return base::nullopt;
+}
+
+// static
+base::Optional<uint64_t>
+DataReductionProxyRequestOptions::GetPageIdFromRequestHeaders(
+    const net::HttpRequestHeaders& request_headers) {
+  base::StringPairs kv_pairs;
+  if (!ParseChromeProxyHeader(request_headers, &kv_pairs))
+    return base::nullopt;
+
+  for (const auto& kv_pair : kv_pairs) {
+    // Delete leading and trailing white space characters from the key before
+    // comparing.
+    if (base::TrimWhitespaceASCII(kv_pair.first, base::TRIM_ALL) ==
+        kPageIdOption) {
+      uint64_t page_id;
+      if (base::StringToUint64(
+              base::TrimWhitespaceASCII(kv_pair.second, base::TRIM_ALL)
+                  .as_string(),
+              &page_id)) {
+        return page_id;
+      }
+    }
+  }
+  return base::nullopt;
 }
 
 uint64_t DataReductionProxyRequestOptions::GeneratePageId() {

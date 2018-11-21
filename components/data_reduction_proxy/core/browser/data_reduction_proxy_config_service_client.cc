@@ -311,7 +311,9 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
   // If the session key used in the request is different from the current
   // session key, then the current session key does not need to be
   // invalidated.
-  if (request_options_->GetSessionKeyFromRequestHeaders(request_headers) !=
+  base::Optional<std::string> session_key =
+      request_options_->GetSessionKeyFromRequestHeaders(request_headers);
+  if ((session_key.has_value() ? session_key.value() : std::string()) !=
       request_options_->GetSecureSession()) {
     RecordAuthExpiredSessionKey(false);
     return true;
