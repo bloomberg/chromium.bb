@@ -55,7 +55,22 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
      * @param <T> The type of the Object being tracked by the key.
      */
     public final static class WritableObjectPropertyKey<T>
-            extends ReadableObjectPropertyKey<T> implements PropertyKey {}
+            extends ReadableObjectPropertyKey<T> implements PropertyKey {
+        private final boolean mSkipEquality;
+
+        /** Default constructor for a writable object property. */
+        public WritableObjectPropertyKey() {
+            this(false);
+        }
+
+        /**
+         * Constructs a new writable object property.
+         * @param skipEquality Whether the equality check should be bypassed for this key.
+         */
+        public WritableObjectPropertyKey(boolean skipEquality) {
+            mSkipEquality = skipEquality;
+        }
+    }
 
     private final Map<PropertyKey, ValueContainer> mData;
 
@@ -177,7 +192,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         if (container == null) {
             container = new ObjectContainer<T>();
             mData.put(key, container);
-        } else if (ObjectsCompat.equals(container.value, value)) {
+        } else if (!key.mSkipEquality && ObjectsCompat.equals(container.value, value)) {
             return;
         }
 

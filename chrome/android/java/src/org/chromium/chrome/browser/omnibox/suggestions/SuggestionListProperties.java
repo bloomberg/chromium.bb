@@ -25,7 +25,7 @@ public class SuggestionListProperties {
 
     /** The list of models controlling the state of the suggestion items. */
     public static final WritableObjectPropertyKey<List<PropertyModel>> SUGGESTION_MODELS =
-            new WritableObjectPropertyKey<>();
+            new WritableObjectPropertyKey<>(true);
 
     /** Whether the suggestion list should have a dark background. */
     public static final WritableBooleanPropertyKey USE_DARK_BACKGROUND =
