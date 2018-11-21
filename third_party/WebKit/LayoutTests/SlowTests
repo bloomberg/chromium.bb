@@ -94,6 +94,8 @@ crbug.com/902685 http/tests/devtools/isolated-code-cache/same-origin-test.js [ S
 crbug.com/902685 http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Slow ]
 crbug.com/902685 virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Slow ]
 crbug.com/902685 virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Slow ]
+crbug.com/902685 virtual/not-site-per-process/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Slow ]
+crbug.com/902685 virtual/not-site-per-process/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Slow ]
 
 # Misc DevTools tests that are slow
 crbug.com/246190 [ Release ] http/tests/devtools/indexeddb/ [ Slow ]
