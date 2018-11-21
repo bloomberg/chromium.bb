@@ -1028,7 +1028,15 @@ bool Vp9UncompressedHeaderParser::Parse(const uint8_t* stream,
             DVLOG(1) << "bit_depth of referenced frame mismatch";
             return false;
           }
-          if (fhdr->color_space != ref.color_space) {
+          // There are encoded streams with no color_space information
+          // with in the frame header of an Intra only frame, so we assigned the
+          // default color_space :BT_601 as per the spec. But reference list
+          // might have frames with UNKNOWN color space information too. So we
+          // relax the requirement a bit to cover more video samples and added
+          // an exception for UNKNOWN colorspace
+          if (fhdr->color_space != ref.color_space &&
+              fhdr->color_space != Vp9ColorSpace::UNKNOWN &&
+              ref.color_space != Vp9ColorSpace::UNKNOWN) {
             DVLOG(1) << "color_space of referenced frame mismatch";
             return false;
           }
