@@ -3330,3 +3330,13 @@ fuzzer_test("utf_string_conversions_fuzzer") {
     "//base",
   ]
 }
+
+fuzzer_test("pickle_fuzzer") {
+  sources = [
+    "pickle_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+  ]
+}
