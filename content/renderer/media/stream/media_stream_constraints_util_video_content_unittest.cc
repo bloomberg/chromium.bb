@@ -39,6 +39,7 @@ void CheckNonFrameRateDefaults(const VideoCaptureSettings& result) {
 void CheckTrackAdapterSettingsEqualsFormat(const VideoCaptureSettings& result) {
   // For content capture, resolution and frame rate should always be the same
   // for source and track.
+  EXPECT_TRUE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
   EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
   EXPECT_EQ(0.0, result.track_adapter_settings().max_frame_rate());
@@ -177,6 +178,28 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnFrameRate) {
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().frame_rate.GetName(),
+            result.failed_constraint_name());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoContentTest,
+       OverconstrainedOnInvalidResizeMode) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII("invalid"));
+  auto result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+  EXPECT_EQ(constraint_factory_.basic().resize_mode.GetName(),
+            result.failed_constraint_name());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoContentTest,
+       OverconstrainedOnEmptyResizeMode) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII(""));
+  auto result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+  EXPECT_EQ(constraint_factory_.basic().resize_mode.GetName(),
             result.failed_constraint_name());
 }
 
@@ -1510,6 +1533,32 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealFrameRate) {
   }
 }
 
+TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryResizeMode) {
+  const int kIdealWidth = 641;
+  const int kIdealHeight = 480;
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetIdeal(kIdealWidth);
+  constraint_factory_.basic().height.SetIdeal(kIdealHeight);
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII("none"));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // Screen capture will proceed at 641x480, which will be considered "native".
+  // No rescaling will occur since it is explicitly disabled.
+  EXPECT_EQ(result.Width(), kIdealWidth);
+  EXPECT_EQ(result.Height(), kIdealHeight);
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
+
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII("crop-and-scale"));
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  EXPECT_EQ(result.Width(), kIdealWidth);
+  EXPECT_EQ(result.Height(), kIdealHeight);
+  EXPECT_EQ(result.track_adapter_settings().target_width(), kIdealWidth);
+  EXPECT_EQ(result.track_adapter_settings().target_height(), kIdealHeight);
+}
+
 // The "Advanced" tests check selection criteria involving advanced constraint
 // sets.
 TEST_F(MediaStreamConstraintsUtilVideoContentTest,
@@ -2035,6 +2084,37 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedIdealDeviceID) {
   // set.
   EXPECT_EQ(std::string(kDeviceID2), result.device_id());
   CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedResizeMode) {
+  const int kIdealWidth = 641;
+  const int kIdealHeight = 480;
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetIdeal(kIdealWidth);
+  constraint_factory_.basic().height.SetIdeal(kIdealHeight);
+  blink::WebMediaTrackConstraintSet& advanced =
+      constraint_factory_.AddAdvanced();
+  advanced.resize_mode.SetExact(blink::WebString::FromASCII("none"));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // Screen capture will proceed at 641x480, which will be considered "native".
+  // No rescaling will occur since it is explicitly disabled in the advanced
+  // constraint set.
+  EXPECT_EQ(result.Width(), kIdealWidth);
+  EXPECT_EQ(result.Height(), kIdealHeight);
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
+
+  advanced.resize_mode.SetExact(blink::WebString::FromASCII("crop-and-scale"));
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // Screen capture will proceed at 641x480, which will be considered "native".
+  // No rescaling will occur since it is explicitly disabled in the advanced
+  // constraint set.
+  EXPECT_EQ(result.Width(), kIdealWidth);
+  EXPECT_EQ(result.Height(), kIdealHeight);
+  EXPECT_TRUE(result.track_adapter_settings().target_size().has_value());
+  EXPECT_EQ(result.track_adapter_settings().target_width(), kIdealWidth);
+  EXPECT_EQ(result.track_adapter_settings().target_height(), kIdealHeight);
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {

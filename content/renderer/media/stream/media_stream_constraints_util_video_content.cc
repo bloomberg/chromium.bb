@@ -73,7 +73,9 @@ class VideoContentCaptureCandidates {
         device_id_set_(media_constraints::StringSetFromConstraint(
             constraint_set.device_id)),
         noise_reduction_set_(media_constraints::BoolSetFromConstraint(
-            constraint_set.goog_noise_reduction)) {}
+            constraint_set.goog_noise_reduction)),
+        rescale_set_(media_constraints::RescaleSetFromConstraint(
+            constraint_set.resize_mode)) {}
 
   VideoContentCaptureCandidates(VideoContentCaptureCandidates&& other) =
       default;
@@ -82,7 +84,8 @@ class VideoContentCaptureCandidates {
 
   bool IsEmpty() const {
     return resolution_set_.IsEmpty() || frame_rate_set_.IsEmpty() ||
-           device_id_set_.IsEmpty() || noise_reduction_set_.IsEmpty();
+           device_id_set_.IsEmpty() || noise_reduction_set_.IsEmpty() ||
+           rescale_set_.IsEmpty();
   }
 
   VideoContentCaptureCandidates Intersection(
@@ -100,6 +103,7 @@ class VideoContentCaptureCandidates {
         device_id_set_.Intersection(other.device_id_set_);
     intersection.noise_reduction_set_ =
         noise_reduction_set_.Intersection(other.noise_reduction_set_);
+    intersection.rescale_set_ = rescale_set_.Intersection(other.rescale_set_);
     return intersection;
   }
 
@@ -109,6 +113,7 @@ class VideoContentCaptureCandidates {
   const DoubleRangeSet& frame_rate_set() const { return frame_rate_set_; }
   const StringSet& device_id_set() const { return device_id_set_; }
   const BoolSet& noise_reduction_set() const { return noise_reduction_set_; }
+  const BoolSet& rescale_set() const { return rescale_set_; }
   void set_resolution_set(const ResolutionSet& set) { resolution_set_ = set; }
   void set_frame_rate_set(const DoubleRangeSet& set) { frame_rate_set_ = set; }
 
@@ -119,6 +124,7 @@ class VideoContentCaptureCandidates {
   DoubleRangeSet frame_rate_set_;
   StringSet device_id_set_;
   BoolSet noise_reduction_set_;
+  BoolSet rescale_set_;
 };
 
 ResolutionSet ScreenCastResolutionCapabilities() {
@@ -249,6 +255,30 @@ base::Optional<bool> SelectNoiseReductionFromCandidates(
   return base::Optional<bool>(candidates.FirstElement());
 }
 
+bool SelectRescaleFromCandidates(
+    const BoolSet& candidates,
+    const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
+  DCHECK(!candidates.IsEmpty());
+  if (basic_constraint_set.resize_mode.HasIdeal()) {
+    for (const auto& ideal_resize_value :
+         basic_constraint_set.resize_mode.Ideal()) {
+      if (ideal_resize_value == blink::WebMediaStreamTrack::kResizeModeNone &&
+          candidates.Contains(false)) {
+        return false;
+      } else if (ideal_resize_value ==
+                     blink::WebMediaStreamTrack::kResizeModeRescale &&
+                 candidates.Contains(true)) {
+        return true;
+      }
+    }
+  }
+
+  DCHECK(!candidates.HasExplicitElements() ||
+         candidates.elements().size() == 1);
+  // Rescaling is the default for content capture.
+  return candidates.HasExplicitElements() ? candidates.FirstElement() : true;
+}
+
 int ClampToValidScreenCastDimension(int value) {
   if (value > kMaxScreenCastDimension)
     return kMaxScreenCastDimension;
@@ -312,10 +342,13 @@ VideoCaptureSettings SelectResultFromCandidates(
   base::Optional<bool> noise_reduction = SelectNoiseReductionFromCandidates(
       candidates.noise_reduction_set(), basic_constraint_set);
 
+  bool enable_rescale = SelectRescaleFromCandidates(candidates.rescale_set(),
+                                                    basic_constraint_set);
+
   auto track_adapter_settings = SelectVideoTrackAdapterSettings(
       basic_constraint_set, candidates.resolution_set(),
       candidates.frame_rate_set(), capture_params.requested_format,
-      true /* enable_rescale */);
+      enable_rescale);
 
   return VideoCaptureSettings(std::move(device_id), capture_params,
                               noise_reduction, track_adapter_settings,
@@ -337,6 +370,8 @@ VideoCaptureSettings UnsatisfiedConstraintsResult(
     return VideoCaptureSettings(constraint_set.frame_rate.GetName());
   } else if (candidates.noise_reduction_set().IsEmpty()) {
     return VideoCaptureSettings(constraint_set.goog_noise_reduction.GetName());
+  } else if (candidates.rescale_set().IsEmpty()) {
+    return VideoCaptureSettings(constraint_set.resize_mode.GetName());
   } else {
     DCHECK(candidates.device_id_set().IsEmpty());
     return VideoCaptureSettings(constraint_set.device_id.GetName());
