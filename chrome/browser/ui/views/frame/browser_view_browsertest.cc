@@ -270,14 +270,12 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, TitleAndLoadState) {
       contents, 1, content::MessageLoopRunner::QuitMode::DEFERRED);
 
   TabStrip* tab_strip = browser_view()->tabstrip();
-
   // Navigate without blocking.
-  ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
-      browser(),
-      ui_test_utils::GetTestUrl(
-          base::FilePath(base::FilePath::kCurrentDirectory),
-          base::FilePath(FILE_PATH_LITERAL("title2.html"))),
-      0, WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+  const GURL test_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title2.html")));
+  contents->GetController().LoadURL(test_url, content::Referrer(),
+                                    ui::PAGE_TRANSITION_LINK, std::string());
   EXPECT_TRUE(browser()->tab_strip_model()->TabsAreLoading());
   EXPECT_EQ(TabNetworkState::kWaiting,
             tab_strip->tab_at(0)->data().network_state);
