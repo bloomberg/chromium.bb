@@ -42,6 +42,15 @@ class LocalCameraClientObserver : public CameraClientObserver {
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocalCameraClientObserver);
 };
 
+void NotifyVideoCaptureDevicesChanged() {
+  base::SystemMonitor* monitor = base::SystemMonitor::Get();
+  // |monitor| might be nullptr in unittest.
+  if (monitor) {
+    monitor->ProcessDevicesChanged(
+        base::SystemMonitor::DeviceType::DEVTYPE_VIDEO_CAPTURE);
+  }
+}
+
 }  // namespace
 
 CameraHalDelegate::CameraHalDelegate(
@@ -346,7 +355,6 @@ void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
   if (result) {
     LOG(ERROR) << "Failed to get camera info. Camera id: " << camera_id;
   }
-  // In case of error |camera_info| is empty.
   SortCameraMetadata(&camera_info->static_camera_characteristics);
 
   base::AutoLock lock(camera_info_lock_);
@@ -367,6 +375,9 @@ void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
     if (all_updated) {
       builtin_camera_info_updated_.Signal();
     }
+  } else {
+    // It's an external camera.
+    NotifyVideoCaptureDevicesChanged();
   }
 }
 
@@ -401,18 +412,13 @@ void CameraHalDelegate::CameraDeviceStatusChange(
     case cros::mojom::CameraDeviceStatus::CAMERA_DEVICE_STATUS_NOT_PRESENT:
       if (it != camera_info_.end()) {
         camera_info_.erase(it);
+        NotifyVideoCaptureDevicesChanged();
       } else {
         LOG(WARNING) << "Ignore nonexistent camera_id = " << camera_id;
       }
       break;
     default:
       NOTREACHED() << "Unexpected new status " << new_status;
-  }
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  // |monitor| might be nullptr in unittest.
-  if (monitor) {
-    monitor->ProcessDevicesChanged(
-        base::SystemMonitor::DeviceType::DEVTYPE_VIDEO_CAPTURE);
   }
 }
 
