@@ -659,7 +659,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, assign) CGFloat footerFullscreenProgress;
 // Y-dimension offset for placement of the header.
 @property(nonatomic, readonly) CGFloat headerOffset;
-// Height of the header view for the tab model's current tab.
+// Height of the header view.
 @property(nonatomic, readonly) CGFloat headerHeight;
 
 // The webState of the active tab.
@@ -736,8 +736,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (CGRect)ntpFrameForWebState:(web::WebState*)webState;
 // Returns web contents frame without including primary toolbar.
 - (CGRect)visibleFrameForTab:(Tab*)tab;
-// Returns the header height needed for |tab|.
-- (CGFloat)headerHeightForTab:(Tab*)tab;
 // Sets the frame for the headers.
 - (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
                    atOffset:(CGFloat)headerOffset;
@@ -1243,7 +1241,20 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (CGFloat)headerHeight {
-  return [self headerHeightForTab:self.tabModel.currentTab];
+  NSArray<HeaderDefinition*>* views = [self headerViews];
+
+  CGFloat height = self.headerOffset;
+  for (HeaderDefinition* header in views) {
+    if (header.view && header.behaviour == Hideable) {
+      height += CGRectGetHeight([header.view frame]);
+    }
+  }
+
+  CGFloat statusBarOffset = 0;
+  if (!self.usesFullscreenContainer) {
+    statusBarOffset = StatusBarHeight();
+  }
+  return height - statusBarOffset;
 }
 
 - (web::WebState*)currentWebState {
@@ -2593,23 +2604,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   return UIEdgeInsetsInsetRect([self viewForTab:tab].bounds, headerInset);
 }
 
-- (CGFloat)headerHeightForTab:(Tab*)tab {
-  NSArray<HeaderDefinition*>* views = [self headerViews];
-
-  CGFloat height = self.headerOffset;
-  for (HeaderDefinition* header in views) {
-    if (header.view && header.behaviour == Hideable) {
-      height += CGRectGetHeight([header.view frame]);
-    }
-  }
-
-  CGFloat statusBarOffset = 0;
-  if (!self.usesFullscreenContainer) {
-    statusBarOffset = StatusBarHeight();
-  }
-  return height - statusBarOffset;
-}
-
 - (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
                    atOffset:(CGFloat)headerOffset {
   CGFloat height = self.headerOffset;
@@ -3027,8 +3021,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
                               ->IsInitialized() ||
                           webState->GetWebViewProxy().shouldUseViewContentInset;
   if (isNTPActive || (outOfWeb && !usesContentInset)) {
-    CGFloat headerHeight = [self headerHeightForTab:tab];
-    return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
+    return UIEdgeInsetsMake(self.headerHeight, 0.0, 0.0, 0.0);
   }
 
   // For all other scenarios, the content area is inset from the snapshot base
@@ -3071,9 +3064,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
             viewController];
     UIView* sadTabView = viewController.view;
     if (sadTabView) {
-      CGFloat offset = [self headerHeightForTab:tab];
       SnapshotOverlay* sadTabOverlay =
-          [[SnapshotOverlay alloc] initWithView:sadTabView yOffset:offset];
+          [[SnapshotOverlay alloc] initWithView:sadTabView
+                                        yOffset:self.headerHeight];
       [overlays addObject:sadTabOverlay];
     }
   }
@@ -3478,11 +3471,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     runRepostFormDialogWithCompletionHandler:(void (^)(BOOL))handler {
   // Display the action sheet with the arrow pointing at the top center of the
   // web contents.
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   UIView* view = webState->GetView();
-  CGPoint dialogLocation =
-      CGPointMake(CGRectGetMidX(view.frame),
-                  CGRectGetMinY(view.frame) + [self headerHeightForTab:tab]);
+  CGPoint dialogLocation = CGPointMake(
+      CGRectGetMidX(view.frame), CGRectGetMinY(view.frame) + self.headerHeight);
   auto* helper = RepostFormTabHelper::FromWebState(webState);
   helper->PresentDialog(dialogLocation, base::BindOnce(^(bool shouldContinue) {
                           handler(shouldContinue);
@@ -3753,15 +3744,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (CGFloat)nativeContentHeaderHeightForWebState:(web::WebState*)webState {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  if (IsVisibleUrlNewTabPage(tab.webState) && ![self canShowTabStrip]) {
+  if (IsVisibleUrlNewTabPage(webState) && ![self canShowTabStrip]) {
     if (self.usesFullscreenContainer)
       return 0;
     // Also subtract the top safe area so the view will appear as full screen.
     // TODO(crbug.com/826369) Remove this once NTP is out of native content.
     return -self.view.safeAreaInsets.top;
   }
-  return [self headerHeightForTab:tab];
+  return self.headerHeight;
 }
 
 #pragma mark - DialogPresenterDelegate methods
