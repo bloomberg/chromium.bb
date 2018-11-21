@@ -12,6 +12,7 @@ class GURL;
 class Profile;
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
@@ -25,6 +26,13 @@ content::WebContents* OpenNewTab(Browser* browser, const GURL& url);
 // tiles asynchronously. Optionally, a delay may be introduced to wait an
 // additional amount of time after the page reports as loaded.
 void NavigateToNTPAndWaitUntilLoaded(Browser* browser, int delay = 0);
+
+// Executes a script on the NTP, verifies it executes successfully, and waits
+// until the NTP tiles are reloaded. Note that simply waiting for the script
+// execution to complete is not enough, since the MV iframe receives the tiles
+// asynchronously.
+void ExecuteScriptOnNTPAndWaitUntilLoaded(content::RenderFrameHost* host,
+                                          const std::string& script);
 
 // Switches the browser language to French, and returns true iff successful.
 bool SwitchBrowserLanguageToFrench();

@@ -30,6 +30,57 @@
 
 namespace local_ntp_test_utils {
 
+namespace {
+
+void WaitUntilTilesLoaded(content::WebContents* active_tab,
+                          content::DOMMessageQueue* msg_queue,
+                          int delay) {
+  // At this point, the MV iframe may or may not have been fully loaded. Once
+  // it loads, it sends a 'loaded' postMessage to the page. Check if the page
+  // has already received that, and if not start listening for it. It's
+  // important that these two things happen in the same JS invocation, since
+  // otherwise we might miss the message.
+  bool mv_tiles_loaded = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, base::StringPrintf(R"js(
+      (function() {
+        if (tilesAreLoaded) {
+          tilesAreLoaded = false;
+          return true;
+        }
+        const loaded = (event) => {
+          if (event.data.cmd == 'loaded') {
+            window.removeEventListener('message', loaded);
+            setTimeout(() => {
+              tilesAreLoaded = false;
+              domAutomationController.send('WaitUntilTilesLoaded');
+            }, %d);
+          }
+        };
+        window.addEventListener('message', loaded);
+        return false;
+      })()
+      )js", delay), &mv_tiles_loaded));
+
+  std::string message;
+  // Get rid of the message that the GetBoolFromJS call produces.
+  ASSERT_TRUE(msg_queue->PopMessage(&message));
+
+  if (mv_tiles_loaded) {
+    // The tiles are already loaded, i.e. we missed the 'loaded' message. All
+    // is well.
+    return;
+  }
+
+  // Not loaded yet. Wait for the "WaitUntilTilesLoaded" message.
+  ASSERT_TRUE(msg_queue->WaitForMessage(&message));
+  ASSERT_EQ("\"WaitUntilTilesLoaded\"", message);
+  // There shouldn't be any other messages.
+  ASSERT_FALSE(msg_queue->PopMessage(&message));
+}
+
+}  // namespace
+
 content::WebContents* OpenNewTab(Browser* browser, const GURL& url) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser, url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -54,45 +105,27 @@ void NavigateToNTPAndWaitUntilLoaded(Browser* browser, int delay) {
   ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
             active_tab->GetController().GetVisibleEntry()->GetURL());
 
-  // At this point, the MV iframe may or may not have been fully loaded. Once
-  // it loads, it sends a 'loaded' postMessage to the page. Check if the page
-  // has already received that, and if not start listening for it. It's
-  // important that these two things happen in the same JS invocation, since
-  // otherwise we might miss the message.
-  bool mv_tiles_loaded = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, base::StringPrintf(R"js(
-      (function() {
-        if (tilesAreLoaded) {
-          return true;
-        }
-        let loaded = window.addEventListener('message', function(event) {
-          if (event.data.cmd == 'loaded') {
-            window.removeEventListener('message', loaded);
-            setTimeout(() => {
-              domAutomationController.send('NavigateToNTPAndWaitUntilLoaded');
-            }, %d);
-          }
-        });
-        return false;
-      })()
-      )js", delay), &mv_tiles_loaded));
+  WaitUntilTilesLoaded(active_tab, &msg_queue, delay);
+}
 
+void ExecuteScriptOnNTPAndWaitUntilLoaded(content::RenderFrameHost* host,
+                                          const std::string& script) {
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(host);
+
+  ASSERT_TRUE(search::IsInstantNTP(contents));
+
+  // Attach a message queue *before* executing the script, to make sure we don't
+  // miss the 'loaded' message due to some race condition.
+  content::DOMMessageQueue msg_queue(contents);
+
+  // Execute the script, and get rid of the message that the ExecuteScript call
+  // produces.
+  EXPECT_TRUE(content::ExecuteScript(host, script));
   std::string message;
-  // Get rid of the message that the GetBoolFromJS call produces.
   ASSERT_TRUE(msg_queue.PopMessage(&message));
 
-  if (mv_tiles_loaded) {
-    // The tiles are already loaded, i.e. we missed the 'loaded' message. All
-    // is well.
-    return;
-  }
-
-  // Not loaded yet. Wait for the "NavigateToNTPAndWaitUntilLoaded" message.
-  ASSERT_TRUE(msg_queue.WaitForMessage(&message));
-  ASSERT_EQ("\"NavigateToNTPAndWaitUntilLoaded\"", message);
-  // There shouldn't be any other messages.
-  ASSERT_FALSE(msg_queue.PopMessage(&message));
+  WaitUntilTilesLoaded(contents, &msg_queue, /*delay=*/0);
 }
 
 bool SwitchBrowserLanguageToFrench() {
