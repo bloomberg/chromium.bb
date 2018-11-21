@@ -2,6 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('extensions');
+
+/**
+ * The different states the activity log page can be in. Initial state is
+ * LOADING because we call the activity log API whenever a user navigates to the
+ * page. LOADED is the state where the API call has returned a successful
+ * result.
+ * @enum {string}
+ */
+const ActivityLogPageState = {
+  LOADING: 'loading',
+  LOADED: 'loaded'
+};
+
 cr.define('extensions', function() {
   'use strict';
 
@@ -35,6 +49,15 @@ cr.define('extensions', function() {
       activityData_: Object,
 
       /**
+       * @private
+       * @type {ActivityLogPageState}
+       */
+      pageState_: {
+        type: String,
+        value: ActivityLogPageState.LOADING,
+      },
+
+      /**
        * A promise resolver for any external files waiting for the
        * GetExtensionActivity API call to finish.
        * Currently only used for extension_settings_browsertest.cc
@@ -53,10 +76,10 @@ cr.define('extensions', function() {
       this.getActivityLog_();
 
       // Add a listener here so we fetch the activity log whenever a user
-      // navigates to the activity log from another page.
-      // This is needed since this component already exists in the background
-      // if a user navigates away from this page so attached may not be called
-      // when a user navigates back.
+      // navigates to the activity log from another page. This is needed since
+      // this component already exists in the background if a user navigates
+      // away from this page so attached may not be called when a user navigates
+      // back.
       this.navigationListener_ = extensions.navigation.addListener(newPage => {
         if (newPage.page === Page.ACTIVITY_LOG)
           this.getActivityLog_();
@@ -74,7 +97,25 @@ cr.define('extensions', function() {
      * @return {boolean}
      */
     shouldShowEmptyActivityLogMessage_: function() {
-      return !this.activityData_ || this.activityData_.activities.length === 0;
+      return this.pageState_ === ActivityLogPageState.LOADED &&
+          (!this.activityData_ || this.activityData_.activities.length === 0);
+    },
+
+    /**
+     * @private
+     * @return {boolean}
+     */
+    shouldShowLoadingMessage_: function() {
+      return this.pageState_ === ActivityLogPageState.LOADING;
+    },
+
+    /**
+     * @private
+     * @return {boolean}
+     */
+    shouldShowActivities_: function() {
+      return this.pageState_ === ActivityLogPageState.LOADED &&
+          !!this.activityData_ && this.activityData_.activities.length > 0;
     },
 
     /** @private */
@@ -85,7 +126,9 @@ cr.define('extensions', function() {
 
     /** @private */
     getActivityLog_: function() {
+      this.pageState_ = ActivityLogPageState.LOADING;
       this.delegate.getExtensionActivityLog(this.extensionId).then(result => {
+        this.pageState_ = ActivityLogPageState.LOADED;
         this.activityData_ = result;
         this.onDataFetched.resolve();
       });

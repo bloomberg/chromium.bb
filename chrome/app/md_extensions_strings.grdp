@@ -226,6 +226,9 @@
   <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_RETRY" desc="The text on the button to retry loading an unpacked extension after a failed load.">
     Retry
   </message>
+  <message name="IDS_MD_EXTENSIONS_LOADING_ACTIVITIES" desc="The message shown to the user when the activity log for an extension is currently being fetched from the API.">
+    Fetching activities...
+  </message>
   <message name="IDS_MD_EXTENSIONS_NO_ACTIVITIES" desc="The message shown to the user when an extension has no recent activities.">
     No recent activities
   </message>

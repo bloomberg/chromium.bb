@@ -227,6 +227,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
     {"loadErrorFileLabel", IDS_MD_EXTENSIONS_LOAD_ERROR_FILE_LABEL},
     {"loadErrorErrorLabel", IDS_MD_EXTENSIONS_LOAD_ERROR_ERROR_LABEL},
     {"loadErrorRetry", IDS_MD_EXTENSIONS_LOAD_ERROR_RETRY},
+    {"loadingActivities", IDS_MD_EXTENSIONS_LOADING_ACTIVITIES},
     {"noActivities", IDS_MD_EXTENSIONS_NO_ACTIVITIES},
     {"noErrorsToShow", IDS_EXTENSIONS_ERROR_NO_ERRORS_CODE_MESSAGE},
     {"runtimeHostsDialogInputError",
