@@ -1361,6 +1361,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
     nav_params.window_action = NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = params.user_gesture;
   nav_params.blob_url_loader_factory = params.blob_url_loader_factory;
+  nav_params.href_translate = params.href_translate;
   bool is_popup = source && ConsiderForPopupBlocking(params.disposition);
   if (is_popup && MaybeBlockPopup(source, base::Optional<GURL>(), &nav_params,
                                   &params, blink::mojom::WindowFeatures())) {

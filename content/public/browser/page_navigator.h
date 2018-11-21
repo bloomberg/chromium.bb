@@ -116,6 +116,11 @@ struct CONTENT_EXPORT OpenURLParams {
   // possible, i.e. if an app for the URL is installed.
   bool open_app_window_if_possible;
 
+  // If this navigation was initiated from a link that specified the
+  // hrefTranslate attribute, this contains the attribute's value (a BCP47
+  // language code). Empty otherwise.
+  std::string href_translate;
+
  private:
   OpenURLParams();
 };

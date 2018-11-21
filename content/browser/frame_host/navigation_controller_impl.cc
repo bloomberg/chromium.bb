@@ -2799,7 +2799,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",
       params.post_data, base::Optional<SourceLocation>(),
       params.started_from_context_menu, has_user_gesture, InitiatorCSPInfo(),
-      std::string(), params.input_start);
+      params.href_translate, params.input_start);
 
   RequestNavigationParams request_params(
       override_user_agent, params.redirect_chain, common_params.url,

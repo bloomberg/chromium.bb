@@ -6449,6 +6449,8 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
   if (is_history_navigation_in_new_child)
     params.is_history_navigation_in_new_child = true;
 
+  params.href_translate = info->href_translate.Latin1();
+
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }
 
