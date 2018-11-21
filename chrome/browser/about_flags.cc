@@ -4438,6 +4438,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnablePipRoundedCornersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPipRoundedCorners)},
 #endif  // defined(OS_CHROMEOS)
+    {"google-password-manager", flag_descriptions::kGooglePasswordManagerName,
+     flag_descriptions::kGooglePasswordManagerDescription, kOsAll,
+     FEATURE_VALUE_TYPE(password_manager::features::kGooglePasswordManager)},
 };
 
 class FlagsStateSingleton {

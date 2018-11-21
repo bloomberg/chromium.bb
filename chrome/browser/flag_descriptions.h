@@ -640,6 +640,9 @@ extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 extern const char kForceGpuRasterization[];
 
+extern const char kGooglePasswordManagerName[];
+extern const char kGooglePasswordManagerDescription[];
+
 extern const char kGoogleProfileInfoName[];
 extern const char kGoogleProfileInfoDescription[];
 
