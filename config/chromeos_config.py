@@ -1436,7 +1436,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin-arcnext',
   ])
   _pi_hwtest_experimental_boards = frozenset([
-      'eve-arcnext',
+      'eve',
   ])
   _pi_vmtest_boards = frozenset([
       'betty-arcnext'
