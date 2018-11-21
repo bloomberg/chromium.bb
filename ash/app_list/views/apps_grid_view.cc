@@ -1047,8 +1047,10 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
   if (!contents_view_->app_list_view()->IsHomeLauncherEnabledInTabletMode() &&
       (event->type() == ui::ET_GESTURE_TAP ||
        event->type() == ui::ET_GESTURE_LONG_PRESS)) {
-    if (EventIsBetweenOccupiedTiles(event))
+    if (EventIsBetweenOccupiedTiles(event)) {
+      contents_view_->app_list_view()->CloseKeyboardIfVisible();
       event->SetHandled();
+    }
     return;
   }
 
