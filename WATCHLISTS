@@ -1497,10 +1497,6 @@
                   '|third_party/hunspell/'\
                   '|third_party/hunspell_dictionaries/',
     },
-    'stack_sampling_profiler': {
-      'filepath': 'components/metrics/*call_stack_profile*'\
-                  '|base/profiler/',
-    },
     'startup': {
       'filepath': 'chrome/browser/ui/startup/',
     },
@@ -2412,7 +2408,6 @@
     'spellcheck': ['rlp+watch@chromium.org',
                    'rouslan+spell@chromium.org',
                    'timvolodine@chromium.org'],
-    'stack_sampling_profiler': ['chengx+watch@chromium.org'],
     'startup': ['grt+watch@chromium.org',
                 'pastarmovj+watch@chromium.org'],
     'streams': ['zork+watch@chromium.org'],
