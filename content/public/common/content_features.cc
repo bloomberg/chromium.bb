@@ -184,6 +184,7 @@ const base::Feature kWebXrGamepadSupport{"WebXRGamepadSupport",
 
 // Causes the implementations of guests (inner WebContents) to use
 // out-of-process iframes.
+// TODO(533069): Remove once BrowserPlugin is removed.
 const base::Feature kGuestViewCrossProcessFrames{
     "GuestViewCrossProcessFrames", base::FEATURE_ENABLED_BY_DEFAULT};
 

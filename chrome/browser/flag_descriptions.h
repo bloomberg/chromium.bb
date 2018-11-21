@@ -182,9 +182,6 @@ extern const char kContextualSuggestionsOptOutDescription[];
 extern const char kCreditCardAssistName[];
 extern const char kCreditCardAssistDescription[];
 
-extern const char kCrossProcessGuestViewIsolationName[];
-extern const char kCrossProcessGuestViewIsolationDescription[];
-
 extern const char kDataSaverServerPreviewsName[];
 extern const char kDataSaverServerPreviewsDescription[];
 

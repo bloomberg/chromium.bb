@@ -447,11 +447,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "cross-process-guests",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "crostini-usb-support",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
