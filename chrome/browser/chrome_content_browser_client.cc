@@ -487,10 +487,6 @@
 #include "extensions/common/switches.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if BUILDFLAG(ENABLE_MUS)
-#include "services/ws/public/mojom/constants.mojom.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
 #include "chrome/browser/plugins/flash_download_interception.h"
@@ -2166,29 +2162,23 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     const service_manager::Identity& identity,
     base::CommandLine* command_line) {
-#if BUILDFLAG(ENABLE_MUS)
-  bool copy_switches = false;
-  if (identity.name() == ws::mojom::kServiceName) {
-    command_line->AppendSwitch(switches::kMessageLoopTypeUi);
-    copy_switches = true;
-  }
 #if defined(OS_CHROMEOS)
+  bool copy_switches = false;
   if (identity.name() == ash::mojom::kServiceName) {
-    command_line->AppendSwitch(switches::kMessageLoopTypeUi);
     copy_switches = true;
+    command_line->AppendSwitch(switches::kMessageLoopTypeUi);
   }
   if (ash_service_registry::IsAshRelatedServiceName(identity.name())) {
+    // Ash services also need command line flags, as some flags are used to
+    // configure the compositor.
+    copy_switches = true;
     command_line->AppendSwitchASCII(switches::kMashServiceName,
                                     identity.name());
   }
+  // TODO(crbug.com/906954): whitelist flags to copy.
+  for (const auto& sw : base::CommandLine::ForCurrentProcess()->GetSwitches())
+    command_line->AppendSwitchNative(sw.first, sw.second);
 #endif
-  // TODO(sky): move to a whitelist, but currently the set of flags is rather
-  // sprawling.
-  if (copy_switches) {
-    for (const auto& sw : base::CommandLine::ForCurrentProcess()->GetSwitches())
-      command_line->AppendSwitchNative(sw.first, sw.second);
-  }
-#endif  // BUILDFLAG(ENABLE_MUS)
 
 #if defined(OS_MACOSX)
   // On Mac, the video-capture and audio services require a CFRunLoop, provided
