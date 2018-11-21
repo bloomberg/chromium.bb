@@ -268,6 +268,9 @@ class PasswordManagerClient {
   // again. Results in updating the fill information on the page.
   virtual void UpdateFormManagers() {}
 
+  // Causes a navigation to the manage passwords page.
+  virtual void NavigateToManagePasswordsPage() {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
 };

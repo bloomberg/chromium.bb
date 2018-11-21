@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -154,17 +153,6 @@ bool ShowAllSavedPasswordsContextMenuEnabled(
           SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU);
 
   return true;
-}
-
-void UserTriggeredShowAllSavedPasswordsFromContextMenu(
-    autofill::AutofillClient* autofill_client) {
-  if (!autofill_client)
-    return;
-  autofill_client->ExecuteCommand(
-      autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
-  password_manager::metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
-      password_manager::metrics_util::
-          SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU);
 }
 
 void UserTriggeredManualGenerationFromContextMenu(

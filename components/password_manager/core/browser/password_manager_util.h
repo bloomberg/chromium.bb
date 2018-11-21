@@ -16,7 +16,6 @@
 
 namespace autofill {
 struct PasswordForm;
-class AutofillClient;
 }
 
 namespace network {
@@ -78,10 +77,6 @@ bool ManualPasswordGenerationEnabled(
 // saved passwords" option.
 bool ShowAllSavedPasswordsContextMenuEnabled(
     password_manager::PasswordManagerDriver* driver);
-
-// Opens Password Manager setting page and records the metrics.
-void UserTriggeredShowAllSavedPasswordsFromContextMenu(
-    autofill::AutofillClient* autofill_client);
 
 // Triggers password generation flow and records the metrics.
 void UserTriggeredManualGenerationFromContextMenu(
