@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -140,17 +139,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(ListPrefMatchChecker(prefs::kURLsToRestoreOnStartup).Wait());
 }
 
-// Disabled due to flakiness on Chrome OS: https://crbug.com/873902.
-#if defined(OS_CHROMEOS)
-#define MAYBE_SingleClientEnabledEncryptionBothChanged \
-  DISABLED_SingleClientEnabledEncryptionBothChanged
-#else
-#define MAYBE_SingleClientEnabledEncryptionBothChanged \
-  SingleClientEnabledEncryptionBothChanged
-#endif
-IN_PROC_BROWSER_TEST_P(
-    TwoClientPreferencesSyncTest,
-    E2E_ENABLED(MAYBE_SingleClientEnabledEncryptionBothChanged)) {
+IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest,
+                       E2E_ENABLED(SingleClientEnabledEncryptionBothChanged)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kHomePageIsNewTabPage).Wait());
   ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
