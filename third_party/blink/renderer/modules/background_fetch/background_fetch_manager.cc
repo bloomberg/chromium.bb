@@ -6,7 +6,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/request_or_usv_string_or_request_or_usv_string_sequence.h"
@@ -97,7 +96,6 @@ bool ShouldBlockDanglingMarkup(const KURL& request_url) {
 }
 
 bool ShouldBlockGateWayAttacks(ExecutionContext* execution_context,
-                               const WebServiceWorkerRequest& web_request,
                                const KURL& request_url) {
   if (RuntimeEnabledFeatures::CorsRFC1918Enabled()) {
     mojom::IPAddressSpace requestor_space =
@@ -176,8 +174,9 @@ ScriptPromise BackgroundFetchManager::fetch(
   }
 
   bool has_requests_with_body;
-  Vector<WebServiceWorkerRequest> web_requests = CreateWebRequestVector(
-      script_state, requests, exception_state, &has_requests_with_body);
+  Vector<mojom::blink::FetchAPIRequestPtr> fetch_api_requests =
+      CreateFetchAPIRequestVector(script_state, requests, exception_state,
+                                  &has_requests_with_body);
   if (exception_state.HadException())
     return ScriptPromise();
 
@@ -205,8 +204,8 @@ ScriptPromise BackgroundFetchManager::fetch(
   // all its security checks) are implemented in the Network Service, such that
   // the Download Service in the browser process can use it without having to
   // spin up a renderer process.
-  for (const WebServiceWorkerRequest& web_request : web_requests) {
-    KURL request_url(web_request.Url());
+  for (const mojom::blink::FetchAPIRequestPtr& request : fetch_api_requests) {
+    KURL request_url(request->url);
 
     if (!request_url.IsValid()) {
       return RejectWithTypeError(script_state, request_url,
@@ -216,7 +215,7 @@ ScriptPromise BackgroundFetchManager::fetch(
     // https://wicg.github.io/background-fetch/#dom-backgroundfetchmanager-fetch
     // ""If |internalRequest|’s mode is "no-cors", then return a promise
     //   rejected with a TypeError.""
-    if (web_request.Mode() == network::mojom::FetchRequestMode::kNoCors) {
+    if (request->mode == network::mojom::FetchRequestMode::kNoCors) {
       return RejectWithTypeError(script_state, request_url,
                                  "the request mode must not be no-cors");
     }
@@ -249,8 +248,7 @@ ScriptPromise BackgroundFetchManager::fetch(
                                  "it contains dangling markup");
     }
 
-    if (ShouldBlockGateWayAttacks(execution_context, web_request,
-                                  request_url)) {
+    if (ShouldBlockGateWayAttacks(execution_context, request_url)) {
       return RejectWithTypeError(script_state, request_url,
                                  "Requestor IP address space doesn't match the "
                                  "target address space.");
@@ -259,7 +257,7 @@ ScriptPromise BackgroundFetchManager::fetch(
     kurls.insert(request_url);
   }
 
-  const bool has_duplicate_requests = kurls.size() != web_requests.size();
+  const bool has_duplicate_requests = kurls.size() != fetch_api_requests.size();
 
   UMA_HISTOGRAM_BOOLEAN("BackgroundFetch.HasDuplicateRequests",
                         has_duplicate_requests);
@@ -291,20 +289,21 @@ ScriptPromise BackgroundFetchManager::fetch(
     loader->Start(
         bridge_.Get(), execution_context, options->icons(),
         WTF::Bind(&BackgroundFetchManager::DidLoadIcons, WrapPersistent(this),
-                  id, WTF::Passed(std::move(web_requests)),
+                  id, WTF::Passed(std::move(fetch_api_requests)),
                   std::move(options_ptr), WrapPersistent(resolver),
                   WrapWeakPersistent(loader)));
     return promise;
   }
 
-  DidLoadIcons(id, std::move(web_requests), std::move(options_ptr), resolver,
-               nullptr, SkBitmap(), -1 /* ideal_to_chosen_icon_size */);
+  DidLoadIcons(id, std::move(fetch_api_requests), std::move(options_ptr),
+               resolver, nullptr, SkBitmap(),
+               -1 /* ideal_to_chosen_icon_size */);
   return promise;
 }
 
 void BackgroundFetchManager::DidLoadIcons(
     const String& id,
-    Vector<WebServiceWorkerRequest> web_requests,
+    Vector<mojom::blink::FetchAPIRequestPtr> requests,
     mojom::blink::BackgroundFetchOptionsPtr options,
     ScriptPromiseResolver* resolver,
     BackgroundFetchIconLoader* loader,
@@ -316,8 +315,7 @@ void BackgroundFetchManager::DidLoadIcons(
   auto ukm_data = mojom::blink::BackgroundFetchUkmData::New();
   ukm_data->ideal_to_chosen_icon_size = ideal_to_chosen_icon_size;
   bridge_->Fetch(
-      id, std::move(web_requests), std::move(options), icon,
-      std::move(ukm_data),
+      id, std::move(requests), std::move(options), icon, std::move(ukm_data),
       WTF::Bind(&BackgroundFetchManager::DidFetch, WrapPersistent(this),
                 WrapPersistent(resolver), base::Time::Now()));
 }
@@ -406,14 +404,15 @@ ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
 }
 
 // static
-Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
+Vector<mojom::blink::FetchAPIRequestPtr>
+BackgroundFetchManager::CreateFetchAPIRequestVector(
     ScriptState* script_state,
     const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
     ExceptionState& exception_state,
     bool* has_requests_with_body) {
   DCHECK(has_requests_with_body);
 
-  Vector<WebServiceWorkerRequest> web_requests;
+  Vector<mojom::blink::FetchAPIRequestPtr> fetch_api_requests;
   *has_requests_with_body = false;
 
   if (requests.IsRequestOrUSVStringSequence()) {
@@ -423,10 +422,10 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
     // Throw a TypeError when the developer has passed an empty sequence.
     if (!request_vector.size()) {
       exception_state.ThrowTypeError(kEmptyRequestSequenceErrorMessage);
-      return Vector<WebServiceWorkerRequest>();
+      return Vector<mojom::blink::FetchAPIRequestPtr>();
     }
 
-    web_requests.resize(request_vector.size());
+    fetch_api_requests.resize(request_vector.size());
 
     for (wtf_size_t i = 0; i < request_vector.size(); ++i) {
       const RequestOrUSVString& request_or_url = request_vector[i];
@@ -438,21 +437,20 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
         request = Request::Create(script_state, request_or_url.GetAsUSVString(),
                                   exception_state);
         if (exception_state.HadException())
-          return Vector<WebServiceWorkerRequest>();
+          return Vector<mojom::blink::FetchAPIRequestPtr>();
       } else {
         exception_state.ThrowTypeError(kNullRequestErrorMessage);
-        return Vector<WebServiceWorkerRequest>();
+        return Vector<mojom::blink::FetchAPIRequestPtr>();
       }
 
       DCHECK(request);
       *has_requests_with_body |= request->HasBody();
       // TODO(crbug.com/774054): Set blob data handle when adding support for
       // requests with body.
-      request->PopulateWebServiceWorkerRequest(web_requests[i]);
-      web_requests[i].SetBlobDataHandle(
-          ExtractBlobHandle(request, exception_state));
+      fetch_api_requests[i] = request->CreateFetchAPIRequest();
+      fetch_api_requests[i]->blob = ExtractBlobHandle(request, exception_state);
       if (exception_state.HadException())
-        return Vector<WebServiceWorkerRequest>();
+        return Vector<mojom::blink::FetchAPIRequestPtr>();
     }
   } else if (requests.IsRequest()) {
     auto* request = requests.GetAsRequest();
@@ -462,28 +460,28 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
     // requests with body.
 
     *has_requests_with_body = request->HasBody();
-    web_requests.resize(1);
-    request->PopulateWebServiceWorkerRequest(web_requests[0]);
-    web_requests[0].SetBlobDataHandle(
-        ExtractBlobHandle(requests.GetAsRequest(), exception_state));
+    fetch_api_requests.resize(1);
+    fetch_api_requests[0] = request->CreateFetchAPIRequest();
+    fetch_api_requests[0]->blob =
+        ExtractBlobHandle(requests.GetAsRequest(), exception_state);
     if (exception_state.HadException())
-      return Vector<WebServiceWorkerRequest>();
+      return Vector<mojom::blink::FetchAPIRequestPtr>();
   } else if (requests.IsUSVString()) {
     Request* request = Request::Create(script_state, requests.GetAsUSVString(),
                                        exception_state);
     if (exception_state.HadException())
-      return Vector<WebServiceWorkerRequest>();
+      return Vector<mojom::blink::FetchAPIRequestPtr>();
 
     DCHECK(request);
     *has_requests_with_body = request->HasBody();
-    web_requests.resize(1);
-    request->PopulateWebServiceWorkerRequest(web_requests[0]);
+    fetch_api_requests.resize(1);
+    fetch_api_requests[0] = request->CreateFetchAPIRequest();
   } else {
     exception_state.ThrowTypeError(kNullRequestErrorMessage);
-    return Vector<WebServiceWorkerRequest>();
+    return Vector<mojom::blink::FetchAPIRequestPtr>();
   }
 
-  return web_requests;
+  return fetch_api_requests;
 }
 
 void BackgroundFetchManager::DidGetRegistration(

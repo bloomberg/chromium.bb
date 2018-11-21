@@ -28,7 +28,6 @@ class RequestOrUSVStringOrRequestOrUSVStringSequence;
 class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
-class WebServiceWorkerRequest;
 
 // Implementation of the BackgroundFetchManager JavaScript object, accessible
 // by developers through ServiceWorkerRegistration.backgroundFetch.
@@ -65,17 +64,17 @@ class MODULES_EXPORT BackgroundFetchManager final
 
   explicit BackgroundFetchManager(ServiceWorkerRegistration* registration);
 
-  // Creates a vector of WebServiceWorkerRequest objects for the given set of
-  // |requests|, which can be either Request objects or URL strings.
+  // Creates a vector of mojom::blink::FetchAPIRequestPtr objects for the given
+  // set of |requests|, which can be either Request objects or URL strings.
   // |has_requests_with_body| will be set if any of the |requests| has a body.
-  static Vector<WebServiceWorkerRequest> CreateWebRequestVector(
+  static Vector<mojom::blink::FetchAPIRequestPtr> CreateFetchAPIRequestVector(
       ScriptState* script_state,
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
       ExceptionState& exception_state,
       bool* has_requests_with_body);
 
   void DidLoadIcons(const String& id,
-                    Vector<WebServiceWorkerRequest> web_requests,
+                    Vector<mojom::blink::FetchAPIRequestPtr> requests,
                     mojom::blink::BackgroundFetchOptionsPtr options,
                     ScriptPromiseResolver* resolver,
                     BackgroundFetchIconLoader* loader,

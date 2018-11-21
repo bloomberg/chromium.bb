@@ -34,6 +34,12 @@ class WebHTTPHeaderVisitor;
 class WebServiceWorkerRequestPrivate;
 
 // Represents a request for a web resource.
+//
+// Now this is used only to carry the request data of a fetch event dispatched
+// towards a service worker, from //content across the boundary into Blink.
+// TODO(crbug.com/879019): Remove this class once we make the following Mojo
+// interface receive the fetch event directly inside Blink.
+//  - content.mojom.ServiceWorker
 class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
  public:
   ~WebServiceWorkerRequest() { Reset(); }

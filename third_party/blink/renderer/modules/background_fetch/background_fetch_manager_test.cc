@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_manager.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -20,14 +19,14 @@ namespace blink {
 
 class BackgroundFetchManagerTest : public testing::Test {
  protected:
-  // Creates a vector of WebServiceWorkerRequest entries for the given
-  // |requests| based on the |scope|. Proxied in the fixture to reduce the
-  // number of friend declarations necessary in the BackgroundFetchManager.
-  Vector<WebServiceWorkerRequest> CreateWebRequestVector(
+  // Creates a vector of FetchAPIRequestPtr entries for the given |requests|
+  // based on the |scope|. Proxied in the fixture to reduce the number of friend
+  // declarations necessary in the BackgroundFetchManager.
+  Vector<mojom::blink::FetchAPIRequestPtr> CreateFetchAPIRequestVector(
       V8TestingScope& scope,
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests) {
     bool has_requests_with_body;
-    return BackgroundFetchManager::CreateWebRequestVector(
+    return BackgroundFetchManager::CreateFetchAPIRequestVector(
         scope.GetScriptState(), requests, scope.GetExceptionState(),
         &has_requests_with_body);
   }
@@ -38,8 +37,8 @@ TEST_F(BackgroundFetchManagerTest, NullValue) {
 
   RequestOrUSVStringOrRequestOrUSVStringSequence requests;
 
-  Vector<WebServiceWorkerRequest> web_requests =
-      CreateWebRequestVector(scope, requests);
+  Vector<mojom::blink::FetchAPIRequestPtr> fetch_api_requests =
+      CreateFetchAPIRequestVector(scope, requests);
   ASSERT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(scope.GetExceptionState().CodeAs<ESErrorType>(),
             ESErrorType::kTypeError);
@@ -54,15 +53,13 @@ TEST_F(BackgroundFetchManagerTest, SingleUSVString) {
       RequestOrUSVStringOrRequestOrUSVStringSequence::FromUSVString(
           image_url.GetString());
 
-  Vector<WebServiceWorkerRequest> web_requests =
-      CreateWebRequestVector(scope, requests);
+  Vector<mojom::blink::FetchAPIRequestPtr> fetch_api_requests =
+      CreateFetchAPIRequestVector(scope, requests);
   ASSERT_FALSE(scope.GetExceptionState().HadException());
 
-  ASSERT_EQ(web_requests.size(), 1u);
-
-  WebServiceWorkerRequest& web_request = web_requests[0];
-  EXPECT_EQ(web_request.Url(), WebURL(image_url));
-  EXPECT_EQ(web_request.Method(), "GET");
+  ASSERT_EQ(fetch_api_requests.size(), 1u);
+  EXPECT_EQ(fetch_api_requests[0]->url, image_url);
+  EXPECT_EQ(fetch_api_requests[0]->method, "GET");
 }
 
 TEST_F(BackgroundFetchManagerTest, SingleRequest) {
@@ -81,15 +78,13 @@ TEST_F(BackgroundFetchManagerTest, SingleRequest) {
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
       RequestOrUSVStringOrRequestOrUSVStringSequence::FromRequest(request);
 
-  Vector<WebServiceWorkerRequest> web_requests =
-      CreateWebRequestVector(scope, requests);
+  Vector<mojom::blink::FetchAPIRequestPtr> fetch_api_requests =
+      CreateFetchAPIRequestVector(scope, requests);
   ASSERT_FALSE(scope.GetExceptionState().HadException());
 
-  ASSERT_EQ(web_requests.size(), 1u);
-
-  WebServiceWorkerRequest& web_request = web_requests[0];
-  EXPECT_EQ(web_request.Url(), WebURL(image_url));
-  EXPECT_EQ(web_request.Method(), "POST");
+  ASSERT_EQ(fetch_api_requests.size(), 1u);
+  EXPECT_EQ(fetch_api_requests[0]->url, image_url);
+  EXPECT_EQ(fetch_api_requests[0]->method, "POST");
 }
 
 TEST_F(BackgroundFetchManagerTest, Sequence) {
@@ -124,19 +119,19 @@ TEST_F(BackgroundFetchManagerTest, Sequence) {
       RequestOrUSVStringOrRequestOrUSVStringSequence::
           FromRequestOrUSVStringSequence(request_sequence);
 
-  Vector<WebServiceWorkerRequest> web_requests =
-      CreateWebRequestVector(scope, requests);
+  Vector<mojom::blink::FetchAPIRequestPtr> fetch_api_requests =
+      CreateFetchAPIRequestVector(scope, requests);
   ASSERT_FALSE(scope.GetExceptionState().HadException());
 
-  ASSERT_EQ(web_requests.size(), 3u);
-  EXPECT_EQ(web_requests[0].Url(), WebURL(image_url));
-  EXPECT_EQ(web_requests[0].Method(), "GET");
+  ASSERT_EQ(fetch_api_requests.size(), 3u);
+  EXPECT_EQ(fetch_api_requests[0]->url, image_url);
+  EXPECT_EQ(fetch_api_requests[0]->method, "GET");
 
-  EXPECT_EQ(web_requests[1].Url(), WebURL(icon_url));
-  EXPECT_EQ(web_requests[1].Method(), "GET");
+  EXPECT_EQ(fetch_api_requests[1]->url, icon_url);
+  EXPECT_EQ(fetch_api_requests[1]->method, "GET");
 
-  EXPECT_EQ(web_requests[2].Url(), WebURL(cat_video_url));
-  EXPECT_EQ(web_requests[2].Method(), "DELETE");
+  EXPECT_EQ(fetch_api_requests[2]->url, cat_video_url);
+  EXPECT_EQ(fetch_api_requests[2]->method, "DELETE");
 }
 
 TEST_F(BackgroundFetchManagerTest, SequenceEmpty) {
@@ -147,8 +142,8 @@ TEST_F(BackgroundFetchManagerTest, SequenceEmpty) {
       RequestOrUSVStringOrRequestOrUSVStringSequence::
           FromRequestOrUSVStringSequence(request_sequence);
 
-  Vector<WebServiceWorkerRequest> web_requests =
-      CreateWebRequestVector(scope, requests);
+  Vector<mojom::blink::FetchAPIRequestPtr> fetch_api_requests =
+      CreateFetchAPIRequestVector(scope, requests);
   ASSERT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(scope.GetExceptionState().CodeAs<ESErrorType>(),
             ESErrorType::kTypeError);
@@ -171,8 +166,8 @@ TEST_F(BackgroundFetchManagerTest, SequenceWithNullValue) {
       RequestOrUSVStringOrRequestOrUSVStringSequence::
           FromRequestOrUSVStringSequence(request_sequence);
 
-  Vector<WebServiceWorkerRequest> web_requests =
-      CreateWebRequestVector(scope, requests);
+  Vector<mojom::blink::FetchAPIRequestPtr> fetch_api_requests =
+      CreateFetchAPIRequestVector(scope, requests);
   ASSERT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(scope.GetExceptionState().CodeAs<ESErrorType>(),
             ESErrorType::kTypeError);
@@ -211,15 +206,16 @@ TEST_F(BackgroundFetchManagerTest, BlobsExtracted) {
           FromRequestOrUSVStringSequence(request_sequence);
 
   // Extract the blobs.
-  auto web_requests = CreateWebRequestVector(scope, requests);
+  Vector<mojom::blink::FetchAPIRequestPtr> fetch_api_requests =
+      CreateFetchAPIRequestVector(scope, requests);
   ASSERT_FALSE(scope.GetExceptionState().HadException());
 
-  ASSERT_EQ(web_requests.size(), 2u);
+  ASSERT_EQ(fetch_api_requests.size(), 2u);
 
-  ASSERT_TRUE(web_requests[0].GetBlobDataHandle());
-  EXPECT_EQ(web_requests[0].GetBlobDataHandle()->size(), body_text.length());
+  ASSERT_TRUE(fetch_api_requests[0]->blob);
+  EXPECT_EQ(fetch_api_requests[0]->blob->size(), body_text.length());
 
-  EXPECT_FALSE(web_requests[1].GetBlobDataHandle());
+  EXPECT_FALSE(fetch_api_requests[1]->blob);
 }
 
 }  // namespace blink

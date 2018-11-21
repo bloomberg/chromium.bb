@@ -22,7 +22,6 @@ typemaps = [
   "//third_party/blink/renderer/platform/mojo/string.typemap",
   "//third_party/blink/renderer/platform/mojo/time.typemap",
   "//third_party/blink/public/platform/modules/bluetooth/bluetooth.typemap",
-  "//third_party/blink/public/platform/modules/fetch/fetch_api_request.typemap",
   "//third_party/blink/public/common/manifest/display_mode.typemap",
   "//third_party/blink/public/common/screen_orientation/screen_orientation_lock_types.typemap",
 ]
