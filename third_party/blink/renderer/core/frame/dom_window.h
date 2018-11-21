@@ -28,6 +28,13 @@ class SerializedScriptValue;
 class WindowPostMessageOptions;
 class WindowProxyManager;
 
+// DOMWindow is an abstract class of Window interface implementations.
+// We have two derived implementation classes;  LocalDOMWindow and
+// RemoteDOMWindow.
+//
+// TODO(tkent): Rename DOMWindow to Window. The class was named as 'DOMWindow'
+// because WebKit already had KJS::Window.  We have no reasons to avoid
+// blink::Window now.
 class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
                               public DOMWindowBase64 {
   DEFINE_WRAPPERTYPEINFO();
