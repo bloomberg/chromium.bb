@@ -1256,6 +1256,7 @@
           'hard_timeout': 900,
         },
         'test_suites': {
+          'gtest_tests': 'layout_ng_gtests',
           'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
         },
       },
