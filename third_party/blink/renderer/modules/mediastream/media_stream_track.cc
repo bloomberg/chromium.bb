@@ -393,6 +393,8 @@ MediaTrackCapabilities* MediaStreamTrack::getCapabilities() const {
         break;
     }
     capabilities->setFacingMode(facing_mode);
+    capabilities->setResizeMode({WebMediaStreamTrack::kResizeModeNone,
+                                 WebMediaStreamTrack::kResizeModeRescale});
   }
   return capabilities;
 }
