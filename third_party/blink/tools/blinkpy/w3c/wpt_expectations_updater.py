@@ -94,7 +94,7 @@ class WPTExpectationsUpdater(object):
         # At this point, test_expectations looks like: {
         #     'test-with-failing-result': {
         #         ('port-name1', 'port-name2'): SimpleTestResult,
-        #         'port-name3': SimpleTestResult
+        #         'port-name3': AnotherSimpleTestResult
         #     }
         # }
 
@@ -310,11 +310,11 @@ class WPTExpectationsUpdater(object):
                 _log.warning('Non-WPT test "%s" unexpectedly passed to create_line_dict.', test_name)
                 continue
             for port_names, result in sorted(port_results.iteritems()):
-                line_dict[test_name].append(self._create_line(test_name, port_names, result))
+                line_dict[test_name].extend(self._create_lines(test_name, port_names, result))
         return line_dict
 
-    def _create_line(self, test_name, port_names, result):
-        """Constructs a test expectation line string.
+    def _create_lines(self, test_name, port_names, result):
+        """Constructs test expectation line strings.
 
         Args:
             test_name: The test name string.
@@ -322,8 +322,10 @@ class WPTExpectationsUpdater(object):
             result: A SimpleTestResult.
 
         Returns:
-            A string that contains a line of test expectation.
+            A list of strings which each is a line of test expectation for given
+            |test_name|.
         """
+        lines = []
         port_names = self.tuple_or_value_to_list(port_names)
 
         # The set of ports with no results is assumed to have have no
@@ -337,43 +339,43 @@ class WPTExpectationsUpdater(object):
         # also apply to any ports that we weren't able to get results for.
         port_names.extend(self.ports_with_no_results)
 
-        specifier_part = self.specifier_part(test_name, port_names)
-
-        line_parts = []
-        if specifier_part:
-            line_parts.append(specifier_part)
-        line_parts.append(test_name)
         expectations = '[ %s ]' % ' '.join(self.get_expectations(result, test_name))
-        line_parts.append(expectations)
+        for specifier in self.normalized_specifiers(test_name, port_names):
+            line_parts = []
+            if specifier:
+                line_parts.append('[ %s ]' % specifier)
+            line_parts.append(test_name)
+            line_parts.append(expectations)
 
-        # Only add the bug link if the expectations do not include WontFix.
-        if 'WontFix' not in expectations:
-            line_parts.insert(0, result.bug)
+            # Only add the bug link if the expectations do not include WontFix.
+            if 'WontFix' not in expectations:
+                line_parts.insert(0, result.bug)
 
-        return ' '.join(line_parts)
+            lines.append(' '.join(line_parts))
+        return lines
 
-    def specifier_part(self, test_name, port_names):
-        """Returns the specifier part for a new test expectations line.
+    def normalized_specifiers(self, test_name, port_names):
+        """Converts and simplifies ports into platform specifiers.
 
         Args:
             test_name: The test name string.
             port_names: A list of full port names that the line should apply to.
 
         Returns:
-            The specifier part of the new expectation line, e.g. "[ Mac ]".
-            This will be an empty string if the line should apply to all platforms.
+            A list of specifier string, e.g. ["Mac", "Win"].
+            [''] will be returned if the line should apply to all platforms.
         """
         specifiers = []
         for name in sorted(port_names):
             specifiers.append(self.host.builders.version_specifier_for_port_name(name))
 
         if self.specifiers_can_extend_to_all_platforms(specifiers, test_name):
-            return ''
+            return ['']
 
         specifiers = self.simplify_specifiers(specifiers, self.port.configuration_specifier_macros())
         if not specifiers:
-            return ''
-        return '[ %s ]' % ' '.join(specifiers)
+            return ['']
+        return specifiers
 
     @staticmethod
     def tuple_or_value_to_list(tuple_or_value):
