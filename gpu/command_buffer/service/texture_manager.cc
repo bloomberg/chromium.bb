@@ -1692,7 +1692,7 @@ bool Texture::ClearLevel(DecoderContext* decoder, GLenum target, GLint level) {
 
   Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
 
-  DCHECK(target == info.target);
+  DCHECK_EQ(target, info.target);
 
   if (info.target == 0 ||
       info.cleared_rect == gfx::Rect(info.width, info.height) ||
@@ -2133,13 +2133,8 @@ scoped_refptr<TextureRef>
                      gfx::Rect(1, 1));
       }
     } else {
-      if (needs_initialization) {
-        SetLevelInfo(default_texture.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1,
-                     0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
-      } else {
-        SetLevelInfo(default_texture.get(), GL_TEXTURE_EXTERNAL_OES, 0, GL_RGBA,
-                     1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
-      }
+      SetLevelInfo(default_texture.get(), target, 0, GL_RGBA, 1, 1, 1, 0,
+                   GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
     }
   }
 
