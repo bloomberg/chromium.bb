@@ -44,10 +44,6 @@ class PrefService;
 class SigninClient;
 class SigninErrorController;
 
-namespace password_manager {
-class PasswordStoreSigninNotifierImpl;
-}
-
 class SigninManagerBase : public KeyedService {
  public:
   class Observer {
@@ -58,6 +54,22 @@ class SigninManagerBase : public KeyedService {
     // Called when a user signs into Google services such as sync.
     // This method is not called during a reauth.
     virtual void GoogleSigninSucceeded(const AccountInfo& account_info) {}
+
+    // Called when a user signs into Google services such as sync. Also passes
+    // the password of the Google account that was used to sign in.
+    // This method is not called during a reauth.
+    //
+    // Observers should override |GoogleSigninSucceeded| if they are not
+    // interested in the password thas was used during the sign-in.
+    //
+    // Note: The password is always empty on mobile as the user signs in to
+    // Chrome with accounts that were added to the device, so Chrome does not
+    // have access to the password.
+    // DEPRECATED: password will be empty if login is using DICE workflow; the
+    // method will be removed once all login is using the DICE workflow.
+    virtual void GoogleSigninSucceededWithPassword(
+        const AccountInfo& account_info,
+        const std::string& password) {}
 
     // DEPRECATED: Use the above method instead.
     virtual void GoogleSigninSucceeded(const std::string& account_id,
@@ -74,29 +86,10 @@ class SigninManagerBase : public KeyedService {
     virtual ~Observer() {}
 
    private:
-    // Observers that can observer the password of the Google account after a
-    // successful sign-in.
-    friend class PasswordStoreSigninNotifierImpl;
-
     // SigninManagers that fire |GoogleSigninSucceededWithPassword|
     // notifications.
     friend class SigninManager;
     friend class FakeSigninManager;
-
-    // Called when a user signs into Google services such as sync. Also passes
-    // the password of the Google account that was used to sign in.
-    // This method is not called during a reauth.
-    //
-    // Observers should override |GoogleSigninSucceeded| if they are not
-    // interested in the password thas was used during the sign-in.
-    //
-    // Note: The password is always empty on mobile as the user signs in to
-    // Chrome with accounts that were added to the device, so Chrome does not
-    // have access to the password.
-    virtual void GoogleSigninSucceededWithPassword(
-        const std::string& account_id,
-        const std::string& username,
-        const std::string& password) {}
   };
 
 // On non-ChromeOS platforms, SigninManagerBase should only be instantiated

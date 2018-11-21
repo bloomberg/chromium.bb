@@ -68,6 +68,14 @@ class IdentityManager : public SigninManagerBase::Observer,
     // This method is not called during a reauth.
     virtual void OnPrimaryAccountSet(const AccountInfo& primary_account_info) {}
 
+    // Called when an account becomes the user's primary account using the
+    // legacy workflow (non-DICE). If access to the password is not required,
+    // it is preferred to instead override OnPrimaryAccountSet() which will
+    // also be called at the same time.
+    virtual void OnPrimaryAccountSetWithPassword(
+        const AccountInfo& primary_account_info,
+        const std::string& password) {}
+
     // Called when when the user moves from having a primary account to no
     // longer having a primary account.
     virtual void OnPrimaryAccountCleared(
@@ -336,6 +344,8 @@ class IdentityManager : public SigninManagerBase::Observer,
 
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
+  void GoogleSigninSucceededWithPassword(const AccountInfo& account_info,
+                                         const std::string& password) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;
   void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
 

@@ -473,12 +473,11 @@ void SigninManager::OnSignedIn() {
 }
 
 void SigninManager::FireGoogleSigninSucceeded() {
-  std::string account_id = GetAuthenticatedAccountId();
-  std::string email = GetAuthenticatedAccountInfo().email;
+  const AccountInfo account_info = GetAuthenticatedAccountInfo();
   for (auto& observer : observer_list_) {
-    observer.GoogleSigninSucceeded(account_id, email);
-    observer.GoogleSigninSucceeded(GetAuthenticatedAccountInfo());
-    observer.GoogleSigninSucceededWithPassword(account_id, email, password_);
+    observer.GoogleSigninSucceeded(account_info.account_id, account_info.email);
+    observer.GoogleSigninSucceeded(account_info);
+    observer.GoogleSigninSucceededWithPassword(account_info, password_);
   }
 }
 

@@ -6,8 +6,8 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace password_manager {
 
@@ -22,34 +22,32 @@ PasswordStoreSigninNotifierImpl::~PasswordStoreSigninNotifierImpl() {}
 void PasswordStoreSigninNotifierImpl::SubscribeToSigninEvents(
     PasswordStore* store) {
   set_store(store);
-  SigninManagerFactory::GetForProfile(profile_)->AddObserver(this);
+  IdentityManagerFactory::GetForProfile(profile_)->AddObserver(this);
   AccountTrackerServiceFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
 void PasswordStoreSigninNotifierImpl::UnsubscribeFromSigninEvents() {
-  SigninManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
   AccountTrackerServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
+  IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
-void PasswordStoreSigninNotifierImpl::GoogleSigninSucceededWithPassword(
-    const std::string& account_id,
-    const std::string& username,
+void PasswordStoreSigninNotifierImpl::OnPrimaryAccountSetWithPassword(
+    const AccountInfo& account_info,
     const std::string& password) {
-  NotifySignin(username, password);
+  NotifySignin(account_info.email, password);
 }
 
-void PasswordStoreSigninNotifierImpl::GoogleSignedOut(
-    const std::string& account_id,
-    const std::string& username) {
-  NotifySignedOut(username, /* primary_account= */ true);
+void PasswordStoreSigninNotifierImpl::OnPrimaryAccountCleared(
+    const AccountInfo& account_info) {
+  NotifySignedOut(account_info.email, /* primary_account= */ true);
 }
 
 // AccountTrackerService::Observer implementations.
 void PasswordStoreSigninNotifierImpl::OnAccountRemoved(
     const AccountInfo& info) {
   // Only reacts to content area (non-primary) Gaia account sign-out event.
-  if (info.account_id != SigninManagerFactory::GetForProfile(profile_)
-                             ->GetAuthenticatedAccountId()) {
+  if (info.account_id !=
+      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId()) {
     NotifySignedOut(info.email, /* primary_account= */ false);
   }
 }
