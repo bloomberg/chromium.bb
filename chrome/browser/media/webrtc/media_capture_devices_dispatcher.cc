@@ -37,6 +37,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "media/base/media_switches.h"
+#include "third_party/blink/public/common/features.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/media/webrtc/display_media_access_handler.h"
@@ -180,6 +181,15 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
     content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Kill switch for getDisplayMedia() on browser side to prevent renderer from
+  // bypassing blink side checks.
+  if (request.video_type == content::MEDIA_DISPLAY_VIDEO_CAPTURE &&
+      !base::FeatureList::IsEnabled(blink::features::kRTCGetDisplayMedia)) {
+    std::move(callback).Run(content::MediaStreamDevices(),
+                            content::MEDIA_DEVICE_NOT_SUPPORTED, nullptr);
+    return;
+  }
 
   for (const auto& handler : media_access_handlers_) {
     if (handler->SupportsStreamType(web_contents, request.video_type,

@@ -107,6 +107,11 @@ const base::Feature kJankTracking{"JankTracking",
 const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables usage of getDisplayMedia() that allows capture of web content, see
+// https://crbug.com/865060.
+const base::Feature kRTCGetDisplayMedia{"RTCGetDisplayMedia",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables the site isolated Wasm code cache that is keyed on the resource URL
 // and the origin lock of the renderer that is requesting the resource. When
 // this flag is enabled, content/GeneratedCodeCache handles code cache requests.

@@ -588,4 +588,8 @@ void WebRuntimeFeatures::EnableMergeBlockingNonBlockingPools(bool enable) {
   RuntimeEnabledFeatures::SetMergeBlockingNonBlockingPoolsEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableGetDisplayMedia(bool enable) {
+  RuntimeEnabledFeatures::SetGetDisplayMediaEnabled(enable);
+}
+
 }  // namespace blink

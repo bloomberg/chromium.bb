@@ -212,6 +212,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableMediaControlsExpandGesture(bool);
   BLINK_PLATFORM_EXPORT static void EnableTranslateService(bool);
   BLINK_PLATFORM_EXPORT static void EnableMergeBlockingNonBlockingPools(bool);
+  BLINK_PLATFORM_EXPORT static void EnableGetDisplayMedia(bool);
 
  private:
   WebRuntimeFeatures();
