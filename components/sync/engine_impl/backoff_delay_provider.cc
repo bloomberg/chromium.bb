@@ -69,12 +69,14 @@ TimeDelta BackoffDelayProvider::GetInitialDelay(
   // from server because of some network error. If network is unavailable then
   // on next connection type or address change scheduler will run canary job.
   // Otherwise we'll retry in 30 seconds.
-  if (state.commit_result == NETWORK_CONNECTION_UNAVAILABLE ||
-      state.last_download_updates_result == NETWORK_CONNECTION_UNAVAILABLE) {
+  if (state.commit_result.value() ==
+          SyncerError::NETWORK_CONNECTION_UNAVAILABLE ||
+      state.last_download_updates_result.value() ==
+          SyncerError::NETWORK_CONNECTION_UNAVAILABLE) {
     return default_initial_backoff_;
   }
 
-  if (SyncerErrorIsError(state.last_get_key_result))
+  if (state.last_get_key_result.IsActualError())
     return default_initial_backoff_;
 
   // Note: If we received a MIGRATION_DONE on download updates, then commit
@@ -82,14 +84,17 @@ TimeDelta BackoffDelayProvider::GetInitialDelay(
   // on commit, it means that download updates succeeded.  Therefore, we only
   // need to check if either code is equal to SERVER_RETURN_MIGRATION_DONE,
   // and not if there were any more serious errors requiring the long retry.
-  if (state.last_download_updates_result == SERVER_RETURN_MIGRATION_DONE ||
-      state.commit_result == SERVER_RETURN_MIGRATION_DONE) {
+  if (state.last_download_updates_result.value() ==
+          SyncerError::SERVER_RETURN_MIGRATION_DONE ||
+      state.commit_result.value() ==
+          SyncerError::SERVER_RETURN_MIGRATION_DONE) {
     return short_initial_backoff_;
   }
 
   // If a datatype decides the GetUpdates must be retried (e.g. because the
   // context has been updated since the request), use the short delay.
-  if (state.last_download_updates_result == DATATYPE_TRIGGERED_RETRY)
+  if (state.last_download_updates_result.value() ==
+      SyncerError::DATATYPE_TRIGGERED_RETRY)
     return short_initial_backoff_;
 
   // When the server tells us we have a conflict, then we should download the
@@ -100,7 +105,7 @@ TimeDelta BackoffDelayProvider::GetInitialDelay(
   // TODO(sync): We shouldn't need to handle this in BackoffDelayProvider.
   // There should be a way to deal with protocol errors before we get to this
   // point.
-  if (state.commit_result == SERVER_RETURN_CONFLICT)
+  if (state.commit_result.value() == SyncerError::SERVER_RETURN_CONFLICT)
     return short_initial_backoff_;
 
   return default_initial_backoff_;

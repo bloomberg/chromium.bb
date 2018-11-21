@@ -229,7 +229,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
       ContainsDuplicate(std::move(client_tag_hashes)));
 
   debug_info_emitter_->EmitUpdateCountersUpdate();
-  return SYNCER_OK;
+  return SyncerError(SyncerError::SYNCER_OK);
 }
 
 // static

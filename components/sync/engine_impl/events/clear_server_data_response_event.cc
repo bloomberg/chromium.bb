@@ -26,7 +26,7 @@ std::string ClearServerDataResponseEvent::GetType() const {
 }
 
 std::string ClearServerDataResponseEvent::GetDetails() const {
-  return base::StringPrintf("Result: %s", GetSyncerErrorString(result_));
+  return base::StringPrintf("Result: %s", result_.ToString());
 }
 
 std::unique_ptr<base::DictionaryValue>

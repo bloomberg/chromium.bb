@@ -522,12 +522,11 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     if (snapshot.get_updates_origin() != sync_pb::SyncEnums::UNKNOWN_ORIGIN) {
       session_source->Set(ProtoEnumToString(snapshot.get_updates_origin()));
     }
-    get_key_result->Set(GetSyncerErrorString(
-        snapshot.model_neutral_state().last_get_key_result));
-    download_result->Set(GetSyncerErrorString(
-        snapshot.model_neutral_state().last_download_updates_result));
-    commit_result->Set(
-        GetSyncerErrorString(snapshot.model_neutral_state().commit_result));
+    get_key_result->Set(
+        snapshot.model_neutral_state().last_get_key_result.ToString());
+    download_result->Set(
+        snapshot.model_neutral_state().last_download_updates_result.ToString());
+    commit_result->Set(snapshot.model_neutral_state().commit_result.ToString());
   }
 
   // Running Totals.
