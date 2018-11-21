@@ -23,8 +23,8 @@ class InfoBarControllerDelegate;
 // Removes the view.
 - (void)removeView;
 
-// Accesses the view.
-- (UIView*)view;
+// The view.
+@property(nonatomic, readonly) UIView* view;
 
 @property(nonatomic, assign) InfoBarControllerDelegate* delegate;  // weak
 
