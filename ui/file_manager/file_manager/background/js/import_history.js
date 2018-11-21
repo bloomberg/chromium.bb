@@ -5,7 +5,10 @@
 // Namespace
 var importer = importer || {};
 
-/** @enum {string} */
+/**
+ * @enum {string}
+ * @suppress {checkTypes}
+ */
 importer.ImportHistoryState = {
   'COPIED': 'copied',
   'IMPORTED': 'imported'
