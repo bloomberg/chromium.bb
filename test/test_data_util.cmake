@@ -508,6 +508,8 @@ if(CONFIG_AV1_DECODER)
               "av1-1-b8-22-svc-L2T2.ivf.md5"
               "invalid-bug-1814.ivf"
               "invalid-bug-1814.ivf.res"
+              "invalid-chromium-906381.ivf"
+              "invalid-chromium-906381.ivf.res"
               "invalid-oss-fuzz-10061.ivf"
               "invalid-oss-fuzz-10061.ivf.res"
               "invalid-oss-fuzz-10117-mc-buf-use-highbd.ivf"
