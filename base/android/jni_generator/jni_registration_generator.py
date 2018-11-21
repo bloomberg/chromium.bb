@@ -34,10 +34,9 @@ MERGEABLE_KEYS = [
     'REGISTER_NON_MAIN_DEX_NATIVES',
 ]
 
-
 def _Generate(java_file_paths,
               srcjar_path,
-              use_proxy_hash=False,
+              proxy_opts,
               header_path=None,
               namespace=''):
   """Generates files required to perform JNI registration.
@@ -61,7 +60,7 @@ def _Generate(java_file_paths,
 
   results = []
   for d in pool.imap_unordered(
-      functools.partial(_DictForPath, use_proxy_hash=use_proxy_hash),
+      functools.partial(_DictForPath, use_proxy_hash=proxy_opts.use_hash),
       java_file_paths):
     if d:
       results.append(d)
@@ -87,7 +86,7 @@ def _Generate(java_file_paths,
       build_utils.AddToZipHermetic(
           srcjar,
           'org/chromium/base/natives/GEN_JNI.java',
-          data=CreateProxyJavaFromDict(combined_dict))
+          data=CreateProxyJavaFromDict(combined_dict, proxy_opts))
 
 
 def _DictForPath(path, use_proxy_hash=False):
@@ -181,7 +180,7 @@ JNI_REGISTRATION_EXPORT bool ${REGISTRATION_NAME}(JNIEnv* env) {
   registration_dict['REGISTER_MAIN_DEX_PROXY_NATIVES'] = main_dex_call
 
 
-def CreateProxyJavaFromDict(registration_dict):
+def CreateProxyJavaFromDict(registration_dict, proxy_opts):
   template = string.Template("""\
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -194,13 +193,16 @@ package ${PACKAGE};
 // Please do not change its content.
 
 public class ${CLASS_NAME} {
-  public static final boolean TESTING_ENABLED = false;
+  public static final boolean TESTING_ENABLED = ${TESTING_ENABLED};
+  public static final boolean REQUIRE_MOCK = ${REQUIRE_MOCK};
 ${SIGNATURES}
 
 }
 """)
 
   return template.substitute({
+      'TESTING_ENABLED': str(proxy_opts.enable_mocks).lower(),
+      'REQUIRE_MOCK': str(proxy_opts.require_mocks).lower(),
       'CLASS_NAME': jni_generator.NATIVE_PROXY_CLASS_NAME,
       'PACKAGE': jni_generator.NATIVE_PROXY_PACKAGE_NAME.replace('/', '.'),
       'SIGNATURES': registration_dict['PROXY_NATIVE_SIGNATURES']
@@ -503,6 +505,16 @@ def _MakeProxySignature(proxy_native):
   })
 
 
+class ProxyOptions:
+
+  def __init__(self, **kwargs):
+    self.use_hash = kwargs.get('use_hash', False)
+    self.enable_mocks = kwargs.get('enable_mocks', False)
+    self.require_mocks = kwargs.get('require_mocks', False)
+    # Can never require and disable.
+    assert self.enable_mocks or not self.require_mocks
+
+
 def main(argv):
   arg_parser = argparse.ArgumentParser()
   build_utils.AddDepfileOption(arg_parser)
@@ -527,13 +539,37 @@ def main(argv):
                           default='',
                           help='Namespace to wrap the registration functions '
                           'into.')
+  # TODO(crbug.com/898261) hook these flags up to the build config to enable
+  # mocking in instrumentation tests
+  arg_parser.add_argument(
+      '--enable_proxy_mocks',
+      default=False,
+      action='store_true',
+      help='Allows proxy native impls to be mocked through Java.')
+  arg_parser.add_argument(
+      '--require_mocks',
+      default=False,
+      action='store_true',
+      help='Requires all used native implementations to have a mock set when '
+           'called. Otherwise an exception will be thrown.')
   arg_parser.add_argument(
       '--use_proxy_hash',
       action='store_true',
-      help='Enables hashing of the native declaration '
-      'for methods in an @JniNatives interface')
+      help='Enables hashing of the native declaration for methods in '
+           'an @JniNatives interface')
   args = arg_parser.parse_args(build_utils.ExpandFileArgs(argv[1:]))
+
+  if not args.enable_proxy_mocks and args.require_mocks:
+    arg_parser.error(
+        'Invalid arguments: --require_mocks without --enable_proxy_mocks. '
+        'Cannot require mocks if they are not enabled.')
+
   args.sources_files = build_utils.ParseGnList(args.sources_files)
+
+  proxy_opts = ProxyOptions(
+      use_hash=args.use_proxy_hash,
+      require_mocks=args.require_mocks,
+      enable_mocks=args.enable_proxy_mocks)
 
   java_file_paths = []
   for f in args.sources_files:
@@ -545,7 +581,7 @@ def main(argv):
   _Generate(
       java_file_paths,
       args.srcjar_path,
-      use_proxy_hash=args.use_proxy_hash,
+      proxy_opts=proxy_opts,
       header_path=args.header_path,
       namespace=args.namespace)
 
