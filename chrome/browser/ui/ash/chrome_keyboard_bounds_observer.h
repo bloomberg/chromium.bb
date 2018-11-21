@@ -12,6 +12,10 @@
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace content {
+class RenderWidgetHostView;
+}
+
 // Class responsible for updating insets for windows overlapping the virtual
 // keyboard.
 class ChromeKeyboardBoundsObserver
@@ -41,6 +45,7 @@ class ChromeKeyboardBoundsObserver
   void OnWindowDestroyed(aura::Window* window) override;
 
   void UpdateInsetsForWindow(aura::Window* window);
+  void UpdateInsetsForHostView(content::RenderWidgetHostView* view);
   bool ShouldWindowOverscroll(aura::Window* window);
   bool ShouldEnableInsets(aura::Window* window);
 

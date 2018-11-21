@@ -18,6 +18,7 @@ KeyboardUI::KeyboardUI() = default;
 KeyboardUI::~KeyboardUI() = default;
 
 void KeyboardUI::ShowKeyboardWindow() {
+  DVLOG(1) << "ShowKeyboardWindow";
   aura::Window* window = GetKeyboardWindow();
   if (window) {
     TRACE_EVENT0("vk", "ShowKeyboardWindow");
@@ -26,6 +27,7 @@ void KeyboardUI::ShowKeyboardWindow() {
 }
 
 void KeyboardUI::HideKeyboardWindow() {
+  DVLOG(1) << "HideKeyboardWindow";
   aura::Window* window = GetKeyboardWindow();
   if (window)
     window->Hide();

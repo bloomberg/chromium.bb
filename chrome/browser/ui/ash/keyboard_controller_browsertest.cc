@@ -22,6 +22,8 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/public/keyboard_switches.h"
@@ -79,14 +81,10 @@ class KeyboardLoadedWaiter : public ChromeKeyboardControllerClient::Observer {
   DISALLOW_COPY_AND_ASSIGN(KeyboardLoadedWaiter);
 };
 
-aura::Window* GetKeyboardRootWindow() {
-  return ChromeKeyboardControllerClient::Get()
-      ->GetKeyboardWindow()
-      ->GetRootWindow();
-}
-
 ui::InputMethod* GetInputMethod() {
-  aura::Window* root_window = GetKeyboardRootWindow();
+  aura::Window* root_window = ChromeKeyboardControllerClient::Get()
+                                  ->GetKeyboardWindow()
+                                  ->GetRootWindow();
   return root_window ? root_window->GetHost()->GetInputMethod() : nullptr;
 }
 
@@ -195,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
   controller->FlushForTesting();
 
   // Drag the top left corner of the keyboard to move it.
-  ui::test::EventGenerator event_generator(GetKeyboardRootWindow());
+  ui::test::EventGenerator event_generator(contents_window->GetRootWindow());
   event_generator.MoveMouseTo(gfx::Point(0, 0));
   event_generator.PressLeftButton();
   event_generator.MoveMouseTo(gfx::Point(50, 50));
@@ -268,10 +266,14 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerAppWindowTest,
   controller->ShowKeyboard();
   KeyboardVisibleWaiter(true).Wait();
 
-  aura::Window* keyboard_window = GetKeyboardRootWindow();
-  ASSERT_TRUE(keyboard_window);
-  int screen_height = keyboard_window->bounds().height();
-  gfx::Rect test_bounds(0, 0, 0, screen_height - ime_window_visible_height + 1);
+  int screen_height = display::Screen::GetScreen()
+                          ->GetPrimaryDisplay()
+                          .GetSizeInPixel()
+                          .height();
+  int keyboard_height = screen_height - ime_window_visible_height + 1;
+  ASSERT_GT(keyboard_height, 0);
+  gfx::Rect test_bounds = controller->GetKeyboardWindow()->bounds();
+  test_bounds.set_height(keyboard_height);
   controller->GetKeyboardWindow()->SetBounds(test_bounds);
   // Allow actions triggered by window bounds observers to complete.
   base::RunLoop().RunUntilIdle();
