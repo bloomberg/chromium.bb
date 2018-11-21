@@ -22,6 +22,7 @@ namespace content {
 class DevToolsAgentHostImpl;
 class DevToolsSession;
 class RenderFrameHostImpl;
+class WorkerDevToolsAgentHost;
 
 namespace protocol {
 class TargetAutoAttacher;
@@ -81,7 +82,7 @@ class CONTENT_EXPORT DevToolsRendererChannel
   RenderFrameHostImpl* frame_host_ = nullptr;
   base::flat_set<protocol::TargetAutoAttacher*> report_attachers_;
   base::flat_set<protocol::TargetAutoAttacher*> wait_for_debugger_attachers_;
-  base::flat_set<DevToolsAgentHostImpl*> child_workers_;
+  base::flat_set<WorkerDevToolsAgentHost*> child_workers_;
   base::WeakPtrFactory<DevToolsRendererChannel> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsRendererChannel);
