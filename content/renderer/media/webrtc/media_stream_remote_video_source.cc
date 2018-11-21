@@ -178,9 +178,9 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
         WebRtcToMediaVideoRotation(incoming_frame.rotation()));
   }
 
-  if (incoming_frame.color_space().has_value()) {
+  if (incoming_frame.color_space()) {
     video_frame->set_color_space(
-        WebRtcToMediaVideoColorSpace(incoming_frame.color_space().value())
+        WebRtcToMediaVideoColorSpace(*incoming_frame.color_space())
             .ToGfxColorSpace());
   }
 
