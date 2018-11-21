@@ -78,8 +78,7 @@ bool MockSchedulerTaskRunnerDelegate::PostTaskWithSequence(
   std::unique_ptr<Sequence::Transaction> sequence_transaction =
       sequence->BeginTransaction();
 
-  if (!task_tracker_->WillPostTask(&task,
-                                   sequence->traits().shutdown_behavior()))
+  if (!task_tracker_->WillPostTask(&task, sequence->shutdown_behavior()))
     return false;
 
   if (task.delayed_run_time.is_null()) {

@@ -216,10 +216,14 @@ class BASE_EXPORT TaskTracker {
  protected:
   // Runs and deletes |task| if |can_run_task| is true. Otherwise, just deletes
   // |task|. |task| is always deleted in the environment where it runs or would
-  // have run. |sequence| is the sequence from which |task| was extracted. An
-  // override is expected to call its parent's implementation but is free to
-  // perform extra work before and after doing so.
-  virtual void RunOrSkipTask(Task task, Sequence* sequence, bool can_run_task);
+  // have run. |sequence| is the sequence from which |task| was extracted.
+  // |traits| are the traits of |sequence|. An override is expected to call its
+  // parent's implementation but is free to perform extra work before and after
+  // doing so.
+  virtual void RunOrSkipTask(Task task,
+                             Sequence* sequence,
+                             const TaskTraits& traits,
+                             bool can_run_task);
 
   // Returns true if there are undelayed tasks that haven't completed their
   // execution (still queued or in progress). If it returns false: the side-

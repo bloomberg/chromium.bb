@@ -279,8 +279,8 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
     Task task(from_here, std::move(closure), delay);
     task.single_thread_task_runner_ref = this;
 
-    if (!outer_->task_tracker_->WillPostTask(
-            &task, sequence_->traits().shutdown_behavior())) {
+    if (!outer_->task_tracker_->WillPostTask(&task,
+                                             sequence_->shutdown_behavior())) {
       return false;
     }
 
