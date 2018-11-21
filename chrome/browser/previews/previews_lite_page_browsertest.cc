@@ -57,6 +57,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+namespace {
+const int kTimeoutMs = 250;
+}
+
 class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
  public:
   PreviewsLitePageServerBrowserTest() {}
@@ -176,7 +180,8 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
           {"previews_host", previews_server().spec()},
           {"blacklisted_path_suffixes", ".mp4,.jpg"},
           {"trigger_on_localhost", "true"},
-          {"navigation_timeout_milliseconds", use_timeout ? "250" : "0"}};
+          {"navigation_timeout_milliseconds",
+           use_timeout ? base::IntToString(kTimeoutMs) : "0"}};
       base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
           "TrialName1", "GroupName1", feature_parameters);
 
@@ -587,6 +592,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         1);
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        false, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 0);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
   }
 
   {
@@ -596,6 +605,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     VerifyPreviewLoaded();
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
   }
 
   {
@@ -611,6 +624,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         1);
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        false, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 0);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
   }
 
   {
@@ -632,6 +649,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         PreviewsLitePageNavigationThrottle::IneligibleReason::kHttpPost, 1);
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        false, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 0);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
   }
 
   {
@@ -647,6 +668,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         1);
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        false, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 0);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
   }
 
   {
@@ -660,6 +685,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         1);
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        false, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 0);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
     VerifyErrorPageLoaded();
   }
 
@@ -676,6 +705,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         1);
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        false, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 0);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
   }
 
   {
@@ -693,6 +726,12 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         "Previews.ServerLitePage.IneligibleReasons",
         PreviewsLitePageNavigationThrottle::IneligibleReason::kNetworkNotSlow,
         1);
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       false, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 0);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
 
     // Reset ECT for future tests.
     g_browser_process->network_quality_tracker()
@@ -766,6 +805,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
     histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
+    histogram_tester.ExpectTotalCount(
         "Previews.ServerLitePage.HttpOnlyFallbackPenalty", 1);
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
@@ -784,6 +827,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
 
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
     histogram_tester.ExpectTotalCount(
         "Previews.ServerLitePage.HttpOnlyFallbackPenalty", 1);
     histogram_tester.ExpectBucketCount(
@@ -814,6 +861,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
     histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 2);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
+    histogram_tester.ExpectTotalCount(
         "Previews.ServerLitePage.HttpOnlyFallbackPenalty", 1);
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
@@ -828,6 +879,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     ClearDeciderState();
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 2);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
     histogram_tester.ExpectTotalCount(
         "Previews.ServerLitePage.HttpOnlyFallbackPenalty", 1);
     histogram_tester.ExpectBucketCount(
@@ -953,6 +1008,20 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
         PreviewsLitePageNavigationThrottle::ServerResponse::kTimeout, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 2);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
+    // Since this test already has a delay baked in, make sure the reported
+    // penalty is at least the length of the delay.
+    int max_penalty = 0;
+    for (const base::Bucket& bucket : histogram_tester.GetAllSamples(
+             "Previews.ServerLitePage.ReportedNavigationRestartPenalty")) {
+      if (bucket.min > max_penalty) {
+        max_penalty = bucket.min;
+      }
+    }
+    EXPECT_GE(max_penalty, kTimeoutMs);
   }
 
   {
@@ -996,6 +1065,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBadServerBrowserTest,
 
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", 2);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", 0);
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
         PreviewsLitePageNavigationThrottle::ServerResponse::kFailed, 1);
