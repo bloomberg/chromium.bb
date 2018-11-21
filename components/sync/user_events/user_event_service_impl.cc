@@ -101,19 +101,22 @@ bool UserEventServiceImpl::MightRecordEvents(bool off_the_record,
 }
 
 bool UserEventServiceImpl::CanRecordHistory() {
-  // Before the engine is initialized, we cannot trust the other fields.
-  // TODO(vitaliii): Consider using GetState() instead of IsEngineInitialized(),
-  // because even when IsEngineInitialized() the user still may be configuring
-  // the datatypes.
+  // Before the engine is initialized, Sync doesn't know if there is a
+  // secondary passphrase. Similarly, unless the Sync feature is enabled,
+  // GetPreferredDataTypes() isn't meaningful.
   return sync_service_->IsEngineInitialized() &&
          !sync_service_->IsUsingSecondaryPassphrase() &&
+         sync_service_->IsSyncFeatureEnabled() &&
          sync_service_->GetPreferredDataTypes().Has(HISTORY_DELETE_DIRECTIVES);
 }
 
 bool UserEventServiceImpl::IsUserEventsDatatypeEnabled() {
-  // Before the engine is initialized, we cannot trust the other fields.
+  // Before the engine is initialized, Sync doesn't know if there is a
+  // secondary passphrase. Similarly, unless the Sync feature is enabled,
+  // GetPreferredDataTypes() isn't meaningful.
   return sync_service_->IsEngineInitialized() &&
          !sync_service_->IsUsingSecondaryPassphrase() &&
+         sync_service_->IsSyncFeatureEnabled() &&
          sync_service_->GetPreferredDataTypes().Has(USER_EVENTS);
 }
 
