@@ -5,6 +5,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -134,8 +135,15 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
 
   // It is possible in unit tests that it's missing.
   if (chromeos::NetworkHandler::IsInitialized()) {
-    tray::NetworkTrayView* network_item = new tray::NetworkTrayView(shelf);
-    tray_container()->AddChildView(network_item);
+    if (features::IsSeparateNetworkIconsEnabled()) {
+      tray_container()->AddChildView(
+          tray::NetworkTrayView::CreateForDefault(shelf));
+      tray_container()->AddChildView(
+          tray::NetworkTrayView::CreateForMobile(shelf));
+    } else {
+      tray_container()->AddChildView(
+          tray::NetworkTrayView::CreateForSingleIcon(shelf));
+    }
   }
 
   tray_container()->AddChildView(new tray::PowerTrayView(shelf));

@@ -34,10 +34,13 @@ enum class SignalStrength { NONE, WEAK, MEDIUM, STRONG, NOT_WIRELESS };
 
 // Gets the image for provided |network|. |network| must not be NULL.
 // |icon_type| determines the color theme and whether or not to show the VPN
-// badge. This caches badged icons per network per |icon_type|.
+// badge. This caches badged icons per network per |icon_type|. |animating| is
+// an optional out parameter that is set to true when the returned image can be
+// animated.
 ASH_EXPORT gfx::ImageSkia GetImageForNetwork(
     const chromeos::NetworkState* network,
-    IconType icon_type);
+    IconType icon_type,
+    bool* animating = nullptr);
 
 // Gets an image for a Wi-Fi network, either full strength or strike-through
 // based on |enabled|.
@@ -45,10 +48,13 @@ ASH_EXPORT gfx::ImageSkia GetImageForWiFiEnabledState(
     bool enabled,
     IconType = ICON_TYPE_DEFAULT_VIEW);
 
-// Gets the disconnected image for a cell network.
-// TODO(estade): this is only used by the pre-MD OOBE, which should be removed:
-// crbug.com/728805.
-ASH_EXPORT gfx::ImageSkia GetImageForDisconnectedCellNetwork();
+// Gets the conneting image for a shill network type.
+gfx::ImageSkia GetConnectingImageForNetworkType(const std::string& network_type,
+                                                IconType icon_type);
+
+// Gets the disconnected image for a shill network type.
+gfx::ImageSkia GetDisconnectedImageForNetworkType(
+    const std::string& network_type);
 
 // Gets the full strength image for a Wi-Fi network using |icon_color| for the
 // main icon and |badge_color| for the badge.

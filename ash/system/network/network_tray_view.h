@@ -20,6 +20,8 @@ class NetworkState;
 namespace ash {
 namespace tray {
 
+class NetworkTrayIconStrategy;
+
 // Returns the connected, non-virtual (aka VPN), network.
 const chromeos::NetworkState* GetConnectedNetwork();
 
@@ -28,9 +30,14 @@ class NetworkTrayView : public TrayItemView,
                         public SessionObserver,
                         public TrayNetworkStateObserver::Delegate {
  public:
-  explicit NetworkTrayView(Shelf* shelf);
-
   ~NetworkTrayView() override;
+
+  // Creates a NetworkTrayView that shows non-mobile network state.
+  static NetworkTrayView* CreateForDefault(Shelf* shelf);
+  // Creates a NetworkTrayView that only shows Mobile network state.
+  static NetworkTrayView* CreateForMobile(Shelf* shelf);
+  // Creates a NetworkTrayView that shows all networks state.
+  static NetworkTrayView* CreateForSingleIcon(Shelf* shelf);
 
   const char* GetClassName() const override;
 
@@ -50,6 +57,9 @@ class NetworkTrayView : public TrayItemView,
   void NetworkStateChanged(bool notify_a11y) override;
 
  private:
+  NetworkTrayView(Shelf* shelf,
+                  std::unique_ptr<NetworkTrayIconStrategy> network_icon_type);
+
   void UpdateIcon(bool tray_icon_visible, const gfx::ImageSkia& image);
 
   void UpdateNetworkStateHandlerIcon();
@@ -62,6 +72,7 @@ class NetworkTrayView : public TrayItemView,
   base::string16 connection_status_tooltip_;
 
   std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
+  std::unique_ptr<NetworkTrayIconStrategy> network_tray_icon_strategy_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkTrayView);
 };
