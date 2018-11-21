@@ -417,7 +417,7 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
         // Replace any existing output frame
         assert(pbi->num_output_frames == 0 || pbi->num_output_frames == 1);
         if (pbi->num_output_frames > 0) {
-          decrease_ref_count((int)pbi->output_frame_index[0], frame_bufs, pool);
+          decrease_ref_count(pbi->output_frame_index[0], frame_bufs, pool);
         }
         pbi->output_frames[0] = cur_frame;
         pbi->output_frame_index[0] = cm->new_fb_idx;

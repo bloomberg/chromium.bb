@@ -558,7 +558,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
           (FrameWorkerData *)worker->data1;
       struct AV1Decoder *pbi = frame_worker_data->pbi;
       for (size_t j = 0; j < pbi->num_output_frames; j++) {
-        decrease_ref_count((int)pbi->output_frame_index[j], frame_bufs, pool);
+        decrease_ref_count(pbi->output_frame_index[j], frame_bufs, pool);
       }
       pbi->num_output_frames = 0;
     }

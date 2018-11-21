@@ -195,7 +195,7 @@ typedef struct AV1Decoder {
   // application calls aom_codec_decode().
   int output_all_layers;
   YV12_BUFFER_CONFIG *output_frames[MAX_NUM_SPATIAL_LAYERS];
-  size_t output_frame_index[MAX_NUM_SPATIAL_LAYERS];  // Buffer pool indices
+  int output_frame_index[MAX_NUM_SPATIAL_LAYERS];  // Buffer pool indices
   size_t num_output_frames;  // How many frames are queued up so far?
 
   // In order to properly support random-access decoding, we need
