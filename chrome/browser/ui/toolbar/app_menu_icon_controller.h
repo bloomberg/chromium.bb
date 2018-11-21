@@ -24,12 +24,12 @@ class AppMenuIconController :
     public content::NotificationObserver,
     public UpgradeObserver {
  public:
-  enum class IconType : uint32_t {
+  enum class IconType {
     NONE,
     UPGRADE_NOTIFICATION,
     GLOBAL_ERROR,
   };
-  enum class Severity : uint32_t {
+  enum class Severity {
     NONE,
     LOW,
     MEDIUM,
