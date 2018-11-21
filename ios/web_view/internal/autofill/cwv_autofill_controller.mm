@@ -336,6 +336,49 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                                       completionHandler:completionHandler];
 }
 
+- (void)findAllFormsWithCompletionHandler:
+    (void (^)(NSArray<CWVAutofillForm*>*))completionHandler {
+  web::WebFramesManager* framesManager =
+      web::WebFramesManager::FromWebState(_webState);
+  DCHECK(framesManager);
+  web::WebFrame* webFrame = framesManager->GetMainWebFrame();
+  if (!webFrame) {
+    completionHandler(nil);
+    return;
+  }
+
+  GURL pageURL = _webState->GetLastCommittedURL();
+  GURL frameOrigin = webFrame->GetSecurityOrigin();
+  id fetchCompletionHandler = ^(NSString* formJSON) {
+    std::vector<autofill::FormData> formDataVector;
+    bool success = autofill::ExtractFormsData(
+        formJSON, /*filtered=*/NO, /*form_name=*/base::string16(), pageURL,
+        frameOrigin, &formDataVector);
+    if (!success) {
+      completionHandler(nil);
+      return;
+    }
+    NSMutableArray<CWVAutofillForm*>* autofillForms = [NSMutableArray array];
+    for (const autofill::FormData& formData : formDataVector) {
+      autofill::FormStructure formStructure(formData);
+      formStructure.DetermineHeuristicTypes();
+      CWVAutofillForm* autofillForm =
+          [[CWVAutofillForm alloc] initWithFormStructure:formStructure];
+      [autofillForms addObject:autofillForm];
+    }
+    completionHandler([autofillForms copy]);
+  };
+
+  // Ignore empty forms.
+  NSUInteger minRequiredFieldsCount = 1;
+  [_JSAutofillManager
+      fetchFormsWithMinimumRequiredFieldsCount:minRequiredFieldsCount
+                                       inFrame:webFrame
+                             completionHandler:fetchCompletionHandler];
+}
+
+#pragma mark - Utility Methods
+
 - (autofill::AutofillManager*)autofillManagerForFrame:(web::WebFrame*)frame {
   if (!_webState) {
     return nil;
@@ -472,12 +515,6 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
     return;
   }
 
-  // Find all forms in the page and notify |delegate|.
-  if (![_delegate respondsToSelector:@selector
-                  (autofillController:didScanForAutofillableForms:)]) {
-    return;
-  }
-
   web::WebFramesManager* framesManager =
       web::WebFramesManager::FromWebState(_webState);
   DCHECK(framesManager);
@@ -486,36 +523,8 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
     return;
   }
 
-  GURL pageURL = _webState->GetLastCommittedURL();
-  GURL frameOrigin = webFrame->GetSecurityOrigin();
-  id completionHandler = ^(NSString* formJSON) {
-    std::vector<autofill::FormData> formDataVector;
-    bool success = autofill::ExtractFormsData(
-        formJSON, /*filtered=*/NO, /*form_name=*/base::string16(), pageURL,
-        frameOrigin, &formDataVector);
-    if (!success) {
-      return;
-    }
-    NSMutableArray<CWVAutofillForm*>* autofillForms = [NSMutableArray array];
-    for (const autofill::FormData& formData : formDataVector) {
-      autofill::FormStructure formStructure(formData);
-      formStructure.DetermineHeuristicTypes();
-      CWVAutofillForm* autofillForm =
-          [[CWVAutofillForm alloc] initWithFormStructure:formStructure];
-      if (autofillForm.type != CWVAutofillFormTypeUnknown) {
-        [autofillForms addObject:autofillForm];
-      }
-    }
-    [_delegate autofillController:self
-        didScanForAutofillableForms:[autofillForms copy]];
-  };
-
-  // Ignore empty forms.
-  NSUInteger minRequiredFieldsCount = 1;
-  [_JSAutofillManager
-      fetchFormsWithMinimumRequiredFieldsCount:minRequiredFieldsCount
-                                       inFrame:webFrame
-                             completionHandler:completionHandler];
+  // Start listening for any form mutations.
+  [_JSAutofillManager toggleTrackingFormMutations:YES inFrame:webFrame];
 }
 
 - (void)webState:(web::WebState*)webState
@@ -563,6 +572,11 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
                               formName:nsFormName
                                frameID:nsFrameID
                                  value:nsValue];
+    }
+  } else if (params.type == "form_changed") {
+    if ([_delegate respondsToSelector:@selector
+                   (autofillControllerDidInsertFormElements:)]) {
+      [_delegate autofillControllerDidInsertFormElements:self];
     }
   }
 }

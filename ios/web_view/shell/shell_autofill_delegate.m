@@ -41,11 +41,6 @@
 #pragma mark - CWVAutofillControllerDelegate methods
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    didScanForAutofillableForms:(NSArray<CWVAutofillForm*>*)forms {
-  NSLog(@"%@ found %lu forms", NSStringFromSelector(_cmd), forms.count);
-}
-
-- (void)autofillController:(CWVAutofillController*)autofillController
     didFocusOnFieldWithIdentifier:(NSString*)fieldIdentifier
                         fieldType:(NSString*)fieldType
                          formName:(NSString*)formName
@@ -114,6 +109,11 @@
      didSubmitFormWithName:(NSString*)formName
              userInitiated:(BOOL)userInitiated
                isMainFrame:(BOOL)isMainFrame {
+  // Not implemented.
+}
+
+- (void)autofillControllerDidInsertFormElements:
+    (CWVAutofillController*)autofillController {
   // Not implemented.
 }
 
