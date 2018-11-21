@@ -28,6 +28,66 @@ __gCrWeb.findInPage.index = -1;
 __gCrWeb.findInPage.spans = [];
 
 /**
+ * A replacement represents a DOM operation that swaps |oldNode| with |newNodes|
+ * under the parent of |oldNode| to highlight the match result inside |oldNode|.
+ * |newNodes| may contain plain TEXT Nodes for unhighlighted parts and
+ * <chrome_find> nodes for highlighted parts. This operation will be executed
+ * reversely when clearing current highlights for next FindInPage action.
+ */
+class Replacement {
+  /**
+   * Contructor for Replacement.
+   * @param {Node} The HTML Node containing search result.
+   * @param {Array<Node>} New HTML Nodes created for substitution of |oldNode|.
+   */
+  constructor(oldNode, newNodes) {
+    this.oldNode = oldNode;
+    this.newNodes = newNodes;
+  }
+
+  /**
+   * Executes the replacement to highlight search result.
+   * @return {undefined}
+   */
+  doSwap() {
+    let parentNode = this.oldNode.parentNode;
+    if (!parentNode)
+      return;
+    for (var i = 0; i < this.newNodes.length; ++i) {
+      parentNode.insertBefore(this.newNodes[i], this.oldNode);
+    }
+    parentNode.removeChild(this.oldNode);
+  }
+
+  /**
+   * Executes the replacement reversely to clear the highlight.
+   * @return {undefined}
+   */
+  undoSwap() {
+    let parentNode = this.newNodes[0].parentNode;
+    if (!parentNode)
+      return;
+    parentNode.insertBefore(this.oldNode, this.newNodes[0]);
+    for (var i = 0; i < this.newNodes.length; ++i) {
+      parentNode.removeChild(this.newNodes[i]);
+    }
+  }
+}
+
+/**
+ * The replacements of current FindInPage action.
+ * @type {Array<Replacement>}
+ */
+let replacements_ = [];
+
+/**
+ * The index of the Replacement from which the highlight process continue when
+ * pumpSearch is called.
+ * @type {Number}
+ */
+let replacementsIndex_ = 0;
+
+/**
  * The list of frame documents.
  * TODO(justincohen): x-domain frames won't work.
  * @type {Array<Document>}
@@ -150,9 +210,6 @@ __gCrWeb.findInPage.highlightWord = function(findText, timeout) {
     return NO_RESULTS;
   }
 
-  // Store all DOM modifications to do them in a tight loop at once.
-  __gCrWeb.findInPage.replacements = [];
-
   // Node is what we are currently looking at.
   __gCrWeb.findInPage.node = document.body;
 
@@ -170,8 +227,6 @@ __gCrWeb.findInPage.highlightWord = function(findText, timeout) {
 
   // Index tracking variables so search can be broken up into multiple calls.
   __gCrWeb.findInPage.visibleIndex = 0;
-  __gCrWeb.findInPage.replacementsIndex = 0;
-  __gCrWeb.findInPage.replacementNewNodesIndex = 0;
 
   __gCrWeb.findInPage.regex = getRegex_(findText);
 
@@ -243,7 +298,7 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
               node.textContent.substring(strIndex, node.textContent.length);
           nodes.push(node.ownerDocument.createTextNode(substr));
         }
-        __gCrWeb.findInPage.replacements.push({oldNode: node, newNodes: nodes});
+        replacements_.push(new Replacement(node, nodes));
         regex.lastIndex = 0;
       }
     }
@@ -258,34 +313,14 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
     }
   }
 
-  // Insert each of the replacement nodes into the old node's parent, then
-  // remove the old node.
-  let replacements = __gCrWeb.findInPage.replacements;
-
-  // Last position in replacements array.
-  let rIndex = __gCrWeb.findInPage.replacementsIndex;
-  let rMax = replacements.length;
-  for (; rIndex < rMax; rIndex++) {
-    let replacement = replacements[rIndex];
-    let parent = replacement.oldNode.parentNode;
-    if (parent == null)
-      continue;
-    let rNodesMax = replacement.newNodes.length;
-    for (let rNodesIndex = __gCrWeb.findInPage.replacementNewNodesIndex;
-         rNodesIndex < rNodesMax; rNodesIndex++) {
-      if (__gCrWeb.findInPage.overTime()) {
-        __gCrWeb.findInPage.replacementsIndex = rIndex;
-        __gCrWeb.findInPage.replacementNewNodesIndex = rNodesIndex;
-        return __gCrWeb.stringify([false]);
-      }
-      parent.insertBefore(
-          replacement.newNodes[rNodesIndex], replacement.oldNode);
+  // Execute replacements to highlight search results.
+  for (let i = replacementsIndex_; i < replacements_.length; ++i) {
+    if (__gCrWeb.findInPage.overTime()) {
+      replacementsIndex_ = i;
+      return __gCrWeb.stringify([false]);
     }
-    parent.removeChild(replacement.oldNode);
-    __gCrWeb.findInPage.replacementNewNodesIndex = 0;
+    replacements_[i].doSwap();
   }
-  // Save last position in replacements array.
-  __gCrWeb.findInPage.replacementsIndex = rIndex;
 
   __gCrWeb.findInPage.spans = getAllElementsByClassName_(CSS_CLASS_NAME);
 
@@ -355,64 +390,11 @@ function getAllElementsByClassName_(name) {
  * Note: It does not restore previous state, just removes the class name.
  */
 function clearHighlight_() {
-  if (__gCrWeb.findInPage.index >= 0) {
-    removeSelectHighlight_(getCurrentSpan_());
+  for (let i = 0; i < replacements_.length; ++i) {
+    replacements_[i].undoSwap();
   }
-  // Store all DOM modifications to do them in a tight loop.
-  let modifications = [];
-  let length = __gCrWeb.findInPage.spans.length;
-  let prevParent = null;
-  for (let i = length - 1; i >= 0; i--) {
-    let elem = __gCrWeb.findInPage.spans[i];
-    let parentNode = elem.parentNode;
-    // Safari has an occasional |elem.innerText| bug that drops the trailing
-    // space.  |elem.innerText| would be more correct in this situation, but
-    // since we only allow text in this element, grabbing the HTML value should
-    // not matter.
-    let nodeText = elem.innerHTML;
-    // If this element has the same parent as the previous, check if we should
-    // add this node to the previous one.
-    if (prevParent && prevParent.isSameNode(parentNode) &&
-        elem.nextSibling.isSameNode(
-            __gCrWeb.findInPage.spans[i + 1].previousSibling)) {
-      let prevMod = modifications[modifications.length - 1];
-      prevMod.nodesToRemove.push(elem);
-      let elemText = elem.innerText;
-      if (elem.previousSibling) {
-        prevMod.nodesToRemove.push(elem.previousSibling);
-        elemText = elem.previousSibling.textContent + elemText;
-      }
-      prevMod.replacement.textContent =
-          elemText + prevMod.replacement.textContent;
-    } else {
-      // Element isn't attached to previous, so create a new modification.
-      let nodesToRemove = [elem];
-      if (elem.previousSibling && elem.previousSibling.nodeType == 3) {
-        nodesToRemove.push(elem.previousSibling);
-        nodeText = elem.previousSibling.textContent + nodeText;
-      }
-      if (elem.nextSibling && elem.nextSibling.nodeType == 3) {
-        nodesToRemove.push(elem.nextSibling);
-        nodeText = nodeText + elem.nextSibling.textContent;
-      }
-      let textNode = elem.ownerDocument.createTextNode(nodeText);
-      modifications.push({nodesToRemove: nodesToRemove, replacement: textNode});
-    }
-    prevParent = parentNode;
-  }
-  let numMods = modifications.length;
-  for (i = numMods - 1; i >= 0; i--) {
-    let mod = modifications[i];
-    for (let j = 0; j < mod.nodesToRemove.length; j++) {
-      let existing = mod.nodesToRemove[j];
-      if (j == 0) {
-        existing.parentNode.replaceChild(mod.replacement, existing);
-      } else {
-        existing.parentNode.removeChild(existing);
-      }
-    }
-  }
-
+  replacements_ = [];
+  replacementsIndex_ = 0;
   __gCrWeb.findInPage.spans = [];
   __gCrWeb.findInPage.index = -1;
 };
