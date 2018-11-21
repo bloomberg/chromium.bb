@@ -458,12 +458,7 @@ TEST(SimpleColorSpace, ShaderSourceTrFnOptimizations) {
 // to make reviewing shader code simpler by giving an example of the resulting
 // shader source. This should be updated whenever shader generation is updated.
 // This test produces slightly different results on Android.
-#if defined(OS_ANDROID)
-#define MAYBE_SampleShaderSource DISABLED_SampleShaderSource
-#else
-#define MAYBE_SampleShaderSource SampleShaderSource
-#endif
-TEST(SimpleColorSpace, MAYBE_SampleShaderSource) {
+TEST(SimpleColorSpace, SampleShaderSource) {
   ColorSpace bt709 = ColorSpace::CreateREC709();
   ColorSpace output(ColorSpace::PrimaryID::BT2020,
                     ColorSpace::TransferID::GAMMA28);

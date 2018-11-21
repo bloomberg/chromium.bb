@@ -73,18 +73,10 @@ TEST_F(FontTest, AvgWidths) {
   EXPECT_GT(cf.GetExpectedTextWidth(3), cf.GetExpectedTextWidth(2));
 }
 
-#if defined(OS_WIN)
-#define MAYBE_GetActualFontNameForTesting DISABLED_GetActualFontNameForTesting
-#else
-#define MAYBE_GetActualFontNameForTesting GetActualFontNameForTesting
-#endif
-// On Windows, Font::GetActualFontNameForTesting() doesn't work well for now.
-// http://crbug.com/327287
-//
 // Check that fonts used for testing are installed and enabled. On Mac
 // fonts may be installed but still need enabling in Font Book.app.
 // http://crbug.com/347429
-TEST_F(FontTest, MAYBE_GetActualFontNameForTesting) {
+TEST_F(FontTest, GetActualFontNameForTesting) {
   Font arial(kTestFontName, 16);
   EXPECT_EQ(base::ToLowerASCII(kTestFontName),
             base::ToLowerASCII(arial.GetActualFontNameForTesting()))

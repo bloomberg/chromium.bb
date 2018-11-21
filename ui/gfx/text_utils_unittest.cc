@@ -64,13 +64,7 @@ TEST(TextUtilsTest, RemoveAcceleratorChar) {
   }
 }
 
-// Disabled on Ozone since there are no fonts: crbug.com/320050
-#if defined(USE_OZONE)
-#define MAYBE_GetStringWidth DISABLED_GetStringWidth
-#else
-#define MAYBE_GetStringWidth GetStringWidth
-#endif
-TEST(TextUtilsTest, MAYBE_GetStringWidth) {
+TEST(TextUtilsTest, GetStringWidth) {
   FontList font_list;
   EXPECT_EQ(GetStringWidth(base::string16(), font_list), 0);
   EXPECT_GT(GetStringWidth(base::ASCIIToUTF16("a"), font_list),
