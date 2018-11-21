@@ -19,6 +19,7 @@
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/message_loop/sequenced_task_source.h"
 #include "base/run_loop.h"
+#include "base/task/common/operations_controller.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -40,8 +41,6 @@ class MessageLoopImpl::Controller : public SequencedTaskSource::Observer {
   // used after DisconnectFromParent() returns.
   Controller(MessageLoopImpl* message_loop);
 
-  ~Controller() override;
-
   // SequencedTaskSource::Observer:
   void WillQueueTask(PendingTask* task) final;
   void DidQueueTask(bool was_empty) final;
@@ -62,12 +61,7 @@ class MessageLoopImpl::Controller : public SequencedTaskSource::Observer {
   debug::TaskAnnotator& task_annotator() { return task_annotator_; }
 
  private:
-  // Helpers to be invoked before using |message_loop_| instead of operating
-  // directly on |operations_state_| below. BeforeOperation() returns true iff
-  // the operation is allowed to be performed (in which case, AfterOperation()
-  // must be invoked when done).
-  bool BeforeOperation();
-  void AfterOperation();
+  internal::OperationsController operations_controller_;
 
   // A TaskAnnotator which is owned by this Controller to be able to use it
   // without locking |message_loop_lock_|. It cannot be owned by MessageLoop
@@ -75,38 +69,8 @@ class MessageLoopImpl::Controller : public SequencedTaskSource::Observer {
   // lock. Note: the TaskAnnotator API itself is thread-safe.
   debug::TaskAnnotator task_annotator_;
 
-  // An atomic representation of the ongoing operations and shutdown state. The
-  // lower bit (kDisconnectedBit) is used to indicate that
-  // DisconnectFromParent() was initiated. The other bits are used to indicate
-  // ongoing operations. As such this should be incremented by
-  // kOperationInProgress before making any operation on |message_loop_|.
-  // Conversely DisconnectFromParent() will wait on |safe_to_shutdown_| if this
-  // was non-zero when it set the lower bit.
-  static constexpr int kDisconnectedBit = 1;
-  static constexpr int kOperationInProgress = 1 << kDisconnectedBit;
-  std::atomic_int operations_state_{0};
-
-  // DisconnectFromParent() will instantiate and wait on this event if
-  // |operations_state_| wasn't zero when it set the lower bit. Whoever then
-  // completes the last in-progress operation needs to signal this event to
-  // resume the disconnect.
-  Optional<WaitableEvent> safe_to_shutdown_;
-
-  enum InitializationState {
-    // Initial state : ScheduleWork() cannot be called yet.
-    kNotReady,
-    // ScheduleWork() cannot be called yet but should be when transitioning to
-    // kReadyForScheduling.
-    kPendingWork,
-    // ScheduleWork() can be called now.
-    kReadyForScheduling,
-  };
-  std::atomic_int initialization_state_{kNotReady};
-
   // Points to this Controller's outer MessageLoop instance.
-  // |initialization_state_| must be set to kReadyForScheduling before using
-  // this. |operations_state_| must then be incremented per the above protocol
-  // to use this.
+  // Access to this member is protected by |operations_controller_|.
   MessageLoopImpl* const message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
@@ -117,11 +81,6 @@ MessageLoopImpl::Controller::Controller(MessageLoopImpl* message_loop)
   DCHECK(message_loop_);
 }
 
-MessageLoopImpl::Controller::~Controller() {
-  DCHECK(safe_to_shutdown_)
-      << "DisconnectFromParent() needs to be invoked before destruction.";
-}
-
 void MessageLoopImpl::Controller::WillQueueTask(PendingTask* task) {
   task_annotator_.WillQueueTask("MessageLoop::PostTask", task);
 }
@@ -130,18 +89,8 @@ void MessageLoopImpl::Controller::DidQueueTask(bool was_empty) {
   if (!was_empty)
     return;
 
-  // Perform a lock-less check that we are ready for scheduling. If not,
-  // atomically inform StartScheduling() about the pending work.
-  // std::memory_order_acquire as documented in StartScheduling().
-  int previous_state = kNotReady;
-  if (initialization_state_.compare_exchange_strong(
-          previous_state, kPendingWork, std::memory_order_acquire) ||
-      previous_state == kPendingWork) {
-    return;
-  }
-  DCHECK_EQ(previous_state, kReadyForScheduling);
-
-  if (!BeforeOperation())
+  auto operation_token = operations_controller_.TryBeginOperation();
+  if (!operation_token)
     return;
 
   // Some scenarios can result in getting to this point on multiple threads at
@@ -158,82 +107,21 @@ void MessageLoopImpl::Controller::DidQueueTask(bool was_empty) {
 
   // MessageLoop/MessagePump::ScheduleWork() is thread-safe so this is fine.
   message_loop_->ScheduleWork();
-
-  AfterOperation();
 }
 
 void MessageLoopImpl::Controller::StartScheduling() {
-  DCHECK_CALLED_ON_VALID_THREAD(message_loop_->bound_thread_checker_);
-
-  // std::memory_order_release because any thread that acquires this value and
-  // sees kReadyForScheduling needs to also see the state initialized on this
-  // thread before StartScheduling(). (this is also why matching reads use
-  // std::memory_order_acquire)
-  auto previous_state = initialization_state_.exchange(
-      kReadyForScheduling, std::memory_order_release);
-  DCHECK_NE(previous_state, kReadyForScheduling);
-
-  if (previous_state == kPendingWork)
+  if (operations_controller_.StartAcceptingOperations())
     message_loop_->ScheduleWork();
 }
 
 void MessageLoopImpl::Controller::DisconnectFromParent() {
-  DCHECK_CALLED_ON_VALID_THREAD(message_loop_->bound_thread_checker_);
-  DCHECK(!safe_to_shutdown_);
-
-  safe_to_shutdown_.emplace();
-
-  // Acquire semantics are required to guarantee that all memory side-effects
-  // made to |message_loop_| by other threads are visible to this thread before
-  // it returns from this method. Release semantics are required to guarantee
-  // that threads seeing the disconnect bit will also see a fully initialized
-  // |safe_to_shutdown_|.
-  if (operations_state_.fetch_add(kDisconnectedBit,
-                                  std::memory_order_acq_rel) != 0) {
-    ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait_for_fast_ops;
-    safe_to_shutdown_->Wait();
-  }
-}
-
-bool MessageLoopImpl::Controller::BeforeOperation() {
-  // Acquire semantics are required to ensure that no operation on the current
-  // thread can be reordered before this one.
-  const bool allowed = (operations_state_.fetch_add(kOperationInProgress,
-                                                    std::memory_order_acquire) &
-                        kDisconnectedBit) == 0;
-
-  // Undo the increment if disallowed (and potentially signal if that racily
-  // ended up being the last operation).
-  if (!allowed)
-    AfterOperation();
-
-  return allowed;
-}
-
-void MessageLoopImpl::Controller::AfterOperation() {
-  constexpr int kWasDisconnectedWithOnlyOneOperationLeft =
-      kOperationInProgress | kDisconnectedBit;
-  // Release semantics are required to ensure that no operation on the current
-  // thread can be reordered after this one. Technically, acquire semantics are
-  // only required if the conditional is true (to synchronize with
-  // DisconnectFromParent() before using |safe_to_shutdown_|). As such, per
-  // "Atomic-fence synchronization" semantics [1], it'd be sufficient to
-  // fetch_sub(std::memory_order_release) and only have a
-  // std::atomic_thread_fence(std::memory_order_acquire) inside the
-  // conditional's body. However, as documented in atomic_ref_count.h TSAN
-  // doesn't support fences at the moment. Hence, this uses acq_rel for now.
-  // [1] https://en.cppreference.com/w/cpp/atomic/atomic_thread_fence
-  if (operations_state_.fetch_sub(kOperationInProgress,
-                                  std::memory_order_acq_rel) ==
-      kWasDisconnectedWithOnlyOneOperationLeft) {
-    safe_to_shutdown_->Signal();
-  }
+  ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait_for_fast_ops;
+  operations_controller_.ShutdownAndWaitForZeroOperations();
 }
 
 //------------------------------------------------------------------------------
 
 MessageLoopImpl::~MessageLoopImpl() {
-
 #if defined(OS_WIN)
   if (in_high_res_mode_)
     Time::ActivateHighResolutionTimer(false);
