@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/crash/core/common/crash_key.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -270,6 +271,9 @@ bool WebViewInternalExtensionFunction::PreRunValidation(std::string* error) {
 
   int instance_id = 0;
   EXTENSION_FUNCTION_PRERUN_VALIDATE(args_->GetInteger(0, &instance_id));
+  // TODO(780728): Remove crash key once the cause of the kill is known.
+  static crash_reporter::CrashKeyString<128> name_key("webview-function");
+  crash_reporter::ScopedCrashKeyString name_key_scope(&name_key, name());
   guest_ = WebViewGuest::From(render_frame_host()->GetProcess()->GetID(),
                               instance_id);
   if (!guest_) {

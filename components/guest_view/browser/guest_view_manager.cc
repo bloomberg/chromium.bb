@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/guest_view/browser/bad_message.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
@@ -462,17 +463,24 @@ bool GuestViewManager::GetFullPageGuestHelper(
 bool GuestViewManager::CanEmbedderAccessInstanceID(
     int embedder_render_process_id,
     int guest_instance_id) {
+  // TODO(780728): Remove crash key once the cause of the kill is known.
+  static crash_reporter::CrashKeyString<32> bad_access_key("guest-bad-access");
+
   // The embedder is trying to access a guest with a negative or zero
   // instance ID.
-  if (guest_instance_id <= kInstanceIDNone)
+  if (guest_instance_id <= kInstanceIDNone) {
+    bad_access_key.Set("Nonpositive");
     return false;
+  }
 
   // The embedder is trying to access an instance ID that has not yet been
   // allocated by GuestViewManager. This could cause instance ID
   // collisions in the future, and potentially give one embedder access to a
   // guest it does not own.
-  if (guest_instance_id > current_instance_id_)
+  if (guest_instance_id > current_instance_id_) {
+    bad_access_key.Set("Unallocated");
     return false;
+  }
 
   // We might get some late arriving messages at tear down. Let's let the
   // embedder tear down in peace.
@@ -481,21 +489,28 @@ bool GuestViewManager::CanEmbedderAccessInstanceID(
     return true;
 
   auto* guest_view = GuestViewBase::FromWebContents(it->second);
-  if (!guest_view)
+  if (!guest_view) {
+    bad_access_key.Set("No guest");
     return false;
-
-  if (guest_view->CanBeEmbeddedInsideCrossProcessFrames()) {
-    // MimeHandlerViewGuests (PDF) may be embedded in a cross-process frame.
-    return embedder_render_process_id ==
-           guest_view->GetOwnerSiteInstance()->GetProcess()->GetID();
   }
 
+  // MimeHandlerViewGuests (PDF) may be embedded in a cross-process frame.
   // Other than MimeHandlerViewGuest, all other guest types are only permitted
-  // to run in the main frame.
-  return embedder_render_process_id == guest_view->owner_web_contents()
-                                           ->GetMainFrame()
-                                           ->GetProcess()
-                                           ->GetID();
+  // to run in the main frame or its local subframes.
+  const int allowed_embedder_render_process_id =
+      guest_view->CanBeEmbeddedInsideCrossProcessFrames()
+          ? guest_view->GetOwnerSiteInstance()->GetProcess()->GetID()
+          : guest_view->owner_web_contents()
+                ->GetMainFrame()
+                ->GetProcess()
+                ->GetID();
+
+  if (embedder_render_process_id != allowed_embedder_render_process_id) {
+    bad_access_key.Set("Bad embedder process");
+    return false;
+  }
+
+  return true;
 }
 
 GuestViewManager::ElementInstanceKey::ElementInstanceKey()
