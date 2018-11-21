@@ -156,7 +156,6 @@ class HardwareDisplayController {
   gfx::Point origin() const { return origin_; }
   void set_origin(const gfx::Point& origin) { origin_ = origin; }
 
-  uint32_t GetRefreshRate() const;
   base::TimeDelta GetRefreshInterval() const;
   base::TimeTicks GetTimeOfLastFlip() const;
 
