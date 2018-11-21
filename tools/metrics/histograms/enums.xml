@@ -14917,6 +14917,8 @@ Called by update_net_error_codes.py.-->
   <int value="500" label="ReportSafeBrowsingData"/>
   <int value="501" label="DeviceWiFiFastTransitionEnabled"/>
   <int value="502" label="DeviceDisplayResolution"/>
+  <int value="503" label="PluginVmAllowed"/>
+  <int value="504" label="PluginVmImage"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

@@ -1076,6 +1076,25 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
   }
+
+  if (policy.has_plugin_vm_allowed()) {
+    const em::PluginVmAllowedProto& container(policy.plugin_vm_allowed());
+    if (container.has_plugin_vm_allowed()) {
+      policies->Set(
+          key::kPluginVmAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+          POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.plugin_vm_allowed()),
+          nullptr);
+    }
+  }
+
+  if (policy.has_plugin_vm_image()) {
+    const em::PluginVmImageProto& container(policy.plugin_vm_image());
+    if (container.has_plugin_vm_image()) {
+      SetJsonDevicePolicy(key::kPluginVmImage, container.plugin_vm_image(),
+                          policies);
+    }
+  }
 }
 
 }  // namespace

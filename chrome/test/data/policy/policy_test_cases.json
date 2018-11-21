@@ -4086,6 +4086,23 @@
   "WebAppInstallForceList": {
   },
 
+  "PluginVmAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "PluginVmAllowed": true },
+    "pref_mappings": []
+  },
+
+  "PluginVmImage": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "PluginVmImage": {
+        "url": "http://localhost/",
+        "hash": "842841a4c75a55ad050d686f4ea5f77e83ae059877fe9b6946aa63d3d057ed32"
+      }
+    },
+    "pref_mappings": []
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
