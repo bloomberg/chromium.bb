@@ -160,7 +160,8 @@ js_library("mock_entry") {
 js_library("progress_center_common") {
 }
 
-js_unittest("unittest_util") {
+js_library("unittest_util") {
+  testonly = true
   # Only files app tests use this util file.
   visibility = []
   visibility = [ "//ui/file_manager/file_manager/*" ]
