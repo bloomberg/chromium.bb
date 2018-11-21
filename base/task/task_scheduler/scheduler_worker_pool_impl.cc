@@ -277,21 +277,21 @@ SchedulerWorkerPoolImpl::~SchedulerWorkerPoolImpl() {
 
 void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
     scoped_refptr<Sequence> sequence) {
-  DCHECK(sequence);
-  OnCanScheduleSequence(sequence->BeginTransaction());
+  OnCanScheduleSequence(
+      SequenceAndTransaction::FromSequence(std::move(sequence)));
 }
 
 void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
-    std::unique_ptr<Sequence::Transaction> sequence_transaction) {
-  PushSequenceToPriorityQueue(std::move(sequence_transaction));
+    SequenceAndTransaction sequence_and_transaction) {
+  PushSequenceToPriorityQueue(std::move(sequence_and_transaction));
   WakeUpOneWorker();
 }
 
 void SchedulerWorkerPoolImpl::PushSequenceToPriorityQueue(
-    std::unique_ptr<Sequence::Transaction> sequence_transaction) {
-  DCHECK(sequence_transaction);
+    SequenceAndTransaction sequence_and_transaction) {
   shared_priority_queue_.BeginTransaction()->Push(
-      sequence_transaction->sequence(), sequence_transaction->GetSortKey());
+      std::move(sequence_and_transaction.sequence),
+      sequence_and_transaction.transaction.GetSortKey());
 }
 
 void SchedulerWorkerPoolImpl::GetHistograms(
@@ -373,8 +373,8 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
 }
 
 void SchedulerWorkerPoolImpl::ReEnqueueSequence(
-    std::unique_ptr<Sequence::Transaction> sequence_transaction) {
-  PushSequenceToPriorityQueue(std::move(sequence_transaction));
+    SequenceAndTransaction sequence_and_transaction) {
+  PushSequenceToPriorityQueue(std::move(sequence_and_transaction));
   if (!IsBoundToCurrentThread())
     WakeUpOneWorker();
 }
@@ -570,8 +570,8 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask() {
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::ReEnqueueSequence(
     scoped_refptr<Sequence> sequence) {
-  DCHECK(sequence);
-  outer_->delegate_->ReEnqueueSequence(sequence->BeginTransaction());
+  outer_->delegate_->ReEnqueueSequence(
+      SequenceAndTransaction::FromSequence(std::move(sequence)));
 }
 
 TimeDelta

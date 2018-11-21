@@ -107,7 +107,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
 
   // SchedulerWorkerPool::Delegate:
   void ReEnqueueSequence(
-      std::unique_ptr<Sequence::Transaction> sequence_transaction) override;
+      SequenceAndTransaction sequence_and_transaction) override;
 
   // SchedulerTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,

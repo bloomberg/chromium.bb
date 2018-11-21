@@ -152,11 +152,11 @@ PriorityQueue::~PriorityQueue() {
     while (!container_.empty()) {
       scoped_refptr<Sequence> sequence = BeginTransaction()->PopSequence();
       {
-        std::unique_ptr<Sequence::Transaction> sequence_transaction =
-            sequence->BeginTransaction();
-        while (!sequence_transaction->IsEmpty()) {
-          sequence_transaction->TakeTask();
-          sequence_transaction->Pop();
+        Sequence::Transaction sequence_transaction(
+            sequence->BeginTransaction());
+        while (!sequence_transaction.IsEmpty()) {
+          sequence_transaction.TakeTask();
+          sequence_transaction.Pop();
         }
       }
     }

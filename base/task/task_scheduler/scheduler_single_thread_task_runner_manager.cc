@@ -111,12 +111,17 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   void DidRunTask() override {}
 
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
-    DCHECK(sequence);
+    ReEnqueueSequence(
+        SequenceAndTransaction::FromSequence(std::move(sequence)));
+  }
+
+  void ReEnqueueSequence(SequenceAndTransaction sequence_and_transaction) {
     const SequenceSortKey sequence_sort_key =
-        sequence->BeginTransaction()->GetSortKey();
+        sequence_and_transaction.transaction.GetSortKey();
     std::unique_ptr<PriorityQueue::Transaction> transaction(
         priority_queue_.BeginTransaction());
-    transaction->Push(std::move(sequence), sequence_sort_key);
+    transaction->Push(std::move(sequence_and_transaction.sequence),
+                      sequence_sort_key);
   }
 
   TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
@@ -228,7 +233,7 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
                              TimeDelta());
       if (task_tracker_->WillPostTask(&pump_message_task,
                                       TaskShutdownBehavior::SKIP_ON_SHUTDOWN)) {
-        bool was_empty = message_pump_sequence_->BeginTransaction()->PushTask(
+        bool was_empty = message_pump_sequence_->BeginTransaction().PushTask(
             std::move(pump_message_task));
         DCHECK(was_empty) << "GetWorkFromWindowsMessageQueue() does not expect "
                              "queueing of pump tasks.";
@@ -335,12 +340,14 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
   }
 
   void PostTaskNow(Task task) {
+    auto sequence_and_transaction =
+        SequenceAndTransaction::FromSequence(sequence_);
     const bool sequence_was_empty =
-        sequence_->BeginTransaction()->PushTask(std::move(task));
+        sequence_and_transaction.transaction.PushTask(std::move(task));
     if (sequence_was_empty) {
       if (outer_->task_tracker_->WillScheduleSequence(
-              sequence_->BeginTransaction(), GetDelegate())) {
-        GetDelegate()->ReEnqueueSequence(sequence_);
+              sequence_and_transaction.transaction, GetDelegate())) {
+        GetDelegate()->ReEnqueueSequence(std::move(sequence_and_transaction));
         worker_->WakeUp();
       }
     }

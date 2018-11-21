@@ -307,12 +307,11 @@ void TaskSchedulerImpl::SetExecutionFenceEnabled(bool execution_fence_enabled) {
 }
 
 void TaskSchedulerImpl::ReEnqueueSequence(
-    std::unique_ptr<Sequence::Transaction> sequence_transaction) {
-  DCHECK(sequence_transaction);
-  const TaskTraits new_traits =
-      SetUserBlockingPriorityIfNeeded(sequence_transaction->traits());
+    SequenceAndTransaction sequence_and_transaction) {
+  const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(
+      sequence_and_transaction.transaction.traits());
   GetWorkerPoolForTraits(new_traits)
-      ->ReEnqueueSequence(std::move(sequence_transaction));
+      ->ReEnqueueSequence(std::move(sequence_and_transaction));
 }
 
 bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
@@ -326,23 +325,24 @@ bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
     return false;
 
   if (task.delayed_run_time.is_null()) {
-    std::unique_ptr<Sequence::Transaction> sequence_transaction =
-        sequence->BeginTransaction();
-    const TaskTraits traits = sequence_transaction->traits();
+    auto sequence_and_transaction =
+        SequenceAndTransaction::FromSequence(std::move(sequence));
+    const TaskTraits traits = sequence_and_transaction.transaction.traits();
     GetWorkerPoolForTraits(traits)->PostTaskWithSequenceNow(
-        std::move(task), std::move(sequence_transaction));
+        std::move(task), std::move(sequence_and_transaction));
   } else {
     delayed_task_manager_.AddDelayedTask(
         std::move(task),
         BindOnce(
             [](scoped_refptr<Sequence> sequence,
                TaskSchedulerImpl* task_scheduler_impl, Task task) {
-              std::unique_ptr<Sequence::Transaction> sequence_transaction =
-                  sequence->BeginTransaction();
-              const TaskTraits traits = sequence_transaction->traits();
+              auto sequence_and_transaction =
+                  SequenceAndTransaction::FromSequence(std::move(sequence));
+              const TaskTraits traits =
+                  sequence_and_transaction.transaction.traits();
               task_scheduler_impl->GetWorkerPoolForTraits(traits)
-                  ->PostTaskWithSequenceNow(std::move(task),
-                                            std::move(sequence_transaction));
+                  ->PostTaskWithSequenceNow(
+                      std::move(task), std::move(sequence_and_transaction));
             },
             std::move(sequence), Unretained(this)));
   }

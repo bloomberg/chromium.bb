@@ -43,7 +43,7 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin : public SchedulerWorkerPool {
   // SchedulerWorkerPool:
   void JoinForTesting() override;
   void ReEnqueueSequence(
-      std::unique_ptr<Sequence::Transaction> sequence_transaction) override;
+      SequenceAndTransaction sequence_and_transaction) override;
 
  private:
   // Callback that gets run by |pool_|. It runs a task off the next sequence on
@@ -55,7 +55,7 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin : public SchedulerWorkerPool {
   // SchedulerWorkerPool:
   void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
   void OnCanScheduleSequence(
-      std::unique_ptr<Sequence::Transaction> sequence_transaction) override;
+      SequenceAndTransaction sequence_and_transaction) override;
 
   // Returns the top Sequence off the |priority_queue_|. Returns nullptr
   // if the |priority_queue_| is empty.
