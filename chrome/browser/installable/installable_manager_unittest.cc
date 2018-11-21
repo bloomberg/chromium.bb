@@ -38,11 +38,12 @@ class InstallableManagerUnitTest : public testing::Test {
     return manifest;
   }
 
-  bool IsManifestValid(const blink::Manifest& manifest) {
+  bool IsManifestValid(const blink::Manifest& manifest,
+                       bool check_webapp_manifest_display = true) {
     // Explicitly reset the error code before running the method.
     manager_->set_valid_manifest_error(NO_ERROR_DETECTED);
-    return manager_->IsManifestValidForWebApp(
-        manifest, true /* check_webapp_manifest_display */);
+    return manager_->IsManifestValidForWebApp(manifest,
+                                              check_webapp_manifest_display);
   }
 
   InstallableStatusCode GetErrorCode() {
@@ -189,10 +190,14 @@ TEST_F(InstallableManagerUnitTest, ManifestDisplayModes) {
   blink::Manifest manifest = GetValidManifest();
 
   manifest.display = blink::kWebDisplayModeUndefined;
+  EXPECT_TRUE(
+      IsManifestValid(manifest, false /* check_webapp_manifest_display */));
   EXPECT_FALSE(IsManifestValid(manifest));
   EXPECT_EQ(MANIFEST_DISPLAY_NOT_SUPPORTED, GetErrorCode());
 
   manifest.display = blink::kWebDisplayModeBrowser;
+  EXPECT_TRUE(
+      IsManifestValid(manifest, false /* check_webapp_manifest_display */));
   EXPECT_FALSE(IsManifestValid(manifest));
   EXPECT_EQ(MANIFEST_DISPLAY_NOT_SUPPORTED, GetErrorCode());
 
