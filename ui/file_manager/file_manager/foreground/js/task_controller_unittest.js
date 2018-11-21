@@ -80,15 +80,14 @@ function testExecuteEntryTask(callback) {
       {
         taskMenuButton: document.createElement('button'),
         shareMenuButton: {menu: document.createElement('div')},
-        fileContextMenu:
-            {defaultActionMenuItem: document.createElement('div')}
+        fileContextMenu: {defaultActionMenuItem: document.createElement('div')}
       },
       new MockMetadataModel({}), {
         getCurrentRootType: function() {
           return null;
         }
       },
-      new cr.EventTarget(), null, createCrostini());
+      new cr.EventTarget(), null, null, createCrostini());
 
   controller.executeEntryTask(fileSystem.entries['/test.png']);
   reportPromise(new Promise(function(fulfill) {
@@ -149,15 +148,14 @@ function createTaskController(selectionHandler) {
       {
         taskMenuButton: document.createElement('button'),
         shareMenuButton: {menu: document.createElement('div')},
-        fileContextMenu:
-            {defaultActionMenuItem: document.createElement('div')}
+        fileContextMenu: {defaultActionMenuItem: document.createElement('div')}
       },
       new MockMetadataModel({}), {
         getCurrentRootType: function() {
           return null;
         }
       },
-      selectionHandler, null, createCrostini());
+      selectionHandler, null, null, createCrostini());
 }
 
 // TaskController.getFileTasks should not call fileManagerPrivate.getFileTasks

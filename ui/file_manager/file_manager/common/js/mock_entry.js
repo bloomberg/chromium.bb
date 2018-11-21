@@ -227,6 +227,23 @@ MockEntry.prototype.remove = function(onSuccess, onError) {
 };
 
 /**
+ * Removes the entry and any children.
+ *
+ * @param {function()} onSuccess Success callback.
+ * @param {function(!FileError)=} onError Callback invoked with an error object.
+ */
+MockEntry.prototype.removeRecursively = function(onSuccess, onError) {
+  this.removed_ = true;
+  Promise.resolve().then(() => {
+    for (let path in this.filesystem.entries) {
+      if (path.startsWith(this.fullPath))
+        delete this.filesystem.entries[path];
+    }
+    onSuccess();
+  });
+};
+
+/**
  * Asserts that the entry was removed.
  */
 MockEntry.prototype.assertRemoved = function() {

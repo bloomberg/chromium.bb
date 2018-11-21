@@ -1147,11 +1147,18 @@ FileManager.prototype = /** @struct */ {
         this.metadataModel_,
         this.fileMetadataFormatter_);
 
+    // Create naming controller.
+    this.namingController_ = new NamingController(
+        this.ui_.listContainer, assert(this.ui_.alertDialog),
+        assert(this.ui_.confirmDialog), this.directoryModel_,
+        assert(this.fileFilter_), this.selectionHandler_);
+
     // Create task controller.
     this.taskController_ = new TaskController(
         this.dialogType, this.volumeManager_, this.ui_, this.metadataModel_,
         this.directoryModel_, this.selectionHandler_,
-        this.metadataUpdateController_, assert(this.crostini_));
+        this.metadataUpdateController_, this.namingController_,
+        assert(this.crostini_));
 
     // Create search controller.
     this.searchController_ = new SearchController(
@@ -1160,18 +1167,6 @@ FileManager.prototype = /** @struct */ {
         this.directoryModel_,
         this.volumeManager_,
         assert(this.taskController_));
-
-    // Create naming controller.
-    assert(this.ui_.alertDialog);
-    assert(this.ui_.confirmDialog);
-    assert(this.fileFilter_);
-    this.namingController_ = new NamingController(
-        this.ui_.listContainer,
-        this.ui_.alertDialog,
-        this.ui_.confirmDialog,
-        this.directoryModel_,
-        this.fileFilter_,
-        this.selectionHandler_);
 
     // Create directory tree naming controller.
     this.directoryTreeNamingController_ = new DirectoryTreeNamingController(

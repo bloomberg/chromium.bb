@@ -15,13 +15,14 @@
  * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
  * @param {chrome.fileManagerPrivate.FileTask} defaultTask
  * @param {!TaskHistory} taskHistory
+ * @param {!NamingController} namingController
  * @param {!Crostini} crostini
  * @constructor
  * @struct
  */
 function FileTasks(
     volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes, tasks,
-    defaultTask, taskHistory, crostini) {
+    defaultTask, taskHistory, namingController, crostini) {
   /**
    * @private {!VolumeManager}
    * @const
@@ -75,6 +76,12 @@ function FileTasks(
    * @const
    */
   this.taskHistory_ = taskHistory;
+
+  /**
+   * @private {!NamingController}
+   * @const
+   */
+  this.namingController_ = namingController;
 
   /**
    * @private {!Crostini}
@@ -162,12 +169,13 @@ FileTasks.TaskPickerType = {
  * @param {!Array<!Entry>} entries
  * @param {!Array<?string>} mimeTypes
  * @param {!TaskHistory} taskHistory
+ * @param {!NamingController} namingController
  * @param {!Crostini} crostini
  * @return {!Promise<!FileTasks>}
  */
 FileTasks.create = function(
     volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-    taskHistory, crostini) {
+    taskHistory, namingController, crostini) {
   var tasksPromise = new Promise(function(fulfill) {
     // getFileTasks supports only native entries.
     entries = entries.filter(util.isNativeEntry);
@@ -220,7 +228,7 @@ FileTasks.create = function(
   return Promise.all([tasksPromise, defaultTaskPromise]).then(function(args) {
     return new FileTasks(
         volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-        args[0], args[1], taskHistory, crostini);
+        args[0], args[1], taskHistory, namingController, crostini);
   });
 };
 
@@ -739,7 +747,8 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
               .create(
                   this.volumeManager_, this.metadataModel_,
                   this.directoryModel_, this.ui_, this.entries_,
-                  this.mimeTypes_, this.taskHistory_, this.crostini_)
+                  this.mimeTypes_, this.taskHistory_, this.namingController_,
+                  this.crostini_)
               .then(
                   function(tasks) {
                     tasks.executeDefault();
@@ -1071,7 +1080,9 @@ FileTasks.prototype.updateShareMenuButton_ = function(shareMenuButton, tasks) {
   var driveShareCommandSeparator =
       shareMenuButton.menu.querySelector('#drive-share-separator');
 
-  shareMenuButton.hidden = driveShareCommand.disabled && tasks.length == 0;
+  // Hide share icon for New Folder creation.  See https://crbug.com/571355.
+  shareMenuButton.hidden = (driveShareCommand.disabled && tasks.length == 0) ||
+      this.namingController_.isRenamingInProgress();
 
   // Show the separator if Drive share command is enabled and there is at least
   // one other share actions.
