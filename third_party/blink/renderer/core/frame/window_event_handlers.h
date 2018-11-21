@@ -27,34 +27,39 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_EVENT_HANDLERS_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_EVENT_HANDLERS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WINDOW_EVENT_HANDLERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WINDOW_EVENT_HANDLERS_H_
 
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
-namespace DOMWindowEventHandlers {
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(afterprint, kAfterprint);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(beforeprint, kBeforeprint);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(beforeunload, kBeforeunload);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(hashchange, kHashchange);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(languagechange, kLanguagechange);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(offline, kOffline);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(online, kOnline);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(pagehide, kPagehide);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(pageshow, kPageshow);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(popstate, kPopstate);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(rejectionhandled,
-                                              kRejectionhandled);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(storage, kStorage);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(unhandledrejection,
-                                              kUnhandledrejection);
-DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(unload, kUnload);
-}
+class WindowEventHandlers {
+  STATIC_ONLY(WindowEventHandlers);
 
-}  // namespace
+ public:
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(afterprint, kAfterprint);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(beforeprint, kBeforeprint);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(beforeunload, kBeforeunload);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(hashchange, kHashchange);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(languagechange,
+                                                kLanguagechange);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(offline, kOffline);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(online, kOnline);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(pagehide, kPagehide);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(pageshow, kPageshow);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(popstate, kPopstate);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(rejectionhandled,
+                                                kRejectionhandled);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(storage, kStorage);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(unhandledrejection,
+                                                kUnhandledrejection);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(unload, kUnload);
+};
+
+}  // namespace blink
 
 #endif
