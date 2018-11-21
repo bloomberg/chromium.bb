@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_PROFILE_EDIT_COLLECTION_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_PROFILE_EDIT_COLLECTION_VIEW_CONTROLLER_H_
 
-#import "ios/chrome/browser/ui/settings/autofill_edit_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/legacy_autofill_edit_collection_view_controller.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -16,7 +16,7 @@ extern NSString* const kAutofillProfileEditCollectionViewId;
 
 // The collection view for the Autofill settings.
 @interface AutofillProfileEditCollectionViewController
-    : AutofillEditCollectionViewController
+    : LegacyAutofillEditCollectionViewController
 
 // Creates a controller for |profile| and |dataManager| that cannot be null.
 + (instancetype)controllerWithProfile:(const autofill::AutofillProfile&)profile

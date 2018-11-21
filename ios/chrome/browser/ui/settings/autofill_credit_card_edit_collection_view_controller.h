@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_CREDIT_CARD_EDIT_COLLECTION_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_CREDIT_CARD_EDIT_COLLECTION_VIEW_CONTROLLER_H_
 
-#import "ios/chrome/browser/ui/settings/autofill_edit_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/legacy_autofill_edit_collection_view_controller.h"
 
 namespace autofill {
 class CreditCard;
@@ -14,7 +14,7 @@ class PersonalDataManager;
 
 // The collection view for the credit card editor.
 @interface AutofillCreditCardEditCollectionViewController
-    : AutofillEditCollectionViewController
+    : LegacyAutofillEditCollectionViewController
 
 // Initializes a AutofillCreditCardEditCollectionViewController with
 // |creditCard| and |dataManager|. These cannot be null.

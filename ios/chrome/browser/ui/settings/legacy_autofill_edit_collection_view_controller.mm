@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/autofill_edit_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/legacy_autofill_edit_collection_view_controller.h"
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
 #import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
-#import "ios/chrome/browser/ui/settings/autofill_edit_collection_view_controller+protected.h"
+#import "ios/chrome/browser/ui/settings/legacy_autofill_edit_collection_view_controller+protected.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,14 +35,14 @@ LegacyAutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
 
 }  // namespace
 
-@interface AutofillEditCollectionViewController ()<
+@interface LegacyAutofillEditCollectionViewController ()<
     AutofillEditAccessoryDelegate> {
   LegacyAutofillEditCell* _currentEditingCell;
   AutofillEditAccessoryView* _accessoryView;
 }
 @end
 
-@implementation AutofillEditCollectionViewController
+@implementation LegacyAutofillEditCollectionViewController
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
                          style:(CollectionViewControllerStyle)style {
