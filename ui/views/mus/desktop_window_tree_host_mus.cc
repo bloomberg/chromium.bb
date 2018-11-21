@@ -278,34 +278,45 @@ class ScopedTouchTransferController : public ui::GestureRecognizerObserver {
 
 }  // namespace
 
-// See description in RestoreToPreminimizedState() for details.
-class DesktopWindowTreeHostMus::RestoreWindowObserver
+// WindowObserver installed on DesktopWindowTreeHostMus::window(). Mostly
+// forwards interesting events to DesktopWindowTreeHostMus. To avoid having
+// DesktopWindowTreeHostMus be a WindowObserver on two windows (which is mildly
+// error prone), this helper class is used.
+class DesktopWindowTreeHostMus::WindowTreeHostWindowObserver
     : public aura::WindowObserver {
  public:
-  explicit RestoreWindowObserver(DesktopWindowTreeHostMus* host) : host_(host) {
+  explicit WindowTreeHostWindowObserver(DesktopWindowTreeHostMus* host)
+      : host_(host) {
     host->window()->AddObserver(this);
   }
-  ~RestoreWindowObserver() override { host_->window()->RemoveObserver(this); }
+  ~WindowTreeHostWindowObserver() override {
+    host_->window()->RemoveObserver(this);
+  }
+
+  void set_is_waiting_for_restore(bool value) {
+    is_waiting_for_restore_ = value;
+  }
+  bool is_waiting_for_restore() const { return is_waiting_for_restore_; }
 
   // aura::WindowObserver:
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
+    if (window == host_->window())
+      host_->OnWindowTreeHostWindowVisibilityChanged(visible);
+  }
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override {
-    if (key == aura::client::kShowStateKey) {
-      host_->restore_window_observer_.reset();
-      // WARNING: this has been deleted.
-    }
-  }
-  void OnWindowDestroying(aura::Window* window) override {
-    // This is owned by DesktopWindowTreeHostMus, which should be destroyed
-    // before the Window.
-    NOTREACHED();
+    if (key == aura::client::kShowStateKey)
+      is_waiting_for_restore_ = false;
   }
 
  private:
   DesktopWindowTreeHostMus* host_;
 
-  DISALLOW_COPY_AND_ASSIGN(RestoreWindowObserver);
+  // True while waiting for the show state to change.
+  bool is_waiting_for_restore_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostWindowObserver);
 };
 
 DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
@@ -325,11 +336,16 @@ DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
   // Widget. This call enables that.
   NativeWidgetAura::RegisterNativeWidgetForWindow(desktop_native_widget_aura,
                                                   window());
+
+  window_tree_host_window_observer_ =
+      std::make_unique<WindowTreeHostWindowObserver>(this);
   // TODO: use display id and bounds if available, likely need to pass in
   // InitParams for that.
 }
 
 DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
+  window_tree_host_window_observer_.reset();
+
   // The cursor-client can be accessed during WindowTreeHostMus tear-down. So
   // the cursor-client needs to be unset on the root-window before
   // |cursor_manager_| is destroyed.
@@ -386,6 +402,10 @@ void DesktopWindowTreeHostMus::SetBoundsInDIP(const gfx::Rect& bounds_in_dip) {
   SetBoundsInPixels(rect, viz::LocalSurfaceIdAllocation());
 }
 
+bool DesktopWindowTreeHostMus::IsWaitingForRestoreToComplete() const {
+  return window_tree_host_window_observer_->is_waiting_for_restore();
+}
+
 bool DesktopWindowTreeHostMus::ShouldSendClientAreaToServer() const {
   if (!auto_update_client_area_)
     return false;
@@ -397,8 +417,24 @@ bool DesktopWindowTreeHostMus::ShouldSendClientAreaToServer() const {
 
 void DesktopWindowTreeHostMus::RestoreToPreminimizedState() {
   DCHECK(IsMinimized());
-  restore_window_observer_ = std::make_unique<RestoreWindowObserver>(this);
+  window_tree_host_window_observer_->set_is_waiting_for_restore(true);
+  base::AutoReset<bool> setter(&is_updating_window_visibility_, true);
   window()->Show();
+}
+
+void DesktopWindowTreeHostMus::OnWindowTreeHostWindowVisibilityChanged(
+    bool visible) {
+  if (is_updating_window_visibility_)
+    return;
+
+  // Call Show()/Hide() so that the visibility state is mirrored correctly. This
+  // function makes it so that calling Show()/Hide() on window() is the same as
+  // calling Show()/Hide() on the Widget.
+  base::AutoReset<bool> setter(&is_updating_window_visibility_, true);
+  if (visible)
+    Show(ui::SHOW_STATE_INACTIVE, gfx::Rect());
+  else
+    Hide();
 }
 
 void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
@@ -575,7 +611,11 @@ aura::WindowTreeHost* DesktopWindowTreeHostMus::AsWindowTreeHost() {
 
 void DesktopWindowTreeHostMus::Show(ui::WindowShowState show_state,
                                     const gfx::Rect& restore_bounds) {
-  native_widget_delegate_->OnNativeWidgetVisibilityChanging(true);
+  // Only notify if the visibility is really changing.
+  const bool notify_visibility_change =
+      is_updating_window_visibility_ || !IsVisible();
+  if (notify_visibility_change)
+    native_widget_delegate_->OnNativeWidgetVisibilityChanging(true);
 
   // NOTE: this code is called from Widget::Show() (no args). Widget::Show()
   // supplies ui::SHOW_STATE_DEFAULT as the |show_state| after the first call.
@@ -589,7 +629,7 @@ void DesktopWindowTreeHostMus::Show(ui::WindowShowState show_state,
   if (show_state == ui::SHOW_STATE_MAXIMIZED ||
       show_state == ui::SHOW_STATE_FULLSCREEN) {
     window()->SetProperty(aura::client::kShowStateKey, show_state);
-    restore_window_observer_.reset();
+    window_tree_host_window_observer_->set_is_waiting_for_restore(false);
   } else if (show_state == ui::SHOW_STATE_DEFAULT && IsMinimized()) {
     RestoreToPreminimizedState();
   } else if (show_state == ui::SHOW_STATE_MINIMIZED && !IsMinimized()) {
@@ -600,7 +640,10 @@ void DesktopWindowTreeHostMus::Show(ui::WindowShowState show_state,
   // is necessary as window()'s visibility is mirrored in the server, on other
   // platforms it's the visibility of the AcceleratedWidget that matters and
   // dictates what is actually drawn on screen.
-  window()->Show();
+  {
+    base::AutoReset<bool> setter(&is_updating_window_visibility_, true);
+    window()->Show();
+  }
   if (compositor())
     compositor()->SetVisible(true);
 
@@ -609,7 +652,8 @@ void DesktopWindowTreeHostMus::Show(ui::WindowShowState show_state,
   // otherwise focus goes to window().
   content_window()->Show();
 
-  native_widget_delegate_->OnNativeWidgetVisibilityChanged(true);
+  if (notify_visibility_change)
+    native_widget_delegate_->OnNativeWidgetVisibilityChanged(true);
 
   if (native_widget_delegate_->CanActivate()) {
     if (show_state != ui::SHOW_STATE_INACTIVE &&
@@ -1019,8 +1063,17 @@ void DesktopWindowTreeHostMus::ShowImpl() {
 }
 
 void DesktopWindowTreeHostMus::HideImpl() {
+  // If |is_updating_window_visibility_| is true, this is being called in
+  // response to window()'s visibility changing, in which case we need to
+  // continue on to complete processing of the hide.
+  if (!IsVisible() && !is_updating_window_visibility_)
+    return;
+
   native_widget_delegate_->OnNativeWidgetVisibilityChanging(false);
-  WindowTreeHostMus::HideImpl();
+  {
+    base::AutoReset<bool> setter(&is_updating_window_visibility_, true);
+    WindowTreeHostMus::HideImpl();
+  }
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 
   // When hiding we can't possibly be active any more. Reset the FocusClient,

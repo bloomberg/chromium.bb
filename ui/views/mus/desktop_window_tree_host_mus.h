@@ -48,7 +48,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   }
 
  private:
-  class RestoreWindowObserver;
+  class WindowTreeHostWindowObserver;
 
   void SendClientAreaToServer();
 
@@ -64,9 +64,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // Returns true if the client area should be set on this.
   bool ShouldSendClientAreaToServer() const;
 
-  bool IsWaitingForRestoreToComplete() const {
-    return restore_window_observer_.get() != nullptr;
-  }
+  bool IsWaitingForRestoreToComplete() const;
 
   // Restores the window to its pre-minimized state. There are two paths to
   // unminimizing/restoring a window:
@@ -81,6 +79,10 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // know the new state, an observer is added that tracks when the show state
   // changes. While waiting, IsMinimized() returns false.
   void RestoreToPreminimizedState();
+
+  // Called when window()'s visibility changes to |visible|. This is called from
+  // WindowObserver::OnWindowVisibilityChanged().
+  void OnWindowTreeHostWindowVisibilityChanged(bool visible);
 
   // DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
@@ -193,8 +195,13 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // server.
   ScopedObserver<views::View, views::ViewObserver> observed_client_view_{this};
 
-  // See description in RestoreToPreminimizedState() for details.
-  std::unique_ptr<RestoreWindowObserver> restore_window_observer_;
+  // If true, |this| is changing the visibility of window(), or is processing
+  // a change in the visibility of window().
+  bool is_updating_window_visibility_ = false;
+
+  // aura::WindowObserver on window().
+  std::unique_ptr<WindowTreeHostWindowObserver>
+      window_tree_host_window_observer_;
 
   // Used so that Close() isn't immediate.
   base::WeakPtrFactory<DesktopWindowTreeHostMus> close_widget_factory_;
