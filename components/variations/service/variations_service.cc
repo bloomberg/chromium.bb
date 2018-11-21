@@ -116,9 +116,14 @@ std::string GetPlatformString() {
 #endif
 }
 
-// Gets the restrict parameter from either the client or |policy_pref_service|.
-std::string GetRestrictParameterPref(VariationsServiceClient* client,
-                                     PrefService* policy_pref_service) {
+// Gets the restrict parameter from either the passed override, the client or
+// |policy_pref_service|.
+std::string GetRestrictParameterValue(const std::string& restrict_mode_override,
+                                      VariationsServiceClient* client,
+                                      PrefService* policy_pref_service) {
+  if (!restrict_mode_override.empty())
+    return restrict_mode_override;
+
   std::string parameter;
   if (client->OverridesRestrictParameter(&parameter) || !policy_pref_service)
     return parameter;
@@ -369,11 +374,16 @@ void VariationsService::SetRestrictMode(const std::string& restrict_mode) {
   restrict_mode_ = restrict_mode;
 }
 
-GURL VariationsService::GetVariationsServerURL(
-    PrefService* policy_pref_service,
-    const std::string& restrict_mode_override,
-    HttpOptions http_options) {
-  bool secure = http_options == USE_HTTPS;
+GURL VariationsService::GetVariationsServerURL(HttpOptions http_options) {
+  const bool secure = http_options == USE_HTTPS;
+  const std::string restrict_mode = GetRestrictParameterValue(
+      restrict_mode_, client_.get(), policy_pref_service_);
+
+  // If there's a restrict mode, we don't want to fall back to HTTP to avoid
+  // toggling restrict mode state.
+  if (!secure && !restrict_mode.empty())
+    return GURL();
+
   std::string server_url_string(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           secure ? switches::kVariationsServerURL
@@ -381,15 +391,10 @@ GURL VariationsService::GetVariationsServerURL(
   if (server_url_string.empty())
     server_url_string = secure ? kDefaultServerUrl : kDefaultInsecureServerUrl;
   GURL server_url = GURL(server_url_string);
-  if (secure) {
-    const std::string restrict_param =
-        !restrict_mode_override.empty()
-            ? restrict_mode_override
-            : GetRestrictParameterPref(client_.get(), policy_pref_service);
-    if (!restrict_param.empty()) {
-      server_url = net::AppendOrReplaceQueryParameter(server_url, "restrict",
-                                                      restrict_param);
-    }
+  if (!restrict_mode.empty()) {
+    DCHECK(secure);
+    server_url = net::AppendOrReplaceQueryParameter(server_url, "restrict",
+                                                    restrict_mode);
   }
   server_url = net::AppendOrReplaceQueryParameter(server_url, "osname",
                                                   GetPlatformString());
@@ -601,14 +606,11 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Initialize the Variations server URL.
-  variations_server_url_ =
-      GetVariationsServerURL(policy_pref_service_, restrict_mode_, USE_HTTPS);
+  variations_server_url_ = GetVariationsServerURL(USE_HTTPS);
 
   // Initialize the fallback HTTP URL if the HTTP retry feature is enabled.
-  if (base::FeatureList::IsEnabled(kHttpRetryFeature)) {
-    insecure_variations_server_url_ =
-        GetVariationsServerURL(policy_pref_service_, restrict_mode_, USE_HTTP);
-  }
+  if (base::FeatureList::IsEnabled(kHttpRetryFeature))
+    insecure_variations_server_url_ = GetVariationsServerURL(USE_HTTP);
 
   DCHECK(!request_scheduler_);
   request_scheduler_.reset(VariationsRequestScheduler::Create(
@@ -676,6 +678,15 @@ void VariationsService::OnSimpleLoaderComplete(
   if (!is_success) {
     DVLOG(1) << "Variations server request failed with error: " << net_error
              << ": " << net::ErrorToString(net_error);
+    // It's common for the very first fetch attempt to fail (e.g. the network
+    // may not yet be available). In such a case, try again soon, rather than
+    // waiting the full time interval.
+    // |request_scheduler_| will be null during unit tests.
+    if (is_first_request && request_scheduler_) {
+      request_scheduler_->ScheduleFetchShortly();
+      return;
+    }
+
     // If the current fetch attempt was over an HTTPS connection, retry the
     // fetch immediately over an HTTP connection.
     // Currently we only do this if if the 'VariationsHttpRetry' feature is
@@ -686,12 +697,6 @@ void VariationsService::OnSimpleLoaderComplete(
       if (DoFetchFromURL(insecure_variations_server_url_, true))
         return;
     }
-    // It's common for the very first fetch attempt to fail (e.g. the network
-    // may not yet be available). In such a case, try again soon, rather than
-    // waiting the full time interval.
-    // |request_scheduler_| will be null during unit tests.
-    if (is_first_request && request_scheduler_)
-      request_scheduler_->ScheduleFetchShortly();
     return;
   }
 
