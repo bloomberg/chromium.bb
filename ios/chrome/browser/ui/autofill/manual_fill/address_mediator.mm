@@ -42,13 +42,7 @@ NSString* const ManageAddressAccessibilityIdentifier =
     (std::vector<autofill::AutofillProfile*>)profiles {
   self = [super init];
   if (self) {
-    NSMutableArray<ManualFillAddress*>* manualFillAddresses =
-        [[NSMutableArray alloc] initWithCapacity:profiles.size()];
-    for (autofill::AutofillProfile* profile : profiles) {
-      [manualFillAddresses
-          addObject:[[ManualFillAddress alloc] initWithProfile:*profile]];
-    }
-    _addresses = manualFillAddresses;
+    _addresses = [ManualFillAddress manualFillAddressesFromProfiles:profiles];
   }
   return self;
 }
@@ -60,6 +54,14 @@ NSString* const ManageAddressAccessibilityIdentifier =
   _consumer = consumer;
   [self postAddressesToConsumer];
   [self postActionsToConsumer];
+}
+
+- (void)reloadWithProfiles:(std::vector<autofill::AutofillProfile*>)profiles {
+  self.addresses = [ManualFillAddress manualFillAddressesFromProfiles:profiles];
+  if (self.consumer) {
+    [self postAddressesToConsumer];
+    [self postActionsToConsumer];
+  }
 }
 
 #pragma mark - Private

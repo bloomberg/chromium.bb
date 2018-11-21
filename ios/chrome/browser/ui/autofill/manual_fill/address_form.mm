@@ -63,4 +63,15 @@ NSString* FieldValueOfTypeOnProfile(const autofill::AutofillProfile& profile,
                          country:country];
 }
 
++ (NSArray<ManualFillAddress*>*)manualFillAddressesFromProfiles:
+    (std::vector<autofill::AutofillProfile*>)profiles {
+  NSMutableArray<ManualFillAddress*>* manualFillAddresses =
+      [[NSMutableArray alloc] initWithCapacity:profiles.size()];
+  for (autofill::AutofillProfile* profile : profiles) {
+    [manualFillAddresses
+        addObject:[[ManualFillAddress alloc] initWithProfile:*profile]];
+  }
+  return manualFillAddresses;
+}
+
 @end
