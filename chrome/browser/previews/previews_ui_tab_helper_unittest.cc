@@ -17,6 +17,7 @@
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -34,6 +35,7 @@
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_features.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/test/web_contents_tester.h"
@@ -405,4 +407,23 @@ TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsCallbackCalledNonOptOut) {
 
   EXPECT_TRUE(on_dismiss_value);
   EXPECT_FALSE(on_dismiss_value.value());
+}
+
+TEST_F(PreviewsUITabHelperUnitTest, TestReloadWithoutPreviewsLitePageRedirect) {
+  SimulateWillProcessResponse();
+  CallDidFinishNavigation();
+  base::RunLoop().RunUntilIdle();
+
+  GURL original_url("https://porgs.com");
+  GURL previews_url =
+      PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(original_url);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(previews_url);
+
+  PreviewsUITabHelper::FromWebContents(web_contents())
+      ->ReloadWithoutPreviews(previews::PreviewsType::LITE_PAGE_REDIRECT);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(previews_url,
+            web_contents()->GetController().GetLastCommittedEntry()->GetURL());
 }

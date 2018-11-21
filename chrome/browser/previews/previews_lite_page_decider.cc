@@ -17,6 +17,7 @@
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -24,6 +25,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -184,19 +186,22 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
     return nullptr;
   DCHECK(!browser_context->IsOffTheRecord());
 
-  PreviewsLitePageDecider* decider =
-      previews_service->previews_lite_page_decider();
-  DCHECK(decider);
+  PreviewsUITabHelper* tab_helper =
+      PreviewsUITabHelper::FromWebContents(handle->GetWebContents());
+  if (!tab_helper)
+    return nullptr;
 
-  // TODO(crbug/898557): Replace this logic with PreviewsState.
-  bool drp_enabled = decider->drp_settings_->IsDataReductionProxyEnabled();
-  bool preview_enabled = previews::params::ArePreviewsAllowed() &&
-                         previews::params::IsLitePageServerPreviewsEnabled();
+  previews::PreviewsUserData* previews_data =
+      tab_helper->GetPreviewsUserData(handle);
+  if (!previews_data)
+    return nullptr;
 
-  if (drp_enabled && preview_enabled) {
-    return std::make_unique<PreviewsLitePageNavigationThrottle>(handle,
-                                                                decider);
+  if (previews_data->allowed_previews_state() &
+      content::LITE_PAGE_REDIRECT_ON) {
+    return std::make_unique<PreviewsLitePageNavigationThrottle>(
+        handle, previews_service->previews_lite_page_decider());
   }
+
   return nullptr;
 }
 
