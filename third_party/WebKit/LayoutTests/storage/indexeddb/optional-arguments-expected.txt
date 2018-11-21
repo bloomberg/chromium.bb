@@ -2,10 +2,10 @@ Exercise optional arguments with missing vs. undefined in IndexedDB methods.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "optional-arguments.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
+
 
 prepareDatabase():
 db = event.target.result
@@ -28,11 +28,13 @@ PASS store.put({id: 3, name: 'c'}) did not throw exception.
 PASS store.add({id: 4, name: 'd'}, undefined) did not throw exception.
 PASS store.put({id: 5, name: 'e'}, undefined) did not throw exception.
 
+
 verifyCursor():
 request = store.openCursor()
 cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 5
+
 
 verifyCursor():
 request = store.openCursor(null)
@@ -40,11 +42,13 @@ cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 5
 
+
 verifyCursor():
 request = store.openCursor(IDBKeyRange.lowerBound(4))
 cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 2
+
 
 verifyCursor():
 request = store.openCursor(3)
@@ -52,11 +56,13 @@ cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 1
 
+
 verifyCursor():
 request = store.openKeyCursor()
 cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 5
+
 
 verifyCursor():
 request = store.openKeyCursor(null)
@@ -64,11 +70,13 @@ cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 5
 
+
 verifyCursor():
 request = store.openKeyCursor(IDBKeyRange.lowerBound(4))
 cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 2
+
 
 verifyCursor():
 request = store.openKeyCursor(3)
@@ -76,11 +84,13 @@ cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 1
 
+
 verifyCursor():
 request = index.openCursor()
 cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 5
+
 
 verifyCursor():
 request = index.openCursor(null)
@@ -88,11 +98,13 @@ cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 5
 
+
 verifyCursor():
 request = index.openCursor(IDBKeyRange.lowerBound('b'))
 cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 4
+
 
 verifyCursor():
 request = index.openCursor('c')
@@ -100,11 +112,13 @@ cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 1
 
+
 verifyCursor():
 request = index.openKeyCursor()
 cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 5
+
 
 verifyCursor():
 request = index.openKeyCursor(null)
@@ -112,11 +126,13 @@ cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 5
 
+
 verifyCursor():
 request = index.openKeyCursor(IDBKeyRange.lowerBound('b'))
 cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 4
+
 
 verifyCursor():
 request = index.openKeyCursor('c')
@@ -124,29 +140,36 @@ cursor = request.result
 PASS cursor.direction is "next"
 PASS continues is 1
 
+
 verifyCount():
 request = store.count()
 PASS request.result is 5
+
 
 verifyCount():
 request = store.count(null)
 PASS request.result is 5
 
+
 verifyCount():
 request = store.count(IDBKeyRange.lowerBound(2))
 PASS request.result is 4
+
 
 verifyCount():
 request = index.count()
 PASS request.result is 5
 
+
 verifyCount():
 request = index.count(null)
 PASS request.result is 5
 
+
 verifyCount():
 request = index.count(IDBKeyRange.lowerBound('b'))
 PASS request.result is 4
+
 
 continueUndefined():
 request = store.openCursor()

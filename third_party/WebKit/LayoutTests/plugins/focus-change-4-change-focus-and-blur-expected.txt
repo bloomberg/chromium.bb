@@ -11,6 +11,8 @@ i3focus
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 Test changing focus inside plugin onfocus and onblur events
 
     

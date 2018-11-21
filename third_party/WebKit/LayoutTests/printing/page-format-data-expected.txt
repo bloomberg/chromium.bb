@@ -2,7 +2,6 @@ This tests page format data
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Test default visibility
 PASS internals.isPageBoxVisible(document, 0) is true
 Test display: none. display property doesn't apply to @page
@@ -13,6 +12,7 @@ Test visibility: hidden
 PASS internals.isPageBoxVisible(document, 0) is false
 Test visibility: visible
 PASS internals.isPageBoxVisible(document, 0) is true
+
 
 Test default page size
 PASS internals.pageSizeAndMarginsInPixels(0, 100, 200, 1, 2, 3, 4) is '(100, 200)' + pxMargins(1, 2, 3, 4)
@@ -61,6 +61,7 @@ PASS internals.pageSizeAndMarginsInPixels(0, 100, 200, 1, 2, 3, 4) is '(10000, 2
 Test invalid page size: empty
 PASS internals.pageSizeAndMarginsInPixels(0, 100, 200, 1, 2, 3, 4) is '(10000, 20000)' + pxMargins(1, 2, 3, 4)
 
+
 Test 0px margins
 PASS internals.pageSizeAndMarginsInPixels(0, 100, 200, 1, 2, 3, 4) is '(10000, 20000)' + pxMargins(0, 0, 0, 0)
 Test non-zero margins
@@ -77,6 +78,7 @@ Test margin: 8% 4% 2% auto
 PASS internals.pageSizeAndMarginsInPixels(0, 100, 200, 1, 2, 3, 4) is '(10000, 20000)' + pxMargins(800, 400, 200, 4)
 Test visibility: hidden
 PASS internals.pageSizeAndMarginsInPixels(0, 100, 200, 1, 2, 3, 4) is '(10000, 20000)' + pxMargins(800, 400, 200, 4)
+
 
 PASS successfullyParsed is true
 

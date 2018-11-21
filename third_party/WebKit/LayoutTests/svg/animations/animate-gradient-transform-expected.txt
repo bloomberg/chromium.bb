@@ -1,8 +1,8 @@
 SVG 1.1 dynamic animation tests
+
 Tests if gradientTransform of a gradient is animateable.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS gradient.gradientTransform.animVal.consolidate() threw exception NoModificationAllowedError: Failed to execute 'consolidate' on 'SVGTransformList': This object is read-only..
 PASS gradient.gradientTransform.animVal.numberOfItems is 1

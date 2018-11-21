@@ -3,24 +3,3 @@ Test that iframe shims can be used to overlay HTML above a windowed plugin. The 
 Prints "SUCCESS" on success, "FAILURE" on failure.
 
 SUCCESS
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

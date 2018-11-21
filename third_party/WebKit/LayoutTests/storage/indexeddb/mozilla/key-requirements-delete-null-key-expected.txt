@@ -2,7 +2,6 @@ Test IndexedDB's behavior deleting entry with no key
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "key-requirements-delete-null-key.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

@@ -2,7 +2,6 @@ This test checks that SVGStyleElement objects have xmlspace and xmllang properti
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS style.xmlspace is "preserve"
 PASS style.xmllang is "en-AU"
 PASS successfullyParsed is true

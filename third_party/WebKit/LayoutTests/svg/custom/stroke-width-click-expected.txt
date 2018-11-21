@@ -11,4 +11,3 @@ SUCCESS: click at 30, 49 was correctly ignored
 SUCCESS: click at 30, 151 was correctly ignored
 SUCCESS: click at 300, 49 was correctly ignored
 SUCCESS: click at 300, 151 was correctly ignored
-

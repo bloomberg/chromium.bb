@@ -33,6 +33,7 @@ PASS text3 does not contain point at (302, 337)
 PASS text3 does not contain point at (348, 335)
 PASS image1 contains point at (19, 215)
 PASS image1 contains point at (45, 225)
+
 Text should change color when mouse is within the bbox.
 Text should change color when mouse is within the bbox.
 Text should end here.

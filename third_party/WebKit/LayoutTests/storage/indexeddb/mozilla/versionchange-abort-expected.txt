@@ -2,7 +2,6 @@ When a versionchange transaction is aborted, the version and newly created objec
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "versionchange-abort.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

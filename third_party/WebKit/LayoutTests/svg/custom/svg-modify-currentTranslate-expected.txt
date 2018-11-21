@@ -2,7 +2,6 @@ Tests whether changes to the 'currentTranslate' SVGSVGElement property take effe
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS svg.currentTranslate.x is 0
 PASS svg.currentTranslate.y is 0
 PASS svg.currentTranslate.x is 100

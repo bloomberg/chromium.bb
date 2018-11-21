@@ -1,6 +1,8 @@
 Test
 Test
 Test
+
+
 This test checks getBoundingClientRect() on zoomed HTML and SVG elements
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -9,7 +11,9 @@ Gray rectangles: 100x50
 Green rectangles: 100x50, zoom=200%
 Blue rectangles: 200x100, zoom=50%
 
+
 Checking HTML elements:
+
 
 PASS div1.left is 0.00
 PASS div1.top is 0.00
@@ -18,12 +22,14 @@ PASS div1.height is 50.00
 PASS div1.right is 100.00
 PASS div1.bottom is 50.00
 
+
 PASS div2.left is 0.00
 PASS div2.top is 25.00
 PASS div2.width is 100.00
 PASS div2.height is 50.00
 PASS div2.right is 100.00
 PASS div2.bottom is 75.00
+
 
 PASS div3.left is 0.00
 PASS div3.top is 300.00
@@ -32,7 +38,9 @@ PASS div3.height is 100.00
 PASS div3.right is 200.00
 PASS div3.bottom is 400.00
 
+
 Checking SVG elements:
+
 
 PASS svg1.left is 0.00
 PASS svg1.top is 250.00
@@ -59,6 +67,7 @@ PASS text1.height is 6.16
 FAIL text1.right should be 147.98. Was 149.1875.
 PASS text1.bottom is 288.82
 
+
 PASS svg2.left is 75.00
 PASS svg2.top is 100.00
 PASS svg2.width is 150.00
@@ -84,6 +93,7 @@ FAIL text2.height should be 6.02. Was 5.921872138977051.
 FAIL text2.right should be 222.98. Was 222.85938262939453.
 FAIL text2.bottom should be 138.7. Was 138.58593463897705.
 
+
 PASS svg3.left is 900.00
 PASS svg3.top is 500.00
 PASS svg3.width is 300.00
@@ -108,6 +118,7 @@ FAIL text3.width should be 95.97. Was 98.3750228881836.
 PASS text3.height is 12.31
 FAIL text3.right should be 1195.97. Was 1198.3750228881836.
 PASS text3.bottom is 577.64
+
 
 PASS successfullyParsed is true
 

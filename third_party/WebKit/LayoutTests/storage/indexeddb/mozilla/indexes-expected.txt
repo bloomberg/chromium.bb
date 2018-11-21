@@ -2,7 +2,6 @@ Test IndexedDB: iterating through index cursors with keys and key ranges
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "indexes.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

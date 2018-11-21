@@ -2,7 +2,6 @@ Removing animated use target indirectly from the document should not cause crash
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 loaded SVG to be moved
 other -> local
 local -> other
@@ -13,5 +12,7 @@ local -> other
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
  
+
 Test pass if no crash.

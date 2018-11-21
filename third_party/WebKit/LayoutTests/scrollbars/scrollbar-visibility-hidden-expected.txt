@@ -2,4 +2,3 @@ Test that the scrollbars of a visibility:hidden overflow:auto DIV do not partici
 
 SUCCESS
 Div 1
-

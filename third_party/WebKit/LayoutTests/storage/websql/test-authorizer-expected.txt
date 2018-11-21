@@ -1,4 +1,5 @@
 This test tests the database authorizer.
+
 SQLITE_CREATE_TABLE statement succeeded.
 SQLITE_CREATE_INDEX statement succeeded.
 SQLITE_CREATE_TEMP_TABLE statement succeeded.

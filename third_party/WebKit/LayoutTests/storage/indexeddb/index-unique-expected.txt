@@ -2,7 +2,6 @@ Test features of IndexedDB's unique indices.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "index-unique.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

@@ -2,7 +2,6 @@ Regression test for http://crbug.com/108071
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "prefetch-bugfix-108071.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -15,6 +14,7 @@ objectStore.add({id: 1, name: "Bravo"})
 objectStore.add({id: 2, name: "Charlie"})
 objectStore.add({id: 3, name: "Delta"})
 objectStore.add({id: 4, name: "Echo"})
+
 
 iterateAndDeleteFirstElement():
 trans = db.transaction(['store'], 'readwrite')
@@ -33,6 +33,7 @@ objectStore.add({id: 1, name: "Bravo"})
 objectStore.add({id: 2, name: "Charlie"})
 objectStore.add({id: 3, name: "Delta"})
 objectStore.add({id: 4, name: "Echo"})
+
 
 prefetchAndAbort():
 trans.objectStore('store').openCursor()

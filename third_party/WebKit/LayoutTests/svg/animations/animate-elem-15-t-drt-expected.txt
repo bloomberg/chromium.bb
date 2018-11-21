@@ -4,7 +4,6 @@ A copy of the corresponding W3C-SVG-1.1 test, which dumps the animation at certa
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS rect.width.animVal.value is 300
 PASS rect.width.baseVal.value is 300
 PASS rect.width.animVal.value is 232.5

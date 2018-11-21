@@ -2,10 +2,10 @@ Verify that storage events fire even when only the case of the value changes.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Testing sessionStorage
 storage.clear()
 PASS storage.length is 0
+
 
 Verify storage events are case sensitive
 storage.foo = 'test'
@@ -17,9 +17,12 @@ storage.foo = 'TEST'
 PASS storageEventList.length is 1
 
 
+
+
 Testing localStorage
 storage.clear()
 PASS storage.length is 0
+
 
 Verify storage events are case sensitive
 storage.foo = 'test'
@@ -32,4 +35,5 @@ PASS storageEventList.length is 1
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

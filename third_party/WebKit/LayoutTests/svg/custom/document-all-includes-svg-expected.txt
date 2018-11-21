@@ -1,6 +1,7 @@
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS document.all['test1'].length is 2
 PASS document.all['test2'].length is 2
 PASS document.all['test3'].nodeName is "A"

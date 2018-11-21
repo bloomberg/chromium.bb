@@ -6,7 +6,6 @@ This test ensures that changing visibility of a non-fast scrollable area correct
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 running tests for non-fast scrollable div
 PASS document.getElementById("div").style.display is "block"
 PASS nonFastScrollableRects.length is 1

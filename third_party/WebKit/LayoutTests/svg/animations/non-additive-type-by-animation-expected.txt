@@ -4,7 +4,6 @@ This by animation for all non-additive property types - should have no effect.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS feConvolveMatrix.preserveAlpha.animVal is false
 PASS filter.filterUnits.animVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
 PASS svg.preserveAspectRatio.animVal.align is SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_NONE

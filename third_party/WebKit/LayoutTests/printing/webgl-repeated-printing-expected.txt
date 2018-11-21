@@ -1,6 +1,7 @@
- PASS successfullyParsed is true
+PASS successfullyParsed is true
 
 TEST COMPLETE
+
 Snapshot width: 800 height: 600
 Test 0: canvas should be green
 PASS pixel[0] is within 1 of 0

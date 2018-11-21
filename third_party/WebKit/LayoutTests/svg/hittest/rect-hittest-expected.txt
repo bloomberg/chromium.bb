@@ -1,4 +1,5 @@
 This tests hit testing on rects with simple strokes, exercising optimized code for hit testing the rects' strokes. If this test passes, you will see "PASS" below.
+
 PASS
 
 (30, 12)

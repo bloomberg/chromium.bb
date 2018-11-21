@@ -1,4 +1,5 @@
 This test checks to see if window.localStorage, window.sessionStorage and window.onstorage exist.
+
 window.sessionStorage exists
 Storage object sessionStorage has length
 Storage object sessionStorage has key

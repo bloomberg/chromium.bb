@@ -2,14 +2,15 @@ Test that integer versions are reverted when their version transactions abort.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "intversion-revert-on-abort.html"
 indexedDB.deleteDatabase(dbname)
 request = indexedDB.open(dbname, 2)
 
+
 firstUpgradeNeededCallback():
 db = event.target.result
 db.createObjectStore('some os')
+
 
 openSuccess():
 db = event.target.result
@@ -19,15 +20,18 @@ request = indexedDB.open(dbname, 3)
 request.onupgradeneeded = secondUpgradeNeededCallback
 request.onerror = errorAfterAbortCallback
 
+
 secondUpgradeNeededCallback():
 db = event.target.result
 db.createObjectStore('some os 2')
 event.target.transaction.abort()
 
+
 errorAfterAbortCallback():
 PASS db.version is 2
 request = indexedDB.open(dbname)
 request.onsuccess = finalSuccessCallback
+
 
 finalSuccessCallback():
 db = event.target.result

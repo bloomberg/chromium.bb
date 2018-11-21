@@ -2,7 +2,6 @@ Test IndexedDB's putting and getting values in an object store
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "put-get-values.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

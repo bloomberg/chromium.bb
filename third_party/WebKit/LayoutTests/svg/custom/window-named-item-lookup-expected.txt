@@ -1,6 +1,7 @@
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS window.test1.length is 2
 PASS window.test2.length is 2
 PASS window.test3.nodeName is "A"

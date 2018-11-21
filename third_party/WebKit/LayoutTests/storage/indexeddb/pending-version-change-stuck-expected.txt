@@ -2,7 +2,6 @@ Implicitly terminating worker with blocked setVersion call should allow later op
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 request = indexedDB.open("pending-version-change-stuck.html")
 PASS Open worked after page reload.
 PASS successfullyParsed is true

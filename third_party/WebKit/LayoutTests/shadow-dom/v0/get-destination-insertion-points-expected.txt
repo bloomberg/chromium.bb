@@ -3,7 +3,6 @@ Tests for getDestinationInsertionPoints().
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS nodeList.length is expectedNodes.length
 PASS nodeList.item(0) is expectedNodes[0]
 Insertion points should be inactive in v1 shadow trees.

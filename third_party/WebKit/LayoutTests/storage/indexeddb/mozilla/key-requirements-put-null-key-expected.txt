@@ -2,7 +2,6 @@ Test IndexedDB's behavior put()ing with null key
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "key-requirements-put-null-key.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

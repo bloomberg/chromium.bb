@@ -9,6 +9,7 @@ PASS rect.requiredExtensions.numberOfItems is 2
 PASS rect.requiredExtensions.getItem(0) is "foo"
 PASS rect.requiredExtensions.getItem(1) is "bar"
 
+
 Check that getItem() does NOT return live strings, as the IDL defines the return types as plain DOMString
 PASS firstItem = 'test' is "test"
 PASS rect.requiredExtensions.numberOfItems is 2

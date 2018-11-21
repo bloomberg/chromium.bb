@@ -2,7 +2,6 @@ Test IndexedDB's IDBCursor.continue() behavior when called beyond normal scope.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "cursor-continue-validity.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -36,6 +35,7 @@ objectStore.add({'x': 22 }, 22)
 objectStore.add({'x': 23 }, 23)
 objectStore.add({'x': 24 }, 24)
 continueTest()
+
 
 Checking objectStore
 ====================
@@ -420,6 +420,7 @@ doubleContinueCallback()
 cursor = event.target.result
 continueIndexTest()
 
+
 Checking index
 ==============
 indexObject.openCursor(null, 'next')
@@ -776,6 +777,7 @@ PASS cursor.value.x is 24
 self.continueValue++;
 cursor = event.target.result
 testModifyContinueOrder()
+
 
 Checking modification
 =====================

@@ -1,8 +1,8 @@
 SVG 1.1 dynamic animation tests
+
 Tests that XML and CSS attributeTypes can be switched between.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS polygon.animatedPoints.getItem(0).x is 100
 PASS polygon.points.getItem(0).x is 100

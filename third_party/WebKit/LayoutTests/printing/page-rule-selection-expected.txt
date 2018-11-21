@@ -2,7 +2,6 @@ This tests page style selection.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Default margin is auto.
 PASS internals.pageProperty('margin-left', 0) is "auto"
 PASS internals.pageProperty('margin-left', 1) is "auto"

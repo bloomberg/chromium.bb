@@ -2,12 +2,13 @@ Ensure that metadata remains correct when an aborted version change is followed 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "unblocked-version-changes.html"
 indexedDB.deleteDatabase(dbname)
 
+
 openConnection():
 request = indexedDB.open(dbname, 2)
+
 
 onUpgradeNeeded():
 db = request.result
@@ -16,12 +17,15 @@ transaction = request.transaction
 request = indexedDB.open(dbname, 3)
 transaction.abort()
 
+
 onError():
 PASS db.version is 0
+
 
 onUpgradeNeeded2():
 db = request.result
 PASS db.version is 3
+
 
 onSuccess():
 db = request.result

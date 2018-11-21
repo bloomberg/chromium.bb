@@ -2,7 +2,6 @@ This test checks to ensure that window.localStorage and window.sessionStorage ar
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS storage.getItem('clear') is "almost"
 PASS storage.getItem('key') is "too"
 PASS storage.getItem('getItem') is "funny"

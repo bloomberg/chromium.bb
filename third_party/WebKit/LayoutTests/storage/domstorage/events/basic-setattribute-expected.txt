@@ -2,7 +2,6 @@ This is a test to make sure DOM Storage mutations fire StorageEvents that are ca
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Testing sessionStorage
 storage.clear()
 PASS storage.length is 0
@@ -47,6 +46,8 @@ PASS storageEventList.length is 8
 PASS storageEventList[7].key is null
 PASS storageEventList[7].oldValue is null
 PASS storageEventList[7].newValue is null
+
+
 
 
 Testing localStorage
@@ -96,4 +97,5 @@ PASS storageEventList[7].newValue is null
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

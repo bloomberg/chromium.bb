@@ -2,20 +2,23 @@ Ensure IndexedDB's IDBObjectStore.deleteIndex() works if IDBIndex object has not
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "deleteIndex-bug110792.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname, 1)
+
 
 onFirstUpgradeNeeded():
 db = event.target.result
 store = db.createObjectStore('store')
 store.createIndex('index', 'keyPath')
 
+
 closeAndReOpen():
 db.close()
 
+
 indexedDB.open(dbname, 2)
+
 
 onSecondUpgradeNeeded():
 db = event.target.result

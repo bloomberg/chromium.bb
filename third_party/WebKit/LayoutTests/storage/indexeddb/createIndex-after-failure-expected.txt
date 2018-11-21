@@ -2,7 +2,6 @@ Test IndexedDB's basics.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "createIndex-after-failure.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

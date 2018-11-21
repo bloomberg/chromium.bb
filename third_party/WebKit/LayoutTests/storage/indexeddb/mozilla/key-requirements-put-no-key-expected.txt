@@ -2,7 +2,6 @@ Test IndexedDB's behavior puting without key
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "key-requirements-put-no-key.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

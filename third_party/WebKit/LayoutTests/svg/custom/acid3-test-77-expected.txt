@@ -2,7 +2,6 @@ Acid3 test 77, checking text metric functionality
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS text.getNumberOfChars() is 3
 FAIL text.getComputedTextLength() should be 4776. Was 5550.78125.
 FAIL text.getSubStringLength(0,1) should be 42. Was 1775.390625.

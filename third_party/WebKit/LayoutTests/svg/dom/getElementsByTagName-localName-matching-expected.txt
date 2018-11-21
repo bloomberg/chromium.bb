@@ -2,7 +2,6 @@ This test checks the behaviour of getElementsByTagName in a non-HTML document
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS container.getElementsByTagName('linearGradient').length is 1
 PASS container.getElementsByTagName('lineargradient').length is 0
 PASS container.getElementsByTagName('LINEARGRADIENT').length is 0

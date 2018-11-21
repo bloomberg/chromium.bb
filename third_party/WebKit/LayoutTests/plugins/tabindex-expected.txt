@@ -6,7 +6,6 @@ Test for the tabIndex of embedded plugins. Plugins may be focusable so their tab
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS "embedElem"; pluginElement.tabIndex is 0
 PASS "objectElem"; pluginElement.tabIndex is 1
 PASS "embedElemWithFallbackContents"; pluginElement.tabIndex is -1
@@ -22,4 +21,5 @@ PASS "noPluginObjectElemWithContenteditable"; pluginElement.tabIndex is -1
 PASS successfullyParsed is true
 
 TEST COMPLETE
-   Fallback contents.     Fallback contents. Fallback contents.   
+
+  Fallback contents.    Fallback contents. Fallback contents.  

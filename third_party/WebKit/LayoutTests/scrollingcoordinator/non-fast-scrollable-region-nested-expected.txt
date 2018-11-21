@@ -1,8 +1,6 @@
-
 The test ensures that non-fast scrollable regions nested in iframe are correctly offset by the iframe location.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS nonFastScrollableRects.length is 3
 PASS rectToString(nonFastScrollableRects[0]) is "[51, 102, 200, 200]"

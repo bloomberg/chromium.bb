@@ -2,10 +2,11 @@ Test that when db.close is called in upgradeneeded, the db is cleaned up on refr
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "intversion-close-in-upgradeneeded.html"
 indexedDB.deleteDatabase(dbname)
 request = indexedDB.open(dbname, 7)
+
+
 
 
 upgradeNeeded():
@@ -15,13 +16,16 @@ transaction = event.target.transaction
 db.createObjectStore('os')
 db.close()
 
+
 transaction.oncomplete:
 sawTransactionComplete = true
+
 
 openError():
 PASS sawTransactionComplete is true
 PASS event.target.error.name is 'AbortError'
 PASS event.result is undefined
+
 
 Verify that the old connection is unchanged and was closed:
 PASS db is non-null.

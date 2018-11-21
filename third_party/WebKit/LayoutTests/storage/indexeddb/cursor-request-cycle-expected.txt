@@ -2,14 +2,15 @@ Verify that that cursors weakly hold request, and work if request is GC'd
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "cursor-request-cycle.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
 
+
 prepareDatabase():
 db = event.target.result
 store = db.createObjectStore('store')
+
 
 onOpen():
 db = event.target.result
@@ -18,8 +19,10 @@ store = tx.objectStore('store')
 cursorRequest = store.openCursor()
 otherRequest = store.get(0)
 
+
 openCursorRequestSuccess():
 Result will be checked later, to ensure that lazy access is safe
+
 
 otherRequestSuccess():
 Verify that the request's result can be accessed lazily:
@@ -40,6 +43,7 @@ gc()
 PASS cursorObservation.wasCollected is false
 finalRequest = store.get(0)
 
+
 cursorContinueSuccess():
 cursor = event.target.result
 PASS cursor is non-null.
@@ -47,6 +51,7 @@ PASS cursor.key is "key2"
 PASS cursor.value is "value2"
 PASS event.target.extra is 123
 PASS cursor.extra is 456
+
 
 finalRequestSuccess():
 PASS cursor.key is "key2"

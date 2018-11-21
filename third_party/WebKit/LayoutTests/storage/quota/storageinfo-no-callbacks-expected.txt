@@ -3,7 +3,6 @@ This tests webkitStorageInfo methods do not crash when they are not given option
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS storageInfo callback called.
 PASS storageInfo callback called.
 PASS storageInfo callback called.

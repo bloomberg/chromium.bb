@@ -4,7 +4,6 @@ This test forces use shadow tree recreation while an animating is running
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS rect.width.animVal.value is 10
 PASS rect.width.baseVal.value is 10
 PASS rect.width.animVal.value is 55

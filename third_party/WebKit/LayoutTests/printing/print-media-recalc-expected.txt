@@ -3,5 +3,6 @@ PASS getComputedStyle(document.body, null).fontSize is '16px'
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 A
 B

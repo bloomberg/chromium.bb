@@ -2,7 +2,6 @@ Test that expected exceptions are thrown per IndexedDB spec.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "exceptions.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -23,7 +22,9 @@ inlineKeyStore = db.createObjectStore('inlineKeyStore', {keyPath: 'id'})
 request = inlineKeyStore.put({id: 0})
 PASS request.readyState is "pending"
 
+
 3.2.1 The IDBRequest Interface
+
 
 IDBRequest.error
 When the done flag is false, getting this property must throw a DOMException of type InvalidStateError.
@@ -33,6 +34,7 @@ PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
 Exception message: Failed to read the 'error' property from 'IDBRequest': The request has not finished.
 
+
 IDBRequest.result
 When the done flag is false, getting this property must throw a DOMException of type InvalidStateError.
 Expecting exception from request.result
@@ -41,7 +43,9 @@ PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
 Exception message: Failed to read the 'result' property from 'IDBRequest': The request has not finished.
 
+
 3.2.3 Opening a database
+
 
 IDBFactory.cmp()
 One of the supplied keys was not a valid key.
@@ -52,8 +56,10 @@ PASS ename is 'DataError'
 Exception message: Failed to execute 'cmp' on 'IDBFactory': The parameter is not a valid key.
 db.close()
 
+
 3.2.4 Database
 indexedDB.open(dbname, 2)
+
 
 IDBDatabase.createObjectStore()
 If an objectStore with the same name already exists, the implementation must throw a DOMException of type ConstraintError.
@@ -80,6 +86,7 @@ PASS code is DOMException.INVALID_ACCESS_ERR
 PASS ename is 'InvalidAccessError'
 Exception message: Failed to execute 'createObjectStore' on 'IDBDatabase': The autoIncrement option was set but the keyPath option was empty or an array.
 
+
 IDBDatabase.deleteObjectStore()
 There is no object store with the given name, compared in a case-sensitive manner, in the connected database.
 Expecting exception from db.deleteObjectStore('no-such-store')
@@ -87,6 +94,7 @@ PASS Exception was thrown.
 PASS code is DOMException.NOT_FOUND_ERR
 PASS ename is 'NotFoundError'
 Exception message: Failed to execute 'deleteObjectStore' on 'IDBDatabase': The specified object store was not found.
+
 
 IDBDatabase.transaction()
 If this method is called on IDBDatabase object for which a "versionchange" transaction is still running, a InvalidStateError exception must be thrown.
@@ -116,6 +124,7 @@ PASS code is DOMException.INVALID_ACCESS_ERR
 PASS ename is 'InvalidAccessError'
 Exception message: Failed to execute 'transaction' on 'IDBDatabase': The storeNames parameter was empty.
 
+
 One more IDBDatabase.createObjectStore() test:
 If this function is called from outside a "versionchange" transaction callback ... the implementation must throw a DOMException of type InvalidStateError.
 Expecting exception from db.createObjectStore('fail')
@@ -123,6 +132,7 @@ PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
 Exception message: Failed to execute 'createObjectStore' on 'IDBDatabase': The database is not running a version change transaction.
+
 
 One more IDBDatabase.deleteObjectStore() test:
 If this function is called from outside a "versionchange" transaction callback ... the implementation must throw a DOMException of type InvalidStateError.
@@ -132,6 +142,7 @@ PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
 Exception message: Failed to execute 'deleteObjectStore' on 'IDBDatabase': The database is not running a version change transaction.
 
+
 Prepare an object store and index from an inactive transaction for later use.
 finishedTransaction = inactiveTransaction = db.transaction('store')
 storeFromInactiveTransaction = inactiveTransaction.objectStore('store')
@@ -139,11 +150,13 @@ indexFromInactiveTransaction = storeFromInactiveTransaction.index('index')
 request = storeFromInactiveTransaction.openCursor()
 cursorFromInactiveTransaction = request.result
 
+
 3.2.5 Object Store
 ro_transaction = db.transaction('store', 'readonly')
 storeFromReadOnlyTransaction = ro_transaction.objectStore('store')
 rw_transaction = db.transaction('store', 'readwrite')
 store = rw_transaction.objectStore('store')
+
 
 IDBObjectStore.add()
 This method throws a DOMException of type ReadOnlyError if the transaction which this IDBObjectStore belongs to is has its mode set to "readonly".
@@ -164,6 +177,7 @@ PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR
 Exception message: Failed to execute 'add' on 'IDBObjectStore': #<Window> could not be cloned.
 
+
 IDBObjectStore.clear()
 This method throws a DOMException of type ReadOnlyError if the transaction which this IDBObjectStore belongs to is has its mode set to "readonly".
 Expecting exception from storeFromReadOnlyTransaction.clear()
@@ -178,6 +192,7 @@ PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'clear' on 'IDBObjectStore': The transaction has finished.
 
+
 IDBObjectStore.count()
 If the optional key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.
 Expecting exception from store.count({})
@@ -191,6 +206,7 @@ PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'count' on 'IDBObjectStore': The transaction has finished.
+
 
 IDBObjectStore.delete()
 This method throws a DOMException of type ReadOnlyError if the transaction which this IDBObjectStore belongs to is has its mode set to "readonly".
@@ -212,6 +228,7 @@ PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'add' on 'IDBObjectStore': The transaction has finished.
 
+
 IDBObjectStore.get()
 If the key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.
 Expecting exception from store.get({})
@@ -225,6 +242,7 @@ PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'get' on 'IDBObjectStore': The transaction has finished.
+
 
 IDBObjectStore.getAll()
 If the key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.
@@ -240,6 +258,7 @@ PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'getAll' on 'IDBObjectStore': The transaction has finished.
 
+
 IDBObjectStore.getAllKeys()
 If the key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.
 Expecting exception from store.getAllKeys({})
@@ -254,6 +273,7 @@ PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'getAllKeys' on 'IDBObjectStore': The transaction has finished.
 
+
 IDBObjectStore.index()
 There is no index with the given name, compared in a case-sensitive manner, in the connected database.
 Expecting exception from store.index('no-such-index')
@@ -267,6 +287,7 @@ PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
 Exception message: Failed to execute 'index' on 'IDBObjectStore': The transaction has finished.
+
 
 IDBObjectStore.openCursor()
 If the range parameter is specified but is not a valid key or a key range, this method throws a DOMException of type DataError.
@@ -286,6 +307,7 @@ Expecting TypeError exception from store.openCursor(0, 'invalid-direction')
 PASS Exception was thrown.
 PASS store.openCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openCursor' on 'IDBObjectStore': The provided value 'invalid-direction' is not a valid enum value of type IDBCursorDirection.
 
+
 IDBObjectStore.openKeyCursor()
 If the range parameter is specified but is not a valid key or a key range, this method throws a DOMException of type DataError.
 Expecting exception from store.openKeyCursor({})
@@ -303,6 +325,7 @@ The value for the direction parameter is invalid.
 Expecting TypeError exception from store.openKeyCursor(0, 'invalid-direction')
 PASS Exception was thrown.
 PASS store.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBObjectStore': The provided value 'invalid-direction' is not a valid enum value of type IDBCursorDirection.
+
 
 IDBObjectStore.put()
 This method throws a DOMException of type ReadOnlyError if the transaction which this IDBObjectStore belongs to is has its mode set to "readonly".
@@ -326,12 +349,15 @@ db.close()
 ro_transaction.oncomplete = transactionComplete
 rw_transaction.oncomplete = transactionComplete
 
+
 transactionComplete():
 First transaction completed
+
 
 transactionComplete():
 request = indexedDB.open(dbname, 3)
 request.onupgradeneeded = onUpgradeNeeded3
+
 
 IDBObjectStore.createIndex()
 If an index with the same name already exists, the implementation must throw a DOMException of type ConstraintError. 
@@ -353,6 +379,7 @@ PASS code is DOMException.INVALID_ACCESS_ERR
 PASS ename is 'InvalidAccessError'
 Exception message: Failed to execute 'createIndex' on 'IDBObjectStore': The keyPath argument was an array and the multiEntry option is true.
 
+
 IDBObjectStore.deleteIndex()
 There is no index with the given name, compared in a case-sensitive manner, in the connected database.
 Expecting exception from store.deleteIndex('no-such-index')
@@ -360,6 +387,7 @@ PASS Exception was thrown.
 PASS code is DOMException.NOT_FOUND_ERR
 PASS ename is 'NotFoundError'
 Exception message: Failed to execute 'deleteIndex' on 'IDBObjectStore': The specified index was not found.
+
 
 One more IDBObjectStore.createIndex() test:
 If this function is called from outside a "versionchange" transaction callback ... the implementation must throw a DOMException of type InvalidStateError.
@@ -369,6 +397,7 @@ PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
 Exception message: Failed to execute 'createIndex' on 'IDBObjectStore': The database is not running a version change transaction.
 
+
 One more IDBObjectStore.deleteIndex() test:
 If this function is called from outside a "versionchange" transaction callback ... the implementation must throw a DOMException of type InvalidStateError.
 Expecting exception from db.transaction('store').objectStore('store').deleteIndex('fail', 'keyPath')
@@ -377,9 +406,11 @@ PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
 Exception message: Failed to execute 'deleteIndex' on 'IDBObjectStore': The database is not running a version change transaction.
 
+
 3.2.6 Index
 indexFromReadOnlyTransaction = db.transaction('store', 'readonly').objectStore('store').index('index')
 index = db.transaction('store', 'readwrite').objectStore('store').index('index')
+
 
 IDBIndex.count()
 If the optional key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.
@@ -395,6 +426,7 @@ PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'count' on 'IDBIndex': The transaction has finished.
 
+
 IDBIndex.get()
 If the key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.
 Expecting exception from index.get({})
@@ -408,6 +440,7 @@ PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'get' on 'IDBIndex': The transaction has finished.
+
 
 IDBIndex.getAll()
 If the key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.
@@ -423,6 +456,7 @@ PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'getAll' on 'IDBIndex': The transaction has finished.
 
+
 IDBIndex.getKey()
 If the key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.
 Expecting exception from index.getKey({})
@@ -437,6 +471,7 @@ PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'getKey' on 'IDBIndex': The transaction has finished.
 
+
 IDBIndex.getAllKeys()
 If the key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.
 Expecting exception from index.getAllKeys({})
@@ -450,6 +485,7 @@ PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'getAllKeys' on 'IDBIndex': The transaction has finished.
+
 
 IDBIndex.openCursor()
 If the range parameter is specified but is not a valid key or a key range, this method throws a DOMException of type DataError.
@@ -469,6 +505,7 @@ Expecting TypeError exception from index.openCursor(0, 'invalid-direction')
 PASS Exception was thrown.
 PASS index.openCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openCursor' on 'IDBIndex': The provided value 'invalid-direction' is not a valid enum value of type IDBCursorDirection.
 
+
 IDBIndex.openKeyCursor()
 If the range parameter is specified but is not a valid key or a key range, this method throws a DOMException of type DataError.
 Expecting exception from index.openKeyCursor({})
@@ -487,6 +524,7 @@ Expecting TypeError exception from index.openKeyCursor(0, 'invalid-direction')
 PASS Exception was thrown.
 PASS index.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBIndex': The provided value 'invalid-direction' is not a valid enum value of type IDBCursorDirection.
 
+
 3.2.7 Cursor
 transaction = db.transaction(['store', 'inlineKeyStore'], 'readwrite')
 request = transaction.objectStore('store').openCursor()
@@ -497,6 +535,7 @@ request = transaction.objectStore('store').openCursor(IDBKeyRange.lowerBound(-In
 reverseCursor = request.result
 request = transaction.objectStore('inlineKeyStore').openCursor()
 inlineCursor = request.result
+
 
 IDBCursor.advance()
 Calling this method more than once before new cursor data has been loaded is not allowed and results in a DOMException of type InvalidStateError being thrown.
@@ -516,6 +555,7 @@ PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'advance' on 'IDBCursor': The transaction has finished.
+
 
 IDBCursor.continue()
 The parameter is not a valid key.
@@ -550,6 +590,7 @@ PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'continue' on 'IDBCursor': The transaction has finished.
 
+
 IDBCursor.delete()
 If this cursor's got value flag is false, or if this cursor was created using openKeyCursor a DOMException of type InvalidStateError is thrown.
 Expecting exception from keyCursor.delete()
@@ -563,6 +604,7 @@ PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'delete' on 'IDBCursor': The transaction has finished.
+
 
 IDBCursor.update()
 If this cursor's got value flag is false or if this cursor was created using openKeyCursor. This method throws a DOMException of type InvalidStateError.
@@ -592,6 +634,7 @@ readOnlyTransaction = db.transaction('store', 'readonly')
 request = readOnlyTransaction.objectStore('store').openCursor()
 cursorFromReadOnlyTransaction = request.result
 
+
 One more IDBCursor.delete() test:
 This method throws a DOMException of type ReadOnlyError if the transaction which this IDBCursor belongs to has its mode set to "readonly".
 Expecting exception from cursorFromReadOnlyTransaction.delete()
@@ -599,6 +642,7 @@ PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'ReadOnlyError'
 Exception message: Failed to execute 'delete' on 'IDBCursor': The record may not be deleted inside a read-only transaction.
+
 
 One more IDBCursor.update() test:
 This method throws a DOMException of type ReadOnlyError if the transaction which this IDBCursor belongs to has its mode set to "readonly".
@@ -608,7 +652,9 @@ PASS code is 0
 PASS ename is 'ReadOnlyError'
 Exception message: Failed to execute 'update' on 'IDBCursor': The record may not be updated inside a read-only transaction.
 
+
 3.2.8 Transaction
+
 
 IDBTransaction.abort()
 If this transaction is finished, throw a DOMException of type InvalidStateError. 

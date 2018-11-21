@@ -2,13 +2,13 @@ Validate the overloads of IDBObjectStore.openCursor(), IDBIndex.openCursor() and
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "cursor-overloads.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
 store = db.createObjectStore('store')
 index = store.createIndex('index', 'value')
 store.put({value: 0}, 0)
+
 
 verifyOverloads():
 trans = db.transaction('store')

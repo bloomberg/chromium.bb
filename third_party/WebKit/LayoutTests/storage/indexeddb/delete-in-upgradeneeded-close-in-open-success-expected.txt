@@ -2,12 +2,13 @@ Test that a deleteDatabase called while handling an upgradeneeded event is queue
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "delete-in-upgradeneeded-close-in-open-success.html"
 indexedDB.deleteDatabase(dbname)
 
+
 initiallyDeleted():
 request = indexedDB.open(dbname, 1)
+
 
 upgradeNeededCallback():
 PASS sawUpgradeNeeded is false
@@ -18,12 +19,14 @@ db = event.target.result
 request2 = indexedDB.deleteDatabase(dbname)
 request2.onsuccess = deleteSuccessCallback
 
+
 openSuccess():
 PASS sawUpgradeNeeded is true
 PASS sawVersionChange is false
 sawOpenSuccess = true
 db = event.target.result
 PASS db.version is 1
+
 
 versionChangeCallback():
 PASS event.oldVersion is 1
@@ -32,11 +35,13 @@ PASS sawOpenSuccess is true
 sawVersionChange = true
 Connection not closed at the end of 'versionchange', so 'blocked' should fire
 
+
 deleteBlockedCallback():
 PASS sawVersionChange is true
 PASS sawOpenSuccess is true
 sawDeleteBlocked = true
 db.close()
+
 
 deleteSuccessCallback():
 PASS sawVersionChange is true

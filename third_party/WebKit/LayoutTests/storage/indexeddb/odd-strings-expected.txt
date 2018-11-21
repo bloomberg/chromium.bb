@@ -2,7 +2,6 @@ Test IndexedDB odd value datatypes
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Deleting all the databases...
 opening a database named empty string
 indexedDB.open(testData[nextToOpen].name, 1)
@@ -12,6 +11,7 @@ key = testData[nextToOpen].name
 request = objectStore.add(key, key);
 db.close()
 
+
 opening a database named null
 indexedDB.open(testData[nextToOpen].name, 1)
 objectStore = db.createObjectStore(testData[nextToOpen].name);
@@ -19,6 +19,7 @@ index = objectStore.createIndex(testData[nextToOpen].name, 'keyPath');
 key = testData[nextToOpen].name
 request = objectStore.add(key, key);
 db.close()
+
 
 opening a database named faihu
 indexedDB.open(testData[nextToOpen].name, 1)
@@ -28,6 +29,7 @@ key = testData[nextToOpen].name
 request = objectStore.add(key, key);
 db.close()
 
+
 opening a database named unpaired surrogate
 indexedDB.open(testData[nextToOpen].name, 1)
 objectStore = db.createObjectStore(testData[nextToOpen].name);
@@ -35,6 +37,7 @@ index = objectStore.createIndex(testData[nextToOpen].name, 'keyPath');
 key = testData[nextToOpen].name
 request = objectStore.add(key, key);
 db.close()
+
 
 opening a database named fffe
 indexedDB.open(testData[nextToOpen].name, 1)
@@ -44,6 +47,7 @@ key = testData[nextToOpen].name
 request = objectStore.add(key, key);
 db.close()
 
+
 opening a database named ffff
 indexedDB.open(testData[nextToOpen].name, 1)
 objectStore = db.createObjectStore(testData[nextToOpen].name);
@@ -52,6 +56,7 @@ key = testData[nextToOpen].name
 request = objectStore.add(key, key);
 db.close()
 
+
 opening a database named line separator
 indexedDB.open(testData[nextToOpen].name, 1)
 objectStore = db.createObjectStore(testData[nextToOpen].name);
@@ -59,6 +64,7 @@ index = objectStore.createIndex(testData[nextToOpen].name, 'keyPath');
 key = testData[nextToOpen].name
 request = objectStore.add(key, key);
 db.close()
+
 
 reopening a database named empty string
 indexedDB.open(testData[nextToOpen].name, 2)
@@ -70,6 +76,7 @@ cursor = event.target.result;
 PASS cursor.key is testData[nextToOpen].name
 PASS cursor.value is testData[nextToOpen].name
 
+
 reopening a database named null
 indexedDB.open(testData[nextToOpen].name, 2)
 trans = event.target.transaction
@@ -79,6 +86,7 @@ request = objectStore.openCursor();
 cursor = event.target.result;
 PASS cursor.key is testData[nextToOpen].name
 PASS cursor.value is testData[nextToOpen].name
+
 
 reopening a database named faihu
 indexedDB.open(testData[nextToOpen].name, 2)
@@ -90,6 +98,7 @@ cursor = event.target.result;
 PASS cursor.key is testData[nextToOpen].name
 PASS cursor.value is testData[nextToOpen].name
 
+
 reopening a database named unpaired surrogate
 indexedDB.open(testData[nextToOpen].name, 2)
 trans = event.target.transaction
@@ -99,6 +108,7 @@ request = objectStore.openCursor();
 cursor = event.target.result;
 PASS cursor.key is testData[nextToOpen].name
 PASS cursor.value is testData[nextToOpen].name
+
 
 reopening a database named fffe
 indexedDB.open(testData[nextToOpen].name, 2)
@@ -110,6 +120,7 @@ cursor = event.target.result;
 PASS cursor.key is testData[nextToOpen].name
 PASS cursor.value is testData[nextToOpen].name
 
+
 reopening a database named ffff
 indexedDB.open(testData[nextToOpen].name, 2)
 trans = event.target.transaction
@@ -119,6 +130,7 @@ request = objectStore.openCursor();
 cursor = event.target.result;
 PASS cursor.key is testData[nextToOpen].name
 PASS cursor.value is testData[nextToOpen].name
+
 
 reopening a database named line separator
 indexedDB.open(testData[nextToOpen].name, 2)

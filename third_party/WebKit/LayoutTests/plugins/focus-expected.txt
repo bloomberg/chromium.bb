@@ -6,7 +6,6 @@ Test for Embed and Object for bug 32292: Unable to focus on embedded plugins suc
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS "embedElem"; document.activeElement === pluginElement is true
 PASS "objectElem"; document.activeElement === pluginElement is true
 PASS "embedElemWithFallbackContents"; document.activeElement === pluginElement is true
@@ -22,8 +21,10 @@ PASS "noPluginObjectElemWithContenteditable"; document.activeElement === pluginE
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 Test for bug 32292: "Unable to focus on embedded plugins such as Flash via javascript focus()"
 
 This tests focusing Embeds and Objects. See LayoutTests/java for Applet elements.
 
-   Fallback contents.     Fallback contents. Fallback contents.      
+  Fallback contents.    Fallback contents. Fallback contents.    

@@ -1,9 +1,9 @@
 SVG 1.1 dynamic animation tests
 ABCD
+
 Test 'to' animation of SVGLengthList with different LengthTypes.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS text.x.animVal.numberOfItems is 4
 PASS text.x.animVal.getItem(0).value is 50

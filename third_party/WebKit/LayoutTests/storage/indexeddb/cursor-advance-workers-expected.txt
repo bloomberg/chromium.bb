@@ -2,7 +2,6 @@
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Starting worker: resources/cursor-advance.js
 [Worker] dbname = "cursor-advance.js"
 [Worker] indexedDB.deleteDatabase(dbname)

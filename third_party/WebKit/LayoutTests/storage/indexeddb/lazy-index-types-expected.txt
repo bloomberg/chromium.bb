@@ -2,10 +2,10 @@ Test lazy IndexedDB index population with various key types.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "lazy-index-types.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname, 1)
+
 
 onUpgradeNeeded():
 db = event.target.result
@@ -28,6 +28,7 @@ store.put({id: /(?:)/})
 index = store.createIndex('lazy-index', 'id')
 expectedIndexSize = 8
 
+
 onSuccess():
 db = event.target.result
 trans = db.transaction('store')
@@ -37,13 +38,16 @@ request = greedyIndex.count()
 lazyIndex = store.index('lazy-index')
 request = lazyIndex.count()
 
+
 countSuccess():
 PASS event.target.result is expectedIndexSize
 gotGreedyCount = true
 
+
 countSuccess():
 PASS event.target.result is expectedIndexSize
 gotLazyCount = true
+
 
 onComplete():
 PASS gotGreedyCount is true

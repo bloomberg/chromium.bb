@@ -8,5 +8,4 @@ CONSOLE MESSAGE: Blink Test Plugin: KeyDown 'KeyB'
 CONSOLE MESSAGE: Blink Test Plugin: KeyUp 'KeyB'
 CONSOLE MESSAGE: Blink Test Plugin: KeyDown 'KeyC'
 CONSOLE MESSAGE: Blink Test Plugin: KeyUp 'KeyC'
-
 This test checks if a plugin can receive keyboard events sent from eventSender. This is a test for Bug 34936.

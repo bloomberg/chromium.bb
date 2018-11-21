@@ -2,7 +2,6 @@ Test IndexedDB's behavior adding inline and passed key simultaneously
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "key-requirements-inline-and-passed.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

@@ -2,7 +2,6 @@ Tests that Document.createEvent() throws for SVG Documents when given no argumen
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS svgDoc.__proto__ is XMLDocument.prototype
 PASS svgDoc.__proto__.__proto__ is Document.prototype
 PASS svgDoc.createEvent() threw exception TypeError: Failed to execute 'createEvent' on 'Document': 1 argument required, but only 0 present..

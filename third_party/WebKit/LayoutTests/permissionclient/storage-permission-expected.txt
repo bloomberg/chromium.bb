@@ -1,4 +1,5 @@
 This test verifies that all access to localStorage can be blocked
+
 Length is 0
 Value for FOO is null
 Length is 1

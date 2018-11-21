@@ -2,7 +2,6 @@ Test features of IndexedDB's multiEntry indices.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "index-multientry.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -10,6 +9,7 @@ store = db.createObjectStore('store')
 store.createIndex('index', 'x', {multiEntry: true})
 store2 = db.createObjectStore('store-unique')
 store2.createIndex('index-unique', 'x', {multiEntry: true, unique: true})
+
 
 Populating stores (and indexes)
 transaction = db.transaction(['store'], 'readwrite')
@@ -20,6 +20,7 @@ transaction.objectStore('store').put({x: [1, 2, 3], y: 'a'}, 'foo')
 transaction.objectStore('store').put({x: [4, 5, 6], y: 'b'}, 'bar')
 transaction.objectStore('store').put({x: [7, 7, 8, 7], y: 'c'}, 'baz')
 transaction.objectStore('store').put({x: [null, 9, 9], y: 'd'}, 'bloop')
+
 
 Verifying index: index
 transaction = db.transaction(['store'], 'readonly')
@@ -87,6 +88,7 @@ PASS event.target.result is 9
 index.count(7)
 PASS event.target.result is 1
 
+
 Verifying unique constraint on multiEntry index
 transaction = db.transaction(['store-unique'], 'readwrite')
 transaction.objectStore('store-unique').put({x: [1, 2, 3], y: 'a'}, 'foo')
@@ -101,6 +103,7 @@ PASS request.error is non-null.
 Request failed, as expected (ConstraintError)
 Transaction aborted as expected
 
+
 Create an index on a populated store
 db.close()
 indexedDB.open(dbname, 2)
@@ -108,6 +111,7 @@ db = event.target.result
 trans = event.target.transaction
 store = trans.objectStore('store')
 store.createIndex('index-new', 'x', {multiEntry: true})
+
 
 Verifying index: index-new
 transaction = db.transaction(['store'], 'readonly')

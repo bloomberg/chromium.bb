@@ -2,10 +2,10 @@ Call db.close() in the complete handler for a version change transaction, before
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "intversion-close-in-oncomplete.html"
 indexedDB.deleteDatabase(dbname)
 request = indexedDB.open(dbname, 7)
+
 
 upgradeNeeded():
 db = event.target.result
@@ -13,9 +13,11 @@ PASS event.newVersion is 7
 db.createObjectStore('os')
 transaction = event.target.transaction
 
+
 transaction.oncomplete:
 sawTransactionComplete = true
 db.close()
+
 
 openError():
 PASS sawTransactionComplete is true

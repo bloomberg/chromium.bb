@@ -2,12 +2,12 @@ h2 shouldn't receive any blocked events, and h3 should open after h2 is open
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "setversion-blocked-by-versionchange-close.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
 versionChangeComplete = false
 h2Opened = false
+
 
 openAnother():
 h1 = event.target.result
@@ -15,14 +15,18 @@ indexedDB.open(dbname, 2)
 indexedDB.open(dbname)
 h1.close()
 
+
 h2UpgradeNeeded():
 h2 = event.target.result
+
 
 transactionOnComplete():
 versionChangeComplete = true
 
+
 h2Success():
 h2Opened = true
+
 
 h3Success():
 h3 = event.target.result

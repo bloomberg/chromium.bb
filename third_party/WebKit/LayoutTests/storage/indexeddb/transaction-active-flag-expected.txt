@@ -2,15 +2,16 @@ Test IndexedDB transaction internal active flag.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "transaction-active-flag.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
 store = db.createObjectStore('store')
 store.createIndex('index', 'keypath')
 
+
 runTransaction():
 transaction = db.transaction('store', 'readwrite')
+
 
 Verify that transactions are created with |active| flag set:
 store = transaction.objectStore('store')
@@ -48,8 +49,10 @@ PASS index.openKeyCursor(0, 'next') did not throw exception.
 PASS index.openKeyCursor(IDBKeyRange.only(0)) did not throw exception.
 PASS index.openKeyCursor(IDBKeyRange.only(0), 'next') did not throw exception.
 
+
 Transaction shouldn't be active inside a non-IDB-event callback
 setTimeout(testTimeout, 0)
+
 
 testTimeout():
 store = transaction.objectStore('store')
@@ -215,6 +218,7 @@ PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'openKeyCursor' on 'IDBIndex': The transaction is not active.
 
+
 testEventCallback():
 Transaction should be active inside a non-IDB-event callback
 store = transaction.objectStore('store')
@@ -251,6 +255,7 @@ PASS index.openKeyCursor(0) did not throw exception.
 PASS index.openKeyCursor(0, 'next') did not throw exception.
 PASS index.openKeyCursor(IDBKeyRange.only(0)) did not throw exception.
 PASS index.openKeyCursor(IDBKeyRange.only(0), 'next') did not throw exception.
+
 
 transactionComplete():
 Expecting exception from store = transaction.objectStore('store')

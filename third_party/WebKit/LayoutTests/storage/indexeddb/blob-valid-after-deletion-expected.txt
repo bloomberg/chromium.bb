@@ -2,12 +2,12 @@ Confirm that blobs stay alive after their records are deleted.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "blob-valid-after-deletion.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
 store = db.createObjectStore('store')
 store.put(value, key)
+
 
 doRead():
 trans = db.transaction('store')
@@ -22,4 +22,5 @@ PASS document.getElementById('frame2').contentDocument.body.innerText is blobBCo
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
   

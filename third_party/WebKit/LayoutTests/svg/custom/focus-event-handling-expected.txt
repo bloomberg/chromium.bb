@@ -1,8 +1,9 @@
 TEST
+
+
 Test whether focusin and focusout events are dispatched and seen in the focusin/focusout event handlers:
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS focusinSeen is "rect1"
 PASS focusoutSeen is "rect1"

@@ -1,4 +1,5 @@
 This tests hit testing on ellipses with continuous strokes. If this test passes, you will see "PASS" below.
+
 PASS
 
 (27, 46)
