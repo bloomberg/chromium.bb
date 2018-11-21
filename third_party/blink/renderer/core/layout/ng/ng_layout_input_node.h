@@ -32,14 +32,10 @@ enum class NGMinMaxSizeType { kContentBoxSize, kBorderBoxSize };
 
 // Input to the min/max inline size calculation algorithm for child nodes. Child
 // nodes within the same formatting context need to know which floats are beside
-// them. Additionally, orthogonal writing mode roots will need the extrinsic
-// block-size of the container.
+// them.
 struct MinMaxSizeInput {
   LayoutUnit float_left_inline_size;
   LayoutUnit float_right_inline_size;
-
-  // Extrinsic block-size of the containing block.
-  LayoutUnit extrinsic_block_size = NGSizeIndefinite;
 
   // Whether to return the size as a content-box size or border-box size.
   NGMinMaxSizeType size_type = NGMinMaxSizeType::kBorderBoxSize;

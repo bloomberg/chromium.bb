@@ -806,11 +806,10 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item) {
                    *item_result->layout_result->PhysicalFragment())
             .InlineSize();
   } else {
-    NGBlockNode block_node(ToLayoutBox(item.GetLayoutObject()));
+    NGBlockNode child(ToLayoutBox(item.GetLayoutObject()));
     MinMaxSizeInput input;
-    MinMaxSize sizes = ComputeMinAndMaxContentContribution(
-        constraint_space_.GetWritingMode(), block_node, input,
-        &constraint_space_);
+    MinMaxSize sizes =
+        ComputeMinAndMaxContentContribution(node_.Style(), child, input);
     item_result->inline_size = mode_ == NGLineBreakerMode::kMinContent
                                    ? sizes.min_size
                                    : sizes.max_size;

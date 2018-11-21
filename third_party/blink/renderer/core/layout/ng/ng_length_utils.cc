@@ -426,11 +426,12 @@ MinMaxSize ComputeMinAndMaxContentContribution(
 }
 
 MinMaxSize ComputeMinAndMaxContentContribution(
-    WritingMode writing_mode,
-    NGLayoutInputNode node,
-    const MinMaxSizeInput& input,
-    const NGConstraintSpace* constraint_space) {
-  LayoutBox* box = node.GetLayoutBox();
+    const ComputedStyle& parent_style,
+    NGLayoutInputNode child,
+    const MinMaxSizeInput& input) {
+  const ComputedStyle& child_style = child.Style();
+  WritingMode parent_writing_mode = parent_style.GetWritingMode();
+  LayoutBox* box = child.GetLayoutBox();
 
   if (box->NeedsPreferredWidthsRecalculation()) {
     // Some objects (when there's an intrinsic ratio) have their min/max inline
@@ -441,7 +442,8 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     box->SetPreferredLogicalWidthsDirty();
   }
 
-  if (IsParallelWritingMode(writing_mode, node.Style().GetWritingMode())) {
+  if (IsParallelWritingMode(parent_writing_mode,
+                            child_style.GetWritingMode())) {
     if (!box->PreferredLogicalWidthsDirty()) {
       return {box->MinPreferredLogicalWidth(), box->MaxPreferredLogicalWidth()};
     }
@@ -455,38 +457,24 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   }
 
   base::Optional<MinMaxSize> minmax;
-  if (NeedMinMaxSizeForContentContribution(writing_mode, node.Style())) {
-    NGConstraintSpace adjusted_constraint_space;
-    if (constraint_space) {
-      // TODO(layout-ng): Check if our constraint space produces spec-compliant
-      // outputs.
-      // It is important to set a floats bfc block offset so that we don't get a
-      // partial layout. It is also important that we shrink to fit, by
-      // definition.
-      adjusted_constraint_space =
-          NGConstraintSpaceBuilder(
-              *constraint_space, node.Style().GetWritingMode(),
-              /* is_new_fc */ constraint_space->IsNewFormattingContext())
-              .SetOrthogonalFallbackInlineSize(
-                  // TODO(mstensho): This is broken and needs to be cleaned
-                  // up. First of all, we don't know whom |constraint_space| is
-                  // for. Could be for |node|, or could be for its parent,
-                  // depending on call site.
-                  constraint_space->AvailableSize().inline_size)
-              .SetAvailableSize(constraint_space->AvailableSize())
-              .SetPercentageResolutionSize(
-                  constraint_space->PercentageResolutionSize())
-              .SetFloatsBfcBlockOffset(LayoutUnit())
-              .SetIsShrinkToFit(true)
-              .ToConstraintSpace();
-      constraint_space = &adjusted_constraint_space;
+  if (NeedMinMaxSizeForContentContribution(parent_writing_mode, child_style)) {
+    // We need to set up a constraint space with correct fallback available
+    // inline size in case of orthogonal children.
+    NGConstraintSpace indefinite_constraint_space;
+    const NGConstraintSpace* child_constraint_space = nullptr;
+    if (!IsParallelWritingMode(parent_writing_mode,
+                               child_style.GetWritingMode())) {
+      indefinite_constraint_space =
+          CreateIndefiniteConstraintSpaceForChild(parent_style, child);
+      child_constraint_space = &indefinite_constraint_space;
     }
-    minmax = node.ComputeMinMaxSize(writing_mode, input, constraint_space);
+    minmax = child.ComputeMinMaxSize(parent_writing_mode, input,
+                                     child_constraint_space);
   }
 
-  MinMaxSize sizes =
-      ComputeMinAndMaxContentContribution(writing_mode, node.Style(), minmax);
-  if (IsParallelWritingMode(writing_mode, node.Style().GetWritingMode()))
+  MinMaxSize sizes = ComputeMinAndMaxContentContribution(parent_writing_mode,
+                                                         child_style, minmax);
+  if (IsParallelWritingMode(parent_writing_mode, child_style.GetWritingMode()))
     box->SetPreferredLogicalWidthsFromNG(sizes);
   return sizes;
 }
@@ -1155,10 +1143,17 @@ LayoutUnit CalculateOrthogonalFallbackInlineSize(
   else
     fallback_size = orthogonal_children_containing_block_size.width;
 
-  if (!parent_style.LogicalMaxHeight().IsFixed())
-    return fallback_size;
-
-  LayoutUnit size(parent_style.LogicalMaxHeight().GetFloatValue());
+  LayoutUnit size(LayoutUnit::Max());
+  if (parent_style.LogicalHeight().IsFixed()) {
+    // Note that during layout, fixed size will already be taken care of (and
+    // set in the constraint space), but when calculating intrinsic sizes of
+    // orthogonal children, that won't be the case.
+    size = LayoutUnit(parent_style.LogicalHeight().GetFloatValue());
+  }
+  if (parent_style.LogicalMaxHeight().IsFixed()) {
+    size = std::min(
+        size, LayoutUnit(parent_style.LogicalMaxHeight().GetFloatValue()));
+  }
   if (parent_style.LogicalMinHeight().IsFixed()) {
     size = std::max(
         size, LayoutUnit(parent_style.LogicalMinHeight().GetFloatValue()));

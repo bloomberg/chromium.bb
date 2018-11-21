@@ -118,19 +118,17 @@ ComputeMinAndMaxContentContribution(WritingMode writing_mode,
                                     const base::Optional<MinMaxSize>&);
 
 // A version of ComputeMinAndMaxContentContribution that does not require you
-// to compute the min/max content size of the node. Instead, this function
+// to compute the min/max content size of the child. Instead, this function
 // will compute it if necessary.
-// writing_mode is the desired output writing mode (ie. often the writing mode
-// of the parent); node is the node of which to compute the min/max content
-// contribution.
-// If a constraint space is provided, this function will convert it to the
-// correct writing mode and otherwise make sure it is suitable for computing
-// the desired value.
+// |child| is the node of which to compute the min/max content contribution.
+// Note that if the writing mode of the child is orthogonal to that of the
+// parent, we'll still return the inline min/max contribution in the writing
+// mode of the parent (i.e. typically something based on the preferred *block*
+// size of the child).
 MinMaxSize ComputeMinAndMaxContentContribution(
-    WritingMode writing_mode,
-    NGLayoutInputNode node,
-    const MinMaxSizeInput& input,
-    const NGConstraintSpace* space = nullptr);
+    const ComputedStyle& parent_style,
+    NGLayoutInputNode child,
+    const MinMaxSizeInput& input);
 
 // Resolves the computed value in style.logicalWidth (Length) to a layout unit,
 // then constrains the result by the resolved min logical width and max logical

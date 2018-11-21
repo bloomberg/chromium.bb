@@ -200,14 +200,6 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
   LayoutUnit float_left_inline_size = input.float_left_inline_size;
   LayoutUnit float_right_inline_size = input.float_right_inline_size;
 
-  LayoutUnit extrinsic_block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), NGSizeIndefinite, border_padding);
-  if (extrinsic_block_size != NGSizeIndefinite) {
-    extrinsic_block_size -=
-        (border_padding + Node().GetScrollbarSizes()).BlockSum();
-    extrinsic_block_size = extrinsic_block_size.ClampNegativeToZero();
-  }
-
   for (NGLayoutInputNode child = Node().FirstChild(); child;
        child = child.NextSibling()) {
     if (child.IsOutOfFlowPositioned() || child.IsColumnSpanAll())
@@ -238,10 +230,8 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     }
 
     MinMaxSizeInput child_input;
-    if (child.IsInline() || child.IsAnonymousBlock()) {
-      child_input = {float_left_inline_size, float_right_inline_size,
-                     extrinsic_block_size};
-    }
+    if (child.IsInline() || child.IsAnonymousBlock())
+      child_input = {float_left_inline_size, float_right_inline_size};
 
     MinMaxSize child_sizes;
     if (child.IsInline()) {
@@ -250,27 +240,12 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
       // all inline nodes following |child| and their descendants, and produces
       // an anonymous box that contains all line boxes.
       // |NextSibling| returns the next block sibling, or nullptr, skipping all
-      // following inline siblings and descendants. We'll pass our constraint
-      // space here, so that floated orthogonal flow roots can calculate an
-      // extrinsic constraint space.
-      child_sizes = child.ComputeMinMaxSize(Style().GetWritingMode(),
-                                            child_input, &constraint_space_);
+      // following inline siblings and descendants.
+      child_sizes =
+          child.ComputeMinMaxSize(Style().GetWritingMode(), child_input);
     } else {
-      // We'll need extrinsic sizing data when computing min/max for orthogonal
-      // flow roots. If the child is a block node, we can check that right away,
-      // but if it's inline, there's no way of telling; there may be floated
-      // children that establish an orthogonal flow root.
-      NGConstraintSpace extrinsic_constraint_space;
-      const NGConstraintSpace* optional_constraint_space = nullptr;
-      if (!IsParallelWritingMode(Style().GetWritingMode(),
-                                 child.Style().GetWritingMode())) {
-        extrinsic_constraint_space = CreateExtrinsicConstraintSpaceForChild(
-            ConstraintSpace(), Style(), extrinsic_block_size, child);
-        optional_constraint_space = &extrinsic_constraint_space;
-      }
-      child_sizes = ComputeMinAndMaxContentContribution(
-          Style().GetWritingMode(), child, child_input,
-          optional_constraint_space);
+      child_sizes =
+          ComputeMinAndMaxContentContribution(Style(), child, child_input);
     }
     DCHECK_LE(child_sizes.min_size, child_sizes.max_size) << child.ToString();
 
