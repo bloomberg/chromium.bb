@@ -85,8 +85,7 @@ class IdentityManagerImpl : public mojom::IdentityManager,
   void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // SigninManagerBase::Observer:
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
+  void GoogleSigninSucceeded(const AccountInfo& account_info) override;
 
   // Notified when there is a change in the state of the account
   // corresponding to |account_id|.
