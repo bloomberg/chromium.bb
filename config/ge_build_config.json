@@ -2315,6 +2315,12 @@
         },
         {
           "board_name": "scarlet",
+          "name": "druwl",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "scarlet",
           "name": "dumo",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
