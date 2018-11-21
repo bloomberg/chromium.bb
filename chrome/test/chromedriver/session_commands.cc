@@ -100,47 +100,53 @@ InitSessionParams::~InitSessionParams() {}
 
 namespace {
 
+// Creates a JSON object (represented by base::DictionaryValue) that contains
+// the capabilities, for returning to the client app as the result of New
+// Session command.
 std::unique_ptr<base::DictionaryValue> CreateCapabilities(
     Session* session,
-    const Capabilities& capabilities) {
+    const Capabilities& capabilities,
+    const base::DictionaryValue& desired_caps) {
   std::unique_ptr<base::DictionaryValue> caps(new base::DictionaryValue());
-  caps->SetString("browserName", "chrome");
-  caps->SetString("version",
-                  session->chrome->GetBrowserInfo()->browser_version);
-  caps->SetString("chrome.chromedriverVersion", kChromeDriverVersion);
-  caps->SetString(
-      "goog:chromeOptions.debuggerAddress",
-      session->chrome->GetBrowserInfo()->debugger_address.ToString());
-  caps->SetString("platform", session->chrome->GetOperatingSystemName());
-  caps->SetString("pageLoadStrategy", session->chrome->page_load_strategy());
-  caps->SetBoolean("javascriptEnabled", true);
-  caps->SetBoolean("takesScreenshot", true);
-  caps->SetBoolean("takesHeapSnapshot", true);
-  caps->SetBoolean("handlesAlerts", true);
-  caps->SetBoolean("databaseEnabled", false);
-  caps->SetBoolean("locationContextEnabled", true);
-  caps->SetBoolean("mobileEmulationEnabled",
-                   session->chrome->IsMobileEmulationEnabled());
-  caps->SetBoolean("applicationCacheEnabled", false);
-  caps->SetBoolean("browserConnectionEnabled", false);
-  caps->SetBoolean("cssSelectorsEnabled", true);
-  caps->SetBoolean("webStorageEnabled", true);
-  caps->SetBoolean("rotatable", false);
-  caps->SetBoolean("acceptSslCerts", capabilities.accept_insecure_certs);
-  caps->SetBoolean("acceptInsecureCerts", capabilities.accept_insecure_certs);
-  caps->SetBoolean("nativeEvents", true);
-  caps->SetBoolean("hasTouchScreen", session->chrome->HasTouchScreen());
-  caps->SetString(session->w3c_compliant ? "unhandledPromptBehavior"
-                                         : "unexpectedAlertBehaviour",
-                  session->unhandled_prompt_behavior);
 
+  // Capabilities defined by W3C. Some of these capabilities have different
+  // names in legacy mode.
+  caps->SetString("browserName", "chrome");
+  caps->SetString(session->w3c_compliant ? "browserVersion" : "version",
+                  session->chrome->GetBrowserInfo()->browser_version);
+  if (session->w3c_compliant)
+    caps->SetString(
+        "platformName",
+        base::ToLowerASCII(session->chrome->GetOperatingSystemName()));
+  else
+    caps->SetString("platform", session->chrome->GetOperatingSystemName());
+  caps->SetString("pageLoadStrategy", session->chrome->page_load_strategy());
+  caps->SetBoolean("acceptInsecureCerts", capabilities.accept_insecure_certs);
+  const base::Value* proxy = desired_caps.FindKey("proxy");
+  if (proxy == nullptr || proxy->is_none())
+    caps->SetKey("proxy", base::Value(base::Value::Type::DICTIONARY));
+  else
+    caps->SetKey("proxy", proxy->Clone());
   // add setWindowRect based on whether we are desktop/android/remote
   if (capabilities.IsAndroid() || capabilities.IsRemoteBrowser()) {
     caps->SetBoolean("setWindowRect", false);
   } else {
     caps->SetBoolean("setWindowRect", true);
   }
+  caps->SetInteger("timeouts.script", session->script_timeout.InMilliseconds());
+  caps->SetInteger("timeouts.pageLoad",
+                   session->page_load_timeout.InMilliseconds());
+  caps->SetInteger("timeouts.implicit",
+                   session->implicit_wait.InMilliseconds());
+  caps->SetString(session->w3c_compliant ? "unhandledPromptBehavior"
+                                         : "unexpectedAlertBehaviour",
+                  session->unhandled_prompt_behavior);
 
+  // Chrome-specific extensions.
+  caps->SetString("chrome.chromedriverVersion", kChromeDriverVersion);
+  caps->SetString(
+      "goog:chromeOptions.debuggerAddress",
+      session->chrome->GetBrowserInfo()->debugger_address.ToString());
   ChromeDesktopImpl* desktop = NULL;
   Status status = session->chrome->GetAsDesktop(&desktop);
   if (status.IsOk()) {
@@ -148,6 +154,26 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
                     desktop->command().GetSwitchValueNative("user-data-dir"));
     caps->SetBoolean("networkConnectionEnabled",
                      desktop->IsNetworkConnectionEnabled());
+  }
+
+  // Legacy capabilities.
+  if (!session->w3c_compliant) {
+    caps->SetBoolean("javascriptEnabled", true);
+    caps->SetBoolean("takesScreenshot", true);
+    caps->SetBoolean("takesHeapSnapshot", true);
+    caps->SetBoolean("handlesAlerts", true);
+    caps->SetBoolean("databaseEnabled", false);
+    caps->SetBoolean("locationContextEnabled", true);
+    caps->SetBoolean("mobileEmulationEnabled",
+                     session->chrome->IsMobileEmulationEnabled());
+    caps->SetBoolean("applicationCacheEnabled", false);
+    caps->SetBoolean("browserConnectionEnabled", false);
+    caps->SetBoolean("cssSelectorsEnabled", true);
+    caps->SetBoolean("webStorageEnabled", true);
+    caps->SetBoolean("rotatable", false);
+    caps->SetBoolean("acceptSslCerts", capabilities.accept_insecure_certs);
+    caps->SetBoolean("nativeEvents", true);
+    caps->SetBoolean("hasTouchScreen", session->chrome->HasTouchScreen());
   }
 
   return caps;
@@ -293,7 +319,8 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
     return status;
   session->detach = capabilities.detach;
   session->force_devtools_screenshot = capabilities.force_devtools_screenshot;
-  session->capabilities = CreateCapabilities(session, capabilities);
+  session->capabilities =
+      CreateCapabilities(session, capabilities, *desired_caps);
 
   if (session->w3c_compliant) {
     base::DictionaryValue body;
