@@ -27,10 +27,12 @@ CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2017'
 
 def SetEnvironmentAndGetRuntimeDllDirs():
   """Sets up os.environ to use the depot_tools VS toolchain with gyp, and
-  returns the location of the VS runtime DLLs so they can be copied into
+  returns the location of the VC runtime DLLs so they can be copied into
   the output directory after gyp generation.
 
-  Return value is [x64path, x86path] or None
+  Return value is [x64path, x86path, 'Arm64Unused'] or None. arm64path is
+  generated separately because there are multiple folders for the arm64 VC
+  runtime.
   """
   vs_runtime_dll_dirs = None
   depot_tools_win_toolchain = \
@@ -86,7 +88,9 @@ def SetEnvironmentAndGetRuntimeDllDirs():
     # don't build on ARM64 machines.
     x64_path = 'System32' if bitness == '64bit' else 'Sysnative'
     x64_path = os.path.join(os.path.expandvars('%windir%'), x64_path)
-    vs_runtime_dll_dirs = [x64_path, os.path.expandvars('%windir%/SysWOW64'),
+    vs_runtime_dll_dirs = [x64_path,
+                           os.path.join(os.path.expandvars('%windir%'),
+                                        'SysWOW64'),
                            'Arm64Unused']
 
   return vs_runtime_dll_dirs
@@ -184,6 +188,16 @@ def _CopyRuntimeImpl(target, source, verbose=True):
 def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
   """Copy both the msvcp and vccorlib runtime DLLs, only if the target doesn't
   exist, but the target directory does exist."""
+  if target_cpu == 'arm64':
+    # Windows ARM64 VCRuntime is located at {toolchain_root}/VC/Redist/MSVC/
+    # {x.y.z}/[debug_nonredist/]arm64/Microsoft.VC141.CRT/.
+    vc_redist_root = FindVCRedistRoot()
+    if suffix.startswith('.'):
+      source_dir = os.path.join(vc_redist_root,
+                                'arm64', 'Microsoft.VC141.CRT')
+    else:
+      source_dir = os.path.join(vc_redist_root, 'debug_nonredist',
+                                'arm64', 'Microsoft.VC141.DebugCRT')
   for file_part in ('msvcp', 'vccorlib', 'vcruntime'):
     dll = dll_pattern % file_part
     target = os.path.join(target_dir, dll)
@@ -211,6 +225,20 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
       _CopyRuntimeImpl(ucrt_dst_file, ucrt_src_file, False)
   # We must copy ucrtbase.dll for x64/x86, and ucrtbased.dll for all CPU types.
   if target_cpu != 'arm64' or not suffix.startswith('.'):
+    if not suffix.startswith('.'):
+      # ucrtbased.dll is located at {win_sdk_dir}/bin/{a.b.c.d}/{target_cpu}/
+      # ucrt/.
+      sdk_redist_root = os.path.join(win_sdk_dir, 'bin')
+      sdk_bin_sub_dirs = os.listdir(sdk_redist_root)
+      # Select the most recent SDK if there are multiple versions installed.
+      sdk_bin_sub_dirs.sort(reverse=True)
+      for directory in sdk_bin_sub_dirs:
+        sdk_redist_root_version = os.path.join(sdk_redist_root, directory)
+        if not os.path.isdir(sdk_redist_root_version):
+          continue
+        if re.match('10\.\d+\.\d+\.\d+', directory):
+          source_dir = os.path.join(sdk_redist_root_version, target_cpu, 'ucrt')
+          break
     _CopyRuntimeImpl(os.path.join(target_dir, 'ucrtbase' + suffix),
                      os.path.join(source_dir, 'ucrtbase' + suffix))
 
@@ -236,6 +264,29 @@ def FindVCToolsRoot():
     if re.match('14\.\d+\.\d+', directory):
       return os.path.join(vc_tools_msvc_root, directory, 'bin')
   raise Exception('Unable to find the VC tools directory.')
+
+
+def FindVCRedistRoot():
+  """In VS2017, Redist binaries are located in
+  {toolchain_root}/VC/Redist/MSVC/{x.y.z}/{target_cpu}/, the {version_number}
+  part is likely to change in case of minor update of the toolchain so we don't
+  hardcode this value here (except for the major number).
+
+  This returns the '{toolchain_root}/VC/Redist/MSVC/{x.y.z}/' path.
+
+  This function should only be called when using VS2017.
+  """
+  assert GetVisualStudioVersion() == '2017'
+  SetEnvironmentAndGetRuntimeDllDirs()
+  assert ('GYP_MSVS_OVERRIDE_PATH' in os.environ)
+  vc_redist_msvc_root = os.path.join(os.environ['GYP_MSVS_OVERRIDE_PATH'],
+      'VC', 'Redist', 'MSVC')
+  for directory in os.listdir(vc_redist_msvc_root):
+    if not os.path.isdir(os.path.join(vc_redist_msvc_root, directory)):
+      continue
+    if re.match('14\.\d+\.\d+', directory):
+      return os.path.join(vc_redist_msvc_root, directory)
+  raise Exception('Unable to find the VC redist directory')
 
 
 def _CopyPGORuntime(target_dir, target_cpu):
@@ -286,7 +337,7 @@ def CopyDlls(target_dir, configuration, target_cpu):
   """Copy the VS runtime DLLs into the requested directory as needed.
 
   configuration is one of 'Debug' or 'Release'.
-  target_cpu is one of 'x86' or 'x64'.
+  target_cpu is one of 'x86', 'x64' or 'arm64'.
 
   The debug configuration gets both the debug and release DLLs; the
   release config only the latter.
@@ -316,7 +367,7 @@ def CopyDlls(target_dir, configuration, target_cpu):
 def _CopyDebugger(target_dir, target_cpu):
   """Copy dbghelp.dll and dbgcore.dll into the requested directory as needed.
 
-  target_cpu is one of 'x86' or 'x64'.
+  target_cpu is one of 'x86', 'x64' or 'arm64'.
 
   dbghelp.dll is used when Chrome needs to symbolize stacks. Copying this file
   from the SDK directory avoids using the system copy of dbghelp.dll which then
