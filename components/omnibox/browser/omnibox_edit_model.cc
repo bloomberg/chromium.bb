@@ -719,9 +719,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   fake_single_entry_result.AppendMatches(input_, fake_single_entry_matches);
   OmniboxLog log(
       input_.from_omnibox_focus() ? base::string16() : input_text,
-      just_deleted_text_, input_.type(), is_keyword_selected(),
-      keyword_mode_entry_method_, popup_open, dropdown_ignored ? 0 : index,
-      disposition, !pasted_text.empty(),
+      just_deleted_text_, input_.type(), popup_open,
+      dropdown_ignored ? 0 : index, disposition, !pasted_text.empty(),
       SessionID::InvalidValue(),  // don't know tab ID; set later if appropriate
       ClassifyPage(), elapsed_time_since_user_first_modified_omnibox,
       match.allowed_to_be_default_match ? match.inline_autocompletion.length()

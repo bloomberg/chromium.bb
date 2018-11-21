@@ -23,8 +23,6 @@ struct OmniboxLog {
   OmniboxLog(const base::string16& text,
              bool just_deleted_text,
              metrics::OmniboxInputType input_type,
-             bool in_keyword_mode,
-             metrics::OmniboxEventProto::KeywordModeEntryMethod entry_method,
              bool is_popup_open,
              size_t selected_index,
              WindowOpenDisposition disposition,
@@ -47,14 +45,6 @@ struct OmniboxLog {
 
   // The detected type of the user's input.
   metrics::OmniboxInputType input_type;
-
-  // Whether the Omnibox was in keyword mode when the user selected a
-  // suggestion.
-  bool in_keyword_mode;
-
-  // Preserves the method that the user used to enter keyword mode. If
-  // |in_keyword_mode| is false, this should be INVALID.
-  metrics::OmniboxEventProto::KeywordModeEntryMethod keyword_mode_entry_method;
 
   // True if the popup is open.
   bool is_popup_open;
