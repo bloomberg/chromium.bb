@@ -531,7 +531,7 @@ void FakeSessionManagerClient::StartArcMiniContainer(
 
 void FakeSessionManagerClient::UpgradeArcContainer(
     const login_manager::UpgradeArcContainerRequest& request,
-    UpgradeArcContainerCallback success_callback,
+    base::OnceClosure success_callback,
     UpgradeErrorCallback error_callback) {
   last_upgrade_arc_request_ = request;
 
@@ -549,7 +549,8 @@ void FakeSessionManagerClient::UpgradeArcContainer(
     PostReply(FROM_HERE, std::move(error_callback), true);
     return;
   }
-  PostReply(FROM_HERE, std::move(success_callback), base::ScopedFD());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                std::move(success_callback));
 }
 
 void FakeSessionManagerClient::StopArcInstance(

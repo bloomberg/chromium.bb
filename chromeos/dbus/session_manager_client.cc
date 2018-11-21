@@ -412,7 +412,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void UpgradeArcContainer(
       const login_manager::UpgradeArcContainerRequest& request,
-      UpgradeArcContainerCallback success_callback,
+      base::OnceClosure success_callback,
       UpgradeErrorCallback error_callback) override {
     DCHECK(!success_callback.is_null());
     DCHECK(!error_callback.is_null());
@@ -811,7 +811,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::move(callback).Run(std::move(container_instance_id));
   }
 
-  void OnUpgradeArcContainer(UpgradeArcContainerCallback success_callback,
+  void OnUpgradeArcContainer(base::OnceClosure success_callback,
                              UpgradeErrorCallback error_callback,
                              dbus::Response* response,
                              dbus::ErrorResponse* error) {
@@ -823,15 +823,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
                             login_manager::dbus_error::kLowFreeDisk);
       return;
     }
-
-    dbus::MessageReader reader(response);
-    base::ScopedFD server_socket;
-    if (!reader.PopFileDescriptor(&server_socket)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      std::move(error_callback).Run(false);
-      return;
-    }
-    std::move(success_callback).Run(std::move(server_socket));
+    std::move(success_callback).Run();
   }
 
   dbus::ObjectProxy* session_manager_proxy_ = nullptr;
