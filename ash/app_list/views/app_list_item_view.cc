@@ -472,7 +472,7 @@ void AppListItemView::OnContextMenuModelReceived(
                   views::MenuRunner::FIXED_ANCHOR |
                   views::MenuRunner::CONTEXT_MENU;
 
-  if (source_type == ui::MENU_SOURCE_TOUCH)
+  if (source_type == ui::MENU_SOURCE_TOUCH && touch_dragging_)
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
 
   gfx::Rect anchor_rect = apps_grid_view_->GetIdealBounds(this);
