@@ -13,6 +13,8 @@
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace password_manager {
@@ -21,10 +23,10 @@ namespace {
 
 bool ShouldAffiliationBasedMatchingBeActive(syncer::SyncService* sync_service) {
   return base::FeatureList::IsEnabled(features::kAffiliationBasedMatching) &&
-         sync_service && sync_service->CanSyncFeatureStart() &&
-         sync_service->IsSyncFeatureActive() &&
-         sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS) &&
-         !sync_service->IsUsingSecondaryPassphrase();
+         sync_service && sync_service->IsSyncFeatureActive() &&
+         sync_service->GetUserSettings()->GetChosenDataTypes().Has(
+             syncer::PASSWORDS) &&
+         !sync_service->GetUserSettings()->IsUsingSecondaryPassphrase();
 }
 
 void ActivateAffiliationBasedMatching(

@@ -55,6 +55,8 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/content/content_record_password_state.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
@@ -821,7 +823,7 @@ bool ChromePasswordManagerClient::ShouldAnnotateNavigationEntries(
   browser_sync::ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   if (!profile_sync_service || !profile_sync_service->IsSyncFeatureActive() ||
-      profile_sync_service->IsUsingSecondaryPassphrase()) {
+      profile_sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
     return false;
   }
 

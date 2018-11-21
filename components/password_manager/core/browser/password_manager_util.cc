@@ -32,6 +32,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 
 using autofill::PasswordForm;
 
@@ -60,10 +61,10 @@ void UpdateMetadataForUsage(PasswordForm* credential) {
 
 password_manager::SyncState GetPasswordSyncState(
     const syncer::SyncService* sync_service) {
-  if (sync_service && sync_service->IsFirstSetupComplete() &&
+  if (sync_service && sync_service->GetUserSettings()->IsFirstSetupComplete() &&
       sync_service->IsSyncFeatureActive() &&
       sync_service->GetActiveDataTypes().Has(syncer::PASSWORDS)) {
-    return sync_service->IsUsingSecondaryPassphrase()
+    return sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()
                ? password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE
                : password_manager::SYNCING_NORMAL_ENCRYPTION;
   }
