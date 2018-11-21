@@ -1814,8 +1814,6 @@ crbug.com/840238 http/tests/devtools/elements/shadow/shadow-distribution.js [ Fa
 crbug.com/667560 [ Debug ] http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
 crbug.com/778515 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
 
-crbug.com/667560 http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Timeout ]
-
 crbug.com/778391 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
 crbug.com/778391 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
 
@@ -5358,3 +5356,7 @@ crbug.com/906591 virtual/threaded/printing/single-line-must-not-be-split-into-tw
 crbug.com/906952 editing/pasteboard/file-drag-to-editable.html [ Pass Crash ]
 crbug.com/906952 fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
 
+#Sheriff 2018-11-21
+
+# See also crbug.com/907150
+crbug.com/667560 http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Failure Timeout ]
