@@ -623,6 +623,8 @@ source_set("common") {
     "browser/net/input_stream_reader.h",
     "browser/net/token_binding_manager.cc",
     "browser/net/token_binding_manager.h",
+    "browser/net_helpers.cc",
+    "browser/net_helpers.h",
     "browser/parent_compositor_draw_constraints.cc",
     "browser/parent_compositor_draw_constraints.h",
     "browser/parent_output_surface.cc",

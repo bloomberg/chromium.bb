@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "android_webview/browser/aw_contents_client_bridge.h"
+#include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/browser/net_helpers.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -16,6 +18,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_utils.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 
 namespace android_webview {
@@ -68,6 +71,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
   void ResumeReadingBodyFromNet() override;
 
  private:
+  std::unique_ptr<AwContentsIoThreadClient> GetIoThreadClient();
   void OnRequestError(const network::URLLoaderCompletionStatus& status);
 
   // TODO(timvolodine): consider factoring this out of this class.
@@ -125,6 +129,8 @@ InterceptedRequest::~InterceptedRequest() {}
 void InterceptedRequest::Restart() {
   // TODO(timvolodine): add async check shouldOverrideUrlLoading and
   // shouldInterceptRequest.
+
+  request_.load_flags = GetCacheModeForClient(GetIoThreadClient().get());
 
   if (!target_loader_ && target_factory_) {
     network::mojom::URLLoaderClientPtr proxied_client;
@@ -313,6 +319,16 @@ void InterceptedRequest::PauseReadingBodyFromNet() {
 void InterceptedRequest::ResumeReadingBodyFromNet() {
   if (target_loader_)
     target_loader_->ResumeReadingBodyFromNet();
+}
+
+std::unique_ptr<AwContentsIoThreadClient>
+InterceptedRequest::GetIoThreadClient() {
+  // |process_id_| == 0 indicates this is a navigation, and so we should use the
+  // frame_tree_node_id API (with request_.render_frame_id).
+  return process_id_
+             ? AwContentsIoThreadClient::FromID(process_id_,
+                                                request_.render_frame_id)
+             : AwContentsIoThreadClient::FromID(request_.render_frame_id);
 }
 
 void InterceptedRequest::OnRequestError(
