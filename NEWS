@@ -38,6 +38,7 @@ issues]].
 - New table for Arabic contracted braille thanks to Ikrami Ahmad.
 - New table for Arabic computer braille thanks to Ikrami Ahmad.
 - Improvements to Ethiopic thanks to Tamru E. Belay.
+- New table for Spanish contracted braille thanks to Juan Pablo Bello.
 
 ** Other changes
 - Updated the ~lou_allround~ and ~lou_trace~ test tools to include all
@@ -55,6 +56,7 @@ issues]].
 - tr-g2.ctb
 - ar-ar-g2.ctb
 - ar-ar-comp8.utb
+- es-g2.ctb
 
 *** Renamed
 - de-de-accents.cti -> de-accents.cti
