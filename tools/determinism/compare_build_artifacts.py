@@ -183,6 +183,14 @@ def compare_files(first_filepath, second_filepath):
       lhs = json.load(f)
     with open(second_filepath, 'rb') as f:
       rhs = json.load(f)
+    # The isolated files contain the name of the build dir.  Until that's
+    # fixed (https://crbug.com/907488), change the rhs to use the lhs's
+    # build dir -- we care more about the hash differences than about
+    # the name of the build dir.
+    with open(second_filepath, 'rb') as f:
+      lhs_cwd = lhs['relative_cwd']
+      rhs_cwd = rhs['relative_cwd']
+      rhs = json.loads(f.read().replace(rhs_cwd, lhs_cwd))
     diff = diff_dict(lhs, rhs)
     if diff:
       return '\n' + '\n'.join('  ' + line for line in diff.splitlines())
