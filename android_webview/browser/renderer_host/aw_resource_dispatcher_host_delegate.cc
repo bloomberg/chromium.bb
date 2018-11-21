@@ -14,6 +14,7 @@
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_safe_browsing_resource_throttle.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
+#include "android_webview/browser/net_helpers.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "android_webview/common/url_constants.h"
 #include "base/task/post_task.h"
@@ -249,20 +250,9 @@ bool IoThreadClientThrottle::ShouldBlockRequest() {
     SetCacheControlFlag(
         request_, net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION);
   } else {
-    AwContentsIoThreadClient::CacheMode cache_mode = io_client->GetCacheMode();
-    switch (cache_mode) {
-      case AwContentsIoThreadClient::LOAD_CACHE_ELSE_NETWORK:
-        SetCacheControlFlag(request_, net::LOAD_SKIP_CACHE_VALIDATION);
-        break;
-      case AwContentsIoThreadClient::LOAD_NO_CACHE:
-        SetCacheControlFlag(request_, net::LOAD_BYPASS_CACHE);
-        break;
-      case AwContentsIoThreadClient::LOAD_CACHE_ONLY:
-        SetCacheControlFlag(request_, net::LOAD_ONLY_FROM_CACHE |
-                                          net::LOAD_SKIP_CACHE_VALIDATION);
-        break;
-      default:
-        break;
+    int cache_mode = GetCacheModeForClient(io_client.get());
+    if (cache_mode) {
+      SetCacheControlFlag(request_, cache_mode);
     }
   }
   return false;
