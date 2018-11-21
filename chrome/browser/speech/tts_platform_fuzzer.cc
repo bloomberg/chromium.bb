@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <objbase.h>
+
+#include "build/build_config.h"
 #include "chrome/browser/speech/tts_platform.h"
 
 // Entry point for LibFuzzer.
@@ -14,6 +17,14 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   params.pitch = 1.0;
   params.rate = 1.0;
   params.volume = 0.1;
+
+#if defined(OS_WIN)
+  static bool initialized = false;
+  if (!initialized) {
+    initialized = true;
+    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+  }
+#endif
 
   // First byte gives us the utterance ID.
   size_t i = 0;
