@@ -331,10 +331,8 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
 
   // If there is a GAIA image available, try to use that.
   if (entry->IsUsingGAIAPicture()) {
-    // TODO(chengx): The GetGAIAPicture API call will trigger an async image
-    // load from disk if it has not been loaded. This is non-obvious and
-    // dependency should be avoided. We should come with a better idea to handle
-    // this.
+    // The GetGAIAPicture API call will trigger an async image load from disk if
+    // it has not been loaded.
     const gfx::Image* gaia_image = entry->GetGAIAPicture();
 
     if (gaia_image)
