@@ -23,6 +23,8 @@ source_set("web_applications") {
     "web_app_database.h",
     "web_app_database_factory.cc",
     "web_app_database_factory.h",
+    "web_app_install_finalizer.cc",
+    "web_app_install_finalizer.h",
     "web_app_install_manager.cc",
     "web_app_install_manager.h",
     "web_app_registrar.cc",
@@ -52,6 +54,8 @@ source_set("web_applications_test_support") {
   sources = [
     "test/test_data_retriever.cc",
     "test/test_data_retriever.h",
+    "test/test_install_finalizer.cc",
+    "test/test_install_finalizer.h",
     "test/test_system_web_app_manager.cc",
     "test/test_system_web_app_manager.h",
     "test/test_web_app_database.cc",

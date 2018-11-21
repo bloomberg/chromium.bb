@@ -23,12 +23,17 @@ void TestDataRetriever::GetWebApplicationInfo(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(web_app_info_)));
 }
 
-void TestDataRetriever::GetIcons(const GURL& app_url,
+void TestDataRetriever::GetIcons(content::WebContents* web_contents,
                                  const std::vector<GURL>& icon_urls,
+                                 bool skip_page_fav_icons,
                                  GetIconsCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback),
-                                std::vector<WebApplicationInfo::IconInfo>()));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(icons_map_)));
+  icons_map_.clear();
+}
+
+void TestDataRetriever::SetIcons(IconsMap icons_map) {
+  icons_map_ = std::move(icons_map);
 }
 
 }  // namespace web_app

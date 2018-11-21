@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class SkBitmap;
@@ -36,12 +37,9 @@ namespace web_app {
 // icons) for a tab.
 class WebAppIconDownloader : public content::WebContentsObserver {
  public:
-  typedef std::map<GURL, std::vector<SkBitmap> > FaviconMap;
-  typedef base::OnceCallback<void(
-      bool, /* success */
-      /* A map of icon urls to the bitmaps provided by that url. */
-      const FaviconMap&)>
-      WebAppIconDownloaderCallback;
+  using WebAppIconDownloaderCallback =
+      base::OnceCallback<void(bool success, const IconsMap& icons_map)>;
+
   // |extra_favicon_urls| allows callers to provide icon urls that aren't
   // provided by the renderer (e.g touch icons on non-android environments).
   // |https_status_code_class_histogram_name| optionally specifies a histogram
@@ -100,7 +98,7 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   std::vector<GURL> extra_favicon_urls_;
 
   // The icons which were downloaded. Populated by FetchIcons().
-  FaviconMap favicon_map_;
+  IconsMap icons_map_;
 
   // Request ids of in-progress requests.
   std::set<int> in_progress_requests_;

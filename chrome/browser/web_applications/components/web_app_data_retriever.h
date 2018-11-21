@@ -5,13 +5,17 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_DATA_RETRIEVER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_DATA_RETRIEVER_H_
 
+#include <map>
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 
+class GURL;
 struct InstallableData;
 struct WebApplicationInfo;
 
@@ -25,6 +29,8 @@ class WebContents;
 
 namespace web_app {
 
+class WebAppIconDownloader;
+
 // Class used by BookmarkAppInstallationTask to retrieve the necessary
 // information to install an app. Should only be called from the UI thread.
 class WebAppDataRetriever {
@@ -35,9 +41,8 @@ class WebAppDataRetriever {
   // |is_installable| is false if installability check failed.
   using CheckInstallabilityCallback =
       base::OnceCallback<void(const blink::Manifest&, bool is_installable)>;
-  // Returns empty vector if error.
-  using GetIconsCallback =
-      base::OnceCallback<void(std::vector<WebApplicationInfo::IconInfo>)>;
+  // Returns empty map if error.
+  using GetIconsCallback = base::OnceCallback<void(IconsMap)>;
 
   WebAppDataRetriever();
   virtual ~WebAppDataRetriever();
@@ -52,11 +57,11 @@ class WebAppDataRetriever {
       content::WebContents* web_contents,
       CheckInstallabilityCallback callback);
 
-  // Downloads icons from |icon_urls|. If icons are missing for certain required
-  // sizes, generates them based on |app_url|. Runs |callback| with a vector of
-  // the retrieved and generated icons.
-  virtual void GetIcons(const GURL& app_url,
+  // Downloads icons from |icon_urls|. Runs |callback| with a map of
+  // the retrieved icons.
+  virtual void GetIcons(content::WebContents* web_contents,
                         const std::vector<GURL>& icon_urls,
+                        bool skip_page_fav_icons,
                         GetIconsCallback callback);
 
  private:
@@ -70,8 +75,14 @@ class WebAppDataRetriever {
   void OnDidPerformInstallableCheck(CheckInstallabilityCallback callback,
                                     const InstallableData& data);
 
+  void OnIconsDownloaded(GetIconsCallback callback,
+                         bool success,
+                         const IconsMap& icons_map);
+
   // Saved callback from GetWebApplicationInfo().
   GetWebApplicationInfoCallback get_web_app_info_callback_;
+
+  std::unique_ptr<WebAppIconDownloader> icon_downloader_;
 
   base::WeakPtrFactory<WebAppDataRetriever> weak_ptr_factory_{this};
 

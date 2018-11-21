@@ -29,6 +29,9 @@ enum class ForInstallableSite {
   kUnknown,
 };
 
+// A map of icon urls to the bitmaps provided by that url.
+using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
+
 // Update the given WebApplicationInfo with information from the manifest.
 void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
                                   WebApplicationInfo* web_app_info,
@@ -49,10 +52,10 @@ std::vector<GURL> GetValidIconUrlsToDownload(
 void MergeInstallableDataIcon(const InstallableData& data,
                               WebApplicationInfo* web_app_info);
 
-// Get a list of non-empty square icons from downloaded |bitmaps| and
+// Get a list of non-empty square icons from downloaded |icons_map| and
 // |web_app_info| (merged together).
 std::vector<BitmapAndSource> FilterSquareIcons(
-    const std::map<GURL, std::vector<SkBitmap>>& bitmaps,
+    const IconsMap& icons_map,
     const WebApplicationInfo& web_app_info);
 
 // Ensure that the necessary-sized icons are available by resizing larger

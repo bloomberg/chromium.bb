@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class Profile;
@@ -25,13 +26,14 @@ class WebContents;
 
 namespace web_app {
 
+class InstallFinalizer;
 class WebAppDataRetriever;
-class WebAppRegistrar;
 
 class WebAppInstallManager final : public InstallManager,
                                    content::WebContentsObserver {
  public:
-  WebAppInstallManager(Profile* profile, WebAppRegistrar* registrar);
+  WebAppInstallManager(Profile* profile,
+                       std::unique_ptr<InstallFinalizer> install_finalizer);
   ~WebAppInstallManager() override;
 
   // InstallManager:
@@ -45,6 +47,8 @@ class WebAppInstallManager final : public InstallManager,
 
   void SetDataRetrieverForTesting(
       std::unique_ptr<WebAppDataRetriever> data_retriever);
+  void SetInstallFinalizerForTesting(
+      std::unique_ptr<InstallFinalizer> install_finalizer);
 
  private:
   void CallInstallCallback(const AppId& app_id, InstallResultCode code);
@@ -61,13 +65,15 @@ class WebAppInstallManager final : public InstallManager,
       bool force_shortcut_app,
       const blink::Manifest& manifest,
       bool is_installable);
+  void OnIconsRetrieved(std::unique_ptr<WebApplicationInfo> web_app_info,
+                        IconsMap icons_map);
+  void OnInstallFinalized(const AppId& app_id, InstallResultCode code);
 
   // Saved callback:
   OnceInstallCallback install_callback_;
 
-  Profile* profile_;
-  WebAppRegistrar* registrar_;
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
+  std::unique_ptr<InstallFinalizer> install_finalizer_;
 
   base::WeakPtrFactory<WebAppInstallManager> weak_ptr_factory_{this};
 
