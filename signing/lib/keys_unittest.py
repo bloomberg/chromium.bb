@@ -304,6 +304,130 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
                              error_code_ok=True)
 
 
+class TestKeyVersions(cros_test_lib.TempDirTestCase):
+  """Test KeyVersions class."""
+
+  # used for several tests
+  expected = {
+      'firmware_key_version': 2,
+      'firmware_version': 3,
+      'kernel_key_version': 4,
+      'kernel_version': 5,
+      'random': 6,
+  }
+
+  def _CreateVersionsFile(self, values):
+    kv_path = os.path.join(self.tempdir, 'key.versions')
+    lines = ['%s=%d' % (k, v) for k, v in values.items()]
+    contents = '\n'.join(lines) + '\n'
+    osutils.WriteFile(kv_path, contents)
+    return kv_path
+
+  def testInitReturnsDefaultButDoesNotCreateFile(self):
+    kv_path = os.path.join(self.tempdir, 'key.versions')
+    kv = keys.KeyVersions(kv_path)
+    self.assertFalse(os.path.exists(kv_path))
+    expected = {
+        'firmware_key_version': 1,
+        'firmware_version': 1,
+        'kernel_key_version': 1,
+        'kernel_version': 1,
+    }
+    self.assertEqual(False, kv.saved)
+    self.assertDictEqual(expected, kv._versions)
+
+  def testInitReadsFile(self):
+    kv_path = self._CreateVersionsFile(self.expected)
+    kv = keys.KeyVersions(kv_path)
+    self.assertDictEqual(self.expected, kv._versions)
+    self.assertEqual(True, kv.saved)
+
+  def testInitErrorOnBadFileContents(self):
+    kv_path = self._CreateVersionsFile({})
+    osutils.WriteFile(kv_path, 'firmware_version=bogus\n')
+    with self.assertRaises(ValueError):
+      keys.KeyVersions(kv_path)
+
+  def testKeyNameTransformsName(self):
+    kv_path = self._CreateVersionsFile({})
+    kv = keys.KeyVersions(kv_path)
+    self.assertEqual('firmware_version', kv._KeyName('firmware_data_key'))
+    self.assertEqual('firmware_version', kv._KeyName('firmware_data_key.loem1'))
+    self.assertEqual('firmware_version', kv._KeyName('firmware_version'))
+
+  def testKeyNameIsIdempotent(self):
+    kv_path = self._CreateVersionsFile({})
+    kv = keys.KeyVersions(kv_path)
+    self.assertEqual('B_version', kv._KeyName(kv._KeyName('B_data_key')))
+    self.assertEqual('B_version', kv._KeyName(kv._KeyName('B_data_key.loem1')))
+    self.assertEqual('B_version', kv._KeyName(kv._KeyName('B_version')))
+
+  def testGetReturnsValue(self):
+    kv_path = self._CreateVersionsFile(self.expected)
+    kv = keys.KeyVersions(kv_path)
+    self.assertEqual(
+        self.expected['firmware_version'], kv.Get('firmware_data_key'))
+
+  def testGetReturnsOneForUnknown(self):
+    kv_path = self._CreateVersionsFile(self.expected)
+    kv = keys.KeyVersions(kv_path)
+    self.assertEqual(1, kv.Get('invalid'))
+
+  def testSetSetsValue(self):
+    kv_path = self._CreateVersionsFile({})
+    kv = keys.KeyVersions(kv_path)
+    kv.Set('firmware_data_key', 10)
+    self.assertEqual(10, kv._versions['firmware_version'])
+
+  def testSetMarksDirty(self):
+    kv_path = self._CreateVersionsFile({})
+    kv = keys.KeyVersions(kv_path)
+    self.assertEqual(True, kv.saved)
+    kv.Set('firmware_data_key', 10)
+    self.assertEqual(10, kv._versions['firmware_version'])
+    self.assertEqual(False, kv.saved)
+
+  def testSetDoesNotSave(self):
+    kv_path = self._CreateVersionsFile(self.expected)
+    kv = keys.KeyVersions(kv_path)
+    kv.Set('firmware_data_key', 10)
+    kv2 = keys.KeyVersions(kv_path)
+    self.assertEqual(
+        self.expected['firmware_version'], kv2._versions['firmware_version'])
+
+  def testIncrementIncrementsAndMarksDirty(self):
+    kv_path = self._CreateVersionsFile({'firmware_version': 30})
+    kv = keys.KeyVersions(kv_path)
+    kv.Increment('firmware_data_key')
+    self.assertEqual(31, kv._versions['firmware_version'])
+    self.assertEqual(False, kv.saved)
+
+  def testIncrementRaisesOnOverflow(self):
+    kv_path = self._CreateVersionsFile({'firmware_version': 0xffff})
+    kv = keys.KeyVersions(kv_path)
+    with self.assertRaises(keys.VersionOverflowError):
+      kv.Increment('firmware_data_key')
+    self.assertEqual(0xffff, kv._versions['firmware_version'])
+
+  def testIncrementDoesNotSave(self):
+    kv_path = self._CreateVersionsFile(self.expected)
+    kv = keys.KeyVersions(kv_path)
+    kv.Increment('firmware_data_key')
+    kv2 = keys.KeyVersions(kv_path)
+    self.assertEqual(
+        self.expected['firmware_version'], kv2._versions['firmware_version'])
+
+  def testSaveSaves(self):
+    kv_path = self._CreateVersionsFile(self.expected)
+    kv = keys.KeyVersions(kv_path)
+    kv.Increment('firmware_data_key')
+    kv.Set('new', 37)
+    kv.Save()
+    self.assertEqual(True, kv.saved)
+    kv2 = keys.KeyVersions(kv_path)
+    self.assertDictEqual(kv._versions, kv2._versions)
+
+
 class TestKeyset(cros_test_lib.TempDirTestCase):
   """Test Keyset class."""
 

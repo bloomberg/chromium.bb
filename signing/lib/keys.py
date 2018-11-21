@@ -14,6 +14,7 @@ import re
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import osutils
 
 
 class SignerKeyError(Exception):
@@ -26,6 +27,10 @@ class SignerKeyMissingError(SignerKeyError):
 
 class SignerBuildtargetKeyMissingError(SignerKeyMissingError):
   """Raise if a buildtarget-specific key is missing"""
+
+
+class VersionOverflowError(SignerKeyError):
+  """Raise if incrementing a version would overflow 16 bits"""
 
 
 class KeyPair(object):
@@ -163,6 +168,84 @@ class KeyPair(object):
     else:
       raise SignerKeyError('Unable to get sha1sum for %s' % self.public)
 
+class KeyVersions(object):
+  """Manage key.versions file
+
+  Attributes:
+    saved: True if the file on disk matches the contents of the instance.  None
+        of the methods save the instance to disk automatically.
+  """
+
+  def __init__(self, filename):
+    self._versions = {}
+    self._path = filename
+    if os.path.exists(filename):
+      self.saved = True
+      for line in open(filename, "r").readlines():
+        if line.find('=') > 0:
+          k, v = line.strip().split('=')
+          self._versions[k] = int(v)
+    else:
+      self.saved = False
+      self._versions = {
+          'firmware_key_version': 1,
+          'firmware_version': 1,
+          'kernel_key_version': 1,
+          'kernel_version': 1,
+      }
+    # Caller is resonsible for calling Save()
+
+  def _KeyName(self, key):
+    """return the correct name to use when looking up version."""
+    # We want to be idempotent.
+    if key.endswith('_version'):
+      key = key[:-8]
+    # strip anything after a '.', since those are buildtarget names.
+    key = key.split('.')[0]
+    if key.endswith('_data_key'):
+      key = key[:-9]
+    return key + '_version'
+
+  def Get(self, key):
+    """Get a key's version.  Caller is responsible for calling Save()."""
+    key = self._KeyName(key)
+    return self._versions.get(key, 1)
+
+  def Set(self, key, version):
+    """Set a key's version.  Caller is responsible for calling Save()."""
+    key = self._KeyName(key)
+    self._versions[key] = int(version)
+    self.saved = False
+    # Caller is resonsible for calling Save()
+
+  def Increment(self, key):
+    """Increment key's version.  Caller is responsible for calling Save().
+
+    Args:
+      key: name of the key.
+
+    Returns:
+      Incremented version.
+
+    Raises:
+      VersionOverflowError: version is 16 bit, and incrementing would cause
+          overflow.
+    """
+    key = self._KeyName(key)
+    if self._versions[key] == 0xffff:
+      raise VersionOverflowError('%s version overflow' % key)
+    self._versions[key] += 1
+    self.saved = False
+    return self._versions[key]
+    # Caller is resonsible for calling Save()
+
+  def Save(self):
+    """Save KeyVersions to disk."""
+    lines = ['%s=%d' % (k, v) for k, v in sorted(self._versions.items())]
+    contents = '\n'.join(lines) + '\n'
+    osutils.WriteFile(self._path, contents)
+    self.saved = True
+
 
 class Keyset(object):
   """Store signer keys and keyblocks (think keychain).
@@ -229,7 +312,8 @@ class Keyset(object):
         else:
           logging.warning("Error reading loem.ini file")
 
-      # TODO (chingcodes): add versions from file - needed for keygen
+      versions_filename = os.path.join(key_dir, 'key.versions')
+      self._versions = KeyVersions(versions_filename)
 
       # Match any private key file name
       # Ex: firmware_data_key.loem4.vbprivk, kernel_subkey.vbprivk
@@ -240,7 +324,10 @@ class Keyset(object):
           if key_name not in self.keys:
             logging.debug('Found new key %s', key_name)
             key = KeyPair(
-                key_name, key_dir, version=1, priv_ext=match.group('ext'))
+                key_name,
+                key_dir,
+                version=self._versions.Get(key_name),
+                priv_ext=match.group('ext'))
             # AddKey will detect whether or not this is a buildtarget-specific
             # key and do the right thing.
             self.AddKey(key)
