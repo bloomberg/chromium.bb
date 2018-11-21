@@ -101,8 +101,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // WebView does not yet support screen orientation locking.
   cl->AppendSwitch(switches::kDisableScreenOrientationLock);
 
-  // WebView does not currently support Web Speech API (crbug.com/487255)
-  cl->AppendSwitch(switches::kDisableSpeechAPI);
+  // WebView does not currently support Web Speech Synthesis API,
+  // but it does support Web Speech Recognition API (crbug.com/487255).
+  cl->AppendSwitch(switches::kDisableSpeechSynthesisAPI);
 
   // WebView does not currently support the Permissions API (crbug.com/490120)
   cl->AppendSwitch(switches::kDisablePermissionsAPI);
