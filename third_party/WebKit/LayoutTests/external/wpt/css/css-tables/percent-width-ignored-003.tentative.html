@@ -1,5 +1,12 @@
 <!DOCTYPE html>
-This should be identical to <a href="inner-percent-width-doesnt-affect-outer-columns.html">inner-percent-width-doesnt-affect-outer-columns.html</a>
+<script src='/resources/testharness.js'></script>
+<script src='/resources/testharnessreport.js'></script>
+<script src='/resources/check-layout-th.js'></script>
+<link rel="author" title="David Grogan" href="dgrogan@chromium.org">
+<link rel="help" href="https://github.com/w3c/csswg-drafts/issues/3336">
+<meta name="flags" content="" />
+<meta name="assert" content="A cell's percent width is ignored when its table is nested in another cell, even if there's an intermediate block." />
+Engines render this same as without the intermediate background:blue block -- yellow 1% width is ignored.
 <table id="outerTable" style="width: 300px" cellspacing="0" cellpadding="0">
     <td style="background:red;">
       <div style="background:blue">
@@ -14,7 +21,6 @@ This should be identical to <a href="inner-percent-width-doesnt-affect-outer-col
         <div style="width:40px; height:150px;"></div>
     </td>
 </table>
-<script src="../../resources/check-layout.js"></script>
 <script>
 checkLayout('#outerTable');
 </script>
