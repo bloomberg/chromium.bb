@@ -8,6 +8,9 @@ component("common") {
     "//media/learning",
     "//media/learning/impl:*",
     "//media/learning/impl:test_support",
+    "//media/learning/mojo/public/cpp:*",
+    "//media/learning/mojo/public/mojom:mojom",
+    "//media/learning/mojo:*",
     "//media/learning/common:unit_tests",
   ]
 

@@ -10,6 +10,7 @@ source_set("unit_tests") {
     "//media:test_support",
     "//media/learning/common:unit_tests",
     "//media/learning/impl:unit_tests",
+    "//media/learning/mojo:unit_tests",
     "//testing/gtest",
   ]
 }

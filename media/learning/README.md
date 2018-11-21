@@ -69,3 +69,6 @@ All of our models are supervised.
 
  * `common/` - public interfaces
  * `impl/` - learning algorithms, other implementation details
+ * `mojo/` - mojo service-side implementations
+ * `mojo/public/cpp` - public headers / clients for mojo
+ * `mojo/public/mojom` - public mojom interfaces
