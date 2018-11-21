@@ -352,7 +352,7 @@ cca.views.camera.Options.prototype.updateMicAudio = function(forceEnable) {
 
 /**
  * Schedules ticks by the timer option if any.
- * @return {?Promise<>} Promise for the operation.
+ * @return {?Promise} Promise for the operation.
  */
 cca.views.camera.Options.prototype.timerTicks = function() {
   if (!this.toggleTimer_.checked) {
@@ -394,7 +394,7 @@ cca.views.camera.Options.prototype.timerTicks = function() {
 /**
  * Updates UI controls' disabled status for capturing/taking state changes.
  * @param {boolean} capturing Whether camera is capturing.
- * @param {boolean} capturing Whether camera is taking.
+ * @param {boolean} taking Whether camera is taking.
  */
 cca.views.camera.Options.prototype.updateControls = function(
     capturing, taking) {
@@ -493,7 +493,7 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
 
 /**
  * Gets the video device ids sorted by preference.
- * @return {!Promise<!Array<string>}
+ * @return {!Promise<!Array<string>>}
  */
 cca.views.camera.Options.prototype.videoDeviceIds = function() {
   return this.videoDevices_.then((devices) => {

@@ -115,14 +115,14 @@ cca.views.Camera = function(router, model, onAspectRatio) {
 
   /**
    * Promise for the operation that starts camera.
-   * @type {Promise<>}
+   * @type {Promise}
    * @private
    */
   this.started_ = null;
 
   /**
    * Promise for the current timer ticks.
-   * @type {Promise<>}
+   * @type {Promise}
    * @private
    */
   this.ticks_ = null;
@@ -308,7 +308,7 @@ cca.views.Camera.prototype.beginTake_ = function() {
 
 /**
  * Ends the current take (or clears scheduled further takes if any.)
- * @return {!Promise<>} Promise for the operation.
+ * @return {!Promise} Promise for the operation.
  * @private
  */
 cca.views.Camera.prototype.endTake_ = function() {
@@ -484,7 +484,7 @@ cca.views.Camera.prototype.constraintsCandidates_ = function() {
 
 /**
  * Stops camera and tries to start camera stream again if possible.
- * @return {!Promise<>} Promise for the start-camera operation.
+ * @return {!Promise} Promise for the start-camera operation.
  * @private
  */
 cca.views.Camera.prototype.stop_ = function() {

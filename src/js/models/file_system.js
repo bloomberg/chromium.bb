@@ -98,7 +98,7 @@ cca.models.FileSystem.initExternalFs_ = function() {
  * should be called only once in the beginning of the app.
  * @param {function()} promptMigrate Callback to instantiate a promise that
        prompts users to migrate pictures if no acknowledgement yet.
- * @return {!Promise<>} Promise for the operation.
+ * @return {!Promise} Promise for the operation.
  */
 cca.models.FileSystem.initialize = function(promptMigrate) {
   var checkAcked = new Promise((resolve) => {
@@ -172,7 +172,7 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
 /**
  * Reads file entries from the file system.
  * @param {FileSystem} fs File system to be read.
- * @return {!Promise<!Array.<FileEntry>} Promise for the read file entries.
+ * @return {!Promise<!Array.<FileEntry>>} Promise for the read file entries.
  * @private
  */
 cca.models.FileSystem.readFs_ = function(fs) {
@@ -218,7 +218,7 @@ cca.models.FileSystem.hasInternalPictures_ = function() {
 
 /**
  * Migrates all picture-files from internal storage to external storage.
- * @return {!Promise<>} Promise for the operation.
+ * @return {!Promise} Promise for the operation.
  */
 cca.models.FileSystem.migratePictures = function() {
   var internalFs = cca.models.FileSystem.internalFs;
@@ -441,7 +441,7 @@ cca.models.FileSystem.hasThumbnailPrefix_ = function(entry) {
 /**
  * Parses and filters the internal entries to thumbnail and picture entries.
  * @param {Array.<FileEntry>} internalEntries Internal file entries.
- * @param {Object{string, FileEntry}} thumbnailEntriesByName Result thumbanil
+ * @param {Object.<string, FileEntry>} thumbnailEntriesByName Result thumbanil
  *     entries mapped by thumbnail names, initially empty.
  * @param {Array.<FileEntry>=} pictureEntries Result picture entries,
  *     initially empty.
@@ -470,7 +470,7 @@ cca.models.FileSystem.parseInternalEntries_ = function(
 
 /**
  * Gets the picture and thumbnail entries.
- * @return {!Promise<!Array.<!Array.<FileEntry>|!Object{string, FileEntry}>}
+ * @return {!Promise<!Array.<!Array.<FileEntry>|!Object.<string, FileEntry>>>}
  *     Promise for the picture entries and the thumbnail entries mapped by
  *     thumbnail names.
  */
