@@ -38,7 +38,7 @@ SyncerError MockUpdateHandler::ProcessGetUpdatesResponse(
     const SyncEntityList& applicable_updates,
     StatusController* status) {
   progress_marker_.CopyFrom(progress_marker);
-  return SYNCER_OK;
+  return SyncerError(SyncerError::SYNCER_OK);
 }
 
 void MockUpdateHandler::ApplyUpdates(StatusController* status) {

@@ -16,12 +16,13 @@ class StatusControllerTest : public testing::Test {};
 TEST_F(StatusControllerTest, ReadYourWrites) {
   StatusController status;
 
-  status.set_last_download_updates_result(SYNCER_OK);
-  EXPECT_EQ(SYNCER_OK,
-            status.model_neutral_state().last_download_updates_result);
+  status.set_last_download_updates_result(SyncerError(SyncerError::SYNCER_OK));
+  EXPECT_EQ(SyncerError::SYNCER_OK,
+            status.model_neutral_state().last_download_updates_result.value());
 
-  status.set_commit_result(SYNC_AUTH_ERROR);
-  EXPECT_EQ(SYNC_AUTH_ERROR, status.model_neutral_state().commit_result);
+  status.set_commit_result(SyncerError(SyncerError::SYNC_AUTH_ERROR));
+  EXPECT_EQ(SyncerError::SYNC_AUTH_ERROR,
+            status.model_neutral_state().commit_result.value());
 
   for (int i = 0; i < 14; i++)
     status.increment_num_successful_commits();

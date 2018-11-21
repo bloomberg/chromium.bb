@@ -138,14 +138,14 @@ SyncerError Commit::PostAndProcessResponse(
   CommitResponseEvent response_event(base::Time::Now(), post_result, response);
   cycle->SendProtocolEvent(response_event);
 
-  if (post_result != SYNCER_OK) {
+  if (post_result.value() != SyncerError::SYNCER_OK) {
     LOG(WARNING) << "Post commit failed";
     return post_result;
   }
 
   if (!response.has_commit()) {
     LOG(WARNING) << "Commit response has no commit body!";
-    return SERVER_RESPONSE_VALIDATION_FAILED;
+    return SyncerError(SyncerError::SERVER_RESPONSE_VALIDATION_FAILED);
   }
 
   size_t message_entries = message_.commit().entries_size();
@@ -154,7 +154,7 @@ SyncerError Commit::PostAndProcessResponse(
     LOG(ERROR) << "Commit response has wrong number of entries! "
                << "Expected: " << message_entries << ", "
                << "Got: " << response_entries;
-    return SERVER_RESPONSE_VALIDATION_FAILED;
+    return SyncerError(SyncerError::SERVER_RESPONSE_VALIDATION_FAILED);
   }
 
   if (cycle->context()->debug_info_getter()) {
@@ -164,17 +164,18 @@ SyncerError Commit::PostAndProcessResponse(
   }
 
   // Let the contributors process the responses to each of their requests.
-  SyncerError processing_result = SYNCER_OK;
+  SyncerError processing_result = SyncerError(SyncerError::SYNCER_OK);
   for (ContributionMap::const_iterator it = contributions_.begin();
        it != contributions_.end(); ++it) {
     TRACE_EVENT1("sync", "ProcessCommitResponse", "type",
                  ModelTypeToString(it->first));
     SyncerError type_result =
         it->second->ProcessCommitResponse(response, status);
-    if (type_result == SERVER_RETURN_CONFLICT) {
+    if (type_result.value() == SyncerError::SERVER_RETURN_CONFLICT) {
       nudge_tracker->RecordCommitConflict(it->first);
     }
-    if (processing_result == SYNCER_OK && type_result != SYNCER_OK) {
+    if (processing_result.value() == SyncerError::SYNCER_OK &&
+        type_result.value() != SyncerError::SYNCER_OK) {
       processing_result = type_result;
     }
   }

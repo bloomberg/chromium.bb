@@ -26,16 +26,15 @@ std::string GetUpdatesResponseEvent::GetType() const {
 }
 
 std::string GetUpdatesResponseEvent::GetDetails() const {
-  switch (error_) {
-    case SYNCER_OK:
+  switch (error_.value()) {
+    case SyncerError::SYNCER_OK:
       return base::StringPrintf("Received %d update(s).",
                                 response_.get_updates().entries_size());
-    case SERVER_MORE_TO_DOWNLOAD:
+    case SyncerError::SERVER_MORE_TO_DOWNLOAD:
       return base::StringPrintf("Received %d update(s).  Some updates remain.",
                                 response_.get_updates().entries_size());
     default:
-      return base::StringPrintf("Received error: %s",
-                                GetSyncerErrorString(error_));
+      return base::StringPrintf("Received error: %s", error_.ToString());
   }
 }
 

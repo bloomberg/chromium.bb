@@ -75,7 +75,7 @@ SyncerError DirectoryUpdateHandler::ProcessGetUpdatesResponse(
       // set. Fail this get updates cycle, to force a retry.
       DVLOG(1) << "GU Context conflict detected, forcing GU retry.";
       debug_info_emitter_->EmitUpdateCountersUpdate();
-      return DATATYPE_TRIGGERED_RETRY;
+      return SyncerError(SyncerError::DATATYPE_TRIGGERED_RETRY);
     }
   }
 
@@ -98,7 +98,7 @@ SyncerError DirectoryUpdateHandler::ProcessGetUpdatesResponse(
   }
 
   debug_info_emitter_->EmitUpdateCountersUpdate();
-  return SYNCER_OK;
+  return SyncerError(SyncerError::SYNCER_OK);
 }
 
 void DirectoryUpdateHandler::CreateTypeRoot(
@@ -217,7 +217,7 @@ SyncerError DirectoryUpdateHandler::ApplyUpdatesImpl(StatusController* status) {
     DCHECK(conflict_applicator.simple_conflict_ids().empty());
   }
 
-  return SYNCER_OK;
+  return SyncerError(SyncerError::SYNCER_OK);
 }
 
 void DirectoryUpdateHandler::PostApplyUpdates() {

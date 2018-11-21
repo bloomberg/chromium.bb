@@ -154,13 +154,13 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
 
   // Let the scheduler know about the failures.
   if (unknown_error) {
-    return SERVER_RETURN_UNKNOWN_ERROR;
+    return SyncerError(SyncerError::SERVER_RETURN_UNKNOWN_ERROR);
   } else if (transient_error_commits > 0) {
-    return SERVER_RETURN_TRANSIENT_ERROR;
+    return SyncerError(SyncerError::SERVER_RETURN_TRANSIENT_ERROR);
   } else if (conflicting_commits > 0) {
-    return SERVER_RETURN_CONFLICT;
+    return SyncerError(SyncerError::SERVER_RETURN_CONFLICT);
   } else {
-    return SYNCER_OK;
+    return SyncerError(SyncerError::SYNCER_OK);
   }
 }
 

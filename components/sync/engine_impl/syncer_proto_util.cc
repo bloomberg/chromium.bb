@@ -86,19 +86,19 @@ SyncerError ServerConnectionErrorAsSyncerError(
     const HttpResponse::ServerConnectionCode server_status) {
   switch (server_status) {
     case HttpResponse::CONNECTION_UNAVAILABLE:
-      return NETWORK_CONNECTION_UNAVAILABLE;
+      return SyncerError(SyncerError::NETWORK_CONNECTION_UNAVAILABLE);
     case HttpResponse::IO_ERROR:
-      return NETWORK_IO_ERROR;
+      return SyncerError(SyncerError::NETWORK_IO_ERROR);
     case HttpResponse::SYNC_SERVER_ERROR:
       // FIXME what does this mean?
-      return SYNC_SERVER_ERROR;
+      return SyncerError(SyncerError::SYNC_SERVER_ERROR);
     case HttpResponse::SYNC_AUTH_ERROR:
-      return SYNC_AUTH_ERROR;
+      return SyncerError(SyncerError::SYNC_AUTH_ERROR);
     case HttpResponse::SERVER_CONNECTION_OK:
     case HttpResponse::NONE:
     default:
       NOTREACHED();
-      return UNSET;
+      return SyncerError();
   }
 }
 
@@ -479,10 +479,10 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     case UNKNOWN_ERROR:
       LOG(WARNING) << "Sync protocol out-of-date. The server is using a more "
                    << "recent version.";
-      return SERVER_RETURN_UNKNOWN_ERROR;
+      return SyncerError(SyncerError::SERVER_RETURN_UNKNOWN_ERROR);
     case SYNC_SUCCESS:
       LogResponseProfilingData(*response);
-      return SYNCER_OK;
+      return SyncerError(SyncerError::SYNCER_OK);
     case THROTTLED:
       if (sync_protocol_error.error_data_types.Empty()) {
         DLOG(WARNING) << "Client fully throttled by syncer.";
@@ -496,23 +496,23 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
         if (partial_failure_data_types != nullptr) {
           *partial_failure_data_types = sync_protocol_error.error_data_types;
         }
-        return SYNCER_OK;
+        return SyncerError(SyncerError::SYNCER_OK);
       }
-      return SERVER_RETURN_THROTTLED;
+      return SyncerError(SyncerError::SERVER_RETURN_THROTTLED);
     case TRANSIENT_ERROR:
-      return SERVER_RETURN_TRANSIENT_ERROR;
+      return SyncerError(SyncerError::SERVER_RETURN_TRANSIENT_ERROR);
     case MIGRATION_DONE:
       LOG_IF(ERROR, 0 >= response->migrated_data_type_id_size())
           << "MIGRATION_DONE but no types specified.";
       cycle->delegate()->OnReceivedMigrationRequest(
           GetTypesToMigrate(*response));
-      return SERVER_RETURN_MIGRATION_DONE;
+      return SyncerError(SyncerError::SERVER_RETURN_MIGRATION_DONE);
     case CLEAR_PENDING:
-      return SERVER_RETURN_CLEAR_PENDING;
+      return SyncerError(SyncerError::SERVER_RETURN_CLEAR_PENDING);
     case NOT_MY_BIRTHDAY:
-      return SERVER_RETURN_NOT_MY_BIRTHDAY;
+      return SyncerError(SyncerError::SERVER_RETURN_NOT_MY_BIRTHDAY);
     case DISABLED_BY_ADMIN:
-      return SERVER_RETURN_DISABLED_BY_ADMIN;
+      return SyncerError(SyncerError::SERVER_RETURN_DISABLED_BY_ADMIN);
     case PARTIAL_FAILURE:
       // This only happens when partial backoff during GetUpdates.
       if (!sync_protocol_error.error_data_types.Empty()) {
@@ -524,12 +524,12 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
       if (partial_failure_data_types != nullptr) {
         *partial_failure_data_types = sync_protocol_error.error_data_types;
       }
-      return SYNCER_OK;
+      return SyncerError(SyncerError::SYNCER_OK);
     case CLIENT_DATA_OBSOLETE:
-      return SERVER_RETURN_CLIENT_DATA_OBSOLETE;
+      return SyncerError(SyncerError::SERVER_RETURN_CLIENT_DATA_OBSOLETE);
     default:
       NOTREACHED();
-      return UNSET;
+      return SyncerError();
   }
 }
 

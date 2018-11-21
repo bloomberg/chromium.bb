@@ -8,11 +8,13 @@
 
 namespace syncer {
 
-#define ENUM_CASE(x) \
-  case x:            \
-    return #x;       \
+namespace {
+
+#define ENUM_CASE(x)   \
+  case SyncerError::x: \
+    return #x;         \
     break;
-const char* GetSyncerErrorString(SyncerError value) {
+const char* GetSyncerErrorString(SyncerError::Value value) {
   switch (value) {
     ENUM_CASE(UNSET);
     ENUM_CASE(CANNOT_DO_WORK);
@@ -42,9 +44,17 @@ const char* GetSyncerErrorString(SyncerError value) {
 }
 #undef ENUM_CASE
 
-bool SyncerErrorIsError(SyncerError error) {
-  return error != UNSET && error != SYNCER_OK &&
-         error != SERVER_MORE_TO_DOWNLOAD;
+}  // namespace
+
+SyncerError::~SyncerError() = default;
+
+const char* SyncerError::ToString() const {
+  return GetSyncerErrorString(value_);
+}
+
+bool SyncerError::IsActualError() const {
+  return value_ != UNSET && value_ != SYNCER_OK &&
+         value_ != SERVER_MORE_TO_DOWNLOAD;
 }
 
 }  // namespace syncer

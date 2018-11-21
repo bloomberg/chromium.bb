@@ -106,7 +106,7 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types, SyncCycle* cycle) {
 bool Syncer::PostClearServerData(SyncCycle* cycle) {
   DCHECK(cycle);
   ClearServerData clear_server_data(cycle->context()->account_name());
-  return clear_server_data.SendRequest(cycle) == SYNCER_OK;
+  return clear_server_data.SendRequest(cycle).value() == SyncerError::SYNCER_OK;
 }
 
 bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
@@ -123,18 +123,18 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
       Difference(*request_types, requested_commit_only_types);
   GetUpdatesProcessor get_updates_processor(
       cycle->context()->model_type_registry()->update_handler_map(), delegate);
-  SyncerError download_result = UNSET;
+  SyncerError download_result;
   do {
     download_result = get_updates_processor.DownloadUpdates(
         &download_types, cycle, create_mobile_bookmarks_folder);
-  } while (download_result == SERVER_MORE_TO_DOWNLOAD);
+  } while (download_result.value() == SyncerError::SERVER_MORE_TO_DOWNLOAD);
 
   // It is our responsibility to propagate the removal of types that occurred in
   // GetUpdatesProcessor::DownloadUpdates().
   *request_types = Union(download_types, requested_commit_only_types);
 
   // Exit without applying if we're shutting down or an error was detected.
-  if (download_result != SYNCER_OK || ExitRequested())
+  if (download_result.value() != SyncerError::SYNCER_OK || ExitRequested())
     return false;
 
   {
@@ -183,12 +183,12 @@ SyncerError Syncer::BuildAndPostCommits(const ModelTypeSet& request_types,
         nudge_tracker, cycle, cycle->mutable_status_controller(),
         cycle->context()->extensions_activity());
     commit->CleanUp();
-    if (error != SYNCER_OK) {
+    if (error.value() != SyncerError::SYNCER_OK) {
       return error;
     }
   }
 
-  return SYNCER_OK;
+  return SyncerError(SyncerError::SYNCER_OK);
 }
 
 bool Syncer::ExitRequested() {
