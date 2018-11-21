@@ -265,9 +265,97 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, ClickAnchorElement) {
     histogram_tester.ExpectTotalCount(
         "AnchorElementMetrics.Clicked.NavigationScore", 1);
 
+    histogram_tester.ExpectUniqueSample(
+        "NavigationPredictor.OnNonDSE.ActionTaken",
+        NavigationPredictor::Action::kNone, 1);
+
   } else {
     histogram_tester.ExpectTotalCount(
         "AnchorElementMetrics.Clicked.HrefEngagementScore2", 0);
+  }
+}
+
+// Simulate a click at the anchor element.
+// Test that the action accuracy is properly recorded.
+// User clicks on an anchor element that points to a origin different than the
+// origin of the URL prefetched.
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+                       ActionAccuracy_DifferentOrigin) {
+  base::HistogramTester histogram_tester;
+
+  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "document.getElementById('google').click();"));
+  base::RunLoop().RunUntilIdle();
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kRecordAnchorMetricsClicked)) {
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
+    // Same document anchor element should be removed after merge.
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+    histogram_tester.ExpectUniqueSample(
+        "NavigationPredictor.OnNonDSE.ActionTaken",
+        NavigationPredictor::Action::kPrefetch, 1);
+
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
+
+    histogram_tester.ExpectUniqueSample(
+        "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
+        NavigationPredictor::ActionAccuracy::
+            kPrefetchActionClickToDifferentOrigin,
+        1);
+
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
+  }
+}
+
+// Simulate a click at the anchor element.
+// Test that the action accuracy is properly recorded.
+// User clicks on an anchor element that points to same URL as the URL
+// prefetched.
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+                       ActionAccuracy_SameOrigin) {
+  base::HistogramTester histogram_tester;
+
+  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "document.getElementById('example').click();"));
+  base::RunLoop().RunUntilIdle();
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kRecordAnchorMetricsClicked)) {
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
+    // Same document anchor element should be removed after merge.
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+    histogram_tester.ExpectUniqueSample(
+        "NavigationPredictor.OnNonDSE.ActionTaken",
+        NavigationPredictor::Action::kPrefetch, 1);
+
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
+
+    histogram_tester.ExpectUniqueSample(
+        "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
+        NavigationPredictor::ActionAccuracy::kPrefetchActionClickToSameURL, 1);
+
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
   }
 }
 

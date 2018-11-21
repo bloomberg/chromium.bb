@@ -34521,6 +34521,16 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="kCopyStateFrom"/>
 </enum>
 
+<enum name="NavigationPredictorAccuracyActionTaken">
+  <int value="0" label="No action was taken by the predictor"/>
+  <int value="1" label="Click was to the same URL as the prefetch URL"/>
+  <int value="2"
+      label="Click was to a URL with the same origin but different URL as the
+             prefetch URL"/>
+  <int value="3"
+      label="Click was to a URL with different origin than the prefetch URL"/>
+</enum>
+
 <enum name="NavigationPredictorActionTaken">
   <int value="0" label="Unknown"/>
   <int value="1" label="None"/>
