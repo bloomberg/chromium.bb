@@ -24,6 +24,8 @@ static_library("shared") {
   sources = [
     "account_info.cc",
     "account_info.h",
+    "identity_utils.cc",
+    "identity_utils.h",
     "signin_metrics.cc",
     "signin_metrics.h",
     "signin_pref_names.cc",
@@ -34,6 +36,7 @@ static_library("shared") {
   deps = [
     ":signin_buildflags",
     "//components/account_id",
+    "//third_party/icu:icui18n",
   ]
   public_deps = [
     "//base",
@@ -272,6 +275,7 @@ source_set("unit_tests") {
     "device_id_helper_unittest.cc",
     "dice_account_reconcilor_delegate_unittest.cc",
     "gaia_cookie_manager_service_unittest.cc",
+    "identity_utils_unittest.cc",
     "signin_error_controller_unittest.cc",
     "signin_header_helper_unittest.cc",
     "signin_investigator_unittest.cc",
