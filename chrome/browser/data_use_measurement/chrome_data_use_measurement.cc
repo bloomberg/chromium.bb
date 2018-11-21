@@ -15,7 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
-#include "components/metrics/data_use_tracker.h"
+#include "components/metrics/metrics_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
@@ -34,9 +34,14 @@ void UpdateMetricsUsagePrefs(int64_t total_bytes,
                              bool is_cellular,
                              bool is_metrics_service_usage) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  metrics::DataUseTracker::UpdateMetricsUsagePrefs(
-      base::saturated_cast<int>(total_bytes), is_cellular,
-      is_metrics_service_usage, g_browser_process->local_state());
+  // Some unit tests use IOThread but do not initialize MetricsService. In that
+  // case it's fine to skip the update.
+  auto* metrics_service = g_browser_process->metrics_service();
+  if (metrics_service) {
+    metrics_service->UpdateMetricsUsagePrefs(
+        base::saturated_cast<int>(total_bytes), is_cellular,
+        is_metrics_service_usage);
+  }
 }
 
 // This function is for forwarding metrics usage pref changes to the metrics
