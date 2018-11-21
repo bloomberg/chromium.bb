@@ -18,6 +18,11 @@
 #include "util.h"
 
 #define DEFAULT_ALIGNMENT 64
+#define BUFFER_SIZE_ALIGN 4096
+
+#define VENUS_STRIDE_ALIGN 128
+#define VENUS_SCANLINE_ALIGN 16
+#define NV12_LINEAR_PADDING (12 * 1024)
 
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
 						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
@@ -25,6 +30,51 @@ static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_R8,
 						   DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
+
+static void msm_calculate_linear_layout(struct bo *bo)
+{
+	uint32_t width, height;
+
+	width = bo->width;
+	height = bo->height;
+
+	/* NV12 format requires extra padding with platform
+	 * specific alignments for venus driver
+	 */
+	if (bo->format == DRM_FORMAT_NV12) {
+		uint32_t y_stride, uv_stride, y_scanline, uv_scanline, y_plane, uv_plane, size;
+		y_stride = ALIGN(width, VENUS_STRIDE_ALIGN);
+		uv_stride = ALIGN(width, VENUS_STRIDE_ALIGN);
+		y_scanline = ALIGN(height, VENUS_SCANLINE_ALIGN * 2);
+		uv_scanline = ALIGN(DIV_ROUND_UP(height, 2), VENUS_SCANLINE_ALIGN);
+		y_plane = y_stride * y_scanline;
+		uv_plane = uv_stride * uv_scanline;
+
+		bo->strides[0] = y_stride;
+		bo->sizes[0] = y_plane;
+		bo->offsets[1] = y_plane;
+		bo->strides[1] = uv_stride;
+		size = y_plane + uv_plane + NV12_LINEAR_PADDING;
+		bo->total_size = ALIGN(size, BUFFER_SIZE_ALIGN);
+		bo->sizes[1] = bo->total_size - bo->sizes[0];
+	} else {
+		uint32_t stride, alignw, alignh;
+
+		alignw = ALIGN(width, DEFAULT_ALIGNMENT);
+
+		/* HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned. */
+		if (bo->format == DRM_FORMAT_YVU420_ANDROID) {
+			alignh = height;
+		} else {
+			alignh = ALIGN(height, DEFAULT_ALIGNMENT);
+		}
+
+		stride = drv_stride_from_format(bo->format, alignw, 0);
+
+		/* Calculate size and assign stride, size, offset to each plane based on format */
+		drv_bo_from_format(bo, stride, alignh, bo->format);
+	}
+}
 
 static int msm_init(struct driver *drv)
 {
@@ -45,30 +95,10 @@ static int msm_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_
 			 uint64_t flags)
 {
 	struct drm_msm_gem_new req;
-	uint32_t stride, alignw, alignh;
 	int ret;
 	size_t i;
 
-	/* will get alignment from libadreno eventually */
-	alignw = ALIGN(width, DEFAULT_ALIGNMENT);
-	alignh = ALIGN(height, DEFAULT_ALIGNMENT);
-
-	/* HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned. */
-	if (bo->format == DRM_FORMAT_YVU420_ANDROID)
-		alignh = bo->height;
-
-	/*
-	 * The extra 12KB at the end are a requirement of the Venus codec driver.
-	 * Since |height| will be multiplied by 3/2 in drv_dumb_bo_create,
-	 * we multiply this padding by 2/3 here.
-	 */
-	if (bo->format == DRM_FORMAT_NV12)
-		alignh += 2 * DIV_ROUND_UP(0x3000, 3 * alignw);
-
-	stride = drv_stride_from_format(format, alignw, 0);
-
-	/* Calculate size and assign stride, size, offset to each plane based on format */
-	drv_bo_from_format(bo, stride, alignh, format);
+	msm_calculate_linear_layout(bo);
 
 	memset(&req, 0, sizeof(req));
 	req.flags = MSM_BO_WC | MSM_BO_SCANOUT;
