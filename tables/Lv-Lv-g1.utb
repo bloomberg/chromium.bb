@@ -3,6 +3,7 @@
 #  Copyright (C) 2004-2008 ViewPlus Technologies, Inc. www.viewplus.com
 #  Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
 #  Copyright (C) 2012 Mesar Hameed <mesar.hameed@gmail.com>
+#  Copyright (C) 2018 Bert Frees
 #
 #  This file is part of liblouis.
 #
@@ -21,6 +22,9 @@
 #  <http://www.gnu.org/licenses/>.
 
 # Created & maintained by Leon Ungier <Leon.Ungier@ViewPlus.com>.
+
+# Modifications done by Bert Frees based on input from Gatis Grintals
+# and Artis Raugulis.
 
 include text_nabcc.dis
 
