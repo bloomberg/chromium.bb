@@ -50,36 +50,78 @@ class TestOptions(object):
     self.use_proxy_hash = False
 
 
-class TestGenerator(unittest.TestCase):
-  def assertObjEquals(self, first, second):
+class BaseTest(unittest.TestCase):
+
+  @staticmethod
+  def _MergeRegistrationForTests(results,
+                                 header_guard='HEADER_GUARD',
+                                 namespace='test'):
+
+    results.sort(key=lambda d: d['FULL_CLASS_NAME'])
+
+    combined_dict = {}
+    for key in jni_registration_generator.MERGEABLE_KEYS:
+      combined_dict[key] = ''.join(d.get(key, '') for d in results)
+
+    combined_dict['HEADER_GUARD'] = header_guard
+    combined_dict['NAMESPACE'] = namespace
+    return combined_dict
+
+  def _JoinScriptDir(self, path):
+    script_dir = os.path.dirname(sys.argv[0])
+    return os.path.join(script_dir, path)
+
+  def _JoinGoldenPath(self, golden_file_name):
+    return self._JoinScriptDir(os.path.join('golden', golden_file_name))
+
+  def _ReadGoldenFile(self, golden_file_name):
+    golden_file_name = self._JoinGoldenPath(golden_file_name)
+    if not os.path.exists(golden_file_name):
+      return None
+    with file(golden_file_name, 'r') as f:
+      return f.read()
+
+  def _CreateJniHeaderFromFile(self, fname, qualified_clazz, options=None):
+    content = file(self._JoinScriptDir(fname)).read()
+    opts = options
+    if opts is None:
+      opts = TestOptions()
+
+    jni_from_java = jni_generator.JNIFromJavaSource(content, qualified_clazz,
+                                                    opts)
+    return jni_from_java.GetContent()
+
+  def AssertObjEquals(self, first, second):
     dict_first = first.__dict__
     dict_second = second.__dict__
     self.assertEquals(dict_first.keys(), dict_second.keys())
     for key, value in dict_first.iteritems():
       if (type(value) is list and len(value) and
           isinstance(type(value[0]), object)):
-        self.assertListEquals(value, second.__getattribute__(key))
+        self.AssertListEquals(value, second.__getattribute__(key))
       else:
         actual = second.__getattribute__(key)
         self.assertEquals(value, actual,
                           'Key ' + key + ': ' + str(value) + '!=' + str(actual))
 
-  def assertListEquals(self, first, second):
+  def AssertListEquals(self, first, second):
     self.assertEquals(len(first), len(second))
     for i in xrange(len(first)):
       if isinstance(first[i], object):
-        self.assertObjEquals(first[i], second[i])
+        self.AssertObjEquals(first[i], second[i])
       else:
         self.assertEquals(first[i], second[i])
 
-  def assertTextEquals(self, golden_text, generated_text):
-    if not self.compareText(golden_text, generated_text):
+  def AssertTextEquals(self, golden_text, generated_text):
+    if not self.CompareText(golden_text, generated_text):
       self.fail('Golden text mismatch.')
 
-  def compareText(self, golden_text, generated_text):
+  def CompareText(self, golden_text, generated_text):
+
     def FilterText(text):
       return [
-          l.strip() for l in text.split('\n')
+          l.strip()
+          for l in text.split('\n')
           if not l.startswith('// Copyright')
       ]
     stripped_golden = FilterText(golden_text)
@@ -97,255 +139,43 @@ class TestGenerator(unittest.TestCase):
     print 'REBASELINE=1', sys.argv[0]
     print 'to regenerate the data files.'
 
-  @staticmethod
-  def _MergeRegistrationForTests(results,
-                                 header_guard='HEADER_GUARD',
-                                 namespace='test'):
-
-    results.sort(key=lambda d: d['FULL_CLASS_NAME'])
-
-    combined_dict = {}
-    for key in jni_registration_generator.MERGEABLE_KEYS:
-      combined_dict[key] = ''.join(d.get(key, '') for d in results)
-
-    combined_dict['HEADER_GUARD'] = header_guard
-    combined_dict['NAMESPACE'] = namespace
-    return combined_dict
-
-  def _ReadGoldenFile(self, golden_file):
-    if not os.path.exists(golden_file):
-      return None
-    with file(golden_file, 'r') as f:
-      return f.read()
-
-  def assertGoldenTextEquals(self, generated_text, suffix='', golden_file=None):
+  def AssertGoldenTextEquals(self, generated_text, suffix='', golden_file=None):
     """Compares generated text with the corresponding golden_file
 
     By default compares generated_text with the file at
-    script_dir/{caller_name}[suffix].golden. If the parameter golden_file is
+    script_dir/golden/{caller_name}[suffix].golden. If the parameter golden_file is
     provided it will instead compare the generated text with
-    script_dir/golden_file."""
-    script_dir = os.path.dirname(sys.argv[0])
+    script_dir/golden/golden_file."""
     # This is the caller test method.
     caller = inspect.stack()[1][3]
 
     if golden_file is None:
       self.assertTrue(
           caller.startswith('test'),
-          'assertGoldenTextEquals can only be called from a '
+          'AssertGoldenTextEquals can only be called from a '
           'test* method, not %s' % caller)
-      golden_file = os.path.join(script_dir, '%s%s.golden' % (caller, suffix))
-      self.assertTrue(
-          os.path.exists(golden_file), '%s does not exist' % golden_file)
+      golden_file = '%s%s.golden' % (caller, suffix)
     golden_text = self._ReadGoldenFile(golden_file)
     if os.environ.get(REBASELINE_ENV):
       if golden_text != generated_text:
-        with file(golden_file, 'w') as f:
+        with file(self._JoinGoldenPath(golden_file), 'w') as f:
           f.write(generated_text)
       return
-    self.assertTextEquals(golden_text, generated_text)
+    # golden_text is None if no file is found. Better to fail than in
+    # AssertTextEquals so we can give a clearer message.
+    if golden_text is None:
+      self.fail(
+          'Golden file %s does not exist.' % self._JoinGoldenPath(golden_file))
+    self.AssertTextEquals(golden_text, generated_text)
+
+
+class TestGenerator(BaseTest):
 
   def testInspectCaller(self):
     def willRaise():
       # This function can only be called from a test* method.
-      self.assertGoldenTextEquals('')
+      self.AssertGoldenTextEquals('')
     self.assertRaises(AssertionError, willRaise)
-
-  def testEscapingProxyNatives(self):
-    test_data = """
-    class SampleProxyJni {
-      @JniStaticNatives
-      interface Natives {
-        void foo_bar();
-        void foo__bar();
-      }
-    }
-    """
-    qualified_clazz = 'org/chromium/example/SampleProxyJni'
-
-    natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
-        qualified_clazz, test_data, 'long')
-
-    golden_natives = [
-        NativeMethod(
-            return_type='void',
-            static=True,
-            name='foo_bar',
-            params=[],
-            java_class_name=None,
-            is_proxy=True,
-            proxy_name='org_chromium_example_SampleProxyJni_foo_1bar',
-            type='function'),
-        NativeMethod(
-            return_type='void',
-            static=True,
-            name='foo__bar',
-            params=[],
-            java_class_name=None,
-            is_proxy=True,
-            proxy_name='org_chromium_example_SampleProxyJni_foo_1_1bar',
-            type='function'),
-    ]
-
-    self.assertListEquals(natives, golden_natives)
-
-  def testProxyNativesMainDex(self):
-    test_data = """
-    @MainDex
-    class Foo() {
-      @JniStaticNatives
-      interface Natives {
-        void thisismaindex();
-      }
-      void dontmatchme();
-      public static void metoo();
-      public static native void this_is_a_non_proxy_native();
-    }
-    """
-
-    non_main_dex_test_data = """
-    class Bar() {
-      @JniStaticNatives
-      interface Natives {
-        void foo();
-        void bar();
-      }
-    }
-    """
-    qualified_clazz = 'test/foo/Foo'
-    jni_params = TestOptions()
-
-    natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
-        qualified_clazz, test_data, 'long')
-
-    golden_natives = [
-        NativeMethod(
-            return_type='void',
-            static=True,
-            name='thisismaindex',
-            params=[],
-            java_class_name=None,
-            is_proxy=True,
-            proxy_name='test_foo_Foo_thisismaindex',
-            type='function'),
-    ]
-
-    self.assertListEquals(natives, golden_natives)
-
-    jni_params = jni_generator.JniParams(qualified_clazz)
-    main_dex_header = jni_registration_generator.HeaderGenerator(
-        '', qualified_clazz, natives, jni_params, main_dex=True).Generate()
-    content = TestGenerator._MergeRegistrationForTests([main_dex_header])
-
-    self.assertGoldenTextEquals(
-        jni_registration_generator.CreateFromDict(content))
-
-    other_qualified_clazz = 'test/foo/Bar'
-    other_natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
-        other_qualified_clazz, non_main_dex_test_data, 'long')
-
-    jni_params = jni_generator.JniParams(other_qualified_clazz)
-    non_main_dex_header = jni_registration_generator.HeaderGenerator(
-        '', other_qualified_clazz, other_natives, jni_params,
-        main_dex=False).Generate()
-
-    content = TestGenerator._MergeRegistrationForTests([main_dex_header] +
-                                                       [non_main_dex_header])
-
-    self.assertGoldenTextEquals(
-        jni_registration_generator.CreateFromDict(content), 'AndNonMainDex')
-
-  def testProxyNatives(self):
-    test_data = """
-    class SampleProxyJni {
-      private void do_not_match();
-      @JniStaticNatives
-      interface Natives {
-        void foo();
-        int bar(int x, int y);
-        String foobar(String x, String y);
-      }
-      void dontmatchme();
-      public static void metoo();
-      public static native void this_is_a_non_proxy_native();
-    }
-    """
-
-    bad_spaced_test_data = """
-    class SampleProxyJni{
-      @JniStaticNatives interface 
-      Natives 
-      
-      
-      { void     foo(); 
-      int              bar(int        
-      x,  int y); String    
-        foobar(String x, String y); 
-      }
-
-    }
-    """
-
-    qualified_clazz = 'org/chromium/example/SampleProxyJni'
-
-    natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
-        qualified_clazz, test_data, 'long')
-    bad_spacing_natives = jni_generator.NativeProxyHelpers\
-      .ExtractStaticProxyNatives(qualified_clazz, bad_spaced_test_data, 'long')
-    golden_natives = [
-        NativeMethod(
-            return_type='void',
-            static=True,
-            name='foo',
-            params=[],
-            java_class_name=None,
-            is_proxy=True,
-            proxy_name='org_chromium_example_SampleProxyJni_foo',
-            type='function'),
-        NativeMethod(
-            return_type='int',
-            static=True,
-            name='bar',
-            params=[
-                Param(datatype='int', name='x'),
-                Param(datatype='int', name='y')
-            ],
-            java_class_name=None,
-            is_proxy=True,
-            proxy_name='org_chromium_example_SampleProxyJni_bar',
-            type='function'),
-        NativeMethod(
-            return_type='String',
-            static=True,
-            name='foobar',
-            params=[
-                Param(datatype='String', name='x'),
-                Param(datatype='String', name='y')
-            ],
-            java_class_name=None,
-            is_proxy=True,
-            proxy_name='org_chromium_example_SampleProxyJni_foobar',
-            type='function'),
-    ]
-    self.assertListEquals(golden_natives, natives)
-    self.assertListEquals(golden_natives, bad_spacing_natives)
-
-    jni_params = jni_generator.JniParams(qualified_clazz)
-    h1 = jni_generator.InlHeaderFileGenerator('', qualified_clazz, natives, [],
-                                              [], jni_params, TestOptions())
-    self.assertGoldenTextEquals(h1.GetContent())
-    h2 = jni_registration_generator.HeaderGenerator('', qualified_clazz,
-                                                    natives, jni_params, False)
-    content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
-
-    proxy_opts = jni_registration_generator.ProxyOptions()
-    self.assertGoldenTextEquals(
-        jni_registration_generator.CreateProxyJavaFromDict(content, proxy_opts),
-        suffix='Java')
-
-    self.assertGoldenTextEquals(
-        jni_registration_generator.CreateFromDict(content),
-        suffix='Registrations')
 
   def testNatives(self):
     test_data = """"
@@ -508,19 +338,18 @@ class TestGenerator(unittest.TestCase):
                      java_class_name=None,
                      type='function')
     ]
-    self.assertListEquals(golden_natives, natives)
+    self.AssertListEquals(golden_natives, natives)
     h1 = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
                                               natives, [], [], jni_params,
                                               TestOptions())
-    self.assertGoldenTextEquals(h1.GetContent())
+    self.AssertGoldenTextEquals(h1.GetContent())
     h2 = jni_registration_generator.HeaderGenerator(
         '', 'org/chromium/TestJni', natives, jni_params, True)
     content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
-    self.assertGoldenTextEquals(
+    self.AssertGoldenTextEquals(
         jni_registration_generator.CreateFromDict(content),
         suffix='Registrations')
-
 
   def testInnerClassNatives(self):
     test_data = """
@@ -536,12 +365,12 @@ class TestGenerator(unittest.TestCase):
                      java_class_name='MyInnerClass',
                      type='function')
     ]
-    self.assertListEquals(golden_natives, natives)
+    self.AssertListEquals(golden_natives, natives)
     jni_params = jni_generator.JniParams('')
     h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
                                              natives, [], [], jni_params,
                                              TestOptions())
-    self.assertGoldenTextEquals(h.GetContent())
+    self.AssertGoldenTextEquals(h.GetContent())
 
   def testInnerClassNativesMultiple(self):
     test_data = """
@@ -565,12 +394,12 @@ class TestGenerator(unittest.TestCase):
                      java_class_name='MyOtherInnerClass',
                      type='function')
     ]
-    self.assertListEquals(golden_natives, natives)
+    self.AssertListEquals(golden_natives, natives)
     jni_params = jni_generator.JniParams('')
     h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
                                              natives, [], [], jni_params,
                                              TestOptions())
-    self.assertGoldenTextEquals(h.GetContent())
+    self.AssertGoldenTextEquals(h.GetContent())
 
   def testInnerClassNativesBothInnerAndOuter(self):
     test_data = """
@@ -593,18 +422,18 @@ class TestGenerator(unittest.TestCase):
                      java_class_name='MyOtherInnerClass',
                      type='function')
     ]
-    self.assertListEquals(golden_natives, natives)
+    self.AssertListEquals(golden_natives, natives)
     jni_params = jni_generator.JniParams('')
     h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
                                              natives, [], [], jni_params,
                                              TestOptions())
-    self.assertGoldenTextEquals(h.GetContent())
+    self.AssertGoldenTextEquals(h.GetContent())
 
     h2 = jni_registration_generator.HeaderGenerator(
         '', 'org/chromium/TestJni', natives, jni_params, True)
     content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
-    self.assertGoldenTextEquals(
+    self.AssertGoldenTextEquals(
         jni_registration_generator.CreateFromDict(content),
         suffix='Registrations')
 
@@ -930,11 +759,11 @@ class TestGenerator(unittest.TestCase):
             unchecked=False,
         ),
     ]
-    self.assertListEquals(golden_called_by_natives, called_by_natives)
+    self.AssertListEquals(golden_called_by_natives, called_by_natives)
     h = jni_generator.InlHeaderFileGenerator(
         '', 'org/chromium/TestJni', [], called_by_natives, [], jni_params,
         TestOptions())
-    self.assertGoldenTextEquals(h.GetContent())
+    self.AssertGoldenTextEquals(h.GetContent())
 
   def testCalledByNativeParseError(self):
     try:
@@ -1002,7 +831,7 @@ public abstract class java.util.HashSet<T> extends java.util.AbstractSet<E>
     jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
                                                 TestOptions())
     self.assertEquals(2, len(jni_from_javap.called_by_natives))
-    self.assertGoldenTextEquals(jni_from_javap.GetContent())
+    self.AssertGoldenTextEquals(jni_from_javap.GetContent())
 
   def testSnippnetJavap6_7_8(self):
     content_javap6 = """
@@ -1037,28 +866,26 @@ public class java.util.HashSet {
     self.assertTrue(jni_from_javap8.GetContent())
     # Ensure the javap7 is correctly parsed and uses the Signature field rather
     # than the "E" parameter.
-    self.assertTextEquals(jni_from_javap6.GetContent(),
+    self.AssertTextEquals(jni_from_javap6.GetContent(),
                           jni_from_javap7.GetContent())
     # Ensure the javap8 is correctly parsed and uses the descriptor field.
-    self.assertTextEquals(jni_from_javap7.GetContent(),
+    self.AssertTextEquals(jni_from_javap7.GetContent(),
                           jni_from_javap8.GetContent())
 
   def testFromJavaP(self):
-    contents = self._ReadGoldenFile(os.path.join(os.path.dirname(sys.argv[0]),
-        'testInputStream.javap'))
+    contents = self._ReadGoldenFile('testInputStream.javap')
     jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
                                                 TestOptions())
     self.assertEquals(10, len(jni_from_javap.called_by_natives))
-    self.assertGoldenTextEquals(jni_from_javap.GetContent())
+    self.AssertGoldenTextEquals(jni_from_javap.GetContent())
 
   def testConstantsFromJavaP(self):
     for f in ['testMotionEvent.javap', 'testMotionEvent.javap7']:
-      contents = self._ReadGoldenFile(os.path.join(os.path.dirname(sys.argv[0]),
-          f))
+      contents = self._ReadGoldenFile(f)
       jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
                                                   TestOptions())
       self.assertEquals(86, len(jni_from_javap.called_by_natives))
-      self.assertGoldenTextEquals(jni_from_javap.GetContent())
+      self.AssertGoldenTextEquals(jni_from_javap.GetContent())
 
   def testREForNatives(self):
     # We should not match "native SyncSetupFlow" inside the comment.
@@ -1091,49 +918,11 @@ public class java.util.HashSet {
                       jni_generator.JNIFromJavaSource,
                       test_data, 'foo/bar', TestOptions())
 
-  def _createJniHeaderFromFile(self, fname, qualified_clazz, options=None):
-    script_dir = os.path.dirname(sys.argv[0])
-    content = file(os.path.join(script_dir, fname)).read()
-    opts = options
-    if opts is None:
-      opts = TestOptions()
-
-    jni_from_java = jni_generator.JNIFromJavaSource(content, qualified_clazz,
-                                                    opts)
-    return jni_from_java.GetContent()
-
-  def testHashedProxyExample(self):
-    opts = TestOptions()
-    opts.use_proxy_hash = True
-    path = 'java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java'
-    generated_text = self._createJniHeaderFromFile(
-        path, 'org/chromium/example/jni_generator/SampleForAnnotationProcessor',
-        opts)
-    self.assertGoldenTextEquals(
-        generated_text,
-        golden_file='HashedSampleForAnnotationProcessor_jni.golden')
-
-    reg_dict = jni_registration_generator._DictForPath(path)
-    reg_dict = self._MergeRegistrationForTests([reg_dict])
-
-    proxy_opts = jni_registration_generator.ProxyOptions()
-    self.assertGoldenTextEquals(
-        jni_registration_generator.CreateProxyJavaFromDict(reg_dict,
-                                                           proxy_opts),
-        golden_file='HashedSampleForAnnotationProcessorGenJni.golden')
-
-  def testJniProxyExample(self):
-    generated_text = self._createJniHeaderFromFile(
-        'java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java',
-        'org/chromium/example/jni_generator/SampleForAnnotationProcessor')
-    self.assertGoldenTextEquals(
-        generated_text, golden_file='SampleForAnnotationProcessor_jni.golden')
-
   def testJniSelfDocumentingExample(self):
-    generated_text = self._createJniHeaderFromFile(
+    generated_text = self._CreateJniHeaderFromFile(
         'java/src/org/chromium/example/jni_generator/SampleForTests.java',
         'org/chromium/example/jni_generator/SampleForTests')
-    self.assertGoldenTextEquals(
+    self.AssertGoldenTextEquals(
         generated_text, golden_file='SampleForTests_jni.golden')
 
   def testNoWrappingPreprocessorLines(self):
@@ -1211,10 +1000,10 @@ class Foo {
 
   def testJniParamsJavaToJni(self):
     jni_params = jni_generator.JniParams('')
-    self.assertTextEquals('I', jni_params.JavaToJni('int'))
-    self.assertTextEquals('[B', jni_params.JavaToJni('byte[]'))
-    self.assertTextEquals(
-        '[Ljava/nio/ByteBuffer;', jni_params.JavaToJni('java/nio/ByteBuffer[]'))
+    self.AssertTextEquals('I', jni_params.JavaToJni('int'))
+    self.AssertTextEquals('[B', jni_params.JavaToJni('byte[]'))
+    self.AssertTextEquals('[Ljava/nio/ByteBuffer;',
+                          jni_params.JavaToJni('java/nio/ByteBuffer[]'))
 
   def testNativesLong(self):
     test_options = TestOptions()
@@ -1234,11 +1023,11 @@ class Foo {
                      p0_type='ChromeBrowserProvider',
                      ptr_type=test_options.ptr_type),
     ]
-    self.assertListEquals(golden_natives, natives)
+    self.AssertListEquals(golden_natives, natives)
     h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
                                              natives, [], [], jni_params,
                                              test_options)
-    self.assertGoldenTextEquals(h.GetContent())
+    self.AssertGoldenTextEquals(h.GetContent())
 
   def testMainDexAnnotation(self):
     mainDexEntries = [
@@ -1320,7 +1109,7 @@ class Foo {
     options.native_exports_optional = False
     jni_from_java = jni_generator.JNIFromJavaSource(
         test_data, 'org/chromium/example/jni_generator/SampleForTests', options)
-    self.assertGoldenTextEquals(jni_from_java.GetContent())
+    self.AssertGoldenTextEquals(jni_from_java.GetContent())
 
   def testOuterInnerRaises(self):
     test_data = """
@@ -1355,7 +1144,7 @@ class Foo {
     jni_from_java = jni_generator.JNIFromJavaSource(test_data,
                                                     'org/chromium/foo/Foo',
                                                     TestOptions())
-    self.assertGoldenTextEquals(jni_from_java.GetContent())
+    self.AssertGoldenTextEquals(jni_from_java.GetContent())
 
   def testMultipleJNIAdditionalImport(self):
     test_data = """
@@ -1376,7 +1165,46 @@ class Foo {
     jni_from_java = jni_generator.JNIFromJavaSource(test_data,
                                                     'org/chromium/foo/Foo',
                                                     TestOptions())
-    self.assertGoldenTextEquals(jni_from_java.GetContent())
+    self.AssertGoldenTextEquals(jni_from_java.GetContent())
+
+  def testTracing(self):
+    test_data = """
+    package org.chromium.foo;
+
+    @JNINamespace("org::chromium_foo")
+    class Foo {
+
+    @CalledByNative
+    Foo();
+
+    @CalledByNative
+    void callbackFromNative();
+
+    native void nativeInstanceMethod(long nativeInstance);
+
+    static native void nativeStaticMethod();
+    }
+    """
+    options_with_tracing = TestOptions()
+    options_with_tracing.enable_tracing = True
+    jni_from_java = jni_generator.JNIFromJavaSource(
+        test_data, 'org/chromium/foo/Foo', options_with_tracing)
+    self.AssertGoldenTextEquals(jni_from_java.GetContent())
+
+
+class ProxyTestGenerator(BaseTest):
+
+  def _BuildRegDictFromSample(self, options=None):
+    if options is None:
+      options = TestOptions()
+
+    path = self._JoinScriptDir(
+        'java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java'
+    )
+    reg_dict = jni_registration_generator._DictForPath(path)
+    reg_dict = self._MergeRegistrationForTests([reg_dict])
+
+    return reg_dict
 
   def testProxyNativesWithNatives(self):
     test_data = """
@@ -1402,34 +1230,249 @@ class Foo {
     options_with_tracing.enable_tracing = True
     jni_from_java = jni_generator.JNIFromJavaSource(
         test_data, 'org/chromium/foo/Foo', options_with_tracing)
-    self.assertGoldenTextEquals(jni_from_java.GetContent())
+    self.AssertGoldenTextEquals(jni_from_java.GetContent())
 
-
-
-  def testTracing(self):
+  def testEscapingProxyNatives(self):
     test_data = """
-    package org.chromium.foo;
-
-    @JNINamespace("org::chromium_foo")
-    class Foo {
-
-    @CalledByNative
-    Foo();
-
-    @CalledByNative
-    void callbackFromNative();
-
-    native void nativeInstanceMethod(long nativeInstance);
-
-    static native void nativeStaticMethod();
+    class SampleProxyJni {
+      @JniStaticNatives
+      interface Natives {
+        void foo_bar();
+        void foo__bar();
+      }
     }
     """
-    options_with_tracing = TestOptions()
-    options_with_tracing.enable_tracing = True
-    jni_from_java = jni_generator.JNIFromJavaSource(test_data,
-                                                    'org/chromium/foo/Foo',
-                                                    options_with_tracing)
-    self.assertGoldenTextEquals(jni_from_java.GetContent())
+    qualified_clazz = 'org/chromium/example/SampleProxyJni'
+
+    natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
+        qualified_clazz, test_data, 'long')
+
+    golden_natives = [
+        NativeMethod(
+            return_type='void',
+            static=True,
+            name='foo_bar',
+            params=[],
+            java_class_name=None,
+            is_proxy=True,
+            proxy_name='org_chromium_example_SampleProxyJni_foo_1bar',
+            type='function'),
+        NativeMethod(
+            return_type='void',
+            static=True,
+            name='foo__bar',
+            params=[],
+            java_class_name=None,
+            is_proxy=True,
+            proxy_name='org_chromium_example_SampleProxyJni_foo_1_1bar',
+            type='function'),
+    ]
+
+    self.AssertListEquals(natives, golden_natives)
+
+  def testProxyNativesMainDex(self):
+    test_data = """
+    @MainDex
+    class Foo() {
+      @JniStaticNatives
+      interface Natives {
+        void thisismaindex();
+      }
+      void dontmatchme();
+      public static void metoo();
+      public static native void this_is_a_non_proxy_native();
+    }
+    """
+
+    non_main_dex_test_data = """
+    class Bar() {
+      @JniStaticNatives
+      interface Natives {
+        void foo();
+        void bar();
+      }
+    }
+    """
+    qualified_clazz = 'test/foo/Foo'
+    jni_params = TestOptions()
+
+    natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
+        qualified_clazz, test_data, 'long')
+
+    golden_natives = [
+        NativeMethod(
+            return_type='void',
+            static=True,
+            name='thisismaindex',
+            params=[],
+            java_class_name=None,
+            is_proxy=True,
+            proxy_name='test_foo_Foo_thisismaindex',
+            type='function'),
+    ]
+
+    self.AssertListEquals(natives, golden_natives)
+
+    jni_params = jni_generator.JniParams(qualified_clazz)
+    main_dex_header = jni_registration_generator.HeaderGenerator(
+        '', qualified_clazz, natives, jni_params, main_dex=True).Generate()
+    content = TestGenerator._MergeRegistrationForTests([main_dex_header])
+
+    self.AssertGoldenTextEquals(
+        jni_registration_generator.CreateFromDict(content))
+
+    other_qualified_clazz = 'test/foo/Bar'
+    other_natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
+        other_qualified_clazz, non_main_dex_test_data, 'long')
+
+    jni_params = jni_generator.JniParams(other_qualified_clazz)
+    non_main_dex_header = jni_registration_generator.HeaderGenerator(
+        '', other_qualified_clazz, other_natives, jni_params,
+        main_dex=False).Generate()
+
+    content = TestGenerator._MergeRegistrationForTests([main_dex_header] +
+                                                       [non_main_dex_header])
+
+    self.AssertGoldenTextEquals(
+        jni_registration_generator.CreateFromDict(content), 'AndNonMainDex')
+
+  def testProxyNatives(self):
+    test_data = """
+    class SampleProxyJni {
+      private void do_not_match();
+      @JniStaticNatives
+      interface Natives {
+        void foo();
+        int bar(int x, int y);
+        String foobar(String x, String y);
+      }
+      void dontmatchme();
+      public static void metoo();
+      public static native void this_is_a_non_proxy_native();
+    }
+    """
+
+    bad_spaced_test_data = """
+    class SampleProxyJni{
+      @JniStaticNatives interface 
+      Natives 
+      
+      
+      { void     foo(); 
+      int              bar(int        
+      x,  int y); String    
+        foobar(String x, String y); 
+      }
+
+    }
+    """
+
+    qualified_clazz = 'org/chromium/example/SampleProxyJni'
+
+    natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
+        qualified_clazz, test_data, 'long')
+    bad_spacing_natives = jni_generator.NativeProxyHelpers \
+      .ExtractStaticProxyNatives(qualified_clazz, bad_spaced_test_data, 'long')
+    golden_natives = [
+        NativeMethod(
+            return_type='void',
+            static=True,
+            name='foo',
+            params=[],
+            java_class_name=None,
+            is_proxy=True,
+            proxy_name='org_chromium_example_SampleProxyJni_foo',
+            type='function'),
+        NativeMethod(
+            return_type='int',
+            static=True,
+            name='bar',
+            params=[
+                Param(datatype='int', name='x'),
+                Param(datatype='int', name='y')
+            ],
+            java_class_name=None,
+            is_proxy=True,
+            proxy_name='org_chromium_example_SampleProxyJni_bar',
+            type='function'),
+        NativeMethod(
+            return_type='String',
+            static=True,
+            name='foobar',
+            params=[
+                Param(datatype='String', name='x'),
+                Param(datatype='String', name='y')
+            ],
+            java_class_name=None,
+            is_proxy=True,
+            proxy_name='org_chromium_example_SampleProxyJni_foobar',
+            type='function'),
+    ]
+    self.AssertListEquals(golden_natives, natives)
+    self.AssertListEquals(golden_natives, bad_spacing_natives)
+
+    jni_params = jni_generator.JniParams(qualified_clazz)
+    h1 = jni_generator.InlHeaderFileGenerator('', qualified_clazz, natives, [],
+                                              [], jni_params, TestOptions())
+    self.AssertGoldenTextEquals(h1.GetContent())
+    h2 = jni_registration_generator.HeaderGenerator('', qualified_clazz,
+                                                    natives, jni_params, False)
+    content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
+
+    proxy_opts = jni_registration_generator.ProxyOptions()
+    self.AssertGoldenTextEquals(
+        jni_registration_generator.CreateProxyJavaFromDict(content, proxy_opts),
+        suffix='Java')
+
+    self.AssertGoldenTextEquals(
+        jni_registration_generator.CreateFromDict(content),
+        suffix='Registrations')
+
+  def testProxyHashedExample(self):
+    opts = TestOptions()
+    opts.use_proxy_hash = True
+    path = 'java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java'
+
+    generated_text = self._CreateJniHeaderFromFile(
+        path, 'org/chromium/example/jni_generator/SampleForAnnotationProcessor',
+        opts)
+    self.AssertGoldenTextEquals(
+        generated_text,
+        golden_file='HashedSampleForAnnotationProcessor_jni.golden')
+
+    reg_dict = jni_registration_generator._DictForPath(
+        self._JoinScriptDir(path))
+    reg_dict = self._MergeRegistrationForTests([reg_dict])
+
+    proxy_opts = jni_registration_generator.ProxyOptions()
+    self.AssertGoldenTextEquals(
+        jni_registration_generator.CreateProxyJavaFromDict(reg_dict, proxy_opts),
+        golden_file='HashedSampleForAnnotationProcessorGenJni.golden')
+
+  def testProxyJniExample(self):
+    generated_text = self._CreateJniHeaderFromFile(
+        'java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java',
+        'org/chromium/example/jni_generator/SampleForAnnotationProcessor')
+    self.AssertGoldenTextEquals(
+        generated_text, golden_file='SampleForAnnotationProcessor_jni.golden')
+
+  def testGenJniFlags(self):
+    reg_dict = self._BuildRegDictFromSample()
+    proxy_options = jni_registration_generator.ProxyOptions()
+    content = jni_registration_generator.CreateProxyJavaFromDict(
+        reg_dict, proxy_options)
+    self.AssertGoldenTextEquals(content, 'Disabled')
+
+    proxy_options = jni_registration_generator.ProxyOptions(enable_mocks=True)
+    content = jni_registration_generator.CreateProxyJavaFromDict(
+        reg_dict, proxy_options)
+    self.AssertGoldenTextEquals(content, 'MocksEnabled')
+
+    proxy_options = jni_registration_generator.ProxyOptions(
+        enable_mocks=True, require_mocks=True)
+    content = jni_registration_generator.CreateProxyJavaFromDict(
+        reg_dict, proxy_options)
+    self.AssertGoldenTextEquals(content, 'MocksRequired')
 
 
 def TouchStamp(stamp_path):
@@ -1444,8 +1487,8 @@ def TouchStamp(stamp_path):
 def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--stamp', help='Path to touch on success.')
-  parser.add_option('--verbose', action='store_true',
-                    help='Whether to output details.')
+  parser.add_option(
+      '-v', '--verbose', action='store_true', help='Whether to output details.')
   options, _ = parser.parse_args(argv[1:])
 
   test_result = unittest.main(
