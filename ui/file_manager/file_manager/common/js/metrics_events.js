@@ -132,12 +132,6 @@ metrics.Management = {
 };
 
 /** @enum {!analytics.EventBuilder} */
-metrics.ImportEvents = {
-  HISTORY_LOADED: metrics.event.Builders_.IMPORT
-      .action('History Loaded'),
-};
-
-/** @enum {!analytics.EventBuilder} */
 metrics.Internals = {
   UNRECOGNIZED_FILE_SYSTEM_PROVIDER: metrics.event.Builders_.INTERNALS
       .action('Unrecognized File System Provider')
@@ -150,6 +144,5 @@ metrics.timing = metrics.timing || {};
 metrics.timing.Variables = {
   COMPUTE_HASH: 'Compute Content Hash',
   SEARCH_BY_HASH: 'Search By Hash',
-  HISTORY_LOAD: 'History Load',
   EXTRACT_THUMBNAIL_FROM_RAW: 'Extract Thumbnail From RAW'
 };
