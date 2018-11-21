@@ -1568,7 +1568,7 @@
   },
   {
     "name": "enable-picture-in-picture",
-    // "owners": [ "your-team" ],
+    "owners": [ "beaufort.francois@gmail.com", "mlamouri", "media-dev" ],
     "expiry_milestone": 76
   },
   {
