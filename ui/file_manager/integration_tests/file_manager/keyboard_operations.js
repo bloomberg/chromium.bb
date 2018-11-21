@@ -348,3 +348,60 @@ testcase.renameNewFolderDownloads = function() {
 testcase.renameNewFolderDrive = function() {
   testPromise(testRenameFolder(RootPath.DRIVE, TREEITEM_DRIVE));
 };
+
+/**
+ * Test that selecting "Google Drive" in the directory tree with the keyboard
+ * expands it and selects "My Drive".
+ */
+testcase.keyboardSelectDriveDirectoryTree = function() {
+  let appId = null;
+
+  StepsRunner.run([
+    // Open Files app.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.world],
+          [ENTRIES.hello]);
+    },
+    // Focus the directory tree.
+    function(result) {
+      appId = result.windowId;
+      remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree'])
+          .then(this.next);
+    },
+    // Select Google Drive in the directory tree; it's the last item.
+    function() {
+      return remoteCall
+          .fakeKeyDown(appId, '#directory-tree', 'End', false, false, false)
+          .then(this.next);
+    },
+    // Ensure it's selected.
+    function() {
+      remoteCall.waitForElement(appId, ['.drive-volume [selected]'])
+          .then(this.next);
+    },
+    // Activate it.
+    function() {
+      return remoteCall
+          .fakeKeyDown(
+              appId, '#directory-tree .drive-volume', 'Enter', false, false,
+              false)
+          .then(this.next);
+    },
+    // It should have expanded.
+    function() {
+      remoteCall
+          .waitForElement(appId, ['.drive-volume .tree-children[expanded]'])
+          .then(this.next);
+    },
+    // My Drive should be selected.
+    function() {
+      remoteCall
+          .waitForElement(appId, ['[full-path-for-testing="/root"] [selected]'])
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};

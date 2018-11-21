@@ -317,6 +317,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("keyboardCopyDownloads"),
                       TestCase("keyboardCopyDrive").DisableDriveFs(),
                       TestCase("keyboardCopyDrive").EnableDriveFs(),
+                      TestCase("keyboardSelectDriveDirectoryTree"),
                       TestCase("renameFileDownloads").InGuestMode(),
                       TestCase("renameFileDownloads"),
                       TestCase("renameFileDrive").DisableDriveFs(),
