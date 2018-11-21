@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActionModeCallback;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -71,6 +72,7 @@ import org.chromium.chrome.browser.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
@@ -89,6 +91,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.PulseDrawable;
+import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.view.ContentView;
@@ -116,6 +119,7 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.ui.widget.AnchoredPopupWindow;
+import org.chromium.ui.widget.ViewRectProvider;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -363,6 +367,15 @@ public class Tab
      * {@link WindowAndroid}.
      */
     private boolean mIsDetached;
+
+    /**
+     * Stores total data saved at the start of a page load. Used to calculate delta at the end of
+     * page load, which is just an estimate of the data saved for the current page load since there
+     * may be multiple pages loading at the same time. This estimate is used to get an idea of how
+     * widely used the data saver feature is for a particular user at a time (i.e. not since the
+     * user started using Chrome).
+     */
+    private long mDataSavedOnStartPageLoad;
 
     /**
      * The Text bubble used to display In Product help widget for download feature on videos.
@@ -1457,6 +1470,9 @@ public class Tab
      */
     protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
         updateTitle();
+        mDataSavedOnStartPageLoad =
+                DataReductionProxySettings.getInstance().getContentLengthSavedInHistorySummary();
+
         if (mIsRendererUnresponsive) handleRendererResponsiveStateChanged(true);
 
         for (TabObserver observer : mObservers) observer.onPageLoadStarted(this, validatedUrl);
@@ -1473,6 +1489,87 @@ public class Tab
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this, url);
         mIsBeingRestored = false;
+
+        // TODO(crbug.com/889682): Consider moving the rest of this function to a Tab User data.
+        long dataSaved =
+                DataReductionProxySettings.getInstance().getContentLengthSavedInHistorySummary()
+                - mDataSavedOnStartPageLoad;
+
+        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        if (dataSaved > 0L) {
+            tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
+        }
+
+        if (isPreview()) {
+            tracker.notifyEvent(EventConstants.PREVIEWS_PAGE_LOADED);
+        }
+
+        maybeShowDataSaverInProductHelp(tracker);
+        maybeShowPreviewVerboseStatusInProductHelp(tracker);
+    }
+
+    private void maybeShowDataSaverInProductHelp(final Tracker tracker) {
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DATA_SAVER_DETAIL_FEATURE)) return;
+
+        if (!(getActivity() instanceof ChromeTabbedActivity)) return;
+
+        View anchorView = getActivity().getToolbarManager().getMenuButton();
+        if (anchorView == null) return;
+
+        ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
+        TextBubble textBubble =
+                new TextBubble(getActivity(), anchorView, R.string.iph_data_saver_detail_text,
+                        R.string.iph_data_saver_detail_accessibility_text, rectProvider);
+        textBubble.setDismissOnTouchInteraction(true);
+        getActivity().getAppMenuHandler().setMenuHighlight(R.id.app_menu_footer);
+        textBubble.addOnDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tracker.dismissed(FeatureConstants.DATA_SAVER_DETAIL_FEATURE);
+                        getActivity().getAppMenuHandler().setMenuHighlight(null);
+                    }
+                });
+            }
+        });
+        int yInsetPx = mThemedApplicationContext.getResources().getDimensionPixelOffset(
+                R.dimen.text_bubble_menu_anchor_y_inset);
+        rectProvider.setInsetPx(0, 0, 0, yInsetPx);
+        textBubble.show();
+    }
+
+    private void maybeShowPreviewVerboseStatusInProductHelp(final Tracker tracker) {
+        if (!isPreview()) return;
+        if (!(getActivity() instanceof ChromeTabbedActivity)) return;
+        final View anchorView = getActivity().getToolbarManager().getSecurityIconView();
+        if (anchorView == null) return;
+
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE)) return;
+
+        final ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
+        final TextBubble textBubble =
+                new TextBubble(getActivity(), anchorView, R.string.iph_previews_omnibox_ui_text,
+                        R.string.iph_previews_omnibox_ui_accessibility_text, rectProvider);
+        textBubble.setDismissOnTouchInteraction(true);
+        textBubble.addOnDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ViewHighlighter.turnOffHighlight(anchorView);
+                        tracker.dismissed(FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE);
+                    }
+                });
+            }
+        });
+        final int yInsetPx = mThemedApplicationContext.getResources().getDimensionPixelOffset(
+                R.dimen.text_bubble_menu_anchor_y_inset);
+        rectProvider.setInsetPx(0, 0, 0, yInsetPx);
+        textBubble.show();
+        ViewHighlighter.turnOnHighlight(anchorView, true);
     }
 
     /**
