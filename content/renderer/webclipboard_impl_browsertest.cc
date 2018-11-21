@@ -39,36 +39,6 @@ IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, PasteRTF) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, ImageCopy) {
-  BrowserTestClipboardScope clipboard;
-  clipboard.SetText("");
-
-  base::string16 expected_types;
-  expected_types = base::ASCIIToUTF16("file;image/png string;text/html");
-
-  WebContents* web_contents = shell()->web_contents();
-  FrameFocusedObserver focus_observer(web_contents->GetMainFrame());
-  NavigateToURL(shell(), GetTestUrl(".", "image_copy_types.html"));
-  focus_observer.Wait();
-
-  // Populate an iframe with an image, and wait for load to complete.
-  NavigateIframeToURL(web_contents, "copyme",
-                      GetTestUrl(".", "media/blackwhite.png"));
-
-  // Run script in child frame to copy image contents and wait for completion.
-  RenderFrameHost* child_frame = ChildFrameAt(web_contents->GetMainFrame(), 0);
-  child_frame->ExecuteJavaScriptWithUserGestureForTests(
-      base::ASCIIToUTF16("document.execCommand('copy');"
-                         "parent.document.title = 'copied';"));
-  TitleWatcher watcher1(web_contents, base::ASCIIToUTF16("copied"));
-  EXPECT_EQ(base::ASCIIToUTF16("copied"), watcher1.WaitAndGetTitle());
-
-  // Paste and check the types.
-  web_contents->Paste();
-  TitleWatcher watcher2(web_contents, expected_types);
-  EXPECT_EQ(expected_types, watcher2.WaitAndGetTitle());
-}
-
 }  // namespace
 
 }  // namespace content
