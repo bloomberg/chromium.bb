@@ -899,11 +899,6 @@
   },
   {
     "prefix": "not-site-per-process",
-    "base": "fast/css/acid2.html",
-    "args": ["--disable-site-isolation-trials"]
-  },
-  {
-    "prefix": "not-site-per-process",
     "base": "http/tests/devtools/debugger/fetch-breakpoints.js",
     "args": ["--disable-site-isolation-trials"]
   },

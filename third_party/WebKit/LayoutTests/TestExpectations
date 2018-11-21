@@ -147,7 +147,6 @@ crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-opti
 crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
 crbug.com/678491 http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
-crbug.com/769508 fast/css/acid2.html [ Failure ]
 crbug.com/778372 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Crash ]
 crbug.com/793127 external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Crash ]
 crbug.com/793127 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
