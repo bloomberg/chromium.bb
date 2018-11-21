@@ -14,13 +14,14 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation CWVAutofillSuggestion
+@implementation CWVAutofillSuggestion {
+  BOOL _isPasswordSuggestion;
+}
 
 @synthesize formSuggestion = _formSuggestion;
 @synthesize formName = _formName;
 @synthesize fieldIdentifier = _fieldIdentifier;
 @synthesize frameID = _frameID;
-@synthesize isPasswordSuggestion = _isPasswordSuggestion;
 
 - (instancetype)initWithFormSuggestion:(FormSuggestion*)formSuggestion
                               formName:(NSString*)formName
@@ -57,6 +58,10 @@
   return ui::ResourceBundle::GetSharedInstance()
       .GetNativeImageNamed(resourceID)
       .ToUIImage();
+}
+
+- (BOOL)isPasswordSuggestion {
+  return _isPasswordSuggestion;
 }
 
 #pragma mark - NSObject
