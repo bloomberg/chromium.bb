@@ -994,6 +994,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_DEV_TOOLS" desc="The text label of the Developer Tools menu item">
           &amp;Developer tools
         </message>
+        <message name="IDS_DEV_TOOLS_ELEMENTS" desc="The text label of the Inspect Elements menu item">
+          &amp;Inspect elements
+        </message>
         <message name="IDS_DEV_TOOLS_CONSOLE" desc="The text label of the JavaScript console menu item">
           &amp;JavaScript console
         </message>
@@ -1028,6 +1031,9 @@ are declared in tools/grit/grit_rule.gni.
         </message>
         <message name="IDS_DEV_TOOLS_DEVICES" desc="The text label of the Inspect Devices menu item">
           &amp;Inspect Devices
+        </message>
+         <message name="IDS_DEV_TOOLS_ELEMENTS" desc="The text label of the Inspect Elements menu item">
+          &amp;Inspect Elements
         </message>
         <message name="IDS_TASK_MANAGER" desc="In Title Case: The text label of the Task Manager menu item">
           &amp;Task Manager
@@ -7611,6 +7617,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_DEV_TOOLS_CONSOLE_MAC" desc="The Mac menu item for the JavaScript console in the developer submenu of the view menu.">
           JavaScript Console
+        </message>
+        <message name="IDS_DEV_TOOLS_ELEMENTS_MAC" desc="The Mac menu item to inspect elements in the developer submenu of the view menu.">
+          Inspect Elements
         </message>
         <message name="IDS_ALLOW_JAVASCRIPT_APPLE_EVENTS_MAC" desc="The Mac menu item to allow JavaScript from Apple Events in the developer submenu of the view menu.">
           Allow JavaScript from Apple Events
