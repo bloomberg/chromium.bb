@@ -2291,13 +2291,8 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInThaiText) {
 
 // TODO(crbug.com/865527): Chinese and Japanese tokenization doesn't work on
 // mobile.
-#if defined(OS_ANDROID)
-#define MAYBE_MoveLeftRightByWordInChineseText \
-  DISABLED_MoveLeftRightByWordInChineseText
-#else
-#define MAYBE_MoveLeftRightByWordInChineseText MoveLeftRightByWordInChineseText
-#endif
-TEST_F(RenderTextTest, MAYBE_MoveLeftRightByWordInChineseText) {
+#if !defined(OS_ANDROID)
+TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
   RenderText* render_text = GetRenderText();
   // zh-Hans-CN: 我们去公园玩, broken to 我们|去|公园|玩.
   render_text->SetText(UTF8ToUTF16("\u6211\u4EEC\u53BB\u516C\u56ED\u73A9"));
@@ -2325,6 +2320,7 @@ TEST_F(RenderTextTest, MAYBE_MoveLeftRightByWordInChineseText) {
   render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
   EXPECT_EQ(0U, render_text->cursor_position());
 }
+#endif
 
 // Test the correct behavior of undirected selections: selections where the
 // "end" of the selection that holds the cursor is only determined after the
@@ -2556,8 +2552,7 @@ TEST_F(RenderTextTest, MinLineHeight) {
 // Check that, for Latin characters, typesetting text in the default fonts and
 // sizes does not discover any glyphs that would exceed the line spacing
 // recommended by gfx::Font.
-// Disabled since this relies on machine configuration. http://crbug.com/701241.
-TEST_F(RenderTextTest, DISABLED_DefaultLineHeights) {
+TEST_F(RenderTextTest, DefaultLineHeights) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(
       UTF8ToUTF16("A quick brown fox jumped over the lazy dog!"));
@@ -2603,8 +2598,6 @@ TEST_F(RenderTextTest, SetFontList) {
   EXPECT_EQ(13, render_text->font_list().GetFontSize());
 }
 
-// http://crbug/624513
-#if !defined(OS_WIN)
 TEST_F(RenderTextTest, StringSizeBoldWidth) {
   // TODO(mboc): Add some unittests for other weights (currently not
   // implemented because of test system font configuration).
@@ -2631,7 +2624,6 @@ TEST_F(RenderTextTest, StringSizeBoldWidth) {
   EXPECT_GT(plain_bold_width, plain_width);
   EXPECT_LT(plain_bold_width, bold_width);
 }
-#endif  // !defined(OS_WIN)
 
 TEST_F(RenderTextTest, StringSizeHeight) {
   base::string16 cases[] = {
@@ -4213,9 +4205,8 @@ TEST_F(RenderTextTest, StringFitsOwnWidth) {
   EXPECT_EQ(kString, render_text->GetDisplayText());
 }
 
-// TODO(derat): Figure out why this fails on Windows: http://crbug.com/427184
 // TODO(865715): Figure out why this fails on Android.
-#if !defined(OS_WIN) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 // Ensure that RenderText examines all of the fonts in its FontList before
 // falling back to other fonts.
 TEST_F(RenderTextTest, HarfBuzz_FontListFallback) {
@@ -4239,7 +4230,7 @@ TEST_F(RenderTextTest, HarfBuzz_FontListFallback) {
   ASSERT_EQ(static_cast<size_t>(1), spans.size());
   EXPECT_STRCASEEQ(kSymbolFontName, spans[0].first.GetFontName().c_str());
 }
-#endif  // !defined(OS_WIN) && !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 
 // Ensure that the fallback fonts of the Uniscribe font are tried for shaping.
 #if defined(OS_WIN)
