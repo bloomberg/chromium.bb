@@ -295,6 +295,23 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
     EXPECT_EQ("/mnt/chromeos/MyFiles/Downloads/path/in/downloads",
               inside.value());
 
+    EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+        &profile,
+        mount_points->CreateExternalFileSystemURL(
+            GURL(), "Downloads-testing_profile-hash",
+            base::FilePath("path/in/downloads/")),
+        &inside));
+
+    EXPECT_EQ("/mnt/chromeos/MyFiles/Downloads/path/in/downloads",
+              inside.value());
+
+    EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+        &profile,
+        mount_points->CreateExternalFileSystemURL(
+            GURL(), "Downloads-testing_profile-hash", base::FilePath()),
+        &inside));
+    EXPECT_EQ("/mnt/chromeos/MyFiles/Downloads", inside.value());
+
     EXPECT_FALSE(ConvertFileSystemURLToPathInsideCrostini(
         &profile,
         mount_points->CreateExternalFileSystemURL(

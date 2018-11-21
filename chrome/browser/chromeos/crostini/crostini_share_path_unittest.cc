@@ -516,6 +516,16 @@ TEST_F(CrostiniSharePathTest, UnsharePathSuccess) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniSharePathTest, UnsharePathRoot) {
+  crostini_share_path()->UnsharePath(
+      "vm-running", downloads_,
+      base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
+                     base::Unretained(this), downloads_,
+                     SeneschalClientCalled::YES, "MyFiles/Downloads",
+                     Success::YES, ""));
+  run_loop()->Run();
+}
+
 TEST_F(CrostiniSharePathTest, UnsharePathVmNotRunning) {
   crostini_share_path()->UnsharePath(
       "vm-not-running", shared_path_,

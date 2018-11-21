@@ -227,7 +227,9 @@ bool ConvertFileSystemURLToPathInsideCrostini(
     const storage::FileSystemURL& file_system_url,
     base::FilePath* inside) {
   const std::string& id(file_system_url.mount_filesystem_id());
-  base::FilePath path(file_system_url.virtual_path());
+  // File system root requires strip trailing separator.
+  base::FilePath path =
+      base::FilePath(file_system_url.virtual_path()).StripTrailingSeparators();
   std::string mount_point_name_crostini = GetCrostiniMountPointName(profile);
   std::string mount_point_name_downloads = GetDownloadsMountPointName(profile);
   // Include drive if using DriveFS.
@@ -286,7 +288,8 @@ bool ConvertFileSystemURLToPathInsideCrostini(
   } else {
     return false;
   }
-  return base_to_exclude.AppendRelativePath(path, inside);
+  return base_to_exclude == path ||
+         base_to_exclude.AppendRelativePath(path, inside);
 }
 
 bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
