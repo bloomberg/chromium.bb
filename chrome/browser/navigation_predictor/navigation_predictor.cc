@@ -141,6 +141,45 @@ void NavigationPredictor::RecordTimingOnClick() {
   last_click_timing_ = current_timing;
 }
 
+void NavigationPredictor::RecordActionAccuracyOnClick(
+    const GURL& target_url) const {
+  static constexpr char histogram_name_dse[] =
+      "NavigationPredictor.OnDSE.AccuracyActionTaken";
+  static constexpr char histogram_name_non_dse[] =
+      "NavigationPredictor.OnNonDSE.AccuracyActionTaken";
+
+  if (!prefetch_url_) {
+    base::UmaHistogramEnumeration(source_is_default_search_engine_page_
+                                      ? histogram_name_dse
+                                      : histogram_name_non_dse,
+                                  ActionAccuracy::kNoActionTakenClickHappened);
+    return;
+  }
+
+  if (target_url == prefetch_url_.value()) {
+    base::UmaHistogramEnumeration(
+        source_is_default_search_engine_page_ ? histogram_name_dse
+                                              : histogram_name_non_dse,
+        ActionAccuracy::kPrefetchActionClickToSameURL);
+    return;
+  }
+
+  if (url::Origin::Create(target_url) ==
+      url::Origin::Create(prefetch_url_.value())) {
+    base::UmaHistogramEnumeration(
+        source_is_default_search_engine_page_ ? histogram_name_dse
+                                              : histogram_name_non_dse,
+        ActionAccuracy::kPrefetchActionClickToSameOrigin);
+    return;
+  }
+
+  base::UmaHistogramEnumeration(
+      source_is_default_search_engine_page_ ? histogram_name_dse
+                                            : histogram_name_non_dse,
+      ActionAccuracy::kPrefetchActionClickToDifferentOrigin);
+  return;
+}
+
 SiteEngagementService* NavigationPredictor::GetEngagementService() const {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   SiteEngagementService* service = SiteEngagementService::Get(profile);
@@ -195,6 +234,8 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
         "AnchorElementMetrics.Clicked.HrefEngagementScoreExternal",
         static_cast<int>(target_score));
   }
+
+  RecordActionAccuracyOnClick(metrics->target_url);
 
   // Look up the clicked URL in |navigation_scores_map_|. Record if we find it.
   auto iter = navigation_scores_map_.find(metrics->target_url.spec());

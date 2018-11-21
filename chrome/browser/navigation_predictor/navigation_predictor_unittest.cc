@@ -104,6 +104,9 @@ TEST_F(NavigationPredictorTest, ReportAnchorElementMetricsOnClick) {
 
   histogram_tester.ExpectTotalCount(
       "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
+      NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
 }
 
 // Test that ReportAnchorElementMetricsOnLoad method can be called.
@@ -257,9 +260,11 @@ TEST_F(NavigationPredictorTest, ActionTaken_NoSameHost_Prefetch) {
 TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch) {
   const std::string source = "https://example.com";
   const std::string same_origin_href_small = "https://example.com/small";
+  const std::string same_origin_href_large = "https://example.com/large";
   const std::string diff_origin_href_xlarge = "https://example2.com/xlarge";
 
   std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_large, 1));
   metrics.push_back(CreateMetricsPtr(source, same_origin_href_small, 0.01));
   metrics.push_back(CreateMetricsPtr(source, diff_origin_href_xlarge, 1));
 
@@ -270,7 +275,18 @@ TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch) {
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPrefetch, 1);
-  EXPECT_EQ(GURL(same_origin_href_small), prefetch_url());
+  EXPECT_EQ(GURL(same_origin_href_large), prefetch_url());
+
+  auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
+  predictor_service()->ReportAnchorElementMetricsOnClick(
+      std::move(metrics_clicked));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
+      NavigationPredictor::ActionAccuracy::kPrefetchActionClickToSameOrigin, 1);
 }
 
 TEST_F(NavigationPredictorTest,

@@ -42,7 +42,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   static void Create(mojo::InterfaceRequest<AnchorElementMetricsHost> request,
                      content::RenderFrameHost* render_frame_host);
 
-  // This enum should remain synchronized with enum
+  // Enum describing the possible set of actions that navigation predictor may
+  // take. This enum should remain synchronized with enum
   // NavigationPredictorActionTaken in enums.xml. Order of enum values should
   // not be changed since the values are recorded in UMA.
   enum class Action {
@@ -52,6 +53,28 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
     kPreconnect = 3,
     kPrefetch = 4,
     kMaxValue = kPrefetch,
+  };
+
+  // Enum describing the accuracy of actions taken by the navigation predictor.
+  // This enum should remain synchronized with enum
+  // NavigationPredictorAccuracyActionTaken in enums.xml. Order of enum values
+  // should not be changed since the values are recorded in UMA.
+  enum class ActionAccuracy {
+    // No action was taken, but an anchor element was clicked.
+    kNoActionTakenClickHappened = 0,
+
+    // Navigation predictor prefetched a URL, and an anchor element was clicked
+    // which pointed to the same URL as prefetched URL.
+    kPrefetchActionClickToSameURL = 1,
+
+    // Navigation predictor prefetched a URL, and an anchor element was clicked
+    // whose URL had the same origin as the prefetched URL.
+    kPrefetchActionClickToSameOrigin = 2,
+
+    // Navigation predictor prefetched a URL, and an anchor element was clicked
+    // whose URL had a different origin than the prefetched URL.
+    kPrefetchActionClickToDifferentOrigin = 3,
+    kMaxValue = kPrefetchActionClickToDifferentOrigin,
   };
 
  protected:
@@ -117,6 +140,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
 
   // Record timing information when an anchor element is clicked.
   void RecordTimingOnClick();
+
+  // Records the accuracy of the action taken by the navigator predictor based
+  // on the action taken as well as the URL that was navigated to.
+  // |target_url| is the URL navigated to by the user.
+  void RecordActionAccuracyOnClick(const GURL& target_url) const;
 
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
