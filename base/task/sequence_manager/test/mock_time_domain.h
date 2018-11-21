@@ -24,7 +24,7 @@ class MockTimeDomain : public TimeDomain {
   TimeTicks Now() const override;
   Optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
   void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override;
-  bool MaybeFastForwardToNextTask() override;
+  bool MaybeFastForwardToNextTask(bool quit_when_idle_requested) override;
   const char* GetName() const override;
 
  private:

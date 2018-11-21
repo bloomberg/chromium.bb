@@ -90,6 +90,9 @@ class ThreadController {
   // Returns the MessagePump we're bound to if any.
   virtual MessagePump* GetBoundMessagePump() const = 0;
 
+  // Returns true if the current run loop should quit when idle.
+  virtual bool ShouldQuitRunLoopWhenIdle() = 0;
+
 #if defined(OS_IOS) || defined(OS_ANDROID)
   // On iOS, the main message loop cannot be Run().  Instead call
   // AttachToMessagePump(), which connects this ThreadController to the

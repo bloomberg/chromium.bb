@@ -531,9 +531,11 @@ bool SequenceManagerImpl::HasPendingHighResolutionTasks() {
 bool SequenceManagerImpl::OnSystemIdle() {
   bool have_work_to_do = false;
   for (TimeDomain* time_domain : main_thread_only().time_domains) {
-    if (time_domain->MaybeFastForwardToNextTask())
+    if (time_domain->MaybeFastForwardToNextTask(
+            controller_->ShouldQuitRunLoopWhenIdle())) {
       have_work_to_do = true;
-  };
+    }
+  }
   return have_work_to_do;
 }
 

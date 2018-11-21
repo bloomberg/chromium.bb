@@ -28,7 +28,7 @@ Optional<TimeDelta> MockTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
   return nullopt;
 }
 
-bool MockTimeDomain::MaybeFastForwardToNextTask() {
+bool MockTimeDomain::MaybeFastForwardToNextTask(bool quit_when_idle_requested) {
   return false;
 }
 

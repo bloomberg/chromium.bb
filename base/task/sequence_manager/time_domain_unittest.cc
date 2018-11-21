@@ -49,7 +49,9 @@ class TestTimeDomain : public TimeDomain {
     return Optional<TimeDelta>();
   }
 
-  bool MaybeFastForwardToNextTask() override { return false; }
+  bool MaybeFastForwardToNextTask(bool quit_when_idle_requested) override {
+    return false;
+  }
 
   void AsValueIntoInternal(trace_event::TracedValue* state) const override {}
   const char* GetName() const override { return "Test"; }
