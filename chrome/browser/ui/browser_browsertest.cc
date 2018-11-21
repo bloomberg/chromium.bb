@@ -530,20 +530,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoJavaScriptDialogsActivateTab) {
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
 }
 
-#if defined(OS_WIN) && !defined(NDEBUG)
-// http://crbug.com/114859. Times out frequently on Windows.
-#define MAYBE_ThirtyFourTabs DISABLED_ThirtyFourTabs
-#else
-#define MAYBE_ThirtyFourTabs ThirtyFourTabs
-#endif
-
 // Create 34 tabs and verify that a lot of processes have been created. The
 // exact number of processes depends on the amount of memory. Previously we
 // had a hard limit of 31 processes and this test is mainly directed at
 // verifying that we don't crash when we pass this limit.
 // Warning: this test can take >30 seconds when running on a slow (low
 // memory?) Mac builder.
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ThirtyFourTabs) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
   GURL url(ui_test_utils::GetTestUrl(base::FilePath(
       base::FilePath::kCurrentDirectory), base::FilePath(kTitle2File)));
 
@@ -619,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
 // Test for crbug.com/297289.  Ensure that modal dialogs are closed when a
 // cross-process navigation is ready to commit.
 // Flaky test, see https://crbug.com/445155.
-IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CrossProcessNavCancelsDialogs) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, CrossProcessNavCancelsDialogs) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -743,7 +736,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCancelsGuestViewDialogs) {
 // Test for crbug.com/22004.  Reloading a page with a before unload handler and
 // then canceling the dialog should not leave the throbber spinning.
 // https://crbug.com/898370: Test is flakily timing out
-IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ReloadThenCancelBeforeUnload) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
@@ -1115,6 +1108,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 #define MAYBE_FaviconChange FaviconChange
 #endif
 // Test that an icon can be changed from JS.
+// This test doesn't seem to be correct now. The Favicon never seems to be set
+// as a NavigationEntry. The related events on the TestWebContentsObserver do
+// seem to be called, however.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_FaviconChange) {
   static const base::FilePath::CharType* kFile =
       FILE_PATH_LITERAL("onload_change_favicon.html");
@@ -1132,16 +1128,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_FaviconChange) {
   EXPECT_EQ(expected_favicon_url.spec(), entry->GetFavicon().url.spec());
 }
 
-// http://crbug.com/172336
-#if defined(OS_WIN)
-#define MAYBE_TabClosingWhenRemovingExtension \
-    DISABLED_TabClosingWhenRemovingExtension
-#else
-#define MAYBE_TabClosingWhenRemovingExtension TabClosingWhenRemovingExtension
-#endif
 // Makes sure TabClosing is sent when uninstalling an extension that is an app
 // tab.
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TabClosingWhenRemovingExtension) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   TabStripModel* model = browser()->tab_strip_model();
@@ -1625,14 +1614,6 @@ void OnZoomLevelChanged(const base::Closure& callback,
 
 }  // namespace
 
-#if defined(OS_WIN)
-// Flakes regularly on Windows XP
-// http://crbug.com/146040
-#define MAYBE_PageZoom DISABLED_PageZoom
-#else
-#define MAYBE_PageZoom PageZoom
-#endif
-
 namespace {
 
 int GetZoomPercent(const content::WebContents* contents,
@@ -1647,7 +1628,7 @@ int GetZoomPercent(const content::WebContents* contents,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   bool enable_plus, enable_minus;
 
@@ -1914,13 +1895,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose2) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
-#if (defined(OS_WIN) && !defined(NDEBUG))
-// Times out on windows (dbg). https://crbug.com/753691.
-#define MAYBE_WindowOpenClose3 DISABLED_WindowOpenClose3
-#else
-#define MAYBE_WindowOpenClose3 WindowOpenClose3
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_WindowOpenClose3) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose3) {
 #if defined(OS_MACOSX)
   // Ensure that tests don't wait for frames that will never come.
   ui::CATransactionCoordinator::Get().DisableForTesting();
@@ -2342,7 +2317,7 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefControlClickTest) {
 // Control-shift-clicks open in a foreground tab.
 // On OSX meta [the command key] takes the place of control.
 // http://crbug.com/396347
-IN_PROC_BROWSER_TEST_F(ClickModifierTest, DISABLED_HrefControlShiftClickTest) {
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefControlShiftClickTest) {
 #if defined(OS_MACOSX)
   int modifiers = blink::WebInputEvent::kMetaKey;
 #else
@@ -2364,7 +2339,7 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefMiddleClickTest) {
 
 // Shift-middle-clicks open in a foreground tab.
 // http://crbug.com/396347
-IN_PROC_BROWSER_TEST_F(ClickModifierTest, DISABLED_HrefShiftMiddleClickTest) {
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefShiftMiddleClickTest) {
   int modifiers = blink::WebInputEvent::kShiftKey;
   blink::WebMouseEvent::Button button = blink::WebMouseEvent::Button::kMiddle;
   WindowOpenDisposition disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
