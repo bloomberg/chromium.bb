@@ -94,8 +94,12 @@ class DataReductionProxyRequestOptions {
   void Invalidate();
 
   // Parses |request_headers| and returns the value of the session key.
-  std::string GetSessionKeyFromRequestHeaders(
-      const net::HttpRequestHeaders& request_headers) const;
+  static base::Optional<std::string> GetSessionKeyFromRequestHeaders(
+      const net::HttpRequestHeaders& request_headers);
+
+  // Parses |request_headers| and returns the value of the page id.
+  static base::Optional<uint64_t> GetPageIdFromRequestHeaders(
+      const net::HttpRequestHeaders& request_headers);
 
   // Creates and returns a new unique page ID (unique per session).
   uint64_t GeneratePageId();
