@@ -88,7 +88,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTModuleCache,
     &kCCTModuleCustomHeader,
     &kCCTModulePostMessage,
-    &kCCTParallelRequest,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
     &kCCTReportParallelRequestStatus,
@@ -236,9 +235,6 @@ const base::Feature kCCTModuleCustomHeader{"CCTModuleCustomHeader",
 
 const base::Feature kCCTModulePostMessage{"CCTModulePostMessage",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCCTParallelRequest{"CCTParallelRequest",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCCTPostMessageAPI{"CCTPostMessageAPI",
                                        base::FEATURE_ENABLED_BY_DEFAULT};

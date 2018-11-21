@@ -1002,13 +1002,11 @@ public class CustomTabsConnection {
         ThreadUtils.assertOnUiThread();
         // The restrictions are:
         // - Native initialization: Required to get the profile, and the feature state.
-        // - Feature check
         // - The referrer's origin is allowed.
         //
         // TODO(lizeb): Relax the restrictions.
         return ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
                        .hasNativeInitializationCompleted()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PARALLEL_REQUEST)
                 && mClientManager.isFirstPartyOriginForSession(session, new Origin(referrer));
     }
 
