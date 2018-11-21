@@ -26,18 +26,7 @@ namespace extensions {
 
 namespace {
 
-// Returns a list of |patterns| as strings, making it easy to compare for
-// equality with readable errors.
-// TODO(devlin): This was blatantly copy-pasted from
-// scriptable_permissions_modifier_unittest.cc. Put it somewhere common.
-std::vector<std::string> GetPatternsAsStrings(const URLPatternSet& patterns) {
-  std::vector<std::string> pattern_strings;
-  pattern_strings.reserve(patterns.size());
-  for (const auto& pattern : patterns)
-    pattern_strings.push_back(pattern.GetAsString());
-
-  return pattern_strings;
-}
+using permissions_test_util::GetPatternsAsStrings;
 
 scoped_refptr<const Extension> CreateExtensionWithPermissions(
     std::unique_ptr<base::Value> permissions,
