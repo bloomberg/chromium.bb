@@ -11,8 +11,8 @@
 
 @interface ConfirmInfoBarController ()
 
-// Accesses the view.
-- (ConfirmInfoBarView*)view;
+// Overrides superclass property.
+@property(nonatomic, readwrite) ConfirmInfoBarView* view;
 
 // Action for any of the user defined buttons.
 - (void)infoBarButtonDidPress:(id)sender;

@@ -13,13 +13,12 @@
 #error "This file requires ARC support."
 #endif
 
-@interface InfoBarController () {
-  UIView* _infoBarView;
-}
+@interface InfoBarController ()
 @end
 
 @implementation InfoBarController
 
+@synthesize view = _view;
 @synthesize delegate = _delegate;
 @synthesize infoBarDelegate = _infoBarDelegate;
 
@@ -30,21 +29,17 @@
   self = [super init];
   if (self) {
     _infoBarDelegate = infoBarDelegate;
-    _infoBarView = [self infobarView];
+    _view = [self infobarView];
   }
   return self;
 }
 
 - (void)dealloc {
-  [_infoBarView removeFromSuperview];
-}
-
-- (UIView*)view {
-  return _infoBarView;
+  [_view removeFromSuperview];
 }
 
 - (void)removeView {
-  [_infoBarView removeFromSuperview];
+  [_view removeFromSuperview];
 }
 
 - (void)detachView {
@@ -56,7 +51,7 @@
 
 - (UIView*)infobarView {
   NOTREACHED() << "Must be overriden in subclasses.";
-  return _infoBarView;
+  return _view;
 }
 
 - (BOOL)shouldIgnoreUserInteraction {
