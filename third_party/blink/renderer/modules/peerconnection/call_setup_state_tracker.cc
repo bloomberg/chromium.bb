@@ -6,6 +6,22 @@
 
 namespace blink {
 
+namespace {
+
+bool IsRejectedOffererState(OffererState state) {
+  return state == OffererState::kCreateOfferRejected ||
+         state == OffererState::kSetLocalOfferRejected ||
+         state == OffererState::kSetRemoteAnswerRejected;
+}
+
+bool IsRejectedAnswererState(AnswererState state) {
+  return state == AnswererState::kSetRemoteOfferRejected ||
+         state == AnswererState::kCreateAnswerRejected ||
+         state == AnswererState::kSetLocalAnswerRejected;
+}
+
+}  // namespace
+
 CallSetupStateTracker::CallSetupStateTracker()
     : valid_offerer_transitions_(
           {std::make_pair(OffererState::kNotStarted,
@@ -65,7 +81,8 @@ CallSetupStateTracker::CallSetupStateTracker()
                          AnswererState::kSetLocalAnswerResolved),
       }),
       offerer_state_(OffererState::kNotStarted),
-      answerer_state_(AnswererState::kNotStarted) {}
+      answerer_state_(AnswererState::kNotStarted),
+      has_ever_failed_(false) {}
 
 OffererState CallSetupStateTracker::offerer_state() const {
   return offerer_state_;
@@ -75,6 +92,20 @@ AnswererState CallSetupStateTracker::answerer_state() const {
   return answerer_state_;
 }
 
+CallSetupState CallSetupStateTracker::CallSetupState() const {
+  if (offerer_state_ == OffererState::kNotStarted &&
+      answerer_state_ == AnswererState::kNotStarted) {
+    return CallSetupState::kNotStarted;
+  }
+  if (offerer_state_ == OffererState::kSetRemoteAnswerResolved ||
+      answerer_state_ == AnswererState::kSetLocalAnswerResolved) {
+    return CallSetupState::kSucceeded;
+  }
+  if (has_ever_failed_)
+    return CallSetupState::kFailed;
+  return CallSetupState::kStarted;
+}
+
 bool CallSetupStateTracker::NoteOffererStateEvent(OffererState event) {
   auto transition = std::make_pair(offerer_state_, event);
   if (valid_offerer_transitions_.find(transition) ==
@@ -82,6 +113,8 @@ bool CallSetupStateTracker::NoteOffererStateEvent(OffererState event) {
     return false;
   }
   offerer_state_ = event;
+  if (IsRejectedOffererState(offerer_state_))
+    has_ever_failed_ = true;
   return true;
 }
 
@@ -92,6 +125,8 @@ bool CallSetupStateTracker::NoteAnswererStateEvent(AnswererState event) {
     return false;
   }
   answerer_state_ = event;
+  if (IsRejectedAnswererState(answerer_state_))
+    has_ever_failed_ = true;
   return true;
 }
 

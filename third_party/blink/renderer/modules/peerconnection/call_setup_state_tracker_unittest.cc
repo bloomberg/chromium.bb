@@ -127,6 +127,7 @@ class CallSetupStateTrackerTest : public testing::Test {
 TEST_F(CallSetupStateTrackerTest, InitialState) {
   EXPECT_EQ(OffererState::kNotStarted, tracker_.offerer_state());
   EXPECT_EQ(AnswererState::kNotStarted, tracker_.answerer_state());
+  EXPECT_EQ(CallSetupState::kNotStarted, tracker_.CallSetupState());
 }
 
 TEST_F(CallSetupStateTrackerTest, OffererSuccessfulNegotiation) {
@@ -135,6 +136,7 @@ TEST_F(CallSetupStateTrackerTest, OffererSuccessfulNegotiation) {
   EXPECT_TRUE(
       tracker_.NoteOffererStateEvent(OffererState::kCreateOfferPending));
   EXPECT_EQ(OffererState::kCreateOfferPending, tracker_.offerer_state());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
   EXPECT_TRUE(VerifyOnlyReachableStates<OffererState>(
       {OffererState::kCreateOfferResolved,
        OffererState::kCreateOfferRejected}));
@@ -160,18 +162,22 @@ TEST_F(CallSetupStateTrackerTest, OffererSuccessfulNegotiation) {
   EXPECT_TRUE(VerifyOnlyReachableStates<OffererState>(
       {OffererState::kSetRemoteAnswerResolved,
        OffererState::kSetRemoteAnswerRejected}));
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
   EXPECT_TRUE(
       tracker_.NoteOffererStateEvent(OffererState::kSetRemoteAnswerResolved));
   EXPECT_EQ(OffererState::kSetRemoteAnswerResolved, tracker_.offerer_state());
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_.CallSetupState());
   EXPECT_TRUE(VerifyOnlyReachableStates<OffererState>({}));
 }
 
 TEST_F(CallSetupStateTrackerTest, OffererCreateOfferRejected) {
   EXPECT_TRUE(
       tracker_.NoteOffererStateEvent(OffererState::kCreateOfferPending));
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
   EXPECT_TRUE(
       tracker_.NoteOffererStateEvent(OffererState::kCreateOfferRejected));
   EXPECT_EQ(OffererState::kCreateOfferRejected, tracker_.offerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_.CallSetupState());
   EXPECT_TRUE(VerifyOnlyReachableStates<OffererState>(
       {OffererState::kCreateOfferResolved}));
 }
@@ -183,9 +189,11 @@ TEST_F(CallSetupStateTrackerTest, OffererSetLocalOfferRejected) {
       tracker_.NoteOffererStateEvent(OffererState::kCreateOfferResolved));
   EXPECT_TRUE(
       tracker_.NoteOffererStateEvent(OffererState::kSetLocalOfferPending));
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
   EXPECT_TRUE(
       tracker_.NoteOffererStateEvent(OffererState::kSetLocalOfferRejected));
   EXPECT_EQ(OffererState::kSetLocalOfferRejected, tracker_.offerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_.CallSetupState());
   EXPECT_TRUE(VerifyOnlyReachableStates<OffererState>(
       {OffererState::kSetLocalOfferResolved}));
 }
@@ -201,11 +209,38 @@ TEST_F(CallSetupStateTrackerTest, OffererSetRemoteAnswerRejected) {
       tracker_.NoteOffererStateEvent(OffererState::kSetLocalOfferResolved));
   EXPECT_TRUE(
       tracker_.NoteOffererStateEvent(OffererState::kSetRemoteAnswerPending));
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
   EXPECT_TRUE(
       tracker_.NoteOffererStateEvent(OffererState::kSetRemoteAnswerRejected));
   EXPECT_EQ(OffererState::kSetRemoteAnswerRejected, tracker_.offerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_.CallSetupState());
   EXPECT_TRUE(VerifyOnlyReachableStates<OffererState>(
       {OffererState::kSetRemoteAnswerResolved}));
+}
+
+TEST_F(CallSetupStateTrackerTest, OffererRejectThenSucceed) {
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kCreateOfferPending));
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kCreateOfferResolved));
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kSetLocalOfferPending));
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kSetLocalOfferResolved));
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kSetRemoteAnswerPending));
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kSetRemoteAnswerRejected));
+  EXPECT_EQ(CallSetupState::kFailed, tracker_.CallSetupState());
+  // Pending another operation should not revert the states to "pending" or
+  // "started".
+  EXPECT_FALSE(
+      tracker_.NoteOffererStateEvent(OffererState::kSetRemoteAnswerPending));
+  EXPECT_EQ(CallSetupState::kFailed, tracker_.CallSetupState());
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kSetRemoteAnswerResolved));
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_.CallSetupState());
 }
 
 TEST_F(CallSetupStateTrackerTest, AnswererSuccessfulNegotiation) {
@@ -214,6 +249,7 @@ TEST_F(CallSetupStateTrackerTest, AnswererSuccessfulNegotiation) {
   EXPECT_TRUE(
       tracker_.NoteAnswererStateEvent(AnswererState::kSetRemoteOfferPending));
   EXPECT_EQ(AnswererState::kSetRemoteOfferPending, tracker_.answerer_state());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
   EXPECT_TRUE(VerifyOnlyReachableStates<AnswererState>(
       {AnswererState::kSetRemoteOfferResolved,
        AnswererState::kSetRemoteOfferRejected}));
@@ -239,18 +275,22 @@ TEST_F(CallSetupStateTrackerTest, AnswererSuccessfulNegotiation) {
   EXPECT_TRUE(VerifyOnlyReachableStates<AnswererState>(
       {AnswererState::kSetLocalAnswerResolved,
        AnswererState::kSetLocalAnswerRejected}));
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
   EXPECT_TRUE(
       tracker_.NoteAnswererStateEvent(AnswererState::kSetLocalAnswerResolved));
   EXPECT_EQ(AnswererState::kSetLocalAnswerResolved, tracker_.answerer_state());
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_.CallSetupState());
   EXPECT_TRUE(VerifyOnlyReachableStates<AnswererState>({}));
 }
 
 TEST_F(CallSetupStateTrackerTest, AnswererSetRemoteOfferRejected) {
   EXPECT_TRUE(
       tracker_.NoteAnswererStateEvent(AnswererState::kSetRemoteOfferPending));
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
   EXPECT_TRUE(
       tracker_.NoteAnswererStateEvent(AnswererState::kSetRemoteOfferRejected));
   EXPECT_EQ(AnswererState::kSetRemoteOfferRejected, tracker_.answerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_.CallSetupState());
   EXPECT_TRUE(VerifyOnlyReachableStates<AnswererState>(
       {AnswererState::kSetRemoteOfferResolved}));
 }
@@ -262,9 +302,11 @@ TEST_F(CallSetupStateTrackerTest, AnswererCreateAnswerRejected) {
       tracker_.NoteAnswererStateEvent(AnswererState::kSetRemoteOfferResolved));
   EXPECT_TRUE(
       tracker_.NoteAnswererStateEvent(AnswererState::kCreateAnswerPending));
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
   EXPECT_TRUE(
       tracker_.NoteAnswererStateEvent(AnswererState::kCreateAnswerRejected));
   EXPECT_EQ(AnswererState::kCreateAnswerRejected, tracker_.answerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_.CallSetupState());
   EXPECT_TRUE(VerifyOnlyReachableStates<AnswererState>(
       {AnswererState::kCreateAnswerResolved}));
 }
@@ -280,11 +322,63 @@ TEST_F(CallSetupStateTrackerTest, AnswererSetLocalAnswerRejected) {
       tracker_.NoteAnswererStateEvent(AnswererState::kCreateAnswerResolved));
   EXPECT_TRUE(
       tracker_.NoteAnswererStateEvent(AnswererState::kSetLocalAnswerPending));
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
   EXPECT_TRUE(
       tracker_.NoteAnswererStateEvent(AnswererState::kSetLocalAnswerRejected));
   EXPECT_EQ(AnswererState::kSetLocalAnswerRejected, tracker_.answerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_.CallSetupState());
   EXPECT_TRUE(VerifyOnlyReachableStates<AnswererState>(
       {AnswererState::kSetLocalAnswerResolved}));
+}
+
+TEST_F(CallSetupStateTrackerTest, AnswererRejectThenSucceed) {
+  EXPECT_TRUE(
+      tracker_.NoteAnswererStateEvent(AnswererState::kSetRemoteOfferPending));
+  EXPECT_TRUE(
+      tracker_.NoteAnswererStateEvent(AnswererState::kSetRemoteOfferResolved));
+  EXPECT_TRUE(
+      tracker_.NoteAnswererStateEvent(AnswererState::kCreateAnswerPending));
+  EXPECT_TRUE(
+      tracker_.NoteAnswererStateEvent(AnswererState::kCreateAnswerResolved));
+  EXPECT_TRUE(
+      tracker_.NoteAnswererStateEvent(AnswererState::kSetLocalAnswerPending));
+  EXPECT_EQ(CallSetupState::kStarted, tracker_.CallSetupState());
+  EXPECT_TRUE(
+      tracker_.NoteAnswererStateEvent(AnswererState::kSetLocalAnswerRejected));
+  EXPECT_EQ(CallSetupState::kFailed, tracker_.CallSetupState());
+  // Pending another operation should not revert the states to "pending" or
+  // "started".
+  EXPECT_FALSE(
+      tracker_.NoteAnswererStateEvent(AnswererState::kSetLocalAnswerPending));
+  EXPECT_EQ(CallSetupState::kFailed, tracker_.CallSetupState());
+  EXPECT_TRUE(
+      tracker_.NoteAnswererStateEvent(AnswererState::kSetLocalAnswerResolved));
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_.CallSetupState());
+}
+
+// Succeeding in one role and subsequently failing in another should not revert
+// the call setup state from kSucceeded; the most succeessful attempt would
+// still have been successful.
+TEST_F(CallSetupStateTrackerTest, OffererSucceedAnswererFail) {
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kCreateOfferPending));
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kCreateOfferResolved));
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kSetLocalOfferPending));
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kSetLocalOfferResolved));
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kSetRemoteAnswerPending));
+  EXPECT_TRUE(
+      tracker_.NoteOffererStateEvent(OffererState::kSetRemoteAnswerResolved));
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_.CallSetupState());
+  EXPECT_TRUE(
+      tracker_.NoteAnswererStateEvent(AnswererState::kSetRemoteOfferPending));
+  EXPECT_TRUE(
+      tracker_.NoteAnswererStateEvent(AnswererState::kSetRemoteOfferRejected));
+  // Still succeeded.
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_.CallSetupState());
 }
 
 }  // namespace blink
