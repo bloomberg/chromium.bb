@@ -359,6 +359,11 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
   }
 
+  if (GetProperty(AXBooleanProperty::SUPPORTS_TEXT_LOCATION)) {
+    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSupportsTextLocation,
+                               true);
+  }
+
   // Range info.
   AXRangeInfoData* range_info = node_ptr_->range_info.get();
   if (range_info) {

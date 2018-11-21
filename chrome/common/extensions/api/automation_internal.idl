@@ -31,6 +31,17 @@ namespace automationInternal {
     long actionRequestID;
   };
 
+  dictionary AXTextLocationParams {
+    DOMString treeID;
+    long nodeID;
+    boolean result;
+    long left;
+    long top;
+    long width;
+    long height;
+    long requestID;
+  };
+
   // Actions internally used by automation.
   enum ActionTypePrivate {
     resumeMedia,
@@ -101,6 +112,12 @@ namespace automationInternal {
     DOMString eventToFire;
   };
 
+  // Arguments for getTextLocation action.
+  dictionary GetTextLocationDataParams {
+    long startIndex;
+    long endIndex;
+  };
+
   // Returns the accessibility tree id of the web contents who's accessibility
   // was enabled using enableTab().
   callback EnableTabCallback = void(DOMString tree_id);
@@ -138,6 +155,8 @@ namespace automationInternal {
     static void onAccessibilityEvent(AXEventParams update);
 
     static void onAccessibilityTreeDestroyed(DOMString treeID);
+
+    static void onGetTextLocationResult(AXTextLocationParams params);
 
     static void onTreeChange(long observerID,
                              DOMString treeID,

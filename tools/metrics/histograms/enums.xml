@@ -15939,6 +15939,7 @@ Called by update_net_error_codes.py.-->
   <int value="425" label="ARC_APPS_PRIVATE_ON_INSTALLED"/>
   <int value="426"
       label="FILE_MANAGER_PRIVATE_ON_CROSTINI_SHARED_PATHS_CHANGED"/>
+  <int value="427" label="AUTOMATION_INTERNAL_ON_GET_TEXT_LOCATION_RESULT"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">

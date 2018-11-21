@@ -342,14 +342,22 @@ automationInternal.onAccessibilityTreeSerializationError.addListener(
   automationInternal.enableFrame(id);
 });
 
-automationInternal.onActionResult.addListener(
-    function(treeID, requestID, result) {
+automationInternal.onActionResult.addListener(function(
+    treeID, requestID, result) {
   var targetTree = AutomationRootNode.get(treeID);
   if (!targetTree)
     return;
 
   privates(targetTree).impl.onActionResult(requestID, result);
-    });
+});
+
+automationInternal.onGetTextLocationResult.addListener(function(
+    textLocationParams) {
+  var targetTree = AutomationRootNode.get(textLocationParams.treeID);
+  if (!targetTree)
+    return;
+  privates(targetTree).impl.onGetTextLocationResult(textLocationParams);
+});
 
 if (!apiBridge)
   exports.$set('binding', automation.generate());

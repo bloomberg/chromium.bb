@@ -69,6 +69,10 @@ class AutomationEventRouter : public content::NotificationObserver {
   void SetTreeDestroyedCallbackForTest(
       base::RepeatingCallback<void(ui::AXTreeID)> cb);
 
+  // Notify the source extension of the result to getTextLocation.
+  void DispatchGetTextLocationDataResult(const ui::AXActionData& data,
+                                         const base::Optional<gfx::Rect>& rect);
+
  private:
   struct AutomationListener {
     AutomationListener();

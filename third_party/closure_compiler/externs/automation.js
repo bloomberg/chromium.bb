@@ -537,15 +537,17 @@ chrome.automation.AutomationNode.prototype.location;
 
 /**
  * Computes the bounding box of a subrange of this node in global screen
- * coordinates. Returns the same as |location| if range information is not
- * available. The start and end indices are zero-based offsets into the node's
- * "name" string attribute.
+ * coordinates. The start and end indices are zero-based offsets into the node's
+ * "name" string attribute. A callback will also be provided, which will
+ * be called if node bounds are available, and called with undefined when
+ * boundsForRange is not available.
  * @param {number} startIndex
  * @param {number} endIndex
- * @return {!chrome.automation.Rect}
+ * @param {function(!chrome.automation.Rect):void} callback
  * @see https://developer.chrome.com/extensions/automation#method-boundsForRange
  */
-chrome.automation.AutomationNode.prototype.boundsForRange = function(startIndex, endIndex) {};
+chrome.automation.AutomationNode.prototype.boundsForRange = function(
+    startIndex, endIndex, callback) {};
 
 /**
  * The location (as a bounding box) of this node in global screen coordinates without applying any clipping from ancestors.

@@ -781,21 +781,23 @@ SelectToSpeak.prototype = {
     }
     if (this.prefsManager_.wordHighlightingEnabled() &&
         this.currentNodeWord_ != null) {
-      // Only show the highlight if this is an inline text box.
-      // Otherwise we'd be highlighting entire nodes, like images.
-      // Highlight should be only for text.
-      // Note that boundsForRange doesn't work on staticText.
+      var charIndexInParent = 0;
+      // getStartCharIndexInParent is only defined for nodes with role
+      // INLINE_TEXT_BOX.
       if (node.role == RoleType.INLINE_TEXT_BOX) {
-        let charIndexInParent = ParagraphUtils.getStartCharIndexInParent(node);
-        chrome.accessibilityPrivate.setHighlights(
-            [node.boundsForRange(
-                this.currentNodeWord_.start - charIndexInParent,
-                this.currentNodeWord_.end - charIndexInParent)],
-            this.prefsManager_.highlightColor());
-      } else {
-        chrome.accessibilityPrivate.setHighlights(
-            [], this.prefsManager_.highlightColor());
+        charIndexInParent = ParagraphUtils.getStartCharIndexInParent(node);
       }
+      node.boundsForRange(
+          this.currentNodeWord_.start - charIndexInParent,
+          this.currentNodeWord_.end - charIndexInParent, (bounds) => {
+            if (bounds) {
+              chrome.accessibilityPrivate.setHighlights(
+                  [bounds], this.prefsManager_.highlightColor());
+            } else {
+              chrome.accessibilityPrivate.setHighlights(
+                  [], this.prefsManager_.highlightColor());
+            }
+          });
     }
     // Show the parent element of the currently verbalized node with the
     // focus ring. This is a nicer user-facing behavior than jumping from

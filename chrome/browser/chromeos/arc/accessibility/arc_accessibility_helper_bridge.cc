@@ -486,6 +486,26 @@ void ArcAccessibilityHelperBridge::OnAction(
       action_data->action_type =
           arc::mojom::AccessibilityActionType::CLEAR_ACCESSIBILITY_FOCUS;
       break;
+    case ax::mojom::Action::kGetTextLocation: {
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::GET_TEXT_LOCATION;
+      action_data->start_index = data.start_index;
+      action_data->end_index = data.end_index;
+
+      auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+          arc_bridge_service_->accessibility_helper(), RefreshWithExtraData);
+      if (!instance) {
+        OnActionResult(data, false);
+        return;
+      }
+
+      instance->RefreshWithExtraData(
+          std::move(action_data),
+          base::BindOnce(
+              &ArcAccessibilityHelperBridge::OnGetTextLocationDataResult,
+              base::Unretained(this), data));
+      return;
+    }
     default:
       return;
   }
@@ -512,6 +532,17 @@ void ArcAccessibilityHelperBridge::OnActionResult(const ui::AXActionData& data,
     return;
 
   tree_source->NotifyActionResult(data, result);
+}
+
+void ArcAccessibilityHelperBridge::OnGetTextLocationDataResult(
+    const ui::AXActionData& data,
+    const base::Optional<gfx::Rect>& result_rect) const {
+  AXTreeSourceArc* tree_source = GetFromTreeId(data.target_tree_id);
+
+  if (!tree_source)
+    return;
+
+  tree_source->NotifyGetTextLocationDataResult(data, result_rect);
 }
 
 void ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged(

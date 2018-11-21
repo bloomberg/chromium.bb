@@ -577,6 +577,7 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
     case ax::mojom::Action::kScrollDown:
     case ax::mojom::Action::kScrollLeft:
     case ax::mojom::Action::kScrollRight:
+    case ax::mojom::Action::kGetTextLocation:
       break;
   }
 
@@ -1176,6 +1177,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::BoolAttribute::kSelected:
         result += " selected=" + value;
+        break;
+      case ax::mojom::BoolAttribute::kSupportsTextLocation:
+        result += " supports_text_location=" + value;
         break;
       case ax::mojom::BoolAttribute::kNone:
         break;
