@@ -31,6 +31,18 @@ window.onload = function() {
         content.onloadeddata = (e) => contentChanged(e.target.src);
         content.src = event.data.src;
         break;
+      case 'image':
+        content.remove();
+        content.onload = (e) => contentChanged(e.target.src);
+        content.src = event.data.src;
+        content.decode().then(() => {
+            content.removeAttribute('generic-thumbnail');
+            document.body.appendChild(content);
+        }).catch(() => {
+            content.setAttribute('generic-thumbnail', 'image');
+            document.body.appendChild(content);
+        });
+        break;
       default:
         content.onload = (e) => contentChanged(e.target.src);
         content.src = event.data.src;
