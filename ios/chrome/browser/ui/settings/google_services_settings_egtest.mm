@@ -148,7 +148,7 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // "History" sync is off.
 - (void)testActivityAndInteractionsDisabledWithHistoryDisabled {
   // TODO(crbug.com/906680): Re-enable this test when it's fixed.
-  EARL_GREY_TEST_DISABLED(@"Test disabled on simulators.");
+  EARL_GREY_TEST_DISABLED(@"Test disabled on devices and simulators.");
 
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   [self resetUnifiedConsent];
