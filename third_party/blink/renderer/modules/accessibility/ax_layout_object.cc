@@ -1901,14 +1901,18 @@ void AXLayoutObject::AddChildren() {
 
   if (GetNode() && GetNode()->IsElementNode()) {
     Element* element = ToElement(GetNode());
-    if (!IsHTMLMapElement(*element) &&   // Handled in AddImageMapChildren (img)
-        !IsHTMLRubyElement(*element) &&  // Special layout handling
+
+    if (IsHTMLMapElement(*element))  // Handled in AddImageMapChildren (img)
+      return;
+
+    if (!IsHTMLRubyElement(*element) &&   // Special layout handling
         !IsHTMLTableElement(*element) &&  // thead/tfoot move around
         !element->IsPseudoElement()) {    // Not visited in layout traversal
       AXNodeObject::AddChildren();
       return;
     }
   }
+
   Element* element = nullptr;
   if (GetNode() && GetNode()->IsElementNode())
     element = ToElement(GetNode());
