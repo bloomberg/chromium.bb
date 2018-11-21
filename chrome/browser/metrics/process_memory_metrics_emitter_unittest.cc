@@ -197,6 +197,15 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
       metrics_mb_or_count["V8.Main.Heap.AllocatedObjects"] * 1024 * 1024);
 
   SetAllocatorDumpMetric(
+      pmd, "v8/main/heap/code_large_object_space", "effective_size",
+      metrics_mb_or_count["V8.Main.Heap.CodeLargeObjectSpace"] * 1024 * 1024);
+  SetAllocatorDumpMetric(
+      pmd, "v8/main/heap/code_large_object_space", "allocated_objects_size",
+      metrics_mb_or_count
+              ["V8.Main.Heap.CodeLargeObjectSpace.AllocatedObjects"] *
+          1024 * 1024);
+
+  SetAllocatorDumpMetric(
       pmd, "v8/main/heap/code_space", "effective_size",
       metrics_mb_or_count["V8.Main.Heap.CodeSpace"] * 1024 * 1024);
   SetAllocatorDumpMetric(
