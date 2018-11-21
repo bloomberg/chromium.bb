@@ -142,7 +142,7 @@ message MatchedScheduledTask {
   optional ScheduledTask scheduled_task = 1;
 }
 
-// Next tag: 5
+// Next tag: 4
 message MatchedExtension {
   // The extension ID that the extension was installed with.
   optional string extension_id = 1;
@@ -153,9 +153,6 @@ message MatchedExtension {
   // The permissions the extension was installed based on the permissions field
   // from the extension's manifest.json.
   repeated string manifest_permissions = 3;
-
-  // The files associated with an extension that should be deleted or reported.
-  repeated MatchedFile files = 4;
 }
 
 // Information about a registry value.

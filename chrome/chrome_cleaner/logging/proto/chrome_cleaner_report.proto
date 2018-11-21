@@ -212,13 +212,16 @@ message ChromeCleanerReport {
     optional SystemProxySettings win_http_proxy_settings = 9;
 
     // Information about an extension that is installed.
-    // Next tag: 3.
+    // Next tag: 4.
     message InstalledExtension {
       // The ID of the extension that is installed.
       optional string extension_id = 1;
 
       // The method used to install the extension.
       optional ExtensionInstallMethod install_method = 2;
+
+      // Information about the files that compose this extension.
+      repeated FileInformation extension_files = 3;
     }
     repeated InstalledExtension installed_extensions = 12;
   }
