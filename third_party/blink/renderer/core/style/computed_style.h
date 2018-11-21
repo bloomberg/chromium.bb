@@ -1343,7 +1343,7 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasWillChangeOpacityHint() const {
     return WillChangeProperties().Contains(CSSPropertyOpacity);
   }
-  CORE_EXPORT bool HasWillChangeTransformHint() const;
+  bool HasWillChangeTransformHint() const;
 
   // Hyphen utility functions.
   Hyphenation* GetHyphenation() const;
@@ -2123,7 +2123,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool CanContainFixedPositionObjects(bool is_document_element) const {
     return HasTransformRelatedProperty() ||
-           HasTransformAnimationWithForwardsOrBothFillMode() ||
            // Filter establishes containing block for non-document elements:
            // https://drafts.fxtf.org/filter-effects-1/#FilterProperty
            (!is_document_element && HasFilter());
