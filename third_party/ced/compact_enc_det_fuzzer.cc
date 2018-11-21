@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
+#include <stddef.h>
+#include <stdint.h>
+
+#include <vector>
 
 #include "base/test/fuzzed_data_provider.h"
 #include "third_party/ced/src/compact_enc_det/compact_enc_det.h"
+
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider data_provider(data, size);
@@ -19,11 +23,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       data_provider.ConsumeInt32InRange(0, NUM_LANGUAGES));
   bool ignore_7bit_mail_encodings = data_provider.ConsumeBool();
 
-  std::string text = data_provider.ConsumeRemainingBytes();
+  std::vector<char> text = data_provider.ConsumeRemainingBytes<char>();
   int bytes_consumed = 0;
   bool is_reliable = false;
   CompactEncDet::DetectEncoding(
-      text.c_str(), text.length(), nullptr /* url_hint */,
+      text.data(), text.size(), nullptr /* url_hint */,
       nullptr /* http_charset_hint */, nullptr /* meta_charset_hint */,
       encoding_hint, langauge_hint, corpus, ignore_7bit_mail_encodings,
       &bytes_consumed, &is_reliable);

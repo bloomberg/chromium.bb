@@ -48,7 +48,6 @@ static_library("test_support") {
     "android/url_utils.h",
     "bind_test_util.h",
     "copy_only_int.h",
-    "fuzzed_data_provider.cc",
     "fuzzed_data_provider.h",
     "gtest_util.cc",
     "gtest_util.h",

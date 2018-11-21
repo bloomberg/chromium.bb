@@ -81,8 +81,10 @@ class WebSocketFuzzedStream final : public WebSocketStream {
     frame->header.masked = (flags >> 4) & 0x1;
     uint64_t payload_length =
         fuzzed_data_provider_->ConsumeUint32InRange(0, 64);
-    std::string payload = fuzzed_data_provider_->ConsumeBytes(payload_length);
-    frame->data = base::MakeRefCounted<StringIOBuffer>(payload);
+    std::vector<char> payload =
+        fuzzed_data_provider_->ConsumeBytes<char>(payload_length);
+    frame->data = base::MakeRefCounted<IOBufferWithSize>(payload.size());
+    memcpy(frame->data->data(), payload.data(), payload.size());
     frame->header.payload_length = payload.size();
     return frame;
   }

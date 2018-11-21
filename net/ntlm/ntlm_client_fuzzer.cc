@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
+#include <vector>
+
 #include "base/containers/span.h"
 #include "base/test/fuzzed_data_provider.h"
 #include "net/ntlm/ntlm_client.h"
@@ -40,11 +43,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::string channel_bindings = fdp.ConsumeRandomLengthString(150);
   std::string spn =
       fdp.ConsumeRandomLengthString(net::ntlm::kMaxFqdnLen + 5 + 1);
-  std::string challenge_msg_bytes = fdp.ConsumeRemainingBytes();
+  std::vector<uint8_t> challenge_msg_bytes = fdp.ConsumeRemainingBytes();
 
   client.GenerateAuthenticateMessage(
       domain, username, password, hostname, channel_bindings, spn, client_time,
-      net::ntlm::test::kClientChallenge,
-      base::as_bytes(base::make_span(challenge_msg_bytes)));
+      net::ntlm::test::kClientChallenge, base::make_span(challenge_msg_bytes));
   return 0;
 }

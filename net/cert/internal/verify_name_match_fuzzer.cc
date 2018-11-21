@@ -4,6 +4,11 @@
 
 #include "net/cert/internal/verify_name_match.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include <vector>
+
 #include "base/test/fuzzed_data_provider.h"
 #include "net/der/input.h"
 
@@ -11,11 +16,11 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider fuzzed_data(data, size);
   size_t first_part_size = fuzzed_data.ConsumeUint16();
-  std::string first_part = fuzzed_data.ConsumeBytes(first_part_size);
-  std::string second_part = fuzzed_data.ConsumeRemainingBytes();
+  std::vector<uint8_t> first_part = fuzzed_data.ConsumeBytes(first_part_size);
+  std::vector<uint8_t> second_part = fuzzed_data.ConsumeRemainingBytes();
 
-  net::der::Input in1(&first_part);
-  net::der::Input in2(&second_part);
+  net::der::Input in1(first_part.data(), first_part.size());
+  net::der::Input in2(second_part.data(), second_part.size());
   bool match = net::VerifyNameMatch(in1, in2);
   bool reverse_order_match = net::VerifyNameMatch(in2, in1);
   // Result should be the same regardless of argument order.

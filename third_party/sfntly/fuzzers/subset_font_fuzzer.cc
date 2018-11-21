@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cstdint>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
+#include <vector>
 
 #include "base/test/fuzzed_data_provider.h"
 #include "third_party/sfntly/src/cpp/src/sample/chromium/font_subsetter.h"
@@ -14,21 +17,21 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider fuzzed_data(data, size);
 
   size_t font_name_size = fuzzed_data.ConsumeUint32InRange(0, kMaxFontNameSize);
-  std::string font_name = fuzzed_data.ConsumeBytes(font_name_size);
+  std::string font_name = fuzzed_data.ConsumeBytesAsString(font_name_size);
 
   size_t font_str_size = fuzzed_data.ConsumeUint32InRange(0, kMaxFontSize);
-  std::string font_str = fuzzed_data.ConsumeBytes(font_str_size);
-  const unsigned char* font_data =
-      reinterpret_cast<const unsigned char*>(font_str.data());
+  std::vector<unsigned char> font_str =
+      fuzzed_data.ConsumeBytes<unsigned char>(font_str_size);
 
-  std::string glyph_ids_str = fuzzed_data.ConsumeRemainingBytes();
+  std::vector<uint8_t> glyph_ids_str = fuzzed_data.ConsumeRemainingBytes();
   const unsigned int* glyph_ids =
       reinterpret_cast<const unsigned int*>(glyph_ids_str.data());
-  size_t glyph_ids_size =
-      glyph_ids_str.size() * sizeof(char) / sizeof(unsigned int);
+  size_t glyph_ids_size = glyph_ids_str.size() *
+                          sizeof(decltype(glyph_ids_str)::value_type) /
+                          sizeof(*glyph_ids);
 
   unsigned char* output = nullptr;
-  SfntlyWrapper::SubsetFont(font_name.data(), font_data, font_str_size,
+  SfntlyWrapper::SubsetFont(font_name.c_str(), font_str.data(), font_str.size(),
                             glyph_ids, glyph_ids_size, &output);
   delete[] output;
   return 0;

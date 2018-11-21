@@ -13,12 +13,12 @@ CString FuzzedDataProvider::ConsumeBytesInRange(uint32_t min_bytes,
                                                 uint32_t max_bytes) {
   size_t num_bytes =
       static_cast<size_t>(provider_.ConsumeUint32InRange(min_bytes, max_bytes));
-  std::string bytes = provider_.ConsumeBytes(num_bytes);
+  std::vector<char> bytes = provider_.ConsumeBytes<char>(num_bytes);
   return CString(bytes.data(), bytes.size());
 }
 
 CString FuzzedDataProvider::ConsumeRemainingBytes() {
-  std::string bytes = provider_.ConsumeRemainingBytes();
+  std::vector<char> bytes = provider_.ConsumeRemainingBytes<char>();
   return CString(bytes.data(), bytes.size());
 }
 
