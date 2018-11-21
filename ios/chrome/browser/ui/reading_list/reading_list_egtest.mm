@@ -485,15 +485,7 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version via context menu.
-// TODO(crbug.com/796082): Re-enable this test on devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testSavingToReadingListAndLoadDistilled \
-  testSavingToReadingListAndLoadDistilled
-#else
-#define MAYBE_testSavingToReadingListAndLoadDistilled \
-  FLAKY_testSavingToReadingListAndLoadDistilled
-#endif
-- (void)MAYBE_testSavingToReadingListAndLoadDistilled {
+- (void)testSavingToReadingListAndLoadDistilled {
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
@@ -538,15 +530,7 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads online version by tapping on entry.
-// TODO(crbug.com/796082): Re-enable this test on devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testSavingToReadingListAndLoadNormal \
-  testSavingToReadingListAndLoadNormal
-#else
-#define MAYBE_testSavingToReadingListAndLoadNormal \
-  FLAKY_testSavingToReadingListAndLoadNormal
-#endif
-- (void)MAYBE_testSavingToReadingListAndLoadNormal {
+- (void)testSavingToReadingListAndLoadNormal {
   // TODO(crbug.com/874649): re-enable this test.
   if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
@@ -587,15 +571,7 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
-// TODO(crbug.com/796082): Re-enable this test on devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testSavingToReadingListAndLoadNoNetwork \
-  testSavingToReadingListAndLoadNoNetwork
-#else
-#define MAYBE_testSavingToReadingListAndLoadNoNetwork \
-  FLAKY_testSavingToReadingListAndLoadNoNetwork
-#endif
-- (void)MAYBE_testSavingToReadingListAndLoadNoNetwork {
+- (void)testSavingToReadingListAndLoadNoNetwork {
   // TODO(crbug.com/874649): re-enable this test.
   if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
@@ -646,15 +622,7 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
-// TODO(crbug.com/796082): Re-enable this test on devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testSavingToReadingListAndLoadBadNetwork \
-  testSavingToReadingListAndLoadBadNetwork
-#else
-#define MAYBE_testSavingToReadingListAndLoadBadNetwork \
-  FLAKY_testSavingToReadingListAndLoadBadNetwork
-#endif
-- (void)MAYBE_testSavingToReadingListAndLoadBadNetwork {
+- (void)testSavingToReadingListAndLoadBadNetwork {
   // TODO(crbug.com/905839): re-enable this test.
   if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
