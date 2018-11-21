@@ -11,8 +11,7 @@
 #include "chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -35,12 +34,11 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/navigation_handle.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
@@ -549,14 +547,10 @@ void SaveCardBubbleControllerImpl::FetchAccountInfo() {
   Profile* profile = GetProfile();
   if (!profile)
     return;
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile);
-  if (!signin_manager || !account_tracker)
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  if (!identity_manager)
     return;
-  account_info_ = account_tracker->GetAccountInfo(
-      signin_manager->GetAuthenticatedAccountId());
+  account_info_ = identity_manager->GetPrimaryAccountInfo();
 }
 
 LegacyStrikeDatabase* SaveCardBubbleControllerImpl::GetLegacyStrikeDatabase() {
