@@ -19,9 +19,9 @@ issues]].
   of diacritics working
 
 ** Other changes
-- Updated the ~lou_allround~ test tool to include all the mode flags
-  described in the documentation of the ~lou_translateString()~
-  function. Thanks to Bue Vester-Andersen
+- Updated the ~lou_allround~ and ~lou_trace~ test tools to include all
+  the mode flags described in the documentation of the
+  ~lou_translateString()~ function. Thanks to Bue Vester-Andersen
 
 ** Deprecation notice
 
