@@ -96,9 +96,9 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
 // their history.
 bool IsHistorySyncEnabled(Profile* profile) {
   browser_sync::ProfileSyncService* sync =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  return sync &&
-      sync->GetPreferredDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  return sync->IsSyncFeatureEnabled() &&
+         sync->GetUserSettings()->GetChosenDataTypes().Has(syncer::TYPED_URLS);
 }
 
 }  // namespace
