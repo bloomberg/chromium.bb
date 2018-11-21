@@ -58,7 +58,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       NGPhysicalOffset offset);
 
   // Next/last fragment for  when this is fragmented.
-  NGPaintFragment* Next() { return next_fragmented_.get(); }
+  NGPaintFragment* Next();
   void SetNext(scoped_refptr<NGPaintFragment>);
   NGPaintFragment* Last();
   NGPaintFragment* Last(const NGBreakToken&);
@@ -170,10 +170,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   LayoutRect VisualRect() const override { return visual_rect_; }
   void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
 
-  LayoutRect SelectionVisualRect() const { return selection_visual_rect_; }
-  void SetSelectionVisualRect(const LayoutRect& rect) {
-    selection_visual_rect_ = rect;
-  }
+  LayoutRect SelectionVisualRect() const;
+  void SetSelectionVisualRect(const LayoutRect& rect);
 
   // CSS ink overflow https://www.w3.org/TR/css-overflow-3/#ink
   // Encloses all pixels painted by self + children.
@@ -334,8 +332,18 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   scoped_refptr<NGPaintFragment> first_child_;
   scoped_refptr<NGPaintFragment> next_sibling_;
 
-  // The next fragment for when this is fragmented.
-  scoped_refptr<NGPaintFragment> next_fragmented_;
+  struct RareData {
+    USING_FAST_MALLOC(RareData);
+
+   public:
+    // The next fragment for when this is fragmented.
+    scoped_refptr<NGPaintFragment> next_fragmented_;
+
+    // Used for invalidating selected fragment.
+    LayoutRect selection_visual_rect_;
+  };
+  RareData& EnsureRareData();
+  std::unique_ptr<RareData> rare_data_;
 
   NGPaintFragment* next_for_same_layout_object_ = nullptr;
   NGPhysicalOffset inline_offset_to_container_box_;
@@ -351,7 +359,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   //
 
   LayoutRect visual_rect_;
-  LayoutRect selection_visual_rect_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
