@@ -50,10 +50,9 @@ constexpr base::FilePath::CharType kCrosRemovableMediaDir[] =
     FILE_PATH_LITERAL("/media/removable");
 
 // The removable media path inside ARC container. This will be the path that
-// is used in MediaScanner.scanFile request. The /var is mandatory here because
-// it is the ARC container side path name.
+// is used in MediaScanner.scanFile request.
 constexpr base::FilePath::CharType kAndroidRemovableMediaDir[] =
-    FILE_PATH_LITERAL("/var/run/arc/media/removable");
+    FILE_PATH_LITERAL("/storage");
 
 // How long to wait for new inotify events before building the updated timestamp
 // map.
