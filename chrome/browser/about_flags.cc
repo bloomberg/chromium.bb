@@ -338,28 +338,6 @@ const FeatureEntry::Choice kShowSavedCopyChoices[] = {
      error_page::switches::kShowSavedCopy,
      error_page::switches::kDisableShowSavedCopy}};
 
-const FeatureEntry::Choice kDefaultTileWidthChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kDefaultTileWidthShort, switches::kDefaultTileWidth,
-     "128"},
-    {flag_descriptions::kDefaultTileWidthTall, switches::kDefaultTileWidth,
-     "256"},
-    {flag_descriptions::kDefaultTileWidthGrande, switches::kDefaultTileWidth,
-     "512"},
-    {flag_descriptions::kDefaultTileWidthVenti, switches::kDefaultTileWidth,
-     "1024"}};
-
-const FeatureEntry::Choice kDefaultTileHeightChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kDefaultTileHeightShort, switches::kDefaultTileHeight,
-     "128"},
-    {flag_descriptions::kDefaultTileHeightTall, switches::kDefaultTileHeight,
-     "256"},
-    {flag_descriptions::kDefaultTileHeightGrande, switches::kDefaultTileHeight,
-     "512"},
-    {flag_descriptions::kDefaultTileHeightVenti, switches::kDefaultTileHeight,
-     "1024"}};
-
 #if defined(OS_WIN)
 const FeatureEntry::Choice kUseAngleChoices[] = {
     {flag_descriptions::kUseAngleDefault, "", ""},
@@ -1873,12 +1851,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-saved-copy", flag_descriptions::kShowSavedCopyName,
      flag_descriptions::kShowSavedCopyDescription, kOsAll,
      MULTI_VALUE_TYPE(kShowSavedCopyChoices)},
-    {"default-tile-width", flag_descriptions::kDefaultTileWidthName,
-     flag_descriptions::kDefaultTileWidthDescription, kOsAll,
-     MULTI_VALUE_TYPE(kDefaultTileWidthChoices)},
-    {"default-tile-height", flag_descriptions::kDefaultTileHeightName,
-     flag_descriptions::kDefaultTileHeightDescription, kOsAll,
-     MULTI_VALUE_TYPE(kDefaultTileHeightChoices)},
 #if defined(OS_CHROMEOS)
     {"enable-virtual-keyboard", flag_descriptions::kVirtualKeyboardName,
      flag_descriptions::kVirtualKeyboardDescription, kOsCrOS,
