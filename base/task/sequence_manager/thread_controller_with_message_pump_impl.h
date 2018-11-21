@@ -148,7 +148,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
       GUARDED_BY(task_runner_lock_);
 
   // OperationsController will only be started after |pump_| is set.
-  ::base::internal::OperationsController operations_controller_;
+  base::internal::OperationsController operations_controller_;
 
   // Can only be set once (just before calling
   // operations_controller_.StartAcceptingOperations()). After that only read
