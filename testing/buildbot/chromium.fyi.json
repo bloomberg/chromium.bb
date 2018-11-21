@@ -2167,6 +2167,24 @@
     ]
   },
   "WebKit Linux layout_ng Dummy Builder": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--enable-blink-features=LayoutNG"
+        ],
+        "name": "webkit_unit_tests_ng",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "hard_timeout": 900
+        },
+        "test": "webkit_unit_tests"
+      }
+    ],
     "isolated_scripts": [
       {
         "args": [

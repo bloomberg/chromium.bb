@@ -1684,6 +1684,15 @@
       },
     },
 
+    'layout_ng_gtests': {
+      'webkit_unit_tests_ng': {
+        'args': [
+          '--enable-blink-features=LayoutNG'
+        ],
+        'test': 'webkit_unit_tests',
+      },
+    },
+
     'leak_detection_isolated_scripts': {
       'memory.leak_detection': {
         'args': [
