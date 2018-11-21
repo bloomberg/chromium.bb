@@ -144,6 +144,7 @@ static NSTimeInterval MFAnimationDuration = 0;
   self.passwordButton.accessibilityIdentifier =
       manual_fill::AccessoryPasswordAccessibilityIdentifier;
   self.passwordButton.hidden = self.isPasswordButtonHidden;
+  self.passwordButton.contentEdgeInsets = UIEdgeInsetsMake(0, 2, 0, 2);
   self.passwordButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_SHOW_PASSWORDS);
   [icons addObject:self.passwordButton];
