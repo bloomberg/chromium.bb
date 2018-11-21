@@ -14,4 +14,13 @@ const Feature kAllTasksUserBlocking{"AllTasksUserBlocking",
 const Feature kMergeBlockingNonBlockingPools = {
     "MergeBlockingNonBlockingPools", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const Feature kMayBlockTimings = {"MayBlockTimings",
+                                  FEATURE_DISABLED_BY_DEFAULT};
+
+const FeatureParam<int> kMayBlockThresholdMicrosecondsParam = {
+    &kMayBlockTimings, "MayBlockThresholdMicroseconds", 10000};
+
+const FeatureParam<int> kBlockedWorkersPollMicrosecondsParam = {
+    &kMayBlockTimings, "BlockedWorkersPollMicroseconds", 50000};
+
 }  // namespace base

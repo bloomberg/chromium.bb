@@ -20,6 +20,7 @@
 #include "base/sequence_token.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/task_features.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task/task_scheduler/task_tracker.h"
 #include "base/task/task_traits.h"
@@ -37,8 +38,6 @@
 
 namespace base {
 namespace internal {
-
-constexpr TimeDelta SchedulerWorkerPoolImpl::kBlockedWorkersPollPeriod;
 
 namespace {
 
@@ -223,6 +222,11 @@ void SchedulerWorkerPoolImpl::Start(
     WorkerEnvironment worker_environment) {
   AutoSchedulerLock auto_lock(lock_);
 
+  may_block_threshold_ =
+      TimeDelta::FromMicroseconds(kMayBlockThresholdMicrosecondsParam.Get());
+  blocked_workers_poll_period_ =
+      TimeDelta::FromMicroseconds(kBlockedWorkersPollMicrosecondsParam.Get());
+
   DCHECK(workers_.empty());
 
   max_tasks_ = params.max_tasks();
@@ -391,7 +395,7 @@ size_t SchedulerWorkerPoolImpl::NumberOfIdleWorkersForTesting() const {
 }
 
 void SchedulerWorkerPoolImpl::MaximizeMayBlockThresholdForTesting() {
-  maximum_blocked_threshold_for_testing_.Set();
+  may_block_threshold_ = TimeDelta::Max();
 }
 
 void SchedulerWorkerPoolImpl::RecordNumWorkersHistogram() const {
@@ -964,14 +968,10 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
 }
 
 TimeDelta SchedulerWorkerPoolImpl::MayBlockThreshold() const {
-  if (maximum_blocked_threshold_for_testing_.IsSet())
-    return TimeDelta::Max();
-  // This value was set unscientifically based on intuition and may be adjusted
-  // in the future. This value is smaller than |kBlockedWorkersPollPeriod|
-  // because we hope than when multiple workers block around the same time, a
-  // single AdjustMaxTasks() call will perform all the necessary max tasks
-  // adjustments.
-  return TimeDelta::FromMilliseconds(10);
+  // This value is usually smaller than |blocked_workers_poll_period_| because
+  // we hope than when multiple workers block around the same time, a single
+  // AdjustMaxTasks() call will perform all the necessary max tasks adjustments.
+  return may_block_threshold_;
 }
 
 void SchedulerWorkerPoolImpl::ScheduleAdjustMaxTasksIfNeeded() {
@@ -986,7 +986,7 @@ void SchedulerWorkerPoolImpl::ScheduleAdjustMaxTasksIfNeeded() {
       FROM_HERE,
       BindOnce(&SchedulerWorkerPoolImpl::AdjustMaxTasksFunction,
                Unretained(this)),
-      kBlockedWorkersPollPeriod);
+      blocked_workers_poll_period_);
 }
 
 void SchedulerWorkerPoolImpl::AdjustMaxTasksFunction() {
@@ -1006,7 +1006,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasksFunction() {
       FROM_HERE,
       BindOnce(&SchedulerWorkerPoolImpl::AdjustMaxTasksFunction,
                Unretained(this)),
-      kBlockedWorkersPollPeriod);
+      blocked_workers_poll_period_);
 }
 
 bool SchedulerWorkerPoolImpl::ShouldPeriodicallyAdjustMaxTasksLockRequired() {
