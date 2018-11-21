@@ -415,6 +415,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
       configuration->iceCandidatePoolSize();
 
   if (configuration->hasRtcAudioJitterBufferMaxPackets()) {
+    UseCounter::Count(context, WebFeature::kRTCMaxAudioBufferSize);
     web_configuration.audio_jitter_buffer_max_packets =
         static_cast<int>(configuration->rtcAudioJitterBufferMaxPackets());
   }
