@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/metrics/histogram_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
@@ -47,6 +48,39 @@ bool IsUnsupportedVP9Profile(const VideoDecoderConfig& config) {
 
 #undef INRANGE
 
+// Holder class, so that we don't keep creating CommandBufferHelpers every time
+// somebody calls a callback.  We can't actually create it until we're on the
+// right thread.
+struct CommandBufferHelperHolder
+    : base::RefCountedDeleteOnSequence<CommandBufferHelperHolder> {
+  CommandBufferHelperHolder(
+      scoped_refptr<base::SequencedTaskRunner> task_runner)
+      : base::RefCountedDeleteOnSequence<CommandBufferHelperHolder>(
+            std::move(task_runner)) {}
+  scoped_refptr<CommandBufferHelper> helper;
+
+ private:
+  ~CommandBufferHelperHolder() = default;
+  friend class base::RefCountedDeleteOnSequence<CommandBufferHelperHolder>;
+  friend class base::DeleteHelper<CommandBufferHelperHolder>;
+
+  DISALLOW_COPY_AND_ASSIGN(CommandBufferHelperHolder);
+};
+
+scoped_refptr<CommandBufferHelper> CreateCommandBufferHelper(
+    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
+    scoped_refptr<CommandBufferHelperHolder> holder) {
+  gpu::CommandBufferStub* stub = get_stub_cb.Run();
+  if (!stub)
+    return nullptr;
+
+  DCHECK(holder);
+  if (!holder->helper)
+    holder->helper = CommandBufferHelper::Create(stub);
+
+  return holder->helper;
+}
+
 }  // namespace
 
 std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
@@ -62,12 +96,16 @@ std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
   // Note that we WrapUnique<VideoDecoder> rather than D3D11VideoDecoder to make
   // this castable; the deleters have to match.
   std::unique_ptr<MediaLog> cloned_media_log = media_log->Clone();
+  auto get_helper_cb =
+      base::BindRepeating(CreateCommandBufferHelper, std::move(get_stub_cb),
+                          scoped_refptr<CommandBufferHelperHolder>(
+                              new CommandBufferHelperHolder(gpu_task_runner)));
   return base::WrapUnique<VideoDecoder>(
       new D3D11VideoDecoder(std::move(gpu_task_runner), std::move(media_log),
                             gpu_preferences, gpu_workarounds,
                             std::make_unique<D3D11VideoDecoderImpl>(
-                                std::move(cloned_media_log), get_stub_cb),
-                            get_stub_cb));
+                                std::move(cloned_media_log), get_helper_cb),
+                            get_helper_cb));
 }
 
 D3D11VideoDecoder::D3D11VideoDecoder(
@@ -76,14 +114,14 @@ D3D11VideoDecoder::D3D11VideoDecoder(
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     std::unique_ptr<D3D11VideoDecoderImpl> impl,
-    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb)
+    base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()> get_helper_cb)
     : media_log_(std::move(media_log)),
       impl_(std::move(impl)),
       impl_task_runner_(std::move(gpu_task_runner)),
       gpu_preferences_(gpu_preferences),
       gpu_workarounds_(gpu_workarounds),
       create_device_func_(base::BindRepeating(D3D11CreateDevice)),
-      get_stub_cb_(get_stub_cb),
+      get_helper_cb_(std::move(get_helper_cb)),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -526,7 +564,7 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   for (size_t i = 0; i < num_buffers; i++) {
     picture_buffers_.push_back(
         new D3D11PictureBuffer(GL_TEXTURE_EXTERNAL_OES, size, i));
-    if (!picture_buffers_[i]->Init(get_stub_cb_, video_device_, out_texture,
+    if (!picture_buffers_[i]->Init(get_helper_cb_, video_device_, out_texture,
                                    decoder_guid_, textures_per_picture)) {
       NotifyError("Unable to allocate PictureBuffer");
       return;
