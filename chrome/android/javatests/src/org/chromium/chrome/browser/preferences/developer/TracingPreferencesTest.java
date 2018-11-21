@@ -312,8 +312,8 @@ public class TracingPreferencesTest {
                         });
                     });
 
-            PreferenceFragment categoriesFragment =
-                    (PreferenceFragment) categoriesActivity.getFragmentForTest();
+            PreferenceFragment categoriesFragment = ActivityUtils.waitForFragmentToAttach(
+                    categoriesActivity, PreferenceFragment.class);
             Assert.assertEquals(TracingCategoriesPreferences.class, categoriesFragment.getClass());
 
             CheckBoxPreference sampleCategoryPref =
