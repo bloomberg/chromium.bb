@@ -60,6 +60,8 @@ public class TasksUma {
         int othersCreatedCount = 0;
         int totalTabCount = model.getCount();
 
+        if (totalTabCount == 0) return;
+
         for (int i = 0; i < totalTabCount; i++) {
             Integer tabLaunchType = model.getTabAt(i).getLaunchTypeAtInitialTabCreation();
             if (tabLaunchType == null) {
