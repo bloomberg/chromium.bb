@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_EDIT_COLLECTION_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_EDIT_COLLECTION_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_LEGACY_AUTOFILL_EDIT_COLLECTION_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_LEGACY_AUTOFILL_EDIT_COLLECTION_VIEW_CONTROLLER_H_
 
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 
 // The collection view for an Autofill edit entry menu.
-@interface AutofillEditCollectionViewController
+// TODO(crbug.com/894800): Remove this.
+@interface LegacyAutofillEditCollectionViewController
     : SettingsRootCollectionViewController<UITextFieldDelegate>
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_EDIT_COLLECTION_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_LEGACY_AUTOFILL_EDIT_COLLECTION_VIEW_CONTROLLER_H_
