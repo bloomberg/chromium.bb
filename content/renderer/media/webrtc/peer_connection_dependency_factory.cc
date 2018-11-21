@@ -345,10 +345,6 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   factory_options.disable_sctp_data_channels = false;
   factory_options.disable_encryption =
       cmd_line->HasSwitch(switches::kDisableWebRtcEncryption);
-  factory_options.crypto_options.srtp.enable_gcm_crypto_suites =
-      cmd_line->HasSwitch(switches::kEnableWebRtcSrtpAesGcm);
-  factory_options.crypto_options.srtp.enable_encrypted_rtp_header_extensions =
-      cmd_line->HasSwitch(switches::kEnableWebRtcSrtpEncryptedHeaders);
   pc_factory_->SetOptions(factory_options);
 
   event->Signal();
