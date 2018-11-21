@@ -61,6 +61,15 @@ struct ParseNumberTestCase {
   std::string deduced_region;
 };
 
+namespace {
+
+// Returns a string which is too long to be considered a phone number.
+std::string GenerateTooLongString() {
+  return std::string(i18n::kMaxPhoneNumberSize + 1, '7');
+}
+
+}  // namespace
+
 class ParseNumberTest : public testing::TestWithParam<ParseNumberTestCase> {};
 
 TEST_P(ParseNumberTest, ParsePhoneNumber) {
@@ -90,6 +99,8 @@ INSTANTIATE_TEST_CASE_P(
         // Test for string with less than 7 digits.  Should give back empty
         // strings.
         ParseNumberTestCase{false, "1234", "US"},
+        // Too long strings should not be parsed.
+        ParseNumberTestCase{false, GenerateTooLongString(), "US"},
         // Test for string with exactly 7 digits.
         // Still a possible number with unknown("ZZ") deduced region.
         ParseNumberTestCase{true, "17134567", "US", "7134567", "", "1", "ZZ"},
