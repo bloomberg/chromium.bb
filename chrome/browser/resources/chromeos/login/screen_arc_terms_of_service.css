@@ -15,8 +15,8 @@
 
 #arc-tos-overlay-content-text {
   box-sizing: border-box;
-  height: 200px;
   margin: auto;
+  min-height: 200px;
   padding: 24px 8px 8px 8px;
   width: 100%;
 }
