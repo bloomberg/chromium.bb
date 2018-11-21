@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -134,7 +135,8 @@ public class NewTabButton extends Button implements Drawable.Callback, Incognito
                 || (mIsNativeReady
                            && (DeviceClassManager.enableAccessibilityLayout()
                                       || ChromeFeatureList.isEnabled(
-                                                 ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID))
+                                                 ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
+                                      || FeatureUtilities.isBottomToolbarEnabled())
                            && mIsIncognito);
         mModernDrawable.setTintList(shouldUseLightMode ? mLightModeTint : mDarkModeTint);
     }
