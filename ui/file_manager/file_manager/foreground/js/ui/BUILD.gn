@@ -62,7 +62,6 @@ js_library("closure_compile_externs") {
     "../../../../externs/background/file_browser_background.js",
     "../../../../externs/background/file_operation_manager.js",
     "../../../../externs/background/import_history.js",
-    "../../../../externs/background/import_history_enum.js",
     "../../../../externs/background_window.js",
     "../../../../externs/chrome_echo_private.js",
     "../../../../externs/chrome_webstore_widget_private.js",
@@ -188,7 +187,6 @@ js_library("file_grid") {
   ]
   externs_list = [
     "../../../../externs/background/import_history.js",
-    "../../../../externs/background/import_history_enum.js",
   ]
 }
 
@@ -270,7 +268,6 @@ js_library("file_table") {
   ]
   externs_list = [
     "../../../../externs/background/import_history.js",
-    "../../../../externs/background/import_history_enum.js",
   ]
 }
 
