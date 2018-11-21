@@ -323,13 +323,20 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
       ComputeTrackSizesForDefiniteSize(
           kForRows, AvailableLogicalHeight(kExcludeMarginBorderPadding));
     } else {
-      ComputeTrackSizesForIndefiniteSize(track_sizing_algorithm_, kForRows,
-                                         min_content_height_,
-                                         max_content_height_);
+      ComputeTrackSizesForIndefiniteSize(track_sizing_algorithm_, kForRows);
     }
     LayoutUnit track_based_logical_height =
         track_sizing_algorithm_.ComputeTrackBasedSize() +
-        BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
+        BorderAndPaddingLogicalHeight();
+
+    // TODO(rego): We shouldn't need this once crbug.com/906530 is fixed.
+    // Right now we need this because
+    // LayoutBox::ComputeContentAndScrollbarLogicalHeightUsing() is adding the
+    // ScrollbarLogicalHeight() for the intrinsic height cases. But that's
+    // causing more problems as described in the bug linked before.
+    if (!StyleRef().LogicalHeight().IsIntrinsic())
+      track_based_logical_height += ScrollbarLogicalHeight();
+
     SetLogicalHeight(track_based_logical_height);
 
     LayoutUnit old_client_after_edge = ClientLogicalBottom();
@@ -512,8 +519,8 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
     }
   }
 
-  ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, min_logical_width,
-                                     max_logical_width);
+  ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, &min_logical_width,
+                                     &max_logical_width);
 
   LayoutUnit scrollbar_width = LayoutUnit(ScrollbarLogicalWidth());
   min_logical_width += scrollbar_width;
@@ -523,52 +530,24 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
 void LayoutGrid::ComputeTrackSizesForIndefiniteSize(
     GridTrackSizingAlgorithm& algo,
     GridTrackSizingDirection direction,
-    LayoutUnit& min_intrinsic_size,
-    LayoutUnit& max_intrinsic_size) const {
+    LayoutUnit* min_intrinsic_size,
+    LayoutUnit* max_intrinsic_size) const {
   const Grid& grid = algo.GetGrid();
   algo.Setup(direction, NumTracks(direction, grid), base::nullopt);
   algo.Run();
 
-  min_intrinsic_size = algo.MinContentSize();
-  max_intrinsic_size = algo.MaxContentSize();
-
   size_t number_of_tracks = algo.Tracks(direction).size();
   LayoutUnit total_gutters_size =
       GuttersSize(grid, direction, 0, number_of_tracks, base::nullopt);
-  min_intrinsic_size += total_gutters_size;
-  max_intrinsic_size += total_gutters_size;
+
+  if (min_intrinsic_size)
+    *min_intrinsic_size = algo.MinContentSize() + total_gutters_size;
+  if (max_intrinsic_size)
+    *max_intrinsic_size = algo.MaxContentSize() + total_gutters_size;
 
 #if DCHECK_IS_ON()
   DCHECK(algo.TracksAreWiderThanMinTrackBreadth());
 #endif
-}
-
-LayoutUnit LayoutGrid::ComputeIntrinsicLogicalContentHeightUsing(
-    const Length& logical_height_length,
-    LayoutUnit intrinsic_content_height,
-    LayoutUnit border_and_padding) const {
-  if (logical_height_length.IsMinContent())
-    return min_content_height_;
-
-  if (logical_height_length.IsMaxContent())
-    return max_content_height_;
-
-  if (logical_height_length.IsFitContent()) {
-    if (min_content_height_ == -1 || max_content_height_ == -1)
-      return LayoutUnit(-1);
-    LayoutUnit fill_available_extent =
-        ContainingBlock()->AvailableLogicalHeight(kExcludeMarginBorderPadding);
-    return std::min<LayoutUnit>(
-        max_content_height_,
-        std::max(min_content_height_, fill_available_extent));
-  }
-
-  if (logical_height_length.IsFillAvailable())
-    return ContainingBlock()->AvailableLogicalHeight(
-               kExcludeMarginBorderPadding) -
-           border_and_padding;
-  NOTREACHED();
-  return LayoutUnit();
 }
 
 LayoutUnit LayoutGrid::OverrideContainingBlockContentSizeForChild(

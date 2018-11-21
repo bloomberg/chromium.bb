@@ -76,10 +76,10 @@ body {
 
 <div class="container">
     <p>Grid with <b>fixed</b> width and height under <b>min-content</b> constrain.<br >All grid items sized with <b>min-{width, height} auto</b>.</p>
-    <div class="grid itemsStart contentStart min-content width300" data-expected-width="300" data-expected-height="90">
+    <div class="grid itemsStart contentStart min-content width300" data-expected-width="300" data-expected-height="490">
         <div class="firstRowFirstColumn"             data-offset-x="0"   data-offset-y="0"   data-expected-width="150" data-expected-height="10">XX XXX X XXX XX</div>
-        <div class="verticalLR firstRowSecondColumn" data-offset-x="150" data-offset-y="0"   data-expected-width="70"  data-expected-height="50">X XXX XX XXXXX XX XXX X XXXX X XX</div>
-        <div class="verticalLR secondRowFirstColumn" data-offset-x="0"   data-offset-y="50"  data-expected-width="40"  data-expected-height="40">XXXX XX X XX XXX</div>
+        <div class="verticalLR firstRowSecondColumn" data-offset-x="150" data-offset-y="0"   data-expected-width="10"  data-expected-height="330">X XXX XX XXXXX XX XXX X XXXX X XX</div>
+        <div class="verticalLR secondRowFirstColumn" data-offset-x="0"   data-offset-y="330"  data-expected-width="10"  data-expected-height="160">XXXX XX X XX XXX</div>
     </div>
 </div>
 
@@ -132,10 +132,10 @@ body {
 
 <div class="container">
     <p>Grid with <b>fixed</b> width and height under <b>min-content</b> constrain.<br> All grid items sized with <b>min-width: auto, min-height: 0px</b>.</p>
-    <div class="grid itemsStart contentStart min-content width300 " data-expected-width="300" data-expected-height="0">
+    <div class="grid itemsStart contentStart min-content width300 " data-expected-width="300" data-expected-height="490">
         <div class="minHeightZero firstRowFirstColumn"              data-offset-x="0"   data-offset-y="0"   data-expected-width="150" data-expected-height="10">XX XXX X XXX XX</div>
-        <div class="minHeightZero verticalLR firstRowSecondColumn"  data-offset-x="150" data-offset-y="0"   data-expected-width="70"  data-expected-height="50">X XXX XX XXXXX XX XXX X XXXX X XX</div>
-        <div class="minHeightZero verticalLR secondRowFirstColumn"  data-offset-x="0"   data-offset-y="0"   data-expected-width="40"  data-expected-height="40">XXXX XX X XX XXX</div>
+        <div class="minHeightZero verticalLR firstRowSecondColumn"  data-offset-x="150" data-offset-y="0"   data-expected-width="10"  data-expected-height="330">X XXX XX XXXXX XX XXX X XXXX X XX</div>
+        <div class="minHeightZero verticalLR secondRowFirstColumn"  data-offset-x="0"   data-offset-y="330"   data-expected-width="10"  data-expected-height="160">XXXX XX X XX XXX</div>
     </div>
 </div>
 
@@ -177,10 +177,10 @@ body {
 
 <div class="container">
     <p>Grid with <b>fixed</b> width and height under <b>min-content</b> constrain.<br> All grid items sized with <b>min-width: auto, min-height: 50px</b>.</p>
-    <div class="grid itemsStart contentStart min-content width300" data-expected-width="300" data-expected-height="100">
+    <div class="grid itemsStart contentStart min-content width300" data-expected-width="300" data-expected-height="490">
         <div class="minHeightFixed firstRowFirstColumn"             data-offset-x="0"   data-offset-y="0"   data-expected-width="150" data-expected-height="50">XX XXX X XXX XX</div>
-        <div class="minHeightFixed verticalLR firstRowSecondColumn" data-offset-x="150" data-offset-y="0"   data-expected-width="70"  data-expected-height="50">X XXX XX XXXXX XX XXX X XXXX X XX</div>
-        <div class="minHeightFixed verticalLR secondRowFirstColumn" data-offset-x="0"   data-offset-y="50"  data-expected-width="40"  data-expected-height="50">XXXX XX X XX XXX</div>
+        <div class="minHeightFixed verticalLR firstRowSecondColumn" data-offset-x="150" data-offset-y="0"   data-expected-width="10"  data-expected-height="330">X XXX XX XXXXX XX XXX X XXXX X XX</div>
+        <div class="minHeightFixed verticalLR secondRowFirstColumn" data-offset-x="0"   data-offset-y="330"  data-expected-width="10"  data-expected-height="160">XXXX XX X XX XXX</div>
     </div>
 </div>
 
