@@ -29,8 +29,10 @@
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_lite_page_url_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -92,6 +94,22 @@ bool ShouldShowUIForPreviewsType(previews::PreviewsType type) {
            base::FeatureList::IsEnabled(network::features::kNetworkService);
   }
   return true;
+}
+
+void LoadOriginalForLitePageRedirect(content::WebContents* web_contents) {
+  std::string original_url;
+  bool extracted = previews::ExtractOriginalURLFromLitePageRedirectURL(
+      web_contents->GetController().GetLastCommittedEntry()->GetURL(),
+      &original_url);
+  ALLOW_UNUSED_LOCAL(extracted);
+  DCHECK(extracted);
+  content::OpenURLParams url_params(GURL(original_url), content::Referrer(),
+                                    WindowOpenDisposition::CURRENT_TAB,
+                                    ui::PAGE_TRANSITION_RELOAD,
+                                    false /* is_render_initiated */);
+  url_params.user_gesture = true;
+  url_params.started_from_context_menu = false;
+  web_contents->OpenURL(url_params);
 }
 
 }  // namespace
@@ -215,7 +233,6 @@ void PreviewsUITabHelper::ReloadWithoutPreviews(
     std::move(on_dismiss_callback_).Run(true);
   switch (previews_type) {
     case previews::PreviewsType::LITE_PAGE:
-    case previews::PreviewsType::LITE_PAGE_REDIRECT:
     case previews::PreviewsType::OFFLINE:
     case previews::PreviewsType::NOSCRIPT:
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:
@@ -226,6 +243,9 @@ void PreviewsUITabHelper::ReloadWithoutPreviews(
       break;
     case previews::PreviewsType::LOFI:
       web_contents()->ReloadLoFiImages();
+      break;
+    case previews::PreviewsType::LITE_PAGE_REDIRECT:
+      LoadOriginalForLitePageRedirect(web_contents());
       break;
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::UNSPECIFIED:

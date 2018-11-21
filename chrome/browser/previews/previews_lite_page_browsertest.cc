@@ -679,32 +679,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   }
 
   {
-    // Verify a subframe navigation does not trigger a preview.
-    const base::string16 kSubframeTitle = base::ASCIIToUTF16("Subframe");
-    base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), subframe_url());
-
-    // Navigate in the subframe and wait for it to finish. The waiting is
-    // accomplished by |ExecuteScriptAndExtractString| which waits for
-    // |window.domAutomationController.send| in the HTML page.
-    std::string result;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        GetWebContents()->GetMainFrame(),
-        "window.open(\"" + base_https_lite_page_url().spec() +
-            "\", \"subframe\")",
-        &result));
-    EXPECT_EQ(kSubframeTitle, base::ASCIIToUTF16(result));
-
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.IneligibleReasons",
-        PreviewsLitePageNavigationThrottle::IneligibleReason::
-            kSubframeNavigation,
-        1);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       false, 2);
-  }
-
-  {
     // Verify a preview is only shown on slow networks.
     base::HistogramTester histogram_tester;
     g_browser_process->network_quality_tracker()
@@ -734,15 +708,16 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
 
   GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
   VerifyPreviewLoaded();
+}
 
-  base::HistogramTester histogram_tester;
-  GetWebContents()->GetController().Reload(
-      content::ReloadType::ORIGINAL_REQUEST_URL, false);
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsLoadOriginal)) {
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+
+  PreviewsUITabHelper::FromWebContents(GetWebContents())
+      ->ReloadWithoutPreviews();
   VerifyPreviewNotLoaded();
-  histogram_tester.ExpectBucketCount(
-      "Previews.ServerLitePage.IneligibleReasons",
-      PreviewsLitePageNavigationThrottle::IneligibleReason::kLoadOriginalReload,
-      1);
 }
 
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,

@@ -184,6 +184,10 @@ PreviewsLitePageNavigationThrottle::~PreviewsLitePageNavigationThrottle() =
     default;
 
 bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
+  DCHECK(navigation_handle()->IsInMainFrame());
+  DCHECK_NE(navigation_handle()->GetReloadType(),
+            content::ReloadType::ORIGINAL_REQUEST_URL);
+
   // Check if the parameters of the navigation are not eligible for the preview.
   std::vector<IneligibleReason> ineligible_reasons;
   const GURL& url = navigation_handle()->GetURL();
@@ -192,9 +196,6 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
 
   if (navigation_handle()->IsPost())
     ineligible_reasons.push_back(IneligibleReason::kHttpPost);
-
-  if (!navigation_handle()->IsInMainFrame())
-    ineligible_reasons.push_back(IneligibleReason::kSubframeNavigation);
 
   if (manager_->IsServerUnavailable())
     ineligible_reasons.push_back(IneligibleReason::kServerUnavailable);
@@ -390,22 +391,6 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
 
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::MaybeNavigateToPreview() const {
-  // First check if the user is attempting to load the original page on a
-  // preview.
-  std::string original_url;
-  if (navigation_handle()->GetReloadType() ==
-          content::ReloadType::ORIGINAL_REQUEST_URL &&
-      previews::ExtractOriginalURLFromLitePageRedirectURL(
-          navigation_handle()->GetURL(), &original_url)) {
-    LoadAndBypass(navigation_handle()->GetWebContents(), manager_,
-                  MakeOpenURLParams(navigation_handle(), GURL(original_url),
-                                    std::string()),
-                  true);
-    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.IneligibleReasons",
-                              IneligibleReason::kLoadOriginalReload);
-    return content::NavigationThrottle::CANCEL;
-  }
-
   const bool trigger =
       IsEligibleForPreview() &&
       !manager_->CheckSingleBypass(navigation_handle()->GetURL().spec());
