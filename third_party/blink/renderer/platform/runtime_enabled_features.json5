@@ -229,6 +229,10 @@
       status: "experimental",
     },
     {
+      name: "ContactsManager",
+      status: "experimental",
+    },
+    {
       name: "ContextMenu",
       status: "experimental",
     },
