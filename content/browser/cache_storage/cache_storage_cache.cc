@@ -27,6 +27,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
+#include "content/browser/cache_storage/cache_storage_cache_entry_handler.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_cache_observer.h"
 #include "content/browser/cache_storage/cache_storage_histogram_utils.h"
@@ -47,15 +48,12 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
-#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
-#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "storage/common/storage_histograms.h"
-#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
@@ -422,67 +420,6 @@ int64_t CalculateResponsePaddingInternal(
 }
 
 }  // namespace
-
-// This class ensures that the cache and the entry have a lifetime as long as
-// the blob that is created to contain them.
-class CacheStorageCache::BlobDataHandle
-    : public storage::BlobDataBuilder::DataHandle {
- public:
-  BlobDataHandle(CacheStorageCacheHandle cache_handle,
-                 disk_cache::ScopedEntryPtr entry)
-      : cache_handle_(std::move(cache_handle)), entry_(std::move(entry)) {}
-
-  bool IsValid() override { return bool{entry_}; }
-
-  void Invalidate() {
-    cache_handle_ = base::nullopt;
-    entry_ = nullptr;
-  }
-
- private:
-  ~BlobDataHandle() override {
-    if (cache_handle_ && cache_handle_->value()) {
-      cache_handle_->value()->blob_data_handles_.erase(this);
-    }
-  }
-
-  base::Optional<CacheStorageCacheHandle> cache_handle_;
-  disk_cache::ScopedEntryPtr entry_;
-
-  DISALLOW_COPY_AND_ASSIGN(BlobDataHandle);
-};
-
-// The state needed to pass between CacheStorageCache::Put callbacks.
-struct CacheStorageCache::PutContext {
-  PutContext(std::unique_ptr<ServiceWorkerFetchRequest> request,
-             blink::mojom::FetchAPIResponsePtr response,
-             blink::mojom::BlobPtr blob,
-             uint64_t blob_size,
-             blink::mojom::BlobPtr side_data_blob,
-             uint64_t side_data_blob_size,
-             CacheStorageCache::ErrorCallback callback)
-      : request(std::move(request)),
-        response(std::move(response)),
-        blob(std::move(blob)),
-        blob_size(blob_size),
-        side_data_blob(std::move(side_data_blob)),
-        side_data_blob_size(side_data_blob_size),
-        callback(std::move(callback)) {}
-
-  // Input parameters to the Put function.
-  std::unique_ptr<ServiceWorkerFetchRequest> request;
-  blink::mojom::FetchAPIResponsePtr response;
-  blink::mojom::BlobPtr blob;
-  uint64_t blob_size;
-  blink::mojom::BlobPtr side_data_blob;
-  uint64_t side_data_blob_size;
-
-  CacheStorageCache::ErrorCallback callback;
-  disk_cache::ScopedEntryPtr cache_entry;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PutContext);
-};
 
 struct CacheStorageCache::QueryCacheResult {
   explicit QueryCacheResult(base::Time entry_time) : entry_time(entry_time) {}
@@ -962,6 +899,9 @@ CacheStorageCache::CacheStorageCache(
       cache_padding_key_(std::move(cache_padding_key)),
       max_query_size_bytes_(kMaxQueryCacheResultBytes),
       cache_observer_(nullptr),
+      cache_entry_handler_(
+          CacheStorageCacheEntryHandler::CreateCacheEntryHandler(owner,
+                                                                 blob_context)),
       memory_only_(path.empty()),
       weak_ptr_factory_(this) {
   DCHECK(!origin_.opaque());
@@ -1188,7 +1128,8 @@ void CacheStorageCache::QueryCacheDidReadMetadata(
       return;
     }
 
-    PopulateResponseBody(std::move(entry), match->response.get());
+    cache_entry_handler_->PopulateResponseBody(CreateHandle(), std::move(entry),
+                                               match->response.get());
   } else if (!(query_cache_context->query_types &
                QUERY_CACHE_RESPONSES_NO_BODIES)) {
     match->response.reset();
@@ -1459,27 +1400,13 @@ void CacheStorageCache::Put(std::unique_ptr<ServiceWorkerFetchRequest> request,
                             ErrorCallback callback) {
   DCHECK(BACKEND_OPEN == backend_state_ || initializing_);
 
-  blink::mojom::BlobPtr blob;
-  uint64_t blob_size = blink::BlobUtils::kUnknownSize;
-  blink::mojom::BlobPtr side_data_blob;
-  uint64_t side_data_blob_size = blink::BlobUtils::kUnknownSize;
-
-  if (response->blob) {
-    blob.Bind(std::move(response->blob->blob));
-    blob_size = response->blob->size;
-  }
-  if (response->side_data_blob) {
-    side_data_blob.Bind(std::move(response->side_data_blob->blob));
-    side_data_blob_size = response->side_data_blob->size;
-  }
-
   UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.Cache.AllWritesResponseType",
                             response->response_type);
 
-  auto put_context = std::make_unique<PutContext>(
-      std::move(request), std::move(response), std::move(blob), blob_size,
-      std::move(side_data_blob), side_data_blob_size,
-      scheduler_->WrapCallbackToRunNext(std::move(callback)));
+  auto put_context = cache_entry_handler_->CreatePutContext(
+      std::move(request), std::move(response));
+  put_context->callback =
+      scheduler_->WrapCallbackToRunNext(std::move(callback));
 
   scheduler_->ScheduleOperation(base::BindOnce(&CacheStorageCache::PutImpl,
                                                weak_ptr_factory_.GetWeakPtr(),
@@ -1980,8 +1907,7 @@ void CacheStorageCache::SizeImpl(SizeCallback callback) {
 
 void CacheStorageCache::GetSizeThenCloseDidGetSize(SizeCallback callback,
                                                    int64_t cache_size) {
-  for (auto* handle : blob_data_handles_)
-    handle->Invalidate();
+  cache_entry_handler_->InvalidateBlobDataHandles();
   CloseImpl(base::BindOnce(std::move(callback), cache_size));
 }
 
@@ -2131,31 +2057,6 @@ void CacheStorageCache::InitGotCacheSizeAndPadding(
     cache_observer_->CacheSizeUpdated(this);
 
   std::move(callback).Run();
-}
-
-void CacheStorageCache::PopulateResponseBody(
-    disk_cache::ScopedEntryPtr entry,
-    blink::mojom::FetchAPIResponse* response) {
-  DCHECK(blob_storage_context_);
-
-  // Create a blob with the response body data.
-  response->blob = blink::mojom::SerializedBlob::New();
-  response->blob->size = entry->GetDataSize(INDEX_RESPONSE_BODY);
-  response->blob->uuid = base::GenerateGUID();
-  auto blob_data =
-      std::make_unique<storage::BlobDataBuilder>(response->blob->uuid);
-
-  disk_cache::Entry* temp_entry = entry.get();
-  auto data_handle =
-      base::MakeRefCounted<BlobDataHandle>(CreateHandle(), std::move(entry));
-  blob_data_handles_.insert(data_handle.get());
-  blob_data->AppendDiskCacheEntryWithSideData(
-      std::move(data_handle), temp_entry, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA);
-  auto blob_handle =
-      blob_storage_context_->AddFinishedBlob(std::move(blob_data));
-
-  storage::BlobImpl::Create(std::move(blob_handle),
-                            MakeRequest(&response->blob->blob));
 }
 
 int64_t CacheStorageCache::PaddedCacheSize() const {

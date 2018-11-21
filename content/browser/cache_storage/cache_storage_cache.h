@@ -41,9 +41,11 @@ class QuotaManagerProxy;
 namespace content {
 class CacheStorage;
 class CacheStorageBlobToDiskCache;
+class CacheStorageCacheEntryHandler;
 class CacheStorageCacheObserver;
 class CacheStorageScheduler;
 enum class CacheStorageOwner;
+struct PutContext;
 
 namespace proto {
 class CacheMetadata;
@@ -84,6 +86,9 @@ class CONTENT_EXPORT CacheStorageCache {
   using SizeCallback = base::OnceCallback<void(int64_t)>;
   using SizePaddingCallback = base::OnceCallback<void(int64_t, int64_t)>;
 
+  // The stream index for a cache Entry. This cannot be extended without changes
+  // in the Entry implementation. INDEX_SIDE_DATA is used for storing any
+  // additional data, such as response side blobs or request bodies.
   enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
 
   static std::unique_ptr<CacheStorageCache> CreateMemoryCache(
@@ -259,7 +264,6 @@ class CONTENT_EXPORT CacheStorageCache {
   friend class cache_storage_cache_unittest::TestCacheStorageCache;
   friend class cache_storage_cache_unittest::CacheStorageCacheTest;
 
-  struct PutContext;
   struct QueryCacheContext;
   struct QueryCacheResult;
 
@@ -477,9 +481,6 @@ class CONTENT_EXPORT CacheStorageCache {
       int64_t cache_padding);
   void DeleteBackendCompletedIO();
 
-  void PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
-                            blink::mojom::FetchAPIResponse* response);
-
   // Be sure to check |backend_state_| before use.
   std::unique_ptr<disk_cache::Backend> backend_;
 
@@ -505,16 +506,10 @@ class CONTENT_EXPORT CacheStorageCache {
   size_t max_query_size_bytes_;
   size_t handle_ref_count_ = 0;
   CacheStorageCacheObserver* cache_observer_;
+  std::unique_ptr<CacheStorageCacheEntryHandler> cache_entry_handler_;
 
   // Owns the elements of the list
   BlobToDiskCacheIDMap active_blob_to_disk_cache_writers_;
-
-  // This class ensures that the cache and the entry have a lifetime as long as
-  // the blob that is created to contain them. We keep track of these instances
-  // to allow us to invalidate them if the cache has to be deleted while there
-  // are still references to data in it.
-  class BlobDataHandle;
-  std::set<BlobDataHandle*> blob_data_handles_;
 
   // Whether or not to store data in disk or memory.
   bool memory_only_;
