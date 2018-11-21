@@ -335,7 +335,7 @@ class CommandBufferSetup {
   }
 
   bool InitDecoder() {
-    if (recreate_context_) {
+    if (!context_) {
       InitContext();
     }
 
