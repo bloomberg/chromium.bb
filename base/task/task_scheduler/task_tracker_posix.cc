@@ -17,10 +17,11 @@ TaskTrackerPosix::~TaskTrackerPosix() = default;
 
 void TaskTrackerPosix::RunOrSkipTask(Task task,
                                      Sequence* sequence,
+                                     const TaskTraits& traits,
                                      bool can_run_task) {
   DCHECK(io_thread_task_runner_);
   FileDescriptorWatcher file_descriptor_watcher(io_thread_task_runner_);
-  TaskTracker::RunOrSkipTask(std::move(task), sequence, can_run_task);
+  TaskTracker::RunOrSkipTask(std::move(task), sequence, traits, can_run_task);
 }
 
 }  // namespace internal

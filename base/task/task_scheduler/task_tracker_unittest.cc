@@ -894,7 +894,7 @@ TEST_F(TaskSchedulerTaskTrackerTest, CurrentSequenceToken) {
 
   const SequenceToken sequence_token = sequence->token();
   Task task(FROM_HERE, Bind(&ExpectSequenceToken, sequence_token), TimeDelta());
-  tracker_.WillPostTask(&task, sequence->traits().shutdown_behavior());
+  tracker_.WillPostTask(&task, sequence->shutdown_behavior());
 
   auto sequence_transaction = sequence->BeginTransaction();
   sequence_transaction->PushTask(std::move(task));

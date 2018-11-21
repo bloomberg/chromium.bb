@@ -78,6 +78,9 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
 
     bool IsEmpty() const;
 
+    // Returns the traits of all Tasks in the Sequence.
+    TaskTraits traits() const { return sequence_->traits_; }
+
     scoped_refptr<Sequence> sequence() { return sequence_; }
 
    private:
@@ -113,8 +116,11 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
     return &sequence_local_storage_;
   }
 
-  // Returns the TaskTraits for all Tasks in the Sequence.
-  TaskTraits traits() const { return traits_; }
+  // Returns the shutdown behavior of all Tasks in the Sequence. Can be
+  // accessed without a Transaction because it is never mutated.
+  TaskShutdownBehavior shutdown_behavior() const {
+    return traits_.shutdown_behavior();
+  }
 
  private:
   friend class RefCountedThreadSafe<Sequence>;

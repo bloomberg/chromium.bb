@@ -212,6 +212,12 @@ class BASE_EXPORT TaskTraits {
     return TaskTraits(left, right);
   }
 
+  // Sets the priority of tasks with these traits to |priority|.
+  void UpdatePriority(TaskPriority priority) {
+    priority_ = priority;
+    priority_set_explicitly_ = true;
+  }
+
   // Returns true if the priority was set explicitly.
   constexpr bool priority_set_explicitly() const {
     return priority_set_explicitly_;
