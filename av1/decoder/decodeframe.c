@@ -4681,26 +4681,25 @@ static void generate_next_ref_frame_map(AV1Decoder *const pbi) {
   RefCntBuffer *const frame_bufs = pool->frame_bufs;
 
   lock_buffer_pool(pool);
+  // cm->next_ref_frame_map holds references to frame buffers. After storing a
+  // frame buffer index in cm->next_ref_frame_map, we need to increase the
+  // frame buffer's ref_count.
   int ref_index = 0;
   for (int mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
     if (mask & 1) {
       cm->next_ref_frame_map[ref_index] = cm->new_fb_idx;
-      ++cm->cur_frame->ref_count;
     } else {
       cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
     }
-    // Current thread holds the reference frame.
-    if (cm->ref_frame_map[ref_index] >= 0)
-      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
+    if (cm->next_ref_frame_map[ref_index] >= 0)
+      ++frame_bufs[cm->next_ref_frame_map[ref_index]].ref_count;
     ++ref_index;
   }
 
   for (; ref_index < REF_FRAMES; ++ref_index) {
     cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
-
-    // Current thread holds the reference frame.
-    if (cm->ref_frame_map[ref_index] >= 0)
-      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
+    if (cm->next_ref_frame_map[ref_index] >= 0)
+      ++frame_bufs[cm->next_ref_frame_map[ref_index]].ref_count;
   }
   unlock_buffer_pool(pool);
   pbi->hold_ref_buf = 1;

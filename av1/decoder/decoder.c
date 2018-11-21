@@ -324,27 +324,13 @@ static void release_frame_buffers(AV1Decoder *pbi) {
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
 
   lock_buffer_pool(pool);
-  // Release all the reference buffers if worker thread is holding them.
+  // Release all the reference buffers in cm->next_ref_frame_map if the worker
+  // thread is holding them.
   if (pbi->hold_ref_buf) {
-    int ref_index = 0, mask;
-    for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
-      const int old_idx = cm->ref_frame_map[ref_index];
-      // Current thread releases the holding of reference frame.
-      decrease_ref_count(old_idx, frame_bufs, pool);
-
-      // Release the reference frame holding in the reference map for the
-      // decoding of the next frame.
-      if (mask & 1) {
-        const int new_idx = cm->next_ref_frame_map[ref_index];
-        decrease_ref_count(new_idx, frame_bufs, pool);
-      }
-      ++ref_index;
-    }
-
-    // Current thread releases the holding of reference frame.
-    for (; ref_index < REF_FRAMES; ++ref_index) {
-      const int old_idx = cm->ref_frame_map[ref_index];
-      decrease_ref_count(old_idx, frame_bufs, pool);
+    int ref_index;
+    for (ref_index = 0; ref_index < REF_FRAMES; ++ref_index) {
+      const int new_idx = cm->next_ref_frame_map[ref_index];
+      decrease_ref_count(new_idx, frame_bufs, pool);
     }
     pbi->hold_ref_buf = 0;
   }
@@ -376,19 +362,16 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
       assert(IMPLIES(!pbi->hold_ref_buf,
                      cm->show_existing_frame && !cm->reset_decoder_state));
 
+      // The following two for loops need to release the reference stored in
+      // cm->ref_frame_map[ref_index] before transferring the reference stored
+      // in cm->next_ref_frame_map[ref_index] to cm->ref_frame_map[ref_index].
       for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
         const int old_idx = cm->ref_frame_map[ref_index];
-        // Current thread releases the holding of reference frame.
         decrease_ref_count(old_idx, frame_bufs, pool);
-
-        // Release the reference frame holding in the reference map for the
-        // decoding of the next frame.
-        if (mask & 1) decrease_ref_count(old_idx, frame_bufs, pool);
         cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
         ++ref_index;
       }
 
-      // Current thread releases the holding of reference frame.
       const int check_on_show_existing_frame =
           !cm->show_existing_frame || cm->reset_decoder_state;
       for (; ref_index < REF_FRAMES && check_on_show_existing_frame;
