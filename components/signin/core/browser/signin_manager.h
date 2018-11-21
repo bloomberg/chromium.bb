@@ -53,12 +53,7 @@ class SigninClient;
 class SigninErrorController;
 
 namespace identity {
-
 class IdentityManager;
-
-// Returns true if the username is allowed based on the pattern string.
-bool IsUsernameAllowedByPattern(base::StringPiece username,
-                                base::StringPiece pattern);
 }  // namespace identity
 
 class SigninManager : public SigninManagerBase,
