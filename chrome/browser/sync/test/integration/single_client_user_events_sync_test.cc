@@ -41,7 +41,7 @@ std::string GetAccountId() {
   // impossible to discover otherwise.
   return "user@gmail.com";
 #else
-  return "gaia_id_for_user@gmail.com";
+  return "gaia_id_for_user_gmail.com";
 #endif
 }
 

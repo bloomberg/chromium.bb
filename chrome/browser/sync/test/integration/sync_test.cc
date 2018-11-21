@@ -336,9 +336,11 @@ bool SyncTest::CreateGaiaAccount(const std::string& username,
 void SyncTest::BeforeSetupClient(int index) {}
 
 bool SyncTest::CreateProfile(int index) {
+  base::FilePath profile_path;
+
   base::ScopedAllowBlockingForTesting allow_blocking;
-  tmp_profile_paths_[index] = new base::ScopedTempDir();
   if (UsingExternalServers() && num_clients_ > 1) {
+    scoped_temp_dirs_.push_back(std::make_unique<base::ScopedTempDir>());
     // For multi profile UI signin, profile paths should be outside user data
     // dir to allow signing-in multiple profiles to same account. Otherwise, we
     // get an error that the profile has already signed in on this device.
@@ -346,23 +348,26 @@ bool SyncTest::CreateProfile(int index) {
     // user data dir. We violate that assumption here, which can lead to weird
     // issues, see https://crbug.com/801569 and the workaround in
     // TearDownOnMainThread.
-    if (!tmp_profile_paths_[index]->CreateUniqueTempDir()) {
+    if (!scoped_temp_dirs_.back()->CreateUniqueTempDir()) {
       ADD_FAILURE();
       return false;
     }
+
+    profile_path = scoped_temp_dirs_.back()->GetPath();
   } else {
-    // Create new profiles in user data dir so that other profiles can know
-    // about it. This is needed in tests such as supervised user cases which
-    // assume browser->profile() as the custodian profile.
     base::FilePath user_data_dir;
     base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    if (!tmp_profile_paths_[index]->CreateUniqueTempDirUnderPath(
-            user_data_dir)) {
-      ADD_FAILURE();
-      return false;
-    }
+
+    // Create new profiles in user data dir so that other profiles can know
+    // about it. This is needed in tests such as supervised user cases which
+    // assume browser->profile() as the custodian profile. Instead of creating
+    // a new directory, we use a deterministic name such that PRE_ tests (i.e.
+    // test that span browser restarts) can reuse the same directory and carry
+    // over state.
+    profile_path = user_data_dir.AppendASCII(
+        base::StringPrintf("SyncIntegrationTestClient%d", index));
   }
-  base::FilePath profile_path = tmp_profile_paths_[index]->GetPath();
+
   if (UsingExternalServers()) {
     // If running against an EXTERNAL_LIVE_SERVER, we signin profiles using real
     // GAIA server. This requires creating profiles with no test hooks.
@@ -539,7 +544,6 @@ bool SyncTest::SetupClients() {
   // Create the required number of sync profiles, browsers and clients.
   profiles_.resize(num_clients_);
   profile_delegates_.resize(num_clients_ + 1);  // + 1 for the verifier.
-  tmp_profile_paths_.resize(num_clients_);
   clients_.resize(num_clients_);
   invalidation_forwarders_.resize(num_clients_);
   sync_refreshers_.resize(num_clients_);
@@ -902,10 +906,6 @@ void SyncTest::TearDownOnMainThread() {
   if (previous_profile_) {
     profiles::SetLastUsedProfile(
         previous_profile_->GetPath().BaseName().MaybeAsASCII());
-  }
-
-  for (size_t i = 0; i < clients_.size(); ++i) {
-    clients_[i]->service()->RequestStop(ProfileSyncService::CLEAR_DATA);
   }
 
   // Closing all browsers created by this test. The calls here block until

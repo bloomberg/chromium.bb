@@ -277,6 +277,24 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableDisable) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, PRE_EnableAndRestart) {
+  SetupTest(/*all_types_enabled=*/true);
+}
+
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableAndRestart) {
+  ASSERT_TRUE(SetupClients());
+
+  EXPECT_TRUE(GetClient(0)->AwaitEngineInitialization());
+
+  // Proxy types don't really run.
+  const ModelTypeSet non_proxy_types =
+      Difference(selectable_types_, ProxyTypes());
+
+  for (ModelType type : non_proxy_types) {
+    EXPECT_TRUE(ModelTypeExists(type)) << " for " << ModelTypeToString(type);
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, FastEnableDisableEnable) {
   SetupTest(/*all_types_enabled=*/false);
 
