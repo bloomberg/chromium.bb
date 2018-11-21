@@ -49,6 +49,8 @@ import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 
+import java.util.List;
+
 /**
  * The settings screen with information and settings related to the user's accounts.
  *
@@ -358,8 +360,9 @@ public class AccountManagementFragment extends PreferenceFragment
 
         accountsCategory.removeAll();
 
-        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
-        for (final Account account : accounts) {
+        List<Account> accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+        for (int i = 0; i < accounts.size(); i++) {
+            Account account = accounts.get(i);
             Preference pref = new Preference(getActivity());
             pref.setLayoutResource(R.layout.account_management_account_row);
             pref.setTitle(account.name);

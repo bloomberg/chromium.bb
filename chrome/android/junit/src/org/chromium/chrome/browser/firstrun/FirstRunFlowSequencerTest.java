@@ -26,6 +26,9 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.signin.ChildAccountStatus;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Tests FirstRunFlowSequencer which contains the core logic of what should be shown during the
  * first run.
@@ -49,7 +52,7 @@ public class FirstRunFlowSequencerTest {
         public boolean isFirstRunFlowComplete;
         public boolean isSignedIn;
         public boolean isSyncAllowed;
-        public Account[] googleAccounts;
+        public List<Account> googleAccounts;
         public boolean hasAnyUserSeenToS;
         public boolean shouldSkipFirstUseHints;
         public boolean isFirstRunEulaAccepted;
@@ -83,7 +86,7 @@ public class FirstRunFlowSequencerTest {
         }
 
         @Override
-        public Account[] getGoogleAccounts() {
+        public List<Account> getGoogleAccounts() {
             return googleAccounts;
         }
 
@@ -140,12 +143,11 @@ public class FirstRunFlowSequencerTest {
     @Test
     @Feature({"FirstRun"})
     public void testFirstRunComplete() {
-        Account[] accounts = new Account[1];
-        accounts[0] = new Account(DEFAULT_ACCOUNT, GOOGLE_ACCOUNT_TYPE);
         mSequencer.isFirstRunFlowComplete = true;
         mSequencer.isSignedIn = false;
         mSequencer.isSyncAllowed = true;
-        mSequencer.googleAccounts = accounts;
+        mSequencer.googleAccounts =
+                Collections.singletonList(new Account(DEFAULT_ACCOUNT, GOOGLE_ACCOUNT_TYPE));
         mSequencer.hasAnyUserSeenToS = true;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.isFirstRunEulaAccepted = true;
@@ -164,7 +166,7 @@ public class FirstRunFlowSequencerTest {
         mSequencer.isFirstRunFlowComplete = false;
         mSequencer.isSignedIn = false;
         mSequencer.isSyncAllowed = true;
-        mSequencer.googleAccounts = new Account[0];
+        mSequencer.googleAccounts = Collections.emptyList();
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = false;
@@ -189,12 +191,11 @@ public class FirstRunFlowSequencerTest {
     @Test
     @Feature({"FirstRun"})
     public void testStandardFlowOneChildAccount() {
-        Account[] accounts = new Account[1];
-        accounts[0] = new Account(DEFAULT_ACCOUNT, GOOGLE_ACCOUNT_TYPE);
         mSequencer.isFirstRunFlowComplete = false;
         mSequencer.isSignedIn = false;
         mSequencer.isSyncAllowed = true;
-        mSequencer.googleAccounts = accounts;
+        mSequencer.googleAccounts =
+                Collections.singletonList(new Account(DEFAULT_ACCOUNT, GOOGLE_ACCOUNT_TYPE));
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = false;
@@ -224,7 +225,7 @@ public class FirstRunFlowSequencerTest {
         mSequencer.isFirstRunFlowComplete = false;
         mSequencer.isSignedIn = false;
         mSequencer.isSyncAllowed = true;
-        mSequencer.googleAccounts = new Account[0];
+        mSequencer.googleAccounts = Collections.emptyList();
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = true;
@@ -253,7 +254,7 @@ public class FirstRunFlowSequencerTest {
         mSequencer.isFirstRunFlowComplete = false;
         mSequencer.isSignedIn = false;
         mSequencer.isSyncAllowed = true;
-        mSequencer.googleAccounts = new Account[0];
+        mSequencer.googleAccounts = Collections.emptyList();
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = true;

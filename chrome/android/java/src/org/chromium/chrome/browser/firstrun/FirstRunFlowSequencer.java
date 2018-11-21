@@ -60,7 +60,7 @@ public abstract class FirstRunFlowSequencer  {
     // The following are initialized via initializeSharedState().
     private boolean mIsAndroidEduDevice;
     private @ChildAccountStatus.Status int mChildAccountStatus;
-    private Account[] mGoogleAccounts;
+    private List<Account> mGoogleAccounts;
     private boolean mForceEduSignIn;
 
     /**
@@ -113,7 +113,7 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     @VisibleForTesting
-    protected Account[] getGoogleAccounts() {
+    protected List<Account> getGoogleAccounts() {
         return AccountManagerFacade.get().tryGetGoogleAccounts();
     }
 
@@ -163,7 +163,7 @@ public abstract class FirstRunFlowSequencer  {
         mGoogleAccounts = getGoogleAccounts();
         // EDU devices should always have exactly 1 google account, which will be automatically
         // signed-in. All FRE screens are skipped in this case.
-        mForceEduSignIn = mIsAndroidEduDevice && mGoogleAccounts.length == 1 && !isSignedIn();
+        mForceEduSignIn = mIsAndroidEduDevice && mGoogleAccounts.size() == 1 && !isSignedIn();
     }
 
     void processFreEnvironmentPreNative() {
@@ -195,7 +195,7 @@ public abstract class FirstRunFlowSequencer  {
 
     /**
      * Called onNativeInitialized() a given flow as completed.
-     * @param data Resulting FRE properties bundle.
+     * @param freProperties Resulting FRE properties bundle.
      */
     public void onNativeInitialized(Bundle freProperties) {
         // We show the sign-in page if sync is allowed, and not signed in, and this is not
@@ -203,13 +203,13 @@ public abstract class FirstRunFlowSequencer  {
         // - no "skip the first use hints" is set, or
         // - "skip the first use hints" is set, but there is at least one account.
         boolean offerSignInOk = isSyncAllowed() && !isSignedIn() && !mForceEduSignIn
-                && (!shouldSkipFirstUseHints() || mGoogleAccounts.length > 0);
+                && (!shouldSkipFirstUseHints() || !mGoogleAccounts.isEmpty());
         freProperties.putBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE, offerSignInOk);
         if (mForceEduSignIn || ChildAccountStatus.isChild(mChildAccountStatus)) {
             // If the device is an Android EDU device or has a child account, there should be
             // exactly account on the device. Force sign-in in to that account.
             freProperties.putString(
-                    AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO, mGoogleAccounts[0].name);
+                    AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO, mGoogleAccounts.get(0).name);
         }
 
         freProperties.putBoolean(

@@ -136,10 +136,11 @@ public class AccountTrackerService {
                 @Override
                 public String[][] doInBackground() {
                     Log.d(TAG, "Getting id/email mapping");
-                    String[][] accountIdNameMap = new String[2][accounts.length];
-                    for (int i = 0; i < accounts.length; ++i) {
-                        accountIdNameMap[0][i] = accountIdProvider.getAccountId(accounts[i].name);
-                        accountIdNameMap[1][i] = accounts[i].name;
+                    String[][] accountIdNameMap = new String[2][accounts.size()];
+                    for (int i = 0; i < accounts.size(); ++i) {
+                        accountIdNameMap[0][i] =
+                                accountIdProvider.getAccountId(accounts.get(i).name);
+                        accountIdNameMap[1][i] = accounts.get(i).name;
                     }
                     return accountIdNameMap;
                 }
@@ -222,9 +223,9 @@ public class AccountTrackerService {
                 return;
             }
 
-            String[] accountNames = new String[accounts.length];
-            for (int i = 0; i < accounts.length; ++i) {
-                accountNames[i] = accounts[i].name;
+            String[] accountNames = new String[accounts.size()];
+            for (int i = 0; i < accounts.size(); ++i) {
+                accountNames[i] = accounts.get(i).name;
             }
             if (nativeAreAccountsSeeded(accountNames)) {
                 mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_DONE;

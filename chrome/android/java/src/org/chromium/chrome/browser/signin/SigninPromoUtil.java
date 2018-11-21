@@ -21,6 +21,7 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -119,9 +120,9 @@ public class SigninPromoUtil {
             ProfileDataCache profileDataCache, PersonalizedSigninPromoView view,
             SigninPromoController.OnDismissListener listener) {
         DisplayableProfileData profileData = null;
-        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
-        if (accounts.length > 0) {
-            String defaultAccountName = accounts[0].name;
+        List<Account> accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+        if (accounts.size() > 0) {
+            String defaultAccountName = accounts.get(0).name;
             profileDataCache.update(Collections.singletonList(defaultAccountName));
             profileData = profileDataCache.getProfileDataOrDefault(defaultAccountName);
         }
