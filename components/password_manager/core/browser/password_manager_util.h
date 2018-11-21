@@ -105,7 +105,7 @@ void RemoveUselessCredentials(
 // what is before the web origin (with the protocol excluded as well). For
 // example if the signon_realm is "https://www.google.com/", after
 // excluding protocol it becomes "www.google.com/".
-// This assumes that the |form|'s origin is a substring of the signon_realm.
+// This assumes that the |form|'s host is a substring of the signon_realm.
 base::StringPiece GetSignonRealmWithProtocolExcluded(
     const autofill::PasswordForm& form);
 

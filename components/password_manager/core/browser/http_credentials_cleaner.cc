@@ -39,12 +39,9 @@ void HttpCredentialCleaner::StartCleaning(Observer* observer) {
 
 void HttpCredentialCleaner::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  // Non HTTP or HTTPS credentials are ignored.
-  base::EraseIf(results, [](const auto& form) {
-    return !form->origin.SchemeIsHTTPOrHTTPS();
-  });
-
-  for (auto& form : results) {
+  // Non HTTP or HTTPS credentials are ignored, in particular Android or
+  // federated credentials.
+  for (auto& form : RemoveNonHTTPOrHTTPSForms(std::move(results))) {
     FormKey form_key(
         {std::string(
              password_manager_util::GetSignonRealmWithProtocolExcluded(*form)),

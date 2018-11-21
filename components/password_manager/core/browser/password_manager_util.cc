@@ -227,7 +227,7 @@ base::StringPiece GetSignonRealmWithProtocolExcluded(const PasswordForm& form) {
 
   // Find the web origin (with protocol excluded) in the signon_realm.
   const size_t after_protocol =
-      signon_realm_protocol_excluded.find(form.origin.GetOrigin().GetContent());
+      signon_realm_protocol_excluded.find(form.origin.host_piece());
   DCHECK_NE(after_protocol, base::StringPiece::npos);
 
   // Keep the string starting with position |after_protocol|.

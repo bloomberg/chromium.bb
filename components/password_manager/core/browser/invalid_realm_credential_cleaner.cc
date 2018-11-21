@@ -184,15 +184,10 @@ void InvalidRealmCredentialCleaner::OnGetPasswordStoreResults(
     FormVector results) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Non HTTP or HTTPS credentials are ignored.
-  base::EraseIf(results, [](const auto& form) {
-    return !form->origin.SchemeIsHTTPOrHTTPS();
-  });
-
   // Separate HTTP and HTTPS credentials.
   FormVector http_forms, https_forms;
   std::tie(http_forms, https_forms) = SplitFormsBy(
-      std::move(results),
+      RemoveNonHTTPOrHTTPSForms(std::move(results)),
       [](const auto& form) { return form->origin.SchemeIs(url::kHttpScheme); });
 
   // Map from (date_created, origin (excluding protocol), username_value) of
