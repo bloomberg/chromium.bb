@@ -1230,7 +1230,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/photo_picker/DecoderService.java",
   "java/src/org/chromium/chrome/browser/photo_picker/DecoderServiceHost.java",
   "java/src/org/chromium/chrome/browser/photo_picker/FileEnumWorkerTask.java",
-  "java/src/org/chromium/chrome/browser/photo_picker/MimeTypeFileFilter.java",
   "java/src/org/chromium/chrome/browser/photo_picker/PhotoPickerDialog.java",
   "java/src/org/chromium/chrome/browser/photo_picker/PhotoPickerToolbar.java",
   "java/src/org/chromium/chrome/browser/photo_picker/PickerAdapter.java",
