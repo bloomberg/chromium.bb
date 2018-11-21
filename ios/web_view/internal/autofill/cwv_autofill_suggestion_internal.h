@@ -23,9 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 // The internal autofill form suggestion.
 @property(nonatomic, readonly) FormSuggestion* formSuggestion;
 
-// YES if this is a password autofill suggestion.
-@property(nonatomic, readonly) BOOL isPasswordSuggestion;
-
 @end
 
 NS_ASSUME_NONNULL_END

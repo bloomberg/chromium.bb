@@ -41,6 +41,7 @@ TEST_F(CWVAutofillSuggestionTest, Initialization) {
   EXPECT_NSEQ(formSuggestion.displayDescription, suggestion.displayDescription);
   EXPECT_NSEQ(formSuggestion.value, suggestion.value);
   EXPECT_EQ(formSuggestion, suggestion.formSuggestion);
+  EXPECT_FALSE(suggestion.isPasswordSuggestion);
 }
 
 }  // namespace ios_web_view
