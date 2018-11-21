@@ -199,21 +199,32 @@ unsigned ParkableStringImpl::CharactersSizeInBytes() const {
   return length_ * (is_8bit() ? sizeof(LChar) : sizeof(UChar));
 }
 
-bool ParkableStringImpl::Park() {
+bool ParkableStringImpl::Park(ParkingMode mode) {
   AssertOnValidThread();
   MutexLocker locker(mutex_);
   DCHECK(may_be_parked_);
   if (state_ == State::kUnparked && CanParkNow()) {
-    // |string_|'s data should not be touched except in the compression task.
-    AsanPoisonString(string_);
-    // |params| keeps |this| alive until |OnParkingCompleteOnMainThread()|.
-    auto params = std::make_unique<CompressionTaskParams>(
-        this, string_.Bytes(), string_.CharactersSizeInBytes(),
-        Thread::Current()->GetTaskRunner());
-    background_scheduler::PostOnBackgroundThread(
-        FROM_HERE, CrossThreadBind(&ParkableStringImpl::CompressInBackground,
-                                   WTF::Passed(std::move(params))));
-    state_ = State::kParkingInProgress;
+    // Parking can proceed synchronously.
+    if (has_compressed_data()) {
+      RecordParkingAction(ParkingAction::kParkedInBackground);
+      state_ = State::kParked;
+      ParkableStringManager::Instance().OnParked(this, string_.Impl());
+
+      // Must unpoison the memory before releasing it.
+      AsanUnpoisonString(string_);
+      string_ = String();
+    } else if (mode == ParkingMode::kAlways) {
+      // |string_|'s data should not be touched except in the compression task.
+      AsanPoisonString(string_);
+      // |params| keeps |this| alive until |OnParkingCompleteOnMainThread()|.
+      auto params = std::make_unique<CompressionTaskParams>(
+          this, string_.Bytes(), string_.CharactersSizeInBytes(),
+          Thread::Current()->GetTaskRunner());
+      background_scheduler::PostOnBackgroundThread(
+          FROM_HERE, CrossThreadBind(&ParkableStringImpl::CompressInBackground,
+                                     WTF::Passed(std::move(params))));
+      state_ = State::kParkingInProgress;
+    }
   }
 
   return state_ == State::kParked || state_ == State::kParkingInProgress;
@@ -271,7 +282,6 @@ void ParkableStringImpl::Unpark() {
   // the string we need, nothing else to do than to abort.
   CHECK(compression::GzipUncompress(compressed_string_piece,
                                     uncompressed_string_piece));
-  compressed_ = nullptr;
   string_ = uncompressed;
   state_ = State::kUnparked;
   ParkableStringManager::Instance().OnUnparked(this, string_.Impl());
@@ -303,9 +313,9 @@ void ParkableStringImpl::OnParkingCompleteOnMainThread(
   if (CanParkNow() && compressed) {
     RecordParkingAction(ParkingAction::kParkedInBackground);
     state_ = State::kParked;
+    compressed_ = std::move(compressed);
     ParkableStringManager::Instance().OnParked(this, string_.Impl());
 
-    compressed_ = std::move(compressed);
     // Must unpoison the memory before releasing it.
     AsanUnpoisonString(string_);
     string_ = String();
