@@ -2993,8 +2993,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {
   DCHECK(webState);
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
   PagePlaceholderTabHelper* pagePlaceholderTabHelper =
       PagePlaceholderTabHelper::FromWebState(webState);
   return !pagePlaceholderTabHelper->displaying_placeholder() &&
@@ -3003,9 +3001,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (UIEdgeInsets)snapshotEdgeInsetsForWebState:(web::WebState*)webState {
   DCHECK(webState);
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
-
   // The NTP's snapshot should be inset |headerHeight| from the top to remove
   // the fake NTP toolbar from the snapshot.
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
