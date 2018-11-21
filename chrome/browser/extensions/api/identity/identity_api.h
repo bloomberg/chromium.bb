@@ -35,6 +35,7 @@
 #include "extensions/browser/event_router.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace content {
 class BrowserContext;
@@ -82,7 +83,7 @@ class IdentityTokenCacheValue {
 
 class IdentityAPI : public BrowserContextKeyedAPI,
                     public AccountTrackerService::Observer,
-                    public OAuth2TokenService::Observer {
+                    public identity::IdentityManager::Observer {
  public:
   typedef std::map<ExtensionTokenKey, IdentityTokenCacheValue> CachedTokens;
 
@@ -131,8 +132,9 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   static const char* service_name() { return "IdentityAPI"; }
   static const bool kServiceIsNULLWhileTesting = true;
 
-  // OAuth2TokenService::Observer:
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  // identity::IdentityManager::Observer:
+  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
+                                       bool is_valid) override;
 
   // AccountTrackerService::Observer:
   // NOTE: This class listens for signout events via this callback (which itself
