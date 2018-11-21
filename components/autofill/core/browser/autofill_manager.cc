@@ -1281,6 +1281,9 @@ void AutofillManager::FillOrPreviewDataModelForm(
       !is_refill && !is_credit_card;
 
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
+    // On the renderer, the section is used regardless of the autofill status.
+    result.fields[i].section = form_structure->field(i)->section;
+
     if (form_structure->field(i)->section != autofill_field->section)
       continue;
 
@@ -1352,9 +1355,6 @@ void AutofillManager::FillOrPreviewDataModelForm(
     // will be sent to the renderer.
     FillFieldWithValue(cached_field, data_model, &result.fields[i],
                        should_notify, cvc);
-    // On the renderer, only the section of newly autofilled fields are updated.
-    if (result.fields[i].is_autofilled)
-      result.fields[i].section = form_structure->field(i)->section;
 
     if (!cached_field->IsVisible() && result.fields[i].is_autofilled) {
       AutofillMetrics::LogHiddenOrPresentationalSelectFieldsFilled();

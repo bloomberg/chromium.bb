@@ -170,6 +170,12 @@ void AutofillUiTest::SendKeyToPopupAndWait(
   widget->RemoveKeyPressEventCallback(key_press_event_sink_);
 }
 
+void AutofillUiTest::DoNothingAndWait(unsigned seconds) {
+  test_delegate()->Reset();
+  ASSERT_FALSE(test_delegate()->Wait({ObservedUiEvents::kNoEvent},
+                                     base::TimeDelta::FromSeconds(seconds)));
+}
+
 void AutofillUiTest::SendKeyToDataListPopup(ui::DomKey key) {
   ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
   ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);

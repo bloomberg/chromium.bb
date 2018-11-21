@@ -1106,32 +1106,44 @@ void AutofillAgent::OnFormNoLongerSubmittable() {
 }
 
 bool AutofillAgent::FindTheUniqueNewVersionOfOldElement(
-    WebVector<WebFormControlElement>& elements,
-    bool& element_found,
-    const WebString& original_element_section,
+    const WebVector<WebFormControlElement>& elements,
+    bool& potential_match_encountered,
+    WebFormControlElement& matching_element,
     const WebFormControlElement& original_element) {
+  if (original_element.IsNull())
+    return false;
+
+  const auto original_element_section = original_element.AutofillSection();
   for (const WebFormControlElement& current_element : elements) {
     if (current_element.IsFocusable() &&
         original_element.NameForAutofill() ==
             current_element.NameForAutofill()) {
-      if (!element_found) {
-        element_ = current_element;
-        element_found = true;
+      // If this is the first matching element, or is the first with the right
+      // section, this is the best match so far.
+      // In other words: bad, then good. => pick good.
+      if (!potential_match_encountered ||
+          (current_element.AutofillSection() == original_element_section &&
+           (matching_element.IsNull() ||
+            matching_element.AutofillSection() != original_element_section))) {
+        matching_element = current_element;
+        potential_match_encountered = true;
+      } else if (current_element.AutofillSection() !=
+                     original_element_section &&
+                 matching_element.AutofillSection() !=
+                     original_element_section) {
+        // The so far matching fields are equally bad. Continue the search if
+        // none of them have the correct section.
+        // In other words: bad, then bad => pick none.
+        matching_element.Reset();
       } else if (current_element.AutofillSection() ==
-                     element_.AutofillSection() ||
-                 (current_element.AutofillSection() !=
-                      original_element_section &&
-                  element_.AutofillSection() != original_element_section)) {
-        // If there are two elements that share the same name with the element_,
-        // and the section can't tell them apart, we can't decide between the
-        // two.
-        element_ = original_element;
+                     original_element_section &&
+                 matching_element.AutofillSection() ==
+                     original_element_section) {
+        // If two or more fields have the matching name and section, we can't
+        // decide. Two equally good fields => fail.
+        matching_element.Reset();
         return false;
-      } else if (current_element.AutofillSection() ==
-                 original_element_section) {
-        // If the current element has the right section, update the element_.
-        element_ = current_element;
-      }
+      }  // For the good, then bad case => keep good. Continue the search.
     }
   }
   return true;
@@ -1147,20 +1159,26 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
   WebVector<WebFormElement> forms;
   WebVector<WebFormControlElement> elements;
 
+  const auto original_element = element_;
+  WebFormControlElement matching_element;
+  bool potential_match_encountered = false;
+
   if (original_form.name.empty()) {
     // If the form has no name, check all the forms.
-    bool element_found = false;
     element_.GetDocument().Forms(forms);
     for (const WebFormElement& form : forms) {
       form.GetFormControlElements(elements);
-      // If finding a unique element is impossible, return.
+      // If finding a unique element is impossible, don't look further.
       if (!FindTheUniqueNewVersionOfOldElement(
-              elements, element_found, element_.AutofillSection(), element_))
+              elements, potential_match_encountered, matching_element,
+              original_element))
         return;
     }
     // If the element is not found, we should still check for unowned elements.
-    if (element_found)
+    if (!matching_element.IsNull()) {
+      element_ = matching_element;
       return;
+    }
   }
 
   if (!element_.Form().IsNull()) {
@@ -1173,14 +1191,17 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
   }
 
   WebFormElement form_element;
+  bool form_is_found = false;
   if (!original_form.name.empty()) {
     // Try to find the new version of the form.
     element_.GetDocument().Forms(forms);
     for (const WebFormElement& form : forms) {
       if (original_form.name == form.GetName().Utf16() ||
           original_form.name == form.GetAttribute("id").Utf16()) {
-        form_element = form;
-        break;
+        if (!form_is_found)
+          form_element = form;
+        else  // multiple forms with the matching name.
+          return;
       }
     }
   }
@@ -1190,20 +1211,23 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
     std::vector<WebElement> fieldsets;
     elements = form_util::GetUnownedAutofillableFormFieldElements(
         element_.GetDocument().All(), &fieldsets);
-    bool element_found = false;
-    FindTheUniqueNewVersionOfOldElement(elements, element_found,
-                                        element_.AutofillSection(), element_);
+    // If a unique match was found.
+    if (FindTheUniqueNewVersionOfOldElement(
+            elements, potential_match_encountered, matching_element,
+            original_element) &&
+        !matching_element.IsNull()) {
+      element_ = matching_element;
+    }
     return;
   }
   // This is the case for owned fields that belong to the right named form.
   // Get all the elements of the new version of the form.
   form_element.GetFormControlElements(elements);
-  // Try to find the new version of the last interacted element.
-  for (const WebFormControlElement& element : elements) {
-    if (element_.NameForAutofill() == element.NameForAutofill()) {
-      element_ = element;
-      return;
-    }
+  // If a unique match was found.
+  if (FindTheUniqueNewVersionOfOldElement(elements, potential_match_encountered,
+                                          matching_element, original_element) &&
+      !matching_element.IsNull()) {
+    element_ = matching_element;
   }
 }
 
