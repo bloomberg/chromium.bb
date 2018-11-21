@@ -80,7 +80,9 @@ float GetPointerEventPressure(float force, int buttons) {
     return 0.5;
   return force;
 }
+
 void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
+                                  const FloatPoint& last_global_position,
                                   LocalDOMWindow* dom_window,
                                   PointerEventInit* pointer_event_init) {
   // This function should not update attributes like pointerId, isPrimary,
@@ -92,6 +94,15 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
 
   MouseEvent::SetCoordinatesFromWebPointerProperties(
       web_pointer_event_in_root_frame, dom_window, pointer_event_init);
+  if (RuntimeEnabledFeatures::MovementXYInBlinkEnabled() &&
+      web_pointer_event.GetType() == WebInputEvent::kPointerMove) {
+    // TODO(eirage): pointerrawmove event's movements are not calculated.
+    pointer_event_init->setMovementX(web_pointer_event.PositionInScreen().x -
+                                     last_global_position.X());
+    pointer_event_init->setMovementY(web_pointer_event.PositionInScreen().y -
+                                     last_global_position.Y());
+  }
+
   // If width/height is unknown we let PointerEventInit set it to 1.
   // See https://w3c.github.io/pointerevents/#dom-pointerevent-width
   if (web_pointer_event_in_root_frame.HasWidth() &&
@@ -115,48 +126,60 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
   pointer_event_init->setTwist(web_pointer_event.twist);
 }
 
-HeapVector<Member<PointerEvent>> CreateEventSequence(
+}  // namespace
+
+HeapVector<Member<PointerEvent>> PointerEventFactory::CreateEventSequence(
     const WebPointerEvent& web_pointer_event,
     const PointerEventInit* pointer_event_init,
     const Vector<WebPointerEvent>& event_list,
     LocalDOMWindow* view) {
   AtomicString type = PointerEventNameForEventType(web_pointer_event.GetType());
   HeapVector<Member<PointerEvent>> result;
-  for (const auto& event : event_list) {
-    DCHECK_EQ(web_pointer_event.id, event.id);
-    DCHECK_EQ(web_pointer_event.GetType(), event.GetType());
-    DCHECK_EQ(web_pointer_event.pointer_type, event.pointer_type);
 
-    PointerEventInit* new_event_init = PointerEventInit::Create();
-    if (pointer_event_init->hasButton())
-      new_event_init->setButton(pointer_event_init->button());
-    if (pointer_event_init->hasButtons())
-      new_event_init->setButtons(pointer_event_init->buttons());
-    if (pointer_event_init->hasIsPrimary())
-      new_event_init->setIsPrimary(pointer_event_init->isPrimary());
-    if (pointer_event_init->hasPointerId())
-      new_event_init->setPointerId(pointer_event_init->pointerId());
-    if (pointer_event_init->hasPointerType())
-      new_event_init->setPointerType(pointer_event_init->pointerType());
-    if (pointer_event_init->hasView())
-      new_event_init->setView(pointer_event_init->view());
+  if (!event_list.IsEmpty()) {
+    // Make a copy of LastPointerPosition so we can modify it after creating
+    // each coalesced event.
+    FloatPoint last_global_position = GetLastPointerPosition(
+        pointer_event_init->pointerId(), event_list.front());
 
-    new_event_init->setCancelable(false);
-    new_event_init->setBubbles(false);
-    UpdateCommonPointerEventInit(event, view, new_event_init);
-    PointerEvent* pointer_event =
-        PointerEvent::Create(type, new_event_init, event.TimeStamp());
-    // Set the trusted flag for these events at the creation time as oppose to
-    // the normal events which is done at the dispatch time. This is because we
-    // don't want to go over all these events at every dispatch and add the
-    // implementation complexity while it has no sensible usecase at this time.
-    pointer_event->SetTrusted(true);
-    result.push_back(pointer_event);
+    for (const auto& event : event_list) {
+      DCHECK_EQ(web_pointer_event.id, event.id);
+      DCHECK_EQ(web_pointer_event.GetType(), event.GetType());
+      DCHECK_EQ(web_pointer_event.pointer_type, event.pointer_type);
+
+      PointerEventInit* new_event_init = PointerEventInit::Create();
+      if (pointer_event_init->hasButton())
+        new_event_init->setButton(pointer_event_init->button());
+      if (pointer_event_init->hasButtons())
+        new_event_init->setButtons(pointer_event_init->buttons());
+      if (pointer_event_init->hasIsPrimary())
+        new_event_init->setIsPrimary(pointer_event_init->isPrimary());
+      if (pointer_event_init->hasPointerId())
+        new_event_init->setPointerId(pointer_event_init->pointerId());
+      if (pointer_event_init->hasPointerType())
+        new_event_init->setPointerType(pointer_event_init->pointerType());
+      if (pointer_event_init->hasView())
+        new_event_init->setView(pointer_event_init->view());
+
+      new_event_init->setCancelable(false);
+      new_event_init->setBubbles(false);
+      UpdateCommonPointerEventInit(event, last_global_position, view,
+                                   new_event_init);
+      last_global_position = event.PositionInScreen();
+
+      PointerEvent* pointer_event =
+          PointerEvent::Create(type, new_event_init, event.TimeStamp());
+      // Set the trusted flag for these events at the creation time as oppose to
+      // the normal events which is done at the dispatch time. This is because
+      // we don't want to go over all these events at every dispatch and add the
+      // implementation complexity while it has no sensible usecase at this
+      // time.
+      pointer_event->SetTrusted(true);
+      result.push_back(pointer_event);
+    }
   }
   return result;
 }
-
-}  // namespace
 
 const int PointerEventFactory::kInvalidId = 0;
 
@@ -263,7 +286,11 @@ PointerEvent* PointerEventFactory::Create(
   }
 
   pointer_event_init->setView(view);
-  UpdateCommonPointerEventInit(web_pointer_event, view, pointer_event_init);
+  UpdateCommonPointerEventInit(
+      web_pointer_event,
+      GetLastPointerPosition(pointer_event_init->pointerId(),
+                             web_pointer_event),
+      view, pointer_event_init);
 
   UIEventWithKeyState::SetFromWebInputEventModifiers(
       pointer_event_init,
@@ -285,8 +312,28 @@ PointerEvent* PointerEventFactory::Create(
   pointer_event_init->setCoalescedEvents(coalesced_pointer_events);
   pointer_event_init->setPredictedEvents(predicted_pointer_events);
 
+  SetLastPosition(pointer_event_init->pointerId(), web_pointer_event);
   return PointerEvent::Create(type, pointer_event_init,
                               web_pointer_event.TimeStamp());
+}
+
+void PointerEventFactory::SetLastPosition(int pointer_id,
+                                          const WebPointerProperties& event) {
+  pointer_id_last_position_mapping_.Set(pointer_id, event.PositionInScreen());
+}
+
+void PointerEventFactory::RemoveLastPosition(const int pointer_id) {
+  return pointer_id_last_position_mapping_.erase(pointer_id);
+}
+
+FloatPoint PointerEventFactory::GetLastPointerPosition(
+    int pointer_id,
+    const WebPointerProperties& event) const {
+  if (pointer_id_last_position_mapping_.Contains(pointer_id))
+    return pointer_id_last_position_mapping_.at(pointer_id);
+  // If pointer_id is not in the map, returns the current position so the
+  // movement will be zero.
+  return event.PositionInScreen();
 }
 
 PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
@@ -399,6 +446,7 @@ void PointerEventFactory::Clear() {
   }
   pointer_incoming_id_mapping_.clear();
   pointer_id_mapping_.clear();
+  pointer_id_last_position_mapping_.clear();
 
   // Always add mouse pointer in initialization and never remove it.
   // No need to add it to m_pointerIncomingIdMapping as it is not going to be
@@ -449,6 +497,7 @@ bool PointerEventFactory::Remove(const int mapped_id) {
   int type_int = p.PointerTypeInt();
   pointer_id_mapping_.erase(mapped_id);
   pointer_incoming_id_mapping_.erase(p);
+  RemoveLastPosition(mapped_id);
   if (primary_id_[type_int] == mapped_id)
     primary_id_[type_int] = PointerEventFactory::kInvalidId;
   id_count_[type_int]--;

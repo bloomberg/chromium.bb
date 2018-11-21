@@ -185,8 +185,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   WebMenuSourceType GetMenuSourceType() const { return menu_source_type_; }
 
   // Page point in "absolute" coordinates (i.e. post-zoomed, page-relative
-  // coords, usable with LayoutObject::absoluteToLocal) relative to view(), i.e.
-  // the local frame.
+  // coords, usable with LayoutObject::absoluteToLocal) relative to view(),
+  // i.e. the local frame.
   const DoublePoint& AbsoluteLocation() const { return absolute_location_; }
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
@@ -215,7 +215,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   DoublePoint screen_location_;
   DoublePoint client_location_;
-  DoublePoint page_location_;  // zoomed CSS pixels
+  DoublePoint page_location_;    // zoomed CSS pixels
   DoublePoint offset_location_;  // zoomed CSS pixels
 
   bool has_cached_relative_position_ = false;

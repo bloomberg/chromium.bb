@@ -806,6 +806,9 @@
       status: "test",
     },
     {
+      name: "MovementXYInBlink",
+    },
+    {
       name: "NavigatorContentUtils",
     },
     {

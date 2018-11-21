@@ -190,7 +190,7 @@ MouseEvent::MouseEvent(const AtomicString& event_type,
       screen_location_(
           DoublePoint(initializer->screenX(), initializer->screenY())),
       movement_delta_(
-          IntPoint(initializer->movementX(), initializer->movementY())),
+          DoublePoint(initializer->movementX(), initializer->movementY())),
       position_type_(synthetic_event_type == kPositionless
                          ? PositionType::kPositionless
                          : PositionType::kPosition),
@@ -236,11 +236,13 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
   initializer->setClientX(client_point.X());
   initializer->setClientY(client_point.Y());
 
-  // TODO(nzolghadr): We need to scale movement attrinutes as well. But if we do
-  // that here and round it to the int again it causes inconsistencies between
-  // screenX/Y and cumulative movementX/Y.
-  initializer->setMovementX(web_pointer_properties.movement_x);
-  initializer->setMovementY(web_pointer_properties.movement_y);
+  // TODO(nzolghadr): We need to scale movement attrinutes as well. But if we
+  // do that here and round it to the int again it causes inconsistencies
+  // between screenX/Y and cumulative movementX/Y.
+  if (!RuntimeEnabledFeatures::MovementXYInBlinkEnabled()) {
+    initializer->setMovementX(web_pointer_properties.movement_x);
+    initializer->setMovementY(web_pointer_properties.movement_y);
+  }
 }
 
 MouseEvent::~MouseEvent() = default;

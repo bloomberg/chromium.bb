@@ -61,6 +61,27 @@ String CanvasRegionId(Node* node, const WebMouseEvent& mouse_event) {
   return canvas->GetIdFromControl(element);
 }
 
+void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
+                           const FloatPoint* last_position,
+                           MouseEventInit* initializer) {
+  if (RuntimeEnabledFeatures::MovementXYInBlinkEnabled() &&
+      mouse_event.GetType() == WebInputEvent::kMouseMove && last_position) {
+    if (RuntimeEnabledFeatures::FractionalMouseEventEnabled()) {
+      initializer->setMovementX(mouse_event.PositionInScreen().x -
+                                last_position->X());
+      initializer->setMovementY(mouse_event.PositionInScreen().y -
+                                last_position->Y());
+    } else {
+      initializer->setMovementX(
+          static_cast<int>(mouse_event.PositionInScreen().x) -
+          static_cast<int>(last_position->X()));
+      initializer->setMovementY(
+          static_cast<int>(mouse_event.PositionInScreen().y) -
+          static_cast<int>(last_position->Y()));
+    }
+  }
+}
+
 // The amount of time to wait before sending a fake mouse event triggered
 // during a scroll.
 constexpr TimeDelta kFakeMouseMoveIntervalDuringScroll =
@@ -192,8 +213,8 @@ void MouseEventManager::MouseEventBoundaryEventDispatcher::Dispatch(
     const WebMouseEvent& web_mouse_event,
     bool check_for_listener) {
   mouse_event_manager_->DispatchMouseEvent(target, type, web_mouse_event,
-                                           canvas_region_id, related_target,
-                                           check_for_listener);
+                                           canvas_region_id, nullptr,
+                                           related_target, check_for_listener);
 }
 
 void MouseEventManager::SendBoundaryEvents(EventTarget* exited_target,
@@ -210,6 +231,7 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
     const AtomicString& mouse_event_type,
     const WebMouseEvent& mouse_event,
     const String& canvas_region_id,
+    const FloatPoint* last_position,
     EventTarget* related_target,
     bool check_for_listener) {
   if (target && target->ToNode() &&
@@ -232,6 +254,7 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
     MouseEvent::SetCoordinatesFromWebPointerProperties(
         mouse_event.FlattenTransform(), target_node->GetDocument().domWindow(),
         initializer);
+    UpdateMouseMovementXY(mouse_event, last_position, initializer);
     initializer->setButton(static_cast<short>(mouse_event.button));
     initializer->setButtons(MouseEvent::WebInputEventModifiersToButtons(
         mouse_event.GetModifiers()));
@@ -275,7 +298,7 @@ WebInputEventResult MouseEventManager::SetMousePositionAndDispatchMouseEvent(
   SetNodeUnderMouse(target_node, canvas_region_id, web_mouse_event);
 
   return DispatchMouseEvent(node_under_mouse_, event_type, web_mouse_event,
-                            canvas_region_id, nullptr);
+                            canvas_region_id, nullptr, nullptr);
 }
 
 WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
@@ -340,7 +363,7 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
         (mev.Event().button == WebPointerProperties::Button::kLeft)
             ? event_type_names::kClick
             : event_type_names::kAuxclick,
-        mev.Event(), mev.CanvasRegionId(), nullptr);
+        mev.Event(), mev.CanvasRegionId(), nullptr, nullptr);
   }
 
   return WebInputEventResult::kNotHandled;

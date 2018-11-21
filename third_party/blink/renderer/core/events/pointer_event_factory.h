@@ -80,6 +80,15 @@ class CORE_EXPORT PointerEventFactory {
 
   static const int kMouseId;
 
+  // Removes pointer_id from the map.
+  void RemoveLastPosition(const int pointer_id);
+
+  // Returns last_position of for the given pointerId if such id is active.
+  // Otherwise it returns the PositionInScreen of the given events, so we will
+  // get movement = 0 when there is no last position.
+  FloatPoint GetLastPointerPosition(int pointer_id,
+                                    const WebPointerProperties& event) const;
+
  private:
   typedef WTF::UnsignedWithZeroKeyHashTraits<int> UnsignedHash;
   typedef struct IncomingId : public std::pair<int, int> {
@@ -119,6 +128,14 @@ class CORE_EXPORT PointerEventFactory {
                                        const AtomicString&,
                                        EventTarget*);
 
+  HeapVector<Member<PointerEvent>> CreateEventSequence(
+      const WebPointerEvent& web_pointer_event,
+      const PointerEventInit* pointer_event_init,
+      const Vector<WebPointerEvent>& event_list,
+      LocalDOMWindow* view);
+
+  void SetLastPosition(int pointer_id, const WebPointerProperties& event);
+
   static const int kInvalidId;
 
   int current_id_;
@@ -135,6 +152,9 @@ class CORE_EXPORT PointerEventFactory {
   int id_count_[static_cast<int>(
                     WebPointerProperties::PointerType::kLastEntry) +
                 1];
+
+  HashMap<int, FloatPoint, WTF::IntHash<int>, UnsignedHash>
+      pointer_id_last_position_mapping_;
 };
 
 }  // namespace blink
