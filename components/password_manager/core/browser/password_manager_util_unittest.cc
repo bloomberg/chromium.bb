@@ -219,6 +219,13 @@ TEST(PasswordManagerUtil, GetSignonRealmWithProtocolExcluded) {
   https_form.origin = GURL("https://www.google.com/page-1/");
   https_form.signon_realm = "https://www.google.com/";
   EXPECT_EQ(GetSignonRealmWithProtocolExcluded(https_form), "www.google.com/");
+
+  autofill::PasswordForm federated_form;
+  federated_form.origin = GURL("http://localhost:8000/");
+  federated_form.signon_realm =
+      "federation://localhost/accounts.federation.com";
+  EXPECT_EQ(GetSignonRealmWithProtocolExcluded(federated_form),
+            "localhost/accounts.federation.com");
 }
 
 TEST(PasswordManagerUtil, FindBestMatches) {
