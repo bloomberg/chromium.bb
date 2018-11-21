@@ -3019,10 +3019,12 @@ public class AwSettingsTest {
         final String page = "<!doctype html>"
                 + "<script>"
                 + "window.onload = function() {"
-                + "  document.title = CSS.supports('color', '%23AABBCCDD');"
+                + "  document.title = CSS.supports('color', '#AABBCCDD');"
                 + "};"
                 + "</script>";
-        mActivityTestRule.loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        // Loading the html via a data URI requires us to encode '#' symbols as '%23'.
+        mActivityTestRule.loadDataSync(
+                awContents, onPageFinishedHelper, page.replace("#", "%23"), "text/html", false);
         String actualTitle = mActivityTestRule.getTitleOnUiThread(awContents);
         Assert.assertEquals(expectedTitle, actualTitle);
     }

@@ -67,9 +67,11 @@ public class AwContentsRenderTest {
         setBackgroundColorOnUiThread(Color.YELLOW);
         GraphicsTestUtils.pollForBackgroundColor(mAwContents, Color.YELLOW);
 
+        final String html = "<html><head><style>body {background-color:#227788}</style></head>"
+                + "<body></body></html>";
+        // Loading the html via a data URI requires us to encode '#' symbols as '%23'.
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                "data:text/html,<html><head><style>body {background-color:%23227788}</style></head>"
-                        + "<body></body></html>");
+                "data:text/html," + html.replace("#", "%23"));
         final int teal = 0xFF227788;
         GraphicsTestUtils.pollForBackgroundColor(mAwContents, teal);
 
@@ -99,9 +101,11 @@ public class AwContentsRenderTest {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testForceDrawWhenInvisible() throws Throwable {
+        final String html = "<html><head><style>body {background-color:#227788}</style></head>"
+                + "<body>Hello world!</body></html>";
+        // Loading the html via a data URI requires us to encode '#' symbols as '%23'.
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                "data:text/html,<html><head><style>body {background-color:%23227788}</style></head>"
-                        + "<body>Hello world!</body></html>");
+                "data:text/html," + html.replace("#", "%23"));
 
         Bitmap visibleBitmap = null;
         Bitmap invisibleBitmap = null;
