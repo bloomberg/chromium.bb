@@ -36,7 +36,7 @@
 
   ConsoleTestRunner.addConsoleViewSniffer(addMessage, true);
   async function addMessage(uiMessage) {
-    var element = await uiMessage.completeElementForTest();
+    var element = uiMessage.toMessageElement();
     // There will be only one such message.
     if (element.deepTextContent().indexOf('non-existent-iframe') !== -1)
       ConsoleTestRunner.expandConsoleMessages(onExpandedMessages);

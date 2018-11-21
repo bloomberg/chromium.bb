@@ -20,7 +20,7 @@
       TestRunner.deprecatedRunAfterPendingDispatches(async () => {
         TestRunner.addResult('XHR with logging enabled: ');
         // Sorting console messages to prevent flakiness.
-        await ConsoleTestRunner.renderCompleteMessages();
+        await ConsoleTestRunner.waitForPendingViewportUpdates();
         TestRunner.addResults(ConsoleTestRunner.dumpConsoleMessagesIntoArray().sort());
         Console.ConsoleView.clearConsole();
         step2();

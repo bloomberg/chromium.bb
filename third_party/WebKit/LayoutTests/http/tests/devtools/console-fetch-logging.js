@@ -56,14 +56,14 @@
   TestRunner.addResult('Making requests with monitoring ENABLED');
   Common.settingForTest('monitoringXHREnabled').set(true);
   await TestRunner.callFunctionInPageAsync('makeRequests');
-  await ConsoleTestRunner.renderCompleteMessages();
+  await ConsoleTestRunner.waitForPendingViewportUpdates();
   ConsoleTestRunner.dumpConsoleMessages();
   Console.ConsoleView.clearConsole();
 
   TestRunner.addResult('Making requests with monitoring DISABLED');
   Common.settingForTest('monitoringXHREnabled').set(false);
   await TestRunner.callFunctionInPageAsync('makeRequests');
-  await ConsoleTestRunner.renderCompleteMessages();
+  await ConsoleTestRunner.waitForPendingViewportUpdates();
   ConsoleTestRunner.dumpConsoleMessages();
 
   TestRunner.completeTest();
