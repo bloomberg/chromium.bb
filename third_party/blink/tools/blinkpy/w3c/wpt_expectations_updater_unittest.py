@@ -349,10 +349,14 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 ],
             })
 
-    def test_specifier_part(self):
+    def test_normalized_specifiers(self):
         updater = WPTExpectationsUpdater(self.mock_host())
-        self.assertEqual(updater.specifier_part('x/y.html', ['test-mac-mac10.10']), '[ Mac10.10 ]')
-        self.assertEqual(updater.specifier_part('x/y.html', []), '')
+        self.assertEqual(updater.normalized_specifiers('x/y.html', ['test-mac-mac10.10']), ['Mac10.10'])
+        self.assertEqual(updater.normalized_specifiers('x/y.html', []), [''])
+
+        self.assertEqual(
+            updater.normalized_specifiers('x/y.html', ['test-mac-mac10.10', 'test-win-win7']),
+            ['Mac10.10', 'Win7'])
 
     def test_skipped_specifiers_when_test_is_wontfix(self):
         host = self.mock_host()
@@ -404,7 +408,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertEqual(updater.simplify_specifiers(['mac10.10', 'mac10.11'], macros), ['Mac'])
         self.assertEqual(updater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty', 'Win7', 'Win10'], macros), [])
 
-    def test_specifier_part_with_skipped_test(self):
+    def test_normalized_specifiers_with_skipped_test(self):
         host = self.mock_host()
         expectations_path = '/test.checkout/wtests/NeverFixTests'
         host.filesystem.write_text_file(
@@ -413,11 +417,11 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         host.filesystem.write_text_file('/test.checkout/wtests/external/wpt/test.html', '')
         updater = WPTExpectationsUpdater(host)
         self.assertEqual(
-            updater.specifier_part('external/wpt/test.html', ['test-mac-mac10.10', 'test-win-win7', 'test-win-win10']), '')
+            updater.normalized_specifiers('external/wpt/test.html', ['test-mac-mac10.10', 'test-win-win7', 'test-win-win10']), [''])
         self.assertEqual(
-            updater.specifier_part('external/wpt/test.html', ['test-win-win7', 'test-win-win10']), '[ Win ]')
+            updater.normalized_specifiers('external/wpt/test.html', ['test-win-win7', 'test-win-win10']), ['Win'])
         self.assertEqual(
-            updater.specifier_part('external/wpt/another.html', ['test-win-win7', 'test-win-win10']), '[ Win ]')
+            updater.normalized_specifiers('external/wpt/another.html', ['test-win-win7', 'test-win-win10']), ['Win'])
 
     def test_merge_dicts_with_conflict_raise_exception(self):
         updater = WPTExpectationsUpdater(self.mock_host())
@@ -761,5 +765,33 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater.ports_with_no_results = {'test-mac-mac10.10'}
         self.assertEqual(
             updater.create_line_dict(results),
-            {'external/wpt/x.html': ['crbug.com/test [ Linux Mac ] external/wpt/x.html [ Failure ]']}
+            {'external/wpt/x.html': [
+                'crbug.com/test [ Linux ] external/wpt/x.html [ Failure ]',
+                'crbug.com/test [ Mac ] external/wpt/x.html [ Failure ]',
+            ]
+            }
+        )
+
+    def test_merging_platforms_if_possible(self):
+        host = self.mock_host()
+        updater = WPTExpectationsUpdater(host)
+        results = {
+            'external/wpt/x.html': {
+                (
+                    'test-linux-precise',
+                    'test-linux-trusty',
+                    'test-mac-mac10.10',
+                    'test-mac-mac10.11',
+                    'test-win-win7',
+                ): SimpleTestResult(expected='PASS', actual='TEXT', bug='crbug.com/test')
+            }
+        }
+        self.assertEqual(
+            updater.create_line_dict(results),
+            {'external/wpt/x.html': [
+                'crbug.com/test [ Linux ] external/wpt/x.html [ Failure ]',
+                'crbug.com/test [ Mac ] external/wpt/x.html [ Failure ]',
+                'crbug.com/test [ Win7 ] external/wpt/x.html [ Failure ]',
+            ]
+            }
         )
