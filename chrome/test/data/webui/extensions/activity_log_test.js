@@ -69,6 +69,9 @@ suite('ExtensionsActivityLogTest', function() {
   test('activities are present for extension', function() {
     Polymer.dom.flush();
 
+    testVisible('#no-activities', false);
+    testVisible('#loading-activities', false);
+    testVisible('#activity-list', true);
     expectEquals(
         activityLog.shadowRoot.querySelectorAll('activity-log-item').length, 2);
   });
@@ -82,8 +85,21 @@ suite('ExtensionsActivityLogTest', function() {
     Polymer.dom.flush();
 
     testVisible('#no-activities', true);
+    testVisible('#loading-activities', false);
+    testVisible('#activity-list', false);
     expectEquals(
         activityLog.shadowRoot.querySelectorAll('activity-log-item').length, 0);
+  });
+
+  test('message shown when activities are being fetched', function() {
+    // Pretend the activity log is still loading.
+    activityLog.pageState_ = ActivityLogPageState.LOADING;
+
+    Polymer.dom.flush();
+
+    testVisible('#no-activities', false);
+    testVisible('#loading-activities', true);
+    testVisible('#activity-list', false);
   });
 
   test('clicking on back button navigates to the details page', function() {
