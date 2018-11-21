@@ -1083,13 +1083,7 @@ DriveVolumeItem.prototype = {
 DriveVolumeItem.prototype.handleClick = function(e) {
   VolumeItem.prototype.handleClick.call(this, e);
 
-  if (!e.target.classList.contains('expand-icon')) {
-    // If the Drive volume is clicked, select one of the children instead of
-    // this item itself.
-    this.volumeInfo_.resolveDisplayRoot((displayRoot) => {
-      this.searchAndSelectByEntry(displayRoot);
-    });
-  }
+  this.selectDisplayRoot_();
 
   DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
       this, e, VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT, true);
@@ -1229,6 +1223,27 @@ DriveVolumeItem.prototype.createComputersGrandRoot_ = function() {
       }
     });
   });
+};
+
+/**
+ * Change current entry to the entry corresponding to My Drive.
+ */
+DriveVolumeItem.prototype.activate = function() {
+  VolumeItem.prototype.activate.call(this);
+  this.selectDisplayRoot_();
+};
+
+/**
+ * Select Drive's display root.
+ */
+DriveVolumeItem.prototype.selectDisplayRoot_ = function() {
+  if (!this.classList.contains('expand-icon')) {
+    // If the Drive volume is clicked, select one of the children instead of
+    // this item itself.
+    this.volumeInfo_.resolveDisplayRoot((displayRoot) => {
+      this.searchAndSelectByEntry(displayRoot);
+    });
+  }
 };
 
 /**
