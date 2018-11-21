@@ -261,16 +261,19 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task,
     // be common. This pathway is less optimal than perhaps it could be
     // because it causes two main thread tasks to be run.  Should this
     // assumption prove to be false in future, we may need to revisit this.
-    AutoLock lock(any_thread_lock_);
     EnqueueOrder sequence_number = sequence_manager_->GetNextSequenceNumber();
 
-    TimeTicks time_domain_now = any_thread().time_domain->Now();
+    TimeTicks time_domain_now;
+    {
+      AutoLock lock(any_thread_lock_);
+      time_domain_now = any_thread().time_domain->Now();
+    }
     TimeTicks time_domain_delayed_run_time = time_domain_now + task.delay;
     if (sequence_manager_->GetAddQueueTimeToTasks()) {
       task.queue_time = time_domain_now;
     }
 
-    PushOntoDelayedIncomingQueueLocked(
+    PushOntoDelayedIncomingQueue(
         Task(std::move(task), time_domain_delayed_run_time, sequence_number,
              EnqueueOrder(), resolution));
   }
@@ -290,7 +293,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
   TraceQueueSize();
 }
 
-void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
+void TaskQueueImpl::PushOntoDelayedIncomingQueue(Task pending_task) {
   sequence_manager_->WillQueueTask(&pending_task);
 
   // TODO(altimin): Add a copy method to Task to capture metadata here.
