@@ -271,6 +271,9 @@ QuickViewController.prototype.onFileSelectionChanged_ = function(event) {
   if (this.quickView_ && this.quickView_.isOpened()) {
     assert(this.entries_.length > 0);
     var entry = this.entries_[0];
+    if (util.isSameEntry(entry, this.quickViewModel_.getSelectedEntry())) {
+      return;
+    }
     this.quickViewModel_.setSelectedEntry(entry);
     this.display_();
   }
