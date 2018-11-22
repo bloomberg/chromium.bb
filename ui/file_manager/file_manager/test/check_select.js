@@ -53,7 +53,7 @@ checkselect.testCheckSelectModeAfterSelectAllOneFile = (done) => {
   const gearMenu = document.querySelector('#gear-menu');
   const cancel = document.querySelector('#cancel-selection-button-wrapper');
   const selectAll =
-      '#gear-menu:not([hidden]) #gear-menu-select-all:not([hidden])';
+      '#gear-menu:not([hidden]) #gear-menu-select-all:not([disabled])';
 
   // Load a single file.
   test.setupAndWaitUntilReady([test.ENTRIES.hello])
@@ -68,7 +68,7 @@ checkselect.testCheckSelectModeAfterSelectAllOneFile = (done) => {
         return test.repeatUntil(() => {
           return getComputedStyle(gearMenu).opacity == 0 &&
               getComputedStyle(cancel).display == 'block' ||
-              test.pending('waiting for check select mode');
+              test.pending('waiting for check select mode from click');
         });
       })
       .then(result => {
@@ -77,7 +77,7 @@ checkselect.testCheckSelectModeAfterSelectAllOneFile = (done) => {
         return test.repeatUntil(() => {
           return document.querySelectorAll('#file-list li[selected]').length ==
               0 ||
-              test.pending('waiting for no files selected');
+              test.pending('waiting for no files selected after click');
         });
       })
       .then(result => {
@@ -85,7 +85,7 @@ checkselect.testCheckSelectModeAfterSelectAllOneFile = (done) => {
         assertTrue(test.fakeKeyDown('#file-list', 'a', true, false, false));
         return test.repeatUntil(() => {
           return getComputedStyle(cancel).display == 'block' ||
-              test.pending('waiting for check select mode');
+              test.pending('waiting for check select mode from key');
         });
       })
       .then(result => {
@@ -94,7 +94,7 @@ checkselect.testCheckSelectModeAfterSelectAllOneFile = (done) => {
         return test.repeatUntil(() => {
           return document.querySelectorAll('#file-list li[selected]').length ==
               0 ||
-              test.pending('waiting for no files selected');
+              test.pending('waiting for no files selected after key');
         });
       })
       .then(result => {
