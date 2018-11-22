@@ -59,7 +59,7 @@
 <translation id="1079766198702302550">Увек блокирај приступ камери</translation>
 <translation id="1082398631555931481">Алатка <ph name="THIRD_PARTY_TOOL_NAME" /> жели да врати подешавања Chrome-а на првобитне подразумеване вредности. То ће ресетовати почетну страницу, страницу нове картице и претраживач, онемогућиће додатке и откачити све картице. Такође ће обрисати друге привремене и кеширане податке, попут колачића, садржаја и података о сајтовима.</translation>
 <translation id="1082725763867769612">Офлајн датотеке</translation>
-<translation id="1084824384139382525">Копирај адр&amp;есу везе</translation>
+<translation id="1084824384139382525">Копирај адр&amp;есу линка</translation>
 <translation id="1085697365578766383">Грешка при покретању виртуелне машине. Пробајте поново.</translation>
 <translation id="1089439967362294234">Промена лозинке</translation>
 <translation id="1090126737595388931">Није покренута ниједна позадинска апликација</translation>
@@ -409,7 +409,7 @@
 <translation id="1587275751631642843">&amp;JavaScript конзола</translation>
 <translation id="1588438908519853928">Нормалан</translation>
 <translation id="158849752021629804">Потребна је матична мрежа</translation>
-<translation id="1588870296199743671">Отвори везу користећи...</translation>
+<translation id="1588870296199743671">Отвори линк користећи...</translation>
 <translation id="1589055389569595240">Прикажи правопис и граматику</translation>
 <translation id="1593594475886691512">Форматирање...</translation>
 <translation id="159359590073980872">Кеш слике</translation>
@@ -541,7 +541,7 @@
 <translation id="1764226536771329714">бета</translation>
 <translation id="176587472219019965">&amp;Нови прозор</translation>
 <translation id="1768278914020124551">Упс, дошло је до проблема при контактирању сервера за пријављивање. Проверите мрежну везу и име домена, па пробајте поново.</translation>
-<translation id="1769104665586091481">Отвори везу у новом &amp;прозору</translation>
+<translation id="1769104665586091481">Отвори линк у новом &amp;прозору</translation>
 <translation id="1773212559869067373">Сертификат за потврду аутентичности је одбијен локално</translation>
 <translation id="177336675152937177">Подаци хостованих апликација</translation>
 <translation id="1774349594977710164">Телефон такође откључава и друге <ph name="DEVICE_TYPE" />-ове зато што се аутоматски синхронизују.</translation>
@@ -1282,7 +1282,7 @@
 <translation id="2886771036282400576">• <ph name="PERMISSION" /></translation>
 <translation id="2887525882758501333">PDF документ</translation>
 <translation id="2888807692577297075">Ниједна ставка се не подудара са упитом &lt;b&gt;„<ph name="SEARCH_STRING" />“&lt;/b&gt;</translation>
-<translation id="2889064240420137087">Отвори везу користећи...</translation>
+<translation id="2889064240420137087">Отвори линк користећи...</translation>
 <translation id="2889925978073739256">Настави блокирање додатних компонената које су изван заштићеног окружења</translation>
 <translation id="2890678560483811744">Превелика референца за странице</translation>
 <translation id="2893168226686371498">Подразумевани прегледач</translation>
@@ -1687,7 +1687,7 @@
 <translation id="3508920295779105875">Одабери други директоријум...</translation>
 <translation id="3510797500218907545">WiMAX</translation>
 <translation id="3511200754045804813">Поново скенирај</translation>
-<translation id="3511307672085573050">Копирај адр&amp;есу везе</translation>
+<translation id="3511307672085573050">Копирај адр&amp;есу линка</translation>
 <translation id="3511399794969432965">Имате проблема при повезивању?</translation>
 <translation id="351152300840026870">Фонт фиксне ширине</translation>
 <translation id="3511528412952710609">Кратко</translation>
@@ -1768,7 +1768,7 @@
 <translation id="3625870480639975468">Враћање зума на почетне вредности</translation>
 <translation id="3626281679859535460">Осветљеност</translation>
 <translation id="3627320433825461852">Остало је мање од 1 минута</translation>
-<translation id="3627588569887975815">Отвори везу у прозору без архивирања</translation>
+<translation id="3627588569887975815">Отвори линк у прозору без архивирања</translation>
 <translation id="3627671146180677314">Време за обнову Netscape сертификата</translation>
 <translation id="3627879631695760395">Инсталирање апликације <ph name="APP" />...</translation>
 <translation id="3630132874740063857">Телефон</translation>
@@ -2306,7 +2306,7 @@
 <translation id="4475552974751346499">Претражите преузимања</translation>
 <translation id="4476590490540813026">Спортисткиња</translation>
 <translation id="4477015793815781985">Користите Ctrl, Alt или ⌘</translation>
-<translation id="4478664379124702289">Сачувај ве&amp;зу као...</translation>
+<translation id="4478664379124702289">Сачувај вли&amp;нк као...</translation>
 <translation id="4479424953165245642">Управљај киоск апликацијама</translation>
 <translation id="4479639480957787382">Етернет</translation>
 <translation id="4480590691557335796">Chrome може да пронађе штетан софтвер на рачунару и да га уклони</translation>
@@ -3557,7 +3557,7 @@
 <translation id="630065524203833229">И&amp;зађи</translation>
 <translation id="6305607932814307878">Глобалне смернице:</translation>
 <translation id="6307990684951724544">Систем је заузет</translation>
-<translation id="6308937455967653460">Сачувај ве&amp;зу као...</translation>
+<translation id="6308937455967653460">Сачувај ли&amp;нк као...</translation>
 <translation id="6311220991371174222">Не можемо да покренемо Chrome јер је дошло до проблема при отварању профила. Пробајте поново да покренете Chrome.</translation>
 <translation id="6312400084708441752">Садрже информације о штетном софтверу, системским подешавањима и процесима на рачунару</translation>
 <translation id="6312403991423642364">Непозната грешка на мрежи</translation>
@@ -3933,7 +3933,7 @@
 <translation id="6883319974225028188">Упс! Систем није успео да сачува конфигурацију уређаја.</translation>
 <translation id="6885771755599377173">Преглед информација о систему</translation>
 <translation id="6886476658664859389">NFC безбедносни кључ</translation>
-<translation id="6886871292305414135">Отвори везу на новој &amp;картици</translation>
+<translation id="6886871292305414135">Отвори линк на новој &amp;картици</translation>
 <translation id="6892812721183419409">Отвори линк као <ph name="USER" /></translation>
 <translation id="6896758677409633944">Копирај</translation>
 <translation id="6898440773573063262">Киоск апликације сада могу да се конфигуришу тако да се аутоматски покрећу на овом уређају.</translation>
@@ -5101,7 +5101,7 @@
 <translation id="8658595122208653918">Промени опције штампача...</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> дели екран и звук са <ph name="TAB_NAME" />.</translation>
 <translation id="8659875081143553823">Само тренутак</translation>
-<translation id="8661290697478713397">Отвори везу у прозору за пре&amp;гледање без архивирања</translation>
+<translation id="8661290697478713397">Отвори линк у прозору за пре&amp;гледање без архивирања</translation>
 <translation id="8662671328352114214">Придружите се <ph name="TYPE" /> мрежи</translation>
 <translation id="8662795692588422978">Особе</translation>
 <translation id="8662811608048051533">Одјавиће вас са већине сајтова.</translation>
@@ -5265,7 +5265,7 @@
 <translation id="88986195241502842">Страница надоле</translation>
 <translation id="8898786835233784856">Изабери следећу картицу</translation>
 <translation id="8898840733695078011">Јачина сигнала</translation>
-<translation id="8899851313684471736">Отвори везу у новом &amp;прозору</translation>
+<translation id="8899851313684471736">Отвори линк у новом &amp;прозору</translation>
 <translation id="8902667442496790482">Отвори подешавања за услугу Изаберите за говор</translation>
 <translation id="8903921497873541725">Увећавање</translation>
 <translation id="8904976895050290827">Синхронизација Chrome прегледача</translation>
@@ -5350,7 +5350,7 @@
 <translation id="9025098623496448965">Важи, врати ме на екран за пријављивање</translation>
 <translation id="9026731007018893674">преузимање</translation>
 <translation id="9026852570893462412">Ово може да потраје неколико минута. Преузима се виртуелна машина.</translation>
-<translation id="9027459031423301635">Отвори везу у новој &amp;картици</translation>
+<translation id="9027459031423301635">Отвори линк у новој &amp;картици</translation>
 <translation id="9030515284705930323">Организација није омогућила Google Play продавницу за налог. Контактирајте администратора за више информација.</translation>
 <translation id="9033857511263905942">&amp;Налепи</translation>
 <translation id="9034924485347205037">Linux датотеке</translation>
