@@ -6,6 +6,7 @@ module network.mojom;
 
 import "services/network/public/mojom/http_request_headers.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "url/mojom/url.mojom";
 
 [Native]
 struct URLRequest;
@@ -46,9 +47,13 @@ interface URLLoader {
   // the redirect. This parameter is before |modified_request_headers| since
   // removing headers is applied first in the URLLoader::FollowRedirect().
   // |modified_request_headers| can be used to add or override existing headers
-  // for the redirect.
+  // for the redirect. If |new_url| is specified, then the request will be made
+  // to it instead of the redirected URL. Note: it has to be in the same origin
+  // as the redirected URL, and this is only supported when the network service
+  // is enabled.
   FollowRedirect(array<string>? to_be_removed_request_headers,
-                 network.mojom.HttpRequestHeaders? modified_request_headers);
+                 network.mojom.HttpRequestHeaders? modified_request_headers,
+                 url.mojom.Url? new_url);
 
   // Resumes loading the response body if the URLLoader paused the request upon
   // receiving the final response headers.

@@ -38,7 +38,7 @@ void URLLoaderThrottle::WillStartRequest(network::ResourceRequest* request,
                                          bool* defer) {}
 
 void URLLoaderThrottle::WillRedirectRequest(
-    const net::RedirectInfo& redirect_info,
+    net::RedirectInfo* redirect_info,
     const network::ResourceResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,

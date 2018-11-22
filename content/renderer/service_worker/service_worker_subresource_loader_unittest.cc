@@ -1155,7 +1155,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
 
   // Redirect once more.
   fake_controller_.RespondWithRedirect("https://other.example.com/baz.png");
-  loader->FollowRedirect(base::nullopt, base::nullopt);
+  loader->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
   client->RunUntilRedirectReceived();
 
   EXPECT_EQ(net::OK, client->completion_status().error_code);
@@ -1174,7 +1174,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   mojo::DataPipe data_pipe;
   fake_controller_.RespondWithStream(mojo::MakeRequest(&stream_callback),
                                      std::move(data_pipe.consumer_handle));
-  loader->FollowRedirect(base::nullopt, base::nullopt);
+  loader->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
   client->RunUntilResponseReceived();
 
   const network::ResourceResponseHead& info = client->response_head();
@@ -1244,7 +1244,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
     redirect_location = std::string("https://www.example.com/redirect_") +
                         base::IntToString(count);
     fake_controller_.RespondWithRedirect(redirect_location);
-    loader->FollowRedirect(base::nullopt, base::nullopt);
+    loader->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
   }
   client->RunUntilComplete();
 

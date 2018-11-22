@@ -103,8 +103,8 @@ class ProxyingURLLoaderFactory::InProgressRequest
   // network::mojom::URLLoader:
   void FollowRedirect(
       const base::Optional<std::vector<std::string>>& to_be_removed_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers)
-      override;
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<GURL>& new_url) override;
 
   void ProceedWithResponse() override { target_loader_->ProceedWithResponse(); }
 
@@ -360,7 +360,8 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
 
 void ProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
     const base::Optional<std::vector<std::string>>& opt_headers_to_remove,
-    const base::Optional<net::HttpRequestHeaders>& opt_modified_headers) {
+    const base::Optional<net::HttpRequestHeaders>& opt_modified_headers,
+    const base::Optional<GURL>& opt_new_url) {
   std::vector<std::string> headers_to_remove;
   if (opt_headers_to_remove)
     headers_to_remove = *opt_headers_to_remove;
@@ -381,7 +382,8 @@ void ProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
       headers_to_remove.empty() ? base::nullopt
                                 : base::make_optional(headers_to_remove),
       modified_headers.IsEmpty() ? base::nullopt
-                                 : base::make_optional(modified_headers));
+                                 : base::make_optional(modified_headers),
+      opt_new_url);
 
   request_url_ = redirect_info_.new_url;
   referrer_origin_ = GURL(redirect_info_.new_referrer).GetOrigin();

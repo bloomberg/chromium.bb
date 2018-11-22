@@ -6,6 +6,7 @@
 
 #include "chrome/common/net/safe_search_util.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "services/network/public/cpp/features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension_urls.h"
@@ -58,26 +59,35 @@ void GoogleURLLoaderThrottle::WillStartRequest(
 }
 
 void GoogleURLLoaderThrottle::WillRedirectRequest(
-    const net::RedirectInfo& redirect_info,
+    net::RedirectInfo* redirect_info,
     const network::ResourceResponseHead& /* response_head */,
     bool* /* defer */,
     std::vector<std::string>* to_be_removed_headers,
     net::HttpRequestHeaders* modified_headers) {
-  if (!variations::ShouldAppendVariationHeaders(redirect_info.new_url))
+  if (!variations::ShouldAppendVariationHeaders(redirect_info->new_url))
     to_be_removed_headers->push_back(variations::kClientDataHeader);
+
+  // URLLoaderThrottles can only change the redirect URL when the network
+  // service is enabled. The non-network service path handles this in
+  // ChromeNetworkDelegate.
+  if (dynamic_params_.force_safe_search &&
+      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    safe_search_util::ForceGoogleSafeSearch(redirect_info->new_url,
+                                            &redirect_info->new_url);
+  }
 
   if (dynamic_params_.youtube_restrict >
           safe_search_util::YOUTUBE_RESTRICT_OFF &&
       dynamic_params_.youtube_restrict <
           safe_search_util::YOUTUBE_RESTRICT_COUNT) {
     safe_search_util::ForceYouTubeRestrict(
-        redirect_info.new_url, modified_headers,
+        redirect_info->new_url, modified_headers,
         static_cast<safe_search_util::YouTubeRestrictMode>(
             dynamic_params_.youtube_restrict));
   }
 
   if (!dynamic_params_.allowed_domains_for_apps.empty() &&
-      redirect_info.new_url.DomainIs("google.com")) {
+      redirect_info->new_url.DomainIs("google.com")) {
     modified_headers->SetHeader(safe_search_util::kGoogleAppsAllowedDomains,
                                 dynamic_params_.allowed_domains_for_apps);
   }

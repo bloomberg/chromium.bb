@@ -46,7 +46,7 @@ class PrerenderURLLoaderThrottle
   void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
-  void WillRedirectRequest(const net::RedirectInfo& redirect_info,
+  void WillRedirectRequest(net::RedirectInfo* redirect_info,
                            const network::ResourceResponseHead& response_head,
                            bool* defer,
                            std::vector<std::string>* to_be_removed_headers,

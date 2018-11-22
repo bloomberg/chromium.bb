@@ -117,10 +117,11 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   }
 
   // network::mojom::URLLoader implementation.
-  void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                          to_be_removed_request_headers,
-                      const base::Optional<net::HttpRequestHeaders>&
-                          modified_request_headers) override {
+  void FollowRedirect(
+      const base::Optional<std::vector<std::string>>&
+          to_be_removed_request_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<GURL>& new_url) override {
     headers_removed_on_redirect_ = to_be_removed_request_headers;
     headers_modified_on_redirect_ = modified_request_headers;
   }
@@ -293,7 +294,7 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
   }
 
   void WillRedirectRequest(
-      const net::RedirectInfo& redirect_info,
+      net::RedirectInfo* redirect_info,
       const network::ResourceResponseHead& response_head,
       bool* defer,
       std::vector<std::string>* to_be_removed_request_headers,

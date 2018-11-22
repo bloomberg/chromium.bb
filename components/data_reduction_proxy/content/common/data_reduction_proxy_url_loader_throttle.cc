@@ -70,13 +70,13 @@ void DataReductionProxyURLLoaderThrottle::WillStartRequest(
 }
 
 void DataReductionProxyURLLoaderThrottle::WillRedirectRequest(
-    const net::RedirectInfo& redirect_info,
+    net::RedirectInfo* redirect_info,
     const network::ResourceResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,
     net::HttpRequestHeaders* modified_request_headers) {
-  url_chain_.push_back(redirect_info.new_url);
-  request_method_ = redirect_info.new_method;
+  url_chain_.push_back(redirect_info->new_url);
+  request_method_ = redirect_info->new_method;
 }
 
 void DataReductionProxyURLLoaderThrottle::BeforeWillProcessResponse(

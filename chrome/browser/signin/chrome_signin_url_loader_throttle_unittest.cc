@@ -161,7 +161,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
 
   std::vector<std::string> request_headers_to_remove;
   net::HttpRequestHeaders modified_request_headers;
-  throttle->WillRedirectRequest(redirect_info, *response_head, &defer,
+  throttle->WillRedirectRequest(&redirect_info, *response_head, &defer,
                                 &request_headers_to_remove,
                                 &modified_request_headers);
 
@@ -246,7 +246,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, InterceptSubFrame) {
 
   std::vector<std::string> request_headers_to_remove;
   net::HttpRequestHeaders modified_request_headers;
-  throttle->WillRedirectRequest(redirect_info, response_head, &defer,
+  throttle->WillRedirectRequest(&redirect_info, response_head, &defer,
                                 &request_headers_to_remove,
                                 &modified_request_headers);
   EXPECT_FALSE(defer);

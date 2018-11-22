@@ -71,10 +71,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   ~URLLoader() override;
 
   // mojom::URLLoader implementation:
-  void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                          to_be_removed_request_headers,
-                      const base::Optional<net::HttpRequestHeaders>&
-                          modified_request_headers) override;
+  void FollowRedirect(
+      const base::Optional<std::vector<std::string>>&
+          to_be_removed_request_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<GURL>& new_url) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
@@ -114,6 +115,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   bool custom_proxy_use_alternate_proxy_list() const {
     return custom_proxy_use_alternate_proxy_list_;
+  }
+
+  const base::Optional<GURL>& new_redirect_url() const {
+    return new_redirect_url_;
   }
 
   // Gets the URLLoader associated with this request.
@@ -231,8 +236,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   std::unique_ptr<UploadProgressTracker> upload_progress_tracker_;
 
-  // Whether a redirect is currently deferred.
-  bool deferred_redirect_ = false;
+  // Holds the URL of a redirect if it's currently deferred.
+  std::unique_ptr<GURL> deferred_redirect_url_;
+
+  // If |new_url| is given to FollowRedirect() it's saved here, so that it can
+  // be later referred to from NetworkContext::OnBeforeURLRequestInternal, which
+  // is called from NetworkDelegate::NotifyBeforeURLRequest.
+  base::Optional<GURL> new_redirect_url_;
 
   bool should_pause_reading_body_ = false;
   // The response body stream is open, but transferring data is paused.

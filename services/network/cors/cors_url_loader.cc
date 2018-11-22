@@ -102,12 +102,21 @@ void CorsURLLoader::Start() {
 void CorsURLLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
-  if (!network_loader_ || !is_waiting_follow_redirect_call_) {
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<GURL>& new_url) {
+  if (!network_loader_ || !deferred_redirect_url_) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
     return;
   }
-  is_waiting_follow_redirect_call_ = false;
+
+  if (new_url &&
+      (new_url->GetOrigin() != deferred_redirect_url_->GetOrigin())) {
+    NOTREACHED() << "Can only change the URL within the same origin.";
+    HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
+    return;
+  }
+
+  deferred_redirect_url_.reset();
 
   // When the redirect mode is "error", the client is not expected to
   // call this function. Let's abort the request.
@@ -152,7 +161,7 @@ void CorsURLLoader::FollowRedirect(
         CalculateResponseTainting(request_.url, request_.fetch_request_mode,
                                   request_.request_initiator, fetch_cors_flag_);
     network_loader_->FollowRedirect(to_be_removed_request_headers,
-                                    modified_request_headers);
+                                    modified_request_headers, new_url);
     return;
   }
   DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCors);
@@ -188,7 +197,7 @@ void CorsURLLoader::OnReceiveResponse(
     const ResourceResponseHead& response_head) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
-  DCHECK(!is_waiting_follow_redirect_call_);
+  DCHECK(!deferred_redirect_url_);
 
   const bool is_304_for_revalidation =
       request_.is_revalidating && response_head.headers->response_code() == 304;
@@ -216,10 +225,10 @@ void CorsURLLoader::OnReceiveRedirect(
     const ResourceResponseHead& response_head) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
-  DCHECK(!is_waiting_follow_redirect_call_);
+  DCHECK(!deferred_redirect_url_);
 
   if (request_.fetch_redirect_mode == mojom::FetchRedirectMode::kManual) {
-    is_waiting_follow_redirect_call_ = true;
+    deferred_redirect_url_ = std::make_unique<GURL>(redirect_info.new_url);
     forwarding_client_->OnReceiveRedirect(redirect_info, response_head);
     return;
   }
@@ -289,7 +298,7 @@ void CorsURLLoader::OnReceiveRedirect(
 
   redirect_info_ = redirect_info;
 
-  is_waiting_follow_redirect_call_ = true;
+  deferred_redirect_url_ = std::make_unique<GURL>(redirect_info.new_url);
 
   auto response_head_to_pass = response_head;
   if (request_.fetch_redirect_mode == mojom::FetchRedirectMode::kManual) {
@@ -306,7 +315,7 @@ void CorsURLLoader::OnUploadProgress(int64_t current_position,
                                      OnUploadProgressCallback ack_callback) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
-  DCHECK(!is_waiting_follow_redirect_call_);
+  DCHECK(!deferred_redirect_url_);
   forwarding_client_->OnUploadProgress(current_position, total_size,
                                        std::move(ack_callback));
 }
@@ -314,14 +323,14 @@ void CorsURLLoader::OnUploadProgress(int64_t current_position,
 void CorsURLLoader::OnReceiveCachedMetadata(const std::vector<uint8_t>& data) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
-  DCHECK(!is_waiting_follow_redirect_call_);
+  DCHECK(!deferred_redirect_url_);
   forwarding_client_->OnReceiveCachedMetadata(data);
 }
 
 void CorsURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
-  DCHECK(!is_waiting_follow_redirect_call_);
+  DCHECK(!deferred_redirect_url_);
   forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
@@ -329,14 +338,14 @@ void CorsURLLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
-  DCHECK(!is_waiting_follow_redirect_call_);
+  DCHECK(!deferred_redirect_url_);
   forwarding_client_->OnStartLoadingResponseBody(std::move(body));
 }
 
 void CorsURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
-  DCHECK(!is_waiting_follow_redirect_call_);
+  DCHECK(!deferred_redirect_url_);
 
   URLLoaderCompletionStatus modified_status(status);
   if (status.error_code == net::OK)

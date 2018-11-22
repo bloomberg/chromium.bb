@@ -84,6 +84,7 @@
 #include "services/network/throttling/network_conditions.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "services/network/throttling/throttling_network_transaction_factory.h"
+#include "services/network/url_loader.h"
 #include "services/network/url_request_context_builder_mojo.h"
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
@@ -356,6 +357,10 @@ class NetworkContext::ContextNetworkDelegate
       request->SetReferrer(std::string());
     if (network_context_->network_service())
       network_context_->network_service()->OnBeforeURLRequest();
+
+    auto* loader = URLLoader::ForRequest(*request);
+    if (loader && loader->new_redirect_url())
+      *new_url = loader->new_redirect_url().value();
   }
 
   void OnBeforeRedirectInternal(net::URLRequest* request,

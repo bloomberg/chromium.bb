@@ -163,7 +163,7 @@ void URLLoaderThrottle::WillStartRequest(network::ResourceRequest* request,
 }
 
 void URLLoaderThrottle::WillRedirectRequest(
-    const net::RedirectInfo& redirect_info,
+    net::RedirectInfo* redirect_info,
     const network::ResourceResponseHead& response_head,
     bool* /* defer */,
     std::vector<std::string>* to_be_removed_request_headers,
@@ -171,7 +171,7 @@ void URLLoaderThrottle::WillRedirectRequest(
   ThrottleRequestAdapter request_adapter(this, request_headers_,
                                          modified_request_headers,
                                          to_be_removed_request_headers);
-  delegate_->ProcessRequest(&request_adapter, redirect_info.new_url);
+  delegate_->ProcessRequest(&request_adapter, redirect_info->new_url);
 
   request_headers_.MergeFrom(*modified_request_headers);
   for (const std::string& name : *to_be_removed_request_headers)
@@ -180,10 +180,10 @@ void URLLoaderThrottle::WillRedirectRequest(
   // Modifications to |response_head.headers| will be passed to the
   // URLLoaderClient even though |response_head| is const.
   ThrottleResponseAdapter response_adapter(this, response_head.headers.get());
-  delegate_->ProcessResponse(&response_adapter, redirect_info.new_url);
+  delegate_->ProcessResponse(&response_adapter, redirect_info->new_url);
 
-  request_url_ = redirect_info.new_url;
-  request_referrer_ = GURL(redirect_info.new_referrer);
+  request_url_ = redirect_info->new_url;
+  request_referrer_ = GURL(redirect_info->new_referrer);
 }
 
 void URLLoaderThrottle::WillProcessResponse(

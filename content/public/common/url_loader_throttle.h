@@ -127,8 +127,13 @@ class CONTENT_EXPORT URLLoaderThrottle {
   // before the redirect is followed. Headers added to
   // |modified_request_headers| will be merged into the existing request headers
   // before the redirect is followed.
+  //
+  // If |redirect_info->new_url| is modified by a throttle, the request will be
+  // redirected to the new URL. Only one throttle can update this and it must
+  // have the same origin as |redirect_info->new_url|. See the comments for
+  // WillStartRequest on possible side-effects.
   virtual void WillRedirectRequest(
-      const net::RedirectInfo& redirect_info,
+      net::RedirectInfo* redirect_info,
       const network::ResourceResponseHead& response_head,
       bool* defer,
       std::vector<std::string>* to_be_removed_request_headers,

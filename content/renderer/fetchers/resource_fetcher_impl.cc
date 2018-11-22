@@ -186,7 +186,7 @@ class ResourceFetcherImpl::ClientImpl : public network::mojom::URLLoaderClient {
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head) override {
     DCHECK_EQ(Status::kStarted, status_);
-    loader_->FollowRedirect(base::nullopt, base::nullopt);
+    loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
     response_.SetURL(redirect_info.new_url);
   }
   void OnUploadProgress(int64_t current_position,

@@ -635,7 +635,8 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
 void ServiceWorkerSubresourceLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<GURL>& new_url) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::FollowRedirect",
       TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
@@ -645,6 +646,8 @@ void ServiceWorkerSubresourceLoader::FollowRedirect(
   DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
                                                    "headers was not supported "
                                                    "yet. crbug.com/845683";
+  DCHECK(!new_url.has_value()) << "Redirect with modified URL was not "
+                                  "supported yet. crbug.com/845683";
   DCHECK(redirect_info_);
 
   bool should_clear_upload = false;

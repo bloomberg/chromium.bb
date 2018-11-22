@@ -1587,10 +1587,12 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
   }
 
   final_url_ = redirect_info.new_url;
-  if (to_be_removed_headers.empty())
-    url_loader_->FollowRedirect(base::nullopt, base::nullopt);
-  else
-    url_loader_->FollowRedirect(to_be_removed_headers, base::nullopt);
+  if (to_be_removed_headers.empty()) {
+    url_loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  } else {
+    url_loader_->FollowRedirect(to_be_removed_headers, base::nullopt,
+                                base::nullopt);
+  }
 }
 
 void SimpleURLLoaderImpl::OnReceiveCachedMetadata(

@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -209,8 +210,8 @@ void ThrottlingURLLoader::FollowRedirect(
     modified_headers_to_send = &modified_request_headers_;
   }
 
-  if (!throttle_redirect_url_.is_empty()) {
-    throttle_redirect_url_ = GURL();
+  if (!throttle_will_start_redirect_url_.is_empty()) {
+    throttle_will_start_redirect_url_ = GURL();
     // This is a synthesized redirect, so no need to tell the URLLoader.
     DCHECK(!modified_headers_to_send->has_value())
         << "ThrottlingURLLoader doesn't support modifying headers for "
@@ -220,8 +221,12 @@ void ThrottlingURLLoader::FollowRedirect(
   }
 
   if (url_loader_) {
+    base::Optional<GURL> new_url;
+    if (!throttle_will_redirect_redirect_url_.is_empty())
+      new_url = throttle_will_redirect_redirect_url_;
     url_loader_->FollowRedirect(to_be_removed_request_headers_,
-                                *modified_headers_to_send);
+                                *modified_headers_to_send, new_url);
+    throttle_will_redirect_redirect_url_ = GURL();
   }
 
   to_be_removed_request_headers_.reset();
@@ -232,6 +237,7 @@ void ThrottlingURLLoader::FollowRedirectForcingRestart() {
   debug_log_.emplace_back("FollowRedirectForcingRestart");
   url_loader_.reset();
   client_binding_.Close();
+  CHECK(throttle_will_redirect_redirect_url_.is_empty());
 
   if (to_be_removed_request_headers_) {
     for (const std::string& key : *to_be_removed_request_headers_)
@@ -319,13 +325,13 @@ void ThrottlingURLLoader::Start(
       GURL original_url = url_request->url;
       throttle->WillStartRequest(url_request, &throttle_deferred);
       if (original_url != url_request->url) {
-        DCHECK(throttle_redirect_url_.is_empty())
+        DCHECK(throttle_will_start_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
                "changing the URL.";
         CHECK_EQ(original_url.GetOrigin(), url_request->url.GetOrigin())
             << "ThrottlingURLLoader doesn't support a throttle making a "
             << "cross-origin redirect.";
-        throttle_redirect_url_ = url_request->url;
+        throttle_will_start_redirect_url_ = url_request->url;
         // Restore the original URL so that all throttles see the same original
         // URL.
         url_request->url = original_url;
@@ -338,8 +344,8 @@ void ThrottlingURLLoader::Start(
 
     // If a throttle had changed the URL, set it in the ResourceRequest struct
     // so that it is the URL that's requested.
-    if (!throttle_redirect_url_.is_empty())
-      url_request->url = throttle_redirect_url_;
+    if (!throttle_will_start_redirect_url_.is_empty())
+      url_request->url = throttle_will_start_redirect_url_;
   }
 
   start_info_ =
@@ -356,18 +362,19 @@ void ThrottlingURLLoader::Start(
 void ThrottlingURLLoader::StartNow() {
   DCHECK(start_info_);
   debug_log_.emplace_back("StartNow");
-  if (!throttle_redirect_url_.is_empty()) {
+  if (!throttle_will_start_redirect_url_.is_empty()) {
     net::RedirectInfo redirect_info;
     redirect_info.status_code = net::HTTP_TEMPORARY_REDIRECT;
     redirect_info.new_method = start_info_->url_request.method;
-    redirect_info.new_url = throttle_redirect_url_;
-    redirect_info.new_site_for_cookies = throttle_redirect_url_;
+    redirect_info.new_url = throttle_will_start_redirect_url_;
+    redirect_info.new_site_for_cookies = throttle_will_start_redirect_url_;
 
     network::ResourceResponseHead response_head;
     std::string header_string = base::StringPrintf(
         "HTTP/1.1 %i Internal Redirect\n"
         "Location: %s\n",
-        net::HTTP_TEMPORARY_REDIRECT, throttle_redirect_url_.spec().c_str());
+        net::HTTP_TEMPORARY_REDIRECT,
+        throttle_will_start_redirect_url_.spec().c_str());
     response_head.headers =
         new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
             header_string.c_str(), header_string.length()));
@@ -520,9 +527,26 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       auto weak_ptr = weak_factory_.GetWeakPtr();
       std::vector<std::string> to_be_removed_headers;
       net::HttpRequestHeaders modified_headers;
-      throttle->WillRedirectRequest(redirect_info, response_head,
+      net::RedirectInfo redirect_info_copy = redirect_info;
+      throttle->WillRedirectRequest(&redirect_info_copy, response_head,
                                     &throttle_deferred, &to_be_removed_headers,
                                     &modified_headers);
+      if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+          redirect_info_copy.new_url != redirect_info.new_url) {
+        DCHECK(throttle_will_redirect_redirect_url_.is_empty())
+            << "ThrottlingURLLoader doesn't support multiple throttles "
+               "changing the URL.";
+        CHECK_EQ(redirect_info_copy.new_url.GetOrigin(),
+                 redirect_info.new_url.GetOrigin())
+            << "ThrottlingURLLoader doesn't support a throttle making a "
+            << "cross-origin redirect.";
+        throttle_will_redirect_redirect_url_ = redirect_info_copy.new_url;
+      } else {
+        CHECK_EQ(redirect_info_copy.new_url, redirect_info.new_url)
+            << "Non-network service path doesn't support modifying a redirect "
+               "URL";
+      }
+
       if (!weak_ptr)
         return;
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred)) {

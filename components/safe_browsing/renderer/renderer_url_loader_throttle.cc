@@ -70,7 +70,7 @@ void RendererURLLoaderThrottle::WillStartRequest(
 }
 
 void RendererURLLoaderThrottle::WillRedirectRequest(
-    const net::RedirectInfo& redirect_info,
+    net::RedirectInfo* redirect_info,
     const network::ResourceResponseHead& /* response_head */,
     bool* /* defer */,
     std::vector<std::string>* /* to_be_removed_headers */,
@@ -86,7 +86,7 @@ void RendererURLLoaderThrottle::WillRedirectRequest(
 
   pending_checks_++;
   url_checker_->CheckUrl(
-      redirect_info.new_url, redirect_info.new_method,
+      redirect_info->new_url, redirect_info->new_method,
       base::BindOnce(&RendererURLLoaderThrottle::OnCheckUrlResult,
                      base::Unretained(this)));
 }
