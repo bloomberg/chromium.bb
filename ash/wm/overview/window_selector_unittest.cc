@@ -152,27 +152,6 @@ class TweenTester : public ui::LayerAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(TweenTester);
 };
 
-// WindowState that lets us specify an initial state.
-class InitialStateTestState : public wm::WindowState::State {
- public:
-  explicit InitialStateTestState(mojom::WindowStateType initial_state_type)
-      : state_type_(initial_state_type) {}
-  ~InitialStateTestState() override = default;
-
-  // WindowState::State overrides:
-  void OnWMEvent(wm::WindowState* window_state,
-                 const wm::WMEvent* event) override {}
-  mojom::WindowStateType GetType() const override { return state_type_; }
-  void AttachState(wm::WindowState* window_state,
-                   wm::WindowState::State* previous_state) override {}
-  void DetachState(wm::WindowState* window_state) override {}
-
- private:
-  mojom::WindowStateType state_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(InitialStateTestState);
-};
-
 }  // namespace
 
 // TODO(bruthig): Move all non-simple method definitions out of class
@@ -3044,9 +3023,9 @@ TEST_F(WindowSelectorTest, PipWindowShownButExcludedFromOverview) {
   const gfx::Rect bounds(200, 200);
   std::unique_ptr<aura::Window> pip_window(CreateWindow(bounds));
 
-  wm::GetWindowState(pip_window.get())
-      ->SetStateObject(std::unique_ptr<wm::WindowState::State>(
-          new InitialStateTestState(mojom::WindowStateType::PIP)));
+  wm::WindowState* window_state = wm::GetWindowState(pip_window.get());
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
 
   // Enter overview.
   ToggleOverview();
