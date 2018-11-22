@@ -515,14 +515,28 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     // The ResourceDispatcherHostImpl can be null in unit tests.
-    if (!intercepted && ResourceDispatcherHostImpl::Get()) {
-      ResourceDispatcherHostImpl::Get()->BeginNavigationRequest(
+    ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
+    if (!intercepted && rdh) {
+      rdh->BeginNavigationRequest(
           resource_context_, url_request_context_getter->GetURLRequestContext(),
           upload_file_system_context, *request_info_,
           std::move(navigation_ui_data_), std::move(url_loader_client),
           std::move(url_loader), service_worker_navigation_handle_core,
           appcache_handle_core, options, resource_request_->priority,
           global_request_id_);
+
+      if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+        // Get the SWProviderHost for non-S13nSW path. For S13nSW path,
+        // |service_worker_provider_host_| must be set in
+        // CreateServiceWorkerInterceptor().
+        net::URLRequest* url_request = rdh->GetURLRequest(global_request_id_);
+        ServiceWorkerProviderHost* service_worker_provider_host =
+            ServiceWorkerRequestHandler::GetProviderHost(url_request);
+        if (service_worker_provider_host) {
+          service_worker_provider_host_ =
+              service_worker_provider_host->AsWeakPtr();
+        }
+      }
     }
 
     // TODO(arthursonzogni): Detect when the ResourceDispatcherHost didn't
@@ -1376,6 +1390,17 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               new_interceptors;
           new_interceptors.push_back(std::move(interceptors_[i]));
           new_interceptors.swap(interceptors_);
+          if (service_worker_provider_host_) {
+            // Reset the state of ServiceWorkerProviderHost.
+            // Currently we don't support Service Worker in Signed Exchange
+            // pages. The page will not be controlled by service workers. And
+            // Service Worker related APIs will fail with NoDocumentURL error.
+            // TODO(crbug/898733): Support SignedExchange loading and Service
+            // Worker integration.
+            service_worker_provider_host_->SetControllerRegistration(
+                nullptr, false /* notify_controllerchange */);
+            service_worker_provider_host_->UpdateURLs(GURL(), GURL());
+          }
         }
         return true;
       }
@@ -1391,8 +1416,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   std::unique_ptr<NavigationLoaderInterceptor> CreateServiceWorkerInterceptor(
       const NavigationRequestInfo& request_info,
-      ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core)
-      const {
+      ServiceWorkerNavigationHandleCore*
+          service_worker_navigation_handle_core) {
     const ResourceType resource_type = request_info.is_main_frame
                                            ? RESOURCE_TYPE_MAIN_FRAME
                                            : RESOURCE_TYPE_SUB_FRAME;
@@ -1408,7 +1433,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         request_info.begin_params->skip_service_worker, resource_type,
         request_info.begin_params->request_context_type, frame_type,
         request_info.are_ancestors_secure, request_info.common_params.post_data,
-        web_contents_getter_);
+        web_contents_getter_, &service_worker_provider_host_);
   }
 
   std::unique_ptr<SignedExchangeRequestHandler>
@@ -1542,6 +1567,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   // If true, redirect checks will be handled in a proxy, and not here.
   bool bypass_redirect_checks_;
+
+  // Used to reset the state of ServiceWorkerProviderHost when
+  // SignedExchangeRequestHandler will handle the response.
+  base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
 
   mutable base::WeakPtrFactory<URLLoaderRequestController> weak_factory_;
 

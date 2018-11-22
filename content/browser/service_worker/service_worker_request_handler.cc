@@ -146,7 +146,8 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
     network::mojom::RequestContextFrameType frame_type,
     bool is_parent_frame_secure,
     scoped_refptr<network::ResourceRequestBody> body,
-    base::RepeatingCallback<WebContents*()> web_contents_getter) {
+    base::RepeatingCallback<WebContents*()> web_contents_getter,
+    base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host) {
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(navigation_handle_core);
 
@@ -165,22 +166,22 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
     return nullptr;
 
   // Initialize the SWProviderHost.
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          context->AsWeakPtr(), is_parent_frame_secure,
-          std::move(web_contents_getter));
+  *out_provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
+      context->AsWeakPtr(), is_parent_frame_secure,
+      std::move(web_contents_getter));
 
   std::unique_ptr<ServiceWorkerRequestHandler> handler(
-      provider_host->CreateRequestHandler(
-          network::mojom::FetchRequestMode::kNavigate,
-          network::mojom::FetchCredentialsMode::kInclude,
-          network::mojom::FetchRedirectMode::kManual,
-          std::string() /* integrity */, false /* keepalive */, resource_type,
-          request_context_type, frame_type, blob_storage_context->AsWeakPtr(),
-          body, skip_service_worker));
+      (*out_provider_host)
+          ->CreateRequestHandler(
+              network::mojom::FetchRequestMode::kNavigate,
+              network::mojom::FetchCredentialsMode::kInclude,
+              network::mojom::FetchRedirectMode::kManual,
+              std::string() /* integrity */, false /* keepalive */,
+              resource_type, request_context_type, frame_type,
+              blob_storage_context->AsWeakPtr(), body, skip_service_worker));
 
   navigation_handle_core->DidPreCreateProviderHost(
-      provider_host->provider_id());
+      (*out_provider_host)->provider_id());
 
   return base::WrapUnique<NavigationLoaderInterceptor>(handler.release());
 }
