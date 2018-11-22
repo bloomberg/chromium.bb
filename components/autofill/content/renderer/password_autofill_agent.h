@@ -190,6 +190,16 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // unique origins aren't allowed access.
   virtual bool FrameCanAccessPasswordManager();
 
+  // RenderFrameObserver:
+  void DidFinishDocumentLoad() override;
+  void DidFinishLoad() override;
+  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
+                               bool is_content_initiated) override;
+  void WillCommitProvisionalLoad() override;
+  void DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                ui::PageTransition transition) override;
+  void OnDestruct() override;
+
  private:
   // Ways to restrict which passwords are saved in ProvisionallySavePassword.
   enum ProvisionallySaveRestriction {
@@ -258,16 +268,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
     DISALLOW_COPY_AND_ASSIGN(PasswordValueGatekeeper);
   };
-
-  // RenderFrameObserver:
-  void DidFinishDocumentLoad() override;
-  void DidFinishLoad() override;
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               bool is_content_initiated) override;
-  void WillCommitProvisionalLoad() override;
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
-  void OnDestruct() override;
 
   // Scans the given frame for password forms and sends them up to the browser.
   // If |only_visible| is true, only forms visible in the layout are sent.
