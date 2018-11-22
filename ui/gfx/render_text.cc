@@ -231,7 +231,7 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
                                    const uint16_t* glyphs,
                                    size_t glyph_count) {
   SkTextBlobBuilder builder;
-  const auto& run_buffer = builder.allocRunPos(flags_.ToSkPaint(), glyph_count);
+  const auto& run_buffer = builder.allocRunPos(flags_.ToSkFont(), glyph_count);
 
   static_assert(sizeof(*glyphs) == sizeof(*run_buffer.glyphs), "");
   memcpy(run_buffer.glyphs, glyphs, glyph_count * sizeof(*glyphs));
