@@ -5,6 +5,7 @@
 '''GRIT tool that runs the unit test suite for GRIT.'''
 
 import getopt
+import sys
 import unittest
 
 import grit.test_suite_all
@@ -20,7 +21,11 @@ This happens in the environment that is set up by the basic GRIT runner.'''
 
   def ParseOptions(self, args):
     """Set this objects and return all non-option arguments."""
-    own_opts, args = getopt.getopt(args, '')
+    own_opts, args = getopt.getopt(args, '', ('help',))
+    for key, val in own_opts:
+      if key == '--help':
+        self.ShowUsage()
+        sys.exit(0)
     return args
 
   def Run(self, opts, args):

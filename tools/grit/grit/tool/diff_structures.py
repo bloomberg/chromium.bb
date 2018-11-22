@@ -7,6 +7,7 @@
 
 import os
 import getopt
+import sys
 import tempfile
 
 from grit.node import structure
@@ -48,7 +49,7 @@ class DiffStructures(interface.Tool):
 
   def Run(self, global_opts, args):
     (opts, args) = getopt.getopt(args, 's:e:t:',
-                                 ['left_encoding=', 'right_encoding='])
+                                 ('help', 'left_encoding=', 'right_encoding='))
     for key, val in opts:
       if key == '-s':
         self.section = val
@@ -61,6 +62,9 @@ class DiffStructures(interface.Tool):
         self.left_encoding = val
       elif key == '--right_encoding':
         self.right_encoding == val
+      elif key == '--help':
+        self.ShowUsage()
+        sys.exit(0)
 
     if len(args) != 2:
       print "Incorrect usage - 'grit help sdiff' for usage details."

@@ -7,6 +7,7 @@
 
 import getopt
 import os
+import sys
 
 from grit import grd_reader
 from grit.node import structure
@@ -32,10 +33,13 @@ The output directory is used for display only.
   def Run(self, opts, args):
     """Main method for the buildinfo tool."""
     self.output_directory = '.'
-    (own_opts, args) = getopt.getopt(args, 'o:')
+    (own_opts, args) = getopt.getopt(args, 'o:', ('help',))
     for (key, val) in own_opts:
       if key == '-o':
         self.output_directory = val
+      elif key == '--help':
+        self.ShowUsage()
+        sys.exit(0)
     if len(args) > 0:
       print 'This tool takes exactly one argument: the output directory via -o'
       return 2

@@ -163,6 +163,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
     replace_ellipsis = True
     (own_opts, args) = getopt.getopt(args, 'a:p:o:D:E:f:w:t:',
         ('depdir=','depfile=','assert-file-list=',
+         'help',
          'output-all-resource-defines',
          'no-output-all-resource-defines',
          'no-replace-ellipsis',
@@ -209,6 +210,9 @@ are exported to translation interchange files (e.g. XMB files), etc.
         js_minifier = val
       elif key == '--whitelist-support':
         whitelist_support = True
+      elif key == '--help':
+        self.ShowUsage()
+        sys.exit(0)
 
     if len(args):
       print 'This tool takes no tool-specific arguments.'

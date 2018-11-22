@@ -7,6 +7,7 @@
 
 import getopt
 import os
+import sys
 
 from grit import grd_reader
 from grit import pseudo
@@ -193,7 +194,7 @@ near the top of the file, before you open it in Visual Studio.
   def Run(self, opts, args):
     self.SetOptions(opts)
 
-    own_opts, args = getopt.getopt(args, 'l:f:c:D:')
+    own_opts, args = getopt.getopt(args, 'l:f:c:D:', ('help',))
     for key, val in own_opts:
       if key == '-l':
         self.SetLanguage(val)
@@ -205,6 +206,9 @@ near the top of the file, before you open it in Visual Studio.
       if key == '-D':
         name, val = util.ParseDefine(val)
         self.defines[name] = val
+      elif key == '--help':
+        self.ShowUsage()
+        sys.exit(0)
 
     res_tree = grd_reader.Parse(opts.input, debug=opts.extra_verbose)
     res_tree.OnlyTheseTranslations([self.lang])

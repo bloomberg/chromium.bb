@@ -5,6 +5,7 @@
 '''Count number of occurrences of a given message ID.'''
 
 import getopt
+import sys
 
 from grit import grd_reader
 from grit.tool import interface
@@ -21,7 +22,11 @@ class CountMessage(interface.Tool):
 
   def ParseOptions(self, args):
     """Set this objects and return all non-option arguments."""
-    own_opts, args = getopt.getopt(args, '')
+    own_opts, args = getopt.getopt(args, '', ('help',))
+    for key, val in own_opts:
+      if key == '--help':
+        self.ShowUsage()
+        sys.exit(0)
     return args
 
   def Run(self, opts, args):

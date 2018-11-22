@@ -8,6 +8,7 @@
 import getopt
 import os.path
 import StringIO
+import sys
 from xml.dom import Node
 import xml.dom.minidom
 
@@ -124,7 +125,8 @@ OPTIONS may be any of the following:
         Android2Grd._HEADER_DIR_FLAG,
         Android2Grd._XTB_DIR_FLAG,
         Android2Grd._XML_DIR_FLAG, ]
-    (opts, args) = getopt.getopt(args, None, ['%s=' % o for o in flags])
+    (opts, args) = getopt.getopt(
+        args, None, ['%s=' % o for o in flags] + ['help'])
 
     for key, val in opts:
       # Get rid of the preceding hypens.
@@ -143,6 +145,9 @@ OPTIONS may be any of the following:
         self.xtb_dir = val
       elif k == Android2Grd._XML_DIR_FLAG:
         self.xml_res_dir = val
+      elif k == 'help':
+        self.ShowUsage()
+        sys.exit(0)
     return args
 
   def Run(self, opts, args):
