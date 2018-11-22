@@ -238,7 +238,6 @@ js_library("directory_model") {
     ":directory_contents",
     ":file_watcher",
     "../../common/js:importer_common",
-    "../../common/js:metrics_events",
     "ui:file_list_selection_model",
   ]
   externs_list = [
