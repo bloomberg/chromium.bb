@@ -404,6 +404,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
             mojom::DriveFsRequest drive_fs_request,
             mojom::DriveFsDelegatePtr delegate) override {
     EXPECT_EQ("test@example.com", config->user_email);
+    init_access_token_ = std::move(config->access_token);
     binding_.Bind(std::move(drive_fs_request));
     mojo::FuseInterface(std::move(pending_delegate_request_),
                         delegate.PassInterface());
@@ -427,6 +428,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   mojom::DriveFsDelegatePtr delegate_ptr_;
   mojom::DriveFsDelegateRequest pending_delegate_request_;
   std::string token_;
+  base::Optional<std::string> init_access_token_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveFsHostTest);
@@ -439,6 +441,7 @@ TEST_F(DriveFsHostTest, Basic) {
             host_->GetDataPath());
 
   ASSERT_NO_FATAL_FAILURE(DoMount());
+  EXPECT_FALSE(init_access_token_);
 
   EXPECT_EQ(base::FilePath("/media/drivefsroot/salt-g-ID"),
             host_->GetMountPath());
@@ -966,7 +969,7 @@ TEST_F(DriveFsHostTest, Remount_Cached) {
 
   // Second mount attempt should reuse already available token.
   ASSERT_NO_FATAL_FAILURE(DoMount());
-  ExpectAccessToken(mojom::AccessTokenStatus::kSuccess, "auth token");
+  EXPECT_EQ("auth token", init_access_token_.value_or(""));
 }
 
 TEST_F(DriveFsHostTest, Remount_CachedOnceOnly) {
@@ -989,9 +992,9 @@ TEST_F(DriveFsHostTest, Remount_CachedOnceOnly) {
 
   // Second mount attempt should reuse already available token.
   ASSERT_NO_FATAL_FAILURE(DoMount());
-  ExpectAccessToken(mojom::AccessTokenStatus::kSuccess, "auth token");
+  EXPECT_EQ("auth token", init_access_token_.value_or(""));
 
-  // But if it asks for token more than once it goes straight to identity.
+  // But if it asks for token it goes straight to identity.
   ExpectAccessToken(mojom::AccessTokenStatus::kSuccess, "auth token 2");
 }
 
@@ -1040,10 +1043,40 @@ TEST_F(DriveFsHostTest, Remount_RequestInflight) {
   std::move(mock_identity_manager_.callbacks().front())
       .Run("auth token", clock_.Now() + base::TimeDelta::FromHours(1),
            GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  mock_identity_manager_.bindings_->FlushForTesting();
 
   // Second mount will reuse previous token.
   ASSERT_NO_FATAL_FAILURE(DoMount());
+  EXPECT_EQ("auth token", init_access_token_.value_or(""));
+}
 
+TEST_F(DriveFsHostTest, Remount_RequestInflightCompleteAfterMount) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  mock_identity_manager_.set_pause_requests(true);
+
+  delegate_ptr_->GetAccessToken(
+      "client ID", "app ID", {"scope1", "scope2"},
+      base::BindLambdaForTesting([&](mojom::AccessTokenStatus status,
+                                     const std::string& token) { FAIL(); }));
+
+  base::Optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
+  EXPECT_CALL(*host_delegate_, OnUnmounted(delay));
+  SendOnUnmounted(delay);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_NO_FATAL_FAILURE(DoUnmount());
+
+  // Second mount will reuse previous token.
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  EXPECT_FALSE(init_access_token_);
+
+  // Now the response is ready.
+  ASSERT_EQ(1u, mock_identity_manager_.callbacks().size());
+  std::move(mock_identity_manager_.callbacks().front())
+      .Run("auth token", clock_.Now() + base::TimeDelta::FromHours(1),
+           GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  mock_identity_manager_.bindings_->FlushForTesting();
+
+  // A new request will reuse the cached token.
   ExpectAccessToken(mojom::AccessTokenStatus::kSuccess, "auth token");
 }
 
