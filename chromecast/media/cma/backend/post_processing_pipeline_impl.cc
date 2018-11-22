@@ -167,13 +167,18 @@ bool PostProcessingPipelineImpl::SetSampleRate(int sample_rate) {
 }
 
 bool PostProcessingPipelineImpl::IsRinging() {
-  return silence_frames_processed_ < ringing_time_in_frames_;
+  return ringing_time_in_frames_ < 0 ||
+         silence_frames_processed_ < ringing_time_in_frames_;
 }
 
 int PostProcessingPipelineImpl::GetRingingTimeInFrames() {
   int memory_frames = 0;
   for (auto& processor : processors_) {
-    memory_frames += processor.ptr->GetRingingTimeInFrames();
+    int ringing_time = processor.ptr->GetRingingTimeInFrames();
+    if (ringing_time < 0) {
+      return -1;
+    }
+    memory_frames += ringing_time;
   }
   return memory_frames;
 }
