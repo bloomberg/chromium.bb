@@ -1242,6 +1242,10 @@ bool ShelfLayoutManager::StartGestureDrag(
   if (is_app_list_visible_ && !IsHomeLauncherEnabledInTabletMode())
     return false;
 
+  // Also disable shelf drags until the overflow shelf is closed.
+  if (shelf_widget_->IsShowingOverflowBubble())
+    return false;
+
   gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
   gesture_drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
                                       ? auto_hide_state()
@@ -1388,6 +1392,11 @@ bool ShelfLayoutManager::CanStartFullscreenAppListDrag(
 
   // If the shelf is not visible, swiping up should show the shelf.
   if (!IsVisible())
+    return false;
+
+  // Do not show the fullscreen app list until the overflow bubble has been
+  // closed.
+  if (shelf_widget_->IsShowingOverflowBubble())
     return false;
 
   // If app list is already opened, swiping up on the shelf should keep the app

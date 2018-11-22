@@ -276,7 +276,7 @@ class ShelfViewTest : public AshTestBase {
       flag_warning->SetVisible(false);
     }
 
-    // The bounds should be big enough for 4 buttons + overflow chevron.
+    // The bounds should be big enough for 4 buttons + overflow button.
     ASSERT_GE(shelf_view_->width(), 500);
 
     test_api_.reset(new ShelfViewTestAPI(shelf_view_));
@@ -1757,6 +1757,53 @@ TEST_F(ShelfViewTest, CheckDragAndDropFromShelfToOtherShelf) {
                                           false /* cancel */);
   TestDraggingAnItemFromShelfToOtherShelf(true /* main_to_overflow */,
                                           true /* cancel */);
+}
+
+// Checks drag-reorder items within the overflow shelf.
+TEST_F(ShelfViewTest, TestDragWithinOverflow) {
+  // Prepare the overflow and open it.
+  AddButtonsUntilOverflow();
+  // Add a couple more to make sure we have things to drag.
+  AddAppShortcut();
+  AddAppShortcut();
+  test_api_->ShowOverflowBubble();
+  ShelfView* overflow_shelf_view =
+      shelf_view_->overflow_bubble()->bubble_view()->shelf_view();
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+
+  ShelfViewTestAPI overflow_api(overflow_shelf_view);
+
+  // We are going to drag the first item in the overflow (A) onto the last
+  // one (B).
+  int item_a_initial_index = overflow_api.GetFirstVisibleIndex();
+  int item_b_initial_index = overflow_api.GetLastVisibleIndex();
+  ShelfID item_a = GetItemId(item_a_initial_index);
+  ShelfID item_b = GetItemId(item_b_initial_index);
+  ShelfButton* item_a_button = overflow_api.GetButton(item_a_initial_index);
+  ShelfButton* item_b_button = overflow_api.GetButton(item_b_initial_index);
+  gfx::Point drag_point = GetButtonCenter(item_a_button);
+  gfx::Point drop_point = GetButtonCenter(item_b_button);
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(drag_point);
+  EXPECT_EQ(nullptr, overflow_shelf_view->drag_view());
+
+  // TODO(manucornet): Test the same thing with only touches.
+  generator->PressLeftButton();
+
+  generator->MoveMouseTo(drop_point);
+  EXPECT_NE(nullptr, overflow_shelf_view->drag_view());
+  generator->ReleaseLeftButton();
+  overflow_api.RunMessageLoopUntilAnimationsDone();
+
+  // Now, item A should be the last item, and item B should be just before it.
+  ShelfID new_first_visible_item =
+      GetItemId(overflow_api.GetFirstVisibleIndex());
+  EXPECT_NE(item_a, new_first_visible_item);
+  EXPECT_EQ(item_a, GetItemId(overflow_api.GetLastVisibleIndex()));
+  EXPECT_EQ(item_b, GetItemId(overflow_api.GetLastVisibleIndex() - 1));
+
+  test_api_->HideOverflowBubble();
 }
 
 // Checks creating app shortcut for an opened platform app in overflow bubble
