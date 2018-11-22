@@ -47,11 +47,11 @@ void TextRun::SetText(const String& string) {
   len_ = string.length();
   if (!len_) {
     data_.characters8 = nullptr;
-    is8_bit_ = true;
+    is_8bit_ = true;
     return;
   }
-  is8_bit_ = string.Is8Bit();
-  if (is8_bit_)
+  is_8bit_ = string.Is8Bit();
+  if (is_8bit_)
     data_.characters8 = string.Characters8();
   else
     data_.characters16 = string.Characters16();

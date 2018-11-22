@@ -490,7 +490,7 @@ static inline void SetAttributes(Element* element,
   element->ParserSetAttributes(attribute_vector);
 }
 
-static void SwitchEncoding(xmlParserCtxtPtr ctxt, bool is8_bit) {
+static void SwitchEncoding(xmlParserCtxtPtr ctxt, bool is_8bit) {
   // Make sure we don't call xmlSwitchEncoding in an error state.
   if ((ctxt->errNo != XML_ERR_OK) && (ctxt->disableSAX == 1))
     return;
@@ -499,7 +499,7 @@ static void SwitchEncoding(xmlParserCtxtPtr ctxt, bool is8_bit) {
   // resetting the encoding to UTF-16 before every chunk. Otherwise libxml
   // will detect <?xml version="1.0" encoding="<encoding name>"?> blocks and
   // switch encodings, causing the parse to fail.
-  if (is8_bit) {
+  if (is_8bit) {
     xmlSwitchEncoding(ctxt, XML_CHAR_ENCODING_8859_1);
     return;
   }
@@ -512,9 +512,9 @@ static void SwitchEncoding(xmlParserCtxtPtr ctxt, bool is8_bit) {
 }
 
 static void ParseChunk(xmlParserCtxtPtr ctxt, const String& chunk) {
-  bool is8_bit = chunk.Is8Bit();
-  SwitchEncoding(ctxt, is8_bit);
-  if (is8_bit)
+  bool is_8bit = chunk.Is8Bit();
+  SwitchEncoding(ctxt, is_8bit);
+  if (is_8bit)
     xmlParseChunk(ctxt, reinterpret_cast<const char*>(chunk.Characters8()),
                   sizeof(LChar) * chunk.length(), 0);
   else

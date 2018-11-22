@@ -139,7 +139,7 @@ class WTFStringImplPrinter(StringPrinter):
                                  self.get_length())
 
     def is_8bit(self):
-        return self.val['is8_bit_']
+        return self.val['is_8bit_']
 
 
 class WTFStringPrinter(StringPrinter):

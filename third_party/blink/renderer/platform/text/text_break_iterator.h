@@ -346,30 +346,30 @@ class PLATFORM_EXPORT NonSharedCharacterBreakIterator final {
   int Preceding(int offset) const;
   int Following(int offset) const;
 
-  bool operator!() const { return !is8_bit_ && !iterator_; }
+  bool operator!() const { return !is_8bit_ && !iterator_; }
 
  private:
   void CreateIteratorForBuffer(const UChar*, unsigned length);
 
   unsigned ClusterLengthStartingAt(unsigned offset) const {
-    DCHECK(is8_bit_);
+    DCHECK(is_8bit_);
     // The only Latin-1 Extended Grapheme Cluster is CR LF
     return IsCRBeforeLF(offset) ? 2 : 1;
   }
 
   bool IsCRBeforeLF(unsigned offset) const {
-    DCHECK(is8_bit_);
+    DCHECK(is_8bit_);
     return charaters8_[offset] == '\r' && offset + 1 < length_ &&
            charaters8_[offset + 1] == '\n';
   }
 
   bool IsLFAfterCR(unsigned offset) const {
-    DCHECK(is8_bit_);
+    DCHECK(is_8bit_);
     return charaters8_[offset] == '\n' && offset >= 1 &&
            charaters8_[offset - 1] == '\r';
   }
 
-  bool is8_bit_;
+  bool is_8bit_;
 
   // For 8 bit strings, we implement the iterator ourselves.
   const LChar* charaters8_;
