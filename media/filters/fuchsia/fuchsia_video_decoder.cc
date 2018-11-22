@@ -153,9 +153,6 @@ class InputBuffer {
 
   ~InputBuffer() { CallDecodeCallbackIfAny(DecodeStatus::ABORTED); }
 
-  InputBuffer(InputBuffer&& other) = default;
-  InputBuffer& operator=(InputBuffer&& other) = default;
-
   bool Initialize(
       const fuchsia::mediacodec::CodecBufferConstraints& constraints) {
     return buffer_.Initialize(constraints);
@@ -217,9 +214,6 @@ class InputBuffer {
 class OutputBuffer : public base::RefCountedThreadSafe<OutputBuffer> {
  public:
   OutputBuffer() = default;
-
-  OutputBuffer(OutputBuffer&& other) = default;
-  OutputBuffer& operator=(OutputBuffer&& other) = default;
 
   bool Initialize(
       const fuchsia::mediacodec::CodecBufferConstraints& constraints) {
