@@ -73,7 +73,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -108,7 +108,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -138,6 +137,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
@@ -1036,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
   EXPECT_FALSE(
-      SigninManagerFactory::GetForProfile(profile)->IsAuthenticated());
+      IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount());
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenAllowed) {
