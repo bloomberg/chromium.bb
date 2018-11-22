@@ -1,0 +1,15 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/autofill/core/browser/autofill_client.h"
+
+#include "components/version_info/channel.h"
+
+namespace autofill {
+
+version_info::Channel AutofillClient::GetChannel() const {
+  return version_info::Channel::UNKNOWN;
+}
+
+}  // namespace autofill

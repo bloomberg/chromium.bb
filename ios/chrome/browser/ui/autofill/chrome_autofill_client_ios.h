@@ -44,6 +44,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void SetBaseViewController(UIViewController* base_view_controller);
 
   // AutofillClientIOS implementation.
+  version_info::Channel GetChannel() const override;
   PersonalDataManager* GetPersonalDataManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;

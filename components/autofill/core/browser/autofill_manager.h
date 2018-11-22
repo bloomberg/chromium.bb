@@ -199,6 +199,10 @@ class AutofillManager : public AutofillHandler,
   // to be uploadable. Exposed for testing.
   bool ShouldUploadForm(const FormStructure& form);
 
+  // Rich queries are enabled by feature flag iff this chrome instance is
+  // neither on the STABLE nor BETA release channel.
+  static bool IsRichQueryEnabled(version_info::Channel channel);
+
  protected:
   // Test code should prefer to use this constructor.
   AutofillManager(AutofillDriver* driver,
@@ -272,6 +276,9 @@ class AutofillManager : public AutofillHandler,
   void set_download_manager(AutofillDownloadManager* manager) {
     download_manager_.reset(manager);
   }
+
+  // Exposed for testing.
+  bool is_rich_query_enabled() const { return is_rich_query_enabled_; }
 
  private:
   // Keeps track of the filling context for a form, used to make refill attemps.
@@ -578,6 +585,9 @@ class AutofillManager : public AutofillHandler,
   // attempts for dynamic forms.
   std::map<base::string16, std::unique_ptr<FillingContext>>
       filling_contexts_map_;
+
+  // Tracks whether or not rich query encoding is enabled for this client.
+  const bool is_rich_query_enabled_ = false;
 
   base::WeakPtrFactory<AutofillManager> weak_ptr_factory_;
 
