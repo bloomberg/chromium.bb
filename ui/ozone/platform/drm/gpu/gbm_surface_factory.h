@@ -53,8 +53,6 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
 
   std::unique_ptr<OverlaySurface> CreateOverlaySurface(
       gfx::AcceleratedWidget window) override;
-  std::vector<gfx::BufferFormat> GetScanoutFormats(
-      gfx::AcceleratedWidget widget) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
   scoped_refptr<gfx::NativePixmap> CreateNativePixmap(

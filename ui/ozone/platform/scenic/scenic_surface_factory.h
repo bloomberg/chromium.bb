@@ -27,8 +27,6 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
   GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
-  std::vector<gfx::BufferFormat> GetScanoutFormats(
-      gfx::AcceleratedWidget widget) override;
   scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
       gfx::AcceleratedWidget widget,
       gfx::Size size,

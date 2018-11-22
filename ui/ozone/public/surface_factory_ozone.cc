@@ -61,11 +61,6 @@ std::unique_ptr<SurfaceOzoneCanvas> SurfaceFactoryOzone::CreateCanvasForWidget(
   return nullptr;
 }
 
-std::vector<gfx::BufferFormat> SurfaceFactoryOzone::GetScanoutFormats(
-    gfx::AcceleratedWidget widget) {
-  return std::vector<gfx::BufferFormat>();
-}
-
 scoped_refptr<gfx::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
