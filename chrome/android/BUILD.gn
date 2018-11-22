@@ -1882,7 +1882,12 @@ android_app_bundle("chrome_public_bundle") {
 android_app_bundle("chrome_modern_public_bundle") {
   bundle_name = "ChromeModernPublic"
   base_module_target = ":chrome_modern_public_base_module"
-  proguard_enabled = !is_java_debug
+  if (!is_java_debug) {
+    proguard_enabled = true
+    if (experimental_r8_path == "") {
+      enable_multidex = true
+    }
+  }
   enable_language_splits = enable_chrome_language_splits
   if (modularize_vr) {
     extra_modules = [
