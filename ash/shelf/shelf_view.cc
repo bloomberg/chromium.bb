@@ -1807,14 +1807,6 @@ void ShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
-  // Do not forward events to |shelf_| (which forwards events to the shelf
-  // layout manager) as we do not want gestures on the overflow to open the app
-  // list for example.
-  if (is_overflow_mode()) {
-    main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(*event);
-    event->StopPropagation();
-    return;
-  }
 
   // Convert the event location from current view to screen, since swiping up on
   // the shelf can open the fullscreen app list. Updating the bounds of the app
@@ -1824,6 +1816,13 @@ void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
   event->set_location(location_in_screen);
   if (shelf_->ProcessGestureEvent(*event))
     event->StopPropagation();
+  else if (is_overflow_mode()) {
+    // If the event hasn't been processed and the overflow shelf is showing,
+    // let the bubble process the event.
+    main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(*event);
+    event->StopPropagation();
+    return;
+  }
 }
 
 bool ShelfView::OnMouseWheel(const ui::MouseWheelEvent& event) {
