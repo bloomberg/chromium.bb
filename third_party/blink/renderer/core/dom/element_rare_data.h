@@ -49,6 +49,7 @@
 namespace blink {
 
 class Element;
+class HTMLElement;
 class ResizeObservation;
 class ResizeObserver;
 
@@ -157,6 +158,7 @@ class ElementRareData : public NodeRareData {
   const AtomicString& IsValue() const { return is_value_; }
   void SetDidAttachInternals() { did_attach_internals_ = true; }
   bool DidAttachInternals() const { return did_attach_internals_; }
+  ElementInternals& EnsureElementInternals(HTMLElement& target);
 
   AccessibleNode* GetAccessibleNode() const { return accessible_node_.Get(); }
   AccessibleNode* EnsureAccessibleNode(Element* owner_element) {
@@ -231,6 +233,7 @@ class ElementRareData : public NodeRareData {
   Member<V0CustomElementDefinition> v0_custom_element_definition_;
   Member<CustomElementDefinition> custom_element_definition_;
   AtomicString is_value_;
+  TraceWrapperMember<ElementInternals> element_internals_;
 
   Member<PseudoElementData> pseudo_element_data_;
 

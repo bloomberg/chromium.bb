@@ -259,7 +259,9 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
       return element.HasTagName(kATag) && element.FastHasAttribute(kNameAttr);
     case kFormControls:
       DCHECK(IsHTMLFieldSetElement(html_collection.ownerNode()));
-      return IsHTMLObjectElement(element) || IsHTMLFormControlElement(element);
+      return IsHTMLObjectElement(element) ||
+             IsHTMLFormControlElement(element) ||
+             element.IsFormAssociatedCustomElement();
     case kClassCollectionType:
     case kTagCollectionType:
     case kTagCollectionNSType:
