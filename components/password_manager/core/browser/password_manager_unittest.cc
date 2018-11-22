@@ -101,6 +101,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(GetMainFrameURL, const GURL&());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
   MOCK_CONST_METHOD0(GetStoreResultFilter, const MockStoreResultFilter*());
+  MOCK_METHOD0(GetMetricsRecorder, PasswordManagerMetricsRecorder*());
 
   // Workaround for std::unique_ptr<> lacking a copy constructor.
   bool PromptUserToSaveOrUpdatePassword(
@@ -202,6 +203,7 @@ class PasswordManagerTest : public testing::Test {
     EXPECT_CALL(*store_, IsAbleToSavePasswords()).WillRepeatedly(Return(true));
 
     ON_CALL(client_, GetMainFrameURL()).WillByDefault(ReturnRef(test_url_));
+    ON_CALL(client_, GetMetricsRecorder()).WillByDefault(Return(nullptr));
   }
 
   void TearDown() override {
@@ -2934,6 +2936,44 @@ TEST_F(PasswordManagerTest, AutofillPredictionBeforeFormParsed) {
 
   manager()->OnPasswordFormsParsed(&driver_, {form});
   task_runner_->FastForwardUntilNoTasksRemain();
+}
+
+// Check that when a form is submitted and a NewPasswordFormManager not present,
+// this ends up reported.
+TEST_F(PasswordManagerTest, ReportMissingFormManager_New) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForSaving(&scoped_feature_list);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+  manager()->OnPasswordFormsParsed(&driver_, {});
+  manager()->OnPasswordFormsRendered(&driver_, {}, true);
+
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  auto metrics_recorder = std::make_unique<PasswordManagerMetricsRecorder>(
+      1234, GURL("http://example.com"));
+  EXPECT_CALL(client_, GetMetricsRecorder())
+      .WillRepeatedly(Return(metrics_recorder.get()));
+
+  PasswordForm unobserved_form = MakeSimpleForm();
+  manager()->OnPasswordFormSubmitted(nullptr, unobserved_form);
+
+  // 2 samples instead of just 1, because one is also reported from the missing
+  // (old) PasswordFormManager.
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.ProvisionalSaveFailure",
+      PasswordManagerMetricsRecorder::NO_MATCHING_FORM, 2);
+  // Flush the UKM reports.
+  metrics_recorder.reset();
+  std::vector<const ukm::mojom::UkmEntry*> ukm_entries =
+      test_ukm_recorder.GetEntriesByName(
+          ukm::builders::PageWithPassword::kEntryName);
+  ASSERT_EQ(1u, ukm_entries.size());
+  test_ukm_recorder.ExpectEntryMetric(
+      ukm_entries[0],
+      ukm::builders::PageWithPassword::kProvisionalSaveFailureName,
+      static_cast<int64_t>(PasswordManagerMetricsRecorder::NO_MATCHING_FORM));
 }
 
 }  // namespace password_manager

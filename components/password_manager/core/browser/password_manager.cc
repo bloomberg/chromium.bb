@@ -892,17 +892,24 @@ void PasswordManager::CreateFormManagers(
 void PasswordManager::ProcessSubmittedForm(
     const FormData& submitted_form,
     const PasswordManagerDriver* driver) {
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (password_manager_util::IsLoggingActive(client_)) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+  }
   if (!client_->IsSavingAndFillingEnabledForCurrentPage()) {
-    std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
-    if (password_manager_util::IsLoggingActive(client_)) {
-      logger.reset(
-          new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
-    }
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SAVING_DISABLED, submitted_form.origin,
         logger.get());
     return;
   }
+
+  // No need to report PasswordManagerMetricsRecorder::EMPTY_PASSWORD, because
+  // PasswordToSave in NewPasswordFormManager DCHECKs that the password is never
+  // empty.
+
+  // TODO(https://crbug.com/831123): Add the
+  // ShouldBlockPasswordForSameOriginButDifferentScheme check.
 
   NewPasswordFormManager* matching_form_manager = nullptr;
   for (const auto& manager : form_managers_) {
@@ -912,8 +919,11 @@ void PasswordManager::ProcessSubmittedForm(
     }
   }
   if (!matching_form_manager) {
-    // TODO(https://crbug.com/831123). Add metrics and implement more robust
-    // handling when |matching_form_manager| is not found.
+    // TODO(https://crbug.com/831123): Implement more robust handling when
+    // |matching_form_manager| is not found.
+    RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::NO_MATCHING_FORM, submitted_form.origin,
+        logger.get());
     return;
   }
 
