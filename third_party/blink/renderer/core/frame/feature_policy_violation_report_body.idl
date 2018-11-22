@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/WICG/reporting/blob/master/EXPLAINER.md#reportingobserver---observing-reports-from-javascript
+// https://wicg.github.io/feature-policy/#reporting
 
 [
     NoInterfaceObject
 ] interface FeaturePolicyViolationReportBody : ReportBody {
-  readonly attribute DOMString feature;
-  readonly attribute DOMString disposition;
-  readonly attribute DOMString message;
+  readonly attribute DOMString featureId;
   readonly attribute DOMString? sourceFile;
   readonly attribute unsigned long? lineNumber;
   readonly attribute unsigned long? columnNumber;
+  readonly attribute DOMString disposition;
+  readonly attribute DOMString? message;
 };

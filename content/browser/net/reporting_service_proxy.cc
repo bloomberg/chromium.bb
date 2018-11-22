@@ -107,23 +107,24 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
 
   void QueueFeaturePolicyViolationReport(
       const GURL& url,
-      const std::string& policy,
+      const std::string& policy_id,
       const std::string& disposition,
-      const std::string& message,
+      const base::Optional<std::string>& message,
       const base::Optional<std::string>& source_file,
       int line_number,
       int column_number) override {
     auto body = std::make_unique<base::DictionaryValue>();
-    body->SetString("policy", policy);
+    body->SetString("policyId", policy_id);
     body->SetString("disposition", disposition);
-    body->SetString("message", message);
+    if (message)
+      body->SetString("message", *message);
     if (source_file)
       body->SetString("sourceFile", *source_file);
     if (line_number)
       body->SetInteger("lineNumber", line_number);
     if (column_number)
       body->SetInteger("columnNumber", column_number);
-    QueueReport(url, "default", "feature-policy", std::move(body));
+    QueueReport(url, "default", "feature-policy-violation", std::move(body));
   }
 
  private:
