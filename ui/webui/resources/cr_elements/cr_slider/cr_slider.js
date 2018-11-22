@@ -62,6 +62,7 @@ cr_slider.SliderTick;
       dragging: {
         type: Boolean,
         value: false,
+        notify: true,
         reflectToAttribute: true,
       },
 
@@ -78,6 +79,16 @@ cr_slider.SliderTick;
       min: {
         type: Number,
         value: 0,
+      },
+
+      /**
+       * When set to false, the keybindings are not handled by this component,
+       * for example when the owner of the component wants to set up its own
+       * keybindings.
+       */
+      noKeybindings: {
+        type: Boolean,
+        value: false,
       },
 
       snaps: {
@@ -135,6 +146,13 @@ cr_slider.SliderTick;
         type: String,
         value: '',
       },
+
+      /** @private */
+      isRtl_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
     },
 
     hostAttributes: {
@@ -157,15 +175,13 @@ cr_slider.SliderTick;
     /** @private {Map<string, number>} */
     deltaKeyMap_: null,
 
-    /** @private {boolean} */
-    isRtl_: false,
 
     /** @private {EventTracker} */
     draggingEventTracker_: null,
 
     /** @override */
     attached: function() {
-      this.isRtl_ = this.matches(':host-context([dir=rtl]) cr-slider');
+      this.isRtl_ = window.getComputedStyle(this)['direction'] === 'rtl';
       this.deltaKeyMap_ = new Map([
         ['ArrowDown', -1],
         ['ArrowUp', 1],
@@ -234,15 +250,17 @@ cr_slider.SliderTick;
      * @private
      */
     stopDragging_: function(pointerId) {
-      this.dragging = false;
-      this.draggingEventTracker_.removeAll();
+      // Update |value| before updating |dragging| so dragging-changed event
+      // handlers will have access to the updated |value|.
       this.value = this.immediateValue_;
+      this.draggingEventTracker_.removeAll();
+      this.releasePointerCapture(pointerId);
+      this.dragging = false;
       // If there is a ripple animation in progress, setTimeout will hold off
       // on updating |holdDown_|.
       setTimeout(() => {
         this.holdDown_ = false;
       });
-      this.releasePointerCapture(pointerId);
     },
 
     /** @private */
@@ -271,25 +289,28 @@ cr_slider.SliderTick;
      * @private
      */
     onKeyDown_: function(event) {
-      if (this.disabled_)
+      if (this.disabled_ || this.noKeybindings)
         return;
 
       if (event.metaKey || event.shiftKey || event.altKey || event.ctrlKey)
         return;
 
       let handled = true;
-      if (event.key == 'Home')
-        this.value = this.min;
-      else if (event.key == 'End')
-        this.value = this.max;
-      else if (this.deltaKeyMap_.has(event.key)) {
+      if (event.key == 'Home') {
+        this.immediateValue_ = this.min;
+      } else if (event.key == 'End') {
+        this.immediateValue_ = this.max;
+      } else if (this.deltaKeyMap_.has(event.key)) {
         const newValue = this.value + this.deltaKeyMap_.get(event.key);
-        this.value = clamp(this.min, this.max, newValue);
-      } else
+        this.immediateValue_ = clamp(this.min, this.max, newValue);
+      } else {
         handled = false;
+      }
 
       if (handled) {
+        this.value = this.immediateValue_;
         event.preventDefault();
+        event.stopPropagation();
         setTimeout(() => {
           this.holdDown_ = true;
         });
@@ -307,13 +328,13 @@ cr_slider.SliderTick;
         return;
 
       this.dragging = true;
+      this.updateValueFromClientX_(event.clientX);
       // If there is a ripple animation in progress, setTimeout will hold off on
       // updating |holdDown_|.
       setTimeout(() => {
         this.$.knob.focus();
         this.holdDown_ = true;
       });
-      this.updateValueFromClientX_(event.clientX);
 
       this.setPointerCapture(event.pointerId);
       const stopDragging = this.stopDragging_.bind(this, event.pointerId);
