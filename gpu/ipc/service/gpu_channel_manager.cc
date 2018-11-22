@@ -439,7 +439,7 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
   const bool enable_raster_transport =
       gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
       gpu::kGpuFeatureStatusEnabled;
-  if (enable_raster_transport) {
+  if (enable_raster_transport || features::IsUsingSkiaDeferredDisplayList()) {
     raster_decoder_context_state_->InitializeGrContext(
         gpu_driver_bug_workarounds_, gr_shader_cache(), &activity_flags_,
         watchdog_);
