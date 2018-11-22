@@ -802,7 +802,8 @@ extern int translation_direction;
 /**
  * Return true if given translation mode is valid.
  */
-int isValidMode(int mode);
+int
+isValidMode(int mode);
 
 #ifdef __cplusplus
 }

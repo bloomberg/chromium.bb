@@ -252,4 +252,3 @@ isValidMode(int mode) {
 	}
 	return 0;
 }
-
