@@ -1861,10 +1861,6 @@ void AutofillMetrics::FormEventLogger::SetBankNameAvailable() {
   has_logged_bank_name_available_ = true;
 }
 
-void AutofillMetrics::FormEventLogger::OnDidSeeDynamicForm() {
-  Log(AutofillMetrics::FORM_EVENT_DID_SEE_DYNAMIC_FORM);
-}
-
 void AutofillMetrics::FormEventLogger::OnDidSeeFillableDynamicForm() {
   Log(AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM);
 }

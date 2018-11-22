@@ -1876,8 +1876,6 @@ bool AutofillManager::ShouldTriggerRefill(const FormStructure& form_structure) {
   if (!base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
     return false;
 
-  address_form_event_logger_->OnDidSeeDynamicForm();
-
   // Should not refill if a form with the same name has not been filled before.
   auto itr =
       filling_contexts_map_.find(form_structure.GetIdentifierForRefill());

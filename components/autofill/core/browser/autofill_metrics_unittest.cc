@@ -7874,18 +7874,7 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
   // initially.
   FormStructure form_structure(form);
   autofill_manager_->ShouldTriggerRefill(form_structure);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.FormEvents.Address",
-      AutofillMetrics::FORM_EVENT_DID_SEE_DYNAMIC_FORM, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.FormEvents.Address",
-      AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 0);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.FormEvents.Address",
-      AutofillMetrics::FORM_EVENT_DID_DYNAMIC_REFILL, 0);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.FormEvents.Address",
-      AutofillMetrics::FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL, 0);
+  histogram_tester.ExpectTotalCount("Autofill.FormEvents.Address", 0);
 
   // Simulate filling the form.
   autofill_manager_->FillOrPreviewForm(
@@ -7895,9 +7884,6 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
   // Simulate checking whether to fill a dynamic form after the form was filled
   // initially.
   autofill_manager_->ShouldTriggerRefill(form_structure);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.FormEvents.Address",
-      AutofillMetrics::FORM_EVENT_DID_SEE_DYNAMIC_FORM, 2);
   histogram_tester.ExpectBucketCount(
       "Autofill.FormEvents.Address",
       AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 1);
@@ -7912,9 +7898,6 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
   autofill_manager_->TriggerRefill(form);
   histogram_tester.ExpectBucketCount(
       "Autofill.FormEvents.Address",
-      AutofillMetrics::FORM_EVENT_DID_SEE_DYNAMIC_FORM, 2);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.FormEvents.Address",
       AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 1);
   histogram_tester.ExpectBucketCount(
       "Autofill.FormEvents.Address",
@@ -7925,9 +7908,6 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
 
   // Trigger a check to see whether a refill should happen. The
   autofill_manager_->ShouldTriggerRefill(form_structure);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.FormEvents.Address",
-      AutofillMetrics::FORM_EVENT_DID_SEE_DYNAMIC_FORM, 3);
   histogram_tester.ExpectBucketCount(
       "Autofill.FormEvents.Address",
       AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 2);
