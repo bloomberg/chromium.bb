@@ -364,7 +364,8 @@ void TypedURLSyncBridge::OnURLVisited(HistoryBackend* history_backend,
   std::unique_ptr<MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
 
-  UpdateSyncFromLocal(row, metadata_change_list.get());
+  UpdateSyncFromLocal(row, /*is_from_expiration=*/false,
+                      metadata_change_list.get());
 }
 
 void TypedURLSyncBridge::OnURLsModified(HistoryBackend* history_backend,
@@ -384,10 +385,12 @@ void TypedURLSyncBridge::OnURLsModified(HistoryBackend* history_backend,
 
   for (const auto& row : changed_urls) {
     // Only care if the modified URL is typed.
+    // TODO(crbug.com/907476): Get rid of this trivial check. Typed_count()
+    // cannot ever be negative.
     if (row.typed_count() >= 0) {
       // If there were any errors updating the sync node, just ignore them and
       // continue on to process the next URL.
-      UpdateSyncFromLocal(row, metadata_change_list.get());
+      UpdateSyncFromLocal(row, is_from_expiration, metadata_change_list.get());
     }
   }
 }
@@ -414,17 +417,7 @@ void TypedURLSyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
   if (expired) {
     // Delete metadata from the DB and ask the processor to untrack the entries.
     for (const URLRow& row : deleted_rows) {
-      std::string storage_key = GetStorageKeyFromURLRow(row);
-      // The following functions need to tolerate if there exists no metadata
-      // for |storage_key|. The reason is we have no way to tell if there is any
-      // metadata for this row. We cannot distinguish a URL that has never been
-      // typed from a URL that has been typed before but its typed visit has
-      // expired earlier than the URL itself (because there were non-typed
-      // visits afterwards). On top of that, this bridge is not very robust in
-      // syncing up every typed URL.
-      sync_metadata_database_->ClearSyncMetadata(syncer::TYPED_URLS,
-                                                 storage_key);
-      change_processor()->UntrackEntityForStorageKey(storage_key);
+      ExpireMetadataForURL(row);
     }
     return;
   }
@@ -935,6 +928,7 @@ void TypedURLSyncBridge::UpdateFromSync(
 
 void TypedURLSyncBridge::UpdateSyncFromLocal(
     URLRow row,
+    bool is_from_expiration,
     MetadataChangeList* metadata_change_list) {
   DCHECK_GE(row.typed_count(), 0);
 
@@ -947,9 +941,34 @@ void TypedURLSyncBridge::UpdateSyncFromLocal(
     return;
   }
 
-  SendTypedURLToProcessor(row, visit_vector, metadata_change_list);
+  std::string storage_key = GetStorageKeyFromURLRow(row);
 
-  return;
+  if (HasTypedUrl(visit_vector)) {
+    SendTypedURLToProcessor(row, visit_vector, metadata_change_list);
+  } else {
+    // If the URL has no typed visits any more we should get rid of it. It is
+    // possible that this URL never had typed visits and thus it has no sync
+    // entity and no sync metadata. We do not need to check for this case
+    // as all the code below is no-op if there is no sync metadata for |row|.
+    if (is_from_expiration) {
+      // Only remove its metadata as we do not sync up deletions for expired
+      // entities (see the comment in OnURLsDeleted()).
+      ExpireMetadataForURL(row);
+    } else {
+      // This change is caused by the user explicitly removing some visits, we
+      // should also remove the entity from sync.
+      change_processor()->Delete(storage_key, metadata_change_list);
+    }
+  }
+}
+
+void TypedURLSyncBridge::ExpireMetadataForURL(const URLRow& row) {
+  std::string storage_key = GetStorageKeyFromURLRow(row);
+  // The following functions need to tolerate if there exists no metadata
+  // for |storage_key| as we might call this function multiple times for a given
+  // url.
+  sync_metadata_database_->ClearSyncMetadata(syncer::TYPED_URLS, storage_key);
+  change_processor()->UntrackEntityForStorageKey(storage_key);
 }
 
 base::Optional<ModelError> TypedURLSyncBridge::WriteToHistoryBackend(
@@ -1080,6 +1099,8 @@ bool TypedURLSyncBridge::ShouldSyncVisit(int typed_count,
   // suggestions. But there are relatively few URLs with > 10 visits, and those
   // tend to be more broadly distributed such that there's no need to sync up
   // every visit to preserve their relative ordering.
+  // TODO(crbug.com/907476): Get rid of the trivial 'typed_count >= 0' check;
+  // typed_count cannot ever be negative.
   return (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
           typed_count >= 0 &&
           (typed_count < kTypedUrlVisitThrottleThreshold ||

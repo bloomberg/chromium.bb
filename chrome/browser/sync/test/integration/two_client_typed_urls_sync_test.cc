@@ -25,11 +25,12 @@ using typed_urls_helper::AddUrlToHistoryWithTimestamp;
 using typed_urls_helper::AddUrlToHistoryWithTransition;
 using typed_urls_helper::AreVisitsEqual;
 using typed_urls_helper::AreVisitsUnique;
-using typed_urls_helper::CheckURLRowVectorsAreEqual;
 using typed_urls_helper::CheckSyncHasMetadataForURLID;
 using typed_urls_helper::CheckSyncHasURLMetadata;
+using typed_urls_helper::CheckURLRowVectorsAreEqualForTypedURLs;
 using typed_urls_helper::DeleteUrlFromHistory;
 using typed_urls_helper::ExpireHistoryBefore;
+using typed_urls_helper::ExpireHistoryBetween;
 using typed_urls_helper::GetTypedUrlsFromClient;
 using typed_urls_helper::GetUrlFromClient;
 using typed_urls_helper::GetVisitsFromClient;
@@ -47,7 +48,7 @@ class TwoClientTypedUrlsSyncTest : public SyncTest {
   ::testing::AssertionResult CheckClientsEqual() {
     history::URLRows urls = GetTypedUrlsFromClient(0);
     history::URLRows urls2 = GetTypedUrlsFromClient(1);
-    if (!CheckURLRowVectorsAreEqual(urls, urls2))
+    if (!CheckURLRowVectorsAreEqualForTypedURLs(urls, urls2))
       return ::testing::AssertionFailure() << "URLVectors are not equal";
     // Now check the visits.
     for (size_t i = 0; i < urls.size() && i < urls2.size(); i++) {
@@ -94,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(Add)) {
   // Populate one client with a URL, wait for it to sync to the other.
   GURL new_url(kHistoryUrl);
   AddUrlToHistory(0, new_url);
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 
   // Assert that the second client has the correct new URL.
   history::URLRows urls = GetTypedUrlsFromClient(1);
@@ -279,6 +280,88 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenExpireThenAddAgain) {
   EXPECT_TRUE(CheckSyncHasURLMetadata(0, url));
 }
 
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenExpireVisitByVisit) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  base::Time now = base::Time::Now();
+
+  // Populate one client with a URL (with three visits), should sync to the
+  // other. First non-typed, then typed, then non-typed again.
+  GURL url("http://www.add-one-history.google.com/");
+  base::Time insertion_time = now - base::TimeDelta::FromDays(6);
+  base::Time second_typed_visit_time = now - base::TimeDelta::FromDays(5);
+  base::Time third_link_visit_time = now - base::TimeDelta::FromDays(4);
+  base::Time dummy_visit_1 = now - base::TimeDelta::FromDays(3);
+  base::Time dummy_visit_2 = now - base::TimeDelta::FromDays(2);
+  base::Time dummy_visit_3 = now - base::TimeDelta::FromDays(1);
+  AddUrlToHistoryWithTimestamp(0, url, ui::PAGE_TRANSITION_LINK,
+                               history::SOURCE_BROWSED, insertion_time);
+  AddUrlToHistoryWithTimestamp(0, url, ui::PAGE_TRANSITION_TYPED,
+                               history::SOURCE_BROWSED,
+                               second_typed_visit_time);
+  AddUrlToHistoryWithTimestamp(0, url, ui::PAGE_TRANSITION_LINK,
+                               history::SOURCE_BROWSED, third_link_visit_time);
+  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(1U, urls.size());
+  ASSERT_EQ(url, urls[0].url());
+  history::URLID url_id_on_first_client = urls[0].id();
+
+  // Wait for sync to finish.
+  ASSERT_TRUE(TypedURLChecker(1, url.spec()).Wait());
+
+  // Second client should have the url.
+  ASSERT_EQ(1U, GetTypedUrlsFromClient(1).size());
+  EXPECT_TRUE(CheckSyncHasURLMetadata(1, url));
+
+  // Expire the first (non-typed) visit on the first client and assert both data
+  // and metadata are intact.
+  ExpireHistoryBefore(0, insertion_time + base::TimeDelta::FromSeconds(1));
+  ASSERT_EQ(1U, GetTypedUrlsFromClient(0).size());
+  EXPECT_TRUE(CheckSyncHasMetadataForURLID(0, url_id_on_first_client));
+
+  // Force a sync cycle (add a dummy typed url and sync it) and check the second
+  // client still has the original URL (plus the dummy one).
+  AddUrlToHistoryWithTimestamp(0, GURL(kDummyUrl), ui::PAGE_TRANSITION_TYPED,
+                               history::SOURCE_BROWSED, dummy_visit_1);
+  ASSERT_EQ(2U, GetTypedUrlsFromClient(0).size());
+  ASSERT_TRUE(TypedURLChecker(1, kDummyUrl).Wait());
+  ASSERT_EQ(2U, GetTypedUrlsFromClient(1).size());
+  EXPECT_TRUE(CheckSyncHasURLMetadata(1, url));
+
+  // Expire the second (typed) visit on the first client and assert both data
+  // and metadata for the URL are gone.
+  ExpireHistoryBefore(
+      0, second_typed_visit_time + base::TimeDelta::FromSeconds(1));
+  std::vector<history::URLRow> pruned_urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(1U, pruned_urls.size());
+  ASSERT_EQ(GURL(kDummyUrl), pruned_urls[0].url());
+  EXPECT_FALSE(CheckSyncHasMetadataForURLID(0, url_id_on_first_client));
+
+  // Force a sync cycle (add another visit to the dummy url and sync it).
+  AddUrlToHistoryWithTimestamp(0, GURL(kDummyUrl), ui::PAGE_TRANSITION_TYPED,
+                               history::SOURCE_BROWSED, dummy_visit_2);
+  ASSERT_TRUE(TypedURLChecker(1, kDummyUrl).Wait());
+
+  // The expiration should not get synced up, the second client still has the
+  // URL (and also the dummy one).
+  ASSERT_EQ(2U, GetTypedUrlsFromClient(1).size());
+  EXPECT_TRUE(CheckSyncHasURLMetadata(1, url));
+
+  // Now expire also the last non-typed visit (make sure it has no impact).
+  ExpireHistoryBefore(0,
+                      third_link_visit_time + base::TimeDelta::FromSeconds(1));
+  ASSERT_EQ(1U, GetTypedUrlsFromClient(0).size());
+  EXPECT_FALSE(CheckSyncHasMetadataForURLID(0, url_id_on_first_client));
+
+  // Force a sync cycle (add another visit to the dummy url and sync it) and
+  // check the second client still has the same state.
+  AddUrlToHistoryWithTimestamp(0, GURL(kDummyUrl), ui::PAGE_TRANSITION_TYPED,
+                               history::SOURCE_BROWSED, dummy_visit_3);
+  ASSERT_TRUE(TypedURLChecker(1, kDummyUrl).Wait());
+  ASSERT_EQ(2U, GetTypedUrlsFromClient(1).size());
+  EXPECT_TRUE(CheckSyncHasURLMetadata(1, url));
+}
+
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(AddThenDelete)) {
   // Use a randomized URL to prevent test collisions.
   const base::string16 kHistoryUrl = ASCIIToUTF16(base::StringPrintf(
@@ -290,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(AddThenDelete)) {
   // Populate one client with a URL, wait for it to sync to the other.
   GURL new_url(kHistoryUrl);
   AddUrlToHistory(0, new_url);
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 
   // Assert that the second client has the correct new URL.
   history::URLRows urls = GetTypedUrlsFromClient(1);
@@ -299,10 +382,43 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(AddThenDelete)) {
 
   // Delete from first client, and wait for them to sync.
   DeleteUrlFromHistory(0, new_url);
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 
   // Assert that it's deleted from the second client.
   ASSERT_EQ(initial_count, GetTypedUrlsFromClient(1).size());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
+                       AddMultipleVisitsThenDeleteAllTypedVisits) {
+  const base::string16 kHistoryUrl(ASCIIToUTF16("http://history1.google.com/"));
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  base::Time now = base::Time::Now();
+  base::Time insertion_time = now - base::TimeDelta::FromDays(2);
+  base::Time visit_time = now - base::TimeDelta::FromDays(1);
+
+  // Populate one client with a URL with multiple visits, wait for it to sync to
+  // the other.
+  GURL new_url(kHistoryUrl);
+  AddUrlToHistoryWithTimestamp(0, new_url, ui::PAGE_TRANSITION_TYPED,
+                               history::SOURCE_BROWSED, insertion_time);
+  AddUrlToHistoryWithTimestamp(0, new_url, ui::PAGE_TRANSITION_LINK,
+                               history::SOURCE_BROWSED, visit_time);
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
+
+  // Assert that the second client has the correct new URL.
+  history::URLRows urls = GetTypedUrlsFromClient(1);
+  ASSERT_EQ(1u, urls.size());
+  ASSERT_EQ(new_url, urls[0].url());
+
+  // Delete the only typed visit from the first client, and wait for them to
+  // sync.
+  ExpireHistoryBetween(0, insertion_time - base::TimeDelta::FromSeconds(1),
+                       insertion_time + base::TimeDelta::FromSeconds(1));
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
+
+  // Assert that it's deleted from the second client.
+  ASSERT_EQ(0u, GetTypedUrlsFromClient(1).size());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
@@ -333,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   // Enable typed url sync, make both URLs are synced to each client.
   GetClient(0)->EnableSyncForDatatype(syncer::TYPED_URLS);
 
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOther) {
@@ -349,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOther) {
   ASSERT_EQ(new_url, urls[0].url());
 
   // Both clients should have this URL.
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 
   // Now, delete the URL from the second client.
   DeleteUrlFromHistory(1, new_url);
@@ -357,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOther) {
   ASSERT_EQ(1U, urls.size());
 
   // Both clients should have this URL removed.
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOtherAddAgain) {
@@ -373,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOtherAddAgain) {
   ASSERT_EQ(new_url, urls[0].url());
 
   // Both clients should have this URL.
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 
   // Now, delete the URL from the second client.
   DeleteUrlFromHistory(1, new_url);
@@ -381,14 +497,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOtherAddAgain) {
   ASSERT_EQ(1U, urls.size());
 
   // Both clients should have this URL removed.
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 
   // Add it to the first client again, should succeed (tests that the deletion
   // properly disassociates that URL).
   AddUrlToHistory(0, new_url);
 
   // Both clients should have this URL added again.
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
@@ -478,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, UpdateToNonTypedURL) {
   ASSERT_EQ(0U, urls.size());
 
   // Both clients should have 0 typed URLs.
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
 
@@ -513,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
 
   // Modify the non-typed URL. It should not get synced.
   typed_urls_helper::SetPageTitle(0, kNonTypedURL, "Welcome to Non-Typed URL");
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 
   history::VisitVector visits;
   // First client has both visits.
@@ -559,7 +675,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                                 history::SOURCE_BROWSED);
 
   // Both clients should have both URLs.
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 
   history::VisitVector visits =
       typed_urls_helper::GetVisitsForURLFromClient(0, initial_url);
@@ -642,7 +758,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, BookmarksWithTypedVisit) {
   // - this should not cause a crash.
   AddUrlToHistory(0, bookmark_url);
 
-  ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
+  ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
   history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(bookmark_url, urls[0].url());

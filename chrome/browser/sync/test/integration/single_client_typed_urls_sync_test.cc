@@ -12,7 +12,7 @@
 
 using typed_urls_helper::AddUrlToHistory;
 using typed_urls_helper::AddUrlToHistoryWithTransition;
-using typed_urls_helper::CheckAllProfilesHaveSameURLs;
+using typed_urls_helper::CheckAllProfilesHaveSameTypedURLs;
 using typed_urls_helper::DeleteUrlFromHistory;
 using typed_urls_helper::GetTypedUrlsFromClient;
 
@@ -38,11 +38,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, Sanity) {
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(new_url, urls[0].url());
-  ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
+  ASSERT_TRUE(CheckAllProfilesHaveSameTypedURLs());
 
   // Wait for sync and verify client did not change.
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
-  ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
+  ASSERT_TRUE(CheckAllProfilesHaveSameTypedURLs());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, TwoVisits) {
@@ -58,11 +58,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, TwoVisits) {
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(new_url, urls[0].url());
-  ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
+  ASSERT_TRUE(CheckAllProfilesHaveSameTypedURLs());
 
   // Wait for sync and verify client did not change.
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
-  ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
+  ASSERT_TRUE(CheckAllProfilesHaveSameTypedURLs());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteTyped) {
@@ -78,18 +78,18 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteTyped) {
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(new_url, urls[0].url());
-  ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
+  ASSERT_TRUE(CheckAllProfilesHaveSameTypedURLs());
 
   // Wait for sync and verify client did not change.
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
-  ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
+  ASSERT_TRUE(CheckAllProfilesHaveSameTypedURLs());
 
   // Now delete the URL we just added, wait for sync, and verify the deletion.
   DeleteUrlFromHistory(0, new_url);
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
-  ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
+  ASSERT_TRUE(CheckAllProfilesHaveSameTypedURLs());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteNonTyped) {
@@ -104,16 +104,16 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteNonTyped) {
 
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
-  ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
+  ASSERT_TRUE(CheckAllProfilesHaveSameTypedURLs());
 
   // Wait for sync and verify client did not change.
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
-  ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
+  ASSERT_TRUE(CheckAllProfilesHaveSameTypedURLs());
 
   // Now delete the URL we just added, wait for sync and verify the deletion.
   DeleteUrlFromHistory(0, new_url);
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
-  ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
+  ASSERT_TRUE(CheckAllProfilesHaveSameTypedURLs());
 }

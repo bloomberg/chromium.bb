@@ -58,8 +58,14 @@ void AddUrlToHistoryWithTimestamp(int index,
                                   const base::Time& timestamp);
 
 // Expires all visits before |end_time| from the History DB for the sync profile
-// at |index|.
+// at |index|. This mimicks the automatic expiration of old history.
 void ExpireHistoryBefore(int index, base::Time end_time);
+
+// Expires all visits between |begin_time| and |end_time|. This mimicks explicit
+// removal of browsing data by the user.
+void ExpireHistoryBetween(int index,
+                          base::Time begin_time,
+                          base::Time end_time);
 
 // Deletes a URL from the history DB for a specific sync profile.
 void DeleteUrlFromHistory(int index, const GURL& url);
@@ -71,8 +77,8 @@ void DeleteUrlsFromHistory(int index, const std::vector<GURL>& urls);
 // Modifies an URL stored in history by setting a new title.
 void SetPageTitle(int index, const GURL& url, const std::string& title);
 
-// Returns true if all clients have the same URLs.
-bool CheckAllProfilesHaveSameURLs();
+// Returns true if all clients have the same typed URLs.
+bool CheckAllProfilesHaveSameTypedURLs();
 
 // Return true if there is sync metadata for the given typed |url| in the given
 // sync profile.
@@ -83,13 +89,13 @@ bool CheckSyncHasURLMetadata(int index, const GURL& url);
 bool CheckSyncHasMetadataForURLID(int index, history::URLID url_id);
 
 // Checks that the two vectors contain the same set of URLRows (possibly in
-// a different order).
-bool CheckURLRowVectorsAreEqual(const history::URLRows& left,
-                                const history::URLRows& right);
+// a different order) w.r.t. typed URL sync.
+bool CheckURLRowVectorsAreEqualForTypedURLs(const history::URLRows& left,
+                                            const history::URLRows& right);
 
-// Checks that the passed URLRows are equivalent.
-bool CheckURLRowsAreEqual(const history::URLRow& left,
-                          const history::URLRow& right);
+// Checks that the passed URLRows are equivalent w.r.t. typed URL sync.
+bool CheckURLRowsAreEqualForTypedURLs(const history::URLRow& left,
+                                      const history::URLRow& right);
 
 // Returns true if two sets of visits are equivalent.
 bool AreVisitsEqual(const history::VisitVector& visit1,
@@ -107,10 +113,10 @@ base::Time GetTimestamp();
 
 }  // namespace typed_urls_helper
 
-// Checker that blocks until all clients have the same URLs.
-class ProfilesHaveSameURLsChecker : public MultiClientStatusChangeChecker {
+// Checker that blocks until all clients have the same Typed URLs.
+class ProfilesHaveSameTypedURLsChecker : public MultiClientStatusChangeChecker {
  public:
-  ProfilesHaveSameURLsChecker();
+  ProfilesHaveSameTypedURLsChecker();
 
   // Implementation of StatusChangeChecker.
   bool IsExitConditionSatisfied() override;
