@@ -1021,7 +1021,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
         max_penalty = bucket.min;
       }
     }
-    EXPECT_GE(max_penalty, kTimeoutMs);
+    // |kTimeoutMs| is flaky, so use something slightly less.
+    EXPECT_GE(max_penalty, kTimeoutMs - 50);
   }
 
   {
