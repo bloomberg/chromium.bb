@@ -184,7 +184,10 @@ RemoteCall.prototype.waitForWindowGeometry = function(windowId, width, height) {
 /**
  * Waits for the specified element appearing in the DOM.
  * @param {string} windowId Target window ID.
- * @param {string} query Query string for the element.
+ * @param {string|!Array<string>} query Query to specify the element.
+ *     If query is an array, |query[0]| specifies the first
+ *     element(s), |query[1]| specifies elements inside the shadow DOM of
+ *     the first element, and so on.
  * @return {Promise} Promise to be fulfilled when the element appears.
  */
 RemoteCall.prototype.waitForElement = function(windowId, query) {
@@ -194,7 +197,10 @@ RemoteCall.prototype.waitForElement = function(windowId, query) {
 /**
  * Waits for the specified element appearing in the DOM.
  * @param {string} windowId Target window ID.
- * @param {string} query Query string for the element.
+ * @param {string|!Array<string>} query Query to specify the element.
+ *     If query is an array, |query[0]| specifies the first
+ *     element(s), |query[1]| specifies elements inside the shadow DOM of
+ *     the first element, and so on.
  * @param {!Array<string>} styleNames List of CSS property name to be
  *     obtained. NOTE: Causes element style re-calculation.
  * @return {Promise} Promise to be fulfilled when the element appears.
@@ -204,7 +210,8 @@ RemoteCall.prototype.waitForElementStyles = function(
   var caller = getCaller();
   return repeatUntil(() => {
     return this
-        .callRemoteTestUtil('queryAllElements', windowId, [query, styleNames])
+        .callRemoteTestUtil(
+            'deepQueryAllElements', windowId, [query, styleNames])
         .then(function(elements) {
           if (elements.length > 0)
             return elements[0];
@@ -248,13 +255,16 @@ RemoteCall.prototype.waitFor = function(
 /**
  * Waits for the specified element leaving from the DOM.
  * @param {string} windowId Target window ID.
- * @param {string} query Query string for the element.
+ * @param {string|!Array<string>} query Query to specify the element.
+ *     If query is an array, |query[0]| specifies the first
+ *     element(s), |query[1]| specifies elements inside the shadow DOM of
+ *     the first element, and so on.
  * @return {Promise} Promise to be fulfilled when the element is lost.
  */
 RemoteCall.prototype.waitForElementLost = function(windowId, query) {
   var caller = getCaller();
   return repeatUntil(function() {
-    return this.callRemoteTestUtil('queryAllElements', windowId, [query])
+    return this.callRemoteTestUtil('deepQueryAllElements', windowId, [query])
         .then(function(elements) {
           if (elements.length > 0)
             return pending(caller, 'Elements %j is still exists.', elements);
@@ -266,7 +276,10 @@ RemoteCall.prototype.waitForElementLost = function(windowId, query) {
 /**
  * Sends a fake key down event.
  * @param {string} windowId Window ID.
- * @param {string} query Query for the target element.
+ * @param {string|!Array<string>} query Query to specify the element.
+ *     If query is an array, |query[0]| specifies the first
+ *     element(s), |query[1]| specifies elements inside the shadow DOM of
+ *     the first element, and so on.
  * @param {string} key DOM UI Events Key value.
  * @param {boolean} ctrlKey Control key flag.
  * @param {boolean} shiftKey Shift key flag.
@@ -642,7 +655,10 @@ RemoteCallGallery.prototype.changeNameAndWait = function(windowId, newName) {
 /**
  * Shorthand for clicking an element.
  * @param {AppWindow} appWindow Application window.
- * @param {string} query Query for the element.
+ * @param {string|!Array<string>} query Query to specify the element.
+ *     If query is an array, |query[0]| specifies the first
+ *     element(s), |query[1]| specifies elements inside the shadow DOM of
+ *     the first element, and so on.
  * @param {Promise} Promise to be fulfilled with the clicked element.
  */
 RemoteCallGallery.prototype.waitAndClickElement = function(windowId, query) {

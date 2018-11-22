@@ -907,3 +907,53 @@ testcase.openQuickViewVideo = function() {
     },
   ]);
 };
+
+/**
+ * Tests close/open metadata info via Enter key.
+ */
+testcase.pressEnterOnInfoBoxToOpenClose = function() {
+  const infoButton = ['#quick-view', '#metadata-button'];
+  const key = [infoButton, 'Enter', false, false, false];
+  const infoShown = ['#quick-view', '#contentPanel[metadata-box-active]'];
+  const infoHidden =
+      ['#quick-view', '#contentPanel:not([metadata-box-active])'];
+
+  let appId;
+
+  StepsRunner.run([
+    // Open Files app on Downloads containing ENTRIES.hello.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.hello], []);
+    },
+    // Open the file in Quick View.
+    function(results) {
+      appId = results.windowId;
+      const openSteps = openQuickViewSteps(appId, ENTRIES.hello.nameText);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    // Press Enter on info button to close metadata box.
+    function() {
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
+    },
+    // Info should be hidden.
+    function() {
+      remoteCall.waitForElement(appId, infoHidden).then(this.next);
+    },
+    // Press Enter on info button to open metadata box.
+    function() {
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
+    },
+    // Info should be shown.
+    function() {
+      remoteCall.waitForElement(appId, infoShown).then(this.next);
+    },
+    // Close Quick View.
+    function() {
+      StepsRunner.run(closeQuickViewSteps(appId)).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
