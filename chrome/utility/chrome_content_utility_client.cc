@@ -204,13 +204,6 @@ void ChromeContentUtilityClient::RegisterServices(
   services->emplace(device::mojom::kVrIsolatedServiceName, service_info);
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING)
-  service_manager::EmbeddedServiceInfo pdf_compositor_info;
-  pdf_compositor_info.factory = base::BindRepeating(
-      &printing::CreatePdfCompositorService, GetUserAgent());
-  services->emplace(printing::mojom::kServiceName, pdf_compositor_info);
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
   service_manager::EmbeddedServiceInfo printing_info;
@@ -326,6 +319,13 @@ ChromeContentUtilityClient::HandleServiceRequest(
 #if !defined(OS_ANDROID)
   if (service_name == patch::mojom::kServiceName)
     return std::make_unique<patch::PatchService>(std::move(request));
+#endif
+
+#if BUILDFLAG(ENABLE_PRINTING)
+  if (service_name == printing::mojom::kServiceName) {
+    return printing::CreatePdfCompositorService(GetUserAgent(),
+                                                std::move(request));
+  }
 #endif
 
 #if defined(OS_CHROMEOS)

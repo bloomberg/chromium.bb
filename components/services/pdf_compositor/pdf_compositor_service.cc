@@ -32,20 +32,24 @@
 
 namespace {
 
-void OnPdfCompositorRequest(
-    const std::string& creator,
-    service_manager::ServiceContextRefFactory* ref_factory,
-    printing::mojom::PdfCompositorRequest request) {
+void OnPdfCompositorRequest(const std::string& creator,
+                            service_manager::ServiceKeepalive* keepalive,
+                            printing::mojom::PdfCompositorRequest request) {
   mojo::MakeStrongBinding(std::make_unique<printing::PdfCompositorImpl>(
-                              creator, ref_factory->CreateRef()),
+                              creator, keepalive->CreateRef()),
                           std::move(request));
 }
+
 }  // namespace
 
 namespace printing {
 
-PdfCompositorService::PdfCompositorService(const std::string& creator)
-    : creator_(creator.empty() ? "Chromium" : creator), weak_factory_(this) {}
+PdfCompositorService::PdfCompositorService(
+    const std::string& creator,
+    service_manager::mojom::ServiceRequest request)
+    : creator_(creator.empty() ? "Chromium" : creator),
+      binding_(this, std::move(request)),
+      keepalive_(&binding_, base::TimeDelta{}) {}
 
 PdfCompositorService::~PdfCompositorService() {
 #if defined(OS_WIN)
@@ -55,27 +59,35 @@ PdfCompositorService::~PdfCompositorService() {
 
 // static
 std::unique_ptr<service_manager::Service> PdfCompositorService::Create(
-    const std::string& creator) {
+    const std::string& creator,
+    service_manager::mojom::ServiceRequest request) {
 #if defined(OS_WIN)
   // Initialize direct write font proxy so skia can use it.
   content::InitializeDWriteFontProxy();
 #endif
-  return std::make_unique<printing::PdfCompositorService>(creator);
+  return std::make_unique<printing::PdfCompositorService>(creator,
+                                                          std::move(request));
 }
 
-void PdfCompositorService::PrepareToStart() {
+void PdfCompositorService::OnStart() {
+  registry_.AddInterface(
+      base::BindRepeating(&OnPdfCompositorRequest, creator_, &keepalive_));
+
+  if (skip_initialization_for_testing_)
+    return;
+
   // Set up discardable memory manager.
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
   if (features::IsMultiProcessMash()) {
 #if defined(USE_AURA)
-    context()->connector()->BindInterface(ws::mojom::kServiceName,
-                                          &manager_ptr);
+    binding_.GetConnector()->BindInterface(ws::mojom::kServiceName,
+                                           &manager_ptr);
 #else
     NOTREACHED();
 #endif
   } else {
-    context()->connector()->BindInterface(content::mojom::kBrowserServiceName,
-                                          &manager_ptr);
+    binding_.GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
+                                           &manager_ptr);
   }
   discardable_shared_memory_manager_ = std::make_unique<
       discardable_memory::ClientDiscardableSharedMemoryManager>(
@@ -99,17 +111,8 @@ void PdfCompositorService::PrepareToStart() {
   // Initialize a connection to FontLoaderMac service so blink platform's web
   // sandbox support can communicate with it to load font.
   content::UtilityThread::Get()->InitializeFontLoaderMac(
-      context()->connector());
+      binding_.GetConnector());
 #endif
-}
-
-void PdfCompositorService::OnStart() {
-  PrepareToStart();
-
-  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
-      context()->CreateQuitClosure());
-  registry_.AddInterface(
-      base::Bind(&OnPdfCompositorRequest, creator_, ref_factory_.get()));
 }
 
 void PdfCompositorService::OnBindInterface(

@@ -53,22 +53,18 @@ if (enable_basic_printing) {
       "//testing/gmock/include",
       "//third_party/skia/include/core",
     ]
+
     deps = [
       ":pdf_compositor",
+      "//base",
       "//base/test:test_support",
       "//cc/paint:paint",
       "//components/crash/core/common:crash_key",
       "//components/services/pdf_compositor/public/interfaces",
-      "//services/service_manager/public/cpp:service_test_support",
+      "//services/service_manager/public/cpp/test:test_support",
       "//skia",
       "//testing/gmock",
       "//testing/gtest",
     ]
-  }
-
-  service_manifest("pdf_compositor_service_unittest_manifest") {
-    name = "pdf_compositor_service_unittest"
-    source = "pdf_compositor_service_unittest_manifest.json"
-    packaged_services = [ ":pdf_compositor_manifest" ]
   }
 }
