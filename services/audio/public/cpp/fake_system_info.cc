@@ -5,8 +5,7 @@
 #include "services/audio/public/cpp/fake_system_info.h"
 
 #include "services/audio/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace audio {
 
@@ -17,16 +16,16 @@ FakeSystemInfo::~FakeSystemInfo() {}
 // static
 void FakeSystemInfo::OverrideGlobalBinderForAudioService(
     FakeSystemInfo* fake_system_info) {
-  service_manager::ServiceContext::SetGlobalBinderForTesting(
-      mojom::kServiceName, mojom::SystemInfo::Name_,
+  service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
+      mojom::kServiceName,
       base::BindRepeating(&FakeSystemInfo::Bind,
                           base::Unretained(fake_system_info)));
 }
 
 // static
 void FakeSystemInfo::ClearGlobalBinderForAudioService() {
-  service_manager::ServiceContext::ClearGlobalBindersForTesting(
-      mojom::kServiceName);
+  service_manager::ServiceBinding ::ClearInterfaceBinderOverrideForTesting<
+      mojom::SystemInfo>(mojom::kServiceName);
 }
 
 void FakeSystemInfo::GetInputStreamParameters(
@@ -70,11 +69,8 @@ void FakeSystemInfo::GetInputDeviceInfo(const std::string& input_device_id,
   std::move(callback).Run(base::nullopt, base::nullopt);
 }
 
-void FakeSystemInfo::Bind(const std::string& interface_name,
-                          mojo::ScopedMessagePipeHandle handle,
-                          const service_manager::BindSourceInfo& source_info) {
-  DCHECK(interface_name == mojom::SystemInfo::Name_);
-  bindings_.AddBinding(this, mojom::SystemInfoRequest(std::move(handle)));
+void FakeSystemInfo::Bind(mojom::SystemInfoRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace audio

@@ -37,7 +37,8 @@ class UtilityServiceFactory : public ServiceFactory {
   void OnLoadFailed() override;
 
   std::unique_ptr<service_manager::Service> CreateNetworkService();
-  std::unique_ptr<service_manager::Service> CreateAudioService();
+  std::unique_ptr<service_manager::Service> CreateAudioService(
+      service_manager::mojom::ServiceRequest request);
 
   // Allows embedders to register their interface implementations before the
   // network or audio services are created. Used for testing.

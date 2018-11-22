@@ -35,16 +35,13 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
     audio_manager_ = std::make_unique<media::MockAudioManager>(
         std::make_unique<media::TestAudioThread>(
             false /*not using a separate audio thread*/));
-    std::unique_ptr<Service> service_impl = std::make_unique<Service>(
+    service_ = std::make_unique<Service>(
         std::make_unique<InProcessAudioManagerAccessor>(audio_manager_.get()),
         kQuitTimeout, false /* device_notifications_enabled */,
-        std::make_unique<service_manager::BinderRegistry>());
-    service_ = service_impl.get();
-    service_->SetQuitClosureForTesting(quit_request_.Get());
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(service_impl));
-    connector_ = connector_factory_->CreateConnector();
+        std::make_unique<service_manager::BinderRegistry>(),
+        connector_factory_.RegisterInstance(mojom::kServiceName));
+    service_->set_termination_closure(quit_request_.Get());
+    connector_ = connector_factory_.CreateConnector();
   }
 
   void TearDown() override { audio_manager_->Shutdown(); }
@@ -55,9 +52,9 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
 
   StrictMock<base::MockCallback<base::RepeatingClosure>> quit_request_;
   std::unique_ptr<media::MockAudioManager> audio_manager_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<Service> service_;
   std::unique_ptr<service_manager::Connector> connector_;
-  Service* service_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioServiceLifetimeConnectorTest);
