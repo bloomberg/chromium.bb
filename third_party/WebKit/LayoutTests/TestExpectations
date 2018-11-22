@@ -5527,6 +5527,10 @@ crbug.com/902645 [ Retina ] transforms/3d/point-mapping/3d-point-mapping-origins
 # Test is flaky under load
 crbug.com/904389 http/tests/preload/delaying_onload_link_preload_after_discovery.html [ Failure Pass ]
 
+# Tests flaky after an unrelated change involving a new swap promise
+crbug.com/843184 xr/events_session_resetpose.html [ Pass Timeout ]
+crbug.com/843184 xr/xrFrameOfReference_stage_updates.html [ Pass Failure ]
+
 # These are known failures, being implemented
 crbug.com/497522 css3/filters/backdrop-filter-boundary.html [ Failure ]
 crbug.com/497522 css3/filters/backdrop-filter-bleeding.html [ Failure ]

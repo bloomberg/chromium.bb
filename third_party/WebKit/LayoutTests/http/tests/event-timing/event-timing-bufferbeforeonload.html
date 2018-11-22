@@ -23,23 +23,28 @@
   }
 
   function validateEntries() {
-    const entries = performance.getEntriesByName('click', 'event');
+    const entries = performance.getEntriesByName('mousedown', 'event');
     const onloadTime = performance.timing.loadEventStart - performance.timeOrigin;
 
     const entriesBeforeOnload = entries.filter(
         e => e.startTime < onloadTime);
     assert_equals(entriesBeforeOnload.length, 1,
-        "Long latency events before onload should be buffered.");
+        "Long latency mousedown events before onload should be buffered.");
     const entry = entriesBeforeOnload[0];
     verifyClickEvent(entry, true);
 
-    assert_greater_than(entry.processingStart, processingStartMin,
+    const clicks = performance.getEntriesByName('click', 'event').filter(
+        e => e.startTime < onloadTime);
+    assert_equals(clicks.length, 1,
+        "Long latency click events before onload should be buffered.");
+    const click = clicks[0];
+    assert_greater_than(click.processingStart, processingStartMin,
         "The entry should be processed later than processingStartMin.");
-    assert_greater_than(entry.startTime, clickTimeMin,
+    assert_greater_than(click.startTime, clickTimeMin,
         "The entry's start time should be later than clickTimeMin.");
-    assert_greater_than_equal(firstClickStart, entry.processingStart,
+    assert_greater_than_equal(firstClickStart, click.processingStart,
         "The processingStart must be before the onclick starts.")
-    assert_greater_than_equal(entry.processingEnd, firstClickEnd,
+    assert_greater_than_equal(click.processingEnd, firstClickEnd,
         "The processingEnd must be after onclick finishes.");
 
     const entriesAfterOnload = entries.filter(
