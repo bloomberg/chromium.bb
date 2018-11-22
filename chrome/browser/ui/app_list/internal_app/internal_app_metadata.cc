@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -238,15 +239,20 @@ void OnArcFeaturesRead(Profile* profile,
       registry->GetInstalledExtension(chrome_app_id);
 
   bool arc_enabled = arc::IsArcPlayStoreEnabledForProfile(profile);
+  bool is_android_camera_app_registered =
+      arc_enabled &&
+      ArcAppListPrefs::Get(profile)->IsRegistered(kAndroidCameraAppId);
   bool chrome_camera_migrated =
       profile->GetPrefs()->GetBoolean(prefs::kCameraMediaConsolidated);
 
   VLOG(1) << "Launching camera app. arc_enabled = " << arc_enabled
+          << " is_android_camera_app_registered = "
+          << is_android_camera_app_registered
           << " arc_p_or_above = " << arc_p_or_above
           << " chrome_camera_migrated = " << chrome_camera_migrated
           << " cca_exist = " << (extension != nullptr);
-
-  if (arc_enabled && arc_p_or_above && (!extension || chrome_camera_migrated)) {
+  if (arc_p_or_above && is_android_camera_app_registered &&
+      (!extension || chrome_camera_migrated)) {
     // Open Google camera app or GCA migration app according to GCA
     // migration system property.
     arc::ArcPropertyBridge* property =
