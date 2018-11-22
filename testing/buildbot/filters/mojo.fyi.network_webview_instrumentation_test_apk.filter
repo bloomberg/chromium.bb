@@ -66,11 +66,6 @@
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testNotCalledForHttpRedirect
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testNullInputStreamCausesErrorForMainFrame
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testOnLoadResourceCalledWithCorrectUrl
--org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testOnReceivedErrorCallback
-
-# https://crbug.com/893567
--org.chromium.android_webview.test.AwContentsClientShouldOverrideUrlLoadingTest.testWindowOpenHttpUrlInPopup
--org.chromium.android_webview.test.AwContentsClientShouldOverrideUrlLoadingTest.testWindowOpenHttpUrlInPopupAddsTrailingSlash
 
 # https://crbug.com/893568
 -org.chromium.android_webview.test.AwContentsTest.testCanInjectHeaders
