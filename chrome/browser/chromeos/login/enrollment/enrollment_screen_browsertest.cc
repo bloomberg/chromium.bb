@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, EnrollmentSpinner) {
 
   view->ShowAttestationBasedEnrollmentSuccessScreen("fake domain");
   checker.ExpectTrue(
-      "window.getComputedStyle(document.getElementById('oauth-enroll-step-abe-"
+      "window.getComputedStyle(document.getElementById('oauth-enroll-step-"
       "success')).display !== 'none'");
 }
 
