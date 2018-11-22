@@ -356,6 +356,8 @@ crbug.com/826957 fast/peerconnection/RTCPeerConnection-manyCandidates.html [ Slo
 crbug.com/842995 external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/078.html [ Slow ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_007.htm [ Slow ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_010.htm [ Slow ]
+crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/async_007.htm [ Slow ]
+crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/async_010.htm [ Slow ]
 
 crbug.com/840792 [ Mac10.12 Mac10.13 ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Slow ]
 

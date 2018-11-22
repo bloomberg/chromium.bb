@@ -413,6 +413,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableScheduledScriptStreaming(
       base::FeatureList::IsEnabled(features::kScheduledScriptStreaming));
 
+  WebRuntimeFeatures::EnableScriptStreamingOnPreload(
+      base::FeatureList::IsEnabled(features::kScriptStreamingOnPreload));
+
   WebRuntimeFeatures::EnableMergeBlockingNonBlockingPools(
       base::FeatureList::IsEnabled(base::kMergeBlockingNonBlockingPools));
 
