@@ -181,8 +181,6 @@ class StyleBuilderConverter {
   static ShadowData ConvertShadow(const CSSToLengthConversionData&,
                                   StyleResolverState*,
                                   const CSSValue&);
-  static double ConvertValueToNumber(const CSSFunctionValue*,
-                                     const CSSPrimitiveValue*);
   static scoped_refptr<ShadowList> ConvertShadowList(StyleResolverState&,
                                                      const CSSValue&);
   static ShapeValue* ConvertShapeValue(StyleResolverState&, const CSSValue&);

@@ -356,39 +356,6 @@ float StyleBuilderConverter::ConvertFontSizeAdjust(StyleResolverState& state,
   return primitive_value.GetFloatValue();
 }
 
-double StyleBuilderConverter::ConvertValueToNumber(
-    const CSSFunctionValue* filter,
-    const CSSPrimitiveValue* value) {
-  switch (filter->FunctionType()) {
-    case CSSValueGrayscale:
-    case CSSValueSepia:
-    case CSSValueSaturate:
-    case CSSValueInvert:
-    case CSSValueBrightness:
-    case CSSValueContrast:
-    case CSSValueOpacity: {
-      double amount = (filter->FunctionType() == CSSValueBrightness ||
-                       filter->FunctionType() == CSSValueInvert)
-                          ? 0
-                          : 1;
-      if (filter->length() == 1) {
-        amount = value->GetDoubleValue();
-        if (value->IsPercentage())
-          amount /= 100;
-      }
-      return amount;
-    }
-    case CSSValueHueRotate: {
-      double angle = 0;
-      if (filter->length() == 1)
-        angle = value->ComputeDegrees();
-      return angle;
-    }
-    default:
-      return 0;
-  }
-}
-
 FontSelectionValue StyleBuilderConverterBase::ConvertFontStretch(
     const blink::CSSValue& value) {
   if (value.IsPrimitiveValue()) {
