@@ -9,7 +9,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -56,31 +55,6 @@ class AlwaysMaximizeTestState : public WindowState::State {
 };
 
 }  // namespace
-
-class InitialStateTestState : public WindowState::State {
- public:
-  explicit InitialStateTestState(WindowStateType initial_state_type)
-      : state_type_(initial_state_type) {}
-  ~InitialStateTestState() override = default;
-
-  // WindowState::State overrides:
-  void OnWMEvent(WindowState* window_state, const WMEvent* event) override {
-    if (event->type() == WM_EVENT_SET_BOUNDS) {
-      const SetBoundsEvent* set_bounds_event =
-          static_cast<const SetBoundsEvent*>(event);
-      window_state->SetBoundsDirect(set_bounds_event->requested_bounds());
-    }
-  }
-  WindowStateType GetType() const override { return state_type_; }
-  void AttachState(WindowState* window_state,
-                   WindowState::State* previous_state) override {}
-  void DetachState(WindowState* window_state) override {}
-
- private:
-  WindowStateType state_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(InitialStateTestState);
-};
 
 using WindowStateTest = AshTestBase;
 
@@ -160,6 +134,20 @@ TEST_F(WindowStateTest, SnapWindowMinimumSize) {
   EXPECT_TRUE(window_state->CanSnap());
 }
 
+// Test that a window's state type can be changed to PIP via a WM transition
+// event.
+TEST_F(WindowStateTest, CanTransitionToPipWindow) {
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+
+  WindowState* window_state = GetWindowState(window.get());
+  EXPECT_FALSE(window_state->IsPip());
+
+  const WMEvent enter_pip(WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+  EXPECT_TRUE(window_state->IsPip());
+}
+
 // Test that a PIP window cannot be snapped.
 TEST_F(WindowStateTest, PipWindowCannotSnap) {
   std::unique_ptr<aura::Window> window(
@@ -168,8 +156,9 @@ TEST_F(WindowStateTest, PipWindowCannotSnap) {
   WindowState* window_state = GetWindowState(window.get());
   EXPECT_TRUE(window_state->CanSnap());
 
-  window_state->SetStateObject(std::unique_ptr<WindowState::State>(
-      new InitialStateTestState(mojom::WindowStateType::PIP)));
+  const WMEvent enter_pip(WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+
   EXPECT_FALSE(window_state->CanSnap());
 }
 
@@ -179,8 +168,9 @@ TEST_F(WindowStateTest, PipWindowMaskRecreated) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
   WindowState* window_state = GetWindowState(window.get());
-  window_state->SetStateObject(std::unique_ptr<WindowState::State>(
-      new InitialStateTestState(mojom::WindowStateType::PIP)));
+
+  const WMEvent enter_pip(WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
   window_state->UpdatePipRoundedCorners();
 
   // Mask layer exists.
@@ -204,8 +194,9 @@ TEST_F(WindowStateTest, PipWindowHasMaskLayer) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
   WindowState* window_state = GetWindowState(window.get());
-  window_state->SetStateObject(std::unique_ptr<WindowState::State>(
-      new InitialStateTestState(mojom::WindowStateType::PIP)));
+
+  const WMEvent enter_pip(WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
   EXPECT_TRUE(window->layer());
 
   // No mask layer exist at this time.
