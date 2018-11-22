@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
@@ -89,6 +90,20 @@ void FormatValidatedNumber(const ::i18n::phonenumbers::PhoneNumber& number,
   }
 }
 
+// Returns false iff |str| contains any characters from the range 0-31
+// (inclusive) or the "delete" character (127). This allows the characters in
+// 128-255 because |str| is assumed to be in UTF-8. Note that for all
+// multi-byte UTF-8 characters, every byte has its most significant bit set
+// (i.e., is in the range 128-255, inclusive), so all bytes <=127 are
+// single-byte characters.
+bool IsPrintable(base::StringPiece str) {
+  for (unsigned char c : str) {
+    if (c < 32 || c == 127)
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 namespace i18n {
@@ -142,7 +157,11 @@ bool ParsePhoneNumber(const base::string16& value,
   if (value.size() > kMaxPhoneNumberSize)
     return false;
 
-  std::string number_text(base::UTF16ToUTF8(value));
+  std::string number_text;
+  if (!base::UTF16ToUTF8(value.data(), value.size(), &number_text) ||
+      !base::IsStringUTF8(number_text) || !IsPrintable(number_text)) {
+    return false;
+  }
 
   // Parse phone number based on the region.
   PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
