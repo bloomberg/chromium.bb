@@ -271,6 +271,7 @@ source_set("tests") {
     "chunked_data_pipe_upload_data_stream_unittest.cc",
     "cookie_manager_unittest.cc",
     "cookie_settings_unittest.cc",
+    "cors/cors_url_loader_factory_unittest.cc",
     "cors/cors_url_loader_unittest.cc",
     "cors/preflight_controller_unittest.cc",
     "cross_origin_read_blocking_unittest.cc",

@@ -79,11 +79,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   // The NetworkContext owns |this|.
   NetworkContext* const context_ = nullptr;
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
-  std::set<std::unique_ptr<mojom::URLLoader>, base::UniquePtrComparator>
-      loaders_;
 
   const bool disable_web_security_;
+
+  // Relative order of |network_loader_factory_| and |loaders_| matters -
+  // URLLoaderFactory needs to live longer than URLLoaders created using the
+  // factory.  See also https://crbug.com/906305.
   std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory_;
+  std::set<std::unique_ptr<mojom::URLLoader>, base::UniquePtrComparator>
+      loaders_;
 
   // Used when constructed by ResourceMessageFilter.
   base::RepeatingCallback<void(int)> preflight_finalizer_;
