@@ -158,23 +158,7 @@ class Database final : public ScriptWrappable {
                       const ChangeVersionData* = nullptr);
   Vector<String> PerformGetTableNames();
 
-  void ReportOpenDatabaseResult(int error_site,
-                                int web_sql_error_code,
-                                int sqlite_error_code,
-                                TimeDelta duration);
-  void ReportChangeVersionResult(int error_site,
-                                 int web_sql_error_code,
-                                 int sqlite_error_code);
-  void ReportStartTransactionResult(int error_site,
-                                    int web_sql_error_code,
-                                    int sqlite_error_code);
-  void ReportCommitTransactionResult(int error_site,
-                                     int web_sql_error_code,
-                                     int sqlite_error_code);
-  void ReportExecuteStatementResult(int error_site,
-                                    int web_sql_error_code,
-                                    int sqlite_error_code);
-  void ReportVacuumDatabaseResult(int sqlite_error_code);
+  void ReportSqliteError(int sqlite_error_code);
   void LogErrorMessage(const String&);
   static const char* DatabaseInfoTableName();
   String DatabaseDebugName() const {

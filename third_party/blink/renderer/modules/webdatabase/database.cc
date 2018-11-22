@@ -454,7 +454,6 @@ class DoneCreatingDatabaseOnExitCaller {
 bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
                                     DatabaseError& error,
                                     String& error_message) {
-  TimeTicks call_start_time = WTF::CurrentTimeTicks();
   DoneCreatingDatabaseOnExitCaller on_exit_caller(this);
   DCHECK(error_message.IsEmpty());
   DCHECK_EQ(error,
@@ -465,10 +464,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
   const int kMaxSqliteBusyWaitTime = 30000;
 
   if (!sqlite_database_.Open(filename_)) {
-    ReportOpenDatabaseResult(
-        1, static_cast<int>(DOMExceptionCode::kInvalidStateError),
-        sqlite_database_.LastError(),
-        WTF::CurrentTimeTicks() - call_start_time);
+    ReportSqliteError(sqlite_database_.LastError());
     error_message = FormatErrorMessage("unable to open database",
                                        sqlite_database_.LastError(),
                                        sqlite_database_.LastErrorMsg());
@@ -512,10 +508,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
       SQLiteTransaction transaction(sqlite_database_);
       transaction.begin();
       if (!transaction.InProgress()) {
-        ReportOpenDatabaseResult(
-            2, static_cast<int>(DOMExceptionCode::kInvalidStateError),
-            sqlite_database_.LastError(),
-            WTF::CurrentTimeTicks() - call_start_time);
+        ReportSqliteError(sqlite_database_.LastError());
         error_message = FormatErrorMessage(
             "unable to open database, failed to start transaction",
             sqlite_database_.LastError(), sqlite_database_.LastErrorMsg());
@@ -531,10 +524,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
                 "CREATE TABLE " + table_name +
                 " (key TEXT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT "
                 "REPLACE,value TEXT NOT NULL ON CONFLICT FAIL);")) {
-          ReportOpenDatabaseResult(
-              3, static_cast<int>(DOMExceptionCode::kInvalidStateError),
-              sqlite_database_.LastError(),
-              WTF::CurrentTimeTicks() - call_start_time);
+          ReportSqliteError(sqlite_database_.LastError());
           error_message = FormatErrorMessage(
               "unable to open database, failed to create 'info' table",
               sqlite_database_.LastError(), sqlite_database_.LastErrorMsg());
@@ -543,10 +533,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
           return false;
         }
       } else if (!GetVersionFromDatabase(current_version, false)) {
-        ReportOpenDatabaseResult(
-            4, static_cast<int>(DOMExceptionCode::kInvalidStateError),
-            sqlite_database_.LastError(),
-            WTF::CurrentTimeTicks() - call_start_time);
+        ReportSqliteError(sqlite_database_.LastError());
         error_message = FormatErrorMessage(
             "unable to open database, failed to read current version",
             sqlite_database_.LastError(), sqlite_database_.LastErrorMsg());
@@ -563,10 +550,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
                          << " in database " << DatabaseDebugName()
                          << " that was just created";
         if (!SetVersionInDatabase(expected_version_, false)) {
-          ReportOpenDatabaseResult(
-              5, static_cast<int>(DOMExceptionCode::kInvalidStateError),
-              sqlite_database_.LastError(),
-              WTF::CurrentTimeTicks() - call_start_time);
+          ReportSqliteError(sqlite_database_.LastError());
           error_message = FormatErrorMessage(
               "unable to open database, failed to write current version",
               sqlite_database_.LastError(), sqlite_database_.LastErrorMsg());
@@ -594,9 +578,6 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
   // whatever version of the database we have.
   if ((!new_ || should_set_version_in_new_database) &&
       expected_version_.length() && expected_version_ != current_version) {
-    ReportOpenDatabaseResult(
-        6, static_cast<int>(DOMExceptionCode::kInvalidStateError), 0,
-        WTF::CurrentTimeTicks() - call_start_time);
     error_message =
         "unable to open database, version mismatch, '" + expected_version_ +
         "' does not match the currentVersion of '" + current_version + "'";
@@ -620,9 +601,6 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
     // version.
     expected_version_ = "";
   }
-
-  ReportOpenDatabaseResult(0, -1, 0,
-                           WTF::CurrentTimeTicks() - call_start_time);  // OK
 
   if (GetDatabaseContext()->GetDatabaseThread())
     GetDatabaseContext()->GetDatabaseThread()->RecordDatabaseOpen(this);
@@ -766,69 +744,17 @@ void Database::IncrementalVacuumIfNeeded() {
   int64_t total_size = sqlite_database_.TotalSize();
   if (total_size <= 10 * free_space_size) {
     int result = sqlite_database_.RunIncrementalVacuumCommand();
-    ReportVacuumDatabaseResult(result);
-    if (result != kSQLResultOk)
+    if (result != kSQLResultOk) {
+      ReportSqliteError(result);
       LogErrorMessage(FormatErrorMessage("error vacuuming database", result,
                                          sqlite_database_.LastErrorMsg()));
+    }
   }
 }
 
-// These are used to generate histograms of errors seen with websql.
-// See about:histograms in chromium.
-void Database::ReportOpenDatabaseResult(int error_site,
-                                        int web_sql_error_code,
-                                        int sqlite_error_code,
-                                        TimeDelta duration) {
+void Database::ReportSqliteError(int sqlite_error_code) {
   if (Platform::Current()->DatabaseObserver()) {
-    Platform::Current()->DatabaseObserver()->ReportOpenDatabaseResult(
-        WebSecurityOrigin(GetSecurityOrigin()), StringIdentifier(), error_site,
-        web_sql_error_code, sqlite_error_code, duration);
-  }
-}
-
-void Database::ReportChangeVersionResult(int error_site,
-                                         int web_sql_error_code,
-                                         int sqlite_error_code) {
-  if (Platform::Current()->DatabaseObserver()) {
-    Platform::Current()->DatabaseObserver()->ReportChangeVersionResult(
-        WebSecurityOrigin(GetSecurityOrigin()), StringIdentifier(), error_site,
-        web_sql_error_code, sqlite_error_code);
-  }
-}
-
-void Database::ReportStartTransactionResult(int error_site,
-                                            int web_sql_error_code,
-                                            int sqlite_error_code) {
-  if (Platform::Current()->DatabaseObserver()) {
-    Platform::Current()->DatabaseObserver()->ReportStartTransactionResult(
-        WebSecurityOrigin(GetSecurityOrigin()), StringIdentifier(), error_site,
-        web_sql_error_code, sqlite_error_code);
-  }
-}
-
-void Database::ReportCommitTransactionResult(int error_site,
-                                             int web_sql_error_code,
-                                             int sqlite_error_code) {
-  if (Platform::Current()->DatabaseObserver()) {
-    Platform::Current()->DatabaseObserver()->ReportCommitTransactionResult(
-        WebSecurityOrigin(GetSecurityOrigin()), StringIdentifier(), error_site,
-        web_sql_error_code, sqlite_error_code);
-  }
-}
-
-void Database::ReportExecuteStatementResult(int error_site,
-                                            int web_sql_error_code,
-                                            int sqlite_error_code) {
-  if (Platform::Current()->DatabaseObserver()) {
-    Platform::Current()->DatabaseObserver()->ReportExecuteStatementResult(
-        WebSecurityOrigin(GetSecurityOrigin()), StringIdentifier(), error_site,
-        web_sql_error_code, sqlite_error_code);
-  }
-}
-
-void Database::ReportVacuumDatabaseResult(int sqlite_error_code) {
-  if (Platform::Current()->DatabaseObserver()) {
-    Platform::Current()->DatabaseObserver()->ReportVacuumDatabaseResult(
+    Platform::Current()->DatabaseObserver()->ReportSqliteError(
         WebSecurityOrigin(GetSecurityOrigin()), StringIdentifier(),
         sqlite_error_code);
   }

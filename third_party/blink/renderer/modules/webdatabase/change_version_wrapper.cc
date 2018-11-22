@@ -47,7 +47,7 @@ bool ChangeVersionWrapper::PerformPreflight(
   String actual_version;
   if (!database->GetVersionFromDatabase(actual_version)) {
     int sqlite_error = database->SqliteDatabase().LastError();
-    database->ReportChangeVersionResult(1, SQLError::kUnknownErr, sqlite_error);
+    database->ReportSqliteError(sqlite_error);
     sql_error_ = SQLErrorData::Create(
         SQLError::kUnknownErr, "unable to read the current version",
         sqlite_error, database->SqliteDatabase().LastErrorMsg());
@@ -55,7 +55,6 @@ bool ChangeVersionWrapper::PerformPreflight(
   }
 
   if (actual_version != old_version_) {
-    database->ReportChangeVersionResult(2, SQLError::kVersionErr, 0);
     sql_error_ = SQLErrorData::Create(SQLError::kVersionErr,
                                       "current version of the database and "
                                       "`oldVersion` argument do not match");
@@ -74,7 +73,7 @@ bool ChangeVersionWrapper::PerformPostflight(
 
   if (!database->SetVersionInDatabase(new_version_)) {
     int sqlite_error = database->SqliteDatabase().LastError();
-    database->ReportChangeVersionResult(3, SQLError::kUnknownErr, sqlite_error);
+    database->ReportSqliteError(sqlite_error);
     sql_error_ = SQLErrorData::Create(
         SQLError::kUnknownErr, "unable to set new version in database",
         sqlite_error, database->SqliteDatabase().LastErrorMsg());
@@ -83,7 +82,6 @@ bool ChangeVersionWrapper::PerformPostflight(
 
   database->SetExpectedVersion(new_version_);
 
-  database->ReportChangeVersionResult(0, -1, 0);  // OK
   return true;
 }
 

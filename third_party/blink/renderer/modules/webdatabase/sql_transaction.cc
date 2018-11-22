@@ -198,13 +198,11 @@ SQLTransactionState SQLTransaction::DeliverTransactionCallback() {
   // jump to the error callback.
   SQLTransactionState next_state = SQLTransactionState::kRunStatements;
   if (should_deliver_error_callback) {
-    database_->ReportStartTransactionResult(5, SQLError::kUnknownErr, 0);
     transaction_error_ = SQLErrorData::Create(
         SQLError::kUnknownErr,
         "the SQLTransactionCallback was null or threw an exception");
     next_state = SQLTransactionState::kDeliverTransactionErrorCallback;
   }
-  database_->ReportStartTransactionResult(0, -1, 0);  // OK
   return next_state;
 }
 
@@ -249,7 +247,6 @@ SQLTransactionState SQLTransaction::DeliverStatementCallback() {
   execute_sql_allowed_ = false;
 
   if (result) {
-    database_->ReportCommitTransactionResult(2, SQLError::kUnknownErr, 0);
     transaction_error_ =
         SQLErrorData::Create(SQLError::kUnknownErr,
                              "the statement callback raised an exception or "

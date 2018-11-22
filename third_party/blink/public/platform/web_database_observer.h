@@ -48,35 +48,9 @@ class WebDatabaseObserver {
                                 const WebString& database_name) = 0;
   virtual void DatabaseClosed(const WebSecurityOrigin&,
                               const WebString& database_name) = 0;
-  virtual void ReportOpenDatabaseResult(const WebSecurityOrigin&,
-                                        const WebString& database_name,
-                                        int error_site,
-                                        int web_sql_error_code,
-                                        int sqlite_error_code,
-                                        base::TimeDelta call_time) {}
-  virtual void ReportChangeVersionResult(const WebSecurityOrigin&,
-                                         const WebString& database_name,
-                                         int error_site,
-                                         int web_sql_error_code,
-                                         int sqlite_error_code) {}
-  virtual void ReportStartTransactionResult(const WebSecurityOrigin&,
-                                            const WebString& database_name,
-                                            int error_site,
-                                            int web_sql_error_code,
-                                            int sqlite_error_code) {}
-  virtual void ReportCommitTransactionResult(const WebSecurityOrigin&,
-                                             const WebString& database_name,
-                                             int error_site,
-                                             int web_sql_error_code,
-                                             int sqlite_error_code) {}
-  virtual void ReportExecuteStatementResult(const WebSecurityOrigin&,
-                                            const WebString& database_name,
-                                            int error_site,
-                                            int web_sql_error_code,
-                                            int sqlite_error_code) {}
-  virtual void ReportVacuumDatabaseResult(const WebSecurityOrigin&,
-                                          const WebString& database_name,
-                                          int sqlite_error_code) {}
+  virtual void ReportSqliteError(const blink::WebSecurityOrigin& origin,
+                                 const blink::WebString& database_name,
+                                 int error) = 0;
 
  protected:
   ~WebDatabaseObserver() = default;
