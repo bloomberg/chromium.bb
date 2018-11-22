@@ -389,7 +389,8 @@ fuchsia::mem::Buffer CreateBuffer(base::StringPiece data) {
 }
 
 // Test JS injection by using Javascript to trigger document navigation.
-IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
+// Flaky: https://crbug.com/907859
+IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_ExecuteJavaScriptImmediate) {
   chromium::web::FramePtr frame = CreateFrame();
 
   ASSERT_TRUE(embedded_test_server()->Start());
