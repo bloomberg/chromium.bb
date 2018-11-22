@@ -141,8 +141,7 @@ bool UserEventServiceImpl::ShouldRecordEvent(
   // TODO(vitaliii): Checking USER_EVENTS directly should not be needed once
   // https://crbug.com/830535 is fixed. Then disabling USER_EVENTS should be
   // honored by the processor and it should drop all events.
-  if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType) &&
-      !IsUserEventsDatatypeEnabled()) {
+  if (!IsUserEventsDatatypeEnabled()) {
     DCHECK(!specifics.has_user_consent());
     return false;
   }

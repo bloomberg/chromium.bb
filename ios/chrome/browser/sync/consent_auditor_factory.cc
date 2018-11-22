@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 // TODO(crbug.com/850428): Move this and .h back to
-// ios/chrome/browser/consent_auditor, when it does not depend on
-// UserEventService anymore. Currently this is not possible due to a BUILD.gn
-// depedency.
+// ios/chrome/browser/consent_auditor.
 
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 
@@ -29,7 +27,6 @@
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
@@ -59,7 +56,6 @@ ConsentAuditorFactory::ConsentAuditorFactory()
           "ConsentAuditor",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
-  DependsOn(IOSUserEventServiceFactory::GetInstance());
 }
 
 ConsentAuditorFactory::~ConsentAuditorFactory() {}
@@ -70,26 +66,19 @@ std::unique_ptr<KeyedService> ConsentAuditorFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(browser_state);
 
   std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge;
-  syncer::UserEventService* user_event_service = nullptr;
-  if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
-    syncer::OnceModelTypeStoreFactory store_factory =
-        ModelTypeStoreServiceFactory::GetForBrowserState(ios_browser_state)
-            ->GetStoreFactory();
-    auto change_processor =
-        std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::USER_CONSENTS,
-            base::BindRepeating(&syncer::ReportUnrecoverableError,
-                                ::GetChannel()));
-    consent_sync_bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
-        std::move(store_factory), std::move(change_processor));
-  } else {
-    user_event_service =
-        IOSUserEventServiceFactory::GetForBrowserState(ios_browser_state);
-  }
+  syncer::OnceModelTypeStoreFactory store_factory =
+      ModelTypeStoreServiceFactory::GetForBrowserState(ios_browser_state)
+          ->GetStoreFactory();
+  auto change_processor =
+      std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+          syncer::USER_CONSENTS,
+          base::BindRepeating(&syncer::ReportUnrecoverableError,
+                              ::GetChannel()));
+  consent_sync_bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
+      std::move(store_factory), std::move(change_processor));
 
   return std::make_unique<consent_auditor::ConsentAuditorImpl>(
       ios_browser_state->GetPrefs(), std::move(consent_sync_bridge),
-      user_event_service,
       // The browser version and locale do not change runtime, so we can pass
       // them directly.
       version_info::GetVersionNumber(),

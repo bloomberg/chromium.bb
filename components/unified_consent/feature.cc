@@ -19,14 +19,6 @@ const base::Feature kForceUnifiedConsentBump{"ForceUnifiedConsentBump",
 
 namespace {
 UnifiedConsentFeatureState GetUnifiedConsentFeatureState() {
-  // Unified consent requires user consent to be recorded via its own
-  // sync model type.The reason is that when unified consent is enabled,
-  // |USER_EVENTS| sync model type is configurable and the user may disable it.
-  // Chromium needs to continue to record user consent even if the user
-  // manually disables |USER_EVENTS|.
-  if (!base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType))
-    return UnifiedConsentFeatureState::kDisabled;
-
   if (!base::FeatureList::IsEnabled(kUnifiedConsent))
     return UnifiedConsentFeatureState::kDisabled;
 

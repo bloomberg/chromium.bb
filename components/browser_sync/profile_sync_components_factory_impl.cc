@@ -392,27 +392,25 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         syncer::USER_EVENTS));
   }
 
-  if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
-    // Forward both on-disk and in-memory storage modes to the same delegate,
-    // since behavior for USER_CONSENTS does not differ (they are always
-    // persisted).
-    // TODO(crbug.com/867801): Replace the proxy delegates below with a simpler
-    // forwarding delegate that involves no posting of tasks.
-    controllers.push_back(std::make_unique<ModelTypeController>(
-        syncer::USER_CONSENTS,
-        /*delegate_on_disk=*/
-        std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-            ui_thread_,
-            base::BindRepeating(
-                &syncer::SyncClient::GetControllerDelegateForModelType,
-                base::Unretained(sync_client_), syncer::USER_CONSENTS)),
-        /*delegate_in_memory=*/
-        std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-            ui_thread_,
-            base::BindRepeating(
-                &syncer::SyncClient::GetControllerDelegateForModelType,
-                base::Unretained(sync_client_), syncer::USER_CONSENTS))));
-  }
+  // Forward both on-disk and in-memory storage modes to the same delegate,
+  // since behavior for USER_CONSENTS does not differ (they are always
+  // persisted).
+  // TODO(crbug.com/867801): Replace the proxy delegates below with a simpler
+  // forwarding delegate that involves no posting of tasks.
+  controllers.push_back(std::make_unique<ModelTypeController>(
+      syncer::USER_CONSENTS,
+      /*delegate_on_disk=*/
+      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+          ui_thread_,
+          base::BindRepeating(
+              &syncer::SyncClient::GetControllerDelegateForModelType,
+              base::Unretained(sync_client_), syncer::USER_CONSENTS)),
+      /*delegate_in_memory=*/
+      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+          ui_thread_,
+          base::BindRepeating(
+              &syncer::SyncClient::GetControllerDelegateForModelType,
+              base::Unretained(sync_client_), syncer::USER_CONSENTS))));
 
   return controllers;
 }

@@ -17,13 +17,8 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
-namespace syncer {
-class UserEventService;
-}  // namespace syncer
-
 namespace sync_pb {
 class UserConsentSpecifics;
-class UserEventSpecifics;
 }  // namespace sync_pb
 
 class PrefService;
@@ -31,14 +26,11 @@ class PrefRegistrySimple;
 
 namespace consent_auditor {
 
-// TODO(vitaliii): Delete user-event-related code once USER_CONSENTS type is
-// fully launched.
 class ConsentAuditorImpl : public ConsentAuditor {
  public:
   ConsentAuditorImpl(
       PrefService* pref_service,
       std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge,
-      syncer::UserEventService* user_event_service,
       const std::string& app_version,
       const std::string& app_locale,
       base::Clock* clock);
@@ -79,24 +71,6 @@ class ConsentAuditorImpl : public ConsentAuditor {
       override;
 
  private:
-  // Records a consent for |feature| for the signed-in GAIA account with
-  // the ID |account_id| (as defined in AccountInfo).
-  // Consent text consisted of strings with |consent_grd_ids|, and the UI
-  // element the user clicked had the ID |confirmation_grd_id|.
-  // Whether the consent was GIVEN or NOT_GIVEN is passed as |status|.
-  void RecordGaiaConsent(const std::string& account_id,
-                         Feature feature,
-                         const std::vector<int>& description_grd_ids,
-                         int confirmation_grd_id,
-                         ConsentStatus status);
-
-  std::unique_ptr<sync_pb::UserEventSpecifics> ConstructUserEventSpecifics(
-      const std::string& account_id,
-      Feature feature,
-      const std::vector<int>& description_grd_ids,
-      int confirmation_grd_id,
-      ConsentStatus status);
-
   std::unique_ptr<sync_pb::UserConsentSpecifics> ConstructUserConsentSpecifics(
       const std::string& account_id,
       Feature feature,
@@ -106,7 +80,6 @@ class ConsentAuditorImpl : public ConsentAuditor {
 
   PrefService* pref_service_;
   std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge_;
-  syncer::UserEventService* user_event_service_;
   std::string app_version_;
   std::string app_locale_;
   base::Clock* clock_;

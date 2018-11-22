@@ -103,11 +103,6 @@ const base::Feature kSyncUserFieldTrialEvents{"SyncUserFieldTrialEvents",
 const base::Feature kSyncUserConsentEvents{"SyncUserConsentEvents",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Emit user consents through a separate sync type USER_CONSENTS instead of
-// USER_EVENTS. This feature does not override kSyncUserConsentEvents.
-const base::Feature kSyncUserConsentSeparateType{
-    "SyncUserConsentSeparateType", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Gates registration for user language detection events.
 const base::Feature kSyncUserLanguageDetectionEvents{
     "SyncUserLanguageDetectionEvents", base::FEATURE_DISABLED_BY_DEFAULT};
