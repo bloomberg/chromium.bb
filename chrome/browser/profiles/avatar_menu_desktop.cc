@@ -29,16 +29,15 @@ AvatarMenu::ImageLoadStatus AvatarMenu::GetImageForMenuButton(
 
   // If there is a Gaia image available, try to use that.
   if (entry->IsUsingGAIAPicture()) {
-    // TODO(chengx): The GetGAIAPicture API call will trigger an async image
-    // load from disk if it has not been loaded. This is non-obvious and
-    // dependency should be avoided. We should come with a better idea to handle
-    // this.
+    // The GetGAIAPicture API call will trigger an async image load from disk if
+    // it has not been loaded into memory.
     const gfx::Image* gaia_image = entry->GetGAIAPicture();
 
     if (gaia_image) {
       *image = *gaia_image;
       return ImageLoadStatus::LOADED;
     }
+
     if (entry->IsGAIAPictureLoaded())
       status = ImageLoadStatus::MISSING;
     else
