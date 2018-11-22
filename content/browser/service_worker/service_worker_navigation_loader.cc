@@ -271,10 +271,24 @@ void ServiceWorkerNavigationLoader::CommitResponseBody(
 
 void ServiceWorkerNavigationLoader::CommitResponseBodyEmpty() {
   TransitionToStatus(Status::kSentBody);
-  mojo::DataPipe pipe;
-  url_loader_client_->OnStartLoadingResponseBody(
-      std::move(pipe.consumer_handle));
-  // pipe.producer_handle is closed here.
+
+  // TODO(arthursonzogni): As soon as https://crbug.com/905779 is fixed, switch
+  // back to using mojo::DataPipe instead of creating it manually.
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  // Cannot use 0, because this means "default" in
+  // mojo::core::Core::CreateDataPipe.
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = 1;
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  MojoResult result =
+      CreateDataPipe(&options, &producer_handle, &consumer_handle);
+  CHECK_EQ(MOJO_RESULT_OK, result);
+
+  producer_handle.reset();  // The data pipe is empty.
+  url_loader_client_->OnStartLoadingResponseBody(std::move(consumer_handle));
 }
 
 void ServiceWorkerNavigationLoader::CommitCompleted(int error_code,
