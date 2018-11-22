@@ -19,20 +19,10 @@ import java.util.Map;
 /** Installs dynamic feature modules (DFMs). */
 public class ModuleInstaller {
     /** Command line switch for activating the fake backend.  */
-    public static final String FAKE_FEATURE_MODULE_INSTALL = "fake-feature-module-install";
-    private static final Map<String, List<OnFinishedListener>> sModuleNameListenerMap =
+    private static final String FAKE_FEATURE_MODULE_INSTALL = "fake-feature-module-install";
+    private static final Map<String, List<OnModuleInstallFinishedListener>> sModuleNameListenerMap =
             new HashMap<>();
     private static ModuleInstallerBackend sBackend;
-
-    /** Listener for when a module install has finished. */
-    public interface OnFinishedListener {
-        /**
-         * Called when the install has finished.
-         *
-         * @param success True if the module was installed successfully.
-         */
-        void onFinished(boolean success);
-    }
 
     /** Needs to be called before trying to access a module. */
     public static void init() {
@@ -48,13 +38,15 @@ public class ModuleInstaller {
      * @param moduleName Name of the module as defined in GN.
      * @param onFinishedListener Listener to be called once installation is finished.
      */
-    public static void install(String moduleName, OnFinishedListener onFinishedListener) {
+    public static void install(
+            String moduleName, OnModuleInstallFinishedListener onFinishedListener) {
         ThreadUtils.assertOnUiThread();
 
         if (!sModuleNameListenerMap.containsKey(moduleName)) {
             sModuleNameListenerMap.put(moduleName, new LinkedList<>());
         }
-        List<OnFinishedListener> onFinishedListeners = sModuleNameListenerMap.get(moduleName);
+        List<OnModuleInstallFinishedListener> onFinishedListeners =
+                sModuleNameListenerMap.get(moduleName);
         onFinishedListeners.add(onFinishedListener);
         if (onFinishedListeners.size() > 1) {
             // Request is already running.
@@ -67,10 +59,11 @@ public class ModuleInstaller {
         ThreadUtils.assertOnUiThread();
 
         for (String moduleName : moduleNames) {
-            List<OnFinishedListener> onFinishedListeners = sModuleNameListenerMap.get(moduleName);
+            List<OnModuleInstallFinishedListener> onFinishedListeners =
+                    sModuleNameListenerMap.get(moduleName);
             if (onFinishedListeners == null) continue;
 
-            for (OnFinishedListener listener : onFinishedListeners) {
+            for (OnModuleInstallFinishedListener listener : onFinishedListeners) {
                 listener.onFinished(success);
             }
             sModuleNameListenerMap.remove(moduleName);

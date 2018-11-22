@@ -145,6 +145,17 @@ template("chrome_public_common_apk_or_module_tmpl") {
         }
       }
     }
+
+    # Only bundles can install modules. Therefore, include stub implementation
+    # for all other targets to save some binary size.
+    if (_target_type == "android_app_bundle_module") {
+      deps +=
+          [ "//components/module_installer/android:module_installer_impl_java" ]
+    } else {
+      deps +=
+          [ "//components/module_installer/android:module_installer_stub_java" ]
+    }
+
     if (!is_java_debug) {
       proguard_enabled = true
       if (!defined(proguard_configs)) {
