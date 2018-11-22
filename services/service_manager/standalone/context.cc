@@ -37,10 +37,6 @@
 #include "services/service_manager/runner/host/service_process_launcher.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
-#endif
-
 namespace service_manager {
 namespace {
 

@@ -18,7 +18,7 @@
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
+#include "mojo/core/embedder/default_mach_broker.h"
 #endif
 
 namespace service_manager {
@@ -33,7 +33,7 @@ int InitializeAndLaunchUnitTests(int argc,
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   mojo::core::SetMachPortProvider(
-      service_manager::MachBroker::GetInstance()->port_provider());
+      mojo::core::DefaultMachBroker::Get()->port_provider());
 #endif
 
   base::Thread ipc_thread("IPC thread");

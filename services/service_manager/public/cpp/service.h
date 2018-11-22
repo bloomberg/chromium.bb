@@ -24,6 +24,16 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   Service();
   virtual ~Service();
 
+  // Transfers ownership of |service| to itself such that self-termination via
+  // |Terminate()| is also self-deletion. Note that most services implicitly
+  // call |Terminate()| when disconnected from the Service Manager, via the
+  // default implementation of |OnDisconnected()|.
+  //
+  // This should really only be called on a Service instance that has a bound
+  // connection to the Service Manager, e.g. a functioning ServiceBinding. If
+  // the service never calls |Terminate()|, it will effectively leak.
+  static void RunUntilTermination(std::unique_ptr<Service> service);
+
   // Sets a closure to run when the service wants to self-terminate. This may be
   // used by whomever created the Service instance in order to clean up
   // associated resources.

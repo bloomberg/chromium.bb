@@ -35,7 +35,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/mac/mach_port_broker.h"
+#include "mojo/core/embedder/default_mach_broker.h"
 #endif
 
 #if !defined(OS_FUCHSIA)
@@ -249,7 +249,7 @@ void MultiprocessTestHelper::ChildSetup() {
   bool run_as_broker_client = command_line.HasSwitch(kRunAsBrokerClient);
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   if (run_as_broker_client)
-    CHECK(base::MachPortBroker::ChildSendTaskPortToParent("mojo_test"));
+    DefaultMachBroker::SendTaskPortToParent();
 #endif
 
   PlatformChannelEndpoint endpoint;

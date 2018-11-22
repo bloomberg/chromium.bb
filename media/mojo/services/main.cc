@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
-#include "base/bind.h"
-#include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "media/mojo/services/media_service_factory.h"
 #include "services/service_manager/public/c/main.h"
-#include "services/service_manager/public/cpp/service_runner.h"
+#include "base/logging.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "media/mojo/services/media_service_factory.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
-MojoResult ServiceMain(MojoHandle mojo_handle) {
-  // Enable logging.
-  service_manager::ServiceRunner::InitBaseCommandLine();
-
+MojoResult ServiceMain(MojoHandle service_request_handle) {
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
 
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
   std::unique_ptr<service_manager::Service> service =
-      media::CreateMediaServiceForTesting();
-  service_manager::ServiceRunner runner(service.release());
-  return runner.Run(mojo_handle, false /* init_base */);
+      media::CreateMediaServiceForTesting(
+          service_manager::mojom::ServiceRequest(mojo::ScopedMessagePipeHandle(
+              mojo::MessagePipeHandle(service_request_handle))));
+  service->set_termination_closure(run_loop.QuitClosure());
+  run_loop.Run();
+  return MOJO_RESULT_OK;
 }

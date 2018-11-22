@@ -658,6 +658,10 @@ ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo(
 ContentBrowserClient::OutOfProcessServiceInfo::~OutOfProcessServiceInfo() =
     default;
 
+void ContentBrowserClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {}
+
 bool ContentBrowserClient::ShouldTerminateOnServiceQuit(
     const service_manager::Identity& id) {
   return false;

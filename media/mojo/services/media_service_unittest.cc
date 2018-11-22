@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "media/base/cdm_config.h"
 #include "media/base/mock_filters.h"
@@ -27,10 +28,13 @@
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
+#include "media/mojo/services/service_tests_catalog_source.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/test/test_service.h"
+#include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -118,18 +122,20 @@ ACTION_P(QuitLoop, run_loop) {
 // TestMojoMediaClient supports CDM creation using DefaultCdmFactory (only
 // supports Clear Key key system), and Renderer creation using
 // DefaultRendererFactory that always create media::RendererImpl.
-class MediaServiceTest : public service_manager::test::ServiceTest {
+class MediaServiceTest : public testing::Test {
  public:
   MediaServiceTest()
-      : ServiceTest("media_service_unittests"),
+      : test_service_manager_(test::CreateServiceTestCatalog()),
+        test_service_(test_service_manager_.RegisterTestInstance(
+            "media_service_unittests")),
         cdm_proxy_client_binding_(&cdm_proxy_client_),
         renderer_client_binding_(&renderer_client_),
         video_stream_(DemuxerStream::VIDEO) {}
   ~MediaServiceTest() override = default;
 
-  void SetUp() override {
-    ServiceTest::SetUp();
+  service_manager::Connector* connector() { return test_service_.connector(); }
 
+  void SetUp() override {
     service_manager::mojom::InterfaceProviderPtr host_interfaces;
     auto provider = std::make_unique<MediaInterfaceProvider>(
         mojo::MakeRequest(&host_interfaces));
@@ -253,6 +259,10 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
   MOCK_METHOD0(MediaServiceConnectionClosed, void());
 
  protected:
+  base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::TestServiceManager test_service_manager_;
+  service_manager::TestService test_service_;
+
   mojom::MediaServicePtr media_service_;
   mojom::InterfaceFactoryPtr interface_factory_;
   mojom::ContentDecryptionModulePtr cdm_;

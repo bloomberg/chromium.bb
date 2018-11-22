@@ -197,13 +197,6 @@ void ShellContentBrowserClient::BindInterfaceRequestFromFrame(
 void ShellContentBrowserClient::RegisterInProcessServices(
     StaticServiceMap* services,
     content::ServiceManagerConnection* connection) {
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind(&media::CreateMediaServiceForTesting);
-    services->insert(std::make_pair(media::mojom::kMediaServiceName, info));
-  }
-#endif
 #if defined(OS_CHROMEOS)
   if (features::IsSingleProcessMash()) {
     service_manager::EmbeddedServiceInfo info;
@@ -229,6 +222,17 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
   if (features::IsMultiProcessMash()) {
     (*services)[test_ws::mojom::kServiceName] =
         base::BindRepeating(&base::ASCIIToUTF16, "Test Window Service");
+  }
+#endif
+}
+
+void ShellContentBrowserClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+  if (service_name == media::mojom::kMediaServiceName) {
+    service_manager::Service::RunUntilTermination(
+        media::CreateMediaServiceForTesting(std::move(request)));
   }
 #endif
 }

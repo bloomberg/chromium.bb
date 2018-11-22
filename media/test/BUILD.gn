@@ -69,7 +69,6 @@ source_set("pipeline_integration_tests") {
       "//base",
       "//media:test_support",
       "//media/mojo/clients",
-      "//services/service_manager/public/cpp:service_test_support",
       "//third_party/libaom:av1_buildflags",
 
       # Needed for the opus_config
@@ -77,8 +76,8 @@ source_set("pipeline_integration_tests") {
       "//url",
 
       # TODO(dalecurtis): Required since the gmock header is included in the
-      # header for pipeline_integration_test_base.h.  This should be moved into
-      # the .cc file to avoid the extra dependency here.
+      # header for pipeline_integration_test_base.h.  This should be moved
+      #  into the .cc file to avoid the extra dependency here.
       "//testing/gmock",
     ]
   }
@@ -126,7 +125,8 @@ source_set("mojo_pipeline_integration_tests") {
       "//media/mojo/clients",
       "//media/mojo/interfaces",
       "//media/mojo/services",
-      "//services/service_manager/public/cpp:service_test_support",
+      "//media/mojo/services:media_pipeline_integration_unittests_catalog_source",
+      "//services/service_manager/public/cpp/test:test_support",
       "//testing/gtest",
       "//third_party/libaom:av1_buildflags",
       "//ui/gfx:test_support",

@@ -34,7 +34,9 @@ class GpuServiceFactory : public ServiceFactory {
   ~GpuServiceFactory() override;
 
   // ServiceFactory overrides:
-  void RegisterServices(ServiceMap* services) override;
+  bool HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request) override;
 
  private:
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)

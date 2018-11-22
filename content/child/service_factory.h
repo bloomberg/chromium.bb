@@ -29,7 +29,7 @@ class ServiceFactory : public service_manager::mojom::ServiceFactory {
   ServiceFactory();
   ~ServiceFactory() override;
 
-  virtual void RegisterServices(ServiceMap* services) = 0;
+  virtual void RegisterServices(ServiceMap* services);
   virtual bool HandleServiceRequest(
       const std::string& name,
       service_manager::mojom::ServiceRequest request);
