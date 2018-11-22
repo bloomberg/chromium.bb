@@ -200,6 +200,8 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
   FormInputAccessoryViewHandler* handler =
       [[FormInputAccessoryViewHandler alloc] init];
   handler.JSSuggestionManager = self.suggestionManager;
+  [handler setLastFocusFormActivityWebFrameID:
+               base::SysUTF8ToNSString(self.lastFocusedElementFrameIdentifier)];
   [handler selectNextElementWithoutButtonPress];
 }
 
