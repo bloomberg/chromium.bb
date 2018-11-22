@@ -1120,8 +1120,22 @@ Node::InsertionNotificationRequest HTMLElement::InsertedInto(
       InActiveDocument() && FastHasAttribute(kNonceAttr)) {
     setAttribute(kNonceAttr, g_empty_atom);
   }
+  if (IsFormAssociatedCustomElement())
+    EnsureElementInternals().InsertedInto(insertion_point);
 
   return kInsertionDone;
+}
+
+void HTMLElement::RemovedFrom(ContainerNode& insertion_point) {
+  Element::RemovedFrom(insertion_point);
+  if (IsFormAssociatedCustomElement())
+    EnsureElementInternals().RemovedFrom(insertion_point);
+}
+
+void HTMLElement::DidMoveToNewDocument(Document& old_document) {
+  if (IsFormAssociatedCustomElement())
+    EnsureElementInternals().DidMoveToNewDocument(old_document);
+  Element::DidMoveToNewDocument(old_document);
 }
 
 void HTMLElement::AddHTMLLengthToStyle(MutableCSSPropertyValueSet* style,
@@ -1435,7 +1449,12 @@ ElementInternals* HTMLElement::attachInternals(
     return nullptr;
   }
   SetDidAttachInternals();
-  return MakeGarbageCollected<ElementInternals>(*this);
+  return &EnsureElementInternals();
+}
+
+bool HTMLElement::IsFormAssociatedCustomElement() const {
+  return GetCustomElementState() == CustomElementState::kCustom &&
+         GetCustomElementDefinition()->IsFormAssociated();
 }
 
 }  // namespace blink

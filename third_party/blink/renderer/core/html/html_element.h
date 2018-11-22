@@ -131,7 +131,8 @@ class CORE_EXPORT HTMLElement : public Element {
   Element* unclosedOffsetParent();
 
   ElementInternals* attachInternals(ExceptionState& exception_state);
-  virtual FormAssociated* ToFormAssociatedOrNull() { return nullptr; };
+  virtual FormAssociated* ToFormAssociatedOrNull() { return nullptr; }
+  bool IsFormAssociatedCustomElement() const;
 
  protected:
   HTMLElement(const QualifiedName& tag_name, Document&, ConstructionType);
@@ -165,6 +166,8 @@ class CORE_EXPORT HTMLElement : public Element {
   void CalculateAndAdjustDirectionality();
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
+  void RemovedFrom(ContainerNode& insertion_point) override;
+  void DidMoveToNewDocument(Document& old_document) override;
 
  private:
   String DebugNodeName() const final;

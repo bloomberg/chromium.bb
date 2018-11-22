@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/validity_state.h"
@@ -280,9 +281,15 @@ bool ListedElement::IsFormControlElementWithState() const {
   return false;
 }
 
+bool ListedElement::IsElementInternals() const {
+  return false;
+}
+
 const HTMLElement& ToHTMLElement(const ListedElement& listed_element) {
   if (listed_element.IsFormControlElement())
     return ToHTMLFormControlElement(listed_element);
+  if (listed_element.IsElementInternals())
+    return To<ElementInternals>(listed_element).Target();
   return ToHTMLObjectElementFromListedElement(listed_element);
 }
 

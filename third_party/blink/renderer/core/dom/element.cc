@@ -2680,6 +2680,10 @@ bool Element::DidAttachInternals() const {
   return HasRareData() && GetElementRareData()->DidAttachInternals();
 }
 
+ElementInternals& Element::EnsureElementInternals() {
+  return EnsureElementRareData().EnsureElementInternals(ToHTMLElement(*this));
+}
+
 ShadowRoot* Element::createShadowRoot(ExceptionState& exception_state) {
   if (ShadowRoot* root = GetShadowRoot()) {
     if (root->IsUserAgent()) {

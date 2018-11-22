@@ -59,6 +59,7 @@ class DOMTokenList;
 class Document;
 class DisplayLockContext;
 class ElementAnimations;
+class ElementInternals;
 class ElementIntersectionObserverData;
 class ElementRareData;
 class ExceptionState;
@@ -810,6 +811,7 @@ class CORE_EXPORT Element : public ContainerNode {
   const AtomicString& IsValue() const;
   void SetDidAttachInternals();
   bool DidAttachInternals() const;
+  ElementInternals& EnsureElementInternals();
 
   bool ContainsFullScreenElement() const {
     return HasElementFlag(ElementFlags::kContainsFullScreenElement);

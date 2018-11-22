@@ -2047,6 +2047,7 @@ interface Element : Node
     setter slot
 interface ElementInternals
     attribute @@toStringTag
+    getter form
     method constructor
 interface EnterPictureInPictureEvent : Event
     attribute @@toStringTag

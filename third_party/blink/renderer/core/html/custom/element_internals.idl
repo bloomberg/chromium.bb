@@ -9,6 +9,7 @@
   RuntimeEnabled=ElementInternals
 ]
 interface ElementInternals {
-  // TODO(tkent): Add operations.
+  // Attributes and operations for form-associated custom elements.
+  readonly attribute HTMLFormElement? form;
 };
 

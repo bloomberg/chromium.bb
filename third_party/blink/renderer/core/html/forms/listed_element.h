@@ -53,6 +53,7 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
 
   virtual bool IsFormControlElement() const = 0;
   virtual bool IsFormControlElementWithState() const;
+  virtual bool IsElementInternals() const;
   virtual bool IsEnumeratable() const = 0;
 
   // Returns the 'name' attribute value. If this element has no name
@@ -89,6 +90,9 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   virtual void setCustomValidity(const String&);
 
   void FormAttributeTargetChanged();
+  void InsertedInto(ContainerNode&);
+  void RemovedFrom(ContainerNode&);
+  void DidMoveToNewDocument(Document& old_document);
 
   typedef HeapVector<Member<ListedElement>> List;
 
@@ -96,10 +100,6 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
 
  protected:
   ListedElement();
-
-  void InsertedInto(ContainerNode&);
-  void RemovedFrom(ContainerNode&);
-  void DidMoveToNewDocument(Document& old_document);
 
   // FIXME: Remove usage of setForm. resetFormOwner should be enough, and
   // setForm is confusing.
