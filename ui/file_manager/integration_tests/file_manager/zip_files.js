@@ -159,6 +159,112 @@ testcase.zipFileOpenDownloadsWithAbsolutePaths = function() {
 };
 
 /**
+ * Tests encrypted zip file open, and canceling the passphrase dialog.
+ */
+testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = function() {
+  let appId;
+
+  const zipArchiverAppId = 'dmboannefpncccogfdikhmhpmdnddgoe';
+  const zipArchiverPassphraseDialogUrl =
+      'chrome-extension://dmboannefpncccogfdikhmhpmdnddgoe/html/passphrase.html';
+
+  var cancelPassphraseDialog = function(windowId) {
+    return sendTestMessage({
+      'name': 'runJsInAppWindow',
+      'windowId': windowId,
+      'script':
+          'document.addEventListener("DOMContentLoaded", function() {document.querySelector("passphrase-dialog").shadowRoot.querySelector("#cancelButton").click();});'
+    });
+  };
+
+  var waitForAllPassphraseWindowsClosed = function() {
+    const caller = getCaller();
+
+    const passphraseWindowCountCommand = {
+      'name': 'countAppWindows',
+      'appId': zipArchiverAppId
+    };
+
+    const getPassphraseWindowIdCommand = {
+      'name': 'getAppWindowId',
+      'windowUrl': zipArchiverPassphraseDialogUrl
+    };
+
+    return repeatUntil(function() {
+      return sendTestMessage(passphraseWindowCountCommand).then((result) => {
+        if (result == 0)
+          return true;
+        return sendTestMessage(getPassphraseWindowIdCommand)
+            .then((result) => {
+              if (result == 'none')
+                return true;
+              return cancelPassphraseDialog(result);
+            })
+            .then(function() {
+              return pending(caller, 'waitForAllPassphraseWindowsClosed');
+            });
+      });
+    });
+  };
+
+  StepsRunner.run([
+    // Open Files app on Downloads containing a zip file.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.zipArchiveEncrypted],
+          []);
+    },
+    // Select the zip file.
+    function(result) {
+      appId = result.windowId;
+      remoteCall.callRemoteTestUtil('selectFile', appId, ['encrypted.zip'])
+          .then(this.next);
+    },
+    // Press the Enter key.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'selectFile failed');
+      const key = ['#file-list', 'Enter', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
+    },
+    // Check: the zip file content should be shown (unzip).
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
+      const files = getUnzippedFileListRowEntries();
+      remoteCall.waitForFiles(appId, files, {'ignoreLastModifiedTime': true})
+          .then(this.next);
+    },
+    // Select the text file in the ZIP file.
+    function(result) {
+      remoteCall.callRemoteTestUtil('selectFile', appId, ['text.txt'])
+          .then(this.next);
+    },
+    // Press the Enter key.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'selectFile failed');
+      const key = ['#file-list', 'Enter', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
+    },
+    // Wait for the external passphrase dialog window to appear.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
+      waitForAppWindow(zipArchiverPassphraseDialogUrl).then(this.next);
+    },
+    // Close the dialog by pressing the 'Cancel' button. Repeat for any new
+    // dialogs that pop up.
+    function(result) {
+      waitForAllPassphraseWindowsClosed().then(this.next);
+    },
+    // Check: the zip file content should still be shown.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
+      const files = getUnzippedFileListRowEntries();
+      remoteCall.waitForFiles(appId, files, {'ignoreLastModifiedTime': true})
+          .then(this.next);
+    },
+  ]);
+};
+
+/**
  * Tests zip file open (aka unzip) from Google Drive.
  */
 testcase.zipFileOpenDrive = function() {
