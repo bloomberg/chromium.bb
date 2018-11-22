@@ -98,6 +98,12 @@ function keyboardCopy(path) {
         [['world (1).ogv', '59 KB', 'OGG video']]);
     return remoteCall.waitForFiles(
         appId, expectedEntryRows, {ignoreLastModifiedTime: true});
+  }).then(() => {
+    return remoteCall.callRemoteTestUtil(
+        'getFileList', appId, []);
+  }).then(function(files) {
+    // The mtimes should not match.
+    chrome.test.assertTrue(files[0][3] != files[1][3], files[1][3]);
   });
 }
 

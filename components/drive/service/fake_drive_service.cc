@@ -890,6 +890,10 @@ CancelCallback FakeDriveService::CopyResource(
   if (!last_modified.is_null()) {
     new_file->set_modified_date(last_modified);
     new_file->set_modified_by_me_date(last_modified);
+  } else {
+    auto now = base::Time::Now();
+    new_file->set_modified_date(now);
+    new_file->set_modified_by_me_date(now);
   }
 
   AddNewChangestamp(new_change, new_file->team_drive_id());
