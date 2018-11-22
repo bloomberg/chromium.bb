@@ -1985,17 +1985,17 @@
   },
   {
     "name": "enable-webassembly",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "titzer", "wasm-team@google.com" ],
+    "expiry_milestone": 72
   },
   {
     "name": "enable-webassembly-baseline",
-    // "owners": [ "your-team" ],
+    "owners": [ "clemensh", "wasm-team@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-webassembly-threads",
-    // "owners": [ "your-team" ],
+    "owners": [ "binji", "hablich", "wasm-team@google.com" ],
     "expiry_milestone": 76
   },
   {
