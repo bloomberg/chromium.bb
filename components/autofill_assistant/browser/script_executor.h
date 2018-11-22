@@ -177,6 +177,16 @@ class ScriptExecutor : public ActionDelegate {
     void OnInterruptDone(const ScriptExecutor::Result& result);
     void RunCallback(bool found, const ScriptExecutor::Result* result);
 
+    // Saves the current state and sets save_pre_interrupt_state_.
+    void SavePreInterruptState();
+
+    // Restores the UI states as found by SavePreInterruptState.
+    void RestorePreInterruptUiState();
+
+    // if save_pre_interrupt_state_ is set, attempt to scroll the page back to
+    // the original area.
+    void RestorePreInterruptScroll(bool element_found);
+
     const ScriptExecutor* main_script_;
     const base::TimeDelta max_wait_time_;
     const ElementCheckType check_type_;
@@ -193,6 +203,13 @@ class ScriptExecutor : public ActionDelegate {
 
     // The interrupt that's currently running.
     std::unique_ptr<ScriptExecutor> interrupt_executor_;
+
+    // If true, pre-interrupt state was saved already. This happens just before
+    // the first interrupt.
+    bool saved_pre_interrupt_state_;
+
+    // The status message that was displayed when the interrupt started.
+    std::string pre_interrupt_status_;
 
     DISALLOW_COPY_AND_ASSIGN(WaitWithInterrupts);
   };
@@ -229,6 +246,7 @@ class ScriptExecutor : public ActionDelegate {
   bool should_stop_script_;
   bool should_clean_contextual_ui_on_finish_;
   ActionProto::ActionInfoCase previous_action_type_;
+  std::vector<std::string> last_focused_element_selector_;
   std::vector<std::vector<std::string>> touchable_elements_;
   std::map<std::string, ScriptStatusProto>* scripts_state_;
 
