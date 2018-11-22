@@ -183,11 +183,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @CalledByNative
-    private String onGetStatusMessage() {
-        return mStatusMessage;
-    }
-
-    @CalledByNative
     private void onShowOverlay() {
         mUiDelegateHolder.performUiOperation(uiDelegate -> {
             uiDelegate.showOverlay();

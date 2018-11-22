@@ -111,16 +111,6 @@ void UiControllerAndroid::ShowStatusMessage(const std::string& message) {
       base::android::ConvertUTF8ToJavaString(env, message));
 }
 
-std::string UiControllerAndroid::GetStatusMessage() {
-  JNIEnv* env = AttachCurrentThread();
-  std::string status;
-  base::android::ScopedJavaLocalRef<jstring> message =
-      Java_AutofillAssistantUiController_onGetStatusMessage(
-          env, java_autofill_assistant_ui_controller_);
-  base::android::ConvertJavaStringToUTF8(env, message.obj(), &status);
-  return status;
-}
-
 void UiControllerAndroid::ShowOverlay() {
   Java_AutofillAssistantUiController_onShowOverlay(
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
