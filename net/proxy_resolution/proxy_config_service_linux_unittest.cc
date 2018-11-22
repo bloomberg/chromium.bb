@@ -1852,9 +1852,16 @@ void WriteFile(const base::FilePath& path, base::StringPiece data) {
   EXPECT_TRUE(base::WriteFile(path, data.data(), data.size()));
 }
 
+// TODO(https://crbug.com/907673): Undiagnosed flakiness on ASAN and TSAN bots.
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_KDEFileChanged DISABLED_KDEFileChanged
+#else
+#define MAYBE_KDEFileChanged KDEFileChanged
+#endif
+
 // Tests that the KDE proxy config service watches for file and directory
 // changes.
-TEST_F(ProxyConfigServiceLinuxTest, KDEFileChanged) {
+TEST_F(ProxyConfigServiceLinuxTest, MAYBE_KDEFileChanged) {
   // Set up the initial .kde kioslaverc file.
   WriteFile(kioslaverc_,
             "[Proxy Settings]\nProxyType=2\n"
