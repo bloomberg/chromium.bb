@@ -95,8 +95,7 @@ void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
 
   // TODO(loyso): Refactor WebAppIconDownloader: crbug.com/907296.
   icon_downloader_ = std::make_unique<WebAppIconDownloader>(
-      web_contents, icon_urls,
-      "Extensions.BookmarkApp.Icon.HttpStatusCodeClassOnCreate",
+      web_contents, icon_urls, "WebApp.Icon.HttpStatusCodeClassOnCreate",
       base::BindOnce(&WebAppDataRetriever::OnIconsDownloaded,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
