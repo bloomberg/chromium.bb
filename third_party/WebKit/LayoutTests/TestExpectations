@@ -5406,3 +5406,4 @@ crbug.com/907481 [ Win10 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/R
 
 #Sheriff 2018-11-22
 crbug.com/907736 http/tests/devtools/elements/elements-save-to-temp-var.js [ Timeout Pass ]
+crbug.com/907862 [ Mac10.13 ] virtual/user-activation-v2/gamepad/multiple-event-listeners.html [ Pass Failure ]
