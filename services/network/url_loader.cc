@@ -535,19 +535,29 @@ const void* const URLLoader::kUserDataKey = &URLLoader::kUserDataKey;
 void URLLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<GURL>& new_url) {
   if (!url_request_) {
     NotifyCompleted(net::ERR_UNEXPECTED);
     // |this| may have been deleted.
     return;
   }
 
-  if (!deferred_redirect_) {
+  if (!deferred_redirect_url_) {
     NOTREACHED();
     return;
   }
 
-  deferred_redirect_ = false;
+  if (new_url &&
+      (new_url->GetOrigin() != deferred_redirect_url_->GetOrigin())) {
+    NOTREACHED() << "Can only change the URL within the same origin.";
+    NotifyCompleted(net::ERR_UNEXPECTED);
+    // |this| may have been deleted.
+    return;
+  }
+
+  deferred_redirect_url_.reset();
+  new_redirect_url_ = new_url;
 
   if (to_be_removed_request_headers.has_value()) {
     for (const std::string& key : to_be_removed_request_headers.value())
@@ -555,6 +565,7 @@ void URLLoader::FollowRedirect(
   }
 
   url_request_->FollowDeferredRedirect(modified_request_headers);
+  new_redirect_url_.reset();
 }
 
 void URLLoader::ProceedWithResponse() {
@@ -614,8 +625,8 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   DCHECK(url_request == url_request_.get());
   DCHECK(url_request->status().is_success());
 
-  DCHECK(!deferred_redirect_);
-  deferred_redirect_ = true;
+  DCHECK(!deferred_redirect_url_);
+  deferred_redirect_url_ = std::make_unique<GURL>(redirect_info.new_url);
 
   // Send the redirect response to the client, allowing them to inspect it and
   // optionally follow the redirect.

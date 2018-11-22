@@ -80,10 +80,13 @@ PrefetchURLLoader::~PrefetchURLLoader() = default;
 void PrefetchURLLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<GURL>& new_url) {
   DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
                                                    "headers was not supported "
                                                    "yet. crbug.com/845683";
+  DCHECK(!new_url.has_value()) << "Redirect with modified URL was not "
+                                  "supported yet. crbug.com/845683";
   DCHECK(new_url_for_redirect_.is_valid());
   if (signed_exchange_prefetch_handler_) {
     // Rebind |client_binding_| and |loader_|.
@@ -107,11 +110,12 @@ void PrefetchURLLoader::FollowRedirect(
       modified_request_headers_for_accept.SetHeader(
           network::kAcceptHeader, network::kDefaultAcceptHeader);
     }
-    loader_->FollowRedirect(base::nullopt, modified_request_headers_for_accept);
+    loader_->FollowRedirect(base::nullopt, modified_request_headers_for_accept,
+                            base::nullopt);
     return;
   }
 
-  loader_->FollowRedirect(base::nullopt, base::nullopt);
+  loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
 }
 
 void PrefetchURLLoader::ProceedWithResponse() {

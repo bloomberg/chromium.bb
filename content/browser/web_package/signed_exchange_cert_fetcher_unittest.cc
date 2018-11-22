@@ -40,7 +40,7 @@ class DeferringURLLoaderThrottle final : public URLLoaderThrottle {
   }
 
   void WillRedirectRequest(
-      const net::RedirectInfo& /* redirect_info */,
+      net::RedirectInfo* redirect_info,
       const network::ResourceResponseHead& /* response_head */,
       bool* defer,
       std::vector<std::string>* /* to_be_removed_headers */,
@@ -80,9 +80,10 @@ class MockURLLoader final : public network::mojom::URLLoader {
       : binding_(this, std::move(url_loader_request)) {}
   ~MockURLLoader() override = default;
 
-  MOCK_METHOD2(FollowRedirect,
+  MOCK_METHOD3(FollowRedirect,
                void(const base::Optional<std::vector<std::string>>&,
-                    const base::Optional<net::HttpRequestHeaders>&));
+                    const base::Optional<net::HttpRequestHeaders>&,
+                    const base::Optional<GURL>&));
   MOCK_METHOD0(ProceedWithResponse, void());
   MOCK_METHOD2(SetPriority,
                void(net::RequestPriority priority,

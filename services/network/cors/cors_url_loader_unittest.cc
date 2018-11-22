@@ -190,7 +190,7 @@ class CorsURLLoaderTest : public testing::Test {
 
   void FollowRedirect() {
     DCHECK(url_loader_);
-    url_loader_->FollowRedirect(base::nullopt, base::nullopt);
+    url_loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
   }
 
   const ResourceRequest& GetRequest() const {

@@ -258,10 +258,11 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   }
 
   // network::mojom::URLLoader methods
-  void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                          to_be_removed_request_headers,
-                      const base::Optional<net::HttpRequestHeaders>&
-                          modified_request_headers) override;
+  void FollowRedirect(
+      const base::Optional<std::vector<std::string>>&
+          to_be_removed_request_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<GURL>& new_url) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
@@ -849,7 +850,7 @@ Response InterceptionJob::InnerContinueRequest(
     } else {
       // TODO(caseq): report error if other modifications are present.
       state_ = State::kRequestSent;
-      loader_->FollowRedirect(base::nullopt, base::nullopt);
+      loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
       return Response::OK();
     }
   }
@@ -1256,10 +1257,13 @@ void InterceptionJob::Shutdown() {
 void InterceptionJob::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<GURL>& new_url) {
   DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
                                                    "headers was not supported "
                                                    "yet. crbug.com/845683";
+  DCHECK(!new_url.has_value()) << "Redirect with modified url was not "
+                                  "supported yet. crbug.com/845683";
   DCHECK(!waiting_for_resolution_);
 
   network::ResourceRequest* request = &create_loader_params_->request;
@@ -1299,7 +1303,7 @@ void InterceptionJob::FollowRedirect(
   }
   if (state_ == State::kRedirectReceived) {
     state_ = State::kRequestSent;
-    loader_->FollowRedirect(base::nullopt, base::nullopt);
+    loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
     return;
   }
 

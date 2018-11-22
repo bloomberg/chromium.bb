@@ -394,7 +394,15 @@ void MojoAsyncResourceHandler::OnReadCompleted(
 void MojoAsyncResourceHandler::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<GURL>& new_url) {
+  if (new_url) {
+    ReportBadMessage(
+        "Non-network service path doesn't support modifying a "
+        "redirect URL");
+    return;
+  }
+
   if (!request()->status().is_success()) {
     DVLOG(1) << "FollowRedirect for invalid request";
     return;

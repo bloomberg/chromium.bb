@@ -242,7 +242,11 @@ class CONTENT_EXPORT ThrottlingURLLoader
   std::unique_ptr<PriorityInfo> priority_info_;
 
   // Set if a throttle changed the URL in WillStartRequest.
-  GURL throttle_redirect_url_;
+  GURL throttle_will_start_redirect_url_;
+
+  // Set if a throttle changed the URL in WillRedirectRequest.
+  // Only supported with the network service.
+  GURL throttle_will_redirect_redirect_url_;
 
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
 

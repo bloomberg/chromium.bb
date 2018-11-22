@@ -58,10 +58,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   void Start();
 
   // mojom::URLLoader overrides:
-  void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                          to_be_removed_request_headers,
-                      const base::Optional<net::HttpRequestHeaders>&
-                          modified_request_headers) override;
+  void FollowRedirect(
+      const base::Optional<std::vector<std::string>>&
+          to_be_removed_request_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<GURL>& new_url) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
@@ -134,9 +135,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   mojom::FetchResponseType response_tainting_ =
       mojom::FetchResponseType::kBasic;
 
-  // A flag to indicate that the instance is waiting for that forwarding_client_
-  // calls FollowRedirect.
-  bool is_waiting_follow_redirect_call_ = false;
+  // Holds the URL of a redirect if it's currently deferred, waiting for
+  // forwarding_client_ to call FollowRedirect.
+  std::unique_ptr<GURL> deferred_redirect_url_;
 
   // Corresponds to the Fetch spec, https://fetch.spec.whatwg.org/.
   bool fetch_cors_flag_ = false;

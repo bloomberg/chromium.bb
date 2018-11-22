@@ -224,7 +224,7 @@ void ResourceDownloader::OnResponseStarted(
 }
 
 void ResourceDownloader::OnReceiveRedirect() {
-  url_loader_->FollowRedirect(base::nullopt, base::nullopt);
+  url_loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
 }
 
 void ResourceDownloader::OnResponseCompleted() {

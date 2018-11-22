@@ -32,13 +32,13 @@ void ExtensionURLLoaderThrottle::WillStartRequest(
 }
 
 void ExtensionURLLoaderThrottle::WillRedirectRequest(
-    const net::RedirectInfo& redirect_info,
+    net::RedirectInfo* redirect_info,
     const network::ResourceResponseHead& /* response_head */,
     bool* /* defer */,
     std::vector<std::string>* /* to_be_removed_request_headers */,
     net::HttpRequestHeaders* /* modified_request_headers */) {
   if (manager_->ShouldRejectRedirect(start_request_url_, request_load_flags_,
-                                     redirect_info)) {
+                                     *redirect_info)) {
     delegate_->CancelWithError(net::ERR_TEMPORARILY_THROTTLED, kCancelReason);
   }
 }

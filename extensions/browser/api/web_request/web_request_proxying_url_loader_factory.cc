@@ -107,7 +107,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<GURL>& new_url) {
   if (to_be_removed_request_headers) {
     for (const std::string& header : *to_be_removed_request_headers)
       request_.headers.RemoveHeader(header);
@@ -118,7 +119,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
 
   if (target_loader_.is_bound()) {
     target_loader_->FollowRedirect(to_be_removed_request_headers,
-                                   modified_request_headers);
+                                   modified_request_headers, new_url);
   }
 
   Restart();
