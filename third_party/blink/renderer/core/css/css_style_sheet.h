@@ -70,6 +70,11 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
       Node& owner_node,
       const TextPosition& start_position = TextPosition::MinimumPosition());
 
+  CSSStyleSheet(StyleSheetContents*, CSSImportRule* owner_rule);
+  CSSStyleSheet(StyleSheetContents*,
+                Node& owner_node,
+                bool is_inline_stylesheet,
+                const TextPosition& start_position);
   ~CSSStyleSheet() override;
 
   CSSStyleSheet* parentStyleSheet() const override;
@@ -193,12 +198,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSStyleSheet(StyleSheetContents*, CSSImportRule* owner_rule);
-  CSSStyleSheet(StyleSheetContents*,
-                Node& owner_node,
-                bool is_inline_stylesheet,
-                const TextPosition& start_position);
-
   bool IsCSSStyleSheet() const override { return true; }
   String type() const override { return "text/css"; }
 

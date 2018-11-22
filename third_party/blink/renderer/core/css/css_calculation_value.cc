@@ -165,7 +165,7 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
  public:
   static CSSCalcPrimitiveValue* Create(CSSPrimitiveValue* value,
                                        bool is_integer) {
-    return new CSSCalcPrimitiveValue(value, is_integer);
+    return MakeGarbageCollected<CSSCalcPrimitiveValue>(value, is_integer);
   }
 
   static CSSCalcPrimitiveValue* Create(double value,
@@ -173,9 +173,14 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
                                        bool is_integer) {
     if (std::isnan(value) || std::isinf(value))
       return nullptr;
-    return new CSSCalcPrimitiveValue(CSSPrimitiveValue::Create(value, type),
-                                     is_integer);
+    return MakeGarbageCollected<CSSCalcPrimitiveValue>(
+        CSSPrimitiveValue::Create(value, type), is_integer);
   }
+
+  CSSCalcPrimitiveValue(CSSPrimitiveValue* value, bool is_integer)
+      : CSSCalcExpressionNode(UnitCategory(value->TypeWithCalcResolved()),
+                              is_integer),
+        value_(value) {}
 
   bool IsZero() const override { return !value_->GetDoubleValue(); }
 
@@ -278,11 +283,6 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
   }
 
  private:
-  CSSCalcPrimitiveValue(CSSPrimitiveValue* value, bool is_integer)
-      : CSSCalcExpressionNode(UnitCategory(value->TypeWithCalcResolved()),
-                              is_integer),
-        value_(value) {}
-
   Member<CSSPrimitiveValue> value_;
 };
 
@@ -375,7 +375,8 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
     if (new_category == kCalcOther)
       return nullptr;
 
-    return new CSSCalcBinaryOperation(left_side, right_side, op, new_category);
+    return MakeGarbageCollected<CSSCalcBinaryOperation>(left_side, right_side,
+                                                        op, new_category);
   }
 
   static CSSCalcExpressionNode* CreateSimplified(
@@ -461,6 +462,16 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
 
     return Create(left_side, right_side, op);
   }
+
+  CSSCalcBinaryOperation(CSSCalcExpressionNode* left_side,
+                         CSSCalcExpressionNode* right_side,
+                         CalcOperator op,
+                         CalculationCategory category)
+      : CSSCalcExpressionNode(category,
+                              IsIntegerResult(left_side, right_side, op)),
+        left_side_(left_side),
+        right_side_(right_side),
+        operator_(op) {}
 
   bool IsZero() const override { return !DoubleValue(); }
 
@@ -627,16 +638,6 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
   }
 
  private:
-  CSSCalcBinaryOperation(CSSCalcExpressionNode* left_side,
-                         CSSCalcExpressionNode* right_side,
-                         CalcOperator op,
-                         CalculationCategory category)
-      : CSSCalcExpressionNode(category,
-                              IsIntegerResult(left_side, right_side, op)),
-        left_side_(left_side),
-        right_side_(right_side),
-        operator_(op) {}
-
   static CSSCalcExpressionNode* GetNumberSide(
       CSSCalcExpressionNode* left_side,
       CSSCalcExpressionNode* right_side) {
@@ -852,12 +853,13 @@ CSSCalcValue* CSSCalcValue::Create(const CSSParserTokenRange& tokens,
   CSSCalcExpressionNodeParser parser;
   CSSCalcExpressionNode* expression = parser.ParseCalc(tokens);
 
-  return expression ? new CSSCalcValue(expression, range) : nullptr;
+  return expression ? MakeGarbageCollected<CSSCalcValue>(expression, range)
+                    : nullptr;
 }
 
 CSSCalcValue* CSSCalcValue::Create(CSSCalcExpressionNode* expression,
                                    ValueRange range) {
-  return new CSSCalcValue(expression, range);
+  return MakeGarbageCollected<CSSCalcValue>(expression, range);
 }
 
 }  // namespace blink

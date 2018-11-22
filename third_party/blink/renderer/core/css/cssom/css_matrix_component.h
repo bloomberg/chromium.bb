@@ -28,6 +28,9 @@ class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
   // Blink-internal ways of creating CSSMatrixComponents.
   static CSSMatrixComponent* FromCSSValue(const CSSFunctionValue&);
 
+  CSSMatrixComponent(DOMMatrixReadOnly* matrix, bool is2D)
+      : CSSTransformComponent(is2D), matrix_(DOMMatrix::Create(matrix)) {}
+
   // Getters and setters for attributes defined in the IDL.
   DOMMatrix* matrix() { return matrix_.Get(); }
   void setMatrix(DOMMatrix* matrix) { matrix_ = matrix; }
@@ -44,9 +47,6 @@ class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
   }
 
  private:
-  CSSMatrixComponent(DOMMatrixReadOnly* matrix, bool is2D)
-      : CSSTransformComponent(is2D), matrix_(DOMMatrix::Create(matrix)) {}
-
   Member<DOMMatrix> matrix_;
   DISALLOW_COPY_AND_ASSIGN(CSSMatrixComponent);
 };

@@ -97,13 +97,13 @@ CSSUnitValue* CSSUnitValue::Create(double value,
     exception_state.ThrowTypeError("Invalid unit: " + unit_name);
     return nullptr;
   }
-  return new CSSUnitValue(value, unit);
+  return MakeGarbageCollected<CSSUnitValue>(value, unit);
 }
 
 CSSUnitValue* CSSUnitValue::Create(double value,
                                    CSSPrimitiveValue::UnitType unit) {
   DCHECK(IsValidUnit(unit));
-  return new CSSUnitValue(value, unit);
+  return MakeGarbageCollected<CSSUnitValue>(value, unit);
 }
 
 CSSUnitValue* CSSUnitValue::FromCSSValue(const CSSPrimitiveValue& value) {
@@ -113,7 +113,7 @@ CSSUnitValue* CSSUnitValue::FromCSSValue(const CSSPrimitiveValue& value) {
 
   if (!IsValidUnit(unit))
     return nullptr;
-  return new CSSUnitValue(value.GetDoubleValue(), unit);
+  return MakeGarbageCollected<CSSUnitValue>(value.GetDoubleValue(), unit);
 }
 
 String CSSUnitValue::unit() const {

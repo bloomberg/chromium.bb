@@ -50,20 +50,27 @@ class CORE_EXPORT StyleSheetContents
     : public GarbageCollectedFinalized<StyleSheetContents> {
  public:
   static StyleSheetContents* Create(const CSSParserContext* context) {
-    return new StyleSheetContents(nullptr, String(), context);
+    return MakeGarbageCollected<StyleSheetContents>(nullptr, String(), context);
   }
   static StyleSheetContents* Create(const String& original_url,
                                     const CSSParserContext* context) {
-    return new StyleSheetContents(nullptr, original_url, context);
+    return MakeGarbageCollected<StyleSheetContents>(nullptr, original_url,
+                                                    context);
   }
   static StyleSheetContents* Create(StyleRuleImport* owner_rule,
                                     const String& original_url,
                                     const CSSParserContext* context) {
-    return new StyleSheetContents(owner_rule, original_url, context);
+    return MakeGarbageCollected<StyleSheetContents>(owner_rule, original_url,
+                                                    context);
   }
 
   static const Document* SingleOwnerDocument(const StyleSheetContents*);
 
+  StyleSheetContents(StyleRuleImport* owner_rule,
+                     const String& original_url,
+                     const CSSParserContext*);
+  StyleSheetContents(const StyleSheetContents&);
+  StyleSheetContents() = delete;
   ~StyleSheetContents();
 
   const CSSParserContext* ParserContext() const { return parser_context_; }
@@ -174,7 +181,9 @@ class CORE_EXPORT StyleSheetContents
   bool WrapperInsertRule(StyleRuleBase*, unsigned index);
   bool WrapperDeleteRule(unsigned index);
 
-  StyleSheetContents* Copy() const { return new StyleSheetContents(*this); }
+  StyleSheetContents* Copy() const {
+    return MakeGarbageCollected<StyleSheetContents>(*this);
+  }
 
   void RegisterClient(CSSStyleSheet*);
   void UnregisterClient(CSSStyleSheet*);
@@ -214,11 +223,6 @@ class CORE_EXPORT StyleSheetContents
   void Trace(blink::Visitor*);
 
  private:
-  StyleSheetContents(StyleRuleImport* owner_rule,
-                     const String& original_url,
-                     const CSSParserContext*);
-  StyleSheetContents(const StyleSheetContents&);
-  StyleSheetContents() = delete;
   StyleSheetContents& operator=(const StyleSheetContents&) = delete;
   void NotifyRemoveFontFaceRule(const StyleRuleFontFace*);
 

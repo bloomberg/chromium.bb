@@ -22,18 +22,18 @@ CSSKeywordValue* CSSKeywordValue::Create(const String& keyword,
         "CSSKeywordValue does not support empty strings");
     return nullptr;
   }
-  return new CSSKeywordValue(keyword);
+  return MakeGarbageCollected<CSSKeywordValue>(keyword);
 }
 
 CSSKeywordValue* CSSKeywordValue::FromCSSValue(const CSSValue& value) {
   if (value.IsInheritedValue())
-    return new CSSKeywordValue(getValueName(CSSValueInherit));
+    return MakeGarbageCollected<CSSKeywordValue>(getValueName(CSSValueInherit));
   if (value.IsInitialValue())
-    return new CSSKeywordValue(getValueName(CSSValueInitial));
+    return MakeGarbageCollected<CSSKeywordValue>(getValueName(CSSValueInitial));
   if (value.IsUnsetValue())
-    return new CSSKeywordValue(getValueName(CSSValueUnset));
+    return MakeGarbageCollected<CSSKeywordValue>(getValueName(CSSValueUnset));
   if (value.IsIdentifierValue()) {
-    return new CSSKeywordValue(
+    return MakeGarbageCollected<CSSKeywordValue>(
         getValueName(ToCSSIdentifierValue(value).GetValueID()));
   }
   if (value.IsCustomIdentValue()) {
@@ -43,7 +43,7 @@ CSSKeywordValue* CSSKeywordValue::FromCSSValue(const CSSValue& value) {
       // CSSKeywordValue represents a RHS.
       return nullptr;
     }
-    return new CSSKeywordValue(ident_value.Value());
+    return MakeGarbageCollected<CSSKeywordValue>(ident_value.Value());
   }
   NOTREACHED();
   return nullptr;
@@ -51,7 +51,7 @@ CSSKeywordValue* CSSKeywordValue::FromCSSValue(const CSSValue& value) {
 
 CSSKeywordValue* CSSKeywordValue::Create(const String& keyword) {
   DCHECK(!keyword.IsEmpty());
-  return new CSSKeywordValue(keyword);
+  return MakeGarbageCollected<CSSKeywordValue>(keyword);
 }
 
 const String& CSSKeywordValue::value() const {

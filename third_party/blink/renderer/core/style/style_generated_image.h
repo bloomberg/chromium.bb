@@ -39,8 +39,10 @@ class ImageResourceObserver;
 class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
  public:
   static StyleGeneratedImage* Create(const CSSImageGeneratorValue& value) {
-    return new StyleGeneratedImage(value);
+    return MakeGarbageCollected<StyleGeneratedImage>(value);
   }
+
+  StyleGeneratedImage(const CSSImageGeneratorValue&);
 
   WrappedImagePtr Data() const override { return image_generator_value_.Get(); }
 
@@ -64,8 +66,6 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   void Trace(blink::Visitor*) override;
 
  private:
-  StyleGeneratedImage(const CSSImageGeneratorValue&);
-
   bool IsEqual(const StyleImage&) const override;
 
   // TODO(sashab): Replace this with <const CSSImageGeneratorValue> once

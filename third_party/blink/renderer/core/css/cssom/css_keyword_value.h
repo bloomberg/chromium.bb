@@ -22,6 +22,8 @@ class CORE_EXPORT CSSKeywordValue final : public CSSStyleValue {
   static CSSKeywordValue* Create(const String& keyword, ExceptionState&);
   static CSSKeywordValue* FromCSSValue(const CSSValue&);
 
+  explicit CSSKeywordValue(const String& keyword) : keyword_value_(keyword) {}
+
   StyleValueType GetType() const override { return kKeywordType; }
 
   const String& value() const;
@@ -31,8 +33,6 @@ class CORE_EXPORT CSSKeywordValue final : public CSSStyleValue {
   const CSSValue* ToCSSValue() const override;
 
  private:
-  explicit CSSKeywordValue(const String& keyword) : keyword_value_(keyword) {}
-
   String keyword_value_;
   DISALLOW_COPY_AND_ASSIGN(CSSKeywordValue);
 };

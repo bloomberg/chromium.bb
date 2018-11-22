@@ -31,6 +31,8 @@ class CORE_EXPORT CSSInitialValue : public CSSValue {
  public:
   static CSSInitialValue* Create();
 
+  CSSInitialValue() : CSSValue(kInitialClass) {}
+
   String CustomCSSText() const;
 
   bool Equals(const CSSInitialValue&) const { return true; }
@@ -41,8 +43,6 @@ class CORE_EXPORT CSSInitialValue : public CSSValue {
 
  private:
   friend class CSSValuePool;
-
-  CSSInitialValue() : CSSValue(kInitialClass) {}
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSInitialValue, IsInitialValue());

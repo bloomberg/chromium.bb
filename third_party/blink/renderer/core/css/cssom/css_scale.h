@@ -33,14 +33,20 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
 
   // Blink-internal ways of creating CSSScales.
   static CSSScale* Create(CSSNumericValue* x, CSSNumericValue* y) {
-    return new CSSScale(x, y, CSSUnitValue::Create(1), true /* is2D */);
+    return MakeGarbageCollected<CSSScale>(x, y, CSSUnitValue::Create(1),
+                                          true /* is2D */);
   }
   static CSSScale* Create(CSSNumericValue* x,
                           CSSNumericValue* y,
                           CSSNumericValue* z) {
-    return new CSSScale(x, y, z, false /* is2D */);
+    return MakeGarbageCollected<CSSScale>(x, y, z, false /* is2D */);
   }
   static CSSScale* FromCSSValue(const CSSFunctionValue&);
+
+  CSSScale(CSSNumericValue* x,
+           CSSNumericValue* y,
+           CSSNumericValue* z,
+           bool is2D);
 
   // Getters and setters for attributes defined in the IDL.
   void x(CSSNumberish& x) { x.SetCSSNumericValue(x_); }
@@ -64,11 +70,6 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
   }
 
  private:
-  CSSScale(CSSNumericValue* x,
-           CSSNumericValue* y,
-           CSSNumericValue* z,
-           bool is2D);
-
   Member<CSSNumericValue> x_;
   Member<CSSNumericValue> y_;
   Member<CSSNumericValue> z_;

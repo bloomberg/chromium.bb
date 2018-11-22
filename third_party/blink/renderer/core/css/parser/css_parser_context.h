@@ -65,6 +65,19 @@ class CORE_EXPORT CSSParserContext
   // This is used for workers, where we don't have a document.
   static CSSParserContext* Create(const ExecutionContext&);
 
+  CSSParserContext(const KURL& base_url,
+                   bool is_opaque_response_from_service_worker,
+                   const WTF::TextEncoding& charset,
+                   CSSParserMode,
+                   CSSParserMode match_mode,
+                   SelectorProfile,
+                   const Referrer&,
+                   bool is_html_document,
+                   bool use_legacy_background_size_shorthand_behavior,
+                   SecureContextMode,
+                   ContentSecurityPolicyDisposition,
+                   const Document* use_counter_document);
+
   bool operator==(const CSSParserContext&) const;
   bool operator!=(const CSSParserContext& other) const {
     return !(*this == other);
@@ -121,19 +134,6 @@ class CORE_EXPORT CSSParserContext
   void Trace(blink::Visitor*);
 
  private:
-  CSSParserContext(const KURL& base_url,
-                   bool is_opaque_response_from_service_worker,
-                   const WTF::TextEncoding& charset,
-                   CSSParserMode,
-                   CSSParserMode match_mode,
-                   SelectorProfile,
-                   const Referrer&,
-                   bool is_html_document,
-                   bool use_legacy_background_size_shorthand_behavior,
-                   SecureContextMode,
-                   ContentSecurityPolicyDisposition,
-                   const Document* use_counter_document);
-
   KURL base_url_;
   const bool is_opaque_response_from_service_worker_;
   WTF::TextEncoding charset_;

@@ -38,6 +38,15 @@ class MODULES_EXPORT CSSPaintDefinition final
       const Vector<AtomicString>& custom_invalidation_properties,
       const Vector<CSSSyntaxDescriptor>& input_argument_types,
       const PaintRenderingContext2DSettings*);
+
+  CSSPaintDefinition(
+      ScriptState*,
+      v8::Local<v8::Function> constructor,
+      v8::Local<v8::Function> paint,
+      const Vector<CSSPropertyID>& native_invalidation_properties,
+      const Vector<AtomicString>& custom_invalidation_properties,
+      const Vector<CSSSyntaxDescriptor>& input_argument_types,
+      const PaintRenderingContext2DSettings*);
   virtual ~CSSPaintDefinition();
 
   // Invokes the javascript 'paint' callback on an instance of the javascript
@@ -80,15 +89,6 @@ class MODULES_EXPORT CSSPaintDefinition final
   }
 
  private:
-  CSSPaintDefinition(
-      ScriptState*,
-      v8::Local<v8::Function> constructor,
-      v8::Local<v8::Function> paint,
-      const Vector<CSSPropertyID>& native_invalidation_properties,
-      const Vector<AtomicString>& custom_invalidation_properties,
-      const Vector<CSSSyntaxDescriptor>& input_argument_types,
-      const PaintRenderingContext2DSettings*);
-
   void MaybeCreatePaintInstance();
 
   Member<ScriptState> script_state_;

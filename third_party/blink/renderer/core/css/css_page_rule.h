@@ -38,9 +38,10 @@ class CORE_EXPORT CSSPageRule final : public CSSRule {
 
  public:
   static CSSPageRule* Create(StyleRulePage* rule, CSSStyleSheet* sheet) {
-    return new CSSPageRule(rule, sheet);
+    return MakeGarbageCollected<CSSPageRule>(rule, sheet);
   }
 
+  CSSPageRule(StyleRulePage*, CSSStyleSheet*);
   ~CSSPageRule() override;
 
   String cssText() const override;
@@ -54,8 +55,6 @@ class CORE_EXPORT CSSPageRule final : public CSSRule {
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSPageRule(StyleRulePage*, CSSStyleSheet*);
-
   CSSRule::Type type() const override { return kPageRule; }
 
   Member<StyleRulePage> page_rule_;

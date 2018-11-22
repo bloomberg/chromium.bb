@@ -346,7 +346,7 @@ WebAssociatedURLLoaderImpl::WebAssociatedURLLoaderImpl(
     const WebAssociatedURLLoaderOptions& options)
     : client_(nullptr),
       options_(options),
-      observer_(new Observer(this, document)) {}
+      observer_(MakeGarbageCollected<Observer>(this, document)) {}
 
 WebAssociatedURLLoaderImpl::~WebAssociatedURLLoaderImpl() {
   Cancel();

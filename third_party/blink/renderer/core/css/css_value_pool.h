@@ -61,6 +61,8 @@ class CORE_EXPORT CSSValuePool
   static const unsigned kMaximumFontFaceCacheSize = 128;
   using FontFamilyValueCache = HeapHashMap<String, Member<CSSFontFamilyValue>>;
 
+  CSSValuePool();
+
   // Cached individual values.
   CSSColorValue* TransparentColor() { return color_transparent_; }
   CSSColorValue* WhiteColor() { return color_white_; }
@@ -124,8 +126,6 @@ class CORE_EXPORT CSSValuePool
   void Trace(blink::Visitor*);
 
  private:
-  CSSValuePool();
-
   // Cached individual values.
   Member<CSSInheritedValue> inherited_value_;
   Member<CSSInitialValue> initial_value_;

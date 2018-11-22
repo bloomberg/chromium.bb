@@ -37,16 +37,17 @@ namespace blink {
 
 class CSSGridLineNamesValue : public CSSValueList {
  public:
-  static CSSGridLineNamesValue* Create() { return new CSSGridLineNamesValue(); }
+  static CSSGridLineNamesValue* Create() {
+    return MakeGarbageCollected<CSSGridLineNamesValue>();
+  }
+
+  CSSGridLineNamesValue();
 
   String CustomCSSText() const;
 
   void TraceAfterDispatch(blink::Visitor* visitor) {
     CSSValueList::TraceAfterDispatch(visitor);
   }
-
- private:
-  CSSGridLineNamesValue();
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridLineNamesValue, IsGridLineNamesValue());

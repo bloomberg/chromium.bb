@@ -16,12 +16,24 @@ class CSSVariableReferenceValue : public CSSValue {
  public:
   static CSSVariableReferenceValue* Create(
       scoped_refptr<CSSVariableData> data) {
-    return new CSSVariableReferenceValue(std::move(data));
+    return MakeGarbageCollected<CSSVariableReferenceValue>(std::move(data));
   }
   static CSSVariableReferenceValue* Create(scoped_refptr<CSSVariableData> data,
                                            const CSSParserContext& context) {
-    return new CSSVariableReferenceValue(std::move(data), context);
+    return MakeGarbageCollected<CSSVariableReferenceValue>(std::move(data),
+                                                           context);
   }
+
+  CSSVariableReferenceValue(scoped_refptr<CSSVariableData> data)
+      : CSSValue(kVariableReferenceClass),
+        data_(std::move(data)),
+        parser_context_(nullptr) {}
+
+  CSSVariableReferenceValue(scoped_refptr<CSSVariableData> data,
+                            const CSSParserContext& context)
+      : CSSValue(kVariableReferenceClass),
+        data_(std::move(data)),
+        parser_context_(context) {}
 
   CSSVariableData* VariableDataValue() const { return data_.get(); }
   const CSSParserContext* ParserContext() const {
@@ -37,18 +49,6 @@ class CSSVariableReferenceValue : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSVariableReferenceValue(scoped_refptr<CSSVariableData> data)
-      : CSSValue(kVariableReferenceClass),
-        data_(std::move(data)),
-        parser_context_(nullptr) {}
-
-  CSSVariableReferenceValue(scoped_refptr<CSSVariableData> data,
-                            const CSSParserContext& context)
-      : CSSValue(kVariableReferenceClass),
-        data_(std::move(data)),
-        parser_context_(context) {
-  }
-
   scoped_refptr<CSSVariableData> data_;
   Member<const CSSParserContext> parser_context_;
 };

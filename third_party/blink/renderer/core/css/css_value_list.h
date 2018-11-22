@@ -36,18 +36,21 @@ class CORE_EXPORT CSSValueList : public CSSValue {
   using const_iterator = HeapVector<Member<const CSSValue>, 4>::const_iterator;
 
   static CSSValueList* CreateCommaSeparated() {
-    return new CSSValueList(kCommaSeparator);
+    return MakeGarbageCollected<CSSValueList>(kCommaSeparator);
   }
   static CSSValueList* CreateSpaceSeparated() {
-    return new CSSValueList(kSpaceSeparator);
+    return MakeGarbageCollected<CSSValueList>(kSpaceSeparator);
   }
   static CSSValueList* CreateSlashSeparated() {
-    return new CSSValueList(kSlashSeparator);
+    return MakeGarbageCollected<CSSValueList>(kSlashSeparator);
   }
   static CSSValueList* CreateWithSeparatorFrom(const CSSValueList& list) {
-    return new CSSValueList(
+    return MakeGarbageCollected<CSSValueList>(
         static_cast<ValueListSeparator>(list.value_list_separator_));
   }
+
+  CSSValueList(ClassType, ValueListSeparator);
+  explicit CSSValueList(ValueListSeparator);
 
   iterator begin() { return values_.begin(); }
   iterator end() { return values_.end(); }
@@ -72,12 +75,7 @@ class CORE_EXPORT CSSValueList : public CSSValue {
 
   void TraceAfterDispatch(blink::Visitor*);
 
- protected:
-  CSSValueList(ClassType, ValueListSeparator);
-
  private:
-  explicit CSSValueList(ValueListSeparator);
-
   HeapVector<Member<const CSSValue>, 4> values_;
   DISALLOW_COPY_AND_ASSIGN(CSSValueList);
 };

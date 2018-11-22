@@ -2399,7 +2399,7 @@ Response InspectorCSSAgent::getBackgroundColors(
 void InspectorCSSAgent::SetCoverageEnabled(bool enabled) {
   if (enabled == !!tracker_)
     return;
-  tracker_ = enabled ? new StyleRuleUsageTracker() : nullptr;
+  tracker_ = enabled ? MakeGarbageCollected<StyleRuleUsageTracker>() : nullptr;
 
   for (Document* document : dom_agent_->Documents())
     document->GetStyleEngine().SetRuleUsageTracker(tracker_);

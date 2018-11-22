@@ -111,9 +111,10 @@ class CORE_EXPORT StyleEngine final
   };
 
   static StyleEngine* Create(Document& document) {
-    return new StyleEngine(document);
+    return MakeGarbageCollected<StyleEngine>(document);
   }
 
+  StyleEngine(Document&);
   ~StyleEngine() override;
 
   const HeapVector<TraceWrapperMember<StyleSheet>>&
@@ -363,7 +364,6 @@ class CORE_EXPORT StyleEngine final
   void FontsNeedUpdate(FontSelector*) override;
 
  private:
-  StyleEngine(Document&);
   bool NeedsActiveStyleSheetUpdate() const {
     return all_tree_scopes_dirty_ || tree_scopes_removed_ ||
            document_scope_dirty_ || dirty_tree_scopes_.size() ||

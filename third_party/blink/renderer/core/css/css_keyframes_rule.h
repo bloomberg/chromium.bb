@@ -39,8 +39,12 @@ class StyleRuleKeyframe;
 
 class StyleRuleKeyframes final : public StyleRuleBase {
  public:
-  static StyleRuleKeyframes* Create() { return new StyleRuleKeyframes(); }
+  static StyleRuleKeyframes* Create() {
+    return MakeGarbageCollected<StyleRuleKeyframes>();
+  }
 
+  StyleRuleKeyframes();
+  explicit StyleRuleKeyframes(const StyleRuleKeyframes&);
   ~StyleRuleKeyframes();
 
   const HeapVector<Member<StyleRuleKeyframe>>& Keyframes() const {
@@ -59,7 +63,9 @@ class StyleRuleKeyframes final : public StyleRuleBase {
 
   int FindKeyframeIndex(const String& key) const;
 
-  StyleRuleKeyframes* Copy() const { return new StyleRuleKeyframes(*this); }
+  StyleRuleKeyframes* Copy() const {
+    return MakeGarbageCollected<StyleRuleKeyframes>(*this);
+  }
 
   void TraceAfterDispatch(blink::Visitor*);
 
@@ -67,9 +73,6 @@ class StyleRuleKeyframes final : public StyleRuleBase {
   unsigned Version() const { return version_; }
 
  private:
-  StyleRuleKeyframes();
-  explicit StyleRuleKeyframes(const StyleRuleKeyframes&);
-
   HeapVector<Member<StyleRuleKeyframe>> keyframes_;
   AtomicString name_;
   unsigned version_ : 31;
@@ -84,9 +87,10 @@ class CSSKeyframesRule final : public CSSRule {
  public:
   static CSSKeyframesRule* Create(StyleRuleKeyframes* rule,
                                   CSSStyleSheet* sheet) {
-    return new CSSKeyframesRule(rule, sheet);
+    return MakeGarbageCollected<CSSKeyframesRule>(rule, sheet);
   }
 
+  CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);
   ~CSSKeyframesRule() override;
 
   StyleRuleKeyframes* Keyframes() { return keyframes_rule_.Get(); }
@@ -116,8 +120,6 @@ class CSSKeyframesRule final : public CSSRule {
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);
-
   CSSRule::Type type() const override { return kKeyframesRule; }
 
   Member<StyleRuleKeyframes> keyframes_rule_;

@@ -50,8 +50,14 @@ class StyleFetchedImageSet final : public StyleImage,
                                       float image_scale_factor,
                                       CSSImageSetValue* value,
                                       const KURL& url) {
-    return new StyleFetchedImageSet(image, image_scale_factor, value, url);
+    return MakeGarbageCollected<StyleFetchedImageSet>(image, image_scale_factor,
+                                                      value, url);
   }
+
+  StyleFetchedImageSet(ImageResourceContent*,
+                       float image_scale_factor,
+                       CSSImageSetValue*,
+                       const KURL&);
   ~StyleFetchedImageSet() override;
 
   CSSValue* CssValue() const override;
@@ -83,11 +89,6 @@ class StyleFetchedImageSet final : public StyleImage,
   void Trace(blink::Visitor*) override;
 
  private:
-  StyleFetchedImageSet(ImageResourceContent*,
-                       float image_scale_factor,
-                       CSSImageSetValue*,
-                       const KURL&);
-
   bool IsEqual(const StyleImage& other) const override;
   void Dispose();
 

@@ -55,11 +55,17 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
                                const KURL& url,
                                const Referrer& referrer,
                                StyleImage* image = nullptr) {
-    return new CSSImageValue(raw_value, url, referrer, image);
+    return MakeGarbageCollected<CSSImageValue>(raw_value, url, referrer, image);
   }
   static CSSImageValue* Create(const AtomicString& absolute_url) {
-    return new CSSImageValue(absolute_url);
+    return MakeGarbageCollected<CSSImageValue>(absolute_url);
   }
+
+  CSSImageValue(const AtomicString& raw_value,
+                const KURL&,
+                const Referrer&,
+                StyleImage*);
+  CSSImageValue(const AtomicString& absolute_url);
   ~CSSImageValue();
 
   bool IsCachePending() const { return !cached_image_; }
@@ -101,12 +107,6 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   void RestoreCachedResourceIfNeeded(const Document&) const;
 
  private:
-  CSSImageValue(const AtomicString& raw_value,
-                const KURL&,
-                const Referrer&,
-                StyleImage*);
-  CSSImageValue(const AtomicString& absolute_url);
-
   AtomicString relative_url_;
   Referrer referrer_;
   AtomicString initiator_name_;

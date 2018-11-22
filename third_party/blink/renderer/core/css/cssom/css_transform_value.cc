@@ -28,7 +28,7 @@ CSSTransformValue* CSSTransformValue::Create(
     const HeapVector<Member<CSSTransformComponent>>& transform_components) {
   if (transform_components.IsEmpty())
     return nullptr;
-  return new CSSTransformValue(transform_components);
+  return MakeGarbageCollected<CSSTransformValue>(transform_components);
 }
 
 CSSTransformValue* CSSTransformValue::FromCSSValue(const CSSValue& css_value) {

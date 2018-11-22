@@ -35,9 +35,10 @@ class CSSImportRule final : public CSSRule {
 
  public:
   static CSSImportRule* Create(StyleRuleImport* rule, CSSStyleSheet* sheet) {
-    return new CSSImportRule(rule, sheet);
+    return MakeGarbageCollected<CSSImportRule>(rule, sheet);
   }
 
+  CSSImportRule(StyleRuleImport*, CSSStyleSheet*);
   ~CSSImportRule() override;
 
   String cssText() const override;
@@ -50,8 +51,6 @@ class CSSImportRule final : public CSSRule {
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSImportRule(StyleRuleImport*, CSSStyleSheet*);
-
   CSSRule::Type type() const override { return kImportRule; }
 
   Member<StyleRuleImport> import_rule_;

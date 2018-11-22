@@ -29,7 +29,7 @@ CSSSkewX* CSSSkewX::Create(CSSNumericValue* ax,
     exception_state.ThrowTypeError("CSSSkewX does not support non-angles");
     return nullptr;
   }
-  return new CSSSkewX(ax);
+  return MakeGarbageCollected<CSSSkewX>(ax);
 }
 
 void CSSSkewX::setAx(CSSNumericValue* value, ExceptionState& exception_state) {

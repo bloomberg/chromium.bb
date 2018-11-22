@@ -22,6 +22,9 @@ class CORE_EXPORT CSSMathProduct final : public CSSMathVariadic {
   // Blink internal-constructor.
   static CSSMathProduct* Create(CSSNumericValueVector);
 
+  CSSMathProduct(CSSNumericArray* values, const CSSNumericValueType& type)
+      : CSSMathVariadic(values, type) {}
+
   String getOperator() const final { return "product"; }
 
   // From CSSStyleValue.
@@ -30,9 +33,6 @@ class CORE_EXPORT CSSMathProduct final : public CSSMathVariadic {
   CSSCalcExpressionNode* ToCalcExpressionNode() const final;
 
  private:
-  CSSMathProduct(CSSNumericArray* values, const CSSNumericValueType& type)
-      : CSSMathVariadic(values, type) {}
-
   void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
 
   base::Optional<CSSNumericSumValue> SumValue() const final;

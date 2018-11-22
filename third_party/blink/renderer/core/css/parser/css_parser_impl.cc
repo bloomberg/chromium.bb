@@ -258,8 +258,8 @@ ParseSheetResult CSSParserImpl::ParseStyleSheet(
   CSSParserTokenStream stream(tokenizer);
   CSSParserImpl parser(context, style_sheet);
   if (defer_property_parsing == CSSDeferPropertyParsing::kYes) {
-    parser.lazy_state_ =
-        new CSSLazyParsingState(context, string, parser.style_sheet_);
+    parser.lazy_state_ = MakeGarbageCollected<CSSLazyParsingState>(
+        context, string, parser.style_sheet_);
   }
   ParseSheetResult result = ParseSheetResult::kSucceeded;
   bool first_rule_valid = parser.ConsumeRuleList(
@@ -833,7 +833,8 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream) {
     DCHECK(style_sheet_);
     return StyleRule::CreateLazy(
         std::move(selector_list),
-        new CSSLazyPropertyParserImpl(stream.Offset() - 1, lazy_state_));
+        MakeGarbageCollected<CSSLazyPropertyParserImpl>(stream.Offset() - 1,
+                                                        lazy_state_));
   }
   ConsumeDeclarationList(stream, StyleRule::kStyle);
 

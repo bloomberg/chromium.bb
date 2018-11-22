@@ -16,9 +16,15 @@ class CSSPendingSubstitutionValue : public CSSValue {
   static CSSPendingSubstitutionValue* Create(
       CSSPropertyID shorthand_property_id,
       CSSVariableReferenceValue* shorthand_value) {
-    return new CSSPendingSubstitutionValue(shorthand_property_id,
-                                           shorthand_value);
+    return MakeGarbageCollected<CSSPendingSubstitutionValue>(
+        shorthand_property_id, shorthand_value);
   }
+
+  CSSPendingSubstitutionValue(CSSPropertyID shorthand_property_id,
+                              CSSVariableReferenceValue* shorthand_value)
+      : CSSValue(kPendingSubstitutionValueClass),
+        shorthand_property_id_(shorthand_property_id),
+        shorthand_value_(shorthand_value) {}
 
   CSSVariableReferenceValue* ShorthandValue() const {
     return shorthand_value_.Get();
@@ -34,12 +40,6 @@ class CSSPendingSubstitutionValue : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSPendingSubstitutionValue(CSSPropertyID shorthand_property_id,
-                              CSSVariableReferenceValue* shorthand_value)
-      : CSSValue(kPendingSubstitutionValueClass),
-        shorthand_property_id_(shorthand_property_id),
-        shorthand_value_(shorthand_value) {}
-
   CSSPropertyID shorthand_property_id_;
   Member<CSSVariableReferenceValue> shorthand_value_;
 };

@@ -38,6 +38,12 @@ class CORE_EXPORT CSSRotate final : public CSSTransformComponent {
                            CSSNumericValue* angle);
   static CSSRotate* FromCSSValue(const CSSFunctionValue&);
 
+  CSSRotate(CSSNumericValue* x,
+            CSSNumericValue* y,
+            CSSNumericValue* z,
+            CSSNumericValue* angle,
+            bool is2D);
+
   // Getters and setters for attributes defined in the IDL.
   CSSNumericValue* angle() { return angle_.Get(); }
   void setAngle(CSSNumericValue* angle, ExceptionState&);
@@ -63,12 +69,6 @@ class CORE_EXPORT CSSRotate final : public CSSTransformComponent {
   }
 
  private:
-  CSSRotate(CSSNumericValue* x,
-            CSSNumericValue* y,
-            CSSNumericValue* z,
-            CSSNumericValue* angle,
-            bool is2D);
-
   Member<CSSNumericValue> angle_;
   Member<CSSNumericValue> x_;
   Member<CSSNumericValue> y_;

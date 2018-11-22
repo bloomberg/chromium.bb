@@ -31,7 +31,7 @@ namespace blink {
 
 StyleSheetList* StyleSheetList::Create() {
   DCHECK(RuntimeEnabledFeatures::ConstructableStylesheetsEnabled());
-  return new StyleSheetList();
+  return MakeGarbageCollected<StyleSheetList>();
 }
 
 StyleSheetList* StyleSheetList::Create(
@@ -41,7 +41,7 @@ StyleSheetList* StyleSheetList::Create(
     exception_state.ThrowTypeError("Illegal constructor");
     return nullptr;
   }
-  return new StyleSheetList(style_sheet_vector);
+  return MakeGarbageCollected<StyleSheetList>(style_sheet_vector);
 }
 
 StyleSheetList::StyleSheetList(

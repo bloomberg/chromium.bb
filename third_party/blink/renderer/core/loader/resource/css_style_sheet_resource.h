@@ -50,6 +50,9 @@ class CORE_EXPORT CSSStyleSheetResource final : public TextResource {
   static CSSStyleSheetResource* CreateForTest(const KURL&,
                                               const WTF::TextEncoding&);
 
+  CSSStyleSheetResource(const ResourceRequest&,
+                        const ResourceLoaderOptions&,
+                        const TextResourceDecoderOptions&);
   ~CSSStyleSheetResource() override;
   void Trace(blink::Visitor*) override;
 
@@ -70,12 +73,10 @@ class CORE_EXPORT CSSStyleSheetResource final : public TextResource {
         const ResourceRequest& request,
         const ResourceLoaderOptions& options,
         const TextResourceDecoderOptions& decoder_options) const override {
-      return new CSSStyleSheetResource(request, options, decoder_options);
+      return MakeGarbageCollected<CSSStyleSheetResource>(request, options,
+                                                         decoder_options);
     }
   };
-  CSSStyleSheetResource(const ResourceRequest&,
-                        const ResourceLoaderOptions&,
-                        const TextResourceDecoderOptions&);
 
   bool CanUseSheet(const CSSParserContext*, MIMETypeCheck) const;
   void NotifyFinished() override;
