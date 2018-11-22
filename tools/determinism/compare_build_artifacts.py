@@ -188,8 +188,8 @@ def compare_files(first_filepath, second_filepath):
     # build dir -- we care more about the hash differences than about
     # the name of the build dir.
     with open(second_filepath, 'rb') as f:
-      lhs_cwd = lhs['relative_cwd']
-      rhs_cwd = rhs['relative_cwd']
+      lhs_cwd = lhs['relative_cwd'].replace('\\', '\\\\')
+      rhs_cwd = rhs['relative_cwd'].replace('\\', '\\\\')
       json_contents = f.read()
       print >>sys.stderr, 'raw contents', second_filepath, ':', json_contents
       json_contents = json_contents.replace(rhs_cwd, lhs_cwd)
