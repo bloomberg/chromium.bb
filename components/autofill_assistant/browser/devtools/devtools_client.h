@@ -21,6 +21,7 @@
 #include "base/sequenced_task_runner.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/dom.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/input.h"
+#include "components/autofill_assistant/browser/devtools/devtools/domains/network.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/runtime.h"
 #include "components/autofill_assistant/browser/devtools/message_dispatcher.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -37,6 +38,7 @@ class DevtoolsClient : public MessageDispatcher,
   input::Domain* GetInput();
   dom::Domain* GetDOM();
   runtime::Domain* GetRuntime();
+  network::Domain* GetNetwork();
 
   // MessageDispatcher implementation:
   void SendMessage(
@@ -96,6 +98,7 @@ class DevtoolsClient : public MessageDispatcher,
   input::ExperimentalDomain input_domain_;
   dom::ExperimentalDomain dom_domain_;
   runtime::ExperimentalDomain runtime_domain_;
+  network::ExperimentalDomain network_domain_;
   std::unordered_map<int, Callback> pending_messages_;
   EventHandlerMap event_handlers_;
   bool renderer_crashed_;

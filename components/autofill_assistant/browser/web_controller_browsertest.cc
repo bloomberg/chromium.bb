@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/memory/ref_counted.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -307,6 +308,35 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnSetAttribute(const base::Closure& done_callback,
+                      bool* result_output,
+                      bool result) {
+    *result_output = result;
+    std::move(done_callback).Run();
+  }
+
+  bool HasCookie() {
+    base::RunLoop run_loop;
+    bool result;
+    web_controller_->HasCookie(base::BindOnce(
+        &WebControllerBrowserTest::OnCookieResult, base::Unretained(this),
+        run_loop.QuitClosure(), &result));
+    run_loop.Run();
+    return result;
+  }
+
+  bool SetCookie() {
+    base::RunLoop run_loop;
+    bool result;
+    web_controller_->SetCookie(
+        "http://example.com",
+        base::BindOnce(&WebControllerBrowserTest::OnCookieResult,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       &result));
+    run_loop.Run();
+    return result;
+  }
+
+  void OnCookieResult(const base::Closure& done_callback,
                       bool* result_output,
                       bool result) {
     *result_output = result;
@@ -696,6 +726,11 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, HighlightElement) {
   // We only make sure that the element has a non-empty boxShadow style without
   // requiring an exact string match.
   EXPECT_NE("", content::EvalJs(shell(), javascript));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetCookie) {
+  EXPECT_FALSE(HasCookie());
+  EXPECT_TRUE(SetCookie());
 }
 
 }  // namespace

@@ -58,6 +58,8 @@ class Controller : public ScriptExecutorDelegate,
   void SetTouchableElementArea(
       const std::vector<std::vector<std::string>>& elements) override;
 
+  bool IsCookieExperimentEnabled() const;
+
  private:
   friend ControllerTest;
 
@@ -87,6 +89,15 @@ class Controller : public ScriptExecutorDelegate,
   // Runs autostart scripts from |runnable_scripts|, if the conditions are
   // right. Returns true if a script was auto-started.
   bool MaybeAutostartScript(const std::vector<ScriptHandle>& runnable_scripts);
+
+  // Autofill Assistant cookie logic.
+  //
+  // On startup of the controller we set a cookie. If a cookie already existed
+  // for the intial URL, we show a warning that the website has already been
+  // visited and could contain old data. The cookie is cleared (or expires) when
+  // a script terminated with a Stop action.
+  void OnGetCookie(const GURL& initial_url, bool has_cookie);
+  void OnSetCookie(const GURL& initial_url, bool result);
 
   // Overrides content::UiDelegate:
   void Start(const GURL& initialUrl) override;

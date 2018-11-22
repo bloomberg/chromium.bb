@@ -67,10 +67,20 @@ class MockWebController : public WebController {
       base::OnceCallback<void(bool, const RectF&)> callback) override {
     OnGetElementPosition(selectors, callback);
   }
-
   MOCK_METHOD2(OnGetElementPosition,
                void(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool, const RectF&)>& callback));
+
+  void HasCookie(base::OnceCallback<void(bool)> callback) override {
+    std::move(callback).Run(false);
+  }
+
+  void SetCookie(const std::string& domain,
+                 base::OnceCallback<void(bool)> callback) override {
+    std::move(callback).Run(true);
+  }
+
+  MOCK_METHOD0(ClearCookie, void());
 };
 
 }  // namespace autofill_assistant

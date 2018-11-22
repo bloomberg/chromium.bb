@@ -39,6 +39,11 @@ static constexpr int kAutostartCheckCountLimit = 5;
 // Caller parameter name.
 static const char* const kCallerScriptParameterName = "CALLER";
 
+// Cookie experiment name.
+// TODO(crbug.com/806868): Introduce a dedicated experiment extra parameter to
+// pass allow passing more than one experiment.
+static const char* const kCookieExperimentName = "EXP_COOKIE";
+
 }  // namespace
 
 // static
@@ -131,10 +136,8 @@ Controller::~Controller() {
 }
 
 void Controller::Start(const GURL& initialUrl) {
-  started_ = true;
-  if (initialUrl.is_valid())
-    GetOrCheckScripts(initialUrl);
-
+  DCHECK(initialUrl.is_valid());
+  GetOrCheckScripts(initialUrl);
   if (allow_autostart_) {
     auto iter = parameters_->find(kCallerScriptParameterName);
     // TODO(crbug.com/806868): Put back an explicit AUTOSTART parameter so we
@@ -142,8 +145,6 @@ void Controller::Start(const GURL& initialUrl) {
     if (iter != parameters_->end() && iter->second == "1") {
       should_fail_after_checking_scripts_ = true;
       GetUiController()->ShowOverlay();
-      // TODO(crbug.com/806868): Find out how to add template string and add
-      // domain in the "Loading..." message.
       GetUiController()->ShowStatusMessage(l10n_util::GetStringFUTF8(
           IDS_AUTOFILL_ASSISTANT_LOADING,
           base::UTF8ToUTF16(web_contents()->GetVisibleURL().host())));
@@ -158,11 +159,19 @@ void Controller::Start(const GURL& initialUrl) {
 }
 
 void Controller::GetOrCheckScripts(const GURL& url) {
-  if (!started_) {
+  if (IsCookieExperimentEnabled() && !started_) {
+    GetWebController()->HasCookie(
+        base::BindOnce(&Controller::OnGetCookie,
+                       // WebController is owned by Controller.
+                       base::Unretained(this), url));
+    return;
+  } else {
+    started_ = true;
+  }
+
+  if (!started_ || script_tracker_->running()) {
     return;
   }
-  if (script_tracker_->running())
-    return;
 
   if (script_domain_ != url.host()) {
     StopPeriodicScriptChecks();
@@ -279,6 +288,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       return;
 
     case ScriptExecutor::SHUTDOWN_GRACEFULLY:
+      GetWebController()->ClearCookie();
       GetUiController()->ShutdownGracefully();
       return;
 
@@ -350,6 +360,31 @@ bool Controller::MaybeAutostartScript(
 void Controller::OnClickOverlay() {
   GetUiController()->HideOverlay();
   // TODO(crbug.com/806868): Stop executing scripts.
+}
+
+void Controller::OnGetCookie(const GURL& initial_url, bool has_cookie) {
+  if (has_cookie) {
+    // This code is only active with the experiment parameter.
+    // TODO(crbug.com/806868): Set a proper, localized message.
+    GetUiController()->ShowStatusMessage("Warning: You have been here before!");
+    GetUiController()->ShutdownGracefully();
+    return;
+  }
+  GetWebController()->SetCookie(
+      initial_url.host(),
+      base::BindOnce(&Controller::OnSetCookie,
+                     // WebController is owned by Controller.
+                     base::Unretained(this), initial_url));
+}
+
+void Controller::OnSetCookie(const GURL& initial_url, bool result) {
+  DCHECK(result) << "Setting cookie failed";
+  // Failing to set the cookie should not be fatal since it would prevent
+  // checking for available scripts.
+  started_ = true;
+
+  // Kick off another check scripts run since we may have blocked the first one.
+  GetOrCheckScripts(initial_url);
 }
 
 void Controller::OnScriptSelected(const std::string& script_path) {
@@ -526,6 +561,11 @@ void Controller::LoadProgressChanged(content::WebContents* source,
     // DidFinishLoad.
     GetOrCheckScripts(web_contents()->GetLastCommittedURL());
   }
+}
+
+bool Controller::IsCookieExperimentEnabled() const {
+  auto iter = parameters_->find(kCookieExperimentName);
+  return iter != parameters_->end() && iter->second == "1";
 }
 
 }  // namespace autofill_assistant

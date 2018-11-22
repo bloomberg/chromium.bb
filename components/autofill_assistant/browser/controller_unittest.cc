@@ -28,6 +28,7 @@ using ::testing::InSequence;
 using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::Pair;
+using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::Sequence;
 using ::testing::SizeIs;
@@ -87,7 +88,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     mock_service_ = service.get();
     auto parameters = std::make_unique<std::map<std::string, std::string>>();
     parameters->insert(std::make_pair("a", "b"));
-    GURL initialUrl("");
+    GURL initialUrl("http://initialurl.com");
 
     controller_ = new Controller(
         web_contents(), std::make_unique<FakeClient>(std::move(ui_controller)),
@@ -459,6 +460,44 @@ TEST_F(ControllerTest, InitialUrlLoads) {
       std::make_unique<std::map<std::string, std::string>>());
   dynamic_cast<UiDelegate*>(controller)->Start(initialUrl);
   ControllerTest::DestroyController(controller);
+}
+
+TEST_F(ControllerTest, CookieExperimentEnabled) {
+  auto parameters = std::make_unique<std::map<std::string, std::string>>();
+  parameters->insert(std::make_pair("EXP_COOKIE", "1"));
+
+  Controller* controller = ControllerTest::CreateController(
+      web_contents(),
+      std::make_unique<FakeClient>(
+          std::make_unique<NiceMock<MockUiController>>()),
+      std::make_unique<NiceMock<MockWebController>>(),
+      std::make_unique<NiceMock<MockService>>(), std::move(parameters));
+
+  // TODO(crbug.com): Make IsCookieExperimentEnabled private and remove this
+  // test when we pass the cookie data along in the initial request so that it
+  // can be tested.
+  EXPECT_TRUE(controller->IsCookieExperimentEnabled());
+}
+
+// TODO(crbug.com/806868): Extend this test once the cookie information is
+// passed to the initial request. Currently the public controller API does not
+// yet allow proper testing.
+TEST_F(ControllerTest, CookieExperimentSmokeTest) {
+  GURL initialUrl("http://a.example.com/path");
+
+  auto service = std::make_unique<NiceMock<MockService>>();
+  auto ui_controller = std::make_unique<NiceMock<MockUiController>>();
+  auto parameters = std::make_unique<std::map<std::string, std::string>>();
+  parameters->insert(std::make_pair("EXP_COOKIE", "1"));
+
+  EXPECT_CALL(*service.get(), OnGetScriptsForUrl(Eq(initialUrl), _, _))
+      .WillOnce(RunOnceCallback<2>(true, ""));
+
+  Controller* controller = ControllerTest::CreateController(
+      web_contents(), std::make_unique<FakeClient>(std::move(ui_controller)),
+      std::make_unique<NiceMock<MockWebController>>(), std::move(service),
+      std::move(parameters));
+  dynamic_cast<UiDelegate*>(controller)->Start(initialUrl);
 }
 
 }  // namespace autofill_assistant
