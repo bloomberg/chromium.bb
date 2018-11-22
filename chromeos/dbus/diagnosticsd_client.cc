@@ -29,7 +29,7 @@ class DiagnosticsdClientImpl final : public DiagnosticsdClient {
 
   // DiagnosticsdClient overrides:
   void WaitForServiceToBeAvailable(
-      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) override;
+      WaitForServiceToBeAvailableCallback callback) override;
   void BootstrapMojoConnection(base::ScopedFD fd,
                                VoidDBusMethodCallback callback) override;
 
@@ -50,7 +50,7 @@ DiagnosticsdClientImpl::DiagnosticsdClientImpl() = default;
 DiagnosticsdClientImpl::~DiagnosticsdClientImpl() = default;
 
 void DiagnosticsdClientImpl::WaitForServiceToBeAvailable(
-    dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
+    WaitForServiceToBeAvailableCallback callback) {
   diagnosticsd_proxy_->WaitForServiceToBeAvailable(std::move(callback));
 }
 
