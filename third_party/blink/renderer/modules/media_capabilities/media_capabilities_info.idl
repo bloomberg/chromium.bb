@@ -5,8 +5,7 @@
 // https://wicg.github.io/media-capabilities/#mediacapabilitiesinfo
 
 [
-    Exposed=Window,
-    OriginTrialEnabled=MediaCapabilities
+    Exposed=Window
 ] interface MediaCapabilitiesInfo {
     [Measure] readonly attribute boolean supported;
     [Measure] readonly attribute boolean smooth;
