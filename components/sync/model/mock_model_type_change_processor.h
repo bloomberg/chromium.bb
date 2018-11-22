@@ -30,9 +30,10 @@ class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
                void(const EntityData& entity_data,
                     const std::string& storage_key,
                     MetadataChangeList* metadata_change_list));
-  MOCK_METHOD1(UntrackEntity, void(const EntityData& entity_data));
   MOCK_METHOD1(UntrackEntityForStorageKey,
                void(const std::string& storage_key));
+  MOCK_METHOD1(UntrackEntityForClientTagHash,
+               void(const std::string& client_tag_hash));
   MOCK_METHOD1(IsEntityUnsynced, bool(const std::string& storage_key));
   MOCK_METHOD1(OnModelStarting, void(ModelTypeSyncBridge* bridge));
   MOCK_METHOD1(ModelReadyToSync, void(std::unique_ptr<MetadataBatch> batch));

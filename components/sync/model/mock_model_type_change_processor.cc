@@ -40,12 +40,13 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
     other_->UpdateStorageKey(entity_data, storage_key, metadata_change_list);
   }
 
-  void UntrackEntity(const EntityData& entity_data) override {
-    other_->UntrackEntity(entity_data);
-  }
-
   void UntrackEntityForStorageKey(const std::string& storage_key) override {
     other_->UntrackEntityForStorageKey(storage_key);
+  }
+
+  void UntrackEntityForClientTagHash(
+      const std::string& client_tag_hash) override {
+    other_->UntrackEntityForClientTagHash(client_tag_hash);
   }
 
   bool IsEntityUnsynced(const std::string& storage_key) override {
@@ -108,12 +109,12 @@ void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
   ON_CALL(*this, UpdateStorageKey(_, _, _))
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::UpdateStorageKey));
-  ON_CALL(*this, UntrackEntity(_))
-      .WillByDefault(
-          Invoke(delegate, &ModelTypeChangeProcessor::UntrackEntity));
   ON_CALL(*this, UntrackEntityForStorageKey(_))
       .WillByDefault(Invoke(
           delegate, &ModelTypeChangeProcessor::UntrackEntityForStorageKey));
+  ON_CALL(*this, UntrackEntityForClientTagHash(_))
+      .WillByDefault(Invoke(
+          delegate, &ModelTypeChangeProcessor::UntrackEntityForClientTagHash));
   ON_CALL(*this, IsEntityUnsynced(_))
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::IsEntityUnsynced));

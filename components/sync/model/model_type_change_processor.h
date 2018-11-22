@@ -52,20 +52,19 @@ class ModelTypeChangeProcessor {
                                 const std::string& storage_key,
                                 MetadataChangeList* metadata_change_list) = 0;
 
-  // Remove entity metadata and do not track the entity. This function only
-  // applies to datatypes that can't generate storage key based on EntityData.
-  // Bridge should call this function when handling
-  // MergeSyncData/ApplySyncChanges to inform the processor that this entity
-  // should not been tracked. Datatypes that support GetStorageKey should call
-  // change_processor()->Delete() instead.
-  virtual void UntrackEntity(const EntityData& entity_data) = 0;
-
   // Remove entity metadata and do not track the entity. Applies to datatypes
   // that support local deletions that should not get synced up (e.g. TYPED_URL
   // does not sync up deletions of expired URLs). If the deletion should get
   // synced up, use change_processor()->Delete() instead. The call is ignored if
   // |storage_key| is unknown.
   virtual void UntrackEntityForStorageKey(const std::string& storage_key) = 0;
+
+  // Remove entity metadata and do not track the entity, exactly like
+  // UntrackEntityForStorageKey() above. This function should only be called by
+  // datatypes that can't generate storage keys. The call is ignored if
+  // |client_tag_hash| is unknown.
+  virtual void UntrackEntityForClientTagHash(
+      const std::string& client_tag_hash) = 0;
 
   // Returns true if a tracked entity has local changes. A commit may or may not
   // be in progress at this time.

@@ -165,7 +165,8 @@ base::Optional<ModelError> TypedURLSyncBridge::MergeSyncData(
         GetStorageKeyInternal(entity_change.data().specifics.typed_url().url());
     if (storage_key.empty()) {
       // ignore entity change
-      change_processor()->UntrackEntity(entity_change.data());
+      change_processor()->UntrackEntityForClientTagHash(
+          entity_change.data().client_tag_hash);
     } else {
       change_processor()->UpdateStorageKey(entity_change.data(), storage_key,
                                            metadata_change_list.get());
@@ -245,7 +246,8 @@ base::Optional<ModelError> TypedURLSyncBridge::ApplySyncChanges(
           entity_change.data().specifics.typed_url().url());
       if (storage_key.empty()) {
         // ignore entity change
-        change_processor()->UntrackEntity(entity_change.data());
+        change_processor()->UntrackEntityForClientTagHash(
+            entity_change.data().client_tag_hash);
       } else {
         change_processor()->UpdateStorageKey(entity_change.data(), storage_key,
                                              metadata_change_list.get());

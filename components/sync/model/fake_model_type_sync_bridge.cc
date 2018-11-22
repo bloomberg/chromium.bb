@@ -228,7 +228,8 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
     if (storage_key.empty()) {
       storage_key = GetStorageKeyImpl(change.data());
       if (base::ContainsKey(keys_to_ignore_, storage_key)) {
-        change_processor()->UntrackEntity(change.data());
+        change_processor()->UntrackEntityForClientTagHash(
+            change.data().client_tag_hash);
       } else {
         change_processor()->UpdateStorageKey(change.data(), storage_key,
                                              metadata_change_list.get());

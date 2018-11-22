@@ -38,14 +38,14 @@ void RecordingModelTypeChangeProcessor::UpdateStorageKey(
       storage_key, FakeModelTypeSyncBridge::CopyEntityData(entity_data)));
 }
 
-void RecordingModelTypeChangeProcessor::UntrackEntity(
-    const EntityData& entity_data) {
-  untrack_set_.insert(FakeModelTypeSyncBridge::CopyEntityData(entity_data));
-}
-
 void RecordingModelTypeChangeProcessor::UntrackEntityForStorageKey(
     const std::string& storage_key) {
   untrack_for_storage_key_set_.insert(storage_key);
+}
+
+void RecordingModelTypeChangeProcessor::UntrackEntityForClientTagHash(
+    const std::string& client_tag_hash) {
+  untrack_for_client_tag_hash_set_.insert(client_tag_hash);
 }
 
 void RecordingModelTypeChangeProcessor::ModelReadyToSync(
