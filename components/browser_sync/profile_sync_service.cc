@@ -36,6 +36,7 @@
 #include "components/sync/driver/clear_server_data_events.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/directory_data_type_controller.h"
+#include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
@@ -52,6 +53,7 @@
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync_sessions/session_sync_service.h"
@@ -251,15 +253,22 @@ void ProfileSyncService::Initialize() {
       sync_service_url_, local_device_->GetSyncUserAgent(), url_loader_factory_,
       syncer::SyncStoppedReporter::ResultCallback());
 
+  data_type_controllers_ =
+      BuildDataTypeControllerMap(sync_client_->CreateDataTypeControllers());
+
   device_info_sync_bridge_ = std::make_unique<syncer::DeviceInfoSyncBridge>(
       local_device_.get(), model_type_store_factory,
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::DEVICE_INFO,
           /*dump_stack=*/base::BindRepeating(&syncer::ReportUnrecoverableError,
                                              channel_)));
-
-  data_type_controllers_ =
-      BuildDataTypeControllerMap(sync_client_->CreateDataTypeControllers());
+  data_type_controllers_[syncer::DEVICE_INFO] =
+      std::make_unique<syncer::ModelTypeController>(
+          syncer::DEVICE_INFO,
+          std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+              device_info_sync_bridge_->change_processor()
+                  ->GetControllerDelegate()
+                  .get()));
 
   if (gaia_cookie_manager_service_)
     gaia_cookie_manager_service_->AddObserver(this);
@@ -2050,12 +2059,6 @@ bool ProfileSyncService::IsRetryingAccessTokenFetchForTest() const {
 std::string ProfileSyncService::GetAccessTokenForTest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return auth_manager_->access_token();
-}
-
-base::WeakPtr<syncer::ModelTypeControllerDelegate>
-ProfileSyncService::GetDeviceInfoSyncControllerDelegate() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return device_info_sync_bridge_->change_processor()->GetControllerDelegate();
 }
 
 syncer::SyncTokenStatus ProfileSyncService::GetSyncTokenStatus() const {

@@ -196,17 +196,9 @@ WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 WebViewSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
-  switch (type) {
-    case syncer::DEVICE_INFO:
-      // TODO(crbug.com/872420): Distinguish ios/web_view from ios/chrome.
-      return WebViewProfileSyncServiceFactory::GetForBrowserState(
-                 browser_state_)
-          ->GetDeviceInfoSyncControllerDelegate();
-    default:
-      NOTREACHED();
-      // TODO(crbug.com/873790): Figure out if USER_CONSENTS need to be enabled.
-      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
-  }
+  NOTREACHED();
+  // TODO(crbug.com/873790): Figure out if USER_CONSENTS need to be enabled.
+  return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
 }
 
 scoped_refptr<syncer::ModelSafeWorker>
