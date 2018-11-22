@@ -186,6 +186,8 @@ class NET_EXPORT HostResolver {
 
     // Indicates a request for myIpAddress (to differentiate from other requests
     // for localhost, currently used by Chrome OS).
+    //
+    // TODO(https://crbug.com/827533): Remove.
     bool is_my_ip_address_;
   };
 
