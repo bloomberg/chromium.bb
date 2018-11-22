@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/frame/dom_window_timers.h"
+#include "third_party/blink/renderer/core/frame/window_or_worker_global_scope.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
@@ -80,11 +80,12 @@ static bool IsAllowed(ScriptState* script_state,
   return false;
 }
 
-int DOMWindowTimers::setTimeout(ScriptState* script_state,
-                                EventTarget& event_target,
-                                const ScriptValue& handler,
-                                int timeout,
-                                const Vector<ScriptValue>& arguments) {
+int WindowOrWorkerGlobalScope::setTimeout(
+    ScriptState* script_state,
+    EventTarget& event_target,
+    const ScriptValue& handler,
+    int timeout,
+    const Vector<ScriptValue>& arguments) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(script_state, execution_context, false, g_empty_string))
     return 0;
@@ -99,7 +100,7 @@ int DOMWindowTimers::setTimeout(ScriptState* script_state,
                            TimeDelta::FromMilliseconds(timeout), true);
 }
 
-int DOMWindowTimers::setTimeout(
+int WindowOrWorkerGlobalScope::setTimeout(
     ScriptState* script_state,
     EventTarget& event_target,
     const StringOrTrustedScript& string_or_trusted_script,
@@ -118,11 +119,12 @@ int DOMWindowTimers::setTimeout(
                               arguments);
 }
 
-int DOMWindowTimers::setTimeoutFromString(ScriptState* script_state,
-                                          EventTarget& event_target,
-                                          const String& handler,
-                                          int timeout,
-                                          const Vector<ScriptValue>&) {
+int WindowOrWorkerGlobalScope::setTimeoutFromString(
+    ScriptState* script_state,
+    EventTarget& event_target,
+    const String& handler,
+    int timeout,
+    const Vector<ScriptValue>&) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(script_state, execution_context, true, handler))
     return 0;
@@ -141,11 +143,12 @@ int DOMWindowTimers::setTimeoutFromString(ScriptState* script_state,
                            TimeDelta::FromMilliseconds(timeout), true);
 }
 
-int DOMWindowTimers::setInterval(ScriptState* script_state,
-                                 EventTarget& event_target,
-                                 const ScriptValue& handler,
-                                 int timeout,
-                                 const Vector<ScriptValue>& arguments) {
+int WindowOrWorkerGlobalScope::setInterval(
+    ScriptState* script_state,
+    EventTarget& event_target,
+    const ScriptValue& handler,
+    int timeout,
+    const Vector<ScriptValue>& arguments) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(script_state, execution_context, false, g_empty_string))
     return 0;
@@ -155,7 +158,7 @@ int DOMWindowTimers::setInterval(ScriptState* script_state,
                            TimeDelta::FromMilliseconds(timeout), false);
 }
 
-int DOMWindowTimers::setInterval(
+int WindowOrWorkerGlobalScope::setInterval(
     ScriptState* script_state,
     EventTarget& event_target,
     const StringOrTrustedScript& string_or_trusted_script,
@@ -174,11 +177,12 @@ int DOMWindowTimers::setInterval(
                                arguments);
 }
 
-int DOMWindowTimers::setIntervalFromString(ScriptState* script_state,
-                                           EventTarget& event_target,
-                                           const String& handler,
-                                           int timeout,
-                                           const Vector<ScriptValue>&) {
+int WindowOrWorkerGlobalScope::setIntervalFromString(
+    ScriptState* script_state,
+    EventTarget& event_target,
+    const String& handler,
+    int timeout,
+    const Vector<ScriptValue>&) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(script_state, execution_context, true, handler))
     return 0;
@@ -192,12 +196,14 @@ int DOMWindowTimers::setIntervalFromString(ScriptState* script_state,
                            TimeDelta::FromMilliseconds(timeout), false);
 }
 
-void DOMWindowTimers::clearTimeout(EventTarget& event_target, int timeout_id) {
+void WindowOrWorkerGlobalScope::clearTimeout(EventTarget& event_target,
+                                             int timeout_id) {
   if (ExecutionContext* context = event_target.GetExecutionContext())
     DOMTimer::RemoveByID(context, timeout_id);
 }
 
-void DOMWindowTimers::clearInterval(EventTarget& event_target, int timeout_id) {
+void WindowOrWorkerGlobalScope::clearInterval(EventTarget& event_target,
+                                              int timeout_id) {
   if (ExecutionContext* context = event_target.GetExecutionContext())
     DOMTimer::RemoveByID(context, timeout_id);
 }

@@ -30,8 +30,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_TIMERS_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_TIMERS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WINDOW_OR_WORKER_GLOBAL_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WINDOW_OR_WORKER_GLOBAL_SCOPE_H_
 
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -45,8 +45,8 @@ class ScriptState;
 class ScriptValue;
 class StringOrTrustedScript;
 
-class DOMWindowTimers {
-  STATIC_ONLY(DOMWindowTimers);
+class WindowOrWorkerGlobalScope {
+  STATIC_ONLY(WindowOrWorkerGlobalScope);
 
  public:
   static int setTimeout(ScriptState*,
@@ -87,4 +87,4 @@ class DOMWindowTimers {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_TIMERS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WINDOW_OR_WORKER_GLOBAL_SCOPE_H_

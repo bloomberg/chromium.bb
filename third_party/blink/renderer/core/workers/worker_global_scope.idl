@@ -80,6 +80,6 @@
 };
 
 WorkerGlobalScope implements WindowBase64;
-WorkerGlobalScope implements WindowTimers;
+WorkerGlobalScope implements WindowOrWorkerGlobalScope;
 // TODO(fserb): this needs to be enabled once we get out of RuntimeEnabled.
 //WorkerGlobalScope implements FontFaceSource;

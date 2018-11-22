@@ -540,7 +540,7 @@ core_dependency_idl_files =
                     "frame/navigator_user_activation.idl",
                     "frame/window_base64.idl",
                     "frame/window_event_handlers.idl",
-                    "frame/window_timers.idl",
+                    "frame/window_or_worker_global_scope.idl",
                     "fullscreen/document_fullscreen.idl",
                     "fullscreen/element_fullscreen.idl",
                     "html/html_hyperlink_element_utils.idl",

@@ -234,4 +234,4 @@
 Window implements GlobalEventHandlers;
 Window implements WindowBase64;
 Window implements WindowEventHandlers;
-Window implements WindowTimers;
+Window implements WindowOrWorkerGlobalScope;
