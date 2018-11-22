@@ -690,6 +690,10 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
     NotifyDeviceAdvertisementReceived(device_bluez, properties->rssi.value(),
                                       properties->eir.value());
 
+  if (property_name == properties->connected.name())
+    NotifyDeviceConnectedStateChanged(device_bluez,
+                                      properties->connected.value());
+
   if (property_name == properties->services_resolved.name() &&
       properties->services_resolved.value()) {
     device_bluez->UpdateGattServices(object_path);
@@ -1150,6 +1154,16 @@ void BluetoothAdapterBlueZ::NotifyDeviceAdvertisementReceived(
 
   for (auto& observer : observers_)
     observer.DeviceAdvertisementReceived(this, device, rssi, eir);
+}
+
+void BluetoothAdapterBlueZ::NotifyDeviceConnectedStateChanged(
+    BluetoothDeviceBlueZ* device,
+    bool is_now_connected) {
+  DCHECK_EQ(device->adapter_, this);
+  DCHECK_EQ(device->IsConnected(), is_now_connected);
+
+  for (auto& observer : observers_)
+    observer.DeviceConnectedStateChanged(this, device, is_now_connected);
 }
 
 void BluetoothAdapterBlueZ::UseProfile(

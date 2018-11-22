@@ -172,6 +172,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
                                          int16_t rssi,
                                          const std::vector<uint8_t>& eir);
 
+  // Announce to observers that |device| has changed its connected state.
+  void NotifyDeviceConnectedStateChanged(BluetoothDeviceBlueZ* device,
+                                         bool is_now_connected);
+
   // Returns the object path of the adapter.
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
