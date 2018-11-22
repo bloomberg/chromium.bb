@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 
@@ -86,6 +87,8 @@ void BackgroundFetchRegistration::OnProgress(
   downloaded_ = downloaded;
   result_ = result;
   failure_reason_ = failure_reason;
+
+  // TODO(crbug.com/875201): Update records in |records_|.
 
   ExecutionContext* context = GetExecutionContext();
   if (!context || context->IsContextDestroyed())
@@ -232,25 +235,30 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
     ScriptPromiseResolver* resolver,
     bool return_all,
     Vector<mojom::blink::BackgroundFetchSettledFetchPtr> settled_fetches) {
+  DCHECK(resolver);
+
   ScriptState* script_state = resolver->GetScriptState();
   // Do not remove this, |scope| is needed for calling ToV8()
   ScriptState::Scope scope(script_state);
   HeapVector<Member<BackgroundFetchRecord>> to_return;
   to_return.ReserveInitialCapacity(settled_fetches.size());
-  for (const auto& fetch : settled_fetches) {
-    Request* request = Request::Create(script_state, *(fetch->request));
+  for (auto& fetch : settled_fetches) {
+    // If there isn't a record for this fetch in records_ already, create one.
+    auto iter = records_.find(fetch->request->url);
+    BackgroundFetchRecord* record = nullptr;
+    if (iter == records_.end()) {
+      Request* request = Request::Create(script_state, *(fetch->request));
+      auto* new_record = new BackgroundFetchRecord(request, script_state);
+      DCHECK(new_record);
+      records_.Set(request->url(), new_record);
 
-    Response* response = fetch->response
-                             ? Response::Create(script_state, *fetch->response)
-                             : nullptr;
+      record = new_record;
+    } else {
+      record = iter->value;
+    }
 
-    bool aborted =
-        failure_reason_ ==
-            mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI ||
-        failure_reason_ ==
-            mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER;
-
-    to_return.push_back(new BackgroundFetchRecord(request, response, aborted));
+    UpdateRecord(record, fetch->response);
+    to_return.push_back(record);
   }
 
   if (!return_all) {
@@ -265,6 +273,38 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
     return;
   }
   resolver->Resolve(to_return);
+}
+
+void BackgroundFetchRegistration::UpdateRecord(
+    BackgroundFetchRecord* record,
+    mojom::blink::FetchAPIResponsePtr& response) {
+  DCHECK(record);
+
+  if (!record->IsRecordPending())
+    return;
+
+  // Per the spec, resolve with a valid response, if there is one available,
+  // even if the fetch has been aborted.
+  if (response) {
+    record->SetResponse(response);
+    record->UpdateState(BackgroundFetchRecord::State::kSettled);
+    return;
+  }
+
+  if (IsAborted()) {
+    record->UpdateState(BackgroundFetchRecord::State::kAborted);
+    return;
+  }
+
+  if (result_ != mojom::blink::BackgroundFetchResult::UNSET)
+    record->UpdateState(BackgroundFetchRecord::State::kSettled);
+}
+
+bool BackgroundFetchRegistration::IsAborted() {
+  return failure_reason_ ==
+             mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI ||
+         failure_reason_ ==
+             mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER;
 }
 
 void BackgroundFetchRegistration::DidAbort(
@@ -333,6 +373,7 @@ void BackgroundFetchRegistration::Dispose() {
 
 void BackgroundFetchRegistration::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
+  visitor->Trace(records_);
   EventTargetWithInlineData::Trace(visitor);
 }
 
