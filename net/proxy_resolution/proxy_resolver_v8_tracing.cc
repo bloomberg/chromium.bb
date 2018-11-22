@@ -830,16 +830,16 @@ HostResolver::RequestInfo Job::MakeDnsRequestInfo(const std::string& host,
                                                   ResolveDnsOperation op) {
   HostPortPair host_port = HostPortPair(host, 80);
   if (op == MY_IP_ADDRESS || op == MY_IP_ADDRESS_EX) {
+    // TODO(eroman): Remove the need for hostname. This is currently relied on
+    // for the cache key (is_my_ip_address isn't part of it).
     host_port.set_host(GetHostName());
   }
 
   HostResolver::RequestInfo info(host_port);
   // Flag myIpAddress requests.
-  if (op == MY_IP_ADDRESS || op == MY_IP_ADDRESS_EX) {
-    // TODO: Provide a RequestInfo construction mechanism that does not
-    // require a hostname and sets is_my_ip_address to true instead of this.
+  if (op == MY_IP_ADDRESS || op == MY_IP_ADDRESS_EX)
     info.set_is_my_ip_address(true);
-  }
+
   // The non-ex flavors are limited to IPv4 results.
   if (op == MY_IP_ADDRESS || op == DNS_RESOLVE) {
     info.set_address_family(ADDRESS_FAMILY_IPV4);

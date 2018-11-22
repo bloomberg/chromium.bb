@@ -37,17 +37,6 @@ const char kSubtractImplicitBypasses[] = "<-loopback>";
 // Windows so is matched here.
 const char kBypassSimpleHostnames[] = "<local>";
 
-bool IsIPv4LinkLocal(const IPAddress& addr) {
-  // 169.254.0.0/16
-  return addr.IsIPv4() && (addr.bytes()[0] == 169) && (addr.bytes()[1] == 254);
-}
-
-bool IsIPv6LinkLocal(const IPAddress& addr) {
-  // [fe80::]/10
-  return addr.IsIPv6() && (addr.bytes()[0] == 0xFE) &&
-         ((addr.bytes()[1] & 0xC0) == 0x80);
-}
-
 bool IsLinkLocalIP(const GURL& url) {
   // Quick fail if definitely not link-local, to avoid doing unnecessary work in
   // common case. The |url| should be canonicalized, which for IPv6 literals
@@ -61,7 +50,7 @@ bool IsLinkLocalIP(const GURL& url) {
   if (!ip_address.AssignFromIPLiteral(url.HostNoBracketsPiece()))
     return false;
 
-  return IsIPv4LinkLocal(ip_address) || IsIPv6LinkLocal(ip_address);
+  return ip_address.IsLinkLocal();
 }
 
 class HostnamePatternRule : public ProxyBypassRules::Rule {

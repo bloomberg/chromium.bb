@@ -14,6 +14,8 @@
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
+#include "base/task_runner.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/load_states.h"
@@ -23,6 +25,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/pac_file_data.h"
+#include "net/proxy_resolution/pac_library.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolver_error_observer.h"
@@ -43,9 +46,38 @@ std::unique_ptr<base::Value> NetLogErrorCallback(
   return std::move(dict);
 }
 
+// Implementation for myIpAddress() and myIpAddressEx() that is expected to run
+// on a worker thread. Will notify |client| on completion.
+void DoMyIpAddressOnWorker(
+    bool is_ex,
+    proxy_resolver::mojom::HostResolverRequestClientPtrInfo client_info) {
+  // Resolve the list of IP addresses.
+  net::IPAddressList my_ip_addresses =
+      is_ex ? net::PacMyIpAddressEx() : net::PacMyIpAddress();
+
+  proxy_resolver::mojom::HostResolverRequestClientPtr client;
+  client.Bind(std::move(client_info));
+
+  // TODO(eroman): Note that this code always returns a success response (with
+  // loopback) rather than passing forward the error. This is to ensure that the
+  // response gets cached on the proxy resolver process side, since this layer
+  // here does not currently do any caching or de-duplication. This should be
+  // cleaned up once the interfaces are refactored. Lastly note that for
+  // myIpAddress() this doesn't change the final result. However for
+  // myIpAddressEx() it means we return 127.0.0.1 rather than empty string.
+  if (my_ip_addresses.empty())
+    my_ip_addresses.push_back(net::IPAddress::IPv4Localhost());
+
+  // Convert to a net::AddressList.
+  net::AddressList list;
+  for (const auto& ip : my_ip_addresses)
+    list.push_back(net::IPEndPoint(ip, 80));
+  client->ReportResult(net::OK, list);
+}
+
 // A mixin that forwards logging to (Bound)NetLog and ProxyResolverErrorObserver
 // and DNS requests to a MojoHostResolverImpl, which is implemented in terms of
-// a HostResolver.
+// a HostResolver, or myIpAddress[Ex]() which is implemented by //net.
 template <typename ClientInterface>
 class ClientMixin : public ClientInterface {
  public:
@@ -81,15 +113,41 @@ class ClientMixin : public ClientInterface {
     }
   }
 
+  // TODO(eroman): Split the client interfaces so ResolveDns() does not also
+  // carry the myIpAddress(Ex) requests.
   void ResolveDns(
       std::unique_ptr<net::HostResolver::RequestInfo> request_info,
       proxy_resolver::mojom::HostResolverRequestClientPtr client) override {
-    host_resolver_.Resolve(std::move(request_info), std::move(client));
+    if (request_info->is_my_ip_address()) {
+      bool is_ex =
+          request_info->address_family() == net::ADDRESS_FAMILY_UNSPECIFIED;
+
+      GetMyIpAddressTaskRuner()->PostTask(
+          FROM_HERE, base::BindOnce(&DoMyIpAddressOnWorker, is_ex,
+                                    client.PassInterface()));
+    } else {
+      // Request was for dnsResolve() or dnsResolveEx().
+      host_resolver_.Resolve(std::move(request_info), std::move(client));
+    }
   }
 
  protected:
+  // TODO(eroman): This doesn't track being blocked in myIpAddress(Ex) handler.
   bool dns_request_in_progress() {
     return host_resolver_.request_in_progress();
+  }
+
+  // Returns a task runner used to run the code for myIpAddress[Ex].
+  static scoped_refptr<base::TaskRunner> GetMyIpAddressTaskRuner() {
+    // TODO(eroman): While these tasks are expected to normally run quickly,
+    // it would be prudent to enforce a bound on outstanding tasks, and maybe
+    // de-duplication of requests.
+    //
+    // However the better place to focus on is de-duplication and caching on the
+    // proxy service side (which currently caches but doesn't de-duplicate).
+    return base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+         base::TaskPriority::USER_VISIBLE});
   }
 
  private:

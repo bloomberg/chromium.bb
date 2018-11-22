@@ -96,7 +96,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/network/dhcp_pac_file_fetcher_factory_chromeos.h"
-#include "chromeos/network/host_resolver_impl_chromeos.h"
 #include "services/network/cert_verify_proc_chromeos.h"
 #endif
 
@@ -150,13 +149,9 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
     net::NetLog* net_log) {
   TRACE_EVENT0("startup", "IOThread::CreateGlobalHostResolver");
 
-#if defined(OS_CHROMEOS)
-  using resolver = chromeos::HostResolverImplChromeOS;
-#else
-  using resolver = net::HostResolver;
-#endif
   std::unique_ptr<net::HostResolver> global_host_resolver =
-      resolver::CreateSystemResolver(net::HostResolver::Options(), net_log);
+      net::HostResolver::CreateSystemResolver(net::HostResolver::Options(),
+                                              net_log);
 
   // If hostname remappings were specified on the command-line, layer these
   // rules on top of the real host resolver. This allows forwarding all requests

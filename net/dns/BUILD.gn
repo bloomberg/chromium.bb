@@ -211,10 +211,6 @@ source_set("host_resolver_impl") {
     # chromeos/network/network_change_notifier_chromeos.cc
     # ChromeOS-specific change notifier with some overrides for DnsConfigService
     # TODO(crbug.com/882610): Remove/cleanup once we figure out servicification.
-    #
-    # chromeos/network/host_resolver_impl_chromeos.h
-    # ChromeOS-specific overriding implementation of HostResolverImpl.
-    # TODO(crbug.com/827533): Remove once converted to use network service.
     "//chromeos/network",
 
     # Network stack/service

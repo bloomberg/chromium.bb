@@ -69,7 +69,7 @@
 // --------------------+-------------+-------------------+--------------
 //                     | Firefox3    | InternetExplorer8 |  --> Us <---
 // --------------------+-------------+-------------------+--------------
-// myIpAddress()       | IPv4/IPv6   |  IPv4             |  IPv4
+// myIpAddress()       | IPv4/IPv6   |  IPv4             |  IPv4/IPv6
 // dnsResolve()        | IPv4/IPv6   |  IPv4             |  IPv4
 // isResolvable()      | IPv4/IPv6   |  IPv4             |  IPv4
 // myIpAddressEx()     | N/A         |  IPv4/IPv6        |  IPv4/IPv6
