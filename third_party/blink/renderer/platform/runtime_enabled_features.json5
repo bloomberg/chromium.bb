@@ -403,7 +403,7 @@
     {
       // http://crbug.com/905922
       name: "ElementInternals",
-      status: "test",
+      implied_by: ["FormAssociatedCustomElements"],
     },
     {
       // https://crbug.com/879270
@@ -518,6 +518,10 @@
     },
     {
       name: "ForceTallerSelectPopup",
+    },
+    {
+      name: "FormAssociatedCustomElements",
+      status: "test",
     },
     {
       name: "FormDataEvent",

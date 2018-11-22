@@ -16,3 +16,6 @@ callback CustomElementConstructor = any ();
 // Blink specific types. HTML standard does not explicitly define these types.
 callback CustomElementAdoptedCallback = void (Document oldOwner, Document newOwner);
 callback CustomElementAttributeChangedCallback = void (DOMString localName, DOMString? oldValue, DOMString? newValue, USVString? attrNamespace);
+callback CustomElementFormAssociatedCallback = void (HTMLFormElement? form);
+callback CustomElementDisabledStateChangedCallback = void (boolean disabled);
+
