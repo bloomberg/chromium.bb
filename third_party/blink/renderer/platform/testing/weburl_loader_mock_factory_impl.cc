@@ -168,10 +168,11 @@ void WebURLLoaderMockFactoryImpl::LoadAsynchronouly(
 }
 
 void WebURLLoaderMockFactoryImpl::RunUntilIdle() {
-  if (platform_)
+  if (platform_) {
     platform_->RunUntilIdle();
-  else
-    base::RunLoop().RunUntilIdle();
+  } else {
+    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+  }
 }
 
 void WebURLLoaderMockFactoryImpl::LoadRequest(
