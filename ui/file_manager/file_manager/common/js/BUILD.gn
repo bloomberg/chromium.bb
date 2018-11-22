@@ -26,7 +26,6 @@ js_type_check("closure_compile_module") {
     ":lru_cache",
     ":metrics",
     ":metrics_base",
-    ":metrics_events",
     ":mock_entry",
     ":progress_center_common",
     ":util",
@@ -126,8 +125,6 @@ js_unittest("lru_cache_unittest") {
 }
 
 js_library("metrics") {
-  # |metrics| and |metrics_events| are for analytics. Don't leak this dependency
-  # outside of the core files app.
   visibility = []
   visibility = [ "//ui/file_manager/file_manager/*" ]
   deps = [
@@ -135,19 +132,10 @@ js_library("metrics") {
     "../../../externs:file_manager_private",
     "//ui/webui/resources/js:assert",
   ]
-  externs_list = [ "//third_party/analytics/externs.js" ]
 }
 
 js_library("metrics_base") {
   externs_list = [ "$externs_path/metrics_private.js" ]
-}
-
-js_library("metrics_events") {
-  visibility = []
-  visibility = [ "//ui/file_manager/file_manager/*" ]
-  deps = [
-    ":metrics_base",
-  ]
 }
 
 js_library("mock_entry") {
@@ -162,6 +150,7 @@ js_library("progress_center_common") {
 
 js_library("unittest_util") {
   testonly = true
+
   # Only files app tests use this util file.
   visibility = []
   visibility = [ "//ui/file_manager/file_manager/*" ]

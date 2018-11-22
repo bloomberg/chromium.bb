@@ -21,15 +21,10 @@ var SHORT_RESCAN_INTERVAL = 100;
  *     service.
  * @param {!VolumeManager} volumeManager The volume manager.
  * @param {!FileOperationManager} fileOperationManager File operation manager.
- * @param {!analytics.Tracker} tracker
  */
 function DirectoryModel(
-    singleSelection,
-    fileFilter,
-    metadataModel,
-    volumeManager,
-    fileOperationManager,
-    tracker) {
+    singleSelection, fileFilter, metadataModel, volumeManager,
+    fileOperationManager) {
   this.fileListSelection_ = singleSelection ?
       new FileListSingleSelectionModel() : new FileListSelectionModel();
 
@@ -81,9 +76,6 @@ function DirectoryModel(
       fileOperationManager,
       'entries-changed',
       this.onEntriesChanged_.bind(this));
-
-  /** @private {!analytics.Tracker} */
-  this.tracker_ = tracker;
 
   /** @private {string} */
   this.lastSearchQuery_ = '';
@@ -1017,62 +1009,8 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
           event.newDirEntry = dirEntry;
           event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
           this.dispatchEvent(event);
-
-          if (currentVolumeInfo && event.volumeChanged) {
-            this.onVolumeChanged_(assert(currentVolumeInfo));
-          }
         }.bind(this));
   }.bind(this, this.changeDirectorySequence_));
-};
-
-/**
- * Handles volume changed by sending an analytics appView event.
- *
- * @param {!VolumeInfo} volumeInfo The new volume info.
- * @return {!Promise} resolves once handling is done.
- * @private
- */
-DirectoryModel.prototype.onVolumeChanged_ = function(volumeInfo) {
-  // NOTE: That dynamic values, like volume name MUST NOT
-  // be sent to GA as that value can contain PII.
-  // VolumeType is an enum.
-  // ...
-  // But we can do stuff like figure out if this is a media device or vanilla
-  // removable device.
-  return Promise.resolve(undefined)
-      .then(
-          (/** @this {DirectoryModel} */
-          function() {
-            switch (volumeInfo.volumeType) {
-              case VolumeManagerCommon.VolumeType.REMOVABLE:
-                return importer.hasMediaDirectory(volumeInfo.fileSystem.root)
-                    .then(
-                        /**
-                         * @param {boolean} hasMedia
-                         * @return {string}
-                         */
-                        function(hasMedia) {
-                          return hasMedia ?
-                              volumeInfo.volumeType + ':with-media-dir' :
-                              volumeInfo.volumeType;
-                        });
-              case VolumeManagerCommon.VolumeType.PROVIDED:
-                var providerId = volumeInfo.providerId;
-                var name = metrics.getFileSystemProviderName(providerId);
-                // Make note of an unrecognized provider id. When we see
-                // high counts for a particular id, we should add it to the
-                // whitelist in metrics_events.js.
-                if (providerId && name == 'unknown') {
-                  this.tracker_.send(
-                      metrics.Internals.UNRECOGNIZED_FILE_SYSTEM_PROVIDER.label(
-                          providerId));
-                }
-                return volumeInfo.volumeType + ':' + name;
-              default:
-                return volumeInfo.volumeType;
-            }
-          }).bind(this))
-      .then(this.tracker_.sendAppView.bind(this.tracker_));
 };
 
 /**

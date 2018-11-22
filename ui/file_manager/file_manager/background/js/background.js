@@ -12,9 +12,6 @@
 function FileBrowserBackgroundImpl() {
   BackgroundBase.call(this);
 
-  /** @type {!analytics.Tracker} */
-  this.tracker = metrics.getTracker();
-
   /**
    * Progress center of the background page.
    * @type {!ProgressCenter}

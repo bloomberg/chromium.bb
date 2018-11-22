@@ -350,7 +350,6 @@ js_library("volume_manager_util") {
   deps = [
     ":volume_info_impl",
     "../../common/js:metrics",
-    "../../common/js:metrics_events",
     "../../common/js:util",
     "//ui/file_manager/base/js:volume_manager_types",
   ]

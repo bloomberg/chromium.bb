@@ -772,34 +772,13 @@ importer.Logger.prototype.catcher;
  * @final
  *
  * @param {!Promise<!FileEntry>} fileEntryPromise
- * @param {!Promise<!analytics.Tracker>} trackerPromise
  */
-importer.RuntimeLogger = function(fileEntryPromise, trackerPromise) {
-
+importer.RuntimeLogger = function(fileEntryPromise) {
   /** @private {!Promise<!importer.PromisingFileEntry>} */
   this.fileEntryPromise_ = fileEntryPromise.then(
       /** @param {!FileEntry} fileEntry */
       function(fileEntry) {
         return new importer.PromisingFileEntry(fileEntry);
-      });
-
-  /** @private {!Promise<!analytics.Tracker>} */
-  this.trackerPromise_ = trackerPromise;
-};
-
-/**
- * Reports an error to analytics.
- *
- * @param {string} context MUST NOT contain any dynamic error content,
- *    only statically defined string will dooooo.
- */
-importer.RuntimeLogger.prototype.reportErrorContext_ = function(context) {
-  this.trackerPromise_.then(
-      /** @param {!analytics.Tracker} tracker */
-      function(tracker) {
-        tracker.sendException(
-            context,
-            false  /* fatal */ );
       });
 };
 
@@ -820,7 +799,6 @@ importer.RuntimeLogger.prototype.catcher = function(context) {
   var prefix = '(' + context + ') ';
 
   return function(error) {
-    this.reportErrorContext_(context);
 
     var message = prefix + 'Caught error in promise chain.';
     // Append error info, if provided, then output the error.
@@ -912,32 +890,10 @@ importer.getLogger = function() {
     importer.logger_ = new importer.RuntimeLogger(
         importer.ChromeSyncFilesystem.getOrCreateFileEntry(
             /** @type {!Promise<string>} */ (rotator().then(
-                importer.getDebugLogFilename.bind(null, nextLogId)))),
-        importer.getTracker_());
+                importer.getDebugLogFilename.bind(null, nextLogId)))));
   }
 
   return importer.logger_;
-};
-
-/**
- * Fetch analytics.Tracker from background page.
- * @return {!Promise<!analytics.Tracker>}
- * @private
- */
-importer.getTracker_ = function() {
-  return new Promise(
-      function(resolve, reject) {
-        chrome.runtime.getBackgroundPage(
-          function(/** BackgroundWindow */ opt_background) {
-            if (chrome.runtime.lastError) {
-              reject(chrome.runtime.lastError);
-            }
-            opt_background.background.ready(
-                function() {
-                  resolve(opt_background.background.tracker);
-                });
-          });
-      });
 };
 
 /**

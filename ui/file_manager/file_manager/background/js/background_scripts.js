@@ -5,7 +5,6 @@
 // error_counter.js must be loaded before all other scripts of the Files app.
 // <include src="../../../base/js/error_counter.js">
 
-// <include src="../../common/js/metrics_events.js">
 // <include src="../../common/js/metrics.js">
 // <include src="metrics_start.js">
 // <include src="../../common/js/lru_cache.js">

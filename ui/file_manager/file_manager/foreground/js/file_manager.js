@@ -138,11 +138,6 @@ function FileManager() {
    */
   this.ui_ = null;
 
-  /**
-   * @private {analytics.Tracker}
-   */
-  this.tracker_ = null;
-
   // --------------------------------------------------------------------------
   // Parameters determining the type of file manager.
 
@@ -517,12 +512,6 @@ FileManager.prototype = /** @struct */ {
    */
   get ui() {
     return this.ui_;
-  },
-  /**
-   * @return {analytics.Tracker}
-   */
-  get tracker() {
-    return this.tracker_;
   }
 };
 
@@ -870,12 +859,6 @@ FileManager.prototype = /** @struct */ {
 
     // Initialize the member variables that depend this.launchParams_.
     this.dialogType = this.launchParams_.type;
-
-    // We used to share the tracker with background, but due to
-    // its use of instanceof checks for some functionality
-    // we really can't do this (as instanceof checks fail across
-    // different script contexts).
-    this.tracker_ = metrics.getTracker();
   };
 
   /**
@@ -1100,12 +1083,8 @@ FileManager.prototype = /** @struct */ {
     assert(this.fileOperationManager_);
     assert(this.metadataModel_);
     this.directoryModel_ = new DirectoryModel(
-        singleSelection,
-        this.fileFilter_,
-        this.metadataModel_,
-        this.volumeManager_,
-        this.fileOperationManager_,
-        assert(this.tracker_));
+        singleSelection, this.fileFilter_, this.metadataModel_,
+        this.volumeManager_, this.fileOperationManager_);
 
     this.folderShortcutsModel_ = new FolderShortcutsDataModel(
         this.volumeManager_);

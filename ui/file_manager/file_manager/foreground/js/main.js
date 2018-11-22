@@ -22,8 +22,6 @@ fileManager.initializeCore();
 function initializeUI() {
   fileManager.initializeUI(document.body).then(() => {
     util.testSendMessage('ready');
-    metrics.recordInterval('Load.Total');
-    fileManager.tracker.send(metrics.Management.WINDOW_CREATED);
   });
 }
 
@@ -36,6 +34,3 @@ if (document.readyState === 'loading') {
 } else {
   initializeUI();
 }
-
-/** Record script load metric: must be the last line. */
-metrics.recordInterval('Load.Script');
