@@ -41697,6 +41697,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Infobar hasn't been seen by the user and needs to be"/>
   <int value="5" label="Network was not slow"/>
   <int value="6" label="User opted out of this preview (pre-s13n only)"/>
+  <int value="7" label="The user has blocked cookies for the original page"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">

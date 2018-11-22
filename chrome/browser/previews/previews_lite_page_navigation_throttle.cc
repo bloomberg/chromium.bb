@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
@@ -29,6 +30,8 @@
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/base32/base32.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/cookie_settings_base.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_lite_page_url_handler.h"
@@ -328,6 +331,19 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::LITE_PAGE_REDIRECT)) {
     ineligible_reasons.push_back(IneligibleReason::kNetworkNotSlow);
+  }
+
+  content_settings::CookieSettings* cookie_settings =
+      CookieSettingsFactory::GetForProfile(
+          Profile::FromBrowserContext(
+              navigation_handle()->GetWebContents()->GetBrowserContext()))
+          .get();
+  ContentSetting setting;
+  GURL previews_url = GetPreviewsURLForURL(url);
+  cookie_settings->GetCookieSetting(previews_url, previews_url, nullptr,
+                                    &setting);
+  if (!content_settings::CookieSettingsBase::IsAllowed(setting)) {
+    ineligible_reasons.push_back(IneligibleReason::kCookiesBlocked);
   }
 
   // Record UMA.
