@@ -43,18 +43,41 @@ void SetFormFieldValueAction::OnWaitForElement(ActionDelegate* delegate,
 
   // TODO(crbug.com/806868): Add flag to allow simulating key presses to set
   // field value.
-  delegate->SetFieldValue(
-      ExtractVector(proto_.set_form_value().element().selectors()),
-      proto_.set_form_value().value(0).text(),
-      /* simulate_key_presses= */ false,
-      base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  // Start with first value, then call OnSetFieldValue() recursively until done.
+  OnSetFieldValue(delegate, std::move(callback), /* next = */ 0, true);
 }
 
-void SetFormFieldValueAction::OnSetFieldValue(ProcessActionCallback callback,
+void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
+                                              ProcessActionCallback callback,
+                                              int next,
                                               bool status) {
-  UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
-  std::move(callback).Run(std::move(processed_action_proto_));
+  // If something went wrong or we are out of values: finish
+  if (!status || next >= proto_.set_form_value().value_size()) {
+    UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
+    std::move(callback).Run(std::move(processed_action_proto_));
+    return;
+  }
+
+  const auto& key_field = proto_.set_form_value().value(next);
+  const auto& selectors =
+      ExtractVector(proto_.set_form_value().element().selectors());
+  switch (key_field.keypress_case()) {
+    case SetFormFieldValueProto_KeyPress::kText:
+      delegate->SetFieldValue(
+          selectors, key_field.text(),
+          /* simulate_key_presses = */ false,
+          base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
+                         weak_ptr_factory_.GetWeakPtr(), delegate,
+                         std::move(callback), /* next = */ next + 1));
+      break;
+    case SetFormFieldValueProto_KeyPress::kKeycode:
+    // TODO(arbesser): handle keyboard presses
+    default:
+      DLOG(ERROR) << "Unrecognized field for SetFormFieldValueProto_KeyPress";
+      OnSetFieldValue(delegate, std::move(callback), next, false);
+      break;
+  }
 }
 
 }  // namespace autofill_assistant
