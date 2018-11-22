@@ -7701,7 +7701,8 @@ void Document::ReportFeaturePolicyViolation(
       (disposition == mojom::FeaturePolicyDisposition::kReport ? "report"
                                                                : "enforce"),
       SourceLocation::Capture());
-  Report* report = new Report("feature-policy", Url().GetString(), body);
+  Report* report =
+      new Report("feature-policy-violation", Url().GetString(), body);
   ReportingContext::From(this)->QueueReport(report);
 
   bool is_null;

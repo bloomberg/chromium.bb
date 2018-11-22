@@ -14,21 +14,21 @@ class CORE_EXPORT FeaturePolicyViolationReportBody : public MessageReportBody {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  FeaturePolicyViolationReportBody(const String& feature,
+  FeaturePolicyViolationReportBody(const String& feature_id,
                                    const String& message,
                                    const String& disposition,
                                    std::unique_ptr<SourceLocation> location)
       : MessageReportBody(message, std::move(location)),
-        feature_(feature),
+        feature_id_(feature_id),
         disposition_(disposition) {}
 
-  String feature() const { return feature_; }
+  String featureId() const { return feature_id_; }
   String disposition() const { return disposition_; }
 
   ~FeaturePolicyViolationReportBody() override = default;
 
  private:
-  const String feature_;
+  const String feature_id_;
   const String disposition_;
 };
 
