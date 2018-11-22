@@ -5,7 +5,8 @@
   * [Chromium C++ style guide](c++/c++.md)
   * [Chromium Objective-C style guide](objective-c/objective-c.md)
   * [Java style guide for Android](java/java.md)
-  * [GN style guide](../tools/gn/docs/style_guide.md) for build files
+  * [GN style guide](https://gn.googlesource.com/gn/+/master/docs/style_guide.md) for build files.
+    * See also: [Writing GN templates](../build/docs/writing_gn_templates.md) for Chromium best-practices.
 
 Chromium also uses these languages to a lesser degree:
 
