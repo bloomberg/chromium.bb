@@ -55,10 +55,10 @@ dist_check_SCRIPTS +=	 			\
 endif
 
 dist_braille_specs_TESTS =				  \
-	braille-specs/arabic_grade1.yaml		  \
-	braille-specs/arabic_grade2.yaml		  \
 	braille-specs/ar-ar-comp8.yaml			  \
+	braille-specs/ar-ar-g1.yaml			  \
 	braille-specs/ar-ar-g1_harness.yaml		  \
+	braille-specs/ar-ar-g2.yaml			  \
 	braille-specs/chr-us-g1_harness.yaml		  \
 	braille-specs/cs_harness.yaml			  \
 	braille-specs/cs-comp8_harness.yaml		  \
