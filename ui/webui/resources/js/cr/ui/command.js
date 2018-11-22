@@ -24,26 +24,30 @@ cr.define('cr.ui', function() {
    * @constructor
    */
   function KeyboardShortcut(shortcut) {
-    var mods = {};
-    var ident = '';
-    shortcut.split('|').forEach(function(part) {
+    this.useKeyCode_ = false;
+    this.mods_ = {};
+    shortcut.split('|').forEach((part) => {
       var partLc = part.toLowerCase();
       switch (partLc) {
         case 'alt':
         case 'ctrl':
         case 'meta':
         case 'shift':
-          mods[partLc + 'Key'] = true;
+          this.mods_[partLc + 'Key'] = true;
           break;
         default:
-          if (ident)
+          if (this.key_)
             throw Error('Invalid shortcut');
-          ident = part;
+          this.key_ = part;
+          // For single key alpha shortcuts use event.keyCode rather than
+          // event.key to match how chrome handles shortcuts and allow
+          // non-english language input to work.
+          if (part.match(/^[a-z]$/)) {
+            this.useKeyCode_ = true;
+            this.keyCode_ = part.toUpperCase().charCodeAt(0);
+          }
       }
     });
-
-    this.ident_ = ident;
-    this.mods_ = mods;
   }
 
   KeyboardShortcut.prototype = {
@@ -53,8 +57,9 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether we found a match or not.
      */
     matchesEvent: function(e) {
-      if (e.key == this.ident_) {
-        // All keyboard modifiers needs to match.
+      if ((this.useKeyCode_ && e.keyCode == this.keyCode_) ||
+          e.key == this.key_) {
+        // All keyboard modifiers need to match.
         var mods = this.mods_;
         return ['altKey', 'ctrlKey', 'metaKey', 'shiftKey'].every(function(k) {
           return e[k] == !!mods[k];
