@@ -8,11 +8,9 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityDisclosureController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityOpenTimeRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityToolbarController;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.PersistentNotificationView;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityToolbarView;
-import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 
 import javax.inject.Inject;
@@ -31,12 +29,7 @@ public class TrustedWebActivityCoordinator {
             TrustedWebActivityToolbarView toolbarView,
             TrustedWebActivityDisclosureView disclosureView,
             PersistentNotificationView notificationView,
-            TrustedWebActivityOpenTimeRecorder openTimeRecorder,
-            TrustedWebActivityVerifier verifier,
-            CloseButtonNavigator closeButtonNavigator) {
-        // We don't need to do anything with most of the classes above, we just need to resolve them
-        // so they start working.
-
-        closeButtonNavigator.setLandingPageCriteria(verifier::isPageOnVerifiedOrigin);
+            TrustedWebActivityOpenTimeRecorder openTimeRecorder) {
+        // Do nothing for now, just resolve the classes that need to start working.
     }
 }
