@@ -139,6 +139,12 @@ const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[] =
 const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[] =
     "Restrict extraction of formless forms to checkout flows";
 
+const char kAutofillRichMetadataQueriesName[] =
+    "Autofill - Rich metadata queries (Canary/Dev only)";
+const char kAutofillRichMetadataQueriesDescription[] =
+    "Transmit rich form/field metadata when querying the autofill server. "
+    "This feature only works on the Canary and Dev channels.";
+
 const char kAutoplayPolicyName[] = "Autoplay policy";
 const char kAutoplayPolicyDescription[] =
     "Policy used when deciding if audio or video is allowed to autoplay.";

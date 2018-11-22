@@ -60,6 +60,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_params_manager.h"
+#include "components/version_info/channel.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -90,11 +91,15 @@ const int kDefaultPageID = 137;
 
 class MockAutofillClient : public TestAutofillClient {
  public:
-  MockAutofillClient() {}
+  MockAutofillClient() {
+    ON_CALL(*this, GetChannel())
+        .WillByDefault(Return(version_info::Channel::UNKNOWN));
+  }
 
   ~MockAutofillClient() override {}
 
   MOCK_METHOD0(ShouldShowSigninPromo, bool());
+  MOCK_CONST_METHOD0(GetChannel, version_info::Channel());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
@@ -6264,6 +6269,59 @@ TEST_F(AutofillManagerTest,
 
   // Test that we sent the right values to the external delegate.
   ASSERT_FALSE(external_delegate_->is_all_server_suggestions());
+}
+
+// If the rich query feature is enabled, the IsRichQueryEnabled methods only
+// returns true if the channel is neither STABLE not BETA.
+TEST_F(AutofillManagerTest, IsRichQueryEnabled_FeatureEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillRichMetadataQueries);
+
+  for (auto channel :
+       {version_info::Channel::STABLE, version_info::Channel::BETA,
+        version_info::Channel::CANARY, version_info::Channel::DEV,
+        version_info::Channel::UNKNOWN}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "Channel " << static_cast<int>(channel));
+    EXPECT_CALL(autofill_client_, GetChannel()).WillOnce(Return(channel));
+    TestAutofillManager test_instance(autofill_driver_.get(), &autofill_client_,
+                                      &personal_data_);
+    switch (channel) {
+      case version_info::Channel::STABLE:
+      case version_info::Channel::BETA:
+        EXPECT_FALSE(AutofillManager::IsRichQueryEnabled(channel));
+        EXPECT_FALSE(test_instance.is_rich_query_enabled());
+        break;
+      case version_info::Channel::CANARY:
+      case version_info::Channel::DEV:
+      case version_info::Channel::UNKNOWN:
+        EXPECT_TRUE(AutofillManager::IsRichQueryEnabled(channel));
+        EXPECT_TRUE(test_instance.is_rich_query_enabled());
+        break;
+    }
+  }
+}
+
+// No matter what the channel, IsRichQueryEnabled returns false if the feature
+// is disabled.
+TEST_F(AutofillManagerTest, IsRichQueryEnabled_FeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillRichMetadataQueries);
+
+  for (auto channel :
+       {version_info::Channel::STABLE, version_info::Channel::BETA,
+        version_info::Channel::CANARY, version_info::Channel::DEV,
+        version_info::Channel::UNKNOWN}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "Channel " << static_cast<int>(channel));
+    EXPECT_FALSE(AutofillManager::IsRichQueryEnabled(channel));
+    EXPECT_CALL(autofill_client_, GetChannel()).WillOnce(Return(channel));
+    TestAutofillManager test_instance(autofill_driver_.get(), &autofill_client_,
+                                      &personal_data_);
+    EXPECT_FALSE(test_instance.is_rich_query_enabled());
+  }
 }
 
 // Test param indicates if there is an active screen reader.

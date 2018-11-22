@@ -319,6 +319,8 @@ class FormStructure {
 
   void set_randomized_encoder(std::unique_ptr<RandomizedEncoder> encoder);
 
+  void set_is_rich_query_enabled(bool v) { is_rich_query_enabled_ = v; }
+
  private:
   friend class AutofillMergeTest;
   friend class FormStructureTest;
@@ -566,6 +568,10 @@ class FormStructure {
   // The randomized encoder to use to encode form metadata during upload.
   // If this is nullptr, no randomized metadata will be sent.
   std::unique_ptr<RandomizedEncoder> randomized_encoder_;
+
+  // True iff queries encoded from this form structure should include rich
+  // form/field metadata.
+  bool is_rich_query_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

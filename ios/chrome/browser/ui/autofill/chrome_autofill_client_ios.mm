@@ -36,6 +36,7 @@
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
+#include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -103,6 +104,10 @@ ChromeAutofillClientIOS::~ChromeAutofillClientIOS() {
 void ChromeAutofillClientIOS::SetBaseViewController(
     UIViewController* base_view_controller) {
   base_view_controller_ = base_view_controller;
+}
+
+version_info::Channel ChromeAutofillClientIOS::GetChannel() const {
+  return ::GetChannel();
 }
 
 PersonalDataManager* ChromeAutofillClientIOS::GetPersonalDataManager() {

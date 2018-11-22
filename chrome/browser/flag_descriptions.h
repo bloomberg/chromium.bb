@@ -109,6 +109,9 @@ extern const char kAutofillRationalizeRepeatedServerPredictionsDescription[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 
+extern const char kAutofillRichMetadataQueriesName[];
+extern const char kAutofillRichMetadataQueriesDescription[];
+
 extern const char kAutoplayPolicyName[];
 extern const char kAutoplayPolicyDescription[];
 

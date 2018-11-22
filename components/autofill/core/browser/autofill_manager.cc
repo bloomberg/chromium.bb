@@ -72,6 +72,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/version_info/channel.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -1045,6 +1046,13 @@ bool AutofillManager::IsCreditCardAutofillEnabled() const {
   return ::autofill::prefs::IsCreditCardAutofillEnabled(client_->GetPrefs());
 }
 
+// static
+bool AutofillManager::IsRichQueryEnabled(version_info::Channel channel) {
+  return base::FeatureList::IsEnabled(features::kAutofillRichMetadataQueries) &&
+         channel != version_info::Channel::STABLE &&
+         channel != version_info::Channel::BETA;
+}
+
 bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
   return IsAutofillEnabled() && !driver()->IsIncognito() &&
          form.ShouldBeUploaded();
@@ -1158,6 +1166,7 @@ AutofillManager::AutofillManager(
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
+      is_rich_query_enabled_(IsRichQueryEnabled(client->GetChannel())),
       weak_ptr_factory_(this) {
   DCHECK(driver);
   DCHECK(client_);
@@ -1502,8 +1511,10 @@ void AutofillManager::OnFormsParsed(
                               client_->GetUkmSourceId(), form_structure);
     std::set<FormType> current_form_types = form_structure->GetFormTypes();
     form_types.insert(current_form_types.begin(), current_form_types.end());
-    // Set aside forms with method GET or author-specified types, so that they
-    // are not included in the query to the server.
+
+    // Configure the query encoding for this form and add it to the appropriate
+    // collection of forms: queryable vs non-queryable.
+    form_structure->set_is_rich_query_enabled(is_rich_query_enabled_);
     if (form_structure->ShouldBeQueried())
       queryable_forms.push_back(form_structure);
     else
@@ -1568,8 +1579,8 @@ void AutofillManager::OnFormsParsed(
   driver()->SendAutofillTypePredictionsToRenderer(non_queryable_forms);
   driver()->SendAutofillTypePredictionsToRenderer(queryable_forms);
 
+  // Query the server if at least one of the forms was parsed.
   if (!queryable_forms.empty() && download_manager_) {
-    // Query the server if at least one of the forms was parsed.
     download_manager_->StartQueryRequest(queryable_forms);
   }
 }

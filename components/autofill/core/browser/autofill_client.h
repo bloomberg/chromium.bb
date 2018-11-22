@@ -43,6 +43,10 @@ namespace ukm {
 class UkmRecorder;
 }
 
+namespace version_info {
+enum class Channel;
+}
+
 namespace autofill {
 
 class AddressNormalizer;
@@ -118,6 +122,12 @@ class AutofillClient : public RiskDataLoader {
       LocalCardMigrationCallback;
 
   ~AutofillClient() override {}
+
+  // Returns the channel for the installation. In branded builds, this will be
+  // version_info::Channel::{STABLE,BETA,DEV,CANARY}. In unbranded builds, or
+  // in branded builds when the channel cannot be determined, this will be
+  // version_info::Channel::UNKNOWN.
+  virtual version_info::Channel GetChannel() const;
 
   // Gets the PersonalDataManager instance associated with the client.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;

@@ -121,6 +121,11 @@ extern const char kAutofillShowAllSuggestionsOnPrefilledFormsDescription[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 
+// Title and description for the flag to enable rich autofill queries on
+// Canary/Dev.
+extern const char kAutofillRichMetadataQueriesName[];
+extern const char kAutofillRichMetadataQueriesDescription[];
+
 // Title and description for the flag to control GPay branding in credit card
 // upstream infobar.
 extern const char kAutofillUpstreamUseGooglePayBrandingOnMobileName[];

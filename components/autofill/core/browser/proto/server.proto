@@ -14,15 +14,18 @@ import "password_requirements.proto";
 
 // Request to query field suggestions for forms in a page from legacy Autofill
 // API.
-// Next available id: 11
+// Next available id: 14
 message AutofillQueryContents {
+  reserved 11;  // Reserved for server use.
   required string client_version = 1;
   repeated group Form = 2 {
     required fixed64 signature = 3;
+    optional AutofillRandomizedFormMetadata form_metadata = 12;
     repeated group Field = 4 {
       required fixed32 signature = 5;
       optional string name = 8;
       optional string type = 9;  // Control type.
+      optional AutofillRandomizedFieldMetadata field_metadata = 13;
     }
   }
 }

@@ -29200,6 +29200,7 @@ from previous Chrome versions.
   <int value="-1999892428" label="force-ui-direction"/>
   <int value="-1998927516" label="enable-md-settings"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
+  <int value="-1985239289" label="AutofillRichMetadataQueries:enabled"/>
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
   <int value="-1983569861" label="WebXROrientationSensorDevice:disabled"/>
   <int value="-1982700103" label="EnableAppsGridGapFeature:enabled"/>
@@ -31209,6 +31210,7 @@ from previous Chrome versions.
   <int value="1636721063"
       label="AutofillLocalCardMigrationShowFeedback:enabled"/>
   <int value="1636962093" label="disable-material-design-ntp"/>
+  <int value="1638927687" label="AutofillRichMetadataQueries:disabled"/>
   <int value="1639314588" label="LookalikeUrlNavigationSuggestions:disabled"/>
   <int value="1640386037" label="ContextualSuggestionsSlimPeekUI:disabled"/>
   <int value="1646498561" label="OfflineBookmarks:disabled"/>

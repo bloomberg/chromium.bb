@@ -404,10 +404,40 @@ void PopulateRandomizedFieldMetadata(
   // TODO(rogerm): Add hash of initial value.
 }
 
+void EncodeFormMetadataForQuery(const FormStructure& form,
+                                AutofillRandomizedFormMetadata* metadata) {
+  DCHECK(metadata);
+  metadata->mutable_id()->set_encoded_bits(
+      base::UTF16ToUTF8(form.id_attribute()));
+  metadata->mutable_name()->set_encoded_bits(
+      base::UTF16ToUTF8(form.name_attribute()));
+}
+
+void EncodeFieldMetadataForQuery(const FormFieldData& field,
+                                 AutofillRandomizedFieldMetadata* metadata) {
+  DCHECK(metadata);
+  metadata->mutable_id()->set_encoded_bits(
+      base::UTF16ToUTF8(field.id_attribute));
+  metadata->mutable_name()->set_encoded_bits(
+      base::UTF16ToUTF8(field.name_attribute));
+  metadata->mutable_type()->set_encoded_bits(field.form_control_type);
+  metadata->mutable_label()->set_encoded_bits(base::UTF16ToUTF8(field.label));
+  metadata->mutable_aria_label()->set_encoded_bits(
+      base::UTF16ToUTF8(field.aria_label));
+  metadata->mutable_aria_description()->set_encoded_bits(
+      base::UTF16ToUTF8(field.aria_description));
+  metadata->mutable_css_class()->set_encoded_bits(
+      base::UTF16ToUTF8(field.css_classes));
+  metadata->mutable_placeholder()->set_encoded_bits(
+      base::UTF16ToUTF8(field.placeholder));
+}
+
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form)
-    : form_name_(form.name),
+    : id_attribute_(form.id_attribute),
+      name_attribute_(form.name_attribute),
+      form_name_(form.name),
       button_title_(form.button_title),
       submission_event_(PasswordForm::SubmissionIndicatorEvent::NONE),
       source_url_(form.origin),
@@ -1644,6 +1674,11 @@ void FormStructure::EncodeFormForQuery(
   DCHECK(!IsMalformed());
 
   query_form->set_signature(form_signature());
+
+  if (is_rich_query_enabled_) {
+    EncodeFormMetadataForQuery(*this, query_form->mutable_form_metadata());
+  }
+
   for (const auto& field : fields_) {
     if (ShouldSkipField(*field))
       continue;
@@ -1651,6 +1686,11 @@ void FormStructure::EncodeFormForQuery(
     AutofillQueryContents::Form::Field* added_field = query_form->add_field();
 
     added_field->set_signature(field->GetFieldSignature());
+
+    if (is_rich_query_enabled_) {
+      EncodeFieldMetadataForQuery(*field,
+                                  added_field->mutable_field_metadata());
+    }
 
     if (IsAutofillFieldMetadataEnabled()) {
       added_field->set_type(field->form_control_type);

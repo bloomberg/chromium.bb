@@ -297,6 +297,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "autofill-rich-metadata-queries",
+    "owners": [ "rogerm" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "automatic-password-generation",
     "owners": [ "ioanap", "fhorschig" ],
     "expiry_milestone": 76
