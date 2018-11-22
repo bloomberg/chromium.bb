@@ -14929,6 +14929,7 @@ Called by update_net_error_codes.py.-->
   <int value="502" label="DeviceDisplayResolution"/>
   <int value="503" label="PluginVmAllowed"/>
   <int value="504" label="PluginVmImage"/>
+  <int value="505" label="CloudManagementEnrollmentMandatory"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
