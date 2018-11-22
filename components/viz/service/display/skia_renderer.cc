@@ -858,18 +858,12 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
 bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
                                        const RenderPassDrawQuad* quad,
                                        DrawRenderPassDrawQuadParams* params) {
-  auto iter = render_pass_backings_.find(quad->render_pass_id);
-  DCHECK(render_pass_backings_.end() != iter);
-  if (params->filters == nullptr) {
+  if (!params->filters)
     return true;
-  }
 
-  // This function is called after AllocateRenderPassResourceIfNeeded, so there
-  // should be backing ready.
-  RenderPassBacking& content_texture = iter->second;
   DCHECK(!params->filters->IsEmpty());
   auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      *params->filters, gfx::SizeF(content_texture.size));
+      *params->filters, gfx::SizeF(content->width(), content->height()));
   auto filter = paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
 
   // Apply filters to the content texture.
@@ -1295,15 +1289,14 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
     }
     case DrawMode::SKPRECORD: {
       render_pass_backings_.emplace(
-          std::move(render_pass_id),
+          render_pass_id,
           RenderPassBacking(requirements.size, requirements.mipmap,
                             current_frame()->current_render_pass->color_space));
       return;
     }
   }
-
   render_pass_backings_.emplace(
-      std::move(render_pass_id),
+      render_pass_id,
       RenderPassBacking(gr_context, caps, requirements.size,
                         requirements.mipmap,
                         current_frame()->current_render_pass->color_space));
