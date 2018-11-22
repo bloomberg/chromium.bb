@@ -65,7 +65,7 @@ void CallStackProfileBuilder::OnSampleCompleted(
   OnSampleCompleted(std::move(frames), 1);
 }
 
-// TODO(chengx): record |count| as per-Stacksample metadata in the new proto
+// TODO(wittman): record |count| as per-Stacksample metadata in the new proto
 // format.
 void CallStackProfileBuilder::OnSampleCompleted(
     std::vector<base::StackSamplingProfiler::Frame> frames,
