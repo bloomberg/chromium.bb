@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine_impl/loopback_server/loopback_server_entity.h"
-#include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/protocol/loopback_server.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -49,8 +48,7 @@ class LoopbackServer {
   // used to pass data back to the caller. The command has failed if the value
   // pointed to by |error_code| is nonzero.
   void HandleCommand(const std::string& request,
-                     HttpResponse::ServerConnectionCode* server_status,
-                     int64_t* response_code,
+                     int* response_code,
                      std::string* response);
 
   // Enables strong consistency model (i.e. server detects conflicts).

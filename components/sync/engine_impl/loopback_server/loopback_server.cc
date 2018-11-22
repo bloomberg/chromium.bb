@@ -233,11 +233,9 @@ void LoopbackServer::SaveEntity(std::unique_ptr<LoopbackServerEntity> entity) {
   entities_[entity->GetId()] = std::move(entity);
 }
 
-void LoopbackServer::HandleCommand(
-    const string& request,
-    HttpResponse::ServerConnectionCode* server_status,
-    int64_t* response_code,
-    std::string* response) {
+void LoopbackServer::HandleCommand(const string& request,
+                                   int* response_code,
+                                   std::string* response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   sync_pb::ClientToServerMessage message;
@@ -267,14 +265,12 @@ void LoopbackServer::HandleCommand(
         success = true;
         break;
       default:
-        *server_status = HttpResponse::SYNC_SERVER_ERROR;
         *response_code = net::ERR_NOT_IMPLEMENTED;
         *response = string();
         return;
     }
 
     if (!success) {
-      *server_status = HttpResponse::SYNC_SERVER_ERROR;
       *response_code = net::ERR_FAILED;
       *response = string();
       UMA_HISTOGRAM_ENUMERATION(
@@ -288,7 +284,6 @@ void LoopbackServer::HandleCommand(
 
   response_proto.set_store_birthday(GetStoreBirthday());
 
-  *server_status = HttpResponse::SERVER_CONNECTION_OK;
   *response_code = net::HTTP_OK;
   *response = response_proto.SerializeAsString();
 
