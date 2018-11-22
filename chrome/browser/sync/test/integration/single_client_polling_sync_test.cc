@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
   SyncPrefs remote_prefs(GetProfile(0)->GetPrefs());
   ASSERT_FALSE(remote_prefs.GetLastPollTime().is_null());
 
-  // After the start, the last sync cycle snapshot should be empty.
+  // After restart, the last sync cycle snapshot should be empty.
   // Once a sync request happened (e.g. by a poll), that snapshot is populated.
   // We use the following checker to simply wait for an non-empty snapshot.
   EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());

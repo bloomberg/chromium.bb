@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
+#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/common/pref_names.h"
@@ -119,6 +120,50 @@ IN_PROC_BROWSER_TEST_P(SingleClientPreferencesSyncTest,
   EXPECT_EQ(kNumEntities, histogram_tester.GetBucketCount(
                               "Sync.ModelTypeEntityChange3.PREFERENCE",
                               /*REMOTE_INITIAL_UPDATE=*/5));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientPreferencesSyncTest,
+                       PRE_PersistProgressMarkerOnRestart) {
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_preference()->set_name("testing.my-test-preference");
+  fake_server_->InjectEntity(
+      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
+          specifics.preference().name(), specifics, /*creation_time=*/0,
+          /*last_modified_time=*/0));
+
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupSync());
+  EXPECT_EQ(1, histogram_tester.GetBucketCount(
+                   "Sync.ModelTypeEntityChange3.PREFERENCE",
+                   /*REMOTE_INITIAL_UPDATE=*/5));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientPreferencesSyncTest,
+                       PersistProgressMarkerOnRestart) {
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_preference()->set_name("testing.my-test-preference");
+  fake_server_->InjectEntity(
+      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
+          specifics.preference().name(), specifics, /*creation_time=*/0,
+          /*last_modified_time=*/0));
+
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+#if defined(CHROMEOS)
+  // identity::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
+  // to get a non-empty refresh token on startup.
+  GetClient(0)->SignInPrimaryAccount();
+#endif  // defined(CHROMEOS)
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+
+  // After restart, the last sync cycle snapshot should be empty.
+  // Once a sync request happened (e.g. by a poll), that snapshot is populated.
+  // We use the following checker to simply wait for an non-empty snapshot.
+  EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+
+  EXPECT_EQ(0, histogram_tester.GetBucketCount(
+                   "Sync.ModelTypeEntityChange3.PREFERENCE",
+                   /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
 INSTANTIATE_TEST_CASE_P(USS,
