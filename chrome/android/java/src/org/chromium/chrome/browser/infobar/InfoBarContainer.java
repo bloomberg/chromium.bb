@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
@@ -250,6 +249,9 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
 
         mLayout.addAnimationListener(mIPHSupport);
         addObserver(mIPHSupport);
+
+        mTab.getWindowAndroid().getKeyboardDelegate().addKeyboardVisibilityListener(
+                this::updateVisibilityForKeyboard);
 
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
@@ -517,15 +519,10 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
         }
     }
 
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        // Hide the View when the keyboard is showing.
+    private void updateVisibilityForKeyboard(boolean isKeyboardShowing) {
         boolean isShowing = (getVisibility() == View.VISIBLE);
-        if (KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
-                    getContext(), InfoBarContainer.this)) {
+        if (isKeyboardShowing) {
             if (isShowing) {
-                // Set to invisible (instead of gone) so that onLayout() will be called when the
-                // keyboard is dismissed.
                 setVisibility(View.INVISIBLE);
             }
         } else {
@@ -533,8 +530,6 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
                 setVisibility(View.VISIBLE);
             }
         }
-
-        super.onLayout(changed, l, t, r, b);
     }
 
     @Override
