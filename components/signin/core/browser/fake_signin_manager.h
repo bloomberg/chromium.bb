@@ -71,7 +71,7 @@ class FakeSigninManager : public SigninManager {
       const std::string& gaia_id,
       const std::string& username,
       const std::string& password,
-      const OAuthTokenFetchedCallback& oauth_fetched_callback) override;
+      OAuthTokenFetchedCallback oauth_fetched_callback) override;
 
   void CompletePendingSignin() override;
 

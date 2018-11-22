@@ -103,8 +103,8 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
   DCHECK(!refresh_token.empty());
   SigninManagerFactory::GetForProfile(profile_)->StartSignInWithRefreshToken(
       refresh_token, gaia_id, email, password,
-      base::Bind(&OneClickSigninSyncStarter::ConfirmSignin,
-                 weak_pointer_factory_.GetWeakPtr(), profile_mode));
+      base::BindOnce(&OneClickSigninSyncStarter::ConfirmSignin,
+                     weak_pointer_factory_.GetWeakPtr(), profile_mode));
 }
 
 void OneClickSigninSyncStarter::OnBrowserRemoved(Browser* browser) {
