@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,15 +23,17 @@ namespace auto_screen_brightness {
 constexpr base::TimeDelta Adapter::kAmbientLightShortHorizon;
 constexpr int Adapter::kNumberAmbientValuesToTrack;
 
-Adapter::Adapter(const Profile* profile,
+Adapter::Adapter(Profile* profile,
                  AlsReader* als_reader,
                  BrightnessMonitor* brightness_monitor,
                  Modeller* modeller,
+                 MetricsReporter* metrics_reporter,
                  chromeos::PowerManagerClient* power_manager_client)
     : profile_(profile),
       als_reader_observer_(this),
       brightness_monitor_observer_(this),
       modeller_observer_(this),
+      metrics_reporter_(metrics_reporter),
       power_manager_client_(power_manager_client),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       weak_ptr_factory_(this) {
@@ -94,14 +95,32 @@ void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
                                       double new_brightness_percent) {}
 
 void Adapter::OnUserBrightnessChangeRequested() {
-  UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.UserAdjustment",
-                            latest_brightness_change_time_.is_null()
-                                ? UserAdjustment::kNoPriorModelAdjustment
-                                : UserAdjustment::kWithPriorModelAdjustment);
-
   // This will disable |adapter_status_| so that the model will not make any
   // brightness adjustment.
   adapter_status_ = Status::kDisabled;
+  if (!als_init_status_)
+    return;
+
+  if (!metrics_reporter_)
+    return;
+
+  switch (*als_init_status_) {
+    case AlsReader::AlsInitStatus::kSuccess:
+      metrics_reporter_->OnUserBrightnessChangeRequested(
+          MetricsReporter::UserAdjustment::kSupportedAls);
+      return;
+    case AlsReader::AlsInitStatus::kDisabled:
+    case AlsReader::AlsInitStatus::kMissingPath:
+      metrics_reporter_->OnUserBrightnessChangeRequested(
+          MetricsReporter::UserAdjustment::kNoAls);
+      return;
+    case AlsReader::AlsInitStatus::kIncorrectConfig:
+      metrics_reporter_->OnUserBrightnessChangeRequested(
+          MetricsReporter::UserAdjustment::kUnsupportedAls);
+      return;
+    case AlsReader::AlsInitStatus::kInProgress:
+      NOTREACHED() << "ALS should have been initialized with a valid value.";
+  }
 }
 
 void Adapter::OnModelTrained(const MonotoneCubicSpline& brightness_curve) {
