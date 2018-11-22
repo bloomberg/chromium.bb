@@ -23,7 +23,6 @@ class MockUiController : public UiController {
 
   MOCK_METHOD1(SetUiDelegate, void(UiDelegate* ui_delegate));
   MOCK_METHOD1(ShowStatusMessage, void(const std::string& message));
-  MOCK_METHOD0(GetStatusMessage, std::string());
   MOCK_METHOD0(ShowOverlay, void());
   MOCK_METHOD0(HideOverlay, void());
   MOCK_METHOD0(Shutdown, void());
