@@ -503,6 +503,7 @@ test("browser_tests") {
     deps += [
       "//chrome/android:app_hooks_java",
       "//chrome/android:chrome_java",
+      "//components/module_installer/android:module_installer_stub_java",
       "//v8:v8_external_startup_data_assets",
     ]
 
@@ -3035,6 +3036,7 @@ test("unit_tests") {
       "//components/favicon/core/test:test_support",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
+      "//components/module_installer/android:module_installer_stub_java",
       "//content/public/android:content_java",
     ]
     if (use_v8_context_snapshot) {
