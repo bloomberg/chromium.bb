@@ -35,8 +35,6 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
@@ -203,8 +201,6 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   void Dispose();
 
   Member<CanvasRenderingContextHost> host_;
-  HashSet<String> clean_urls_;
-  HashSet<String> dirty_urls_;
   CanvasColorParams color_params_;
   CanvasContextCreationAttributesCore creation_attributes_;
 

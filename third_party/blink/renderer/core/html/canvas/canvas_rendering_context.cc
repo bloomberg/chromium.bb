@@ -166,27 +166,7 @@ CanvasRenderingContext::ResolveContextTypeAliases(
 bool CanvasRenderingContext::WouldTaintOrigin(
     CanvasImageSource* image_source,
     const SecurityOrigin* destination_security_origin) {
-  const KURL& source_url = image_source->SourceURL();
-  const bool has_url = (source_url.IsValid() && !source_url.IsAboutBlankURL());
-
-  if (has_url) {
-    if (source_url.ProtocolIsData() ||
-        clean_urls_.Contains(source_url.GetString())) {
-      return false;
-    }
-    if (dirty_urls_.Contains(source_url.GetString()))
-      return true;
-  }
-
-  const bool taint_origin =
-      image_source->WouldTaintOrigin(destination_security_origin);
-  if (has_url) {
-    if (taint_origin)
-      dirty_urls_.insert(source_url.GetString());
-    else
-      clean_urls_.insert(source_url.GetString());
-  }
-  return taint_origin;
+  return image_source->WouldTaintOrigin(destination_security_origin);
 }
 
 void CanvasRenderingContext::Trace(blink::Visitor* visitor) {
