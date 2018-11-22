@@ -867,6 +867,7 @@ const char kGetNumberOfActiveOutputStreams[] = "GetNumberOfActiveOutputStreams";
 const char kIsAudioOutputActive[] = "IsAudioOutputActive";
 const char kSetGlobalOutputChannelRemix[] = "SetGlobalOutputChannelRemix";
 const char kGetSystemAecSupported[] = "GetSystemAecSupported";
+const char kGetSystemAecGroupId[] = "GetSystemAecGroupId";
 
 // Names of properties returned by GetNodes()
 const char kIsInputProperty[] = "IsInput";
