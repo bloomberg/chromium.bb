@@ -70,8 +70,7 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
 
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  void GoogleSignedOut(const AccountInfo& account_info) override;
 
   // Obtain sign-in status and add observers.
   void Initialize();

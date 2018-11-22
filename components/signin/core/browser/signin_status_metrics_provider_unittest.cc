@@ -43,13 +43,13 @@ TEST(SigninStatusMetricsProviderTest, GoogleSignedOut) {
 
   // Initial status is all signed in and then one of the profiles is signed out.
   metrics_provider.UpdateInitialSigninStatus(2, 2);
-  metrics_provider.GoogleSignedOut(std::string(), std::string());
+  metrics_provider.GoogleSignedOut(AccountInfo());
   EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is mixed and then one of the profiles is signed out.
   metrics_provider.UpdateInitialSigninStatus(2, 1);
-  metrics_provider.GoogleSignedOut(std::string(), std::string());
+  metrics_provider.GoogleSignedOut(AccountInfo());
   EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 }

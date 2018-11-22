@@ -495,8 +495,8 @@ void AccountConsistencyService::GoogleSigninSucceeded(
   AddChromeConnectedCookies();
 }
 
-void AccountConsistencyService::GoogleSignedOut(const std::string& account_id,
-                                                const std::string& username) {
+void AccountConsistencyService::GoogleSignedOut(
+    const AccountInfo& account_info) {
   // There is not need to remove CHROME_CONNECTED cookies on |GoogleSignedOut|
   // events as these cookies will be removed by the GaiaCookieManagerServer
   // right before fetching the Gaia logout request.

@@ -164,7 +164,7 @@ void FakeSigninManager::OnSignoutDecisionReached(
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
   client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
 
-  FireGoogleSignedOut(account_id, account_info);
+  FireGoogleSignedOut(account_info);
 }
 
 #endif  // !defined (OS_CHROMEOS)
