@@ -174,13 +174,22 @@ config("chromium_sqlite3_compile_options") {
     }
   }
 
-  if (use_fuzzing_engine && use_sanitizer_coverage &&
-      (is_debug || dcheck_always_on)) {
-    # Enable SQLite's assert() macros.
-    defines += [ "SQLITE_DEBUG" ]
+  if (is_debug || dcheck_always_on) {
+    if (use_fuzzing_engine && use_sanitizer_coverage) {
+      # Enable SQLite's assert() macros.
+      #
+      # TODO(pwnall): Fix all the bugs preventing us from enabling this flag for
+      #               all DCHECK builds. See https://crbug.com/907371 and
+      #               https://crrev.com/c/1343529.
+      defines += [ "SQLITE_DEBUG" ]
+    }
 
     # Check preconditions when SQLite APIs are called. See
     # https://sqlite.org/compile.html#enable_api_armor
+    #
+    # fuzzing builds have this disabled because the fuzzers are guaranteed to
+    # use the API correctly, and removing the checks opens up the possibility
+    # that the fuzzers will get more code coverage.
     defines += [ "SQLITE_ENABLE_API_ARMOR" ]
   }
 }
@@ -195,10 +204,11 @@ config("sqlite_warnings") {
     # sqlite3Fts3InitTok).
     cflags += [ "-Wno-unused-function" ]
 
-    if (use_fuzzing_engine && use_sanitizer_coverage &&
-        (is_debug || dcheck_always_on)) {
+    if (is_debug || dcheck_always_on) {
       cflags += [
-        "-Wno-implicit-function-declaration",
+        # SQLite uses assert(!"description") to express
+        # NOT_REACHED() << "description". This is considered an implicit
+        # conversion from char[] to bool, and triggers a warning.
         "-Wno-string-conversion",
       ]
     }
