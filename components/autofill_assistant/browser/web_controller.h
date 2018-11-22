@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_dom.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_input.h"
+#include "components/autofill_assistant/browser/devtools/devtools/domains/types_network.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
 #include "components/autofill_assistant/browser/rectf.h"
@@ -136,6 +137,13 @@ class WebController {
   // Distances are floats between -1.0 and 1.0, with 1 corresponding to the size
   // of the visible viewport.
   virtual void ScrollBy(float distanceXRatio, float distanceYRatio);
+
+  // Functions to set, get and expire the Autofill Assistant cookie used to
+  // detect when Autofill Assistant has been used on a domain before.
+  virtual void SetCookie(const std::string& domain,
+                         base::OnceCallback<void(bool)> callback);
+  virtual void HasCookie(base::OnceCallback<void(bool)> callback);
+  virtual void ClearCookie();
 
  protected:
   friend class BatchElementChecker;
@@ -417,6 +425,11 @@ class WebController {
   void OnGetElementPositionResult(
       base::OnceCallback<void(bool, const RectF&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
+
+  void OnSetCookie(base::OnceCallback<void(bool)> callback,
+                   std::unique_ptr<network::SetCookieResult> result);
+  void OnHasCookie(base::OnceCallback<void(bool)> callback,
+                   std::unique_ptr<network::GetCookiesResult> result);
 
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.

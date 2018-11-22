@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <algorithm>
+#include <ctime>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -36,6 +37,13 @@ static constexpr base::TimeDelta kPeriodicBoxModelCheckInterval =
 
 // Timeout after roughly 10 seconds (50*200ms).
 static int kPeriodicBoxModelCheckRounds = 50;
+
+// Expiration time for the Autofill Assistant cookie.
+static int kCookieExpiresSeconds = 600;
+
+// Name and value used for the static cookie.
+const char* const kAutofillAssistantCookieName = "autofill_assistant_cookie";
+const char* const kAutofillAssistantCookieValue = "true";
 
 const char* const kGetBoundingClientRectAsList =
     R"(function(node) {
@@ -1334,6 +1342,58 @@ void WebController::OnGetOuterHtml(
   DCHECK(result->GetResult()->GetValue()->is_string());
   OnResult(true, result->GetResult()->GetValue()->GetString(),
            std::move(callback));
+}
+
+void WebController::SetCookie(const std::string& domain,
+                              base::OnceCallback<void(bool)> callback) {
+  DCHECK(!domain.empty());
+  auto expires_seconds =
+      std::chrono::seconds(std::time(nullptr)).count() + kCookieExpiresSeconds;
+  devtools_client_->GetNetwork()->SetCookie(
+      network::SetCookieParams::Builder()
+          .SetName(kAutofillAssistantCookieName)
+          .SetValue(kAutofillAssistantCookieValue)
+          .SetDomain(domain)
+          .SetExpires(expires_seconds)
+          .Build(),
+      base::BindOnce(&WebController::OnSetCookie,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnSetCookie(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<network::SetCookieResult> result) {
+  std::move(callback).Run(result && result->GetSuccess());
+}
+
+void WebController::HasCookie(base::OnceCallback<void(bool)> callback) {
+  devtools_client_->GetNetwork()->GetCookies(
+      base::BindOnce(&WebController::OnHasCookie,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnHasCookie(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<network::GetCookiesResult> result) {
+  if (!result) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  const auto& cookies = *result->GetCookies();
+  for (const auto& cookie : cookies) {
+    if (cookie->GetName() == kAutofillAssistantCookieName &&
+        cookie->GetValue() == kAutofillAssistantCookieValue) {
+      std::move(callback).Run(true);
+      return;
+    }
+  }
+  std::move(callback).Run(false);
+}
+
+void WebController::ClearCookie() {
+  devtools_client_->GetNetwork()->DeleteCookies(kAutofillAssistantCookieName,
+                                                base::DoNothing());
 }
 
 }  // namespace autofill_assistant
