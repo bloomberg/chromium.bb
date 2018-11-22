@@ -22,7 +22,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
-#include "third_party/blink/renderer/core/paint/paint_tracker.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
@@ -133,8 +133,9 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
 
   if (RuntimeEnabledFeatures::JankTrackingEnabled())
     frame_view.GetJankTracker().NotifyPrePaintFinished();
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
-    frame_view.GetPaintTracker().NotifyPrePaintFinished();
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+    frame_view.GetPaintTimingDetector().NotifyPrePaintFinished();
+  }
 
   context_storage_.pop_back();
 }
@@ -327,9 +328,8 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     property_tree_builder.emplace(object, *context.tree_builder_context);
     property_changed = property_tree_builder->UpdateForSelf();
 
-    if (property_changed &&
-        !context.tree_builder_context
-             ->supports_composited_raster_invalidation) {
+    if (property_changed && !context.tree_builder_context
+                                 ->supports_composited_raster_invalidation) {
       paint_invalidator_context.subtree_flags |=
           PaintInvalidatorContext::kSubtreeFullInvalidation;
     }
@@ -376,7 +376,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
         *paint_invalidator_context.painting_layer);
   }
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
-    object.GetFrameView()->GetPaintTracker().NotifyObjectPrePaint(
+    object.GetFrameView()->GetPaintTimingDetector().NotifyObjectPrePaint(
         object, *paint_invalidator_context.painting_layer);
   }
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TRACKER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TRACKER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_DETECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_DETECTOR_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -16,16 +16,17 @@ class PaintLayer;
 class TextPaintTimingDetector;
 class ImagePaintTimingDetector;
 
-// PaintTracker contains some of paint metric detectors, providing common
-// infrastructure for these detectors.
+// PaintTimingDetector contains some of paint metric detectors,
+// providing common infrastructure for these detectors.
 //
 // Users has to enable 'loading' trace category to enable the metrics.
 //
 // See also:
 // https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit
-class CORE_EXPORT PaintTracker : public GarbageCollected<PaintTracker> {
+class CORE_EXPORT PaintTimingDetector
+    : public GarbageCollected<PaintTimingDetector> {
  public:
-  PaintTracker(LocalFrameView*);
+  PaintTimingDetector(LocalFrameView*);
   void NotifyObjectPrePaint(const LayoutObject& object,
                             const PaintLayer& painting_layer);
   void NotifyNodeRemoved(const LayoutObject& object);
@@ -49,4 +50,4 @@ class CORE_EXPORT PaintTracker : public GarbageCollected<PaintTracker> {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TRACKER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_DETECTOR_H_

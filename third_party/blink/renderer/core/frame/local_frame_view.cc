@@ -111,7 +111,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
-#include "third_party/blink/renderer/core/paint/paint_tracker.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_controller.h"
@@ -267,7 +267,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()),
       jank_tracker_(std::make_unique<JankTracker>(this)),
-      paint_tracker_(new PaintTracker(this)) {
+      paint_timing_detector_(new PaintTimingDetector(this)) {
   // Propagate the marginwidth/height and scrolling modes to the view.
   if (frame_->Owner() &&
       frame_->Owner()->ScrollingMode() == kScrollbarAlwaysOff)
@@ -309,7 +309,7 @@ void LocalFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(visibility_observer_);
   visitor->Trace(anchoring_adjustment_queue_);
   visitor->Trace(print_context_);
-  visitor->Trace(paint_tracker_);
+  visitor->Trace(paint_timing_detector_);
 }
 
 template <typename Function>

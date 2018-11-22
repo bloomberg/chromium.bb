@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
-#include "third_party/blink/renderer/core/paint/paint_tracker.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
@@ -368,39 +368,39 @@ unsigned long long PerformanceTiming::FirstMeaningfulPaintCandidate() const {
 }
 
 unsigned long long PerformanceTiming::LargestImagePaint() const {
-  PaintTracker* paint_tracker = GetPaintTracker();
-  if (!paint_tracker)
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector)
     return 0;
 
   return MonotonicTimeToIntegerMilliseconds(
-      paint_tracker->GetImagePaintTimingDetector().LargestImagePaint());
+      paint_timing_detector->GetImagePaintTimingDetector().LargestImagePaint());
 }
 
 unsigned long long PerformanceTiming::LastImagePaint() const {
-  PaintTracker* paint_tracker = GetPaintTracker();
-  if (!paint_tracker)
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector)
     return 0;
 
   return MonotonicTimeToIntegerMilliseconds(
-      paint_tracker->GetImagePaintTimingDetector().LastImagePaint());
+      paint_timing_detector->GetImagePaintTimingDetector().LastImagePaint());
 }
 
 unsigned long long PerformanceTiming::LargestTextPaint() const {
-  PaintTracker* paint_tracker = GetPaintTracker();
-  if (!paint_tracker)
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector)
     return 0;
 
   return MonotonicTimeToIntegerMilliseconds(
-      paint_tracker->GetTextPaintTimingDetector().LargestTextPaint());
+      paint_timing_detector->GetTextPaintTimingDetector().LargestTextPaint());
 }
 
 unsigned long long PerformanceTiming::LastTextPaint() const {
-  PaintTracker* paint_tracker = GetPaintTracker();
-  if (!paint_tracker)
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector)
     return 0;
 
   return MonotonicTimeToIntegerMilliseconds(
-      paint_tracker->GetTextPaintTimingDetector().LastTextPaint());
+      paint_timing_detector->GetTextPaintTimingDetector().LastTextPaint());
 }
 
 unsigned long long PerformanceTiming::PageInteractive() const {
@@ -587,7 +587,7 @@ InteractiveDetector* PerformanceTiming::GetInteractiveDetector() const {
   return InteractiveDetector::From(*document);
 }
 
-PaintTracker* PerformanceTiming::GetPaintTracker() const {
+PaintTimingDetector* PerformanceTiming::GetPaintTimingDetector() const {
   if (!GetFrame())
     return nullptr;
 
@@ -595,7 +595,7 @@ PaintTracker* PerformanceTiming::GetPaintTracker() const {
   if (!view)
     return nullptr;
 
-  return &view->GetPaintTracker();
+  return &view->GetPaintTimingDetector();
 }
 
 ScriptValue PerformanceTiming::toJSONForBinding(

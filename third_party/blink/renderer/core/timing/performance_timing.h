@@ -47,7 +47,7 @@ class DocumentTiming;
 class InteractiveDetector;
 class LocalFrame;
 class PaintTiming;
-class PaintTracker;
+class PaintTimingDetector;
 class ResourceLoadTiming;
 class ScriptState;
 class ScriptValue;
@@ -162,7 +162,7 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   const CSSTiming* CssTiming() const;
   const DocumentParserTiming* GetDocumentParserTiming() const;
   const PaintTiming* GetPaintTiming() const;
-  PaintTracker* GetPaintTracker() const;
+  PaintTimingDetector* GetPaintTimingDetector() const;
   DocumentLoader* GetDocumentLoader() const;
   DocumentLoadTiming* GetDocumentLoadTiming() const;
   ResourceLoadTiming* GetResourceLoadTiming() const;

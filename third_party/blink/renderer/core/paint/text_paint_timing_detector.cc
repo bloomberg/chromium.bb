@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/paint_tracker.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -120,8 +120,9 @@ void TextPaintTimingDetector::Analyze() {
     OnLastTextDetected(*last_text_first_paint);
     new_candidate_detected = true;
   }
-  if (new_candidate_detected)
-    frame_view_->GetPaintTracker().DidChangePerformanceTiming();
+  if (new_candidate_detected) {
+    frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
+  }
 }
 
 void TextPaintTimingDetector::OnPrePaintFinished() {
@@ -155,8 +156,9 @@ void TextPaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
       largest_text_paint_ = base::TimeTicks();
     if (last_text_paint_invalidated)
       last_text_paint_ = base::TimeTicks();
-    if (largest_text_paint_invalidated || last_text_paint_invalidated)
-      frame_view_->GetPaintTracker().DidChangePerformanceTiming();
+    if (largest_text_paint_invalidated || last_text_paint_invalidated) {
+      frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
+    }
   }
 }
 
