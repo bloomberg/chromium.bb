@@ -2161,11 +2161,6 @@ void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
           kCompositingUpdateAfterGeometryChange);
     }
 
-    // Sticky constraints and paint property nodes need to be updated
-    // to the new sticky locations.
-    if (HasStickyDescendants())
-      InvalidateAllStickyConstraints();
-
     // If we have fixed elements and we scroll the root layer we might
     // change compositing since the fixed elements might now overlap a
     // composited layer.
