@@ -26,6 +26,20 @@ source_set("tab_ranker") {
     "//components/assist_ranker",
     "//components/assist_ranker/proto",
     "//components/sessions",
+    "//services/metrics/public/cpp:ukm_builders",
     "//ui/base",
+  ]
+}
+
+# target for using GetFullTabFeaturesForTesting in unit tests.
+static_library("tab_features_test_helper") {
+  testonly = true
+  sources = [
+    "tab_features_test_helper.cc",
+    "tab_features_test_helper.h",
+  ]
+
+  deps = [
+    ":tab_ranker",
   ]
 }

@@ -12,6 +12,7 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -237,8 +238,6 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, SwitchTabs) {
   EXPECT_EQ(0u, ukm_entry_checker_->NumEntries(kEntryName));
 
   UkmMetricMap expected_metrics = kBasicMetricValues;
-  expected_metrics[TabManager_TabMetrics::kWindowIdName] =
-      browser()->session_id().id();
 
   // Adding a new foreground tab logs the previously active tab.
   AddTabAtIndex(1, kTabUrls[1], ui::PAGE_TRANSITION_LINK);
@@ -293,9 +292,6 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, SwitchWindows) {
                          kCheckNavigationSuccess);
   {
     SCOPED_TRACE("");
-    UkmMetricMap expected_metrics = kBasicMetricValues;
-    expected_metrics[TabManager_TabMetrics::kWindowIdName] =
-        browser()->session_id().id();
     ukm_entry_checker_->ExpectNewEntry(kEntryName, GURL(), kBasicMetricValues);
   }
 
@@ -303,9 +299,6 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, SwitchWindows) {
                          kCheckNavigationSuccess);
   {
     SCOPED_TRACE("");
-    UkmMetricMap expected_metrics = kBasicMetricValues;
-    expected_metrics[TabManager_TabMetrics::kWindowIdName] =
-        browser_2->session_id().id();
     ukm_entry_checker_->ExpectNewEntry(kEntryName, GURL(), kBasicMetricValues);
   }
 
@@ -360,9 +353,10 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, TabDrag) {
                          kCheckNavigationSuccess);
   {
     SCOPED_TRACE("");
-    ukm_entry_checker_->ExpectNewEntry(
-        kEntryName, kBrowserStartUrl,
-        {{TabManager_TabMetrics::kWindowIdName, browser()->session_id().id()}});
+    UkmMetricMap expected_metrics_1 = kBasicMetricValues;
+    expected_metrics_1[TabManager_TabMetrics::kNavigationEntryCountName] = 2;
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, kBrowserStartUrl,
+                                       expected_metrics_1);
   }
 
   // "Drag" the new tab out of its browser.
@@ -387,9 +381,10 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, TabDrag) {
   // inserted.
   {
     SCOPED_TRACE("");
-    ukm_entry_checker_->ExpectNewEntry(
-        kEntryName, kBrowser2StartUrl,
-        {{TabManager_TabMetrics::kWindowIdName, browser_2->session_id().id()}});
+    UkmMetricMap expected_metrics_2 = kBasicMetricValues;
+    expected_metrics_2[TabManager_TabMetrics::kNavigationEntryCountName] = 2;
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, kBrowser2StartUrl,
+                                       expected_metrics_2);
   }
 
   // Closing the window with 2 tabs means we log the backgrounded tab as closed.
@@ -464,6 +459,26 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
         {{TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 0},
          {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 1}},
         ukm_source_id_for_tab_1);
+  }
+}
+
+// Tests that all window metrics are logged with correct value which are
+// different from their default values in TabFeatures.
+IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
+                       AllWindowMetricsArePopulated) {
+  ui_test_utils::NavigateToURL(browser(), test_urls_[0]);
+
+  // Adding a new foreground tab logs the previously active tab.
+  AddTabAtIndex(1, test_urls_[1], ui::PAGE_TRANSITION_LINK);
+  {
+    SCOPED_TRACE("");
+    UkmMetricMap expected_metrics = {
+        {"WindowShowState", metrics::WindowMetricsEvent::SHOW_STATE_NORMAL},
+        {"WindowTabCount", 2},
+        {"WindowType", metrics::WindowMetricsEvent::TYPE_TABBED},
+    };
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[0],
+                                       expected_metrics);
   }
 }
 

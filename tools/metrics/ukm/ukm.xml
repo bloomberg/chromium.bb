@@ -5336,10 +5336,22 @@ be describing additional metrics about the same event.
       Number of mouse events that were sent to the page.
     </summary>
   </metric>
+  <metric name="MRUIndex">
+    <summary>
+      Index of the tab in most-recently-used order. A value of N means there are
+      N tabs more recently used than the one that is being foregrounded or
+      closed.
+    </summary>
+  </metric>
   <metric name="NavigationEntryCount">
     <summary>
       Number of navigation entries in the tab's NavigationController.
       Corresponds to the size of the tab's back/forward list.
+    </summary>
+  </metric>
+  <metric name="NumReactivationBefore">
+    <summary>
+      Number of reactivations that this tab had till now.
     </summary>
   </metric>
   <metric name="PageTransitionCoreType">
@@ -5373,6 +5385,18 @@ be describing additional metrics about the same event.
       10 to limit granularity.
     </summary>
   </metric>
+  <metric name="TimeFromBackgrounded">
+    <summary>
+      Duration in MS from when the tab is backgrounded to when it is brought to
+      foreground or closed.
+    </summary>
+  </metric>
+  <metric name="TotalTabCount">
+    <summary>
+      Total number of tabs open across all non-incognito browser windows. Helps
+      contextualize the MRUIndex value.
+    </summary>
+  </metric>
   <metric name="TouchEventCount">
     <summary>
       Number of touch events that were sent to the page.
@@ -5385,9 +5409,39 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="WindowId">
+    <obsolete>
+      Deprecated 11/2018 in favor of putting window features directly in this
+      event.
+    </obsolete>
     <summary>
       WindowId of the WindowMetrics entry corresponding to the browser window
-      containing this tab.
+      containing this tab. This metrics is not populated from 11/2018 because we
+      don't need to join this event with other WindowMetrics any more.
+    </summary>
+  </metric>
+  <metric name="WindowIsActive">
+    <summary>
+      Boolean value indicating whether the window is the active (frontmost)
+      window.
+    </summary>
+  </metric>
+  <metric name="WindowShowState">
+    <summary>
+      Enumeration of the window show state, such as fullscreen or minimized.
+      Values are enumerated in metrics::WindowMetricsEvent::ShowState.
+    </summary>
+  </metric>
+  <metric name="WindowTabCount">
+    <summary>
+      Number of tabs in the tab strip. Rounded down to the nearest exponential
+      bucket (with a bucket spacing factor of 1.5). Will be 1 for windows with
+      only one top-level WebContents, such as app windows.
+    </summary>
+  </metric>
+  <metric name="WindowType">
+    <summary>
+      Enumeration for the type of the window. Values are enumerated in
+      metrics::WindowMetricsEvent::Type.
     </summary>
   </metric>
 </event>

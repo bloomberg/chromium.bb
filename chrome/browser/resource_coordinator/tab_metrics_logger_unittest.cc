@@ -4,11 +4,12 @@
 
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 
+#include "base/containers/flat_map.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/resource_coordinator/tab_ranker/mru_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
+#include "chrome/browser/resource_coordinator/tab_ranker/tab_features_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -28,7 +29,7 @@ using TabMetricsLoggerTest = ChromeRenderViewHostTestHarness;
 
 // Tests creating a flat TabFeatures structure for logging a tab and its
 // TabMetrics state.
-TEST_F(TabMetricsLoggerTest, TabFeatures) {
+TEST_F(TabMetricsLoggerTest, GetTabFeatures) {
   TabActivitySimulator tab_activity_simulator;
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
@@ -64,9 +65,7 @@ TEST_F(TabMetricsLoggerTest, TabFeatures) {
     EXPECT_EQ(bg_features.navigation_entry_count, 1);
     EXPECT_EQ(bg_features.num_reactivations, 0);
     ASSERT_TRUE(bg_features.page_transition_core_type.has_value());
-    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
-        ui::PAGE_TRANSITION_FORM_SUBMIT,
-        bg_features.page_transition_core_type.value()));
+    EXPECT_EQ(bg_features.page_transition_core_type.value(), 7);
     EXPECT_EQ(bg_features.page_transition_from_address_bar, false);
     EXPECT_EQ(bg_features.page_transition_is_redirect, false);
     ASSERT_TRUE(bg_features.site_engagement_score.has_value());
@@ -108,9 +107,7 @@ TEST_F(TabMetricsLoggerTest, TabFeatures) {
     EXPECT_EQ(bg_features.navigation_entry_count, 2);
     EXPECT_EQ(bg_features.num_reactivations, 5);
     ASSERT_TRUE(bg_features.page_transition_core_type.has_value());
-    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
-        ui::PAGE_TRANSITION_LINK,
-        bg_features.page_transition_core_type.value()));
+    EXPECT_EQ(bg_features.page_transition_core_type.value(), 0);
     EXPECT_EQ(bg_features.page_transition_from_address_bar, true);
     EXPECT_EQ(bg_features.page_transition_is_redirect, false);
     ASSERT_TRUE(bg_features.site_engagement_score.has_value());
@@ -145,6 +142,17 @@ class TabMetricsLoggerUKMTest : public ::testing::Test {
   // Returns the TabMetricsLogger being tested.
   TabMetricsLogger* GetLogger() { return &logger_; }
 
+  // Expects all values inside the |map| appear in the |entry|.
+  void ExpectEntries(const ukm::mojom::UkmEntry* entry,
+                     const base::flat_map<std::string, int64_t>& map) {
+    // Check all metrics are logged as expected.
+    EXPECT_EQ(entry->metrics.size(), map.size());
+
+    for (const auto& pair : map) {
+      GetTestUkmRecorder()->ExpectEntryMetric(entry, pair.first, pair.second);
+    }
+  }
+
  private:
   // Sets up the task scheduling/task-runner environment for each test.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -156,46 +164,56 @@ class TabMetricsLoggerUKMTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TabMetricsLoggerUKMTest);
 };
 
-// Checks the foregrounded event is logged correctly.
-TEST_F(TabMetricsLoggerUKMTest, LogBackgroundTabShown) {
-  const tab_ranker::MRUFeatures& mru_metrics{4, 7};
-  const int64_t inactive_duration_ms = 1234;
-  const bool is_discarded = false;
+// Checks TabFeature is logged correctly with TabMetricsLogger::LogTabMetrics.
+TEST_F(TabMetricsLoggerUKMTest, LogTabMetrics) {
+  const tab_ranker::TabFeatures tab =
+      tab_ranker::GetFullTabFeaturesForTesting();
 
-  GetLogger()->LogBackgroundTabShown(
-      GetSourceId(), base::TimeDelta::FromMilliseconds(inactive_duration_ms),
-      mru_metrics, is_discarded);
+  GetLogger()->LogTabMetrics(GetSourceId(), tab, nullptr);
 
   // Checks that the size is logged correctly.
   EXPECT_EQ(1U, GetTestUkmRecorder()->sources_count());
   EXPECT_EQ(1U, GetTestUkmRecorder()->entries_count());
   const std::vector<const ukm::mojom::UkmEntry*> entries =
-      GetTestUkmRecorder()->GetEntriesByName(
-          "TabManager.Background.ForegroundedOrClosed");
+      GetTestUkmRecorder()->GetEntriesByName("TabManager.TabMetrics");
   EXPECT_EQ(1U, entries.size());
 
   // Checks that all the fields are logged correctly.
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "SequenceId", 1);
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "IsForegrounded", 1);
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "MRUIndex",
-                                          mru_metrics.index);
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "TimeFromBackgrounded",
-                                          inactive_duration_ms);
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "TotalTabCount",
-                                          mru_metrics.total);
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "IsDiscarded",
-                                          is_discarded);
+  ExpectEntries(entries[0], {
+                                {"HasBeforeUnloadHandler", 1},
+                                {"HasFormEntry", 1},
+                                {"IsPinned", 1},
+                                {"KeyEventCount", 21},
+                                {"MouseEventCount", 22},
+                                {"MRUIndex", 27},
+                                {"NavigationEntryCount", 24},
+                                {"NumReactivationBefore", 25},
+                                {"PageTransitionCoreType", 2},
+                                {"PageTransitionFromAddressBar", 1},
+                                {"PageTransitionIsRedirect", 1},
+                                {"SequenceId", 1},
+                                {"SiteEngagementScore", 26},
+                                {"TimeFromBackgrounded", 10000},
+                                {"TotalTabCount", 30},
+                                {"TouchEventCount", 28},
+                                {"WasRecentlyAudible", 1},
+                                {"WindowIsActive", 1},
+                                {"WindowShowState", 3},
+                                {"WindowTabCount", 27},
+                                {"WindowType", 4},
+                            });
 }
 
-// Checks the closed event is logged correctly.
-TEST_F(TabMetricsLoggerUKMTest, LogBackgroundTabClosed) {
-  const tab_ranker::MRUFeatures& mru_metrics{4, 7};
-  const int64_t inactive_duration_ms = 1234;
-  const bool is_discarded = true;
+// Checks the ForegroundedOrClosed event is logged correctly.
+TEST_F(TabMetricsLoggerUKMTest, LogForegroundedOrClosedMetrics) {
+  TabMetricsLogger::ForegroundedOrClosedMetrics foc_metrics;
+  foc_metrics.is_foregrounded = false;
+  foc_metrics.is_discarded = true;
+  foc_metrics.time_from_backgrounded = 1234;
+  foc_metrics.mru_index = 4;
+  foc_metrics.total_tab_count = 7;
 
-  GetLogger()->LogBackgroundTabClosed(
-      GetSourceId(), base::TimeDelta::FromMilliseconds(inactive_duration_ms),
-      mru_metrics, is_discarded);
+  GetLogger()->LogForegroundedOrClosedMetrics(GetSourceId(), foc_metrics);
 
   // Checks that the size is logged correctly.
   EXPECT_EQ(1U, GetTestUkmRecorder()->sources_count());
@@ -206,26 +224,24 @@ TEST_F(TabMetricsLoggerUKMTest, LogBackgroundTabClosed) {
   EXPECT_EQ(1U, entries.size());
 
   // Checks that all the fields are logged correctly.
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "SequenceId", 1);
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "IsForegrounded", 0);
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "MRUIndex",
-                                          mru_metrics.index);
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "TimeFromBackgrounded",
-                                          inactive_duration_ms);
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "TotalTabCount",
-                                          mru_metrics.total);
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "IsDiscarded",
-                                          is_discarded);
+  ExpectEntries(entries[0], {
+                                {"SequenceId", 1},
+                                {"IsForegrounded", 0},
+                                {"MRUIndex", foc_metrics.mru_index},
+                                {"TimeFromBackgrounded",
+                                 foc_metrics.time_from_backgrounded},
+                                {"TotalTabCount", foc_metrics.total_tab_count},
+                                {"IsDiscarded", foc_metrics.is_discarded},
+                            });
 }
 
 // Checks the sequence id is logged as sequentially incremental sequence across
 // different events.
 TEST_F(TabMetricsLoggerUKMTest, SequenceIdShouldBeLoggedSequentially) {
-  const bool is_discarded = false;
-  GetLogger()->LogBackgroundTabShown(GetSourceId(), base::TimeDelta(),
-                                     tab_ranker::MRUFeatures(), is_discarded);
-  GetLogger()->LogBackgroundTabClosed(GetSourceId(), base::TimeDelta(),
-                                      tab_ranker::MRUFeatures(), is_discarded);
+  const TabMetricsLogger::ForegroundedOrClosedMetrics foc_metrics;
+
+  GetLogger()->LogForegroundedOrClosedMetrics(GetSourceId(), foc_metrics);
+  GetLogger()->LogForegroundedOrClosedMetrics(GetSourceId(), foc_metrics);
 
   EXPECT_EQ(2U, GetTestUkmRecorder()->sources_count());
   EXPECT_EQ(2U, GetTestUkmRecorder()->entries_count());
