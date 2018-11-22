@@ -661,16 +661,22 @@ config("compiler") {
       # linker jobs. This is still suboptimal to a potential dynamic
       # resource allocation scheme, but should be good enough.
       if (use_lld) {
-        # Limit the size of the ThinLTO cache to the lesser of 10% of available disk
-        # space, 10GB and 100000 files.
-        cache_policy =
-            "cache_size=10%:cache_size_bytes=10g:cache_size_files=100000"
         ldflags += [
           "-Wl,--thinlto-jobs=8",
-          "-Wl,--thinlto-cache-dir=" +
-              rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-          "-Wl,--thinlto-cache-policy,$cache_policy",
         ]
+
+        # Disable caching on Chrome OS temporarily (crbug.com/889967)
+        if (!is_chromeos) {
+          # Limit the size of the ThinLTO cache to the lesser of 10% of
+          # available disk space, 10GB and 100000 files.
+          cache_policy =
+              "cache_size=10%:cache_size_bytes=10g:cache_size_files=100000"
+          ldflags += [
+            "-Wl,--thinlto-cache-dir=" +
+                rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
+            "-Wl,--thinlto-cache-policy,$cache_policy",
+          ]
+        }
       } else {
         ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
       }
