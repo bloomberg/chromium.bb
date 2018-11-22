@@ -1097,6 +1097,9 @@
       name: "ScriptedSpeechSynthesis",
       status: "stable",
     },
+    {
+      name: "ScriptStreamingOnPreload",
+    },
     // Serialize and restore scroll anchors.
     {
       name: "ScrollAnchorSerialization",

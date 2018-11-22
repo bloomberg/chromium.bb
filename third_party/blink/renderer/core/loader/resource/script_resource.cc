@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 
 namespace blink {
@@ -80,7 +81,12 @@ ScriptResource* ScriptResource::Fetch(FetchParameters& params,
   ScriptResource* resource = ToScriptResource(
       fetcher->RequestResource(params, ScriptResourceFactory(), client));
 
-  if (streaming_allowed != kAllowStreaming) {
+  if (streaming_allowed == kAllowStreaming) {
+    // Start streaming the script as soon as we get it.
+    if (RuntimeEnabledFeatures::ScriptStreamingOnPreloadEnabled()) {
+      resource->StartStreaming(fetcher->Context().GetLoadingTaskRunner());
+    }
+  } else {
     // Advance the |streaming_state_| to kStreamingNotAllowed by calling
     // SetClientIsWaitingForFinished unless it is explicitly allowed.'
     //
