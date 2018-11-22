@@ -409,7 +409,8 @@ MULTIPROCESS_TEST_MAIN(MockChromeCleanerProcessMain) {
   return mock_cleaner_process.Run();
 }
 
-TEST_P(ChromeCleanerRunnerTest, WithMockCleanerProcess) {
+// Fails for official builds. http://crbug.com/907443
+TEST_P(ChromeCleanerRunnerTest, DISABLED_WithMockCleanerProcess) {
   CallRunChromeCleaner();
   run_loop_.Run();
 
