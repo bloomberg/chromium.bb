@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVideoQualityVp9) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  TestVideoQuality("VP9", false /* prefer_hw_video_codec */);
+  TestVideoQuality("VP9", true /* prefer_hw_video_codec */);
 }
 
 #if BUILDFLAG(RTC_USE_H264)
