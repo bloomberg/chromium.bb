@@ -26,9 +26,9 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             Item.OPEN_IN_BROWSER_ID, Item.OPEN_IN_NEW_TAB, Item.OPEN_IN_INCOGNITO_TAB,
             Item.OPEN_IN_OTHER_WINDOW, Item.OPEN_IN_EPHEMERAL_TAB, Item.COPY_LINK_ADDRESS,
             Item.COPY_LINK_TEXT, Item.SAVE_LINK_AS, Item.LOAD_ORIGINAL_IMAGE, Item.SAVE_IMAGE,
-            Item.OPEN_IMAGE, Item.OPEN_IMAGE_IN_NEW_TAB, Item.SEARCH_BY_IMAGE, Item.CALL,
-            Item.SEND_MESSAGE, Item.ADD_TO_CONTACTS, Item.COPY, Item.SAVE_VIDEO,
-            Item.OPEN_IN_CHROME, Item.BROWSER_ACTIONS_OPEN_IN_BACKGROUND,
+            Item.OPEN_IMAGE, Item.OPEN_IMAGE_IN_NEW_TAB, Item.OPEN_IMAGE_IN_EPHEMERAL_TAB,
+            Item.SEARCH_BY_IMAGE, Item.CALL, Item.SEND_MESSAGE, Item.ADD_TO_CONTACTS, Item.COPY,
+            Item.SAVE_VIDEO, Item.OPEN_IN_CHROME, Item.BROWSER_ACTIONS_OPEN_IN_BACKGROUND,
             Item.BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB, Item.BROWSER_ACTION_SAVE_LINK_AS,
             Item.BROWSER_ACTIONS_COPY_ADDRESS})
     @Retention(RetentionPolicy.SOURCE)
@@ -52,23 +52,24 @@ public class ChromeContextMenuItem implements ContextMenuItem {
         int SAVE_IMAGE = 11;
         int OPEN_IMAGE = 12;
         int OPEN_IMAGE_IN_NEW_TAB = 13;
-        int SEARCH_BY_IMAGE = 14;
+        int OPEN_IMAGE_IN_EPHEMERAL_TAB = 14;
+        int SEARCH_BY_IMAGE = 15;
         // Message Group
-        int CALL = 15;
-        int SEND_MESSAGE = 16;
-        int ADD_TO_CONTACTS = 17;
-        int COPY = 18;
+        int CALL = 16;
+        int SEND_MESSAGE = 17;
+        int ADD_TO_CONTACTS = 18;
+        int COPY = 19;
         // Video Group
-        int SAVE_VIDEO = 19;
+        int SAVE_VIDEO = 20;
         // Other
-        int OPEN_IN_CHROME = 20;
+        int OPEN_IN_CHROME = 21;
         // Browser Action Items
-        int BROWSER_ACTIONS_OPEN_IN_BACKGROUND = 21;
-        int BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB = 22;
-        int BROWSER_ACTION_SAVE_LINK_AS = 23;
-        int BROWSER_ACTIONS_COPY_ADDRESS = 24;
+        int BROWSER_ACTIONS_OPEN_IN_BACKGROUND = 22;
+        int BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB = 23;
+        int BROWSER_ACTION_SAVE_LINK_AS = 24;
+        int BROWSER_ACTIONS_COPY_ADDRESS = 25;
         // ALWAYS UPDATE!
-        int NUM_ENTRIES = 25;
+        int NUM_ENTRIES = 26;
     }
 
     /**
@@ -89,6 +90,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             R.id.contextmenu_save_image, // Item.SAVE_IMAGE
             R.id.contextmenu_open_image, // Item.OPEN_IMAGE
             R.id.contextmenu_open_image_in_new_tab, // Item.OPEN_IMAGE_IN_NEW_TAB
+            R.id.contextmenu_open_image_in_ephemeral_tab, // Item.OPEN_IMAGE_IN_EPHEMERAL_TAB
             R.id.contextmenu_search_by_image, // Item.SEARCH_BY_IMAGE
             R.id.contextmenu_call, // Item.CALL
             R.id.contextmenu_send_message, // Item.SEND_MESSAGE
@@ -120,6 +122,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             R.string.contextmenu_save_image, // Item.SAVE_IMAGE:
             R.string.contextmenu_open_image, // Item.OPEN_IMAGE:
             R.string.contextmenu_open_image_in_new_tab, // Item.OPEN_IMAGE_IN_NEW_TAB:
+            R.string.contextmenu_open_image_in_ephemeral_tab, // Item.OPEN_IMAGE_IN_EPHEMERAL_TAB:
             R.string.contextmenu_search_web_for_image, // Item.SEARCH_BY_IMAGE:
             R.string.contextmenu_call, // Item.CALL:
             R.string.contextmenu_send_message, // Item.SEND_MESSAGE:

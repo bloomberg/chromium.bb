@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandl
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
@@ -108,6 +109,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     private int mControlsHidingToken = FullscreenManager.INVALID_TOKEN;
     private boolean mUpdateRequested;
     private final ContextualSearchPanel mContextualSearchPanel;
+    private final EphemeralTabPanel mEphemeralTabPanel;
     private final OverlayPanelManager mOverlayPanelManager;
     private final ToolbarSceneLayer mToolbarOverlay;
 
@@ -220,6 +222,10 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         // Contextual Search scene overlay.
         mContextualSearchPanel = new ContextualSearchPanel(mContext, this, mOverlayPanelManager);
 
+        mEphemeralTabPanel = EphemeralTabPanel.isSupported()
+                ? new EphemeralTabPanel(mContext, this, mOverlayPanelManager)
+                : null;
+
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(true);
 
@@ -231,6 +237,13 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      */
     public OverlayPanelManager getOverlayPanelManager() {
         return mOverlayPanelManager;
+    }
+
+    /**
+     * @return The layout manager's ephemeral tab panel manager.
+     */
+    public EphemeralTabPanel getEphemeralTabPanel() {
+        return mEphemeralTabPanel;
     }
 
     @Override
@@ -862,6 +875,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     protected void addAllSceneOverlays() {
         addGlobalSceneOverlay(mToolbarOverlay);
         mStaticLayout.addSceneOverlay(mContextualSearchPanel);
+        if (mEphemeralTabPanel != null) mStaticLayout.addSceneOverlay(mEphemeralTabPanel);
     }
 
     /**

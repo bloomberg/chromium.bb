@@ -186,9 +186,9 @@ public interface ContextMenuItemDelegate {
     void onOpenInDefaultBrowser(String url);
 
     /**
-     * Called when the {@code url} should be opened in an Ephemeral tab with the same incognito
-     * state as the current {@link Tab}.
+     * Called when the {@code url} should be opened in an ephemeral tab.
      * @param url The URL to open.
+     * @param title The title text to show on top control.
      */
-    void onOpenInEphemeralTab(String url, Referrer referrer);
+    void onOpenInEphemeralTab(String url, String title);
 }
