@@ -37,7 +37,8 @@ class ModelTypeChangeProcessor {
                    std::unique_ptr<EntityData> entity_data,
                    MetadataChangeList* metadata_change_list) = 0;
 
-  // Inform the processor of a deleted entity.
+  // Inform the processor of a deleted entity. The call is ignored if
+  // |storage_key| is unknown.
   virtual void Delete(const std::string& storage_key,
                       MetadataChangeList* metadata_change_list) = 0;
 

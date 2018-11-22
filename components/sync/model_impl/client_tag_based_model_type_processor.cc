@@ -445,10 +445,7 @@ void ClientTagBasedModelTypeProcessor::Delete(
 
   ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
-    // That's unusual, but not necessarily a bad thing.
     // Missing is as good as deleted as far as the model is concerned.
-    DLOG(WARNING) << "Attempted to delete missing item."
-                  << " storage key: " << storage_key;
     return;
   }
 
@@ -498,12 +495,7 @@ void ClientTagBasedModelTypeProcessor::UntrackEntityForStorageKey(
   // Look-up the client tag hash.
   auto iter = storage_key_to_tag_hash_.find(storage_key);
   if (iter == storage_key_to_tag_hash_.end()) {
-    // TODO(jkrcal): Add metrics keyed by the model_type to see which model_type
-    // violates the proper behavior expected here (https://crbug.com/847822).
-    // That's unusual, but not necessarily a bad thing.
     // Missing is as good as untracked as far as the model is concerned.
-    DLOG(WARNING) << "Attempted to untrack missing item with storage_key: "
-                  << storage_key;
     return;
   }
 
