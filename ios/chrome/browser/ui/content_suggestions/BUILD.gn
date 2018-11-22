@@ -162,6 +162,7 @@ source_set("content_suggestions_ui_util") {
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/third_party/material_components_ios",
+    "//ios/web/public",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

@@ -79,12 +79,6 @@ bool IsWKWebViewSnapshotsEnabled() {
 }
 
 CGFloat StatusBarHeight() {
-  if (base::FeatureList::IsEnabled(
-          web::features::kBrowserContainerFullscreen) &&
-      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
-    DCHECK(!base::ios::IsRunningOnIOS11OrLater());
-  }
-
   // This is a temporary solution until usage of StatusBarHeight has been
   // replaced with topLayoutGuide.
 
