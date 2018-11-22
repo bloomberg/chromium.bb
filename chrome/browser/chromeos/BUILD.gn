@@ -487,6 +487,8 @@ source_set("chromeos") {
     "arc/intent_helper/start_smart_selection_action_menu.h",
     "arc/kiosk/arc_kiosk_bridge.cc",
     "arc/kiosk/arc_kiosk_bridge.h",
+    "arc/metrics/arc_metrics_service_proxy.cc",
+    "arc/metrics/arc_metrics_service_proxy.h",
     "arc/notification/arc_boot_error_notification.cc",
     "arc/notification/arc_boot_error_notification.h",
     "arc/notification/arc_provision_notification_service.cc",
