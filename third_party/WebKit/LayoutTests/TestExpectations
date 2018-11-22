@@ -1979,12 +1979,6 @@ crbug.com/779170 virtual/mouseevent_fractional/fast/events/constructors/mouse-ev
 crbug.com/779170 virtual/mouseevent_fractional/fast/events/constructors/wheel-event-constructor.html [ Failure ]
 crbug.com/779170 virtual/mouseevent_fractional/fast/events/zoom-dblclick.html [ Failure ]
 
-# These tests will pass once the --enable-features=TouchpadAndWheelScrollLatching flag is enabled by default.
-crbug.com/526463 fast/events/wheel/mouse-wheel-scroll-latching.html [ Pass Failure ]
-crbug.com/526463 fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Pass Failure ]
-crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/mouse-wheel-scroll-latching.html [ Pass Failure ]
-crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Pass Failure ]
-
 crbug.com/892032 fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
 crbug.com/892032 virtual/mouseevent_fractional/fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
 crbug.com/892032 virtual/user-activation-v2/fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
