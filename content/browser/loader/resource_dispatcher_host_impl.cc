@@ -871,10 +871,16 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   new_request->set_referrer_policy(request_data.referrer_policy);
 
   new_request->SetExtraRequestHeaders(headers);
-  if (!request_data.requested_with.empty()) {
-    // X-Requested-With header must be set here to avoid breaking CORS checks.
-    new_request->SetExtraRequestHeaderByName("X-Requested-With",
-                                             request_data.requested_with, true);
+  // X-Requested-With and X-Client-Data header must be set here to avoid
+  // breaking CORS checks. They are non-empty when the values are given by the
+  // UA code, therefore they should be ignored by CORS checks.
+  if (!request_data.requested_with_header.empty()) {
+    new_request->SetExtraRequestHeaderByName(
+        "X-Requested-With", request_data.requested_with_header, true);
+  }
+  if (!request_data.client_data_header.empty()) {
+    new_request->SetExtraRequestHeaderByName(
+        "X-Client-Data", request_data.client_data_header, true);
   }
 
   std::unique_ptr<network::ScopedThrottlingToken> throttling_token =

@@ -434,12 +434,20 @@ void WebURLRequest::SetOriginPolicy(const WebString& policy) {
   resource_request_->SetOriginPolicy(policy);
 }
 
-const WebString WebURLRequest::GetRequestedWith() const {
-  return resource_request_->GetRequestedWith();
+const WebString WebURLRequest::GetRequestedWithHeader() const {
+  return resource_request_->GetRequestedWithHeader();
 }
 
-void WebURLRequest::SetRequestedWith(const WebString& value) {
-  resource_request_->SetRequestedWith(value);
+void WebURLRequest::SetRequestedWithHeader(const WebString& value) {
+  resource_request_->SetRequestedWithHeader(value);
+}
+
+const WebString WebURLRequest::GetClientDataHeader() const {
+  return resource_request_->GetClientDataHeader();
+}
+
+void WebURLRequest::SetClientDataHeader(const WebString& value) {
+  resource_request_->SetClientDataHeader(value);
 }
 
 const base::UnguessableToken& WebURLRequest::GetFetchWindowId() const {

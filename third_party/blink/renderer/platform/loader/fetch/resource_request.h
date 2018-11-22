@@ -402,8 +402,15 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetOriginPolicy(const String& policy) { origin_policy_ = policy; }
   const String& GetOriginPolicy() const { return origin_policy_; }
 
-  void SetRequestedWith(const String& value) { requested_with_ = value; }
-  const String& GetRequestedWith() const { return requested_with_; }
+  void SetRequestedWithHeader(const String& value) {
+    requested_with_header_ = value;
+  }
+  const String& GetRequestedWithHeader() const {
+    return requested_with_header_;
+  }
+
+  void SetClientDataHeader(const String& value) { client_data_header_ = value; }
+  const String& GetClientDataHeader() const { return client_data_header_; }
 
   void SetUkmSourceId(int64_t ukm_source_id) { ukm_source_id_ = ukm_source_id; }
   int64_t GetUkmSourceId() const { return ukm_source_id_; }
@@ -490,7 +497,8 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   base::Optional<base::UnguessableToken> devtools_token_;
   String origin_policy_;
-  String requested_with_;
+  String requested_with_header_;
+  String client_data_header_;
 
   int64_t ukm_source_id_;
 

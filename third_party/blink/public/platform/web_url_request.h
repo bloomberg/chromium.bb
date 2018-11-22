@@ -326,8 +326,14 @@ class WebURLRequest {
   // Remembers 'X-Requested-With' header value. Blink should not set this header
   // value until CORS checks are done to avoid running checks even against
   // headers that are internally set.
-  BLINK_PLATFORM_EXPORT const WebString GetRequestedWith() const;
-  BLINK_PLATFORM_EXPORT void SetRequestedWith(const WebString&);
+  BLINK_PLATFORM_EXPORT const WebString GetRequestedWithHeader() const;
+  BLINK_PLATFORM_EXPORT void SetRequestedWithHeader(const WebString&);
+
+  // Remembers 'X-Client-Data' header value. Blink should not set this header
+  // value until CORS checks are done to avoid running checks even against
+  // headers that are internally set.
+  BLINK_PLATFORM_EXPORT const WebString GetClientDataHeader() const;
+  BLINK_PLATFORM_EXPORT void SetClientDataHeader(const WebString&);
 
   // https://fetch.spec.whatwg.org/#concept-request-window
   // See network::ResourceRequest::fetch_window_id for details.
