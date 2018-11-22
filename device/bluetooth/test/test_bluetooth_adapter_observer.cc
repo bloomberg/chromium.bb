@@ -44,6 +44,7 @@ void TestBluetoothAdapterObserver::Reset() {
   device_mtu_ = 0;
   device_advertisement_received_count_ = 0;
   device_eir_.clear();
+  device_connected_state_changed_values_.clear();
 #endif
   device_removed_count_ = 0;
   last_device_ = NULL;
@@ -169,6 +170,16 @@ void TestBluetoothAdapterObserver::DeviceAdvertisementReceived(
   ++device_advertisement_received_count_;
   last_device_ = device;
   device_eir_ = eir;
+
+  QuitMessageLoop();
+}
+
+void TestBluetoothAdapterObserver::DeviceConnectedStateChanged(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device,
+    bool is_now_connected) {
+  last_device_ = device;
+  device_connected_state_changed_values_.push_back(is_now_connected);
 
   QuitMessageLoop();
 }

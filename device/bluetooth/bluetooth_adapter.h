@@ -152,6 +152,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                              BluetoothDevice* device,
                                              int16_t rssi,
                                              const std::vector<uint8_t>& eir) {}
+
+    // This function is implemented for ChromeOS only.
+    // Called when |device|'s state has changed from connected to not connected
+    // or vice versa.
+    virtual void DeviceConnectedStateChanged(BluetoothAdapter* adapter,
+                                             BluetoothDevice* device,
+                                             bool is_now_connected) {}
 #endif
 
     // Called when the device |device| is removed from the adapter |adapter|,
