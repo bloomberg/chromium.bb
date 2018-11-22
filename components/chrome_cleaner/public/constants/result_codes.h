@@ -216,7 +216,7 @@ enum ResultCodeValues : ResultCode {
 
   // The target process for the JSON parser sandbox disconnected from the IPC
   // while the pipe was still needed by the broker process.
-  RESULT_CODE_JSON_PARSER_SANDBOX_DISCONNECTED_TOO_SOON = 54,
+  RESULT_CODE_PARSER_SANDBOX_DISCONNECTED_TOO_SOON = 54,
 
   // The target process for the zip archiver sandbox disconnected from the IPC
   // while the pipe was still needed by the broker process.
