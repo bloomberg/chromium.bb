@@ -21,9 +21,6 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
 #pragma mark - TableViewTextItem
 
 @implementation TableViewTextItem
-@synthesize text = _text;
-@synthesize textAlignment = _textAlignment;
-@synthesize textColor = _textColor;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -38,10 +35,17 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
   [super configureCell:tableCell withStyler:styler];
   TableViewTextCell* cell =
       base::mac::ObjCCastStrict<TableViewTextCell>(tableCell);
-  cell.textLabel.text = self.text;
-  cell.textLabel.backgroundColor = styler.tableViewBackgroundColor;
-  // This item's text color takes precedence over the global styler.
-  // TODO(crbug.com/854249): redo the logic for this convoluted if clause.
+  cell.textLabel.text = self.masked ? kMaskedPassword : self.text;
+  // Decide cell.textLabel.backgroundColor in order:
+  //   1. styler.cellBackgroundColor;
+  //   2. styler.tableViewBackgroundColor.
+  cell.textLabel.backgroundColor = styler.cellBackgroundColor
+                                       ? styler.cellBackgroundColor
+                                       : styler.tableViewBackgroundColor;
+  // Decide cell.textLabel.textColor in order:
+  //   1. this.textColor;
+  //   2. styler.cellTitleColor;
+  //   3. kTableViewTextLabelColorLightGrey.
   if (self.textColor) {
     cell.textLabel.textColor = self.textColor;
   } else if (styler.cellTitleColor) {

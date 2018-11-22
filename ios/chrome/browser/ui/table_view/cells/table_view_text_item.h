@@ -20,7 +20,10 @@
 // takes precedence over the default color, but not over |textColor|.
 @property(nonatomic, assign) UIColor* textColor;
 
-@property(nonatomic, readwrite, strong) NSString* text;
+@property(nonatomic, strong) NSString* text;
+
+// If set to YES, |text| will be shown as "••••••" with fixed length.
+@property(nonatomic, assign) BOOL masked;
 
 @end
 

@@ -39,4 +39,7 @@ extern const int kTableViewSecondaryLabelLightGrayTextColor;
 // Hex Value for the tint color for switches.
 extern const int kTableViewSwitchTintColor;
 
+// A masked password string(e.g. "••••••••").
+extern NSString* const kMaskedPassword;
+
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_CELLS_TABLE_VIEW_CELLS_CONSTANTS_H_
