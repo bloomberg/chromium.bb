@@ -2,6 +2,9 @@
 
 [TOC]
 
+Note: See [Threading and Tasks FAQ](threading_and_tasks_faq.md) for more
+examples.
+
 ## Overview
 
 Chromium is a very multithreaded product. We try to keep the UI as responsive as
@@ -77,7 +80,7 @@ use of base::CreateSingleThreadTaskRunnerWithTraits() with a TODO against your
 bug to use base::CreateSequencedTaskRunnerWithTraits() when fixed).
 
 Detailed documentation on how to migrate from single-threaded contexts to
-sequenced contexts can be found [here](threading_and_tasks_faq.md#How-can-I-migrate-from-SingleThreadTaskRunner-to-SequencedTaskRunner_).
+sequenced contexts can be found [here](threading_and_tasks_faq.md#How-to-migrate-from-SingleThreadTaskRunner-to-SequencedTaskRunner).
 
 The discussion below covers all of these ways to execute tasks in details.
 
@@ -677,3 +680,6 @@ class FooWithCustomizableTaskRunnerForTesting {
 
 Note that this still allows removing all layers of plumbing between //chrome and
 that component since unit tests will use the leaf layer directly.
+
+## FAQ
+See [Threading and Tasks FAQ](threading_and_tasks_faq.md) for more examples.
