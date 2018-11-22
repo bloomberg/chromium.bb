@@ -4,11 +4,11 @@
 
 # Do not add any imports to non-//build directories here.
 # Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
-import("//build_overrides/build.gni")
 import("//build/config/android/config.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/python.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build_overrides/build.gni")
 
 assert(is_android)
 
@@ -2652,12 +2652,6 @@ if (enable_java_templates) {
     _build_config = invoker.build_config
     _chromium_code = invoker.chromium_code
 
-    if (defined(invoker.enable_errorprone)) {
-      _enable_errorprone = invoker.enable_errorprone
-    } else {
-      _enable_errorprone = use_errorprone_java_compiler && _chromium_code
-    }
-
     _provider_configurations = []
     if (defined(invoker.provider_configurations)) {
       _provider_configurations = invoker.provider_configurations
@@ -2708,7 +2702,6 @@ if (enable_java_templates) {
 
       outputs = [
         invoker.javac_jar_path,
-        invoker.javac_jar_path + ".md5.stamp",
         invoker.javac_jar_path + ".info",
       ]
       inputs = invoker.java_files + _java_srcjars + [ _build_config ]
@@ -2750,7 +2743,7 @@ if (enable_java_templates) {
       if (_chromium_code) {
         args += [ "--chromium-code=1" ]
       }
-      if (_enable_errorprone) {
+      if (invoker.enable_errorprone) {
         deps += [ "//third_party/errorprone:errorprone($default_toolchain)" ]
         deps += [ "//tools/android/errorprone_plugin:errorprone_plugin_java($default_toolchain)" ]
         _rebased_errorprone_processorpath = [
@@ -3224,44 +3217,71 @@ if (enable_java_templates) {
     # TODO(agrieve): Enable lint for _has_sources rather than just _java_files.
     _lint_enabled = _java_files != [] && _supports_android && _chromium_code &&
                     !disable_android_lint
+    if (defined(invoker.enable_errorprone)) {
+      _enable_errorprone = invoker.enable_errorprone
+    } else {
+      _enable_errorprone =
+          _java_files != [] && _chromium_code && use_errorprone_java_compiler
+    }
 
     if (_has_sources) {
-      _compile_java_target = "${_main_target_name}__compile_java"
-      compile_java(_compile_java_target) {
-        forward_variables_from(invoker,
-                               [
-                                 "additional_jar_files",
-                                 "apk_name",
-                                 "enable_errorprone",
-                                 "enable_incremental_javac_override",
-                                 "processor_args_javac",
-                                 "provider_configurations",
-                                 "javac_args",
-                               ])
-        main_target_name = _main_target_name
-        build_config = _build_config
-        java_files = _java_files
-        if (_java_files != []) {
-          java_sources_file = _java_sources_file
-        }
-        srcjar_deps = _srcjar_deps
-        chromium_code = _chromium_code
-        requires_android = _requires_android
-        deps = _accumulated_deps + _accumulated_public_deps
-        javac_jar_path = _javac_jar_path
+      _type = invoker.type
+      template("compile_java_helper") {
+        compile_java(target_name) {
+          forward_variables_from(invoker, "*")
+          enable_errorprone = invoker.enable_errorprone
+          javac_jar_path = invoker.javac_jar_path
 
-        # android_apk and junit_binary pass R.java srcjars via srcjar_deps.
-        if (invoker.type == "java_library" && _requires_android) {
-          _rebased_build_config = rebase_path(_build_config, root_build_dir)
-          srcjar_filearg = "@FileArg($_rebased_build_config:deps_info:owned_resource_srcjars)"
+          main_target_name = _main_target_name
+          build_config = _build_config
+          java_files = _java_files
+          if (_java_files != []) {
+            java_sources_file = _java_sources_file
+          }
+          srcjar_deps = _srcjar_deps
+          chromium_code = _chromium_code
+          requires_android = _requires_android
+          deps = _accumulated_deps + _accumulated_public_deps
+
+          # android_apk and junit_binary pass R.java srcjars via srcjar_deps.
+          if (_type == "java_library" && _requires_android) {
+            _rebased_build_config = rebase_path(_build_config, root_build_dir)
+            srcjar_filearg = "@FileArg($_rebased_build_config:deps_info:owned_resource_srcjars)"
+          }
         }
+      }
+      _analysis_public_deps = []
+      _compile_java_target = "${_main_target_name}__compile_java"
+      _compile_java_forward_variables = [
+        "additional_jar_files",
+        "apk_name",
+        "enable_incremental_javac_override",
+        "processor_args_javac",
+        "provider_configurations",
+        "javac_args",
+      ]
+      compile_java_helper(_compile_java_target) {
+        forward_variables_from(invoker, _compile_java_forward_variables)
+        enable_errorprone = false
+        javac_jar_path = _javac_jar_path
+      }
+      if (_enable_errorprone) {
+        _compile_java_errorprone_target =
+            "${_main_target_name}__compile_java_errorprone"
+        compile_java_helper(_compile_java_errorprone_target) {
+          forward_variables_from(invoker, _compile_java_forward_variables)
+          enable_errorprone = true
+          javac_jar_path = _javac_jar_path + ".errorprone.jar"
+        }
+        _analysis_public_deps += [ ":$_compile_java_errorprone_target" ]
       }
       if (defined(invoker.android_manifest_for_lint)) {
         _android_manifest_for_lint = invoker.android_manifest_for_lint
         assert(_android_manifest_for_lint != "")  # Mark as used.
       }
       if (_lint_enabled) {
-        android_lint("${_main_target_name}__lint") {
+        _android_lint_target = "${_main_target_name}__lint"
+        android_lint(_android_lint_target) {
           if (invoker.type == "android_apk" ||
               invoker.type == "android_app_bundle_module") {
             forward_variables_from(invoker, [ "android_manifest" ])
@@ -3280,14 +3300,15 @@ if (enable_java_templates) {
             lint_suppressions_file = invoker.lint_suppressions_file
           }
         }
+        _analysis_public_deps += [ ":$_android_lint_target" ]
+      }
 
+      if (_analysis_public_deps != []) {
         # Use an intermediate group() rather as the data_deps target in order to
-        # avoid lint artifacts showing up as runtime_deps (while still having lint
-        # run in parallel to other targets).
+        # avoid errorprone or lint artifacts showing up as runtime_deps (while
+        # still having them run in parallel to other targets).
         group("${_main_target_name}__analysis") {
-          public_deps = [
-            ":${_main_target_name}__lint",
-          ]
+          public_deps = _analysis_public_deps
         }
       }
 
@@ -3377,7 +3398,7 @@ if (enable_java_templates) {
           # BuildConfig, NativeLibraries, etc.
           input_jar = _unprocessed_jar_path
           output_jar = _final_ijar_path
-          if (_lint_enabled) {
+          if (_lint_enabled || _enable_errorprone) {
             if (!defined(data_deps)) {
               data_deps = []
             }
@@ -3434,7 +3455,7 @@ if (enable_java_templates) {
                                  "visibility",
                                ])
         public_deps = _accumulated_public_deps
-        if (_lint_enabled) {
+        if (_lint_enabled || _enable_errorprone) {
           if (!defined(data_deps)) {
             data_deps = []
           }
