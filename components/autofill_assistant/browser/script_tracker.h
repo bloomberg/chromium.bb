@@ -21,6 +21,7 @@
 
 namespace autofill_assistant {
 class ScriptExecutorDelegate;
+class ScriptTrackerTest;
 
 // The script tracker keeps track of which scripts are available, which are
 // running, which have run, which are runnable whose preconditions are met.
@@ -93,9 +94,11 @@ class ScriptTracker : public ScriptExecutor::Listener {
  private:
   typedef std::map<Script*, std::unique_ptr<Script>> AvailableScriptMap;
 
+  friend class ScriptTrackerTest;
+
   void OnScriptRun(const std::string& script_path,
                    ScriptExecutor::RunScriptCallback original_callback,
-                   ScriptExecutor::Result result);
+                   const ScriptExecutor::Result& result);
   void UpdateRunnableScriptsIfNecessary();
   void OnCheckDone();
 
@@ -110,7 +113,6 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // Returns true if |runnable_| should be updated.
   bool RunnablesHaveChanged();
   void OnPreconditionCheck(Script* script, bool met_preconditions);
-  void ClearAvailableScripts();
 
   ScriptExecutorDelegate* const delegate_;
   ScriptTracker::Listener* const listener_;
@@ -134,8 +136,12 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // any pending check.
   AvailableScriptMap available_scripts_;
 
+  // A subset of available_scripts that are interrupts.
+  std::vector<Script*> interrupts_;
+
   // List of scripts that have been executed and their corresponding statuses.
-  std::map<std::string, ScriptStatusProto> executed_scripts_;
+  std::map<std::string, ScriptStatusProto> scripts_state_;
+
   std::unique_ptr<BatchElementChecker> batch_element_checker_;
 
   // Scripts found to be runnable so far, in the current check, represented by

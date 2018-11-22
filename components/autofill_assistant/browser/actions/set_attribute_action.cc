@@ -22,7 +22,7 @@ SetAttributeAction::~SetAttributeAction() {}
 
 void SetAttributeAction::InternalProcessAction(ActionDelegate* delegate,
                                                ProcessActionCallback callback) {
-  delegate->WaitForElement(
+  delegate->ShortWaitForElementExist(
       ExtractVector(proto_.set_attribute().element().selectors()),
       base::BindOnce(&SetAttributeAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),

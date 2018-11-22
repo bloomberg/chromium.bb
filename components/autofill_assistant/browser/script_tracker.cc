@@ -14,6 +14,24 @@
 
 namespace autofill_assistant {
 
+namespace {
+
+// Sort scripts by priority.
+void SortScripts(std::vector<Script*>* scripts) {
+  std::sort(scripts->begin(), scripts->end(),
+            [](const Script* a, const Script* b) {
+              // Runnable scripts with lowest priority value are displayed
+              // first, Interrupts with lowest priority values are run first.
+              // Order of scripts with the same priority is arbitrary. Fallback
+              // to ordering by name and path, arbitrarily, for the behavior to
+              // be consistent across runs.
+              return std::tie(a->priority, a->handle.name, a->handle.path) <
+                     std::tie(b->priority, b->handle.name, a->handle.path);
+            });
+}
+
+}  // namespace
+
 ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
                              ScriptTracker::Listener* listener)
     : delegate_(delegate),
@@ -27,10 +45,26 @@ ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
 ScriptTracker::~ScriptTracker() = default;
 
 void ScriptTracker::SetScripts(std::vector<std::unique_ptr<Script>> scripts) {
-  ClearAvailableScripts();
+  // The set of interrupts must not change while a script is running, as they're
+  // passed to ScriptExecutor.
+  if (running())
+    return;
+
+  TerminatePendingChecks();
+
+  available_scripts_.clear();
   for (auto& script : scripts) {
     available_scripts_[script.get()] = std::move(script);
   }
+
+  interrupts_.clear();
+  for (auto& entry : available_scripts_) {
+    Script* script = entry.first;
+    if (script->handle.interrupt) {
+      interrupts_.push_back(script);
+    }
+  }
+  SortScripts(&interrupts_);
 }
 
 void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
@@ -43,9 +77,12 @@ void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
       delegate_->GetWebController()->CreateBatchElementChecker();
   for (const auto& entry : available_scripts_) {
     Script* script = entry.first;
+    if (script->handle.name.empty() && !script->handle.autostart)
+      continue;
+
     script->precondition->Check(
         delegate_->GetWebController()->GetUrl(), batch_element_checker_.get(),
-        delegate_->GetParameters(), executed_scripts_,
+        delegate_->GetParameters(), scripts_state_,
         base::BindOnce(&ScriptTracker::OnPreconditionCheck,
                        weak_ptr_factory_.GetWeakPtr(), script));
   }
@@ -80,9 +117,9 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
     return;
   }
 
-  executed_scripts_[script_path] = SCRIPT_STATUS_RUNNING;
   executor_ = std::make_unique<ScriptExecutor>(
-      script_path, last_server_payload_, this, delegate_);
+      script_path, last_server_payload_, /* listener= */ this, &scripts_state_,
+      &interrupts_, delegate_);
   ScriptExecutor::RunScriptCallback run_script_callback = base::BindOnce(
       &ScriptTracker::OnScriptRun, weak_ptr_factory_.GetWeakPtr(), script_path,
       std::move(callback));
@@ -100,13 +137,13 @@ base::Value ScriptTracker::GetDebugContext() const {
   base::Base64Encode(last_server_payload_js, &last_server_payload_js);
   dict.SetKey("last-payload", base::Value(last_server_payload_js));
 
-  std::vector<base::Value> executed_scripts_js;
-  for (const auto& entry : executed_scripts_) {
+  std::vector<base::Value> scripts_state_js;
+  for (const auto& entry : scripts_state_) {
     base::Value script_js = base::Value(base::Value::Type::DICTIONARY);
     script_js.SetKey(entry.first, base::Value(entry.second));
-    executed_scripts_js.push_back(std::move(script_js));
+    scripts_state_js.push_back(std::move(script_js));
   }
-  dict.SetKey("executed-scripts", base::Value(executed_scripts_js));
+  dict.SetKey("executed-scripts", base::Value(scripts_state_js));
 
   std::vector<base::Value> available_scripts_js;
   for (const auto& entry : available_scripts_)
@@ -131,10 +168,8 @@ base::Value ScriptTracker::GetDebugContext() const {
 void ScriptTracker::OnScriptRun(
     const std::string& script_path,
     ScriptExecutor::RunScriptCallback original_callback,
-    ScriptExecutor::Result result) {
+    const ScriptExecutor::Result& result) {
   executor_.reset();
-  executed_scripts_[script_path] =
-      result.success ? SCRIPT_STATUS_SUCCESS : SCRIPT_STATUS_FAILURE;
   std::move(original_callback).Run(result);
 }
 
@@ -143,15 +178,7 @@ void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
     return;
 
   runnable_scripts_.clear();
-  std::sort(pending_runnable_scripts_.begin(), pending_runnable_scripts_.end(),
-            [](const Script* a, const Script* b) {
-              // Runnable scripts with lowest priority value are displayed
-              // first. The display order of scripts with the same priority is
-              // arbitrary. Fallback to ordering by name, arbitrarily, for the
-              // behavior to be consistent.
-              return std::tie(a->priority, a->handle.name) <
-                     std::tie(b->priority, b->handle.name);
-            });
+  SortScripts(&pending_runnable_scripts_);
   for (Script* script : pending_runnable_scripts_) {
     runnable_scripts_.push_back(script->handle);
   }
@@ -192,13 +219,6 @@ void ScriptTracker::OnPreconditionCheck(Script* script,
   }
   if (met_preconditions)
     pending_runnable_scripts_.push_back(script);
-}
-
-void ScriptTracker::ClearAvailableScripts() {
-  available_scripts_.clear();
-  // Clearing available_scripts_ has cancelled any pending precondition checks,
-  // ending them.
-  TerminatePendingChecks();
 }
 
 void ScriptTracker::OnServerPayloadChanged(const std::string& server_payload) {

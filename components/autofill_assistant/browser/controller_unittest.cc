@@ -20,11 +20,13 @@
 namespace autofill_assistant {
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::Contains;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::NiceMock;
+using ::testing::Not;
 using ::testing::Pair;
 using ::testing::ReturnRef;
 using ::testing::Sequence;
@@ -98,8 +100,8 @@ class ControllerTest : public content::RenderViewHostTestHarness {
         .WillByDefault(RunOnceCallback<2>(true, ""));
 
     // Scripts run, but have no actions.
-    ON_CALL(*mock_service_, OnGetActions(_, _, _))
-        .WillByDefault(RunOnceCallback<2>(true, ""));
+    ON_CALL(*mock_service_, OnGetActions(_, _, _, _, _))
+        .WillByDefault(RunOnceCallback<4>(true, ""));
 
     // Make WebController::GetUrl accessible.
     ON_CALL(*mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
@@ -122,6 +124,14 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     return script;
   }
 
+  static void RunOnce(SupportedScriptProto* proto) {
+    auto* run_once = proto->mutable_presentation()
+                         ->mutable_precondition()
+                         ->add_script_status_match();
+    run_once->set_script(proto->path());
+    run_once->set_status(SCRIPT_STATUS_NOT_RUN);
+  }
+
   void SetLastCommittedUrl(const GURL& url) {
     url_ = url;
     tester_->SetLastCommittedURL(url);
@@ -138,10 +148,6 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     controller_->LoadProgressChanged(web_contents(), progress);
   }
 
-  void SimulateUserInteraction(const blink::WebInputEvent::Type type) {
-    controller_->DidGetUserInteraction(type);
-  }
-
   // Sets up the next call to the service for scripts to return |response|.
   void SetNextScriptResponse(const SupportsScriptResponseProto& response) {
     std::string response_str;
@@ -149,6 +155,15 @@ class ControllerTest : public content::RenderViewHostTestHarness {
 
     EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
         .WillOnce(RunOnceCallback<2>(true, response_str));
+  }
+
+  // Sets up all calls to the service for scripts to return |response|.
+  void SetRepeatedScriptResponse(const SupportsScriptResponseProto& response) {
+    std::string response_str;
+    response.SerializeToString(&response_str);
+
+    EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
+        .WillRepeatedly(RunOnceCallback<2>(true, response_str));
   }
 
   UiDelegate* GetUiDelegate() { return controller_; }
@@ -197,8 +212,8 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
       });
 
   // 5. script1 run successfully (no actions).
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script1"), _, _))
-      .WillOnce(RunOnceCallback<2>(true, ""));
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script1"), _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, ""));
 
   // 6. As nothing is selected the flow terminates.
 
@@ -240,8 +255,8 @@ TEST_F(ControllerTest, Stop) {
   actions_response.add_actions()->mutable_stop();
   std::string actions_response_str;
   actions_response.SerializeToString(&actions_response_str);
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _))
-      .WillOnce(RunOnceCallback<2>(true, actions_response_str));
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, actions_response_str));
   EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _))
       .WillOnce(RunOnceCallback<2>(true, ""));
 
@@ -272,8 +287,8 @@ TEST_F(ControllerTest, Reset) {
     actions_response.add_actions()->mutable_reset();
     std::string actions_response_str;
     actions_response.SerializeToString(&actions_response_str);
-    EXPECT_CALL(*mock_service_, OnGetActions(StrEq("reset"), _, _))
-        .WillOnce(RunOnceCallback<2>(true, actions_response_str));
+    EXPECT_CALL(*mock_service_, OnGetActions(StrEq("reset"), _, _, _, _))
+        .WillOnce(RunOnceCallback<4>(true, actions_response_str));
 
     // 3. Report the result of running that action.
     EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _))
@@ -330,23 +345,72 @@ TEST_F(ControllerTest, Autostart) {
   AddRunnableScript(&script_response, "alsorunnable");
   SetNextScriptResponse(script_response);
 
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("autostart"), _, _))
-      .WillOnce(RunOnceCallback<2>(true, ""));
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("autostart"), _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, ""));
+
+  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+}
+
+TEST_F(ControllerTest, AutostartFirstInterrupt) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "runnable");
+
+  auto* interrupt1 =
+      AddRunnableScript(&script_response, "autostart interrupt 1");
+  interrupt1->mutable_presentation()->set_interrupt(true);
+  interrupt1->mutable_presentation()->set_priority(1);
+  interrupt1->mutable_presentation()->set_autostart(true);
+
+  auto* interrupt2 =
+      AddRunnableScript(&script_response, "autostart interrupt 2");
+  interrupt2->mutable_presentation()->set_interrupt(true);
+  interrupt2->mutable_presentation()->set_priority(2);
+  interrupt2->mutable_presentation()->set_autostart(true);
+
+  SetNextScriptResponse(script_response);
+
+  EXPECT_CALL(*mock_service_,
+              OnGetActions(StrEq("autostart interrupt 1"), _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(false, ""));
+  // The script fails, ending the flow. What matters is that the correct
+  // expectation is met.
+
+  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+}
+
+TEST_F(ControllerTest, InterruptThenAutostart) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "runnable");
+
+  auto* interrupt = AddRunnableScript(&script_response, "autostart interrupt");
+  interrupt->mutable_presentation()->set_interrupt(true);
+  interrupt->mutable_presentation()->set_autostart(true);
+  RunOnce(interrupt);
+
+  auto* autostart = AddRunnableScript(&script_response, "autostart");
+  autostart->mutable_presentation()->set_autostart(true);
+  RunOnce(autostart);
+
+  SetRepeatedScriptResponse(script_response);
+
+  {
+    testing::InSequence seq;
+    EXPECT_CALL(*mock_service_,
+                OnGetActions(StrEq("autostart interrupt"), _, _, _, _));
+    EXPECT_CALL(*mock_service_, OnGetActions(StrEq("autostart"), _, _, _, _));
+  }
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }
 
 TEST_F(ControllerTest, AutostartIsNotPassedToTheUi) {
   SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "runnable")
-      ->mutable_presentation()
-      ->set_autostart(true);
-  SetNextScriptResponse(script_response);
+  auto* autostart = AddRunnableScript(&script_response, "runnable");
+  autostart->mutable_presentation()->set_autostart(true);
+  RunOnce(autostart);
+  SetRepeatedScriptResponse(script_response);
 
-  EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(0)));
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("runnable"), _, _)).Times(0);
-
-  SimulateUserInteraction(blink::WebInputEvent::kTouchStart);
+  EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(0))).Times(AtLeast(1));
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }
 

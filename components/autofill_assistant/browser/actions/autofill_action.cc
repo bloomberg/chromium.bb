@@ -212,10 +212,10 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
 }
 
 void AutofillAction::FillFormWithData(ActionDelegate* delegate) {
-  delegate->WaitForElement(selectors_,
-                           base::BindOnce(&AutofillAction::OnWaitForElement,
-                                          weak_ptr_factory_.GetWeakPtr(),
-                                          base::Unretained(delegate)));
+  delegate->ShortWaitForElementExist(
+      selectors_, base::BindOnce(&AutofillAction::OnWaitForElement,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 base::Unretained(delegate)));
 }
 
 void AutofillAction::OnWaitForElement(ActionDelegate* delegate,

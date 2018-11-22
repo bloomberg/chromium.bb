@@ -52,8 +52,20 @@ class ActionDelegate {
   //
   // TODO(crbug.com/806868): Consider embedding that wait right into
   // WebController and eliminate double-lookup.
-  virtual void WaitForElement(const std::vector<std::string>& selectors,
-                              base::OnceCallback<void(bool)> callback) = 0;
+  virtual void ShortWaitForElementExist(
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(bool)> callback) = 0;
+
+  // Wait for up to |max_wait_time| for the element |selectors| to be visible on
+  // the page, then call |callback| with true if the element was visible, false
+  // otherwise.
+  //
+  // If |allow_interrupt| interrupts can run while waiting.
+  virtual void WaitForElementVisible(
+      base::TimeDelta max_wait_time,
+      bool allow_interrupt,
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(bool)> callback) = 0;
 
   // Click or tap the element given by |selectors| on the web page.
   virtual void ClickOrTapElement(const std::vector<std::string>& selectors,

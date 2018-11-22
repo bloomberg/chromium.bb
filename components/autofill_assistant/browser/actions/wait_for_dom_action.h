@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
-#include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
@@ -26,9 +26,10 @@ class WaitForDomAction : public Action {
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
 
-  void OnCheckDone(ProcessActionCallback callback);
+  void OnCheckDone(ProcessActionCallback callback, bool element_found);
 
-  std::unique_ptr<BatchElementChecker> batch_element_checker_;
+  base::WeakPtrFactory<WaitForDomAction> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(WaitForDomAction);
 };
 

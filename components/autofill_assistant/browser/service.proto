@@ -84,6 +84,10 @@ message SupportedScriptProto {
     // When set to true this script can be run in 'autostart mode'. Script won't
     // be shown.
     optional bool autostart = 8;
+
+    // When set to true this script will be run from WaitForDom actions with
+    // allow_interrupt=true.
+    optional bool interrupt = 9;
   }
   optional PresentationProto presentation = 2;
 }
@@ -391,6 +395,10 @@ message WaitForDomProto {
 
   // The element to wait for.
   repeated string selectors = 2;
+
+  // If true, run scripts flagged with 'interrupt=true' as soon as their
+  // preconditions match.
+  optional bool allow_interrupt = 3;
 }
 
 // Volatile upload of a portion of the dom for backend analysis, does not store

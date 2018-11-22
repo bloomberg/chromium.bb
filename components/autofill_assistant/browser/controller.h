@@ -70,9 +70,9 @@ class Controller : public ScriptExecutorDelegate,
 
   void GetOrCheckScripts(const GURL& url);
   void OnGetScripts(const GURL& url, bool result, const std::string& response);
-  void OnScriptChosen(const std::string& script_path);
+  void ExecuteScript(const std::string& script_path);
   void OnScriptExecuted(const std::string& script_path,
-                        ScriptExecutor::Result result);
+                        const ScriptExecutor::Result& result);
 
   // Check script preconditions every few seconds for a certain number of times.
   // If checks are already running, StartPeriodicScriptChecks resets the count.
@@ -83,6 +83,10 @@ class Controller : public ScriptExecutorDelegate,
   void StopPeriodicScriptChecks();
   void OnPeriodicScriptCheck();
   void GiveUp();
+
+  // Runs autostart scripts from |runnable_scripts|, if the conditions are
+  // right. Returns true if a script was auto-started.
+  bool MaybeAutostartScript(const std::vector<ScriptHandle>& runnable_scripts);
 
   // Overrides content::UiDelegate:
   void Start(const GURL& initialUrl) override;
