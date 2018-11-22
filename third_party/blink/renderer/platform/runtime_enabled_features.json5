@@ -713,11 +713,6 @@
       status:"experimental",
     },
     {
-      name: "MediaCapabilities",
-      origin_trial_feature_name: "MediaCapabilities",
-      status: "stable",
-    },
-    {
       name: "MediaCapabilitiesEncodingInfo",
       status: "experimental",
     },
