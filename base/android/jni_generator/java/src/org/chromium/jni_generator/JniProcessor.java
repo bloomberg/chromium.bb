@@ -61,13 +61,12 @@ import javax.tools.Diagnostic;
 public class JniProcessor extends AbstractProcessor {
     private static final Class<JniStaticNatives> JNI_STATIC_NATIVES_CLASS = JniStaticNatives.class;
 
-    static final String NATIVE_WRAPPER_CLASS_POSTFIX = "Jni";
+    private static final String NATIVE_WRAPPER_CLASS_POSTFIX = "Jni";
 
-    static final String NATIVE_CLASS_NAME_STR = "GEN_JNI";
-    static final String NATIVE_CLASS_PACKAGE_NAME = "org.chromium.base.natives";
-
-    static final ClassName NATIVE_CLASS_NAME =
-            ClassName.get(NATIVE_CLASS_PACKAGE_NAME, NATIVE_CLASS_NAME_STR);
+    // The native class name and package name used in debug.
+    private String mNativeClassStr = "GEN_JNI";
+    private String mNativeClassPackage = "org.chromium.base.natives";
+    private ClassName mNativeClassName;
 
     static final String NATIVE_TEST_FIELD_NAME = "TESTING_ENABLED";
     static final String NATIVE_REQUIRE_MOCK_FIELD_NAME = "REQUIRE_MOCK";
@@ -86,6 +85,7 @@ public class JniProcessor extends AbstractProcessor {
 
     // If true, native methods in GEN_JNI will be named as a hash of their descriptor.
     private static final boolean USE_HASH_FOR_METHODS = !ProcessorArgs.IS_JAVA_DEBUG;
+    private static final boolean USE_SHORTENED_NATIVE_CLASS = !ProcessorArgs.IS_JAVA_DEBUG;
 
     // Limits the number characters of the Base64 encoded hash
     // of the method descriptor used as name of the generated
@@ -112,6 +112,14 @@ public class JniProcessor extends AbstractProcessor {
     }
 
     public JniProcessor() {
+        // If non-debug we use shorter names to save space.
+        if (USE_SHORTENED_NATIVE_CLASS) {
+            // J.N
+            mNativeClassPackage = "J";
+            mNativeClassStr = "N";
+        }
+        mNativeClassName = ClassName.get(mNativeClassPackage, mNativeClassStr);
+
         FieldSpec.Builder testingFlagBuilder =
                 FieldSpec.builder(TypeName.BOOLEAN, NATIVE_TEST_FIELD_NAME)
                         .addModifiers(Modifier.STATIC, Modifier.PUBLIC);
@@ -128,7 +136,7 @@ public class JniProcessor extends AbstractProcessor {
         }
 
         // State of mNativesBuilder needs to be preserved between processing rounds.
-        mNativesBuilder = TypeSpec.classBuilder(NATIVE_CLASS_NAME)
+        mNativesBuilder = TypeSpec.classBuilder(mNativeClassName)
                                   .addAnnotation(createGeneratedAnnotation())
                                   .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                                   .addField(testingFlagBuilder.build())
@@ -215,7 +223,7 @@ public class JniProcessor extends AbstractProcessor {
             // Need to write NativeClass first because the wrapper classes
             // depend on it.
             JavaFile nativeClassFile =
-                    JavaFile.builder(NATIVE_CLASS_PACKAGE_NAME, mNativesBuilder.build()).build();
+                    JavaFile.builder(mNativeClassPackage, mNativesBuilder.build()).build();
 
             nativeClassFile.writeTo(processingEnv.getFiler());
 
@@ -394,12 +402,12 @@ public class JniProcessor extends AbstractProcessor {
                 MethodSpec.methodBuilder("get")
                         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                         .returns(nativeInterfaceType)
-                        .beginControlFlow("if ($T.$N)", NATIVE_CLASS_NAME, NATIVE_TEST_FIELD_NAME)
+                        .beginControlFlow("if ($T.$N)", mNativeClassName, NATIVE_TEST_FIELD_NAME)
                         .beginControlFlow("if ($N != null)", testTarget)
                         .addStatement("return $N", testTarget)
                         .endControlFlow()
                         .beginControlFlow(
-                                "if ($T.$N)", NATIVE_CLASS_NAME, NATIVE_REQUIRE_MOCK_FIELD_NAME)
+                                "if ($T.$N)", mNativeClassName, NATIVE_REQUIRE_MOCK_FIELD_NAME)
                         .addStatement("throw new UnsupportedOperationException($S)",
                                 noMockExceptionString)
                         .endControlFlow()
@@ -466,7 +474,7 @@ public class JniProcessor extends AbstractProcessor {
         }
 
         // Make call to native function.
-        builder.addCode("$T.$N(", NATIVE_CLASS_NAME, staticNativeMethod);
+        builder.addCode("$T.$N(", mNativeClassName, staticNativeMethod);
 
         // Add params to native call.
         ArrayList<String> paramNames = new ArrayList<>();

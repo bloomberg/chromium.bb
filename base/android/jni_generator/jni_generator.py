@@ -46,18 +46,6 @@ _MAIN_DEX_REGEX = re.compile(
     r'^\s*(?:@(?:\w+\.)*\w+\s+)*@MainDex\b',
     re.MULTILINE)
 
-# 'Proxy' native methods are declared in an @JniStaticNatives interface without
-# a native qualifier and indicate that the JNI annotation processor should
-# generate code to link between the equivalent native method as if it were
-# declared statically.
-# Under the hood the annotation processor generates the actual native method
-# declaration in another another class (org.chromium.base.natives.GEN_JNI)
-# but generates wrapper code so it can be called through the declaring class.
-NATIVE_PROXY_CLASS_NAME = 'GEN_JNI'
-NATIVE_PROXY_PACKAGE_NAME = 'org/chromium/base/natives'
-NATIVE_PROXY_QUALIFIED_NAME = '%s/%s' % (NATIVE_PROXY_PACKAGE_NAME,
-                                         NATIVE_PROXY_CLASS_NAME)
-
 # Matches on method declarations unlike _EXTRACT_NATIVES_REGEX
 # doesn't require name to be prefixed with native, and does not
 # require a native qualifier.
@@ -828,9 +816,35 @@ class JNIFromJavaP(object):
     return jni_from_javap
 
 
-class NativeProxyHelpers(object):
+# 'Proxy' native methods are declared in an @JniStaticNatives interface without
+# a native qualifier and indicate that the JNI annotation processor should
+# generate code to link between the equivalent native method as if it were
+# declared statically.
+# Under the hood the annotation processor generates the actual native method
+# declaration in another class (org.chromium.base.natives.GEN_JNI)
+# but generates wrapper code so it can be called through the declaring class.
+class ProxyHelpers(object):
+  NATIVE_PROXY_CLASS_NAME = 'GEN_JNI'
+  NATIVE_PROXY_PACKAGE_NAME = 'org/chromium/base/natives'
+
   MAX_CHARS_FOR_HASHED_NATIVE_METHODS = 8
-  ESCAPED_NATIVE_PROXY_CLASS = EscapeClassName(NATIVE_PROXY_QUALIFIED_NAME)
+
+  @staticmethod
+  def GetClass(use_hash):
+    if use_hash:
+      return 'N'
+    return ProxyHelpers.NATIVE_PROXY_CLASS_NAME
+
+  @staticmethod
+  def GetPackage(use_hash):
+    if use_hash:
+      return 'J'
+    return ProxyHelpers.NATIVE_PROXY_PACKAGE_NAME
+
+  @staticmethod
+  def GetQualifiedClass(use_hash):
+    return '%s/%s' % (ProxyHelpers.GetPackage(use_hash),
+                      ProxyHelpers.GetClass(use_hash))
 
   @staticmethod
   def CreateHashedMethodName(fully_qualified_class_name, method_name):
@@ -840,14 +854,14 @@ class NativeProxyHelpers(object):
     m.update(descriptor)
     hash = m.digest()
     hashed_name = ('M' + base64.b64encode(hash, altchars='$_')).rstrip('=')
-    return hashed_name[0:NativeProxyHelpers.MAX_CHARS_FOR_HASHED_NATIVE_METHODS]
+    return hashed_name[0:ProxyHelpers.MAX_CHARS_FOR_HASHED_NATIVE_METHODS]
 
   @staticmethod
   def CreateProxyMethodName(fully_qualified_class, old_name, use_hash=False):
     """Returns the literal method name for the corresponding proxy method"""
     if use_hash:
-      hashed_name = NativeProxyHelpers.CreateHashedMethodName(
-          fully_qualified_class, old_name)
+      hashed_name = ProxyHelpers.CreateHashedMethodName(fully_qualified_class,
+                                                        old_name)
       return hashed_name
 
     # The annotation processor currently uses a method name
@@ -871,7 +885,7 @@ class NativeProxyHelpers(object):
         params = JniParams.Parse(method.group('params'), use_proxy_types=True)
         return_type = JavaTypeToProxyCast(method.group('return_type'))
 
-        unescaped_proxy_name = NativeProxyHelpers.CreateProxyMethodName(
+        unescaped_proxy_name = ProxyHelpers.CreateProxyMethodName(
             fully_qualified_class, name, use_hash)
         native = NativeMethod(
             static=True,
@@ -898,7 +912,7 @@ class JNIFromJavaSource(object):
     natives = ExtractNatives(contents, options.ptr_type)
     called_by_natives = ExtractCalledByNatives(self.jni_params, contents)
 
-    natives += NativeProxyHelpers.ExtractStaticProxyNatives(
+    natives += ProxyHelpers.ExtractStaticProxyNatives(
         fully_qualified_class, contents, options.ptr_type,
         options.use_proxy_hash)
 
@@ -924,9 +938,10 @@ class JNIFromJavaSource(object):
 class HeaderFileGeneratorHelper(object):
   """Include helper methods for header generators."""
 
-  def __init__(self, class_name, fully_qualified_class):
+  def __init__(self, class_name, fully_qualified_class, use_proxy_hash):
     self.class_name = class_name
     self.fully_qualified_class = fully_qualified_class
+    self.use_proxy_hash = use_proxy_hash
 
   def GetStubName(self, native):
     """Return the name of the stub function for this native method.
@@ -939,8 +954,8 @@ class HeaderFileGeneratorHelper(object):
     """
     if native.is_proxy:
       method_name = EscapeClassName(native.proxy_name)
-      return 'Java_%s_%s' % (EscapeClassName(NATIVE_PROXY_QUALIFIED_NAME),
-                             method_name)
+      return 'Java_%s_%s' % (EscapeClassName(
+          ProxyHelpers.GetQualifiedClass(self.use_proxy_hash)), method_name)
 
     template = Template('Java_${JAVA_NAME}_native${NAME}')
 
@@ -955,7 +970,8 @@ class HeaderFileGeneratorHelper(object):
     ret = {}
     for entry in origin:
       if isinstance(entry, NativeMethod) and entry.is_proxy:
-        ret[NATIVE_PROXY_CLASS_NAME] = NATIVE_PROXY_QUALIFIED_NAME
+        ret[ProxyHelpers.GetClass(self.use_proxy_hash)] \
+          = ProxyHelpers.GetQualifiedClass(self.use_proxy_hash)
         continue
       ret[self.class_name] = self.fully_qualified_class
 
@@ -988,7 +1004,7 @@ const char kClassPath_${JAVA_CLASS}[] = \
       }
       # Since all proxy methods use the same class, defining this in every
       # header file would result in duplicated extern initializations.
-      if full_clazz != NATIVE_PROXY_QUALIFIED_NAME:
+      if full_clazz != ProxyHelpers.GetQualifiedClass(self.use_proxy_hash):
         ret += [template.substitute(values)]
 
     class_getter = """\
@@ -1016,7 +1032,7 @@ JNI_REGISTRATION_EXPORT std::atomic<jclass> g_${JAVA_CLASS}_clazz(nullptr);
       }
       # Since all proxy methods use the same class, defining this in every
       # header file would result in duplicated extern initializations.
-      if full_clazz != NATIVE_PROXY_QUALIFIED_NAME:
+      if full_clazz != ProxyHelpers.GetQualifiedClass(self.use_proxy_hash):
         ret += [template.substitute(values)]
 
     return ''.join(ret)
@@ -1037,7 +1053,7 @@ class InlHeaderFileGenerator(object):
     self.jni_params = jni_params
     self.options = options
     self.helper = HeaderFileGeneratorHelper(
-        self.class_name, fully_qualified_class)
+        self.class_name, fully_qualified_class, self.options.use_proxy_hash)
 
 
   def GetContent(self):
@@ -1525,7 +1541,8 @@ See SampleForTests.java for more details.
       '--use_proxy_hash',
       action='store_true',
       help='Hashes the native declaration of methods used '
-      'in an @JniNatives interface')
+      'in @JniNatives interface. And uses a shorter name and package'
+      ' than GEN_JNI.')
   options, args = option_parser.parse_args(argv)
   if options.jar_file:
     input_file = ExtractJarInputFile(options.jar_file, options.input_file,

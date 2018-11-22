@@ -26,7 +26,7 @@
 static void JNI_SampleForAnnotationProcessor_Foo(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT void Java_org_chromium_base_natives_GEN_1JNI_MygCV2jQ(
+JNI_GENERATOR_EXPORT void Java_J_N_MygCV2jQ(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_Foo(env, base::android::JavaParamRef<jclass>(env,
@@ -37,7 +37,7 @@ static base::android::ScopedJavaLocalRef<jobject> JNI_SampleForAnnotationProcess
     const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobject>& sample);
 
-JNI_GENERATOR_EXPORT jobject Java_org_chromium_base_natives_GEN_1JNI_MHuqnmXT(
+JNI_GENERATOR_EXPORT jobject Java_J_N_MHuqnmXT(
     JNIEnv* env,
     jclass jcaller,
     jobject sample) {
@@ -49,7 +49,7 @@ static base::android::ScopedJavaLocalRef<jstring> JNI_SampleForAnnotationProcess
     env, const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jstring>& stringToReverse);
 
-JNI_GENERATOR_EXPORT jstring Java_org_chromium_base_natives_GEN_1JNI_MM5Xkwyy(
+JNI_GENERATOR_EXPORT jstring Java_J_N_MM5Xkwyy(
     JNIEnv* env,
     jclass jcaller,
     jstring stringToReverse) {
@@ -62,7 +62,7 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
     base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobjectArray>& strs);
 
-JNI_GENERATOR_EXPORT jobjectArray Java_org_chromium_base_natives_GEN_1JNI_MAC2QhR9(
+JNI_GENERATOR_EXPORT jobjectArray Java_J_N_MAC2QhR9(
     JNIEnv* env,
     jclass jcaller,
     jobjectArray strs) {
@@ -75,7 +75,7 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
     base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobjectArray>& strs);
 
-JNI_GENERATOR_EXPORT jobjectArray Java_org_chromium_base_natives_GEN_1JNI_MGhRh4Nd(
+JNI_GENERATOR_EXPORT jobjectArray Java_J_N_MGhRh4Nd(
     JNIEnv* env,
     jclass jcaller,
     jobjectArray strs) {
@@ -87,7 +87,7 @@ JNI_GENERATOR_EXPORT jobjectArray Java_org_chromium_base_natives_GEN_1JNI_MGhRh4
 static jboolean JNI_SampleForAnnotationProcessor_HasPhalange(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT jboolean Java_org_chromium_base_natives_GEN_1JNI_MW0aEs4h(
+JNI_GENERATOR_EXPORT jboolean Java_J_N_MW0aEs4h(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_HasPhalange(env, base::android::JavaParamRef<jclass>(env,
@@ -114,7 +114,7 @@ static base::android::ScopedJavaLocalRef<jintArray>
     jboolean zbool,
     const base::android::JavaParamRef<jbooleanArray>& bools);
 
-JNI_GENERATOR_EXPORT jintArray Java_org_chromium_base_natives_GEN_1JNI_MlVFI4RX(
+JNI_GENERATOR_EXPORT jintArray Java_J_N_MlVFI4RX(
     JNIEnv* env,
     jclass jcaller,
     jint zint,
@@ -158,7 +158,7 @@ static void JNI_SampleForAnnotationProcessor_TestSpecialTypes(JNIEnv* env, const
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jobjectArray>& objects);
 
-JNI_GENERATOR_EXPORT void Java_org_chromium_base_natives_GEN_1JNI_MqOnlud7(
+JNI_GENERATOR_EXPORT void Java_J_N_MqOnlud7(
     JNIEnv* env,
     jclass jcaller,
     jclass clazz,
@@ -188,7 +188,7 @@ static base::android::ScopedJavaLocalRef<jthrowable>
     JNI_SampleForAnnotationProcessor_ReturnThrowable(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT jthrowable Java_org_chromium_base_natives_GEN_1JNI_MuZc76Vt(
+JNI_GENERATOR_EXPORT jthrowable Java_J_N_MuZc76Vt(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_ReturnThrowable(env,
@@ -199,7 +199,7 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
     JNI_SampleForAnnotationProcessor_ReturnThrowables(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT jobjectArray Java_org_chromium_base_natives_GEN_1JNI_MAD53J7V(
+JNI_GENERATOR_EXPORT jobjectArray Java_J_N_MAD53J7V(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_ReturnThrowables(env,
@@ -210,7 +210,7 @@ static base::android::ScopedJavaLocalRef<jclass>
     JNI_SampleForAnnotationProcessor_ReturnClass(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT jclass Java_org_chromium_base_natives_GEN_1JNI_M_00024ZgOi4g(
+JNI_GENERATOR_EXPORT jclass Java_J_N_M_00024ZgOi4g(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_ReturnClass(env, base::android::JavaParamRef<jclass>(env,
@@ -221,7 +221,7 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
     JNI_SampleForAnnotationProcessor_ReturnClasses(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT jobjectArray Java_org_chromium_base_natives_GEN_1JNI_M_00024hL1577(
+JNI_GENERATOR_EXPORT jobjectArray Java_J_N_M_00024hL1577(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_ReturnClasses(env,
@@ -232,7 +232,7 @@ static base::android::ScopedJavaLocalRef<jstring>
     JNI_SampleForAnnotationProcessor_ReturnString(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT jstring Java_org_chromium_base_natives_GEN_1JNI_M0k1OjBK(
+JNI_GENERATOR_EXPORT jstring Java_J_N_M0k1OjBK(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_ReturnString(env, base::android::JavaParamRef<jclass>(env,
@@ -243,7 +243,7 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
     JNI_SampleForAnnotationProcessor_ReturnStrings(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT jobjectArray Java_org_chromium_base_natives_GEN_1JNI_Mssfs54E(
+JNI_GENERATOR_EXPORT jobjectArray Java_J_N_Mssfs54E(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_ReturnStrings(env,
@@ -254,7 +254,7 @@ static base::android::ScopedJavaLocalRef<jobject>
     JNI_SampleForAnnotationProcessor_ReturnStruct(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT jobject Java_org_chromium_base_natives_GEN_1JNI_MSzcel_1H(
+JNI_GENERATOR_EXPORT jobject Java_J_N_MSzcel_1H(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_ReturnStruct(env, base::android::JavaParamRef<jclass>(env,
@@ -265,7 +265,7 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
     JNI_SampleForAnnotationProcessor_ReturnStructs(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT jobjectArray Java_org_chromium_base_natives_GEN_1JNI_MIBrQLK4(
+JNI_GENERATOR_EXPORT jobjectArray Java_J_N_MIBrQLK4(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_ReturnStructs(env,
@@ -276,7 +276,7 @@ static base::android::ScopedJavaLocalRef<jobject>
     JNI_SampleForAnnotationProcessor_ReturnObject(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT jobject Java_org_chromium_base_natives_GEN_1JNI_M_00024hPywjv(
+JNI_GENERATOR_EXPORT jobject Java_J_N_M_00024hPywjv(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_ReturnObject(env, base::android::JavaParamRef<jclass>(env,
@@ -287,7 +287,7 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
     JNI_SampleForAnnotationProcessor_ReturnObjects(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
-JNI_GENERATOR_EXPORT jobjectArray Java_org_chromium_base_natives_GEN_1JNI_MPpCU1l5(
+JNI_GENERATOR_EXPORT jobjectArray Java_J_N_MPpCU1l5(
     JNIEnv* env,
     jclass jcaller) {
   return JNI_SampleForAnnotationProcessor_ReturnObjects(env,
