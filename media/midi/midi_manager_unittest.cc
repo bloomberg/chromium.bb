@@ -14,9 +14,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/system/system_monitor.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "media/midi/midi_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -144,7 +144,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
 
 class MidiManagerTest : public ::testing::Test {
  public:
-  MidiManagerTest() : message_loop_(std::make_unique<base::MessageLoop>()) {
+  MidiManagerTest() {
     std::unique_ptr<FakeMidiManagerFactory> factory =
         std::make_unique<FakeMidiManagerFactory>();
     factory_ = factory->GetWeakPtr();
@@ -217,7 +217,7 @@ class MidiManagerTest : public ::testing::Test {
   base::WeakPtr<FakeMidiManagerFactory> factory() { return factory_; }
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::ScopedTaskEnvironment env_;
   base::WeakPtr<FakeMidiManagerFactory> factory_;
   std::unique_ptr<MidiService> service_;
 
