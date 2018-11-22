@@ -33,9 +33,7 @@ class MEDIA_EXPORT DataSource {
                     const DataSource::ReadCB& read_cb) = 0;
 
   // Stops the DataSource. Once this is called all future Read() calls will
-  // return an error. This is a synchronous call and may be called from any
-  // thread. Once called, the DataSource may no longer be used and should be
-  // destructed shortly thereafter.
+  // return an error.
   virtual void Stop() = 0;
 
   // Similar to Stop(), but only aborts current reads and not future reads.
