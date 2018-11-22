@@ -52,6 +52,38 @@ using blink::WebTouchEvent;
 
 namespace {
 
+// A dummy RenderWidgetHostNSViewClientHelper implementation which no-ops all
+// functions.
+class DummyClientHelper : public RenderWidgetHostNSViewClientHelper {
+ public:
+  explicit DummyClientHelper() {}
+
+ private:
+  // RenderWidgetHostNSViewClientHelper implementation.
+  id GetRootBrowserAccessibilityElement() override { return nil; }
+  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
+                            const ui::LatencyInfo& latency_info) override {}
+  void ForwardKeyboardEventWithCommands(
+      const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency_info,
+      const std::vector<EditCommand>& commands) override {}
+  void RouteOrProcessMouseEvent(
+      const blink::WebMouseEvent& web_event) override {}
+  void RouteOrProcessTouchEvent(
+      const blink::WebTouchEvent& web_event) override {}
+  void RouteOrProcessWheelEvent(
+      const blink::WebMouseWheelEvent& web_event) override {}
+  void ForwardMouseEvent(const blink::WebMouseEvent& web_event) override {}
+  void ForwardWheelEvent(const blink::WebMouseWheelEvent& web_event) override {}
+  void GestureBegin(blink::WebGestureEvent begin_event,
+                    bool is_synthetically_injected) override {}
+  void GestureUpdate(blink::WebGestureEvent update_event) override {}
+  void GestureEnd(blink::WebGestureEvent end_event) override {}
+  void SmartMagnify(const blink::WebGestureEvent& web_event) override {}
+
+  DISALLOW_COPY_AND_ASSIGN(DummyClientHelper);
+};
+
 // Touch bar identifier.
 NSString* const kWebContentTouchBarId = @"web-content";
 
@@ -384,8 +416,7 @@ void ExtractUnderlines(NSAttributedString* string,
   // to forward messages to that client.
   content::mojom::RenderWidgetHostNSViewClientRequest dummyClientRequest =
       mojo::MakeRequest(&dummyClient_);
-  dummyClientHelper_ = RenderWidgetHostNSViewClientHelper::CreateForMojoClient(
-      dummyClient_.get());
+  dummyClientHelper_ = std::make_unique<DummyClientHelper>();
   client_ = dummyClient_.get();
   clientHelper_ = dummyClientHelper_.get();
 

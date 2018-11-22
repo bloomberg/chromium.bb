@@ -26,7 +26,6 @@ namespace mojom {
 class RenderWidgetHostNSViewClient;
 }  // namespace mojom
 
-class BrowserAccessibilityManager;
 struct EditCommand;
 struct NativeWebKeyboardEvent;
 
@@ -38,12 +37,6 @@ struct NativeWebKeyboardEvent;
 // types.
 class RenderWidgetHostNSViewClientHelper {
  public:
-  // Create a RenderWidgetHostNSViewClientHelper that will only implement
-  // functionality through mojo (this is in contrast with an in-process
-  // RenderWidgetHostNSViewClientHelper that would use raw pointer access).
-  static std::unique_ptr<RenderWidgetHostNSViewClientHelper>
-  CreateForMojoClient(content::mojom::RenderWidgetHostNSViewClient* client);
-
   RenderWidgetHostNSViewClientHelper() {}
   virtual ~RenderWidgetHostNSViewClientHelper() {}
 
