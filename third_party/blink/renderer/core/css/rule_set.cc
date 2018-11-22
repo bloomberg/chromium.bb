@@ -137,6 +137,7 @@ static void ExtractSelectorValues(const CSSSelector* selector,
         case CSSSelector::kPseudoPart:
         case CSSSelector::kPseudoHost:
         case CSSSelector::kPseudoHostContext:
+        case CSSSelector::kPseudoSpatialNavigationFocus:
           pseudo_type = selector->GetPseudoType();
           break;
         case CSSSelector::kPseudoWebKitCustomElement:
@@ -207,6 +208,9 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
     case CSSSelector::kPseudoAnyLink:
     case CSSSelector::kPseudoWebkitAnyLink:
       link_pseudo_class_rules_.push_back(rule_data);
+      return true;
+    case CSSSelector::kPseudoSpatialNavigationFocus:
+      spatial_navigation_focus_class_rules_.push_back(rule_data);
       return true;
     case CSSSelector::kPseudoFocus:
       focus_pseudo_class_rules_.push_back(rule_data);
@@ -382,6 +386,7 @@ void RuleSet::CompactRules() {
   link_pseudo_class_rules_.ShrinkToFit();
   cue_pseudo_rules_.ShrinkToFit();
   focus_pseudo_class_rules_.ShrinkToFit();
+  spatial_navigation_focus_class_rules_.ShrinkToFit();
   universal_rules_.ShrinkToFit();
   shadow_host_rules_.ShrinkToFit();
   page_rules_.ShrinkToFit();
@@ -416,6 +421,7 @@ void RuleSet::Trace(blink::Visitor* visitor) {
   visitor->Trace(link_pseudo_class_rules_);
   visitor->Trace(cue_pseudo_rules_);
   visitor->Trace(focus_pseudo_class_rules_);
+  visitor->Trace(spatial_navigation_focus_class_rules_);
   visitor->Trace(universal_rules_);
   visitor->Trace(shadow_host_rules_);
   visitor->Trace(page_rules_);

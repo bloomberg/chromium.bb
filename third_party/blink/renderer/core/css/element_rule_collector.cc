@@ -235,6 +235,11 @@ void ElementRuleCollector::CollectMatchingRules(
   if (SelectorChecker::MatchesFocusPseudoClass(element))
     CollectMatchingRulesForList(match_request.rule_set->FocusPseudoClassRules(),
                                 cascade_order, match_request);
+  if (SelectorChecker::MatchesSpatialNavigationFocusPseudoClass(element)) {
+    CollectMatchingRulesForList(
+        match_request.rule_set->SpatialNavigationFocusPseudoClassRules(),
+        cascade_order, match_request);
+  }
   AtomicString element_name = matching_ua_rules_
                                   ? element.localName()
                                   : element.LocalNameForSelectorMatching();
