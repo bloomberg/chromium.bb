@@ -48,14 +48,6 @@ enum WeakHandlingFlag {
   kWeakHandling,
 };
 
-template <typename T>
-struct IsTriviallyDestructible {
-  // TODO(slangley): crbug.com/783060 - std::is_trivially_destructible behaves
-  // differently on across platforms.
-  static constexpr bool value =
-      __has_trivial_destructor(T) && std::is_destructible<T>::value;
-};
-
 template <typename T, typename U>
 struct IsSubclass {
  private:

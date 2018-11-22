@@ -390,7 +390,9 @@ void HeapVectorBacking<T, Traits>::Finalize(void* pointer) {
       "HeapVectorBacking doesn't support objects that cannot be cleared as "
       "unused with memset or don't have a vtable");
 
-  DCHECK(!WTF::IsTriviallyDestructible<T>::value);
+  static_assert(
+      !std::is_trivially_destructible<T>::value,
+      "Finalization of trivially destructible classes should not happen.");
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(pointer);
   // Use the payload size as recorded by the heap to determine how many
   // elements to finalize.
@@ -417,7 +419,9 @@ void HeapVectorBacking<T, Traits>::Finalize(void* pointer) {
 template <typename Table>
 void HeapHashTableBacking<Table>::Finalize(void* pointer) {
   using Value = typename Table::ValueType;
-  DCHECK(!WTF::IsTriviallyDestructible<Value>::value);
+  static_assert(
+      !std::is_trivially_destructible<Value>::value,
+      "Finalization of trivially destructible classes should not happen.");
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(pointer);
   // Use the payload size as recorded by the heap to determine how many
   // elements to finalize.
