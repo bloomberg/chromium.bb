@@ -60,17 +60,6 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info,
   if (!success)
     LOG(ERROR) << "gpu::CollectGraphicsInfo failed.";
 
-#if defined(OS_WIN)
-  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
-    gpu_info->direct_composition =
-        DirectCompositionSurfaceWin::IsDirectCompositionSupported();
-    gpu_info->supports_overlays =
-        DirectCompositionSurfaceWin::AreOverlaysSupported();
-    gpu_info->overlay_capabilities =
-        DirectCompositionSurfaceWin::GetOverlayCapabilities();
-  }
-#endif  // defined(OS_WIN)
-
   if (success) {
     base::TimeDelta collect_context_time =
         base::TimeTicks::Now() - before_collect_context_graphics_info;
@@ -78,6 +67,25 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info,
   }
   return success;
 }
+
+#if defined(OS_WIN)
+// This has to be called after a context is created, active GPU is identified,
+// and GPU driver bug workarounds are computed again. Otherwise the workaround
+// |disable_direct_composition| may not be correctly applied.
+// Also, this has to be called after falling back to SwiftShader decision is
+// finalized because this function depends on GL is ANGLE's GLES or not.
+void InitializeDirectCompositionOverlaySupport(GPUInfo* gpu_info) {
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
+    DCHECK(gpu_info);
+    gpu_info->direct_composition =
+        DirectCompositionSurfaceWin::IsDirectCompositionSupported();
+    gpu_info->supports_overlays =
+        DirectCompositionSurfaceWin::AreOverlaysSupported();
+    gpu_info->overlay_capabilities =
+        DirectCompositionSurfaceWin::GetOverlayCapabilities();
+  }
+}
+#endif  // defined(OS_WIN)
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST)
 bool CanAccessNvidiaDeviceFile() {
@@ -285,6 +293,10 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     }
   }
 
+#if defined(OS_WIN)
+  InitializeDirectCompositionOverlaySupport(&gpu_info_);
+#endif
+
 #if defined(OS_LINUX)
   // Driver may create a compatibility profile context when collect graphics
   // information on Linux platform. Try to collect graphics information
@@ -465,6 +477,10 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
       VLOG(1) << "gl::init::CreateOffscreenGLSurface failed";
     }
   }
+
+#if defined(OS_WIN)
+  InitializeDirectCompositionOverlaySupport(&gpu_info_);
+#endif
 
 #if defined(OS_LINUX)
   // Driver may create a compatibility profile context when collect graphics
