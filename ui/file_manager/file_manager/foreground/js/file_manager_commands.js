@@ -746,7 +746,7 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
       var directoryEntry = fileManager.getCurrentDirectoryEntry();
       event.canExecute = !fileManager.directoryModel.isReadOnly() &&
           !fileManager.namingController.isRenamingInProgress() &&
-          !directoryModel.isSearching() && !directoryModel.isScanning() &&
+          !directoryModel.isSearching() &&
           CommandUtil.hasCapability([directoryEntry], 'canAddChildren');
       event.command.setHidden(false);
     }
