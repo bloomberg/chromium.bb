@@ -432,6 +432,15 @@ class SemanticTests(Base):
         except ParseError as exp:
             self.assertEqual(len(exp.warnings), 3)
 
+    def test_exclusive_specifiers_error_in_lint_mode(self):
+        with self.assertRaises(ParseError):
+            self.parse_exp('BUG1234 [ Mac Win ] failures/expected/text.html [ Failure ]',
+                           is_lint_mode=True)
+
+        with self.assertRaises(ParseError):
+            self.parse_exp('BUG1234 [ Mac Debug Release ] failures/expected/text.html [ Failure ]',
+                           is_lint_mode=True)
+
     def test_missing_bugid(self):
         self.parse_exp('failures/expected/text.html [ Failure ]', is_lint_mode=False)
         self.assertFalse(self._exp.has_warnings())

@@ -22,33 +22,53 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # Not intended to be run as a test.
 fast/harness/results.html [ WontFix ]
 # Platform specific virtual test suites.
-[ Win Mac Android ] virtual/linux-subpixel [ WontFix ]
+ [ Win ] virtual/linux-subpixel/ [ WontFix ]
+ [ Mac ] virtual/linux-subpixel/ [ WontFix ]
+ [ Android ] virtual/linux-subpixel/ [ WontFix ]
 
 # Chrome Win/Linux doesn't support emacs key-bindings.
-[ Win Linux ] editing/pasteboard/emacs-cntl-y-001.html [ WontFix ]
-[ Win Linux ] editing/pasteboard/emacs-ctrl-a-k-y.html [ WontFix ]
-[ Win Linux ] editing/pasteboard/emacs-ctrl-k-with-move.html [ WontFix ]
-[ Win Linux ] editing/pasteboard/emacs-ctrl-k-y-001.html [ WontFix ]
-[ Win Linux ] editing/input/emacs-ctrl-o.html [ WontFix ]
-[ Win Linux ] fast/events/inputevents/inputevent-yank.html [ WontFix ]
-[ Win Linux ] virtual/mouseevent_fractional/fast/events/inputevents/inputevent-yank.html [ WontFix ]
-[ Win Linux ] virtual/user-activation-v2/fast/events/inputevents/inputevent-yank.html [ WontFix ]
+ [ Win ] editing/pasteboard/emacs-cntl-y-001.html [ WontFix ]
+ [ Linux ] editing/pasteboard/emacs-cntl-y-001.html [ WontFix ]
+ [ Win ] editing/pasteboard/emacs-ctrl-a-k-y.html [ WontFix ]
+ [ Linux ] editing/pasteboard/emacs-ctrl-a-k-y.html [ WontFix ]
+ [ Win ] editing/pasteboard/emacs-ctrl-k-with-move.html [ WontFix ]
+ [ Linux ] editing/pasteboard/emacs-ctrl-k-with-move.html [ WontFix ]
+ [ Win ] editing/pasteboard/emacs-ctrl-k-y-001.html [ WontFix ]
+ [ Linux ] editing/pasteboard/emacs-ctrl-k-y-001.html [ WontFix ]
+ [ Win ] editing/input/emacs-ctrl-o.html [ WontFix ]
+ [ Linux ] editing/input/emacs-ctrl-o.html [ WontFix ]
+ [ Win ] fast/events/inputevents/inputevent-yank.html [ WontFix ]
+ [ Linux ] fast/events/inputevents/inputevent-yank.html [ WontFix ]
+ [ Win ] virtual/mouseevent_fractional/fast/events/inputevents/inputevent-yank.html [ WontFix ]
+ [ Linux ] virtual/mouseevent_fractional/fast/events/inputevents/inputevent-yank.html [ WontFix ]
+ [ Win ] virtual/user-activation-v2/fast/events/inputevents/inputevent-yank.html [ WontFix ]
+ [ Linux ] virtual/user-activation-v2/fast/events/inputevents/inputevent-yank.html [ WontFix ]
 
 # Chrome Mac doesn't support Ctrl+Up/Down key-bindings.
 [ Mac ] editing/input/ctrl-up-down.html [ WontFix ]
 
 # Chrome uses different keyboard accelerators from those used by Safari, so
 # this test will always fail.
-[ Linux Win ] fast/events/option-tab.html [ WontFix ]
-[ Linux Win ] virtual/mouseevent_fractional/fast/events/option-tab.html [ WontFix ]
-[ Linux Win ] virtual/user-activation-v2/fast/events/option-tab.html [ WontFix ]
+ [ Linux ] fast/events/option-tab.html [ WontFix ]
+ [ Win ] fast/events/option-tab.html [ WontFix ]
+ [ Linux ] virtual/mouseevent_fractional/fast/events/option-tab.html [ WontFix ]
+ [ Win ] virtual/mouseevent_fractional/fast/events/option-tab.html [ WontFix ]
+ [ Linux ] virtual/user-activation-v2/fast/events/option-tab.html [ WontFix ]
+ [ Win ] virtual/user-activation-v2/fast/events/option-tab.html [ WontFix ]
 
 # This test only applies to overlay scrollbar platforms.
-[ Win Linux ] fast/dom/partial-layout-overlay-scrollbars.html [ WontFix ]
+ [ Win ] fast/dom/partial-layout-overlay-scrollbars.html [ WontFix ]
+ [ Linux ] fast/dom/partial-layout-overlay-scrollbars.html [ WontFix ]
 
 # Tests trak table support / letter spacing specific to Mac system font
 # Only maintain this for the latest macOS (and Retina is currently 10.12).
-[ Win Linux Android Mac10.10 Mac10.11 Mac10.12 Retina ] fast/text/mac-system-ui-trak.html [ WontFix ]
+ [ Win ] fast/text/mac-system-ui-trak.html [ WontFix ]
+ [ Linux ] fast/text/mac-system-ui-trak.html [ WontFix ]
+ [ Android ] fast/text/mac-system-ui-trak.html [ WontFix ]
+ [ Mac10.10 ] fast/text/mac-system-ui-trak.html [ WontFix ]
+ [ Mac10.11 ] fast/text/mac-system-ui-trak.html [ WontFix ]
+ [ Mac10.12 ] fast/text/mac-system-ui-trak.html [ WontFix ]
+ [ Retina ] fast/text/mac-system-ui-trak.html [ WontFix ]
 
  # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
@@ -89,20 +109,30 @@ fast/harness/results.html [ WontFix ]
 [ Mac ] virtual/user-activation-v2/fast/events/menu-key-context-menu.html [ WontFix ]
 
 # These tests are specific to Linux.
-[ Mac Win ] editing/input/linux_ltr_composition_underline.html [ WontFix ]
-[ Mac Win ] editing/input/linux_rtl_composition_underline.html [ WontFix ]
-[ Mac Win ] editing/selection/linux_selection_color.html [ WontFix ]
-[ Mac Win ] fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
-[ Mac Win ] fast/text/international/arabic-vertical-offset.html [ WontFix ]
-[ Mac Win ] fast/text/international/complex-joining-using-gpos.html [ WontFix ]
-[ Mac Win ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
-[ Mac Win ] svg/text/text-with-geometric-precision.svg [ WontFix ]
+ [ Mac ] editing/input/linux_ltr_composition_underline.html [ WontFix ]
+ [ Win ] editing/input/linux_ltr_composition_underline.html [ WontFix ]
+ [ Mac ] editing/input/linux_rtl_composition_underline.html [ WontFix ]
+ [ Win ] editing/input/linux_rtl_composition_underline.html [ WontFix ]
+ [ Mac ] editing/selection/linux_selection_color.html [ WontFix ]
+ [ Win ] editing/selection/linux_selection_color.html [ WontFix ]
+ [ Mac ] fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
+ [ Win ] fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
+ [ Mac ] fast/text/international/arabic-vertical-offset.html [ WontFix ]
+ [ Win ] fast/text/international/arabic-vertical-offset.html [ WontFix ]
+ [ Mac ] fast/text/international/complex-joining-using-gpos.html [ WontFix ]
+ [ Win ] fast/text/international/complex-joining-using-gpos.html [ WontFix ]
+ [ Mac ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
+ [ Win ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
+ [ Mac ] svg/text/text-with-geometric-precision.svg [ WontFix ]
+ [ Win ] svg/text/text-with-geometric-precision.svg [ WontFix ]
 
 # Mac has different fallback behavior so that this test won't work there
 [ Mac ] fast/text/font-cachekey.html [ WontFix ]
 
 # AAT/mortx shaping not supported on platforms other than Mac
-[ Linux Win Android ] fast/text/aat-morx.html [ WontFix ]
+ [ Linux ] fast/text/aat-morx.html [ WontFix ]
+ [ Win ] fast/text/aat-morx.html [ WontFix ]
+ [ Android ] fast/text/aat-morx.html [ WontFix ]
 
 # Linux layout tests do not have a Myanmar fallback font.
 [ Linux ] inspector-protocol/layout-fonts/fallback-myanmar.js [ WontFix ]
@@ -124,7 +154,8 @@ virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/verti
 virtual/picture-in-picture/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ WontFix ]
 
 # Only run fake-Android tests on Linux
-[ Mac Win ] virtual/android [ WontFix ]
+ [ Mac ] virtual/android/ [ WontFix ]
+ [ Win ] virtual/android/ [ WontFix ]
 
 # Android doesn't support plugins
 virtual/android/fullscreen/rendering/backdrop-object.html [ WontFix ]
@@ -168,11 +199,16 @@ crbug.com/759914 external/wpt/css/css-values/ch-unit-002.html [ WontFix ]
 
 # CSS2 tests that rely on undefined behaviors (height of line-height: normal).
 external/wpt/css/CSS2/linebox/inline-formatting-context-002.xht [ WontFix ]
-[ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ WontFix ]
-[ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-004.xht [ WontFix ]
-[ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-005.xht [ WontFix ]
-[ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-006.xht [ WontFix ]
-[ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-007.xht [ WontFix ]
+ [ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ WontFix ]
+ [ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ WontFix ]
+ [ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-004.xht [ WontFix ]
+ [ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-004.xht [ WontFix ]
+ [ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-005.xht [ WontFix ]
+ [ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-005.xht [ WontFix ]
+ [ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-006.xht [ WontFix ]
+ [ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-006.xht [ WontFix ]
+ [ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-007.xht [ WontFix ]
+ [ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-007.xht [ WontFix ]
 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-002.xht [ WontFix ]
 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ WontFix ]
 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-004.xht [ WontFix ]
@@ -193,7 +229,8 @@ virtual/layout_ng/external/wpt/css/CSS2/normal-flow/blocks-017.xht [ WontFix ]
 # CSS2 tests that have 1px diff due to font hinting.
 external/wpt/css/CSS2/linebox/inline-formatting-context-023.xht [ WontFix ]
 external/wpt/css/CSS2/linebox/line-height-126.xht [ WontFix ]
-[ Mac Win ] external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ WontFix ]
+ [ Mac ] external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ WontFix ]
+ [ Win ] external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ WontFix ]
 [ Linux ] external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ WontFix ]
 [ Linux ] external/wpt/css/CSS2/linebox/vertical-align-super-001.xht [ WontFix ]
 [ Linux ] external/wpt/css/CSS2/normal-flow/max-height-applies-to-012.xht [ WontFix ]
@@ -201,7 +238,8 @@ external/wpt/css/CSS2/linebox/line-height-126.xht [ WontFix ]
 [ Linux ] external/wpt/css/CSS2/normal-flow/min-height-applies-to-012.xht [ WontFix ]
 [ Linux ] external/wpt/css/CSS2/normal-flow/min-width-applies-to-012.xht [ WontFix ]
 [ Linux ] external/wpt/css/CSS2/normal-flow/width-applies-to-012.xht [ WontFix ]
-[ Mac Win ] virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ WontFix ]
+ [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ WontFix ]
+ [ Win ] virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ WontFix ]
 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-height-applies-to-012.xht [ WontFix ]
 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-applies-to-012.xht [ WontFix ]
 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-height-applies-to-012.xht [ WontFix ]
@@ -221,7 +259,8 @@ external/wpt/css/CSS2/linebox/line-height-126.xht [ WontFix ]
 [ Win ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c.html [ WontFix ]
 [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006a.html [ WontFix ]
 [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006b.html [ WontFix ]
-[ Mac Win ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html [ WontFix ]
+ [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html [ WontFix ]
+ [ Win ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html [ WontFix ]
 [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009a.html [ WontFix ]
 [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009b.html [ WontFix ]
 [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009c.html [ WontFix ]
@@ -251,14 +290,20 @@ crbug.com/753080 external/wpt/css/css-transforms/ttwf-css-3d-polygon-cycle.html 
 
 # We could fix this test for us and upstream it if the test shell user agent
 # would let us differentiate test_shell and WebKit DumpTreeNode.
-crbug.com/7482 [ Linux Win Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]
+crbug.com/7482 [ Linux ] http/tests/misc/timer-vs-loading.html [ WontFix ]
+crbug.com/7482 [ Win ] http/tests/misc/timer-vs-loading.html [ WontFix ]
+crbug.com/7482 [ Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]
 
 # On Linux bold emoji are already supported.
 crbug.com/551843 [ Linux ] fast/text/fallback-traits-fixup.html [ WontFix ]
-crbug.com/551843 [ Linux Win ] fast/text/emoji-font-weight-mac.html [ WontFix ]
+crbug.com/551843 [ Linux ] fast/text/emoji-font-weight-mac.html [ WontFix ]
+crbug.com/551843 [ Win ] fast/text/emoji-font-weight-mac.html [ WontFix ]
 
 # Variable system font only supported on Mac atm.
-crbug.com/670246 [ Linux Android Win Mac10.10 ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
+crbug.com/670246 [ Linux ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
+crbug.com/670246 [ Android ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
+crbug.com/670246 [ Win ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
+crbug.com/670246 [ Mac10.10 ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
 
 # prefer_compositing_to_lcd_text causes things to get composited regardless of their opaqueness, causing the test to fail
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ WontFix ]
@@ -283,7 +328,9 @@ crbug.com/517449 [ Android ] images/optimize-contrast-image.html [ WontFix ]
 crbug.com/676561 [ Android ] images/paletted-png-with-color-profile.html [ WontFix ]
 
 # Only Windows supports Symbol CMAP encoded fonts.
-crbug.com/627953 [ Android Linux Mac ] fast/text/symbol-cmap.html [ WontFix ]
+crbug.com/627953 [ Android ] fast/text/symbol-cmap.html [ WontFix ]
+crbug.com/627953 [ Linux ] fast/text/symbol-cmap.html [ WontFix ]
+crbug.com/627953 [ Mac ] fast/text/symbol-cmap.html [ WontFix ]
 
 # These tests require audio codecs which are generally not available;
 # these tests can still be run manually with --skipped=ignore.
