@@ -32,14 +32,18 @@ HeadlessContentUtilityClient::HeadlessContentUtilityClient(
 
 HeadlessContentUtilityClient::~HeadlessContentUtilityClient() = default;
 
-void HeadlessContentUtilityClient::RegisterServices(
-    HeadlessContentUtilityClient::StaticServiceMap* services) {
+std::unique_ptr<service_manager::Service>
+HeadlessContentUtilityClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
 #if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
-  service_manager::EmbeddedServiceInfo pdf_compositor_info;
-  pdf_compositor_info.factory =
-      base::Bind(&printing::CreatePdfCompositorService, user_agent_);
-  services->emplace(printing::mojom::kServiceName, pdf_compositor_info);
+  if (service_name == printing::mojom::kServiceName) {
+    return printing::CreatePdfCompositorService(user_agent_,
+                                                std::move(request));
+  }
 #endif
+
+  return nullptr;
 }
 
 void HeadlessContentUtilityClient::RegisterNetworkBinders(

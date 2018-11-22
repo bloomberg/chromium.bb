@@ -8,17 +8,14 @@
 #include "base/callback.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/services/pdf_compositor/pdf_compositor_service.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
 #include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_test.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -26,68 +23,25 @@
 
 namespace printing {
 
-// In order to test PdfCompositorService, this class overrides PrepareToStart()
-// to do nothing. So the test discardable memory allocator set up by
-// PdfCompositorServiceTest will be used. Also checks for the service setup are
-// skipped since we don't have those setups in unit tests.
-class PdfCompositorTestService : public printing::PdfCompositorService {
+class PdfCompositorServiceTest : public testing::Test {
  public:
-  explicit PdfCompositorTestService(const std::string& creator)
-      : PdfCompositorService(creator) {}
-  ~PdfCompositorTestService() override {}
-
-  // PdfCompositorService:
-  void PrepareToStart() override {}
-};
-
-class PdfServiceTestClient : public service_manager::test::ServiceTestClient,
-                             public service_manager::mojom::ServiceFactory {
- public:
-  explicit PdfServiceTestClient(service_manager::test::ServiceTest* test)
-      : service_manager::test::ServiceTestClient(test) {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(
-        base::Bind(&PdfServiceTestClient::Create, base::Unretained(this)));
-  }
-  ~PdfServiceTestClient() override {}
-
-  // service_manager::Service
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(interface_name, std::move(interface_pipe));
+  PdfCompositorServiceTest()
+      : connector_(test_connector_factory_.CreateConnector()),
+        service_(
+            "pdf_compositor_service_unittest",
+            test_connector_factory_.RegisterInstance(mojom::kServiceName)) {
+    // We don't want the service instance setting up its own discardable memory
+    // allocator, which it normally does. Instead it will use the one provided
+    // by our fixture in |SetUp()| below.
+    service_.set_skip_initialization_for_testing(true);
   }
 
-  // service_manager::mojom::ServiceFactory
-  void CreateService(
-      service_manager::mojom::ServiceRequest request,
-      const std::string& name,
-      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-    if (!name.compare(mojom::kServiceName)) {
-      service_context_ = std::make_unique<service_manager::ServiceContext>(
-          std::make_unique<PdfCompositorTestService>("pdf_compositor_unittest"),
-          std::move(request));
-    }
-  }
-
-  void Create(service_manager::mojom::ServiceFactoryRequest request) {
-    service_factory_bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  service_manager::BinderRegistry registry_;
-  mojo::BindingSet<service_manager::mojom::ServiceFactory>
-      service_factory_bindings_;
-  std::unique_ptr<service_manager::ServiceContext> service_context_;
-};
-
-class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
- public:
-  PdfCompositorServiceTest() : ServiceTest("pdf_compositor_service_unittest") {}
-  ~PdfCompositorServiceTest() override {}
+  ~PdfCompositorServiceTest() override = default;
 
   MOCK_METHOD1(CallbackOnCompositeSuccess,
                void(const base::ReadOnlySharedMemoryRegion&));
   MOCK_METHOD1(CallbackOnCompositeStatus, void(mojom::PdfCompositor::Status));
+
   void OnCompositeToPdfCallback(mojom::PdfCompositor::Status status,
                                 base::ReadOnlySharedMemoryRegion region) {
     if (status == mojom::PdfCompositor::Status::SUCCESS)
@@ -100,11 +54,11 @@ class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
   MOCK_METHOD0(ConnectionClosed, void());
 
  protected:
-  // service_manager::test::ServiceTest:
+  service_manager::Connector* connector() { return connector_.get(); }
+
   void SetUp() override {
     base::DiscardableMemoryAllocator::SetInstance(
         &discardable_memory_allocator_);
-    ServiceTest::SetUp();
 
     ASSERT_FALSE(compositor_);
     connector()->BindInterface(mojom::kServiceName, &compositor_);
@@ -114,13 +68,8 @@ class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
   }
 
   void TearDown() override {
-    // Clean up
     compositor_.reset();
     base::DiscardableMemoryAllocator::SetInstance(nullptr);
-  }
-
-  std::unique_ptr<service_manager::Service> CreateService() override {
-    return std::make_unique<PdfServiceTestClient>(this);
   }
 
   base::ReadOnlySharedMemoryRegion CreateMSKP() {
@@ -156,11 +105,16 @@ class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
     run_loop_->Run();
   }
 
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   mojom::PdfCompositorPtr compositor_;
   base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
 
  private:
+  service_manager::TestConnectorFactory test_connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  PdfCompositorService service_;
+
   DISALLOW_COPY_AND_ASSIGN(PdfCompositorServiceTest);
 };
 
@@ -183,8 +137,8 @@ TEST_F(PdfCompositorServiceTest, InvokeCallbackOnSuccess) {
   CallCompositorWithSuccess(std::move(compositor_));
 }
 
-// Test coexistence of multiple service instances.
-TEST_F(PdfCompositorServiceTest, MultipleServiceInstances) {
+// Test coexistence of multiple PdfCompositor interface bindings.
+TEST_F(PdfCompositorServiceTest, MultipleCompositors) {
   // One service can bind multiple interfaces.
   mojom::PdfCompositorPtr another_compositor;
   ASSERT_FALSE(another_compositor);
@@ -197,9 +151,9 @@ TEST_F(PdfCompositorServiceTest, MultipleServiceInstances) {
   CallCompositorWithSuccess(std::move(another_compositor));
 }
 
-// Test data structures and content of multiple service instances
+// Test data structures and content of multiple PdfCompositor interface bindings
 // are independent from each other.
-TEST_F(PdfCompositorServiceTest, IndependentServiceInstances) {
+TEST_F(PdfCompositorServiceTest, IndependentCompositors) {
   // Create a new connection 2.
   mojom::PdfCompositorPtr compositor2;
   ASSERT_FALSE(compositor2);
