@@ -34,6 +34,8 @@ function SelectionMenuController(selectionMenuButton, menu) {
 SelectionMenuController.prototype.onShowMenu_ = function() {
   this.menu_.classList.toggle('toolbar-menu', true);
   this.toggleRipple_.activated = true;
+  // crbug.com 752035 focus still on button, get rid of the tooltip
+  document.querySelector('files-tooltip').hideTooltip();
 };
 
 /**
