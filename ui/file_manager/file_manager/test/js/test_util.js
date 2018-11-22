@@ -240,11 +240,6 @@ test.ENTRIES = {
       test.SharedOption.NONE, 'Sep 30, 2014, 3:30 PM', '.hiddenfile.txt',
       '51 bytes', 'Plain text'),
 
-  mhtml: new test.TestEntryInfo(
-      test.EntryType.FILE, 'text.txt', 'hello.mhtml', 'text/html',
-      test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM', 'hello.mhtml',
-      '51 bytes', 'HTML document'),
-
   helloInA: new test.TestEntryInfo(
       test.EntryType.FILE, 'text.txt', 'hello.txt', 'text/plain',
       test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM', 'A/hello.txt',
