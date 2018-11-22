@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
@@ -29,7 +30,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_token_status.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/ukm_service.h"
@@ -123,6 +126,24 @@ class MetricsConsentOverride {
 
  private:
   bool state_;
+};
+
+class SyncConnectionOkChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit SyncConnectionOkChecker(browser_sync::ProfileSyncService* service)
+      : SingleClientStatusChangeChecker(service) {}
+
+  bool IsExitConditionSatisfied() override {
+    return service()->GetSyncTokenStatus().connection_status ==
+           syncer::CONNECTION_OK;
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting for CONNECTION_OK.";
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SyncConnectionOkChecker);
 };
 
 // Test fixture that provides access to some UKM internals.
@@ -219,16 +240,12 @@ class UkmBrowserTestBase : public SyncTest {
   }
 
  protected:
-  std::unique_ptr<ProfileSyncServiceHarness> EnableSyncForProfile(
+  std::unique_ptr<ProfileSyncServiceHarness> InitializeProfileForSync(
       Profile* profile) {
-    unified_consent::UnifiedConsentService* consent_service =
-        UnifiedConsentServiceFactory::GetForProfile(profile);
-    browser_sync::ProfileSyncService* sync_service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-
-    sync_service->OverrideNetworkResourcesForTest(
-        std::make_unique<fake_server::FakeServerNetworkResources>(
-            GetFakeServer()->AsWeakPtr()));
+    ProfileSyncServiceFactory::GetForProfile(profile)
+        ->OverrideNetworkResourcesForTest(
+            std::make_unique<fake_server::FakeServerNetworkResources>(
+                GetFakeServer()->AsWeakPtr()));
 
     std::string username;
 #if defined(OS_CHROMEOS)
@@ -246,10 +263,19 @@ class UkmBrowserTestBase : public SyncTest {
         ProfileSyncServiceHarness::Create(
             profile, username, "unused" /* password */,
             ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
+    return harness;
+  }
+
+  std::unique_ptr<ProfileSyncServiceHarness> EnableSyncForProfile(
+      Profile* profile) {
+    std::unique_ptr<ProfileSyncServiceHarness> harness =
+        InitializeProfileForSync(profile);
     EXPECT_TRUE(harness->SetupSync());
     // Opt into unified consent if possible, so url-keyed-anonymized data
     // collection is enabled. Note: If the consent service is not available, UKM
     // will fall back on the state of history sync.
+    unified_consent::UnifiedConsentService* consent_service =
+        UnifiedConsentServiceFactory::GetForProfile(profile);
     if (consent_service)
       consent_service->SetUnifiedConsentGiven(true);
     return harness;
@@ -300,6 +326,39 @@ class UkmBrowserTest : public UkmBrowserTestBase,
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UkmBrowserTest);
+};
+
+class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
+ public:
+  UkmBrowserTestWithSyncTransport() {
+    features_.InitWithFeatures({switches::kSyncStandaloneTransport,
+                                switches::kSyncSupportSecondaryAccount},
+                               {});
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    // This is required to support (fake) secondary-account-signin (based on
+    // cookies) in tests. Without this, the real GaiaCookieManagerService would
+    // try talking to Google servers which of course wouldn't work in tests.
+    fake_gaia_cookie_manager_factory_ =
+        secondary_account_helper::SetUpFakeGaiaCookieManagerService();
+    UkmBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void SetUpOnMainThread() override {
+#if defined(OS_CHROMEOS)
+    secondary_account_helper::InitNetwork();
+#endif  // defined(OS_CHROMEOS)
+    UkmBrowserTest::SetUpOnMainThread();
+  }
+
+ private:
+  base::test::ScopedFeatureList features_;
+
+  secondary_account_helper::ScopedFakeGaiaCookieManagerServiceFactory
+      fake_gaia_cookie_manager_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(UkmBrowserTestWithSyncTransport);
 };
 
 // This tests if UKM service is enabled/disabled appropriately based on an
@@ -1041,6 +1100,111 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, HistoryDeleteCheck) {
 
 // Run UKM browser test suite with Unified Consent enabled and disabled.
 INSTANTIATE_TEST_CASE_P(, UkmBrowserTest, testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport, SyncFeatureCheck) {
+  MetricsConsentOverride metrics_consent(true);
+
+  // Set up Sync-the-feature.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            sync_service->GetTransportState());
+  ASSERT_TRUE(sync_service->IsSyncFeatureActive());
+
+  // Sanity check: UKM should now be active.
+  ASSERT_TRUE(ukm_enabled());
+
+  // Turn off Sync-the-feature by user choice. The machinery should start up
+  // again in transport-only mode.
+  sync_service->RequestStop(syncer::SyncService::KEEP_DATA);
+  ASSERT_TRUE(harness->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+
+  // The Sync machinery is now active in transport mode (Sync-the-feature is
+  // disabled).
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            sync_service->GetTransportState());
+  ASSERT_FALSE(sync_service->IsSyncFeatureEnabled());
+
+  // Trigger a Sync cycle so the connection status will resolve to
+  // CONNECTION_OK.
+  sync_service->TriggerRefresh(syncer::Intersection(
+      sync_service->GetActiveDataTypes(), syncer::ProtocolTypes()));
+  SyncConnectionOkChecker connection_ok(sync_service);
+  ASSERT_TRUE(connection_ok.Wait());
+
+  // History Sync is now not active anymore, but (maybe surprisingly) TYPED_URLS
+  // is still considered part of the "chosen" data types, since the user hasn't
+  // disabled it.
+  ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(syncer::TYPED_URLS));
+  ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(
+      syncer::HISTORY_DELETE_DIRECTIVES));
+  ASSERT_TRUE(sync_service->GetUserSettings()->GetChosenDataTypes().Has(
+      syncer::TYPED_URLS));
+
+  // If unified consent is disabled, then UKM should now be off, since Sync (the
+  // feature) isn't enabled anymore, even though the machinery is still active.
+  // With unified consent enabled, however, it's still on: The consent is *not*
+  // revoked by (temporarily) turning off Sync.
+  EXPECT_EQ(unified_consent::IsUnifiedConsentFeatureEnabled(), ukm_enabled());
+
+  // Finally, turn Sync-the-feature on again.
+  sync_service->RequestStart();
+  ASSERT_TRUE(harness->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            sync_service->GetTransportState());
+  ASSERT_TRUE(sync_service->IsSyncFeatureActive());
+
+  // Now UKM should be on again.
+  EXPECT_TRUE(ukm_enabled());
+}
+
+// On ChromeOS, the test profile starts with a primary account already set, so
+// this test doesn't apply.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport,
+                       NotEnabledForSecondaryAccountSync) {
+  MetricsConsentOverride metrics_consent(true);
+
+  // Signing in (without making the account Chrome's primary one or explicitly
+  // setting up Sync) causes the Sync machinery to start up in standalone
+  // transport mode.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      InitializeProfileForSync(profile);
+  browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+
+  secondary_account_helper::SignInSecondaryAccount(profile,
+                                                   "secondary_user@email.com");
+  ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
+            sync_service->GetTransportState());
+  ASSERT_TRUE(harness->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            sync_service->GetTransportState());
+  ASSERT_FALSE(sync_service->IsSyncFeatureEnabled());
+
+  // History Sync is not active, but (maybe surprisingly) TYPED_URLS is still
+  // considered part of the "chosen" data types, since the user hasn't disabled
+  // it.
+  ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(syncer::TYPED_URLS));
+  ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(
+      syncer::HISTORY_DELETE_DIRECTIVES));
+  ASSERT_TRUE(sync_service->GetUserSettings()->GetChosenDataTypes().Has(
+      syncer::TYPED_URLS));
+
+  EXPECT_FALSE(ukm_enabled());
+}
+#endif  // !OS_CHROMEOS
+
+// Run UKM browser test suite with Unified Consent enabled and disabled.
+INSTANTIATE_TEST_CASE_P(, UkmBrowserTestWithSyncTransport, testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(UkmConsentParamBrowserTest, GroupPolicyConsentCheck) {
   // Note we are not using the synthetic MetricsConsentOverride since we are
