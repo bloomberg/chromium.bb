@@ -29,11 +29,10 @@
 // https://html.spec.whatwg.org/C/timers-and-user-prompts.html#timers
 
 [
-    ImplementedAs=DOMWindowTimers,
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
     Exposed=(Window,Worker)
-] interface WindowTimers {
+] interface WindowOrWorkerGlobalScope {
     // TODO(yukishiino): Use TimerHandler (or Function at least) to implement
     // setTimeout and setInterval.
     // https://html.spec.whatwg.org/C/webappapis.html#windoworworkerglobalscope-mixin
