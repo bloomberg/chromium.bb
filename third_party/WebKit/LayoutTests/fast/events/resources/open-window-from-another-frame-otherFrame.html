@@ -21,9 +21,11 @@
                     closeWin(newWin);
                 }
             } else {
-                parent.log("Window was not opened! Test succeeded!");
-                if (window.testRunner)
-                    testRunner.notifyDone();
+                if (!newWin) {
+                    parent.log("Window was not opened! Test succeeded!");
+                    if (window.testRunner)
+                        testRunner.notifyDone();
+                }
             }
 
             event.preventDefault();
