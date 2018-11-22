@@ -345,8 +345,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 // Triggers a navigation to the help page.
 - (void)learnMoreButtonPressed {
-  web::NavigationManager::WebLoadParams params(
-      GetUrlWithLang(GURL(kLearnMoreIncognitoUrl)));
+  ChromeLoadParams params(GetUrlWithLang(GURL(kLearnMoreIncognitoUrl)));
   [_loader loadURLWithParams:params];
 }
 

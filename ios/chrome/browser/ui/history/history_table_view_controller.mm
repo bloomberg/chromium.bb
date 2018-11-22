@@ -1070,8 +1070,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                                  new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
   web::NavigationManager::WebLoadParams params(URL);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  ChromeLoadParams chromeParams(params);
   [self.localDispatcher dismissHistoryWithCompletion:^{
-    [self.loader loadURLWithParams:params];
+    [self.loader loadURLWithParams:chromeParams];
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }

@@ -97,6 +97,8 @@
     (UIViewController*)baseViewController;
 
 // Opens the |command| URL in a new tab.
+// TODO(crbug.com/907527): Check if it is possible to merge it with the
+// URLLoader methods.
 - (void)openURLInNewTab:(OpenNewTabCommand*)command;
 
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.

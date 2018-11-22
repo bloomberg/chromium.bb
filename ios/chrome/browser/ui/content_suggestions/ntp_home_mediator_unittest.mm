@@ -255,7 +255,9 @@ TEST_F(NTPHomeMediatorTest, TestOpenPage) {
   OCMStub([model itemAtIndexPath:indexPath]).andReturn(item);
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  OCMExpect([[dispatcher_ ignoringNonObjectArgs] loadURLWithParams:params]);
+  ChromeLoadParams chromeParams(params);
+  OCMExpect(
+      [[dispatcher_ ignoringNonObjectArgs] loadURLWithParams:chromeParams]);
 
   // Action.
   [mediator_ openPageForItemAtIndexPath:indexPath];
@@ -274,7 +276,9 @@ TEST_F(NTPHomeMediatorTest, TestOpenMostVisited) {
   item.URL = url;
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  OCMExpect([[dispatcher_ ignoringNonObjectArgs] loadURLWithParams:params]);
+  ChromeLoadParams chromeParams(params);
+  OCMExpect(
+      [[dispatcher_ ignoringNonObjectArgs] loadURLWithParams:chromeParams]);
 
   // Action.
   [mediator_ openMostVisitedItem:item atIndex:0];

@@ -540,7 +540,8 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
   }
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [_loader loadURLWithParams:params];
+  ChromeLoadParams chromeParams(params);
+  [_loader loadURLWithParams:chromeParams];
 }
 
 - (void)openURLInNewTab:(const GURL&)url

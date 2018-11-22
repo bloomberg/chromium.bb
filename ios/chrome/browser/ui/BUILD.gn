@@ -10,6 +10,8 @@ source_set("ui") {
     "UIView+SizeClassSupport.mm",
     "background_generator.h",
     "background_generator.mm",
+    "chrome_load_params.h",
+    "chrome_load_params.mm",
     "file_locations.h",
     "file_locations.mm",
     "native_content_controller.h",

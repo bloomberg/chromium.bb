@@ -104,7 +104,8 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 - (void)openMostVisitedItem:(ShortcutsMostVisitedItem*)item {
   web::NavigationManager::WebLoadParams params(item.URL);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [self.dispatcher loadURLWithParams:params];
+  ChromeLoadParams chromeParams(params);
+  [self.dispatcher loadURLWithParams:chromeParams];
   [self.dispatcher cancelOmniboxEdit];
 }
 

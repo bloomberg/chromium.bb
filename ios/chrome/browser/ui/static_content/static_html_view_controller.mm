@@ -243,8 +243,7 @@
   // if they are issued by the main frame.
   if (loader_ && fromMainFrame) {
     dispatch_async(dispatch_get_main_queue(), ^{
-      web::NavigationManager::WebLoadParams params(
-          net::GURLWithNSURL([request URL]));
+      ChromeLoadParams params(net::GURLWithNSURL([request URL]));
       [loader_ loadURLWithParams:params];
     });
   }

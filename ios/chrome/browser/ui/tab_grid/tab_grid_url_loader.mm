@@ -97,12 +97,11 @@ initWithRegularWebStateList:(WebStateList*)regularWebStateList
 
 // Opens |loadParams| in a new regular tab, rather than replacing the active
 // tab.
-- (void)loadURLWithParams:
-    (const web::NavigationManager::WebLoadParams&)loadParams {
+- (void)loadURLWithParams:(const ChromeLoadParams&)loadParams {
   DCHECK(self.regularBrowserState);
   web::WebState::CreateParams params(self.regularBrowserState);
   std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
-  webState->GetNavigationManager()->LoadURLWithParams(loadParams);
+  webState->GetNavigationManager()->LoadURLWithParams(loadParams.web_params);
   AppendAndActivateWebState(self.regularWebStateList, std::move(webState));
 }
 

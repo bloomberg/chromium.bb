@@ -43,9 +43,6 @@ class BrowserState;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Loads a new url.
-- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params;
-
 // The scrollview of the native view.
 - (UIScrollView*)scrollView;
 

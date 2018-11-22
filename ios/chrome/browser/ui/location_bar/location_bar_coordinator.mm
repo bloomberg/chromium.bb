@@ -235,7 +235,8 @@ const int kLocationAuthorizationStatusCount = 4;
     web::NavigationManager::WebLoadParams params(url);
     params.transition_type = transition;
     params.extra_headers = [self variationHeadersForURL:url];
-    [self.URLLoader loadURLWithParams:params];
+    ChromeLoadParams chromeParams(params);
+    [self.URLLoader loadURLWithParams:chromeParams];
 
     if (google_util::IsGoogleSearchUrl(url)) {
       UMA_HISTOGRAM_ENUMERATION(
@@ -370,7 +371,8 @@ const int kLocationAuthorizationStatusCount = 4;
     web::NavigationManager::WebLoadParams params(searchURL);
     params.transition_type = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    [self.URLLoader loadURLWithParams:params];
+    ChromeLoadParams chromeParams(params);
+    [self.URLLoader loadURLWithParams:chromeParams];
   }
 }
 

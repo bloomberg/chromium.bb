@@ -28,7 +28,8 @@
 @synthesize inIncognito = _inIncognito;
 @synthesize extraHeaders = _extraHeaders;
 
-- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params {
+- (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
+  web::NavigationManager::WebLoadParams params = chromeParams.web_params;
   _url = params.url;
   _referrer = params.referrer;
   self.transition = params.transition_type;

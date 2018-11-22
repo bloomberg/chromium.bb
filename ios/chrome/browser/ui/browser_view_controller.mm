@@ -3408,7 +3408,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENIMAGE);
     action = ^{
       Record(ACTION_OPEN_IMAGE, isImage, isLink);
-      web::NavigationManager::WebLoadParams params(imageUrl);
+      ChromeLoadParams params(imageUrl);
       [weakSelf loadURLWithParams:params];
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
@@ -4067,7 +4067,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 #pragma mark - UrlLoader (Public)
 
-- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params {
+- (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
+  web::NavigationManager::WebLoadParams params = chromeParams.web_params;
   [[OmniboxGeolocationController sharedInstance]
       locationBarDidSubmitURL:params.url
                    transition:params.transition_type
@@ -4571,7 +4572,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 - (void)navigateToMemexTabSwitcher {
   // TODO(crbug.com/799601): Delete this once its not needed.
   const GURL memexURL("https://chrome-memex.appspot.com");
-  web::NavigationManager::WebLoadParams params(memexURL);
+  ChromeLoadParams params(memexURL);
   [self loadURLWithParams:params];
 }
 

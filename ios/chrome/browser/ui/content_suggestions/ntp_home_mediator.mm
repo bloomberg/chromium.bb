@@ -224,7 +224,8 @@ const char kNTPHelpURL[] =
       web::Referrer(GURL(ntp_snippets::GetContentSuggestionsReferrerURL()),
                     web::ReferrerPolicyDefault);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [self.dispatcher loadURLWithParams:params];
+  ChromeLoadParams chromeParams(params);
+  [self.dispatcher loadURLWithParams:chromeParams];
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_SUGGESTION];
 }
 
@@ -262,7 +263,8 @@ const char kNTPHelpURL[] =
 
   web::NavigationManager::WebLoadParams params(mostVisitedItem.URL);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [self.dispatcher loadURLWithParams:params];
+  ChromeLoadParams chromeParams(params);
+  [self.dispatcher loadURLWithParams:chromeParams];
 }
 
 - (void)displayContextMenuForSuggestion:(CollectionViewItem*)item
@@ -345,7 +347,7 @@ const char kNTPHelpURL[] =
 
 - (void)handleLearnMoreTapped {
   GURL URL(kNTPHelpURL);
-  web::NavigationManager::WebLoadParams params(URL);
+  ChromeLoadParams params(URL);
   [self.dispatcher loadURLWithParams:params];
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_LEARN_MORE];
 }
