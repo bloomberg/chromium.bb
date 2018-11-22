@@ -28,9 +28,40 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
 namespace web_app {
+
+namespace {
+
+SkBitmap CreateSquareIcon(int size, SkColor solid_color) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(size, size);
+  bitmap.eraseColor(solid_color);
+  return bitmap;
+}
+
+bool ContainsOneIconOfEachSize(const WebApplicationInfo& web_app_info) {
+  constexpr int kIconSizes[] = {
+      icon_size::k32, icon_size::k64,  icon_size::k48,
+      icon_size::k96, icon_size::k128, icon_size::k256,
+  };
+
+  for (int size : kIconSizes) {
+    int num_icons_for_size =
+        std::count_if(web_app_info.icons.begin(), web_app_info.icons.end(),
+                      [&size](const WebApplicationInfo::IconInfo& icon) {
+                        return icon.width == size && icon.height == size;
+                      });
+    if (num_icons_for_size != 1)
+      return false;
+  }
+
+  return true;
+}
+
+}  // namespace
 
 class WebAppInstallManagerTest : public WebAppTest {
  public:
@@ -269,6 +300,48 @@ TEST_F(WebAppInstallManagerTest, InstallableCheck) {
   EXPECT_EQ(manifest_theme_color, web_app->theme_color());
 }
 
+TEST_F(WebAppInstallManagerTest, GetIcons) {
+  CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
+                        "Description");
+  CreateDefaultInstallableManager();
+
+  SetInstallFinalizerForTesting();
+
+  const GURL icon_url = GURL("https://example.com/app.ico");
+  const SkColor color = SK_ColorBLUE;
+
+  // Generate one icon as if it was downloaded.
+  {
+    SkBitmap bitmap = CreateSquareIcon(icon_size::k128, color);
+
+    std::vector<SkBitmap> bitmaps;
+    bitmaps.push_back(std::move(bitmap));
+
+    IconsMap icons_map;
+    icons_map.emplace(icon_url, std::move(bitmaps));
+
+    SetIconsMapToRetrieve(std::move(icons_map));
+  }
+
+  InstallWebApp();
+
+  std::unique_ptr<WebApplicationInfo> web_app_info =
+      install_finalizer_->web_app_info();
+
+  // Make sure that icons have been generated for all sub sizes.
+  EXPECT_TRUE(ContainsOneIconOfEachSize(*web_app_info));
+
+  for (const WebApplicationInfo::IconInfo& icon : web_app_info->icons) {
+    EXPECT_FALSE(icon.data.drawsNothing());
+    EXPECT_EQ(color, icon.data.getColor(0, 0));
+
+    // All icons should have an empty url except the original one:
+    if (icon.url != icon_url) {
+      EXPECT_EQ(GURL(), icon.url);
+    }
+  }
+}
+
 TEST_F(WebAppInstallManagerTest, GetIcons_NoIconsProvided) {
   CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
                         "Description");
@@ -281,24 +354,13 @@ TEST_F(WebAppInstallManagerTest, GetIcons_NoIconsProvided) {
 
   InstallWebApp();
 
-  std::unique_ptr<WebApplicationInfo> info = install_finalizer_->web_app_info();
-
-  constexpr int kIconSizesToGenerate[] = {
-      icon_size::k32, icon_size::k64,  icon_size::k48,
-      icon_size::k96, icon_size::k128, icon_size::k256,
-  };
+  std::unique_ptr<WebApplicationInfo> web_app_info =
+      install_finalizer_->web_app_info();
 
   // Make sure that icons have been generated for all sizes.
-  for (int size : kIconSizesToGenerate) {
-    int generated_icons_for_size =
-        std::count_if(info->icons.begin(), info->icons.end(),
-                      [&size](const WebApplicationInfo::IconInfo& icon) {
-                        return icon.width == size && icon.height == size;
-                      });
-    EXPECT_EQ(1, generated_icons_for_size);
-  }
+  EXPECT_TRUE(ContainsOneIconOfEachSize(*web_app_info));
 
-  for (const auto& icon : info->icons) {
+  for (const WebApplicationInfo::IconInfo& icon : web_app_info->icons) {
     EXPECT_FALSE(icon.data.drawsNothing());
     // Since all icons are generated, they should have an empty url.
     EXPECT_TRUE(icon.url.is_empty());
