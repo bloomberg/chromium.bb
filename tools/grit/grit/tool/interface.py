@@ -38,6 +38,10 @@ class Tool(object):
   def __init__(self):
     self.o = None
 
+  def ShowUsage(self):
+    '''Show usage text for this tool.'''
+    print self.__doc__
+
   def SetOptions(self, opts):
     self.o = opts
 

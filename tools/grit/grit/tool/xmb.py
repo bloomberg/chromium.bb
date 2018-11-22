@@ -7,6 +7,7 @@
 
 import getopt
 import os
+import sys
 
 from xml.sax import saxutils
 
@@ -171,7 +172,7 @@ Other options:
     limit_file = None
     limit_is_grd = False
     limit_file_dir = None
-    own_opts, args = getopt.getopt(args, 'l:D:ih')
+    own_opts, args = getopt.getopt(args, 'l:D:ih', ('help',))
     for key, val in own_opts:
       if key == '-l':
         limit_file = open(val, 'r')
@@ -187,6 +188,9 @@ Other options:
       elif key == '-E':
         (env_name, env_value) = val.split('=', 1)
         os.environ[env_name] = env_value
+      elif key == '--help':
+        self.ShowUsage()
+        sys.exit(0)
     if not len(args) == 1:
       print ('grit xmb takes exactly one argument, the path to the XMB file '
              'to output.')

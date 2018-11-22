@@ -223,7 +223,7 @@ def Main(args):
 
       print ("Help for 'grit %s' (for general help, run 'grit help'):\n"
              % (tool))
-      print _GetToolInfo(tool)[_FACTORY]().__doc__
+      _GetToolInfo(tool)[_FACTORY]().ShowUsage()
       return 0
   if not _GetToolInfo(tool):
     print "No such tool.  Try running 'grit help' for a list of tools."
