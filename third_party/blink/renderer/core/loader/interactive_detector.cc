@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -171,37 +171,33 @@ bool InteractiveDetector::PageWasBackgroundedSinceEvent(TimeTicks event_time) {
 
 // This is called early enough in the pipeline that we don't need to worry about
 // javascript dispatching untrusted input events.
-void InteractiveDetector::HandleForInputDelay(const WebInputEvent& event) {
-  DCHECK(event.GetType() != WebInputEvent::kTouchStart);
-
-  // This only happens sometimes on tests unrelated to InteractiveDetector. It
-  // is safe to ignore events that are not properly initialized.
-  if (event.TimeStamp().is_null())
+void InteractiveDetector::HandleForInputDelay(const Event& event,
+                                              TimeTicks event_timestamp,
+                                              TimeTicks processing_start) {
+  // // This only happens sometimes on tests unrelated to InteractiveDetector.
+  // It's safe to ignore events that are not properly initialized.
+  if (event_timestamp.is_null())
     return;
 
   // We can't report a pointerDown until the pointerUp, in case it turns into a
   // scroll.
-  if (event.GetType() == WebInputEvent::kPointerDown) {
-    pending_pointerdown_delay_ = CurrentTimeTicks() - event.TimeStamp();
-    pending_pointerdown_timestamp_ = event.TimeStamp();
+  if (event.type() == event_type_names::kPointerdown) {
+    pending_pointerdown_delay_ = processing_start - event_timestamp;
+    pending_pointerdown_timestamp_ = event_timestamp;
     return;
   }
 
-  bool event_is_meaningful =
-      event.GetType() == WebInputEvent::kMouseDown ||
-      event.GetType() == WebInputEvent::kKeyDown ||
-      event.GetType() == WebInputEvent::kRawKeyDown ||
-      // We need to explicitly include tap, as if there are no listeners, we
-      // won't receive the pointer events.
-      event.GetType() == WebInputEvent::kGestureTap ||
-      event.GetType() == WebInputEvent::kPointerUp;
+  bool event_is_meaningful = event.type() == event_type_names::kPointerup ||
+                             event.type() == event_type_names::kClick ||
+                             event.type() == event_type_names::kKeydown ||
+                             event.type() == event_type_names::kMousedown;
 
   if (!event_is_meaningful)
     return;
 
   TimeDelta delay;
-  TimeTicks event_timestamp;
-  if (event.GetType() == WebInputEvent::kPointerUp) {
+  TimeTicks input_timestamp;
+  if (event.type() == event_type_names::kPointerup) {
     // PointerUp by itself is not considered a significant input.
     if (pending_pointerdown_timestamp_.is_null())
       return;
@@ -211,10 +207,10 @@ void InteractiveDetector::HandleForInputDelay(const WebInputEvent& event) {
     // user gesture started by this event contained some non-scroll input, so we
     // consider it reasonable to use the delay of the initial event.
     delay = pending_pointerdown_delay_;
-    event_timestamp = pending_pointerdown_timestamp_;
+    input_timestamp = pending_pointerdown_timestamp_;
   } else {
-    delay = CurrentTimeTicks() - event.TimeStamp();
-    event_timestamp = event.TimeStamp();
+    delay = processing_start - event_timestamp;
+    input_timestamp = event_timestamp;
   }
 
   pending_pointerdown_delay_ = base::TimeDelta();
@@ -223,7 +219,7 @@ void InteractiveDetector::HandleForInputDelay(const WebInputEvent& event) {
 
   if (page_event_times_.first_input_delay.is_zero()) {
     page_event_times_.first_input_delay = delay;
-    page_event_times_.first_input_timestamp = event_timestamp;
+    page_event_times_.first_input_timestamp = input_timestamp;
     input_delay_metrics_changed = true;
   }
 
@@ -231,16 +227,16 @@ void InteractiveDetector::HandleForInputDelay(const WebInputEvent& event) {
                              base::TimeDelta::FromMilliseconds(1),
                              base::TimeDelta::FromSeconds(60), 50);
   UMA_HISTOGRAM_CUSTOM_TIMES(kHistogramInputTimestamp,
-                             event_timestamp - page_event_times_.nav_start,
+                             input_timestamp - page_event_times_.nav_start,
                              base::TimeDelta::FromMilliseconds(10),
                              base::TimeDelta::FromMinutes(10), 100);
 
   // Only update longest input delay if page was not backgrounded while the
   // input was queued.
   if (delay > page_event_times_.longest_input_delay &&
-      !PageWasBackgroundedSinceEvent(event_timestamp)) {
+      !PageWasBackgroundedSinceEvent(input_timestamp)) {
     page_event_times_.longest_input_delay = delay;
-    page_event_times_.longest_input_timestamp = event_timestamp;
+    page_event_times_.longest_input_timestamp = input_timestamp;
     input_delay_metrics_changed = true;
   }
 

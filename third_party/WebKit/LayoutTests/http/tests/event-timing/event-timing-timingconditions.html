@@ -41,13 +41,13 @@
   async_test(function(t) {
     new PerformanceObserver(entryList => {
       const observerCallbackTime = performance.now();
-      const entries = entryList.getEntries();
+      const entries = entryList.getEntries().filter(entry => entry.name === 'mousedown');
       t.step(()=>{
         assert_equals(entries.length, 1,
             "Observe more than one entries: " +
             JSON.stringify(entries) + ".");
-        assert_equals(entries[0].name, 'click',
-            "The observed entry should be a click");
+        assert_equals(entries[0].name, 'mousedown',
+            "The observed entry should be a mousedown");
         assert_greater_than(observerCallbackTime, entries[0].startTime,
             "assert(untrustedClickStart > entries[0].startTime) failed");
         assert_greater_than(entries[0].startTime, trustedClickStart,
