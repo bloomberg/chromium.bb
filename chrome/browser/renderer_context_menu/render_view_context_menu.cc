@@ -1029,42 +1029,30 @@ void RenderViewContextMenu::AppendDevtoolsForUnpackedExtensions() {
 
 void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
-    if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
-      const Browser* browser = GetBrowser();
-      const bool is_app = browser && browser->is_app();
+    const Browser* browser = GetBrowser();
+    const bool in_app =
+        base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
+        browser && browser->is_app();
 
-      AppendOpenInBookmarkAppLinkItems();
+    AppendOpenInBookmarkAppLinkItems();
 
-      menu_model_.AddItemWithStringId(
-          IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-          is_app ? IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP
-                 : IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-      if (!is_app) {
-        menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
-                                        IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
-      }
-
-      if (params_.link_url.is_valid()) {
-        AppendProtocolHandlerSubMenu();
-      }
-
-      menu_model_.AddItemWithStringId(
-          IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
-          is_app ? IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP
-                 : IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
-
-    } else {
-      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-                                      IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+    menu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+        in_app ? IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP
+               : IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+    if (!in_app) {
       menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
                                       IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
-      if (params_.link_url.is_valid()) {
-        AppendProtocolHandlerSubMenu();
-      }
-
-      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
-                                      IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
     }
+
+    if (params_.link_url.is_valid()) {
+      AppendProtocolHandlerSubMenu();
+    }
+
+    menu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
+        in_app ? IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP
+               : IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
 
     AppendOpenWithLinkItems();
 
@@ -1187,6 +1175,9 @@ void RenderViewContextMenu::AppendSmartSelectionActionItems() {
 }
 
 void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAWindowing))
+    return;
+
   const Extension* pwa = extensions::util::GetInstalledPwaForUrl(
       browser_context_, params_.link_url);
   if (!pwa)
