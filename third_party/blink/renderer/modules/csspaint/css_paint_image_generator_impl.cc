@@ -22,9 +22,11 @@ CSSPaintImageGenerator* CSSPaintImageGeneratorImpl::Create(
   DCHECK(paint_worklet);
   CSSPaintImageGeneratorImpl* generator;
   if (paint_worklet->GetDocumentDefinitionMap().Contains(name)) {
-    generator = new CSSPaintImageGeneratorImpl(paint_worklet, name);
+    generator =
+        MakeGarbageCollected<CSSPaintImageGeneratorImpl>(paint_worklet, name);
   } else {
-    generator = new CSSPaintImageGeneratorImpl(observer, paint_worklet, name);
+    generator = MakeGarbageCollected<CSSPaintImageGeneratorImpl>(
+        observer, paint_worklet, name);
     paint_worklet->AddPendingGenerator(name, generator);
   }
 

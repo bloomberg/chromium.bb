@@ -39,7 +39,7 @@ CSSPaintDefinition* CSSPaintDefinition::Create(
     const Vector<AtomicString>& custom_invalidation_properties,
     const Vector<CSSSyntaxDescriptor>& input_argument_types,
     const PaintRenderingContext2DSettings* context_settings) {
-  return new CSSPaintDefinition(
+  return MakeGarbageCollected<CSSPaintDefinition>(
       script_state, constructor, paint, native_invalidation_properties,
       custom_invalidation_properties, input_argument_types, context_settings);
 }

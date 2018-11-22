@@ -14,6 +14,8 @@ class CORE_EXPORT CSSFontFamilyValue : public CSSValue {
  public:
   static CSSFontFamilyValue* Create(const String& family_name);
 
+  CSSFontFamilyValue(const String&);
+
   String Value() const { return string_; }
 
   String CustomCSSText() const;
@@ -26,8 +28,6 @@ class CORE_EXPORT CSSFontFamilyValue : public CSSValue {
 
  private:
   friend class CSSValuePool;
-
-  CSSFontFamilyValue(const String&);
 
   // TODO(sashab): Change this to an AtomicString.
   String string_;

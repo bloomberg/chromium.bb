@@ -30,6 +30,10 @@ class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
 
   static CSSTransformValue* FromCSSValue(const CSSValue&);
 
+  CSSTransformValue(
+      const HeapVector<Member<CSSTransformComponent>>& transform_components)
+      : CSSStyleValue(), transform_components_(transform_components) {}
+
   bool is2D() const;
 
   DOMMatrix* toMatrix(ExceptionState&) const;
@@ -53,10 +57,6 @@ class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
   }
 
  private:
-  CSSTransformValue(
-      const HeapVector<Member<CSSTransformComponent>>& transform_components)
-      : CSSStyleValue(), transform_components_(transform_components) {}
-
   HeapVector<Member<CSSTransformComponent>> transform_components_;
   DISALLOW_COPY_AND_ASSIGN(CSSTransformValue);
 };

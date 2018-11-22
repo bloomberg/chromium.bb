@@ -528,7 +528,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   for (const auto& entry : pending_update_.NewAnimations()) {
     const InertEffect* inert_animation = entry.effect.Get();
     AnimationEventDelegate* event_delegate =
-        new AnimationEventDelegate(element, entry.name);
+        MakeGarbageCollected<AnimationEventDelegate>(element, entry.name);
     KeyframeEffect* effect = KeyframeEffect::Create(
         element, inert_animation->Model(), inert_animation->SpecifiedTiming(),
         KeyframeEffect::kDefaultPriority, event_delegate);
@@ -538,7 +538,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
       animation->pause();
     animation->Update(kTimingUpdateOnDemand);
 
-    running_animations_.push_back(new RunningAnimation(animation, entry));
+    running_animations_.push_back(
+        MakeGarbageCollected<RunningAnimation>(animation, entry));
   }
 
   // Transitions that are run on the compositor only update main-thread state
@@ -592,7 +593,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     const PropertyHandle& property = new_transition.property;
     const InertEffect* inert_animation = new_transition.effect.Get();
     TransitionEventDelegate* event_delegate =
-        new TransitionEventDelegate(element, property);
+        MakeGarbageCollected<TransitionEventDelegate>(element, property);
 
     KeyframeEffectModelBase* model = inert_animation->Model();
 

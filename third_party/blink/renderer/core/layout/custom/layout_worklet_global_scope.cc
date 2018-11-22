@@ -113,7 +113,7 @@ void LayoutWorkletGlobalScope::registerLayout(
                                               &layout, &exception_state))
     return;
 
-  CSSLayoutDefinition* definition = new CSSLayoutDefinition(
+  CSSLayoutDefinition* definition = MakeGarbageCollected<CSSLayoutDefinition>(
       ScriptController()->GetScriptState(), constructor, intrinsic_sizes,
       layout, native_invalidation_properties, custom_invalidation_properties,
       child_native_invalidation_properties,

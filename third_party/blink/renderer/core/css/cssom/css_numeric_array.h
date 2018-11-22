@@ -17,12 +17,16 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
  public:
   // blink internal
   static CSSNumericArray* Create(CSSNumericValueVector values) {
-    return new CSSNumericArray(std::move(values));
+    return MakeGarbageCollected<CSSNumericArray>(std::move(values));
   }
   static CSSNumericArray* FromNumberishes(
       const HeapVector<CSSNumberish>& values) {
-    return new CSSNumericArray(CSSNumberishesToNumericValues(values));
+    return MakeGarbageCollected<CSSNumericArray>(
+        CSSNumberishesToNumericValues(values));
   }
+
+  explicit CSSNumericArray(CSSNumericValueVector values)
+      : values_(std::move(values)) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(values_);
@@ -39,9 +43,6 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
   const CSSNumericValueVector& Values() const { return values_; }
 
  private:
-  explicit CSSNumericArray(CSSNumericValueVector values)
-      : values_(std::move(values)) {}
-
   CSSNumericValueVector values_;
   DISALLOW_COPY_AND_ASSIGN(CSSNumericArray);
 };

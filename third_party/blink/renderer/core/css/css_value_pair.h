@@ -34,7 +34,19 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
   static CSSValuePair* Create(const CSSValue* first,
                               const CSSValue* second,
                               IdenticalValuesPolicy identical_values_policy) {
-    return new CSSValuePair(first, second, identical_values_policy);
+    return MakeGarbageCollected<CSSValuePair>(first, second,
+                                              identical_values_policy);
+  }
+
+  CSSValuePair(const CSSValue* first,
+               const CSSValue* second,
+               IdenticalValuesPolicy identical_values_policy)
+      : CSSValue(kValuePairClass),
+        first_(first),
+        second_(second),
+        identical_values_policy_(identical_values_policy) {
+    DCHECK(first_);
+    DCHECK(second_);
   }
 
   const CSSValue& First() const { return *first_; }
@@ -61,17 +73,6 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSValuePair(const CSSValue* first,
-               const CSSValue* second,
-               IdenticalValuesPolicy identical_values_policy)
-      : CSSValue(kValuePairClass),
-        first_(first),
-        second_(second),
-        identical_values_policy_(identical_values_policy) {
-    DCHECK(first_);
-    DCHECK(second_);
-  }
-
   Member<const CSSValue> first_;
   Member<const CSSValue> second_;
   IdenticalValuesPolicy identical_values_policy_;

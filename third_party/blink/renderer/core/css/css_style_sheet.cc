@@ -52,8 +52,10 @@ using namespace html_names;
 class StyleSheetCSSRuleList final : public CSSRuleList {
  public:
   static StyleSheetCSSRuleList* Create(CSSStyleSheet* sheet) {
-    return new StyleSheetCSSRuleList(sheet);
+    return MakeGarbageCollected<StyleSheetCSSRuleList>(sheet);
   }
+
+  StyleSheetCSSRuleList(CSSStyleSheet* sheet) : style_sheet_(sheet) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(style_sheet_);
@@ -61,8 +63,6 @@ class StyleSheetCSSRuleList final : public CSSRuleList {
   }
 
  private:
-  StyleSheetCSSRuleList(CSSStyleSheet* sheet) : style_sheet_(sheet) {}
-
   unsigned length() const override { return style_sheet_->length(); }
   CSSRule* item(unsigned index) const override {
     return style_sheet_->item(index);
@@ -103,7 +103,7 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
   // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
   CSSParserContext* parser_context = CSSParserContext::Create(document);
   StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
-  CSSStyleSheet* sheet = new CSSStyleSheet(contents, nullptr);
+  CSSStyleSheet* sheet = MakeGarbageCollected<CSSStyleSheet>(contents, nullptr);
   sheet->SetTitle(options->title());
   sheet->ClearOwnerNode();
   sheet->ClearOwnerRule();
@@ -124,20 +124,21 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
 
 CSSStyleSheet* CSSStyleSheet::Create(StyleSheetContents* sheet,
                                      CSSImportRule* owner_rule) {
-  return new CSSStyleSheet(sheet, owner_rule);
+  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_rule);
 }
 
 CSSStyleSheet* CSSStyleSheet::Create(StyleSheetContents* sheet,
                                      Node& owner_node) {
-  return new CSSStyleSheet(sheet, owner_node, false,
-                           TextPosition::MinimumPosition());
+  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_node, false,
+                                             TextPosition::MinimumPosition());
 }
 
 CSSStyleSheet* CSSStyleSheet::CreateInline(StyleSheetContents* sheet,
                                            Node& owner_node,
                                            const TextPosition& start_position) {
   DCHECK(sheet);
-  return new CSSStyleSheet(sheet, owner_node, true, start_position);
+  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_node, true,
+                                             start_position);
 }
 
 CSSStyleSheet* CSSStyleSheet::CreateInline(Node& owner_node,
@@ -150,7 +151,8 @@ CSSStyleSheet* CSSStyleSheet::CreateInline(Node& owner_node,
       owner_node.GetDocument().GetReferrerPolicy(), encoding);
   StyleSheetContents* sheet =
       StyleSheetContents::Create(base_url.GetString(), parser_context);
-  return new CSSStyleSheet(sheet, owner_node, true, start_position);
+  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_node, true,
+                                             start_position);
 }
 
 CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents,

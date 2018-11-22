@@ -61,7 +61,8 @@ CSSStyleSheetResource* CSSStyleSheetResource::CreateForTest(
   ResourceLoaderOptions options;
   TextResourceDecoderOptions decoder_options(
       TextResourceDecoderOptions::kCSSContent, encoding);
-  return new CSSStyleSheetResource(request, options, decoder_options);
+  return MakeGarbageCollected<CSSStyleSheetResource>(request, options,
+                                                     decoder_options);
 }
 
 CSSStyleSheetResource::CSSStyleSheetResource(

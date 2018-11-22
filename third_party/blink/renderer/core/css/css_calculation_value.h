@@ -120,6 +120,10 @@ class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
   static CSSCalcExpressionNode* CreateExpressionNode(double pixels,
                                                      double percent);
 
+  CSSCalcValue(CSSCalcExpressionNode* expression, ValueRange range)
+      : expression_(expression),
+        non_negative_(range == kValueRangeNonNegative) {}
+
   scoped_refptr<CalculationValue> ToCalcValue(
       const CSSToLengthConversionData& conversion_data) const {
     PixelsAndPercent value(0, 0);
@@ -147,10 +151,6 @@ class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
   void Trace(blink::Visitor* visitor) { visitor->Trace(expression_); }
 
  private:
-  CSSCalcValue(CSSCalcExpressionNode* expression, ValueRange range)
-      : expression_(expression),
-        non_negative_(range == kValueRangeNonNegative) {}
-
   double ClampToPermittedRange(double) const;
 
   const Member<CSSCalcExpressionNode> expression_;

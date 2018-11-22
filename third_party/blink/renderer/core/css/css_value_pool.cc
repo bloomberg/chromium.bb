@@ -37,7 +37,7 @@ CSSValuePool& CssValuePool() {
                                   thread_specific_pool, ());
   Persistent<CSSValuePool>& pool_handle = *thread_specific_pool;
   if (!pool_handle) {
-    pool_handle = new CSSValuePool;
+    pool_handle = MakeGarbageCollected<CSSValuePool>();
     pool_handle.RegisterAsStaticReference();
   }
   return *pool_handle;
@@ -45,7 +45,7 @@ CSSValuePool& CssValuePool() {
 
 CSSValuePool::CSSValuePool()
     : inherited_value_(new CSSInheritedValue),
-      initial_value_(new CSSInitialValue()),
+      initial_value_(MakeGarbageCollected<CSSInitialValue>()),
       unset_value_(new CSSUnsetValue),
       invalid_variable_value_(new CSSInvalidVariableValue),
       color_transparent_(new CSSColorValue(Color::kTransparent)),

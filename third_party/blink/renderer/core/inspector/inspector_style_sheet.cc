@@ -188,7 +188,7 @@ void StyleSheetHandler::StartRuleHeader(StyleRule::RuleType type,
   if (current_rule_data_)
     current_rule_data_stack_.pop_back();
 
-  CSSRuleSourceData* data = new CSSRuleSourceData(type);
+  CSSRuleSourceData* data = MakeGarbageCollected<CSSRuleSourceData>(type);
   data->rule_header_range.start = offset;
   current_rule_data_ = data;
   current_rule_data_stack_.push_back(data);
@@ -1952,7 +1952,8 @@ CSSRuleSourceData* InspectorStyleSheetForInlineStyle::RuleSourceData() {
   const String& text = ElementStyleText();
   CSSRuleSourceData* rule_source_data = nullptr;
   if (text.IsEmpty()) {
-    rule_source_data = new CSSRuleSourceData(StyleRule::kStyle);
+    rule_source_data =
+        MakeGarbageCollected<CSSRuleSourceData>(StyleRule::kStyle);
     rule_source_data->rule_body_range.start = 0;
     rule_source_data->rule_body_range.end = 0;
   } else {

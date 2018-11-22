@@ -40,6 +40,11 @@ class CORE_EXPORT CSSTranslate final : public CSSTransformComponent {
                               CSSNumericValue* z);
   static CSSTranslate* FromCSSValue(const CSSFunctionValue&);
 
+  CSSTranslate(CSSNumericValue* x,
+               CSSNumericValue* y,
+               CSSNumericValue* z,
+               bool is2D);
+
   // Getters and setters for attributes defined in the IDL.
   CSSNumericValue* x() { return x_; }
   CSSNumericValue* y() { return y_; }
@@ -62,11 +67,6 @@ class CORE_EXPORT CSSTranslate final : public CSSTransformComponent {
   }
 
  private:
-  CSSTranslate(CSSNumericValue* x,
-               CSSNumericValue* y,
-               CSSNumericValue* z,
-               bool is2D);
-
   Member<CSSNumericValue> x_;
   Member<CSSNumericValue> y_;
   Member<CSSNumericValue> z_;

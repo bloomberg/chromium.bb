@@ -44,7 +44,12 @@ class ImageResourceObserver;
 class StylePendingImage final : public StyleImage {
  public:
   static StylePendingImage* Create(const CSSValue& value) {
-    return new StylePendingImage(value);
+    return MakeGarbageCollected<StylePendingImage>(value);
+  }
+
+  explicit StylePendingImage(const CSSValue& value)
+      : value_(const_cast<CSSValue*>(&value)) {
+    is_pending_image_ = true;
   }
 
   WrappedImagePtr Data() const override { return value_.Get(); }
@@ -98,11 +103,6 @@ class StylePendingImage final : public StyleImage {
   }
 
  private:
-  explicit StylePendingImage(const CSSValue& value)
-      : value_(const_cast<CSSValue*>(&value)) {
-    is_pending_image_ = true;
-  }
-
   bool IsEqual(const StyleImage& other) const override;
 
   // TODO(sashab): Replace this with <const CSSValue> once Member<>

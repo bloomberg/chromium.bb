@@ -26,7 +26,7 @@ CSSPerspective* CSSPerspective::Create(CSSNumericValue* length,
     exception_state.ThrowTypeError("Must pass length to CSSPerspective");
     return nullptr;
   }
-  return new CSSPerspective(length);
+  return MakeGarbageCollected<CSSPerspective>(length);
 }
 
 void CSSPerspective::setLength(CSSNumericValue* length,
@@ -43,7 +43,7 @@ CSSPerspective* CSSPerspective::FromCSSValue(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1U);
   CSSNumericValue* length =
       CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
-  return new CSSPerspective(length);
+  return MakeGarbageCollected<CSSPerspective>(length);
 }
 
 DOMMatrix* CSSPerspective::toMatrix(ExceptionState& exception_state) const {

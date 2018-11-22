@@ -37,9 +37,10 @@ class CSSFontFaceRule final : public CSSRule {
  public:
   static CSSFontFaceRule* Create(StyleRuleFontFace* rule,
                                  CSSStyleSheet* sheet) {
-    return new CSSFontFaceRule(rule, sheet);
+    return MakeGarbageCollected<CSSFontFaceRule>(rule, sheet);
   }
 
+  CSSFontFaceRule(StyleRuleFontFace*, CSSStyleSheet* parent);
   ~CSSFontFaceRule() override;
 
   String cssText() const override;
@@ -52,8 +53,6 @@ class CSSFontFaceRule final : public CSSRule {
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSFontFaceRule(StyleRuleFontFace*, CSSStyleSheet* parent);
-
   CSSRule::Type type() const override { return kFontFaceRule; }
 
   Member<StyleRuleFontFace> font_face_rule_;

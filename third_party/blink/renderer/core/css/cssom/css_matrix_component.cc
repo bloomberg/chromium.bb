@@ -29,7 +29,7 @@ DOMMatrix* To2DMatrix(DOMMatrixReadOnly* matrix) {
 CSSMatrixComponent* CSSMatrixComponent::Create(
     DOMMatrixReadOnly* matrix,
     const CSSMatrixComponentOptions* options) {
-  return new CSSMatrixComponent(
+  return MakeGarbageCollected<CSSMatrixComponent>(
       matrix, options->hasIs2D() ? options->is2D() : matrix->is2D());
 }
 

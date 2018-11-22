@@ -32,7 +32,7 @@ CSSParserContext* CSSParserContext::Create(const ExecutionContext& context) {
   else
     policy_disposition = kCheckContentSecurityPolicy;
 
-  return new CSSParserContext(
+  return MakeGarbageCollected<CSSParserContext>(
       context.Url(), false /* is_opaque_response_from_service_worker */,
       WTF::TextEncoding(), kHTMLStandardMode, kHTMLStandardMode, kLiveProfile,
       referrer, true, false, context.GetSecureContextMode(), policy_disposition,
@@ -59,7 +59,7 @@ CSSParserContext* CSSParserContext::CreateWithStyleSheetContents(
 CSSParserContext* CSSParserContext::Create(
     const CSSParserContext* other,
     const Document* use_counter_document) {
-  return new CSSParserContext(
+  return MakeGarbageCollected<CSSParserContext>(
       other->base_url_, other->is_opaque_response_from_service_worker_,
       other->charset_, other->mode_, other->match_mode_, other->profile_,
       other->referrer_, other->is_html_document_,
@@ -76,7 +76,7 @@ CSSParserContext* CSSParserContext::Create(
     ReferrerPolicy referrer_policy,
     const WTF::TextEncoding& charset,
     const Document* use_counter_document) {
-  return new CSSParserContext(
+  return MakeGarbageCollected<CSSParserContext>(
       base_url, is_opaque_response_from_service_worker, charset, other->mode_,
       other->match_mode_, other->profile_,
       Referrer(base_url.StrippedForUseAsReferrer(), referrer_policy),
@@ -92,7 +92,7 @@ CSSParserContext* CSSParserContext::Create(
     SecureContextMode secure_context_mode,
     SelectorProfile profile,
     const Document* use_counter_document) {
-  return new CSSParserContext(
+  return MakeGarbageCollected<CSSParserContext>(
       KURL(), false /* is_opaque_response_from_service_worker */,
       WTF::TextEncoding(), mode, mode, profile, Referrer(), false, false,
       secure_context_mode, kDoNotCheckContentSecurityPolicy,
@@ -142,7 +142,7 @@ CSSParserContext* CSSParserContext::Create(
   else
     policy_disposition = kCheckContentSecurityPolicy;
 
-  return new CSSParserContext(
+  return MakeGarbageCollected<CSSParserContext>(
       base_url_override, is_opaque_response_from_service_worker, charset, mode,
       match_mode, profile, referrer, document.IsHTMLDocument(),
       use_legacy_background_size_shorthand_behavior,

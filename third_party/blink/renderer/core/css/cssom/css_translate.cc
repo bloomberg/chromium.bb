@@ -92,7 +92,7 @@ CSSTranslate* CSSTranslate::Create(CSSNumericValue* x,
         "Must pass length or percentage to X and Y of CSSTranslate");
     return nullptr;
   }
-  return new CSSTranslate(
+  return MakeGarbageCollected<CSSTranslate>(
       x, y, CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kPixels),
       true /* is2D */);
 }
@@ -107,11 +107,11 @@ CSSTranslate* CSSTranslate::Create(CSSNumericValue* x,
         "Must pass length or percentage to X, Y and Z of CSSTranslate");
     return nullptr;
   }
-  return new CSSTranslate(x, y, z, false /* is2D */);
+  return MakeGarbageCollected<CSSTranslate>(x, y, z, false /* is2D */);
 }
 
 CSSTranslate* CSSTranslate::Create(CSSNumericValue* x, CSSNumericValue* y) {
-  return new CSSTranslate(
+  return MakeGarbageCollected<CSSTranslate>(
       x, y, CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kPixels),
       true /* is2D */);
 }
@@ -119,7 +119,7 @@ CSSTranslate* CSSTranslate::Create(CSSNumericValue* x, CSSNumericValue* y) {
 CSSTranslate* CSSTranslate::Create(CSSNumericValue* x,
                                    CSSNumericValue* y,
                                    CSSNumericValue* z) {
-  return new CSSTranslate(x, y, z, false /* is2D */);
+  return MakeGarbageCollected<CSSTranslate>(x, y, z, false /* is2D */);
 }
 
 CSSTranslate* CSSTranslate::FromCSSValue(const CSSFunctionValue& value) {

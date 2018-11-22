@@ -27,6 +27,9 @@ class MODULES_EXPORT CSSPaintImageGeneratorImpl final
   static CSSPaintImageGenerator* Create(const String& name,
                                         const Document&,
                                         Observer*);
+
+  CSSPaintImageGeneratorImpl(Observer*, PaintWorklet*, const String&);
+  CSSPaintImageGeneratorImpl(PaintWorklet*, const String&);
   ~CSSPaintImageGeneratorImpl() override;
 
   // The |container_size| is without subpixel snapping.
@@ -52,9 +55,6 @@ class MODULES_EXPORT CSSPaintImageGeneratorImpl final
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSPaintImageGeneratorImpl(Observer*, PaintWorklet*, const String&);
-  CSSPaintImageGeneratorImpl(PaintWorklet*, const String&);
-
   bool HasDocumentDefinition() const;
   // This function first checks whether the document definition with |name_|
   // exists or not. If it does exist, the function fetches the document

@@ -314,7 +314,7 @@ CSSLayoutDefinition::Instance* CSSLayoutDefinition::CreateInstance() {
   if (V8ScriptRunner::CallAsConstructor(
           isolate, constructor, ExecutionContext::From(script_state_), 0, {})
           .ToLocal(&layout_instance)) {
-    instance = new Instance(this, layout_instance);
+    instance = MakeGarbageCollected<Instance>(this, layout_instance);
   } else {
     constructor_has_failed_ = true;
   }

@@ -27,14 +27,14 @@ class MODULES_EXPORT CSSAnimationWorklet final
 
   static AnimationWorklet* animationWorklet(ScriptState*);
 
+  explicit CSSAnimationWorklet(Document*);
+
   void ContextDestroyed(ExecutionContext*) override;
 
   void Trace(blink::Visitor*) override;
 
  private:
   static CSSAnimationWorklet& From(LocalDOMWindow&);
-
-  explicit CSSAnimationWorklet(Document*);
 
   Member<AnimationWorklet> animation_worklet_;
 };

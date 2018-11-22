@@ -43,17 +43,31 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
       const String& absolute_resource,
       const Referrer& referrer,
       ContentSecurityPolicyDisposition should_check_content_security_policy) {
-    return new CSSFontFaceSrcValue(specified_resource, absolute_resource,
-                                   referrer, false,
-                                   should_check_content_security_policy);
+    return MakeGarbageCollected<CSSFontFaceSrcValue>(
+        specified_resource, absolute_resource, referrer, false,
+        should_check_content_security_policy);
   }
   static CSSFontFaceSrcValue* CreateLocal(
       const String& absolute_resource,
       ContentSecurityPolicyDisposition should_check_content_security_policy) {
-    return new CSSFontFaceSrcValue(g_empty_string, absolute_resource,
-                                   Referrer(), true,
-                                   should_check_content_security_policy);
+    return MakeGarbageCollected<CSSFontFaceSrcValue>(
+        g_empty_string, absolute_resource, Referrer(), true,
+        should_check_content_security_policy);
   }
+
+  CSSFontFaceSrcValue(
+      const String& specified_resource,
+      const String& absolute_resource,
+      const Referrer& referrer,
+      bool local,
+      ContentSecurityPolicyDisposition should_check_content_security_policy)
+      : CSSValue(kFontFaceSrcClass),
+        absolute_resource_(absolute_resource),
+        specified_resource_(specified_resource),
+        referrer_(referrer),
+        is_local_(local),
+        should_check_content_security_policy_(
+            should_check_content_security_policy) {}
 
   const String& GetResource() const { return absolute_resource_; }
   const String& Format() const { return format_; }
@@ -77,20 +91,6 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
   }
 
  private:
-  CSSFontFaceSrcValue(
-      const String& specified_resource,
-      const String& absolute_resource,
-      const Referrer& referrer,
-      bool local,
-      ContentSecurityPolicyDisposition should_check_content_security_policy)
-      : CSSValue(kFontFaceSrcClass),
-        absolute_resource_(absolute_resource),
-        specified_resource_(specified_resource),
-        referrer_(referrer),
-        is_local_(local),
-        should_check_content_security_policy_(
-            should_check_content_security_policy) {}
-
   void RestoreCachedResourceIfNeeded(ExecutionContext*) const;
 
   String absolute_resource_;
@@ -109,7 +109,12 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
     static FontResourceHelper* Create(
         FontResource* resource,
         base::SingleThreadTaskRunner* task_runner) {
-      return new FontResourceHelper(resource, task_runner);
+      return MakeGarbageCollected<FontResourceHelper>(resource, task_runner);
+    }
+
+    FontResourceHelper(FontResource* resource,
+                       base::SingleThreadTaskRunner* task_runner) {
+      SetResource(resource, task_runner);
     }
 
     void Trace(blink::Visitor* visitor) override {
@@ -117,11 +122,6 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
     }
 
    private:
-    FontResourceHelper(FontResource* resource,
-                       base::SingleThreadTaskRunner* task_runner) {
-      SetResource(resource, task_runner);
-    }
-
     String DebugName() const override {
       return "CSSFontFaceSrcValue::FontResourceHelper";
     }

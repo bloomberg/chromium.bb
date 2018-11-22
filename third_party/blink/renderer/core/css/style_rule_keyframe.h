@@ -17,8 +17,10 @@ class StyleRuleKeyframe final : public StyleRuleBase {
  public:
   static StyleRuleKeyframe* Create(std::unique_ptr<Vector<double>> keys,
                                    CSSPropertyValueSet* properties) {
-    return new StyleRuleKeyframe(std::move(keys), properties);
+    return MakeGarbageCollected<StyleRuleKeyframe>(std::move(keys), properties);
   }
+
+  StyleRuleKeyframe(std::unique_ptr<Vector<double>>, CSSPropertyValueSet*);
 
   // Exposed to JavaScript.
   String KeyText() const;
@@ -35,8 +37,6 @@ class StyleRuleKeyframe final : public StyleRuleBase {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  StyleRuleKeyframe(std::unique_ptr<Vector<double>>, CSSPropertyValueSet*);
-
   Member<CSSPropertyValueSet> properties_;
   Vector<double> keys_;
 };

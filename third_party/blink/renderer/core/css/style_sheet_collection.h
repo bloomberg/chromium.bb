@@ -50,7 +50,11 @@ class CORE_EXPORT StyleSheetCollection
   friend class ActiveDocumentStyleSheetCollector;
   friend class ImportedDocumentStyleSheetCollector;
 
-  static StyleSheetCollection* Create() { return new StyleSheetCollection; }
+  static StyleSheetCollection* Create() {
+    return MakeGarbageCollected<StyleSheetCollection>();
+  }
+
+  StyleSheetCollection();
 
   const ActiveStyleSheetVector& ActiveAuthorStyleSheets() const {
     return active_author_style_sheets_;
@@ -74,8 +78,6 @@ class CORE_EXPORT StyleSheetCollection
   void Dispose();
 
  protected:
-  StyleSheetCollection();
-
   HeapVector<TraceWrapperMember<StyleSheet>> style_sheets_for_style_sheet_list_;
   ActiveStyleSheetVector active_author_style_sheets_;
   bool sheet_list_dirty_ = true;

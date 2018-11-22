@@ -43,9 +43,13 @@ class CSSGridTemplateAreasValue : public CSSValue {
       const NamedGridAreaMap& grid_area_map,
       size_t row_count,
       size_t column_count) {
-    return new CSSGridTemplateAreasValue(grid_area_map, row_count,
-                                         column_count);
+    return MakeGarbageCollected<CSSGridTemplateAreasValue>(
+        grid_area_map, row_count, column_count);
   }
+
+  CSSGridTemplateAreasValue(const NamedGridAreaMap&,
+                            size_t row_count,
+                            size_t column_count);
   ~CSSGridTemplateAreasValue() = default;
 
   String CustomCSSText() const;
@@ -61,10 +65,6 @@ class CSSGridTemplateAreasValue : public CSSValue {
   }
 
  private:
-  CSSGridTemplateAreasValue(const NamedGridAreaMap&,
-                            size_t row_count,
-                            size_t column_count);
-
   NamedGridAreaMap grid_area_map_;
   size_t row_count_;
   size_t column_count_;

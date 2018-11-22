@@ -64,8 +64,10 @@ class CORE_EXPORT StyleResolver final
 
  public:
   static StyleResolver* Create(Document& document) {
-    return new StyleResolver(document);
+    return MakeGarbageCollected<StyleResolver>(document);
   }
+
+  explicit StyleResolver(Document&);
   ~StyleResolver();
   void Dispose();
 
@@ -138,8 +140,6 @@ class CORE_EXPORT StyleResolver final
   void Trace(blink::Visitor*);
 
  private:
-  explicit StyleResolver(Document&);
-
   // FIXME: This should probably go away, folded into FontBuilder.
   void UpdateFont(StyleResolverState&);
 

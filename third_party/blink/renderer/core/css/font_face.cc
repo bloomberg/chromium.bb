@@ -113,7 +113,7 @@ CSSFontFace* CreateCSSFontFace(FontFace* font_face,
     }
   }
 
-  return new CSSFontFace(font_face, ranges);
+  return MakeGarbageCollected<CSSFontFace>(font_face, ranges);
 }
 
 }  // namespace

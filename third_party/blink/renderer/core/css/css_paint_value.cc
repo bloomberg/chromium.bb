@@ -16,7 +16,7 @@ namespace blink {
 CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
     : CSSImageGeneratorValue(kPaintClass),
       name_(name),
-      paint_image_generator_observer_(new Observer(this)) {}
+      paint_image_generator_observer_(MakeGarbageCollected<Observer>(this)) {}
 
 CSSPaintValue::CSSPaintValue(
     CSSCustomIdentValue* name,

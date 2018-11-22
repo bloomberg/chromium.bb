@@ -38,6 +38,7 @@ class StyleRuleImport : public StyleRuleBase {
   static StyleRuleImport* Create(const String& href,
                                  scoped_refptr<MediaQuerySet>);
 
+  StyleRuleImport(const String& href, scoped_refptr<MediaQuerySet>);
   ~StyleRuleImport();
 
   StyleSheetContents* ParentStyleSheet() const { return parent_style_sheet_; }
@@ -88,8 +89,6 @@ class StyleRuleImport : public StyleRuleBase {
   };
 
   void NotifyFinished(Resource*);
-
-  StyleRuleImport(const String& href, scoped_refptr<MediaQuerySet>);
 
   void Dispose();
 
