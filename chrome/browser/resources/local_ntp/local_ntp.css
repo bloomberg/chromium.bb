@@ -585,10 +585,10 @@ html[dir=rtl] #mv-notice-x {
   background-color: white;
   border: 1px solid rgb(218, 220, 224);
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
-  border-radius: 500px;
+  border-radius: 16px;
   font-family: 'Roboto', arial, sans-serif;
   font-weight: normal;
-  height: 32px;
+  height: fit-content;
   margin: 0 auto;
   padding: 0;
   width: fit-content;
@@ -620,7 +620,7 @@ html[dir=rtl] #mv-notice-x {
 
 .md-icons #mv-notice-links span {
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
-  border-radius: 500px;
+  border-radius: 16px;
   color: rgb(26, 115, 232);
   margin-inline-start: 0;
   padding: 0 16px;
@@ -840,12 +840,13 @@ input:checked + .toggle::before {
   background-color: white;
   border: 1px solid rgb(218, 220, 224);
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
-  border-radius: 500px;
+  border-radius: 16px;
   color: rgb(217, 48, 37);
+  display: flex;
   font-family: 'Roboto', arial, sans-serif;
   font-size: 12px;
   font-weight: normal;
-  height: 32px;
+  height: fit-content;
   margin: 0 auto;
   opacity: 1;
   padding: 0;
@@ -857,46 +858,41 @@ input:checked + .toggle::before {
   display: none;
 }
 
+#error-notice span {
+  align-self: center;
+  display: inline-block;
+  line-height: 32px;
+}
+
 #error-notice-icon {
   background: url(../../../../ui/webui/resources/images/error.svg) no-repeat center;
   background-size: 18px 18px;
   height: 32px;
-  margin-left: 8px;
-  position: absolute;
+  padding: 0 8px;
   width: 18px;
-}
-
-.rtl #error-notice-icon {
-  margin-right: 8px;
 }
 
 #error-notice-msg {
   cursor: default;
-  padding: 0 16px 0 36px;
+  padding-right: 16px;
 }
 
-.rtl #error-notice-msg {
-  padding: 0 36px 0 16px;
+html[dir=rtl] #error-notice-msg {
+  padding-left: 16px;
+  padding-right: 0;
 }
 
 #error-notice.has-link #error-notice-msg {
   padding-right: 0;
 }
 
-.rtl #error-notice.has-link #error-notice-msg {
-  padding: 0 36px 0 0;
-}
-
-#error-notice span:not(#error-notice-icon-container) {
-  display: inline-block;
-  height: auto;
-  line-height: 32px;
-  vertical-align: unset;
+html[dir=rtl] #error-notice.has-link #error-notice-msg {
+  padding: 0;
 }
 
 #error-notice-link {
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
-  border-radius: 500px;
+  border-radius: 16px;
   color: rgb(26, 115, 232);
   cursor: pointer;
   display: none;
