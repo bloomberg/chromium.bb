@@ -21,6 +21,7 @@
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_controller_delegate.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync/test/fake_server/fake_server_http_post_provider.h"
 #include "net/base/network_change_notifier.h"
 
 using browser_sync::ChromeSyncClient;
@@ -347,14 +348,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
 
   // Disable network, write value on client 0 and wait for it to attempt
   // committing the value. This client now has conflicting change.
-  GetFakeServer()->DisableNetwork();
+  fake_server::FakeServerHttpPostProvider::DisableNetwork();
   model0->WriteItem(kKey1, kValue2);
   ASSERT_TRUE(SyncCycleFailedChecker(GetSyncService(0)).Wait());
 
   // Enable network, write different value on client 1 and wait for it to arrive
   // on server. Server now has value different from client 0 which will cause
   // conflict when client 0 performs GetUpdates.
-  GetFakeServer()->EnableNetwork();
+  fake_server::FakeServerHttpPostProvider::EnableNetwork();
   model1->WriteItem(kKey1, kValue3);
   model1->WriteItem(kKey2, kValue1);
   ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::PREFERENCES, 2).Wait());
