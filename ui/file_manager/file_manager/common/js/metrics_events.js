@@ -142,7 +142,5 @@ metrics.timing = metrics.timing || {};
 
 /** @enum {string} */
 metrics.timing.Variables = {
-  COMPUTE_HASH: 'Compute Content Hash',
-  SEARCH_BY_HASH: 'Search By Hash',
   EXTRACT_THUMBNAIL_FROM_RAW: 'Extract Thumbnail From RAW'
 };

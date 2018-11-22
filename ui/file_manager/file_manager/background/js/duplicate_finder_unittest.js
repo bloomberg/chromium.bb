@@ -34,7 +34,13 @@ var getDisposition;
 loadTimeData.data = {
   CLOUD_IMPORT_ITEMS_REMAINING: '',
   DRIVE_DIRECTORY_LABEL: 'My Drive',
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
+  DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
+  DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
+  DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
+};
+
+window.metrics = {
+  recordTime: function() {},
 };
 
 function setUp() {
@@ -77,11 +83,8 @@ function setUp() {
   };
 
   testHistory = new importer.TestImportHistory();
-  var tracker = new TestTracker();
-  duplicateFinder = new importer.DriveDuplicateFinder(tracker);
-
-  getDisposition = importer.DispositionChecker.createChecker(
-      testHistory, tracker);
+  duplicateFinder = new importer.DriveDuplicateFinder();
+  getDisposition = importer.DispositionChecker.createChecker(testHistory);
 }
 
 // Verifies the correct result when a duplicate exists.
@@ -97,7 +100,7 @@ function testCheckDuplicateTrue(callback) {
                 assertTrue(isDuplicate);
               }),
       callback);
-};
+}
 
 // Verifies the correct result when a duplicate doesn't exist.
 function testCheckDuplicateFalse(callback) {
@@ -117,7 +120,7 @@ function testCheckDuplicateFalse(callback) {
                 assertFalse(isDuplicate);
               }),
       callback);
-};
+}
 
 function testDispositionChecker_ContentDupe(callback) {
   var filePaths = ['/foo.txt'];
@@ -133,7 +136,7 @@ function testDispositionChecker_ContentDupe(callback) {
                     disposition);
               }),
       callback);
-};
+}
 
 function testDispositionChecker_HistoryDupe(callback) {
   var filePaths = ['/foo.txt'];
@@ -152,7 +155,7 @@ function testDispositionChecker_HistoryDupe(callback) {
                     disposition);
               }),
       callback);
-};
+}
 
 function testDispositionChecker_Original(callback) {
   var filePaths = ['/foo.txt'];
@@ -170,7 +173,7 @@ function testDispositionChecker_Original(callback) {
                 assertEquals(importer.Disposition.ORIGINAL, disposition);
               }),
       callback);
-};
+}
 
 /**
  * @param {!Array<string>} filePaths
