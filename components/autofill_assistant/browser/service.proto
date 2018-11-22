@@ -540,7 +540,12 @@ message ShowDetailsProto {
 // Set the value of an form element.
 message SetFormFieldValueProto {
   message KeyPress {
-    oneof keypress { string text = 1; }
+    oneof keypress {
+      string text = 1;
+      // A single key with this exact keycode (KeyboardEvent.keyCode) e.g. 8 for
+      // Backspace.
+      int32 keycode = 2;
+    }
   }
 
   // A reference to the form element whose value should be set.
