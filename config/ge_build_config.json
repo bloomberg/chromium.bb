@@ -698,18 +698,6 @@
       ]
     },
     {
-      "name": "hatch",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "heli",
       "configs": [
         {
@@ -1868,6 +1856,21 @@
         {
           "board_name": "grunt",
           "name": "liara",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "hatch",
+      "reference_board_name": "hatch",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "hatch",
+          "name": "hatch",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
