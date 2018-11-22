@@ -23,16 +23,6 @@
     "chrome_extension_messages.h"
 #endif
 
-// Generate destructors.
-#include "ipc/struct_destructor_macros.h"
-#undef CHROMECAST_COMMON_EXTENSIONS_API_CAST_EXTENSION_MESSAGES_H_
-#include "chromecast/common/extensions_api/cast_extension_messages.h"
-#include "content/public/common/common_param_traits.h"
-#ifndef CHROMECAST_COMMON_EXTENSIONS_API_CAST_EXTENSION_MESSAGES_H_
-#error "Failed to include header chromecast/common/extensions_api/"
-    "chrome_extension_messages.h"
-#endif
-
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
     namespace IPC {
