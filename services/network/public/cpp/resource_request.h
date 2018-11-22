@@ -75,7 +75,14 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // Network Service), so the value is stored here (rather than in |headers|)
   // and later populated in the headers after CORS check.
   // TODO(toyoshim): Remove it once PPAPI is deprecated.
-  std::string requested_with;
+  std::string requested_with_header;
+
+  // 'X-Client-Data' header value. See comments for |requested_with_header|
+  // above, too.
+  // TODO(toyoshim): Consider to rename this to have a chrome specific prefix
+  // such as 'Chrome-' instead of 'X-', and to add 'Chrome-' prefixed header
+  // names into the forbidden header name list.
+  std::string client_data_header;
 
   // net::URLRequest load flags (0 by default).
   int load_flags = 0;

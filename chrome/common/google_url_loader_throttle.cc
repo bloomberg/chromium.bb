@@ -28,8 +28,7 @@ void GoogleURLLoaderThrottle::WillStartRequest(
   if (!is_off_the_record_ &&
       variations::ShouldAppendVariationHeaders(request->url) &&
       !dynamic_params_.variation_ids_header.empty()) {
-    request->headers.SetHeaderIfMissing(variations::kClientDataHeader,
-                                        dynamic_params_.variation_ids_header);
+    request->client_data_header = dynamic_params_.variation_ids_header;
   }
 
   if (dynamic_params_.force_safe_search) {

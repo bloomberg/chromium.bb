@@ -371,10 +371,16 @@ URLLoader::URLLoader(
   url_request_->SetReferrer(ComputeReferrer(request.referrer));
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->SetExtraRequestHeaders(request.headers);
-  if (!request.requested_with.empty()) {
-    // X-Requested-With header must be set here to avoid breaking CORS checks.
-    url_request_->SetExtraRequestHeaderByName("X-Requested-With",
-                                              request.requested_with, true);
+  // X-Requested-With and X-Client-Data header must be set here to avoid
+  // breaking CORS checks. They are non-empty when the values are given by the
+  // UA code, therefore they should be ignored by CORS checks.
+  if (!request.requested_with_header.empty()) {
+    url_request_->SetExtraRequestHeaderByName(
+        "X-Requested-With", request.requested_with_header, true);
+  }
+  if (!request.client_data_header.empty()) {
+    url_request_->SetExtraRequestHeaderByName("X-Client-Data",
+                                              request.client_data_header, true);
   }
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
 
