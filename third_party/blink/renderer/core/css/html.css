@@ -644,8 +644,8 @@ input:disabled, textarea:disabled {
 }
 
 option:-internal-spatial-navigation-focus {
-    outline: black dashed 1px;
-    outline-offset: -1px;
+    outline: black dashed 1px !important;
+    outline-offset: -1px !important;
 }
 
 datalist {
@@ -987,6 +987,11 @@ nobr {
 }
 
 /* states */
+
+:-internal-spatial-navigation-focus {
+    outline: auto 5px -webkit-focus-ring-color !important;
+    box-shadow: none !important
+}
 
 :focus {
     outline: auto 5px -webkit-focus-ring-color

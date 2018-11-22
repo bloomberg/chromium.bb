@@ -1036,5 +1036,10 @@
     "prefix": "streaming-preload",
     "base": "external/wpt/html/semantics/scripting-1",
     "args": ["--enable-features=ScriptStreamingOnPreload"]
+  },
+  {
+    "prefix": "spatial-navigation-force-outline",
+    "base": "fast/spatial-navigation",
+    "args": ["--enable-blink-features=SpatialNavigationForcesOutline"]
   }
 ]

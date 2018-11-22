@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -71,12 +72,6 @@ static bool IsFrameFocused(const Element& element) {
                                                  .GetFrame()
                                                  ->Selection()
                                                  .FrameIsFocusedAndActive();
-}
-
-static bool MatchesSpatialNavigationFocusPseudoClass(const Element& element) {
-  return IsHTMLOptionElement(element) &&
-         ToHTMLOptionElement(element).SpatialNavigationFocused() &&
-         IsFrameFocused(element);
 }
 
 static bool MatchesListBoxPseudoClass(const Element& element) {
@@ -1396,6 +1391,22 @@ bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
 
   return element.IsFocused() && (!last_focus_from_mouse || had_keyboard_event ||
                                  always_show_focus_ring);
+}
+
+// static
+bool SelectorChecker::MatchesSpatialNavigationFocusPseudoClass(
+    const Element& element) {
+  if (!IsSpatialNavigationEnabled(element.GetDocument().GetFrame()))
+    return false;
+  if (RuntimeEnabledFeatures::SpatialNavigationForcesOutlineEnabled()) {
+    // TODO(mthiesse): Decouple spatial navigation target from focus, so that
+    // if spat nav is enabled, but not used, we don't override focus ring
+    // behavior on that element.
+    return element.IsFocused() && IsFrameFocused(element);
+  }
+  return IsHTMLOptionElement(element) &&
+         ToHTMLOptionElement(element).SpatialNavigationFocused() &&
+         IsFrameFocused(element);
 }
 
 }  // namespace blink
