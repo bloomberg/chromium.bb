@@ -227,7 +227,6 @@ public class TracingPreferencesTest {
         notification = waitForNotification().notification;
         Assert.assertEquals(0, notification.flags & FLAG_ONGOING_EVENT);
         Assert.assertNotEquals(null, notification.deleteIntent);
-        Assert.assertEquals(0, NotificationCompat.getActionCount(notification));
         PendingIntent deleteIntent = notification.deleteIntent;
 
         // The temporary tracing output file should now exist.
