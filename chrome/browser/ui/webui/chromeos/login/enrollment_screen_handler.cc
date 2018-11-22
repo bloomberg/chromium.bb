@@ -567,7 +567,10 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
                IDS_ENTERPRISE_ENROLLMENT_LOCATION_LABEL);
   builder->Add("oauthEnrollWorking", IDS_ENTERPRISE_ENROLLMENT_WORKING_MESSAGE);
   // Do not use AddF for this string as it will be rendered by the JS code.
-  builder->Add("oauthEnrollAbeSuccess", IDS_ENTERPRISE_ENROLLMENT_ABE_SUCCESS);
+  builder->Add("oauthEnrollAbeSuccessDomain",
+               IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ABE_DOMAIN);
+  builder->Add("oauthEnrollAbeSuccessSupport",
+               IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ABE_SUPPORT);
 
   /* Active Directory strings */
   builder->Add("oauthEnrollAdMachineNameInput", IDS_AD_DEVICE_NAME_INPUT_LABEL);

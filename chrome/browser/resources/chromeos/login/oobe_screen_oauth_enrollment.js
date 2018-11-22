@@ -17,7 +17,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
   /** @const */ var STEP_ATTRIBUTE_PROMPT = 'attribute-prompt';
   /** @const */ var STEP_ERROR = 'error';
   /** @const */ var STEP_SUCCESS = 'success';
-  /** @const */ var STEP_ABE_SUCCESS = 'abe-success';
 
   /* TODO(dzhioev): define this step on C++ side.
   /** @const */ var STEP_ATTRIBUTE_PROMPT_ERROR = 'attribute-prompt-error';
@@ -206,8 +205,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       $('enroll-success-done-button')
           .addEventListener('tap', this.onEnrollmentFinished_.bind(this));
-      $('enroll-success-abe-done-button')
-          .addEventListener('tap', this.onEnrollmentFinished_.bind(this));
 
       $('enroll-attributes-skip-button')
           .addEventListener('tap', this.onSkipButtonClicked.bind(this));
@@ -239,7 +236,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.licenseUi_.addEventListener('buttonclick', function() {
         chrome.send('onLicenseTypeSelected', [this.licenseUi_.selected]);
       }.bind(this));
-
     },
 
     /**
@@ -321,12 +317,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     showAttestationBasedEnrollmentSuccess: function(
         device, enterpriseEnrollmentDomain) {
-      $('oauth-enroll-abe-success-comment-no-domain').hidden = true;
-      $('oauth-enroll-abe-success-comment-domain').hidden = false;
-      $('oauth-enroll-abe-success-comment-domain').innerHTML =
-          loadTimeData.getStringF(
-              'oauthEnrollAbeSuccess', device, enterpriseEnrollmentDomain);
-      this.showStep(STEP_ABE_SUCCESS);
+      $('oauth-enroll-success-subtitle').deviceName = device;
+      $('oauth-enroll-success-subtitle').enrollmentDomain =
+          enterpriseEnrollmentDomain;
+      this.showStep(STEP_SUCCESS);
     },
 
     /**
@@ -393,8 +387,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         $('oauth-enroll-error-card').submitButton.focus();
       } else if (step == STEP_SUCCESS) {
         $('oauth-enroll-success-card').show();
-      } else if (step == STEP_ABE_SUCCESS) {
-        $('oauth-enroll-abe-success-card').show();
       } else if (step == STEP_ATTRIBUTE_PROMPT) {
         $('oauth-enroll-attribute-prompt-card').show();
       } else if (step == STEP_ATTRIBUTE_PROMPT_ERROR) {
