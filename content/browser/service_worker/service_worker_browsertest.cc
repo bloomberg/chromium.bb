@@ -278,10 +278,17 @@ VerifySaveDataHeaderNotInRequest(const net::test_server::HttpRequest& request) {
 std::unique_ptr<net::test_server::HttpResponse>
 VerifySaveDataNotInAccessControlRequestHeader(
     const net::test_server::HttpRequest& request) {
-  // Save-Data should be present.
-  auto it = request.headers.find("Save-Data");
-  EXPECT_NE(request.headers.end(), it);
-  EXPECT_EQ("on", it->second);
+  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors)) {
+    // 'Save-Data' is not expected to be in the CORS preflight request.
+    auto it = request.headers.find("Save-Data");
+    EXPECT_EQ(request.headers.end(), it);
+  } else {
+    // The legacy code path appends 'Save-Data' header regardless of CORS
+    // preflight just because it can not be distinguished.
+    auto it = request.headers.find("Save-Data");
+    EXPECT_NE(request.headers.end(), it);
+    EXPECT_EQ("on", it->second);
+  }
 
   std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse());
