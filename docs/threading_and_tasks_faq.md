@@ -2,9 +2,12 @@
 
 [TOC]
 
+Note: Make sure to read the main [Threading and Tasks](threading_and_tasks.md)
+docs first.
+
 ## General
 
-### On what thread will a task run?
+### On which thread will a task run?
 
 A task is posted through the `base/task/post_task.h` API with `TaskTraits`.
 
@@ -19,13 +22,13 @@ A task is posted through the `base/task/post_task.h` API with `TaskTraits`.
       `CreateSingleThreadTaskRunnerWithTraits(..., mode)`:
         * Where `mode` is `SingleThreadTaskRunnerThreadMode::DEDICATED`:
               * The task runs on a thread that only runs tasks from that
-                SingleThreadTaskRunner. This is not the main thread or the IO
+                SingleThreadTaskRunner. This is not the main thread nor the IO
                 thread.
 
         * Where `mode` is `SingleThreadTaskRunnerThreadMode::SHARED`:
               * The task runs on a thread that runs tasks from one or many
                 unrelated SingleThreadTaskRunners. This is not the main thread
-                or the IO thread.
+                nor the IO thread.
 
     * Otherwise:
         * The task runs in a thread pool.
@@ -34,7 +37,7 @@ As explained in [Prefer Sequences to Threads](threading_and_tasks.md#Prefer-Sequ
 tasks should generally run on a sequence in a thread pool rather than on a
 dedicated thread.
 
-## Blocking off-CPU
+## Making blocking calls (which do not use the CPU)
 
 ### How to make a blocking call without preventing other tasks from being scheduled?
 
@@ -42,7 +45,7 @@ The steps depend on where the task runs (see [Where will a task run?](#On-what-t
 
 If the task runs in a thread pool:
 
-* Annotate the scope that may block off-CPU with
+* Annotate the scope that may block with
   `ScopedBlockingCall(BlockingType::MAY_BLOCK/WILL_BLOCK)`. A few milliseconds
   after the annotated scope is entered, the capacity of the thread pool is
   incremented. This ensures that your task doesn't reduce the number of tasks
@@ -58,15 +61,16 @@ SingleThreadTaskRunner`:
 
 If the task runs on a `DEDICATED SingleThreadTaskRunner`:
 
-* Annotate the scope that may block off-CPU with
+* Annotate the scope that may block with
   `ScopedBlockingCall(BlockingType::MAY_BLOCK/WILL_BLOCK)`. The annotation is a
-  no-op that documents the blocking behavior. Tasks posted to the same
-  `DEDICATED SingleThreadTaskRunner` won't run until your blocking task returns
-  (they will never run if the blocking task never returns).
+  no-op that documents the blocking behavior (and makes it pass assertions).
+  Tasks posted to the same `DEDICATED SingleThreadTaskRunner` won't run until
+  your blocking task returns (they will never run if the blocking task never
+  returns).
 
 [base/threading/scoped_blocking_call.h](https://cs.chromium.org/chromium/src/base/threading/scoped_blocking_call.h)
 explains the difference between `MAY_BLOCK ` and  `WILL_BLOCK` and gives
-examples of off-CPU blocking operations.
+examples of blocking operations.
 
 ### How to make a blocking call that may never return without preventing other tasks from being scheduled?
 
@@ -79,7 +83,8 @@ if it never returns.
 Since tasks posted to the same sequence can't run concurrently, it is advisable
 to run tasks that may block indefinitely in
 [parallel](threading_and_tasks.md#posting-a-parallel-task) rather than in
-[sequence](threading_and_tasks.md#posting-a-sequenced-task).
+[sequence](threading_and_tasks.md#posting-a-sequenced-task) (unless posting many
+such tasks at which point sequencing can be a useful tool to prevent flooding).
 
 ### Do calls to blocking //base APIs need to be annotated with ScopedBlockingCall?
 
@@ -135,15 +140,16 @@ The following mappings can be useful when migrating code from a
 * BrowserThread::DeleteOnThread -> base::OnTaskRunnerDeleter / base::RefCountedDeleteOnSequence
 * BrowserMessageFilter::OverrideThreadForMessage() -> BrowserMessageFilter::OverrideTaskRunnerForMessage()
 * CreateSingleThreadTaskRunnerWithTraits() -> CreateSequencedTaskRunnerWithTraits()
-     * Every CreateSingleThreadTaskRunnerWithTraits() usage should be accompanied
-       with a comment and ideally a bug to make it sequence when the sequence-unfriendly
-       dependency is addressed.
+     * Every CreateSingleThreadTaskRunnerWithTraits() usage, outside of
+       BrowserThread::UI/IO, should be accompanied with a comment and ideally a
+       bug to make it sequence when the sequence-unfriendly dependency is
+       addressed.
 
 ### How to ensure mutual exclusion between tasks posted by a component?
 
 Create a `SequencedTaskRunner` using `CreateSequencedTaskRunnerWithTraits()` and
 store it on an object that can be accessed from all the PostTask() call sites
-that require mutual exclusion. If there isn't a shared object that can own
+that require mutual exclusion. If there isn't a shared object that can own a
 common `SequencedTaskRunner`, use
 `Lazy(Sequenced|SingleThread|COMSTA)TaskRunner` in an anonymous namespace.
 
@@ -153,7 +159,7 @@ common `SequencedTaskRunner`, use
 
 If the test uses `BrowserThread::UI/IO`, instantiate a
 `content::TestBrowserThreadBundle` for the scope of the test. Call
-`content::RunAllTasksUntilIdle()` to wait until all tasks have run.
+`TestBrowserThreadBundle::RunUntilIdle()` to wait until all tasks have run.
 
 If the test doesn't use `BrowserThread::UI/IO`, instantiate a
 `base::test::ScopedTaskEnvironment` for the scope of the test. Call
@@ -182,5 +188,6 @@ EXPECT_TRUE(g_condition);
 
 ## Your question hasn't been answered?
 
-Ping
+ 1. Check the main [Threading and Tasks](threading_and_tasks.md) docs.
+ 2. Ping
 [scheduler-dev@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/scheduler-dev).
