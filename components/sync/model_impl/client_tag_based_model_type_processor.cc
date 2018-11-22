@@ -479,15 +479,6 @@ void ClientTagBasedModelTypeProcessor::UpdateStorageKey(
   metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
 }
 
-void ClientTagBasedModelTypeProcessor::UntrackEntity(
-    const EntityData& entity_data) {
-  const std::string& client_tag_hash = entity_data.client_tag_hash;
-  DCHECK(model_type_state_.initial_sync_done());
-  DCHECK(!client_tag_hash.empty());
-  DCHECK(GetEntityForTagHash(client_tag_hash)->storage_key().empty());
-  entities_.erase(client_tag_hash);
-}
-
 void ClientTagBasedModelTypeProcessor::UntrackEntityForStorageKey(
     const std::string& storage_key) {
   DCHECK(model_type_state_.initial_sync_done());
@@ -501,6 +492,16 @@ void ClientTagBasedModelTypeProcessor::UntrackEntityForStorageKey(
 
   entities_.erase(iter->second);
   storage_key_to_tag_hash_.erase(iter);
+}
+
+void ClientTagBasedModelTypeProcessor::UntrackEntityForClientTagHash(
+    const std::string& client_tag_hash) {
+  DCHECK(model_type_state_.initial_sync_done());
+  DCHECK(!client_tag_hash.empty());
+  // Is a no-op if no entity for |client_tag_hash| is tracked.
+  DCHECK(GetEntityForTagHash(client_tag_hash) == nullptr ||
+         GetEntityForTagHash(client_tag_hash)->storage_key().empty());
+  entities_.erase(client_tag_hash);
 }
 
 bool ClientTagBasedModelTypeProcessor::IsEntityUnsynced(

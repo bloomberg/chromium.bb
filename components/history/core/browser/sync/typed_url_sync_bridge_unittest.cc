@@ -1188,7 +1188,7 @@ TEST_F(TypedURLSyncBridgeTest, AddUrlAndVisits) {
 
   ASSERT_EQ(0U, processor().put_multimap().size());
   ASSERT_EQ(1U, processor().update_multimap().size());
-  ASSERT_EQ(0U, processor().untrack_set().size());
+  ASSERT_EQ(0U, processor().untrack_for_client_tag_hash_set().size());
 
   // Verify processor receive correct upate storage key.
   const auto& it = processor().update_multimap().begin();
@@ -1222,7 +1222,7 @@ TEST_F(TypedURLSyncBridgeTest, AddExpiredUrlAndVisits) {
 
   ASSERT_EQ(0U, processor().put_multimap().size());
   ASSERT_EQ(0U, processor().update_multimap().size());
-  ASSERT_EQ(1U, processor().untrack_set().size());
+  ASSERT_EQ(1U, processor().untrack_for_client_tag_hash_set().size());
 
   URLID url_id = fake_history_backend_->GetIdByUrl(GURL(kURL));
   ASSERT_EQ(0, url_id);
