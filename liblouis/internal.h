@@ -799,6 +799,11 @@ _lou_logMessage(logLevels level, const char *format, ...);
 
 extern int translation_direction;
 
+/**
+ * Return true if given translation mode is valid.
+ */
+int isValidMode(int mode);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
