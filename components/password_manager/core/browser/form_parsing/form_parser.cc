@@ -157,6 +157,10 @@ struct SignificantFields {
   const FormFieldData* password = nullptr;
   const FormFieldData* new_password = nullptr;
   const FormFieldData* confirmation_password = nullptr;
+  // True if the information about fields could only be derived after relaxing
+  // some constraints. The resulting PasswordForm should only be used for
+  // fallback UI.
+  bool is_fallback = false;
 
   // Returns true if some password field is present. This is the minimal
   // requirement for a successful creation of a PasswordForm is present.
@@ -319,60 +323,83 @@ std::unique_ptr<SignificantFields> ParseUsingAutocomplete(
   return result->HasPasswords() ? std::move(result) : nullptr;
 }
 
-// Returns only relevant password fields from |processed_fields|. Namely, if
-// |mode| == SAVING return only non-empty fields (for saving empty fields are
-// useless). This ignores all passwords with Interactability below
-// |best_interactability| and also fields with names which sound like CVC
-// fields. Stores the iterator to the first relevant password in
-// |first_relevant_password|. |readonly_status| will be updated according to the
-// processing of the parsed fields; it must not be null.
+// This computes the "likely" condition from the design https://goo.gl/ERvoEN .
+// The |field| is likely to be a password if it is not a CVC field, not
+// readonly, etc. |*ignored_readonly| is incremented specifically if this
+// function returns false because of the |field| being readonly.
+bool IsLikelyPassword(const FormFieldData& field, size_t* ignored_readonly) {
+  // Readonly fields can be an indication that filling is useless (e.g., the
+  // page might use a virtual keyboard). However, if the field was readonly
+  // only temporarily, that makes it still interesting for saving. The fact
+  // that a user typed or Chrome filled into that field in the past is an
+  // indicator that the readonly was only temporary.
+  if (field.is_readonly &&
+      !(field.properties_mask & (FieldPropertiesFlags::USER_TYPED |
+                                 FieldPropertiesFlags::AUTOFILLED))) {
+    ++*ignored_readonly;
+    return false;
+  }
+  return !IsFieldCVC(field);
+}
+
+// Filters the available passwords from |processed_fields| using these rules:
+// (1) Passwords with Interactability below |best_interactability| are removed.
+// (2) If |mode| == |kSaving|, passwords with empty values are removed.
+// (3) Passwords for which IsLikelyPassword returns false are removed.
+// If applying rules (1)-(3) results in a non-empty vector of password fields,
+// that vector is returned. Otherwise, only rules (1) and (2) are applied and
+// the result returned (even if it is empty).
+// Neither of the following output parameters may be null:
+// |readonly_status| will be updated according to the processing of the parsed
+// fields.
+// |is_fallback| is set to true if the filtering rule (3) was not used to
+// obtain the result.
 std::vector<const FormFieldData*> GetRelevantPasswords(
     const std::vector<ProcessedField>& processed_fields,
     FormDataParser::Mode mode,
     Interactability best_interactability,
-    std::vector<ProcessedField>::const_iterator* first_relevant_password,
-    FormDataParser::ReadonlyPasswordFields* readonly_status) {
-  DCHECK(first_relevant_password);
-  *first_relevant_password = processed_fields.end();
-  std::vector<const FormFieldData*> result;
-  result.reserve(processed_fields.size());
+    FormDataParser::ReadonlyPasswordFields* readonly_status,
+    bool* is_fallback) {
   DCHECK(readonly_status);
+  DCHECK(is_fallback);
 
-  const bool consider_only_non_empty = mode == FormDataParser::Mode::kSaving;
+  // Step 0: filter out all non-password fields.
+  std::vector<const ProcessedField*> passwords;
+  passwords.reserve(processed_fields.size());
+  for (const ProcessedField& processed_field : processed_fields) {
+    if (processed_field.is_password)
+      passwords.push_back(&processed_field);
+  }
+  DCHECK(!passwords.empty());
 
-  // These two counters are used to determine the ReadonlyPassowrdFields value
+  // These two counters are used to determine the ReadonlyPasswordFields value
   // corresponding to this form.
-  size_t all_passwords_seen = 0;
+  const size_t all_passwords_seen = passwords.size();
   size_t ignored_readonly = 0;
-  for (auto it = processed_fields.begin(); it != processed_fields.end(); ++it) {
-    const ProcessedField& processed_field = *it;
-    if (!processed_field.is_password)
-      continue;
-    ++all_passwords_seen;
-    if (!MatchesInteractability(processed_field, best_interactability))
-      continue;
-    if (consider_only_non_empty && processed_field.field->value.empty())
-      continue;
-    // Readonly fields can be an indication that filling is useless (e.g., the
-    // page might use a virtual keyboard). However, if the field was readonly
-    // only temporarily, that makes it still interesting for saving. The fact
-    // that a user typed or Chrome filled into that field in the past is an
-    // indicator that the readonly was only temporary.
-    if (processed_field.field->is_readonly &&
-        !(processed_field.field->properties_mask &
-          (FieldPropertiesFlags::USER_TYPED |
-           FieldPropertiesFlags::AUTOFILLED))) {
-      ++ignored_readonly;
-      continue;
-    }
-    if (IsFieldCVC(*processed_field.field))
-      continue;
-    if (*first_relevant_password == processed_fields.end())
-      *first_relevant_password = it;
-    result.push_back(processed_field.field);
+
+  // Step 1: apply filter criterion (1).
+  base::EraseIf(
+      passwords, [best_interactability](const ProcessedField* processed_field) {
+        return !MatchesInteractability(*processed_field, best_interactability);
+      });
+
+  if (mode == FormDataParser::Mode::kSaving) {
+    // Step 2: apply filter criterion (2).
+    base::EraseIf(passwords, [](const ProcessedField* processed_field) {
+      return processed_field->field->value.empty();
+    });
   }
 
-  DCHECK_NE(0u, all_passwords_seen);
+  // Step 3: apply filter criterion (3). Keep the current content of
+  // |passwords| though, in case it is needed for fallback.
+  std::vector<const ProcessedField*> filtered;
+  filtered.reserve(passwords.size());
+  std::copy_if(passwords.begin(), passwords.end(), std::back_inserter(filtered),
+               [&ignored_readonly](const ProcessedField* processed_field) {
+                 return IsLikelyPassword(*processed_field->field,
+                                         &ignored_readonly);
+               });
+  // Compute the readonly statistic for metrics.
   DCHECK_LE(ignored_readonly, all_passwords_seen);
   if (ignored_readonly == 0)
     *readonly_status = FormDataParser::ReadonlyPasswordFields::kNoneIgnored;
@@ -380,6 +407,18 @@ std::vector<const FormFieldData*> GetRelevantPasswords(
     *readonly_status = FormDataParser::ReadonlyPasswordFields::kSomeIgnored;
   else
     *readonly_status = FormDataParser::ReadonlyPasswordFields::kAllIgnored;
+
+  // Ensure that |filtered| contains what needs to be returned...
+  if (filtered.empty()) {
+    filtered = std::move(passwords);
+    *is_fallback = true;
+  }
+
+  // ...and strip ProcessedFields down to FormFieldData.
+  std::vector<const FormFieldData*> result;
+  result.reserve(filtered.size());
+  for (const ProcessedField* processed_field : filtered)
+    result.push_back(processed_field->field);
 
   return result;
 }
@@ -532,10 +571,9 @@ void ParseUsingBaseHeuristics(
 
     // Try to find password elements (current, new, confirmation) among those
     // with best interactability.
-    first_relevant_password = processed_fields.end();
     std::vector<const FormFieldData*> passwords =
         GetRelevantPasswords(processed_fields, mode, password_max,
-                             &first_relevant_password, readonly_status);
+                             readonly_status, &found_fields->is_fallback);
     if (passwords.empty())
       return;
     LocateSpecificPasswords(passwords, &found_fields->password,
@@ -543,6 +581,13 @@ void ParseUsingBaseHeuristics(
                             &found_fields->confirmation_password);
     if (!found_fields->HasPasswords())
       return;
+    for (auto it = processed_fields.begin(); it != processed_fields.end();
+         ++it) {
+      if (it->field == passwords[0]) {
+        first_relevant_password = it;
+        break;
+      }
+    }
   } else {
     const uint32_t password_ids[] = {
         ExtractUniqueId(found_fields->password),
@@ -762,6 +807,7 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   result->type = PasswordForm::TYPE_MANUAL;
   result->username_may_use_prefilled_placeholder =
       GetMayUsePrefilledPlaceholder(form_predictions, significant_fields);
+  result->only_for_fallback_saving = significant_fields.is_fallback;
 
   // Set data related to specific fields.
   SetFields(significant_fields, result.get());

@@ -86,6 +86,8 @@ struct FormParsingTestCase {
   const autofill::ValueElementVector* all_possible_usernames = nullptr;
   bool username_may_use_prefilled_placeholder = false;
   base::Optional<FormDataParser::ReadonlyPasswordFields> readonly_status;
+  // If the result should be marked as only useful for fallbacks.
+  bool fallback_only = false;
 };
 
 // Returns numbers which are distinct from each other within the scope of one
@@ -360,6 +362,8 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
           EXPECT_EQ(*test_case.all_possible_usernames,
                     parsed_form->other_possible_usernames);
         }
+        EXPECT_EQ(test_case.fallback_only,
+                  parsed_form->only_for_fallback_saving);
       }
       if (test_case.readonly_status) {
         EXPECT_EQ(*test_case.readonly_status, parser.readonly_status());
@@ -907,9 +911,13 @@ TEST(FormParserTest, ReadonlyFields) {
           "For passwords, readonly means: 'give up', perhaps there is a "
           "virtual keyboard, filling might be ignored",
           {
-              {.form_control_type = "text"},
-              {.form_control_type = "password", .is_readonly = true},
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .is_readonly = true},
           },
+          // And "give-up" means "fallback-only".
+          .fallback_only = true,
       },
       {
           "But correctly marked passwords are accepted even if readonly",
@@ -1355,13 +1363,27 @@ TEST(FormParserTest, ComplementingResults) {
 TEST(FormParserTest, CVC) {
   CheckTestData({
       {
-          "Name of 'verification_type' matches the CVC pattern.",
+          "Name of 'verification_type' matches the CVC pattern, ignore that "
+          "one.",
           {
               {.role = ElementRole::USERNAME, .form_control_type = "text"},
               {.form_control_type = "password", .name = "verification_type"},
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password"},
           },
+          // The result should be trusted for more than just fallback, because
+          // the chosen password was not a suspected CVC.
+          .fallback_only = false,
+      },
+      {
+          "Create a fallback for the only password being a CVC field.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .name = "verification_type"},
+          },
+          .fallback_only = true,
       },
   });
 }
@@ -1430,15 +1452,21 @@ TEST(FormParserTest, ReadonlyStatus) {
           },
           .readonly_status =
               FormDataParser::ReadonlyPasswordFields::kSomeIgnored,
+          // The result should be trusted for more than just fallback, because
+          // the chosen password was not readonly.
+          .fallback_only = false,
       },
       {
-          "All readonly passwords ignored.",
+          "All readonly passwords ignored, only returned as a fallback.",
           {
-              {.form_control_type = "text"},
-              {.is_readonly = true, .form_control_type = "password"},
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .is_readonly = true},
           },
           .readonly_status =
               FormDataParser::ReadonlyPasswordFields::kAllIgnored,
+          .fallback_only = true,
       },
   });
 }
