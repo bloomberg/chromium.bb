@@ -34,8 +34,15 @@ syncer::StringOrdinal AppListModelUpdater::GetFirstAvailablePositionInternal(
     const int max_items_in_page =
         app_list::AppListConfig::instance().GetMaxNumOfItemsPerPage(page);
     if (items_in_page > 0 && items_in_page < max_items_in_page) {
-      return sorted_items[i - 1]->position().CreateBetween(
-          sorted_items[i]->position());
+      // Sometimes two continuous items may have the same position, so skip to
+      // the next available position.
+      // |i| should always be larger than 0 here because |items_in_page| is
+      // larger than 0.
+      if (sorted_items[i - 1]->position().LessThan(
+              sorted_items[i]->position())) {
+        return sorted_items[i - 1]->position().CreateBetween(
+            sorted_items[i]->position());
+      }
     }
     if (items_in_page > 0)
       ++page;
