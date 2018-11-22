@@ -259,6 +259,10 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
   # Don't bother enabling incremental compilation for non-chromium code.
   incremental = options.incremental and options.chromium_code
 
+  # Compiles with Error Prone take twice as long to run as pure javac. Thus GN
+  # rules run both in parallel, with Error Prone only used for checks.
+  save_outputs = not options.use_errorprone_path
+
   with build_utils.TempDir() as temp_dir:
     srcjars = options.java_srcjars
 
@@ -292,7 +296,11 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
       # (by not extracting them).
       javac_cmd = _ConvertToJMakeArgs(javac_cmd, pdb_path)
 
-    generated_java_dir = options.generated_dir
+    if save_outputs:
+      generated_java_dir = options.generated_dir
+    else:
+      generated_java_dir = os.path.join(temp_dir, 'gen')
+
     # Incremental means not all files will be extracted, so don't bother
     # clearing out stale generated files.
     if not incremental:
@@ -375,27 +383,35 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
         os.unlink(pdb_path)
         attempt_build()
 
-    # Move any Annotation Processor-generated .java files into $out/gen
-    # so that codesearch can find them.
-    javac_generated_sources = []
-    for src_path in build_utils.FindInDirectory(classes_dir, '*.java'):
-      dst_path = os.path.join(
-          generated_java_dir, os.path.relpath(src_path, classes_dir))
-      build_utils.MakeDirectory(os.path.dirname(dst_path))
-      shutil.move(src_path, dst_path)
-      javac_generated_sources.append(dst_path)
+    if save_outputs:
+      # Move any Annotation Processor-generated .java files into $out/gen
+      # so that codesearch can find them.
+      javac_generated_sources = []
+      for src_path in build_utils.FindInDirectory(classes_dir, '*.java'):
+        dst_path = os.path.join(generated_java_dir,
+                                os.path.relpath(src_path, classes_dir))
+        build_utils.MakeDirectory(os.path.dirname(dst_path))
+        shutil.move(src_path, dst_path)
+        javac_generated_sources.append(dst_path)
 
-    _CreateInfoFile(java_files, options, srcjar_files, javac_generated_sources)
+      _CreateInfoFile(java_files, options, srcjar_files,
+                      javac_generated_sources)
+    else:
+      build_utils.Touch(options.jar_path + '.info')
 
     if options.incremental and (not java_files or not incremental):
       # Make sure output exists.
       build_utils.Touch(pdb_path)
 
-    with build_utils.AtomicOutput(options.jar_path) as f:
-      jar.JarDirectory(classes_dir,
-                       f.name,
-                       provider_configurations=options.provider_configurations,
-                       additional_files=options.additional_jar_files)
+    if options.incremental or save_outputs:
+      with build_utils.AtomicOutput(options.jar_path) as f:
+        jar.JarDirectory(
+            classes_dir,
+             f.name,
+             provider_configurations=options.provider_configurations,
+             additional_files=options.additional_jar_files)
+    else:
+      build_utils.Touch(options.jar_path)
 
 
 def _ParseAndFlattenGnLists(gn_lists):
@@ -595,7 +611,7 @@ def main(argv):
   output_paths = [
       options.jar_path,
       options.jar_path + '.info',
-  ]
+      ]
   if options.incremental:
     output_paths.append(options.jar_path + '.pdb')
 
