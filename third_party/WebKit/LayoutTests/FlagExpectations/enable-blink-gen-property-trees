@@ -142,6 +142,13 @@ crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Fa
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
 Bug(none) compositing/overflow/scaled-overflow.html [ Failure ]
 
+# Opacity not applied to descendant of animated filter node.
+crbug.com/905859 transitions/opacity-transform-transitions-inside-iframe.html [ Failure ]
+crbug.com/905859 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ Failure ]
+
+# Antialiasing differences
+crbug.com/905861 virtual/threaded/animations/skew-notsequential-compositor.html [ Failure ]
+
 # Incorrect scrollbar invalidation.
 crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scrollbars-invisible.html [ Failure ]
 
@@ -152,6 +159,39 @@ crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gestur
 crbug.com/882973 http/tests/devtools/layers/layer-tree-model.js [ Failure ]
 
 crbug.com/884239 virtual/threaded/animations/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]
+
+# CSS clip with filter and opacity leads to a DCHECK
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-comparison-shown-node-count-preserved-when-sorting.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-event-listeners.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-statistics.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-orphan-nodes.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-comparison-show-all.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-search-by-id.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-containment-shown-node-count-preserved-when-sorting.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-expand-collapse.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-show-next.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-loader.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-comparison-show-next.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-expansion-preserved-when-sorting.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-weak-dominator.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-sorting-instances.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-sorting-fields.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-comparison-sorting.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-show-ranges.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-shown-node-count-preserved-when-sorting.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-retainers.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-containment-sorting.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-comparison-dom-groups-change.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-containment-show-next.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-containment-show-all.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-show-all.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-sorting.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/cpu-profiler-save-load.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-summary-search.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-location.js [ Crash ]
+crbug.com/906154 http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.js [ Crash ]
 
 # These tests have failures that were introduced between enabling BGPT for the
 # first time and later disabling it. These are not real failures and can be
