@@ -18,21 +18,7 @@ namespace gfx {
 class Size;
 }  // namespace gfx
 
-namespace gl {
-struct GLVersionInfo;
-}  // namespace gl
-
 namespace gpu {
-class TextureBase;
-
-// Wraps a gpu::TextureBase into Skia API as a GrBackendTexture. Skia does not
-// take ownership.  Returns true on success.
-// TODO(ericrk): Remove this once all paths migrate to SharedImage.
-GPU_GLES2_EXPORT bool GetGrBackendTexture(const gl::GLVersionInfo& version_info,
-                                          const TextureBase& texture,
-                                          GLint sk_color_type,
-                                          GrBackendTexture* gr_texture);
-
 // Creates a GrBackendTexture from a service ID. Skia does not take ownership.
 // Returns true on success.
 GPU_GLES2_EXPORT bool GetGrBackendTexture(GLenum target,

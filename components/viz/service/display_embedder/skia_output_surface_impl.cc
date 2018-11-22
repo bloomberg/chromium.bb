@@ -364,7 +364,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
   if (!gpu_service_->is_using_vulkan()) {
     // Convert internal format from GLES2 to platform GL.
     const auto* version_info = impl_on_gpu_->gl_version_info();
-    metadata.backend_format = GrBackendFormat::MakeGL(
+    metadata.driver_backend_format = GrBackendFormat::MakeGL(
         gl::GetInternalFormat(version_info,
                               *metadata.backend_format.getGLFormat()),
         *metadata.backend_format.getGLTarget());
@@ -381,7 +381,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
   resource_sync_tokens_.push_back(metadata.sync_token);
 
   return PromiseTextureHelper<ResourceMetadata>::MakePromiseSkImage(
-      this, &recorder_.value(), metadata.backend_format, metadata.size,
+      this, &recorder_.value(), metadata.driver_backend_format, metadata.size,
       metadata.mip_mapped, metadata.origin, metadata.color_type,
       metadata.alpha_type, metadata.color_space, std::move(metadata));
 }
