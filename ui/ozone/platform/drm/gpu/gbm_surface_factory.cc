@@ -222,13 +222,6 @@ std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
   return nullptr;
 }
 
-std::vector<gfx::BufferFormat> GbmSurfaceFactory::GetScanoutFormats(
-    gfx::AcceleratedWidget widget) {
-  std::vector<gfx::BufferFormat> scanout_formats;
-  drm_thread_proxy_->GetScanoutFormats(widget, &scanout_formats);
-  return scanout_formats;
-}
-
 scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     gfx::Size size,

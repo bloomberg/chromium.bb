@@ -131,11 +131,6 @@ std::unique_ptr<SurfaceOzoneCanvas> ScenicSurfaceFactory::CreateCanvasForWidget(
   return std::make_unique<ScenicWindowCanvas>(window);
 }
 
-std::vector<gfx::BufferFormat> ScenicSurfaceFactory::GetScanoutFormats(
-    gfx::AcceleratedWidget widget) {
-  return std::vector<gfx::BufferFormat>{gfx::BufferFormat::RGBA_8888};
-}
-
 scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     gfx::Size size,

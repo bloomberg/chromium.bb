@@ -208,12 +208,6 @@ void DrmThread::CreateBufferFromFds(
   *out_framebuffer = std::move(framebuffer);
 }
 
-void DrmThread::GetScanoutFormats(
-    gfx::AcceleratedWidget widget,
-    std::vector<gfx::BufferFormat>* scanout_formats) {
-  display_manager_->GetScanoutFormats(widget, scanout_formats);
-}
-
 void DrmThread::SchedulePageFlip(
     gfx::AcceleratedWidget widget,
     std::vector<DrmOverlayPlane> planes,
