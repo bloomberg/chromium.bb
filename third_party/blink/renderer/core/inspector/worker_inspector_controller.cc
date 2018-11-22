@@ -175,7 +175,7 @@ void WorkerInspectorController::EmitTraceEvent() {
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "TracingSessionIdForWorker", TRACE_EVENT_SCOPE_THREAD,
                        "data",
-                       InspectorTracingSessionIdForWorkerEvent::Data(
+                       inspector_tracing_session_id_for_worker_event::Data(
                            worker_devtools_token_, parent_devtools_token_, url_,
                            worker_thread_id_));
 }

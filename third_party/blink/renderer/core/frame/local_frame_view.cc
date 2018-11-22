@@ -788,7 +788,7 @@ void LocalFrameView::UpdateLayout() {
 
     Document* document = frame_->GetDocument();
     TRACE_EVENT_BEGIN1("devtools.timeline", "Layout", "beginData",
-                       InspectorLayoutEvent::BeginData(this));
+                       inspector_layout_event::BeginData(this));
     probe::UpdateLayout probe(document);
 
     PerformPreLayoutTasks();
@@ -934,7 +934,7 @@ void LocalFrameView::UpdateLayout() {
     // FIXME: The notion of a single root for layout is no longer applicable.
     // Remove or update this code. crbug.com/460596
     TRACE_EVENT_END1("devtools.timeline", "Layout", "endData",
-                     InspectorLayoutEvent::EndData(root_for_this_layout));
+                     inspector_layout_event::EndData(root_for_this_layout));
     probe::didChangeViewport(frame_.Get());
 
     nested_layout_count_--;
@@ -1360,7 +1360,7 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
     TRACE_EVENT_INSTANT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
         "ScrollInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",
-        InspectorScrollInvalidationTrackingEvent::Data(*layout_object));
+        inspector_scroll_invalidation_tracking_event::Data(*layout_object));
 
     // If the fixed layer has a blur/drop-shadow filter applied on at least one
     // of its parents, we cannot scroll using the fast path, otherwise the
@@ -1712,7 +1712,7 @@ void LocalFrameView::ScheduleRelayout() {
     return;
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "InvalidateLayout", TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorInvalidateLayoutEvent::Data(frame_.Get()));
+                       inspector_invalidate_layout_event::Data(frame_.Get()));
 
   ClearLayoutSubtreeRootsAndMarkContainingBlocks();
 
@@ -1758,7 +1758,7 @@ void LocalFrameView::ScheduleRelayoutOfSubtree(LayoutObject* relayout_root) {
   }
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "InvalidateLayout", TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorInvalidateLayoutEvent::Data(frame_.Get()));
+                       inspector_invalidate_layout_event::Data(frame_.Get()));
 }
 
 bool LocalFrameView::LayoutPending() const {
@@ -2423,9 +2423,9 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   {
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                          "SetLayerTreeId", TRACE_EVENT_SCOPE_THREAD, "data",
-                         InspectorSetLayerTreeId::Data(frame_.Get()));
+                         inspector_set_layer_tree_id::Data(frame_.Get()));
     TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data",
-                 InspectorUpdateLayerTreeEvent::Data(frame_.Get()));
+                 inspector_update_layer_tree_event::Data(frame_.Get()));
 
     run_more_lifecycle_phases = RunCompositingLifecyclePhase(target_state);
     if (!run_more_lifecycle_phases)

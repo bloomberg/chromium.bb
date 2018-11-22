@@ -1951,7 +1951,7 @@ void Document::ScheduleLayoutTreeUpdate() {
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "ScheduleStyleRecalculation", TRACE_EVENT_SCOPE_THREAD,
                        "data",
-                       InspectorRecalculateStylesEvent::Data(GetFrame()));
+                       inspector_recalculate_styles_event::Data(GetFrame()));
   ++style_version_;
 }
 
@@ -2225,7 +2225,7 @@ void Document::UpdateStyleAndLayoutTree() {
   CHECK(Lifecycle().StateAllowsTreeMutations());
 
   TRACE_EVENT_BEGIN1("blink,devtools.timeline", "UpdateLayoutTree", "beginData",
-                     InspectorRecalculateStylesEvent::Data(GetFrame()));
+                     inspector_recalculate_styles_event::Data(GetFrame()));
 
   unsigned start_element_count = GetStyleEngine().StyleForElementCount();
 
@@ -6108,7 +6108,7 @@ void Document::FinishedParsing() {
 
     TRACE_EVENT_INSTANT1("devtools.timeline", "MarkDOMContent",
                          TRACE_EVENT_SCOPE_THREAD, "data",
-                         InspectorMarkLoadEvent::Data(frame));
+                         inspector_mark_load_event::Data(frame));
     probe::domContentLoadedEventFired(frame);
     frame->GetIdlenessDetector()->DomContentLoadedEventFired();
   }

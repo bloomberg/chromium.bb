@@ -437,9 +437,9 @@ inline bool PaintFastBottomLayer(Node* node,
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",
-               InspectorPaintImageEvent::Data(node, *info.image,
-                                              FloatRect(image->Rect()),
-                                              FloatRect(image_border.Rect())));
+               inspector_paint_image_event::Data(
+                   node, *info.image, FloatRect(image->Rect()),
+                   FloatRect(image_border.Rect())));
 
   // Since there is no way for the developer to specify decode behavior, use
   // kSync by default.
@@ -554,7 +554,7 @@ void PaintFillLayerBackground(GraphicsContext& context,
       image) {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                  "data",
-                 InspectorPaintImageEvent::Data(
+                 inspector_paint_image_event::Data(
                      node, *info.image, FloatRect(image->Rect()),
                      FloatRect(scrolled_paint_rect)));
     context.DrawTiledImage(image,

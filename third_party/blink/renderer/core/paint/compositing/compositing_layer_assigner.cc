@@ -253,7 +253,8 @@ void CompositingLayerAssigner::UpdateSquashingAssignment(
     // Issue a paint invalidation, since |layer| may have been added to an
     // already-existing squashing layer.
     TRACE_LAYER_INVALIDATION(
-        layer, InspectorLayerInvalidationTrackingEvent::kAddedToSquashingLayer);
+        layer,
+        inspector_layer_invalidation_tracking_event::kAddedToSquashingLayer);
     layers_needing_paint_invalidation.push_back(layer);
     layers_changed_ = true;
   } else if (composited_layer_update == kRemoveFromSquashingLayer) {
@@ -269,9 +270,9 @@ void CompositingLayerAssigner::UpdateSquashingAssignment(
 
     // If we need to issue paint invalidations, do so now that we've removed it
     // from a squashed layer.
-    TRACE_LAYER_INVALIDATION(
-        layer,
-        InspectorLayerInvalidationTrackingEvent::kRemovedFromSquashingLayer);
+    TRACE_LAYER_INVALIDATION(layer,
+                             inspector_layer_invalidation_tracking_event::
+                                 kRemovedFromSquashingLayer);
     layers_needing_paint_invalidation.push_back(layer);
     layers_changed_ = true;
 
@@ -303,7 +304,8 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
     if (compositor_->AllocateOrClearCompositedLayerMapping(
             layer, composited_layer_update)) {
       TRACE_LAYER_INVALIDATION(
-          layer, InspectorLayerInvalidationTrackingEvent::kNewCompositedLayer);
+          layer,
+          inspector_layer_invalidation_tracking_event::kNewCompositedLayer);
       layers_needing_paint_invalidation.push_back(layer);
       layers_changed_ = true;
       if (ScrollingCoordinator* scrolling_coordinator =

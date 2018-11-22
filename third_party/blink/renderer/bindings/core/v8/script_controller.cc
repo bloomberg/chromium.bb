@@ -93,8 +93,8 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
     const ScriptFetchOptions& fetch_options) {
   TRACE_EVENT1(
       "devtools.timeline", "EvaluateScript", "data",
-      InspectorEvaluateScriptEvent::Data(GetFrame(), source.Url().GetString(),
-                                         source.StartPosition()));
+      inspector_evaluate_script_event::Data(
+          GetFrame(), source.Url().GetString(), source.StartPosition()));
   v8::Local<v8::Value> result;
   {
     V8CacheOptions v8_cache_options = kV8CacheOptionsDefault;

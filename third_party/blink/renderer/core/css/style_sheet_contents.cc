@@ -332,8 +332,9 @@ const AtomicString& StyleSheetContents::NamespaceURIFromPrefix(
 void StyleSheetContents::ParseAuthorStyleSheet(
     const CSSStyleSheetResource* cached_style_sheet,
     const SecurityOrigin* security_origin) {
-  TRACE_EVENT1("blink,devtools.timeline", "ParseAuthorStyleSheet", "data",
-               InspectorParseAuthorStyleSheetEvent::Data(cached_style_sheet));
+  TRACE_EVENT1(
+      "blink,devtools.timeline", "ParseAuthorStyleSheet", "data",
+      inspector_parse_author_style_sheet_event::Data(cached_style_sheet));
   TimeTicks start_time = CurrentTimeTicks();
 
   bool is_same_origin_request =

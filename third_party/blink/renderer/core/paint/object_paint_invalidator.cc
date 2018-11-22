@@ -199,7 +199,7 @@ void ObjectPaintInvalidator::InvalidateDisplayItemClient(
     TRACE_EVENT_INSTANT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
         "PaintInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",
-        InspectorPaintInvalidationTrackingEvent::Data(object_));
+        inspector_paint_invalidation_tracking_event::Data(object_));
   }
 
   client.Invalidate(reason);

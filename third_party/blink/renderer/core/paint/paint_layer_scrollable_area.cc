@@ -428,7 +428,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   bool is_root_layer = Layer()->IsRootLayer();
 
   TRACE_EVENT1("devtools.timeline", "ScrollLayer", "data",
-               InspectorScrollLayerEvent::Data(GetLayoutBox()));
+               inspector_scroll_layer_event::Data(GetLayoutBox()));
 
   // FIXME(420741): Resolve circular dependency between scroll offset and
   // compositing state, and remove this disabler.

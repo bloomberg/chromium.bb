@@ -98,7 +98,7 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
     v8::ScriptOrigin origin,
     v8::ScriptCompiler::CompileOptions compile_options,
     v8::ScriptCompiler::NoCacheReason no_cache_reason,
-    InspectorCompileScriptEvent::V8CacheResult* cache_result) {
+    inspector_compile_script_event::V8CacheResult* cache_result) {
   v8::Local<v8::String> code = V8String(isolate, source_code.Source());
 
   if (ScriptStreamer* streamer = source_code.Streamer()) {
@@ -147,7 +147,7 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
       }
       if (cache_result) {
         cache_result->consume_result = base::make_optional(
-            InspectorCompileScriptEvent::V8CacheResult::ConsumeResult(
+            inspector_compile_script_event::V8CacheResult::ConsumeResult(
                 v8::ScriptCompiler::kConsumeCodeCache, cached_data->length,
                 cached_data->rejected));
       }
@@ -212,12 +212,12 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
                                  compile_options, no_cache_reason, nullptr);
   }
 
-  InspectorCompileScriptEvent::V8CacheResult cache_result;
+  inspector_compile_script_event::V8CacheResult cache_result;
   v8::MaybeLocal<v8::Script> script =
       CompileScriptInternal(isolate, execution_context, source, origin,
                             compile_options, no_cache_reason, &cache_result);
   TRACE_EVENT_END1(kTraceEventCategoryGroup, "v8.compile", "data",
-                   InspectorCompileScriptEvent::Data(
+                   inspector_compile_script_event::Data(
                        file_name, script_start_position, cache_result,
                        source.Streamer(), source.NotStreamingReason()));
   return script;

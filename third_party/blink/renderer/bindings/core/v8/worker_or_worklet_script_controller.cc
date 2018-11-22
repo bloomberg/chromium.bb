@@ -258,8 +258,8 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
   DCHECK(IsContextInitialized());
 
   TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data",
-               InspectorEvaluateScriptEvent::Data(nullptr, source_code.Url(),
-                                                  source_code.StartPosition()));
+               inspector_evaluate_script_event::Data(
+                   nullptr, source_code.Url(), source_code.StartPosition()));
 
   ScriptState::Scope scope(script_state_);
 

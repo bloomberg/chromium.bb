@@ -100,9 +100,9 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",
-               InspectorPaintImageEvent::Data(node, *style_image,
-                                              FloatRect(image->Rect()),
-                                              FloatRect(border_image_rect)));
+               inspector_paint_image_event::Data(node, *style_image,
+                                                 FloatRect(image->Rect()),
+                                                 FloatRect(border_image_rect)));
 
   ScopedInterpolationQuality interpolation_quality_scope(
       graphics_context, style.GetInterpolationQuality());

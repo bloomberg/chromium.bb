@@ -223,12 +223,12 @@ void V8CodeCache::ProduceCache(
 
       TRACE_EVENT_END1(
           kTraceEventCategoryGroup, "v8.compile", "data",
-          InspectorCompileScriptEvent::Data(
+          inspector_compile_script_event::Data(
               source.Url().GetString(), source.StartPosition(),
-              InspectorCompileScriptEvent::V8CacheResult(
-                  InspectorCompileScriptEvent::V8CacheResult::ProduceResult(
+              inspector_compile_script_event::V8CacheResult(
+                  inspector_compile_script_event::V8CacheResult::ProduceResult(
                       compile_options, cached_data ? cached_data->length : 0),
-                  base::Optional<InspectorCompileScriptEvent::V8CacheResult::
+                  base::Optional<inspector_compile_script_event::V8CacheResult::
                                      ConsumeResult>()),
               source.Streamer(), source.NotStreamingReason()));
       break;
@@ -311,14 +311,14 @@ scoped_refptr<CachedMetadata> V8CodeCache::GenerateFullCodeCache(
 
   TRACE_EVENT_END1(
       kTraceEventCategoryGroup, "v8.compile", "data",
-      InspectorCompileScriptEvent::Data(
+      inspector_compile_script_event::Data(
           file_name, TextPosition(),
-          InspectorCompileScriptEvent::V8CacheResult(
-              InspectorCompileScriptEvent::V8CacheResult::ProduceResult(
+          inspector_compile_script_event::V8CacheResult(
+              inspector_compile_script_event::V8CacheResult::ProduceResult(
                   v8::ScriptCompiler::kEagerCompile,
                   cached_data ? cached_data->length : 0),
-              base::Optional<
-                  InspectorCompileScriptEvent::V8CacheResult::ConsumeResult>()),
+              base::Optional<inspector_compile_script_event::V8CacheResult::
+                                 ConsumeResult>()),
           false, ScriptStreamer::kHasCodeCache));
 
   return cached_metadata;
