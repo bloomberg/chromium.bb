@@ -43,12 +43,11 @@ class LoopbackServer {
   explicit LoopbackServer(const base::FilePath& persistent_file);
   virtual ~LoopbackServer();
 
-  // Handles a /command POST (with the given |request|) to the server. Three
-  // output arguments, |server_status|, |response_code|, and |response|, are
-  // used to pass data back to the caller. The command has failed if the value
-  // pointed to by |error_code| is nonzero.
+  // Handles a /command POST (with the given |request|) to the server. Two
+  // output arguments, |http_response_code|, and |response|, are used to pass
+  // data back to the caller.
   void HandleCommand(const std::string& request,
-                     int* response_code,
+                     int* http_response_code,
                      std::string* response);
 
   // Enables strong consistency model (i.e. server detects conflicts).

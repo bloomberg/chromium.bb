@@ -79,12 +79,12 @@ void FakeServerHttpPostProvider::SetPostPayload(const char* content_type,
   request_content_.assign(content, content_length);
 }
 
-bool FakeServerHttpPostProvider::MakeSynchronousPost(int* error_code,
-                                                     int* response_code) {
+bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
+                                                     int* http_response_code) {
   if (!network_enabled_) {
     response_.clear();
-    *error_code = net::ERR_INTERNET_DISCONNECTED;
-    *response_code = 0;
+    *net_error_code = net::ERR_INTERNET_DISCONNECTED;
+    *http_response_code = 0;
     return false;
   }
 
@@ -106,8 +106,8 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* error_code,
 
   if (!result) {
     response_.clear();
-    *error_code = net::ERR_UNEXPECTED;
-    *response_code = 0;
+    *net_error_code = net::ERR_UNEXPECTED;
+    *http_response_code = 0;
     return false;
   }
 
@@ -118,16 +118,16 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* error_code,
   // just give up after a few seconds.
   // TODO(crbug.com/869404): Maybe the FakeServer should live on its own thread.
   if (!post_complete.TimedWait(base::TimeDelta::FromSeconds(5))) {
-    *error_code = net::ERR_TIMED_OUT;
+    *net_error_code = net::ERR_TIMED_OUT;
     return false;
   }
 
   // Zero means success.
-  *error_code = 0;
-  *response_code = post_response_code;
+  *net_error_code = 0;
+  *http_response_code = post_response_code;
   response_ = post_response;
 
-  return *error_code == 0;
+  return true;
 }
 
 int FakeServerHttpPostProvider::GetResponseContentLength() const {
