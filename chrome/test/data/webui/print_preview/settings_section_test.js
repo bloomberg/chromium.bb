@@ -29,7 +29,8 @@ cr.define('settings_sections_tests', function() {
     PresetCopies: 'preset copies',
     PresetDuplex: 'preset duplex',
     DisableMarginsByPagesPerSheet: 'disable margins by pages per sheet',
-    ColorManaged: 'color selection disabled by policy',
+    ColorManaged: 'color managed',
+    DuplexManaged: 'duplex managed',
   };
 
   const suiteName = 'SettingsSectionsTests';
@@ -414,6 +415,14 @@ cr.define('settings_sections_tests', function() {
      */
     function isSectionHidden(checkbox) {
       return checkbox.parentNode.parentNode.hidden;
+    }
+
+    /**
+     * @param {!CrCheckboxElement} checkbox The checkbox to check
+     * @return {boolean} Whether the checkbox's parent section is managed.
+     */
+    function isSectionManaged(checkbox) {
+      return checkbox.parentNode.parentNode.managed;
     }
 
     test(assert(TestNames.Other), function() {
@@ -1126,13 +1135,15 @@ cr.define('settings_sections_tests', function() {
         // Policy has no effect.
         colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
         colorPolicy: print_preview.ColorMode.COLOR,
+        colorDefault: print_preview.ColorMode.COLOR,
         expectedValue: true,
         expectedHidden: true,
       },
        {
-         // Policy contradicts actual capabilities and should be ignored.
+         // Policy contradicts actual capabilities and is ignored.
          colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
          colorPolicy: print_preview.ColorMode.GRAY,
+         colorDefault: print_preview.ColorMode.GRAY,
          expectedValue: true,
          expectedHidden: true,
        },
@@ -1145,14 +1156,32 @@ cr.define('settings_sections_tests', function() {
            ]
          },
          colorPolicy: print_preview.ColorMode.COLOR,
+         // Default mismatches restriction and is ignored.
+         colorDefault: print_preview.ColorMode.GRAY,
          expectedValue: true,
          expectedHidden: false,
          expectedManaged: true,
+       },
+       {
+         // Default defined by policy but setting is modifiable.
+         colorCap: {
+           option: [
+             {type: 'STANDARD_MONOCHROME', is_default: true},
+             {type: 'STANDARD_COLOR'}
+           ]
+         },
+         colorDefault: print_preview.ColorMode.COLOR,
+         expectedValue: true,
+         expectedHidden: false,
+         expectedManaged: false,
        }].forEach(subtestParams => {
         capabilities =
             print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
         capabilities.printer.color = subtestParams.colorCap;
-        const policies = {allowedColorModes: subtestParams.colorPolicy};
+        const policies = {
+          allowedColorModes: subtestParams.colorPolicy,
+          defaultColorMode: subtestParams.colorDefault,
+        };
         // In practice |capabilities| are always set after |policies| and
         // observers only check for |capabilities|, so the order is important.
         page.set('destination_.policies', policies);
@@ -1170,6 +1199,85 @@ cr.define('settings_sections_tests', function() {
               subtestParams.expectedManaged,
               colorElement.$$('print-preview-settings-section').managed);
           assertEquals(subtestParams.expectedManaged, selectElement.disabled);
+        }
+      });
+    });
+
+    test(assert(TestNames.DuplexManaged), function() {
+      toggleMoreSettings();
+      const optionsElement = page.$$('print-preview-other-options-settings');
+      const duplexElement = optionsElement.$$('#duplex');
+
+      // Remove duplex capability.
+      let capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
+      delete capabilities.printer.duplex;
+
+      [{
+        // Policy has no effect.
+        duplexCap: {option: [{type: 'NO_DUPLEX', is_default: true}]},
+        duplexPolicy: print_preview.DuplexModeRestriction.SIMPLEX,
+        duplexDefault: print_preview.DuplexModeRestriction.SIMPLEX,
+        expectedValue: false,
+        expectedHidden: true,
+      },
+       {
+         // Policy contradicts actual capabilities and is ignored.
+         duplexCap: {option: [{type: 'NO_DUPLEX', is_default: true}]},
+         duplexPolicy: print_preview.DuplexModeRestriction.DUPLEX,
+         duplexDefault: print_preview.DuplexModeRestriction.LONG_EDGE,
+         expectedValue: false,
+         expectedHidden: true,
+       },
+       {
+         // Policy overrides default.
+         duplexCap: {
+           option: [
+             {type: 'NO_DUPLEX', is_default: true}, {type: 'LONG_EDGE'},
+             {type: 'SHORT_EDGE'}
+           ]
+         },
+         duplexPolicy: print_preview.DuplexModeRestriction.DUPLEX,
+         // Default mismatches restriction and is ignored.
+         duplexDefault: print_preview.DuplexModeRestriction.SIMPLEX,
+         expectedValue: true,
+         expectedHidden: false,
+         expectedManaged: true,
+       },
+       {
+         // Default defined by policy but setting is modifiable.
+         duplexCap: {
+           option: [
+             {type: 'NO_DUPLEX', is_default: true}, {type: 'LONG_EDGE'},
+             {type: 'SHORT_EDGE'}
+           ]
+         },
+         duplexDefault: print_preview.DuplexModeRestriction.LONG_EDGE,
+         expectedValue: true,
+         expectedHidden: false,
+         expectedManaged: false,
+       }].forEach(subtestParams => {
+        capabilities =
+            print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
+        capabilities.printer.duplex = subtestParams.duplexCap;
+        const policies = {
+          allowedDuplexModes: subtestParams.duplexPolicy,
+          defaultDuplexMode: subtestParams.duplexDefault,
+        };
+        // In practice |capabilities| are always set after |policies| and
+        // observers only check for |capabilities|, so the order is important.
+        page.set('destination_.policies', policies);
+        page.set('destination_.capabilities', capabilities);
+        page.$$('print-preview-model').applyDestinationSpecificPolicies();
+        assertEquals(
+            subtestParams.expectedValue, page.getSettingValue('duplex'));
+        assertEquals(
+            subtestParams.expectedHidden, isSectionHidden(duplexElement));
+        if (!subtestParams.expectedHidden) {
+          assertEquals(subtestParams.expectedValue, duplexElement.checked);
+          assertEquals(
+              subtestParams.expectedManaged, isSectionManaged(duplexElement));
+          assertEquals(subtestParams.expectedManaged, duplexElement.disabled);
         }
       });
     });

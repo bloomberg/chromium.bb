@@ -158,9 +158,15 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'PresetDuplex', function() {
   this.runMochaTest(settings_sections_tests.TestNames.PresetDuplex);
 });
 
+GEN('#if defined(OS_CHROMEOS)');
 TEST_F('PrintPreviewSettingsSectionsTest', 'ColorManaged', function() {
   this.runMochaTest(settings_sections_tests.TestNames.ColorManaged);
 });
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'DuplexManaged', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.DuplexManaged);
+});
+GEN('#endif');
 
 TEST_F(
     'PrintPreviewSettingsSectionsTest', 'DisableMarginsByPagesPerSheet',
