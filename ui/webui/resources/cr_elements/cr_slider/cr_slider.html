@@ -44,7 +44,7 @@
       }
 
       #bar {
-        border-top-color: var(--google-blue-600);
+        border-top-color: var(--cr-slider-active-color, --google-blue-600);
         height: 2px;
         left: 0;
         position: absolute;
@@ -53,7 +53,7 @@
         width: 0;
       }
 
-      :host-context([dir=rtl]) #bar {
+      :host([is-rtl_]) #bar {
         left: initial;
         right: 0;
       }
@@ -66,7 +66,7 @@
       }
 
       #knob {
-        background-color: var(--google-blue-600);
+        background-color: var(--cr-slider-knob-color, --google-blue-600);
         border: 0;
         border-radius: 50%;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
@@ -88,7 +88,7 @@
         width: 32px;
       }
 
-      :host-context([dir=rtl]) paper-ripple {
+      :host([is-rtl_]) paper-ripple {
         left: auto;
         right: -11px;
       }

@@ -46,6 +46,7 @@ function AudioPlayer(container) {
   this.player_ =
     /** @type {AudioPlayerElement} */ (document.querySelector('audio-player'));
   this.player_.tracks = [];
+  this.isRtl_ = window.getComputedStyle(this.player_)['direction'] === 'rtl';
 
   /**
    * Queue to throttle concurrent reading of audio file metadata.
@@ -99,6 +100,7 @@ function AudioPlayer(container) {
     this.errorString_ = '';
     this.offlineString_ = '';
     chrome.fileManagerPrivate.getStrings(function(strings) {
+      strings = /** @type {!Object<string>} */ (strings);
       container.ownerDocument.title = strings['AUDIO_PLAYER_TITLE'];
       this.errorString_ = strings['AUDIO_ERROR'];
       this.offlineString_ = strings['AUDIO_OFFLINE'];
@@ -389,14 +391,20 @@ AudioPlayer.prototype.onKeyDown_ = function(event) {
       this.player_.dispatchEvent(new Event('toggle-pause-event'));
       break;
     case 'ArrowUp':
-    case 'ArrowRight':
-      if (event.target.id !== 'volumeSlider')
-        this.player_.dispatchEvent(new Event('small-forward-skip-event'));
+      this.player_.dispatchEvent(new Event('small-forward-skip-event'));
       break;
     case 'ArrowDown':
+      this.player_.dispatchEvent(new Event('small-backword-skip-event'));
+      break;
+    case 'ArrowRight':
+      var eventName = this.isRtl_ ? 'small-backword-skip-event' :
+                                    'small-forward-skip-event';
+      this.player_.dispatchEvent(new Event(eventName));
+      break;
     case 'ArrowLeft':
-      if (event.target.id !== 'volumeSlider')
-        this.player_.dispatchEvent(new Event('small-backword-skip-event'));
+      var eventName = this.isRtl_ ? 'small-forward-skip-event' :
+                                    'small-backword-skip-event';
+      this.player_.dispatchEvent(new Event(eventName));
       break;
     case 'l':
       this.player_.dispatchEvent(new Event('big-forward-skip-event'));

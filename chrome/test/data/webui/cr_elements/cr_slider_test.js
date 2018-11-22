@@ -113,6 +113,22 @@ suite('cr-slider', function() {
     assertEquals(97, crSlider.value);
   });
 
+  test('no-keybindings', () => {
+    crSlider.noKeybindings = true;
+    crSlider.value = 0;
+    pressArrowRight();
+    assertEquals(0, crSlider.value);
+    crSlider.noKeybindings = false;
+    pressArrowRight();
+    assertEquals(1, crSlider.value);
+    crSlider.noKeybindings = true;
+    pressArrowRight();
+    assertEquals(1, crSlider.value);
+    crSlider.noKeybindings = false;
+    pressArrowRight();
+    assertEquals(2, crSlider.value);
+  });
+
   test('mouse events', () => {
     crSlider.value = 0;
     pointerMove(.25);
@@ -282,5 +298,22 @@ suite('cr-slider', function() {
     assertTrue(crSlider.snaps);
     assertEquals(0, crSlider.min);
     assertEquals(1, crSlider.max);
+  });
+
+  test('when drag ends, value updated before dragging-changed event', () => {
+    const wait = new Promise(resolve => {
+      crSlider.addEventListener('dragging-changed', e => {
+        if (!e.detail.value) {
+          assertEquals(50, crSlider.value);
+          resolve();
+        }
+      });
+    });
+    pointerDown(0);
+    pointerMove(.5);
+    pointerUp();
+    return wait.then(() => {
+      assertEquals(50, crSlider.value);
+    });
   });
 });
