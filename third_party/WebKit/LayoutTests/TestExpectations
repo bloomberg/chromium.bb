@@ -5379,3 +5379,6 @@ crbug.com/906952 fast/events/before-unload-return-value-from-listener.html [ Pas
 crbug.com/667560 http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Failure Timeout ]
 crbug.com/907412 [ Mac10.13 ] external/wpt/domxpath/xml_xpath_runner.html [ Pass Timeout ]
 crbug.com/907481 [ Win10 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-nomsid.html [ Failure ]
+
+#Sheriff 2018-11-22
+crbug.com/907736 http/tests/devtools/elements/elements-save-to-temp-var.js [ Timeout Pass ]
