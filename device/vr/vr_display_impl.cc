@@ -39,7 +39,7 @@ void VRDisplayImpl::GetFrameData(
     return;
   }
 
-  device_->GetFrameData(std::move(callback));
+  device_->GetInlineFrameData(std::move(callback));
 }
 
 void VRDisplayImpl::GetEnvironmentIntegrationProvider(

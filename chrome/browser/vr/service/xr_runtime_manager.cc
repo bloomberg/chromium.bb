@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
@@ -47,6 +48,9 @@ namespace vr {
 
 namespace {
 XRRuntimeManager* g_xr_runtime_manager = nullptr;
+
+base::LazyInstance<base::ObserverList<XRRuntimeManagerObserver>>::Leaky
+    g_xr_runtime_manager_observers;
 }  // namespace
 
 XRRuntimeManager::~XRRuntimeManager() {
@@ -113,6 +117,14 @@ void XRRuntimeManager::RecordVrStartupHistograms() {
 #if BUILDFLAG(ENABLE_OPENVR) && !BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
   device::OpenVRDeviceProvider::RecordRuntimeAvailability();
 #endif
+}
+
+void XRRuntimeManager::AddObserver(XRRuntimeManagerObserver* observer) {
+  g_xr_runtime_manager_observers.Get().AddObserver(observer);
+}
+
+void XRRuntimeManager::RemoveObserver(XRRuntimeManagerObserver* observer) {
+  g_xr_runtime_manager_observers.Get().RemoveObserver(observer);
 }
 
 void XRRuntimeManager::AddService(VRServiceImpl* service) {
@@ -286,6 +298,13 @@ void XRRuntimeManager::SupportsSession(
   std::move(callback).Run(true);
 }
 
+void XRRuntimeManager::ForEachRuntime(
+    const base::RepeatingCallback<void(BrowserXRRuntime*)>& fn) {
+  for (auto& rt : runtimes_) {
+    fn.Run(rt.second.get());
+  }
+}
+
 XRRuntimeManager::XRRuntimeManager(ProviderList providers)
     : providers_(std::move(providers)) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -347,7 +366,12 @@ void XRRuntimeManager::AddRuntime(device::mojom::XRDeviceId id,
 
   runtimes_[id] =
       std::make_unique<BrowserXRRuntime>(std::move(runtime), std::move(info));
+
+  for (XRRuntimeManagerObserver& obs : g_xr_runtime_manager_observers.Get())
+    obs.OnRuntimeAdded(runtimes_[id].get());
+
   for (VRServiceImpl* service : services_)
+    // TODO(sumankancherla): Consider combining with XRRuntimeManagerObserver.
     service->RuntimesChanged();
 }
 

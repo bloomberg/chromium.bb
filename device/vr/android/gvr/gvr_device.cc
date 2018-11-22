@@ -213,7 +213,7 @@ void GvrDevice::StopPresenting() {
   exclusive_controller_binding_.Close();
 }
 
-void GvrDevice::OnMagicWindowFrameDataRequest(
+void GvrDevice::OnGetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   if (!gvr_api_) {
     std::move(callback).Run(nullptr);
@@ -257,12 +257,9 @@ void GvrDevice::EnsureInitialized(EnsureInitializedCallback callback) {
 }
 
 GvrDelegateProvider* GvrDevice::GetGvrDelegateProvider() {
-  // GvrDelegateProviderFactory::Create() may fail transiently, so every time we
-  // try to get it, set the device ID.
-  GvrDelegateProvider* delegate_provider = GvrDelegateProviderFactory::Create();
-  if (delegate_provider)
-    delegate_provider->SetDeviceId(GetId());
-  return delegate_provider;
+  // GvrDelegateProviderFactory::Create() may return a different
+  // pointer each time. Do not cache it.
+  return GvrDelegateProviderFactory::Create();
 }
 
 void GvrDevice::OnDisplayConfigurationChanged(JNIEnv* env,
@@ -335,17 +332,17 @@ void GvrDevice::OnInitRequestSessionFinished(
     return;
   }
 
-  if (!options->immersive) {
-    // TODO(https://crbug.com/695937): This should be NOTREACHED() once we no
-    // longer need the hacked GRV non-immersive mode.  This should now only be
-    // hit if orientation devices are disabled by flag.
-    ReturnNonImmersiveSession(std::move(callback));
-    return;
-  }
-
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider) {
     std::move(callback).Run(nullptr, nullptr);
+    return;
+  }
+
+  if (!options->immersive) {
+    // TODO(https://crbug.com/695937): This should be NOTREACHED() once we no
+    // longer need the hacked GVR non-immersive mode.  This should now only be
+    // hit if orientation devices are disabled by flag.
+    ReturnNonImmersiveSession(std::move(callback));
     return;
   }
 

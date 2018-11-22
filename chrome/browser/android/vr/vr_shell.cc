@@ -425,13 +425,13 @@ void VrShell::ToggleCardboardGamepad(bool enabled) {
   }
 
   if (!cardboard_gamepad_source_active_ && enabled) {
-    device::GvrDevice* device = delegate_provider_->GetDevice();
-    if (!device)
+    device::GvrDevice* gvr_device = delegate_provider_->GetGvrDevice();
+    if (!gvr_device)
       return;
 
     device::GamepadDataFetcherManager::GetInstance()->AddFactory(
         new device::CardboardGamepadDataFetcher::Factory(this,
-                                                         device->GetId()));
+                                                         gvr_device->GetId()));
     cardboard_gamepad_source_active_ = true;
     if (pending_cardboard_trigger_) {
       OnTriggerEvent(nullptr, JavaParamRef<jobject>(nullptr), true);
@@ -444,12 +444,12 @@ void VrShell::ToggleGvrGamepad(bool enabled) {
   // Enable/disable updating gamepad state.
   if (enabled) {
     DCHECK(!gvr_gamepad_source_active_);
-    device::GvrDevice* device = delegate_provider_->GetDevice();
-    if (!device)
+    device::GvrDevice* gvr_device = delegate_provider_->GetGvrDevice();
+    if (!gvr_device)
       return;
 
     device::GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new device::GvrGamepadDataFetcher::Factory(this, device->GetId()));
+        new device::GvrGamepadDataFetcher::Factory(this, gvr_device->GetId()));
     gvr_gamepad_source_active_ = true;
   } else {
     DCHECK(gvr_gamepad_source_active_);

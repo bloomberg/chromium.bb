@@ -40,10 +40,6 @@ bool VRDeviceBase::HasExclusiveSession() {
   return presenting_;
 }
 
-void VRDeviceBase::SetMagicWindowEnabled(bool enabled) {
-  magic_window_enabled_ = enabled;
-}
-
 void VRDeviceBase::ListenToDeviceChanges(
     mojom::XRRuntimeEventListenerAssociatedPtrInfo listener_info,
     mojom::XRRuntime::ListenToDeviceChangesCallback callback) {
@@ -51,14 +47,14 @@ void VRDeviceBase::ListenToDeviceChanges(
   std::move(callback).Run(display_info_.Clone());
 }
 
-void VRDeviceBase::GetFrameData(
+void VRDeviceBase::GetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  if (!magic_window_enabled_) {
+  if (!inline_poses_enabled_) {
     std::move(callback).Run(nullptr);
     return;
   }
 
-  OnMagicWindowFrameDataRequest(std::move(callback));
+  OnGetInlineFrameData(std::move(callback));
 }
 
 void VRDeviceBase::SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info) {
@@ -88,7 +84,7 @@ bool VRDeviceBase::ShouldPauseTrackingWhenFrameDataRestricted() {
 
 void VRDeviceBase::OnListeningForActivate(bool listening) {}
 
-void VRDeviceBase::OnMagicWindowFrameDataRequest(
+void VRDeviceBase::OnGetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   std::move(callback).Run(nullptr);
 }
@@ -99,6 +95,10 @@ void VRDeviceBase::SetListeningForActivate(bool is_listening) {
 
 void VRDeviceBase::EnsureInitialized(EnsureInitializedCallback callback) {
   std::move(callback).Run();
+}
+
+void VRDeviceBase::SetInlinePosesEnabled(bool enable) {
+  inline_poses_enabled_ = enable;
 }
 
 void VRDeviceBase::RequestHitTest(

@@ -381,7 +381,7 @@ bool ArCoreDevice::ShouldPauseTrackingWhenFrameDataRestricted() {
   return true;
 }
 
-void ArCoreDevice::OnMagicWindowFrameDataRequest(
+void ArCoreDevice::OnGetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(IsOnMainThread());

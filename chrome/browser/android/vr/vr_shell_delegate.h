@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "chrome/browser/android/vr/vr_core_info.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
+#include "chrome/browser/vr/service/xr_runtime_manager_observer.h"
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
@@ -37,7 +38,8 @@ enum class VrSupportLevel : int {
 
 class VrShell;
 
-class VrShellDelegate : public device::GvrDelegateProvider {
+class VrShellDelegate : public device::GvrDelegateProvider,
+                        XRRuntimeManagerObserver {
  public:
   VrShellDelegate(JNIEnv* env, jobject obj);
   ~VrShellDelegate() override;
@@ -65,7 +67,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
                               const base::android::JavaParamRef<jobject>& obj);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  device::GvrDevice* GetDevice();
+  device::GvrDevice* GetGvrDevice();
 
   void SendRequestPresentReply(device::mojom::XRSessionPtr session);
 
@@ -75,12 +77,20 @@ class VrShellDelegate : public device::GvrDelegateProvider {
  private:
   // device::GvrDelegateProvider implementation.
   bool ShouldDisableGvrDevice() override;
-  void SetDeviceId(device::mojom::XRDeviceId device_id) override;
   void StartWebXRPresentation(
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRRuntimeSessionOptionsPtr options,
       base::OnceCallback<void(device::mojom::XRSessionPtr)> callback) override;
   void OnListeningForActivateChanged(bool listening) override;
+
+  // vr::XRRuntimeManagerObserver implementation.
+  // VrShellDelegate implements XRRuntimeManagerObserver to turn off poses (by
+  // calling SetInlinePosesEnabled) on a runtime that gets initialized and added
+  // to XRRuntimeManager, while the VrShell is active (user has headset on).
+  // As for the runtimes that got added to the XRRuntimeManager before the
+  // VrShell got created, their poses will be turned off too on its
+  // creation.
+  void OnRuntimeAdded(vr::BrowserXRRuntime* runtime) override;
 
   void OnActivateDisplayHandled(bool will_not_present);
   void SetListeningForActivate(bool listening);
@@ -89,12 +99,11 @@ class VrShellDelegate : public device::GvrDelegateProvider {
       device::mojom::XRRuntimeSessionOptionsPtr options,
       base::OnceCallback<void(device::mojom::XRSessionPtr)> callback,
       bool success);
+  void SetInlineVrEnabled(bool enable);
 
   std::unique_ptr<VrCoreInfo> MakeVrCoreInfo(JNIEnv* env);
 
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
-  device::mojom::XRDeviceId device_id_ =
-      device::mojom::XRDeviceId::GVR_DEVICE_ID;
   VrShell* vr_shell_ = nullptr;
 
   // Deferred callback stored for later use in cases where vr_shell

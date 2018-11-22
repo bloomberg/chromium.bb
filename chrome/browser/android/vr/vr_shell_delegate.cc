@@ -15,11 +15,14 @@
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
+#include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
+#include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "content/public/browser/webvr_service_provider.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/buildflags/buildflags.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "jni/VrShellDelegate_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 
@@ -55,13 +58,15 @@ VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj)
       weak_ptr_factory_(this) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   j_vr_shell_delegate_.Reset(env, obj);
+  XRRuntimeManager::AddObserver(this);
 }
 
 VrShellDelegate::~VrShellDelegate() {
   DVLOG(1) << __FUNCTION__ << "=" << this;
-  device::GvrDevice* device = GetDevice();
-  if (device)
-    device->OnExitPresent();
+  XRRuntimeManager::RemoveObserver(this);
+  device::GvrDevice* gvr_device = GetGvrDevice();
+  if (gvr_device)
+    gvr_device->OnExitPresent();
   if (!on_present_result_callback_.is_null())
     base::ResetAndReturn(&on_present_result_callback_).Run(false);
 }
@@ -84,12 +89,10 @@ VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(
 void VrShellDelegate::SetDelegate(VrShell* vr_shell,
                                   gvr::ViewerType viewer_type) {
   vr_shell_ = vr_shell;
-  device::GvrDevice* device = GetDevice();
   // When VrShell is created, we disable magic window mode as the user is inside
   // the headset. As currently implemented, orientation-based magic window
   // doesn't make sense when the window is fixed and the user is moving.
-  if (device)
-    device->SetMagicWindowEnabled(false);
+  SetInlineVrEnabled(false);
 
   if (pending_successful_present_request_) {
     CHECK(!on_present_result_callback_.is_null());
@@ -114,11 +117,10 @@ void VrShellDelegate::RemoveDelegate() {
     pending_successful_present_request_ = false;
     base::ResetAndReturn(&on_present_result_callback_).Run(false);
   }
-  device::GvrDevice* device = GetDevice();
-  if (device) {
-    device->SetMagicWindowEnabled(true);
-    device->OnExitPresent();
-  }
+  SetInlineVrEnabled(true);
+  device::GvrDevice* gvr_device = GetGvrDevice();
+  if (gvr_device)
+    gvr_device->OnExitPresent();
 }
 
 void VrShellDelegate::SetPresentResult(JNIEnv* env,
@@ -187,6 +189,15 @@ void VrShellDelegate::OnPresentResult(
                                       std::move(options));
 }
 
+void VrShellDelegate::SetInlineVrEnabled(bool enable) {
+  base::RepeatingCallback<void(BrowserXRRuntime*)> fn = base::BindRepeating(
+      [](bool flag, BrowserXRRuntime* runtime) {
+        runtime->GetRuntime()->SetInlinePosesEnabled(flag);
+      },
+      enable);
+  XRRuntimeManager::GetInstance()->ForEachRuntime(fn);
+}
+
 void VrShellDelegate::SendRequestPresentReply(
     device::mojom::XRSessionPtr session) {
   DVLOG(1) << __FUNCTION__;
@@ -201,8 +212,8 @@ void VrShellDelegate::SendRequestPresentReply(
 
 void VrShellDelegate::DisplayActivate(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {
-  device::GvrDevice* device = static_cast<device::GvrDevice*>(GetDevice());
-  if (device) {
+  device::GvrDevice* gvr_device = GetGvrDevice();
+  if (gvr_device) {
     if (!possible_presentation_start_action_ ||
         possible_presentation_start_action_ !=
             PresentationStartAction::kDeepLinkedApp) {
@@ -213,7 +224,7 @@ void VrShellDelegate::DisplayActivate(JNIEnv* env,
           PresentationStartAction::kHeadsetActivation;
     }
 
-    device->Activate(
+    gvr_device->Activate(
         device::mojom::VRDisplayEventReason::MOUNTED,
         base::BindRepeating(&VrShellDelegate::OnActivateDisplayHandled,
                             weak_ptr_factory_.GetWeakPtr()));
@@ -225,17 +236,17 @@ void VrShellDelegate::DisplayActivate(JNIEnv* env,
 void VrShellDelegate::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (vr_shell_)
     return;
-  device::GvrDevice* device = GetDevice();
-  if (device)
-    device->PauseTracking();
+  device::GvrDevice* gvr_device = GetGvrDevice();
+  if (gvr_device)
+    gvr_device->PauseTracking();
 }
 
 void VrShellDelegate::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (vr_shell_)
     return;
-  device::GvrDevice* device = GetDevice();
-  if (device)
-    device->ResumeTracking();
+  device::GvrDevice* gvr_device = GetGvrDevice();
+  if (gvr_device)
+    gvr_device->ResumeTracking();
 }
 
 void VrShellDelegate::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -247,18 +258,6 @@ bool VrShellDelegate::ShouldDisableGvrDevice() {
       Java_VrShellDelegate_getVrSupportLevel(AttachCurrentThread());
   return static_cast<VrSupportLevel>(vr_support_level) <=
          VrSupportLevel::kVrNeedsUpdate;
-}
-
-void VrShellDelegate::SetDeviceId(device::mojom::XRDeviceId device_id) {
-  device_id_ = device_id;
-  if (vr_shell_) {
-    device::GvrDevice* device = GetDevice();
-    // See comment in VrShellDelegate::SetDelegate. This handles the case where
-    // VrShell is created before the device code is initialized (like when
-    // entering VR browsing on a non-webVR page).
-    if (device)
-      device->SetMagicWindowEnabled(false);
-  }
 }
 
 void VrShellDelegate::StartWebXRPresentation(
@@ -285,9 +284,9 @@ void VrShellDelegate::StartWebXRPresentation(
 void VrShellDelegate::ExitWebVRPresent() {
   JNIEnv* env = AttachCurrentThread();
   Java_VrShellDelegate_exitWebVRPresent(env, j_vr_shell_delegate_);
-  device::GvrDevice* device = GetDevice();
-  if (device)
-    device->OnExitPresent();
+  device::GvrDevice* gvr_device = GetGvrDevice();
+  if (gvr_device)
+    gvr_device->OnExitPresent();
 }
 
 std::unique_ptr<VrCoreInfo> VrShellDelegate::MakeVrCoreInfo(JNIEnv* env) {
@@ -311,7 +310,16 @@ void VrShellDelegate::OnListeningForActivateChanged(bool listening) {
                                                     listening);
 }
 
-device::GvrDevice* VrShellDelegate::GetDevice() {
+void VrShellDelegate::OnRuntimeAdded(vr::BrowserXRRuntime* runtime) {
+  if (vr_shell_) {
+    // See comment in VrShellDelegate::SetDelegate. This handles the case where
+    // VrShell is created before the device code is initialized (like when
+    // entering VR browsing on a non-webVR page).
+    runtime->GetRuntime()->SetInlinePosesEnabled(false);
+  }
+}
+
+device::GvrDevice* VrShellDelegate::GetGvrDevice() {
   return device::GvrDelegateProviderFactory::GetDevice();
 }
 
