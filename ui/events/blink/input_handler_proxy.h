@@ -186,7 +186,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   SynchronousInputHandler* synchronous_input_handler_;
   bool allow_root_animate_;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   bool expect_scroll_update_end_;
 #endif
   bool gesture_scroll_on_impl_thread_;

@@ -144,7 +144,7 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       input_handler_(input_handler),
       synchronous_input_handler_(nullptr),
       allow_root_animate_(true),
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
       expect_scroll_update_end_(false),
 #endif
       gesture_scroll_on_impl_thread_(false),
@@ -585,7 +585,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   if (compositor_event_queue_ && scroll_predictor_)
     scroll_predictor_->ResetOnGestureScrollBegin(gesture_event);
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   expect_scroll_update_end_ = true;
 #endif
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
@@ -645,7 +645,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
 InputHandlerProxy::EventDisposition
 InputHandlerProxy::HandleGestureScrollUpdate(
     const WebGestureEvent& gesture_event) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   DCHECK(expect_scroll_update_end_);
 #endif
 
@@ -696,7 +696,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 
   if (snap_fling_controller_->HandleGestureScrollUpdate(
           GetGestureScrollUpdateInfo(gesture_event))) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     expect_scroll_update_end_ = false;
 #endif
     gesture_scroll_on_impl_thread_ = false;
@@ -726,7 +726,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
   const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollEnd");
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   DCHECK(expect_scroll_update_end_);
   expect_scroll_update_end_ = false;
 #endif
