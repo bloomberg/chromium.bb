@@ -60,7 +60,6 @@ namespace syncer {
 class BackendMigrator;
 class DeviceInfoSyncBridge;
 class DeviceInfoTracker;
-class ModelTypeControllerDelegate;
 class NetworkResources;
 class SyncTypePreferenceProvider;
 class TypeDebugInfoObserver;
@@ -290,10 +289,6 @@ class ProfileSyncService : public syncer::SyncService,
   const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const;
 
   syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProviderForTest();
-
-  // Returns the ModelTypeControllerDelegate for syncer::DEVICE_INFO.
-  base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetDeviceInfoSyncControllerDelegate();
 
   // Returns synced devices tracker.
   // Virtual for testing.

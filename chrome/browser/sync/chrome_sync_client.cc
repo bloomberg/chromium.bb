@@ -151,7 +151,13 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kDisableSyncTypes);
 
-  return syncer::ModelTypeSetFromString(disabled_types_str);
+  syncer::ModelTypeSet disabled_types =
+      syncer::ModelTypeSetFromString(disabled_types_str);
+  if (disabled_types.Has(syncer::DEVICE_INFO)) {
+    DLOG(WARNING) << "DEVICE_INFO cannot be disabled via a command-line switch";
+    disabled_types.Remove(syncer::DEVICE_INFO);
+  }
+  return disabled_types;
 }
 
 }  // namespace
@@ -597,9 +603,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
   switch (type) {
-    case syncer::DEVICE_INFO:
-      return ProfileSyncServiceFactory::GetForProfile(profile_)
-          ->GetDeviceInfoSyncControllerDelegate();
     case syncer::READING_LIST:
       // Reading List is only supported on iOS at the moment.
       NOTREACHED();
@@ -628,6 +631,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
     case syncer::AUTOFILL_WALLET_DATA:
     case syncer::AUTOFILL_WALLET_METADATA:
     case syncer::BOOKMARKS:
+    case syncer::DEVICE_INFO:
     case syncer::SESSIONS:
     case syncer::TYPED_URLS:
       NOTREACHED();

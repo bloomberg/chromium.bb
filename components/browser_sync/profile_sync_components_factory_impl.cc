@@ -141,11 +141,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   const base::RepeatingClosure dump_stack =
       base::BindRepeating(&syncer::ReportUnrecoverableError, channel_);
 
-  // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
-  // Use an error callback that always uploads a stacktrace if it can to help
-  // get USS as stable as possible.
-  controllers.push_back(
-      CreateModelTypeControllerForModelRunningOnUIThread(syncer::DEVICE_INFO));
   // These features are enabled only if there's a DB thread to post tasks to.
   if (db_thread_) {
     // Autocomplete sync is enabled by default.  Register unless explicitly
