@@ -23,7 +23,8 @@ namespace {
 // due to profile deserialization when profile uploads are delayed (e.g. due to
 // being offline). Capping at this threshold loses approximately 0.5% of
 // profiles on canary and dev.
-// TODO(chengx): Remove this threshold after crbug.com/903972 is fixed.
+//
+// TODO(wittman): Remove this threshold after crbug.com/903972 is fixed.
 const size_t kMaxPendingProfiles = 1250;
 
 // PendingProfiles ------------------------------------------------------------

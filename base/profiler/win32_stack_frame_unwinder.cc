@@ -119,7 +119,7 @@ Win32StackFrameUnwinder::~Win32StackFrameUnwinder() {}
 bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context,
                                         ScopedModuleHandle* module) {
 #ifdef _WIN64
-  // TODO(chengx): update base::ModuleCache to return a ScopedModuleHandle and
+  // TODO(wittman): update base::ModuleCache to return a ScopedModuleHandle and
   // use it for this module lookup.
   ScopedModuleHandle frame_module =
       unwind_functions_->GetModuleForProgramCounter(ContextPC(context));
