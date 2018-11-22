@@ -42,23 +42,23 @@ class PLATFORM_EXPORT SegmentedSubstring {
         string_(str) {
     if (length_) {
       if (string_.Is8Bit()) {
-        is8_bit_ = true;
+        is_8bit_ = true;
         data_.string8_ptr = string_.Characters8();
         current_char_ = *data_.string8_ptr;
       } else {
-        is8_bit_ = false;
+        is_8bit_ = false;
         data_.string16_ptr = string_.Characters16();
         current_char_ = *data_.string16_ptr;
       }
     } else {
-      is8_bit_ = true;
+      is_8bit_ = true;
       data_.string8_ptr = nullptr;
     }
   }
 
   void Clear() {
     length_ = 0;
-    is8_bit_ = true;
+    is_8bit_ = true;
     data_.string8_ptr = nullptr;
     current_char_ = 0;
   }
@@ -91,7 +91,7 @@ class PLATFORM_EXPORT SegmentedSubstring {
     if (data_.void_ptr == string_.Impl()->Bytes())
       return false;
 
-    if (is8_bit_) {
+    if (is_8bit_) {
       if (*(data_.string8_ptr - 1) != c)
         return false;
 
@@ -111,7 +111,7 @@ class PLATFORM_EXPORT SegmentedSubstring {
   ALWAYS_INLINE UChar GetCurrentChar() const { return current_char_; }
 
   ALWAYS_INLINE void IncrementAndDecrementLength() {
-    current_char_ = is8_bit_ ? *++data_.string8_ptr : *++data_.string16_ptr;
+    current_char_ = is_8bit_ ? *++data_.string8_ptr : *++data_.string16_ptr;
     --length_;
   }
 
@@ -131,7 +131,7 @@ class PLATFORM_EXPORT SegmentedSubstring {
   int length_ = 0;
   UChar current_char_ = 0;
   bool do_not_exclude_line_numbers_ = true;
-  bool is8_bit_ = true;
+  bool is_8bit_ = true;
   String string_;
 };
 

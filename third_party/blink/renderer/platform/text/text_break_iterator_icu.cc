@@ -752,7 +752,7 @@ static TextBreakIterator* GetNonSharedCharacterBreakIterator() {
 
 NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(
     const StringView& string)
-    : is8_bit_(true),
+    : is_8bit_(true),
       charaters8_(nullptr),
       offset_(0),
       length_(0),
@@ -760,9 +760,9 @@ NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(
   if (string.IsEmpty())
     return;
 
-  is8_bit_ = string.Is8Bit();
+  is_8bit_ = string.Is8Bit();
 
-  if (is8_bit_) {
+  if (is_8bit_) {
     charaters8_ = string.Characters8();
     offset_ = 0;
     length_ = string.length();
@@ -775,7 +775,7 @@ NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(
 NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(
     const UChar* buffer,
     unsigned length)
-    : is8_bit_(false),
+    : is_8bit_(false),
       charaters8_(nullptr),
       offset_(0),
       length_(0),
@@ -791,12 +791,12 @@ void NonSharedCharacterBreakIterator::CreateIteratorForBuffer(
 }
 
 NonSharedCharacterBreakIterator::~NonSharedCharacterBreakIterator() {
-  if (is8_bit_)
+  if (is_8bit_)
     return;
 }
 
 int NonSharedCharacterBreakIterator::Next() {
-  if (!is8_bit_)
+  if (!is_8bit_)
     return iterator_->next();
 
   if (offset_ >= length_)
@@ -807,19 +807,19 @@ int NonSharedCharacterBreakIterator::Next() {
 }
 
 int NonSharedCharacterBreakIterator::Current() {
-  if (!is8_bit_)
+  if (!is_8bit_)
     return iterator_->current();
   return offset_;
 }
 
 bool NonSharedCharacterBreakIterator::IsBreak(int offset) const {
-  if (!is8_bit_)
+  if (!is_8bit_)
     return iterator_->isBoundary(offset);
   return !IsLFAfterCR(offset);
 }
 
 int NonSharedCharacterBreakIterator::Preceding(int offset) const {
-  if (!is8_bit_)
+  if (!is_8bit_)
     return iterator_->preceding(offset);
   if (offset <= 0)
     return kTextBreakDone;
@@ -829,7 +829,7 @@ int NonSharedCharacterBreakIterator::Preceding(int offset) const {
 }
 
 int NonSharedCharacterBreakIterator::Following(int offset) const {
-  if (!is8_bit_)
+  if (!is_8bit_)
     return iterator_->following(offset);
   if (static_cast<unsigned>(offset) >= length_)
     return kTextBreakDone;

@@ -33,8 +33,8 @@
 
 namespace blink {
 
-VTTScanner::VTTScanner(const String& line) : is8_bit_(line.Is8Bit()) {
-  if (is8_bit_) {
+VTTScanner::VTTScanner(const String& line) : is_8bit_(line.Is8Bit()) {
+  if (is_8bit_) {
     data_.characters8 = line.Characters8();
     end_.characters8 = data_.characters8 + line.length();
   } else {
@@ -52,13 +52,13 @@ bool VTTScanner::Scan(char c) {
 
 bool VTTScanner::Scan(const LChar* characters, wtf_size_t characters_count) {
   wtf_size_t match_length =
-      is8_bit_
+      is_8bit_
           ? static_cast<wtf_size_t>(end_.characters8 - data_.characters8)
           : static_cast<wtf_size_t>(end_.characters16 - data_.characters16);
   if (match_length < characters_count)
     return false;
   bool matched;
-  if (is8_bit_)
+  if (is_8bit_)
     matched = WTF::Equal(data_.characters8, characters, characters_count);
   else
     matched = WTF::Equal(data_.characters16, characters, characters_count);
@@ -76,7 +76,7 @@ bool VTTScanner::ScanRun(const Run& run, const String& to_match) {
   if (to_match.length() > match_length)
     return false;
   bool matched;
-  if (is8_bit_)
+  if (is_8bit_)
     matched = WTF::Equal(to_match.Impl(), data_.characters8, match_length);
   else
     matched = WTF::Equal(to_match.Impl(), data_.characters16, match_length);
@@ -98,7 +98,7 @@ String VTTScanner::ExtractString(const Run& run) {
   DCHECK_GE(run.end(), run.Start());
   DCHECK_LE(run.end(), end());
   String s;
-  if (is8_bit_)
+  if (is_8bit_)
     s = String(data_.characters8, run.length());
   else
     s = String(data_.characters16, run.length());
@@ -107,7 +107,7 @@ String VTTScanner::ExtractString(const Run& run) {
 }
 
 String VTTScanner::RestOfInputAsString() {
-  Run rest(GetPosition(), end(), is8_bit_);
+  Run rest(GetPosition(), end(), is_8bit_);
   return ExtractString(rest);
 }
 
@@ -119,7 +119,7 @@ unsigned VTTScanner::ScanDigits(unsigned& number) {
   }
   bool valid_number;
   wtf_size_t num_digits = run_of_digits.length();
-  if (is8_bit_) {
+  if (is_8bit_) {
     number = CharactersToUInt(data_.characters8, num_digits,
                               WTF::NumberParsingOptions::kNone, &valid_number);
   } else {
@@ -141,7 +141,7 @@ unsigned VTTScanner::ScanDigits(unsigned& number) {
 bool VTTScanner::ScanDouble(double& number) {
   Run integer_run = CollectWhile<IsASCIIDigit>();
   SeekTo(integer_run.end());
-  Run decimal_run(GetPosition(), GetPosition(), is8_bit_);
+  Run decimal_run(GetPosition(), GetPosition(), is_8bit_);
   if (Scan('.')) {
     decimal_run = CollectWhile<IsASCIIDigit>();
     SeekTo(decimal_run.end());
@@ -155,9 +155,9 @@ bool VTTScanner::ScanDouble(double& number) {
   }
 
   size_t length_of_double =
-      Run(integer_run.Start(), GetPosition(), is8_bit_).length();
+      Run(integer_run.Start(), GetPosition(), is_8bit_).length();
   bool valid_number;
-  if (is8_bit_) {
+  if (is_8bit_) {
     number = CharactersToDouble(integer_run.Start(), length_of_double,
                                 &valid_number);
   } else {

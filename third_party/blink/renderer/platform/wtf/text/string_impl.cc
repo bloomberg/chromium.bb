@@ -1757,15 +1757,15 @@ scoped_refptr<StringImpl> StringImpl::Replace(const StringView& pattern,
   wtf_size_t src_segment_length;
   src_segment_start = 0;
   wtf_size_t dst_offset = 0;
-  bool src_is8_bit = Is8Bit();
-  bool replacement_is8_bit = replacement.Is8Bit();
+  bool src_is_8bit = Is8Bit();
+  bool replacement_is_8bit = replacement.Is8Bit();
 
   // There are 4 cases:
   // 1. This and replacement are both 8 bit.
   // 2. This and replacement are both 16 bit.
   // 3. This is 8 bit and replacement is 16 bit.
   // 4. This is 16 bit and replacement is 8 bit.
-  if (src_is8_bit && replacement_is8_bit) {
+  if (src_is_8bit && replacement_is_8bit) {
     // Case 1
     LChar* data;
     scoped_refptr<StringImpl> new_impl = CreateUninitialized(new_size, data);
@@ -1793,7 +1793,7 @@ scoped_refptr<StringImpl> StringImpl::Replace(const StringView& pattern,
   scoped_refptr<StringImpl> new_impl = CreateUninitialized(new_size, data);
   while ((src_segment_end = Find(pattern, src_segment_start)) != kNotFound) {
     src_segment_length = src_segment_end - src_segment_start;
-    if (src_is8_bit) {
+    if (src_is_8bit) {
       // Case 3.
       for (wtf_size_t i = 0; i < src_segment_length; ++i)
         data[i + dst_offset] = Characters8()[i + src_segment_start];
@@ -1803,7 +1803,7 @@ scoped_refptr<StringImpl> StringImpl::Replace(const StringView& pattern,
              src_segment_length * sizeof(UChar));
     }
     dst_offset += src_segment_length;
-    if (replacement_is8_bit) {
+    if (replacement_is_8bit) {
       // Cases 2 & 3.
       for (wtf_size_t i = 0; i < rep_str_length; ++i)
         data[i + dst_offset] = replacement.Characters8()[i];
@@ -1817,7 +1817,7 @@ scoped_refptr<StringImpl> StringImpl::Replace(const StringView& pattern,
   }
 
   src_segment_length = length_ - src_segment_start;
-  if (src_is8_bit) {
+  if (src_is_8bit) {
     // Case 3.
     for (wtf_size_t i = 0; i < src_segment_length; ++i)
       data[i + dst_offset] = Characters8()[i + src_segment_start];

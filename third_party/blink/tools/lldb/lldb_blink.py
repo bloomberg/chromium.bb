@@ -157,7 +157,7 @@ class WTFStringImplProvider:
         return ustring_to_string(self.get_data16(), error, self.get_length())
 
     def is_8bit(self):
-        return self.valobj.GetChildMemberWithName('is8_bit_')
+        return self.valobj.GetChildMemberWithName('is_8bit_')
 
 
 class WTFStringProvider:
