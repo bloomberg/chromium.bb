@@ -25,9 +25,22 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Use one of Create functions. This is public only for MakeGarbageCollected.
-  ReadableStream(ScriptState*, v8::Local<v8::Object> object);
+  // Call one of Init functions before using the instance.
+  ReadableStream() = default;
+  ~ReadableStream() override = default;
 
+  // If an error happens, |exception_state.HadException()| will be true, and
+  // |this| will not be usable after that.
+  void Init(ScriptState*,
+            ScriptValue underlying_source,
+            ScriptValue strategy,
+            ExceptionState& exception_state);
+  void InitWithInternalStream(ScriptState*,
+                              v8::Local<v8::Object> object,
+                              ExceptionState& exception_state);
+
+  // Create* functions call Init* internally and returns null when an error
+  // happens.
   static ReadableStream* Create(ScriptState*, ExceptionState&);
   static ReadableStream* Create(ScriptState*,
                                 ScriptValue underlying_source,
@@ -48,8 +61,6 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
       ScriptState*,
       UnderlyingSourceBase* underlying_source,
       size_t high_water_mark);
-
-  ~ReadableStream() override = default;
 
   void Trace(Visitor* visitor) override;
 
@@ -108,8 +119,6 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
 
  private:
   class NoopFunction;
-
-  bool Init(ScriptState*);
 
   TraceWrapperV8Reference<v8::Object> object_;
 };

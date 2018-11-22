@@ -21,6 +21,7 @@ bindings_core_v8_files =
                     "core/v8/custom/v8_message_event_custom.cc",
                     "core/v8/custom/v8_pop_state_event_custom.cc",
                     "core/v8/custom/v8_promise_rejection_event_custom.cc",
+                    "core/v8/custom/v8_readable_stream_custom.cc",
                     "core/v8/custom/v8_shadow_root_custom.cc",
                     "core/v8/custom/v8_window_custom.cc",
                     "core/v8/custom/v8_xml_http_request_custom.cc",
