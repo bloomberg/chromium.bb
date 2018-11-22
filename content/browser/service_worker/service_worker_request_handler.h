@@ -81,7 +81,8 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       network::mojom::RequestContextFrameType frame_type,
       bool is_parent_frame_secure,
       scoped_refptr<network::ResourceRequestBody> body,
-      base::RepeatingCallback<WebContents*()> web_contents_getter);
+      base::RepeatingCallback<WebContents*()> web_contents_getter,
+      base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host);
 
   static std::unique_ptr<NavigationLoaderInterceptor> InitializeForSharedWorker(
       const network::ResourceRequest& resource_request,

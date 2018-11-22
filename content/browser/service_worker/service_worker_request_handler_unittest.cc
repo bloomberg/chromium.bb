@@ -169,6 +169,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
       bool expected_handler_created) {
     std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core =
         CreateNavigationHandleCore(helper_->context_wrapper());
+    base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host;
     std::unique_ptr<NavigationLoaderInterceptor> interceptor =
         ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
             GURL(url), nullptr /* resource_context */,
@@ -177,7 +178,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
             blink::mojom::RequestContextType::HYPERLINK,
             network::mojom::RequestContextFrameType::kTopLevel,
             true /* is_parent_frame_secure */, nullptr /* body */,
-            base::RepeatingCallback<WebContents*(void)>());
+            base::RepeatingCallback<WebContents*(void)>(),
+            &service_worker_provider_host);
     return !!interceptor.get();
   }
 
