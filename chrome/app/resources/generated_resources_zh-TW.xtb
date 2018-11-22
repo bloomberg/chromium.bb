@@ -194,7 +194,6 @@
 <translation id="126156426083987769">示範模式的裝置授權發生問題。</translation>
 <translation id="126710816202626562">翻譯語言：</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="127138278192656016">使用同步處理功能和所有服務</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1272978324304772054">裝置註冊的網域中沒有這個使用者帳戶。如果你要使用其他網域進行註冊，必須先完成裝置修復作業。</translation>
 <translation id="1274977772557788323">Adobe Flash Player 儲存設定</translation>
@@ -3026,7 +3025,6 @@
 <translation id="5636996382092289526">如要使用 <ph name="NETWORK_ID" />，你必須先<ph name="LINK_START" />造訪網路的登入頁面<ph name="LINK_END" />，系統隨即會自動開啟登入頁面；如果沒有，你就無法使用這個網路。</translation>
 <translation id="5637476008227280525">啟用行動數據</translation>
 <translation id="5638309510554459422">歡迎前往 <ph name="BEGIN_LINK" />Chrome 線上應用程式商店<ph name="END_LINK" />尋找擴充功能和主題</translation>
-<translation id="5638497698949808140"><ph name="HOURS" /> 小時前更新</translation>
 <translation id="5639549361331209298">重新載入這個網頁 (按住即可查看更多選項)</translation>
 <translation id="5642508497713047">CRL 簽署者</translation>
 <translation id="5643620609347735571">清除並繼續</translation>
@@ -3990,7 +3988,6 @@
 <translation id="7120865473764644444">無法連上同步處理伺服器。重試中...</translation>
 <translation id="7121362699166175603">將歷史記錄和自動即時查詢從網址列中清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="7123360114020465152">已停止支援</translation>
-<translation id="71243390042171582"><ph name="MINUTES" /> 分鐘前更新</translation>
 <translation id="7124929488592184705">列印「<ph name="DOCUMENT_NAME" />」時發生錯誤</translation>
 <translation id="7126604456862387217">「&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;」- 搜尋雲端硬碟</translation>
 <translation id="7127980134843952133">下載記錄</translation>
@@ -4535,7 +4532,6 @@
 <translation id="794676567536738329">確認權限</translation>
 <translation id="7947962633355574091">複製影片位址(&amp;O)</translation>
 <translation id="7950040156882184764">網際網路列印通訊協定 (HTTP)</translation>
-<translation id="795025003224538582">不要重新啟動</translation>
 <translation id="7952904276017482715">預期的 ID 為「<ph name="EXPECTED_ID" />」，但實際的 ID 為「<ph name="NEW_ID" />」</translation>
 <translation id="7953739707111622108">這個裝置所用的檔案系統無法識別，因此系統無法開啟這個裝置。</translation>
 <translation id="7953955868932471628">管理快速鍵</translation>

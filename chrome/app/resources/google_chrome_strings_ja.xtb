@@ -138,7 +138,6 @@
 <translation id="4600710005438004015">Chrome を最新版に更新できませんでした。新しい機能とセキュリティ修正は適用されていません。</translation>
 <translation id="4631713731678262610">Chrome メニューで非表示</translation>
 <translation id="4633000520311261472">Chrome をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
-<translation id="4664415150087723341">Google Chrome の特別なセキュリティ アップデートが適用されました。アップデートを反映するため、今すぐ Google Chrome を再起動してください（タブは復元されます）。</translation>
 <translation id="4700157086864140907">Google Chrome ではブラウザに入力された内容を Google のサーバーに送信することで高度なスペルチェックを実現し、Google 検索で使用されているスペルチェック テクノロジーを活用できます。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> を有効にするには Chrome を再起動してください</translation>
@@ -274,7 +273,6 @@
 <translation id="873133009373065397">Google Chrome では既定のブラウザを判定または設定できません</translation>
 <translation id="8736674169840206667">管理者が、アップデートを適用するために Chrome を再起動するよう求めています</translation>
 <translation id="8791470158600044404">{0,plural, =1{Chrome OS は 1 分後に再起動されます}other{Chrome OS は # 分後に再起動されます}}</translation>
-<translation id="8796108026289707191">今すぐ Google Chrome を再起動してください。</translation>
 <translation id="8823341990149967727">Chrome は古いバージョンです</translation>
 <translation id="884296878221830158">この拡張機能では、Chrome の起動時、またはホーム ボタンのクリック時に表示されるページも制御されます。</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>

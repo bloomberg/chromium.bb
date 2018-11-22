@@ -194,7 +194,6 @@
 <translation id="126156426083987769">ഡെമോ മോഡ് ഉപകരണ ലൈസൻസുകളിൽ ഒരു പ്രശ്‌നമുണ്ടായി.</translation>
 <translation id="126710816202626562">വിവർത്തന ഭാഷ:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="127138278192656016">സമന്വയവും എല്ലാ സേവനങ്ങളും ഉപയോഗിക്കുക</translation>
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="1272978324304772054">ഈ ഉപയോക്തൃ അക്കൗണ്ട്, ഉപകരണം ചേർത്തിരിക്കുന്ന ഡൊമെയ്‌നിന്റെ ഭാഗമല്ല.  നിങ്ങൾക്ക് മറ്റൊരു ഡൊമെയ്ൻ ചേർക്കണമെങ്കിൽ, ആദ്യം ഉപകരണം വീണ്ടെടുക്കുന്നതിലേക്ക് പോകേണ്ടതുണ്ട്.</translation>
 <translation id="1274977772557788323">Adobe Flash Player സ്റ്റോറേജ് ക്രമീകരണം</translation>
@@ -3024,7 +3023,6 @@
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> ഉപയോഗിക്കുന്നതിന് നിങ്ങൾ ആദ്യം <ph name="LINK_START" />നെറ്റ്‌വർക്കിന്റെ സൈൻ-ഇൻ പേജ് സന്ദർശിക്കേണ്ടതുണ്ട്<ph name="LINK_END" />, അത് കുറച്ച് സെക്കൻഡിനുള്ളിൽ സ്വയമേവ തുറക്കും. അങ്ങനെ സംഭവിച്ചില്ലെങ്കിൽ, നെറ്റ്‌വർക്ക് ഉപയോഗിക്കാനാകില്ല.</translation>
 <translation id="5637476008227280525">മൊബൈൽ ഡാറ്റ പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="5638309510554459422"><ph name="BEGIN_LINK" />Chrome വെബ് സ്‌റ്റോറിൽ<ph name="END_LINK" /> വിപുലീകരണങ്ങളും തീമുകളും കണ്ടെത്തുക</translation>
-<translation id="5638497698949808140"><ph name="HOURS" />മണിക്കൂർ മുമ്പ് അപ്‌ഡേറ്റുചെയ്തു</translation>
 <translation id="5639549361331209298">കൂടുതൽ ഓപ്‌ഷനുകൾ കാണുന്നതിന് ഈ പേജ് വീണ്ടും ലോഡുചെയ്‌ത് ഹോൾഡുചെയ്യുക</translation>
 <translation id="5642508497713047">CRL സൈനര്‍‌</translation>
 <translation id="5643620609347735571">മായ്ച്ചതിന് ശേഷം തുടരുക</translation>
@@ -3991,7 +3989,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="7120865473764644444">സമന്വയ സെര്‍വറിലേക്ക് കണക്‌റ്റുചെയ്യാനായില്ല. വീണ്ടും ശ്രമിക്കുന്നു...</translation>
 <translation id="7121362699166175603">ചരിത്രവും വിലാസ ബാറിലെ സ്വയം പൂർത്തീകരണങ്ങളും മായ്ക്കുന്നു. നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം.</translation>
 <translation id="7123360114020465152">ഇനിയങ്ങോട്ട് പിന്തുണയില്ല</translation>
-<translation id="71243390042171582"><ph name="MINUTES" />മിനിറ്റ് മുമ്പ് അപ്‌ഡേറ്റുചെയ്തു</translation>
 <translation id="7124929488592184705"><ph name="DOCUMENT_NAME" /> അച്ചടിക്കുന്നതിൽ പിശക്</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;തിരയൽ ഡ്രൈവ്&lt;/em&gt;</translation>
 <translation id="7127980134843952133">ഡൗൺലോഡ് ചരിത്രം</translation>
@@ -4537,7 +4534,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="794676567536738329">അനുവാദങ്ങൾ സ്ഥിരീകരിക്കുക</translation>
 <translation id="7947962633355574091">വീഡിയോ വിലാസം പകർത്തുക</translation>
 <translation id="7950040156882184764">ഇന്റർനെറ്റ് പ്രിന്റിംഗ് പ്രോട്ടോക്കോൾ (HTTP)</translation>
-<translation id="795025003224538582">പുനഃരാരംഭിക്കരുത്</translation>
 <translation id="7952904276017482715">പ്രതീക്ഷിച്ച ID "<ph name="EXPECTED_ID" />" ആണ്, എന്നാൽ ലഭിച്ച ID "<ph name="NEW_ID" />" ആയിരുന്നു</translation>
 <translation id="7953739707111622108">ഈ ഉപകരണത്തിന്റെ ഫയൽസിസ്റ്റം അംഗീകൃതമല്ലാത്തതിനാൽ ഇത് തുറക്കാനായില്ല.</translation>
 <translation id="7953955868932471628">കുറുക്കുവഴികൾ നിയന്ത്രിക്കുക</translation>

@@ -162,7 +162,6 @@
 <translation id="6333502561965082103">U tijeku je neka druga operacija na Chromiumu. Pokušajte ponovo kasnije.</translation>
 <translation id="6334986366598267305">Upotreba Chromiuma s vašim Google računom te na dijeljenim računalima sada je još jednostavnija.</translation>
 <translation id="6373523479360886564">Jeste li sigurni da želite deinstalirati Chromium?</translation>
-<translation id="6394232988457703198">Sada trebate ponovo pokrenuti Chromium.</translation>
 <translation id="6400072781405947421">Chromium možda neće ispravno raditi jer više nije podržan na sustavu Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium je web-preglednik koji munjevitom brzinom prikazuje web-stranice i aplikacije. Brz je, stabilan i jednostavan za upotrebu. Pregledavajte web sigurnije jer je zaštita od zlonamjernog softvera i krađe identiteta ugrađena u Chromium.</translation>
 <translation id="641451971369018375">Komunicira s Googleom radi poboljšanja pregledavanja i Chromiuma</translation>
@@ -212,7 +211,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7471302858145901434">{0,plural, =1{Ponovo pokrenite OS Chromium u roku od jednog dana}one{Ponovo pokrenite OS Chromium u roku od # dana}few{Ponovo pokrenite OS Chromium u roku od # dana}other{Ponovo pokrenite OS Chromium u roku od # dana}}</translation>
 <translation id="7483335560992089831">Ne možete instalirati istu verziju Chromiuma koja se trenutačno izvršava. Zatvorite Chromium i pokušajte ponovo.</translation>
 <translation id="7549178288319965365">O OS-u Chromium</translation>
-<translation id="7577193603922410712">Upravo je primijenjeno posebno sigurnosno ažuriranje za Chromium i trebate ponovo pokrenuti sustav kako bi promjena stupila na snagu (vratit ćemo vaše kartice).</translation>
 <translation id="761356813943268536">Chromium upotrebljava vašu kameru i mikrofon.</translation>
 <translation id="7617377681829253106">Chromium je upravo postao bolji</translation>
 <translation id="7686590090926151193">Chromium nije vaš zadani preglednik</translation>

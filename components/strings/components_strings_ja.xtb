@@ -636,6 +636,7 @@
 <translation id="5287240709317226393">Cookie を表示</translation>
 <translation id="5288108484102287882">ポリシー値の検証で警告が返されました</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
+<translation id="5300589172476337783">表示</translation>
 <translation id="5308380583665731573">接続</translation>
 <translation id="5308689395849655368">障害レポートが無効になっています。</translation>
 <translation id="5317780077021120954">保存</translation>
@@ -871,6 +872,7 @@
 <translation id="7079718277001814089">このサイトには不正なソフトウェアが含まれています</translation>
 <translation id="7087282848513945231">郡</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> を Google で検索してください</translation>
+<translation id="7108338896283013870">非表示</translation>
 <translation id="7108819624672055576">拡張機能によって許可</translation>
 <translation id="7111012039238467737">（有効）</translation>
 <translation id="7119414471315195487">他のタブやプログラムを閉じる</translation>

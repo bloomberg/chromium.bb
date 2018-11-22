@@ -162,7 +162,6 @@
 <translation id="6333502561965082103">Chromium 正在执行另一项操作，请稍后重试。</translation>
 <translation id="6334986366598267305">现在，无论是通过Google帐号还是在共用的计算机上，您都可以更轻松地使用Chromium。</translation>
 <translation id="6373523479360886564">确定要卸载 Chromium 吗？</translation>
-<translation id="6394232988457703198">您应立即重新启动 Chromium。</translation>
 <translation id="6400072781405947421">Chromium 可能无法正常运行，因为它不再支持 Mac OS X 10.9。</translation>
 <translation id="6403826409255603130">Chromium 是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Chromium 内置的防护恶意软件和网上诱骗的功能可让您更安全地浏览网页。</translation>
 <translation id="641451971369018375">与 Google 通信，以便改进浏览功能和 Chromium</translation>
@@ -212,7 +211,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7471302858145901434">{0,plural, =1{请于 1 天内重启 Chromium 操作系统}other{请于 # 天内重启 Chromium 操作系统}}</translation>
 <translation id="7483335560992089831">无法安装与当前运行的版本相同的 Chromium。请关闭 Chromium 并重试。</translation>
 <translation id="7549178288319965365">关于 Chromium 操作系统</translation>
-<translation id="7577193603922410712">系统刚刚为 Chromium 应用了一项特殊的安全更新；您应立即重新启动，以使此更新生效（我们会恢复您的标签页）。</translation>
 <translation id="761356813943268536">Chromium 正在使用您的摄像头和麦克风。</translation>
 <translation id="7617377681829253106">Chromium现在更好用了</translation>
 <translation id="7686590090926151193">Chromium 不是您的默认浏览器</translation>

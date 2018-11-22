@@ -194,7 +194,6 @@
 <translation id="126156426083987769">デモモード端末ライセンスで問題が発生しました。</translation>
 <translation id="126710816202626562">翻訳言語:</translation>
 <translation id="126768002343224824">16 倍</translation>
-<translation id="127138278192656016">同期とすべてのサービスを使用する</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1272978324304772054">このユーザー アカウントは、デバイスが登録されているドメインに属していません。別のドメインに登録する場合は、まず、デバイス リカバリ操作を行う必要があります。</translation>
 <translation id="1274977772557788323">Adobe Flash Player のストレージ設定</translation>
@@ -3028,7 +3027,6 @@
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> を使用するには、最初に<ph name="LINK_START" />ネットワークのログイン ページにアクセス<ph name="LINK_END" />する必要がある場合があります。その場合は、数秒でログイン ページが自動的に開きます。ログイン ページが自動的に開かない場合、そのネットワークは使用できません。</translation>
 <translation id="5637476008227280525">モバイルデータの有効化</translation>
 <translation id="5638309510554459422"><ph name="BEGIN_LINK" />Chrome ウェブストア<ph name="END_LINK" />で拡張機能やテーマを探すことができます</translation>
-<translation id="5638497698949808140"><ph name="HOURS" /> 時間前に更新されました</translation>
 <translation id="5639549361331209298">このページを再読み込みするには、詳細オプションが表示されるまで押し続けます</translation>
 <translation id="5642508497713047">CRL の署名者</translation>
 <translation id="5643620609347735571">削除して続行</translation>
@@ -3992,7 +3990,6 @@
 <translation id="7120865473764644444">同期サーバーに接続できませんでした。再試行しています...</translation>
 <translation id="7121362699166175603">アドレスバーの履歴とオートコンプリートを削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
 <translation id="7123360114020465152">サポートが終了しています</translation>
-<translation id="71243390042171582"><ph name="MINUTES" /> 分前に更新されました</translation>
 <translation id="7124929488592184705">「<ph name="DOCUMENT_NAME" />」の印刷エラー</translation>
 <translation id="7126604456862387217">「&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;」 - &lt;em&gt;&lt;/em&gt;ドライブを検索</translation>
 <translation id="7127980134843952133">ダウンロード履歴</translation>
@@ -4539,7 +4536,6 @@
 <translation id="794676567536738329">許可の確認</translation>
 <translation id="7947962633355574091">動画アドレスをコピー(&amp;C)</translation>
 <translation id="7950040156882184764">インターネット印刷プロトコル（HTTP）</translation>
-<translation id="795025003224538582">再起動しない</translation>
 <translation id="7952904276017482715">ID「<ph name="EXPECTED_ID" />」が必要ですが、ID「<ph name="NEW_ID" />」が検出されました</translation>
 <translation id="7953739707111622108">ファイルシステムが認識されなかったため、このデバイスを開くことはできません。</translation>
 <translation id="7953955868932471628">ショートカットの管理</translation>

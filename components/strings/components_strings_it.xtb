@@ -633,6 +633,7 @@
 <translation id="5287240709317226393">Mostra cookie</translation>
 <translation id="5288108484102287882">La convalida dei valori della norma ha generato degli avvisi</translation>
 <translation id="5299298092464848405">Errore durante l'analisi del criterio</translation>
+<translation id="5300589172476337783">Mostra</translation>
 <translation id="5308380583665731573">Connessione</translation>
 <translation id="5308689395849655368">La segnalazione degli arresti anomali è disattivata.</translation>
 <translation id="5317780077021120954">Salva</translation>
@@ -725,7 +726,7 @@
 <translation id="5922853866070715753">Hai quasi finito.</translation>
 <translation id="5932224571077948991">Il sito mostra annunci invasivi o fuorvianti</translation>
 <translation id="5939518447894949180">Ripristina</translation>
-<translation id="5946937721014915347">Apertura sito <ph name="SITE_NAME" />…</translation>
+<translation id="5946937721014915347">Apertura di <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Impossibile effettuare la registrazione con l'account consumer (è disponibile la licenza inclusa).</translation>
 <translation id="5966151627327109289">Uscirai dalla maggior parte dei siti. Potresti non riuscire più ad accedere ai contenuti protetti del sito <ph name="SITE" /> e di altri siti.</translation>
 <translation id="5967592137238574583">Modifica informazioni di contatto</translation>
@@ -867,6 +868,7 @@
 <translation id="7079718277001814089">Questo sito contiene malware</translation>
 <translation id="7087282848513945231">Contea</translation>
 <translation id="7090678807593890770">Cerca <ph name="LINK" /> con Google</translation>
+<translation id="7108338896283013870">Nascondi</translation>
 <translation id="7108819624672055576">Consentita da un'estensione</translation>
 <translation id="7111012039238467737">(Valido)</translation>
 <translation id="7119414471315195487">Chiudi altri programmi o schede</translation>

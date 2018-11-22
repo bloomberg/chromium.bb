@@ -194,7 +194,6 @@
 <translation id="126156426083987769">演示模式设备许可出问题了。</translation>
 <translation id="126710816202626562">翻译语言：</translation>
 <translation id="126768002343224824">16 倍</translation>
-<translation id="127138278192656016">使用同步功能和所有服务</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1272978324304772054">此用户帐号不属于设备所注册的域。如果想注册其他域，那么您首先需要执行设备恢复。</translation>
 <translation id="1274977772557788323">Adobe Flash Player 存储设置</translation>
@@ -3015,7 +3014,6 @@
 <translation id="5636996382092289526">要使用“<ph name="NETWORK_ID" />”，您可能需要先<ph name="LINK_START" />访问该网络的登录页面<ph name="LINK_END" />，该页面会在几秒钟后自动打开。如果未打开，就表示该网络无法使用。</translation>
 <translation id="5637476008227280525">移动数据开关</translation>
 <translation id="5638309510554459422">在 <ph name="BEGIN_LINK" />Chrome 网上应用店<ph name="END_LINK" />中查找扩展程序和主题背景</translation>
-<translation id="5638497698949808140">上次更新时间：<ph name="HOURS" /> 小时前</translation>
 <translation id="5639549361331209298">重新加载此网页，按下可查看更多选项</translation>
 <translation id="5642508497713047">CRL 签名人</translation>
 <translation id="5643620609347735571">清除并继续</translation>
@@ -3979,7 +3977,6 @@
 <translation id="7120865473764644444">无法连接到同步服务器。正在重试…</translation>
 <translation id="7121362699166175603">清除历史记录和地址栏中的自动填充项。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="7123360114020465152">已不再受支持</translation>
-<translation id="71243390042171582">上次更新时间：<ph name="MINUTES" /> 分钟前</translation>
 <translation id="7124929488592184705">打印 <ph name="DOCUMENT_NAME" /> 时出错</translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; - 搜索云端硬盘&lt;em&gt;&lt;/em&gt;</translation>
 <translation id="7127980134843952133">下载记录</translation>
@@ -4523,7 +4520,6 @@
 <translation id="794676567536738329">确认权限</translation>
 <translation id="7947962633355574091">复制视频地址(&amp;O)</translation>
 <translation id="7950040156882184764">互联网打印协议 (HTTP)</translation>
-<translation id="795025003224538582">不重新启动</translation>
 <translation id="7952904276017482715">预期 ID 是“<ph name="EXPECTED_ID" />”，但实际 ID 是“<ph name="NEW_ID" />”</translation>
 <translation id="7953739707111622108">无法识别此设备的文件系统，因此无法打开此设备。</translation>
 <translation id="7953955868932471628">管理快捷方式</translation>

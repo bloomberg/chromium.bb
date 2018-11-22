@@ -45,6 +45,7 @@
 <translation id="1275718070701477396">ተመርጧል</translation>
 <translation id="1286609444451033486">ለመቀያየር ፍለጋ+Space ይጫኑ።</translation>
 <translation id="1291286136605998134">የማቀያየሪያ አዝራር</translation>
+<translation id="1303806948938513162">የChromeVox ምናሌዎችን ለማስገባት በ4 ጣቶች መታ ያድርጉ</translation>
 <translation id="1319608975892113573">ምንም ቀዳሚ የጽሑፍ ጥቅስ የለም።</translation>
 <translation id="1321576897702511272">የChromeVox እገዛን ደብቅ</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> ከ<ph name="TOTAL" /></translation>
@@ -238,6 +239,7 @@
 <translation id="3046838483509668188">ChromeVox አማራጮች</translation>
 <translation id="3047143736589213134">የሙከራ ቁልፍ አደራደር</translation>
 <translation id="3060756054951570867">የ<ph name="TITLE" /> ምናሌ ተከፍቷል</translation>
+<translation id="3060880924447482063">በንጥል ለማንቀሳቀስ ወደ ግራ ወይም ወደ ቀኝ ጠረግ ያድርጉ</translation>
 <translation id="3070245424257836917">ሶስት ጣቶችን ወደ ላይ ያንሸራትቱ</translation>
 <translation id="3078345202707391975">ቀጣይ የደረጃ 2 ርዕስ</translation>
 <translation id="3078740164268491126">ሠንጠረዥ</translation>
@@ -331,6 +333,7 @@
 <translation id="3389259863310851658">ቀዳሚ የቅጽ መስክ</translation>
 <translation id="3390225400784126843">ቀጣይ የተለየ አካል።</translation>
 <translation id="3392045790598181549"><ph name="NAME" />፣ የምናሌ ንጥል</translation>
+<translation id="3393605254399152980">እርስዎ የነኩትን ለመስማት በአንድ ጣት ይጎትቱ</translation>
 <translation id="3406283310380167331">የቅጾች ዝርዝር አሳይ</translation>
 <translation id="3423495725743882470">ረድፍ $1 ዓምድ $2</translation>
 <translation id="3457000393508828486">በከፊል ተጭኗል</translation>
@@ -346,6 +349,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{የጥያቄ ምልክት}one{# የጥያቄ ምልክቶች}other{# የጥያቄ ምልክቶች}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{ድፋት}one{# ድፋቶች}other{# ድፋቶች}}</translation>
 <translation id="352577523970648069">አርትዖት ሊደረግበት የሚችል የጽሑፍ መስክ</translation>
+<translation id="3549680091535286226">በጊዜያዊነት ንግግርን ለማቆም በ2 ጣቶች ይጎትቱ</translation>
 <translation id="3568702578574425662"><ph name="NAME" />፣ አመልካች ሳጥኑ ላይ ምልክት አልተደረገም</translation>
 <translation id="3589661172894441357">ሙዳየ ቃላት</translation>
 <translation id="3599054940393788245">ሒሳብ ውስጥ አይደለም</translation>
@@ -410,6 +414,7 @@
 <translation id="4166192625054637755">የግርጌዓደር መጀመሪያ</translation>
 <translation id="4173994908659439270">ምንም አርትዖት ሊደረግበት የሚችል የጽሑፍ መስክ የለም።</translation>
 <translation id="4176463684765177261">ተሰናክሏል</translation>
+<translation id="4187322598335821254">በመስመር ለማንቀሳቀስ ወደ ላይ ወይም ወደ ታች ጠረግ ያድርጉ</translation>
 <translation id="4188530942454211480">ቀዳሚ አረፍተ ነገር</translation>
 <translation id="4191918948604314587">አዝራር</translation>
 <translation id="419265409837491189">ወደ ቀዳሚ አምድ ይሂዱ</translation>
@@ -708,6 +713,7 @@
 <translation id="6583174818554398774">በጥራት ደረጃ ላይ ወደ ቀጣዩ ውሰድ</translation>
 <translation id="6587021927234520429">ምንም ቀጣይ የደረጃ 4 ርዕስ የለም።</translation>
 <translation id="6601344353291556895">ብዙ ቃላት ያላቸው ማብራሪያዎችን አንቃ።</translation>
+<translation id="6609828810966525877">በመማር ሁነታ ውስጥ እና በChromebook እገዛ ማዕከል ውስጥ ተጨማሪ ያስሱ</translation>
 <translation id="6615602925644411249">በዚህ ገጽ ውስጥ ያግኙ።</translation>
 <translation id="6628427060004938651">ክፍለ አካል</translation>
 <translation id="6633350132811819843">ምንም ቀጣይ ሠንጠረዥ የለም።</translation>
@@ -759,6 +765,7 @@
 በክፍት ትሮች መካከል ወደፊት ለመሄድ Control+Tab ይጠቀሙ። 
 የChrome አሳሽ ምናሌውን ለመክፈት Alt+F ይጫኑ።</translation>
 <translation id="7086377898680121060">ብሩህነት ጨምር</translation>
+<translation id="7088743565397416204">ትኩረት የተደረገበትን ለማግበር ሁለቴ መታ ያድርጉ</translation>
 <translation id="7095834689119144465">የጽሑፍ ቁጥር ብቻ ያርትዑ</translation>
 <translation id="7096001299300236431">ቀዳሚ ሚዲያ</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -814,6 +821,7 @@
 <translation id="7491962110804786152">TAB</translation>
 <translation id="7492049978501397201">የገባ መገናኛ</translation>
 <translation id="7518543783849163354">ChromeVoxን ለጊዜው እንዳይናገር ለማስቆም የControl ቁልፉን ይጫኑ።</translation>
+<translation id="7521682724501952239">በንኪ ማያ ገጽ ChromeVoxን መጠቀም ይችላሉ።</translation>
 <translation id="7532613204005497612">ጁን</translation>
 <translation id="7552432549459840808">አጋዥ የChrome አቋራጮች</translation>
 <translation id="7579911500627256166">ነጥብ <ph name="DOT" /></translation>

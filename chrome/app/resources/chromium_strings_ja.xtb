@@ -162,7 +162,6 @@
 <translation id="6333502561965082103">Chromium で別の処理が行われています。しばらくしてからもう一度お試しください。</translation>
 <translation id="6334986366598267305">共有パソコンの Chromium で Google アカウントが簡単に使用できるようになりました。</translation>
 <translation id="6373523479360886564">Chromium をアンインストールしてもよろしいですか？</translation>
-<translation id="6394232988457703198">今すぐ Chromium を再起動してください。</translation>
 <translation id="6400072781405947421">Mac OS X 10.9 はサポートされなくなったため、Chromium は正常に機能しない可能性があります。</translation>
 <translation id="6403826409255603130">Chromium は、ウェブページやアプリケーションを高速に実行できるスピードと、高い安定性を兼ね備えた非常に使いやすいウェブブラウザです。不正なソフトウェアやフィッシングに対する保護機能が組み込まれており、ウェブを安全にブラウジングできます。</translation>
 <translation id="641451971369018375">ブラウジングと Chromium の改善に向けて Google と通信します</translation>
@@ -212,7 +211,6 @@
 <translation id="7471302858145901434">{0,plural, =1{1 日以内に Chromium OS を再起動してください}other{# 日以内に Chromium OS を再起動してください}}</translation>
 <translation id="7483335560992089831">実行中の Chromium と同じバージョンをインストールすることはできません。Chromium を閉じてからもう一度お試しください。</translation>
 <translation id="7549178288319965365">Chromium OS について</translation>
-<translation id="7577193603922410712">Chromium の特別なセキュリティ アップデートが適用されました。アップデートを反映するため、今すぐ Chromium を再起動してください（タブは復元されます）。</translation>
 <translation id="761356813943268536">Chromium がカメラとマイクを使用しています。</translation>
 <translation id="7617377681829253106">進化する Chromium</translation>
 <translation id="7686590090926151193">Chromium はデフォルトのブラウザとして設定されていません</translation>

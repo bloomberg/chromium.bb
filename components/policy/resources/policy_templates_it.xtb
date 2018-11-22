@@ -113,13 +113,13 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
       Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia RC4 in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.</translation>
 <translation id="1297117713060236551">Questa norma consente di stabilire l'elenco di siti web che non provocano mai il cambio di browser.
 
-      Puoi anche aggiungere elementi all'elenco ricorrendo alla norma <ph name="USE_IE_SITELIST_POLICY_NAME" />.
+      Puoi anche aggiungere elementi all'elenco tramite la norma <ph name="USE_IE_SITELIST_POLICY_NAME" />.
 
       Se questa norma non viene impostata, nessun sito web viene aggiunto all'elenco.
 
       Se questa norma viene impostata, ogni elemento è considerato come una regola, in modo simile alla norma <ph name="URL_LIST_POLICY_NAME" />. Tuttavia, la logica funziona al contrario: le regole con una corrispondenza non aprono un browser alternativo.
 
-      A differenza della norma <ph name="URL_LIST_POLICY_NAME" />, le regole vengono applicate in entrambe le direzioni. In altre parole, quando il componente aggiuntivo Internet Explorer è presente e attivato, controlla anche se <ph name="IE_PRODUCT_NAME" /> deve aprire questi URL in <ph name="PRODUCT_NAME" />.</translation>
+      A differenza della norma <ph name="URL_LIST_POLICY_NAME" />, le regole vengono applicate in entrambe le direzioni. In altre parole, quando il componente aggiuntivo Internet Explorer è presente e attivato, la norma stabilisce se <ph name="IE_PRODUCT_NAME" /> deve aprire questi URL in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Utilizza uno script proxy .pac</translation>
 <translation id="1304973015437969093">ID app/estensioni e URL di aggiornamento da installare automaticamente</translation>
 <translation id="1307454923744766368">Origini o schemi di nomi host a cui non dovrebbero essere applicate limitazioni previste per le origini non sicure.</translation>
@@ -758,15 +758,15 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="3047732214002457234">Consente di stabilire la modalità di segnalazione dei dati di Chrome Software Cleaner a Google</translation>
 <translation id="304775240152542058">Questa norma consente di stabilire i parametri della riga di comando da inviare al browser alternativo.
 
-      Se questa norma non viene impostata, viene trasmesso solo l'URL come parametro della riga di comando.
+      Se questa norma non viene impostata, solo l'URL viene passato come parametro della riga di comando.
 
-      Se questa norma viene impostata su un elenco di stringhe, ogni stringa viene trasmessa al browser alternativo come parametro distinto della riga di comando. Su Windows, i parametri vengono uniti mediante spazi. Su Mac OS X e Linux, un parametro può contenere spazi e venire comunque considerato come un singolo parametro.
+      Se questa norma viene impostata su un elenco di stringhe, ogni stringa viene passata al browser alternativo come parametro distinto della riga di comando. Su Windows, i parametri vengono uniti mediante spazi. Su Mac OS X e Linux, un parametro può contenere spazi e venire comunque considerato come un singolo parametro.
 
       Se un elemento contiene ${url}, viene sostituito con l'URL della pagina da aprire.
 
       Se nessun elemento contiene ${url}, l'URL viene aggiunto alla fine della riga di comando.
 
-      Le variabili d'ambiente vengono espanse. Su Windows, %ABC% viene sostituita con il valore della variabile d'ambiente ABC. Su Mac OS X e Linux, ${ABC} viene sostituita con il valore della variabile d'ambiente ABC.</translation>
+      Le variabili d'ambiente vengono espanse. Su Windows, la variabile %ABC% viene sostituita con il valore della variabile d'ambiente ABC. Su Mac OS X e Linux, la variabile ${ABC} viene sostituita con il valore della variabile d'ambiente ABC.</translation>
 <translation id="3048744057455266684">Se questa norma viene impostata e un URL di ricerca suggerito dalla omnibox contiene questo parametro nella stringa di ricerca o nell'identificatore del frammento, il suggerimento visualizzerà i termini di ricerca e il fornitore del servizio di ricerca anziché l'URL di ricerca non elaborato.
 
 Questa norma è facoltativa. Se non viene impostata, non verrà effettuata alcuna sostituzione dei termini di ricerca.
@@ -933,7 +933,7 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
       Puoi utilizzare le norme "PasswordProtectionLoginURLs" e "PasswordProtectionChangePasswordURL" per configurare la password da proteggere.
 
       Se questa norma viene impostata su "PasswordProtectionWarningOff", non apparirà alcun avviso di protezione tramite password.
-      Se questa norma viene impostata su" PasswordProtectionWarningOnPasswordReuse", l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito non autorizzato.
+      Se questa norma viene impostata su "PasswordProtectionWarningOnPasswordReuse", l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito non autorizzato.
       Se questa norma viene impostata su "PasswordProtectionWarningOnPhishingReuse", l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito di phishing.
       Se questa norma viene lasciata non impostata, il servizio di protezione tramite password proteggerà esclusivamente le password Google, ma l'utente sarà in grado di modificare questa impostazione.</translation>
 <translation id="3502555714327823858">Consenti tutte le modalità fronte/retro</translation>
@@ -1139,7 +1139,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se la norma è impostata su true, i pacchetti di rete di monitoraggio (chiamati <ph name="HEARTBEATS_TERM" />) verranno inviati.
       Se la norma è impostata su false, i pacchetti non verranno inviati.</translation>
 <translation id="3950239119790560549">Limitazioni relative alla data/ora di aggiornamento</translation>
-<translation id="3956686688560604829">Utilizza la norma di un elenco di siti per Internet Explorer per il Supporto dei browser precedenti.</translation>
+<translation id="3956686688560604829">Utilizza la norma SiteList di Internet Explorer per il Supporto dei browser precedenti.</translation>
 <translation id="3958586912393694012">Consenti l'utilizzo di Smart Lock</translation>
 <translation id="3963602271515417124">Se la norma viene impostata su true, l'attestazione da remoto viene consentita per il dispositivo e viene generato automaticamente un certificato che viene caricato sul Server di gestione del dispositivo.
 
@@ -1685,7 +1685,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5584132346604748282">Controlla i servizi di geolocalizzazione di Google per Android</translation>
 <translation id="5586942249556966598">Non fare niente</translation>
 <translation id="5592242031005200087">
-      Se la norma è attivata, ciascuna delle origini denominate all'interno di un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche le origini dei sottodomini corrispondenti, ad esempio specificando https://example.com/ si isolerà anche https://foo.example.com/, perché fa parte del sito https://example.com/.
+      Se la norma è attivata, ciascuna delle origini denominate all'interno di un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche le origini indicate dai sottodomini, ad esempio specificando https://example.com/ si isolerà anche https://foo.example.com/, perché fa parte del sito https://example.com/.
       Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOriginsAndroid e SitePerProcessAndroid saranno disattivate. Gli utenti potranno ancora attivare IsolateOrigins manualmente, tramite flag da riga di comando.
       Se la norma non è configurata, l'utente potrà modificare questa impostazione.
 
@@ -1717,7 +1717,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5728154254076636808">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" /></translation>
 <translation id="5728661376331491504">Questa norma consente di stabilire l'elenco di siti web da aprire in un browser alternativo.
 
-      Puoi anche aggiungere elementi all'elenco ricorrendo alla norma <ph name="USE_IE_SITELIST_POLICY_NAME" />.
+      Puoi anche aggiungere elementi all'elenco tramite la norma <ph name="USE_IE_SITELIST_POLICY_NAME" />.
 
       Se questa norma non viene impostata, nessun sito web viene aggiunto all'elenco.
 
@@ -1790,7 +1790,7 @@ Se la norma non viene impostata, la lettura vocale viene disattivata alla prima 
 <translation id="5898486742390981550">Quando più utenti eseguono l'accesso, solo l'utente principale può utilizzare le app Android.</translation>
 <translation id="5900196529149231477">
       Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      Se la norma è attivata, ciascuna delle origini denominate all'interno di un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche le origini dei sottodomini corrispondenti, ad esempio specificando https://example.com/ si isolerà anche https://foo.example.com/, perché fa parte del sito https://example.com/.
+      Se la norma è attivata, ciascuna delle origini denominate all'interno di un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche le origini indicate dai sottodomini, ad esempio specificando https://example.com/ si isolerà anche https://foo.example.com/, perché fa parte del sito https://example.com/.
       Se la norma è disattivata, le funzionalità IsolateOrigins e SitePerProcess saranno entrambe disattivate. Gli utenti potranno ancora attivare IsolateOrigins manualmente, tramite flag da riga di comando.
       Se la norma non è configurata, per la schermata di accesso verranno usate le impostazioni di isolamento dei siti predefinite della piattaforma.
       </translation>
@@ -2290,7 +2290,7 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
 <translation id="7132877481099023201">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione video senza richieste</translation>
 <translation id="7158064522994309072">Questa norma consente di stabilire i comandi da usare per aprire gli URL in un browser alternativo.
 
-      Se questa norma non viene impostata, viene usata un'impostazione specifica della piattaforma: Internet Explorer per Windows o Safari per Mac OS X. Su Linux, se questa norma non viene impostata l'avvio del browser alternativo non riesce.
+      Se questa norma non viene impostata, viene usata un'impostazione predefinita specifica della piattaforma: Internet Explorer per Windows o Safari per Mac OS X. Su Linux, se questa norma non viene impostata l'avvio del browser alternativo non riesce.
 
       Se questa norma viene impostata su ${ie}, ${firefox}, ${safari} o ${opera}, verrà avviato il browser corrispondente, se installato. ${ie} è disponibile solo su Windows e ${safari} è disponibile solo su Windows e Mac OS X.
 
@@ -2815,13 +2815,13 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8390049129576938611">Consente di disattivare il visualizzatore di PDF interno di <ph name="PRODUCT_NAME" />. I file PDF vengono gestiti come download che l'utente può aprire con l'applicazione predefinita.
 
       Se questa norma non viene impostata o viene disattivata, per aprire i file PDF verrà utilizzato il plug-in di PDF, se l'utente non lo disattiva.</translation>
-<translation id="8396145449084377015">Questa norma consente di stabilire se caricare regole dall'elenco di siti per Internet Explorer.
+<translation id="8396145449084377015">Questa norma consente di stabilire se caricare regole dalla norma SiteList di Internet Explorer.
 
-      Se questa norma non viene impostata o viene impostata su False, <ph name="PRODUCT_NAME" /> non utilizza la norma <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer come fonte di regole per lo scambio di browser.
+      Se questa norma non viene impostata o viene impostata su False, <ph name="PRODUCT_NAME" /> non utilizza la norma <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer come fonte di regole per il cambio di browser.
 
       Se questa norma viene impostata su True, <ph name="PRODUCT_NAME" /> legge la norma <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer per ottenere l'URL dell'elenco di siti. <ph name="PRODUCT_NAME" /> scarica poi l'elenco da quell'URL e applica le regole come se fossero state configurate con la norma <ph name="SITELIST_POLICY_NAME" />.
 
-      Per ulteriori informazioni sulla norma <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer, visita il sito: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
+      Per ulteriori informazioni sulla norma <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer, visita il sito https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Apri sempre file PDF esternamente</translation>
 <translation id="8412312801707973447">Esecuzione dei controlli OCSP/CRL online</translation>
 <translation id="8417305981081876834">Imposta la lunghezza massima del PIN per la schermata di blocco</translation>

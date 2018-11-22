@@ -194,7 +194,6 @@
 <translation id="126156426083987769">데모 모드 기기 라이선스에 문제가 발생했습니다.</translation>
 <translation id="126710816202626562">번역 언어:</translation>
 <translation id="126768002343224824">16배</translation>
-<translation id="127138278192656016">동기화 및 모든 서비스 사용</translation>
 <translation id="1272079795634619415">중지</translation>
 <translation id="1272978324304772054">이 사용자 계정은 기기가 등록된 도메인에 속해 있지 않습니다. 다른 도메인에 등록하려면 먼저 기기 복구 절차를 거쳐야 합니다.</translation>
 <translation id="1274977772557788323">Adobe Flash Player 저장용량 설정</translation>
@@ -3026,7 +3025,6 @@
 <translation id="5636996382092289526"><ph name="NETWORK_ID" />을(를) 사용하려면 먼저 몇 초 뒤에 자동으로 열리는 <ph name="LINK_START" />네트워크 로그인 페이지로 이동<ph name="LINK_END" />해야 합니다. 네트워크 로그인 페이지가 자동으로 열리지 않으면 네트워크를 사용할 수 없습니다.</translation>
 <translation id="5637476008227280525">모바일 데이터 사용</translation>
 <translation id="5638309510554459422"><ph name="BEGIN_LINK" />Chrome 웹 스토어<ph name="END_LINK" />에서 확장 프로그램과 테마를 찾아보세요</translation>
-<translation id="5638497698949808140"><ph name="HOURS" />시간 전에 업데이트됨</translation>
 <translation id="5639549361331209298">옵션을 더 보려면 이 페이지를 새로고친 다음 누르기</translation>
 <translation id="5642508497713047">CRL 서명자</translation>
 <translation id="5643620609347735571">삭제하고 계속</translation>
@@ -3990,7 +3988,6 @@
 <translation id="7120865473764644444">동기화 서버에 연결하지 못했습니다. 다시 시도 중...</translation>
 <translation id="7121362699166175603">검색주소창에 저장된 방문 기록과 자동 완성 내역을 지웁니다. Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
 <translation id="7123360114020465152">프린터가 더 이상 지원되지 않습니다.</translation>
-<translation id="71243390042171582"><ph name="MINUTES" />분 전에 업데이트되었습니다.</translation>
 <translation id="7124929488592184705"><ph name="DOCUMENT_NAME" />을(를) 인쇄하는 중에 오류가 발생함</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;드라이브 검색&lt;/em&gt;</translation>
 <translation id="7127980134843952133">다운로드 기록</translation>
@@ -4536,7 +4533,6 @@
 <translation id="794676567536738329">권한 확인</translation>
 <translation id="7947962633355574091">동영상 주소 복사(&amp;O)</translation>
 <translation id="7950040156882184764">인터넷 인쇄 프로토콜(HTTP)</translation>
-<translation id="795025003224538582">다시 시작 안함</translation>
 <translation id="7952904276017482715">ID로 '<ph name="EXPECTED_ID" />'을(를) 예상했으나 '<ph name="NEW_ID" />'이(가) 표시되었습니다</translation>
 <translation id="7953739707111622108">파일 시스템이 인식되지 않아 이 기기를 열 수 없습니다.</translation>
 <translation id="7953955868932471628">단축키 관리</translation>
