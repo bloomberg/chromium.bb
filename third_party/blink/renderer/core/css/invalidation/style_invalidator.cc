@@ -209,7 +209,7 @@ void StyleInvalidator::PushInvalidationSetsForContainerNode(
           TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
           "StyleInvalidatorInvalidationTracking", TRACE_EVENT_SCOPE_THREAD,
           "data",
-          InspectorStyleInvalidatorInvalidateEvent::InvalidationList(
+          inspector_style_invalidator_invalidate_event::InvalidationList(
               node, pending_invalidations.Descendants()));
     }
   }

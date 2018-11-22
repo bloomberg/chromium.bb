@@ -1120,7 +1120,7 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
           .InvalidatePaintIncludingNonCompositingDescendants();
 
       TRACE_LAYER_INVALIDATION(layers[i].paint_layer,
-                               InspectorLayerInvalidationTrackingEvent::
+                               inspector_layer_invalidation_tracking_event::
                                    kSquashingLayerGeometryWasUpdated);
       layers_needing_paint_invalidation.push_back(layers[i].paint_layer);
     }
@@ -3373,8 +3373,8 @@ void CompositedLayerMapping::PaintContents(
 
   TRACE_EVENT1(
       "devtools.timeline,rail", "Paint", "data",
-      InspectorPaintEvent::Data(&owning_layer_.GetLayoutObject(),
-                                LayoutRect(interest_rect), graphics_layer));
+      inspector_paint_event::Data(&owning_layer_.GetLayoutObject(),
+                                  LayoutRect(interest_rect), graphics_layer));
 
   PaintLayerFlags paint_layer_flags = 0;
   if (graphics_layer_painting_phase & kGraphicsLayerPaintBackground)

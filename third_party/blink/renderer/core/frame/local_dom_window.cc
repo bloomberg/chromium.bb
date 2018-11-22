@@ -1416,7 +1416,7 @@ void LocalDOMWindow::DispatchLoadEvent() {
 
   TRACE_EVENT_INSTANT1("devtools.timeline", "MarkLoad",
                        TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorMarkLoadEvent::Data(GetFrame()));
+                       inspector_mark_load_event::Data(GetFrame()));
   probe::loadEventFired(GetFrame());
 }
 
@@ -1432,7 +1432,7 @@ DispatchEventResult LocalDOMWindow::DispatchEvent(Event& event,
   event.SetEventPhase(Event::kAtTarget);
 
   TRACE_EVENT1("devtools.timeline", "EventDispatch", "data",
-               InspectorEventDispatchEvent::Data(event));
+               inspector_event_dispatch_event::Data(event));
   return FireEventListeners(event);
 }
 

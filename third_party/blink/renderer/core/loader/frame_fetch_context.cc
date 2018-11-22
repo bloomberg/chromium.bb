@@ -518,7 +518,7 @@ void FrameFetchContext::DispatchDidChangeResourcePriority(
   if (IsDetached())
     return;
   TRACE_EVENT1("devtools.timeline", "ResourceChangePriority", "data",
-               InspectorChangeResourcePriorityEvent::Data(
+               inspector_change_resource_priority_event::Data(
                    MasterDocumentLoader(), identifier, load_priority));
   probe::didChangeResourcePriority(GetFrame(), MasterDocumentLoader(),
                                    identifier, load_priority);
