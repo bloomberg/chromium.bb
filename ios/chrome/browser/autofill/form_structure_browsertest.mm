@@ -165,7 +165,7 @@ void FormStructureBrowserTest::TearDown() {
 
 void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
-  ASSERT_TRUE(LoadHtmlWithoutSubresources(input));
+  ASSERT_TRUE(LoadHtml(input));
   base::TaskScheduler::GetInstance()->FlushForTesting();
   web::WebFrame* frame = web::GetMainWebFrame(web_state());
   AutofillManager* autofill_manager =
