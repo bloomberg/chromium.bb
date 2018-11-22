@@ -5,30 +5,36 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_EXPERIMENTAL_SAFE_SEARCH_URL_REPORTER_H_
 #define CHROME_BROWSER_SUPERVISED_USER_EXPERIMENTAL_SAFE_SEARCH_URL_REPORTER_H_
 
+#include <list>
 #include <memory>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "url/gurl.h"
 
 class GURL;
 class Profile;
 
+namespace identity {
+class IdentityManager;
+struct AccessTokenInfo;
+}  // namespace identity
+
 namespace network {
 class SharedURLLoaderFactory;
 }
 
-class SafeSearchURLReporter : public OAuth2TokenService::Consumer {
+class SafeSearchURLReporter {
  public:
   using SuccessCallback = base::OnceCallback<void(bool)>;
 
   SafeSearchURLReporter(
-      OAuth2TokenService* oauth2_token_service,
+      identity::IdentityManager* identity_manager,
       const std::string& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  ~SafeSearchURLReporter() override;
+  ~SafeSearchURLReporter();
 
   static std::unique_ptr<SafeSearchURLReporter> CreateWithProfile(
       Profile* profile);
@@ -39,12 +45,9 @@ class SafeSearchURLReporter : public OAuth2TokenService::Consumer {
   struct Report;
   using ReportList = std::list<std::unique_ptr<Report>>;
 
-  // OAuth2TokenService::Consumer implementation:
-  void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  void OnAccessTokenFetchComplete(Report* report,
+                                  GoogleServiceAuthError error,
+                                  identity::AccessTokenInfo token_info);
 
   void OnSimpleLoaderComplete(ReportList::iterator it,
                               std::unique_ptr<std::string> response_body);
@@ -55,7 +58,7 @@ class SafeSearchURLReporter : public OAuth2TokenService::Consumer {
 
   void DispatchResult(ReportList::iterator it, bool success);
 
-  OAuth2TokenService* oauth2_token_service_;
+  identity::IdentityManager* identity_manager_;
   std::string account_id_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
