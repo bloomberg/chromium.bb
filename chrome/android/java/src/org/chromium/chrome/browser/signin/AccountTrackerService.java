@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.os.SystemClock;
 import android.support.annotation.IntDef;
 
 import org.chromium.base.Log;
@@ -11,6 +12,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -18,6 +20,7 @@ import org.chromium.components.signin.AccountsChangeObserver;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.concurrent.TimeUnit;
 
 /**
 * Android wrapper of AccountTrackerService which provides access from the java layer.
@@ -136,12 +139,20 @@ public class AccountTrackerService {
                 @Override
                 public String[][] doInBackground() {
                     Log.d(TAG, "Getting id/email mapping");
+
+                    long seedingStartTime = SystemClock.elapsedRealtime();
+
                     String[][] accountIdNameMap = new String[2][accounts.size()];
                     for (int i = 0; i < accounts.size(); ++i) {
                         accountIdNameMap[0][i] =
                                 accountIdProvider.getAccountId(accounts.get(i).name);
                         accountIdNameMap[1][i] = accounts.get(i).name;
                     }
+
+                    RecordHistogram.recordTimesHistogram("Signin.AndroidGetAccountIdsTime",
+                            SystemClock.elapsedRealtime() - seedingStartTime,
+                            TimeUnit.MILLISECONDS);
+
                     return accountIdNameMap;
                 }
                 @Override
