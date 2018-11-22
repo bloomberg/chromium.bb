@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_tree_id.h"
 
 class Profile;

@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/extension_messages.h"
 
 namespace content {
 class BrowserContext;
