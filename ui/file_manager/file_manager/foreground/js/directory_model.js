@@ -754,6 +754,7 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
     // Restore leadIndex in case leadName no longer exists.
     var leadIndex = this.fileListSelection_.leadIndex;
     var leadEntry = this.getLeadEntry_();
+    const isCheckSelectMode = this.fileListSelection_.getCheckSelectMode();
 
     var previousDirContents = this.currentDirContents_;
     this.currentDirContents_ = dirContents;
@@ -772,6 +773,10 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
       this.selectIndex(Math.min(maxIdx - selectedIndices.length + 2,
                                 this.getFileList().length) - 1);
       forceChangeEvent = true;
+    } else if (isCheckSelectMode) {
+      // Otherwise, ensure check select mode is retained if it was previously
+      // active.
+      this.fileListSelection_.setCheckSelectMode(true);
     }
     return forceChangeEvent;
   }.bind(this));
