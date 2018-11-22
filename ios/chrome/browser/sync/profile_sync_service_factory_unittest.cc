@@ -67,9 +67,7 @@ class ProfileSyncServiceFactoryTest : public PlatformTest {
     datatypes.push_back(syncer::PROXY_TABS);
     datatypes.push_back(syncer::TYPED_URLS);
     datatypes.push_back(syncer::USER_EVENTS);
-    if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
-      datatypes.push_back(syncer::USER_CONSENTS);
-    }
+    datatypes.push_back(syncer::USER_CONSENTS);
     if (base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
       datatypes.push_back(syncer::SEND_TAB_TO_SELF);
     }

@@ -11,14 +11,10 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/sync/driver/sync_driver_switches.h"
 
 namespace unified_consent {
 
 ScopedUnifiedConsent::ScopedUnifiedConsent(UnifiedConsentFeatureState state) {
-  sync_user_consent_separate_type_feature_list_.InitAndEnableFeature(
-      switches::kSyncUserConsentSeparateType);
   switch (state) {
     case UnifiedConsentFeatureState::kDisabled:
       unified_consent_feature_list_.InitAndDisableFeature(kUnifiedConsent);

@@ -12,7 +12,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
-#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/consent_auditor/consent_auditor_impl.h"
@@ -48,7 +47,6 @@ ConsentAuditorFactory::ConsentAuditorFactory()
     : BrowserContextKeyedServiceFactory(
           "ConsentAuditor",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(browser_sync::UserEventServiceFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
 }
 
@@ -59,25 +57,19 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
 
   std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge;
-  syncer::UserEventService* user_event_service = nullptr;
-  if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
-    syncer::OnceModelTypeStoreFactory store_factory =
-        ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory();
+  syncer::OnceModelTypeStoreFactory store_factory =
+      ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory();
 
-    auto change_processor =
-        std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::USER_CONSENTS,
-            base::BindRepeating(&syncer::ReportUnrecoverableError,
-                                chrome::GetChannel()));
-    consent_sync_bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
-        std::move(store_factory), std::move(change_processor));
-  } else {
-    user_event_service =
-        browser_sync::UserEventServiceFactory::GetForProfile(profile);
-  }
+  auto change_processor =
+      std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+          syncer::USER_CONSENTS,
+          base::BindRepeating(&syncer::ReportUnrecoverableError,
+                              chrome::GetChannel()));
+  consent_sync_bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
+      std::move(store_factory), std::move(change_processor));
 
   return new consent_auditor::ConsentAuditorImpl(
-      profile->GetPrefs(), std::move(consent_sync_bridge), user_event_service,
+      profile->GetPrefs(), std::move(consent_sync_bridge),
       // The browser version and locale do not change runtime, so we can pass
       // them directly.
       version_info::GetVersionNumber(),

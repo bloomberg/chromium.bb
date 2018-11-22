@@ -23,7 +23,6 @@ class ScopedUnifiedConsent {
   ~ScopedUnifiedConsent();
 
  private:
-  base::test::ScopedFeatureList sync_user_consent_separate_type_feature_list_;
   base::test::ScopedFeatureList unified_consent_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedUnifiedConsent);

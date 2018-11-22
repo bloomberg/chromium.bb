@@ -42,8 +42,7 @@ enum class Feature {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.consent_auditor
 enum class ConsentStatus { NOT_GIVEN, GIVEN };
 
-// TODO(vitaliii): Delete user-event-related code once USER_CONSENTS type is
-// fully launched.
+// TODO(markusheintz): Document this class.
 class ConsentAuditor : public KeyedService {
  public:
   ConsentAuditor() = default;

@@ -92,9 +92,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::SUPERVISED_USER_WHITELISTS);
     datatypes.push_back(syncer::TYPED_URLS);
     datatypes.push_back(syncer::USER_EVENTS);
-    if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
-      datatypes.push_back(syncer::USER_CONSENTS);
-    }
+    datatypes.push_back(syncer::USER_CONSENTS);
     if (base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
       datatypes.push_back(syncer::SEND_TAB_TO_SELF);
     }

@@ -844,11 +844,6 @@ const char kEnableSyncPseudoUSSThemesName[] =
 const char kEnableSyncPseudoUSSThemesDescription[] =
     "Enable new USS-based codepath for sync datatype THEMES.";
 
-const char kEnableSyncUserConsentSeparateTypeName[] =
-    "Enable separate sync type for consents";
-const char kEnableSyncUserConsentSeparateTypeDescription[] =
-    "Emit user consents as a separate sync type instead of user events.";
-
 const char kEnableSyncUSSBookmarksName[] = "Enable USS for bookmarks sync";
 const char kEnableSyncUSSBookmarksDescription[] =
     "Enables the new, experimental implementation of bookmark sync";

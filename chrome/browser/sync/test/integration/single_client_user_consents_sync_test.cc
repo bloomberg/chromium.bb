@@ -104,19 +104,11 @@ class SingleClientUserConsentsSyncTest : public SyncTest {
         .Wait();
   }
 
-  void SetSyncUserConsentSeparateTypeFeature(bool value) {
-    SyncTest::feature_list_.InitWithFeatureState(
-        switches::kSyncUserConsentSeparateType, value);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientUserConsentsSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
-                       ShouldSubmitAsSeparateConsentDatatypeWhenEnabled) {
-  SetSyncUserConsentSeparateTypeFeature(true);
-
+IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest, ShouldSubmit) {
   ASSERT_TRUE(SetupSync());
   ASSERT_EQ(0u, GetFakeServer()
                     ->GetSyncEntitiesByModelType(syncer::USER_CONSENTS)
@@ -138,8 +130,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
 IN_PROC_BROWSER_TEST_F(
     SingleClientUserConsentsSyncTest,
     ShouldPreserveConsentsOnDisableSyncAndResubmitWhenReenabled) {
-  SetSyncUserConsentSeparateTypeFeature(true);
-
   UserConsentSpecifics specifics;
   specifics.mutable_sync_consent()->set_confirmation_grd_id(1);
   // Account id may be compared to the synced account, thus, we need them to
@@ -161,18 +151,48 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(ExpectUserConsents({specifics}));
 }
 
+IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
+                       ShouldPreserveConsentsLoggedBeforeSyncSetup) {
+  SyncConsent consent1;
+  consent1.set_confirmation_grd_id(1);
+  consent1.set_status(UserConsentTypes::GIVEN);
+  SyncConsent consent2;
+  consent2.set_confirmation_grd_id(2);
+  consent2.set_status(UserConsentTypes::GIVEN);
+
+  UserConsentSpecifics specifics1;
+  *specifics1.mutable_sync_consent() = consent1;
+  specifics1.set_account_id(GetAccountId());
+  UserConsentSpecifics specifics2;
+  *specifics2.mutable_sync_consent() = consent2;
+  specifics2.set_account_id(GetAccountId());
+
+  // Set up the clients (profiles), but do *not* set up Sync yet.
+  ASSERT_TRUE(SetupClients());
+
+  // Now we can already record a consent, but of course it won't make it to the
+  // server yet.
+  consent_auditor::ConsentAuditor* consent_service =
+      ConsentAuditorFactory::GetForProfile(GetProfile(0));
+  consent_service->RecordSyncConsent(GetAccountId(), consent1);
+  EXPECT_TRUE(ExpectUserConsents({}));
+
+  // Once we turn on Sync, the consent gets uploaded.
+  ASSERT_TRUE(SetupSync());
+  EXPECT_TRUE(ExpectUserConsents({specifics1}));
+
+  // Another consent can also be added now.
+  consent_service->RecordSyncConsent(GetAccountId(), consent2);
+  EXPECT_TRUE(ExpectUserConsents({specifics1, specifics2}));
+}
+
 // ChromeOS does not support late signin after profile creation, so the test
 // below does not apply, at least in the current form.
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
                        ShouldSubmitIfSignedInAlthoughFullSyncNotEnabled) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      // Enabled.
-      {switches::kSyncStandaloneTransport,
-       switches::kSyncUserConsentSeparateType},
-      // Disabled.
-      {});
+  feature_list.InitAndEnableFeature(switches::kSyncStandaloneTransport);
 
   // We avoid calling SetupSync(), because we don't want to turn on full sync,
   // only sign in such that the standalone transport starts.
