@@ -878,6 +878,7 @@ void DocumentLoader::StopLoading() {
 void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   DCHECK(frame_);
   StopLoading();
+  fetcher_->ClearContext();
   if (flush_microtask_queue) {
     // Flush microtask queue so that they all run on pre-navigation context.
     // TODO(dcheng): This is a temporary hack that should be removed. This is
@@ -893,7 +894,6 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
     Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
   }
   ScriptForbiddenScope forbid_scripts;
-  fetcher_->ClearContext();
 
   // If that load cancellation triggered another detach, leave.
   // (fast/frames/detach-frame-nested-no-crash.html is an example of this.)
