@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/animation/keyframe_model.h"
 #include "third_party/blink/renderer/platform/animation/compositor_target_property.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
@@ -46,6 +47,8 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
   int Group() const;
 
   CompositorTargetProperty::Type TargetProperty() const;
+
+  void SetElementId(CompositorElementId element_id);
 
   // This is the number of times that the animation will play. If this
   // value is zero the animation will not play. If it is negative, then
