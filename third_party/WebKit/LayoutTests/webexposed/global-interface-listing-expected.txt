@@ -6168,11 +6168,22 @@ interface SVGEllipseElement : SVGGeometryElement
     method constructor
 interface SVGFEBlendElement : SVGElement
     attribute @@toStringTag
+    attribute SVG_FEBLEND_MODE_COLOR
+    attribute SVG_FEBLEND_MODE_COLOR_BURN
+    attribute SVG_FEBLEND_MODE_COLOR_DODGE
     attribute SVG_FEBLEND_MODE_DARKEN
+    attribute SVG_FEBLEND_MODE_DIFFERENCE
+    attribute SVG_FEBLEND_MODE_EXCLUSION
+    attribute SVG_FEBLEND_MODE_HARD_LIGHT
+    attribute SVG_FEBLEND_MODE_HUE
     attribute SVG_FEBLEND_MODE_LIGHTEN
+    attribute SVG_FEBLEND_MODE_LUMINOSITY
     attribute SVG_FEBLEND_MODE_MULTIPLY
     attribute SVG_FEBLEND_MODE_NORMAL
+    attribute SVG_FEBLEND_MODE_OVERLAY
+    attribute SVG_FEBLEND_MODE_SATURATION
     attribute SVG_FEBLEND_MODE_SCREEN
+    attribute SVG_FEBLEND_MODE_SOFT_LIGHT
     attribute SVG_FEBLEND_MODE_UNKNOWN
     getter height
     getter in1

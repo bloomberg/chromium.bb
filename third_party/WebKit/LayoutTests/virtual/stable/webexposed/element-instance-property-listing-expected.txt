@@ -1445,11 +1445,22 @@ svg element ellipse
     property systemLanguage
     property transform
 svg element feBlend
+    property SVG_FEBLEND_MODE_COLOR
+    property SVG_FEBLEND_MODE_COLOR_BURN
+    property SVG_FEBLEND_MODE_COLOR_DODGE
     property SVG_FEBLEND_MODE_DARKEN
+    property SVG_FEBLEND_MODE_DIFFERENCE
+    property SVG_FEBLEND_MODE_EXCLUSION
+    property SVG_FEBLEND_MODE_HARD_LIGHT
+    property SVG_FEBLEND_MODE_HUE
     property SVG_FEBLEND_MODE_LIGHTEN
+    property SVG_FEBLEND_MODE_LUMINOSITY
     property SVG_FEBLEND_MODE_MULTIPLY
     property SVG_FEBLEND_MODE_NORMAL
+    property SVG_FEBLEND_MODE_OVERLAY
+    property SVG_FEBLEND_MODE_SATURATION
     property SVG_FEBLEND_MODE_SCREEN
+    property SVG_FEBLEND_MODE_SOFT_LIGHT
     property SVG_FEBLEND_MODE_UNKNOWN
     property height
     property in1
