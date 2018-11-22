@@ -109,6 +109,15 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       std::unique_ptr<WebMediaPlayerParams> params);
   ~WebMediaPlayerImpl() override;
 
+  // Destroys |demuxer| and records a UMA for the time taken to destroy it.
+  // |task_runner| is the expected runner on which this method is called, and is
+  // used as a parameter to ensure a scheduled task bound to this method is run
+  // (to prevent uncontrolled |demuxer| destruction if |task_runner| has no
+  // other references before such task is executed.)
+  static void DemuxerDestructionHelper(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      std::unique_ptr<Demuxer> demuxer);
+
   // WebSurfaceLayerBridgeObserver implementation.
   void OnWebLayerUpdated() override;
   void RegisterContentsLayer(cc::Layer* layer) override;

@@ -424,7 +424,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     // destructed since WMPI may reference them during destruction.
     wmpi_.reset();
 
-    CycleThreads();
+    base::RunLoop().RunUntilIdle();
 
     web_view_->MainFrameWidget()->Close();
   }
@@ -669,8 +669,13 @@ class WebMediaPlayerImplTest : public testing::Test {
     // Ensure any tasks waiting to be posted to the media thread are posted.
     base::RunLoop().RunUntilIdle();
 
-    // Flush all media tasks.
-    media_thread_.FlushForTesting();
+    // Cycle media thread.
+    {
+      base::RunLoop loop;
+      media_thread_.task_runner()->PostTaskAndReply(
+          FROM_HERE, base::DoNothing(), loop.QuitClosure());
+      loop.Run();
+    }
 
     // Cycle anything that was posted back from the media thread.
     base::RunLoop().RunUntilIdle();
