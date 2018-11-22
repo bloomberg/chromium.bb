@@ -502,6 +502,8 @@ void CorsURLLoader::SetCorsFlagIfNeeded() {
 base::Optional<std::string> CorsURLLoader::GetHeaderString(
     const ResourceResponseHead& response,
     const std::string& header_name) {
+  if (!response.headers)
+    return base::nullopt;
   std::string header_value;
   if (!response.headers->GetNormalizedHeader(header_name, &header_value))
     return base::nullopt;
