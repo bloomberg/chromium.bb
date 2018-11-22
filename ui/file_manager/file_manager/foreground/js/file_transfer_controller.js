@@ -1307,6 +1307,19 @@ FileTransferController.prototype.isDocumentWideEvent_ = function() {
 };
 
 /**
+ * @return {boolean} Returns true if there is a dialog showing that we should
+ * treat as modal, false otherwise.
+ * @private
+ */
+FileTransferController.prototype.isModalDialogBeingDisplayed_ = function() {
+  // Do not allow Cut or Copy if a modal dialog is being displayed.
+  if (document.querySelector('.cr-dialog-container.shown') !== null) {
+    return true;
+  }
+  return false;
+};
+
+/**
  * @param {boolean} isMove True for move operation.
  * @param {!Event} event
  * @private
@@ -1414,6 +1427,10 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
     var volumeInfo = this.volumeManager_.getVolumeInfo(selectedItem.entry);
     return !volumeInfo.isReadOnly && metadata[0].canCopy !== false &&
         metadata[0].canDelete !== false;
+  }
+
+  if (this.isModalDialogBeingDisplayed_()) {
+    return false;
   }
 
   return isMove ? this.canCutOrDrag_() : this.canCopyOrDrag_() ;
