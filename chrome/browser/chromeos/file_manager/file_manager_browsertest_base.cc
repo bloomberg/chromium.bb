@@ -18,7 +18,9 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -1597,6 +1599,71 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     app_windows.front()->GetNativeWindow()->GetHost()->DispatchKeyEventPostIME(
         &key_event, base::BindOnce([](bool) {}));
     *output = "mediaKeyDispatched";
+    return;
+  }
+
+  if (name == "getAppWindowId") {
+    std::string window_url;
+    ASSERT_TRUE(value.GetString("windowUrl", &window_url));
+
+    const auto& app_windows =
+        extensions::AppWindowRegistry::Get(profile())->app_windows();
+    ASSERT_FALSE(app_windows.empty());
+    *output = "none";
+    for (auto* window : app_windows) {
+      if (!window->web_contents())
+        continue;
+
+      if (window->web_contents()->GetLastCommittedURL() == window_url) {
+        *output = base::NumberToString(window->session_id().id());
+        break;
+      }
+    }
+    return;
+  }
+
+  if (name == "countAppWindows") {
+    std::string app_id;
+    ASSERT_TRUE(value.GetString("appId", &app_id));
+
+    const auto& app_windows =
+        extensions::AppWindowRegistry::Get(profile())->app_windows();
+    ASSERT_FALSE(app_windows.empty());
+    int window_count = 0;
+    for (auto* window : app_windows) {
+      if (window->extension_id() == app_id)
+        window_count++;
+    }
+    *output = base::NumberToString(window_count);
+    return;
+  }
+
+  if (name == "runJsInAppWindow") {
+    std::string window_id_str;
+    ASSERT_TRUE(value.GetString("windowId", &window_id_str));
+    int window_id = 0;
+    ASSERT_TRUE(base::StringToInt(window_id_str, &window_id));
+    std::string script;
+    ASSERT_TRUE(value.GetString("script", &script));
+
+    const auto& app_windows =
+        extensions::AppWindowRegistry::Get(profile())->app_windows();
+    ASSERT_FALSE(app_windows.empty());
+    for (auto* window : app_windows) {
+      CHECK(window);
+      if (window->session_id().id() != window_id) {
+        continue;
+      }
+
+      if (!window->web_contents())
+        break;
+
+      CHECK(window->web_contents()->GetMainFrame());
+      window->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+          base::UTF8ToUTF16(script));
+
+      break;
+    }
     return;
   }
 
