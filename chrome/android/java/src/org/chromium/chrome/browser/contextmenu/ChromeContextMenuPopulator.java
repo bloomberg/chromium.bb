@@ -16,8 +16,8 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
-import org.chromium.chrome.browser.experiments.EphemeralTab;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -79,7 +79,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 Action.ADD_TO_CONTACTS, Action.CALL, Action.SEND_TEXT_MESSAGE,
                 Action.COPY_PHONE_NUMBER, Action.OPEN_IN_NEW_CHROME_TAB,
                 Action.OPEN_IN_CHROME_INCOGNITO_TAB, Action.OPEN_IN_BROWSER, Action.OPEN_IN_CHROME,
-                Action.SHARE_LINK, Action.OPEN_IN_EPHEMERAL_TAB,
+                Action.SHARE_LINK, Action.OPEN_IN_EPHEMERAL_TAB, Action.OPEN_IMAGE_IN_EPHEMERAL_TAB,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface Action {
@@ -108,7 +108,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             int OPEN_IN_CHROME = 36;
             int SHARE_LINK = 37;
             int OPEN_IN_EPHEMERAL_TAB = 38;
-            int NUM_ENTRIES = 39;
+            int OPEN_IMAGE_IN_EPHEMERAL_TAB = 39;
+            int NUM_ENTRIES = 40;
         }
 
         // Note: these values must match the ContextMenuSaveLinkType enum in enums.xml.
@@ -258,7 +259,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 if (mDelegate.isOpenInOtherWindowSupported()) {
                     linkTab.add(new ChromeContextMenuItem(Item.OPEN_IN_OTHER_WINDOW));
                 }
-                if (EphemeralTab.isCapable()) {
+                if (EphemeralTabPanel.isSupported()) {
                     linkTab.add(new ChromeContextMenuItem(Item.OPEN_IN_EPHEMERAL_TAB));
                 }
             }
@@ -326,6 +327,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 }
                 if (mMode == ContextMenuMode.NORMAL) {
                     imageTab.add(new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_NEW_TAB));
+                }
+                if (EphemeralTabPanel.isSupported()) {
+                    imageTab.add(new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_EPHEMERAL_TAB));
                 }
                 if (isSrcDownloadableScheme) {
                     imageTab.add(new ChromeContextMenuItem(Item.SAVE_IMAGE));
@@ -417,13 +421,16 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mDelegate.onOpenInOtherWindow(params.getUrl(), params.getReferrer());
         } else if (itemId == R.id.contextmenu_open_in_ephemeral_tab) {
             ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IN_EPHEMERAL_TAB);
-            mDelegate.onOpenInEphemeralTab(params.getUrl(), params.getReferrer());
+            mDelegate.onOpenInEphemeralTab(params.getUrl(), params.getLinkText());
         } else if (itemId == R.id.contextmenu_open_image) {
             ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IMAGE);
             mDelegate.onOpenImageUrl(params.getSrcUrl(), params.getReferrer());
         } else if (itemId == R.id.contextmenu_open_image_in_new_tab) {
             ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IMAGE_IN_NEW_TAB);
             mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
+        } else if (itemId == R.id.contextmenu_open_image_in_ephemeral_tab) {
+            ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IMAGE_IN_EPHEMERAL_TAB);
+            mDelegate.onOpenInEphemeralTab(params.getSrcUrl(), params.getTitleText());
         } else if (itemId == R.id.contextmenu_load_original_image) {
             ContextMenuUma.record(params, ContextMenuUma.Action.LOAD_ORIGINAL_IMAGE);
             DataReductionProxyUma.previewsLoFiContextMenuAction(

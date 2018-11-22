@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItemDelegate;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
-import org.chromium.chrome.browser.experiments.EphemeralTab;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -223,6 +222,11 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     }
 
     @Override
+    public void onOpenInEphemeralTab(String url, String title) {
+        mTab.getActivity().getEphemeralTabPanel().requestOpenPanel(url, title);
+    }
+
+    @Override
     public void onOpenInChrome(String linkUrl, String pageUrl) {
         Context applicationContext = ContextUtils.getApplicationContext();
         Intent chromeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl));
@@ -291,11 +295,6 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         CustomTabsIntent.setAlwaysUseBrowserUI(intent);
         IntentUtils.safeStartActivity(mTab.getActivity(), intent);
-    }
-
-    @Override
-    public void onOpenInEphemeralTab(String url, Referrer referrer) {
-        EphemeralTab.onOpen(url, referrer, isIncognito());
     }
 
     /**

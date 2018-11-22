@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
@@ -263,6 +264,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private CompositorViewHolder mCompositorViewHolder;
     private InsetObserverView mInsetObserverView;
     private ContextualSearchManager mContextualSearchManager;
+    private EphemeralTabPanel mEphemeralTabPanel;
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
     private DataReductionPromoSnackbarController mDataReductionPromoSnackbarController;
@@ -1533,6 +1535,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return false;
         }
 
+        if (getEphemeralTabPanel() != null && getEphemeralTabPanel().isPanelOpened()) {
+            return false;
+        }
+
         // Do not show the menu if we are in find in page view.
         if (mFindToolbarManager != null && mFindToolbarManager.isShowing() && !isTablet()) {
             return false;
@@ -1800,6 +1806,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return mReaderModeManager;
     }
 
+    public EphemeralTabPanel getEphemeralTabPanel() {
+        return getCompositorViewHolder().getLayoutManager().getEphemeralTabPanel();
+    }
+
     /**
      * Create a full-screen manager to be used by this activity.
      * Note: This is called during {@link #postInflationStartup}, so native code may not have been
@@ -1859,6 +1869,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         mActivityTabProvider.setLayoutManager(layoutManager);
+        EphemeralTabPanel panel = layoutManager.getEphemeralTabPanel();
+        if (panel != null) panel.setChromeActivity(this);
     }
 
     /**
@@ -2084,6 +2096,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mFindToolbarManager.showToolbar();
             if (mContextualSearchManager != null) {
                 getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
+            }
+            if (getEphemeralTabPanel() != null) {
+                getEphemeralTabPanel().closePanel(StateChangeReason.UNKNOWN, true);
             }
             if (fromMenu) {
                 RecordUserAction.record("MobileMenuFindInPage");
