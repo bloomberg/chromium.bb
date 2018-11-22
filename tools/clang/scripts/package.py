@@ -321,6 +321,10 @@ def main():
         'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a',
         'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a.syms',
 
+        # UndefinedBehaviorSanitizer Android runtime, needed for CFI.
+        'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone-aarch64-android.so',
+        'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone-arm-android.so',
+
         # Blacklist for MemorySanitizer (used on Linux only).
         'lib/clang/*/share/msan_blacklist.txt',
     ])
