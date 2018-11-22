@@ -1104,6 +1104,143 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateWithWeekendTimeUsageLimit) {
   AssertEqState(expected_state_one, state_one);
 }
 
+// Test that a lock override followed by a time window limit will be ignored
+// after the time window limit is over.
+TEST_F(UsageTimeLimitProcessorTest, GetStateLockOverrideFollowedByBedtime) {
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone("PST"));
+
+  // Setup policy.
+  std::string last_updated = CreatePolicyTimestamp("1 Jan 2018 8:00 PST");
+  std::unique_ptr<base::DictionaryValue> policy =
+      CreateTimeLimitPolicy(CreateTime(6, 0));
+  AddTimeWindowLimit(policy.get(), kMonday, CreateTime(18, 0),
+                     CreateTime(20, 0), last_updated);
+  AddOverride(policy.get(), kLock,
+              CreatePolicyTimestamp("Mon, 1 Jan 2018 15:00 PST"));
+
+  // Check that the device is locked because of the override.
+  base::Time time_one = TimeFromString("Mon, 1 Jan 2018 15:00 PST");
+  State state_one = GetState(policy, base::TimeDelta::FromMinutes(60), time_one,
+                             time_one, timezone.get(), base::nullopt);
+
+  State expected_state_one;
+  expected_state_one.is_locked = true;
+  expected_state_one.active_policy = ActivePolicies::kOverride;
+  expected_state_one.is_time_usage_limit_enabled = false;
+  expected_state_one.next_state_change_time =
+      TimeFromString("Mon, 1 Jan 2018 18:00 PST");
+  expected_state_one.next_state_active_policy = ActivePolicies::kFixedLimit;
+  expected_state_one.next_unlock_time =
+      TimeFromString("Mon, 1 Jan 2018 20:00 PST");
+  expected_state_one.last_state_changed = base::Time();
+
+  AssertEqState(expected_state_one, state_one);
+
+  // Check that the device is locked because of the bedtime.
+  base::Time time_two = TimeFromString("Mon, 1 Jan 2018 18:00 PST");
+  State state_two = GetState(policy, base::TimeDelta::FromMinutes(60), time_two,
+                             time_two, timezone.get(), state_one);
+
+  State expected_state_two;
+  expected_state_two.is_locked = true;
+  expected_state_two.active_policy = ActivePolicies::kFixedLimit;
+  expected_state_two.is_time_usage_limit_enabled = false;
+  expected_state_two.next_state_change_time =
+      TimeFromString("Mon, 1 Jan 2018 20:00 PST");
+  expected_state_two.next_state_active_policy = ActivePolicies::kNoActivePolicy;
+  expected_state_two.next_unlock_time =
+      TimeFromString("Mon, 1 Jan 2018 20:00 PST");
+  expected_state_two.last_state_changed = time_two;
+
+  AssertEqState(expected_state_two, state_two);
+
+  // Check that the device is unlocked after the bedtime ends.
+  base::Time time_three = TimeFromString("Mon, 1 Jan 2018 20:00 PST");
+  State state_three =
+      GetState(policy, base::TimeDelta::FromMinutes(60), time_three, time_three,
+               timezone.get(), state_two);
+
+  State expected_state_three;
+  expected_state_three.is_locked = false;
+  expected_state_three.active_policy = ActivePolicies::kNoActivePolicy;
+  expected_state_three.is_time_usage_limit_enabled = false;
+  expected_state_three.next_state_change_time =
+      TimeFromString("Mon, 8 Jan 2018 18:00 PST");
+  expected_state_three.next_state_active_policy = ActivePolicies::kFixedLimit;
+  expected_state_three.last_state_changed = time_three;
+
+  AssertEqState(expected_state_three, state_three);
+}
+
+// Test unlock-lock pair during time window limit.
+TEST_F(UsageTimeLimitProcessorTest, GetStateUnlockLockDuringBedtime) {
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone("PST"));
+
+  // Setup policy.
+  std::string last_updated = CreatePolicyTimestamp("1 Jan 2018 8:00 PST");
+  std::unique_ptr<base::DictionaryValue> policy =
+      CreateTimeLimitPolicy(CreateTime(6, 0));
+  AddTimeWindowLimit(policy.get(), kMonday, CreateTime(10, 0),
+                     CreateTime(20, 0), last_updated);
+  AddOverride(policy.get(), kUnlock,
+              CreatePolicyTimestamp("Mon, 1 Jan 2018 12:00 PST"));
+
+  // Check that the device is unlocked because of the override.
+  base::Time time_one = TimeFromString("Mon, 1 Jan 2018 12:00 PST");
+  State state_one = GetState(policy, base::TimeDelta::FromMinutes(60), time_one,
+                             time_one, timezone.get(), base::nullopt);
+
+  State expected_state_one;
+  expected_state_one.is_locked = false;
+  expected_state_one.active_policy = ActivePolicies::kOverride;
+  expected_state_one.is_time_usage_limit_enabled = false;
+  expected_state_one.next_state_change_time =
+      TimeFromString("Mon, 8 Jan 2018 10:00 PST");
+  expected_state_one.next_state_active_policy = ActivePolicies::kFixedLimit;
+  expected_state_one.last_state_changed = base::Time();
+
+  AssertEqState(expected_state_one, state_one);
+
+  // Create lock.
+  AddOverride(policy.get(), kLock,
+              CreatePolicyTimestamp("Mon, 1 Jan 2018 14:00 PST"));
+
+  // Check that the device is locked because of the bedtime.
+  base::Time time_two = TimeFromString("Mon, 1 Jan 2018 14:00 PST");
+  State state_two = GetState(policy, base::TimeDelta::FromMinutes(60), time_two,
+                             time_two, timezone.get(), state_one);
+
+  State expected_state_two;
+  expected_state_two.is_locked = true;
+  expected_state_two.active_policy = ActivePolicies::kFixedLimit;
+  expected_state_two.is_time_usage_limit_enabled = false;
+  expected_state_two.next_state_change_time =
+      TimeFromString("Mon, 1 Jan 2018 20:00 PST");
+  expected_state_two.next_state_active_policy = ActivePolicies::kNoActivePolicy;
+  expected_state_two.next_unlock_time =
+      TimeFromString("Mon, 1 Jan 2018 20:00 PST");
+  expected_state_two.last_state_changed = time_two;
+
+  AssertEqState(expected_state_two, state_two);
+
+  // Check that the device is unlocked after the bedtime ends.
+  base::Time time_three = TimeFromString("Mon, 1 Jan 2018 20:00 PST");
+  State state_three =
+      GetState(policy, base::TimeDelta::FromMinutes(60), time_three, time_three,
+               timezone.get(), state_two);
+
+  State expected_state_three;
+  expected_state_three.is_locked = false;
+  expected_state_three.active_policy = ActivePolicies::kNoActivePolicy;
+  expected_state_three.is_time_usage_limit_enabled = false;
+  expected_state_three.next_state_change_time =
+      TimeFromString("Mon, 8 Jan 2018 10:00 PST");
+  expected_state_three.next_state_active_policy = ActivePolicies::kFixedLimit;
+  expected_state_three.last_state_changed = time_three;
+
+  AssertEqState(expected_state_three, state_three);
+}
+
 // Test GetExpectedResetTime with an empty policy.
 TEST_F(UsageTimeLimitProcessorTest, GetExpectedResetTimeWithEmptyPolicy) {
   std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone("GMT"));
