@@ -418,7 +418,8 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
               ui::PageTransition transition) {
           web::NavigationManager::WebLoadParams params(replacementURL);
           params.transition_type = transition;
-          [self.URLLoader loadURLWithParams:params];
+          ChromeLoadParams chromeParams(params);
+          [self.URLLoader loadURLWithParams:chromeParams];
           [self cancelOmniboxEdit];
         };
     load_GURL_from_location_bar_swizzler_.reset(

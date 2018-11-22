@@ -1078,7 +1078,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [self.loader loadURLWithParams:params];
+  ChromeLoadParams chromeParams(params);
+  [self.loader loadURLWithParams:chromeParams];
 }
 
 - (void)addNewFolder {

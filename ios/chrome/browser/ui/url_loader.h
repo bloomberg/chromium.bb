@@ -9,7 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "components/sessions/core/session_id.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/chrome/browser/ui/chrome_load_params.h"
 
 @class OpenNewTabCommand;
 
@@ -20,12 +20,16 @@ struct SessionTab;
 @protocol UrlLoader<NSObject>
 
 // Load a new request.
-- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params;
+// TODO(crbug.com/907527): Check if it is possible to merge with the other way
+// of loading a URL.
+- (void)loadURLWithParams:(const ChromeLoadParams&)params;
 
 // Load a new URL on a new page/tab. The |referrer| is optional. The tab will be
 // placed in the model according to |appendTo|. |originPoint| is used when the
 // tab is opened in background as the origin point for the animation, it is not
 // used if the tab is opened in foreground.
+// TODO(crbug.com/907527): Check if it is possible to merge with the other way
+// of loading a URL.
 - (void)webPageOrderedOpen:(OpenNewTabCommand*)command;
 
 // Load a tab with the given session.

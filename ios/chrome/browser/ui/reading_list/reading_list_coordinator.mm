@@ -381,7 +381,8 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
     params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
     params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
                                     web::ReferrerPolicyDefault);
-    [self.loader loadURLWithParams:params];
+    ChromeLoadParams chromeParams(params);
+    [self.loader loadURLWithParams:chromeParams];
   }
 
   [self stop];
