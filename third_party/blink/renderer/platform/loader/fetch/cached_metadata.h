@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -54,7 +55,8 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
   static scoped_refptr<CachedMetadata> Create(uint32_t data_type_id,
                                               const char* data,
                                               size_t size) {
-    return base::AdoptRef(new CachedMetadata(data_type_id, data, size));
+    return base::AdoptRef(
+        new CachedMetadata(data_type_id, data, SafeCast<wtf_size_t>(size)));
   }
 
   static scoped_refptr<CachedMetadata> CreateFromSerializedData(
@@ -76,14 +78,14 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
     return serialized_data_.data() + kCachedMetaDataStart;
   }
 
-  size_t size() const {
+  uint32_t size() const {
     DCHECK_GE(serialized_data_.size(), kCachedMetaDataStart);
     return serialized_data_.size() - kCachedMetaDataStart;
   }
 
  private:
-  CachedMetadata(const char* data, size_t);
-  CachedMetadata(uint32_t data_type_id, const char* data, size_t);
+  CachedMetadata(const char* data, wtf_size_t);
+  CachedMetadata(uint32_t data_type_id, const char* data, wtf_size_t);
 
   // Since the serialization format supports random access, storing it in
   // serialized form avoids need for a copy during serialization.

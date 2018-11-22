@@ -975,7 +975,7 @@ void Resource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
               WTF::CodePointCompareLessThan);
 
     StringBuilder builder;
-    for (size_t i = 0;
+    for (wtf_size_t i = 0;
          i < client_names.size() && i < kMaxResourceClientToShowInMemoryInfra;
          ++i) {
       if (i > 0)

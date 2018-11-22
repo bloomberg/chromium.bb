@@ -358,10 +358,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void SetEncodedDataLength(int64_t value) {
     response_.SetEncodedDataLength(value);
   }
-  void SetEncodedBodyLength(int value) {
+  void SetEncodedBodyLength(int64_t value) {
     response_.SetEncodedBodyLength(value);
   }
-  void SetDecodedBodyLength(int value) {
+  void SetDecodedBodyLength(int64_t value) {
     response_.SetDecodedBodyLength(value);
   }
 

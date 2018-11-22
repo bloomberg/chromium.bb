@@ -114,7 +114,7 @@ constexpr base::TimeDelta kKeepaliveLoadersTimeout =
 void AddRedirectsToTimingInfo(Resource* resource, ResourceTimingInfo* info) {
   // Store redirect responses that were packed inside the final response.
   const auto& responses = resource->GetResponse().RedirectResponses();
-  for (size_t i = 0; i < responses.size(); ++i) {
+  for (wtf_size_t i = 0; i < responses.size(); ++i) {
     const KURL& new_url = i + 1 < responses.size()
                               ? KURL(responses[i + 1].Url())
                               : resource->GetResourceRequest().Url();

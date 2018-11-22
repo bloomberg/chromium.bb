@@ -75,8 +75,8 @@ class PLATFORM_EXPORT LinkHeaderSet {
     return header_set_.begin();
   }
   Vector<LinkHeader>::const_iterator end() const { return header_set_.end(); }
-  LinkHeader& operator[](size_t i) { return header_set_[i]; }
-  size_t size() { return header_set_.size(); }
+  LinkHeader& operator[](wtf_size_t i) { return header_set_[i]; }
+  wtf_size_t size() { return header_set_.size(); }
 
  private:
   Vector<LinkHeader> header_set_;

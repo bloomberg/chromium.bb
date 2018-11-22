@@ -157,9 +157,9 @@ class PLATFORM_EXPORT FetchContext
       ResourceResponseType);
   virtual void DispatchDidReceiveData(unsigned long identifier,
                                       const char* data,
-                                      int data_length);
+                                      size_t data_length);
   virtual void DispatchDidReceiveEncodedData(unsigned long identifier,
-                                             int encoded_data_length);
+                                             size_t encoded_data_length);
   virtual void DispatchDidDownloadToBlob(unsigned long identifier,
                                          BlobDataHandle*);
   virtual void DispatchDidFinishLoading(unsigned long identifier,
