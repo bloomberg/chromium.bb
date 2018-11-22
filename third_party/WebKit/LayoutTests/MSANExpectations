@@ -204,3 +204,6 @@ crbug.com/873045 [ Linux ] external/wpt/picture-in-picture/idlharness.window.htm
 # Disabled by sheriff due to test crash
 crbug.com/896068 [ Linux ] webaudio/AudioBuffer/huge-buffer.html [ Crash ]
 crbug.com/896068 [ Linux ] webaudio/dom-exceptions.html [ Pass Crash ]
+
+# Sheriff 2018-11-22
+crbug.com/856601 [ Linux ] http/tests/devtools/elements/elements-save-to-temp-var.js [ Pass Timeout ]
