@@ -12,12 +12,6 @@
         }
 
         function clickHandler() {
-            if (internals.runtimeFlags.userActivationV2Enabled) {
-                if (window.testRunner)
-                    testRunner.notifyDone();
-                return;
-            }
-
             setTimeout(function() {
                 newWindow = window.open("about:blank");
                 self.focus();
