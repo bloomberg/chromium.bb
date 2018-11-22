@@ -97,41 +97,6 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
   // Must only be called on a bound ServiceBinding.
   void Close();
 
-  // Allows the caller to intercept all requests for a specific interface
-  // targeting any instance of the service |service_name| running in the calling
-  // process. Prefer the template helpers for clarity.
-  using BinderForTesting =
-      base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)>;
-  static void OverrideInterfaceBinderForTesting(
-      const std::string& service_name,
-      const std::string& interface_name,
-      const BinderForTesting& binder);
-  static void ClearInterfaceBinderOverrideForTesting(
-      const std::string& service_name,
-      const std::string& interface_name);
-
-  template <typename Interface>
-  using TypedBinderForTesting =
-      base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>)>;
-  template <typename Interface>
-  static void OverrideInterfaceBinderForTesting(
-      const std::string& service_name,
-      const TypedBinderForTesting<Interface>& binder) {
-    ServiceBinding::OverrideInterfaceBinderForTesting(
-        service_name, Interface::Name_,
-        base::BindRepeating(
-            [](const TypedBinderForTesting<Interface>& binder,
-               mojo::ScopedMessagePipeHandle pipe) {
-              binder.Run(mojo::InterfaceRequest<Interface>(std::move(pipe)));
-            },
-            binder));
-  }
-  template <typename Interface>
-  static void ClearInterfaceBinderOverrideForTesting(
-      const std::string& service_name) {
-    ClearInterfaceBinderOverrideForTesting(service_name, Interface::Name_);
-  }
-
  private:
   void OnConnectionError();
 

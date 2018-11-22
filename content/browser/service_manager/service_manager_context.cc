@@ -412,21 +412,6 @@ std::unique_ptr<service_manager::Service> CreateVideoCaptureService(
   return std::make_unique<video_capture::ServiceImpl>(std::move(request));
 }
 
-void CreateInProcessAudioService(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    service_manager::mojom::ServiceRequest request) {
-  // TODO(https://crbug.com/853254): Remove BrowserMainLoop::GetAudioManager().
-  task_runner->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](media::AudioManager* audio_manager,
-                        service_manager::mojom::ServiceRequest request) {
-                       service_manager::Service::RunUntilTermination(
-                           audio::CreateEmbeddedService(audio_manager,
-                                                        std::move(request)));
-                     },
-                     BrowserMainLoop::GetAudioManager(), std::move(request)));
-}
-
 #if defined(OS_LINUX)
 void CreateFontService(service_manager::mojom::ServiceRequest request) {
   // The font service owns itself here, deleting on self-termination.
@@ -766,10 +751,18 @@ ServiceManagerContext::ServiceManagerContext(
     out_of_process_services[audio::mojom::kServiceName] =
         base::BindRepeating(&base::ASCIIToUTF16, "Audio Service");
   } else {
-    packaged_services_connection_->AddServiceRequestHandler(
-        audio::mojom::kServiceName,
-        base::BindRepeating(&CreateInProcessAudioService,
-                            base::WrapRefCounted(GetAudioServiceRunner())));
+    service_manager::EmbeddedServiceInfo info;
+    // TODO(hanxi): Removes BrowserMainLoop::GetAudioManager().
+    // https://crbug.com/853254.
+    info.factory =
+        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
+          return audio::CreateEmbeddedService(
+              BrowserMainLoop::GetAudioManager());
+        });
+    info.task_runner = GetAudioServiceRunner();
+    DCHECK(info.task_runner);
+    packaged_services_connection_->AddEmbeddedService(
+        audio::mojom::kServiceName, info);
   }
 
   if (features::IsVideoCaptureServiceEnabledForOutOfProcess()) {

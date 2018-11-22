@@ -16,6 +16,7 @@
 #include "services/audio/in_process_audio_manager_accessor.h"
 #include "services/audio/owning_audio_manager_accessor.h"
 #include "services/audio/service.h"
+#include "services/service_manager/public/cpp/service.h"
 
 namespace audio {
 
@@ -54,24 +55,22 @@ base::TimeDelta GetQuitTimeout() {
 
 }  // namespace
 
-std::unique_ptr<Service> CreateEmbeddedService(
-    media::AudioManager* audio_manager,
-    service_manager::mojom::ServiceRequest request) {
+std::unique_ptr<service_manager::Service> CreateEmbeddedService(
+    media::AudioManager* audio_manager) {
   return std::make_unique<Service>(
       std::make_unique<InProcessAudioManagerAccessor>(audio_manager),
       base::TimeDelta() /* do not quit if all clients disconnected */,
       false /* enable_device_notifications */,
-      std::make_unique<service_manager::BinderRegistry>(), std::move(request));
+      std::make_unique<service_manager::BinderRegistry>());
 }
 
-std::unique_ptr<Service> CreateStandaloneService(
-    std::unique_ptr<service_manager::BinderRegistry> registry,
-    service_manager::mojom::ServiceRequest request) {
+std::unique_ptr<service_manager::Service> CreateStandaloneService(
+    std::unique_ptr<service_manager::BinderRegistry> registry) {
   return std::make_unique<Service>(
       std::make_unique<audio::OwningAudioManagerAccessor>(
           base::BindOnce(&media::AudioManager::Create)),
       GetQuitTimeout(), true /* enable_remote_client_support */,
-      std::move(registry), std::move(request));
+      std::move(registry));
 }
 
 }  // namespace audio
