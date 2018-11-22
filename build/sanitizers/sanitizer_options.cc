@@ -77,15 +77,9 @@ const char *kAsanDefaultOptions =
     "check_printf=1 use_sigaltstack=1 "
     "strip_path_prefix=/../../ fast_unwind_on_fatal=1 "
     "detect_stack_use_after_return=1 detect_odr_violation=0 ";
-
-#elif defined(OS_WIN)
-const char* kAsanDefaultOptions =
-    "check_printf=1 use_sigaltstack=1 "
-    "strip_path_prefix=\\..\\..\\ fast_unwind_on_fatal=1 "
-    "detect_stack_use_after_return=1 ";
 #endif  // OS_LINUX
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 // Allow NaCl to override the default asan options.
 extern const char* kAsanDefaultOptionsNaCl;
 __attribute__((weak)) const char* kAsanDefaultOptionsNaCl = nullptr;
@@ -101,7 +95,7 @@ extern char kASanDefaultSuppressions[];
 SANITIZER_HOOK_ATTRIBUTE const char *__asan_default_suppressions() {
   return kASanDefaultSuppressions;
 }
-#endif  // OS_LINUX || OS_MACOSX || OS_WIN
+#endif  // OS_LINUX || OS_MACOSX
 #endif  // ADDRESS_SANITIZER
 
 #if defined(THREAD_SANITIZER) && defined(OS_LINUX)
