@@ -3461,6 +3461,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method webkitRequestFileSystemSync
 [Worker]     method webkitResolveLocalFileSystemSyncURL
 [Worker]     method webkitResolveLocalFileSystemURL
+[Worker]     setter name
 [Worker]     setter onconnect
 PASS successfullyParsed is true
 
