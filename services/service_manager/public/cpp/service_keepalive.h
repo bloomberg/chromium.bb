@@ -20,6 +20,9 @@ namespace service_manager {
 class ServiceBinding;
 class ServiceContext;
 
+// TODO: Rename ServiceContextRef everywhere.
+using ServiceKeepaliveRef = ServiceContextRef;
+
 // Helper class which vends ServiceContextRefs from its own
 // ServiceContextRefFactory. Whenever the ref count goes to zero, this starts an
 // idle timer (configured at construction time). If the timer runs out before
@@ -64,7 +67,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceKeepalive {
                    base::Optional<base::TimeDelta> idle_timeout);
   ~ServiceKeepalive();
 
-  std::unique_ptr<ServiceContextRef> CreateRef();
+  std::unique_ptr<ServiceKeepaliveRef> CreateRef();
   bool HasNoRefs();
 
   void AddObserver(Observer* observer);

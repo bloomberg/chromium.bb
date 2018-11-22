@@ -14,7 +14,7 @@
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace media {
 
@@ -27,7 +27,7 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   InterfaceFactoryImpl(
       service_manager::mojom::InterfaceProviderPtr interfaces,
       MediaLog* media_log,
-      std::unique_ptr<service_manager::ServiceContextRef> connection_ref,
+      std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref,
       MojoMediaClient* mojo_media_client);
   ~InterfaceFactoryImpl() final;
 
@@ -88,7 +88,7 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
 
   mojo::StrongBindingSet<mojom::Decryptor> decryptor_bindings_;
 
-  std::unique_ptr<service_manager::ServiceContextRef> connection_ref_;
+  std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref_;
   MojoMediaClient* mojo_media_client_;
   base::OnceClosure destroy_cb_;
 

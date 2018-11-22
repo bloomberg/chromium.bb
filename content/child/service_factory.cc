@@ -15,6 +15,8 @@ namespace content {
 ServiceFactory::ServiceFactory() {}
 ServiceFactory::~ServiceFactory() {}
 
+void ServiceFactory::RegisterServices(ServiceMap* service) {}
+
 bool ServiceFactory::HandleServiceRequest(
     const std::string& name,
     service_manager::mojom::ServiceRequest request) {

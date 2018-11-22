@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/interfaces/cdm_service.mojom.h"
@@ -16,7 +17,9 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "media/cdm/cdm_host_file.h"
@@ -50,14 +53,13 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   };
 
-  explicit CdmService(std::unique_ptr<Client> client);
+  CdmService(std::unique_ptr<Client> client,
+             service_manager::mojom::ServiceRequest request);
   ~CdmService() final;
 
   // By default CdmService release is delayed. Overrides the delay with |delay|.
   // If |delay| is 0, delayed service release will be disabled.
-  void SetServiceReleaseDelayForTesting(base::TimeDelta delay) {
-    service_release_delay_ = delay;
-  }
+  void SetServiceReleaseDelayForTesting(base::TimeDelta delay);
 
   size_t BoundCdmFactorySizeForTesting() const {
     return cdm_factory_bindings_.size();
@@ -73,7 +75,7 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
-  bool OnServiceManagerConnectionLost() final;
+  void OnDisconnected() final;
 
   void Create(mojom::CdmServiceRequest request);
 
@@ -88,13 +90,15 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
       mojom::CdmFactoryRequest request,
       service_manager::mojom::InterfaceProviderPtr host_interfaces) final;
 
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
+  service_manager::ServiceBinding service_binding_;
+  std::unique_ptr<service_manager::ServiceKeepalive> keepalive_;
   std::unique_ptr<Client> client_;
   std::unique_ptr<CdmFactory> cdm_factory_;
   DeferredDestroyStrongBindingSet<mojom::CdmFactory> cdm_factory_bindings_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::CdmService> bindings_;
-  base::TimeDelta service_release_delay_;
+
+  DISALLOW_COPY_AND_ASSIGN(CdmService);
 };
 
 }  // namespace media

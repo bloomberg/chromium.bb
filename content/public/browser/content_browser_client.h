@@ -979,6 +979,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // to use for the service's host process when launched.
   virtual void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) {}
 
+  // Handles a Service request for the service named |service_name|. If the
+  // client knows how to run |service_name|, it should bind |request|
+  // accordingly.
+  virtual void HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request);
+
   // Allows the embedder to terminate the browser if a specific service instance
   // quits or crashes.
   virtual bool ShouldTerminateOnServiceQuit(

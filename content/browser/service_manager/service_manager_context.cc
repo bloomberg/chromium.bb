@@ -594,6 +594,9 @@ ServiceManagerContext::ServiceManagerContext(
   packaged_services_connection_ =
       ServiceManagerConnection::Create(std::move(packaged_services_request),
                                        service_manager_thread_task_runner_);
+  packaged_services_connection_->SetDefaultServiceRequestHandler(
+      base::BindRepeating(&ServiceManagerContext::OnUnhandledServiceRequest,
+                          weak_ptr_factory_.GetWeakPtr()));
 
   service_manager::mojom::ServicePtr root_browser_service;
   ServiceManagerConnection::SetForProcess(
@@ -874,6 +877,13 @@ ServiceManagerContext::GetAudioServiceRunner() {
   static base::NoDestructor<scoped_refptr<base::DeferredSequencedTaskRunner>>
       instance(new base::DeferredSequencedTaskRunner);
   return (*instance).get();
+}
+
+void ServiceManagerContext::OnUnhandledServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  GetContentClient()->browser()->HandleServiceRequest(service_name,
+                                                      std::move(request));
 }
 
 }  // namespace content

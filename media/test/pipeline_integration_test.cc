@@ -42,8 +42,9 @@
 #include "media/mojo/clients/mojo_renderer.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
-#include "services/service_manager/public/cpp/connect.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "media/mojo/services/media_pipeline_integration_unittests_catalog_source.h"  // nogncheck
+#include "services/service_manager/public/cpp/test/test_service.h"  // nogncheck
+#include "services/service_manager/public/cpp/test/test_service_manager.h"  // nogncheck
 
 // TODO(dalecurtis): The mojo renderer is in another process, so we have no way
 // currently to get hashes for video and audio samples.  This also means that
@@ -411,15 +412,15 @@ class FailingVideoDecoder : public VideoDecoder {
 //               preferably by eliminating multiple inheritance here which is
 //               banned by Google C++ style.
 #if defined(MOJO_RENDERER) && defined(ENABLE_MOJO_PIPELINE_INTEGRATION_TEST)
-class PipelineIntegrationTest : public service_manager::test::ServiceTest,
+class PipelineIntegrationTest : public testing::Testing,
                                 public PipelineIntegrationTestBase {
  public:
   PipelineIntegrationTest()
-      : service_manager::test::ServiceTest(
-            "media_pipeline_integration_shelltests") {}
+      : test_service_manager_(test::CreatePipelineIntegrationTestCatalog()),
+        test_service_(test_service_manager_.RegisterTestInstance(
+            "media_pipeline_integration_shelltests")) {}
 
   void SetUp() override {
-    ServiceTest::SetUp();
     InitializeMediaLibrary();
   }
 
@@ -427,7 +428,8 @@ class PipelineIntegrationTest : public service_manager::test::ServiceTest,
   std::unique_ptr<Renderer> CreateRenderer(
       CreateVideoDecodersCB prepend_video_decoders_cb,
       CreateAudioDecodersCB prepend_audio_decoders_cb) override {
-    connector()->BindInterface("media", &media_interface_factory_);
+    test_service_.connector()->BindInterface("media",
+                                             &media_interface_factory_);
 
     mojom::RendererPtr mojo_renderer;
     media_interface_factory_->CreateRenderer(std::string(),
@@ -438,6 +440,8 @@ class PipelineIntegrationTest : public service_manager::test::ServiceTest,
   }
 
  private:
+  service_manager::TestServiceManager test_service_manager_;
+  service_manager::TestService test_service_;
   mojom::InterfaceFactoryPtr media_interface_factory_;
 };
 #else

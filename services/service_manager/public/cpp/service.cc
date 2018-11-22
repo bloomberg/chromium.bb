@@ -13,6 +13,13 @@ Service::Service() = default;
 
 Service::~Service() = default;
 
+// static
+void Service::RunUntilTermination(std::unique_ptr<Service> service) {
+  auto* raw_service = service.get();
+  raw_service->set_termination_closure(base::BindOnce(
+      [](std::unique_ptr<Service> service) {}, std::move(service)));
+}
+
 void Service::OnStart() {}
 
 void Service::OnBindInterface(const BindSourceInfo& source,

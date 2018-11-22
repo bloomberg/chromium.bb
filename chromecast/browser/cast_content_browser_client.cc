@@ -128,11 +128,12 @@ namespace shell {
 
 namespace {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-static std::unique_ptr<service_manager::Service> CreateMediaService(
-    CastContentBrowserClient* browser_client) {
+static void CreateMediaService(CastContentBrowserClient* browser_client,
+                               service_manager::mojom::ServiceRequest request) {
+  std::unique_ptr<::media::MediaService> service;
 #if defined(OS_ANDROID)
-  return std::make_unique<::media::MediaService>(
-      std::make_unique<::media::AndroidMojoMediaClient>());
+  service = std::make_unique<::media::MediaService>(
+      std::make_unique<::media::AndroidMojoMediaClient>(), std::move(request));
 #else
   auto mojo_media_client = std::make_unique<media::CastMojoMediaClient>(
       browser_client->GetCmaBackendFactory(),
@@ -141,8 +142,11 @@ static std::unique_ptr<service_manager::Service> CreateMediaService(
       browser_client->GetVideoModeSwitcher(),
       browser_client->GetVideoResolutionPolicy(),
       browser_client->media_resource_tracker());
-  return std::make_unique<::media::MediaService>(std::move(mojo_media_client));
+  service = std::make_unique<::media::MediaService>(
+      std::move(mojo_media_client), std::move(request));
 #endif  // defined(OS_ANDROID)
+
+  service_manager::Service::RunUntilTermination(std::move(service));
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
@@ -737,14 +741,15 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
       std::move(application_session_id)));
 }
 
-void CastContentBrowserClient::RegisterInProcessServices(
-    StaticServiceMap* services,
-    content::ServiceManagerConnection* connection) {
+void CastContentBrowserClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  service_manager::EmbeddedServiceInfo info;
-  info.factory = base::Bind(&CreateMediaService, base::Unretained(this));
-  info.task_runner = GetMediaTaskRunner();
-  services->insert(std::make_pair(::media::mojom::kMediaServiceName, info));
+  if (service_name == ::media::mojom::kMediaServiceName) {
+    GetMediaTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&CreateMediaService, this, std::move(request)));
+  }
 #endif
 }
 

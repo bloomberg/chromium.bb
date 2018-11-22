@@ -12,8 +12,11 @@
 
 namespace media {
 
-MediaService::MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client)
-    : mojo_media_client_(std::move(mojo_media_client)) {
+MediaService::MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client,
+                           service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)),
+      keepalive_(&service_binding_, base::TimeDelta{}),
+      mojo_media_client_(std::move(mojo_media_client)) {
   DCHECK(mojo_media_client_);
   registry_.AddInterface<mojom::MediaService>(
       base::Bind(&MediaService::Create, base::Unretained(this)));
@@ -24,9 +27,7 @@ MediaService::~MediaService() = default;
 void MediaService::OnStart() {
   DVLOG(1) << __func__;
 
-  ref_factory_.reset(new service_manager::ServiceContextRefFactory(
-      context()->CreateQuitClosure()));
-  mojo_media_client_->Initialize(context()->connector());
+  mojo_media_client_->Initialize(service_binding_.GetConnector());
 }
 
 void MediaService::OnBindInterface(
@@ -38,10 +39,10 @@ void MediaService::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-bool MediaService::OnServiceManagerConnectionLost() {
+void MediaService::OnDisconnected() {
   interface_factory_bindings_.CloseAllBindings();
   mojo_media_client_.reset();
-  return true;
+  Terminate();
 }
 
 void MediaService::Create(mojom::MediaServiceRequest request) {
@@ -57,7 +58,7 @@ void MediaService::CreateInterfaceFactory(
 
   interface_factory_bindings_.AddBinding(
       std::make_unique<InterfaceFactoryImpl>(
-          std::move(host_interfaces), &media_log_, ref_factory_->CreateRef(),
+          std::move(host_interfaces), &media_log_, keepalive_.CreateRef(),
           mojo_media_client_.get()),
       std::move(request));
 }

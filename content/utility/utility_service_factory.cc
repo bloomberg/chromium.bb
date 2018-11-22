@@ -101,10 +101,6 @@ class ContentCdmServiceClient final : public media::CdmService::Client {
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 };
 
-std::unique_ptr<service_manager::Service> CreateCdmService() {
-  return std::unique_ptr<service_manager::Service>(
-      new ::media::CdmService(std::make_unique<ContentCdmServiceClient>()));
-}
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 std::unique_ptr<service_manager::Service> CreateVizService() {
@@ -138,12 +134,6 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   audio_info.factory = base::BindRepeating(
       &UtilityServiceFactory::CreateAudioService, base::Unretained(this));
   services->insert(std::make_pair(audio::mojom::kServiceName, audio_info));
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  service_manager::EmbeddedServiceInfo info;
-  info.factory = base::Bind(&CreateCdmService);
-  services->emplace(media::mojom::kCdmServiceName, info);
-#endif
 
 #if defined(OS_CHROMEOS)
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -184,6 +174,12 @@ bool UtilityServiceFactory::HandleServiceRequest(
     running_service_ =
         std::make_unique<video_capture::ServiceImpl>(std::move(request));
   }
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  else if (name == media::mojom::kCdmServiceName) {
+    running_service_ = std::make_unique<media::CdmService>(
+        std::make_unique<ContentCdmServiceClient>(), std::move(request));
+  }
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   if (!running_service_) {
     running_service_ = GetContentClient()->utility()->HandleServiceRequest(

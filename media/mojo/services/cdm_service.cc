@@ -11,7 +11,6 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
 #if defined(OS_MACOSX)
 #include <vector>
@@ -22,53 +21,10 @@ namespace media {
 
 namespace {
 
-using service_manager::ServiceContextRef;
+using service_manager::ServiceKeepaliveRef;
 
-constexpr base::TimeDelta kServiceContextRefReleaseDelay =
+constexpr base::TimeDelta kKeepaliveIdleTimeout =
     base::TimeDelta::FromSeconds(5);
-
-void DeleteServiceContextRef(ServiceContextRef* ref) {
-  delete ref;
-}
-
-// Starting a new process and loading the library CDM could be expensive. This
-// class helps delay the release of ServiceContextRef by
-// |kServiceContextRefReleaseDelay|, which will ultimately delay CdmService
-// destruction by the same delay as well. This helps reduce the chance of
-// destroying the CdmService and immediately creates it (in another process) in
-// cases like navigation, which could cause long service connection delays.
-class DelayedReleaseServiceContextRef : public ServiceContextRef {
- public:
-  DelayedReleaseServiceContextRef(std::unique_ptr<ServiceContextRef> ref,
-                                  base::TimeDelta delay)
-      : ref_(std::move(ref)),
-        delay_(delay),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-    DCHECK_GT(delay_, base::TimeDelta());
-  }
-
-  ~DelayedReleaseServiceContextRef() override {
-    service_manager::ServiceContextRef* ref_ptr = ref_.release();
-    if (!task_runner_->PostNonNestableDelayedTask(
-            FROM_HERE, base::BindOnce(&DeleteServiceContextRef, ref_ptr),
-            delay_)) {
-      DeleteServiceContextRef(ref_ptr);
-    }
-  }
-
-  // ServiceContextRef implementation.
-  std::unique_ptr<ServiceContextRef> Clone() override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
- private:
-  std::unique_ptr<ServiceContextRef> ref_;
-  base::TimeDelta delay_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayedReleaseServiceContextRef);
-};
 
 // Implementation of mojom::CdmFactory that creates and hosts MojoCdmServices
 // which then host CDMs created by the media::CdmFactory provided by the
@@ -77,12 +33,12 @@ class DelayedReleaseServiceContextRef : public ServiceContextRef {
 // Lifetime Note:
 // 1. CdmFactoryImpl instances are owned by a DeferredDestroyStrongBindingSet
 //    directly, which is owned by CdmService.
-// 2. Note that CdmFactoryImpl also holds a ServiceContextRef to the CdmService.
+// 2. Note that CdmFactoryImpl also holds a ServiceKeepaliveRef tied to the
+//    CdmService.
 // 3. CdmFactoryImpl is destroyed in any of the following two cases:
 //   - CdmService is destroyed. Because of (2) this should not happen except for
-//     during browser shutdown, when the ServiceContext could be destroyed
-//     directly which will then destroy CdmService, ignoring any outstanding
-//     ServiceContextRefs.
+//     during browser shutdown, when the Cdservice could be destroyed directly,
+//     ignoring any outstanding ServiceKeepaliveRefs.
 //   - mojo::CdmFactory connection error happens, AND CdmFactoryImpl doesn't own
 //     any CDMs (|cdm_bindings_| is empty). This is to prevent destroying the
 //     CDMs too early (e.g. during page navigation) which could cause errors
@@ -92,10 +48,10 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
  public:
   CdmFactoryImpl(CdmService::Client* client,
                  service_manager::mojom::InterfaceProviderPtr interfaces,
-                 std::unique_ptr<ServiceContextRef> service_context_ref)
+                 std::unique_ptr<ServiceKeepaliveRef> keepalive_ref)
       : client_(client),
         interfaces_(std::move(interfaces)),
-        service_context_ref_(std::move(service_context_ref)) {
+        keepalive_ref_(std::move(keepalive_ref)) {
     DVLOG(1) << __func__;
 
     // base::Unretained is safe because |cdm_bindings_| is owned by |this|. If
@@ -151,7 +107,7 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
   CdmService::Client* client_;
   service_manager::mojom::InterfaceProviderPtr interfaces_;
   mojo::StrongBindingSet<mojom::ContentDecryptionModule> cdm_bindings_;
-  std::unique_ptr<ServiceContextRef> service_context_ref_;
+  std::unique_ptr<ServiceKeepaliveRef> keepalive_ref_;
   std::unique_ptr<media::CdmFactory> cdm_factory_;
   base::OnceClosure destroy_cb_;
 
@@ -160,9 +116,13 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
 
 }  // namespace
 
-CdmService::CdmService(std::unique_ptr<Client> client)
-    : client_(std::move(client)),
-      service_release_delay_(kServiceContextRefReleaseDelay) {
+CdmService::CdmService(std::unique_ptr<Client> client,
+                       service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)),
+      keepalive_(std::make_unique<service_manager::ServiceKeepalive>(
+          &service_binding_,
+          kKeepaliveIdleTimeout)),
+      client_(std::move(client)) {
   DVLOG(1) << __func__;
   DCHECK(client_);
   registry_.AddInterface<mojom::CdmService>(
@@ -173,11 +133,14 @@ CdmService::~CdmService() {
   DVLOG(1) << __func__;
 }
 
+void CdmService::SetServiceReleaseDelayForTesting(base::TimeDelta delay) {
+  DCHECK(keepalive_->HasNoRefs());
+  keepalive_ = std::make_unique<service_manager::ServiceKeepalive>(
+      &service_binding_, delay);
+}
+
 void CdmService::OnStart() {
   DVLOG(1) << __func__;
-
-  ref_factory_.reset(new service_manager::ServiceContextRefFactory(
-      context()->CreateQuitClosure()));
 }
 
 void CdmService::OnBindInterface(
@@ -189,10 +152,10 @@ void CdmService::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-bool CdmService::OnServiceManagerConnectionLost() {
+void CdmService::OnDisconnected() {
   cdm_factory_bindings_.CloseAllBindings();
   client_.reset();
-  return true;
+  Terminate();
 }
 
 void CdmService::Create(mojom::CdmServiceRequest request) {
@@ -265,16 +228,9 @@ void CdmService::CreateCdmFactory(
   if (!client_)
     return;
 
-  std::unique_ptr<ServiceContextRef> service_context_ref =
-      service_release_delay_ > base::TimeDelta()
-          ? std::make_unique<DelayedReleaseServiceContextRef>(
-                ref_factory_->CreateRef(), service_release_delay_)
-          : ref_factory_->CreateRef();
-
   cdm_factory_bindings_.AddBinding(
-      std::make_unique<CdmFactoryImpl>(client_.get(),
-                                       std::move(host_interfaces),
-                                       std::move(service_context_ref)),
+      std::make_unique<CdmFactoryImpl>(
+          client_.get(), std::move(host_interfaces), keepalive_->CreateRef()),
       std::move(request));
 }
 

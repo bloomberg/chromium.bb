@@ -40,7 +40,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
+#include "mojo/core/embedder/default_mach_broker.h"
 #endif
 
 namespace service_manager {
@@ -198,7 +198,8 @@ base::ProcessId ServiceProcessLauncher::ProcessState::LaunchInBackground(
 #endif
   {
 #if defined(OS_MACOSX)
-    MachBroker* mach_broker = MachBroker::GetInstance();
+    mojo::core::DefaultMachBroker* mach_broker =
+        mojo::core::DefaultMachBroker::Get();
     base::AutoLock locker(mach_broker->GetLock());
 #endif
     child_process_ = base::LaunchProcess(*child_command_line, options);

@@ -41,6 +41,9 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   void RegisterInProcessServices(StaticServiceMap* services,
                                  ServiceManagerConnection* connection) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
+  void HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request) override;
   bool ShouldTerminateOnServiceQuit(
       const service_manager::Identity& id) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(

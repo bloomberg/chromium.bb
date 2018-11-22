@@ -44,7 +44,7 @@ namespace media {
 InterfaceFactoryImpl::InterfaceFactoryImpl(
     service_manager::mojom::InterfaceProviderPtr interfaces,
     MediaLog* media_log,
-    std::unique_ptr<service_manager::ServiceContextRef> connection_ref,
+    std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref,
     MojoMediaClient* mojo_media_client)
     :
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
@@ -53,7 +53,7 @@ InterfaceFactoryImpl::InterfaceFactoryImpl(
 #if BUILDFLAG(ENABLE_MOJO_CDM)
       interfaces_(std::move(interfaces)),
 #endif
-      connection_ref_(std::move(connection_ref)),
+      keepalive_ref_(std::move(keepalive_ref)),
       mojo_media_client_(mojo_media_client) {
   DVLOG(1) << __func__;
   DCHECK(mojo_media_client_);

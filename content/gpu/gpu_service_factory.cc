@@ -14,6 +14,7 @@
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 #include "base/bind.h"
+#include "media/mojo/interfaces/constants.mojom.h"      // nogncheck
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "content/public/gpu/content_gpu_client.h"
@@ -40,39 +41,57 @@ GpuServiceFactory::GpuServiceFactory(
 
 GpuServiceFactory::~GpuServiceFactory() {}
 
-void GpuServiceFactory::RegisterServices(ServiceMap* services) {
+bool GpuServiceFactory::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  media::CdmProxyFactoryCB cdm_proxy_factory_cb;
+  if (service_name == media::mojom::kMediaServiceName) {
+    media::CdmProxyFactoryCB cdm_proxy_factory_cb;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  cdm_proxy_factory_cb =
-      base::BindRepeating(&ContentGpuClient::CreateCdmProxy,
-                          base::Unretained(GetContentClient()->gpu()));
+    cdm_proxy_factory_cb =
+        base::BindRepeating(&ContentGpuClient::CreateCdmProxy,
+                            base::Unretained(GetContentClient()->gpu()));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-  service_manager::EmbeddedServiceInfo info;
-  info.factory = base::BindRepeating(
-      &media::CreateGpuMediaService, gpu_preferences_, gpu_workarounds_,
-      gpu_feature_info_, task_runner_, media_gpu_channel_manager_,
-      android_overlay_factory_cb_, std::move(cdm_proxy_factory_cb));
-  // This service will host audio/video decoders, and if these decoding
-  // operations are blocked, user may hear audio glitch or see video freezing,
-  // hence "user blocking".
+    // This service will host audio/video decoders, and if these decoding
+    // operations are blocked, user may hear audio glitch or see video freezing,
+    // hence "user blocking".
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner;
 #if defined(OS_WIN)
-  // Run everything on the gpu main thread, since that's where the CDM runs.
-  info.task_runner = task_runner_;
+    // Run everything on the gpu main thread, since that's where the CDM runs.
+    task_runner = task_runner_;
 #else
-  // TODO(crbug.com/786169): Check whether this needs to be single threaded.
-  info.task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-      {base::TaskPriority::USER_BLOCKING});
+    // TODO(crbug.com/786169): Check whether this needs to be single threaded.
+    task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+        {base::TaskPriority::USER_BLOCKING});
 #endif  // defined(OS_WIN)
-  services->insert(std::make_pair("media", info));
+
+    using FactoryCallback =
+        base::OnceCallback<std::unique_ptr<service_manager::Service>()>;
+    FactoryCallback factory = base::BindOnce(
+        &media::CreateGpuMediaService, std::move(request), gpu_preferences_,
+        gpu_workarounds_, gpu_feature_info_, task_runner_,
+        media_gpu_channel_manager_, android_overlay_factory_cb_,
+        std::move(cdm_proxy_factory_cb));
+    task_runner->PostTask(FROM_HERE,
+                          base::BindOnce(
+                              [](FactoryCallback factory) {
+                                service_manager::Service::RunUntilTermination(
+                                    std::move(factory).Run());
+                              },
+                              std::move(factory)));
+    return true;
+  }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 
-  service_manager::EmbeddedServiceInfo shape_detection_info;
-  shape_detection_info.factory =
-      base::Bind(&shape_detection::ShapeDetectionService::Create);
-  services->insert(std::make_pair(shape_detection::mojom::kServiceName,
-                                  shape_detection_info));
+  if (service_name == shape_detection::mojom::kServiceName) {
+    service_manager::Service::RunUntilTermination(
+        std::make_unique<shape_detection::ShapeDetectionService>(
+            std::move(request)));
+    return true;
+  }
+
+  return true;
 }
 
 }  // namespace content

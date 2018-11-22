@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
 class DeferredSequencedTaskRunner;
@@ -53,10 +54,15 @@ class CONTENT_EXPORT ServiceManagerContext {
  private:
   class InProcessServiceManagerContext;
 
+  void OnUnhandledServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request);
+
   scoped_refptr<base::SingleThreadTaskRunner>
       service_manager_thread_task_runner_;
   scoped_refptr<InProcessServiceManagerContext> in_process_context_;
   std::unique_ptr<ServiceManagerConnection> packaged_services_connection_;
+  base::WeakPtrFactory<ServiceManagerContext> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerContext);
 };

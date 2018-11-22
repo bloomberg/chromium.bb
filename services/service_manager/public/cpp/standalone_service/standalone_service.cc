@@ -31,7 +31,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
+#include "mojo/core/embedder/default_mach_broker.h"
 #endif
 
 namespace service_manager {
@@ -41,7 +41,7 @@ void RunStandaloneService(const StandaloneServiceCallback& callback) {
 
 #if defined(OS_MACOSX)
   // Send our task port to the parent.
-  MachBroker::SendTaskPortToParent();
+  mojo::core::DefaultMachBroker::SendTaskPortToParent();
 #endif
 
   const base::CommandLine& command_line =

@@ -32,13 +32,6 @@ source_set("standalone_service") {
       "//sandbox/linux:seccomp_bpf",
     ]
   }
-
-  if (is_mac) {
-    sources += [
-      "mach_broker.cc",
-      "mach_broker.h",
-    ]
-  }
 }
 
 # Service executable targets should link against this to get a boilerplate entry

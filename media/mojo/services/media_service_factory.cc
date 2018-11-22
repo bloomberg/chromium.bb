@@ -17,12 +17,13 @@
 
 namespace media {
 
-std::unique_ptr<service_manager::Service> CreateMediaService() {
+std::unique_ptr<service_manager::Service> CreateMediaService(
+    service_manager::mojom::ServiceRequest request) {
 #if defined(ENABLE_TEST_MOJO_MEDIA_CLIENT)
-  return CreateMediaServiceForTesting();
+  return CreateMediaServiceForTesting(std::move(request));
 #elif defined(OS_ANDROID)
-  return std::unique_ptr<service_manager::Service>(
-      new MediaService(std::make_unique<AndroidMojoMediaClient>()));
+  return std::make_unique<MediaService>(
+      std::make_unique<AndroidMojoMediaClient>(), std::move(request));
 #else
   NOTREACHED() << "No MediaService implementation available.";
   return nullptr;
@@ -30,6 +31,7 @@ std::unique_ptr<service_manager::Service> CreateMediaService() {
 }
 
 std::unique_ptr<service_manager::Service> CreateGpuMediaService(
+    service_manager::mojom::ServiceRequest request,
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     const gpu::GpuFeatureInfo& gpu_feature_info,
@@ -37,16 +39,18 @@ std::unique_ptr<service_manager::Service> CreateGpuMediaService(
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     AndroidOverlayMojoFactoryCB android_overlay_factory_cb,
     CdmProxyFactoryCB cdm_proxy_factory_cb) {
-  return std::unique_ptr<service_manager::Service>(
-      new MediaService(std::make_unique<GpuMojoMediaClient>(
+  return std::make_unique<MediaService>(
+      std::make_unique<GpuMojoMediaClient>(
           gpu_preferences, gpu_workarounds, gpu_feature_info, task_runner,
           media_gpu_channel_manager, std::move(android_overlay_factory_cb),
-          std::move(cdm_proxy_factory_cb))));
+          std::move(cdm_proxy_factory_cb)),
+      std::move(request));
 }
 
-std::unique_ptr<service_manager::Service> CreateMediaServiceForTesting() {
-  return std::unique_ptr<service_manager::Service>(
-      new MediaService(std::make_unique<TestMojoMediaClient>()));
+std::unique_ptr<service_manager::Service> CreateMediaServiceForTesting(
+    service_manager::mojom::ServiceRequest request) {
+  return std::make_unique<MediaService>(std::make_unique<TestMojoMediaClient>(),
+                                        std::move(request));
 }
 
 }  // namespace media

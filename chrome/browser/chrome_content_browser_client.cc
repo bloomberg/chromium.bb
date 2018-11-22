@@ -3716,14 +3716,6 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
     services->insert(
         std::make_pair(prefs::mojom::kLocalStateServiceName, info));
   }
-  service_manager::EmbeddedServiceInfo info;
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind(&media::CreateMediaService);
-    services->insert(std::make_pair(media::mojom::kMediaServiceName, info));
-  }
-#endif
 
 #if defined(OS_ANDROID)
   {
@@ -3873,6 +3865,17 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     (*services)[mirroring::mojom::kServiceName] =
         base::BindRepeating(&base::ASCIIToUTF16, "Mirroring Service");
+  }
+#endif
+}
+
+void ChromeContentBrowserClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+  if (service_name == media::mojom::kMediaServiceName) {
+    service_manager::Service::RunUntilTermination(
+        media::CreateMediaService(std::move(request)));
   }
 #endif
 }
