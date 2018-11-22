@@ -61,8 +61,8 @@ function FileBrowserBackgroundImpl() {
   /**
    * @type {!importer.DispositionChecker.CheckerFunction}
    */
-  this.dispositionChecker_ = importer.DispositionChecker.createChecker(
-      this.historyLoader, this.tracker);
+  this.dispositionChecker_ =
+      importer.DispositionChecker.createChecker(this.historyLoader);
 
   /**
    * Provides support for scaning media devices as part of Cloud Import.
