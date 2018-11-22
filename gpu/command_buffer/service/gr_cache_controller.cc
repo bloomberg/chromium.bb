@@ -34,6 +34,7 @@ void GrCacheController::ScheduleGrContextCleanup() {
   // a long while even if it is under budget. Below we set a call back to
   // purge all possible GrContext resources if the context itself is not being
   // used.
+  context_state_->context->MakeCurrent(context_state_->surface.get());
   context_state_->gr_context->performDeferredCleanup(
       std::chrono::seconds(kOldResourceCleanupDelaySeconds));
 
