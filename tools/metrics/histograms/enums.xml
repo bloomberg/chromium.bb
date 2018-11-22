@@ -3296,6 +3296,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="AutoScreenBrightnessUserAdjustment">
+  <obsolete>
+    Deprecated as of 11/2018. The corresponding histogram has been deprecated.
+  </obsolete>
   <int value="0" label="NoPriorModelAdjustment"/>
   <int value="1" label="WithPriorModelAdjustment"/>
 </enum>

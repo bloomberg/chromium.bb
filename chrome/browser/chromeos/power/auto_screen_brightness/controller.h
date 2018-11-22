@@ -18,6 +18,7 @@ namespace auto_screen_brightness {
 class Adapter;
 class AlsReaderImpl;
 class BrightnessMonitorImpl;
+class MetricsReporter;
 class ModellerImpl;
 
 // This controller class sets up and destroys all components needed for the auto
@@ -28,6 +29,7 @@ class Controller {
   ~Controller();
 
  private:
+  std::unique_ptr<MetricsReporter> metrics_reporter_;
   std::unique_ptr<AlsReaderImpl> als_reader_;
   std::unique_ptr<BrightnessMonitorImpl> brightness_monitor_;
   std::unique_ptr<ModellerImpl> modeller_;

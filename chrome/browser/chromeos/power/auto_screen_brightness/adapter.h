@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/metrics_reporter.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/modeller.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/monotone_cubic_spline.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
@@ -45,14 +46,6 @@ class Adapter : public AlsReader::Observer,
     // Use the personal curve if available, else use the global curve.
     kLatest = 2,
     kMaxValue = kLatest
-  };
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class UserAdjustment {
-    kNoPriorModelAdjustment = 0,
-    kWithPriorModelAdjustment = 1,
-    kMaxValue = kWithPriorModelAdjustment
   };
 
   // TODO(jiameng): we currently use past 2 seconds of ambient values to
@@ -112,10 +105,11 @@ class Adapter : public AlsReader::Observer,
     kMaxValue = kDisabled
   };
 
-  Adapter(const Profile* profile,
+  Adapter(Profile* profile,
           AlsReader* als_reader,
           BrightnessMonitor* brightness_monitor,
           Modeller* modeller,
+          MetricsReporter* metrics_reporter,
           chromeos::PowerManagerClient* power_manager_client);
   ~Adapter() override;
 
@@ -183,12 +177,15 @@ class Adapter : public AlsReader::Observer,
   base::Optional<double> GetBrightnessBasedOnAmbientLogLux(
       double ambient_lux) const;
 
-  const Profile* const profile_;
+  Profile* const profile_;
 
   ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_;
   ScopedObserver<BrightnessMonitor, BrightnessMonitor::Observer>
       brightness_monitor_observer_;
   ScopedObserver<Modeller, Modeller::Observer> modeller_observer_;
+
+  // Used to report daily metrics to UMA. This may be null in unit tests.
+  MetricsReporter* metrics_reporter_;
 
   chromeos::PowerManagerClient* const power_manager_client_;
 

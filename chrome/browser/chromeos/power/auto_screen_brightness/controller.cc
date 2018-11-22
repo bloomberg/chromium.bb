@@ -6,10 +6,12 @@
 
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/adapter.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader_impl.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor_impl.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/gaussian_trainer.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/metrics_reporter.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/modeller_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -20,12 +22,16 @@ namespace power {
 namespace auto_screen_brightness {
 
 Controller::Controller() {
-  als_reader_ = std::make_unique<AlsReaderImpl>();
-  als_reader_->Init();
-
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
   DCHECK(power_manager_client);
+
+  metrics_reporter_ = std::make_unique<MetricsReporter>(
+      power_manager_client, g_browser_process->local_state());
+
+  als_reader_ = std::make_unique<AlsReaderImpl>();
+  als_reader_->Init();
+
   brightness_monitor_ =
       std::make_unique<BrightnessMonitorImpl>(power_manager_client);
 
@@ -33,15 +39,15 @@ Controller::Controller() {
       ui::UserActivityDetector::Get();
   DCHECK(user_activity_detector);
 
-  const Profile* const profile = ProfileManager::GetPrimaryUserProfile();
+  Profile* const profile = ProfileManager::GetPrimaryUserProfile();
   DCHECK(profile);
   modeller_ = std::make_unique<ModellerImpl>(
       profile, als_reader_.get(), brightness_monitor_.get(),
       user_activity_detector, std::make_unique<GaussianTrainer>());
 
-  adapter_ = std::make_unique<Adapter>(profile, als_reader_.get(),
-                                       brightness_monitor_.get(),
-                                       modeller_.get(), power_manager_client);
+  adapter_ = std::make_unique<Adapter>(
+      profile, als_reader_.get(), brightness_monitor_.get(), modeller_.get(),
+      metrics_reporter_.get(), power_manager_client);
 }
 
 Controller::~Controller() = default;

@@ -1916,6 +1916,20 @@ const char kCameraMediaConsolidated[] = "camera_media_consolidated";
 
 // Whether the user is allowed to disconnect and configure VPN connections.
 const char kVpnConfigAllowed[] = "vpn_config_allowed";
+
+// Integer pref used by the metrics::DailyEvent owned by
+// chromeos::power::auto_screen_brightness::MetricsReporter.
+const char kAutoScreenBrightnessMetricsDailySample[] =
+    "auto_screen_brightness.metrics.daily_sample";
+
+// Integer prefs used to back event counts reported by
+// chromeos::power::auto_screen_brightness::MetricsReporter.
+const char kAutoScreenBrightnessMetricsNoAlsUserAdjustmentCount[] =
+    "auto_screen_brightness.metrics.no_als_user_adjustment_count";
+const char kAutoScreenBrightnessMetricsSupportedAlsUserAdjustmentCount[] =
+    "auto_screen_brightness.metrics.supported_als_user_adjustment_count";
+const char kAutoScreenBrightnessMetricsUnsupportedAlsUserAdjustmentCount[] =
+    "auto_screen_brightness.metrics.unsupported_als_user_adjustment_count";
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.

@@ -257,6 +257,7 @@
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/metrics_reporter.h"
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -509,6 +510,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::MultiProfileUserController::RegisterPrefs(registry);
   chromeos::NetworkThrottlingObserver::RegisterPrefs(registry);
   chromeos::PowerMetricsReporter::RegisterLocalStatePrefs(registry);
+  chromeos::power::auto_screen_brightness::MetricsReporter::
+      RegisterLocalStatePrefs(registry);
   chromeos::Preferences::RegisterPrefs(registry);
   chromeos::ResetScreen::RegisterPrefs(registry);
   chromeos::ResourceReporter::RegisterPrefs(registry);
