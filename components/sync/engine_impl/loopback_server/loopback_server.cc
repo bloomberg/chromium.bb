@@ -234,7 +234,7 @@ void LoopbackServer::SaveEntity(std::unique_ptr<LoopbackServerEntity> entity) {
 }
 
 void LoopbackServer::HandleCommand(const string& request,
-                                   int* response_code,
+                                   int* http_response_code,
                                    std::string* response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -265,13 +265,13 @@ void LoopbackServer::HandleCommand(const string& request,
         success = true;
         break;
       default:
-        *response_code = net::ERR_NOT_IMPLEMENTED;
+        *http_response_code = net::ERR_NOT_IMPLEMENTED;
         *response = string();
         return;
     }
 
     if (!success) {
-      *response_code = net::ERR_FAILED;
+      *http_response_code = net::ERR_FAILED;
       *response = string();
       UMA_HISTOGRAM_ENUMERATION(
           "Sync.Local.RequestTypeOnError", message.message_contents(),
@@ -284,7 +284,7 @@ void LoopbackServer::HandleCommand(const string& request,
 
   response_proto.set_store_birthday(GetStoreBirthday());
 
-  *response_code = net::HTTP_OK;
+  *http_response_code = net::HTTP_OK;
   *response = response_proto.SerializeAsString();
 
   // TODO(pastarmovj): This should be done asynchronously.

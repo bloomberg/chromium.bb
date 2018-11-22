@@ -55,8 +55,8 @@ bool SyncBridgedConnection::Init(const char* path,
                        payload.data());
 
   // Issue the POST, blocking until it finishes.
-  int error_code = 0;
-  int response_code = 0;
+  int net_error_code = 0;
+  int http_response_code = 0;
   if (!cancelation_signal_->TryRegisterHandler(this)) {
     // Return early because cancelation signal was signaled.
     response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
@@ -66,22 +66,22 @@ bool SyncBridgedConnection::Init(const char* path,
       &CancelationSignal::UnregisterHandler,
       base::Unretained(cancelation_signal_), base::Unretained(this)));
 
-  if (!http->MakeSynchronousPost(&error_code, &response_code)) {
-    DCHECK_NE(error_code, net::OK);
-    DVLOG(1) << "Http POST failed, error returns: " << error_code;
+  if (!http->MakeSynchronousPost(&net_error_code, &http_response_code)) {
+    DCHECK_NE(net_error_code, net::OK);
+    DVLOG(1) << "Http POST failed, error returns: " << net_error_code;
     response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
     return false;
   }
 
   // We got a server response, copy over response codes and content.
-  response->response_code = response_code;
+  response->http_response_code = http_response_code;
   response->content_length =
       static_cast<int64_t>(http->GetResponseContentLength());
   response->payload_length =
       static_cast<int64_t>(http->GetResponseContentLength());
-  if (response->response_code < 400)
+  if (response->http_response_code < 400)
     response->server_status = HttpResponse::SERVER_CONNECTION_OK;
-  else if (response->response_code == net::HTTP_UNAUTHORIZED)
+  else if (response->http_response_code == net::HTTP_UNAUTHORIZED)
     response->server_status = HttpResponse::SYNC_AUTH_ERROR;
   else
     response->server_status = HttpResponse::SYNC_SERVER_ERROR;

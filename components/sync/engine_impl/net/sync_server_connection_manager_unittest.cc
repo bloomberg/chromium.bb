@@ -34,9 +34,10 @@ class BlockingHttpPost : public HttpPostProviderInterface {
   void SetPostPayload(const char* content_type,
                       int content_length,
                       const char* content) override {}
-  bool MakeSynchronousPost(int* error_code, int* response_code) override {
+  bool MakeSynchronousPost(int* net_error_code,
+                           int* http_response_code) override {
     wait_for_abort_.TimedWait(TestTimeouts::action_max_timeout());
-    *error_code = net::ERR_ABORTED;
+    *net_error_code = net::ERR_ABORTED;
     return false;
   }
   int GetResponseContentLength() const override { return 0; }
@@ -126,7 +127,8 @@ namespace {
 
 class FailingHttpPost : public HttpPostProviderInterface {
  public:
-  explicit FailingHttpPost(int error_code) : error_code_(error_code) {}
+  explicit FailingHttpPost(int net_error_code)
+      : net_error_code_(net_error_code) {}
   ~FailingHttpPost() override {}
 
   void SetExtraRequestHeaders(const char* headers) override {}
@@ -134,8 +136,9 @@ class FailingHttpPost : public HttpPostProviderInterface {
   void SetPostPayload(const char* content_type,
                       int content_length,
                       const char* content) override {}
-  bool MakeSynchronousPost(int* error_code, int* response_code) override {
-    *error_code = error_code_;
+  bool MakeSynchronousPost(int* net_error_code,
+                           int* http_response_code) override {
+    *net_error_code = net_error_code_;
     return false;
   }
   int GetResponseContentLength() const override { return 0; }
@@ -147,25 +150,26 @@ class FailingHttpPost : public HttpPostProviderInterface {
   void Abort() override {}
 
  private:
-  int error_code_;
+  int net_error_code_;
 };
 
 class FailingHttpPostFactory : public HttpPostProviderFactory {
  public:
-  explicit FailingHttpPostFactory(int error_code) : error_code_(error_code) {}
+  explicit FailingHttpPostFactory(int net_error_code)
+      : net_error_code_(net_error_code) {}
   ~FailingHttpPostFactory() override {}
   void Init(const std::string& user_agent,
             const BindToTrackerCallback& bind_to_tracker_callback) override {}
 
   HttpPostProviderInterface* Create() override {
-    return new FailingHttpPost(error_code_);
+    return new FailingHttpPost(net_error_code_);
   }
   void Destroy(HttpPostProviderInterface* http) override {
     delete static_cast<FailingHttpPost*>(http);
   }
 
  private:
-  int error_code_;
+  int net_error_code_;
 };
 
 }  // namespace

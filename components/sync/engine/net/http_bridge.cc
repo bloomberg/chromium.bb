@@ -131,7 +131,7 @@ HttpBridge::URLFetchState::URLFetchState()
       request_completed(false),
       request_succeeded(false),
       http_response_code(-1),
-      error_code(-1) {}
+      net_error_code(-1) {}
 HttpBridge::URLFetchState::~URLFetchState() {}
 
 HttpBridge::HttpBridge(
@@ -199,7 +199,8 @@ void HttpBridge::SetPostPayload(const char* content_type,
   }
 }
 
-bool HttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
+bool HttpBridge::MakeSynchronousPost(int* net_error_code,
+                                     int* http_response_code) {
 #if DCHECK_IS_ON()
   DCHECK(thread_checker_.CalledOnValidThread());
   {
@@ -224,8 +225,8 @@ bool HttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
 
   base::AutoLock lock(fetch_state_lock_);
   DCHECK(fetch_state_.request_completed || fetch_state_.aborted);
-  *error_code = fetch_state_.error_code;
-  *response_code = fetch_state_.http_response_code;
+  *net_error_code = fetch_state_.net_error_code;
+  *http_response_code = fetch_state_.http_response_code;
   return fetch_state_.request_succeeded;
 }
 
@@ -374,7 +375,7 @@ void HttpBridge::Abort() {
     NOTREACHED() << "Could not post task to delete URLLoader";
   }
 
-  fetch_state_.error_code = net::ERR_ABORTED;
+  fetch_state_.net_error_code = net::ERR_ABORTED;
   http_post_completed_.Signal();
 }
 
@@ -399,20 +400,20 @@ void HttpBridge::OnURLLoadComplete(std::unique_ptr<std::string> response_body) {
   if (fetch_state_.aborted)
     return;
 
-  int response_code = -1;
+  int http_response_code = -1;
   if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers) {
-    response_code = url_loader->ResponseInfo()->headers->response_code();
+    http_response_code = url_loader->ResponseInfo()->headers->response_code();
     fetch_state_.response_headers = url_loader->ResponseInfo()->headers;
   }
 
   OnURLLoadCompleteInternal(
-      response_code, url_loader->NetError(), url_loader->GetContentSize(),
+      http_response_code, url_loader->NetError(), url_loader->GetContentSize(),
       url_loader->GetFinalURL(), std::move(response_body));
 }
 
 void HttpBridge::OnURLLoadCompleteInternal(
-    int response_code,
-    int net_error,
+    int http_response_code,
+    int net_error_code,
     int64_t compressed_content_length,
     const GURL& final_url,
     std::unique_ptr<std::string> response_body) {
@@ -428,9 +429,10 @@ void HttpBridge::OnURLLoadCompleteInternal(
 
   fetch_state_.end_time = base::Time::Now();
   fetch_state_.request_completed = true;
-  fetch_state_.request_succeeded = net_error == net::OK && response_code != -1;
-  fetch_state_.http_response_code = response_code;
-  fetch_state_.error_code = net_error;
+  fetch_state_.request_succeeded =
+      net_error_code == net::OK && http_response_code != -1;
+  fetch_state_.http_response_code = http_response_code;
+  fetch_state_.net_error_code = net_error_code;
 
   if (fetch_state_.request_succeeded)
     LogTimeout(false);
@@ -438,7 +440,7 @@ void HttpBridge::OnURLLoadCompleteInternal(
       "Sync.URLFetchResponse",
       fetch_state_.request_succeeded
           ? fetch_state_.http_response_code
-          : net::URLRequestStatus::FromError(fetch_state_.error_code)
+          : net::URLRequestStatus::FromError(fetch_state_.net_error_code)
                 .ToNetError());
   UMA_HISTOGRAM_LONG_TIMES("Sync.URLFetchTime",
                            fetch_state_.end_time - fetch_state_.start_time);
@@ -487,7 +489,7 @@ void HttpBridge::OnURLLoadTimedOut() {
   fetch_state_.request_completed = true;
   fetch_state_.request_succeeded = false;
   fetch_state_.http_response_code = -1;
-  fetch_state_.error_code = net::ERR_TIMED_OUT;
+  fetch_state_.net_error_code = net::ERR_TIMED_OUT;
 
   // This method is called by the timer, not the url fetcher implementation,
   // so it's safe to delete the fetcher here.

@@ -239,10 +239,10 @@ void FakeServer::HandleWalletRequest(
 
 int FakeServer::SendToLoopbackServer(const std::string& request,
                                      std::string* response) {
-  int response_code;
+  int http_response_code;
   base::ThreadRestrictions::SetIOAllowed(true);
-  loopback_server_->HandleCommand(request, &response_code, response);
-  return response_code;
+  loopback_server_->HandleCommand(request, &http_response_code, response);
+  return http_response_code;
 }
 
 void FakeServer::InjectClientCommand(std::string* response) {

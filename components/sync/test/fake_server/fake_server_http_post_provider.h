@@ -34,7 +34,8 @@ class FakeServerHttpPostProvider
   void SetPostPayload(const char* content_type,
                       int content_length,
                       const char* content) override;
-  bool MakeSynchronousPost(int* error_code, int* response_code) override;
+  bool MakeSynchronousPost(int* net_error_code,
+                           int* http_response_code) override;
   void Abort() override;
   int GetResponseContentLength() const override;
   const char* GetResponseContent() const override;
