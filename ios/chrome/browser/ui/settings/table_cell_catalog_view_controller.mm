@@ -91,6 +91,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   textItem.textColor = [UIColor blackColor];
   [model addItem:textItem toSectionWithIdentifier:SectionIdentifierText];
 
+  textItem = [[TableViewTextItem alloc] initWithType:ItemTypeText];
+  textItem.text = @"1234";
+  textItem.masked = YES;
+  [model addItem:textItem toSectionWithIdentifier:SectionIdentifierText];
+
   TableViewAccessoryItem* textAccessoryItem =
       [[TableViewAccessoryItem alloc] initWithType:ItemTypeTextAccessoryImage];
   textAccessoryItem.title = @"Text Accessory with History Image";

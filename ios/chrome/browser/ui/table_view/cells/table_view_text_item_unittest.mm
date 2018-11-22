@@ -39,6 +39,27 @@ TEST_F(TableViewTextItemTest, TextLabels) {
   EXPECT_NSEQ(text, textCell.textLabel.text);
 }
 
+// Tests that item's text is shown as masked string in UILabel after a call to
+// |configureCell:| with item.masked set to YES.
+TEST_F(TableViewTextItemTest, MaskedTextLabels) {
+  NSString* text = @"Cell text";
+
+  TableViewTextItem* item = [[TableViewTextItem alloc] initWithType:0];
+  item.text = text;
+  item.masked = YES;
+
+  id cell = [[[item cellClass] alloc] init];
+  ASSERT_TRUE([cell isMemberOfClass:[TableViewTextCell class]]);
+
+  TableViewTextCell* textCell =
+      base::mac::ObjCCastStrict<TableViewTextCell>(cell);
+  EXPECT_FALSE(textCell.textLabel.text);
+
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  [item configureCell:textCell withStyler:styler];
+  EXPECT_NSEQ(kMaskedPassword, textCell.textLabel.text);
+}
+
 TEST_F(TableViewTextItemTest, ConfigureCellWithStyler) {
   TableViewTextItem* item = [[TableViewTextItem alloc] initWithType:0];
   TableViewTextCell* cell = [[[item cellClass] alloc] init];
