@@ -320,7 +320,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
     needs_section_recalc_ = true;
     SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kTableChanged);
+        layout_invalidation_reason::kTableChanged);
 
     // Grid structure affects cell adjacence relationships which affect
     // conflict resolution of collapsed borders.

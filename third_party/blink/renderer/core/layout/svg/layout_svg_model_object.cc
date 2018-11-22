@@ -131,7 +131,7 @@ void LayoutSVGModelObject::StyleDidChange(StyleDifference diff,
   // before and thus will not flag paint in ClientLayoutChanged.
   if (diff.FilterChanged()) {
     SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kStyleChange);
+        layout_invalidation_reason::kStyleChange);
   }
 
   if (diff.NeedsFullLayout()) {

@@ -556,7 +556,7 @@ void LayoutListItem::OrdinalValueChanged() {
   if (!marker_)
     return;
   marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kListValueChange);
+      layout_invalidation_reason::kListValueChange);
 }
 
 }  // namespace blink

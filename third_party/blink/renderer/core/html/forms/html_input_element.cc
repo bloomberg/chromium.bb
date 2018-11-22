@@ -788,10 +788,11 @@ void HTMLInputElement::ParseAttribute(
       size = kDefaultSize;
     if (size_ != size) {
       size_ = size;
-      if (GetLayoutObject())
+      if (GetLayoutObject()) {
         GetLayoutObject()
             ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-                LayoutInvalidationReason::kAttributeChanged);
+                layout_invalidation_reason::kAttributeChanged);
+      }
     }
   } else if (name == kAltAttr) {
     input_type_view_->AltAttributeChanged();

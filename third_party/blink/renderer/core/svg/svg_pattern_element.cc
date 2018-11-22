@@ -105,7 +105,7 @@ void SVGPatternElement::BuildPendingResource() {
   if (resource_)
     resource_->AddClient(EnsureSVGResourceClient());
 
-  InvalidatePattern(LayoutInvalidationReason::kSvgResourceInvalidated);
+  InvalidatePattern(layout_invalidation_reason::kSvgResourceInvalidated);
   if (auto* layout_object = GetLayoutObject())
     SVGResourcesCache::ResourceReferenceChanged(*layout_object);
 }
@@ -151,7 +151,7 @@ void SVGPatternElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     if (is_length_attr)
       UpdateRelativeLengthsInformation();
 
-    InvalidatePattern(LayoutInvalidationReason::kAttributeChanged);
+    InvalidatePattern(layout_invalidation_reason::kAttributeChanged);
     return;
   }
 
@@ -184,7 +184,7 @@ void SVGPatternElement::ChildrenChanged(const ChildrenChange& change) {
   if (change.by_parser)
     return;
 
-  InvalidatePattern(LayoutInvalidationReason::kChildChanged);
+  InvalidatePattern(layout_invalidation_reason::kChildChanged);
 }
 
 void SVGPatternElement::InvalidatePattern(

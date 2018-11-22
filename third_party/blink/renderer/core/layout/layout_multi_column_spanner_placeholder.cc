@@ -52,7 +52,7 @@ void LayoutMultiColumnSpannerPlaceholder::
       // its containing block chain, we need to mark it here, or we risk that
       // the object isn't laid out.
       object_in_flow_thread->Parent()->SetNeedsLayout(
-          LayoutInvalidationReason::kColumnsChanged);
+          layout_invalidation_reason::kColumnsChanged);
     }
     return;
   }
@@ -73,7 +73,7 @@ void LayoutMultiColumnSpannerPlaceholder::InsertedIntoTree() {
   // The object may previously have been laid out as a non-spanner, but since
   // it's a spanner now, it needs to be relaid out.
   layout_object_in_flow_thread_->SetNeedsLayoutAndPrefWidthsRecalc(
-      LayoutInvalidationReason::kColumnsChanged);
+      layout_invalidation_reason::kColumnsChanged);
 }
 
 void LayoutMultiColumnSpannerPlaceholder::WillBeRemovedFromTree() {
@@ -84,7 +84,7 @@ void LayoutMultiColumnSpannerPlaceholder::WillBeRemovedFromTree() {
     // might live on. Since it's not a spanner anymore, it needs to be relaid
     // out.
     ex_spanner->SetNeedsLayoutAndPrefWidthsRecalc(
-        LayoutInvalidationReason::kColumnsChanged);
+        layout_invalidation_reason::kColumnsChanged);
   }
   LayoutBox::WillBeRemovedFromTree();
 }

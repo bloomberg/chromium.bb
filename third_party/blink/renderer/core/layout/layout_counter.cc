@@ -521,7 +521,7 @@ void LayoutCounter::Invalidate() {
   if (DocumentBeingDestroyed())
     return;
   SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kCountersChanged);
+      layout_invalidation_reason::kCountersChanged);
 }
 
 static void DestroyCounterNodeWithoutMapRemoval(const AtomicString& identifier,

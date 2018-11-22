@@ -142,9 +142,10 @@ void SVGMaskElement::ChildrenChanged(const ChildrenChange& change) {
   if (change.by_parser)
     return;
 
-  if (LayoutObject* object = GetLayoutObject())
+  if (LayoutObject* object = GetLayoutObject()) {
     object->SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kChildChanged);
+        layout_invalidation_reason::kChildChanged);
+  }
 }
 
 LayoutObject* SVGMaskElement::CreateLayoutObject(const ComputedStyle&) {

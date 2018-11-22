@@ -1261,7 +1261,7 @@ void LocalFrameView::MarkViewportConstrainedObjectsForLayout(
         layout_object->SetNeedsPositionedMovementLayout();
       } else {
         layout_object->SetNeedsLayoutAndFullPaintInvalidation(
-            LayoutInvalidationReason::kSizeChanged);
+            layout_invalidation_reason::kSizeChanged);
       }
     }
     if (height_changed) {
@@ -1270,7 +1270,7 @@ void LocalFrameView::MarkViewportConstrainedObjectsForLayout(
         layout_object->SetNeedsPositionedMovementLayout();
       } else {
         layout_object->SetNeedsLayoutAndFullPaintInvalidation(
-            LayoutInvalidationReason::kSizeChanged);
+            layout_invalidation_reason::kSizeChanged);
       }
     }
   }
@@ -1795,7 +1795,7 @@ void LocalFrameView::SetNeedsLayout() {
   // the check fails.
   if (!CheckLayoutInvalidationIsAllowed())
     return;
-  layout_view->SetNeedsLayout(LayoutInvalidationReason::kUnknown);
+  layout_view->SetNeedsLayout(layout_invalidation_reason::kUnknown);
 }
 
 bool LocalFrameView::HasOpaqueBackground() const {
@@ -3093,7 +3093,7 @@ void LocalFrameView::ForceLayoutForPagination(
     layout_view->SetLogicalWidth(floored_page_logical_width);
     layout_view->SetPageLogicalHeight(floored_page_logical_height);
     layout_view->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        LayoutInvalidationReason::kPrintingChanged);
+        layout_invalidation_reason::kPrintingChanged);
     UpdateLayout();
 
     // If we don't fit in the given page width, we'll lay out again. If we don't
@@ -3127,7 +3127,7 @@ void LocalFrameView::ForceLayoutForPagination(
       layout_view->SetLogicalWidth(floored_page_logical_width);
       layout_view->SetPageLogicalHeight(floored_page_logical_height);
       layout_view->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          LayoutInvalidationReason::kPrintingChanged);
+          layout_invalidation_reason::kPrintingChanged);
       UpdateLayout();
 
       const LayoutRect& updated_document_rect =
@@ -4206,7 +4206,7 @@ void LocalFrameView::BeginLifecycleUpdates() {
   bool layout_view_is_empty = layout_view && !layout_view->FirstChild();
   if (layout_view_is_empty && !DidFirstLayout() && !NeedsLayout()) {
     // Make sure a display:none iframe gets an initial layout pass.
-    layout_view->SetNeedsLayout(LayoutInvalidationReason::kAddedToLayout,
+    layout_view->SetNeedsLayout(layout_invalidation_reason::kAddedToLayout,
                                 kMarkOnlyThis);
   }
 

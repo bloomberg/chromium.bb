@@ -267,7 +267,7 @@ void HTMLPlugInElement::AttachLayoutTree(AttachContext& context) {
 void HTMLPlugInElement::IntrinsicSizingInfoChanged() {
   if (auto* layout_object = GetLayoutObject()) {
     layout_object->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        LayoutInvalidationReason::kUnknown);
+        layout_invalidation_reason::kUnknown);
   }
 }
 

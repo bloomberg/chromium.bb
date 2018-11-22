@@ -62,9 +62,10 @@ LayoutObject* LayoutFieldset::LayoutSpecialExcludedChild(bool relayout_children,
   if (legend) {
     LayoutRect old_legend_frame_rect = legend->FrameRect();
 
-    if (relayout_children)
+    if (relayout_children) {
       legend->SetNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::kFieldsetChanged);
+          layout_invalidation_reason::kFieldsetChanged);
+    }
     legend->LayoutIfNeeded();
 
     LayoutUnit logical_left;

@@ -233,6 +233,7 @@ _CONFIG = [
             'event_handling_util::.+',
             'event_util::.+',
             'file_error::.+',
+            'layout_invalidation_reason::.+',
             'media_constraints_impl::.+',
             'media_element_parser_helpers::.+',
             'network_utils::.+',

@@ -81,7 +81,7 @@ void SVGGradientElement::BuildPendingResource() {
   if (auto* gradient = ToSVGGradientElementOrNull(target))
     AddReferenceTo(gradient);
 
-  InvalidateGradient(LayoutInvalidationReason::kSvgResourceInvalidated);
+  InvalidateGradient(layout_invalidation_reason::kSvgResourceInvalidated);
 }
 
 void SVGGradientElement::ClearResourceReferences() {
@@ -113,7 +113,7 @@ void SVGGradientElement::SvgAttributeChanged(const QualifiedName& attr_name) {
       attr_name == svg_names::kGradientTransformAttr ||
       attr_name == svg_names::kSpreadMethodAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-    InvalidateGradient(LayoutInvalidationReason::kAttributeChanged);
+    InvalidateGradient(layout_invalidation_reason::kAttributeChanged);
     return;
   }
 
@@ -146,7 +146,7 @@ void SVGGradientElement::ChildrenChanged(const ChildrenChange& change) {
   if (change.by_parser)
     return;
 
-  InvalidateGradient(LayoutInvalidationReason::kChildChanged);
+  InvalidateGradient(layout_invalidation_reason::kChildChanged);
 }
 
 void SVGGradientElement::InvalidateGradient(
@@ -159,7 +159,7 @@ void SVGGradientElement::InvalidateDependentGradients() {
   NotifyIncomingReferences([](SVGElement& element) {
     if (auto* gradient = ToSVGGradientElementOrNull(element)) {
       gradient->InvalidateGradient(
-          LayoutInvalidationReason::kSvgResourceInvalidated);
+          layout_invalidation_reason::kSvgResourceInvalidated);
     }
   });
 }

@@ -116,7 +116,7 @@ void LayoutReplaced::IntrinsicSizeChanged() {
       static_cast<int>(kDefaultHeight * StyleRef().EffectiveZoom());
   intrinsic_size_ = LayoutSize(scaled_width, scaled_height);
   SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kSizeChanged);
+      layout_invalidation_reason::kSizeChanged);
 }
 
 void LayoutReplaced::Paint(const PaintInfo& paint_info) const {

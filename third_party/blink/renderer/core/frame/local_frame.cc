@@ -707,7 +707,7 @@ void LocalFrame::SetPrinting(bool printing,
   } else {
     if (LayoutView* layout_view = View()->GetLayoutView()) {
       layout_view->SetPreferredLogicalWidthsDirty();
-      layout_view->SetNeedsLayout(LayoutInvalidationReason::kPrintingChanged);
+      layout_view->SetNeedsLayout(layout_invalidation_reason::kPrintingChanged);
       layout_view->SetShouldDoFullPaintInvalidationForViewAndAllDescendants();
     }
     View()->UpdateLayout();

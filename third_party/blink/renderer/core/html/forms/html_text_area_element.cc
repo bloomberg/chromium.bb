@@ -160,7 +160,7 @@ void HTMLTextAreaElement::ParseAttribute(
       if (GetLayoutObject()) {
         GetLayoutObject()
             ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-                LayoutInvalidationReason::kAttributeChanged);
+                layout_invalidation_reason::kAttributeChanged);
       }
     }
   } else if (name == kColsAttr) {
@@ -173,7 +173,7 @@ void HTMLTextAreaElement::ParseAttribute(
       if (LayoutObject* layout_object = GetLayoutObject()) {
         layout_object
             ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-                LayoutInvalidationReason::kAttributeChanged);
+                layout_invalidation_reason::kAttributeChanged);
       }
     }
   } else if (name == kWrapAttr) {
@@ -194,7 +194,7 @@ void HTMLTextAreaElement::ParseAttribute(
       if (LayoutObject* layout_object = GetLayoutObject()) {
         layout_object
             ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-                LayoutInvalidationReason::kAttributeChanged);
+                layout_invalidation_reason::kAttributeChanged);
       }
     }
   } else if (name == kAccesskeyAttr) {

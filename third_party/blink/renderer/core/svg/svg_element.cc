@@ -575,10 +575,10 @@ void SVGElement::InvalidateRelativeLengthClients(
     if (HasRelativeLengths() && layout_object->IsSVGResourceContainer()) {
       ToLayoutSVGResourceContainer(layout_object)
           ->InvalidateCacheAndMarkForLayout(
-              LayoutInvalidationReason::kSizeChanged, layout_scope);
+              layout_invalidation_reason::kSizeChanged, layout_scope);
     } else if (SelfHasRelativeLengths()) {
       layout_object->SetNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::kUnknown, kMarkContainerChain,
+          layout_invalidation_reason::kUnknown, kMarkContainerChain,
           layout_scope);
     }
   }

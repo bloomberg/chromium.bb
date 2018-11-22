@@ -169,12 +169,14 @@ void LayoutTableRow::AddChild(LayoutObject* child, LayoutObject* before_child) {
     LayoutTable* enclosing_table = Table();
     if (enclosing_table && enclosing_table->ShouldCollapseBorders()) {
       enclosing_table->InvalidateCollapsedBorders();
-      if (LayoutTableCell* previous_cell = cell->PreviousCell())
+      if (LayoutTableCell* previous_cell = cell->PreviousCell()) {
         previous_cell->SetNeedsLayoutAndPrefWidthsRecalc(
-            LayoutInvalidationReason::kTableChanged);
-      if (LayoutTableCell* next_cell = cell->NextCell())
+            layout_invalidation_reason::kTableChanged);
+      }
+      if (LayoutTableCell* next_cell = cell->NextCell()) {
         next_cell->SetNeedsLayoutAndPrefWidthsRecalc(
-            LayoutInvalidationReason::kTableChanged);
+            layout_invalidation_reason::kTableChanged);
+      }
     }
   }
 

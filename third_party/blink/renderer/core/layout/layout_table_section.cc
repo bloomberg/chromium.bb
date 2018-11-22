@@ -1702,7 +1702,7 @@ void LayoutTableSection::RecalcCells() {
   }
 
   grid_.ShrinkToFit();
-  SetNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::kUnknown);
+  SetNeedsLayoutAndFullPaintInvalidation(layout_invalidation_reason::kUnknown);
 }
 
 // FIXME: This function could be made O(1) in certain cases (like for the

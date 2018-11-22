@@ -343,9 +343,10 @@ void RangeInputType::ListAttributeTargetChanged() {
   if (auto* object = GetElement().GetLayoutObject())
     object->SetSubtreeShouldDoFullPaintInvalidation();
   Element* slider_track_element = SliderTrackElement();
-  if (slider_track_element->GetLayoutObject())
+  if (slider_track_element->GetLayoutObject()) {
     slider_track_element->GetLayoutObject()->SetNeedsLayout(
-        LayoutInvalidationReason::kAttributeChanged);
+        layout_invalidation_reason::kAttributeChanged);
+  }
 }
 
 static bool DecimalCompare(const Decimal& a, const Decimal& b) {

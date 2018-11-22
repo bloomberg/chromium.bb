@@ -180,7 +180,7 @@ void LayoutText::StyleDidChange(StyleDifference diff,
   // We do have to schedule layouts, though, since a style change can force us
   // to need to relayout.
   if (diff.NeedsFullLayout()) {
-    SetNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::kStyleChange);
+    SetNeedsLayoutAndPrefWidthsRecalc(layout_invalidation_reason::kStyleChange);
     known_to_have_no_overflow_and_no_fallback_fonts_ = false;
   }
 
@@ -1878,7 +1878,7 @@ void LayoutText::SetText(scoped_refptr<StringImpl> text,
       SetShouldDoFullPaintInvalidation();
     } else {
       SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          LayoutInvalidationReason::kTextChanged);
+          layout_invalidation_reason::kTextChanged);
     }
   }
   known_to_have_no_overflow_and_no_fallback_fonts_ = false;

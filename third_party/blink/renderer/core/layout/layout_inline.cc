@@ -322,7 +322,7 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
       if (old_style && always_create_line_boxes_new) {
         DirtyLineBoxes(false);
         SetNeedsLayoutAndFullPaintInvalidation(
-            LayoutInvalidationReason::kStyleChange);
+            layout_invalidation_reason::kStyleChange);
       }
       SetAlwaysCreateLineBoxes(always_create_line_boxes_new);
     }
@@ -560,7 +560,7 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
   LayoutBoxModelObject::AddChild(new_child, before_child);
 
   new_child->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kChildChanged);
+      layout_invalidation_reason::kChildChanged);
 }
 
 LayoutInline* LayoutInline::Clone() const {
@@ -713,7 +713,7 @@ void LayoutInline::SplitFlow(LayoutObject* before_child,
       pre->Children()->AppendChildNode(
           pre, block->Children()->RemoveChildNode(block, no));
       no->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          LayoutInvalidationReason::kAnonymousBlockChange);
+          layout_invalidation_reason::kAnonymousBlockChange);
     }
   }
 
@@ -731,11 +731,11 @@ void LayoutInline::SplitFlow(LayoutObject* before_child,
   // pre block into the post block, we want to make new line boxes instead of
   // leaving the old line boxes around.
   pre->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kAnonymousBlockChange);
+      layout_invalidation_reason::kAnonymousBlockChange);
   block->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kAnonymousBlockChange);
+      layout_invalidation_reason::kAnonymousBlockChange);
   post->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kAnonymousBlockChange);
+      layout_invalidation_reason::kAnonymousBlockChange);
 }
 
 void LayoutInline::AddChildToContinuation(LayoutObject* new_child,

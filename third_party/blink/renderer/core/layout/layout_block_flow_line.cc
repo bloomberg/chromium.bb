@@ -2091,7 +2091,7 @@ RootInlineBox* LayoutBlockFlow::DetermineStartPosition(
     // force us to issue paint invalidations.
     if (layout_state.HasInlineChild() && !SelfNeedsLayout()) {
       SetNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::kFloatDescendantChanged, kMarkOnlyThis);
+          layout_invalidation_reason::kFloatDescendantChanged, kMarkOnlyThis);
       SetShouldDoFullPaintInvalidation();
     }
 

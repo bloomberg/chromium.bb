@@ -222,7 +222,7 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
         // mark the current containing block chain for preferred widths
         // recalculation.
         SetNeedsLayoutAndPrefWidthsRecalc(
-            LayoutInvalidationReason::kStyleChange);
+            layout_invalidation_reason::kStyleChange);
       } else {
         MarkContainerChainForLayout();
       }
@@ -5646,7 +5646,7 @@ static void MarkBoxForRelayoutAfterSplit(LayoutBox* box) {
   }
 
   box->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kAnonymousBlockChange);
+      layout_invalidation_reason::kAnonymousBlockChange);
 }
 
 static void CollapseLoneAnonymousBlockChild(LayoutBox* parent,

@@ -267,7 +267,7 @@ Node::InsertionNotificationRequest HTMLFrameSetElement::InsertedInto(
 void HTMLFrameSetElement::WillRecalcStyle(StyleRecalcChange) {
   if (NeedsStyleRecalc() && GetLayoutObject()) {
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kStyleChange);
+        layout_invalidation_reason::kStyleChange);
     ClearNeedsStyleRecalc();
   }
 }

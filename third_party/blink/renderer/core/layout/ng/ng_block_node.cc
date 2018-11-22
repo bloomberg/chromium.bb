@@ -258,7 +258,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
 
     // Scrollbar changes are hard to detect. Make sure everyone gets the
     // message.
-    box_->SetNeedsLayout(LayoutInvalidationReason::kScrollbarChanged,
+    box_->SetNeedsLayout(layout_invalidation_reason::kScrollbarChanged,
                          kMarkOnlyThis);
 
     layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,

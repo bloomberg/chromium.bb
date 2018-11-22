@@ -671,7 +671,7 @@ void TextAutosizer::SetAllTextNeedsLayout(LayoutBlock* container) {
     } else {
       if (object->IsText()) {
         object->SetNeedsLayoutAndFullPaintInvalidation(
-            LayoutInvalidationReason::kTextAutosizing);
+            layout_invalidation_reason::kTextAutosizing);
       }
       object = object->NextInPreOrder(container);
     }
@@ -1158,7 +1158,7 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
         ToLayoutText(layout_object)->AutosizingMultiplerChanged();
       DCHECK(!layouter || layout_object->IsDescendantOf(&layouter->Root()));
       layout_object->SetNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::kTextAutosizing, kMarkContainerChain,
+          layout_invalidation_reason::kTextAutosizing, kMarkContainerChain,
           layouter);
       layout_object->MarkContainerNeedsCollectInlines();
       break;

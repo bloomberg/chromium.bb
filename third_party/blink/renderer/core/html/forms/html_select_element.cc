@@ -700,7 +700,7 @@ void HTMLSelectElement::SetOptionsChangedOnLayoutObject() {
       return;
     ToLayoutMenuList(layout_object)
         ->SetNeedsLayoutAndPrefWidthsRecalc(
-            LayoutInvalidationReason::kMenuOptionsChanged);
+            layout_invalidation_reason::kMenuOptionsChanged);
   }
 }
 

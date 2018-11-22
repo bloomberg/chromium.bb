@@ -207,7 +207,7 @@ std::unique_ptr<TracedValue> InvalidationList(
 
 // From a web developer's perspective: what caused this layout? This is strictly
 // for tracing. Blink logic must not depend on these.
-namespace LayoutInvalidationReason {
+namespace layout_invalidation_reason {
 extern const char kUnknown[];
 extern const char kSizeChanged[];
 extern const char kAncestorMoved[];
@@ -243,7 +243,7 @@ extern const char kTextControlChanged[];
 extern const char kSvgChanged[];
 extern const char kScrollbarChanged[];
 extern const char kDisplayLockCommitting[];
-}  // namespace LayoutInvalidationReason
+}  // namespace layout_invalidation_reason
 
 // LayoutInvalidationReasonForTracing is strictly for tracing. Blink logic must
 // not depend on this value.
