@@ -8,6 +8,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_adopted_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_attribute_changed_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_constructor.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_disabled_state_changed_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_form_associated_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_registry.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
@@ -81,13 +83,19 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
     V8VoidFunction* disconnected_callback,
     V8CustomElementAdoptedCallback* adopted_callback,
     V8CustomElementAttributeChangedCallback* attribute_changed_callback,
+    V8CustomElementFormAssociatedCallback* form_associated_callback,
+    V8CustomElementDisabledStateChangedCallback*
+        disabled_state_changed_callback,
     HashSet<AtomicString>&& observed_attributes,
-    const Vector<String>& disabled_features) {
+    const Vector<String>& disabled_features,
+    FormAssociationFlag form_association_flag) {
   ScriptCustomElementDefinition* definition =
       MakeGarbageCollected<ScriptCustomElementDefinition>(
           script_state, descriptor, constructor, connected_callback,
           disconnected_callback, adopted_callback, attribute_changed_callback,
-          std::move(observed_attributes), disabled_features);
+          form_associated_callback, disabled_state_changed_callback,
+          std::move(observed_attributes), disabled_features,
+          form_association_flag);
 
   // Tag the JavaScript constructor object with its ID.
   v8::Local<v8::Value> id_value =
@@ -109,17 +117,24 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     V8VoidFunction* disconnected_callback,
     V8CustomElementAdoptedCallback* adopted_callback,
     V8CustomElementAttributeChangedCallback* attribute_changed_callback,
+    V8CustomElementFormAssociatedCallback* form_associated_callback,
+    V8CustomElementDisabledStateChangedCallback*
+        disabled_state_changed_callback,
     HashSet<AtomicString>&& observed_attributes,
-    const Vector<String>& disabled_features)
+    const Vector<String>& disabled_features,
+    FormAssociationFlag form_association_flag)
     : CustomElementDefinition(descriptor,
                               std::move(observed_attributes),
-                              disabled_features),
+                              disabled_features,
+                              form_association_flag),
       script_state_(script_state),
       constructor_(constructor),
       connected_callback_(connected_callback),
       disconnected_callback_(disconnected_callback),
       adopted_callback_(adopted_callback),
-      attribute_changed_callback_(attribute_changed_callback) {}
+      attribute_changed_callback_(attribute_changed_callback),
+      form_associated_callback_(form_associated_callback),
+      disabled_state_changed_callback_(disabled_state_changed_callback) {}
 
 void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
@@ -128,6 +143,8 @@ void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(disconnected_callback_);
   visitor->Trace(adopted_callback_);
   visitor->Trace(attribute_changed_callback_);
+  visitor->Trace(form_associated_callback_);
+  visitor->Trace(disabled_state_changed_callback_);
   CustomElementDefinition::Trace(visitor);
 }
 
@@ -268,6 +285,14 @@ bool ScriptCustomElementDefinition::HasAdoptedCallback() const {
   return adopted_callback_;
 }
 
+bool ScriptCustomElementDefinition::HasFormAssociatedCallback() const {
+  return form_associated_callback_;
+}
+
+bool ScriptCustomElementDefinition::HasDisabledStateChangedCallback() const {
+  return disabled_state_changed_callback_;
+}
+
 void ScriptCustomElementDefinition::RunConnectedCallback(Element* element) {
   if (!connected_callback_)
     return;
@@ -301,6 +326,23 @@ void ScriptCustomElementDefinition::RunAttributeChangedCallback(
 
   attribute_changed_callback_->InvokeAndReportException(
       element, name.LocalName(), old_value, new_value, name.NamespaceURI());
+}
+
+void ScriptCustomElementDefinition::RunFormAssociatedCallback(
+    Element* element,
+    HTMLFormElement* nullable_form) {
+  if (!form_associated_callback_)
+    return;
+  form_associated_callback_->InvokeAndReportException(element, nullable_form);
+}
+
+void ScriptCustomElementDefinition::RunDisabledStateChangedCallback(
+    Element* element,
+    bool is_disabled) {
+  if (!disabled_state_changed_callback_)
+    return;
+  disabled_state_changed_callback_->InvokeAndReportException(element,
+                                                             is_disabled);
 }
 
 }  // namespace blink

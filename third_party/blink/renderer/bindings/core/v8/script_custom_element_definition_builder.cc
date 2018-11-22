@@ -12,6 +12,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_adopted_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_attribute_changed_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_constructor.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_disabled_state_changed_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_form_associated_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -147,6 +149,47 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
     }
   }
 
+  if (RuntimeEnabledFeatures::FormAssociatedCustomElementsEnabled()) {
+    auto* isolate = script_state_->GetIsolate();
+    v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
+    v8::TryCatch try_catch(isolate);
+    v8::Local<v8::Value> v8_form_associated;
+
+    if (!constructor_->CallbackObject()
+             ->Get(current_context, V8AtomicString(isolate, "formAssociated"))
+             .ToLocal(&v8_form_associated)) {
+      exception_state_.RethrowV8Exception(try_catch.Exception());
+      return false;
+    }
+
+    if (!v8_form_associated->IsUndefined()) {
+      is_form_associated_ = NativeValueTraits<IDLBoolean>::NativeValue(
+          isolate, v8_form_associated, exception_state_);
+      if (exception_state_.HadException())
+        return false;
+    }
+  }
+  if (is_form_associated_) {
+    v8_form_associated_callback_ = retriever.GetMethodOrUndefined(
+        "formAssociatedCallback", exception_state_);
+    if (exception_state_.HadException())
+      return false;
+    if (v8_form_associated_callback_->IsFunction()) {
+      form_associated_callback_ = V8CustomElementFormAssociatedCallback::Create(
+          v8_form_associated_callback_.As<v8::Function>());
+    }
+
+    v8_disabled_state_changed_callback_ = retriever.GetMethodOrUndefined(
+        "disabledStateChangedCallback", exception_state_);
+    if (exception_state_.HadException())
+      return false;
+    if (v8_disabled_state_changed_callback_->IsFunction()) {
+      disabled_state_changed_callback_ =
+          V8CustomElementDisabledStateChangedCallback::Create(
+              v8_disabled_state_changed_callback_.As<v8::Function>());
+    }
+  }
+
   return true;
 }
 
@@ -156,8 +199,11 @@ CustomElementDefinition* ScriptCustomElementDefinitionBuilder::Build(
   return ScriptCustomElementDefinition::Create(
       script_state_, registry_, descriptor, id, constructor_,
       connected_callback_, disconnected_callback_, adopted_callback_,
-      attribute_changed_callback_, std::move(observed_attributes_),
-      disabled_features_);
+      attribute_changed_callback_, form_associated_callback_,
+      disabled_state_changed_callback_, std::move(observed_attributes_),
+      disabled_features_,
+      is_form_associated_ ? FormAssociationFlag::kYes
+                          : FormAssociationFlag::kNo);
 }
 
 }  // namespace blink
