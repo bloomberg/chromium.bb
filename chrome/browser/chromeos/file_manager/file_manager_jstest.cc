@@ -54,8 +54,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImporterCommonTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportHistoryTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("background/js/import_history_unittest.html")));
+  RunGeneratedTest("/background/js/import_history_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, VolumeManagerTest) {
