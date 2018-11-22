@@ -1,21 +1,6 @@
 function clickOnElement(id, resolve) {
   const element = document.getElementById(id);
-  const rect = element.getBoundingClientRect();
-  const xCenter = rect.x + rect.width / 2;
-  const yCenter = rect.y + rect.height / 2;
-  const leftButton = 0;
-  var pointerActions = [{
-    source: "mouse",
-    actions: [
-      { name: "pointerDown", x: xCenter, y: yCenter, button: leftButton },
-      { name: "pointerUp" },
-    ]
-  }];
-  if (!chrome || !chrome.gpuBenchmarking) {
-    reject();
-  } else {
-    chrome.gpuBenchmarking.pointerActionSequence(pointerActions, resolve);
-  }
+  test_driver.click(element).then(resolve);
 }
 
 function mainThreadBusy(duration) {
@@ -54,9 +39,7 @@ function verifyClickEvent(entry, is_first=false) {
 
 function wait() {
   return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve();
-    }, 0);
+    step_timeout(resolve, 0);
   });
 }
 
