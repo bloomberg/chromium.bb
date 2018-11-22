@@ -428,9 +428,9 @@ function runAfterDoubleTapTimerFired(func) {
 }
 
 function hoverMuteButton(video, func) {
-  // 300ms slack because the test could be flaky on Mac Test build
+  // 150ms slack because the test could be flaky on Mac Test build
   // even with volume slider delay set to 0ms
-  const delayedCallback = function() { setTimeout(func, 300); };
+  const delayedCallback = function() { setTimeout(func, 150); };
   const muteBtn = muteButton(video);
   hoverOverControl(muteBtn, delayedCallback);
 }
