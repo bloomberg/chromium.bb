@@ -126,7 +126,7 @@ void NnPredictTest::RunNnPredictTest(const NN_CONFIG *const shape) {
             << shape_str << ")";
       } else {
         const float error = outputs_ref[node] - outputs_test[node];
-        const float relative_error = fabs(error / outputs_ref[node]);
+        const float relative_error = fabsf(error / outputs_ref[node]);
         ASSERT_LE(relative_error, epsilon)
             << "Excessive relative error between reference and test ("
             << shape_str << ")";
