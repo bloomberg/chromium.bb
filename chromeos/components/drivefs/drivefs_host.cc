@@ -67,16 +67,13 @@ class DriveFsHost::AccountTokenDelegate {
   explicit AccountTokenDelegate(DriveFsHost* host) : host_(host) {}
 
   void GetAccessToken(bool use_cached,
-                      const std::string& client_id,
-                      const std::string& app_id,
                       mojom::DriveFsDelegate::GetAccessTokenCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     if (get_access_token_callback_) {
       std::move(callback).Run(mojom::AccessTokenStatus::kTransientError, "");
       return;
     }
-    const std::string& token =
-        MaybeGetCachedToken(use_cached, client_id, app_id);
+    const std::string& token = MaybeGetCachedToken(use_cached);
     if (!token.empty()) {
       std::move(callback).Run(mojom::AccessTokenStatus::kSuccess, token);
       return;
@@ -84,6 +81,14 @@ class DriveFsHost::AccountTokenDelegate {
     get_access_token_callback_ = std::move(callback);
     GetIdentityManager().GetPrimaryAccountWhenAvailable(base::BindOnce(
         &AccountTokenDelegate::AccountReady, base::Unretained(this)));
+  }
+
+  base::Optional<std::string> TakeCachedAccessToken() {
+    const auto& token = MaybeGetCachedToken(true);
+    if (token.empty()) {
+      return base::nullopt;
+    }
+    return token;
   }
 
  private:
@@ -113,9 +118,7 @@ class DriveFsHost::AccountTokenDelegate {
         .Run(mojom::AccessTokenStatus::kSuccess, *access_token);
   }
 
-  const std::string& MaybeGetCachedToken(bool use_cached,
-                                         const std::string& client_id,
-                                         const std::string& app_id) {
+  const std::string& MaybeGetCachedToken(bool use_cached) {
     // Return value from cache at most once per mount.
     if (!use_cached || host_->clock_->Now() >= last_token_expiry_) {
       last_token_.clear();
@@ -176,8 +179,12 @@ class DriveFsHost::MountState
     binding_.Bind(mojo::MakeRequest(&delegate));
     binding_.set_connection_error_handler(
         base::BindOnce(&MountState::OnConnectionError, base::Unretained(this)));
+
+    auto access_token = host_->account_token_delegate_->TakeCachedAccessToken();
+    token_fetch_attempted_ = bool{access_token};
     bootstrap->Init(
-        {base::in_place, host_->delegate_->GetAccountId().GetUserEmail()},
+        {base::in_place, host_->delegate_->GetAccountId().GetUserEmail(),
+         std::move(access_token)},
         mojo::MakeRequest(&drivefs_), std::move(delegate));
     drivefs_.set_connection_error_handler(
         base::BindOnce(&MountState::OnConnectionError, base::Unretained(this)));
@@ -270,8 +277,8 @@ class DriveFsHost::MountState
                       const std::vector<std::string>& scopes,
                       GetAccessTokenCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    host_->account_token_delegate_->GetAccessToken(
-        !token_fetch_attempted_, client_id, app_id, std::move(callback));
+    host_->account_token_delegate_->GetAccessToken(!token_fetch_attempted_,
+                                                   std::move(callback));
     token_fetch_attempted_ = true;
   }
 
