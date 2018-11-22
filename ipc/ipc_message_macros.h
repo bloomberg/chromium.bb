@@ -42,9 +42,6 @@
 //     // Generate constructors.
 //     #include "ipc/struct_constructor_macros.h"
 //     #include "path/to/YYY_message_generator.h"
-//     // Generate destructors.
-//     #include "ipc/struct_destructor_macros.h"
-//     #include "path/to/YYY_message_generator.h"
 //     // Generate param traits write methods.
 //     #include "ipc/param_traits_write_macros.h"
 //     namespace IPC {
@@ -217,12 +214,7 @@
   IPC_STRUCT_TRAITS_BEGIN(struct_name) \
   IPC_STRUCT_TRAITS_END() \
   struct IPC_MESSAGE_EXPORT struct_name : parent { \
-    struct_name(); \
-    struct_name(const struct_name&) = default; \
-    struct_name(struct_name&&) = default; \
-    struct_name& operator=(const struct_name&) = default; \
-    struct_name& operator=(struct_name&&) = default; \
-    ~struct_name();
+    struct_name();
 // Optional variadic parameters specify the default value for this struct
 // member. They are passed through to the constructor for |type|.
 #define IPC_STRUCT_MEMBER(type, name, ...) type name;

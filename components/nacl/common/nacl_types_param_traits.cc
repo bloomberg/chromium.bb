@@ -11,11 +11,6 @@
 #undef COMPONENTS_NACL_COMMON_NACL_TYPES_PARAM_TRAITS_H_
 #include "components/nacl/common/nacl_types_param_traits.h"
 
-// Generate destructors.
-#include "ipc/struct_destructor_macros.h"
-#undef COMPONENTS_NACL_COMMON_NACL_TYPES_PARAM_TRAITS_H_
-#include "components/nacl/common/nacl_types_param_traits.h"
-
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {
