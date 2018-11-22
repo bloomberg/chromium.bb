@@ -444,6 +444,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openQuickViewCrostini"),
                       TestCase("openQuickViewUsb"),
                       TestCase("openQuickViewMtp"),
+                      TestCase("pressEnterOnInfoBoxToOpenClose"),
                       TestCase("closeQuickView")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
