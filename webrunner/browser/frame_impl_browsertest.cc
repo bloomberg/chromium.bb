@@ -781,7 +781,8 @@ class AsyncValueReceiver {
   DISALLOW_COPY_AND_ASSIGN(AsyncValueReceiver<T>);
 };
 
-IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
+// Flaky. https://crbug.com/907717
+IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_PostMessage) {
   chromium::web::FramePtr frame = CreateFrame();
 
   ASSERT_TRUE(embedded_test_server()->Start());
