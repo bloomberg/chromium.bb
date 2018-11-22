@@ -1077,8 +1077,16 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
         max_penalty = bucket.min;
       }
     }
-    // |kTimeoutMs| is flaky, so use something slightly less.
-    EXPECT_GE(max_penalty, kTimeoutMs - 50);
+    // Expecting |max_penalty| > |kTimeoutMs| is flaky in release builds because
+    // of histogram bucketing. Since HistogramTester::Bucket doesn't provide a
+    // bucket max, if |max_penalty| < |kTimeoutMs|, check that a sample exists
+    // in the |kTimeoutMs| bucket.
+    if (max_penalty <= kTimeoutMs) {
+      EXPECT_GE(histogram_tester.GetBucketCount(
+                    "Previews.ServerLitePage.ReportedNavigationRestartPenalty",
+                    kTimeoutMs),
+                1);
+    }  // else, test passes
   }
 
   {
