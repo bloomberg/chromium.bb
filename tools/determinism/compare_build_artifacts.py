@@ -190,12 +190,7 @@ def compare_files(first_filepath, second_filepath):
     with open(second_filepath, 'rb') as f:
       lhs_cwd = lhs['relative_cwd'].replace('\\', '\\\\')
       rhs_cwd = rhs['relative_cwd'].replace('\\', '\\\\')
-      json_contents = f.read()
-      print >>sys.stderr, 'raw contents', second_filepath, ':', json_contents
-      json_contents = json_contents.replace(rhs_cwd, lhs_cwd)
-      print >>sys.stderr, 'transformed', rhs_cwd, lhs_cwd, json_contents
-      rhs = json.loads(json_contents)
-      print >>sys.stderr, 'objects', lhs, rhs
+      rhs = json.loads(f.read().replace(rhs_cwd, lhs_cwd))
     diff = diff_dict(lhs, rhs)
     if diff:
       return '\n' + '\n'.join('  ' + line for line in diff.splitlines())
