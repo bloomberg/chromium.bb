@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
@@ -21,9 +22,6 @@
 #include "services/audio/stream_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
 class SystemMonitor;
@@ -34,6 +32,10 @@ class AudioDeviceListenerMac;
 class AudioManager;
 class AudioLogFactory;
 }  // namespace media
+
+namespace service_manager {
+class ServiceContextRefFactory;
+}
 
 namespace audio {
 class DebugRecording;
@@ -72,8 +74,7 @@ class Service : public service_manager::Service {
   Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
           base::TimeDelta quit_timeout,
           bool enable_remote_client_support,
-          std::unique_ptr<service_manager::BinderRegistry> registry,
-          service_manager::mojom::ServiceRequest request);
+          std::unique_ptr<service_manager::BinderRegistry> registry);
   ~Service() final;
 
   // service_manager::Service implementation.
@@ -81,7 +82,9 @@ class Service : public service_manager::Service {
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) final;
-  void OnDisconnected() final;
+  bool OnServiceManagerConnectionLost() final;
+
+  void SetQuitClosureForTesting(base::RepeatingClosure quit_closure);
 
  private:
   void BindSystemInfoRequest(mojom::SystemInfoRequest request);
@@ -89,6 +92,9 @@ class Service : public service_manager::Service {
   void BindStreamFactoryRequest(mojom::StreamFactoryRequest request);
   void BindDeviceNotifierRequest(mojom::DeviceNotifierRequest request);
   void BindLogFactoryManagerRequest(mojom::LogFactoryManagerRequest request);
+
+  void MaybeRequestQuitDelayed();
+  void MaybeRequestQuit();
 
   // Initializes a platform-specific device monitor for device-change
   // notifications. If the client uses the DeviceNotifier interface to get
@@ -101,10 +107,10 @@ class Service : public service_manager::Service {
   // AudioManager provided by AudioManagerAccessor.
   THREAD_CHECKER(thread_checker_);
 
-  service_manager::ServiceBinding service_binding_;
-  service_manager::ServiceKeepalive keepalive_;
-
+  // The members below should outlive |ref_factory_|.
   base::RepeatingClosure quit_closure_;
+  const base::TimeDelta quit_timeout_;
+  base::OneShotTimer quit_timer_;
 
   std::unique_ptr<AudioManagerAccessor> audio_manager_accessor_;
   const bool enable_remote_client_support_;
@@ -120,6 +126,8 @@ class Service : public service_manager::Service {
   std::unique_ptr<ServiceMetrics> metrics_;
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
+
+  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   // TODO(crbug.com/888478): Remove this after diagnosis.
   volatile uint32_t magic_bytes_;

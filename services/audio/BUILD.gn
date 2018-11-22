@@ -178,7 +178,6 @@ source_set("tests") {
   deps = [
     ":audio",
     ":lib",
-    ":tests_catalog_source",
     "//base/test:test_support",
     "//media:test_support",
     "//mojo/core/embedder",
@@ -186,6 +185,7 @@ source_set("tests") {
     "//services/audio/public/cpp:test_support",
     "//services/audio/public/mojom",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -211,12 +211,6 @@ service_manifest("unittest_manifest") {
 catalog("tests_catalog") {
   testonly = true
   embedded_services = [ ":unittest_manifest" ]
-}
-
-catalog_cpp_source("tests_catalog_source") {
-  testonly = true
-  catalog = ":tests_catalog"
-  generated_function_name = "audio::CreateUnittestCatalog"
 }
 
 # Standalone tests support.

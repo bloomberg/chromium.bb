@@ -12,6 +12,10 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace audio {
 
 // An instance of this class can be used to override the global binding for
@@ -47,7 +51,9 @@ class FakeSystemInfo : public mojom::SystemInfo {
                           GetInputDeviceInfoCallback callback) override;
 
  private:
-  void Bind(mojom::SystemInfoRequest request);
+  void Bind(const std::string& interface_name,
+            mojo::ScopedMessagePipeHandle handle,
+            const service_manager::BindSourceInfo& source_info);
 
   mojo::BindingSet<mojom::SystemInfo> bindings_;
   DISALLOW_COPY_AND_ASSIGN(FakeSystemInfo);
