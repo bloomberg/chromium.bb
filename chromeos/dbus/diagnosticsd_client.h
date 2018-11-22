@@ -24,7 +24,7 @@ class CHROMEOS_EXPORT DiagnosticsdClient : public DBusClient {
   // Registers |callback| to run when the diagnosticsd service becomes
   // available.
   virtual void WaitForServiceToBeAvailable(
-      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) = 0;
+      WaitForServiceToBeAvailableCallback callback) = 0;
 
   // Bootstrap the Mojo connection between Chrome and the diagnosticsd daemon.
   // |fd| is the file descriptor with the child end of the Mojo pipe.
