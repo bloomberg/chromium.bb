@@ -23,6 +23,7 @@ bool LoopbackConnectionManager::PostBufferToPath(
   loopback_server_.HandleCommand(params->buffer_in,
                                  &params->response.http_response_code,
                                  &params->buffer_out);
+  DCHECK_GE(params->response.http_response_code, 0);
 
   if (params->response.http_response_code != net::HTTP_OK) {
     params->response.server_status = HttpResponse::SYNC_SERVER_ERROR;

@@ -265,13 +265,13 @@ void LoopbackServer::HandleCommand(const string& request,
         success = true;
         break;
       default:
-        *http_response_code = net::ERR_NOT_IMPLEMENTED;
+        *http_response_code = net::HTTP_BAD_REQUEST;
         *response = string();
         return;
     }
 
     if (!success) {
-      *http_response_code = net::ERR_FAILED;
+      *http_response_code = net::HTTP_INTERNAL_SERVER_ERROR;
       *response = string();
       UMA_HISTOGRAM_ENUMERATION(
           "Sync.Local.RequestTypeOnError", message.message_contents(),
