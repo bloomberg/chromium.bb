@@ -339,20 +339,14 @@ function testCreateMetadataHashcode(callback) {
 }
 
 /**
- * Installs stub APIs.
+ * Installs stub chrome APIs.
  */
 function setupChromeApis() {
   new MockChromeStorageAPI();
-  chrome = chrome || {};
-  chrome.fileManagerPrivate = {};
-  chrome.fileManagerPrivate.onFileTransfersUpdated = {
-    addListener: function() {}
-  };
-  chrome.syncFileSystem = {};
 }
 
 /**
- * Installs stub APIs.
+ * Installs importer test logger.
  */
 function installTestLogger() {
   testLogger = new importer.TestLogger();
@@ -439,26 +433,5 @@ var TestRecordStorage = function() {
   this.write = function(record) {
     this.records_.push(record);
     return Promise.resolve();
-  };
-};
-
-/**
- * Test implementation of SyncFileEntryProvider.
- *
- * @param {!FileEntry} fileEntry
- * @constructor
- * @final
- * @struct
- */
-var TestSyncFileEntryProvider = function(fileEntry) {
-  /** @private {!FileEntry} */
-  this.fileEntry_ = fileEntry;
-
-  /**
-   * @override
-   * @this {TestSyncFileEntryProvider}
-   */
-  this.getSyncFileEntry = function() {
-    return Promise.resolve(this.fileEntry_);
   };
 };

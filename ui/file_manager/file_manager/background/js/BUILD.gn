@@ -211,6 +211,15 @@ js_library("import_history") {
     "../../common/js:importer_common",
     "../../common/js:util",
   ]
+  externs_list = [ "../../../externs/background/import_history.js" ]
+}
+
+js_unittest("import_history_unittest") {
+  deps = [
+    ":import_history",
+    "//ui/file_manager/file_manager/common/js:mock_entry",
+    "//ui/file_manager/file_manager/common/js:test_importer_common",
+  ]
 }
 
 js_library("launcher") {
@@ -350,6 +359,7 @@ js_library("volume_manager_util") {
 js_unit_tests("unit_tests") {
   deps = [
     ":crostini_unittest",
+    ":import_history_unittest",
     ":volume_manager_unittest",
   ]
 }
