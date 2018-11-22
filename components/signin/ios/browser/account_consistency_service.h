@@ -157,8 +157,7 @@ class AccountConsistencyService : public KeyedService,
 
   // SigninManagerBase::Observer implementation.
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  void GoogleSignedOut(const AccountInfo& account_info) override;
 
   // ActiveStateManager::Observer implementation.
   void OnActive() override;

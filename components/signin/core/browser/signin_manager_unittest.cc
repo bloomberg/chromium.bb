@@ -65,8 +65,7 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
     num_successful_signins_with_password_++;
   }
 
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override {
+  void GoogleSignedOut(const AccountInfo& account_info) override {
     num_signouts_++;
   }
 };

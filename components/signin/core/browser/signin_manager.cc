@@ -259,7 +259,7 @@ void SigninManager::OnSignoutDecisionReached(
       break;
   }
 
-  FireGoogleSignedOut(account_id, account_info);
+  FireGoogleSignedOut(account_info);
 }
 
 void SigninManager::Initialize(PrefService* local_state) {
@@ -443,10 +443,8 @@ void SigninManager::FireGoogleSigninSucceeded() {
   }
 }
 
-void SigninManager::FireGoogleSignedOut(const std::string& account_id,
-                                        const AccountInfo& account_info) {
+void SigninManager::FireGoogleSignedOut(const AccountInfo& account_info) {
   for (auto& observer : observer_list_) {
-    observer.GoogleSignedOut(account_id, account_info.email);
     observer.GoogleSignedOut(account_info);
   }
 }
