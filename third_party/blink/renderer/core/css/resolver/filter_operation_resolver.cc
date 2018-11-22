@@ -120,6 +120,38 @@ static void CountFilterUse(FilterOperation::OperationType operation_type,
   UseCounter::Count(document, feature);
 }
 
+static double ResolveFirstArgumentForFunction(const CSSFunctionValue& filter,
+                                              const CSSPrimitiveValue* value) {
+  switch (filter.FunctionType()) {
+    case CSSValueGrayscale:
+    case CSSValueSepia:
+    case CSSValueSaturate:
+    case CSSValueInvert:
+    case CSSValueBrightness:
+    case CSSValueContrast:
+    case CSSValueOpacity: {
+      double amount = (filter.FunctionType() == CSSValueBrightness ||
+                       filter.FunctionType() == CSSValueInvert)
+                          ? 0
+                          : 1;
+      if (filter.length() == 1) {
+        amount = value->GetDoubleValue();
+        if (value->IsPercentage())
+          amount /= 100;
+      }
+      return amount;
+    }
+    case CSSValueHueRotate: {
+      double angle = 0;
+      if (filter.length() == 1)
+        angle = value->ComputeDegrees();
+      return angle;
+    }
+    default:
+      return 0;
+  }
+}
+
 FilterOperations FilterOperationResolver::CreateFilterOperations(
     StyleResolverState& state,
     const CSSValue& in_value) {
@@ -158,7 +190,7 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
             ? &ToCSSPrimitiveValue(filter_value->Item(0))
             : nullptr;
     double first_number =
-        StyleBuilderConverter::ConvertValueToNumber(filter_value, first_value);
+        ResolveFirstArgumentForFunction(*filter_value, first_value);
 
     switch (filter_value->FunctionType()) {
       case CSSValueGrayscale:
@@ -242,7 +274,7 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
             ? &ToCSSPrimitiveValue(filter_value->Item(0))
             : nullptr;
     double first_number =
-        StyleBuilderConverter::ConvertValueToNumber(filter_value, first_value);
+        ResolveFirstArgumentForFunction(*filter_value, first_value);
 
     switch (filter_value->FunctionType()) {
       case CSSValueGrayscale:
