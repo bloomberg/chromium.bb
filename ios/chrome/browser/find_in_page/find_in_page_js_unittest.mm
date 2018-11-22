@@ -35,8 +35,8 @@ NSString* kJavaScriptGoNext = @"__gCrWeb.findInPage.goNext()";
 NSString* kJavaScriptGoPrev = @"__gCrWeb.findInPage.goPrev()";
 
 // JavaScript variables accessed by the tests.
-NSString* kJavaScriptIndex = @"__gCrWeb.findInPage.index";
-NSString* kJavaScriptSpansLength = @"__gCrWeb.findInPage.spans.length";
+NSString* kJavaScriptIndex = @"__gCrWeb.findInPage.selectedMatchIndex";
+NSString* kJavaScriptSpansLength = @"__gCrWeb.findInPage.matches.length";
 
 // HTML that contains several occurrences of the string 'foo', some visible and
 // some not visible (the first 'foo' is hidden, the next is visible, the next is
@@ -229,9 +229,8 @@ TEST_F(FindInPageJsTest, SearchForNonAscii) {
 }
 
 TEST_F(FindInPageJsTest, SearchForWhitespace) {
-  LoadHtml(
-      @"<html><body> <div> </div> <h1> </h1><p> <span> </span> </p> "
-      @"</body></html>");
+  LoadHtml(@"<html><body> <div> </div> <h1> </h1><p> <span> </span> </p> "
+           @"</body></html>");
   // Assert the index and span count contain their initialized values.
   AssertJavaScriptValue(kJavaScriptIndex, -1);
   AssertJavaScriptValue(kJavaScriptSpansLength, 0);
