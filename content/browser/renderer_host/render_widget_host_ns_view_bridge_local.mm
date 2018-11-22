@@ -21,29 +21,7 @@ namespace content {
 RenderWidgetHostNSViewBridgeLocal::RenderWidgetHostNSViewBridgeLocal(
     mojom::RenderWidgetHostNSViewClient* client,
     RenderWidgetHostNSViewClientHelper* client_helper)
-    : binding_(nullptr) {
-  Initialize(client, client_helper);
-}
-
-RenderWidgetHostNSViewBridgeLocal::RenderWidgetHostNSViewBridgeLocal(
-    mojom::RenderWidgetHostNSViewClientAssociatedPtr client,
-    mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request)
-    : remote_client_(std::move(client)), binding_(this) {
-  binding_.Bind(std::move(bridge_request),
-                ui::WindowResizeHelperMac::Get()->task_runner());
-  // This object will be destroyed when its connection is closed.
-  binding_.set_connection_error_handler(
-      base::BindOnce(&RenderWidgetHostNSViewBridgeLocal::OnConnectionError,
-                     base::Unretained(this)));
-  remote_client_helper_ =
-      RenderWidgetHostNSViewClientHelper::CreateForMojoClient(
-          remote_client_.get());
-  Initialize(remote_client_.get(), remote_client_helper_.get());
-}
-
-void RenderWidgetHostNSViewBridgeLocal::Initialize(
-    mojom::RenderWidgetHostNSViewClient* client,
-    RenderWidgetHostNSViewClientHelper* client_helper) {
+    : binding_(this) {
   display::Screen::GetScreen()->AddObserver(this);
 
   cocoa_view_.reset([[RenderWidgetHostViewCocoa alloc]
@@ -71,8 +49,10 @@ RenderWidgetHostNSViewBridgeLocal::~RenderWidgetHostNSViewBridgeLocal() {
   popup_window_.reset();
 }
 
-void RenderWidgetHostNSViewBridgeLocal::OnConnectionError() {
-  delete this;
+void RenderWidgetHostNSViewBridgeLocal::BindRequest(
+    mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request) {
+  binding_.Bind(std::move(bridge_request),
+                ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
 RenderWidgetHostViewCocoa*

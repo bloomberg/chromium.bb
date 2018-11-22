@@ -2380,7 +2380,6 @@ jumbo_source_set("browser") {
       "renderer_host/render_widget_host_ns_view_bridge_local.h",
       "renderer_host/render_widget_host_ns_view_bridge_local.mm",
       "renderer_host/render_widget_host_ns_view_client_helper.h",
-      "renderer_host/render_widget_host_ns_view_client_helper.mm",
       "renderer_host/render_widget_host_view_cocoa.h",
       "renderer_host/render_widget_host_view_cocoa.mm",
     ]
