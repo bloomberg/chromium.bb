@@ -85,7 +85,7 @@ class PrimaryAccountMutator {
       const std::string& gaia_id,
       const std::string& username,
       const std::string& password,
-      base::RepeatingCallback<void(const std::string&)> callback) = 0;
+      base::OnceCallback<void(const std::string&)> callback) = 0;
 
   // Complete the in-process sign-in (legacy, pre-DICE workflow).
   virtual void LegacyCompletePendingPrimaryAccountSignin() = 0;

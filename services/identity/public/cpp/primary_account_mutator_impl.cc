@@ -72,7 +72,7 @@ void PrimaryAccountMutatorImpl::
         const std::string& gaia_id,
         const std::string& username,
         const std::string& password,
-        base::RepeatingCallback<void(const std::string&)> callback) {
+        base::OnceCallback<void(const std::string&)> callback) {
   NOTIMPLEMENTED();
 }
 

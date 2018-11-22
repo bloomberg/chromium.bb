@@ -193,10 +193,10 @@ TEST_F(SigninManagerTest, SignInWithRefreshTokenCallbackComplete) {
   EXPECT_FALSE(manager_->IsAuthenticated());
 
   // Since the password is empty, must verify the gaia cookies first.
-  SigninManager::OAuthTokenFetchedCallback callback = base::Bind(
-      &SigninManagerTest::CompleteSigninCallback, base::Unretained(this));
-  manager_->StartSignInWithRefreshToken("rt", "gaia_id", "user@gmail.com",
-                                        "password", callback);
+  manager_->StartSignInWithRefreshToken(
+      "rt", "gaia_id", "user@gmail.com", "password",
+      base::BindOnce(&SigninManagerTest::CompleteSigninCallback,
+                     base::Unretained(this)));
 
   ExpectSignInWithRefreshTokenSuccess();
   ASSERT_EQ(1U, oauth_tokens_fetched_.size());

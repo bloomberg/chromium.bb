@@ -100,7 +100,7 @@ void SigninManager::StartSignInWithRefreshToken(
     const std::string& gaia_id,
     const std::string& username,
     const std::string& password,
-    const OAuthTokenFetchedCallback& callback) {
+    OAuthTokenFetchedCallback callback) {
   DCHECK(!IsAuthenticated());
   SigninType signin_type = refresh_token.empty()
                                ? SIGNIN_TYPE_WITHOUT_REFRESH_TOKEN
@@ -114,7 +114,7 @@ void SigninManager::StartSignInWithRefreshToken(
 
   if (!callback.is_null()) {
     // Callback present, let the caller complete the pending sign-in.
-    callback.Run(temp_refresh_token_);
+    std::move(callback).Run(temp_refresh_token_);
   } else {
     // No callback, so just complete the pending signin.
     CompletePendingSignin();

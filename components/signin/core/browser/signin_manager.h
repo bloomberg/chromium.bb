@@ -64,7 +64,8 @@ class SigninManager : public SigninManagerBase,
   // but before the profile transitions to the "signed-in" state. This allows
   // callers to load policy and prompt the user appropriately before completing
   // signin. The callback is passed the just-fetched OAuth login refresh token.
-  typedef base::Callback<void(const std::string&)> OAuthTokenFetchedCallback;
+  using OAuthTokenFetchedCallback =
+      base::OnceCallback<void(const std::string&)>;
 
   // Used to remove accounts from the token service and the account tracker.
   enum class RemoveAccountsOption {
@@ -108,7 +109,7 @@ class SigninManager : public SigninManagerBase,
       const std::string& gaia_id,
       const std::string& username,
       const std::string& password,
-      const OAuthTokenFetchedCallback& oauth_fetched_callback);
+      OAuthTokenFetchedCallback oauth_fetched_callback);
 
   // Copies auth credentials from one SigninManager to this one. This is used
   // when creating a new profile during the signin process to transfer the
