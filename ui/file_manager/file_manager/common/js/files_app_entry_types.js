@@ -280,7 +280,12 @@ class EntryList {
     this.type_name = 'EntryList';
   }
 
-  get children() {
+  /**
+   * @return {!Array<!Entry|!FilesAppEntry>} List of entries that are shown as
+   *     children of this Volume in the UI, but are not actually entries of the
+   *     Volume.  E.g. 'Play files' is shown as a child of 'My files'.
+   */
+  getUIChildren() {
     return this.children_;
   }
 
@@ -360,8 +365,9 @@ class EntryList {
    * @return {number} index of entry on this EntryList or -1 if not found.
    */
   findIndexByVolumeInfo(volumeInfo) {
-    return this.children.findIndex(
-        childEntry => childEntry.volumeInfo === volumeInfo);
+    return this.children_.findIndex(childEntry => {
+      return /** @type {VolumeEntry} */ (childEntry).volumeInfo === volumeInfo;
+    });
   }
 
   /**
@@ -371,11 +377,12 @@ class EntryList {
    * @return {boolean} if entry was removed.
    */
   removeByVolumeType(volumeType) {
-    const childIndex = this.children.findIndex(
-        childEntry => childEntry.volumeInfo &&
-            childEntry.volumeInfo.volumeType === volumeType);
+    const childIndex = this.children_.findIndex(childEntry => {
+      const volumeInfo = /** @type {VolumeEntry} */ (childEntry).volumeInfo;
+      return volumeInfo && volumeInfo.volumeType === volumeType;
+    });
     if (childIndex !== -1) {
-      this.children.splice(childIndex, 1);
+      this.children_.splice(childIndex, 1);
       return true;
     }
     return false;
@@ -388,10 +395,10 @@ class EntryList {
    * @return {boolean} if entry was removed.
    */
   removeByRootType(rootType) {
-    const childIndex =
-        this.children.findIndex(childEntry => childEntry.rootType === rootType);
+    const childIndex = this.children_.findIndex(
+        childEntry => childEntry.rootType === rootType);
     if (childIndex !== -1) {
-      this.children.splice(childIndex, 1);
+      this.children_.splice(childIndex, 1);
       return true;
     }
     return false;

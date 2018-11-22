@@ -947,19 +947,32 @@ util.isChildEntry = function(entry, directory) {
 util.isDescendantEntry = function(ancestorEntry, childEntry) {
   if (!ancestorEntry.isDirectory)
     return false;
-  if (ancestorEntry instanceof EntryList) {
-    const entryList = /** @type {EntryList} */ (ancestorEntry);
-    return entryList.children.some(ancestorChild => {
+
+  // For EntryList and VolumeEntry they can contain entries from different
+  // files systems, so we should check its getUIChildren.
+  const entryList = util.toEntryList(ancestorEntry);
+  if (entryList.getUIChildren) {
+    // VolumeEntry has to check to root entry descendant entry.
+    const nativeEntry = entryList.getNativeEntry();
+    if (nativeEntry &&
+        util.isSameFileSystem(nativeEntry.filesystem, childEntry.filesystem)) {
+      return util.isDescendantEntry(
+          /** @type {!DirectoryEntry} */ (nativeEntry), childEntry);
+    }
+
+    return entryList.getUIChildren().some(ancestorChild => {
       if (util.isSameEntry(ancestorChild, childEntry))
         return true;
 
       // root entry might not be resolved yet.
-      const volumeEntry = ancestorChild.getNativeEntry();
+      const volumeEntry =
+          /** @type {DirectoryEntry} */ (ancestorChild.getNativeEntry());
       return volumeEntry &&
           (util.isSameEntry(volumeEntry, childEntry) ||
            util.isDescendantEntry(volumeEntry, childEntry));
     });
   }
+
   if (!util.isSameFileSystem(ancestorEntry.filesystem, childEntry.filesystem))
     return false;
   if (util.isSameEntry(ancestorEntry, childEntry))
@@ -1499,6 +1512,16 @@ util.doIfPrimaryContext = function(callback) {
  */
 util.toFilesAppEntry = function(entry) {
   return /** @type {FilesAppEntry} */ (entry);
+};
+
+/**
+ * Casts an Entry to a EntryList, to access a FilesAppEntry-specific
+ * property without Closure compiler complaining.
+ * @param {Entry|FilesAppEntry} entry
+ * @return {EntryList}
+ */
+util.toEntryList = function(entry) {
+  return /** @type {EntryList} */ (entry);
 };
 
 /**

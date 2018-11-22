@@ -1418,7 +1418,7 @@ FileManager.prototype = /** @struct */ {
 
     // If there is no target select MyFiles by default.
     queue.run((callback) => {
-      if (!nextCurrentDirEntry)
+      if (!nextCurrentDirEntry && this.directoryTree.dataModel.myFilesModel_)
         nextCurrentDirEntry = this.directoryTree.dataModel.myFilesModel_.entry;
 
       callback();

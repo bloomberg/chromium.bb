@@ -38,13 +38,13 @@ function testEntryList(testReportCallback) {
   assertEquals('my_files', entryList.rootType);
   assertFalse(entryList.isNativeType);
   assertEquals(null, entryList.getNativeEntry());
-  assertEquals(0, entryList.children.length);
+  assertEquals(0, entryList.getUIChildren().length);
   assertTrue(entryList.isDirectory);
   assertFalse(entryList.isFile);
 
   entryList.addEntry(
       new EntryList('Child Entry', VolumeManagerCommon.RootType.MY_FILES));
-  assertEquals(1, entryList.children.length);
+  assertEquals(1, entryList.getUIChildren().length);
 
   const reader = entryList.createReader();
   // How many times the reader callback |accumulateResults| has been called?
@@ -92,12 +92,12 @@ function testEntryListGetParent(testReportCallback) {
 function testEntryListAddEntry() {
   const entryList =
       new EntryList('My files', VolumeManagerCommon.RootType.MY_FILES);
-  assertEquals(0, entryList.children.length);
+  assertEquals(0, entryList.getUIChildren().length);
 
   const childEntry = fakeVolumeEntry(VolumeManagerCommon.VolumeType.DOWNLOADS);
   entryList.addEntry(childEntry);
-  assertEquals(1, entryList.children.length);
-  assertEquals(childEntry, entryList.children[0]);
+  assertEquals(1, entryList.getUIChildren().length);
+  assertEquals(childEntry, entryList.getUIChildren()[0]);
 }
 
 /**
@@ -130,7 +130,7 @@ function testEntryFindIndex() {
   // Test removeByVolumeType.
   assertTrue(
       entryList.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI));
-  assertEquals(1, entryList.children.length);
+  assertEquals(1, entryList.getUIChildren().length);
   // Now crostini volume doesn't exist anymore, so should return False.
   assertFalse(
       entryList.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI));
@@ -138,7 +138,7 @@ function testEntryFindIndex() {
   // Test removeByRootType.
   entryList.addEntry(fakeEntry);
   assertTrue(entryList.removeByRootType(VolumeManagerCommon.RootType.CROSTINI));
-  assertEquals(1, entryList.children.length);
+  assertEquals(1, entryList.getUIChildren().length);
 }
 
 /**
@@ -473,7 +473,7 @@ function testEntryListAddEntrySetsPrefix() {
       new EntryList('My files', VolumeManagerCommon.RootType.MY_FILES);
 
   entryList.addEntry(volumeEntry);
-  assertEquals(1, entryList.children.length);
+  assertEquals(1, entryList.getUIChildren().length);
   // entryList is parent of volumeEntry so it should be its prefix.
   assertEquals(entryList, volumeEntry.volumeInfo.prefixEntry);
 }

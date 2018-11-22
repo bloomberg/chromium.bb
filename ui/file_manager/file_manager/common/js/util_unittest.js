@@ -5,6 +5,13 @@
 let fileSystem;
 
 function setUp() {
+  // Override VolumeInfo.prototype.resolveDisplayRoot to be sync.
+  VolumeInfoImpl.prototype.resolveDisplayRoot = function(successCallback) {
+    this.displayRoot_ = this.fileSystem_.root;
+    successCallback(this.displayRoot_);
+    return Promise.resolve(this.displayRoot_);
+  };
+
   fileSystem = new MockFileSystem('fake-volume');
   const filenames = [
     '/file_a.txt',
@@ -16,6 +23,10 @@ function setUp() {
     '/dir_a/dir_b/dir_c/file_g.txt',
   ];
   fileSystem.populate(filenames);
+
+  window.loadTimeData = {
+    getString: id => id,
+  };
 }
 
 function testReadEntriesRecursively(callback) {
@@ -64,4 +75,54 @@ function testReadEntriesRecursivelyLevel1(callback) {
         callback();
       },
       () => {}, () => false, 1 /* opt_maxDepth */);
+}
+
+
+function testIsDescendantEntry() {
+  const root = fileSystem.root;
+  const folder = fileSystem.entries['/dir_a'];
+  const subFolder = fileSystem.entries['/dir_a/dir_b'];
+  const file = fileSystem.entries['/file_a.txt'];
+  const deepFile = fileSystem.entries['/dir_a/dir_b/dir_c/file_g.txt'];
+
+  const fakeEntry =
+      new FakeEntry('fake-entry-label', VolumeManagerCommon.RootType.CROSTINI);
+
+  const entryList =
+      new EntryList('entry-list-label', VolumeManagerCommon.RootType.MY_FILES);
+  entryList.addEntry(fakeEntry);
+
+  const volumeManager = new MockVolumeManager();
+  // Index 1 is Downloads.
+  assertEquals(
+      VolumeManagerCommon.VolumeType.DOWNLOADS,
+      volumeManager.volumeInfoList.item(1).volumeType);
+  const downloadsVolumeInfo = volumeManager.volumeInfoList.item(1);
+  const mockFs = /** @type {MockFileSystem} */ (downloadsVolumeInfo.fileSystem);
+  mockFs.populate(['/folder1/']);
+  const folder1 = downloadsVolumeInfo.fileSystem.entries['/folder1'];
+
+  const volumeEntry = new VolumeEntry(downloadsVolumeInfo);
+  volumeEntry.addEntry(fakeEntry);
+
+  // No descendants.
+  assertFalse(util.isDescendantEntry(file, file));
+  assertFalse(util.isDescendantEntry(root, root));
+  assertFalse(util.isDescendantEntry(deepFile, root));
+  assertFalse(util.isDescendantEntry(subFolder, root));
+  assertFalse(util.isDescendantEntry(fakeEntry, root));
+  assertFalse(util.isDescendantEntry(root, fakeEntry));
+  assertFalse(util.isDescendantEntry(fakeEntry, entryList));
+  assertFalse(util.isDescendantEntry(fakeEntry, volumeEntry));
+  assertFalse(util.isDescendantEntry(folder1, volumeEntry));
+
+  assertTrue(util.isDescendantEntry(root, file));
+  assertTrue(util.isDescendantEntry(root, subFolder));
+  assertTrue(util.isDescendantEntry(root, deepFile));
+  assertTrue(util.isDescendantEntry(root, folder));
+  assertTrue(util.isDescendantEntry(folder, subFolder));
+  assertTrue(util.isDescendantEntry(folder, deepFile));
+  assertTrue(util.isDescendantEntry(entryList, fakeEntry));
+  assertTrue(util.isDescendantEntry(volumeEntry, fakeEntry));
+  assertTrue(util.isDescendantEntry(volumeEntry, folder1));
 }

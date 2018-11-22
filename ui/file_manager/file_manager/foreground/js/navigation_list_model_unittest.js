@@ -27,7 +27,7 @@ loadTimeData.data = {
 
 function setUp() {
   new MockCommandLinePrivate();
-  // Override VolumeInfo.prototype.resolveDisplayRoot.
+  // Override VolumeInfo.prototype.resolveDisplayRoot to be sync.
   VolumeInfoImpl.prototype.resolveDisplayRoot = function(successCallback) {
     this.displayRoot_ = this.fileSystem_.root;
     successCallback(this.displayRoot_);
@@ -62,9 +62,9 @@ function testModel() {
 
   // Downloads and Crostini are displayed within My files.
   const myFilesEntry = model.item(2).entry;
-  assertEquals(2, myFilesEntry.children.length);
-  assertEquals('Downloads', myFilesEntry.children[0].name);
-  assertEquals('linux-files-label', myFilesEntry.children[1].name);
+  assertEquals(2, myFilesEntry.getUIChildren().length);
+  assertEquals('Downloads', myFilesEntry.getUIChildren()[0].name);
+  assertEquals('linux-files-label', myFilesEntry.getUIChildren()[1].name);
 }
 
 function testNoRecentOrLinuxFiles() {

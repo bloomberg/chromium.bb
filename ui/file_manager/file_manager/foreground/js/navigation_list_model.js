@@ -518,6 +518,15 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
             str('MY_FILES_ROOT_LABEL'), NavigationModelItemType.ENTRY_LIST,
             myFilesEntry);
         this.myFilesModel_ = myFilesModel;
+      } else {
+        // When MyFilesVolume isn't available we create a empty EntryList to be
+        // MyFiles to be able to display Linux or Play volumes. However we don't
+        // save it back to this.MyFilesModel_ so it's always re-created.
+        myFilesEntry = new EntryList(
+            str('MY_FILES_ROOT_LABEL'), VolumeManagerCommon.RootType.MY_FILES);
+        myFilesModel = new NavigationModelFakeItem(
+            myFilesEntry.label, NavigationModelItemType.ENTRY_LIST,
+            myFilesEntry);
       }
     } else {
       // Here is the initial version for MyFiles, which is only an entry in JS
