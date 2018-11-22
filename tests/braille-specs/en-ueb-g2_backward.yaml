@@ -75,3 +75,12 @@ tests:
   - [⠎⠷, sof]
   - [⠎⠰⠛, song]
   - [⠹⠬, thing]
+
+# According to issue #434 ':)' should be translated as ⠒⠐⠜ (which
+# works) and backtranslation should translate it back to ':)' (which
+# doesn't work). See https://github.com/liblouis/liblouis/issues/434
+# and https://github.com/nvaccess/nvda/issues/7678
+
+flags: {testmode: bothDirections}
+tests:
+  - [":)", ⠒⠐⠜, {xfail: true}]
