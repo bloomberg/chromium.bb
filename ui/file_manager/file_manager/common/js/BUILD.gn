@@ -180,9 +180,11 @@ js_library("util") {
 
 js_unittest("util_unittest") {
   deps = [
+    ":files_app_entry_types",
     ":mock_entry",
+    ":unittest_util",
     ":util",
-    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/file_manager/background/js:mock_volume_manager",
   ]
 }
 

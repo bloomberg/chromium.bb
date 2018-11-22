@@ -498,7 +498,7 @@ testcase.fileDisplayWithoutVolumesThenMountDownloads = function() {
     },
     // Downloads should appear in My files in the directory tree.
     function() {
-      remoteCall.waitForElement(appId, '[volume-type-for-testing="downloads"]')
+      remoteCall.waitForElement(appId, '[volume-type-icon="downloads"]')
           .then(this.next);
     },
     function() {

@@ -612,20 +612,44 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         EventCase("tabindexSearchBoxFocus"),
+        EventCase("tabindexSearchBoxFocus").EnableMyFilesVolume(),
         EventCase("tabindexFocus"),
+        EventCase("tabindexFocus").EnableMyFilesVolume(),
         EventCase("tabindexFocusDownloads"),
+        EventCase("tabindexFocusDownloads").EnableMyFilesVolume(),
         EventCase("tabindexFocusDownloads").InGuestMode(),
+        EventCase("tabindexFocusDownloads").InGuestMode().EnableMyFilesVolume(),
         EventCase("tabindexFocusDirectorySelected"),
+        EventCase("tabindexFocusDirectorySelected").EnableMyFilesVolume(),
         EventCase("tabindexOpenDialogDrive").WithBrowser().DisableDriveFs(),
         EventCase("tabindexOpenDialogDrive").WithBrowser().EnableDriveFs(),
+        EventCase("tabindexOpenDialogDrive")
+            .WithBrowser()
+            .EnableDriveFs()
+            .EnableMyFilesVolume(),
         EventCase("tabindexOpenDialogDownloads").WithBrowser(),
+        EventCase("tabindexOpenDialogDownloads")
+            .WithBrowser()
+            .EnableMyFilesVolume(),
         EventCase("tabindexOpenDialogDownloads").WithBrowser().InGuestMode(),
+        EventCase("tabindexOpenDialogDownloads")
+            .WithBrowser()
+            .InGuestMode()
+            .EnableMyFilesVolume(),
         EventCase("tabindexSaveFileDialogDrive").WithBrowser().DisableDriveFs(),
         EventCase("tabindexSaveFileDialogDrive").WithBrowser().EnableDriveFs(),
+        EventCase("tabindexSaveFileDialogDrive")
+            .WithBrowser()
+            .EnableDriveFs()
+            .EnableMyFilesVolume(),
         EventCase("tabindexSaveFileDialogDownloads").WithBrowser(),
         EventCase("tabindexSaveFileDialogDownloads")
             .WithBrowser()
-            .InGuestMode()));
+            .InGuestMode(),
+        EventCase("tabindexSaveFileDialogDownloads")
+            .WithBrowser()
+            .InGuestMode()
+            .EnableMyFilesVolume()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileDialog, /* file_dialog.js */
@@ -776,13 +800,17 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Metadata, /* metadata.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("metadataDownloads"),
-                      TestCase("metadataDrive").DisableDriveFs(),
-                      TestCase("metadataDrive").EnableDriveFs(),
-                      TestCase("metadataTeamDrives").DisableDriveFs(),
-                      TestCase("metadataTeamDrives").EnableDriveFs(),
-                      TestCase("metadataLargeDrive").DisableDriveFs(),
-                      TestCase("metadataLargeDrive").EnableDriveFs()));
+    ::testing::Values(
+        TestCase("metadataDownloads"),
+        TestCase("metadataDrive").DisableDriveFs(),
+        TestCase("metadataDrive").EnableDriveFs(),
+        TestCase("metadataDrive").EnableDriveFs().EnableMyFilesVolume(),
+        TestCase("metadataTeamDrives").DisableDriveFs(),
+        TestCase("metadataTeamDrives").EnableDriveFs(),
+        TestCase("metadataTeamDrives").EnableDriveFs().EnableMyFilesVolume(),
+        TestCase("metadataLargeDrive").DisableDriveFs(),
+        TestCase("metadataLargeDrive").EnableDriveFs(),
+        TestCase("metadataLargeDrive").EnableDriveFs().EnableMyFilesVolume()));
 
 // Structure to describe an account info.
 struct TestAccountInfo {

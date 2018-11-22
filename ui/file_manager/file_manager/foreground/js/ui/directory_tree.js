@@ -730,6 +730,10 @@ function EntryListItem(rootType, modelItem, tree) {
   item.dirEntry_ = modelItem.entry;
   item.parentTree_ = tree;
 
+  if (window.IN_TEST && item.entry && item.entry.volumeInfo) {
+    item.setAttribute(
+        'volume-type-for-testing', item.entry.volumeInfo.volumeType);
+  }
   const icon = queryRequiredElement('.icon', item);
   icon.classList.add('item-icon');
   icon.setAttribute('root-type-icon', rootType);
