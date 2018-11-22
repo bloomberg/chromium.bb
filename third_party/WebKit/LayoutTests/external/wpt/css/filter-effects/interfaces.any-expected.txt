@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 458 tests; 426 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 458 tests; 448 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS SVGFilterElement interface: existence and properties of interface object
 PASS SVGFilterElement interface object length
@@ -31,28 +31,28 @@ PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_DARKEN on interface 
 PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_DARKEN on interface prototype object
 PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_LIGHTEN on interface object
 PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_LIGHTEN on interface prototype object
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_OVERLAY on interface object assert_own_property: expected property "SVG_FEBLEND_MODE_OVERLAY" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_OVERLAY on interface prototype object assert_own_property: expected property "SVG_FEBLEND_MODE_OVERLAY" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR_DODGE on interface object assert_own_property: expected property "SVG_FEBLEND_MODE_COLOR_DODGE" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR_DODGE on interface prototype object assert_own_property: expected property "SVG_FEBLEND_MODE_COLOR_DODGE" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR_BURN on interface object assert_own_property: expected property "SVG_FEBLEND_MODE_COLOR_BURN" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR_BURN on interface prototype object assert_own_property: expected property "SVG_FEBLEND_MODE_COLOR_BURN" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_HARD_LIGHT on interface object assert_own_property: expected property "SVG_FEBLEND_MODE_HARD_LIGHT" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_HARD_LIGHT on interface prototype object assert_own_property: expected property "SVG_FEBLEND_MODE_HARD_LIGHT" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_SOFT_LIGHT on interface object assert_own_property: expected property "SVG_FEBLEND_MODE_SOFT_LIGHT" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_SOFT_LIGHT on interface prototype object assert_own_property: expected property "SVG_FEBLEND_MODE_SOFT_LIGHT" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_DIFFERENCE on interface object assert_own_property: expected property "SVG_FEBLEND_MODE_DIFFERENCE" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_DIFFERENCE on interface prototype object assert_own_property: expected property "SVG_FEBLEND_MODE_DIFFERENCE" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_EXCLUSION on interface object assert_own_property: expected property "SVG_FEBLEND_MODE_EXCLUSION" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_EXCLUSION on interface prototype object assert_own_property: expected property "SVG_FEBLEND_MODE_EXCLUSION" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_HUE on interface object assert_own_property: expected property "SVG_FEBLEND_MODE_HUE" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_HUE on interface prototype object assert_own_property: expected property "SVG_FEBLEND_MODE_HUE" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_SATURATION on interface object assert_own_property: expected property "SVG_FEBLEND_MODE_SATURATION" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_SATURATION on interface prototype object assert_own_property: expected property "SVG_FEBLEND_MODE_SATURATION" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR on interface object assert_own_property: expected property "SVG_FEBLEND_MODE_COLOR" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR on interface prototype object assert_own_property: expected property "SVG_FEBLEND_MODE_COLOR" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_LUMINOSITY on interface object assert_own_property: expected property "SVG_FEBLEND_MODE_LUMINOSITY" missing
-FAIL SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_LUMINOSITY on interface prototype object assert_own_property: expected property "SVG_FEBLEND_MODE_LUMINOSITY" missing
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_OVERLAY on interface object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_OVERLAY on interface prototype object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR_DODGE on interface object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR_DODGE on interface prototype object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR_BURN on interface object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR_BURN on interface prototype object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_HARD_LIGHT on interface object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_HARD_LIGHT on interface prototype object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_SOFT_LIGHT on interface object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_SOFT_LIGHT on interface prototype object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_DIFFERENCE on interface object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_DIFFERENCE on interface prototype object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_EXCLUSION on interface object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_EXCLUSION on interface prototype object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_HUE on interface object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_HUE on interface prototype object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_SATURATION on interface object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_SATURATION on interface prototype object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR on interface object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_COLOR on interface prototype object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_LUMINOSITY on interface object
+PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_LUMINOSITY on interface prototype object
 PASS SVGFEBlendElement interface: attribute in1
 PASS SVGFEBlendElement interface: attribute in2
 PASS SVGFEBlendElement interface: attribute mode

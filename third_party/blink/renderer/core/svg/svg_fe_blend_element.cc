@@ -76,8 +76,7 @@ const SVGEnumerationMap& GetEnumerationMap<SVGFEBlendElement::Mode>() {
       {SVGFEBlendElement::kModeColor, "color"},
       {SVGFEBlendElement::kModeLuminosity, "luminosity"},
   };
-  static const SVGEnumerationMap entries(enum_items,
-                                         SVGFEBlendElement::kModeLighten);
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 
