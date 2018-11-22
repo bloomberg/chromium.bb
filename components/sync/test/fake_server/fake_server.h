@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -55,15 +54,11 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   FakeServer();
   ~FakeServer() override;
 
-  // Handles a /command POST (with the given |request|) to the server. Three
-  // output arguments, |error_code|, |response_code|, and |response|, are used
-  // to pass data back to the caller. The command has failed if the value
-  // pointed to by |error_code| is nonzero. |completion_closure| will be called
-  // immediately before return.
+  // Handles a /command POST (with the given |request|) to the server. Two
+  // output arguments, |http_response_code|, and |response|, are used
+  // to pass data back to the caller.
   void HandleCommand(const std::string& request,
-                     const base::Closure& completion_closure,
-                     int* error_code,
-                     int* response_code,
+                     int* http_response_code,
                      std::string* response);
 
   // Helpers for fetching the last Commit or GetUpdates messages, respectively.
@@ -170,13 +165,6 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // must be called if AddObserver was ever called with |observer|.
   void RemoveObserver(Observer* observer);
 
-  // Undoes the effects of DisableNetwork.
-  void EnableNetwork();
-
-  // Forces every request to fail in a way that simulates a network failure.
-  // This can be used to trigger exponential backoff in the client.
-  void DisableNetwork();
-
   // Enables strong consistency model (i.e. server detects conflicts).
   void EnableStrongConsistencyWithConflictDetectionModel();
 
@@ -240,10 +228,6 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
 
   // FakeServer's observers.
   base::ObserverList<Observer, true>::Unchecked observers_;
-
-  // When true, the server operates normally. When false, a failure is returned
-  // on every request. This is used to simulate a network failure on the client.
-  bool network_enabled_;
 
   // The last received client to server messages.
   sync_pb::ClientToServerMessage last_commit_message_;

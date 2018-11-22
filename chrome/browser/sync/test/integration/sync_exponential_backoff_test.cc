@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/test/fake_server/fake_server_http_post_provider.h"
 #include "net/base/network_change_notifier.h"
 
 namespace {
@@ -73,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   ASSERT_TRUE(AddFolder(0, 0, "folder1"));
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
-  GetFakeServer()->DisableNetwork();
+  fake_server::FakeServerHttpPostProvider::DisableNetwork();
 
   // Add a new item to trigger another sync cycle.
   ASSERT_TRUE(AddFolder(0, 0, "folder2"));
@@ -84,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
 
   // Trigger network change notification and remember time when it happened.
   // Ensure that scheduler runs canary job immediately.
-  GetFakeServer()->EnableNetwork();
+  fake_server::FakeServerHttpPostProvider::EnableNetwork();
   net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
       net::NetworkChangeNotifier::CONNECTION_ETHERNET);
 

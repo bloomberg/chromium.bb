@@ -38,7 +38,6 @@ FakeServer::FakeServer()
       error_type_(sync_pb::SyncEnums::SUCCESS),
       alternate_triggered_errors_(false),
       request_counter_(0),
-      network_enabled_(true),
       weak_ptr_factory_(this) {
   base::ThreadRestrictions::SetIOAllowed(true);
   loopback_server_storage_ = std::make_unique<base::ScopedTempDir>();
@@ -160,32 +159,20 @@ bool AreWalletDataProgressMarkersEquivalent(
 }
 
 void FakeServer::HandleCommand(const std::string& request,
-                               const base::Closure& completion_closure,
-                               int* error_code,
-                               int* response_code,
+                               int* http_response_code,
                                std::string* response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!network_enabled_) {
-    *error_code = net::ERR_FAILED;
-    *response_code = net::ERR_FAILED;
-    *response = std::string();
-    completion_closure.Run();
-    return;
-  }
   request_counter_++;
 
   if (!authenticated_) {
-    *error_code = 0;
-    *response_code = net::HTTP_UNAUTHORIZED;
+    *http_response_code = net::HTTP_UNAUTHORIZED;
     *response = std::string();
-    completion_closure.Run();
     return;
   }
 
   sync_pb::ClientToServerResponse response_proto;
-  *response_code = 200;
-  *error_code = 0;
+  *http_response_code = net::HTTP_OK;
   if (error_type_ != sync_pb::SyncEnums::SUCCESS &&
       ShouldSendTriggeredError()) {
     response_proto.set_error_code(error_type_);
@@ -216,25 +203,23 @@ void FakeServer::HandleCommand(const std::string& request,
     // before handling those requests.
     std::unique_ptr<sync_pb::DataTypeProgressMarker> wallet_marker =
         RemoveWalletProgressMarkerIfExists(&message);
-    *response_code =
+    *http_response_code =
         SendToLoopbackServer(message.SerializeAsString(), response);
     if (wallet_marker != nullptr) {
       *message.mutable_get_updates()->add_from_progress_marker() =
           *wallet_marker;
-      if (*response_code == net::HTTP_OK) {
+      if (*http_response_code == net::HTTP_OK) {
         HandleWalletRequest(message, *wallet_marker, response);
       }
     }
-    if (*response_code == net::HTTP_OK) {
+    if (*http_response_code == net::HTTP_OK) {
       InjectClientCommand(response);
     }
-    completion_closure.Run();
     return;
   }
 
   response_proto.set_store_birthday(loopback_server_->GetStoreBirthday());
   *response = response_proto.SerializeAsString();
-  completion_closure.Run();
 }
 
 void FakeServer::HandleWalletRequest(
@@ -445,16 +430,6 @@ void FakeServer::OnCommit(const std::string& committer_id,
                           syncer::ModelTypeSet committed_model_types) {
   for (auto& observer : observers_)
     observer.OnCommit(committer_id, committed_model_types);
-}
-
-void FakeServer::EnableNetwork() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  network_enabled_ = true;
-}
-
-void FakeServer::DisableNetwork() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  network_enabled_ = false;
 }
 
 void FakeServer::EnableStrongConsistencyWithConflictDetectionModel() {
