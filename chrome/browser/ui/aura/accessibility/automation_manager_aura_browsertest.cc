@@ -14,6 +14,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"

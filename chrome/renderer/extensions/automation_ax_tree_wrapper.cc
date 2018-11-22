@@ -5,6 +5,7 @@
 #include "base/no_destructor.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
+#include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_node.h"
 
 namespace extensions {

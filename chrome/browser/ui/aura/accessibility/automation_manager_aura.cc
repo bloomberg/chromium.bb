@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/render_frame_host.h"
+#include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
