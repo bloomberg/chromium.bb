@@ -114,7 +114,7 @@ class AutofillActionTest : public testing::Test {
         .WillByDefault(Invoke([this]() {
           return std::make_unique<BatchElementChecker>(&mock_web_controller_);
         }));
-    ON_CALL(mock_action_delegate_, OnWaitForElement(_, _))
+    ON_CALL(mock_action_delegate_, OnShortWaitForElementExist(_, _))
         .WillByDefault(RunOnceCallback<1>(true));
   }
 

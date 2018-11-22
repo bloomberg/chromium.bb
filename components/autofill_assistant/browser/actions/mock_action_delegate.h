@@ -24,13 +24,28 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(CreateBatchElementChecker,
                std::unique_ptr<BatchElementChecker>());
 
-  void WaitForElement(const std::vector<std::string>& selectors,
-                      base::OnceCallback<void(bool)> callback) {
-    OnWaitForElement(selectors, callback);
+  void ShortWaitForElementExist(
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(bool)> callback) override {
+    OnShortWaitForElementExist(selectors, callback);
   }
 
-  MOCK_METHOD2(OnWaitForElement,
+  MOCK_METHOD2(OnShortWaitForElementExist,
                void(const std::vector<std::string>&,
+                    base::OnceCallback<void(bool)>&));
+
+  void WaitForElementVisible(base::TimeDelta max_wait_time,
+                             bool allow_interrupt,
+                             const std::vector<std::string>& selectors,
+                             base::OnceCallback<void(bool)> callback) override {
+    OnWaitForElementVisible(max_wait_time, allow_interrupt, selectors,
+                            callback);
+  }
+
+  MOCK_METHOD4(OnWaitForElementVisible,
+               void(base::TimeDelta,
+                    bool,
+                    const std::vector<std::string>&,
                     base::OnceCallback<void(bool)>&));
 
   MOCK_METHOD1(ShowStatusMessage, void(const std::string& message));

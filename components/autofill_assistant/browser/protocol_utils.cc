@@ -85,14 +85,15 @@ bool ProtocolUtils::ParseScripts(
     const auto& presentation = script_proto.presentation();
     script->handle.name = presentation.name();
     script->handle.autostart = presentation.autostart();
+    script->handle.interrupt = presentation.interrupt();
     script->handle.initial_prompt = presentation.initial_prompt();
     script->handle.highlight = presentation.highlight();
     script->precondition = ScriptPrecondition::FromProto(
         script_proto.path(), presentation.precondition());
     script->priority = presentation.priority();
 
-    if (script->handle.name.empty() || script->handle.path.empty() ||
-        !script->precondition) {
+    if (script->handle.path.empty() || !script->precondition ||
+        (script->handle.name.empty() && !script->handle.interrupt)) {
       LOG(ERROR) << "Ignored invalid or incomplete script '"
                  << script->handle.path << "'";
       continue;

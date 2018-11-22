@@ -77,6 +77,27 @@ TEST(ProtocolUtilsTest, OneFullyFeaturedScript) {
   EXPECT_NE(nullptr, scripts[0]->precondition);
 }
 
+TEST(ProtocolUtilsTest, AllowInterruptsWithNoName) {
+  SupportsScriptResponseProto proto;
+
+  SupportedScriptProto* script = proto.add_scripts();
+  script->set_path("path");
+  auto* presentation = script->mutable_presentation();
+  presentation->set_autostart(true);
+  presentation->set_initial_prompt("prompt");
+  presentation->set_interrupt(true);
+  presentation->mutable_precondition()->add_domain("www.example.com");
+
+  std::vector<std::unique_ptr<Script>> scripts;
+  std::string proto_str;
+  proto.SerializeToString(&proto_str);
+  EXPECT_TRUE(ProtocolUtils::ParseScripts(proto_str, &scripts));
+  ASSERT_THAT(scripts, SizeIs(1));
+  EXPECT_EQ("path", scripts[0]->handle.path);
+  EXPECT_EQ("", scripts[0]->handle.name);
+  EXPECT_TRUE(scripts[0]->handle.interrupt);
+}
+
 TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
   std::map<std::string, std::string> parameters;
   parameters["a"] = "b";

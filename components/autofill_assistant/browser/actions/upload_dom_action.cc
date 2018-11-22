@@ -22,7 +22,7 @@ UploadDomAction::~UploadDomAction() {}
 void UploadDomAction::InternalProcessAction(ActionDelegate* delegate,
                                             ProcessActionCallback callback) {
   DCHECK_GT(proto_.upload_dom().tree_root().selectors_size(), 0);
-  delegate->WaitForElement(
+  delegate->ShortWaitForElementExist(
       ExtractVector(proto_.upload_dom().tree_root().selectors()),
       base::BindOnce(&UploadDomAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),

@@ -22,7 +22,7 @@ ClickAction::~ClickAction() {}
 void ClickAction::InternalProcessAction(ActionDelegate* delegate,
                                         ProcessActionCallback callback) {
   DCHECK_GT(proto_.click().element_to_click().selectors_size(), 0);
-  delegate->WaitForElement(
+  delegate->ShortWaitForElementExist(
       ExtractVector(proto_.click().element_to_click().selectors()),
       base::BindOnce(&ClickAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),

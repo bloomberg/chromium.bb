@@ -6,7 +6,9 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SCRIPT_EXECUTOR_H_
 
 #include <deque>
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -33,11 +35,13 @@ class ScriptExecutor : public ActionDelegate {
     virtual void OnServerPayloadChanged(const std::string& server_payload) = 0;
   };
 
-  // |delegate| and |listener| should outlive this object and should not be
-  // nullptr.
+  // |delegate|, |listener|, |script_state| and |ordered_interrupts| should
+  // outlive this object and should not be nullptr.
   ScriptExecutor(const std::string& script_path,
                  const std::string& server_payload,
                  ScriptExecutor::Listener* listener,
+                 std::map<std::string, ScriptStatusProto>* scripts_state,
+                 const std::vector<Script*>* ordered_interrupts,
                  ScriptExecutorDelegate* delegate);
   ~ScriptExecutor() override;
 
@@ -70,13 +74,18 @@ class ScriptExecutor : public ActionDelegate {
     ~Result();
   };
 
-  using RunScriptCallback = base::OnceCallback<void(Result)>;
+  using RunScriptCallback = base::OnceCallback<void(const Result&)>;
   void Run(RunScriptCallback callback);
 
   // Override ActionDelegate:
   std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() override;
-  void WaitForElement(const std::vector<std::string>& selectors,
-                      base::OnceCallback<void(bool)> callback) override;
+  void ShortWaitForElementExist(
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(bool)> callback) override;
+  void WaitForElementVisible(base::TimeDelta max_wait_time,
+                             bool allow_interrupt,
+                             const std::vector<std::string>& selectors,
+                             base::OnceCallback<void(bool)> callback) override;
   void ShowStatusMessage(const std::string& message) override;
   void ClickOrTapElement(const std::vector<std::string>& selectors,
                          base::OnceCallback<void(bool)> callback) override;
@@ -136,16 +145,79 @@ class ScriptExecutor : public ActionDelegate {
   void HideOverlay() override;
 
  private:
+  // Helper for WaitForElementVisible that keeps track of the state required to
+  // run interrupts while waiting for a specific element.
+  class WaitWithInterrupts {
+   public:
+    // Let the caller know about either the result of looking for the element or
+    // of an abnormal result from an interrupt.
+    //
+    // If the given result is non-null, it should be forwarded as the result of
+    // the main script.
+    using Callback =
+        base::OnceCallback<void(bool, const ScriptExecutor::Result*)>;
+
+    // |main_script_| must not be null and outlive this instance.
+    WaitWithInterrupts(const ScriptExecutor* main_script,
+                       base::TimeDelta max_wait_time,
+                       ElementCheckType check_type,
+                       const std::vector<std::string>& selectors,
+                       WaitWithInterrupts::Callback callback);
+    ~WaitWithInterrupts();
+
+    void Run();
+
+   private:
+    void OnPreconditionCheckDone(const Script* interrupt,
+                                 bool precondition_match);
+    void OnElementCheckDone(bool found);
+    void OnTryDone();
+    void OnAllDone();
+    void RunInterrupt(const Script* interrupt);
+    void OnInterruptDone(const ScriptExecutor::Result& result);
+    void RunCallback(bool found, const ScriptExecutor::Result* result);
+
+    const ScriptExecutor* main_script_;
+    const base::TimeDelta max_wait_time_;
+    const ElementCheckType check_type_;
+    const std::vector<std::string> selectors_;
+    WaitWithInterrupts::Callback callback_;
+
+    std::unique_ptr<BatchElementChecker> batch_element_checker_;
+    std::set<const Script*> runnable_interrupts_;
+    bool element_found_;
+
+    // An empty vector of interrupts that can be passed to interrupt_executor_
+    // and outlives it. Interrupts must not run interrupts.
+    const std::vector<Script*> no_interrupts_;
+
+    // The interrupt that's currently running.
+    std::unique_ptr<ScriptExecutor> interrupt_executor_;
+
+    DISALLOW_COPY_AND_ASSIGN(WaitWithInterrupts);
+  };
+  friend class WaitWithInterrupts;
+
   void OnGetActions(bool result, const std::string& response);
   void RunCallback(bool success);
+  void RunCallbackWithResult(const Result& result);
   void ProcessNextAction();
   void ProcessAction(Action* action);
   void GetNextActions();
   void OnProcessedAction(std::unique_ptr<ProcessedActionProto> action);
+  void WaitForElement(base::TimeDelta max_wait_time,
+                      ElementCheckType check_type,
+                      const std::vector<std::string>& selectors,
+                      base::OnceCallback<void(bool)> callback);
+  void OnWaitForElementVisible(
+      base::OnceCallback<void(bool)> element_found_callback,
+      bool element_found,
+      const Result* interrupt_result);
   void OnChosen(base::OnceCallback<void(const std::string&)> callback,
                 const std::string& chosen);
 
   std::string script_path_;
+  const std::string initial_server_payload_;
   std::string last_server_payload_;
   ScriptExecutor::Listener* const listener_;
   ScriptExecutorDelegate* delegate_;
@@ -158,6 +230,14 @@ class ScriptExecutor : public ActionDelegate {
   bool should_clean_contextual_ui_on_finish_;
   ActionProto::ActionInfoCase previous_action_type_;
   std::vector<std::vector<std::string>> touchable_elements_;
+  std::map<std::string, ScriptStatusProto>* scripts_state_;
+
+  // Set of interrupts that might run during wait for dom actions with
+  // allow_interrupt. Sorted by priority; an interrupt that appears on the
+  // vector first should run first.
+  const std::vector<Script*>* ordered_interrupts_;
+
+  std::unique_ptr<WaitWithInterrupts> wait_with_interrupts_;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);

@@ -242,9 +242,29 @@ void Controller::OnGetScripts(const GURL& url,
   StartPeriodicScriptChecks();
 }
 
+void Controller::ExecuteScript(const std::string& script_path) {
+  DCHECK(!script_tracker_->running());
+
+  GetUiController()->ShowOverlay();
+  touchable_element_area_.ClearElements();
+
+  StopPeriodicScriptChecks();
+  // Runnable scripts will be checked and reported if necessary after executing
+  // the script.
+  script_tracker_->ClearRunnableScripts();
+  GetUiController()->UpdateScripts({});  // Clear scripts.
+  // TODO(crbug.com/806868): Consider making ClearRunnableScripts part of
+  // ExecuteScripts to simplify the controller.
+  script_tracker_->ExecuteScript(
+      script_path, base::BindOnce(&Controller::OnScriptExecuted,
+                                  // script_tracker_ is owned by Controller.
+                                  base::Unretained(this), script_path));
+}
+
 void Controller::OnScriptExecuted(const std::string& script_path,
-                                  ScriptExecutor::Result result) {
-  GetUiController()->HideOverlay();
+                                  const ScriptExecutor::Result& result) {
+  if (!allow_autostart_)
+    GetUiController()->HideOverlay();
   if (!result.success) {
     LOG(ERROR) << "Failed to execute script " << script_path;
     GetUiController()->ShowStatusMessage(
@@ -289,6 +309,44 @@ void Controller::GiveUp() {
   GetUiController()->ShutdownGracefully();
 }
 
+bool Controller::MaybeAutostartScript(
+    const std::vector<ScriptHandle>& runnable_scripts) {
+  // We want to g through all runnable autostart interrupts first, one at a
+  // time. To do that, always run highest priority autostartable interrupt from
+  // runnable_script, which is ordered by priority.
+  for (const auto& script : runnable_scripts) {
+    if (script.autostart && script.interrupt) {
+      std::string script_path = script.path;
+      ExecuteScript(script_path);
+      // making a copy of script.path is necessary, as ExecuteScript clears
+      // runnable_scripts, so script.path will not survive until the end of
+      // ExecuteScript.
+      return true;
+    }
+  }
+
+  // Under specific conditions, we can directly run a non-interrupt script
+  // without first displaying it. This is meant to work only at the very
+  // beginning, when no non-interrupt scripts have run, and only if there's
+  // exactly one autostartable script.
+  if (allow_autostart_) {
+    int autostart_count = 0;
+    std::string autostart_path;
+    for (const auto& script : runnable_scripts) {
+      if (script.autostart && !script.interrupt) {
+        autostart_count++;
+        autostart_path = script.path;
+      }
+    }
+    if (autostart_count == 1) {
+      allow_autostart_ = false;
+      ExecuteScript(autostart_path);
+      return true;
+    }
+  }
+  return false;
+}
+
 void Controller::OnClickOverlay() {
   GetUiController()->HideOverlay();
   // TODO(crbug.com/806868): Stop executing scripts.
@@ -296,21 +354,11 @@ void Controller::OnClickOverlay() {
 
 void Controller::OnScriptSelected(const std::string& script_path) {
   DCHECK(!script_path.empty());
-  DCHECK(!script_tracker_->running());
 
-  GetUiController()->ShowOverlay();
-  touchable_element_area_.ClearElements();
+  // This is a script selected from the UI, so it should disable autostart.
+  allow_autostart_ = false;
 
-  StopPeriodicScriptChecks();
-  // Runnable scripts will be checked and reported if necessary after executing
-  // the script.
-  script_tracker_->ClearRunnableScripts();
-  GetUiController()->UpdateScripts({});  // Clear scripts.
-  allow_autostart_ = false;  // Only ever autostart the very first script.
-  script_tracker_->ExecuteScript(
-      script_path, base::BindOnce(&Controller::OnScriptExecuted,
-                                  // script_tracker_ is owned by Controller.
-                                  base::Unretained(this), script_path));
+  ExecuteScript(script_path);
 }
 
 std::string Controller::GetDebugContext() {
@@ -351,9 +399,6 @@ void Controller::DidGetUserInteraction(const blink::WebInputEvent::Type type) {
   switch (type) {
     case blink::WebInputEvent::kTouchStart:
     case blink::WebInputEvent::kGestureTapDown:
-      // Disable autostart after interaction with the web page.
-      allow_autostart_ = false;
-
       if (!script_tracker_->running()) {
         script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
         StartPeriodicScriptChecks();
@@ -387,23 +432,8 @@ void Controller::OnRunnableScriptsChanged(
     GetUiController()->HideOverlay();
   }
 
-  // Under specific conditions, we can directly run a script without first
-  // displaying it. This is meant to work only at the very beginning, when no
-  // scripts have run, there has been no interaction with the webpage and only
-  // if there's exactly one runnable autostartable script.
-  if (allow_autostart_) {
-    int autostart_count = 0;
-    std::string autostart_path;
-    for (const auto& script : runnable_scripts) {
-      if (script.autostart) {
-        autostart_count++;
-        autostart_path = script.path;
-      }
-    }
-    if (autostart_count == 1) {
-      OnScriptSelected(autostart_path);
-      return;
-    }
+  if (MaybeAutostartScript(runnable_scripts)) {
+    return;
   }
 
   // Show the initial prompt if available.
@@ -415,11 +445,10 @@ void Controller::OnRunnableScriptsChanged(
     }
   }
 
-  // Update the set of scripts. Only scripts that are not marked as autostart
-  // should be shown.
+  // Update the set of scripts in the UI.
   std::vector<ScriptHandle> scripts_to_update;
   for (const auto& script : runnable_scripts) {
-    if (!script.autostart) {
+    if (!script.autostart && !script.name.empty()) {
       scripts_to_update.emplace_back(script);
     }
   }

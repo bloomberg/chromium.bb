@@ -28,7 +28,7 @@ void FocusElementAction::InternalProcessAction(ActionDelegate* delegate,
   if (!focus_element.title().empty()) {
     delegate->ShowStatusMessage(focus_element.title());
   }
-  delegate->WaitForElement(
+  delegate->ShortWaitForElementExist(
       ExtractVector(focus_element.element().selectors()),
       base::BindOnce(&FocusElementAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
