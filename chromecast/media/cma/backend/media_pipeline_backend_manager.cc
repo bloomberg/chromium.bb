@@ -167,6 +167,9 @@ int MediaPipelineBackendManager::TotalPlayingNoneffectsAudioStreamsCount() {
 void MediaPipelineBackendManager::EnterPowerSaveMode() {
   DCHECK_EQ(TotalPlayingAudioStreamsCount(), 0);
   DCHECK(VolumeControl::SetPowerSaveMode);
+  if (!power_save_enabled_) {
+    return;
+  }
   metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
       "Cast.Platform.VolumeControl.PowerSaveOn");
   VolumeControl::SetPowerSaveMode(true);
@@ -237,6 +240,16 @@ void MediaPipelineBackendManager::AddAudioDecoder(
 void MediaPipelineBackendManager::RemoveAudioDecoder(
     AudioDecoderWrapper* decoder) {
   audio_decoders_.erase(decoder);
+}
+
+void MediaPipelineBackendManager::SetPowerSaveEnabled(bool power_save_enabled) {
+  MAKE_SURE_MEDIA_THREAD(SetPowerSaveEnabled, power_save_enabled);
+  power_save_enabled_ = power_save_enabled;
+  if (!power_save_enabled_) {
+    if (VolumeControl::SetPowerSaveMode) {
+      VolumeControl::SetPowerSaveMode(false);
+    }
+  }
 }
 
 }  // namespace media

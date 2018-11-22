@@ -121,6 +121,10 @@ class MediaPipelineBackendManager {
 
   bool IsPlaying(bool include_sfx, AudioContentType type);
 
+  // If |power_save_enabled| is |false|, power save will be turned off and
+  // automatic power save will be disabled until this is called with |true|.
+  void SetPowerSaveEnabled(bool power_save_enabled);
+
  private:
   friend class MediaPipelineBackendWrapper;
   friend class AudioDecoderWrapper;
@@ -160,6 +164,8 @@ class MediaPipelineBackendManager {
   base::flat_map<AudioContentType, float> global_volume_multipliers_;
 
   BufferDelegate* buffer_delegate_;
+
+  bool power_save_enabled_ = true;
 
   base::OneShotTimer power_save_timer_;
 
