@@ -134,7 +134,7 @@ class VROrientationDeviceTest : public testing::Test {
 
     base::RunLoop loop;
 
-    device_->OnMagicWindowFrameDataRequest(base::BindOnce(
+    device_->OnGetInlineFrameData(base::BindOnce(
         [](base::OnceClosure quit_closure,
            base::OnceCallback<void(mojom::VRPosePtr)> callback,
            mojom::XRFrameDataPtr ptr) {
@@ -233,7 +233,7 @@ TEST_F(VROrientationDeviceTest, SensorIsAvailableTest) {
 }
 
 TEST_F(VROrientationDeviceTest, GetOrientationTest) {
-  // Tests that OnMagicWindowFrameDataRequest returns a pose ptr without mishap.
+  // Tests that OnGetInlineFrameData returns a pose ptr without mishap.
 
   InitializeDevice(FakeInitParams());
 

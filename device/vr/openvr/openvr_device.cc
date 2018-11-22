@@ -298,7 +298,7 @@ void OpenVRDevice::OnPresentingControllerMojoConnectionError() {
   exclusive_controller_binding_.Close();
 }
 
-void OpenVRDevice::OnMagicWindowFrameDataRequest(
+void OpenVRDevice::OnGetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   if (!openvr_) {
     std::move(callback).Run(nullptr);

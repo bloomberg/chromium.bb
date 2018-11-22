@@ -47,7 +47,7 @@ class DEVICE_VR_EXPORT OpenVRDevice
 
  private:
   // VRDeviceBase
-  void OnMagicWindowFrameDataRequest(
+  void OnGetInlineFrameData(
       mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
 
   // XRSessionController

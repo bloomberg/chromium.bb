@@ -31,7 +31,7 @@ class DEVICE_VR_EXPORT OculusDevice
   void RequestSession(
       mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
-  void OnMagicWindowFrameDataRequest(
+  void OnGetInlineFrameData(
       mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
   void OnRequestSessionResult(mojom::XRRuntime::RequestSessionCallback callback,
                               bool result,

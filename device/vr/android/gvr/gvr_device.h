@@ -42,7 +42,7 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
  private:
   // VRDeviceBase
   void OnListeningForActivate(bool listening) override;
-  void OnMagicWindowFrameDataRequest(
+  void OnGetInlineFrameData(
       mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
 
   void OnStartPresentResult(mojom::XRRuntime::RequestSessionCallback callback,

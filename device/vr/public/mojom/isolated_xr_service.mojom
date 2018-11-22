@@ -81,6 +81,8 @@ interface XRRuntime {
   EnsureInitialized() => ();
 
   SetListeningForActivate(bool listen_for_activation);
+
+  SetInlinePosesEnabled(bool enable);
 };
 
 // Represents the state of a single button or trigger.
