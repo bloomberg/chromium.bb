@@ -21,7 +21,6 @@ class WebContents;
 }  // namespace content
 
 namespace tab_ranker {
-struct MRUFeatures;
 struct TabFeatures;
 }  // namespace tab_ranker
 
@@ -54,27 +53,29 @@ class TabMetricsLogger {
     PageMetrics page_metrics = {};
   };
 
+  // A struct that contains metrics to be logged in ForegroundedOrClosed event.
+  struct ForegroundedOrClosedMetrics {
+    bool is_foregrounded = false;
+    bool is_discarded = false;
+    int64_t time_from_backgrounded = 0;
+    int mru_index = 0;
+    int total_tab_count = 0;
+  };
+
   TabMetricsLogger();
   ~TabMetricsLogger();
 
-  // Logs metrics for the tab with the given main frame WebContents. Does
-  // nothing if |ukm_source_id| is zero.
-  void LogBackgroundTab(ukm::SourceId ukm_source_id,
-                        const TabMetrics& tab_metrics);
+  // Logs metrics for the tab with the given |tab_features|. Does nothing if
+  // |ukm_source_id| is zero.
+  void LogTabMetrics(ukm::SourceId ukm_source_id,
+                     const tab_ranker::TabFeatures& tab_features,
+                     content::WebContents* web_contents);
 
   // Logs TabManager.Background.ForegroundedOrClosed UKM for a tab that was
-  // shown after being inactive.
-  void LogBackgroundTabShown(ukm::SourceId ukm_source_id,
-                             base::TimeDelta inactive_duration,
-                             const tab_ranker::MRUFeatures& mru_metrics,
-                             bool is_discarded);
-
-  // Logs TabManager.Background.ForegroundedOrClosed UKM for a tab that was
-  // closed after being inactive.
-  void LogBackgroundTabClosed(ukm::SourceId ukm_source_id,
-                              base::TimeDelta inactive_duration,
-                              const tab_ranker::MRUFeatures& mru_metrics,
-                              bool is_discarded);
+  // shown or closed after being inactive.
+  void LogForegroundedOrClosedMetrics(
+      ukm::SourceId ukm_source_id,
+      const ForegroundedOrClosedMetrics& metrics);
 
   // Logs TabManager.TabLifetime UKM for a closed tab.
   void LogTabLifetime(ukm::SourceId ukm_source_id,

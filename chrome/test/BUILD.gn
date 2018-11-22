@@ -3126,6 +3126,7 @@ test("unit_tests") {
       "../browser/resource_coordinator/tab_manager_web_contents_data_unittest.cc",
       "../browser/resource_coordinator/tab_memory_metrics_reporter_unittest.cc",
       "../browser/resource_coordinator/tab_metrics_logger_unittest.cc",
+      "../browser/resource_coordinator/tab_ranker/tab_features_unittest.cc",
       "../browser/resource_coordinator/tab_ranker/tab_score_predictor_unittest.cc",
       "../browser/resource_coordinator/test_lifecycle_unit.cc",
       "../browser/resource_coordinator/test_lifecycle_unit.h",
@@ -3286,6 +3287,7 @@ test("unit_tests") {
 
     deps += [
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
+      "//chrome/browser/resource_coordinator/tab_ranker:tab_features_test_helper",
       "//chrome/services/app_service:unit_tests",
       "//chrome/services/app_service/public/cpp/:unit_tests",
       "//components/signin/core/browser:signin_buildflags",

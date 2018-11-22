@@ -53,27 +53,6 @@ void PopulatePageTransitionFeatures(tab_ranker::TabFeatures* tab,
       ui::PageTransitionIsRedirect(page_transition);
 }
 
-// Logs the TabManager.Background.ForegroundedOrClosed event.
-void LogBackgroundTabForegroundedOrClosed(
-    ukm::SourceId ukm_source_id,
-    base::TimeDelta inactive_duration,
-    const tab_ranker::MRUFeatures& mru_features,
-    bool is_foregrounded,
-    bool is_discarded,
-    int sequence_id) {
-  if (!ukm_source_id)
-    return;
-
-  ukm::builders::TabManager_Background_ForegroundedOrClosed(ukm_source_id)
-      .SetSequenceId(sequence_id)
-      .SetIsForegrounded(is_foregrounded)
-      .SetMRUIndex(mru_features.index)
-      .SetTimeFromBackgrounded(inactive_duration.InMilliseconds())
-      .SetTotalTabCount(mru_features.total)
-      .SetIsDiscarded(is_discarded)
-      .Record(ukm::UkmRecorder::Get());
-}
-
 }  // namespace
 
 TabMetricsLogger::TabMetricsLogger() = default;
@@ -161,79 +140,51 @@ tab_ranker::TabFeatures TabMetricsLogger::GetTabFeatures(
   return tab;
 }
 
-void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
-                                        const TabMetrics& tab_metrics) {
+void TabMetricsLogger::LogTabMetrics(
+    ukm::SourceId ukm_source_id,
+    const tab_ranker::TabFeatures& tab_features,
+    content::WebContents* web_contents) {
   if (!ukm_source_id)
     return;
 
-  content::WebContents* web_contents = tab_metrics.web_contents;
+  if (web_contents) {
+    // UKM recording is disabled in OTR.
+    if (web_contents->GetBrowserContext()->IsOffTheRecord())
+      return;
 
-  // UKM recording is disabled in OTR.
-  if (web_contents->GetBrowserContext()->IsOffTheRecord())
-    return;
+    // Verify that the browser is not closing.
+    const Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+    if (base::ContainsKey(
+            BrowserList::GetInstance()->currently_closing_browsers(),
+            browser)) {
+      return;
+    }
 
-  // Verify that the browser is not closing.
-  const Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser ||
-      base::ContainsKey(
-          BrowserList::GetInstance()->currently_closing_browsers(), browser)) {
-    return;
+    const TabStripModel* tab_strip_model = browser->tab_strip_model();
+    if (tab_strip_model->closing_all())
+      return;
   }
 
-  const TabStripModel* tab_strip_model = browser->tab_strip_model();
-  if (tab_strip_model->closing_all())
-    return;
-
-  int index = tab_strip_model->GetIndexOfWebContents(web_contents);
-  DCHECK_NE(index, TabStripModel::kNoTab);
-
-  // inactive_duration isn't used when logging a tab that gets backgrounded.
-  tab_ranker::TabFeatures tab = GetTabFeatures(
-      browser, tab_metrics, base::TimeDelta() /*inactive_duration*/);
-
-  // Keep these Set functions in alphabetical order so they're easy to check
-  // against the list of metrics in the UKM event.
   ukm::builders::TabManager_TabMetrics entry(ukm_source_id);
-  entry.SetHasBeforeUnloadHandler(tab.has_before_unload_handler);
-  entry.SetHasFormEntry(tab.has_form_entry);
-  entry.SetIsPinned(tab.is_pinned);
-  entry.SetKeyEventCount(tab.key_event_count);
-  entry.SetMouseEventCount(tab.mouse_event_count);
-  entry.SetNavigationEntryCount(tab.navigation_entry_count);
-  if (tab.page_transition_core_type.has_value())
-    entry.SetPageTransitionCoreType(tab.page_transition_core_type.value());
-  entry.SetPageTransitionFromAddressBar(tab.page_transition_from_address_bar);
-  entry.SetPageTransitionIsRedirect(tab.page_transition_is_redirect);
+  PopulateTabFeaturesToUkmEntry(tab_features, &entry);
   entry.SetSequenceId(++sequence_id_);
-  if (tab.site_engagement_score.has_value())
-    entry.SetSiteEngagementScore(tab.site_engagement_score.value());
-  entry.SetTouchEventCount(tab.touch_event_count);
-  entry.SetWasRecentlyAudible(tab.was_recently_audible);
-
-  // The browser window logs its own usage UKMs with its session ID.
-  entry.SetWindowId(browser->session_id().id());
-
   entry.Record(ukm::UkmRecorder::Get());
 }
 
-void TabMetricsLogger::LogBackgroundTabShown(
+void TabMetricsLogger::LogForegroundedOrClosedMetrics(
     ukm::SourceId ukm_source_id,
-    base::TimeDelta inactive_duration,
-    const tab_ranker::MRUFeatures& mru_features,
-    const bool is_discarded) {
-  LogBackgroundTabForegroundedOrClosed(ukm_source_id, inactive_duration,
-                                       mru_features, true /* is_shown */,
-                                       is_discarded, ++sequence_id_);
-}
+    const ForegroundedOrClosedMetrics& metrics) {
+  if (!ukm_source_id)
+    return;
 
-void TabMetricsLogger::LogBackgroundTabClosed(
-    ukm::SourceId ukm_source_id,
-    base::TimeDelta inactive_duration,
-    const tab_ranker::MRUFeatures& mru_features,
-    const bool is_discarded) {
-  LogBackgroundTabForegroundedOrClosed(ukm_source_id, inactive_duration,
-                                       mru_features, false /* is_shown */,
-                                       is_discarded, ++sequence_id_);
+  ukm::builders::TabManager_Background_ForegroundedOrClosed(ukm_source_id)
+      .SetSequenceId(++sequence_id_)
+      .SetIsForegrounded(metrics.is_foregrounded)
+      .SetMRUIndex(metrics.mru_index)
+      .SetTimeFromBackgrounded(metrics.time_from_backgrounded)
+      .SetTotalTabCount(metrics.total_tab_count)
+      .SetIsDiscarded(metrics.is_discarded)
+      .Record(ukm::UkmRecorder::Get());
 }
 
 void TabMetricsLogger::LogTabLifetime(ukm::SourceId ukm_source_id,

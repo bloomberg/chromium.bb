@@ -4,17 +4,14 @@
 
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_score_predictor.h"
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/metrics_hashes.h"
-#include "chrome/browser/resource_coordinator/tab_ranker/mru_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/native_inference.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
-#include "chrome/browser/resource_coordinator/tab_ranker/window_features.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/assist_ranker/example_preprocessing.h"
 #include "components/assist_ranker/proto/example_preprocessor.pb.h"
@@ -47,58 +44,12 @@ LoadExamplePreprocessorConfig() {
   return config;
 }
 
-void PopulateRankerExample(assist_ranker::RankerExample* example,
-                           const TabFeatures& tab,
-                           const WindowFeatures& window,
-                           const MRUFeatures& mru) {
-  auto& features = *example->mutable_features();
-
-  features["HasBeforeUnloadHandler"].set_bool_value(
-      tab.has_before_unload_handler);
-  features["HasFormEntry"].set_bool_value(tab.has_form_entry);
-  features["IsActive"].set_bool_value(window.is_active);
-  features["IsPinned"].set_bool_value(tab.is_pinned);
-  features["KeyEventCount"].set_int32_value(tab.key_event_count);
-  features["MRUIndex"].set_int32_value(mru.index);
-  features["MouseEventCount"].set_int32_value(tab.mouse_event_count);
-  features["NavigationEntryCount"].set_int32_value(tab.navigation_entry_count);
-  DCHECK_GT(mru.total, 0);
-  features["NormalizedMRUIndex"].set_float_value(float(mru.index) / mru.total);
-  features["NumReactivationBefore"].set_int32_value(tab.num_reactivations);
-
-  // Nullable types indicate optional values; if not present, the corresponding
-  // feature should not be set.
-  if (tab.page_transition_core_type.has_value()) {
-    features["PageTransitionCoreType"].set_int32_value(
-        tab.page_transition_core_type.value());
-  }
-  features["PageTransitionFromAddressBar"].set_bool_value(
-      tab.page_transition_from_address_bar);
-  features["PageTransitionIsRedirect"].set_bool_value(
-      tab.page_transition_is_redirect);
-  if (tab.site_engagement_score.has_value()) {
-    features["SiteEngagementScore"].set_int32_value(
-        tab.site_engagement_score.value());
-  }
-  features["ShowState"].set_int32_value(window.show_state);
-  features["TabCount"].set_int32_value(window.tab_count);
-  features["TimeFromBackgrounded"].set_int32_value(tab.time_from_backgrounded);
-  features["TopDomain"].set_string_value(
-      std::to_string(base::HashMetricName(tab.host)));
-  features["TotalTabCount"].set_int32_value(mru.total);
-  features["TouchEventCount"].set_int32_value(tab.touch_event_count);
-  features["Type"].set_int32_value(window.type);
-  features["WasRecentlyAudible"].set_bool_value(tab.was_recently_audible);
-}
-
 }  // namespace
 
 TabScorePredictor::TabScorePredictor() = default;
 TabScorePredictor::~TabScorePredictor() = default;
 
 TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
-                                            const WindowFeatures& window,
-                                            const MRUFeatures& mru,
                                             float* score) {
   DCHECK(score);
 
@@ -110,7 +61,7 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
   if (preprocessor_config_) {
     // Build the RankerExample using the tab's features.
     assist_ranker::RankerExample example;
-    PopulateRankerExample(&example, tab, window, mru);
+    PopulateTabFeaturesToRankerExample(tab, &example);
 
     // Process the RankerExample with the tab ranker config to vectorize the
     // feature list for inference.
@@ -147,7 +98,6 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
     result = TabRankerResult::kPreprocessorInitializationFailed;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("TabManager.TabRanker.Result", result);
   return result;
 }
 
