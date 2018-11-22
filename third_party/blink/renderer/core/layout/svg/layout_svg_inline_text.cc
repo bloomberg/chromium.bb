@@ -85,7 +85,7 @@ void LayoutSVGInlineText::StyleDidChange(StyleDifference diff,
           LayoutSVGText::LocateLayoutSVGTextAncestor(this)) {
     text_layout_object->SetNeedsTextMetricsUpdate();
     text_layout_object->SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kStyleChange);
+        layout_invalidation_reason::kStyleChange);
   }
 }
 

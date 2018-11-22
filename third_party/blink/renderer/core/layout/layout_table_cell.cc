@@ -87,12 +87,12 @@ void LayoutTableCell::WillBeRemovedFromTree() {
     // TODO(dgrogan): Should this be setChildNeedsLayout or setNeedsLayout?
     // remove-cell-with-border-box.html only passes with setNeedsLayout but
     // other places use setChildNeedsLayout.
-    PreviousCell()->SetNeedsLayout(LayoutInvalidationReason::kTableChanged);
+    PreviousCell()->SetNeedsLayout(layout_invalidation_reason::kTableChanged);
     PreviousCell()->SetPreferredLogicalWidthsDirty();
   }
   if (NextCell()) {
     // TODO(dgrogan): Same as above re: setChildNeedsLayout vs setNeedsLayout.
-    NextCell()->SetNeedsLayout(LayoutInvalidationReason::kTableChanged);
+    NextCell()->SetNeedsLayout(layout_invalidation_reason::kTableChanged);
     NextCell()->SetPreferredLogicalWidthsDirty();
   }
 }
@@ -129,7 +129,7 @@ void LayoutTableCell::ColSpanOrRowSpanChanged() {
   UpdateColAndRowSpanFlags();
 
   SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kAttributeChanged);
+      layout_invalidation_reason::kAttributeChanged);
   if (Parent() && Section()) {
     Section()->SetNeedsCellRecalc();
     if (Table() && Table()->ShouldCollapseBorders())
@@ -283,7 +283,7 @@ void LayoutTableCell::ComputeIntrinsicPadding(int collapsed_height,
   // only shifts the cell inside the row but doesn't change the logical height.
   if (intrinsic_padding_before != old_intrinsic_padding_before ||
       intrinsic_padding_after != old_intrinsic_padding_after)
-    layouter.SetNeedsLayout(this, LayoutInvalidationReason::kPaddingChanged);
+    layouter.SetNeedsLayout(this, layout_invalidation_reason::kPaddingChanged);
 }
 
 void LayoutTableCell::UpdateLogicalWidth() {}
@@ -293,7 +293,7 @@ void LayoutTableCell::SetCellLogicalWidth(int table_layout_logical_width,
   if (table_layout_logical_width == LogicalWidth())
     return;
 
-  layouter.SetNeedsLayout(this, LayoutInvalidationReason::kSizeChanged);
+  layouter.SetNeedsLayout(this, layout_invalidation_reason::kSizeChanged);
 
   SetLogicalWidth(LayoutUnit(table_layout_logical_width));
   SetCellChildrenNeedLayout(true);

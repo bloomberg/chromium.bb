@@ -378,9 +378,9 @@ void DisplayLockContext::StartCommit() {
   // Also ensure we reach it for layout.
   // TODO(vmpstr): This should just mark the ancestor chain if needed.
   element_->GetLayoutObject()->SetNeedsLayout(
-      LayoutInvalidationReason::kDisplayLockCommitting);
+      layout_invalidation_reason::kDisplayLockCommitting);
   if (auto* parent = element_->GetLayoutObject()->Parent()) {
-    parent->SetNeedsLayout(LayoutInvalidationReason::kDisplayLockCommitting);
+    parent->SetNeedsLayout(layout_invalidation_reason::kDisplayLockCommitting);
   }
 
   // Schedule an animation to perform the lifecycle phases.

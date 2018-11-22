@@ -130,7 +130,7 @@ void LayoutSVGText::SubtreeChildWasAdded() {
   // The positioning elements cache depends on the size of each text
   // layoutObject in the subtree. If this changes, clear the cache. It will be
   // rebuilt on the next layout.
-  InvalidatePositioningValues(LayoutInvalidationReason::kChildChanged);
+  InvalidatePositioningValues(layout_invalidation_reason::kChildChanged);
   SetNeedsTextMetricsUpdate();
 }
 
@@ -143,7 +143,7 @@ void LayoutSVGText::SubtreeChildWillBeRemoved() {
   // The positioning elements cache depends on the size of each text
   // layoutObject in the subtree. If this changes, clear the cache. It will be
   // rebuilt on the next layout.
-  InvalidatePositioningValues(LayoutInvalidationReason::kChildChanged);
+  InvalidatePositioningValues(layout_invalidation_reason::kChildChanged);
   SetNeedsTextMetricsUpdate();
 }
 
@@ -157,7 +157,7 @@ void LayoutSVGText::SubtreeTextDidChange() {
   // The positioning elements cache depends on the size of each text object in
   // the subtree. If this changes, clear the cache and mark it for rebuilding
   // in the next layout.
-  InvalidatePositioningValues(LayoutInvalidationReason::kTextChanged);
+  InvalidatePositioningValues(layout_invalidation_reason::kTextChanged);
   SetNeedsTextMetricsUpdate();
 }
 

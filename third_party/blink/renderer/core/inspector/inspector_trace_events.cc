@@ -661,7 +661,7 @@ std::unique_ptr<TracedValue> InspectorLayoutEvent::EndData(
   return value;
 }
 
-namespace LayoutInvalidationReason {
+namespace layout_invalidation_reason {
 const char kUnknown[] = "Unknown";
 const char kSizeChanged[] = "Size changed";
 const char kAncestorMoved[] = "Ancestor moved";
@@ -695,7 +695,7 @@ const char kTextControlChanged[] = "Text control changed";
 const char kSvgChanged[] = "SVG changed";
 const char kScrollbarChanged[] = "Scrollbar changed";
 const char kDisplayLockCommitting[] = "Display lock committing";
-}  // namespace LayoutInvalidationReason
+}  // namespace layout_invalidation_reason
 
 std::unique_ptr<TracedValue> InspectorLayoutInvalidationTrackingEvent::Data(
     const LayoutObject* layout_object,

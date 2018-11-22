@@ -621,9 +621,10 @@ void LayoutTable::UpdateLayout() {
     UpdateLogicalWidth();
 
     if (LogicalWidth() != old_logical_width) {
-      for (unsigned i = 0; i < captions_.size(); i++)
+      for (unsigned i = 0; i < captions_.size(); i++) {
         layouter.SetNeedsLayout(captions_[i],
-                                LayoutInvalidationReason::kTableChanged);
+                                layout_invalidation_reason::kTableChanged);
+      }
     }
     // FIXME: The optimisation below doesn't work since the internal table
     // layout could have changed. We need to add a flag to the table

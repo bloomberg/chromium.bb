@@ -79,9 +79,10 @@ void LayoutTableCol::UpdateFromElement() {
   } else {
     span_ = 1;
   }
-  if (span_ != old_span && Style() && Parent())
+  if (span_ != old_span && Style() && Parent()) {
     SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        LayoutInvalidationReason::kAttributeChanged);
+        layout_invalidation_reason::kAttributeChanged);
+  }
 }
 
 void LayoutTableCol::InsertedIntoTree() {

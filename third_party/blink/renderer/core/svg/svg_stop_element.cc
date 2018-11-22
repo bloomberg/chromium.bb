@@ -51,7 +51,7 @@ void InvalidateInstancesAndAncestorResources(SVGStopElement* stop_element) {
 
   Element* parent = stop_element->parentElement();
   if (auto* gradient = ToSVGGradientElementOrNull(parent))
-    gradient->InvalidateGradient(LayoutInvalidationReason::kChildChanged);
+    gradient->InvalidateGradient(layout_invalidation_reason::kChildChanged);
 }
 
 }  // namespace

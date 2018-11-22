@@ -696,9 +696,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void SetAncestorLineBoxDirty(bool value = true) {
     bitfields_.SetAncestorLineBoxDirty(value);
-    if (value)
+    if (value) {
       SetNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::kLineBoxesChanged);
+          layout_invalidation_reason::kLineBoxesChanged);
+    }
   }
 
   void SetIsInsideFlowThreadIncludingDescendants(bool);

@@ -897,8 +897,8 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
   // here instead of a full layout. Need to investigate why it does not
   // trigger the correct invalidations in that case. crbug.com/350756
   if (info == kForcedLayoutAfterContainingBlockMoved) {
-    positioned_object->SetNeedsLayout(LayoutInvalidationReason::kAncestorMoved,
-                                      kMarkOnlyThis);
+    positioned_object->SetNeedsLayout(
+        layout_invalidation_reason::kAncestorMoved, kMarkOnlyThis);
   }
 
   positioned_object->LayoutIfNeeded();

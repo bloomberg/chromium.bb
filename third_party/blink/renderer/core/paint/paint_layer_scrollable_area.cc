@@ -972,7 +972,7 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
           in_overflow_relayout_ = true;
           SubtreeLayoutScope layout_scope(*GetLayoutBox());
           layout_scope.SetNeedsLayout(
-              GetLayoutBox(), LayoutInvalidationReason::kScrollbarChanged);
+              GetLayoutBox(), layout_invalidation_reason::kScrollbarChanged);
           if (GetLayoutBox()->IsLayoutBlock()) {
             LayoutBlock* block = ToLayoutBlock(GetLayoutBox());
             block->ScrollbarsChanged(horizontal_scrollbar_should_change,
@@ -1234,7 +1234,7 @@ void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {
       (GetLayoutBox()->HasAutoVerticalScrollbar() &&
        vertical_scrollbar_should_change)) {
     GetLayoutBox()->SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kUnknown);
+        layout_invalidation_reason::kUnknown);
   }
 
   ClampScrollOffsetAfterOverflowChange();
@@ -2496,7 +2496,7 @@ PaintLayerScrollableArea::PreventRelayoutScope::~PreventRelayoutScope() {
         DCHECK(scrollable_area->NeedsRelayout());
         LayoutBox* box = scrollable_area->GetLayoutBox();
         layout_scope_->SetNeedsLayout(
-            box, LayoutInvalidationReason::kScrollbarChanged);
+            box, layout_invalidation_reason::kScrollbarChanged);
         if (box->IsLayoutBlock()) {
           bool horizontal_scrollbar_changed =
               scrollable_area->HasHorizontalScrollbar() !=

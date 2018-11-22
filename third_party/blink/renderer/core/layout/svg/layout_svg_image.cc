@@ -212,7 +212,7 @@ void LayoutSVGImage::ImageChanged(WrappedImagePtr, CanDeferInvalidation defer) {
 
   if (StyleRef().Width().IsAuto() || StyleRef().Height().IsAuto()) {
     if (UpdateBoundingBox())
-      SetNeedsLayout(LayoutInvalidationReason::kSizeChanged);
+      SetNeedsLayout(layout_invalidation_reason::kSizeChanged);
   }
 
   SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kImage);

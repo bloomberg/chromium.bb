@@ -1969,7 +1969,7 @@ void LayoutObject::FirstLineStyleDidChange(const ComputedStyle& old_style,
       first_line_container->SetShouldDoFullPaintInvalidationForFirstLine();
   }
   if (diff.NeedsLayout())
-    SetNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::kStyleChange);
+    SetNeedsLayoutAndPrefWidthsRecalc(layout_invalidation_reason::kStyleChange);
 }
 
 void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
@@ -2076,10 +2076,12 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
   StyleDifference updated_diff = AdjustStyleDifference(diff);
 
   if (!diff.NeedsFullLayout()) {
-    if (updated_diff.NeedsFullLayout())
-      SetNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::kStyleChange);
-    else if (updated_diff.NeedsPositionedMovementLayout())
+    if (updated_diff.NeedsFullLayout()) {
+      SetNeedsLayoutAndPrefWidthsRecalc(
+          layout_invalidation_reason::kStyleChange);
+    } else if (updated_diff.NeedsPositionedMovementLayout()) {
       SetNeedsPositionedMovementLayout();
+    }
   }
 
   if (diff.TransformChanged() && !NeedsLayout()) {
@@ -2089,10 +2091,12 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
 
   if (diff.NeedsRecomputeOverflow() && !NeedsLayout()) {
     // TODO(rhogan): Make inlines capable of recomputing overflow too.
-    if (IsLayoutBlock())
+    if (IsLayoutBlock()) {
       SetNeedsOverflowRecalc();
-    else
-      SetNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::kStyleChange);
+    } else {
+      SetNeedsLayoutAndPrefWidthsRecalc(
+          layout_invalidation_reason::kStyleChange);
+    }
   }
 
   if (diff.NeedsPaintInvalidationSubtree() ||
@@ -2299,7 +2303,7 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
         old_style->GetPosition() != style_->GetPosition())
       MarkContainerChainForOverflowRecalcIfNeeded();
 
-    SetNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::kStyleChange);
+    SetNeedsLayoutAndPrefWidthsRecalc(layout_invalidation_reason::kStyleChange);
   } else if (diff.NeedsPositionedMovementLayout()) {
     SetNeedsPositionedMovementLayout();
   }
@@ -2362,7 +2366,7 @@ void LayoutObject::ApplyFirstLineChanges(const ComputedStyle& old_style) {
       }
     }
   }
-  SetNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::kStyleChange);
+  SetNeedsLayoutAndPrefWidthsRecalc(layout_invalidation_reason::kStyleChange);
 }
 
 void LayoutObject::PropagateStyleToAnonymousChildren() {

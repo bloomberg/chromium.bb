@@ -91,9 +91,10 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
     // flow child got yanked or that a positioned child got yanked). We also
     // issue paint invalidations, so that the area exposed when the child
     // disappears gets paint invalidated properly.
-    if (notify_layout_object && old_child->EverHadLayout())
+    if (notify_layout_object && old_child->EverHadLayout()) {
       old_child->SetNeedsLayoutAndPrefWidthsRecalc(
-          LayoutInvalidationReason::kRemovedFromLayout);
+          layout_invalidation_reason::kRemovedFromLayout);
+    }
     InvalidatePaintOnRemoval(*old_child);
   }
 
@@ -211,7 +212,7 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   new_child->ClearNeedsCollectInlines();
 
   new_child->SetNeedsLayoutAndPrefWidthsRecalc(
-      LayoutInvalidationReason::kAddedToLayout);
+      layout_invalidation_reason::kAddedToLayout);
   new_child->SetShouldDoFullPaintInvalidation(
       PaintInvalidationReason::kAppeared);
   new_child->AddSubtreePaintPropertyUpdateReason(

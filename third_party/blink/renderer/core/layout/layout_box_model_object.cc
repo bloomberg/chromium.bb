@@ -287,7 +287,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
        (StyleRef().OriginalDisplay() == EDisplay::kInlineBlock)) &&
       ((old_style->OriginalDisplay() == EDisplay::kBlock) ||
        (old_style->OriginalDisplay() == EDisplay::kInlineBlock)))
-    Parent()->SetNeedsLayout(LayoutInvalidationReason::kChildChanged,
+    Parent()->SetNeedsLayout(layout_invalidation_reason::kChildChanged,
                              kMarkContainerChain);
 
   PaintLayerType type = LayerTypeRequired();
@@ -317,7 +317,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
       SetChildNeedsLayout();
     if (had_transform_related_property) {
       SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          LayoutInvalidationReason::kStyleChange);
+          layout_invalidation_reason::kStyleChange);
     }
     if (!NeedsLayout()) {
       // FIXME: We should call a specialized version of this function.

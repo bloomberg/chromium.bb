@@ -84,9 +84,10 @@ void LayoutListMarker::StyleWillChange(StyleDifference diff,
                                        const ComputedStyle& new_style) {
   if (Style() &&
       (new_style.ListStylePosition() != StyleRef().ListStylePosition() ||
-       new_style.ListStyleType() != StyleRef().ListStyleType()))
+       new_style.ListStyleType() != StyleRef().ListStyleType())) {
     SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        LayoutInvalidationReason::kStyleChange);
+        layout_invalidation_reason::kStyleChange);
+  }
 
   LayoutBox::StyleWillChange(diff, new_style);
 }
@@ -166,11 +167,12 @@ void LayoutListMarker::ImageChanged(WrappedImagePtr o, CanDeferInvalidation) {
     return;
 
   LayoutSize image_size = IsImage() ? ImageBulletSize() : LayoutSize();
-  if (Size() != image_size || image_->ErrorOccurred())
+  if (Size() != image_size || image_->ErrorOccurred()) {
     SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        LayoutInvalidationReason::kImageChanged);
-  else
+        layout_invalidation_reason::kImageChanged);
+  } else {
     SetShouldDoFullPaintInvalidation();
+  }
 }
 
 void LayoutListMarker::UpdateMarginsAndContent() {

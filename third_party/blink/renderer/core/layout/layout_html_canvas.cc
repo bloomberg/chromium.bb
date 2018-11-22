@@ -77,7 +77,7 @@ void LayoutHTMLCanvas::CanvasSizeChanged() {
   }
 
   if (!SelfNeedsLayout())
-    SetNeedsLayout(LayoutInvalidationReason::kSizeChanged);
+    SetNeedsLayout(layout_invalidation_reason::kSizeChanged);
 }
 
 void LayoutHTMLCanvas::InvalidatePaint(

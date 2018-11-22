@@ -371,9 +371,10 @@ void SVGLayoutSupport::LayoutChildren(LayoutObject* first_child,
       child->LayoutIfNeeded();
     } else {
       SubtreeLayoutScope layout_scope(*child);
-      if (force_child_layout)
+      if (force_child_layout) {
         layout_scope.SetNeedsLayout(child,
-                                    LayoutInvalidationReason::kSvgChanged);
+                                    layout_invalidation_reason::kSvgChanged);
+      }
 
       // Lay out any referenced resources before the child.
       LayoutResourcesIfNeeded(*child);

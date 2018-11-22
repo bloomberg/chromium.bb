@@ -428,7 +428,7 @@ void LayoutFrameSet::PositionFrames() {
       if (size != child->Size() || size.IsEmpty()) {
         child->SetSize(size);
         child->SetNeedsLayoutAndFullPaintInvalidation(
-            LayoutInvalidationReason::kSizeChanged);
+            layout_invalidation_reason::kSizeChanged);
         child->UpdateLayout();
       }
 
@@ -467,7 +467,7 @@ void LayoutFrameSet::ContinueResizing(GridAxis& axis, int position) {
   axis.deltas_[axis.split_being_resized_ - 1] += delta;
   axis.deltas_[axis.split_being_resized_] -= delta;
   SetNeedsLayoutAndFullPaintInvalidation(
-      LayoutInvalidationReason::kSizeChanged);
+      layout_invalidation_reason::kSizeChanged);
 }
 
 bool LayoutFrameSet::UserResize(const MouseEvent& evt) {

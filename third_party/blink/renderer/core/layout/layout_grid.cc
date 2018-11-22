@@ -156,7 +156,7 @@ void LayoutGrid::StyleDidChange(StyleDifference diff,
                                    *child) ||
           SelfAlignmentChangedSize(kGridColumnAxis, *old_style, new_style,
                                    *child)) {
-        child->SetNeedsLayout(LayoutInvalidationReason::kGridChanged);
+        child->SetNeedsLayout(layout_invalidation_reason::kGridChanged);
       }
     }
   }
@@ -1220,7 +1220,8 @@ void LayoutGrid::UpdateGridAreaLogicalSize(
       OverrideSizeChanged(child, kForRows, grid_area_logical_size);
   if (grid_area_width_changed ||
       (grid_area_height_changed && HasRelativeBlockAxisSize(*this, child))) {
-    child.SetNeedsLayout(LayoutInvalidationReason::kGridChanged, kMarkOnlyThis);
+    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
+                         kMarkOnlyThis);
   }
 
   child.SetOverrideContainingBlockContentLogicalWidth(
@@ -1326,7 +1327,7 @@ void LayoutGrid::LayoutPositionedObjects(bool relayout_children,
     // Mark for layout as we're resetting the position before and we relay in
     // generic layout logic for positioned items in order to get the offsets
     // properly resolved.
-    child->SetNeedsLayout(LayoutInvalidationReason::kGridChanged,
+    child->SetNeedsLayout(layout_invalidation_reason::kGridChanged,
                           kMarkOnlyThis);
 
     LayoutPositionedObject(child, relayout_children, info);
@@ -1508,7 +1509,7 @@ void LayoutGrid::ApplyStretchAlignmentToChildIfNeeded(LayoutBox& child) {
       // TODO (lajava): Can avoid laying out here in some cases. See
       // https://webkit.org/b/87905.
       child.SetLogicalHeight(LayoutUnit());
-      child.SetNeedsLayout(LayoutInvalidationReason::kGridChanged);
+      child.SetNeedsLayout(layout_invalidation_reason::kGridChanged);
     }
   }
 }

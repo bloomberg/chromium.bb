@@ -248,7 +248,7 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
       (!image_size_is_constrained ||
        containing_block_needs_to_recompute_preferred_size)) {
     SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kSizeChanged);
+        layout_invalidation_reason::kSizeChanged);
     return;
   }
 

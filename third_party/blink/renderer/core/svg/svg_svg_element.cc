@@ -140,9 +140,10 @@ void SVGSVGElement::SetCurrentTranslate(const FloatPoint& point) {
 }
 
 void SVGSVGElement::UpdateUserTransform() {
-  if (LayoutObject* object = GetLayoutObject())
+  if (LayoutObject* object = GetLayoutObject()) {
     object->SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kUnknown);
+        layout_invalidation_reason::kUnknown);
+  }
 }
 
 bool SVGSVGElement::ZoomAndPanEnabled() const {

@@ -1943,9 +1943,10 @@ LayoutUnit LayoutBlockFlow::CollapseMargins(
     bool logical_top_intrudes_into_float =
         logical_top < before_collapse_logical_top;
     if (logical_top_intrudes_into_float && ContainsFloats() &&
-        !child.AvoidsFloats() && LowestFloatLogicalBottom() > logical_top)
+        !child.AvoidsFloats() && LowestFloatLogicalBottom() > logical_top) {
       child.SetNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::kAncestorMarginCollapsing);
+          layout_invalidation_reason::kAncestorMarginCollapsing);
+    }
   }
 
   return logical_top;
@@ -3035,7 +3036,7 @@ void LayoutBlockFlow::StyleDidChange(StyleDifference diff,
   bool needs_update_ancestor_float_object_should_paint_flags = false;
   if (HasSelfPaintingLayer() != had_self_painting_layer &&
       HasOverhangingFloats()) {
-    SetNeedsLayout(LayoutInvalidationReason::kStyleChange);
+    SetNeedsLayout(layout_invalidation_reason::kStyleChange);
     if (had_self_painting_layer)
       MarkAllDescendantsWithFloatsForLayout();
     else
@@ -3417,7 +3418,7 @@ void LayoutBlockFlow::CollapseAnonymousBlockChild(LayoutBlockFlow* child) {
   if (child->IsRubyRun() || child->IsRubyBase())
     return;
   SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kChildAnonymousBlockChanged);
+      layout_invalidation_reason::kChildAnonymousBlockChanged);
 
   child->MoveAllChildrenTo(this, child->NextSibling(), child->HasLayer());
   // If we make an object's children inline we are going to frustrate any future
@@ -3443,7 +3444,7 @@ bool LayoutBlockFlow::MergeSiblingContiguousAnonymousBlock(
     return false;
 
   SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kAnonymousBlockChange);
+      layout_invalidation_reason::kAnonymousBlockChange);
 
   // If the inlineness of children of the two block don't match, we'd need
   // special code here (but there should be no need for it).
