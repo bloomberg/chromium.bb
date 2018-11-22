@@ -8,13 +8,13 @@
 <dom-module id="print-preview-number-settings-section">
   <template>
     <style include="print-preview-shared">
-      :host(:not([input-valid])) #section-title {
-        margin-top: calc(-14px - 2 * .75rem);
-      }
-
       :host {
         /* Width = 3 digits + space + cr-input-padding-end/start */
         --cr-input-width: calc(4em + 16px);
+      }
+
+      #sectionTitle {
+        align-self: baseline;
       }
 
       cr-input {
@@ -41,7 +41,7 @@
       }
     </style>
     <print-preview-settings-section>
-      <span slot="title" id="section-title">[[inputLabel]]</span>
+      <span slot="title" id="sectionTitle">[[inputLabel]]</span>
       <div slot="controls" id="controls">
         <span class="input-wrapper">
           <cr-input id="userValue" type="number"
