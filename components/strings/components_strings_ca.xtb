@@ -636,6 +636,7 @@
 <translation id="5287240709317226393">Mostra les galetes</translation>
 <translation id="5288108484102287882">La validació dels valors de la política ha generat advertiments</translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>
+<translation id="5300589172476337783">Mostra</translation>
 <translation id="5308380583665731573">Connecta</translation>
 <translation id="5308689395849655368">La creació d'informes de bloqueig està desactivada.</translation>
 <translation id="5317780077021120954">Desa</translation>
@@ -871,6 +872,7 @@
 <translation id="7079718277001814089">Aquest lloc conté programari maliciós</translation>
 <translation id="7087282848513945231">Comptat</translation>
 <translation id="7090678807593890770">Cerqueu <ph name="LINK" /> a Google</translation>
+<translation id="7108338896283013870">Amaga</translation>
 <translation id="7108819624672055576">Permès per una extensió</translation>
 <translation id="7111012039238467737">(Vàlid)</translation>
 <translation id="7119414471315195487">Tanca altres pestanyes o programes</translation>

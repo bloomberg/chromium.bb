@@ -45,6 +45,7 @@
 <translation id="1275718070701477396">محدد</translation>
 <translation id="1286609444451033486">يُرجى الضغط على "بحث" + "مسافة" للتبديل.</translation>
 <translation id="1291286136605998134">زر التبديل</translation>
+<translation id="1303806948938513162">‏النقر بأربعة أصابع للدخول إلى قوائم ChromeVox</translation>
 <translation id="1319608975892113573">ليست هناك علامة اقتباس فقرة سابقة.</translation>
 <translation id="1321576897702511272">‏إخفاء مساعدة ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> من <ph name="TOTAL" /></translation>
@@ -239,6 +240,7 @@
 <translation id="3046838483509668188">‏خيارات ChromeVox</translation>
 <translation id="3047143736589213134">مخطط مفاتيح تجريبي</translation>
 <translation id="3060756054951570867">تم فتح القائمة <ph name="TITLE" /></translation>
+<translation id="3060880924447482063">التمرير سريعًا جهة اليمين أو اليسار للانتقال حسب العنصر</translation>
 <translation id="3070245424257836917">التمرير السريع بثلاثة أصابع إلى الأعلى</translation>
 <translation id="3078345202707391975">عنوان المستوى الثاني التالي</translation>
 <translation id="3078740164268491126">جدول</translation>
@@ -332,6 +334,7 @@
 <translation id="3389259863310851658">حقل النموذج السابق</translation>
 <translation id="3390225400784126843">العنصر المختلف التالي.</translation>
 <translation id="3392045790598181549">عنصر القائمة <ph name="NAME" /></translation>
+<translation id="3393605254399152980">السحب بإصبع واحد لسماع التعليقات عند لمس الشاشة</translation>
 <translation id="3406283310380167331">عرض قائمة النماذج</translation>
 <translation id="3423495725743882470">صف $1 عمود $2</translation>
 <translation id="3457000393508828486">مضغوط جزئيًا</translation>
@@ -347,6 +350,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{علامة استفهام واحدة}zero{# question marks}two{علامتا استفهام (#)}few{# علامات استفهام}many{# علامة استفهام}other{# من علامات الاستفهام}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{علامة إقحام واحدة}zero{# carets}two{علامتا إقحام (#)}few{# علامات إقحام}many{# علامة إقحام}other{# من علامات الإقحام}}</translation>
 <translation id="352577523970648069">حقل نص قابل للتعديل</translation>
+<translation id="3549680091535286226">النقر بإصبعين لإيقاف الكلام مؤقتًا</translation>
 <translation id="3568702578574425662">لم يتم تحديد مربع الاختيار <ph name="NAME" /></translation>
 <translation id="3589661172894441357">مسرد مصطلحات</translation>
 <translation id="3599054940393788245">ليس داخل الرياضيات</translation>
@@ -411,6 +415,7 @@
 <translation id="4166192625054637755">نهاية الرموز السفلية</translation>
 <translation id="4173994908659439270">ليس هناك حقل تالٍ قابل للتعديل.</translation>
 <translation id="4176463684765177261">غير مفعّل</translation>
+<translation id="4187322598335821254">التمرير سريعًا لأعلى أو لأسفل للانتقال حسب السطر</translation>
 <translation id="4188530942454211480">الجملة السابقة</translation>
 <translation id="4191918948604314587">زر</translation>
 <translation id="419265409837491189">انتقِل إلى العمود السابق.</translation>
@@ -709,6 +714,7 @@
 <translation id="6583174818554398774">الانتقال إلى التالي بدقة</translation>
 <translation id="6587021927234520429">ليس هناك عنوان تالٍ من المستوى الرابع.</translation>
 <translation id="6601344353291556895">تفعيل الأوصاف المطوَّلة.</translation>
+<translation id="6609828810966525877">‏استكشاف المزيد من الإيماءات في "وضع التعلّم" و"مركز مساعدة Chromebook"</translation>
 <translation id="6615602925644411249">بحث في الصفحة.</translation>
 <translation id="6628427060004938651">جزء</translation>
 <translation id="6633350132811819843">ليس هناك جدول تالٍ.</translation>
@@ -760,6 +766,7 @@
 للانتقال للأمام بين علامات التبويب المفتوحة، يُرجى استخدام Control+Tab.
 لفتح قائمة متصفح Chrome، يُرجى الضغط على Alt+F.</translation>
 <translation id="7086377898680121060">سطوع مرتفع</translation>
+<translation id="7088743565397416204">النقر المزدوج لتفعيل العنصر المحدّد</translation>
 <translation id="7095834689119144465">تعديل النص الرقمي فقط</translation>
 <translation id="7096001299300236431">الوسائط السابقة</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -815,6 +822,7 @@
 <translation id="7491962110804786152">علامة تبويب</translation>
 <translation id="7492049978501397201">مربع حوار تم الدخول إليه</translation>
 <translation id="7518543783849163354">‏لإيقاف ChromeVox مؤقتًا عن التحدث، اضغط على مفتاح Control.</translation>
+<translation id="7521682724501952239">‏يمكنك استخدام ChromeVox مع الشاشة التي تعمل باللمس.</translation>
 <translation id="7532613204005497612">حزيران (يونيو)</translation>
 <translation id="7552432549459840808">‏اختصارات Chrome المفيدة</translation>
 <translation id="7579911500627256166">نقطة <ph name="DOT" /></translation>

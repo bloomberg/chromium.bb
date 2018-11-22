@@ -190,7 +190,6 @@
 <translation id="126156426083987769">ಡೆಮೊ ಮೋಡ್ ಸಾಧನದ ಪರವಾನಗಿಗಳಲ್ಲಿ ಸಮಸ್ಯೆ ಸಂಭವಿಸಿದೆ.</translation>
 <translation id="126710816202626562">ಅನುವಾದ ಭಾಷೆ:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="127138278192656016">ಸಿಂಕ್ ಮತ್ತು ಎಲ್ಲಾ ಸೇವೆಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="1272079795634619415">ನಿಲ್ಲಿಸಿ</translation>
 <translation id="1272978324304772054">ಈ ಬಳಕೆದಾರನ ಖಾತೆಯು ಸಾಧನವು ದಾಖಲಾಗಿರುವ ಡೊಮೇನ್‌ಗೆ ಸಂಬಂಧಿಸಿಲ್ಲ. ನೀವು ವಿಭಿನ್ನ ಡೊಮೆನ್ ಅನ್ನು ದಾಖಲಿಸಲು ಬಯಸುವುದಾದರೆ ನೀವು ಮೊದಲು ಮರುಪ್ರಾಪ್ತಿಯ ಸಾಧನದ ಮೂಲಕ ಹೋಗುವ ಅವಶ್ಯಕತೆ ಇದೆ.</translation>
 <translation id="1274977772557788323">Adobe Flash Player ಸಂಗ್ರಹಣೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
@@ -3028,7 +3027,6 @@
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> ಅನ್ನು ಬಳಸಲು ನೀವು ಮೊದಲಿಗೆ ಕೆಲವು ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ತೆರೆಯುವಂತಹ, <ph name="LINK_START" />ನೆಟ್‌ವರ್ಕ್‌ನ ಸೈನ್-ಇನ್ ಪುಟವನ್ನು ಭೇಟಿ ಮಾಡಬೇಕಾಗಿದೆ<ph name="LINK_END" />. ಇದು ಸಂಭವಿಸದಿದ್ದರೆ, ನೆಟ್‌ವರ್ಕ್ ಅನ್ನು ಬಳಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="5637476008227280525">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="5638309510554459422">ವಿಸ್ತರಣೆಗಳು ಮತ್ತು ಥೀಮ್‌ಗಳನ್ನು <ph name="BEGIN_LINK" />Chrome ವೆಬ್ ಸ್ಟೋರ್‌ನಲ್ಲಿ<ph name="END_LINK" /> ಹುಡುಕಿ</translation>
-<translation id="5638497698949808140"><ph name="HOURS" />ಗಂಟೆಗಳ ಹಿಂದೆಯೇ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="5639549361331209298">ಈ ಪುಟವನ್ನು ಮರು ಲೋಡ್ ಮಾಡಿ, ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಒತ್ತಿಹಿಡಿಯಿರಿ</translation>
 <translation id="5642508497713047">CRL ಸೈನರ್</translation>
 <translation id="5643620609347735571">ತೆರವುಗೊಳಿಸಿ ಮತ್ತು ಮುಂದುವರಿಸಿ</translation>
@@ -3990,7 +3988,6 @@
 <translation id="7120865473764644444">ಸಿಂಕ್ ಸರ್ವರ್‌ಗೆ ಸಂಪರ್ಕಿಸಲಾಗಲಿಲ್ಲ. ಮರುಪ್ರಯತ್ನಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7121362699166175603">ವಿಳಾಸ ಪಟ್ಟಿಯ ಇತಿಹಾಸ ಮತ್ತು ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸುವಿಕೆಯನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ. ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಇತರ ವಿಧಗಳ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೊಂದಿರಬಹುದು.</translation>
 <translation id="7123360114020465152">ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ</translation>
-<translation id="71243390042171582"><ph name="MINUTES" />ನಿಮಿಷಗಳ ಹಿಂದೆ ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7124929488592184705"><ph name="DOCUMENT_NAME" /> ಅನ್ನು ಮುದ್ರಿಸುವಲ್ಲಿ ದೋಷ</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ಡ್ರೈವ್ ಹುಡುಕಿ&lt;/em&gt;</translation>
 <translation id="7127980134843952133">ಡೌನ್‌ಲೋಡ್ ಇತಿಹಾಸ</translation>
@@ -4529,7 +4526,6 @@
 <translation id="794676567536738329">ಅನುಮತಿಗಳನ್ನು ದೃಡೀಕರಿಸಿ</translation>
 <translation id="7947962633355574091">ವೀಡಿಯೋ ವಿಳಾಸ ನ&amp;ಕಲಿಸಿ</translation>
 <translation id="7950040156882184764">ಇಂಟರ್ನೆಟ್ ಮುದ್ರಿಸುವಿಕೆ ಪ್ರೊಟೊಕಾಲ್ (HTTP)</translation>
-<translation id="795025003224538582">ಮರುಪ್ರಾರಂಭಿಸಬೇಡಿ</translation>
 <translation id="7952904276017482715">ನಿರೀಕ್ಷಿತ ಐಡಿ "<ph name="EXPECTED_ID" />", ಆದರೆ ಐಡಿ "<ph name="NEW_ID" />" ಆಗಿದೆ</translation>
 <translation id="7953739707111622108">ಇದರ ಫೈಲ್‌ಸಿಸ್ಟಂ ಅನ್ನು ಗುರುತಿಸಲಾಗದ ಕಾರಣ ಈ ಸಾಧನವನ್ನು ತೆರೆಯಲಾಗಲಿಲ್ಲ.</translation>
 <translation id="7953955868932471628">ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸು</translation>

@@ -164,7 +164,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6333502561965082103">Another operation on Chromium is in progress. Please try again later.</translation>
 <translation id="6334986366598267305">Now it's easier to use Chromium with your Google Account and on shared computers.</translation>
 <translation id="6373523479360886564">Are you sure you want to uninstall Chromium?</translation>
-<translation id="6394232988457703198">You should restart Chromium now.</translation>
 <translation id="6400072781405947421">Chromium may not function correctly because it is no longer supported on Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Chromium.</translation>
 <translation id="641451971369018375">Communicates with Google to improve browsing and Chromium</translation>
@@ -214,7 +213,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7471302858145901434">{0,plural, =1{Restart Chromium OS within a day}other{Restart Chromium OS within # days}}</translation>
 <translation id="7483335560992089831">Can not install the same Chromium version that is currently running. Please close Chromium and try again.</translation>
 <translation id="7549178288319965365">About Chromium OS</translation>
-<translation id="7577193603922410712">A special security update for Chromium was just applied; you should restart now for it to take effect (we'll restore your tabs).</translation>
 <translation id="761356813943268536">Chromium is using your camera and microphone.</translation>
 <translation id="7617377681829253106">Chromium just got better</translation>
 <translation id="7686590090926151193">Chromium isn't your default browser</translation>

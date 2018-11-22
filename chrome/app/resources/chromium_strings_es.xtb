@@ -164,7 +164,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="6333502561965082103">Hay otra operación en curso en Chromium. Vuelve a intentarlo más tarde.</translation>
 <translation id="6334986366598267305">Ahora es más fácil utilizar Chromium con tu cuenta de Google y en ordenadores compartidos.</translation>
 <translation id="6373523479360886564">¿Seguro que quieres desinstalar Chromium?</translation>
-<translation id="6394232988457703198">Debes reiniciar Chromium ahora.</translation>
 <translation id="6400072781405947421">Es posible que Chromium no funcione correctamente porque ya no es compatible con Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium es un navegador web que ejecuta páginas web y aplicaciones a gran velocidad. Es rápido, estable y fácil de utilizar. Chromium te permite navegar en la Web de forma más segura, ya que incluye protección contra software malicioso y phishing.</translation>
 <translation id="641451971369018375">Se comunica con Google para mejorar la navegación y Chromium</translation>
@@ -214,7 +213,6 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="7471302858145901434">{0,plural, =1{Reiniciar Chromium OS en un día}other{Reiniciar Chromium OS en # días}}</translation>
 <translation id="7483335560992089831">No se puede instalar la misma versión de Chromium que se está ejecutando actualmente. Cierra Chromium y vuelve a intentarlo.</translation>
 <translation id="7549178288319965365">Información de Chromium OS</translation>
-<translation id="7577193603922410712">Se acaba de instalar una actualización de seguridad especial para Chromium. Reinicia ahora para que se apliquen los cambios. No te preocupes, restauraremos tus pestañas.</translation>
 <translation id="761356813943268536">Chromium está utilizando la cámara y el micrófono.</translation>
 <translation id="7617377681829253106">Chromium mejor que nunca</translation>
 <translation id="7686590090926151193">Chromium no es tu navegador predeterminado</translation>

@@ -138,7 +138,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="4600710005438004015">Não foi possível atualizar o Chrome para a versão mais recente, pelo que não está a beneficiar das novas funcionalidades e correções de segurança.</translation>
 <translation id="4631713731678262610">Ocultar no menu do Chrome</translation>
 <translation id="4633000520311261472">Para tornar o Chrome mais seguro, desativámos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e é possível que tenham sido adicionadas sem o seu conhecimento.</translation>
-<translation id="4664415150087723341">Acabou de ser instalada uma atualização de segurança especial para o Google Chrome. Deve reiniciar agora para que tenha efeito (iremos restaurar os seus separadores).</translation>
 <translation id="4700157086864140907">O Google Chrome pode disponibilizar uma verificação ortográfica mais inteligente, enviando o que escreve no navegador para os servidores da Google, o que lhe permite utilizar a mesma tecnologia de verificação ortográfica da pesquisa do Google.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não especificado. Se o Google Chrome estiver atualmente em execução, feche-o e tente de novo.</translation>
 <translation id="4750550185319565338">Reinicie o Chrome para ativar o <ph name="PLUGIN_NAME" /></translation>
@@ -274,7 +273,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="873133009373065397">O Google Chrome não consegue determinar ou definir o navegador predefinido</translation>
 <translation id="8736674169840206667">O seu administrador necessita que reinicie o Chrome para aplicar uma atualização.</translation>
 <translation id="8791470158600044404">{0,plural, =1{O Chrome OS será reiniciado dentro de 1 minuto}other{O Chrome OS será reiniciado dentro de # minutos}}</translation>
-<translation id="8796108026289707191">Deve reiniciar o Google Chrome agora.</translation>
 <translation id="8823341990149967727">O Chrome Está Desatualizado</translation>
 <translation id="884296878221830158">Também controla a página apresentada quando inicia o Chrome ou clica no botão Página Inicial.</translation>
 <translation id="8862326446509486874">Não tem os direitos adequados para uma instalação ao nível do sistema. Tente executar o programa de instalação novamente como Administrador.</translation>

@@ -162,7 +162,6 @@
 <translation id="6333502561965082103">En anden handling i Chromium er i gang. Prøv igen senere.</translation>
 <translation id="6334986366598267305">Det er nu blevet nemmere at bruge Chromium med din Google-konto og på delte computere.</translation>
 <translation id="6373523479360886564">Er du sikker på, at du vil afinstallere Chromium?</translation>
-<translation id="6394232988457703198">Du bør genstarte Chromium nu.</translation>
 <translation id="6400072781405947421">Chromium fungerer muligvis ikke korrekt, da det ikke længere understøttes af Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium er en webbrowser, der kører websider og apps med lynets hast. Den er hurtig, stabil og brugervenlig. Beskyttelse mod malware og phishing er indbygget i Chromium, så du kan søge mere sikkert på internettet.</translation>
 <translation id="641451971369018375">Kommunikerer med Google for at forbedre browsing og Chromium</translation>
@@ -212,7 +211,6 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="7471302858145901434">{0,plural, =1{Genstart Chromium OS inden for en dag}one{Genstart Chromium OS inden for # dag}other{Genstart Chromium OS inden for # dage}}</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme version af Chromium som den, der kører i øjeblikket. Luk Chromium, og prøv igen.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
-<translation id="7577193603922410712">En særlig sikkerhedsopdatering til Chromium blev netop anvendt. Du bør genstarte nu, så den kan træde i kraft (dine faner gendannes).</translation>
 <translation id="761356813943268536">Chromium bruger dit kamera og din mikrofon.</translation>
 <translation id="7617377681829253106">Chromium er blevet bedre</translation>
 <translation id="7686590090926151193">Chromium er ikke din standardbrowser</translation>

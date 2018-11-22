@@ -194,7 +194,6 @@
 <translation id="126156426083987769">Ocorreu um problema com as licenças do dispositivo no modo de demonstração.</translation>
 <translation id="126710816202626562">Idioma de tradução:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="127138278192656016">Usar a sincronização e todos os serviços</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1272978324304772054">Esta conta de usuário não pertence ao domínio no qual o dispositivo está inscrito. Para se inscrever em um domínio diferente, é preciso passar pela recuperação do dispositivo primeiro.</translation>
 <translation id="1274977772557788323">Configurações de armazenamento do Adobe Flash Player</translation>
@@ -3029,7 +3028,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5636996382092289526">Para usar <ph name="NETWORK_ID" />, talvez seja necessário primeiro <ph name="LINK_START" />visitar a página de login da rede<ph name="LINK_END" />, que abrirá automaticamente em alguns segundos. Se isso não acontecer, significa que a rede não pode ser usada.</translation>
 <translation id="5637476008227280525">Ativar dados móveis</translation>
 <translation id="5638309510554459422">Encontre extensões e temas na <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /></translation>
-<translation id="5638497698949808140">Atualizada <ph name="HOURS" /> horas atrás</translation>
 <translation id="5639549361331209298">Recarrega esta página; mantenha pressionado para ver mais opções</translation>
 <translation id="5642508497713047">Signatário de lista de certificados revogados</translation>
 <translation id="5643620609347735571">Limpar e continuar</translation>
@@ -3994,7 +3992,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7120865473764644444">Não foi possível se conectar ao servidor de sincronização. Tentando novamente…</translation>
 <translation id="7121362699166175603">Limpa o histórico e os preenchimentos automáticos na barra de endereço. Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7123360114020465152">Não é mais compatível</translation>
-<translation id="71243390042171582">Atualizada <ph name="MINUTES" /> minutos atrás</translation>
 <translation id="7124929488592184705">Erro ao imprimir o documento <ph name="DOCUMENT_NAME" /></translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;" - &lt;em&gt;pesquisar no Google Drive&lt;/em&gt;</translation>
 <translation id="7127980134843952133">Histórico de download</translation>
@@ -4540,7 +4537,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="794676567536738329">Confirmar permissões</translation>
 <translation id="7947962633355574091">C&amp;opiar endereço do vídeo</translation>
 <translation id="7950040156882184764">Protocolo de impressão via Internet (HTTP)</translation>
-<translation id="795025003224538582">Não reiniciar</translation>
 <translation id="7952904276017482715">O código esperado era "<ph name="EXPECTED_ID" />", mas o instalado foi "<ph name="NEW_ID" />"</translation>
 <translation id="7953739707111622108">Este dispositivo não pode ser aberto porque seu sistema de arquivos não foi reconhecido.</translation>
 <translation id="7953955868932471628">Gerenciar atalhos</translation>

@@ -162,7 +162,6 @@
 <translation id="6333502561965082103">Chromium 正在執行另一項作業，請稍後再試。</translation>
 <translation id="6334986366598267305">無論是登入 Google 帳戶使用 Chromium，還是以 Google 帳戶使用共用電腦，現在都變得更容易了。</translation>
 <translation id="6373523479360886564">你確定要解除安裝 Chromium 嗎？</translation>
-<translation id="6394232988457703198">建議您立即重新啟動 Chromium。</translation>
 <translation id="6400072781405947421">Chromium 已不再支援 Mac OS X 10.9，因此部分功能可能無法正常運作。</translation>
 <translation id="6403826409255603130">Chromium 網路瀏覽器開啟網頁和執行應用程式的速度十分迅速。除了迅速、穩定且易於使用之外，Chromium 的內建惡意軟體與網路釣魚防護功能，可讓你安心悠遊網路。</translation>
 <translation id="641451971369018375">與各項 Google 服務連結，讓瀏覽體驗和 Chromium 效能更臻完善</translation>
@@ -212,7 +211,6 @@ Chromium 無法復原你的設定。</translation>
 <translation id="7471302858145901434">{0,plural, =1{在 1 天內重新啟動 Chromium 作業系統}other{在 # 天內重新啟動 Chromium 作業系統}}</translation>
 <translation id="7483335560992089831">無法安裝這個版本的 Chromium，因為目前正在執行相同版本。請關閉 Chromium，然後再試一次。</translation>
 <translation id="7549178288319965365">關於 Chromium 作業系統</translation>
-<translation id="7577193603922410712">Chromium 剛套用了特殊的安全性更新。建議您立即重新啟動，讓更新生效 (系統會還原您的分頁)。</translation>
 <translation id="761356813943268536">Chromium 正在使用你的攝影機和麥克風。</translation>
 <translation id="7617377681829253106">Chromium 變得更進步了</translation>
 <translation id="7686590090926151193">Chromium 不是你的預設瀏覽器</translation>

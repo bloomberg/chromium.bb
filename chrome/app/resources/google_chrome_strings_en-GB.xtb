@@ -142,7 +142,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="4600710005438004015">Chrome couldn't update to the latest version, so you're missing out on new features and security fixes.</translation>
 <translation id="4631713731678262610">Hide in Chrome menu</translation>
 <translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
-<translation id="4664415150087723341">A special security update for Google Chrome was just applied; you should restart now for it to take effect (we'll restore your tabs).</translation>
 <translation id="4700157086864140907">Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="4750550185319565338">Restart Chrome to enable <ph name="PLUGIN_NAME" /></translation>
@@ -282,7 +281,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="873133009373065397">Google Chrome cannot determine or set the default browser</translation>
 <translation id="8736674169840206667">Your administrator requires that you relaunch Chrome to apply an update</translation>
 <translation id="8791470158600044404">{0,plural, =1{Chrome OS will restart in 1 minute}other{Chrome OS will restart in # minutes}}</translation>
-<translation id="8796108026289707191">You should restart Google Chrome now.</translation>
 <translation id="8823341990149967727">Chrome is Out of Date</translation>
 <translation id="884296878221830158">It also controls what page is shown when you start Chrome or click the Home button.</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>

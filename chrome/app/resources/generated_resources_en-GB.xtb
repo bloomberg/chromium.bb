@@ -197,7 +197,6 @@
 <translation id="126156426083987769">A problem with demo mode device licences occurred.</translation>
 <translation id="126710816202626562">Translation language:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="127138278192656016">Use sync and all services</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1272978324304772054">This user account does not belong to the domain that the device is enrolled to.  If you want to enrol to a different domain you need to go through device recovery first.</translation>
 <translation id="1274977772557788323">Adobe Flash Player Storage settings</translation>
@@ -1817,7 +1816,6 @@
 <translation id="3742055079367172538">Screenshot taken</translation>
 <translation id="3742666961763734085">Can’t find an organisational unit with that name. Please try again.</translation>
 <translation id="3744111561329211289">Background sync</translation>
-<translation id="3747077776423672805">To remove apps, go to Settings &gt; Google Play Store &gt; Manage Android preferences &gt; Apps or Application manager. Then tap the app that you want to uninstall (you may need to swipe right or left to find the app). Then tap Uninstall or Disable.</translation>
 <translation id="3748026146096797577">Not Connected</translation>
 <translation id="3749289110408117711">File name</translation>
 <translation id="3751427701788899101">Connection was lost</translation>
@@ -3043,7 +3041,6 @@
 <translation id="5636996382092289526">To use <ph name="NETWORK_ID" /> you may first need to <ph name="LINK_START" />visit the network's sign-in page<ph name="LINK_END" />, which will open automatically in a few seconds. If it doesn't happen, the network can't be used.</translation>
 <translation id="5637476008227280525">Mobile data enable</translation>
 <translation id="5638309510554459422">Find extensions and themes in the <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /></translation>
-<translation id="5638497698949808140">Updated <ph name="HOURS" />hrs ago</translation>
 <translation id="5639549361331209298">Reload this page, hold to see more options</translation>
 <translation id="5642508497713047">CRL Signer</translation>
 <translation id="5643620609347735571">Clear and continue</translation>
@@ -4011,7 +4008,6 @@
 <translation id="7120865473764644444">Couldn't connect to the sync server. Retrying...</translation>
 <translation id="7121362699166175603">Clears history and autocompletions in the address bar. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7123360114020465152">No longer supported</translation>
-<translation id="71243390042171582">Updated <ph name="MINUTES" />min ago</translation>
 <translation id="7124929488592184705">Error printing <ph name="DOCUMENT_NAME" /></translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;search Drive&lt;/em&gt;</translation>
 <translation id="7127980134843952133">Download history</translation>
@@ -4561,7 +4557,6 @@
 <translation id="794676567536738329">Confirm Permission</translation>
 <translation id="7947962633355574091">C&amp;opy Video Address</translation>
 <translation id="7950040156882184764">Internet Printing Protocol (HTTP)</translation>
-<translation id="795025003224538582">Don't restart</translation>
 <translation id="7952904276017482715">Expected ID '<ph name="EXPECTED_ID" />', but ID was '<ph name="NEW_ID" />'</translation>
 <translation id="7953739707111622108">This device cannot be opened because its file system was not recognised.</translation>
 <translation id="7953955868932471628">Manage shortcuts</translation>

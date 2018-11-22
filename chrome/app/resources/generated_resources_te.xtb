@@ -194,7 +194,6 @@
 <translation id="126156426083987769">డెమో మోడ్ పరికర లైసెన్స్‌లకు సంబంధించి ఒక సమస్య ఏర్పడింది.</translation>
 <translation id="126710816202626562">అనువాద భాష:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="127138278192656016">సమకాలీకరణ మరియు అన్ని సేవలను ఉపయోగించండి</translation>
 <translation id="1272079795634619415">ఆపు</translation>
 <translation id="1272978324304772054">ఈ వినియోగదారు ఖాతా పరికరం నమోదు చేయబడిన డొమైన్‌కు చెందినది కాదు. మీరు వేరొక డొమైన్‌కు నమోదు చేయాలనుకుంటే మీరు ముందుగా పరికరాన్ని పునరుద్ధరించాలి.</translation>
 <translation id="1274977772557788323">Adobe Flash Player నిల్వ సెట్టింగ్‌లు</translation>
@@ -3028,7 +3027,6 @@
 <translation id="5636996382092289526">మీరు <ph name="NETWORK_ID" />ని ఉపయోగించడానికి మొదట కొన్ని సెకన్లలో స్వయంచాలకంగా తెరవబడే <ph name="LINK_START" />నెట్‌వర్క్ సైన్ ఇన్ పేజీని సందర్శించాలి<ph name="LINK_END" />. ఇది జరగకపోతే, నెట్‌వర్క్‌ను ఉపయోగించలేరు.</translation>
 <translation id="5637476008227280525">మొబైల్ డేటాను ప్రారంభించు</translation>
 <translation id="5638309510554459422"><ph name="BEGIN_LINK" />Chrome వెబ్ స్టోర్‌లో<ph name="END_LINK" /> పొడిగింపులు మరియు థీమ్‌లను కనుగొనండి</translation>
-<translation id="5638497698949808140"><ph name="HOURS" />గంటల క్రితం నవీకరించబడింది</translation>
 <translation id="5639549361331209298">ఈ పేజీని మళ్లీ లోడ్ చేయండి, మరిన్ని ఎంపికలను చూడటానికి దీనిపై కర్సర్ ఉంచండి</translation>
 <translation id="5642508497713047">CRL సైన్ చేసినవారు</translation>
 <translation id="5643620609347735571">క్లియర్ చేసి కొనసాగించు</translation>
@@ -3992,7 +3990,6 @@
 <translation id="7120865473764644444">సమకాలీకరణ సర్వర్‌కి కనెక్ట్ చేయడం సాధ్యపడలేదు. మళ్లీ ప్రయత్నిస్తోంది...</translation>
 <translation id="7121362699166175603">చిరునామా బార్‌లో చరిత్ర మరియు స్వీయ పూరణలను తొలగిస్తుంది. మీ Google ఖాతా <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />లో ఇతర రూపాల్లో ఉన్న బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు.</translation>
 <translation id="7123360114020465152">ఇకపై మద్దతు లేదు</translation>
-<translation id="71243390042171582"><ph name="MINUTES" />నిమిషాల క్రితం నవీకరించబడింది</translation>
 <translation id="7124929488592184705"><ph name="DOCUMENT_NAME" />ని ముద్రిస్తున్నప్పుడు లోపం ఏర్పడింది</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;డిస్క్‌లో శోధించు&lt;/em&gt;</translation>
 <translation id="7127980134843952133">డౌన్‌లోడ్ చరిత్ర</translation>
@@ -4537,7 +4534,6 @@
 <translation id="794676567536738329">అనుమతులు నిర్ధారించండి</translation>
 <translation id="7947962633355574091">వీడియో చిరునామాను కా&amp;పీ చేయండి</translation>
 <translation id="7950040156882184764">ఇంటర్నెట్ ముద్రణ ప్రోటోకాల్ (HTTP)</translation>
-<translation id="795025003224538582">పునః ప్రారంభించవద్దు</translation>
 <translation id="7952904276017482715">ఆశించిన ID "<ph name="EXPECTED_ID" />", కానీ ఉన్న ID "<ph name="NEW_ID" />"</translation>
 <translation id="7953739707111622108">పరికరం తెరవడం సాధ్యం కాదు ఎందుకంటే దాని ఫైల్‌సిస్టమ్ గుర్తించబడలేదు.</translation>
 <translation id="7953955868932471628">సత్వరమార్గాలను నిర్వహించండి</translation>

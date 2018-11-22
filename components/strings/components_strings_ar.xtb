@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">نطاق التسجيل:</translation>
 <translation id="1340482604681802745">عنوان الاستلام</translation>
 <translation id="1348198688976932919">يحتوي موقع الويب المقصود على تطبيقات خطيرة</translation>
+<translation id="1348779747280417563">تأكيد الاسم</translation>
 <translation id="1374468813861204354">اقتراحات</translation>
 <translation id="1375198122581997741">معلومات عن الإصدار</translation>
 <translation id="1376836354785490390">إظهار أقسام أقل</translation>
@@ -456,6 +457,7 @@
 <translation id="3949601375789751990">يظهر سجلّ التصفّح هنا</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
 <translation id="3963721102035795474">وضع القارئ</translation>
+<translation id="3963837677003247395">هل تريد المتابعة يدويًا؟</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{بدون}=1{من موقع واحد }two{من موقعين (#) }few{من # مواقع }many{من # موقعًا }other{من # موقع }}</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="3973234410852337861">تم حظر <ph name="HOST_NAME" /></translation>
@@ -636,6 +638,7 @@
 <translation id="5287240709317226393">عرض ملفات تعريف الارتباط</translation>
 <translation id="5288108484102287882">لقد أدى التحقُّق من قيم السياسة إلى ظهور تحذيرات.</translation>
 <translation id="5299298092464848405">خطأ في تحليل السياسة</translation>
+<translation id="5300589172476337783">عرض</translation>
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="5308689395849655368">ميزة الإبلاغ عن الأعطال غير مفعّلة.</translation>
 <translation id="5317780077021120954">حفظ</translation>
@@ -811,6 +814,7 @@
 <translation id="6569060085658103619">أنت تعرض صفحة إضافة</translation>
 <translation id="6596325263575161958">خيارات التشفير</translation>
 <translation id="6604181099783169992">أجهزة استشعار الإضاءة والحركة</translation>
+<translation id="6607617806003952240">لا يمكنني مساعدتك بعد ذلك، يُرجى المتابعة يدويًا.</translation>
 <translation id="6624427990725312378">معلومات الاتصال</translation>
 <translation id="6626291197371920147">إضافة رقم بطاقة صالح</translation>
 <translation id="6628463337424475685">بحث <ph name="ENGINE" /></translation>
@@ -854,6 +858,7 @@
 <translation id="6950684638814147129">‏حدث خطأ أثناء تحليل قيمة JSON: <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">افتح صفحة في علامة التبويب الجديدة "التصفّح المتخفي".</translation>
 <translation id="6957887021205513506">يبدو أن شهادة الخادم مزيفة.</translation>
+<translation id="6964255747740675745">‏تعذّر تحليل ضبط الشبكة (JSON غير صالح).</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6965978654500191972">جهاز</translation>
 <translation id="6970216967273061347">المنطقة</translation>
@@ -871,6 +876,7 @@
 <translation id="7079718277001814089">يحتوي هذا الموقع على برامج ضارة</translation>
 <translation id="7087282848513945231">المقاطعة/الإقليم/المنطقة</translation>
 <translation id="7090678807593890770">‏البحث في Google عن <ph name="LINK" /></translation>
+<translation id="7108338896283013870">إخفاء</translation>
 <translation id="7108819624672055576">تم السماح بواسطة إحدى الإضافات</translation>
 <translation id="7111012039238467737">(صالح)</translation>
 <translation id="7119414471315195487">إغلاق علامات التبويب أو البرامج الأخرى</translation>
@@ -1147,11 +1153,13 @@
 <translation id="893332455753468063">إضافة اسم</translation>
 <translation id="8938939909778640821">بطاقات الائتمان وبطاقات الدفع المسبق المقبولة</translation>
 <translation id="8957210676456822347">تفويض المدخل المقيد</translation>
+<translation id="8968766641738584599">حفظ البطاقة</translation>
 <translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>
 <translation id="8975012916872825179">يتضمن معلومات مثل أرقام الهواتف وعناوين البريد الإلكتروني وعناوين الشحن.</translation>
 <translation id="8978053250194585037">‏رصد التصفح الآمن من Google عن وجود‬ <ph name="BEGIN_LINK" />تصيّد احتيالي<ph name="END_LINK" /> مؤخرًا على موقع <ph name="SITE" />، إذ تتظاهر مواقع التصيد الاحتيالي بكونها مواقع ويب أخرى لخداعك.</translation>
 <translation id="8983003182662520383">‏طرق الدفع والعناوين باستخدام Google Pay</translation>
 <translation id="8987927404178983737">شهر</translation>
+<translation id="8988408250700415532">حدث خطأ. يمكنك إتمام طلبك على الموقع الإلكتروني.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" />‏ [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">تحتوي مقدمة الموقع على برامج ضارة</translation>
 <translation id="8997023839087525404">قدم الخادم شهادة لم يتم الكشف عنها علنًا باستخدام سياسة شهادة الشفافية. وهذا ضروري لبعض الشهادات، لضمان أنها جديرة بالثقة ومحمية من المهاجمين.</translation>

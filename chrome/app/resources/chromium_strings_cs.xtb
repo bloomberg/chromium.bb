@@ -164,7 +164,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="6333502561965082103">V prohlížeči Chromium právě probíhá jiná operace. Zkuste to znovu později.</translation>
 <translation id="6334986366598267305">Používání prohlížeče Chromium se spravovaným účtem Google a sdílenými počítači je teď snazší.</translation>
 <translation id="6373523479360886564">Jste si jisti, že chcete Chromium odinstalovat?</translation>
-<translation id="6394232988457703198">Nyní byste Chromium měli restartovat.</translation>
 <translation id="6400072781405947421">Prohlížeč Chromium nemusí fungovat správně, protože v systémech Mac OS X 10.9 již není podporován.</translation>
 <translation id="6403826409255603130">Chromium je webový prohlížeč, který spouští webové stránky a aplikace rychlostí blesku. Je rychlý a snadno se používá. Prohlížejte web bezpečněji díky ochraně proti malwaru a phishingu integrované v prohlížeči Chromium.</translation>
 <translation id="641451971369018375">Komunikuje s Googlem za účelem zlepšení prohlížeče Chromium a prohlížení internetu</translation>
@@ -214,7 +213,6 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="7471302858145901434">{0,plural, =1{Do jednoho dne Chromium OS restartujte}few{Do # dní Chromium OS restartujte}many{Do # dne Chromium OS restartujte}other{Do # dní Chromium OS restartujte}}</translation>
 <translation id="7483335560992089831">Nelze nainstalovat verzi prohlížeče Chromium, která je právě spuštěná. Ukončete prohlížeč Chromium a zkuste to znovu.</translation>
 <translation id="7549178288319965365">O systému Chromium OS</translation>
-<translation id="7577193603922410712">Právě byla nainstalována mimořádná bezpečnostní aktualizace prohlížeče Chromium. Aby se projevila, měli byste prohlížeč teď restartovat (otevřené karty se automaticky obnoví).</translation>
 <translation id="761356813943268536">Chromium používá vaši kameru a mikrofon.</translation>
 <translation id="7617377681829253106">Prohlížeč Chromium je opět o něco lepší</translation>
 <translation id="7686590090926151193">Chromium není vaším výchozím prohlížečem</translation>

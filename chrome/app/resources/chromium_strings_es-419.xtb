@@ -160,7 +160,6 @@
 <translation id="6333502561965082103">Hay otra operación en Chromium en curso. Vuelve a intentarlo más tarde.</translation>
 <translation id="6334986366598267305">Ahora es más sencillo utilizar Chromium con la cuenta de Google y en computadoras compartidas.</translation>
 <translation id="6373523479360886564">¿Estás seguro de que deseas desinstalar Chromium?</translation>
-<translation id="6394232988457703198">Debes reiniciar Chromium ahora.</translation>
 <translation id="6400072781405947421">Es posible que Chromium no funcione correctamente porque ya no es compatible con Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium es un navegador web que ejecuta páginas web y aplicaciones con la velocidad de la luz. Es rápido, estable y fácil de usar. Navega por la Web con seguridad y protección integrada contra software mailicioso y suplantación de identidad.</translation>
 <translation id="641451971369018375">Se comunican con Google para mejorar Chromium y la navegación</translation>
@@ -206,7 +205,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7471302858145901434">{0,plural, =1{Reiniciar el SO Chromium en el transcurso de un día}other{Reiniciar el SO Chromium en el transcurso de # días}}</translation>
 <translation id="7483335560992089831">No es posible instalar la misma versión de Chromium que se está ejecutando. Cierra Chromium y vuelve a intentarlo.</translation>
 <translation id="7549178288319965365">Acerca de Chromium OS</translation>
-<translation id="7577193603922410712">Se acaba de instalar una actualización de seguridad especial para Chromium. Reinícialo para que se apliquen los cambios (se restaurarán tus pestañas).</translation>
 <translation id="761356813943268536">Chromium está usando tu cámara y tu micrófono.</translation>
 <translation id="7617377681829253106">Chromium mejorado</translation>
 <translation id="7686590090926151193">Chromium no es el navegador predeterminado</translation>

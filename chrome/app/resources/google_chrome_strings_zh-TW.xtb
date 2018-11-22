@@ -138,7 +138,6 @@
 <translation id="4600710005438004015">Chrome 無法更新至最新版本，因此你並未取得最新功能和安全性問題修正。</translation>
 <translation id="4631713731678262610">在 Chrome 選單中隱藏</translation>
 <translation id="4633000520311261472">為了讓 Chrome 的安全性更有保障，我們已將部分未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中的擴充功能停用，它們可能在你不知情的情況下加入瀏覽器。</translation>
-<translation id="4664415150087723341">Google Chrome 剛套用了特殊的安全性更新。建議您立即重新啟動，讓更新生效 (系統會還原您的分頁)。</translation>
 <translation id="4700157086864140907">Google Chrome 可將你在瀏覽器中輸入的字詞傳送給 Google 伺服器，並透過 Google 搜尋所使用的拼字檢查技術，為你提供更好用的拼字檢查功能。</translation>
 <translation id="4728575227883772061">安裝因不明錯誤而失敗。如果 Google Chrome 目前正在執行中，請將其關閉然後再試一次。</translation>
 <translation id="4750550185319565338">重新啟動 Chrome 即可啟用 <ph name="PLUGIN_NAME" /></translation>
@@ -276,7 +275,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="873133009373065397">Google Chrome 無法偵測或設定預設瀏覽器</translation>
 <translation id="8736674169840206667">你的管理員要求你重新啟動 Chrome，以套用更新</translation>
 <translation id="8791470158600044404">{0,plural, =1{Chrome 作業系統將於 1 分鐘後重新啟動}other{Chrome 作業系統將於 # 分鐘後重新啟動}}</translation>
-<translation id="8796108026289707191">建議您立即重新啟動 Google Chrome。</translation>
 <translation id="8823341990149967727">Chrome 版本過舊</translation>
 <translation id="884296878221830158">這個擴充功能也會控管 Chrome 啟動時或你點選 [首頁] 按鈕時所顯示的網頁。</translation>
 <translation id="8862326446509486874">你沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>

@@ -162,7 +162,6 @@
 <translation id="6333502561965082103">In Chromium wird eine andere Aktion durchgeführt. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="6334986366598267305">Sie können Chromium jetzt noch einfacher mit Ihrem Google-Konto und auf gemeinsam genutzten Computern verwenden.</translation>
 <translation id="6373523479360886564">Möchten Sie Chromium wirklich deinstallieren?</translation>
-<translation id="6394232988457703198">Chromium jetzt neu starten.</translation>
 <translation id="6400072781405947421">Chromium funktioniert unter Umständen nicht ordnungsgemäß, da es unter Mac OS X 10.9 nicht mehr unterstützt wird.</translation>
 <translation id="6403826409255603130">Chromium ist ein Webbrowser, der Webseiten und Apps in Sekundenschnelle lädt und dabei äußerst stabil und nutzerfreundlich ist. Dank des integrierten Malware- und Phishing-Schutzes können Sie bedenkenlos im Internet surfen.</translation>
 <translation id="641451971369018375">Funktionen nutzen, die helfen, Chrome für Sie noch besser zu machen</translation>
@@ -212,7 +211,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7471302858145901434">{0,plural, =1{Chromium OS innerhalb eines Tages neu starten}other{Chromium OS innerhalb von # Tagen neu starten}}</translation>
 <translation id="7483335560992089831">Die Chromium-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Chromium bitte und versuchen Sie es erneut.</translation>
 <translation id="7549178288319965365">Über Chromium OS</translation>
-<translation id="7577193603922410712">Soeben wurde ein spezielles Sicherheitsupdate für Chromium installiert. Führen Sie einen Neustart durch, damit es wirksam wird. Ihre Tabs werden automatisch wiederhergestellt.</translation>
 <translation id="761356813943268536">Chromium verwendet Ihre Kamera und Ihr Mikrofon.</translation>
 <translation id="7617377681829253106">Chromium ist jetzt noch besser</translation>
 <translation id="7686590090926151193">Chromium ist nicht als Ihr Standardbrowser festgelegt</translation>

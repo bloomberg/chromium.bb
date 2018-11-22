@@ -160,7 +160,6 @@
 <translation id="6333502561965082103">Chromium выполняет другую операцию. Повторите попытку позже.</translation>
 <translation id="6334986366598267305">Теперь с Chromium ещё удобнее работать в аккаунте Google, в том числе на общих компьютерах.</translation>
 <translation id="6373523479360886564">Вы действительно хотите удалить Chromium?</translation>
-<translation id="6394232988457703198">Перезапустите Chromium</translation>
 <translation id="6400072781405947421">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium – браузер, который открывает веб-страницы и приложения за секунды. Он быстр, стабилен в работе и прост в использовании. Встроенная в Chromium защита от мошенничества и вредоносного ПО обеспечивает максимально безопасную работу в Интернете.</translation>
 <translation id="641451971369018375">Обмен информацией с Google для улучшения работы Chromium</translation>
@@ -208,7 +207,6 @@
 <translation id="7471302858145901434">{0,plural, =1{Перезапустите Chromium OS в течение 1 дня}one{Перезапустите Chromium OS в течение # дня}few{Перезапустите Chromium OS в течение # дней}many{Перезапустите Chromium OS в течение # дней}other{Перезапустите Chromium OS в течение # дня}}</translation>
 <translation id="7483335560992089831">Невозможно установить ту же версию Chromium, которая уже присутствует в системе. Закройте Chromium и повторите попытку.</translation>
 <translation id="7549178288319965365">О Chromium OS</translation>
-<translation id="7577193603922410712">Установлено специальное обновление системы безопасности. Перезапустите Chromium (все вкладки будут восстановлены).</translation>
 <translation id="761356813943268536">Chromium использует камеру и микрофон.</translation>
 <translation id="7617377681829253106">Chromium становится все лучше</translation>
 <translation id="7686590090926151193">Chromium не является браузером по умолчанию.</translation>

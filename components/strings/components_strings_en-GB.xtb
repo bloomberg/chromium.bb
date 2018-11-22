@@ -638,6 +638,7 @@
 <translation id="5287240709317226393">Show cookies</translation>
 <translation id="5288108484102287882">Validation of policy values has raised warnings</translation>
 <translation id="5299298092464848405">Error parsing policy</translation>
+<translation id="5300589172476337783">Show</translation>
 <translation id="5308380583665731573">Connect</translation>
 <translation id="5308689395849655368">Crash reporting is disabled.</translation>
 <translation id="5317780077021120954">Save</translation>
@@ -875,6 +876,7 @@
 <translation id="7079718277001814089">This site contains malware</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7090678807593890770">Search Google for <ph name="LINK" /></translation>
+<translation id="7108338896283013870">Hide</translation>
 <translation id="7108819624672055576">Allowed by an extension</translation>
 <translation id="7111012039238467737">(Valid)</translation>
 <translation id="7119414471315195487">Close other tabs or programmes</translation>

@@ -162,7 +162,6 @@
 <translation id="6333502561965082103">Teine toiming on Chromiumis pooleli. Proovige hiljem uuesti.</translation>
 <translation id="6334986366598267305">Nüüd on Chromiumi lihtsam kasutada Google'i kontoga ja jagatud arvutistes.</translation>
 <translation id="6373523479360886564">Kas soovite kindlasti Chromiumi desinstallida?</translation>
-<translation id="6394232988457703198">Soovitame Chromiumi kohe taaskäivitada.</translation>
 <translation id="6400072781405947421">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam operatsioonisüsteemis Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium on veebibrauser, mis avab veebilehti ja rakendusi välgukiirusel. See on kiire, stabiilne ja hõlpsasti kasutatav. Sirvige veebi turvalisemalt tänu Chromiumi sisseehitatud pahavara- ja andmepüügikaitsele.</translation>
 <translation id="641451971369018375">Antakse Google'ile tagasisidet, et sirvimist ja Chromiumi paremaks muuta</translation>
@@ -212,7 +211,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7471302858145901434">{0,plural, =1{Taaskäivitage Chromium OS päeva jooksul}other{Taaskäivitage Chromium OS # päeva jooksul}}</translation>
 <translation id="7483335560992089831">Ei saa installida sama Chromiumi versiooni, mis praegu töötab. Sulgege Chromium ja proovige uuesti.</translation>
 <translation id="7549178288319965365">Teave Chromium OS-i kohta</translation>
-<translation id="7577193603922410712">Äsja rakendati Chromiumi spetsiaalne turvavärskendus. Selle jõustamiseks taaskäivitage brauser (teie vahelehed taastatakse).</translation>
 <translation id="761356813943268536">Chromium kasutab kaamerat ja mikrofoni.</translation>
 <translation id="7617377681829253106">Chromium muutus just paremaks</translation>
 <translation id="7686590090926151193">Chromium ei ole teie vaikebrauser</translation>
