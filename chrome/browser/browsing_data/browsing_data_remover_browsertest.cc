@@ -66,7 +66,6 @@
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "media/base/media_switches.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/dns/mock_host_resolver.h"
@@ -80,15 +79,6 @@
 #include "third_party/leveldatabase/leveldb_features.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#if defined(OS_MACOSX)
-#include "base/threading/platform_thread.h"
-#endif
-#include "base/memory/scoped_refptr.h"
-#include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
-#include "chrome/browser/media/library_cdm_test_helper.h"
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 using content::BrowserThread;
 using content::BrowsingDataFilterBuilder;
@@ -291,7 +281,14 @@ bool SetGaiaCookieForProfile(Profile* profile) {
 
 class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
  public:
-  BrowsingDataRemoverBrowserTest() {}
+  BrowsingDataRemoverBrowserTest() {
+    feature_list_.InitWithFeatures(
+        {leveldb::kLevelDBRewriteFeature,
+         // Ensure that kOnionSoupDOMStorage is enabled because the old
+         // SessionStorage implementation causes flaky tests.
+         blink::features::kOnionSoupDOMStorage},
+        {});
+  }
 
   // Call to use an Incognito browser rather than the default.
   void UseIncognitoBrowser() {
@@ -355,22 +352,16 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   }
 
   void RemoveAndWait(int remove_mask) {
-    RemoveAndWait(remove_mask, base::Time(), base::Time::Max());
+    RemoveAndWait(remove_mask, base::Time());
   }
 
   void RemoveAndWait(int remove_mask, base::Time delete_begin) {
-    RemoveAndWait(remove_mask, delete_begin, base::Time::Max());
-  }
-
-  void RemoveAndWait(int remove_mask,
-                     base::Time delete_begin,
-                     base::Time delete_end) {
     content::BrowsingDataRemover* remover =
         content::BrowserContext::GetBrowsingDataRemover(
             GetBrowser()->profile());
     content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->RemoveAndReply(
-        delete_begin, delete_end, remove_mask,
+        delete_begin, base::Time::Max(), remove_mask,
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
         &completion_observer);
     completion_observer.BlockUntilCompletion();
@@ -456,30 +447,6 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     return count;
   }
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  int GetMediaLicenseCount() {
-    base::RunLoop run_loop;
-    int count = -1;
-    content::StoragePartition* partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
-    scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper =
-        BrowsingDataMediaLicenseHelper::Create(
-            partition->GetFileSystemContext());
-    media_license_helper->StartFetching(base::BindLambdaForTesting(
-        [&](const std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>&
-                licenses) {
-          count = licenses.size();
-          LOG(INFO) << "Found " << count << " licenses.";
-          for (const auto& license : licenses)
-            LOG(INFO) << license.last_modified_time;
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return count;
-  }
-#endif
-
   inline void ExpectCookieTreeModelCount(int expected) {
     std::unique_ptr<CookiesTreeModel> model = GetCookiesTreeModel();
     EXPECT_EQ(expected, GetCookiesTreeModelCount(model->GetRoot()))
@@ -552,25 +519,6 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     model->AddCookiesTreeObserver(&observer);
     run_loop.Run();
     return model;
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-
-    std::vector<base::Feature> enabled_features = {
-        leveldb::kLevelDBRewriteFeature,
-        // Ensure that kOnionSoupDOMStorage is enabled because the old
-        // SessionStorage implementation causes flaky tests.
-        blink::features::kOnionSoupDOMStorage};
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    // Testing MediaLicenses requires additional command line parameters as
-    // it uses the External Clear Key CDM.
-    RegisterClearKeyCdm(command_line);
-    enabled_features.push_back(media::kExternalClearKeyForTesting);
-#endif
-
-    feature_list_.InitWithFeatures(enabled_features, {});
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -1094,127 +1042,6 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
 IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, EmptyIndexedDb) {
   TestEmptySiteData("IndexedDb", GetParam());
 }
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-// Test Media Licenses by creating one and checking it is counted by the
-// cookie counter. Then delete it and check that the cookie counter is back
-// to zero.
-IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, MediaLicenseDeletion) {
-  const std::string kMediaLicenseType = "MediaLicense";
-  const base::Time delete_begin = GetParam();
-
-  EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(0, GetMediaLicenseCount());
-  GURL url =
-      embedded_test_server()->GetURL("/browsing_data/media_license.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(0, GetMediaLicenseCount());
-  ExpectCookieTreeModelCount(0);
-  EXPECT_FALSE(HasDataForType(kMediaLicenseType));
-
-  SetDataForType(kMediaLicenseType);
-  EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(1, GetMediaLicenseCount());
-  ExpectCookieTreeModelCount(1);
-  EXPECT_TRUE(HasDataForType(kMediaLicenseType));
-
-  // Try to remove the Media Licenses using a time frame up until an hour ago,
-  // which should not remove the recently created Media License.
-  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
-                delete_begin, kLastHour);
-  EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(1, GetMediaLicenseCount());
-  ExpectCookieTreeModelCount(1);
-  EXPECT_TRUE(HasDataForType(kMediaLicenseType));
-
-  // Now try with a time range that includes the current time, which should
-  // clear the Media License created for this test.
-  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
-                delete_begin, base::Time::Max());
-  EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(0, GetMediaLicenseCount());
-  ExpectCookieTreeModelCount(0);
-  EXPECT_FALSE(HasDataForType(kMediaLicenseType));
-}
-
-// Create and save a media license (which will be deleted in the following
-// test).
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
-                       PRE_MediaLicenseTimedDeletion) {
-  const std::string kMediaLicenseType = "MediaLicense";
-
-  EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(0, GetMediaLicenseCount());
-
-  GURL url =
-      embedded_test_server()->GetURL("/browsing_data/media_license.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(0, GetMediaLicenseCount());
-  ExpectCookieTreeModelCount(0);
-  EXPECT_FALSE(HasDataForType(kMediaLicenseType));
-
-  SetDataForType(kMediaLicenseType);
-  EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(1, GetMediaLicenseCount());
-  ExpectCookieTreeModelCount(1);
-  EXPECT_TRUE(HasDataForType(kMediaLicenseType));
-}
-
-// Create and save a second media license, and then verify that timed deletion
-// selects the correct license to delete.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
-                       MediaLicenseTimedDeletion) {
-  const std::string kMediaLicenseType = "MediaLicense";
-
-  // As the PRE_ test should run first, there should be one media license
-  // still stored. The time of it's creation should be sometime before
-  // this test starts. We can't see the license, since it's stored for a
-  // different origin (but we can delete it).
-  const base::Time start = base::Time::Now();
-  LOG(INFO) << "MediaLicenseTimedDeletion starting @ " << start;
-  EXPECT_EQ(1, GetMediaLicenseCount());
-
-  GURL url =
-      embedded_test_server()->GetURL("/browsing_data/media_license.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // This test should use a different domain than the PRE_ test, so there
-  // should be no existing media license for it.
-  EXPECT_FALSE(HasDataForType(kMediaLicenseType));
-
-#if defined(OS_MACOSX)
-  // On some Macs the file system uses second granularity. So before
-  // creating the second license, delay for 1 second so that the new
-  // license's time is not the same second as |start|.
-  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
-#endif
-
-  // Create a media license for this domain.
-  SetDataForType(kMediaLicenseType);
-  EXPECT_EQ(2, GetMediaLicenseCount());
-  EXPECT_TRUE(HasDataForType(kMediaLicenseType));
-
-  // Try to remove the Media Licenses using a time frame up until the start
-  // of this test, which should only delete the media license created by
-  // the PRE_ test.
-  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
-                base::Time(), start);
-  EXPECT_EQ(1, GetMediaLicenseCount());
-  EXPECT_TRUE(HasDataForType(kMediaLicenseType));
-
-  // Now try with a time range that includes the current time, which should
-  // clear the media license created as part of this test.
-  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
-                base::Time(), base::Time::Now());
-  EXPECT_EQ(0, GetMediaLicenseCount());
-  ExpectCookieTreeModelCount(0);
-  EXPECT_FALSE(HasDataForType(kMediaLicenseType));
-}
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 const std::vector<std::string> kStorageTypes{
     "Cookie",    "LocalStorage", "FileSystem",    "SessionStorage",
