@@ -155,31 +155,6 @@ function TaskController(
 }
 
 /**
- * Cached the temporary disabled task item. Used inside
- * FileSelectionHandler.createTemporaryDisabledTaskItem_().
- * @type {Object}
- * @private
- */
-TaskController.cachedDisabledTaskItem_ = null;
-
-/**
- * Create the temporary disabled task item.
- * @return {Object} Created disabled item.
- * @private
- */
-TaskController.createTemporaryDisabledTaskItem_ = function() {
-  if (!TaskController.cachedDisabledTaskItem_) {
-    TaskController.cachedDisabledTaskItem_ = {
-      title: str('TASK_OPEN'),
-      disabled: true,
-      taskId: null
-    };
-  }
-
-  return TaskController.cachedDisabledTaskItem_;
-};
-
-/**
  * Task combobox handler.
  *
  * @param {Object} event Event containing task which was clicked.
@@ -334,11 +309,8 @@ TaskController.prototype.onSelectionChanged_ = function() {
       (selection.directoryCount > 0 || selection.fileCount > 0)) {
     // Compare entries while ignoring changes inside directories.
     if (!util.isSameEntries(this.lastSelectedEntries_, selection.entries)) {
-      // Show disabled items for position calculation of the menu. They will be
-      // overridden in this.updateTasks_().
-      this.updateContextMenuTaskItems_(
-          [TaskController.createTemporaryDisabledTaskItem_()],
-          [TaskController.createTemporaryDisabledTaskItem_()]);
+      // Update the context menu if selection changed.
+      this.updateContextMenuTaskItems_([], []);
     }
   } else {
     // Update context menu.
