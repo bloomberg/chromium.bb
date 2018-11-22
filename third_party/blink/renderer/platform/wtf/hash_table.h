@@ -1651,7 +1651,7 @@ void HashTable<Key,
                KeyTraits,
                Allocator>::DeleteAllBucketsAndDeallocate(ValueType* table,
                                                          unsigned size) {
-  if (!IsTriviallyDestructible<ValueType>::value) {
+  if (!std::is_trivially_destructible<ValueType>::value) {
     for (unsigned i = 0; i < size; ++i) {
       // This code is called when the hash table is cleared or resized. We
       // have allocated a new backing store and we need to run the

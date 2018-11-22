@@ -32,7 +32,8 @@ namespace WTF {
 
 template <typename T>
 struct VectorTraitsBase {
-  static const bool kNeedsDestruction = !IsTriviallyDestructible<T>::value;
+  static const bool kNeedsDestruction =
+      !std::is_trivially_destructible<T>::value;
 
   static constexpr bool kCanInitializeWithMemset =
       std::is_trivially_default_constructible<T>::value;
