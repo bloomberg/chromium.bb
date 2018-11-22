@@ -12470,6 +12470,24 @@
         The value of this policy is an Enrollment token that can be retrieved from the Google Admin console.''',
     },
     {
+      'name': 'CloudManagementEnrollmentMandatory',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:72-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 505,
+      'caption': '''Enable mandatory cloud management enrollment''',
+      'tags': [],
+      'desc': '''
+        If this policy is set to True, cloud management enrollment is mandatory and blocks Chrome launch process if failed.
+
+        If this policy is left unset or set to False, cloud management enrollment is optional and does not blocks Chrome launch process if failed.''',
+    },
+    {
       'name': 'AutoplayAllowed',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -14089,5 +14107,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 504
+  'highest_id_currently_used': 505
 }

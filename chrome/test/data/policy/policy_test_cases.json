@@ -2380,6 +2380,16 @@
       ]
   },
 
+  "CloudManagementEnrollmentMandatory": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": {"CloudManagementEnrollmentMandatory": true},
+    "pref_mappings": [
+        { "pref": "policy.cloud_management_enrollment_mandatory",
+          "local_state": true
+        }
+      ]
+  },
+
   "SSLVersionMin": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "SSLVersionMin": "tls1.1" },
