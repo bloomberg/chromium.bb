@@ -2916,7 +2916,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="25"
       label="Submitted with fail-luhn-check card without selecting
              suggestions (once)"/>
-  <int value="26" label="The form changed dynamically"/>
+  <int value="26" label="The form changed dynamically (Deprecated)"/>
   <int value="27" label="The form changed dynamically and was fillable"/>
   <int value="28" label="The form changed dynamically and was re-filled"/>
   <int value="29" label="The form changed dynamically again after the refill"/>
