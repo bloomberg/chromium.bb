@@ -4708,7 +4708,6 @@ crbug.com/824775 [ Win Mac ] virtual/video-surface-layer/media/controls/video-co
 crbug.com/824830 fast/peerconnection/RTCPeerConnection-many.html [ Timeout Crash Failure Pass ]
 crbug.com/824848 [ Linux Win ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 crbug.com/824904 inspector-protocol/heap-profiler/heap-objects-tracking.js [ Pass Failure ]
-crbug.com/824955 external/wpt/css/css-font-loading/idlharness.https.html [ Pass Failure ]
 
 # Sheriff 2018-03-23
 crbug.com/825262 [ Win Mac Linux ] external/wpt/css/css-transitions/properties-value-001.html [ Pass Failure ]
