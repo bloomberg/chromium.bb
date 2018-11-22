@@ -78,7 +78,7 @@ class Page;
 class PaintArtifactCompositor;
 class PaintController;
 class PaintLayerScrollableArea;
-class PaintTracker;
+class PaintTimingDetector;
 class PrintContext;
 class RootFrameViewport;
 class ScrollableArea;
@@ -685,7 +685,9 @@ class CORE_EXPORT LocalFrameView final
 
   void ScrollAndFocusFragmentAnchor();
   JankTracker& GetJankTracker() { return *jank_tracker_; }
-  PaintTracker& GetPaintTracker() const { return *paint_tracker_; }
+  PaintTimingDetector& GetPaintTimingDetector() const {
+    return *paint_timing_detector_;
+  }
 
  protected:
   void NotifyFrameRectsChangedIfNeeded();
@@ -975,7 +977,7 @@ class CORE_EXPORT LocalFrameView final
 
   UniqueObjectId unique_id_;
   std::unique_ptr<JankTracker> jank_tracker_;
-  Member<PaintTracker> paint_tracker_;
+  Member<PaintTimingDetector> paint_timing_detector_;
 
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };

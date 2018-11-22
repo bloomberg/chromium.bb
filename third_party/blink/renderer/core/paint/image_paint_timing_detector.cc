@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/paint_tracker.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
@@ -171,7 +171,7 @@ void ImagePaintTimingDetector::OnLargestImagePaintDetected(
       "loading", "LargestImagePaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
       largest_image_record.first_paint_time_after_loaded, "data",
       std::move(value));
-  frame_view_->GetPaintTracker().DidChangePerformanceTiming();
+  frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
 }
 
 void ImagePaintTimingDetector::OnLastImagePaintDetected(
@@ -184,7 +184,7 @@ void ImagePaintTimingDetector::OnLastImagePaintDetected(
       "loading", "LastImagePaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
       last_image_record.first_paint_time_after_loaded, "data",
       std::move(value));
-  frame_view_->GetPaintTracker().DidChangePerformanceTiming();
+  frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
 }
 
 void ImagePaintTimingDetector::Analyze() {
@@ -210,8 +210,9 @@ void ImagePaintTimingDetector::Analyze() {
     new_candidate_detected = true;
     OnLastImagePaintDetected(*last_image_record);
   }
-  if (new_candidate_detected)
-    frame_view_->GetPaintTracker().DidChangePerformanceTiming();
+  if (new_candidate_detected) {
+    frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
+  }
 }
 
 void ImagePaintTimingDetector::OnPrePaintFinished() {
@@ -249,8 +250,9 @@ void ImagePaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
         largest_image_paint_ = base::TimeTicks();
       if (last_image_paint_invalidated)
         last_image_paint_ = base::TimeTicks();
-      if (largest_image_paint_invalidated || last_image_paint_invalidated)
-        frame_view_->GetPaintTracker().DidChangePerformanceTiming();
+      if (largest_image_paint_invalidated || last_image_paint_invalidated) {
+        frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
+      }
     }
   }
 }

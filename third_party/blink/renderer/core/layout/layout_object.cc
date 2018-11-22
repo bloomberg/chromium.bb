@@ -94,7 +94,7 @@
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/paint/paint_tracker.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
@@ -3268,7 +3268,7 @@ void LayoutObject::WillBeRemovedFromTree() {
 
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
     if (LocalFrameView* frame_view = GetFrameView()) {
-      frame_view->GetPaintTracker().NotifyNodeRemoved(*this);
+      frame_view->GetPaintTimingDetector().NotifyNodeRemoved(*this);
     }
   }
 }
