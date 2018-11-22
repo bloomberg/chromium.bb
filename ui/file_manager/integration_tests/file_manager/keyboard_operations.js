@@ -411,3 +411,72 @@ testcase.keyboardSelectDriveDirectoryTree = function() {
     },
   ]);
 };
+
+/**
+ * Tests that while the delete dialog is displayed, it is not possible to press
+ * CONTROL-C to copy a file.
+ */
+testcase.keyboardDisableCopyWhenDialogDisplayed = function() {
+  let appId = null;
+
+  StepsRunner.run([
+    // Open Files app.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.hello], []);
+    },
+    // Select a file for deletion.
+    function(result) {
+      appId = result.windowId;
+      remoteCall.callRemoteTestUtil(
+          'selectFile', appId, ['hello.txt'], this.next);
+    },
+    // Wait for the entry to be selected.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'selectFile failed');
+      remoteCall.waitForElement(appId, '.table-row[selected]').then(this.next);
+    },
+    // Start delete to bring up the delete dialog.
+    function(result) {
+      // Click delete button in the toolbar.
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['button#delete-button'], this.next);
+    },
+    // Confirm that the delete confirmation dialog is shown.
+    function(result) {
+      remoteCall.waitForElement(appId, '.cr-dialog-container.shown')
+          .then(this.next);
+    },
+    // Try to copy file. We need to use execCommand as the command handler that
+    // interprets key strokes will drop events if there is a dialog on screen.
+    function() {
+      remoteCall.callRemoteTestUtil('execCommand', appId, ['copy'], this.next);
+    },
+    // Press Cancel button to stop the delete operation.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['button.cr-dialog-cancel'], this.next);
+    },
+    // Wait for dialog to disappear.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElementLost(appId, '.cr-dialog-container.shown')
+          .then(this.next);
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      const key = ['#file-list', 'v', true, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key).then(this.next);
+    },
+    // Check no files were pasted.
+    function(result) {
+      chrome.test.assertTrue(result);
+      const files = TestEntryInfo.getExpectedRows([ENTRIES.hello]);
+      remoteCall.waitForFiles(appId, files).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
