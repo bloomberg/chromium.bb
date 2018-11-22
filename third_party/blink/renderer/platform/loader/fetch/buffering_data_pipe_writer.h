@@ -36,7 +36,7 @@ class PLATFORM_EXPORT BufferingDataPipeWriter {
   mojo::ScopedDataPipeProducerHandle handle_;
   mojo::SimpleWatcher watcher_;
   Deque<Vector<char>> buffer_;
-  size_t front_written_size_ = 0;
+  wtf_size_t front_written_size_ = 0;
   bool waiting_ = false;
   bool finished_ = false;
 };

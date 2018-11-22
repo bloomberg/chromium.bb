@@ -308,13 +308,13 @@ void WorkerFetchContext::DispatchDidReceiveResponse(
 
 void WorkerFetchContext::DispatchDidReceiveData(unsigned long identifier,
                                                 const char* data,
-                                                int data_length) {
+                                                size_t data_length) {
   probe::didReceiveData(global_scope_, identifier, nullptr, data, data_length);
 }
 
 void WorkerFetchContext::DispatchDidReceiveEncodedData(
     unsigned long identifier,
-    int encoded_data_length) {
+    size_t encoded_data_length) {
   probe::didReceiveEncodedDataLength(global_scope_, nullptr, identifier,
                                      encoded_data_length);
 }

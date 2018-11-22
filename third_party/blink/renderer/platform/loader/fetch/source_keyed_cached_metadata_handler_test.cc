@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/crypto.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -69,7 +70,7 @@ struct CacheMetadataEntry {
   CacheMetadataEntry(const WebURL& url,
                      base::Time response_time,
                      const char* data,
-                     size_t data_size)
+                     wtf_size_t data_size)
       : url(url), response_time(response_time) {
     this->data.Append(data, data_size);
   }
@@ -93,7 +94,8 @@ class SourceKeyedCachedMetadataHandlerMockPlatform final
                      base::Time response_time,
                      const char* data,
                      size_t data_size) override {
-    cache_entries_.emplace_back(url, response_time, data, data_size);
+    cache_entries_.emplace_back(url, response_time, data,
+                                SafeCast<wtf_size_t>(data_size));
   }
 
   bool HasCacheMetadataFor(const WebURL& url) {

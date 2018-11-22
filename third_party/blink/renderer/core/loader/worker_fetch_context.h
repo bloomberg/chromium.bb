@@ -94,9 +94,9 @@ class WorkerFetchContext final : public BaseFetchContext {
                                   ResourceResponseType) override;
   void DispatchDidReceiveData(unsigned long identifier,
                               const char* data,
-                              int dataLength) override;
+                              size_t data_length) override;
   void DispatchDidReceiveEncodedData(unsigned long identifier,
-                                     int encoded_data_length) override;
+                                     size_t encoded_data_length) override;
   void DispatchDidFinishLoading(unsigned long identifier,
                                 TimeTicks finish_time,
                                 int64_t encoded_data_length,

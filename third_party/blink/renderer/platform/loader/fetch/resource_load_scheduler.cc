@@ -6,6 +6,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -106,7 +107,7 @@ size_t GetOutstandingThrottledLimit(FetchContext* context) {
 }
 
 int TakeWholeKilobytes(int64_t& bytes) {
-  int kilobytes = bytes / 1024;
+  int kilobytes = base::saturated_cast<int>(bytes / 1024);
   bytes %= 1024;
   return kilobytes;
 }
@@ -140,13 +141,13 @@ class ResourceLoadScheduler::TrafficMonitor {
   scheduler::SchedulingLifecycleState current_state_ =
       scheduler::SchedulingLifecycleState::kStopped;
 
-  size_t total_throttled_request_count_ = 0;
+  uint32_t total_throttled_request_count_ = 0;
   size_t total_throttled_traffic_bytes_ = 0;
   size_t total_throttled_decoded_bytes_ = 0;
-  size_t total_not_throttled_request_count_ = 0;
+  uint32_t total_not_throttled_request_count_ = 0;
   size_t total_not_throttled_traffic_bytes_ = 0;
   size_t total_not_throttled_decoded_bytes_ = 0;
-  size_t throttling_state_change_count_ = 0;
+  uint32_t throttling_state_change_count_ = 0;
   bool report_all_is_called_ = false;
 
   scheduler::AggregatedMetricReporter<scheduler::FrameStatus, int64_t>
@@ -311,26 +312,34 @@ void ResourceLoadScheduler::TrafficMonitor::ReportAll() {
     main_frame_total_not_throttled_request_count.Count(
         total_not_throttled_request_count_);
     main_frame_total_throttled_traffic_bytes.Count(
-        total_throttled_traffic_bytes_);
+        base::saturated_cast<base::Histogram::Sample>(
+            total_throttled_traffic_bytes_));
     main_frame_total_not_throttled_traffic_bytes.Count(
-        total_not_throttled_traffic_bytes_);
+        base::saturated_cast<base::Histogram::Sample>(
+            total_not_throttled_traffic_bytes_));
     main_frame_total_throttled_decoded_bytes.Count(
-        total_throttled_decoded_bytes_);
+        base::saturated_cast<base::Histogram::Sample>(
+            total_throttled_decoded_bytes_));
     main_frame_total_not_throttled_decoded_bytes.Count(
-        total_not_throttled_decoded_bytes_);
+        base::saturated_cast<base::Histogram::Sample>(
+            total_not_throttled_decoded_bytes_));
   } else {
     sub_frame_total_throttled_request_count.Count(
         total_throttled_request_count_);
     sub_frame_total_not_throttled_request_count.Count(
         total_not_throttled_request_count_);
     sub_frame_total_throttled_traffic_bytes.Count(
-        total_throttled_traffic_bytes_);
+        base::saturated_cast<base::Histogram::Sample>(
+            total_throttled_traffic_bytes_));
     sub_frame_total_not_throttled_traffic_bytes.Count(
-        total_not_throttled_traffic_bytes_);
+        base::saturated_cast<base::Histogram::Sample>(
+            total_not_throttled_traffic_bytes_));
     sub_frame_total_throttled_decoded_bytes.Count(
-        total_throttled_decoded_bytes_);
+        base::saturated_cast<base::Histogram::Sample>(
+            total_throttled_decoded_bytes_));
     sub_frame_total_not_throttled_decoded_bytes.Count(
-        total_not_throttled_decoded_bytes_);
+        base::saturated_cast<base::Histogram::Sample>(
+            total_not_throttled_decoded_bytes_));
   }
 
   throttling_state_change_count.Count(throttling_state_change_count_);

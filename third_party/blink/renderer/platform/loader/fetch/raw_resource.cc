@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -139,7 +140,7 @@ RawResource::RawResource(const ResourceRequest& resource_request,
 void RawResource::AppendData(const char* data, size_t length) {
   if (data_pipe_writer_) {
     DCHECK_EQ(kDoNotBufferData, GetDataBufferingPolicy());
-    data_pipe_writer_->Write(data, length);
+    data_pipe_writer_->Write(data, SafeCast<uint32_t>(length));
   } else {
     Resource::AppendData(data, length);
   }
@@ -340,7 +341,7 @@ bool RawResource::MatchPreload(const FetchParameters& params,
 
   if (Data()) {
     for (const auto& span : *Data())
-      data_pipe_writer_->Write(span.data(), span.size());
+      data_pipe_writer_->Write(span.data(), SafeCast<uint32_t>(span.size()));
   }
   SetDataBufferingPolicy(kDoNotBufferData);
 

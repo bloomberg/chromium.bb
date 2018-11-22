@@ -63,7 +63,7 @@ String GetErrorString(const network::CorsErrorStatus& status,
 
   using CorsError = network::mojom::CorsError;
   const StringView hint(status.failed_parameter.data(),
-                        status.failed_parameter.size());
+                        SafeCast<wtf_size_t>(status.failed_parameter.size()));
 
   const char* resource_kind_raw =
       Resource::ResourceTypeToString(resource_type, initiator_name);

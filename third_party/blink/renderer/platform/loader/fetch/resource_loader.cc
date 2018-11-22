@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -941,8 +942,8 @@ void ResourceLoader::DidStartLoadingResponseBody(
   mojom::blink::BlobRegistry* blob_registry = BlobDataHandle::GetBlobRegistry();
   blob_registry->RegisterFromStream(
       mime_type.IsNull() ? g_empty_string : mime_type.LowerASCII(), "",
-      std::max(0ll, response.ExpectedContentLength()), std::move(body),
-      std::move(progress_client_ptr),
+      std::max(static_cast<int64_t>(0), response.ExpectedContentLength()),
+      std::move(body), std::move(progress_client_ptr),
       WTF::Bind(&ResourceLoader::FinishedCreatingBlob,
                 WrapWeakPersistent(this)));
 }
@@ -1094,7 +1095,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   if (data_out.size()) {
     data_out.ForEachSegment([this](const char* segment, size_t segment_size,
                                    size_t segment_offset) {
-      DidReceiveData(segment, segment_size);
+      DidReceiveData(segment, SafeCast<int>(segment_size));
       return true;
     });
   }
@@ -1171,7 +1172,7 @@ void ResourceLoader::OnProgress(uint64_t delta) {
     return;
 
   Context().DispatchDidReceiveData(resource_->Identifier(), nullptr, delta);
-  resource_->DidDownloadData(delta);
+  resource_->DidDownloadData(SafeCast<int>(delta));
 }
 
 void ResourceLoader::FinishedCreatingBlob(

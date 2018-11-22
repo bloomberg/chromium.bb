@@ -46,7 +46,7 @@ class ResourceClientWalker {
   }
 
   T* Next() {
-    size_t size = client_vector_.size();
+    wtf_size_t size = client_vector_.size();
     while (index_ < size) {
       ResourceClient* next = client_vector_[index_++];
       DCHECK(next);
@@ -60,7 +60,7 @@ class ResourceClientWalker {
  private:
   const HeapHashCountedSet<WeakMember<ResourceClient>>& client_set_;
   HeapVector<Member<ResourceClient>> client_vector_;
-  size_t index_ = 0;
+  wtf_size_t index_ = 0;
 };
 
 }  // namespace blink

@@ -39,7 +39,7 @@ static bool DigestsEqual(const DigestValue& digest1,
   if (digest1.size() != digest2.size())
     return false;
 
-  for (size_t i = 0; i < digest1.size(); i++) {
+  for (wtf_size_t i = 0; i < digest1.size(); i++) {
     if (digest1[i] != digest2[i])
       return false;
   }
@@ -384,7 +384,8 @@ bool SubresourceIntegrity::ParseDigest(const UChar*& position,
   }
 
   // We accept base64url encoding, but normalize to "normal" base64 internally:
-  digest = NormalizeToBase64(String(begin, position - begin));
+  digest = NormalizeToBase64(
+      String(begin, static_cast<wtf_size_t>(position - begin)));
   return true;
 }
 
@@ -490,7 +491,7 @@ SubresourceIntegrity::ParseIntegrityAttribute(
       if (begin != position && report_info) {
         report_info->AddConsoleErrorMessage(
             "Ignoring unrecogized 'integrity' attribute option '" +
-            String(begin, position - begin) + "'.");
+            String(begin, static_cast<wtf_size_t>(position - begin)) + "'.");
       }
     }
 

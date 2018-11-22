@@ -118,9 +118,9 @@ void FetchContext::DispatchDidReceiveResponse(
     Resource*,
     ResourceResponseType) {}
 
-void FetchContext::DispatchDidReceiveData(unsigned long, const char*, int) {}
+void FetchContext::DispatchDidReceiveData(unsigned long, const char*, size_t) {}
 
-void FetchContext::DispatchDidReceiveEncodedData(unsigned long, int) {}
+void FetchContext::DispatchDidReceiveEncodedData(unsigned long, size_t) {}
 
 void FetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
                                              BlobDataHandle*) {}
