@@ -39,6 +39,11 @@ ARC_EXPORT extern const char kArcSupervisionTransition[];
 ARC_EXPORT extern const char kArcCompatibleFilesystemChosen[];
 ARC_EXPORT extern const char kArcVoiceInteractionValuePropAccepted[];
 ARC_EXPORT extern const char kEcryptfsMigrationStrategy[];
+ARC_EXPORT extern const char kEngagementTimeBackground[];
+ARC_EXPORT extern const char kEngagementTimeDayId[];
+ARC_EXPORT extern const char kEngagementTimeForeground[];
+ARC_EXPORT extern const char kEngagementTimeOsVersion[];
+ARC_EXPORT extern const char kEngagementTimeTotal[];
 
 // TODO(b/110211045): Move Assistant related prefs to ash.
 ARC_EXPORT extern const char kVoiceInteractionActivityControlAccepted[];
