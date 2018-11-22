@@ -783,16 +783,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         ChromeAuthenticatorRequestDelegate::
             TouchIdAuthenticatorConfigForProfile(profile_))
         .DeleteCredentials(delete_begin_, delete_end_);
-
-    // When clearing passwords for all time, reset preferences that are used to
-    // prevent overwriting the encryption key in the Keychain.
-    if (IsForAllTime()) {
-      PrefService* local_state = g_browser_process->local_state();
-      if (local_state) {
-        local_state->ClearPref(os_crypt::prefs::kKeyCreated);
-        local_state->ClearPref(os_crypt::prefs::kKeyOverwritingPreventions);
-      }
-    }
 #endif  // defined(OS_MACOSX)
   }
 

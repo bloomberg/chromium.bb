@@ -236,7 +236,6 @@ bool OSCrypt::IsEncryptionAvailable() {
 #if !defined(OS_IOS)
 void OSCrypt::RegisterLocalPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(os_crypt::prefs::kKeyCreated, false);
-  registry->RegisterIntegerPref(os_crypt::prefs::kKeyOverwritingPreventions, 0);
 }
 
 void OSCrypt::Init(PrefService* local_state) {

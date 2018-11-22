@@ -23653,9 +23653,12 @@ Called by update_net_error_codes.py.-->
 <enum name="GetEncryptionKeyAction">
   <int value="0" label="Key is successfully found - not first time"/>
   <int value="1" label="Key is successfully found for the first time"/>
-  <int value="2" label="Overwriting of the key is prevented"/>
-  <int value="3" label="Key is added to the Keychain"/>
-  <int value="4" label="Other error"/>
+  <int value="2" label="(Obsolete) Overwriting of the key is prevented"/>
+  <int value="3" label="New key is added to the Keychain"/>
+  <int value="4" label="Other error during lookup"/>
+  <int value="5" label="New key was created, old key potentially overwritten"/>
+  <int value="6" label="New key creation failed, old key not found"/>
+  <int value="7" label="Error adding a new key"/>
 </enum>
 
 <enum name="GetOutputDeviceInfoCacheHit">

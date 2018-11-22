@@ -63,8 +63,6 @@ KeychainPassword::~KeychainPassword() = default;
 
 std::string KeychainPassword::GetPassword() const {
   DCHECK(key_creation_util_);
-  bool prevent_overwriting_enabled =
-      key_creation_util_->ShouldPreventOverwriting();
 
   UInt32 password_length = 0;
   void* password_data = NULL;
@@ -76,23 +74,14 @@ std::string KeychainPassword::GetPassword() const {
     std::string password =
         std::string(static_cast<char*>(password_data), password_length);
     keychain_.ItemFreeContent(password_data);
-    if (prevent_overwriting_enabled) {
-      key_creation_util_->OnKeyWasFound();
-    }
+    key_creation_util_->OnKeyWasFound();
     return password;
   }
 
   if (error == errSecItemNotFound) {
-    if (prevent_overwriting_enabled &&
-        key_creation_util_->KeyAlreadyCreated()) {
-      key_creation_util_->OnOverwritingPrevented();
-      return std::string();
-    }
     std::string password =
         AddRandomPasswordToKeychain(keychain_, service_name, account_name);
-    if (prevent_overwriting_enabled && !password.empty()) {
-      key_creation_util_->OnKeyWasStored();
-    }
+    key_creation_util_->OnKeyNotFound(!password.empty());
     return password;
   }
 
