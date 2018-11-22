@@ -344,11 +344,16 @@ class TestGenerator(BaseTest):
                                               TestOptions())
     self.AssertGoldenTextEquals(h1.GetContent())
     h2 = jni_registration_generator.HeaderGenerator(
-        '', 'org/chromium/TestJni', natives, jni_params, True)
+        '',
+        'org/chromium/TestJni',
+        natives,
+        jni_params,
+        True,
+        use_proxy_hash=False)
     content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
     self.AssertGoldenTextEquals(
-        jni_registration_generator.CreateFromDict(content),
+        jni_registration_generator.CreateFromDict(content, use_hash=False),
         suffix='Registrations')
 
   def testInnerClassNatives(self):
@@ -430,11 +435,16 @@ class TestGenerator(BaseTest):
     self.AssertGoldenTextEquals(h.GetContent())
 
     h2 = jni_registration_generator.HeaderGenerator(
-        '', 'org/chromium/TestJni', natives, jni_params, True)
+        '',
+        'org/chromium/TestJni',
+        natives,
+        jni_params,
+        True,
+        use_proxy_hash=False)
     content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
     self.AssertGoldenTextEquals(
-        jni_registration_generator.CreateFromDict(content),
+        jni_registration_generator.CreateFromDict(content, use_hash=False),
         suffix='Registrations')
 
   def testCalledByNatives(self):
@@ -1244,7 +1254,7 @@ class ProxyTestGenerator(BaseTest):
     """
     qualified_clazz = 'org/chromium/example/SampleProxyJni'
 
-    natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
+    natives = jni_generator.ProxyHelpers.ExtractStaticProxyNatives(
         qualified_clazz, test_data, 'long')
 
     golden_natives = [
@@ -1296,7 +1306,7 @@ class ProxyTestGenerator(BaseTest):
     qualified_clazz = 'test/foo/Foo'
     jni_params = TestOptions()
 
-    natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
+    natives = jni_generator.ProxyHelpers.ExtractStaticProxyNatives(
         qualified_clazz, test_data, 'long')
 
     golden_natives = [
@@ -1315,26 +1325,36 @@ class ProxyTestGenerator(BaseTest):
 
     jni_params = jni_generator.JniParams(qualified_clazz)
     main_dex_header = jni_registration_generator.HeaderGenerator(
-        '', qualified_clazz, natives, jni_params, main_dex=True).Generate()
+        '',
+        qualified_clazz,
+        natives,
+        jni_params,
+        main_dex=True,
+        use_proxy_hash=False).Generate()
     content = TestGenerator._MergeRegistrationForTests([main_dex_header])
 
     self.AssertGoldenTextEquals(
-        jni_registration_generator.CreateFromDict(content))
+        jni_registration_generator.CreateFromDict(content, use_hash=False))
 
     other_qualified_clazz = 'test/foo/Bar'
-    other_natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
+    other_natives = jni_generator.ProxyHelpers.ExtractStaticProxyNatives(
         other_qualified_clazz, non_main_dex_test_data, 'long')
 
     jni_params = jni_generator.JniParams(other_qualified_clazz)
     non_main_dex_header = jni_registration_generator.HeaderGenerator(
-        '', other_qualified_clazz, other_natives, jni_params,
-        main_dex=False).Generate()
+        '',
+        other_qualified_clazz,
+        other_natives,
+        jni_params,
+        main_dex=False,
+        use_proxy_hash=False).Generate()
 
     content = TestGenerator._MergeRegistrationForTests([main_dex_header] +
                                                        [non_main_dex_header])
 
     self.AssertGoldenTextEquals(
-        jni_registration_generator.CreateFromDict(content), 'AndNonMainDex')
+        jni_registration_generator.CreateFromDict(content, use_hash=False),
+        'AndNonMainDex')
 
   def testProxyNatives(self):
     test_data = """
@@ -1369,9 +1389,9 @@ class ProxyTestGenerator(BaseTest):
 
     qualified_clazz = 'org/chromium/example/SampleProxyJni'
 
-    natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
+    natives = jni_generator.ProxyHelpers.ExtractStaticProxyNatives(
         qualified_clazz, test_data, 'long')
-    bad_spacing_natives = jni_generator.NativeProxyHelpers \
+    bad_spacing_natives = jni_generator.ProxyHelpers \
       .ExtractStaticProxyNatives(qualified_clazz, bad_spaced_test_data, 'long')
     golden_natives = [
         NativeMethod(
@@ -1415,8 +1435,8 @@ class ProxyTestGenerator(BaseTest):
     h1 = jni_generator.InlHeaderFileGenerator('', qualified_clazz, natives, [],
                                               [], jni_params, TestOptions())
     self.AssertGoldenTextEquals(h1.GetContent())
-    h2 = jni_registration_generator.HeaderGenerator('', qualified_clazz,
-                                                    natives, jni_params, False)
+    h2 = jni_registration_generator.HeaderGenerator(
+        '', qualified_clazz, natives, jni_params, False, use_proxy_hash=False)
     content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
     proxy_opts = jni_registration_generator.ProxyOptions()
@@ -1425,7 +1445,7 @@ class ProxyTestGenerator(BaseTest):
         suffix='Java')
 
     self.AssertGoldenTextEquals(
-        jni_registration_generator.CreateFromDict(content),
+        jni_registration_generator.CreateFromDict(content, proxy_opts.use_hash),
         suffix='Registrations')
 
   def testProxyHashedExample(self):
@@ -1446,7 +1466,8 @@ class ProxyTestGenerator(BaseTest):
 
     proxy_opts = jni_registration_generator.ProxyOptions()
     self.AssertGoldenTextEquals(
-        jni_registration_generator.CreateProxyJavaFromDict(reg_dict, proxy_opts),
+        jni_registration_generator.CreateProxyJavaFromDict(
+            reg_dict, proxy_opts),
         golden_file='HashedSampleForAnnotationProcessorGenJni.golden')
 
   def testProxyJniExample(self):

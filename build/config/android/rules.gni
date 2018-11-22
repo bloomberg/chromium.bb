@@ -1762,6 +1762,7 @@ if (enable_java_templates) {
         jar_excluded_patterns = []
       }
       jar_excluded_patterns += [
+        "*J/N.class",
         "*/GEN_JNI.class",
         "*/R.class",
         "*/R\$*.class",
