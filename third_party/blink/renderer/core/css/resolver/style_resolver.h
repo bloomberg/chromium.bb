@@ -75,6 +75,8 @@ class CORE_EXPORT StyleResolver final
       const ComputedStyle* layout_parent_style = nullptr,
       RuleMatchingBehavior = kMatchAllRules);
 
+  static scoped_refptr<ComputedStyle> InitialStyleForElement(Document&);
+
   static AnimatableValue* CreateAnimatableValueSnapshot(
       Element&,
       const ComputedStyle& base_style,
@@ -137,8 +139,6 @@ class CORE_EXPORT StyleResolver final
 
  private:
   explicit StyleResolver(Document&);
-
-  static scoped_refptr<ComputedStyle> InitialStyleForElement(Document&);
 
   // FIXME: This should probably go away, folded into FontBuilder.
   void UpdateFont(StyleResolverState&);

@@ -2145,7 +2145,8 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject() {
 
   if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
       hasAttribute(html_names::kInvisibleAttr)) {
-    auto style = ComputedStyle::Create();
+    auto style =
+        GetDocument().GetStyleResolver()->InitialStyleForElement(GetDocument());
     style->SetDisplay(EDisplay::kNone);
     return style;
   }
