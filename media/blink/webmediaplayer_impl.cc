@@ -455,7 +455,7 @@ void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
   if (client_ && IsInPictureInPicture() && !client_->IsInAutoPIP()) {
     delegate_->DidPictureInPictureSurfaceChange(
         delegate_id_, surface_id, pipeline_metadata_.natural_size,
-        true /* show_play_pause_button */);
+        ShouldShowPlayPauseButtonInPictureInPictureWindow());
   }
 }
 
@@ -844,7 +844,7 @@ void WebMediaPlayerImpl::EnterPictureInPicture(
   // Picture-in-Picture mode.
   delegate_->DidPictureInPictureModeStart(
       delegate_id_, surface_id, pipeline_metadata_.natural_size,
-      std::move(callback), true /* show_play_pause_button */);
+      std::move(callback), ShouldShowPlayPauseButtonInPictureInPictureWindow());
 }
 
 void WebMediaPlayerImpl::ExitPictureInPicture(
@@ -3347,6 +3347,11 @@ bool WebMediaPlayerImpl::IsInPictureInPicture() const {
   DCHECK(client_);
   return client_->DisplayType() ==
          WebMediaPlayer::DisplayType::kPictureInPicture;
+}
+
+bool WebMediaPlayerImpl::ShouldShowPlayPauseButtonInPictureInPictureWindow()
+    const {
+  return Duration() != std::numeric_limits<double>::infinity();
 }
 
 void WebMediaPlayerImpl::MaybeSetContainerName() {

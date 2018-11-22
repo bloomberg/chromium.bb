@@ -601,6 +601,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Switch to SurfaceLayer, either initially or from VideoLayer.
   void ActivateSurfaceLayerForVideo();
 
+  // Returns whether the Picture-in-Picture window should contain a play/pause
+  // button. It will return false if video is "live", in other words if duration
+  // is equals to Infinity.
+  bool ShouldShowPlayPauseButtonInPictureInPictureWindow() const;
+
   blink::WebLocalFrame* const frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate
