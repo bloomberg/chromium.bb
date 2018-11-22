@@ -25,7 +25,6 @@ action("create_test_main") {
     "crostini_share.js",
     "crostini_tasks.js",
     "js/strings.js",
-    "quick_view.js",
     "uma.js",
   ]
   args = [ "--output=" + rebase_path(output, root_build_dir) ]
@@ -41,7 +40,6 @@ js_type_check("closure_compile") {
     ":crostini_mount",
     ":crostini_share",
     ":crostini_tasks",
-    ":quick_view",
     ":uma",
   ]
 }
@@ -88,13 +86,6 @@ js_library("crostini_share") {
 }
 
 js_library("crostini_tasks") {
-  deps = [
-    "js:test_util",
-    "//ui/webui/resources/js:webui_resource_test",
-  ]
-}
-
-js_library("quick_view") {
   deps = [
     "js:test_util",
     "//ui/webui/resources/js:webui_resource_test",
