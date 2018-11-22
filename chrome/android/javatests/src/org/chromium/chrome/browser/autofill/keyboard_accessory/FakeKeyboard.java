@@ -50,10 +50,10 @@ public class FakeKeyboard extends ChromeKeyboardVisibilityDelegate {
 
     @Override
     public void showKeyboard(View view) {
-        boolean keyboardWasVisible = isKeyboardShowing(getActivity(), view);
+        boolean keyboardWasVisible = mIsShowing;
         mIsShowing = true;
         runOnUiThreadBlocking(() -> {
-            if (!keyboardWasVisible) notifyListeners(mIsShowing);
+            if (!keyboardWasVisible) notifyListeners(isKeyboardShowing(getActivity(), view));
             // Pretend a layout change for components listening to the activity directly:
             View contentView = getActivity().findViewById(android.R.id.content);
             ViewGroup.LayoutParams p = contentView.getLayoutParams();
@@ -64,10 +64,10 @@ public class FakeKeyboard extends ChromeKeyboardVisibilityDelegate {
 
     @Override
     protected boolean hideAndroidSoftKeyboard(View view) {
-        boolean keyboardWasVisible = isKeyboardShowing(getActivity(), view);
+        boolean keyboardWasVisible = mIsShowing;
         mIsShowing = false;
         runOnUiThreadBlocking(() -> {
-            if (keyboardWasVisible) notifyListeners(mIsShowing);
+            if (keyboardWasVisible) notifyListeners(isKeyboardShowing(getActivity(), view));
             // Pretend a layout change for components listening to the activity directly:
             View contentView = getActivity().findViewById(android.R.id.content);
             ViewGroup.LayoutParams p = contentView.getLayoutParams();
