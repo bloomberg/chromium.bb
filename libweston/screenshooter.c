@@ -204,7 +204,7 @@ weston_screenshooter_shoot(struct weston_output *output,
 	l->listener.notify = screenshooter_frame_notify;
 	wl_signal_add(&output->frame_signal, &l->listener);
 	output->disable_planes++;
-	weston_output_schedule_repaint(output);
+	weston_output_damage(output);
 
 	return 0;
 }
