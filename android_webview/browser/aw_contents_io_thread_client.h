@@ -27,6 +27,7 @@ class URLRequest;
 namespace android_webview {
 
 class AwWebResourceResponse;
+struct AwWebResourceRequest;
 
 // This class provides a means of calling Java methods on an instance that has
 // a 1:1 relationship with a WebContents instance directly from the IO thread.
@@ -111,7 +112,7 @@ class AwContentsIoThreadClient {
   using ShouldInterceptRequestResultCallback =
       base::OnceCallback<void(std::unique_ptr<AwWebResourceResponse>)>;
   void ShouldInterceptRequestAsync(
-      const net::URLRequest* request,
+      AwWebResourceRequest request,
       ShouldInterceptRequestResultCallback callback);
 
   // Retrieve the AllowContentAccess setting value of this AwContents.
