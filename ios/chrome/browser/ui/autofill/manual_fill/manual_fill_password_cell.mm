@@ -50,7 +50,7 @@
 
 namespace {
 // Left and right margins of the cell content.
-static const CGFloat sideMargins = 16;
+static const CGFloat SideMargins = 16;
 }  // namespace
 
 @interface ManualFillPasswordCell ()
@@ -142,24 +142,26 @@ static const CGFloat sideMargins = 16;
   grayLine.translatesAutoresizingMaskIntoConstraints = NO;
   [self.contentView addSubview:grayLine];
 
+  UIView* guide = self.contentView;
+
   self.siteNameLabel = CreateLabel();
   self.siteNameLabel.translatesAutoresizingMaskIntoConstraints = NO;
   self.siteNameLabel.adjustsFontForContentSizeCategory = YES;
   [self.contentView addSubview:self.siteNameLabel];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.siteNameLabel ],
-                                                grayLine, 0);
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.siteNameLabel ], guide,
+                                                SideMargins);
 
   self.usernameButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapUsernameButton:), self);
   [self.contentView addSubview:self.usernameButton];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.usernameButton ],
-                                                grayLine, 0);
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.usernameButton ], guide,
+                                                0);
 
   self.passwordButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapPasswordButton:), self);
   [self.contentView addSubview:self.passwordButton];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.passwordButton ],
-                                                grayLine, 0);
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.passwordButton ], guide,
+                                                0);
 
   VerticalConstraintsSpacingForViewsInContainer(
       @[ self.siteNameLabel, self.usernameButton, self.passwordButton ],
@@ -175,9 +177,9 @@ static const CGFloat sideMargins = 16;
 
     // Horizontal constraints.
     [grayLine.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor
-                                           constant:sideMargins],
+                                           constant:SideMargins],
     [safeArea.trailingAnchor constraintEqualToAnchor:grayLine.trailingAnchor
-                                            constant:sideMargins],
+                                            constant:SideMargins],
   ]];
 }
 
