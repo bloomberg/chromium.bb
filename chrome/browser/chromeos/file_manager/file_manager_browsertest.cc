@@ -734,8 +734,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestCase("requestMount"),
                       TestCase("requestMountMultipleMounts"),
                       TestCase("requestMountSourceDevice"),
-                      TestCase("requestMountSourceFile"),
-                      TestCase("providerEject")));
+                      TestCase("requestMountSourceFile")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     GearMenu, /* gear_menu.js */
