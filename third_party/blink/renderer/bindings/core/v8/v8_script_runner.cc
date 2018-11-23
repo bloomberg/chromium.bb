@@ -69,7 +69,8 @@ void ThrowScriptForbiddenException(v8::Isolate* isolate) {
   V8ThrowException::ThrowError(isolate, "Script execution is forbidden.");
 }
 
-v8::Local<v8::Value> ThrowStackOverflowExceptionIfNeeded(v8::Isolate* isolate) {
+v8::MaybeLocal<v8::Value> ThrowStackOverflowExceptionIfNeeded(
+    v8::Isolate* isolate) {
   if (V8PerIsolateData::From(isolate)->IsHandlingRecursionLevelError()) {
     // If we are already handling a recursion level error, we should
     // not invoke v8::Function::Call.
@@ -80,12 +81,13 @@ v8::Local<v8::Value> ThrowStackOverflowExceptionIfNeeded(v8::Isolate* isolate) {
   V8PerIsolateData::From(isolate)->SetIsHandlingRecursionLevelError(true);
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
-  v8::Local<v8::Value> result =
-      v8::Function::New(isolate->GetCurrentContext(),
-                        ThrowStackOverflowException, v8::Local<v8::Value>(), 0,
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  v8::MaybeLocal<v8::Value> result =
+      v8::Function::New(context, ThrowStackOverflowException,
+                        v8::Local<v8::Value>(), 0,
                         v8::ConstructorBehavior::kThrow)
           .ToLocalChecked()
-          ->Call(v8::Undefined(isolate), 0, nullptr);
+          ->Call(context, v8::Undefined(isolate), 0, nullptr);
 
   V8PerIsolateData::From(isolate)->SetIsHandlingRecursionLevelError(false);
   return result;
@@ -342,8 +344,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallAsConstructor(
 
   int depth = v8::MicrotasksScope::GetCurrentDepth(isolate);
   if (depth >= kMaxRecursionDepth)
-    return v8::MaybeLocal<v8::Value>(
-        ThrowStackOverflowExceptionIfNeeded(isolate));
+    return ThrowStackOverflowExceptionIfNeeded(isolate);
 
   CHECK(!context->IsIteratingOverObservers());
 
@@ -385,8 +386,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
 
   int depth = v8::MicrotasksScope::GetCurrentDepth(isolate);
   if (depth >= kMaxRecursionDepth)
-    return v8::MaybeLocal<v8::Value>(
-        ThrowStackOverflowExceptionIfNeeded(isolate));
+    return ThrowStackOverflowExceptionIfNeeded(isolate);
 
   CHECK(!context->IsIteratingOverObservers());
 
