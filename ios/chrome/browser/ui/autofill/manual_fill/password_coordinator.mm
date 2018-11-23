@@ -131,7 +131,6 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
   TableViewAnimator* animator = [[TableViewAnimator alloc] init];
   animator.presenting = NO;
-  animator.direction = TableAnimatorDirectionFromLeading;
   return animator;
 }
 
