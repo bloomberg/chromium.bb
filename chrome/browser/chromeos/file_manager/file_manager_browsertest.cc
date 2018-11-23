@@ -446,7 +446,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openQuickViewUsb"),
                       TestCase("openQuickViewMtp"),
                       TestCase("pressEnterOnInfoBoxToOpenClose"),
-                      TestCase("closeQuickView")));
+                      TestCase("closeQuickView"),
+                      TestCase("cantOpenQuickViewWithMultipleFiles")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */

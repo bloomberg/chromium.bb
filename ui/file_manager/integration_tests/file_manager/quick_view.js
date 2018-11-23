@@ -957,3 +957,55 @@ testcase.pressEnterOnInfoBoxToOpenClose = function() {
     },
   ]);
 };
+
+/**
+ * Tests that Quick View doesn't open with multiple files selected.
+ */
+testcase.cantOpenQuickViewWithMultipleFiles = function() {
+  let appId;
+
+  StepsRunner.run([
+    // Open Files app on Downloads containing ENTRIES.hello and ENTRIES.world.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.hello, ENTRIES.world],
+          []);
+    },
+    // Select all 2 files.
+    function(results) {
+      appId = results.windowId;
+
+      const ctrlA = ['#file-list', 'a', true, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlA, this.next);
+    },
+    // Wait for the files to be selected.
+    function() {
+      remoteCall
+          .waitForElement(
+              appId,
+              '#cancel-selection-button-wrapper:not([hidden]):not([disabled])')
+          .then(this.next);
+    },
+    // Attempt to open Quick View via its keyboard shortcut.
+    function() {
+      const space = ['#file-list', ' ', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space, this.next);
+    },
+    // Wait for it to possibly open.
+    function() {
+      window.setTimeout(this.next, 500);
+    },
+    // Check Quick View hasn't opened.
+    function() {
+      return remoteCall
+          .callRemoteTestUtil(
+              'deepQueryAllElements', appId, [['#quick-view', '#dialog[open]']])
+          .then(this.next);
+    },
+    function(result) {
+      chrome.test.assertEq([], result);
+
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
