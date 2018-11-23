@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
+#include "content/public/browser/browser_task_traits.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/feature_list.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome_elf/third_party_dlls/public_api.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -262,6 +264,20 @@ bool ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() {
           prefs::kThirdPartyBlockingEnabled);
   return !third_party_blocking_enabled_pref->IsManaged() ||
          third_party_blocking_enabled_pref->GetValue()->GetBool();
+}
+
+// static
+void ModuleDatabase::DisableThirdPartyBlocking() {
+  // Immediately disable the hook. DisableHook() can be called concurrently.
+  DisableHook();
+
+  // Notify the ThirdPartyMetricsRecorder instance that the hook is disabled.
+  // Since this is meant for a heartbeat metric, the small latency introduced
+  // with the thread-hopping is perfectly acceptable.
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI}, base::BindOnce([]() {
+        ModuleDatabase::GetInstance()->third_party_metrics_.SetHookDisabled();
+      }));
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

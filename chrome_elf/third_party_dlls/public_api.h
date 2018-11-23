@@ -6,9 +6,10 @@
 // 1. The packed-data format used to pass information from chrome.dll
 //    to chrome_elf.dll across restarts.
 // 2. The APIs exported by chrome_elf.dll to share logs of module load attempts.
+// 3. The API used to disable the NtMapViewOfSection hook.
 
-#ifndef CHROME_ELF_THIRD_PARTY_DLLS_LOGGING_API_H_
-#define CHROME_ELF_THIRD_PARTY_DLLS_LOGGING_API_H_
+#ifndef CHROME_ELF_THIRD_PARTY_DLLS_PUBLIC_API_H_
+#define CHROME_ELF_THIRD_PARTY_DLLS_PUBLIC_API_H_
 
 #include <windows.h>
 
@@ -89,4 +90,8 @@ extern "C" uint32_t GetBlockedModulesCount();
 // Returns the number of unique modules that have been blocked.
 extern "C" uint32_t GetUniqueBlockedModulesCount();
 
-#endif  // CHROME_ELF_THIRD_PARTY_DLLS_LOGGING_API_H_
+// Disables the hook for NtMapViewOfSection. This function does not remove the
+// hook but merely makes the hook forward the call to the original function.
+extern "C" void DisableHook();
+
+#endif  // CHROME_ELF_THIRD_PARTY_DLLS_PUBLIC_API_H_

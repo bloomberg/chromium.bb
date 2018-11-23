@@ -14,7 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "chrome_elf/sha1/sha1.h"
-#include "chrome_elf/third_party_dlls/logging_api.h"
+#include "chrome_elf/third_party_dlls/public_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace third_party_dlls {

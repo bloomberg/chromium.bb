@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "chrome_elf/third_party_dlls/logging_api.h"
+#include "chrome_elf/third_party_dlls/public_api.h"
 #include "chrome_elf/third_party_dlls/status_codes.h"
 
 namespace third_party_dlls {
