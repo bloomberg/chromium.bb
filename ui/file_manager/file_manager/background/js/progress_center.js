@@ -4,6 +4,10 @@
 
 /**
  * Progress center at the background page.
+ * Silence closure complaint about re-definition of the ProgressCenter here
+ * found when we began compiling ProgessCenter.
+ *
+ * @suppress {checkTypes}
  * @constructor
  * @struct
  */
