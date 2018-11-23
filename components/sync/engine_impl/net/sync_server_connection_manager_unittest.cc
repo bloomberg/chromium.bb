@@ -35,7 +35,7 @@ class BlockingHttpPost : public HttpPostProviderInterface {
                       int content_length,
                       const char* content) override {}
   bool MakeSynchronousPost(int* net_error_code,
-                           int* http_response_code) override {
+                           int* http_status_code) override {
     wait_for_abort_.TimedWait(TestTimeouts::action_max_timeout());
     *net_error_code = net::ERR_ABORTED;
     return false;
@@ -137,7 +137,7 @@ class FailingHttpPost : public HttpPostProviderInterface {
                       int content_length,
                       const char* content) override {}
   bool MakeSynchronousPost(int* net_error_code,
-                           int* http_response_code) override {
+                           int* http_status_code) override {
     *net_error_code = net_error_code_;
     return false;
   }

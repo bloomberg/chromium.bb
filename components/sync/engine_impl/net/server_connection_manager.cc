@@ -29,7 +29,7 @@ using std::vector;
 static const char kSyncServerSyncPath[] = "/command/";
 
 HttpResponse::HttpResponse()
-    : http_response_code(kUnsetResponseCode),
+    : http_status_code(kUnsetResponseCode),
       content_length(kUnsetContentLength),
       payload_length(kUnsetPayloadLength),
       server_status(NONE) {}
@@ -64,7 +64,7 @@ bool ServerConnectionManager::Connection::ReadBufferResponse(
     string* buffer_out,
     HttpResponse* response,
     bool require_response) {
-  if (net::HTTP_OK != response->http_response_code) {
+  if (net::HTTP_OK != response->http_status_code) {
     response->server_status = HttpResponse::SYNC_SERVER_ERROR;
     return false;
   }
@@ -232,7 +232,7 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
     auth_token_.clear();
   }
 
-  if (!ok || net::HTTP_OK != params->response.http_response_code)
+  if (!ok || net::HTTP_OK != params->response.http_status_code)
     return false;
 
   if (connection->ReadBufferResponse(&params->buffer_out, &params->response,
@@ -261,7 +261,7 @@ ServerConnectionManager::MakeConnection() {
 }
 
 std::ostream& operator<<(std::ostream& s, const struct HttpResponse& hr) {
-  s << " Response Code (bogus on error): " << hr.http_response_code;
+  s << " Response Code (bogus on error): " << hr.http_status_code;
   s << " Content-Length (bogus on error): " << hr.content_length;
   s << " Server Status: "
     << HttpResponse::GetServerConnectionCodeString(hr.server_status);

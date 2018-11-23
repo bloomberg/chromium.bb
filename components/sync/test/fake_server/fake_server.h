@@ -14,6 +14,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
@@ -24,6 +25,7 @@
 #include "components/sync/engine_impl/loopback_server/persistent_unique_client_entity.h"
 #include "components/sync/protocol/client_commands.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "net/http/http_status_code.h"
 
 namespace fake_server {
 
@@ -54,12 +56,10 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   FakeServer();
   ~FakeServer() override;
 
-  // Handles a /command POST (with the given |request|) to the server. Two
-  // output arguments, |http_response_code|, and |response|, are used
-  // to pass data back to the caller.
-  void HandleCommand(const std::string& request,
-                     int* http_response_code,
-                     std::string* response);
+  // Handles a /command POST (with the given |request|) to the server.
+  // |response| must not be null.
+  net::HttpStatusCode HandleCommand(const std::string& request,
+                                    std::string* response);
 
   // Helpers for fetching the last Commit or GetUpdates messages, respectively.
   // Returns true if the specified message existed, and false if no message has
@@ -122,7 +122,7 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   void ClearServerData();
 
   // Causes future calls to HandleCommand() fail with the given response code.
-  void SetHttpError(int http_response_code);
+  void SetHttpError(net::HttpStatusCode http_status_code);
 
   // Undoes previous calls to SetHttpError().
   void ClearHttpError();
@@ -188,15 +188,16 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
  private:
   // Returns whether a triggered error should be sent for the request.
   bool ShouldSendTriggeredError() const;
-  int SendToLoopbackServer(const std::string& request, std::string* response);
+  net::HttpStatusCode SendToLoopbackServer(const std::string& request,
+                                           std::string* response);
   void InjectClientCommand(std::string* response);
   void HandleWalletRequest(
       const sync_pb::ClientToServerMessage& request,
       const sync_pb::DataTypeProgressMarker& old_wallet_marker,
       std::string* response_string);
 
-  // If non-zero, the server will return HTTP errors.
-  int http_error_response_code_;
+  // If set, the server will return HTTP errors.
+  base::Optional<net::HttpStatusCode> http_error_status_code_;
 
   // All Keystore keys known to the server.
   std::vector<std::string> keystore_keys_;

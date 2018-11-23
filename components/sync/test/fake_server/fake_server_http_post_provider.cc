@@ -21,9 +21,14 @@ bool FakeServerHttpPostProvider::network_enabled_ = true;
 
 namespace {
 
-void RunAndSignal(base::OnceClosure task,
-                  base::WaitableEvent* completion_event) {
-  std::move(task).Run();
+void HandleCommandOnFakeServerThread(base::WeakPtr<FakeServer> fake_server,
+                                     const std::string& request,
+                                     int* http_status_code,
+                                     std::string* response,
+                                     base::WaitableEvent* completion_event) {
+  if (fake_server) {
+    *http_status_code = fake_server->HandleCommand(request, response);
+  }
   completion_event->Signal();
 }
 
@@ -80,16 +85,16 @@ void FakeServerHttpPostProvider::SetPostPayload(const char* content_type,
 }
 
 bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
-                                                     int* http_response_code) {
+                                                     int* http_status_code) {
   if (!network_enabled_) {
     response_.clear();
     *net_error_code = net::ERR_INTERNET_DISCONNECTED;
-    *http_response_code = 0;
+    *http_status_code = 0;
     return false;
   }
 
   // It is assumed that a POST is being made to /command.
-  int post_response_code = -1;
+  int post_status_code = -1;
   std::string post_response;
 
   base::WaitableEvent post_complete(
@@ -98,16 +103,15 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
 
   bool result = fake_server_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&RunAndSignal,
-                     base::BindOnce(&FakeServer::HandleCommand, fake_server_,
-                                    base::ConstRef(request_content_),
-                                    &post_response_code, &post_response),
+      base::BindOnce(&HandleCommandOnFakeServerThread, fake_server_,
+                     request_content_, base::Unretained(&post_status_code),
+                     base::Unretained(&post_response),
                      base::Unretained(&post_complete)));
 
   if (!result) {
     response_.clear();
     *net_error_code = net::ERR_UNEXPECTED;
-    *http_response_code = 0;
+    *http_status_code = 0;
     return false;
   }
 
@@ -124,7 +128,7 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
 
   // Zero means success.
   *net_error_code = 0;
-  *http_response_code = post_response_code;
+  *http_status_code = post_status_code;
   response_ = post_response;
 
   return true;

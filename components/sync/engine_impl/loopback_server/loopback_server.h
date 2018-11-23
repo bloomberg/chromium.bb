@@ -20,6 +20,7 @@
 #include "components/sync/engine_impl/loopback_server/loopback_server_entity.h"
 #include "components/sync/protocol/loopback_server.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "net/http/http_status_code.h"
 
 namespace fake_server {
 class FakeServer;
@@ -43,12 +44,10 @@ class LoopbackServer {
   explicit LoopbackServer(const base::FilePath& persistent_file);
   virtual ~LoopbackServer();
 
-  // Handles a /command POST (with the given |request|) to the server. Two
-  // output arguments, |http_response_code|, and |response|, are used to pass
-  // data back to the caller.
-  void HandleCommand(const std::string& request,
-                     int* http_response_code,
-                     std::string* response);
+  // Handles a /command POST (with the given |request|) to the server.
+  // |*response| must not be null.
+  net::HttpStatusCode HandleCommand(const std::string& request,
+                                    std::string* response);
 
   // Enables strong consistency model (i.e. server detects conflicts).
   void EnableStrongConsistencyWithConflictDetectionModel();

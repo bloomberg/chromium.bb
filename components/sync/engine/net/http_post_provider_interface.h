@@ -33,7 +33,7 @@ class HttpPostProviderInterface {
   // Returns true if the URL request succeeded. If the request failed,
   // error() may be non-zero and hence contain more information.
   virtual bool MakeSynchronousPost(int* net_error_code,
-                                   int* http_response_code) = 0;
+                                   int* http_status_code) = 0;
 
   // Get the length of the content returned in the HTTP response.
   // This does not count the trailing null-terminating character returned
