@@ -276,6 +276,7 @@ public class TracingPreferencesTest {
     @MediumTest
     @Feature({"Preferences"})
     @Features.EnableFeatures(ChromeFeatureList.DEVELOPER_PREFERENCES)
+    @DisableIf.Build(sdk_is_less_than = 21, message = "crbug.com/908118")
     public void testSelectCategories() throws Exception {
         Context context = ContextUtils.getApplicationContext();
         // We need a renderer so that its tracing categories will be populated.
