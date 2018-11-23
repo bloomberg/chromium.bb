@@ -33,6 +33,32 @@ typedef uint32_t ChannelConfig;
 
 class MEDIA_EXPORT CoreAudioUtil {
  public:
+  // Helper class which automates casting between WAVEFORMATEX and
+  // WAVEFORMATEXTENSIBLE raw pointers using implicit constructors and
+  // operator overloading. Note that, no memory is allocated by this utility
+  // structure. It only serves as a handle (or a wrapper) of the structure
+  // provided to it at construction.
+  class MEDIA_EXPORT WaveFormatWrapper {
+   public:
+    WaveFormatWrapper(WAVEFORMATEXTENSIBLE* p)
+        : ptr_(reinterpret_cast<WAVEFORMATEX*>(p)) {}
+    WaveFormatWrapper(WAVEFORMATEX* p) : ptr_(p) {}
+    ~WaveFormatWrapper() = default;
+
+    operator WAVEFORMATEX*() const { return ptr_; }
+    WAVEFORMATEX* operator->() const { return ptr_; }
+    WAVEFORMATEX* get() const { return ptr_; }
+    WAVEFORMATEXTENSIBLE* GetExtensible() const;
+
+    bool IsExtensible() const;
+    bool IsPcm() const;
+    bool IsFloat() const;
+    size_t size() const;
+
+   private:
+    WAVEFORMATEX* ptr_;
+  };
+
   // Returns true if Windows Core Audio is supported.
   // Always verify that this method returns true before using any of the
   // methods in this class.
@@ -40,7 +66,9 @@ class MEDIA_EXPORT CoreAudioUtil {
   // it is safe to call from other threads.
   static bool IsSupported();
 
-  static std::string WaveFormatExToString(const WAVEFORMATEXTENSIBLE* format);
+  // Prints/logs all fields of the format structure in |format|.
+  // Also supports extended versions (WAVEFORMATEXTENSIBLE).
+  static std::string WaveFormatToString(WaveFormatWrapper format);
 
   // Converts between reference time to base::TimeDelta.
   // One reference-time unit is 100 nanoseconds.
@@ -126,16 +154,20 @@ class MEDIA_EXPORT CoreAudioUtil {
 
   // Get the mix format that the audio engine uses internally for processing
   // of shared-mode streams. This format is not necessarily a format that the
-  // audio endpoint device supports. Thus, the caller might not succeed in
-  // creating an exclusive-mode stream with a format obtained by this method.
+  // audio endpoint device supports. The WAVEFORMATEXTENSIBLE structure can
+  // specify both the mapping of channels to speakers and the number of bits of
+  // precision in each sample. The first member of the WAVEFORMATEXTENSIBLE
+  // structure is a WAVEFORMATEX structure and its wFormatTag will be set to
+  // WAVE_FORMAT_EXTENSIBLE if the output structure is extended.
+  // FormatIsExtensible() can be used to determine if that is the case or not.
   static HRESULT GetSharedModeMixFormat(IAudioClient* client,
-                                        WAVEFORMATPCMEX* format);
+                                        WAVEFORMATEXTENSIBLE* format);
 
   // Returns true if the specified |client| supports the format in |format|
   // for the given |share_mode| (shared or exclusive).
   static bool IsFormatSupported(IAudioClient* client,
                                 AUDCLNT_SHAREMODE share_mode,
-                                const WAVEFORMATPCMEX* format);
+                                WaveFormatWrapper format);
 
   // Returns true if the specified |channel_layout| is supported for the
   // default IMMDevice where flow direction and role is define by |data_flow|
@@ -190,7 +222,7 @@ class MEDIA_EXPORT CoreAudioUtil {
   // audio session if NULL is passed for |session_guid|, otherwise the client
   // will be associated with the specified session.
   static HRESULT SharedModeInitialize(IAudioClient* client,
-                                      const WAVEFORMATPCMEX* format,
+                                      WaveFormatWrapper format,
                                       HANDLE event_handle,
                                       uint32_t requested_buffer_size,
                                       uint32_t* endpoint_buffer_size,

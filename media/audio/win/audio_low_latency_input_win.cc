@@ -105,7 +105,7 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
   // Set the input (capture) format to the desired output format. In most cases,
   // it will be used unchanged.
   input_format_ = output_format_;
-  DVLOG(1) << CoreAudioUtil::WaveFormatExToString(&input_format_);
+  DVLOG(1) << CoreAudioUtil::WaveFormatToString(&input_format_);
 
   // Size in bytes of each audio frame.
   frame_size_bytes_ = format->nBlockAlign;
@@ -659,37 +659,11 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
 HRESULT WASAPIAudioInputStream::GetAudioEngineStreamFormat() {
   HRESULT hr = S_OK;
 #ifndef NDEBUG
-  // The GetMixFormat() method retrieves the stream format that the
-  // audio engine uses for its internal processing of shared-mode streams.
   base::win::ScopedCoMem<WAVEFORMATEX> format;
   hr = audio_client_->GetMixFormat(&format);
   if (FAILED(hr))
     return hr;
-
-  DVLOG(2) << "WAVEFORMATEX:";
-  DVLOG(2) << "  wFormatTags    : 0x" << std::hex << format->wFormatTag;
-  DVLOG(2) << "  nChannels      : " << format->nChannels;
-  DVLOG(2) << "  nSamplesPerSec : " << format->nSamplesPerSec;
-  DVLOG(2) << "  nAvgBytesPerSec: " << format->nAvgBytesPerSec;
-  DVLOG(2) << "  nBlockAlign    : " << format->nBlockAlign;
-  DVLOG(2) << "  wBitsPerSample : " << format->wBitsPerSample;
-  DVLOG(2) << "  cbSize         : " << format->cbSize;
-
-  if (format->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
-    WAVEFORMATEXTENSIBLE* format_ex =
-        reinterpret_cast<WAVEFORMATEXTENSIBLE*>(format.get());
-    DVLOG(2) << "WAVEFORMATEXTENSIBLE:";
-    DVLOG(2) << " wValidBitsPerSample: "
-             << format_ex->Samples.wValidBitsPerSample;
-    DVLOG(2) << " dwChannelMask      : 0x" << std::hex
-             << format_ex->dwChannelMask;
-    if (format_ex->SubFormat == KSDATAFORMAT_SUBTYPE_PCM)
-      DVLOG(2) << " SubFormat          : KSDATAFORMAT_SUBTYPE_PCM";
-    else if (format_ex->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT)
-      DVLOG(2) << " SubFormat          : KSDATAFORMAT_SUBTYPE_IEEE_FLOAT";
-    else if (format_ex->SubFormat == KSDATAFORMAT_SUBTYPE_WAVEFORMATEX)
-      DVLOG(2) << " SubFormat          : KSDATAFORMAT_SUBTYPE_WAVEFORMATEX";
-  }
+  DVLOG(2) << CoreAudioUtil::WaveFormatToString(format.get());
 #endif
   return hr;
 }
@@ -725,18 +699,9 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
     // Otherwise, we keep the bits sample as is since we still request fixed
     // point PCM. In that case the closest match is typically in float format
     // (KSDATAFORMAT_SUBTYPE_IEEE_FLOAT).
-    auto format_is_pcm = [](const WAVEFORMATEX* format) {
-      if (format->wFormatTag == WAVE_FORMAT_PCM)
-        return true;
-      if (format->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
-        const WAVEFORMATEXTENSIBLE* format_ex =
-            reinterpret_cast<const WAVEFORMATEXTENSIBLE*>(format);
-        return format_ex->SubFormat == KSDATAFORMAT_SUBTYPE_PCM;
-      }
-      return false;
-    };
-    if (format_is_pcm(closest_match))
+    if (CoreAudioUtil::WaveFormatWrapper(closest_match.get()).IsPcm()) {
       input_format->wBitsPerSample = closest_match->wBitsPerSample;
+    }
 
     input_format->nBlockAlign =
         (input_format->wBitsPerSample / 8) * input_format->nChannels;
@@ -745,9 +710,8 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
 
     if (IsSupportedFormatForConversion(&input_format_)) {
       DVLOG(1) << "Will convert captured audio: \n"
-               << CoreAudioUtil::WaveFormatExToString(&input_format_)
-               << " ==> \n"
-               << CoreAudioUtil::WaveFormatExToString(&output_format_);
+               << CoreAudioUtil::WaveFormatToString(&input_format_) << " ==> \n"
+               << CoreAudioUtil::WaveFormatToString(&output_format_);
 
       SetupConverterAndStoreFormatInfo();
 

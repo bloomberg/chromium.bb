@@ -122,6 +122,12 @@ std::string AudioParameters::AsHumanReadableString() const {
     << " frames_per_buffer: " << frames_per_buffer()
     << " effects: " << effects()
     << " mic_positions: " << PointsToString(mic_positions_);
+  if (hardware_capabilities_) {
+    s << ", hw_cap.min_frames_per_buffer: "
+      << hardware_capabilities_->min_frames_per_buffer
+      << ", hw_cap.max_frames_per_buffer: "
+      << hardware_capabilities_->max_frames_per_buffer;
+  }
   return s.str();
 }
 

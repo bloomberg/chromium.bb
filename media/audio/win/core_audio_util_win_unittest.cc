@@ -44,6 +44,68 @@ class CoreAudioUtilWinTest : public ::testing::Test {
   ScopedCOMInitializer com_init_;
 };
 
+TEST_F(CoreAudioUtilWinTest, WaveFormatWrapper) {
+  // Use default constructor for WAVEFORMATEX and verify its size.
+  WAVEFORMATEX format = {};
+  CoreAudioUtil::WaveFormatWrapper wave_format(&format);
+  EXPECT_FALSE(wave_format.IsExtensible());
+  EXPECT_EQ(wave_format.size(), sizeof(WAVEFORMATEX));
+  EXPECT_EQ(wave_format->cbSize, 0);
+
+  // Ensure that the stand-alone WAVEFORMATEX structure has a valid format tag
+  // and that all accessors work.
+  format.wFormatTag = WAVE_FORMAT_PCM;
+  EXPECT_FALSE(wave_format.IsExtensible());
+  EXPECT_EQ(wave_format.size(), sizeof(WAVEFORMATEX));
+  EXPECT_EQ(wave_format.get()->wFormatTag, WAVE_FORMAT_PCM);
+  EXPECT_EQ(wave_format->wFormatTag, WAVE_FORMAT_PCM);
+
+  // Next, ensure that the size is valid. Stand-alone is not extended.
+  EXPECT_EQ(wave_format.size(), sizeof(WAVEFORMATEX));
+
+  // Verify format types for the stand-alone version.
+  EXPECT_TRUE(wave_format.IsPcm());
+  EXPECT_FALSE(wave_format.IsFloat());
+  format.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
+  EXPECT_TRUE(wave_format.IsFloat());
+}
+
+TEST_F(CoreAudioUtilWinTest, WaveFormatWrapperExtended) {
+  // Use default constructor for WAVEFORMATEXTENSIBLE and verify that it
+  // results in same size as for WAVEFORMATEX even if the size of |format_ex|
+  // equals the size of WAVEFORMATEXTENSIBLE.
+  WAVEFORMATEXTENSIBLE format_ex = {};
+  CoreAudioUtil::WaveFormatWrapper wave_format_ex(&format_ex);
+  EXPECT_FALSE(wave_format_ex.IsExtensible());
+  EXPECT_EQ(wave_format_ex.size(), sizeof(WAVEFORMATEX));
+  EXPECT_EQ(wave_format_ex->cbSize, 0);
+
+  // Ensure that the extended structure has a valid format tag and that all
+  // accessors work.
+  format_ex.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+  EXPECT_FALSE(wave_format_ex.IsExtensible());
+  EXPECT_EQ(wave_format_ex.size(), sizeof(WAVEFORMATEX));
+  EXPECT_EQ(wave_format_ex->wFormatTag, WAVE_FORMAT_EXTENSIBLE);
+  EXPECT_EQ(wave_format_ex.get()->wFormatTag, WAVE_FORMAT_EXTENSIBLE);
+
+  // Next, ensure that the size is valid (sum of stand-alone and extended).
+  // Now the structure qualifies as extended.
+  format_ex.Format.cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
+  EXPECT_TRUE(wave_format_ex.IsExtensible());
+  EXPECT_EQ(wave_format_ex.size(), sizeof(WAVEFORMATEXTENSIBLE));
+  EXPECT_TRUE(wave_format_ex.GetExtensible());
+  EXPECT_EQ(wave_format_ex.GetExtensible()->Format.wFormatTag,
+            WAVE_FORMAT_EXTENSIBLE);
+
+  // Verify format types for the extended version.
+  EXPECT_FALSE(wave_format_ex.IsPcm());
+  format_ex.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+  EXPECT_TRUE(wave_format_ex.IsPcm());
+  EXPECT_FALSE(wave_format_ex.IsFloat());
+  format_ex.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
+  EXPECT_TRUE(wave_format_ex.IsFloat());
+}
+
 TEST_F(CoreAudioUtilWinTest, GetIAudioClientVersion) {
   uint32_t client_version = CoreAudioUtil::GetIAudioClientVersion();
   EXPECT_GE(client_version, 1u);
@@ -245,15 +307,21 @@ TEST_F(CoreAudioUtilWinTest, GetSharedModeMixFormat) {
       AudioDeviceDescription::kDefaultDeviceId, eRender, eConsole);
   EXPECT_TRUE(client.Get());
 
-  // Perform a simple sanity test of the aquired format structure.
-  WAVEFORMATPCMEX format;
+  // Perform a simple sanity test of the acquired format structure.
+  WAVEFORMATEXTENSIBLE format;
   EXPECT_TRUE(
       SUCCEEDED(CoreAudioUtil::GetSharedModeMixFormat(client.Get(), &format)));
-  EXPECT_GE(format.Format.nChannels, 1);
-  EXPECT_GE(format.Format.nSamplesPerSec, 8000u);
-  EXPECT_GE(format.Format.wBitsPerSample, 16);
-  EXPECT_GE(format.Samples.wValidBitsPerSample, 16);
-  EXPECT_EQ(format.Format.wFormatTag, WAVE_FORMAT_EXTENSIBLE);
+  CoreAudioUtil::WaveFormatWrapper wformat(&format);
+  EXPECT_GE(wformat->nChannels, 1);
+  EXPECT_GE(wformat->nSamplesPerSec, 8000u);
+  EXPECT_GE(wformat->wBitsPerSample, 16);
+  if (wformat.IsExtensible()) {
+    EXPECT_EQ(wformat->wFormatTag, WAVE_FORMAT_EXTENSIBLE);
+    EXPECT_GE(wformat->cbSize, 22);
+    EXPECT_GE(wformat.GetExtensible()->Samples.wValidBitsPerSample, 16);
+  } else {
+    EXPECT_EQ(wformat->cbSize, 0);
+  }
 }
 
 TEST_F(CoreAudioUtilWinTest, IsChannelLayoutSupported) {
@@ -271,7 +339,7 @@ TEST_F(CoreAudioUtilWinTest, IsChannelLayoutSupported) {
       std::string(), eRender, eConsole, mix_params.channel_layout()));
 
   // Check if it is possible to modify the channel layout to stereo for a
-  // device which reports that it prefers to be openen up in an other
+  // device which reports that it prefers to be opened up in an other
   // channel configuration.
   if (mix_params.channel_layout() != CHANNEL_LAYOUT_STEREO) {
     ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
@@ -322,6 +390,19 @@ TEST_F(CoreAudioUtilWinTest, GetPreferredAudioParameters) {
   }
 }
 
+TEST_F(CoreAudioUtilWinTest, GetChannelConfig) {
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
+
+  EDataFlow data_flows[] = {eRender, eCapture};
+
+  for (auto data_flow : data_flows) {
+    ChannelConfig config =
+        CoreAudioUtil::GetChannelConfig(std::string(), data_flow);
+    EXPECT_NE(config, CHANNEL_LAYOUT_NONE);
+    EXPECT_NE(config, CHANNEL_LAYOUT_UNSUPPORTED);
+  }
+}
+
 TEST_F(CoreAudioUtilWinTest, SharedModeInitialize) {
   ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
@@ -330,7 +411,7 @@ TEST_F(CoreAudioUtilWinTest, SharedModeInitialize) {
                                        eRender, eConsole);
   EXPECT_TRUE(client.Get());
 
-  WAVEFORMATPCMEX format;
+  WAVEFORMATEXTENSIBLE format;
   EXPECT_TRUE(
       SUCCEEDED(CoreAudioUtil::GetSharedModeMixFormat(client.Get(), &format)));
 
@@ -394,7 +475,7 @@ TEST_F(CoreAudioUtilWinTest, CreateRenderAndCaptureClients) {
 
   EDataFlow data[] = {eRender, eCapture};
 
-  WAVEFORMATPCMEX format;
+  WAVEFORMATEXTENSIBLE format;
   uint32_t endpoint_buffer_size = 0;
 
   for (size_t i = 0; i < base::size(data); ++i) {
@@ -443,7 +524,7 @@ TEST_F(CoreAudioUtilWinTest, FillRenderEndpointBufferWithSilence) {
       AudioDeviceDescription::kDefaultDeviceId, eRender, eConsole));
   EXPECT_TRUE(client.Get());
 
-  WAVEFORMATPCMEX format;
+  WAVEFORMATEXTENSIBLE format;
   uint32_t endpoint_buffer_size = 0;
   EXPECT_TRUE(
       SUCCEEDED(CoreAudioUtil::GetSharedModeMixFormat(client.Get(), &format)));
@@ -603,7 +684,7 @@ TEST_F(CoreAudioUtilWinTest, SharedModeLowerBufferSize) {
       AudioDeviceDescription::kDefaultDeviceId, eRender, eConsole);
   EXPECT_TRUE(default_client.Get());
 
-  WAVEFORMATPCMEX format;
+  WAVEFORMATEXTENSIBLE format;
   EXPECT_TRUE(SUCCEEDED(
       CoreAudioUtil::GetSharedModeMixFormat(default_client.Get(), &format)));
 
