@@ -152,17 +152,15 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
 
   id<LayoutGuideProvider> layoutGuide = self.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
-    [leadingViewContainer.topAnchor
-        constraintEqualToAnchor:layoutGuide.topAnchor],
+    [leadingViewContainer.topAnchor constraintEqualToAnchor:self.topAnchor],
     [leadingViewContainer.bottomAnchor
-        constraintEqualToAnchor:layoutGuide.bottomAnchor],
+        constraintEqualToAnchor:self.bottomAnchor],
     [leadingViewContainer.leadingAnchor
         constraintEqualToAnchor:layoutGuide.leadingAnchor],
     [trailingView.trailingAnchor
         constraintEqualToAnchor:layoutGuide.trailingAnchor],
-    [trailingView.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],
-    [trailingView.bottomAnchor
-        constraintEqualToAnchor:layoutGuide.bottomAnchor],
+    [trailingView.topAnchor constraintEqualToAnchor:self.topAnchor],
+    [trailingView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
   ]];
 
   if (autofill::features::IsPasswordManualFallbackEnabled()) {

@@ -30,10 +30,12 @@
 
 // Replace the keyboard accessory view with one showing the passed suggestions.
 // And form navigation buttons if not an iPad (which already includes those).
+// |isHardwareKeyboard| is true if a hardware keyboard is in use.
 - (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
                 suggestionClient:(id<FormSuggestionClient>)suggestionClient
               navigationDelegate:
-                  (id<FormInputAccessoryViewDelegate>)navigationDelegate;
+                  (id<FormInputAccessoryViewDelegate>)navigationDelegate
+              isHardwareKeyboard:(BOOL)hardwareKeyboard;
 
 @end
 
