@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_linked_stack.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
-#include "third_party/blink/renderer/platform/heap/heap_terminated_array_builder.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
@@ -4477,60 +4476,6 @@ void RawPtrInHashHelper() {
   }
 }
 
-TEST(HeapTest, HeapTerminatedArray) {
-  ClearOutOldGarbage();
-  IntWrapper::destructor_calls_ = 0;
-
-  HeapTerminatedArray<TerminatedArrayItem>* arr = nullptr;
-
-  const wtf_size_t kPrefixSize = 4;
-  const wtf_size_t kSuffixSize = 4;
-
-  {
-    HeapTerminatedArrayBuilder<TerminatedArrayItem> builder(arr);
-    builder.Grow(kPrefixSize);
-    ConservativelyCollectGarbage();
-    for (wtf_size_t i = 0; i < kPrefixSize; i++)
-      builder.Append(TerminatedArrayItem(IntWrapper::Create(i)));
-    arr = builder.Release();
-  }
-
-  ConservativelyCollectGarbage();
-  EXPECT_EQ(0, IntWrapper::destructor_calls_);
-  EXPECT_EQ(kPrefixSize, arr->size());
-  for (wtf_size_t i = 0; i < kPrefixSize; i++)
-    EXPECT_EQ(i, static_cast<wtf_size_t>(arr->at(i).Payload()->Value()));
-
-  {
-    HeapTerminatedArrayBuilder<TerminatedArrayItem> builder(arr);
-    builder.Grow(kSuffixSize);
-    for (wtf_size_t i = 0; i < kSuffixSize; i++)
-      builder.Append(TerminatedArrayItem(IntWrapper::Create(kPrefixSize + i)));
-    arr = builder.Release();
-  }
-
-  ConservativelyCollectGarbage();
-  EXPECT_EQ(0, IntWrapper::destructor_calls_);
-  EXPECT_EQ(kPrefixSize + kSuffixSize, arr->size());
-  for (wtf_size_t i = 0; i < kPrefixSize + kSuffixSize; i++)
-    EXPECT_EQ(i, static_cast<wtf_size_t>(arr->at(i).Payload()->Value()));
-
-  {
-    Persistent<HeapTerminatedArray<TerminatedArrayItem>> persistent_arr = arr;
-    arr = nullptr;
-    PreciselyCollectGarbage();
-    arr = persistent_arr.Get();
-    EXPECT_EQ(0, IntWrapper::destructor_calls_);
-    EXPECT_EQ(kPrefixSize + kSuffixSize, arr->size());
-    for (wtf_size_t i = 0; i < kPrefixSize + kSuffixSize; i++)
-      EXPECT_EQ(i, static_cast<wtf_size_t>(arr->at(i).Payload()->Value()));
-  }
-
-  arr = nullptr;
-  PreciselyCollectGarbage();
-  EXPECT_EQ(8, IntWrapper::destructor_calls_);
-}
-
 TEST(HeapTest, HeapLinkedStack) {
   ClearOutOldGarbage();
   IntWrapper::destructor_calls_ = 0;
@@ -6677,9 +6622,6 @@ TEST(HeapTest, IsGarbageCollected) {
   static_assert(
       WTF::IsGarbageCollectedType<HeapDeque<Member<IntWrapper>>>::value,
       "HeapDeque");
-  static_assert(WTF::IsGarbageCollectedType<
-                    HeapTerminatedArray<Member<IntWrapper>>>::value,
-                "HeapTerminatedArray");
 }
 
 TEST(HeapTest, HeapHashMapCallsDestructor) {
