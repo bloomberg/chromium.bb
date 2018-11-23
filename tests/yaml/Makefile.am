@@ -1,5 +1,5 @@
 EXTRA_DIST =					\
-	all-spaces.yaml 			\
+	all-spaces.yaml				\
 	back_cont_then_punc.yaml		\
 	before_begmidword.yaml			\
 	begcaps_endcaps.yaml			\
@@ -27,7 +27,7 @@ EXTRA_DIST =					\
 	issue-583.yaml				\
 	issue-584.yaml				\
 	issue-615.yaml				\
-	issue-77.yaml 				\
+	issue-77.yaml				\
 	letterDefTest_harness.yaml		\
 	multipass-backward.yaml			\
 	multipass-forward.yaml			\
@@ -37,5 +37,6 @@ EXTRA_DIST =					\
 	noletsignafter.yaml			\
 	pass0_typebuf.yaml			\
 	present_progressive.yaml		\
+	spaces-in-all-tables.yaml		\
 	squash_space.yaml			\
 	syllable.yaml
