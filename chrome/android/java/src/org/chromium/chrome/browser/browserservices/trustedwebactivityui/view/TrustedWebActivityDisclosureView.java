@@ -85,7 +85,7 @@ public class TrustedWebActivityDisclosureView implements
         int type = Snackbar.TYPE_PERSISTENT;
         int code = Snackbar.UMA_TWA_PRIVACY_DISCLOSURE;
 
-        String action = mResources.getString(R.string.ok_got_it);
+        String action = mResources.getString(R.string.ok);
         return Snackbar.make(title, mSnackbarController, type, code)
                 .setAction(action, null)
                 .setSingleLine(false);

@@ -4,12 +4,10 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui;
 
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.PersistentNotificationController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityDisclosureController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityOpenTimeRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityToolbarController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.PersistentNotificationView;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityToolbarView;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
@@ -25,12 +23,10 @@ import javax.inject.Inject;
 public class TrustedWebActivityCoordinator {
     @Inject
     public TrustedWebActivityCoordinator(
-            PersistentNotificationController persistentNotificationController,
             TrustedWebActivityDisclosureController disclosureController,
             TrustedWebActivityToolbarController toolbarController,
             TrustedWebActivityToolbarView toolbarView,
             TrustedWebActivityDisclosureView disclosureView,
-            PersistentNotificationView notificationView,
             TrustedWebActivityOpenTimeRecorder openTimeRecorder,
             TrustedWebActivityVerifier verifier,
             CloseButtonNavigator closeButtonNavigator) {
