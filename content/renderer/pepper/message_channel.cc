@@ -80,11 +80,13 @@ MessageChannel* MessageChannel::Create(PepperPluginInstanceImpl* instance,
                                        v8::Persistent<v8::Object>* result) {
   MessageChannel* message_channel = new MessageChannel(instance);
   v8::HandleScope handle_scope(instance->GetIsolate());
-  v8::Context::Scope context_scope(instance->GetMainWorldContext());
+  v8::Local<v8::Context> context = instance->GetMainWorldContext();
+  v8::Context::Scope context_scope(context);
   gin::Handle<MessageChannel> handle =
       gin::CreateHandle(instance->GetIsolate(), message_channel);
+  v8::MaybeLocal<v8::Object> object = handle.ToV8()->ToObject(context);
   result->Reset(instance->GetIsolate(),
-                handle.ToV8()->ToObject(instance->GetIsolate()));
+                object.FromMaybe(v8::Local<v8::Object>()));
   return message_channel;
 }
 
