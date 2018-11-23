@@ -24,6 +24,7 @@ EXTRA_DIST =					\
 	issue-537.yaml				\
 	issue-583.yaml				\
 	issue-584.yaml				\
+	issue-615.yaml				\
 	issue-77.yaml 				\
 	letterDefTest_harness.yaml		\
 	multipass-backward.yaml			\
