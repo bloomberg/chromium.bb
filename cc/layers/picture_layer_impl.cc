@@ -526,7 +526,8 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     if (!has_draw_quad) {
       // Checkerboard.
       SkColor color = SafeOpaqueBackgroundColor();
-      if (ShowDebugBorders(DebugBorderType::LAYER)) {
+      if (mask_type_ == Layer::LayerMaskType::NOT_MASK &&
+          ShowDebugBorders(DebugBorderType::LAYER)) {
         // Fill the whole tile with the missing tile color.
         color = DebugColors::OOMTileBorderColor();
       }
