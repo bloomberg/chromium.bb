@@ -11,7 +11,7 @@ using base::android::JavaParamRef;
 // static
 void JNI_AnimationFrameTimeHistogram_SaveHistogram(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& j_histogram_name,
     const JavaParamRef<jlongArray>& j_frame_times_ms,
     jint j_count) {
