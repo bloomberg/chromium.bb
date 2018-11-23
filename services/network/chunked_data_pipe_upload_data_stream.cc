@@ -48,11 +48,6 @@ int ChunkedDataPipeUploadDataStream::InitInternal(
   mojo::DataPipe data_pipe;
   chunked_data_pipe_getter_->StartReading(std::move(data_pipe.producer_handle));
   data_pipe_ = std::move(data_pipe.consumer_handle);
-  handle_watcher_.Watch(
-      data_pipe_.get(),
-      MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-      base::BindRepeating(&ChunkedDataPipeUploadDataStream::OnHandleReadable,
-                          base::Unretained(this)));
 
   return net::OK;
 }
@@ -75,6 +70,16 @@ int ChunkedDataPipeUploadDataStream::ReadInternal(net::IOBuffer* buf,
 
     SetIsFinalChunk();
     return net::OK;
+  }
+
+  // Only start watching once a read starts. This is because OnHandleReadable()
+  // uses |buf_| implicitly assuming that this method has already been called.
+  if (!handle_watcher_.IsWatching()) {
+    handle_watcher_.Watch(
+        data_pipe_.get(),
+        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        base::BindRepeating(&ChunkedDataPipeUploadDataStream::OnHandleReadable,
+                            base::Unretained(this)));
   }
 
   uint32_t num_bytes = buf_len;
