@@ -81,7 +81,7 @@ void V8BooleanOrTestCallbackInterface::ToImpl(v8::Isolate* isolate, v8::Local<v8
   }
 
   {
-    impl.SetBoolean(v8Value->BooleanValue(isolate->GetCurrentContext()).ToChecked());
+    impl.SetBoolean(v8Value->BooleanValue(isolate));
     return;
   }
 }

@@ -89,7 +89,7 @@ void V8BooleanOrElementSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Valu
   }
 
   {
-    impl.SetBoolean(v8Value->BooleanValue(isolate->GetCurrentContext()).ToChecked());
+    impl.SetBoolean(v8Value->BooleanValue(isolate));
     return;
   }
 }

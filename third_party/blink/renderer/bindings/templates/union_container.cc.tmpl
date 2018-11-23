@@ -192,7 +192,7 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {# 16. Boolean (fallback) #}
   {% elif boolean_type %}
   {
-    impl.SetBoolean(v8Value->BooleanValue(isolate->GetCurrentContext()).ToChecked());
+    impl.SetBoolean(v8Value->BooleanValue(isolate));
     return;
   }
 
