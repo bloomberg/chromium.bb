@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
+import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
@@ -22,5 +23,6 @@ import dagger.Subcomponent;
 @ActivityScope
 public interface CustomTabActivityComponent extends ChromeActivityComponent {
     TrustedWebActivityCoordinator resolveTrustedWebActivityCoordinator();
+    CloseButtonNavigator resolveCloseButtonNavigator();
     CustomTabDelegateFactory resolveTabDelegateFactory();
 }
