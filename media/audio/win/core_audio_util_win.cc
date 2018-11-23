@@ -8,6 +8,7 @@
 #include <functiondiscoverykeys_devpkey.h>
 #include <objbase.h>
 #include <stddef.h>
+#include <bitset>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -184,6 +185,120 @@ ChannelConfig ChannelLayoutToChannelConfig(ChannelLayout layout) {
   }
 }
 
+// Converts the most common format tags defined in mmreg.h into string
+// equivalents. Mainly intended for log messages.
+const char* WaveFormatTagToString(WORD format_tag) {
+  switch (format_tag) {
+    case WAVE_FORMAT_UNKNOWN:
+      return "WAVE_FORMAT_UNKNOWN";
+    case WAVE_FORMAT_PCM:
+      return "WAVE_FORMAT_PCM";
+    case WAVE_FORMAT_IEEE_FLOAT:
+      return "WAVE_FORMAT_IEEE_FLOAT";
+    case WAVE_FORMAT_EXTENSIBLE:
+      return "WAVE_FORMAT_EXTENSIBLE";
+    default:
+      return "UNKNOWN";
+  }
+}
+
+// Converts from channel mask to list of included channels.
+// Each audio data format contains channels for one or more of the positions
+// listed below. The number of channels simply equals the number of nonzero
+// flag bits in the |channel_mask|. The relative positions of the channels
+// within each block of audio data always follow the same relative ordering
+// as the flag bits in the table below. For example, if |channel_mask| contains
+// the value 0x00000033, the format defines four audio channels that are
+// assigned for playback to the front-left, front-right, back-left,
+// and back-right speakers, respectively. The channel data should be interleaved
+// in that order within each block.
+std::string ChannelMaskToString(DWORD channel_mask) {
+  std::string ss;
+  if (channel_mask & SPEAKER_FRONT_LEFT)
+    ss += "FRONT_LEFT | ";
+  if (channel_mask & SPEAKER_FRONT_RIGHT)
+    ss += "FRONT_RIGHT | ";
+  if (channel_mask & SPEAKER_FRONT_CENTER)
+    ss += "FRONT_CENTER | ";
+  if (channel_mask & SPEAKER_LOW_FREQUENCY)
+    ss += "LOW_FREQUENCY | ";
+  if (channel_mask & SPEAKER_BACK_LEFT)
+    ss += "BACK_LEFT | ";
+  if (channel_mask & SPEAKER_BACK_RIGHT)
+    ss += "BACK_RIGHT | ";
+  if (channel_mask & SPEAKER_FRONT_LEFT_OF_CENTER)
+    ss += "FRONT_LEFT_OF_CENTER | ";
+  if (channel_mask & SPEAKER_FRONT_RIGHT_OF_CENTER)
+    ss += "RIGHT_OF_CENTER | ";
+  if (channel_mask & SPEAKER_BACK_CENTER)
+    ss += "BACK_CENTER | ";
+  if (channel_mask & SPEAKER_SIDE_LEFT)
+    ss += "SIDE_LEFT | ";
+  if (channel_mask & SPEAKER_SIDE_RIGHT)
+    ss += "SIDE_RIGHT | ";
+  if (channel_mask & SPEAKER_TOP_CENTER)
+    ss += "TOP_CENTER | ";
+  if (channel_mask & SPEAKER_TOP_FRONT_LEFT)
+    ss += "TOP_FRONT_LEFT | ";
+  if (channel_mask & SPEAKER_TOP_FRONT_CENTER)
+    ss += "TOP_FRONT_CENTER | ";
+  if (channel_mask & SPEAKER_TOP_FRONT_RIGHT)
+    ss += "TOP_FRONT_RIGHT | ";
+  if (channel_mask & SPEAKER_TOP_BACK_LEFT)
+    ss += "TOP_BACK_LEFT | ";
+  if (channel_mask & SPEAKER_TOP_BACK_CENTER)
+    ss += "TOP_BACK_CENTER | ";
+  if (channel_mask & SPEAKER_TOP_BACK_RIGHT)
+    ss += "TOP_BACK_RIGHT | ";
+
+  if (!ss.empty()) {
+    // Delete last appended " | " substring.
+    ss.erase(ss.end() - 3, ss.end());
+  }
+
+  std::bitset<8 * sizeof(DWORD)> mask(channel_mask);
+  ss += " (";
+  ss += std::to_string(mask.count());
+  ss += ")";
+  return ss;
+}
+
+// Converts a channel count into a channel configuration.
+ChannelConfig GuessChannelConfig(WORD channels) {
+  switch (channels) {
+    case 0:
+      DVLOG(2) << "KSAUDIO_SPEAKER_DIRECTOUT";
+      return KSAUDIO_SPEAKER_DIRECTOUT;
+    case 1:
+      DVLOG(2) << "KSAUDIO_SPEAKER_MONO";
+      return KSAUDIO_SPEAKER_MONO;
+    case 2:
+      DVLOG(2) << "KSAUDIO_SPEAKER_STEREO";
+      return KSAUDIO_SPEAKER_STEREO;
+    case 3:
+      DVLOG(2) << "KSAUDIO_SPEAKER_2POINT1";
+      return KSAUDIO_SPEAKER_2POINT1;
+    case 4:
+      DVLOG(2) << "KSAUDIO_SPEAKER_QUAD";
+      return KSAUDIO_SPEAKER_QUAD;
+    case 5:
+      DVLOG(2) << "KSAUDIO_SPEAKER_5POINT0";
+      return KSAUDIO_SPEAKER_5POINT0;
+    case 6:
+      DVLOG(2) << "KSAUDIO_SPEAKER_5POINT1";
+      return KSAUDIO_SPEAKER_5POINT1;
+    case 7:
+      DVLOG(2) << "KSAUDIO_SPEAKER_7POINT0";
+      return KSAUDIO_SPEAKER_7POINT0;
+    case 8:
+      DVLOG(2) << "KSAUDIO_SPEAKER_7POINT1";
+      return KSAUDIO_SPEAKER_7POINT1;
+    default:
+      DVLOG(1) << "Unsupported channel count: " << channels;
+  }
+  return KSAUDIO_SPEAKER_STEREO;
+}
+
 bool IAudioClient3IsSupported() {
   return CoreAudioUtil::GetIAudioClientVersion() >= 3;
 }
@@ -249,7 +364,15 @@ ComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal(
   return device_enumerator;
 }
 
-ChannelLayout GetChannelLayout(const WAVEFORMATPCMEX& mix_format) {
+ChannelLayout GetChannelLayout(
+    const CoreAudioUtil::WaveFormatWrapper mix_format) {
+  if (!mix_format.IsExtensible()) {
+    DVLOG(1) << "Format does not contain any channel mask."
+             << " Guessing layout by channel count: " << std::dec
+             << mix_format->nChannels;
+    return GuessChannelLayout(mix_format->nChannels);
+  }
+
   // Get the integer mask which corresponds to the channel layout the
   // audio engine uses for its internal processing/mixing of shared-mode
   // streams. This mask indicates which channels are present in the multi-
@@ -259,7 +382,7 @@ ChannelLayout GetChannelLayout(const WAVEFORMATPCMEX& mix_format) {
   // See
   // http://msdn.microsoft.com/en-us/library/windows/hardware/ff537083.aspx
   // for more details.
-  ChannelConfig channel_config = mix_format.dwChannelMask;
+  ChannelConfig channel_config = mix_format.GetExtensible()->dwChannelMask;
 
   // Convert Microsoft's channel configuration to generic ChannelLayout.
   ChannelLayout channel_layout = ChannelConfigToChannelLayout(channel_config);
@@ -269,8 +392,8 @@ ChannelLayout GetChannelLayout(const WAVEFORMATPCMEX& mix_format) {
   if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
     DVLOG(1) << "Unsupported channel config: " << std::hex << channel_config
              << ".  Guessing layout by channel count: " << std::dec
-             << mix_format.Format.nChannels;
-    channel_layout = GuessChannelLayout(mix_format.Format.nChannels);
+             << mix_format->nChannels;
+    channel_layout = GuessChannelLayout(mix_format->nChannels);
   }
   DVLOG(1) << "channel layout: " << ChannelLayoutToString(channel_layout);
 
@@ -391,14 +514,12 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
                                             bool is_output_device,
                                             AudioParameters* params,
                                             const UMALogCallback& uma_log_cb) {
-  WAVEFORMATPCMEX mix_format;
+  WAVEFORMATEXTENSIBLE mix_format;
   HRESULT hr = CoreAudioUtil::GetSharedModeMixFormat(client, &mix_format);
   uma_log_cb.Run(UmaLogStep::GET_MIX_FORMAT, hr);
   if (FAILED(hr))
     return hr;
-
-  // Preferred sample rate.
-  const int sample_rate = mix_format.Format.nSamplesPerSec;
+  CoreAudioUtil::WaveFormatWrapper format(&mix_format);
 
   int min_frames_per_buffer = 0;
   int max_frames_per_buffer = 0;
@@ -418,8 +539,8 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
       UINT32 min_period_frames = 0;
       UINT32 max_period_frames = 0;
       hr = audio_client_3->GetSharedModeEnginePeriod(
-          &(mix_format.Format), &default_period_frames,
-          &fundamental_period_frames, &min_period_frames, &max_period_frames);
+          format.get(), &default_period_frames, &fundamental_period_frames,
+          &min_period_frames, &max_period_frames);
 
       uma_log_cb.Run(UmaLogStep::GET_SHARED_MODE_ENGINE_PERIOD, hr);
       if (SUCCEEDED(hr)) {
@@ -431,6 +552,9 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
       DVLOG(1) << "IAudioClient3 => frames_per_buffer: " << frames_per_buffer;
     }
   }
+
+  // Preferred sample rate.
+  const int sample_rate = format->nSamplesPerSec;
 
   // If we don't have access to IAudioClient3 or if the call to
   // GetSharedModeEnginePeriod() fails we fall back to GetDevicePeriod().
@@ -452,7 +576,7 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
     DVLOG(1) << "IAudioClient => frames_per_buffer: " << frames_per_buffer;
   }
 
-  ChannelLayout channel_layout = GetChannelLayout(mix_format);
+  ChannelLayout channel_layout = GetChannelLayout(format);
   AudioParameters audio_params(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, sample_rate,
       frames_per_buffer,
@@ -479,27 +603,57 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
 
 }  // namespace
 
+// CoreAudioUtil::WaveFormatWrapper implementation.
+WAVEFORMATEXTENSIBLE* CoreAudioUtil::WaveFormatWrapper::GetExtensible() const {
+  CHECK(IsExtensible());
+  return reinterpret_cast<WAVEFORMATEXTENSIBLE*>(ptr_);
+}
+
+bool CoreAudioUtil::WaveFormatWrapper::IsExtensible() const {
+  return ptr_->wFormatTag == WAVE_FORMAT_EXTENSIBLE && ptr_->cbSize >= 22;
+}
+
+bool CoreAudioUtil::WaveFormatWrapper::IsPcm() const {
+  return IsExtensible() ? GetExtensible()->SubFormat == KSDATAFORMAT_SUBTYPE_PCM
+                        : ptr_->wFormatTag == WAVE_FORMAT_PCM;
+}
+
+bool CoreAudioUtil::WaveFormatWrapper::IsFloat() const {
+  return IsExtensible()
+             ? GetExtensible()->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT
+             : ptr_->wFormatTag == WAVE_FORMAT_IEEE_FLOAT;
+}
+
+size_t CoreAudioUtil::WaveFormatWrapper::size() const {
+  return sizeof(*ptr_) + ptr_->cbSize;
+}
+
 bool CoreAudioUtil::IsSupported() {
   static bool g_is_supported = IsSupportedInternal();
   return g_is_supported;
 }
 
-std::string CoreAudioUtil::WaveFormatExToString(
-    const WAVEFORMATEXTENSIBLE* format) {
-  DCHECK_EQ(format->Format.wFormatTag, WAVE_FORMAT_EXTENSIBLE);
-  DCHECK_GE(format->Format.cbSize, 22);
+// CoreAudioUtil implementation.
+std::string CoreAudioUtil::WaveFormatToString(const WaveFormatWrapper format) {
+  // Start with the WAVEFORMATEX part.
   std::string wave_format = base::StringPrintf(
-      "wFormatTag: WAVE_FORMAT_EXTENSIBLE, nChannels: %d, nSamplesPerSec: %lu"
-      ", nAvgBytesPerSec: %lu, nBlockAlign: %d, wBitsPerSample: %d, cbSize: %d"
-      ", wValidBitsPerSample: %d, dwChannelMask: 0x%lX",
-      format->Format.nChannels, format->Format.nSamplesPerSec,
-      format->Format.nAvgBytesPerSec, format->Format.nBlockAlign,
-      format->Format.wBitsPerSample, format->Format.cbSize,
-      format->Samples.wValidBitsPerSample, format->dwChannelMask);
-  if (format->SubFormat == KSDATAFORMAT_SUBTYPE_PCM) {
+      "wFormatTag: %s (0x%X), nChannels: %d, nSamplesPerSec: %lu"
+      ", nAvgBytesPerSec: %lu, nBlockAlign: %d, wBitsPerSample: %d, cbSize: %d",
+      WaveFormatTagToString(format->wFormatTag), format->wFormatTag,
+      format->nChannels, format->nSamplesPerSec, format->nAvgBytesPerSec,
+      format->nBlockAlign, format->wBitsPerSample, format->cbSize);
+  if (!format.IsExtensible())
+    return wave_format;
+
+  // Append the WAVEFORMATEXTENSIBLE part (which we know exists).
+  base::StringAppendF(
+      &wave_format, " [+] wValidBitsPerSample: %d, dwChannelMask: %s",
+      format.GetExtensible()->Samples.wValidBitsPerSample,
+      ChannelMaskToString(format.GetExtensible()->dwChannelMask).c_str());
+  if (format.IsPcm()) {
     base::StringAppendF(&wave_format, "%s",
                         ", SubFormat: KSDATAFORMAT_SUBTYPE_PCM");
-  } else if (format->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) {
+  } else if (format.IsFloat()) {
     base::StringAppendF(&wave_format, "%s",
                         ", SubFormat: KSDATAFORMAT_SUBTYPE_IEEE_FLOAT");
   } else {
@@ -756,39 +910,67 @@ ComPtr<IAudioClient3> CoreAudioUtil::CreateClient3(const std::string& device_id,
                                base::BindRepeating(&LogUMAEmptyCb));
 }
 
-HRESULT CoreAudioUtil::GetSharedModeMixFormat(
-    IAudioClient* client, WAVEFORMATPCMEX* format) {
-  ScopedCoMem<WAVEFORMATPCMEX> format_pcmex;
-  HRESULT hr = client->GetMixFormat(
-      reinterpret_cast<WAVEFORMATEX**>(&format_pcmex));
+HRESULT CoreAudioUtil::GetSharedModeMixFormat(IAudioClient* client,
+                                              WAVEFORMATEXTENSIBLE* format) {
+  // The GetMixFormat method retrieves the stream format that the audio engine
+  // uses for its internal processing of shared-mode streams. The method
+  // allocates the storage for the structure and this memory will be released
+  // when |mix_format| goes out of scope. The GetMixFormat method retrieves a
+  // format descriptor that is in the form of a WAVEFORMATEXTENSIBLE structure
+  // instead of a standalone WAVEFORMATEX structure. The method outputs a
+  // pointer to the WAVEFORMATEX structure that is embedded at the start of
+  // this WAVEFORMATEXTENSIBLE structure.
+  // Note that, crbug/803056 indicates that some devices can return a format
+  // where only the WAVEFORMATEX parts is initialized and we must be able to
+  // account for that.
+  ScopedCoMem<WAVEFORMATEXTENSIBLE> mix_format;
+  HRESULT hr =
+      client->GetMixFormat(reinterpret_cast<WAVEFORMATEX**>(&mix_format));
   if (FAILED(hr))
     return hr;
 
-  size_t bytes = sizeof(WAVEFORMATEX) + format_pcmex->Format.cbSize;
-  DCHECK_EQ(bytes, sizeof(WAVEFORMATPCMEX))
-      << "Format tag: 0x" << std::hex << format_pcmex->Format.wFormatTag;
+  // Use a wave format wrapper to make things simpler.
+  WaveFormatWrapper wrapped_format(mix_format.get());
 
-  memcpy(format, format_pcmex, bytes);
-  DVLOG(2) << CoreAudioUtil::WaveFormatExToString(format);
+  // Verify that the reported format can be mixed by the audio engine in
+  // shared mode.
+  if (!wrapped_format.IsPcm() && !wrapped_format.IsFloat()) {
+    DLOG(ERROR)
+        << "Only pure PCM or float audio streams can be mixed in shared mode";
+    return AUDCLNT_E_UNSUPPORTED_FORMAT;
+  }
+  // Log a warning for the rare case where |mix_format| only contains a
+  // stand-alone WAVEFORMATEX structure but don't return.
+  if (!wrapped_format.IsExtensible()) {
+    DLOG(WARNING) << "The returned format contains no extended information. "
+                     "The size is "
+                  << wrapped_format.size() << " bytes.";
+  }
+
+  // Copy the correct number of bytes into |*format| taking into account if
+  // the returned structure is correctly extended or not.
+  CHECK_LE(wrapped_format.size(), sizeof(WAVEFORMATEXTENSIBLE))
+      << "Format tag: 0x" << std::hex << wrapped_format->wFormatTag;
+  memcpy(format, wrapped_format.get(), wrapped_format.size());
+  DVLOG(2) << CoreAudioUtil::WaveFormatToString(format);
 
   return hr;
 }
 
 bool CoreAudioUtil::IsFormatSupported(IAudioClient* client,
                                       AUDCLNT_SHAREMODE share_mode,
-                                      const WAVEFORMATPCMEX* format) {
-  ScopedCoMem<WAVEFORMATEXTENSIBLE> closest_match;
-  HRESULT hr = client->IsFormatSupported(
-      share_mode, reinterpret_cast<const WAVEFORMATEX*>(format),
-      reinterpret_cast<WAVEFORMATEX**>(&closest_match));
+                                      const WaveFormatWrapper format) {
+  ScopedCoMem<WAVEFORMATEX> closest_match;
+  HRESULT hr = client->IsFormatSupported(share_mode, format, &closest_match);
 
   // This log can only be triggered for shared mode.
   DLOG_IF(ERROR, hr == S_FALSE) << "Format is not supported "
                                 << "but a closest match exists.";
   // This log can be triggered both for shared and exclusive modes.
   DLOG_IF(ERROR, hr == AUDCLNT_E_UNSUPPORTED_FORMAT) << "Unsupported format.";
+  DVLOG(2) << CoreAudioUtil::WaveFormatToString(format);
   if (hr == S_FALSE) {
-    DVLOG(2) << CoreAudioUtil::WaveFormatExToString(closest_match);
+    DVLOG(2) << CoreAudioUtil::WaveFormatToString(closest_match.get());
   }
 
   return (hr == S_OK);
@@ -803,31 +985,34 @@ bool CoreAudioUtil::IsChannelLayoutSupported(const std::string& device_id,
   if (!client.Get())
     return false;
 
-  WAVEFORMATPCMEX format;
-  HRESULT hr = GetSharedModeMixFormat(client.Get(), &format);
+  WAVEFORMATEXTENSIBLE mix_format;
+  HRESULT hr = GetSharedModeMixFormat(client.Get(), &mix_format);
   if (FAILED(hr))
     return false;
 
   // Next, check if it is possible to use an alternative format where the
   // channel layout (and possibly number of channels) is modified.
 
-  // Convert generic channel layout into Windows-specific channel configuration.
-  ChannelConfig new_config = ChannelLayoutToChannelConfig(channel_layout);
-  if (new_config == KSAUDIO_SPEAKER_UNSUPPORTED) {
-    return false;
+  // Convert generic channel layout into Windows-specific channel configuration
+  // but only if the wave format is extended (can contain a channel mask).
+  WaveFormatWrapper format(&mix_format);
+  if (format.IsExtensible()) {
+    ChannelConfig new_config = ChannelLayoutToChannelConfig(channel_layout);
+    if (new_config == KSAUDIO_SPEAKER_UNSUPPORTED) {
+      return false;
+    }
+    format.GetExtensible()->dwChannelMask = new_config;
   }
-  format.dwChannelMask = new_config;
 
   // Modify the format if the new channel layout has changed the number of
   // utilized channels.
   const int channels = ChannelLayoutToChannelCount(channel_layout);
-  if (channels != format.Format.nChannels) {
-    format.Format.nChannels = channels;
-    format.Format.nBlockAlign = (format.Format.wBitsPerSample / 8) * channels;
-    format.Format.nAvgBytesPerSec = format.Format.nSamplesPerSec *
-                                    format.Format.nBlockAlign;
+  if (channels != format->nChannels) {
+    format->nChannels = channels;
+    format->nBlockAlign = (format->wBitsPerSample / 8) * channels;
+    format->nAvgBytesPerSec = format->nSamplesPerSec * format->nBlockAlign;
   }
-  DVLOG(2) << CoreAudioUtil::WaveFormatExToString(&format);
+  DVLOG(2) << CoreAudioUtil::WaveFormatToString(format);
 
   // Some devices can initialize a shared-mode stream with a format that is
   // not identical to the mix format obtained from the GetMixFormat() method.
@@ -838,7 +1023,7 @@ bool CoreAudioUtil::IsChannelLayoutSupported(const std::string& device_id,
   // for the audio device includes a local effects (LFX) audio processing
   // object (APO) that can handle format conversions.
   return CoreAudioUtil::IsFormatSupported(client.Get(),
-                                          AUDCLNT_SHAREMODE_SHARED, &format);
+                                          AUDCLNT_SHAREMODE_SHARED, format);
 }
 
 HRESULT CoreAudioUtil::GetDevicePeriod(IAudioClient* client,
@@ -851,8 +1036,8 @@ HRESULT CoreAudioUtil::GetDevicePeriod(IAudioClient* client,
   if (FAILED(hr))
     return hr;
 
-  *device_period = (share_mode == AUDCLNT_SHAREMODE_SHARED) ? default_period :
-      minimum_period;
+  *device_period = (share_mode == AUDCLNT_SHAREMODE_SHARED) ? default_period
+                                                            : minimum_period;
   DVLOG(2) << "device_period: "
            << ReferenceTimeToTimeDelta(*device_period).InMillisecondsF()
            << " [ms]";
@@ -900,15 +1085,25 @@ ChannelConfig CoreAudioUtil::GetChannelConfig(const std::string& device_id,
                                               EDataFlow data_flow) {
   ComPtr<IAudioClient> client(CreateClient(device_id, data_flow, eConsole));
 
-  WAVEFORMATPCMEX format = {};
-  if (!client.Get() || FAILED(GetSharedModeMixFormat(client.Get(), &format)))
+  WAVEFORMATEXTENSIBLE mix_format;
+  if (!client.Get() ||
+      FAILED(GetSharedModeMixFormat(client.Get(), &mix_format)))
     return 0;
+  WaveFormatWrapper format(&mix_format);
+  if (!format.IsExtensible()) {
+    // A format descriptor from WAVEFORMATEX only supports mono and stereo.
+    DCHECK_LE(format->nChannels, 2);
+    DVLOG(1) << "Format does not contain any channel mask."
+             << " Guessing layout by channel count: " << std::dec
+             << format->nChannels;
+    return GuessChannelConfig(format->nChannels);
+  }
 
-  return static_cast<ChannelConfig>(format.dwChannelMask);
+  return static_cast<ChannelConfig>(format.GetExtensible()->dwChannelMask);
 }
 
 HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
-                                            const WAVEFORMATPCMEX* format,
+                                            const WaveFormatWrapper format,
                                             HANDLE event_handle,
                                             uint32_t requested_buffer_size,
                                             uint32_t* endpoint_buffer_size,
@@ -923,9 +1118,10 @@ HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
   // After the stream starts, the audio engine will signal the event handle
   // to notify the client each time a buffer becomes ready to process.
   // Event-driven buffering is supported for both rendering and capturing.
-  // Both shared-mode and exclusive-mode streams can use event-driven buffering.
-  bool use_event = (event_handle != NULL &&
-                    event_handle != INVALID_HANDLE_VALUE);
+  // Both shared-mode and exclusive-mode streams can use event-driven
+  // buffering.
+  bool use_event =
+      (event_handle != NULL && event_handle != INVALID_HANDLE_VALUE);
   if (use_event)
     stream_flags |= AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
   DVLOG(2) << "stream_flags: 0x" << std::hex << stream_flags;
@@ -946,7 +1142,7 @@ HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
     }
     // Initialize a low-latency client using IAudioClient3.
     hr = audio_client_3->InitializeSharedAudioStream(
-        stream_flags, requested_buffer_size, &(format->Format), session_guid);
+        stream_flags, requested_buffer_size, format, session_guid);
     if (FAILED(hr)) {
       DVLOG(1) << "IAudioClient3::InitializeSharedAudioStream: " << std::hex
                << hr;
@@ -955,7 +1151,7 @@ HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
   } else {
     // Initialize the shared mode client for minimal delay.
     hr = client->Initialize(AUDCLNT_SHAREMODE_SHARED, stream_flags, 0, 0,
-                            &(format->Format), session_guid);
+                            format, session_guid);
     if (FAILED(hr)) {
       DVLOG(1) << "IAudioClient::Initialize: " << std::hex << hr;
       return hr;
@@ -981,7 +1177,7 @@ HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
   DVLOG(2) << "endpoint buffer size: " << buffer_size_in_frames;
 
   // TODO(henrika): utilize when delay measurements are added.
-  REFERENCE_TIME  latency = 0;
+  REFERENCE_TIME latency = 0;
   hr = client->GetStreamLatency(&latency);
   DVLOG(2) << "stream latency: "
            << ReferenceTimeToTimeDelta(latency).InMillisecondsF() << " [ms]";
