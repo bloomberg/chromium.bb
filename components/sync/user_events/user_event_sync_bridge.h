@@ -54,8 +54,6 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
  private:
   void RecordUserEventImpl(
       std::unique_ptr<sync_pb::UserEventSpecifics> specifics);
-  // Record events in the deferred queue and clear the queue.
-  void ProcessQueuedEvents();
 
   void OnStoreCreated(const base::Optional<ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
@@ -69,29 +67,12 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
   void OnReadAllData(DataCallback callback,
                      const base::Optional<ModelError>& error,
                      std::unique_ptr<ModelTypeStore::RecordList> data_records);
-  void OnReadAllDataToDelete(
-      std::unique_ptr<MetadataChangeList> delete_metadata_change_list,
-      const base::Optional<ModelError>& error,
-      std::unique_ptr<ModelTypeStore::RecordList> data_records);
-
-  // Resubmit all the events persisted in the store to sync events, which were
-  // preserved when sync was disabled. This may resubmit entities that the
-  // processor already knows about (i.e. with metadata), but it is allowed.
-  void ReadAllDataAndResubmit();
-  void OnReadAllDataToResubmit(
-      const base::Optional<ModelError>& error,
-      std::unique_ptr<ModelTypeStore::RecordList> data_records);
 
   void HandleGlobalIdChange(int64_t old_global_id, int64_t new_global_id);
 
   // Persistent storage for in flight events. Should remain quite small, as we
   // delete upon commit confirmation.
   std::unique_ptr<ModelTypeStore> store_;
-
-  // Used to store important events while the store or change processor are not
-  // ready. This currently only handles user consents.
-  std::vector<std::unique_ptr<sync_pb::UserEventSpecifics>>
-      deferred_user_events_while_initializing_;
 
   // The key is the global_id of the navigation the event is linked to.
   std::multimap<int64_t, sync_pb::UserEventSpecifics>
