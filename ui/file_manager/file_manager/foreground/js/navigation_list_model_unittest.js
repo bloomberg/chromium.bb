@@ -8,24 +8,16 @@ var drive;
 /** @type {!MockFileSystem} Simulate a removable volume. */
 var hoge;
 
-// Set up string assets.
-loadTimeData.data = {
-  DRIVE_DIRECTORY_LABEL: 'My Drive',
-  DRIVE_MY_DRIVE_LABEL: 'My Drive',
-  DRIVE_TEAM_DRIVES_LABEL: 'Team Drives',
-  DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
-  DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
-  DRIVE_RECENT_COLLECTION_LABEL: 'Recents',
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
-  LINUX_FILES_ROOT_LABEL: 'Linux files',
-  MY_FILES_ROOT_LABEL: 'My files',
-  RECENT_ROOT_LABEL: 'Recent',
-  MEDIA_VIEW_IMAGES_ROOT_LABEL: 'Images',
-  MEDIA_VIEW_VIDEOS_ROOT_LABEL: 'Videos',
-  MEDIA_VIEW_AUDIO_ROOT_LABEL: 'Audio',
-};
-
 function setUp() {
+  window.loadTimeData.data = {
+    MY_FILES_VOLUME_ENABLED: false,
+    MY_FILES_ROOT_LABEL: 'My files',
+    DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
+    DRIVE_DIRECTORY_LABEL: 'My Drive',
+  };
+  window.loadTimeData.getString = id => {
+    return window.loadTimeData.data_[id] || id;
+  };
   new MockCommandLinePrivate();
   // Override VolumeInfo.prototype.resolveDisplayRoot to be sync.
   VolumeInfoImpl.prototype.resolveDisplayRoot = function(successCallback) {
@@ -37,7 +29,6 @@ function setUp() {
   drive = new MockFileSystem('drive');
   hoge = new MockFileSystem('removable:hoge');
 
-  loadTimeData.data_['MY_FILES_VOLUME_ENABLED'] = false;
 }
 
 function testModel() {

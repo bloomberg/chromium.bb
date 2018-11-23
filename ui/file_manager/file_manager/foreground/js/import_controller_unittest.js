@@ -29,24 +29,6 @@ var widget;
 /** @type {!DirectoryEntry} */
 var nonDcimDirectory;
 
-/**
- * @enum {string}
- */
-var MESSAGES = {
-  CLOUD_IMPORT_BUTTON_LABEL: 'Import it!',
-  CLOUD_IMPORT_ACTIVE_IMPORT_BUTTON_LABEL: 'Already importing!',
-  CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL: 'No new media',
-  CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL: 'Not enough space!',
-  CLOUD_IMPORT_SCANNING_BUTTON_LABEL: 'Scanning... ...!',
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
-  DRIVE_DIRECTORY_LABEL: 'My Drive',
-  DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
-  DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
-};
-
-// Set up string assets.
-loadTimeData.data = MESSAGES;
-
 window.metrics = {
   recordSmallCount: function() {},
   recordUserAction: function() {},
@@ -55,6 +37,8 @@ window.metrics = {
 };
 
 function setUp() {
+  window.loadTimeData.getString = id => id;
+  window.loadTimeData.data = {};
   new MockChromeStorageAPI();
   new MockCommandLinePrivate();
 

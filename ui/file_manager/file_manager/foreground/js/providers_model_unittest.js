@@ -3,18 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Load time data.
- * @type {Object}
- */
-loadTimeData.data = {
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
-  DRIVE_DIRECTORY_LABEL: 'Google Drive',
-  DRIVE_MY_DRIVE_LABEL: 'My Drive',
-  DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
-  DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
-};
-
-/**
  * Providing extension which has a mounted file system and doesn't support
  * multiple mounts.
  * @type {Object}
@@ -140,6 +128,8 @@ function addProvidedVolume(volumeManager, providerId, volumeId) {
 }
 
 function setUp() {
+  window.loadTimeData.getString = id => id;
+
   // Create and install a mock fileManagerPrivate API for fetching the list of
   // providers. TODO(mtomasz): Add some native (non-extension) providers.
   let mockChrome = {

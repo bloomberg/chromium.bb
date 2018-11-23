@@ -24,9 +24,7 @@ function setUp() {
   ];
   fileSystem.populate(filenames);
 
-  window.loadTimeData = {
-    getString: id => id,
-  };
+  window.loadTimeData.getString = id => id;
 }
 
 function testReadEntriesRecursively(callback) {

@@ -4,10 +4,13 @@
 'use strict';
 
 // Prepare the string assets.
-loadTimeData.data = {
+window.loadTimeData.data = {
   COPY_PROGRESS_SUMMARY: 'Copying...',
   ERROR_PROGRESS_SUMMARY: '1 Error.',
   ERROR_PROGRESS_SUMMARY_PLURAL: '$1 Errors.'
+};
+window.loadTimeData.getString = id => {
+  return window.loadTimeData.data_[id] || id;
 };
 
 function testSimpleProgress() {
