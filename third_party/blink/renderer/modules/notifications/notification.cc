@@ -452,7 +452,7 @@ ScriptPromise Notification::requestPermission(
       script_state, deprecated_callback);
 }
 
-size_t Notification::maxActions() {
+uint32_t Notification::maxActions() {
   return kWebNotificationMaxActions;
 }
 
