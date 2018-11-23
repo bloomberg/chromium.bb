@@ -773,7 +773,6 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     boolean isTrustedWebActivity() {
         if (!ChromeFeatureList.isInitialized()) return false;
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) return false;
-        if (ChromeVersionInfo.isBetaBuild() || ChromeVersionInfo.isStableBuild()) return false;
 
         return mIsTrustedWebActivity;
     }
