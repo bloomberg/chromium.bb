@@ -177,6 +177,17 @@ js_library("duplicate_finder") {
   ]
 }
 
+js_unittest("duplicate_finder_unittest") {
+  deps = [
+    ":duplicate_finder",
+    ":mock_volume_manager",
+    ":test_import_history",
+    "//ui/file_manager/base/js:mock_chrome",
+    "//ui/file_manager/file_manager/common/js:mock_entry",
+    "//ui/file_manager/file_manager/common/js:test_importer_common",
+  ]
+}
+
 js_library("entry_location_impl") {
   deps = [
     "//ui/file_manager/base/js:volume_manager_types",
@@ -395,6 +406,7 @@ js_library("volume_manager_util") {
 js_unit_tests("unit_tests") {
   deps = [
     ":crostini_unittest",
+    ":duplicate_finder_unittest",
     ":import_history_unittest",
     ":media_scanner_unittest",
     ":volume_manager_unittest",

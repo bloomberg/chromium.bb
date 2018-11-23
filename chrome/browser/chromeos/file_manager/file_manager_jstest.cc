@@ -89,8 +89,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskQueueTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DuplicateFinderTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("background/js/duplicate_finder_unittest.html")));
+  RunGeneratedTest("/background/js/duplicate_finder_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportControllerTest) {

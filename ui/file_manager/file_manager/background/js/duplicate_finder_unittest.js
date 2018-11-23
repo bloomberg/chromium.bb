@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @type {!importer.DuplicateFinder} */
+/** @type {!importer.DriveDuplicateFinder} */
 var duplicateFinder;
 
-/** @type {!VolumeInfo} */
+/** @type {VolumeInfo} */
 var drive;
 
 /**
@@ -26,8 +26,7 @@ var fileSystem;
 /** @type {!importer.TestImportHistory} */
 var testHistory;
 
-/** @type {function(!FileEntry, !importer.Destination):
-    !importer.Disposition} */
+/** @type {importer.DispositionChecker.CheckerFunction} */
 var getDisposition;
 
 // Set up string assets.
@@ -44,16 +43,7 @@ window.metrics = {
 };
 
 function setUp() {
-  new MockCommandLinePrivate();
-  // importer.setupTestLogger();
-  fileSystem = new MockFileSystem('fake-filesystem');
-
-  var volumeManager = new MockVolumeManager();
-  drive = volumeManager.getCurrentProfileVolumeInfo(
-      VolumeManagerCommon.VolumeType.DRIVE);
-  MockVolumeManager.installMockSingleton(volumeManager);
-
-  chrome = {
+  let mockChrome = {
     fileManagerPrivate: {
       /**
        * @param {!Entry} entry
@@ -75,12 +65,22 @@ function setUp() {
               result[hash] = fileUrls[hash] || [];
             });
         callback(result);
-      }
+      },
     },
-    runtime: {
-      lastError: null
-    }
+    runtime: {lastError: null},
   };
+
+  installMockChrome(mockChrome);
+  new MockCommandLinePrivate();
+  // importer.setupTestLogger();
+  fileSystem = new MockFileSystem('fake-filesystem');
+
+  var volumeManager = new MockVolumeManager();
+  drive = volumeManager.getCurrentProfileVolumeInfo(
+      VolumeManagerCommon.VolumeType.DRIVE);
+  assertTrue(drive != null);
+
+  MockVolumeManager.installMockSingleton(volumeManager);
 
   testHistory = new importer.TestImportHistory();
   duplicateFinder = new importer.DriveDuplicateFinder();
@@ -111,7 +111,7 @@ function testCheckDuplicateFalse(callback) {
   // Make another file.
   var newFilePath = '/bar.txt';
   fileSystem.populate([newFilePath]);
-  var newFile = fileSystem.entries[newFilePath];
+  var newFile = /** @type {!FileEntry} */ (fileSystem.entries[newFilePath]);
 
   reportPromise(
       duplicateFinder.isDuplicate(newFile)
@@ -128,13 +128,12 @@ function testDispositionChecker_ContentDupe(callback) {
   var files = setupHashes(filePaths, fileHashes);
 
   reportPromise(
-      getDisposition(files[0], importer.Destination.GOOGLE_DRIVE)
-          .then(
-              function(disposition) {
-                assertEquals(
-                    importer.Disposition.CONTENT_DUPLICATE,
-                    disposition);
-              }),
+      getDisposition(
+          files[0], importer.Destination.GOOGLE_DRIVE,
+          importer.ScanMode.CONTENT)
+          .then(function(disposition) {
+            assertEquals(importer.Disposition.CONTENT_DUPLICATE, disposition);
+          }),
       callback);
 }
 
@@ -147,13 +146,12 @@ function testDispositionChecker_HistoryDupe(callback) {
       [importer.Destination.GOOGLE_DRIVE];
 
   reportPromise(
-      getDisposition(files[0], importer.Destination.GOOGLE_DRIVE)
-          .then(
-              function(disposition) {
-                assertEquals(
-                    importer.Disposition.HISTORY_DUPLICATE,
-                    disposition);
-              }),
+      getDisposition(
+          files[0], importer.Destination.GOOGLE_DRIVE,
+          importer.ScanMode.CONTENT)
+          .then(function(disposition) {
+            assertEquals(importer.Disposition.HISTORY_DUPLICATE, disposition);
+          }),
       callback);
 }
 
@@ -164,14 +162,14 @@ function testDispositionChecker_Original(callback) {
 
   var newFilePath = '/bar.txt';
   fileSystem.populate([newFilePath]);
-  var newFile = fileSystem.entries[newFilePath];
+  var newFile = /** @type {!FileEntry} */ (fileSystem.entries[newFilePath]);
 
   reportPromise(
-      getDisposition(newFile, importer.Destination.GOOGLE_DRIVE)
-          .then(
-              function(disposition) {
-                assertEquals(importer.Disposition.ORIGINAL, disposition);
-              }),
+      getDisposition(
+          newFile, importer.Destination.GOOGLE_DRIVE, importer.ScanMode.CONTENT)
+          .then(function(disposition) {
+            assertEquals(importer.Disposition.ORIGINAL, disposition);
+          }),
       callback);
 }
 
