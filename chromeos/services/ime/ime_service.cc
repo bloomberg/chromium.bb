@@ -62,6 +62,7 @@ void ImeService::BindInputEngineManagerRequest(
 
 void ImeService::OnConnectionLost() {
   if (engine_manager_bindings_.empty()) {
+    service_binding_.RequestClose();
     // TODO(https://crbug.com/837156): Set a timer to start a cleanup.
   }
 }
