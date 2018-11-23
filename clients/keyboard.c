@@ -273,11 +273,10 @@ static void __attribute__ ((format (printf, 1, 2)))
 dbg(const char *fmt, ...)
 {
 #ifdef DEBUG
-	int l;
 	va_list argp;
 
 	va_start(argp, fmt);
-	l = vfprintf(stderr, fmt, argp);
+	vfprintf(stderr, fmt, argp);
 	va_end(argp);
 #endif
 }
