@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/optional.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_reader.h"
@@ -93,9 +92,7 @@ class VolumeReaderJavaScriptStream : public VolumeReader {
   bool available_data_;  // Indicates whether any data is available.
   bool read_error_;      // Marks an error in reading from JavaScript.
 
-  // Stores a passphrase from JavaScript. Stored as a base::Optional<> because
-  // the user could have entered an empty passphrase.
-  base::Optional<std::string> available_passphrase_;
+  std::string available_passphrase_;  // Stores a passphrase from JavaScript.
   bool passphrase_error_;  // Marks an error in getting the passphrase.
 
   // The shared_state_lock_ is used to protect members which are accessed by
