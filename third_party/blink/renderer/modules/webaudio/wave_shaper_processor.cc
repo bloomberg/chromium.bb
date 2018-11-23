@@ -30,7 +30,7 @@
 namespace blink {
 
 WaveShaperProcessor::WaveShaperProcessor(float sample_rate,
-                                         size_t number_of_channels)
+                                         unsigned number_of_channels)
     : AudioDSPKernelProcessor(sample_rate, number_of_channels),
       oversample_(kOverSampleNone) {}
 

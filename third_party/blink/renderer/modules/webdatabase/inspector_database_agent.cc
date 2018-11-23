@@ -95,13 +95,13 @@ class StatementCallback final : public SQLStatement::OnSuccessCallback {
     std::unique_ptr<protocol::Array<String>> column_names =
         protocol::Array<String>::create();
     const Vector<String>& columns = row_list->ColumnNames();
-    for (size_t i = 0; i < columns.size(); ++i)
+    for (wtf_size_t i = 0; i < columns.size(); ++i)
       column_names->addItem(columns[i]);
 
     std::unique_ptr<protocol::Array<protocol::Value>> values =
         protocol::Array<protocol::Value>::create();
     const Vector<SQLValue>& data = row_list->Values();
-    for (size_t i = 0; i < data.size(); ++i) {
+    for (wtf_size_t i = 0; i < data.size(); ++i) {
       const SQLValue& value = row_list->Values()[i];
       switch (value.GetType()) {
         case SQLValue::kStringValue:
