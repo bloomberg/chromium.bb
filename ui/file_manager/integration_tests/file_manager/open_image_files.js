@@ -76,9 +76,25 @@ function imageOpenGalleryOpen(path) {
       remoteCall.callRemoteTestUtil(
           'openFile', appId, [ENTRIES.image3.targetPath], this.next);
     },
-    // Check: the Gallery window should open.
+    // Wait a11y-msg to have some text.
     function(result) {
       chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#a11y-msg:not(:empty)').then(this.next);
+    },
+    // Fetch A11y messages.
+    function() {
+      remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, [])
+          .then(this.next);
+    },
+    // Check that opening the file was announced to screen reader.
+    function(a11yMessages) {
+      chrome.test.assertTrue(a11yMessages instanceof Array);
+      chrome.test.assertEq(1, a11yMessages.length);
+      chrome.test.assertEq('Opening file image3.jpg.', a11yMessages[0]);
+      this.next();
+    },
+    // Check: the Gallery window should open.
+    function() {
       galleryApp.waitForWindow('gallery.html').then(this.next);
     },
     // Check: the image should appear in the Gallery window.

@@ -14,23 +14,12 @@ var mockTaskHistory = {
   recordTaskExecuted: function(id) {}
 };
 
-loadTimeData.data = {
-  DRIVE_FS_ENABLED: false,
-  MORE_ACTIONS_BUTTON_LABEL: 'MORE_ACTIONS_BUTTON_LABEL',
-  NO_TASK_FOR_EXECUTABLE: 'NO_TASK_FOR_EXECUTABLE',
-  NO_TASK_FOR_FILE_URL: 'NO_TASK_FOR_FILE_URL',
-  NO_TASK_FOR_FILE: 'NO_TASK_FOR_FILE',
-  NO_TASK_FOR_DMG: 'NO_TASK_FOR_DMG',
-  NO_TASK_FOR_CRX: 'NO_TASK_FOR_CRX',
-  NO_TASK_FOR_CRX_TITLE: 'NO_TASK_FOR_CRX_TITLE',
-  OPEN_WITH_BUTTON_LABEL: 'OPEN_WITH_BUTTON_LABEL',
-  TASK_INSTALL_LINUX_PACKAGE: 'TASK_INSTALL_LINUX_PACKAGE',
-  TASK_OPEN: 'TASK_OPEN',
-  UNABLE_TO_OPEN_CROSTINI_TITLE: 'UNABLE_TO_OPEN_CROSTINI_TITLE',
-  UNABLE_TO_OPEN_CROSTINI: 'UNABLE_TO_OPEN_CROSTINI',
-};
-
 function setUp() {
+  window.loadTimeData.data = {
+    DRIVE_FS_ENABLED: false,
+  };
+  window.loadTimeData.getString = id => id;
+
   window.chrome = {
     commandLinePrivate: {
       hasSwitch: function(name, callback) {
@@ -78,7 +67,8 @@ function getMockFileManager() {
       }
     },
     ui: {
-      alertDialog: {showHtml: function(title, text, onOk, onCancel, onShow) {}}
+      alertDialog: {showHtml: function(title, text, onOk, onCancel, onShow) {}},
+      speakA11yMessage: (text) => {},
     },
     metadataModel: {},
     directoryModel: {
