@@ -152,7 +152,6 @@
     _webState->RemoveObserver(_webStateObserverBridge.get());
     _webStateObserverBridge.reset();
     _webState = nullptr;
-    _formActivityObserverBridge.reset();
   }
   if (_webStateList) {
     _webStateList->RemoveObserver(_webStateListObserver.get());
