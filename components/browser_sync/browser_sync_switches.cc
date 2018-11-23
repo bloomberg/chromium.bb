@@ -16,9 +16,6 @@ const char kDisableSync[] = "disable-sync";
 // --disable-synctypes='Typed URLs, Bookmarks, Autofill Profiles'
 const char kDisableSyncTypes[] = "disable-sync-types";
 
-// Enables synchronizing WiFi credentials across devices, using Chrome Sync.
-const char kEnableWifiCredentialSync[] = "enable-wifi-credential-sync";
-
 // Enabled the local sync backend implemented by the LoopbackServer.
 const char kEnableLocalSyncBackend[] = "enable-local-sync-backend";
 

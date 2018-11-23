@@ -1294,9 +1294,6 @@ extern const char kWebXrHitTestDescription[];
 extern const char kWebXrOrientationSensorDeviceName[];
 extern const char kWebXrOrientationSensorDeviceDescription[];
 
-extern const char kWifiCredentialSyncName[];
-extern const char kWifiCredentialSyncDescription[];
-
 extern const char kZeroCopyName[];
 extern const char kZeroCopyDescription[];
 

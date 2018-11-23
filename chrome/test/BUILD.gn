@@ -5314,10 +5314,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/updated_progress_marker_checker.h",
       "../browser/sync/test/integration/wallet_helper.cc",
       "../browser/sync/test/integration/wallet_helper.h",
-      "../browser/sync/test/integration/wifi_credentials_helper.cc",
-      "../browser/sync/test/integration/wifi_credentials_helper.h",
-      "../browser/sync/test/integration/wifi_credentials_helper_chromeos.cc",
-      "../browser/sync/test/integration/wifi_credentials_helper_chromeos.h",
     ]
     public_deps = [
       "//chrome/browser",
@@ -5367,8 +5363,6 @@ if (!is_android && !is_fuchsia) {
         "../browser/sync/test/integration/printers_helper.h",
         "../browser/sync/test/integration/sync_arc_package_helper.cc",
         "../browser/sync/test/integration/sync_arc_package_helper.h",
-        "../browser/sync/test/integration/wifi_credentials_helper.cc",
-        "../browser/sync/test/integration/wifi_credentials_helper.h",
       ]
     }
   }
@@ -5501,12 +5495,9 @@ if (!is_android && !is_fuchsia) {
       sources += [
         "../browser/sync/test/integration/single_client_arc_package_sync_test.cc",
         "../browser/sync/test/integration/single_client_printers_sync_test.cc",
-        "../browser/sync/test/integration/single_client_wifi_credentials_sync_test.cc",
         "../browser/sync/test/integration/two_client_arc_package_sync_test.cc",
         "../browser/sync/test/integration/two_client_printers_sync_test.cc",
-        "../browser/sync/test/integration/two_client_wifi_credentials_sync_test.cc",
       ]
-      deps += [ "//components/sync_wifi" ]
     }
 
     if (toolkit_views) {
