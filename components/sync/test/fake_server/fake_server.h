@@ -121,13 +121,11 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // store birthday.
   void ClearServerData();
 
-  // Puts the server in a state where it acts as if authentication has
-  // succeeded.
-  void SetAuthenticated();
+  // Causes future calls to HandleCommand() fail with the given response code.
+  void SetHttpError(int http_response_code);
 
-  // Puts the server in a state where all commands will fail with an
-  // authentication error.
-  void SetUnauthenticated();
+  // Undoes previous calls to SetHttpError().
+  void ClearHttpError();
 
   // Sets the provided |client_command| in all subsequent successful requests.
   void SetClientCommand(const sync_pb::ClientCommand& client_command);
@@ -197,9 +195,8 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
       const sync_pb::DataTypeProgressMarker& old_wallet_marker,
       std::string* response_string);
 
-  // Whether the server should act as if incoming connections are properly
-  // authenticated.
-  bool authenticated_;
+  // If non-zero, the server will return HTTP errors.
+  int http_error_response_code_;
 
   // All Keystore keys known to the server.
   std::vector<std::string> keystore_keys_;

@@ -34,7 +34,7 @@ using syncer::ModelTypeSet;
 namespace fake_server {
 
 FakeServer::FakeServer()
-    : authenticated_(true),
+    : http_error_response_code_(0),
       error_type_(sync_pb::SyncEnums::SUCCESS),
       alternate_triggered_errors_(false),
       request_counter_(0),
@@ -165,8 +165,8 @@ void FakeServer::HandleCommand(const std::string& request,
 
   request_counter_++;
 
-  if (!authenticated_) {
-    *http_response_code = net::HTTP_UNAUTHORIZED;
+  if (http_error_response_code_ != 0) {
+    *http_response_code = http_error_response_code_;
     *response = std::string();
     return;
   }
@@ -339,14 +339,15 @@ void FakeServer::ClearServerData() {
   loopback_server_->ClearServerData();
 }
 
-void FakeServer::SetAuthenticated() {
+void FakeServer::SetHttpError(int http_response_code) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  authenticated_ = true;
+  DCHECK_GT(http_response_code, 0);
+  http_error_response_code_ = http_response_code;
 }
 
-void FakeServer::SetUnauthenticated() {
+void FakeServer::ClearHttpError() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  authenticated_ = false;
+  http_error_response_code_ = 0;
 }
 
 void FakeServer::SetClientCommand(
