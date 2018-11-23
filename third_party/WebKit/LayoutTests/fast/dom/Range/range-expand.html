@@ -85,6 +85,14 @@ function runTests() {
     assert_equals(actual, 'multiple lines.');
   }, 'sentence11');
 
+  // Sentence end expansion should not cross block boundaries.
+  test(() => {
+    const id = 'begin';
+    const length = document.getElementById(id).firstChild.length;
+    const actual = expandRangeString(id, length, id, length, 'sentence', true);
+    assert_equals(actual, 'Each sentence begins with capital\nletter and ends with a punctuation.');
+  }, 'sentence12');
+
   // Expand word.
   // Same range start and end, both at the begin of word.
   test(() => {
@@ -218,7 +226,7 @@ function runTests() {
 }
 </script>
 <body>
-<p>This is the begin of a block. A block is a collection of sentences. Each sentence begins with capital
+<p id="begin">This is the begin of a block. A block is a collection of sentences. Each sentence begins with capital
 letter and ends with a punctuation.
 </p>
 <pre id="multilineSentence">Now, a sentence
