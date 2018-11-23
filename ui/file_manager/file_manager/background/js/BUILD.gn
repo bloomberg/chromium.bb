@@ -324,6 +324,18 @@ js_library("task_queue") {
   ]
 }
 
+js_unittest("task_queue_unittest") {
+  deps = [
+    ":task_queue",
+    "../../common/js:importer_common",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/base/js:volume_manager_types",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr:event_target",
+  ]
+}
+
 js_library("test_util_base") {
 }
 
@@ -409,6 +421,7 @@ js_unit_tests("unit_tests") {
     ":duplicate_finder_unittest",
     ":import_history_unittest",
     ":media_scanner_unittest",
+    ":task_queue_unittest",
     ":volume_manager_unittest",
   ]
 }
