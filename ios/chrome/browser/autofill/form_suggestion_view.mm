@@ -10,6 +10,7 @@
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_client.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,33 +31,64 @@ const CGFloat kSuggestionHorizontalMargin = 6;
 
 @interface FormSuggestionView ()
 
-// Creates and adds subviews.
-- (void)setupSubviews;
+// The FormSuggestions that are displayed by this view.
+@property(nonatomic) NSArray<FormSuggestion*>* suggestions;
+
+// The stack view with the suggestions.
+@property(nonatomic) UIStackView* stackView;
+
+// Handles user interactions.
+@property(nonatomic, weak) id<FormSuggestionClient> client;
 
 @end
 
-@implementation FormSuggestionView {
-  // The FormSuggestions that are displayed by this view.
-  NSArray* _suggestions;
+@implementation FormSuggestionView
 
-  // The stack view with the suggestions.
-  UIStackView* _stackView;
+#pragma mark - Public
 
-  // Handles user interactions.
-  id<FormSuggestionClient> _client;
+- (void)updateClient:(id<FormSuggestionClient>)client
+         suggestions:(NSArray<FormSuggestion*>*)suggestions {
+  if ([self.suggestions isEqualToArray:suggestions] &&
+      (self.client == client || !suggestions.count)) {
+    return;
+  }
+  self.client = client;
+  self.suggestions = [suggestions copy];
+
+  if (self.stackView) {
+    for (UIView* view in [self.stackView.arrangedSubviews copy]) {
+      [self.stackView removeArrangedSubview:view];
+      [view removeFromSuperview];
+    }
+    self.contentInset = UIEdgeInsetsZero;
+    [self createAndInsertArrangedSubviews];
+  }
 }
 
-@synthesize trailingView = _trailingView;
-
-- (instancetype)initWithFrame:(CGRect)frame
-                       client:(id<FormSuggestionClient>)client
-                  suggestions:(NSArray<FormSuggestion*>*)suggestions {
-  self = [super initWithFrame:frame];
-  if (self) {
-    _client = client;
-    _suggestions = [suggestions copy];
+- (void)unlockTrailingView {
+  if (!self.superview) {
+    return;
   }
-  return self;
+  [UIView animateWithDuration:0.2
+                   animations:^{
+                     self.contentInset = UIEdgeInsetsZero;
+                   }];
+}
+
+- (void)lockTrailingView {
+  if (!self.superview || !self.trailingView) {
+    return;
+  }
+
+  LayoutOffset layoutOffset = CGRectGetLeadingLayoutOffsetInBoundingRect(
+      self.trailingView.frame, {CGPointZero, self.contentSize});
+  // Because the way the scroll view is transformed for RTL, the insets don't
+  // need to be directed.
+  UIEdgeInsets lockedContentInsets = UIEdgeInsetsMake(0, -layoutOffset, 0, 0);
+  [UIView animateWithDuration:0.2
+                   animations:^{
+                     self.contentInset = lockedContentInsets;
+                   }];
 }
 
 #pragma mark - UIView
@@ -71,10 +103,12 @@ const CGFloat kSuggestionHorizontalMargin = 6;
 
 #pragma mark - Helper methods
 
+// Creates and adds subviews.
 - (void)setupSubviews {
   self.showsVerticalScrollIndicator = NO;
   self.showsHorizontalScrollIndicator = NO;
   self.canCancelContentTouches = YES;
+  self.alwaysBounceHorizontal = YES;
 
   UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
   stackView.axis = UILayoutConstraintAxisHorizontal;
@@ -95,7 +129,11 @@ const CGFloat kSuggestionHorizontalMargin = 6;
     self.transform = CGAffineTransformMakeRotation(M_PI);
     stackView.transform = CGAffineTransformMakeRotation(M_PI);
   }
+  self.stackView = stackView;
+  [self createAndInsertArrangedSubviews];
+}
 
+- (void)createAndInsertArrangedSubviews {
   auto setupBlock = ^(FormSuggestion* suggestion, NSUInteger idx, BOOL* stop) {
     // Disable user interaction with suggestion if it is Google Pay logo.
     BOOL userInteractionEnabled =
@@ -105,9 +143,9 @@ const CGFloat kSuggestionHorizontalMargin = 6;
         [[FormSuggestionLabel alloc] initWithSuggestion:suggestion
                                                   index:idx
                                  userInteractionEnabled:userInteractionEnabled
-                                         numSuggestions:[_suggestions count]
-                                                 client:_client];
-    [stackView addArrangedSubview:label];
+                                         numSuggestions:[self.suggestions count]
+                                                 client:self.client];
+    [self.stackView addArrangedSubview:label];
 
     // If first suggestion is Google Pay logo animate it below the fold.
     if (idx == 0U &&
@@ -126,17 +164,10 @@ const CGFloat kSuggestionHorizontalMargin = 6;
       });
     }
   };
-  [_suggestions enumerateObjectsUsingBlock:setupBlock];
+  [self.suggestions enumerateObjectsUsingBlock:setupBlock];
   if (self.trailingView) {
-    [stackView addArrangedSubview:self.trailingView];
+    [self.stackView addArrangedSubview:self.trailingView];
   }
-  _stackView = stackView;
-}
-
-#pragma mark - Getters
-
-- (NSArray*)suggestions {
-  return _suggestions;
 }
 
 #pragma mark - Setters
@@ -144,6 +175,7 @@ const CGFloat kSuggestionHorizontalMargin = 6;
 - (void)setTrailingView:(UIView*)subview {
   if (_trailingView.superview) {
     [_stackView removeArrangedSubview:_trailingView];
+    [_trailingView removeFromSuperview];
   }
   _trailingView = subview;
   if (_stackView) {

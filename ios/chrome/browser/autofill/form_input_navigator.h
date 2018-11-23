@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_DELEGATE_H_
-#define IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_DELEGATE_H_
+#ifndef IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_NAVIGATOR_H_
+#define IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_NAVIGATOR_H_
 
 #import <Foundation/Foundation.h>
 
-// Handles user interaction with a FormInputAccessoryView.
-@protocol FormInputAccessoryViewDelegate<NSObject>
+// Handles navigation in a form.
+@protocol FormInputNavigator <NSObject>
 
 // Called when the close button is pressed by the user.
 - (void)closeKeyboardWithButtonPress;
@@ -34,8 +34,8 @@
 // previous element was found, and the second indicating if a next element was
 // found. |completionHandler| cannot be nil.
 - (void)fetchPreviousAndNextElementsPresenceWithCompletionHandler:
-        (void (^)(BOOL, BOOL))completionHandler;
+    (void (^)(BOOL, BOOL))completionHandler;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_DELEGATE_H_
+#endif  // IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_NAVIGATOR_H_

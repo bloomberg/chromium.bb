@@ -182,7 +182,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
       new autofill::KeyboardAccessoryMetricsLogger());
 }
 
-#pragma mark - FormInputAccessoryViewDelegate
+#pragma mark - FormInputNavigator
 
 - (void)closeKeyboardWithButtonPress {
   [self closeKeyboardLoggingButtonPressed:YES];

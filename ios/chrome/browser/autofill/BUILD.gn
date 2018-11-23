@@ -77,9 +77,9 @@ source_set("autofill") {
 source_set("autofill_shared") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "form_input_accessory_view_delegate.h",
     "form_input_accessory_view_handler.h",
     "form_input_accessory_view_handler.mm",
+    "form_input_navigator.h",
     "form_input_suggestions_provider.h",
     "form_suggestion_client.h",
   ]

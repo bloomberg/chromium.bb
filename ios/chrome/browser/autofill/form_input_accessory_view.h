@@ -7,12 +7,31 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol FormInputAccessoryViewDelegate;
+@class FormInputAccessoryView;
+
+// Informs the receiver of actions in the accessory view.
+@protocol FormInputAccessoryViewDelegate
+- (void)formInputAccessoryViewDidTapNextButton:(FormInputAccessoryView*)sender;
+- (void)formInputAccessoryViewDidTapPreviousButton:
+    (FormInputAccessoryView*)sender;
+- (void)formInputAccessoryViewDidTapCloseButton:(FormInputAccessoryView*)sender;
+@end
 
 // Subview of the accessory view for web forms. Shows a custom view with form
 // navigation controls above the keyboard. Enables input clicks by way of the
 // playInputClick method.
 @interface FormInputAccessoryView : UIView<UIInputViewAudioFeedback>
+
+// The previous button if the view was set up with a navigation delegate. Nil
+// otherwise.
+@property(nonatomic, readonly, weak) UIButton* previousButton;
+
+// The next button if the view was set up with a navigation delegate. Nil
+// otherwise.
+@property(nonatomic, readonly, weak) UIButton* nextButton;
+
+// The leading view.
+@property(nonatomic, readonly, weak) UIView* leadingView;
 
 // Sets up the view with the given |leadingView|. Navigation controls are shown
 // on the trailing side and use |delegate| for actions.

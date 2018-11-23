@@ -186,7 +186,6 @@ class FormSuggestionControllerTest : public PlatformTest {
     [[[mock_consumer_ stub] andDo:mockShow]
         showAccessorySuggestions:[OCMArg any]
                 suggestionClient:[OCMArg any]
-              navigationDelegate:[OCMArg any]
               isHardwareKeyboard:NO];
 
     // Mock restore keyboard to verify cleanup.

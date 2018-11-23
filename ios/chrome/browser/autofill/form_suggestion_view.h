@@ -19,10 +19,16 @@
 // A view added at the end of the current suggestions.
 @property(nonatomic, strong) UIView* trailingView;
 
-// Initializes with |frame| and |client| to show |suggestions|.
-- (instancetype)initWithFrame:(CGRect)frame
-                       client:(id<FormSuggestionClient>)client
-                  suggestions:(NSArray<FormSuggestion*>*)suggestions;
+// Updates with |client| and |suggestions|.
+- (void)updateClient:(id<FormSuggestionClient>)client
+         suggestions:(NSArray<FormSuggestion*>*)suggestions;
+
+// Animates the content insets back to zero.
+- (void)unlockTrailingView;
+
+// Animates the content insets so the trailing view is showed as the first
+// thing.
+- (void)lockTrailingView;
 
 @end
 

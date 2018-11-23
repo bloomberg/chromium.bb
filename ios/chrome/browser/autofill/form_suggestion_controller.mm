@@ -15,7 +15,7 @@
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view_delegate.h"
+#import "ios/chrome/browser/autofill/form_input_navigator.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
@@ -63,9 +63,6 @@ AutofillSuggestionState::AutofillSuggestionState(
 }  // namespace
 
 @interface FormSuggestionController ()<FormInputSuggestionsProvider> {
-  // Form navigation delegate.
-  __weak id<FormInputAccessoryViewDelegate> _delegate;
-
   // Callback to update the accessory view.
   FormSuggestionsReadyCompletion accessoryViewUpdateBlock_;
 
@@ -105,6 +102,8 @@ AutofillSuggestionState::AutofillSuggestionState(
   // The provider for the current set of suggestions.
   __weak id<FormSuggestionProvider> _provider;
 }
+
+@synthesize formInputNavigator = _formInputNavigator;
 
 - (instancetype)initWithWebState:(web::WebState*)webState
                        providers:(NSArray*)providers
@@ -319,19 +318,11 @@ AutofillSuggestionState::AutofillSuggestionState(
                   frameID:base::SysUTF8ToNSString(
                               _suggestionState->frame_identifier)
         completionHandler:^{
-          [[weakSelf accessoryViewDelegate] closeKeyboardWithoutButtonPress];
+          [[weakSelf formInputNavigator] closeKeyboardWithoutButtonPress];
         }];
 }
 
 #pragma mark FormInputSuggestionsProvider
-
-- (id<FormInputAccessoryViewDelegate>)accessoryViewDelegate {
-  return _delegate;
-}
-
-- (void)setAccessoryViewDelegate:(id<FormInputAccessoryViewDelegate>)delegate {
-  _delegate = delegate;
-}
 
 - (void)retrieveSuggestionsForForm:(const autofill::FormActivityParams&)params
                           webState:(web::WebState*)webState
