@@ -441,12 +441,7 @@ TEST_F(DemoExtensionsExternalLoaderTest,
   EXPECT_TRUE(external_provider_visitor_.loaded_crx_files().empty());
 }
 
-#if defined(OS_LINUX)
-#define MAYBE_LoadApp DISABLED_LoadApp
-#else
-#define MAYBE_LoadApp LoadApp
-#endif
-TEST_F(DemoExtensionsExternalLoaderTest, LoadApp) {
+TEST_F(DemoExtensionsExternalLoaderTest, DISABLED_LoadApp) {
   demo_mode_test_helper_->InitializeSession();
 
   // Create a temporary cache directory.
