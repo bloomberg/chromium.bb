@@ -440,16 +440,17 @@ static ARIARoleMap* CreateARIARoleMap() {
 static Vector<AtomicString>* CreateRoleNameVector() {
   Vector<AtomicString>* role_name_vector =
       new Vector<AtomicString>(base::size(kInternalRoles));
-  for (size_t i = 0; i < base::size(kInternalRoles); i++)
+  for (wtf_size_t i = 0; i < base::size(kInternalRoles); i++)
     (*role_name_vector)[i] = g_null_atom;
 
-  for (size_t i = 0; i < base::size(kRoles); ++i) {
-    (*role_name_vector)[static_cast<size_t>(kRoles[i].webcore_role)] =
+  for (wtf_size_t i = 0; i < base::size(kRoles); ++i) {
+    (*role_name_vector)[static_cast<wtf_size_t>(kRoles[i].webcore_role)] =
         AtomicString(kRoles[i].aria_role);
   }
 
-  for (size_t i = 0; i < base::size(kReverseRoles); ++i) {
-    (*role_name_vector)[static_cast<size_t>(kReverseRoles[i].webcore_role)] =
+  for (wtf_size_t i = 0; i < base::size(kReverseRoles); ++i) {
+    (*role_name_vector)[static_cast<wtf_size_t>(
+        kReverseRoles[i].webcore_role)] =
         AtomicString(kReverseRoles[i].aria_role);
   }
 
@@ -459,8 +460,8 @@ static Vector<AtomicString>* CreateRoleNameVector() {
 static Vector<AtomicString>* CreateInternalRoleNameVector() {
   Vector<AtomicString>* internal_role_name_vector =
       new Vector<AtomicString>(base::size(kInternalRoles));
-  for (size_t i = 0; i < base::size(kInternalRoles); i++) {
-    (*internal_role_name_vector)[static_cast<size_t>(
+  for (wtf_size_t i = 0; i < base::size(kInternalRoles); i++) {
+    (*internal_role_name_vector)[static_cast<wtf_size_t>(
         kInternalRoles[i].webcore_role)] =
         AtomicString(kInternalRoles[i].internal_role_name);
   }
@@ -1907,7 +1908,7 @@ int AXObject::IndexInParent() const {
     return 0;
 
   const AXObjectVector& siblings = ParentObjectUnignored()->Children();
-  size_t index = siblings.Find(this);
+  wtf_size_t index = siblings.Find(this);
   return (index == kNotFound) ? 0 : static_cast<int>(index);
 }
 
@@ -3464,7 +3465,7 @@ ax::mojom::Role AXObject::ButtonRoleType() const {
 const AtomicString& AXObject::RoleName(ax::mojom::Role role) {
   static const Vector<AtomicString>* role_name_vector = CreateRoleNameVector();
 
-  return role_name_vector->at(static_cast<size_t>(role));
+  return role_name_vector->at(static_cast<wtf_size_t>(role));
 }
 
 // static
@@ -3472,7 +3473,7 @@ const AtomicString& AXObject::InternalRoleName(ax::mojom::Role role) {
   static const Vector<AtomicString>* internal_role_name_vector =
       CreateInternalRoleNameVector();
 
-  return internal_role_name_vector->at(static_cast<size_t>(role));
+  return internal_role_name_vector->at(static_cast<wtf_size_t>(role));
 }
 
 // static

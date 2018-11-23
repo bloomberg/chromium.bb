@@ -438,7 +438,7 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
     return;
 
   DCHECK_EQ(effects_.size(), local_times_.size());
-  for (size_t i = 0; i < effects_.size(); ++i) {
+  for (wtf_size_t i = 0; i < effects_.size(); ++i) {
     effects_[i]->UpdateInheritedTime(
         local_times_[i] ? local_times_[i]->InSecondsF() : NullValue(), reason);
   }
@@ -667,7 +667,7 @@ void WorkletAnimation::SetOutputState(
   // peeking state.local_times will be empty.
   DCHECK(local_times_.size() == state.local_times.size() ||
          !running_on_main_thread_);
-  for (size_t i = 0; i < state.local_times.size(); ++i)
+  for (wtf_size_t i = 0; i < state.local_times.size(); ++i)
     local_times_[i] = state.local_times[i];
 }
 

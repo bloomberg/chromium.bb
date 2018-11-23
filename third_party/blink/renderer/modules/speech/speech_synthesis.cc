@@ -167,7 +167,7 @@ void SpeechSynthesis::FireEvent(const AtomicString& type,
 }
 
 void SpeechSynthesis::FireErrorEvent(SpeechSynthesisUtterance* utterance,
-                                     unsigned long char_index,
+                                     uint32_t char_index,
                                      const String& error) {
   double millis;
   if (!GetElapsedTimeMillis(&millis))

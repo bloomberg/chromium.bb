@@ -93,7 +93,7 @@ class MODULES_EXPORT SpeechSynthesis final
                  const String& name);
 
   void FireErrorEvent(SpeechSynthesisUtterance*,
-                      unsigned long char_index,
+                      uint32_t char_index,
                       const String& error);
 
   // Returns the utterance at the front of the queue.

@@ -182,7 +182,7 @@ void DeferredTaskHandler::RemoveTailProcessingHandler(AudioHandler* handler,
                                                       bool disable_outputs) {
   AssertGraphOwner();
 
-  size_t index = tail_processing_handlers_.Find(handler);
+  wtf_size_t index = tail_processing_handlers_.Find(handler);
   if (index != kNotFound) {
 #if DEBUG_AUDIONODE_REFERENCES > 1
     handler->RemoveTailProcessingDebug(disable_outputs);

@@ -79,7 +79,8 @@ void WebIDBDatabaseImpl::AddObserver(
   static_assert(kIDBOperationTypeCount < sizeof(uint32_t) * CHAR_BIT,
                 "IDBOperationTypeCount exceeds size of uint32_t");
   database_->AddObserver(transaction_id, observer_id, include_transaction,
-                         no_records, values, operation_types.to_ulong());
+                         no_records, values,
+                         static_cast<uint32_t>(operation_types.to_ulong()));
 }
 
 void WebIDBDatabaseImpl::RemoveObservers(const Vector<int32_t>& observer_ids) {
