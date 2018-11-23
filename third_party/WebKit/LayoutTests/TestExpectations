@@ -1462,7 +1462,6 @@ crbug.com/591099 virtual/layout_ng_experimental/printing/page-break-widows.html 
 crbug.com/591099 virtual/layout_ng_experimental/printing/page-count-relayout-shrink.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/respect-layout-overflow-from-pagination.html [ Failure ]
 crbug.com/824918 virtual/layout_ng_experimental/printing/setPrinting.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/printing/single-line-must-not-be-split-into-two-pages.html [ Failure Timeout ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/tfoot-repeats-at-bottom-of-each-page-multiple-tables.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/thead-repeat-in-nested-table.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/thead-repeats-at-top-of-each-page.html [ Failure ]
@@ -5547,10 +5546,6 @@ crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-paint-order.htm
 crbug.com/905694 [ Linux ] virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Failure Pass ]
 crbug.com/905772 [ Linux ] virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-profile-partition-alloc.js [ Failure Pass ]
 crbug.com/905827 [ Mac10.13 ] fast/dom/StyleSheet/stylesheet-move-between-documents-crash.html [ Failure Pass ]
-
-#Sheriff 2018-11-19
-crbug.com/906591 printing/single-line-must-not-be-split-into-two-pages.html [ Failure ]
-crbug.com/906591 virtual/threaded/printing/single-line-must-not-be-split-into-two-pages.html [ Failure ]
 
 # Flaky crash due to "bad mojo message".
 crbug.com/906952 editing/pasteboard/file-drag-to-editable.html [ Pass Crash ]
