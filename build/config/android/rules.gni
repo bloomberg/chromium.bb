@@ -1392,6 +1392,7 @@ if (enable_java_templates) {
   #         [ [ path_to_file, path_to_put_in_jar ] ]
   #
   #   javac_args: Additional arguments to pass to javac.
+  #   errorprone_args: Additional arguments to pass to errorprone.
   #
   #   data_deps, testonly
   #
@@ -3100,27 +3101,8 @@ if (enable_java_templates) {
   #
   # This target creates an Android instrumentation test apk.
   #
-  # Variables
-  #   android_manifest: Path to AndroidManifest.xml.
-  #   data_deps: List of dependencies needed at runtime. These will be built but
-  #     won't change the generated .apk in any way (in fact they may be built
-  #     after the .apk is).
-  #   deps: List of dependencies. All Android java resources and libraries in the
-  #     "transitive closure" of these dependencies will be included in the apk.
-  #     Note: this "transitive closure" actually only includes such targets if
-  #     they are depended on through android_library or android_resources targets
-  #     (and so not through builtin targets like 'action', 'group', etc).
-  #   java_files: List of .java files to include in the apk.
-  #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
-  #      will be added to java_files and be included in this apk.
-  #   apk_name: Name for final apk.
-  #   final_apk_path: Path to final built apk. Default is
-  #     $root_out_dir/apks/$apk_name.apk. Setting this will override apk_name.
-  #   shared_libraries: List shared_library targets to bundle. If these
-  #     libraries depend on other shared_library targets, those dependencies will
-  #     also be included in the apk (e.g. for is_component_build).
-  #   apk_under_test: The apk being tested.
-  #   javac_args: Additional arguments to pass to javac.
+  # Supports all variables of android_apk(), plus:
+  #   apk_under_test: The apk being tested (optional).
   #
   # Example
   #   instrumentation_test_apk("foo_test_apk") {
