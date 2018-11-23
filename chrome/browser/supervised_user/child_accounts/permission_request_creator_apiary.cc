@@ -13,15 +13,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/kids_management_api.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -29,6 +25,9 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/access_token_info.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -64,7 +63,7 @@ struct PermissionRequestCreatorApiary::Request {
   std::string request_type;
   std::string object_ref;
   SuccessCallback callback;
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request;
+  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher;
   std::string access_token;
   bool access_token_expired;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
@@ -82,11 +81,10 @@ PermissionRequestCreatorApiary::Request::Request(
 PermissionRequestCreatorApiary::Request::~Request() {}
 
 PermissionRequestCreatorApiary::PermissionRequestCreatorApiary(
-    OAuth2TokenService* oauth2_token_service,
+    identity::IdentityManager* identity_manager,
     const std::string& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : OAuth2TokenService::Consumer("permissions_creator"),
-      oauth2_token_service_(oauth2_token_service),
+    : identity_manager_(identity_manager),
       account_id_(account_id),
       url_loader_factory_(std::move(url_loader_factory)),
       retry_on_network_change_(true) {}
@@ -96,11 +94,9 @@ PermissionRequestCreatorApiary::~PermissionRequestCreatorApiary() {}
 // static
 std::unique_ptr<PermissionRequestCreator>
 PermissionRequestCreatorApiary::CreateWithProfile(Profile* profile) {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   return base::WrapUnique(new PermissionRequestCreatorApiary(
-      token_service, signin->GetAuthenticatedAccountId(),
+      identity_manager, identity_manager->GetPrimaryAccountId(),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess()));
 }
@@ -161,23 +157,41 @@ void PermissionRequestCreatorApiary::CreateRequest(
 }
 
 void PermissionRequestCreatorApiary::StartFetching(Request* request) {
-  OAuth2TokenService::ScopeSet scopes;
+  identity::ScopeSet scopes;
   scopes.insert(GetApiScope());
-  request->access_token_request = oauth2_token_service_->StartRequest(
-      account_id_, scopes, this);
+  // It is safe to use Unretained(this) here given that the callback
+  // will not be invoked if this object is deleted. Likewise, |request|
+  // only comes from |requests_|, which are owned by this object too.
+  request->access_token_fetcher =
+      identity_manager_->CreateAccessTokenFetcherForAccount(
+          account_id_, "permissions_creator", scopes,
+          base::BindOnce(
+              &PermissionRequestCreatorApiary::OnAccessTokenFetchComplete,
+              base::Unretained(this), request),
+          identity::AccessTokenFetcher::Mode::kImmediate);
 }
 
-void PermissionRequestCreatorApiary::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+void PermissionRequestCreatorApiary::OnAccessTokenFetchComplete(
+    Request* request,
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo token_info) {
   auto it = requests_.begin();
   while (it != requests_.end()) {
-    if (request == (*it)->access_token_request.get())
+    if (request->access_token_fetcher.get() ==
+        (*it)->access_token_fetcher.get()) {
       break;
+    }
     ++it;
   }
   DCHECK(it != requests_.end());
-  (*it)->access_token = token_response.access_token;
+
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    LOG(WARNING) << "Token error: " << error.ToString();
+    DispatchResult(it, false);
+    return;
+  }
+
+  (*it)->access_token = token_info.token;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("permission_request_creator", R"(
@@ -221,7 +235,7 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
   resource_request->headers.SetHeader(
       net::HttpRequestHeaders::kAuthorization,
       base::StringPrintf(supervised_users::kAuthorizationHeaderFormat,
-                         token_response.access_token.c_str()));
+                         token_info.token.c_str()));
   (*it)->simple_url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   (*it)->simple_url_loader->AttachStringForUpload(body, "application/json");
@@ -237,20 +251,6 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
       url_loader_factory_.get(),
       base::BindOnce(&PermissionRequestCreatorApiary::OnSimpleLoaderComplete,
                      base::Unretained(this), std::move(it)));
-}
-
-void PermissionRequestCreatorApiary::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  auto it = requests_.begin();
-  while (it != requests_.end()) {
-    if (request == (*it)->access_token_request.get())
-      break;
-    ++it;
-  }
-  DCHECK(it != requests_.end());
-  LOG(WARNING) << "Token error: " << error.ToString();
-  DispatchResult(it, false);
 }
 
 void PermissionRequestCreatorApiary::OnSimpleLoaderComplete(
@@ -269,10 +269,10 @@ void PermissionRequestCreatorApiary::OnSimpleLoaderComplete(
   if (response_code == net::HTTP_UNAUTHORIZED &&
       !request->access_token_expired) {
     request->access_token_expired = true;
-    OAuth2TokenService::ScopeSet scopes;
+    identity::ScopeSet scopes;
     scopes.insert(GetApiScope());
-    oauth2_token_service_->InvalidateAccessToken(account_id_, scopes,
-                                                 request->access_token);
+    identity_manager_->RemoveAccessTokenFromCache(account_id_, scopes,
+                                                  request->access_token);
     StartFetching(request);
     return;
   }
