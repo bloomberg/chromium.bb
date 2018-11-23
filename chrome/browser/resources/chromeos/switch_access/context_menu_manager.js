@@ -209,7 +209,7 @@ class ContextMenuManager {
   /**
    * Send a message to the context menu to update the focus ring around the
    * current node.
-   * TODO(zhelfins): Revisit focus rings before launch
+   * TODO(anastasi): Revisit focus rings before launch
    * @private
    * @param {boolean=} opt_clear If true, will clear the focus ring.
    */
