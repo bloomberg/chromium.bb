@@ -71,8 +71,8 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // |submitted_form| and |driver|) then saves |submitted_form| to
   // |submitted_form_| field, sets |is_submitted| = true and returns true.
   // Otherwise returns false.
-  bool SetSubmittedFormIfIsManaged(const autofill::FormData& submitted_form,
-                                   const PasswordManagerDriver* driver);
+  bool ProvisionallySaveIfIsManaged(const autofill::FormData& submitted_form,
+                                    const PasswordManagerDriver* driver);
   bool is_submitted() { return is_submitted_; }
   void set_not_submitted() { is_submitted_ = false; }
 

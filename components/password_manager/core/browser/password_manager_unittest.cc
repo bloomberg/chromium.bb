@@ -2938,6 +2938,41 @@ TEST_F(PasswordManagerTest, AutofillPredictionBeforeFormParsed) {
   task_runner_->FastForwardUntilNoTasksRemain();
 }
 
+// Checks the following scenario:
+// 1. The user is typing in a password form.
+// 2. Navigation happens.
+// 3. The password disappeared after navigation.
+// 4. A save prompt is shown.
+TEST_F(PasswordManagerTest, SavingAfterUserTypingAndNavigation) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForSaving(&scoped_feature_list);
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  PasswordForm form(MakeSimpleForm());
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsParsed(&driver_, {form});
+
+  // The user is typing as a result the saving manual fallback is shown.
+  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  manager()->ShowManualFallbackForSaving(&driver_, form);
+  ASSERT_TRUE(form_manager_to_save);
+  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(), FormMatches(form));
+
+  // Check that a save prompt is shown when there is no password form after
+  // the navigation (which suggests that the submission was successful).
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+
+  manager()->DidNavigateMainFrame();
+  manager()->OnPasswordFormsRendered(&driver_, {}, true);
+
+  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(), FormMatches(form));
+}
+
 // Check that when a form is submitted and a NewPasswordFormManager not present,
 // this ends up reported.
 TEST_F(PasswordManagerTest, ReportMissingFormManager_New) {
