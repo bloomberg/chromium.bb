@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Collection of utility functions to support migrating different consumers of
-// the SigninManager component to the Identity service, which will eventually be
-// migrated to //services/identity once the SigninManager class gets removed.
+// Functions that are shared between the Identity Service implementation and its
+// consumers. Currently in //components/signin because they are used by classes
+// in this component, which cannot depend on //services/identity to avoid a
+// dependency cycle. When these classes have no direct consumers and are moved
+// to //services/identity, these functions should correspondingly be moved to
+// //services/identity/public/cpp.
 
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_IDENTITY_UTILS_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_IDENTITY_UTILS_H_
@@ -14,6 +17,9 @@
 namespace identity {
 
 // Returns true if the username is allowed based on the pattern string.
+//
+// NOTE: Can be moved to //services/identity/public/cpp once SigninManager is
+// moved to //services/identity.
 bool IsUsernameAllowedByPattern(base::StringPiece username,
                                 base::StringPiece pattern);
 }  // namespace identity
