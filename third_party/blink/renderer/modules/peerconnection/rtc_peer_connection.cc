@@ -654,6 +654,8 @@ RTCPeerConnection::RTCPeerConnection(
           webrtc::PeerConnectionInterface::SignalingState::kStable),
       ice_gathering_state_(webrtc::PeerConnectionInterface::kIceGatheringNew),
       ice_connection_state_(webrtc::PeerConnectionInterface::kIceConnectionNew),
+      peer_connection_state_(
+          webrtc::PeerConnectionInterface::PeerConnectionState::kNew),
       // WebRTC spec specifies kNetworking as task source.
       // https://www.w3.org/TR/webrtc/#operation
       dispatch_scheduled_event_runner_(
@@ -1517,13 +1519,16 @@ String RTCPeerConnection::iceGatheringState() const {
       return "gathering";
     case webrtc::PeerConnectionInterface::kIceGatheringComplete:
       return "complete";
-    default:
-      NOTREACHED();
-      return "";
   }
+
+  NOTREACHED();
+  return String();
 }
 
 String RTCPeerConnection::iceConnectionState() const {
+  if (closed_) {
+    return "closed";
+  }
   switch (ice_connection_state_) {
     case webrtc::PeerConnectionInterface::kIceConnectionNew:
       return "new";
@@ -1539,11 +1544,35 @@ String RTCPeerConnection::iceConnectionState() const {
       return "disconnected";
     case webrtc::PeerConnectionInterface::kIceConnectionClosed:
       return "closed";
-    default:
+    case webrtc::PeerConnectionInterface::kIceConnectionMax:
       NOTREACHED();
-      return "";
   }
 
+  NOTREACHED();
+  return String();
+}
+
+String RTCPeerConnection::connectionState() const {
+  if (closed_) {
+    return "closed";
+  }
+  switch (peer_connection_state_) {
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kNew:
+      return "new";
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kConnecting:
+      return "connecting";
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kConnected:
+      return "connected";
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kDisconnected:
+      return "disconnected";
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kFailed:
+      return "failed";
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kClosed:
+      return "closed";
+  }
+
+  NOTREACHED();
+  return String();
 }
 
 void RTCPeerConnection::addStream(ScriptState* script_state,
@@ -2279,6 +2308,13 @@ void RTCPeerConnection::DidChangeIceConnectionState(
   ChangeIceConnectionState(new_state);
 }
 
+void RTCPeerConnection::DidChangePeerConnectionState(
+    webrtc::PeerConnectionInterface::PeerConnectionState new_state) {
+  DCHECK(!closed_);
+  DCHECK(GetExecutionContext()->IsContextThread());
+  ChangePeerConnectionState(new_state);
+}
+
 void RTCPeerConnection::DidAddReceiverPlanB(
     std::unique_ptr<WebRTCRtpReceiver> web_receiver) {
   DCHECK(!closed_);
@@ -2656,7 +2692,30 @@ bool RTCPeerConnection::SetIceConnectionState(
     if (ice_connection_state_ ==
         webrtc::PeerConnectionInterface::kIceConnectionConnected)
       RecordRapporMetrics();
+    return true;
+  }
+  return false;
+}
 
+void RTCPeerConnection::ChangePeerConnectionState(
+    webrtc::PeerConnectionInterface::PeerConnectionState
+        peer_connection_state) {
+  if (peer_connection_state_ !=
+      webrtc::PeerConnectionInterface::PeerConnectionState::kClosed) {
+    ScheduleDispatchEvent(
+        Event::Create(event_type_names::kConnectionstatechange),
+        WTF::Bind(&RTCPeerConnection::SetPeerConnectionState,
+                  WrapPersistent(this), peer_connection_state));
+  }
+}
+
+bool RTCPeerConnection::SetPeerConnectionState(
+    webrtc::PeerConnectionInterface::PeerConnectionState
+        peer_connection_state) {
+  if (peer_connection_state_ !=
+          webrtc::PeerConnectionInterface::PeerConnectionState::kClosed &&
+      peer_connection_state_ != peer_connection_state) {
+    peer_connection_state_ = peer_connection_state;
     return true;
   }
   return false;
@@ -2670,6 +2729,8 @@ void RTCPeerConnection::CloseInternal() {
 
   ChangeIceConnectionState(
       webrtc::PeerConnectionInterface::kIceConnectionClosed);
+  SetPeerConnectionState(
+      webrtc::PeerConnectionInterface::PeerConnectionState::kClosed);
   ChangeSignalingState(webrtc::PeerConnectionInterface::SignalingState::kClosed,
                        false);
   for (auto& transceiver : transceivers_) {

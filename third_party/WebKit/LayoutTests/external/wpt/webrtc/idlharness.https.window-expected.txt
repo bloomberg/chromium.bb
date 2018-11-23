@@ -30,7 +30,7 @@ PASS RTCPeerConnection interface: operation addIceCandidate(RTCIceCandidateInit)
 PASS RTCPeerConnection interface: attribute signalingState
 PASS RTCPeerConnection interface: attribute iceGatheringState
 PASS RTCPeerConnection interface: attribute iceConnectionState
-FAIL RTCPeerConnection interface: attribute connectionState assert_true: The prototype object must have a property "connectionState" expected true got false
+PASS RTCPeerConnection interface: attribute connectionState
 FAIL RTCPeerConnection interface: attribute canTrickleIceCandidates assert_true: The prototype object must have a property "canTrickleIceCandidates" expected true got false
 FAIL RTCPeerConnection interface: operation getDefaultIceServers() assert_own_property: interface object missing static operation expected property "getDefaultIceServers" missing
 PASS RTCPeerConnection interface: operation getConfiguration()
@@ -42,7 +42,7 @@ FAIL RTCPeerConnection interface: attribute onicecandidateerror assert_true: The
 PASS RTCPeerConnection interface: attribute onsignalingstatechange
 PASS RTCPeerConnection interface: attribute oniceconnectionstatechange
 PASS RTCPeerConnection interface: attribute onicegatheringstatechange
-FAIL RTCPeerConnection interface: attribute onconnectionstatechange assert_true: The prototype object must have a property "onconnectionstatechange" expected true got false
+PASS RTCPeerConnection interface: attribute onconnectionstatechange
 PASS RTCPeerConnection interface: operation createOffer(RTCSessionDescriptionCallback, RTCPeerConnectionErrorCallback, RTCOfferOptions)
 PASS RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescriptionInit, VoidFunction, RTCPeerConnectionErrorCallback)
 PASS RTCPeerConnection interface: operation createAnswer(RTCSessionDescriptionCallback, RTCPeerConnectionErrorCallback)
@@ -82,7 +82,7 @@ PASS RTCPeerConnection interface: calling addIceCandidate(RTCIceCandidateInit) o
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "signalingState" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "iceGatheringState" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "iceConnectionState" with the proper type
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "connectionState" with the proper type assert_inherits: property "connectionState" not found in prototype chain
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "connectionState" with the proper type
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "canTrickleIceCandidates" with the proper type assert_inherits: property "canTrickleIceCandidates" not found in prototype chain
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getDefaultIceServers()" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getConfiguration()" with the proper type
@@ -95,7 +95,7 @@ FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property 
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onsignalingstatechange" with the proper type Unrecognized type EventHandler
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "oniceconnectionstatechange" with the proper type Unrecognized type EventHandler
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onicegatheringstatechange" with the proper type Unrecognized type EventHandler
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onconnectionstatechange" with the proper type assert_inherits: property "onconnectionstatechange" not found in prototype chain
+FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onconnectionstatechange" with the proper type Unrecognized type EventHandler
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "createOffer(RTCSessionDescriptionCallback, RTCPeerConnectionErrorCallback, RTCOfferOptions)" with the proper type
 PASS RTCPeerConnection interface: calling createOffer(RTCSessionDescriptionCallback, RTCPeerConnectionErrorCallback, RTCOfferOptions) on new RTCPeerConnection() with too few arguments must throw TypeError
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "setLocalDescription(RTCSessionDescriptionInit, VoidFunction, RTCPeerConnectionErrorCallback)" with the proper type

@@ -49,6 +49,15 @@ enum RTCIceConnectionState {
     "closed"
 };
 
+enum RTCPeerConnectionState {
+    "new",
+    "connecting",
+    "connected",
+    "disconnected",
+    "failed",
+    "closed"
+};
+
 // https://w3c.github.io/webrtc-pc/#interface-definition
 
 // TODO(guidou): Many types are of the wrong type in this interface:
@@ -75,6 +84,7 @@ enum RTCIceConnectionState {
     readonly attribute RTCSignalingState signalingState;
     readonly attribute RTCIceGatheringState iceGatheringState;
     readonly attribute RTCIceConnectionState iceConnectionState;
+    readonly attribute RTCPeerConnectionState connectionState;
     // readonly attribute boolean? canTrickleIceCandidates;
     [CallWith=ScriptState] RTCConfiguration getConfiguration();
     [CallWith=ScriptState, RaisesException] void setConfiguration(RTCConfiguration configuration);
@@ -83,6 +93,7 @@ enum RTCIceConnectionState {
     attribute EventHandler onicecandidate;
     attribute EventHandler onsignalingstatechange;
     attribute EventHandler oniceconnectionstatechange;
+    attribute EventHandler onconnectionstatechange;
     attribute EventHandler onicegatheringstatechange;
 
     // https://w3c.github.io/webrtc-pc/#legacy-interface-extensions

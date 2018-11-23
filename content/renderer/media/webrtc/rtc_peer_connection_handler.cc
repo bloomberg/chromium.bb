@@ -845,6 +845,19 @@ class RTCPeerConnectionHandler::Observer
     }
   }
 
+  void OnConnectionChange(
+      PeerConnectionInterface::PeerConnectionState new_state) override {
+    if (!main_thread_->BelongsToCurrentThread()) {
+      main_thread_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &RTCPeerConnectionHandler::Observer::OnConnectionChange, this,
+              new_state));
+    } else if (handler_) {
+      handler_->OnConnectionChange(new_state);
+    }
+  }
+
   void OnIceGatheringChange(
       PeerConnectionInterface::IceGatheringState new_state) override {
     if (!main_thread_->BelongsToCurrentThread()) {
@@ -1950,6 +1963,14 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
     peer_connection_tracker_->TrackIceConnectionStateChange(this, new_state);
   if (!is_closed_)
     client_->DidChangeIceConnectionState(new_state);
+}
+
+// Called any time the combined peerconnection state changes
+void RTCPeerConnectionHandler::OnConnectionChange(
+    webrtc::PeerConnectionInterface::PeerConnectionState new_state) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (!is_closed_)
+    client_->DidChangePeerConnectionState(new_state);
 }
 
 // Called any time the IceGatheringState changes

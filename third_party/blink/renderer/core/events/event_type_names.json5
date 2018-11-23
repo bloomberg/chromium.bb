@@ -75,6 +75,7 @@
     "connect",
     "connecting",
     "connectionavailable",
+    "connectionstatechange",
     "contextlost",
     "contextmenu",
     "contextrestored",

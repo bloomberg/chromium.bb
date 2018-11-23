@@ -171,6 +171,8 @@ class MODULES_EXPORT RTCPeerConnection final
 
   String iceConnectionState() const;
 
+  String connectionState() const;
+
   // A local stream is any stream associated with a sender.
   MediaStreamVector getLocalStreams() const;
   // A remote stream is any stream associated with a receiver.
@@ -238,6 +240,8 @@ class MODULES_EXPORT RTCPeerConnection final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(removestream, kRemovestream);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(iceconnectionstatechange,
                                   kIceconnectionstatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionstatechange,
+                                  kConnectionstatechange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(icegatheringstatechange,
                                   kIcegatheringstatechange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(datachannel, kDatachannel);
@@ -266,6 +270,8 @@ class MODULES_EXPORT RTCPeerConnection final
       webrtc::PeerConnectionInterface::IceGatheringState) override;
   void DidChangeIceConnectionState(
       webrtc::PeerConnectionInterface::IceConnectionState) override;
+  void DidChangePeerConnectionState(
+      webrtc::PeerConnectionInterface::PeerConnectionState) override;
   void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidModifyTransceivers(std::vector<std::unique_ptr<WebRTCRtpTransceiver>>,
@@ -435,6 +441,11 @@ class MODULES_EXPORT RTCPeerConnection final
   bool SetIceConnectionState(
       webrtc::PeerConnectionInterface::IceConnectionState);
 
+  void ChangePeerConnectionState(
+      webrtc::PeerConnectionInterface::PeerConnectionState);
+  bool SetPeerConnectionState(
+      webrtc::PeerConnectionInterface::PeerConnectionState);
+
   void CloseInternal();
 
   void RecordRapporMetrics();
@@ -446,6 +457,7 @@ class MODULES_EXPORT RTCPeerConnection final
   webrtc::PeerConnectionInterface::SignalingState signaling_state_;
   webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state_;
   webrtc::PeerConnectionInterface::IceConnectionState ice_connection_state_;
+  webrtc::PeerConnectionInterface::PeerConnectionState peer_connection_state_;
 
   // A map containing any track that is in use by the peer connection. This
   // includes tracks of |rtp_senders_| and |rtp_receivers_|.

@@ -5551,6 +5551,7 @@ interface RTCIceTransport : EventTarget
 interface RTCPeerConnection : EventTarget
     static method generateCertificate
     attribute @@toStringTag
+    getter connectionState
     getter currentLocalDescription
     getter currentRemoteDescription
     getter iceConnectionState
@@ -5558,6 +5559,7 @@ interface RTCPeerConnection : EventTarget
     getter id
     getter localDescription
     getter onaddstream
+    getter onconnectionstatechange
     getter ondatachannel
     getter onicecandidate
     getter oniceconnectionstatechange
@@ -5593,6 +5595,7 @@ interface RTCPeerConnection : EventTarget
     method setLocalDescription
     method setRemoteDescription
     setter onaddstream
+    setter onconnectionstatechange
     setter ondatachannel
     setter onicecandidate
     setter oniceconnectionstatechange
@@ -10414,6 +10417,7 @@ interface webkitMediaStream : EventTarget
 interface webkitRTCPeerConnection : EventTarget
     static method generateCertificate
     attribute @@toStringTag
+    getter connectionState
     getter currentLocalDescription
     getter currentRemoteDescription
     getter iceConnectionState
@@ -10421,6 +10425,7 @@ interface webkitRTCPeerConnection : EventTarget
     getter id
     getter localDescription
     getter onaddstream
+    getter onconnectionstatechange
     getter ondatachannel
     getter onicecandidate
     getter oniceconnectionstatechange
@@ -10456,6 +10461,7 @@ interface webkitRTCPeerConnection : EventTarget
     method setLocalDescription
     method setRemoteDescription
     setter onaddstream
+    setter onconnectionstatechange
     setter ondatachannel
     setter onicecandidate
     setter oniceconnectionstatechange
