@@ -24,45 +24,35 @@ importer.TestImportHistory = function() {
   /**
    * If null, history has been loaded and listeners notified.
    *
-   * @private {Array<!importer.ImportHistory>}
+   * @private {Array<!function(!importer.ImportHistory)>}
    */
   this.loadListeners_ = [];
 };
 
 /** @override */
-importer.TestImportHistory.prototype.getHistory =
-    function() {
-  Promise.resolve().then(
-      /** @this {importer.TestImportHistory} */
-      function() {
-        if (this.loadListeners_) {
-          this.loadListeners_.forEach(
-              /** @param {!Array<!importer.ImportHistory>} listener */
-              function(listener) {
-                listener(this);
-              }.bind(this));
-          // Null out listeners...this is our signal that history has
-          // been loaded ... resulting in all future listener added
-          // being notified immediately
-          this.loadListeners_ = null;
-        }
-      }.bind(this));
+importer.TestImportHistory.prototype.getHistory = function() {
+  Promise.resolve().then(() => {
+    if (this.loadListeners_) {
+      this.loadListeners_.forEach((listener) => listener(this));
+      // Null out listeners...this is our signal that history has
+      // been loaded ... resulting in all future listener added
+      // being notified immediately
+      this.loadListeners_ = null;
+    }
+  });
 
   return Promise.resolve(this);
 };
 
 /** @override */
-importer.TestImportHistory.prototype.addHistoryLoadedListener =
-    function(listener) {
-  // Notify immediately if history is already loaded.
+importer.TestImportHistory.prototype.addHistoryLoadedListener = function(
+    listener) {
+  assertTrue(typeof listener === 'function');
+  // Notify listener immediately if history is already loaded.
   if (this.loadListeners_ === null) {
-    Promise.resolve(this.history_).then(
-        /** @param {!importer.ImportHistory} history */
-        function(history) {
-          listener(history);
-        });
+    setTimeout(listener, 0, this);
   } else {
-    this.loadListeners_.push(listeners);
+    this.loadListeners_.push(listener);
   }
 };
 
@@ -153,6 +143,12 @@ importer.TestImportHistory.prototype.markImported =
   }
   return Promise.resolve();
 };
+
+/** @override */
+importer.TestImportHistory.prototype.whenReady = function() {};
+
+/** @override */
+importer.TestImportHistory.prototype.markImportedByUrl = function() {};
 
 /** @override */
 importer.TestImportHistory.prototype.addObserver = function() {};

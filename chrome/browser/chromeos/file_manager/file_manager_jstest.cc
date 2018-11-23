@@ -71,8 +71,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTableTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaScannerTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("background/js/media_scanner_unittest.html")));
+  RunGeneratedTest("/background/js/media_scanner_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, LRUCacheTest) {

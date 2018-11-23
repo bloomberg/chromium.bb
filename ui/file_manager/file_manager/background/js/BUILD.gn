@@ -197,6 +197,8 @@ js_library("file_operation_util") {
     "../../common/js:async_util",
     "../../common/js:util",
   ]
+  externs_list =
+      [ "//ui/file_manager/externs/file_operation_progress_event.js" ]
 }
 
 js_library("metadata_proxy") {
@@ -250,10 +252,27 @@ js_library("media_import_handler") {
   ]
 }
 
+js_library("mock_media_scanner") {
+  testonly = true
+  deps = [
+    ":test_import_history",
+  ]
+  externs_list = [ "../../../externs/background/media_scanner.js" ]
+}
+
 js_library("media_scanner") {
   deps = [
     ":file_operation_util",
     "../../common/js:importer_common",
+  ]
+  externs_list = [ "../../../externs/background/media_scanner.js" ]
+}
+
+js_unittest("media_scanner_unittest") {
+  deps = [
+    ":media_scanner",
+    ":mock_media_scanner",
+    "//ui/file_manager/file_manager/common/js:test_importer_common",
   ]
 }
 
@@ -285,6 +304,13 @@ js_library("task_queue") {
 }
 
 js_library("test_util_base") {
+}
+
+js_library("test_import_history") {
+  testonly = true
+  deps = [
+    ":import_history",
+  ]
 }
 
 js_library("runtime_loaded_test_util") {
@@ -359,6 +385,7 @@ js_unit_tests("unit_tests") {
   deps = [
     ":crostini_unittest",
     ":import_history_unittest",
+    ":media_scanner_unittest",
     ":volume_manager_unittest",
   ]
 }
