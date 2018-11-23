@@ -314,15 +314,18 @@ def main(args):
     # by creating an empty JAR
     with zipfile.ZipFile(options.dex_path, 'w') as outfile:
       outfile.comment = 'empty'
-  elif is_dex:
+  else:
     # .dex files can't specify a name for D8. Instead, we output them to a
     # temp directory then move them after the command has finished running
     # (see _MoveTempDexFile). For other files, tmp_dex_dir is None.
     with build_utils.TempDir() as tmp_dex_dir:
       _RunD8(dex_cmd, paths, tmp_dex_dir)
-      _MoveTempDexFile(tmp_dex_dir, options.dex_path)
-  else:
-    _RunD8(dex_cmd, paths, options.dex_path)
+      if is_dex:
+        _MoveTempDexFile(tmp_dex_dir, options.dex_path)
+      else:
+        # d8 supports outputting to a .zip, but does not have deterministic file
+        # ordering: https://issuetracker.google.com/issues/119945929
+        build_utils.ZipDir(options.dex_path, tmp_dex_dir)
 
   if options.dexlayout_profile:
     with build_utils.TempDir() as temp_dir:
