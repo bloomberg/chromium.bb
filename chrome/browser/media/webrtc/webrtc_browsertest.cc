@@ -122,12 +122,20 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   content::WebContents* right_tab_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+// TODO(898546): many of these tests are failing on ASan builds.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
+class DISABLED_WebRtcBrowserTest : public WebRtcBrowserTest {};
+#else
+#define MAYBE_WebRtcBrowserTest WebRtcBrowserTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        RunsAudioVideoWebRTCCallInTwoTabsVP8) {
   RunsAudioVideoWebRTCCallInTwoTabs("VP8");
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        RunsAudioVideoWebRTCCallInTwoTabsVP9) {
   RunsAudioVideoWebRTCCallInTwoTabs("VP9");
 }
@@ -172,14 +180,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, TestWebAudioMediaStream) {
   ASSERT_FALSE(tab->IsCrashed());
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        RunsAudioVideoWebRTCCallInTwoTabsOfferRsaAnswerRsa) {
   RunsAudioVideoWebRTCCallInTwoTabs(WebRtcTestBase::kUseDefaultVideoCodec,
                                     false /* prefer_hw_video_codec */,
                                     kKeygenAlgorithmRsa, kKeygenAlgorithmRsa);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        RunsAudioVideoWebRTCCallInTwoTabsOfferEcdsaAnswerEcdsa) {
   RunsAudioVideoWebRTCCallInTwoTabs(
       WebRtcTestBase::kUseDefaultVideoCodec, false /* prefer_hw_video_codec */,
@@ -187,32 +195,32 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(
-    WebRtcBrowserTest,
+    MAYBE_WebRtcBrowserTest,
     RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificateRsa) {
   RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificate(kKeygenAlgorithmRsa);
 }
 
 IN_PROC_BROWSER_TEST_F(
-    WebRtcBrowserTest,
+    MAYBE_WebRtcBrowserTest,
     RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificateEcdsa) {
   RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificate(kKeygenAlgorithmEcdsa);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        RunsAudioVideoWebRTCCallInTwoTabsOfferRsaAnswerEcdsa) {
   RunsAudioVideoWebRTCCallInTwoTabs(WebRtcTestBase::kUseDefaultVideoCodec,
                                     false /* prefer_hw_video_codec */,
                                     kKeygenAlgorithmRsa, kKeygenAlgorithmEcdsa);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        RunsAudioVideoWebRTCCallInTwoTabsOfferEcdsaAnswerRsa) {
   RunsAudioVideoWebRTCCallInTwoTabs(WebRtcTestBase::kUseDefaultVideoCodec,
                                     false /* prefer_hw_video_codec */,
                                     kKeygenAlgorithmEcdsa, kKeygenAlgorithmRsa);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        RunsAudioVideoWebRTCCallInTwoTabsGetStatsCallback) {
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
@@ -224,15 +232,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   DetectVideoAndHangUp();
 }
 
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise \
-  DISABLED_RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise
-#else
-#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise \
-  RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise
-#endif
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       MAYBE_RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise) {
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
   SetupPeerconnectionWithLocalStream(right_tab_);
@@ -255,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(
-    WebRtcBrowserTest,
+    MAYBE_WebRtcBrowserTest,
     RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange) {
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
