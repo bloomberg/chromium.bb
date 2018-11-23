@@ -5564,3 +5564,5 @@ crbug.com/907862 [ Mac10.13 ] virtual/user-activation-v2/gamepad/multiple-event-
 
 # Sheriff 2018-11-23
 crbug.com/874162 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-event-fired.html [ Skip ]
+crbug.com/906320 [ Mac10.13 ] virtual/not-site-per-process/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Failure Pass ]
+crbug.com/906320 [ Mac10.13 ] virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Failure Pass ]
