@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 
 #include <set>
+#include <vector>
 
 #include "base/base_switches.h"
 #include "base/feature_list.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/pref_names.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -38,6 +40,7 @@
 #include "components/variations/pref_names.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_crash_keys.h"
+#include "services/service_manager/embedder/result_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
@@ -76,6 +79,7 @@ void ChromeFeatureListCreator::CreateFeatureList() {
   CreatePrefService();
   ConvertFlagsToSwitches();
   CreateMetricsServices();
+  SetupMasterPrefs();
   SetupFieldTrials();
 }
 
@@ -102,6 +106,13 @@ std::unique_ptr<prefs::InProcessPrefServiceFactory>
 ChromeFeatureListCreator::TakePrefServiceFactory() {
   return std::move(pref_service_factory_);
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+std::unique_ptr<first_run::MasterPrefs>
+ChromeFeatureListCreator::TakeMasterPrefs() {
+  return std::move(master_prefs_);
+}
+#endif
 
 void ChromeFeatureListCreator::CreatePrefService() {
   base::FilePath local_state_file;
@@ -193,4 +204,65 @@ void ChromeFeatureListCreator::CreateMetricsServices() {
   metrics_services_manager_ =
       std::make_unique<metrics_services_manager::MetricsServicesManager>(
           std::move(client));
+}
+
+void ChromeFeatureListCreator::SetupMasterPrefs() {
+  master_prefs_apply_result_ = ApplyFirstRunPrefs();
+}
+
+int ChromeFeatureListCreator::ApplyFirstRunPrefs() {
+// Android does first run in Java instead of native.
+// Chrome OS has its own out-of-box-experience code.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  master_prefs_ = std::make_unique<first_run::MasterPrefs>();
+  // On first run, we need to process the predictor preferences before the
+  // browser's profile_manager object is created, but after ResourceBundle
+  // is initialized.
+  if (!first_run::IsChromeFirstRun())
+    return service_manager::RESULT_CODE_NORMAL_EXIT;
+
+  base::FilePath user_data_dir;
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+    return chrome::RESULT_CODE_MISSING_DATA;
+
+  first_run::ProcessMasterPreferencesResult pmp_result =
+      first_run::ProcessMasterPreferences(user_data_dir, master_prefs_.get());
+  if (pmp_result == first_run::EULA_EXIT_NOW)
+    return chrome::RESULT_CODE_EULA_REFUSED;
+
+  // TODO(macourteau): refactor preferences that are copied from
+  // master_preferences into local_state, as a "local_state" section in
+  // master preferences. If possible, a generic solution would be preferred
+  // over a copy one-by-one of specific preferences. Also see related TODO
+  // in first_run.h.
+
+  // Store the initial VariationsService seed in local state, if it exists
+  // in master prefs.
+  if (!master_prefs_->compressed_variations_seed.empty()) {
+    local_state_->SetString(variations::prefs::kVariationsCompressedSeed,
+                            master_prefs_->compressed_variations_seed);
+    if (!master_prefs_->variations_seed_signature.empty()) {
+      local_state_->SetString(variations::prefs::kVariationsSeedSignature,
+                              master_prefs_->variations_seed_signature);
+    }
+    // Set the variation seed date to the current system time. If the user's
+    // clock is incorrect, this may cause some field trial expiry checks to
+    // not do the right thing until the next seed update from the server,
+    // when this value will be updated.
+    local_state_->SetInt64(variations::prefs::kVariationsSeedDate,
+                           base::Time::Now().ToInternalValue());
+  }
+
+  if (!master_prefs_->suppress_default_browser_prompt_for_version.empty()) {
+    local_state_->SetString(
+        prefs::kBrowserSuppressDefaultBrowserPrompt,
+        master_prefs_->suppress_default_browser_prompt_for_version);
+  }
+
+#if defined(OS_WIN)
+  if (!master_prefs_->welcome_page_on_os_upgrade_enabled)
+    local_state_->SetBoolean(prefs::kWelcomePageOnOSUpgradeEnabled, false);
+#endif
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
