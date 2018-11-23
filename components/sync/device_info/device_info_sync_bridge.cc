@@ -120,11 +120,9 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
   DCHECK(change_processor()->IsTrackingMetadata());
   const DeviceInfo* local_info =
       local_device_info_provider_->GetLocalDeviceInfo();
-  // If our dependency was yanked out from beneath us, we cannot correctly
-  // handle this request, and all our data will be deleted soon.
-  if (local_info == nullptr) {
-    return {};
-  }
+  // DEVICE_INFO sync is running; DeviceInfo thus exists (it gets cleared only
+  // synchronously with disabling DEVICE_INFO sync).
+  DCHECK(local_info);
 
   // Local data should typically be near empty, with the only possible value
   // corresponding to this device. This is because on signout all device info
@@ -173,11 +171,9 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
   DCHECK(has_provider_initialized_);
   const DeviceInfo* local_info =
       local_device_info_provider_->GetLocalDeviceInfo();
-  // If our dependency was yanked out from beneath us, we cannot correctly
-  // handle this request, and all our data will be deleted soon.
-  if (local_info == nullptr) {
-    return {};
-  }
+  // DEVICE_INFO sync is running; DeviceInfo thus exists (it gets cleared only
+  // synchronously with disabling DEVICE_INFO sync).
+  DCHECK(local_info);
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   bool has_changes = false;
