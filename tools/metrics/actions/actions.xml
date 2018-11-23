@@ -4537,6 +4537,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="CustomTabs.CloseButtonClicked.GoToModuleManagedUrl">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
 <action name="CustomTabs.StartedInitially">
   <owner>tedchoc@chromium.org</owner>
   <description>A CustomTabActivity was stared for the first time.</description>
@@ -18752,12 +18757,12 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_DictationDisabled">
-  <owner>zhelfins@chromium.org</owner>
+  <owner>anastasi@google.com</owner>
   <description>Ash system menu: Accessibility: Disable Dictation.</description>
 </action>
 
 <action name="StatusArea_DictationEnabled">
-  <owner>zhelfins@chromium.org</owner>
+  <owner>anastasi@google.com</owner>
   <description>Ash system menu: Accessibility: Enable Dictation.</description>
 </action>
 

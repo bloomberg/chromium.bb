@@ -838,7 +838,7 @@ void RenderAccessibilityImpl::Scroll(const WebAXObject& target,
   WebPoint min = target.MinimumScrollOffset();
   WebPoint max = target.MaximumScrollOffset();
 
-  // TODO(zhelfins): This 4/5ths came from the Android implementation, revisit
+  // TODO(anastasi): This 4/5ths came from the Android implementation, revisit
   // to find the appropriate modifier to keep enough context onscreen after
   // scrolling.
   int page_x = std::max((int)(bounds.width * 4 / 5), 1);
