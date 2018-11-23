@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>
@@ -466,7 +465,8 @@ void AudioHandler::DisableOutputs() {
 }
 
 void AudioHandler::MakeConnection() {
-  AtomicIncrement(&connection_ref_count_);
+  Context()->AssertGraphOwner();
+  connection_ref_count_++;
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(
@@ -508,8 +508,7 @@ void AudioHandler::BreakConnection() {
 
 void AudioHandler::BreakConnectionWithLock() {
   Context()->AssertGraphOwner();
-
-  AtomicDecrement(&connection_ref_count_);
+  connection_ref_count_--;
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr,

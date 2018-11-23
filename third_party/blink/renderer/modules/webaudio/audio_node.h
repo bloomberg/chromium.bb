@@ -263,7 +263,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
  private:
   void SetNodeType(NodeType);
 
-  volatile bool is_initialized_;
+  bool is_initialized_;
   NodeType node_type_;
 
   // The owner AudioNode. Accessed only on the main thread.
@@ -281,7 +281,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   double last_processing_time_;
   double last_non_silent_time_;
 
-  volatile int connection_ref_count_;
+  int connection_ref_count_;
 
   bool is_disabled_;
 
