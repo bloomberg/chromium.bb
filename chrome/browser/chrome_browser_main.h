@@ -123,11 +123,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // if the ResourceBundle couldn't be loaded.
   int OnLocalStateLoaded(bool* failed_to_load_resource_bundle);
 
-  // Applies any preferences (to local state) needed for first run. This is
-  // always called and early outs if not first-run. Return value is an exit
-  // status, RESULT_CODE_NORMAL_EXIT indicates success.
-  int ApplyFirstRunPrefs();
-
   // Methods for Main Message Loop -------------------------------------------
 
   int PreCreateThreadsImpl();
