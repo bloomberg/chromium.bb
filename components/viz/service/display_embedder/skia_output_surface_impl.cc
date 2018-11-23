@@ -374,7 +374,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
         *metadata.backend_format.getGLTarget());
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    metadata.backend_format = GrBackendFormat::MakeVk(
+    metadata.driver_backend_format = GrBackendFormat::MakeVk(
         gfx::SkColorTypeToVkFormat(metadata.color_type));
 #else
     NOTREACHED();
