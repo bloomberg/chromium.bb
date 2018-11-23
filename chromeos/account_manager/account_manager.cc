@@ -161,6 +161,10 @@ bool AccountManager::AccountKey::operator==(const AccountKey& other) const {
   return id == other.id && account_type == other.account_type;
 }
 
+bool AccountManager::AccountKey::operator!=(const AccountKey& other) const {
+  return !(*this == other);
+}
+
 AccountManager::Observer::Observer() = default;
 
 AccountManager::Observer::~Observer() = default;

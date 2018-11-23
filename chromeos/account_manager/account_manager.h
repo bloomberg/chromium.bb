@@ -50,6 +50,7 @@ class CHROMEOS_EXPORT AccountManager {
 
     bool operator<(const AccountKey& other) const;
     bool operator==(const AccountKey& other) const;
+    bool operator!=(const AccountKey& other) const;
   };
 
   // A map from |AccountKey| to a raw token.
@@ -121,6 +122,7 @@ class CHROMEOS_EXPORT AccountManager {
 
   // Updates or inserts a token, for the account corresponding to the given
   // |account_key|. |account_key| must be valid (|AccountKey::IsValid|).
+  // This API is idempotent.
   void UpsertToken(const AccountKey& account_key, const std::string& token);
 
   // Add a non owning pointer to an |AccountManager::Observer|.
