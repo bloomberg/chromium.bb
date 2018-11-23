@@ -15,17 +15,16 @@ registration are lost
 
   function verifyBufferAndObserverEntries(observedEntries) {
     // Verify buffer entries
-    const bufferedEntries = performance.getEntriesByName('mousedown', 'event');
+    const bufferedEntries = performance.getEntriesByName('click', 'event');
     const bufferedEntriesBeforeObserver = bufferedEntries.filter(e => e.startTime <
       observerStart);
     assert_equals(bufferedEntries.length, 0,
       "Long latency events after onload should not be buffered."
     );
 
-    // Filter to consider only mousedown, as we could have 'click' and 'mouseup' as well.
-    clickEntries = observedEntries.filter(entry => entry.name === 'mousedown');
-    assert_equals(clickEntries.length, 1, "Long latency task after observer start should be observed.");
-    const entry = clickEntries[0];
+    // Verify observer entries
+    assert_equals(observedEntries.length, 1, "Long latency task after observer start should be observed.");
+    const entry = observedEntries[0];
     verifyClickEvent(entry);
     assert_greater_than(entry.processingStart, processingStartMin,
         "The entry's processing start should be later than processingStartMin.");
@@ -60,7 +59,7 @@ registration are lost
   */
   async_test(function(t) {
       on_event(window, 'load', () => {
-        clickAndBlockMain('button').then(wait).then(()=> {
+        clickAndBlockMain('button').then(() => {
           startObserver(t);
           clickAndBlockMain('button').then(wait);
           processingStartMin = performance.now();

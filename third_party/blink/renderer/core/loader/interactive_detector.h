@@ -22,7 +22,7 @@
 namespace blink {
 
 class Document;
-class Event;
+class WebInputEvent;
 
 // Detects when a page reaches First Idle and Time to Interactive. See
 // https://goo.gl/SYt55W for detailed description and motivation of First Idle
@@ -105,9 +105,7 @@ class CORE_EXPORT InteractiveDetector
 
   // Process an input event, updating first_input_delay and
   // first_input_timestamp if needed.
-  void HandleForInputDelay(const Event&,
-                           TimeTicks event_timestamp,
-                           TimeTicks processing_start);
+  void HandleForInputDelay(const WebInputEvent&);
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/timing/event_timing.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
@@ -139,10 +140,14 @@ DispatchEventResult EventDispatcher::Dispatch() {
     return DispatchEventResult::kNotCanceled;
   }
   std::unique_ptr<EventTiming> eventTiming;
-  LocalFrame* frame = node_->GetDocument().GetFrame();
-  if (frame && frame->DomWindow()) {
-    eventTiming = std::make_unique<EventTiming>(frame->DomWindow());
-    eventTiming->WillDispatchEvent(*event_);
+  if (origin_trials::EventTimingEnabled(&node_->GetDocument())) {
+    LocalFrame* frame = node_->GetDocument().GetFrame();
+    if (frame && frame->DomWindow()) {
+      UseCounter::Count(node_->GetDocument(),
+                        WebFeature::kPerformanceEventTimingConstructor);
+      eventTiming = std::make_unique<EventTiming>(frame->DomWindow());
+      eventTiming->WillDispatchEvent(*event_);
+    }
   }
   event_->GetEventPath().EnsureWindowEventContext();
 
@@ -151,6 +156,7 @@ DispatchEventResult EventDispatcher::Dispatch() {
 
   if (is_click && event_->isTrusted()) {
     Document& document = node_->GetDocument();
+    LocalFrame* frame = document.GetFrame();
     if (frame) {
       // A genuine mouse click cannot be triggered by script so we don't expect
       // there are any script in the stack.

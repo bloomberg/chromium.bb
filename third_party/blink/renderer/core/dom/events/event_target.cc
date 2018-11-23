@@ -704,6 +704,7 @@ DispatchEventResult EventTarget::FireEventListeners(Event& event) {
   // Only invoke the callback if event listeners were fired for this phase.
   if (fired_event_listeners) {
     event.DoneDispatchingEventAtCurrentTarget();
+    event.SetExecutedListenerOrDefaultAction();
 
     // Only count uma metrics if we really fired an event listener.
     Editor::CountEvent(GetExecutionContext(), event);
