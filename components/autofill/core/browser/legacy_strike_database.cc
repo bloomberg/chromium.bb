@@ -17,8 +17,8 @@
 namespace autofill {
 
 namespace {
-const char kDatabaseClientName[] = "StrikeService";
-const char kKeyDeliminator[] = "__";
+const char kLegacyDatabaseClientName[] = "StrikeService";
+const char kLegacyDatabaseKeyDeliminator[] = "__";
 const char kKeyPrefixForCreditCardSave[] = "creditCardSave";
 }  // namespace
 
@@ -28,7 +28,7 @@ LegacyStrikeDatabase::LegacyStrikeDatabase(const base::FilePath& database_dir)
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),
       weak_ptr_factory_(this) {
-  db_->Init(kDatabaseClientName, database_dir,
+  db_->Init(kLegacyDatabaseClientName, database_dir,
             leveldb_proto::CreateSimpleOptions(),
             base::BindRepeating(&LegacyStrikeDatabase::OnDatabaseInit,
                                 weak_ptr_factory_.GetWeakPtr()));
@@ -165,7 +165,7 @@ void LegacyStrikeDatabase::LoadKeys(const LoadKeysCallback& callback) {
 std::string LegacyStrikeDatabase::CreateKey(
     const std::string& type_prefix,
     const std::string& identifier_suffix) {
-  return type_prefix + kKeyDeliminator + identifier_suffix;
+  return type_prefix + kLegacyDatabaseKeyDeliminator + identifier_suffix;
 }
 
 std::string LegacyStrikeDatabase::GetKeyPrefixForCreditCardSave() {
@@ -173,7 +173,7 @@ std::string LegacyStrikeDatabase::GetKeyPrefixForCreditCardSave() {
 }
 
 std::string LegacyStrikeDatabase::GetPrefixFromKey(const std::string& key) {
-  return key.substr(0, key.find(kKeyDeliminator));
+  return key.substr(0, key.find(kLegacyDatabaseKeyDeliminator));
 }
 
 }  // namespace autofill
