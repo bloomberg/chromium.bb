@@ -10,6 +10,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/android_theme_resources.h"
+#include "components/url_formatter/elide_url.h"
+#include "url/origin.h"
 #else
 #include "chrome/app/vector_icons/vector_icons.h"
 #endif
@@ -34,7 +36,12 @@ PermissionRequest::IconId DownloadPermissionRequest::GetIconId() const {
 
 #if defined(OS_ANDROID)
 base::string16 DownloadPermissionRequest::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING);
+  return l10n_util::GetStringFUTF16(
+      IDS_MULTI_DOWNLOAD_WARNING,
+      url_formatter::FormatOriginForSecurityDisplay(
+          url::Origin::Create(request_origin_),
+          /*scheme_display = */ url_formatter::
+              SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
 #endif
 

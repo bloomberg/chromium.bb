@@ -6897,7 +6897,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
       <!-- Multiple download warning-->
       <message name="IDS_MULTI_DOWNLOAD_WARNING" desc="Warning invoked if multiple downloads are attempted without user interaction.">
-        This site is attempting to download multiple files. Do you want to allow this?
+        <ph name="ORIGIN">$1<ex>https://backgroundfetch.com</ex></ph> wants to download multiple files
       </message>
       <message name="IDS_MULTI_DOWNLOAD_PERMISSION_FRAGMENT" desc="Permission request shown if multiple downloads are attempted without user interaction and there are multiple permissions requested. Follows a prompt: 'This site would like to:'">
         Download multiple files
