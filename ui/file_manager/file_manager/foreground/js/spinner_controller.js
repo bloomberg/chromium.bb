@@ -7,14 +7,14 @@
  * is called 3 times, the hide callback has to be called 3 times to make the
  * spinner invisible.
  *
- * @param {!HTMLElement} element
+ * @param {!Element} element
  * @constructor
  * @extends {cr.EventTarget}
  */
 function SpinnerController(element) {
   /**
    * The container element of the file list.
-   * @type {!HTMLElement}
+   * @type {!Element}
    * @const
    * @private
    */

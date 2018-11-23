@@ -619,6 +619,15 @@ js_library("spinner_controller") {
   ]
 }
 
+js_unittest("spinner_controller_unittest") {
+  deps = [
+    ":spinner_controller",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:util",
+  ]
+}
+
 js_library("task_controller") {
   deps = [
     ":dialog_type",
@@ -684,6 +693,7 @@ js_unit_tests("unit_tests") {
   deps = [
     ":file_list_model_unittest",
     ":providers_model_unittest",
+    ":spinner_controller_unittest",
     ":thumbnail_loader_unittest",
   ]
 }
