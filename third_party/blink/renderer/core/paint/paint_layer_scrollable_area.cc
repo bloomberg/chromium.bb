@@ -512,6 +512,11 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
     box->SetSubtreeShouldCheckForPaintInvalidation();
   }
 
+  // TODO(chrishtr): remove this slow path once crbug.com/906885 is fixed.
+  // See also https://bugs.chromium.org/p/chromium/issues/detail?id=903287#c10.
+  if (Layer()->EnclosingPaginationLayer())
+    box->SetSubtreeShouldCheckForPaintInvalidation();
+
   // If not composited, background always paints into the main graphics layer.
   bool background_paint_in_graphics_layer = true;
   bool background_paint_in_scrolling_contents = false;
