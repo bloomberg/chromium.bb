@@ -38,6 +38,7 @@ class UiControllerAndroid : public UiController,
   // Overrides UiController:
   void SetUiDelegate(UiDelegate* ui_delegate) override;
   void ShowStatusMessage(const std::string& message) override;
+  std::string GetStatusMessage() override;
   void ShowOverlay() override;
   void HideOverlay() override;
   void Shutdown() override;

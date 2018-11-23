@@ -39,6 +39,10 @@ class UiController {
   // Show status message on the bottom bar.
   virtual void ShowStatusMessage(const std::string& message) = 0;
 
+  // Returns the current status message. The purpose of this call is to allow
+  // restoring a previous status message.
+  virtual std::string GetStatusMessage() = 0;
+
   // Show the overlay.
   virtual void ShowOverlay() = 0;
 
