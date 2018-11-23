@@ -43,6 +43,13 @@ static const char* const kCallerScriptParameterName = "CALLER";
 // TODO(crbug.com/806868): Introduce a dedicated experiment extra parameter to
 // pass allow passing more than one experiment.
 static const char* const kCookieExperimentName = "EXP_COOKIE";
+// Website visited before parameter.
+// Note: This parameter goes with the previous experiment name. I.e. it is only
+// set when the cookie experiment is active.
+static const char* const kWebsiteVisitedBeforeParameterName =
+    "WEBSITE_VISITED_BEFORE";
+
+static const char* const kTrueValue = "true";
 
 }  // namespace
 
@@ -365,9 +372,9 @@ void Controller::OnClickOverlay() {
 void Controller::OnGetCookie(const GURL& initial_url, bool has_cookie) {
   if (has_cookie) {
     // This code is only active with the experiment parameter.
-    // TODO(crbug.com/806868): Set a proper, localized message.
-    GetUiController()->ShowStatusMessage("Warning: You have been here before!");
-    GetUiController()->ShutdownGracefully();
+    parameters_->insert(
+        std::make_pair(kWebsiteVisitedBeforeParameterName, kTrueValue));
+    OnSetCookie(initial_url, has_cookie);
     return;
   }
   GetWebController()->SetCookie(
