@@ -264,20 +264,20 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
                                     bool has_alpha,
                                     bool use_stencil) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (initialize_waitable_event_) {
+    initialize_waitable_event_->Wait();
+    initialize_waitable_event_ = nullptr;
+  }
 
-  recorder_.reset();
   SkSurfaceCharacterization* characterization = nullptr;
-  base::Optional<base::WaitableEvent> event;
   if (characterization_.isValid()) {
     characterization_ =
         characterization_.createResized(size.width(), size.height());
   } else {
     characterization = &characterization_;
-    // TODO(penghuang): avoid blocking compositor thread.
-    // We don't have a valid surface characterization, so we have to wait
-    // until reshape is finished on Gpu thread.
-    event.emplace(base::WaitableEvent::ResetPolicy::MANUAL,
-                  base::WaitableEvent::InitialState::NOT_SIGNALED);
+    initialize_waitable_event_ = std::make_unique<base::WaitableEvent>(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
   }
 
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
@@ -287,13 +287,9 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
                      base::Unretained(impl_on_gpu_.get()), size,
                      device_scale_factor, color_space, has_alpha, use_stencil,
-                     characterization, base::OptionalOrNullptr(event));
+                     characterization, initialize_waitable_event_.get());
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
-
-  if (event)
-    event->Wait();
-  RecreateRecorder();
 }
 
 void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
@@ -350,9 +346,17 @@ unsigned SkiaOutputSurfaceImpl::UpdateGpuFence() {
 
 SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(recorder_);
+  // Make sure there is no unsubmitted PaintFrame or PaintRenderPass.
+  DCHECK(!recorder_);
   DCHECK_EQ(current_render_pass_id_, 0u);
 
+  if (initialize_waitable_event_) {
+    initialize_waitable_event_->Wait();
+    initialize_waitable_event_ = nullptr;
+  }
+
+  DCHECK(characterization_.isValid());
+  recorder_.emplace(characterization_);
   return recorder_->getCanvas();
 }
 
@@ -394,6 +398,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
   DCHECK(recorder_);
   DCHECK((has_alpha && (metadatas.size() == 3 || metadatas.size() == 4)) ||
          (!has_alpha && (metadatas.size() == 2 || metadatas.size() == 3)));
+
   return YUVAPromiseTextureHelper::MakeYUVAPromiseSkImage(
       this, &recorder_.value(), yuv_color_space, std::move(metadatas),
       has_alpha);
@@ -402,7 +407,6 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
 void SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!recorder_);
-  RecreateRecorder();
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
@@ -419,8 +423,9 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
     ResourceFormat format,
     bool mipmap) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!current_render_pass_id_);
-  DCHECK(!offscreen_surface_recorder_);
+  // Make sure there is no unsubmitted PaintFrame or PaintRenderPass.
+  DCHECK(!recorder_);
+  DCHECK_EQ(current_render_pass_id_, 0u);
   DCHECK(resource_sync_tokens_.empty());
 
   current_render_pass_id_ = id;
@@ -458,27 +463,26 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
       kCacheMaxResourceBytes, image_info, backend_format, msaa_sample_count,
       kTopLeft_GrSurfaceOrigin, surface_props, mipmap);
   DCHECK(characterization.isValid());
-  offscreen_surface_recorder_.emplace(characterization);
-  return offscreen_surface_recorder_->getCanvas();
+  recorder_.emplace(characterization);
+  return recorder_->getCanvas();
 }
 
 gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(recorder_);
+
   // If current_render_pass_id_ is not 0, we are painting a render pass.
   // Otherwise we are painting a frame.
   bool painting_render_pass = current_render_pass_id_ != 0;
-  auto& current_recorder =
-      painting_render_pass ? offscreen_surface_recorder_ : recorder_;
 
-  DCHECK(current_recorder);
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE,
                             impl_on_gpu_->command_buffer_id(),
                             ++sync_fence_release_);
   sync_token.SetVerifyFlush();
 
-  auto ddl = current_recorder->detach();
+  auto ddl = recorder_->detach();
   DCHECK(ddl);
-  current_recorder.reset();
+  recorder_.reset();
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
@@ -586,15 +590,6 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
       CreateSafeCallback(client_thread_task_runner_, buffer_presented_callback),
       CreateSafeCallback(client_thread_task_runner_, context_lost_callback));
   capabilities_ = impl_on_gpu_->capabilities();
-}
-
-void SkiaOutputSurfaceImpl::RecreateRecorder() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(characterization_.isValid());
-  recorder_.emplace(characterization_);
-  // TODO(penghuang): remove the unnecessary getCanvas() call, when the
-  // recorder crash is fixed in skia.
-  recorder_->getCanvas();
 }
 
 void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
