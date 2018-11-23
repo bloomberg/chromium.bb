@@ -24,6 +24,9 @@ const CGFloat kTrailingButtonTrailingMargin = 4;
 const CGFloat kTrailingButtonSize = 48.0;
 }
 
+NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
+    @"OmniboxPopupRowSwitchTabAccessibilityIdentifier";
+
 @interface OmniboxPopupRow () {
   BOOL _incognito;
 }
@@ -180,8 +183,11 @@ const CGFloat kTrailingButtonSize = 48.0;
 
 - (void)updateTrailingButtonImages {
   UIImage* appendImage = nil;
+  _trailingButton.accessibilityIdentifier = nil;
   if (self.tabMatch) {
     appendImage = [UIImage imageNamed:@"omnibox_popup_tab_match"];
+    _trailingButton.accessibilityIdentifier =
+        kOmniboxPopupRowSwitchTabAccessibilityIdentifier;
   } else {
     int appendResourceID = _incognito
                                ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO

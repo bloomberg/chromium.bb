@@ -9,6 +9,9 @@
 
 @class OmniboxPopupTruncatingLabel;
 
+// Accessibility identifier for the Switch to Open Tab button.
+extern NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier;
+
 // View used to display an omnibox autocomplete match in the omnibox popup.
 @interface OmniboxPopupRow : UITableViewCell
 
