@@ -132,6 +132,12 @@ public class SigninHelper {
         if (!accountsChanged) {
             mAccountTrackerService.validateSystemAccounts();
         }
+        if (mSigninManager.isOperationInProgress()) {
+            // Wait for ongoing sign-in/sign-out operation to finish before validating accounts.
+            mSigninManager.runAfterOperationInProgress(
+                    () -> validateAccountsInternal(accountsChanged));
+            return;
+        }
 
         Account syncAccount = mChromeSigninController.getSignedInUser();
         if (syncAccount == null) {
@@ -159,11 +165,13 @@ public class SigninHelper {
                 @Override
                 protected void onPostExecute(Void result) {
                     String renamedAccount = getNewSignedInAccountName();
-                    if (renamedAccount == null) {
-                        mSigninManager.signOut(SignoutReason.ACCOUNT_REMOVED_FROM_DEVICE);
-                    } else {
+                    if (renamedAccount != null || mSigninManager.isOperationInProgress()) {
+                        // Found account rename event or there's a sign-in/sign-out operation in
+                        // progress. Restart validation process.
                         validateAccountsInternal(true);
+                        return;
                     }
+                    mSigninManager.signOut(SignoutReason.ACCOUNT_REMOVED_FROM_DEVICE);
                 }
             };
             task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
