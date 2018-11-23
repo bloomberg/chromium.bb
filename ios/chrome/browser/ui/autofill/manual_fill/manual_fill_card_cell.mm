@@ -66,10 +66,7 @@
 namespace {
 
 // Left and right margins of the cell content.
-static const CGFloat sideMargins = 16;
-
-// Margin left and right of expiration buttons.
-static const CGFloat ExpirationMarginWidth = 16.0;
+static const CGFloat SideMargins = 16;
 
 }  // namespace
 
@@ -167,33 +164,31 @@ static const CGFloat ExpirationMarginWidth = 16.0;
   grayLine.translatesAutoresizingMaskIntoConstraints = NO;
   [self.contentView addSubview:grayLine];
 
+  UIView* guide = self.contentView;
+
   self.cardLabel = CreateLabel();
   [self.contentView addSubview:self.cardLabel];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.cardLabel ], grayLine,
-                                                0);
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.cardLabel ], guide,
+                                                SideMargins);
 
   self.cardNumberButton =
       CreateButtonWithSelectorAndTarget(@selector(userDidTapCardNumber:), self);
   [self.contentView addSubview:self.cardNumberButton];
   HorizontalConstraintsForViewsOnGuideWithShift(@[ self.cardNumberButton ],
-                                                grayLine, 0);
+                                                guide, 0);
 
   self.cardholderButton =
       CreateButtonWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
   [self.contentView addSubview:self.cardholderButton];
   HorizontalConstraintsForViewsOnGuideWithShift(@[ self.cardholderButton ],
-                                                grayLine, 0);
+                                                guide, 0);
 
   // Expiration line.
   self.expirationMonthButton =
       CreateButtonWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
-  HorizontalConstraintsMarginForButtonWithWidth(self.expirationMonthButton,
-                                                ExpirationMarginWidth);
   [self.contentView addSubview:self.expirationMonthButton];
   self.expirationYearButton =
       CreateButtonWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
-  HorizontalConstraintsMarginForButtonWithWidth(self.expirationYearButton,
-                                                ExpirationMarginWidth);
   [self.contentView addSubview:self.expirationYearButton];
   UILabel* expirationSeparatorLabel = CreateLabel();
   expirationSeparatorLabel.text = @"/";
@@ -206,7 +201,7 @@ static const CGFloat ExpirationMarginWidth = 16.0;
         self.expirationMonthButton, expirationSeparatorLabel,
         self.expirationYearButton
       ],
-      grayLine, -ExpirationMarginWidth);
+      guide, 0);
 
   VerticalConstraintsSpacingForViewsInContainer(
       @[
@@ -225,9 +220,9 @@ static const CGFloat ExpirationMarginWidth = 16.0;
 
     // Horizontal constraints.
     [grayLine.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor
-                                           constant:sideMargins],
+                                           constant:SideMargins],
     [safeArea.trailingAnchor constraintEqualToAnchor:grayLine.trailingAnchor
-                                            constant:sideMargins],
+                                            constant:SideMargins],
   ]];
 }
 

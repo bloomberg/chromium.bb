@@ -88,6 +88,8 @@ source_set("manual_fill_ui") {
     "manual_fill_address_cell.mm",
     "manual_fill_card_cell.h",
     "manual_fill_card_cell.mm",
+    "manual_fill_cell_button.h",
+    "manual_fill_cell_button.mm",
     "manual_fill_cell_utils.h",
     "manual_fill_cell_utils.mm",
     "manual_fill_content_delegate.h",

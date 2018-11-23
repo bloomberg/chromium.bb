@@ -11,11 +11,6 @@
 // |target|.
 UIButton* CreateButtonWithSelectorAndTarget(SEL action, id target);
 
-// Creates horizontal constraints for given |button| based on given |width| on
-// both sides.
-void HorizontalConstraintsMarginForButtonWithWidth(UIButton* button,
-                                                   CGFloat width);
-
 // Sets vertical constraints on firstBaselineAnchor for the button or label rows
 // in |views| inside |container| starting at its topAnchor. Returns the applied
 // constrainst to allow caller to deactivate them later.

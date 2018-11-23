@@ -48,17 +48,11 @@
 namespace {
 
 // Left and right margins of the cell content.
-static const CGFloat sideMargins = 16;
-
-// Margin left and right of multiple buttons on same line.
-static const CGFloat InnerMarginWidth = 16.0;
+static const CGFloat SideMargins = 16;
 
 }  // namespace
 
 @interface ManualFillAddressCell ()
-
-// The separator gray line.
-@property(nonatomic, strong) UIView* grayLine;
 
 // The label with the line1 -- line2.
 @property(nonatomic, strong) UILabel* addressLabel;
@@ -158,6 +152,7 @@ static const CGFloat InnerMarginWidth = 16.0;
   self.delegate = delegate;
 
   NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
+  UIView* guide = self.contentView;
 
   // Top label, summary of line 1 and 2.
   NSMutableAttributedString* attributedString =
@@ -232,8 +227,8 @@ static const CGFloat InnerMarginWidth = 16.0;
     self.lastNameButton.hidden = YES;
   }
 
-  self.nameLineConstraints = HorizontalConstraintsForViewsOnGuideWithShift(
-      nameLineViews, self.grayLine, -InnerMarginWidth);
+  self.nameLineConstraints =
+      HorizontalConstraintsForViewsOnGuideWithShift(nameLineViews, guide, 0);
 
   if (nameLineViews.count) {
     [verticalLeadViews addObject:nameLineViews.firstObject];
@@ -283,8 +278,8 @@ static const CGFloat InnerMarginWidth = 16.0;
     self.cityButton.hidden = YES;
   }
 
-  self.zipCityLineConstraints = HorizontalConstraintsForViewsOnGuideWithShift(
-      zipCityLineViews, self.grayLine, -InnerMarginWidth);
+  self.zipCityLineConstraints =
+      HorizontalConstraintsForViewsOnGuideWithShift(zipCityLineViews, guide, 0);
   if (zipCityLineViews.count) {
     [verticalLeadViews addObject:zipCityLineViews.firstObject];
   }
@@ -317,8 +312,8 @@ static const CGFloat InnerMarginWidth = 16.0;
   }
 
   self.stateCountryLineConstraints =
-      HorizontalConstraintsForViewsOnGuideWithShift(
-          stateCountryLineViews, self.grayLine, -InnerMarginWidth);
+      HorizontalConstraintsForViewsOnGuideWithShift(stateCountryLineViews,
+                                                    guide, 0);
   if (stateCountryLineViews.count) {
     [verticalLeadViews addObject:stateCountryLineViews.firstObject];
   }
@@ -333,21 +328,21 @@ static const CGFloat InnerMarginWidth = 16.0;
 - (void)createViewHierarchy {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  self.grayLine = [[UIView alloc] init];
-  self.grayLine.backgroundColor = [UIColor colorWithWhite:0.88 alpha:1];
-  self.grayLine.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.contentView addSubview:self.grayLine];
+  UIView* grayLine = [[UIView alloc] init];
+  grayLine.backgroundColor = [UIColor colorWithWhite:0.88 alpha:1];
+  grayLine.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.contentView addSubview:grayLine];
+
+  UIView* guide = self.contentView;
 
   self.addressLabel = CreateLabel();
   [self.contentView addSubview:self.addressLabel];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.addressLabel ],
-                                                self.grayLine, 0);
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.addressLabel ], guide,
+                                                SideMargins);
 
   self.firstNameButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.firstNameButton];
-  HorizontalConstraintsMarginForButtonWithWidth(self.firstNameButton,
-                                                InnerMarginWidth);
 
   self.middleNameSeparatorLabel = CreateLabel();
   self.middleNameSeparatorLabel.text = @"·";
@@ -356,8 +351,6 @@ static const CGFloat InnerMarginWidth = 16.0;
   self.middleNameButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.middleNameButton];
-  HorizontalConstraintsMarginForButtonWithWidth(self.middleNameButton,
-                                                InnerMarginWidth);
 
   self.lastNameSeparatorLabel = CreateLabel();
   self.lastNameSeparatorLabel.text = @"·";
@@ -366,8 +359,6 @@ static const CGFloat InnerMarginWidth = 16.0;
   self.lastNameButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.lastNameButton];
-  HorizontalConstraintsMarginForButtonWithWidth(self.lastNameButton,
-                                                InnerMarginWidth);
 
   SyncBaselinesForViewsOnView(
       @[
@@ -379,20 +370,18 @@ static const CGFloat InnerMarginWidth = 16.0;
   self.line1Button = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.line1Button];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.line1Button ],
-                                                self.grayLine, 0);
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.line1Button ], guide,
+                                                0);
 
   self.line2Button = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.line2Button];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.line2Button ],
-                                                self.grayLine, 0);
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.line2Button ], guide,
+                                                0);
 
   self.zipButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.zipButton];
-  HorizontalConstraintsMarginForButtonWithWidth(self.zipButton,
-                                                InnerMarginWidth);
 
   self.citySeparatorLabel = CreateLabel();
   self.citySeparatorLabel.text = @"·";
@@ -401,8 +390,6 @@ static const CGFloat InnerMarginWidth = 16.0;
   self.cityButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.cityButton];
-  HorizontalConstraintsMarginForButtonWithWidth(self.cityButton,
-                                                InnerMarginWidth);
 
   SyncBaselinesForViewsOnView(@[ self.citySeparatorLabel, self.cityButton ],
                               self.zipButton);
@@ -410,8 +397,6 @@ static const CGFloat InnerMarginWidth = 16.0;
   self.stateButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.stateButton];
-  HorizontalConstraintsMarginForButtonWithWidth(self.stateButton,
-                                                InnerMarginWidth);
 
   self.countrySeparatorLabel = CreateLabel();
   self.countrySeparatorLabel.text = @"·";
@@ -420,8 +405,6 @@ static const CGFloat InnerMarginWidth = 16.0;
   self.countryButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.countryButton];
-  HorizontalConstraintsMarginForButtonWithWidth(self.countryButton,
-                                                InnerMarginWidth);
 
   SyncBaselinesForViewsOnView(
       @[ self.countrySeparatorLabel, self.countryButton ], self.stateButton);
@@ -435,16 +418,15 @@ static const CGFloat InnerMarginWidth = 16.0;
 
   [NSLayoutConstraint activateConstraints:@[
     // Common vertical constraints.
-    [self.grayLine.bottomAnchor
+    [grayLine.bottomAnchor
         constraintEqualToAnchor:self.contentView.bottomAnchor],
-    [self.grayLine.heightAnchor constraintEqualToConstant:1],
+    [grayLine.heightAnchor constraintEqualToConstant:1],
 
     // Horizontal constraints.
-    [self.grayLine.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor
-                                                constant:sideMargins],
-    [safeArea.trailingAnchor
-        constraintEqualToAnchor:self.grayLine.trailingAnchor
-                       constant:sideMargins],
+    [grayLine.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor
+                                           constant:SideMargins],
+    [safeArea.trailingAnchor constraintEqualToAnchor:grayLine.trailingAnchor
+                                            constant:SideMargins],
   ]];
 }
 

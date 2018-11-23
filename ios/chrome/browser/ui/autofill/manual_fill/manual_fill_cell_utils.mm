@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_button.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -26,32 +27,31 @@ static const CGFloat MiddleSystemSpacingMultiplier = 1.83;
 // The multiplier for the base system spacing at the bottom margin.
 static const CGFloat BottomSystemSpacingMultiplier = 2.26;
 
+// Top and bottom margins for buttons.
+static const CGFloat ButtonVerticalMargin = 12;
+
+// Left and right margins of the cell content and buttons.
+static const CGFloat ButtonHorizontalMargin = 16;
+
 }  // namespace
 
 UIButton* CreateButtonWithSelectorAndTarget(SEL action, id target) {
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
+  UIButton* button = [ManualFillCellButton buttonWithType:UIButtonTypeCustom];
   [button setTitleColor:UIColor.cr_manualFillTintColor
                forState:UIControlStateNormal];
   button.translatesAutoresizingMaskIntoConstraints = NO;
   button.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   button.titleLabel.adjustsFontForContentSizeCategory = YES;
+  button.contentHorizontalAlignment =
+      UIControlContentHorizontalAlignmentLeading;
   [button addTarget:target
                 action:action
       forControlEvents:UIControlEventTouchUpInside];
+  button.contentEdgeInsets =
+      UIEdgeInsetsMake(ButtonVerticalMargin, ButtonHorizontalMargin,
+                       ButtonVerticalMargin, ButtonHorizontalMargin);
   return button;
-}
-
-void HorizontalConstraintsMarginForButtonWithWidth(UIButton* button,
-                                                   CGFloat width) {
-  [NSLayoutConstraint activateConstraints:@[
-    [button.leadingAnchor
-        constraintEqualToAnchor:button.titleLabel.leadingAnchor
-                       constant:-width],
-    [button.trailingAnchor
-        constraintEqualToAnchor:button.titleLabel.trailingAnchor
-                       constant:width],
-  ]];
 }
 
 NSArray<NSLayoutConstraint*>* VerticalConstraintsSpacingForViewsInContainer(
@@ -91,14 +91,27 @@ NSArray<NSLayoutConstraint*>* HorizontalConstraintsForViewsOnGuideWithShift(
     [horizontalConstraints
         addObject:[view.leadingAnchor constraintEqualToAnchor:previousAnchor
                                                      constant:shift]];
+    [view setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                          forAxis:
+                                              UILayoutConstraintAxisHorizontal];
+    [view setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                            forAxis:UILayoutConstraintAxisHorizontal];
     previousAnchor = view.trailingAnchor;
     shift = 0;
   }
   if (views.count > 0) {
     [horizontalConstraints
         addObject:[views.lastObject.trailingAnchor
-                      constraintLessThanOrEqualToAnchor:guide.trailingAnchor
-                                               constant:shift]];
+                      constraintEqualToAnchor:guide.trailingAnchor
+                                     constant:shift]];
+    // Give all remaining space to the last button, as per UX.
+    [views.lastObject
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
+    [views.lastObject
+        setContentHuggingPriority:UILayoutPriorityDefaultLow
+                          forAxis:UILayoutConstraintAxisHorizontal];
   }
   [NSLayoutConstraint activateConstraints:horizontalConstraints];
   return horizontalConstraints;
