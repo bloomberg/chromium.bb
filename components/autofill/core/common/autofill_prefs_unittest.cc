@@ -73,5 +73,59 @@ TEST_F(AutofillPrefsTest, MigrateDeprecatedAutofillPrefs) {
   EXPECT_FALSE(pref_service()->GetBoolean(kAutofillCreditCardEnabled));
 }
 
+// Tests that setting and getting the AutofillSyncTransportOptIn works as
+// expected.
+TEST_F(AutofillPrefsTest, WalletSyncTransportPref) {
+  const std::string account1 = "account1";
+  const std::string account2 = "account2";
+
+  // There should be no opt-in recorded at first.
+  ASSERT_FALSE(IsUserOptedInWalletSyncTransport(pref_service(), account1));
+  ASSERT_FALSE(IsUserOptedInWalletSyncTransport(pref_service(), account2));
+  // There should be no entry for the accounts in the dictionary.
+  auto* upload_events =
+      pref_service()->GetDictionary(prefs::kAutofillSyncTransportOptIn);
+  EXPECT_EQ(nullptr,
+            upload_events->FindKeyOfType(account1, base::Value::Type::INTEGER));
+  EXPECT_EQ(nullptr,
+            upload_events->FindKeyOfType(account2, base::Value::Type::INTEGER));
+
+  // Set the opt-in for the first account.
+  SetUserOptedInWalletSyncTransport(pref_service(), account1, true);
+  EXPECT_TRUE(IsUserOptedInWalletSyncTransport(pref_service(), account1));
+  EXPECT_FALSE(IsUserOptedInWalletSyncTransport(pref_service(), account2));
+  // There should be an entry for the first account only in the dictionary.
+  upload_events =
+      pref_service()->GetDictionary(prefs::kAutofillSyncTransportOptIn);
+  EXPECT_NE(nullptr,
+            upload_events->FindKeyOfType(account1, base::Value::Type::INTEGER));
+  EXPECT_EQ(nullptr,
+            upload_events->FindKeyOfType(account2, base::Value::Type::INTEGER));
+
+  // Unset the opt-in for the first account.
+  SetUserOptedInWalletSyncTransport(pref_service(), account1, false);
+  EXPECT_FALSE(IsUserOptedInWalletSyncTransport(pref_service(), account1));
+  EXPECT_FALSE(IsUserOptedInWalletSyncTransport(pref_service(), account2));
+  // There should be no entry for the accounts in the dictionary.
+  upload_events =
+      pref_service()->GetDictionary(prefs::kAutofillSyncTransportOptIn);
+  EXPECT_EQ(nullptr,
+            upload_events->FindKeyOfType(account1, base::Value::Type::INTEGER));
+  EXPECT_EQ(nullptr,
+            upload_events->FindKeyOfType(account2, base::Value::Type::INTEGER));
+
+  // Set the opt-in for the second account.
+  SetUserOptedInWalletSyncTransport(pref_service(), account2, true);
+  EXPECT_FALSE(IsUserOptedInWalletSyncTransport(pref_service(), account1));
+  EXPECT_TRUE(IsUserOptedInWalletSyncTransport(pref_service(), account2));
+  // There should be an entry for the second account only in the dictionary.
+  upload_events =
+      pref_service()->GetDictionary(prefs::kAutofillSyncTransportOptIn);
+  EXPECT_EQ(nullptr,
+            upload_events->FindKeyOfType(account1, base::Value::Type::INTEGER));
+  EXPECT_NE(nullptr,
+            upload_events->FindKeyOfType(account2, base::Value::Type::INTEGER));
+}
+
 }  // namespace prefs
 }  // namespace autofill

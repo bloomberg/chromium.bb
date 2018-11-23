@@ -6,9 +6,32 @@
 
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 namespace autofill {
 namespace prefs {
+namespace {
+
+// TODO(crbug.com/907929): Use a hash of the account id.
+// Returns the opt-in bitfield for the specifiec |account_id| or 0 if no entry
+// was found.
+int GetSyncTransportOptInBitFieldForAccount(const PrefService* prefs,
+                                            const std::string& account_id) {
+  auto* upload_events =
+      prefs->GetDictionary(prefs::kAutofillSyncTransportOptIn);
+
+  // If there is no dictionary or no entry in the dictionary, it means the
+  // account didn't opt-in. Use 0 because it's the same as not having opted-in
+  // to anything.
+  if (!upload_events) {
+    return 0;
+  }
+  auto* found =
+      upload_events->FindKeyOfType(account_id, base::Value::Type::INTEGER);
+  return found ? found->GetInt() : 0;
+}
+
+}  // namespace
 
 // Integer that is set to the last choice user made when prompted for saving a
 // credit card. The prompt is for user's consent in saving the card in the
@@ -20,9 +43,6 @@ const char kAutofillAcceptSaveCreditCardPromptState[] =
 // Integer that is set to the billing customer number fetched from priority
 // preference.
 const char kAutofillBillingCustomerNumber[] = "billing_customer_number";
-
-// The field type, validity state map of all profiles.
-const char kAutofillProfileValidity[] = "autofill.profile_validity";
 
 // Boolean that is true if Autofill is enabled and allowed to save credit card
 // data.
@@ -69,6 +89,12 @@ const char kAutofillOrphanRowsRemoved[] = "autofill.orphan_rows_removed";
 
 // Boolean that is true if Autofill is enabled and allowed to save profile data.
 const char kAutofillProfileEnabled[] = "autofill.profile_enabled";
+
+// The field type, validity state map of all profiles.
+const char kAutofillProfileValidity[] = "autofill.profile_validity";
+
+// The opt-ins for Sync Transport features for each client.
+const char kAutofillSyncTransportOptIn[] = "autofill.sync_transport_opt_ins";
 
 // The (randomly inititialied) seed value to use when encoding form/field
 // metadata for randomized uploads. The value of this pref is a string.
@@ -141,6 +167,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kAutofillUploadEvents);
   registry->RegisterTimePref(prefs::kAutofillUploadEventsLastResetTimestamp,
                              base::Time());
+  registry->RegisterDictionaryPref(prefs::kAutofillSyncTransportOptIn);
 }
 
 void MigrateDeprecatedAutofillPrefs(PrefService* prefs) {
@@ -233,6 +260,36 @@ void SetPaymentsIntegrationEnabled(PrefService* prefs, bool enabled) {
 
 std::string GetAllProfilesValidityMapsEncodedString(const PrefService* prefs) {
   return prefs->GetString(kAutofillProfileValidity);
+}
+
+void SetUserOptedInWalletSyncTransport(PrefService* prefs,
+                                       const std::string& account_id,
+                                       bool opted_in) {
+  DictionaryPrefUpdate update(prefs, prefs::kAutofillSyncTransportOptIn);
+  int value = GetSyncTransportOptInBitFieldForAccount(prefs, account_id);
+
+  // If the user has opted in, set that bit while leaving the others intact.
+  if (opted_in) {
+    update->SetKey(account_id,
+                   base::Value(value | sync_transport_opt_in::kWallet));
+    return;
+  }
+
+  // Invert the mask in order to reset the Wallet bit while leaving the other
+  // bits intact, or remove the key entirely if the Wallet was the only opt-in.
+  if (value & ~sync_transport_opt_in::kWallet) {
+    update->SetKey(account_id,
+                   base::Value(value & ~sync_transport_opt_in::kWallet));
+  } else {
+    update->RemoveKey(account_id);
+  }
+}
+
+bool IsUserOptedInWalletSyncTransport(const PrefService* prefs,
+                                      const std::string& account_id) {
+  // Return whether the wallet opt-in bit is set.
+  return GetSyncTransportOptInBitFieldForAccount(prefs, account_id) &
+         sync_transport_opt_in::kWallet;
 }
 
 }  // namespace prefs
