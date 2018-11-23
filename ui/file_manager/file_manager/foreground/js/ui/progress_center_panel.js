@@ -276,8 +276,10 @@ ProgressCenterPanel.getToggleAnimation_ = function(document) {
   for (var i = 0; i < document.styleSheets.length; i++) {
     var styleSheet = document.styleSheets[i];
     for (var j = 0; j < styleSheet.cssRules.length; j++) {
+      // HACK: closure does not define experimental CSSRules.
+      var keyFramesRule = CSSRule.KEYFRAMES_RULE || 7;
       var rule = styleSheet.cssRules[j];
-      if (rule.type === CSSRule.KEYFRAMES_RULE &&
+      if (rule.type === keyFramesRule &&
           rule.name === 'progress-center-toggle') {
         return rule;
       }
