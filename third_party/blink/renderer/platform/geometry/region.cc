@@ -100,8 +100,8 @@ bool Region::Intersects(const Region& region) const {
                                                                  region.shape_);
 }
 
-double Region::Area() const {
-  double area = 0.0;
+uint64_t Region::Area() const {
+  uint64_t area = 0;
   for (Shape::SpanIterator span = shape_.SpansBegin(), end = shape_.SpansEnd();
        span != end && span + 1 != end; ++span) {
     int height = (span + 1)->y - span->y;
@@ -110,7 +110,7 @@ double Region::Area() const {
                                 end = shape_.SegmentsEnd(span);
          segment != end && segment + 1 != end; segment += 2) {
       int width = *(segment + 1) - *segment;
-      area += height * width;
+      area += (uint64_t)height * (uint64_t)width;
     }
   }
   return area;
