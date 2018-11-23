@@ -1087,7 +1087,7 @@ DriveVolumeItem.prototype = {
 DriveVolumeItem.prototype.handleClick = function(e) {
   VolumeItem.prototype.handleClick.call(this, e);
 
-  this.selectDisplayRoot_();
+  this.selectDisplayRoot_(e.target);
 
   DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
       this, e, VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT, true);
@@ -1234,14 +1234,15 @@ DriveVolumeItem.prototype.createComputersGrandRoot_ = function() {
  */
 DriveVolumeItem.prototype.activate = function() {
   VolumeItem.prototype.activate.call(this);
-  this.selectDisplayRoot_();
+  this.selectDisplayRoot_(this);
 };
 
 /**
  * Select Drive's display root.
+ * @param {EventTarget} target The event target.
  */
-DriveVolumeItem.prototype.selectDisplayRoot_ = function() {
-  if (!this.classList.contains('expand-icon')) {
+DriveVolumeItem.prototype.selectDisplayRoot_ = function(target) {
+  if (!target.classList.contains('expand-icon')) {
     // If the Drive volume is clicked, select one of the children instead of
     // this item itself.
     this.volumeInfo_.resolveDisplayRoot((displayRoot) => {
