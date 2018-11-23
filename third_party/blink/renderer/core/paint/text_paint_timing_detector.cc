@@ -53,29 +53,6 @@ void TextPaintTimingDetector::PopulateTraceValue(
                   IdentifiersFactory::FrameId(&frame_view_->GetFrame()));
 }
 
-IntRect TextPaintTimingDetector::CalculateTransformedRect(
-    LayoutRect& invalidated_rect,
-    const PaintLayer& painting_layer) const {
-  const auto* local_transform = painting_layer.GetLayoutObject()
-                                    .FirstFragment()
-                                    .LocalBorderBoxProperties()
-                                    .Transform();
-  const auto* ancestor_transform = painting_layer.GetLayoutObject()
-                                       .View()
-                                       ->FirstFragment()
-                                       .LocalBorderBoxProperties()
-                                       .Transform();
-  FloatRect invalidated_rect_abs = FloatRect(invalidated_rect);
-  if (invalidated_rect_abs.IsEmpty() || invalidated_rect_abs.IsZero())
-    return IntRect();
-  GeometryMapper::SourceToDestinationRect(local_transform, ancestor_transform,
-                                          invalidated_rect_abs);
-  IntRect invalidated_rect_in_viewport = RoundedIntRect(invalidated_rect_abs);
-  invalidated_rect_in_viewport.Intersect(
-      frame_view_->GetScrollableArea()->VisibleContentRect());
-  return invalidated_rect_in_viewport;
-}
-
 void TextPaintTimingDetector::OnLargestTextDetected(
     const TextRecord& largest_text_record) {
   largest_text_paint_ = largest_text_record.first_paint_time;
@@ -217,14 +194,13 @@ void TextPaintTimingDetector::RecordText(const LayoutObject& object,
                          recorded_node_count_);
     return;
   }
+  unsigned rect_size = 0;
   LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
-  int rect_size = 0;
   if (!invalidated_rect.IsEmpty()) {
-    IntRect invalidated_rect_in_viewport =
-        CalculateTransformedRect(invalidated_rect, painting_layer);
-    rect_size = invalidated_rect_in_viewport.Height() *
-                invalidated_rect_in_viewport.Width();
+    rect_size = frame_view_->GetPaintTimingDetector().CalculateVisualSize(
+        invalidated_rect, painting_layer);
   }
+
   // When rect_size == 0, it either means invalidated_rect.IsEmpty() or
   // the text is size 0 or the text is out of viewport. Either way, we don't
   // record their time, to reduce computation.

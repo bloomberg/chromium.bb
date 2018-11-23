@@ -14,7 +14,6 @@
 
 namespace blink {
 class PaintLayer;
-class IntRect;
 class LayoutObject;
 class TracedValue;
 class LocalFrameView;
@@ -70,8 +69,6 @@ class CORE_EXPORT TextPaintTimingDetector final
   void PopulateTraceValue(TracedValue& value,
                           const TextRecord& first_text_paint,
                           unsigned candidate_index) const;
-  IntRect CalculateTransformedRect(LayoutRect& visual_rect,
-                                   const PaintLayer& painting_layer) const;
   void TimerFired(TimerBase*);
   void Analyze();
 

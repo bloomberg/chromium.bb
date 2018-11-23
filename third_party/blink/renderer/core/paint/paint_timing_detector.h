@@ -13,6 +13,7 @@ namespace blink {
 class LayoutObject;
 class LocalFrameView;
 class PaintLayer;
+class LayoutRect;
 class TextPaintTimingDetector;
 class ImagePaintTimingDetector;
 
@@ -32,6 +33,8 @@ class CORE_EXPORT PaintTimingDetector
   void NotifyNodeRemoved(const LayoutObject& object);
   void NotifyPrePaintFinished();
   void DidChangePerformanceTiming();
+  unsigned CalculateVisualSize(const LayoutRect& invalidated_rect,
+                               const PaintLayer& painting_layer) const;
   void Dispose();
 
   TextPaintTimingDetector& GetTextPaintTimingDetector() {
