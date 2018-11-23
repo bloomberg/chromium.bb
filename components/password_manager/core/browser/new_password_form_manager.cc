@@ -476,6 +476,12 @@ std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
   if (parser_.predictions())
     result->parser_.set_predictions(*parser_.predictions());
 
+  result->pending_credentials_ = pending_credentials_;
+  result->is_new_login_ = is_new_login_;
+  result->password_overridden_ = password_overridden_;
+  result->retry_password_form_password_update_ =
+      retry_password_form_password_update_;
+
   return result;
 }
 
@@ -517,7 +523,7 @@ void NewPasswordFormManager::ProcessMatches(
   }
 }
 
-bool NewPasswordFormManager::SetSubmittedFormIfIsManaged(
+bool NewPasswordFormManager::ProvisionallySaveIfIsManaged(
     const autofill::FormData& submitted_form,
     const PasswordManagerDriver* driver) {
   if (!DoesManage(submitted_form, driver))
@@ -673,6 +679,12 @@ void NewPasswordFormManager::CreatePendingCredentials() {
   // credentials are not received from the store yet.
   if (!parsed_submitted_form_)
     return;
+
+  // This function might be called multiple times so set variables that are
+  // changed in this function to initial states.
+  is_new_login_ = true;
+  SetPasswordOverridden(false);
+  retry_password_form_password_update_ = false;
 
   ValueElementPair password_to_save(PasswordToSave(*parsed_submitted_form_));
 

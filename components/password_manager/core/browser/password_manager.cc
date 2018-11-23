@@ -294,35 +294,6 @@ NewPasswordFormManager* FindMatchedManager(
   return nullptr;
 }
 
-// Returns a form manager that is ready to save/update credentials, provided
-// that |form| is submitted form. Namely 1. Finds form manager from
-// |form_managers| that manages |form| 2. Clones it. 3. Passes |form| as
-// submitted form to the cloned form manager.
-std::unique_ptr<NewPasswordFormManager>
-FindAndCloneMatchedNewPasswordFormManager(
-    const FormData& form,
-    const std::vector<std::unique_ptr<NewPasswordFormManager>>& form_managers,
-    const PasswordManagerDriver* driver) {
-  NewPasswordFormManager* matched_manager =
-      FindMatchedManager(form, form_managers, driver);
-  if (!matched_manager)
-    return nullptr;
-  // TODO(crbug.com/741537): Process manual saving request even if there is
-  // still no response from the store.
-  if (matched_manager->GetFormFetcher()->GetState() ==
-      FormFetcher::State::WAITING) {
-    return nullptr;
-  }
-
-  std::unique_ptr<NewPasswordFormManager> manager = matched_manager->Clone();
-  // Cloned NewPasswordFormManager doesn't have |driver|, so nullptr must be
-  // passed to ensure that the |form| is managed.
-  if (manager->SetSubmittedFormIfIsManaged(form, nullptr))
-    return manager;
-
-  return nullptr;
-}
-
 // Records the difference between how |old_manager| and |new_manager| understood
 // the pending credentials.
 void RecordParsingOnSavingDifference(
@@ -652,7 +623,7 @@ void PasswordManager::OnPasswordFormSubmitted(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
   if (is_new_form_parsing_for_saving_enabled_)
-    ProcessSubmittedForm(password_form.form_data, driver);
+    ProvisionallySaveForm(password_form.form_data, driver);
 
   ProvisionallySavePassword(password_form, driver);
 }
@@ -676,7 +647,7 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
   }
 
   if (is_new_form_parsing_for_saving_enabled_)
-    ProcessSubmittedForm(password_form.form_data, driver);
+    ProvisionallySaveForm(password_form.form_data, driver);
 
   ProvisionallySavePassword(password_form, driver);
 
@@ -695,8 +666,9 @@ void PasswordManager::ShowManualFallbackForSaving(
 
   std::unique_ptr<PasswordFormManagerInterface> manager = nullptr;
   if (is_new_form_parsing_for_saving_enabled_) {
-    manager = FindAndCloneMatchedNewPasswordFormManager(password_form.form_data,
-                                                        form_managers_, driver);
+    NewPasswordFormManager* matched_manager =
+        ProvisionallySaveForm(password_form.form_data, driver);
+    manager = matched_manager ? matched_manager->Clone() : nullptr;
   } else {
     manager = FindAndCloneMatchedPasswordFormManager(
         password_form, pending_login_managers_, driver);
@@ -889,7 +861,7 @@ void PasswordManager::CreateFormManagers(
   }
 }
 
-void PasswordManager::ProcessSubmittedForm(
+NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     const FormData& submitted_form,
     const PasswordManagerDriver* driver) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
@@ -901,7 +873,7 @@ void PasswordManager::ProcessSubmittedForm(
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SAVING_DISABLED, submitted_form.origin,
         logger.get());
-    return;
+    return nullptr;
   }
 
   // No need to report PasswordManagerMetricsRecorder::EMPTY_PASSWORD, because
@@ -913,7 +885,7 @@ void PasswordManager::ProcessSubmittedForm(
 
   NewPasswordFormManager* matching_form_manager = nullptr;
   for (const auto& manager : form_managers_) {
-    if (manager->SetSubmittedFormIfIsManaged(submitted_form, driver)) {
+    if (manager->ProvisionallySaveIfIsManaged(submitted_form, driver)) {
       matching_form_manager = manager.get();
       break;
     }
@@ -924,7 +896,7 @@ void PasswordManager::ProcessSubmittedForm(
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::NO_MATCHING_FORM, submitted_form.origin,
         logger.get());
-    return;
+    return nullptr;
   }
 
   // Set all other form managers to no submission state.
@@ -932,6 +904,8 @@ void PasswordManager::ProcessSubmittedForm(
     if (manager.get() != matching_form_manager)
       manager->set_not_submitted();
   }
+
+  return matching_form_manager;
 }
 
 void PasswordManager::ReportSpecPriorityForGeneratedPassword(
