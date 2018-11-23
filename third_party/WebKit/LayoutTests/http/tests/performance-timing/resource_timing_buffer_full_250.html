@@ -19,7 +19,7 @@
             // Scripts appended in JS to ensure setResourceTimingBufferSize is called before.
             let counter = performance.getEntriesByType("resource").length;
             const documentFragment = document.createDocumentFragment();
-            while (counter <= default_buffer_size) {
+            while (counter < default_buffer_size) {
                 const src = "../loading/resources/empty.js?" + counter;
                 const script = document.createElement('script');
                 script.type = 'text/javascript';
