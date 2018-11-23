@@ -12,6 +12,8 @@
 #include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "base/strings/utf_string_conversions.h"
+#include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/toggle_button.h"
@@ -20,6 +22,7 @@
 #include "ui/views/layout/box_layout.h"
 
 using device::mojom::BluetoothSystem;
+using device::mojom::BluetoothDeviceInfo;
 
 namespace ash {
 namespace tray {
@@ -30,34 +33,36 @@ const int kDisabledPanelLabelBaselineY = 20;
 // Returns corresponding device type icons for given Bluetooth device types and
 // connection states.
 const gfx::VectorIcon& GetBluetoothDeviceIcon(
-    device::BluetoothDeviceType device_type,
-    bool connected) {
+    BluetoothDeviceInfo::DeviceType device_type,
+    BluetoothDeviceInfo::ConnectionState connection_state) {
   switch (device_type) {
-    case device::BluetoothDeviceType::COMPUTER:
+    case BluetoothDeviceInfo::DeviceType::kComputer:
       return ash::kSystemMenuComputerIcon;
-    case device::BluetoothDeviceType::PHONE:
+    case BluetoothDeviceInfo::DeviceType::kPhone:
       return ash::kSystemMenuPhoneIcon;
-    case device::BluetoothDeviceType::AUDIO:
-    case device::BluetoothDeviceType::CAR_AUDIO:
+    case BluetoothDeviceInfo::DeviceType::kAudio:
+    case BluetoothDeviceInfo::DeviceType::kCarAudio:
       return ash::kSystemMenuHeadsetIcon;
-    case device::BluetoothDeviceType::VIDEO:
+    case BluetoothDeviceInfo::DeviceType::kVideo:
       return ash::kSystemMenuVideocamIcon;
-    case device::BluetoothDeviceType::JOYSTICK:
-    case device::BluetoothDeviceType::GAMEPAD:
+    case BluetoothDeviceInfo::DeviceType::kJoystick:
+    case BluetoothDeviceInfo::DeviceType::kGamepad:
       return ash::kSystemMenuGamepadIcon;
-    case device::BluetoothDeviceType::KEYBOARD:
-    case device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO:
+    case BluetoothDeviceInfo::DeviceType::kKeyboard:
+    case BluetoothDeviceInfo::DeviceType::kKeyboardMouseCombo:
       return ash::kSystemMenuKeyboardIcon;
-    case device::BluetoothDeviceType::TABLET:
+    case BluetoothDeviceInfo::DeviceType::kTablet:
       return ash::kSystemMenuTabletIcon;
-    case device::BluetoothDeviceType::MOUSE:
+    case BluetoothDeviceInfo::DeviceType::kMouse:
       return ash::kSystemMenuMouseIcon;
-    case device::BluetoothDeviceType::MODEM:
-    case device::BluetoothDeviceType::PERIPHERAL:
+    case BluetoothDeviceInfo::DeviceType::kModem:
+    case BluetoothDeviceInfo::DeviceType::kPeripheral:
       return ash::kSystemMenuBluetoothIcon;
     default:
-      return connected ? ash::kSystemMenuBluetoothConnectedIcon
-                       : ash::kSystemMenuBluetoothIcon;
+      return connection_state ==
+                     BluetoothDeviceInfo::ConnectionState::kConnected
+                 ? ash::kSystemMenuBluetoothConnectedIcon
+                 : ash::kSystemMenuBluetoothIcon;
   }
 }
 
@@ -154,8 +159,13 @@ void BluetoothDetailedView::UpdateDeviceScrollList(
     const BluetoothDeviceList& connecting_devices,
     const BluetoothDeviceList& paired_not_connected_devices,
     const BluetoothDeviceList& discovered_not_paired_devices) {
-  connecting_devices_ = connecting_devices;
-  paired_not_connected_devices_ = paired_not_connected_devices;
+  connecting_devices_.clear();
+  for (const auto& device : connecting_devices)
+    connecting_devices_.push_back(device->Clone());
+
+  paired_not_connected_devices_.clear();
+  for (const auto& device : paired_not_connected_devices)
+    paired_not_connected_devices_.push_back(device->Clone());
 
   std::string focused_device_address = GetFocusedDeviceAddress();
 
@@ -214,14 +224,20 @@ void BluetoothDetailedView::AppendSameTypeDevicesToScrollList(
     bool checked) {
   for (const auto& device : list) {
     const gfx::VectorIcon& icon =
-        GetBluetoothDeviceIcon(device.device_type, device.connected);
-    HoverHighlightView* container =
-        AddScrollListItem(icon, device.display_name);
-    if (device.connected)
-      SetupConnectedScrollListItem(container);
-    else if (device.connecting)
-      SetupConnectingScrollListItem(container);
-    device_map_[container] = device.address;
+        GetBluetoothDeviceIcon(device->device_type, device->connection_state);
+    HoverHighlightView* container = AddScrollListItem(
+        icon, device::GetBluetoothDeviceNameForDisplay(device));
+    switch (device->connection_state) {
+      case BluetoothDeviceInfo::ConnectionState::kNotConnected:
+        break;
+      case BluetoothDeviceInfo::ConnectionState::kConnecting:
+        SetupConnectingScrollListItem(container);
+        break;
+      case BluetoothDeviceInfo::ConnectionState::kConnected:
+        SetupConnectedScrollListItem(container);
+        break;
+    }
+    device_map_[container] = device->address;
   }
 }
 
@@ -229,7 +245,7 @@ bool BluetoothDetailedView::FoundDevice(
     const std::string& device_address,
     const BluetoothDeviceList& device_list) const {
   for (const auto& device : device_list) {
-    if (device.address == device_address)
+    if (device->address == device_address)
       return true;
   }
   return false;

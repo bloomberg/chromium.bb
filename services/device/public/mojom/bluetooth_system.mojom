@@ -4,6 +4,58 @@
 
 module device.mojom;
 
+// Holds information about a Bluetooth Device.
+struct BluetoothDeviceInfo {
+  enum ConnectionState {
+    kNotConnected,
+    kConnecting,
+    kConnected,
+  };
+
+  // Represent the different types of Bluetooth devices that we support
+  // or are aware of. Based on the Device Classes specified by the Bluetooth SIG
+  // https://www.bluetooth.com/specifications/assigned-numbers/baseband.
+  enum DeviceType {
+    kUnknown,
+    kComputer,
+    kPhone,
+    kModem,
+    kAudio,
+    kCarAudio,
+    kVideo,
+    kPeripheral,
+    kJoystick,
+    kGamepad,
+    kKeyboard,
+    kMouse,
+    kTablet,
+    kKeyboardMouseCombo,
+  };
+
+  // The MAC Address of the device e.g. AA:BB:CC:00:11:22.
+  // TODO(ortuno): Validate address.
+  string address;
+
+  // Name of the device. Retrieved during the inquiry response for Classic
+  // devices, from the Advertisement from LE devices, or from the devices itself
+  // after connecting to it.
+  string? name;
+
+  // Indicates whether the device is not connected, connecting, or already
+  // connected.
+  ConnectionState connection_state;
+
+  // Indicates whether the device is paired to the system.
+  bool is_paired;
+
+  // Retrieved from the the Bluetooth class[1] for Classic and Dual devices and
+  // from the appearance characteristic[2] for LE devices.
+  //
+  // [1] https://www.bluetooth.com/specifications/assigned-numbers/baseband
+  // [2] https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.gap.appearance.xml
+  DeviceType device_type;
+};
+
 // Factory to get an instance of the BluetoothSystem interface.
 interface BluetoothSystemFactory {
   Create(BluetoothSystem& system, BluetoothSystemClient system_client);

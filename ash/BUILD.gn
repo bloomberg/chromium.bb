@@ -1285,6 +1285,7 @@ component("ash") {
     "//ash/wayland",
     "//components/discardable_memory/public/interfaces",
     "//mojo/public/cpp/system",
+    "//services/device/public/cpp/bluetooth",
     "//services/device/public/mojom",
     "//services/media_session/public/mojom",
     "//services/service_manager/public/cpp",

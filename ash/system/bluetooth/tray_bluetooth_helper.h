@@ -15,23 +15,7 @@
 
 namespace ash {
 
-// Cached info from device::BluetoothDevice used for display in the UI.
-// Exists because it is not safe to cache pointers to device::BluetoothDevice
-// instances.
-struct ASH_EXPORT BluetoothDeviceInfo {
-  BluetoothDeviceInfo();
-  BluetoothDeviceInfo(const BluetoothDeviceInfo& other);
-  ~BluetoothDeviceInfo();
-
-  std::string address;
-  base::string16 display_name;
-  bool connected = false;
-  bool connecting = false;
-  bool paired = false;
-  device::BluetoothDeviceType device_type;
-};
-
-using BluetoothDeviceList = std::vector<BluetoothDeviceInfo>;
+using BluetoothDeviceList = std::vector<device::mojom::BluetoothDeviceInfoPtr>;
 
 // Maps UI concepts from the Bluetooth system tray (e.g. "Bluetooth is on") into
 // device concepts ("Bluetooth adapter enabled"). Note that most Bluetooth
