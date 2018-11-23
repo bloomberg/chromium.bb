@@ -850,7 +850,7 @@ class TestHttpPostProviderInterface : public HttpPostProviderInterface {
                       int content_length,
                       const char* content) override {}
   bool MakeSynchronousPost(int* net_error_code,
-                           int* http_response_code) override {
+                           int* http_status_code) override {
     return false;
   }
   int GetResponseContentLength() const override { return 0; }

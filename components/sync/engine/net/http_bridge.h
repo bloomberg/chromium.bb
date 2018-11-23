@@ -59,8 +59,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   void SetPostPayload(const char* content_type,
                       int content_length,
                       const char* content) override;
-  bool MakeSynchronousPost(int* net_error_code,
-                           int* http_response_code) override;
+  bool MakeSynchronousPost(int* net_error_code, int* http_status_code) override;
   void Abort() override;
 
   // WARNING: these response content methods are used to extract plain old data
@@ -105,7 +104,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   void CallMakeAsynchronousPost() { MakeAsynchronousPost(); }
 
   // Actual implementation of the load complete callback. Called by tests too.
-  void OnURLLoadCompleteInternal(int http_response_code,
+  void OnURLLoadCompleteInternal(int http_status_code,
                                  int net_error_code,
                                  int64_t compressed_content_length,
                                  const GURL& final_url,
@@ -168,7 +167,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     // Cached response data.
     bool request_completed;
     bool request_succeeded;
-    int http_response_code;
+    int http_status_code;
     int net_error_code;
     std::string response_content;
     scoped_refptr<net::HttpResponseHeaders> response_headers;

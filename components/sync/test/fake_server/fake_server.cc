@@ -34,8 +34,7 @@ using syncer::ModelTypeSet;
 namespace fake_server {
 
 FakeServer::FakeServer()
-    : http_error_response_code_(0),
-      error_type_(sync_pb::SyncEnums::SUCCESS),
+    : error_type_(sync_pb::SyncEnums::SUCCESS),
       alternate_triggered_errors_(false),
       request_counter_(0),
       weak_ptr_factory_(this) {
@@ -158,21 +157,18 @@ bool AreWalletDataProgressMarkersEquivalent(
          GetHashFromToken(marker2.token(), /*default_value=*/-1);
 }
 
-void FakeServer::HandleCommand(const std::string& request,
-                               int* http_response_code,
-                               std::string* response) {
+net::HttpStatusCode FakeServer::HandleCommand(const std::string& request,
+                                              std::string* response) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  response->clear();
 
   request_counter_++;
 
-  if (http_error_response_code_ != 0) {
-    *http_response_code = http_error_response_code_;
-    *response = std::string();
-    return;
+  if (http_error_status_code_) {
+    return *http_error_status_code_;
   }
 
   sync_pb::ClientToServerResponse response_proto;
-  *http_response_code = net::HTTP_OK;
   if (error_type_ != sync_pb::SyncEnums::SUCCESS &&
       ShouldSendTriggeredError()) {
     response_proto.set_error_code(error_type_);
@@ -203,23 +199,24 @@ void FakeServer::HandleCommand(const std::string& request,
     // before handling those requests.
     std::unique_ptr<sync_pb::DataTypeProgressMarker> wallet_marker =
         RemoveWalletProgressMarkerIfExists(&message);
-    *http_response_code =
+    net::HttpStatusCode http_status_code =
         SendToLoopbackServer(message.SerializeAsString(), response);
     if (wallet_marker != nullptr) {
       *message.mutable_get_updates()->add_from_progress_marker() =
           *wallet_marker;
-      if (*http_response_code == net::HTTP_OK) {
+      if (http_status_code == net::HTTP_OK) {
         HandleWalletRequest(message, *wallet_marker, response);
       }
     }
-    if (*http_response_code == net::HTTP_OK) {
+    if (http_status_code == net::HTTP_OK) {
       InjectClientCommand(response);
     }
-    return;
+    return http_status_code;
   }
 
   response_proto.set_store_birthday(loopback_server_->GetStoreBirthday());
   *response = response_proto.SerializeAsString();
+  return net::HTTP_OK;
 }
 
 void FakeServer::HandleWalletRequest(
@@ -237,12 +234,10 @@ void FakeServer::HandleWalletRequest(
   *response_string = response_proto.SerializeAsString();
 }
 
-int FakeServer::SendToLoopbackServer(const std::string& request,
-                                     std::string* response) {
-  int http_response_code;
+net::HttpStatusCode FakeServer::SendToLoopbackServer(const std::string& request,
+                                                     std::string* response) {
   base::ThreadRestrictions::SetIOAllowed(true);
-  loopback_server_->HandleCommand(request, &http_response_code, response);
-  return http_response_code;
+  return loopback_server_->HandleCommand(request, response);
 }
 
 void FakeServer::InjectClientCommand(std::string* response) {
@@ -339,15 +334,15 @@ void FakeServer::ClearServerData() {
   loopback_server_->ClearServerData();
 }
 
-void FakeServer::SetHttpError(int http_response_code) {
+void FakeServer::SetHttpError(net::HttpStatusCode http_status_code) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_GT(http_response_code, 0);
-  http_error_response_code_ = http_response_code;
+  DCHECK_GT(http_status_code, 0);
+  http_error_status_code_ = http_status_code;
 }
 
 void FakeServer::ClearHttpError() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  http_error_response_code_ = 0;
+  http_error_status_code_ = base::nullopt;
 }
 
 void FakeServer::SetClientCommand(
