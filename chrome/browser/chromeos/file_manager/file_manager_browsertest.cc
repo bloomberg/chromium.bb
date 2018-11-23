@@ -282,7 +282,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       ZipCase("zipFileOpenDownloadsShiftJIS"),
                       ZipCase("zipFileOpenDownloadsMacOs"),
                       ZipCase("zipFileOpenDownloadsWithAbsolutePaths"),
-                      ZipCase("zipFileOpenDownloadsEncryptedCancelPassphrase"),
                       ZipCase("zipFileOpenDrive").DisableDriveFs(),
                       ZipCase("zipFileOpenDrive").EnableDriveFs(),
                       ZipCase("zipFileOpenUsb"),
@@ -291,6 +290,13 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       ZipCase("zipCreateFileDrive").DisableDriveFs(),
                       ZipCase("zipCreateFileDrive").EnableDriveFs(),
                       ZipCase("zipCreateFileUsb")));
+
+// Failing linux-chromeos-rel: https://crbug.com/908071
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    DISABLED_ZipFiles, /* zip_files.js */
+    FilesAppBrowserTest,
+    ::testing::Values(
+        ZipCase("zipFileOpenDownloadsEncryptedCancelPassphrase")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder, /* create_new_folder.js */
