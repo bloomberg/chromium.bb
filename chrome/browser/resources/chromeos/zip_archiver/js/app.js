@@ -188,15 +188,13 @@ unpacker.app = {
     if (chrome.extension.inIncognitoContext)
       return;
 
-    if (chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get([unpacker.app.STORAGE_KEY], function(result) {
-        if (result[unpacker.app.STORAGE_KEY]) {
-          chrome.storage.local.clear(function() {
-            console.info('Cleaned up archive mount info from older versions.');
-          });
-        }
-      });
-    }
+    chrome.storage.local.get([unpacker.app.STORAGE_KEY], function(result) {
+      if (result[unpacker.app.STORAGE_KEY]) {
+        chrome.storage.local.clear(function() {
+          console.info('Cleaned up archive mount info from older versions.');
+        });
+      }
+    });
   },
 
   /**

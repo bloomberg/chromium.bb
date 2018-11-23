@@ -193,43 +193,6 @@ function sendBrowserTestCommand(command, callback, opt_debug) {
 }
 
 /**
- * Waits for an app window with the URL |windowUrl|.
- * @param {string} windowUrl URL of the app window to wait for.
- * @return {Promise} Promise to be fulfilled with the window ID of the
- *     app window.
- */
-function waitForAppWindow(windowUrl) {
-  const caller = getCaller();
-  const command = {'name': 'getAppWindowId', 'windowUrl': windowUrl};
-  return repeatUntil(function() {
-    return sendTestMessage(command).then((result) => {
-      if (result == 'none')
-        return pending(caller, 'getAppWindowId ' + windowUrl);
-      return result;
-    });
-  });
-}
-
-/**
- * Wait for the count of windows for app |appId| to equal |expectedCount|.
- * @param{string} appId ID of the app to count windows for.
- * @param{number} expectedCount Number of app windows to wait for.
- * @return {Promise} Promise to be fulfilled when the number of app windows
- *     equals |expectedCount|.
- */
-function waitForAppWindowCount(appId, expectedCount) {
-  const caller = getCaller();
-  const command = {'name': 'countAppWindows', 'appId': appId};
-  return repeatUntil(function() {
-    return sendTestMessage(command).then((result) => {
-      if (result != expectedCount)
-        return pending(caller, 'waitForAppWindowCount ' + appId + ' ' + result);
-      return true;
-    });
-  });
-}
-
-/**
  * Adds the givin entries to the target volume(s).
  * @param {Array<string>} volumeNames Names of target volumes.
  * @param {Array<TestEntryInfo>} entries List of entries to be added.
@@ -738,17 +701,6 @@ var ENTRIES = {
     lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
     nameText: 'absolute_paths.zip',
     sizeText: '400 bytes',
-    typeText: 'Zip archive'
-  }),
-
-  zipArchiveEncrypted: new TestEntryInfo({
-    type: EntryType.FILE,
-    sourceFileName: 'encrypted.zip',
-    targetPath: 'encrypted.zip',
-    mimeType: 'application/x-zip',
-    lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
-    nameText: 'encrypted.zip',
-    sizeText: '589 bytes',
     typeText: 'Zip archive'
   }),
 
