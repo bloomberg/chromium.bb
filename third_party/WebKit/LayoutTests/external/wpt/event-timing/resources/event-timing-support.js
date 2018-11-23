@@ -1,27 +1,11 @@
-function clickOnElement(id, callback) {
+function clickOnElement(id, resolve) {
   const element = document.getElementById(id);
-  const rect = element.getBoundingClientRect();
-  const xCenter = rect.x + rect.width / 2;
-  const yCenter = rect.y + rect.height / 2;
-  const leftButton = 0;
-  var pointerActions = [{
-    source: "mouse",
-    actions: [
-      { name: "pointerDown", x: xCenter, y: yCenter, button: leftButton },
-      { name: "pointerUp" },
-    ]
-  }];
-  var clickHandler = () => {
-    if (callback)
-      callback();
+  const clickHandler = () => {
     element.removeEventListener("click", clickHandler);
+    resolve();
   };
   element.addEventListener("click", clickHandler);
-  if (!chrome || !chrome.gpuBenchmarking) {
-    reject();
-  } else {
-    chrome.gpuBenchmarking.pointerActionSequence(pointerActions);
-  }
+  test_driver.click(element);
 }
 
 function mainThreadBusy(duration) {
@@ -29,7 +13,7 @@ function mainThreadBusy(duration) {
   while (performance.now() < now + duration);
 }
 
-// This method should receive an entry of type 'event'. |is_false| is true only
+// This method should receive an entry of type 'event'. |is_first| is true only
 // when the event also happens to correspond to the first event. In this case,
 // the timings of the 'firstInput' entry should be equal to those of this entry.
 function verifyClickEvent(entry, is_first=false) {
@@ -60,7 +44,7 @@ function verifyClickEvent(entry, is_first=false) {
 
 function wait() {
   return new Promise((resolve, reject) => {
-    setTimeout(() => {
+    step_timeout(() => {
       resolve();
     }, 0);
   });
