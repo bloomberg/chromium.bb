@@ -4,10 +4,10 @@
 
 import("//base/android/linker/config.gni")
 import("//base/android/proguard/proguard.gni")
-import("//build/config/android/extract_unwind_tables.gni")
 import("//build/config/android/rules.gni")
-import("//build/config/compiler/compiler.gni")
 import("//build/config/locales.gni")
+import("//build/config/android/extract_unwind_tables.gni")
+import("//build/config/compiler/compiler.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("channel.gni")
@@ -220,25 +220,14 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         !invoker.use_trichrome_library) {
       # Always build 64-bit //android_webview:monochrome because Chrome runs
       # in 32-bit mode.
-      if (invoker.target_type == "android_app_bundle_module") {
-        _suffix = "_base"
-      } else {
-        _suffix = ""
-      }
       if (android_64bit_target_cpu) {
         shared_libraries = [ "//android_webview:monochrome" ]
-        if (invoker.add_unwind_tables_in_apk) {
-          shared_library_for_unwind_asset = "monochrome"
-        }
-        if (build_apk_secondary_abi) {
-          secondary_abi_shared_libraries =
-              [ "//chrome/android:monochrome${_suffix}_secondary_abi_lib" ]
-        }
       } else {
-        shared_libraries = [ "//chrome/android:monochrome${_suffix}" ]
-        if (invoker.add_unwind_tables_in_apk) {
-          shared_library_for_unwind_asset = "monochrome${_suffix}"
-        }
+        shared_libraries = [ "//chrome/android:monochrome" ]
+      }
+      if (android_64bit_target_cpu && build_apk_secondary_abi) {
+        secondary_abi_shared_libraries =
+            [ "//chrome/android:monochrome_secondary_abi_lib" ]
       }
     } else {
       # Include a 32-bit placeholder library to ensure that Chrome runs in
@@ -249,6 +238,9 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       } else {
         native_lib_placeholders = [ "libdummy.so" ]
       }
+    }
+    if (invoker.add_unwind_tables_in_apk) {
+      shared_library_for_unwind_asset = "monochrome"
     }
 
     alternative_android_sdk_dep = webview_framework_dep
@@ -290,13 +282,9 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       "//android_webview/apk:webview_license_activity_java",
       "//android_webview/glue",
       "//chrome/android:chrome_public_non_pak_assets",
+      "//chrome/android:monochrome_apk_pak_assets",
       "//chrome/android/monochrome:monochrome_license_provider_java",
     ]
-    if (invoker.target_type == "android_app_bundle_module") {
-      deps += [ "//chrome/android:monochrome_bundle_pak_assets" ]
-    } else {
-      deps += [ "//chrome/android:monochrome_apk_pak_assets" ]
-    }
 
     if (_enable_multidex && invoker.target_type == "android_apk" &&
         !defined(invoker.negative_main_dex_globs)) {
@@ -338,5 +326,23 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         }
       }
     }
+  }
+}
+
+# These empty templates are still being called from the clank/ BUILD.gn
+# scripts. Remove them when they have been fixed to call the
+# xxx_common_apk_or_module_tmpl templates above.
+
+template("chrome_public_apk_tmpl") {
+  chrome_public_common_apk_or_module_tmpl(target_name) {
+    forward_variables_from(invoker, "*")
+    target_type = "android_apk"
+  }
+}
+
+template("monochrome_public_apk_tmpl") {
+  monochrome_public_common_apk_or_module_tmpl(target_name) {
+    forward_variables_from(invoker, "*")
+    target_type = "android_apk"
   }
 }
