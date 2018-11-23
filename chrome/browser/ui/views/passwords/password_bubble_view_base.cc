@@ -29,28 +29,25 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
          !g_manage_passwords_bubble_->GetWidget()->IsVisible());
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  bool is_fullscreen = browser_view->IsFullscreen();
-  views::View* const anchor_view =
-      is_fullscreen ? nullptr : browser_view->GetLocationBarView();
+  views::View* const anchor_view = browser_view->GetLocationBarView();
 
   PasswordBubbleViewBase* bubble =
       CreateBubble(web_contents, anchor_view, gfx::Point(), reason);
   DCHECK(bubble);
   DCHECK(bubble == g_manage_passwords_bubble_);
 
-  if (is_fullscreen)
-    g_manage_passwords_bubble_->set_parent_window(
-        web_contents->GetNativeView());
-
   if (anchor_view) {
     g_manage_passwords_bubble_->SetHighlightedButton(
         browser_view->GetLocationBarView()->manage_passwords_icon_view());
+  } else {
+    g_manage_passwords_bubble_->set_parent_window(
+        web_contents->GetNativeView());
   }
 
   views::BubbleDialogDelegateView::CreateBubble(g_manage_passwords_bubble_);
 
   // Adjust for fullscreen after creation as it relies on the content size.
-  if (is_fullscreen) {
+  if (!anchor_view) {
     g_manage_passwords_bubble_->AdjustForFullscreen(
         browser_view->GetBoundsInScreen());
   }
