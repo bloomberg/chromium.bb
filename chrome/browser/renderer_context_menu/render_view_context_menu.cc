@@ -1034,8 +1034,6 @@ void RenderViewContextMenu::AppendLinkItems() {
         base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
         browser && browser->is_app();
 
-    AppendOpenInBookmarkAppLinkItems();
-
     menu_model_.AddItemWithStringId(
         IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
         in_app ? IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP
@@ -1054,6 +1052,7 @@ void RenderViewContextMenu::AppendLinkItems() {
         in_app ? IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP
                : IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
 
+    AppendOpenInBookmarkAppLinkItems();
     AppendOpenWithLinkItems();
 
     // While ChromeOS supports multiple profiles, only one can be open at a
