@@ -12,6 +12,11 @@
 
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // Early out if there isn't enough data to extract options and pass data to
+  // the library.
+  if (size < 3 * sizeof(int32_t) + 1)
+    return 0;
+
   base::FuzzedDataProvider data_provider(data, size);
 
   CompactEncDet::TextCorpusType corpus =
