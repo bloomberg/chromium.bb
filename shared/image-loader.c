@@ -208,8 +208,8 @@ load_png(FILE *fp)
 {
 	png_struct *png;
 	png_info *info;
-	png_byte *data = NULL;
-	png_byte **row_pointers = NULL;
+	png_byte *volatile data = NULL;
+	png_byte **volatile row_pointers = NULL;
 	png_uint_32 width, height;
 	int depth, color_type, interlace, stride;
 	unsigned int i;
