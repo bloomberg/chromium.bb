@@ -3009,6 +3009,8 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.ht
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-module.html [ Timeout ]
+crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-classic.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-classic.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-module.html [ Timeout ]
 crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
@@ -3386,6 +3388,8 @@ crbug.com/626703 external/wpt/websockets/Create-Secure-extensions-empty.any.html
 crbug.com/626703 external/wpt/websockets/Create-Secure-extensions-empty.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-classic.sub.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-module.sub.html [ Skip ]
+crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-classic.sub.html [ Skip ]
+crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-module.sub.html [ Skip ]
 crbug.com/626703 external/wpt/html/browsers/history/joint-session-history/joint-session-history-remove-iframe.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-003a.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-004a.html [ Failure ]
@@ -4352,6 +4356,7 @@ crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure Pass ]
 
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
+crbug.com/717643 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
 # known bug: import() inside set{Timeout,Interval}
 
@@ -4360,6 +4365,10 @@ crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/modu
 crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-external-module.html [ Failure ]
 crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-classic.html [ Failure ]
 crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-module.html [ Failure ]
+crbug.com/796034 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-external-classic.html [ Failure ]
+crbug.com/796034 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-external-module.html [ Failure ]
+crbug.com/796034 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-classic.html [ Failure ]
+crbug.com/796034 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-module.html [ Failure ]
 
 # Geolocation tests
 crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failure ]
