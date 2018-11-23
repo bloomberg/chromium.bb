@@ -103,6 +103,40 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   ASSERT_LE(recovery_time, base::TimeDelta::FromSeconds(2));
 }
 
+IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, ServerRedirect) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Add an item and ensure that sync is successful.
+  ASSERT_TRUE(AddFolder(0, 0, "folder1"));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+
+  GetFakeServer()->SetHttpError(net::HTTP_USE_PROXY);
+
+  // Add a new item to trigger another sync cycle.
+  ASSERT_TRUE(AddFolder(0, 0, "folder2"));
+
+  // Verify that the client goes into exponential backoff while it is unable to
+  // reach the sync server.
+  ASSERT_TRUE(ExponentialBackoffChecker(GetSyncService(0)).Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, InternalServerError) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Add an item and ensure that sync is successful.
+  ASSERT_TRUE(AddFolder(0, 0, "folder1"));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+
+  GetFakeServer()->SetHttpError(net::HTTP_INTERNAL_SERVER_ERROR);
+
+  // Add a new item to trigger another sync cycle.
+  ASSERT_TRUE(AddFolder(0, 0, "folder2"));
+
+  // Verify that the client goes into exponential backoff while it is unable to
+  // reach the sync server.
+  ASSERT_TRUE(ExponentialBackoffChecker(GetSyncService(0)).Wait());
+}
+
 IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, TransientErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 

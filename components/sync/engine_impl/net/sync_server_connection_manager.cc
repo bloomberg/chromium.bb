@@ -79,7 +79,7 @@ bool SyncBridgedConnection::Init(const char* path,
       static_cast<int64_t>(http->GetResponseContentLength());
   response->payload_length =
       static_cast<int64_t>(http->GetResponseContentLength());
-  if (response->http_response_code < 400)
+  if (response->http_response_code == net::HTTP_OK)
     response->server_status = HttpResponse::SERVER_CONNECTION_OK;
   else if (response->http_response_code == net::HTTP_UNAUTHORIZED)
     response->server_status = HttpResponse::SYNC_AUTH_ERROR;
