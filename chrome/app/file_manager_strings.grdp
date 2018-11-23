@@ -1262,6 +1262,12 @@
   <message name="IDS_FILE_BROWSER_SEE_MENU_FOR_ACTIONS" desc="Text to be used by screen reader to indicate users that there are more options on the action bar.">
     More options available on the action bar. Press Alt + A to focus the action bar.
   </message>
+  <message name="IDS_FILE_BROWSER_OPEN_A11Y" desc="Text to be used by screen reader to indicate users that the opening one single file is being executed.">
+    Opening file <ph name="FILE_NAME"> $1<ex>file_name.txt</ex>.</ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_OPEN_A11Y_PLURAL" desc="Text to be used by screen reader to indicate users that the opening multiple files is being executed.">
+    Opening <ph name="NUMBER_FILES"> $1<ex>3</ex> files.</ph>
+  </message>
 
 <!-- Common for Audio player and Media player -->
   <message name="IDS_MEDIA_PLAYER_PLAY_BUTTON_LABEL" desc="Label for the Play button of media players (audio player / video player).">

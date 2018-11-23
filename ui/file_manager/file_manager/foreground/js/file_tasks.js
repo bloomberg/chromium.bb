@@ -814,6 +814,13 @@ FileTasks.prototype.executeInternal_ = function(task) {
   this.checkAvailability_(() => {
     this.maybeShareWithCrostiniOrShowDialog_(task, () => {
       this.taskHistory_.recordTaskExecuted(task.taskId);
+      let msg;
+      if (this.entries.length === 1) {
+        msg = strf('OPEN_A11Y', this.entries_[0].name);
+      } else {
+        msg = strf('OPEN_A11Y_PLURAL', this.entries_.length);
+      }
+      this.ui_.speakA11yMessage(msg);
       if (FileTasks.isInternalTask_(task.taskId)) {
         this.executeInternalTask_(task.taskId);
       } else {

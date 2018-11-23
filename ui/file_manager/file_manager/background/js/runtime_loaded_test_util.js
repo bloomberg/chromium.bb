@@ -680,6 +680,19 @@ test.util.sync.isFileManagerLoaded = function(contentWindow) {
 };
 
 /**
+ * Returns all a11y messages announced by |FileManagerUI.speakA11yMessage|.
+ *
+ * @return {Array<string>}
+ */
+test.util.sync.getA11yAnnounces = function(contentWindow) {
+  if (contentWindow && contentWindow.fileManager &&
+      contentWindow.fileManager.ui)
+    return contentWindow.fileManager.ui.a11yAnnounces;
+
+  return null;
+};
+
+/**
  * Reports to the given |callback| the number of volumes available in
  * VolumeManager in the background page.
  *
