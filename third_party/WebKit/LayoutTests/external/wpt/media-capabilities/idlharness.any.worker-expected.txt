@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 53 tests; 10 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idlharness
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
@@ -7,25 +6,6 @@ PASS Partial interface Navigator: valid exposure set
 PASS Partial interface WorkerNavigator: original interface defined
 PASS Partial interface WorkerNavigator: valid exposure set
 PASS Partial interface Screen: original interface defined
-FAIL MediaCapabilitiesInfo interface: existence and properties of interface object assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-FAIL MediaCapabilitiesInfo interface object length assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-FAIL MediaCapabilitiesInfo interface object name assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-FAIL MediaCapabilitiesInfo interface: existence and properties of interface prototype object assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-FAIL MediaCapabilitiesInfo interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-FAIL MediaCapabilitiesInfo interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-FAIL MediaCapabilitiesInfo interface: attribute supported assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-FAIL MediaCapabilitiesInfo interface: attribute smooth assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-FAIL MediaCapabilitiesInfo interface: attribute powerEfficient assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-FAIL MediaCapabilitiesInfo must be primary interface of decodingInfo assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: decodingInfo is not defined"
-FAIL Stringification of decodingInfo assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: decodingInfo is not defined"
-FAIL MediaCapabilitiesInfo interface: decodingInfo must inherit property "supported" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: decodingInfo is not defined"
-FAIL MediaCapabilitiesInfo interface: decodingInfo must inherit property "smooth" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: decodingInfo is not defined"
-FAIL MediaCapabilitiesInfo interface: decodingInfo must inherit property "powerEfficient" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: decodingInfo is not defined"
-FAIL MediaCapabilitiesInfo must be primary interface of encodingInfo assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: encodingInfo is not defined"
-FAIL Stringification of encodingInfo assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: encodingInfo is not defined"
-FAIL MediaCapabilitiesInfo interface: encodingInfo must inherit property "supported" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: encodingInfo is not defined"
-FAIL MediaCapabilitiesInfo interface: encodingInfo must inherit property "smooth" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: encodingInfo is not defined"
-FAIL MediaCapabilitiesInfo interface: encodingInfo must inherit property "powerEfficient" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: encodingInfo is not defined"
 FAIL MediaCapabilities interface: existence and properties of interface object assert_own_property: self does not have own property "MediaCapabilities" expected property "MediaCapabilities" missing
 FAIL MediaCapabilities interface object length assert_own_property: self does not have own property "MediaCapabilities" expected property "MediaCapabilities" missing
 FAIL MediaCapabilities interface object name assert_own_property: self does not have own property "MediaCapabilities" expected property "MediaCapabilities" missing

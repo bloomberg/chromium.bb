@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 63 tests; 43 PASS, 20 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idlharness
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
@@ -7,25 +6,6 @@ PASS Partial interface Navigator: valid exposure set
 PASS Partial interface WorkerNavigator: original interface defined
 PASS Partial interface WorkerNavigator: valid exposure set
 PASS Partial interface Screen: original interface defined
-PASS MediaCapabilitiesInfo interface: existence and properties of interface object
-PASS MediaCapabilitiesInfo interface object length
-PASS MediaCapabilitiesInfo interface object name
-PASS MediaCapabilitiesInfo interface: existence and properties of interface prototype object
-PASS MediaCapabilitiesInfo interface: existence and properties of interface prototype object's "constructor" property
-PASS MediaCapabilitiesInfo interface: existence and properties of interface prototype object's @@unscopables property
-PASS MediaCapabilitiesInfo interface: attribute supported
-PASS MediaCapabilitiesInfo interface: attribute smooth
-PASS MediaCapabilitiesInfo interface: attribute powerEfficient
-PASS MediaCapabilitiesInfo must be primary interface of decodingInfo
-PASS Stringification of decodingInfo
-PASS MediaCapabilitiesInfo interface: decodingInfo must inherit property "supported" with the proper type
-PASS MediaCapabilitiesInfo interface: decodingInfo must inherit property "smooth" with the proper type
-PASS MediaCapabilitiesInfo interface: decodingInfo must inherit property "powerEfficient" with the proper type
-PASS MediaCapabilitiesInfo must be primary interface of encodingInfo
-PASS Stringification of encodingInfo
-PASS MediaCapabilitiesInfo interface: encodingInfo must inherit property "supported" with the proper type
-PASS MediaCapabilitiesInfo interface: encodingInfo must inherit property "smooth" with the proper type
-PASS MediaCapabilitiesInfo interface: encodingInfo must inherit property "powerEfficient" with the proper type
 PASS MediaCapabilities interface: existence and properties of interface object
 PASS MediaCapabilities interface object length
 PASS MediaCapabilities interface object name

@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/media-capabilities/#mediacapabilitiesinfo
+// https://wicg.github.io/media-capabilities/#media-capabilities-info
 
-[
-    Exposed=Window
-] interface MediaCapabilitiesInfo {
-    [Measure] readonly attribute boolean supported;
-    [Measure] readonly attribute boolean smooth;
-    [Measure] readonly attribute boolean powerEfficient;
+dictionary MediaCapabilitiesInfo {
+    required boolean supported;
+    required boolean smooth;
+    required boolean powerEfficient;
 };
