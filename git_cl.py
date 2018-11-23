@@ -683,7 +683,7 @@ def _ComputeDiffLineRanges(files, upstream_commit):
   if len(files) == 0:
     return {}
 
-  # Take diff and find the line ranges where there are changes.
+  # Take the git diff and find the line ranges where there are changes.
   diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, files, allow_prefix=True)
   diff_output = RunGit(diff_cmd)
 
@@ -5322,7 +5322,11 @@ def BuildGitDiffCmd(diff_type, upstream_commit, args, allow_prefix=False):
   # Generate diff for the current branch's changes.
   diff_cmd = ['-c', 'core.quotePath=false', 'diff', '--no-ext-diff']
 
-  if not allow_prefix:
+  if allow_prefix:
+    # explicitly setting --src-prefix and --dst-prefix is necessary in the
+    # case that diff.noprefix is set in the user's git config.
+    diff_cmd += ['--src-prefix=a/', '--dst-prefix=b/']
+  else:
     diff_cmd += ['--no-prefix']
 
   diff_cmd += [diff_type, upstream_commit, '--']
