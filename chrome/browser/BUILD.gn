@@ -3199,7 +3199,6 @@ jumbo_split_static_library("browser") {
       "//chromeos/strings",
       "//components/services/font:lib",
       "//components/services/font/public/interfaces",
-      "//components/sync_wifi",
       "//services/ws:lib",
       "//services/ws/public/cpp/input_devices",
       "//services/ws/public/cpp/input_devices:input_device_controller",

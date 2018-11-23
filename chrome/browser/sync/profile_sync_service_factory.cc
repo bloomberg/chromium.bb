@@ -76,7 +76,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
-#include "components/sync_wifi/wifi_credential_syncable_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
 using browser_sync::ProfileSyncService;
@@ -168,7 +167,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS)
   DependsOn(chromeos::SyncedPrintersManagerFactory::GetInstance());
-  DependsOn(sync_wifi::WifiCredentialSyncableServiceFactory::GetInstance());
 #endif  // defined(OS_CHROMEOS)
 }
 

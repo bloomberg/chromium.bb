@@ -2126,15 +2126,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kDisableCaptivePortalBypassProxy)},
 #endif  // OS_CHROMEOS
-#if defined(OS_CHROMEOS)
-    {"enable-wifi-credential-sync", flag_descriptions::kWifiCredentialSyncName,
-     flag_descriptions::kWifiCredentialSyncDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kEnableWifiCredentialSync)},
-    {"enable-potentially-annoying-security-features",
-     flag_descriptions::kExperimentalSecurityFeaturesName,
-     flag_descriptions::kExperimentalSecurityFeaturesDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnablePotentiallyAnnoyingSecurityFeatures)},
-#endif  // OS_CHROMEOS
     {"ssl-committed-interstitials",
      flag_descriptions::kSSLCommittedInterstitialsName,
      flag_descriptions::kSSLCommittedInterstitialsDescription, kOsAll,

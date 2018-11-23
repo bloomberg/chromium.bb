@@ -124,8 +124,6 @@
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_data_type_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
-#include "components/sync_wifi/wifi_credential_syncable_service.h"
-#include "components/sync_wifi/wifi_credential_syncable_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
@@ -449,13 +447,6 @@ ChromeSyncClient::CreateDataTypeControllers() {
 #endif  // defined(OS_LINUX) || defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWifiCredentialSync) &&
-      !disabled_types.Has(syncer::WIFI_CREDENTIALS)) {
-    controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-        syncer::WIFI_CREDENTIALS, dump_stack, this, syncer::GROUP_UI,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
-  }
   if (arc::IsArcAllowedForProfile(profile_)) {
     controllers.push_back(std::make_unique<ArcPackageSyncDataTypeController>(
         syncer::ARC_PACKAGE, dump_stack, this, profile_));
@@ -584,10 +575,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
                  : base::WeakPtr<syncer::SyncableService>();
     }
 #if defined(OS_CHROMEOS)
-    case syncer::WIFI_CREDENTIALS:
-      return sync_wifi::WifiCredentialSyncableServiceFactory::
-          GetForBrowserContext(profile_)
-              ->AsWeakPtr();
     case syncer::ARC_PACKAGE:
       return arc::ArcPackageSyncableService::Get(profile_)->AsWeakPtr();
 #endif  // defined(OS_CHROMEOS)
