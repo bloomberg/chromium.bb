@@ -29,20 +29,12 @@ var testHistory;
 /** @type {importer.DispositionChecker.CheckerFunction} */
 var getDisposition;
 
-// Set up string assets.
-loadTimeData.data = {
-  CLOUD_IMPORT_ITEMS_REMAINING: '',
-  DRIVE_DIRECTORY_LABEL: 'My Drive',
-  DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
-  DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
-};
-
 window.metrics = {
   recordTime: function() {},
 };
 
 function setUp() {
+  window.loadTimeData.getString = id => id;
   let mockChrome = {
     fileManagerPrivate: {
       /**

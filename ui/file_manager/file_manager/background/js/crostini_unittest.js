@@ -10,7 +10,8 @@ window.loadTimeData = {
   data: {'DRIVE_FS_ENABLED': false},
   getBoolean: function(key) {
     return window.loadTimeData.data[key];
-  }
+  },
+  getString: id => id,
 };
 
 let volumeManagerRootType = 'testroot';

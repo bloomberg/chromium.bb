@@ -13,7 +13,7 @@ var handler = null;
 // Set up the test components.
 function setUp() {
   // Set up string assets.
-  loadTimeData.data = {
+  window.loadTimeData.data = {
     COPY_FILE_NAME: 'Copying $1...',
     COPY_TARGET_EXISTS_ERROR: '$1 is already exists.',
     COPY_FILESYSTEM_ERROR: 'Copy filesystem error: $1',

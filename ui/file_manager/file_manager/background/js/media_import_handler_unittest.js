@@ -35,15 +35,6 @@ var destinationFactory;
 /** @type {!MockDriveSyncHandler} */
 var driveSyncHandler;
 
-// Set up string assets.
-loadTimeData.data = {
-  CLOUD_IMPORT_ITEMS_REMAINING: '',
-  DRIVE_DIRECTORY_LABEL: 'My Drive',
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
-  DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
-  DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
-};
-
 var chrome;
 
 window.metrics = {
@@ -54,6 +45,7 @@ window.metrics = {
 };
 
 function setUp() {
+  window.loadTimeData.getString = id => id;
   // Set up mock chrome APIs.
   chrome = {
     power: {

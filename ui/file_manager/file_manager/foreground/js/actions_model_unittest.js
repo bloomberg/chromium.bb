@@ -10,11 +10,6 @@ var ui = null;
 var driveFileSystem = null;
 var providedFileSystem = null;
 
-loadTimeData.data = {
-  DRIVE_DIRECTORY_LABEL: '',
-  DOWNLOADS_DIRECTORY_LABEL: ''
-};
-
 function MockFolderShortcutsModel() {
   this.has = false;
 }
@@ -54,6 +49,8 @@ function MockUI() {
 }
 
 function setUp() {
+  window.loadTimeData.getString = id => id;
+  window.loadTimeData.data = {};
   window.chrome = {
     runtime: {
       lastError: null

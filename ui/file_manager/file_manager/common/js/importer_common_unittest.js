@@ -26,14 +26,9 @@ let sdFileEntry;
 /** @type {!MockFileEntry} */
 let driveFileEntry;
 
-// Sadly, boilerplate setup necessary to include test support classes.
-loadTimeData.data = {
-  DRIVE_DIRECTORY_LABEL: 'My Drive',
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
-};
-
 // Set up the test components.
 function setUp() {
+  window.loadTimeData.getString = id => id;
   new MockCommandLinePrivate();
   new MockChromeStorageAPI();
   importer.setupTestLogger();

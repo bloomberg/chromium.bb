@@ -20,36 +20,17 @@ var volumeManager;
 /** @type {DeviceHandler} */
 var handler;
 
-// Set up string assets.
-loadTimeData.data = {
-  REMOVABLE_DEVICE_DETECTION_TITLE: 'Device detected',
-  REMOVABLE_DEVICE_NAVIGATION_MESSAGE: 'DEVICE_NAVIGATION',
-  REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL: '',
-  REMOVABLE_DEVICE_IMPORT_MESSAGE: 'DEVICE_IMPORT',
-  REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL: '',
-  DEVICE_UNKNOWN_BUTTON_LABEL: 'DEVICE_UNKNOWN_BUTTON_LABEL',
-  DEVICE_UNKNOWN_MESSAGE: 'DEVICE_UNKNOWN: $1',
-  DEVICE_UNKNOWN_DEFAULT_MESSAGE: 'DEVICE_UNKNOWN_DEFAULT_MESSAGE',
-  DEVICE_UNSUPPORTED_MESSAGE: 'DEVICE_UNSUPPORTED: $1',
-  DEVICE_HARD_UNPLUGGED_TITLE: 'DEVICE_HARD_UNPLUGGED_TITLE',
-  DEVICE_HARD_UNPLUGGED_MESSAGE: 'DEVICE_HARD_UNPLUGGED_MESSAGE',
-  DOWNLOADS_DIRECTORY_LABEL: 'DOWNLOADS_DIRECTORY_LABEL',
-  DRIVE_DIRECTORY_LABEL: 'DRIVE_DIRECTORY_LABEL',
-  MULTIPART_DEVICE_UNSUPPORTED_MESSAGE: 'MULTIPART_DEVICE_UNSUPPORTED: $1',
-  EXTERNAL_STORAGE_DISABLED_MESSAGE: 'EXTERNAL_STORAGE_DISABLED',
-  FORMATTING_OF_DEVICE_PENDING_TITLE: 'FORMATTING_OF_DEVICE_PENDING_TITLE',
-  FORMATTING_OF_DEVICE_PENDING_MESSAGE: 'FORMATTING_OF_DEVICE_PENDING',
-  FORMATTING_OF_DEVICE_FINISHED_TITLE: 'FORMATTING_OF_DEVICE_FINISHED_TITLE',
-  FORMATTING_FINISHED_SUCCESS_MESSAGE: 'FORMATTING_FINISHED_SUCCESS',
-  FORMATTING_OF_DEVICE_FAILED_TITLE: 'FORMATTING_OF_DEVICE_FAILED_TITLE',
-  FORMATTING_FINISHED_FAILURE_MESSAGE: 'FORMATTING_FINISHED_FAILURE',
-  RENAMING_OF_DEVICE_FAILED_TITLE: 'RENAMING_OF_DEVICE_FAILED_TITLE',
-  RENAMING_OF_DEVICE_FINISHED_FAILURE_MESSAGE:
-      'RENAMING_OF_DEVICE_FINISHED_FAILURE',
-};
-
 // Set up the test components.
 function setUp() {
+// Set up string assets.
+  window.loadTimeData.data = {
+    DEVICE_UNSUPPORTED_MESSAGE: 'DEVICE_UNSUPPORTED: $1',
+    DEVICE_UNKNOWN_MESSAGE: 'DEVICE_UNKNOWN: $1',
+    MULTIPART_DEVICE_UNSUPPORTED_MESSAGE: 'MULTIPART_DEVICE_UNSUPPORTED: $1',
+  };
+  window.loadTimeData.getString = id => {
+    return window.loadTimeData.data_[id] || id;
+  };
   new MockCommandLinePrivate();
   volumeManager = new MockVolumeManager();
   MockVolumeManager.installMockSingleton(volumeManager);
@@ -81,7 +62,8 @@ function testGoodDevice(callback) {
           function(notifications) {
             assertEquals(1, Object.keys(notifications).length);
             var options = notifications['deviceNavigation:/device/path'];
-            assertEquals('DEVICE_NAVIGATION', options.message);
+            assertEquals(
+                'REMOVABLE_DEVICE_NAVIGATION_MESSAGE', options.message);
             assertTrue(options.isClickable);
           }),
       callback);
@@ -184,7 +166,7 @@ function testMediaDeviceWithImportDisabled(callback) {
           function(notifications) {
             assertEquals(1, Object.keys(notifications).length);
             assertEquals(
-                'DEVICE_NAVIGATION',
+                'REMOVABLE_DEVICE_NAVIGATION_MESSAGE',
                 notifications[
                     'deviceNavigation:/device/path'].message,
                 'Device notification did not have the right message.');
@@ -265,7 +247,7 @@ function testGoodDeviceWithBadParent_DuplicateMount(callback) {
           function(notifications) {
             assertEquals(1, Object.keys(notifications).length);
             assertEquals(
-                'DEVICE_NAVIGATION',
+                'REMOVABLE_DEVICE_NAVIGATION_MESSAGE',
                 notifications['deviceNavigation:/device/path'].message);
           }),
       callback);
@@ -400,7 +382,7 @@ function testMountPartialSuccess(callback) {
           function(notifications) {
             assertEquals(1, Object.keys(notifications).length);
             assertEquals(
-                'DEVICE_NAVIGATION',
+                'REMOVABLE_DEVICE_NAVIGATION_MESSAGE',
                 notifications['deviceNavigation:/device/path'].message);
           }).then(function() {
             chrome.fileManagerPrivate.onMountCompleted.dispatch({
@@ -551,7 +533,7 @@ function testDisabledDevice() {
     devicePath: '/device/path'
   });
   assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals('EXTERNAL_STORAGE_DISABLED',
+  assertEquals('EXTERNAL_STORAGE_DISABLED_MESSAGE',
                chrome.notifications.items['deviceFail:/device/path'].message);
 
   chrome.fileManagerPrivate.onDeviceChanged.dispatch({
@@ -567,7 +549,7 @@ function testFormatSucceeded() {
     devicePath: '/device/path'
   });
   assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals('FORMATTING_OF_DEVICE_PENDING',
+  assertEquals('FORMATTING_OF_DEVICE_PENDING_MESSAGE',
                chrome.notifications.items['formatStart:/device/path'].message);
 
   chrome.fileManagerPrivate.onDeviceChanged.dispatch({
@@ -575,7 +557,7 @@ function testFormatSucceeded() {
     devicePath: '/device/path'
   });
   assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals('FORMATTING_FINISHED_SUCCESS',
+  assertEquals('FORMATTING_FINISHED_SUCCESS_MESSAGE',
                chrome.notifications.items[
                    'formatSuccess:/device/path'].message);
 }
@@ -586,7 +568,7 @@ function testFormatFailed() {
     devicePath: '/device/path'
   });
   assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals('FORMATTING_OF_DEVICE_PENDING',
+  assertEquals('FORMATTING_OF_DEVICE_PENDING_MESSAGE',
                chrome.notifications.items['formatStart:/device/path'].message);
 
   chrome.fileManagerPrivate.onDeviceChanged.dispatch({
@@ -594,7 +576,7 @@ function testFormatFailed() {
     devicePath: '/device/path'
   });
   assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals('FORMATTING_FINISHED_FAILURE',
+  assertEquals('FORMATTING_FINISHED_FAILURE_MESSAGE',
                chrome.notifications.items['formatFail:/device/path'].message);
 }
 
@@ -617,7 +599,7 @@ function testRenameFailed() {
       {type: 'rename_fail', devicePath: '/device/path'});
   assertEquals(1, Object.keys(chrome.notifications.items).length);
   assertEquals(
-      'RENAMING_OF_DEVICE_FINISHED_FAILURE',
+      'RENAMING_OF_DEVICE_FINISHED_FAILURE_MESSAGE',
       chrome.notifications.items['renameFail:/device/path'].message);
 }
 
