@@ -37,7 +37,7 @@ using base::ToLowerASCII;
 
 namespace content {
 
-using blink::WebMediaCapabilitiesQueryCallbacks;
+using blink::WebMediaCapabilitiesEncodingInfoCallbacks;
 
 namespace {
 
@@ -113,7 +113,7 @@ AudioTrackRecorder::CodecId AudioStringToCodecId(
 }
 
 void OnEncodingInfoError(
-    std::unique_ptr<WebMediaCapabilitiesQueryCallbacks> callbacks) {
+    std::unique_ptr<WebMediaCapabilitiesEncodingInfoCallbacks> callbacks) {
   callbacks->OnError();
 }
 
@@ -347,7 +347,8 @@ void MediaRecorderHandler::Resume() {
 
 void MediaRecorderHandler::EncodingInfo(
     const blink::WebMediaConfiguration& configuration,
-    std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks> callbacks) {
+    std::unique_ptr<blink::WebMediaCapabilitiesEncodingInfoCallbacks>
+        callbacks) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(configuration.video_configuration ||
          configuration.audio_configuration);

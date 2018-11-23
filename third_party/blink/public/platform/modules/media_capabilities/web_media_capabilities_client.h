@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_callbacks.h"
 
 namespace blink {
 
@@ -20,7 +20,7 @@ class WebMediaCapabilitiesClient {
 
   virtual void DecodingInfo(
       const WebMediaConfiguration&,
-      std::unique_ptr<WebMediaCapabilitiesQueryCallbacks>) = 0;
+      std::unique_ptr<WebMediaCapabilitiesDecodingInfoCallbacks>) = 0;
 };
 
 }  // namespace blink

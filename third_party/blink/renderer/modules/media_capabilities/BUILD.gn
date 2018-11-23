@@ -8,8 +8,10 @@ blink_modules_sources("media_capabilities") {
   sources = [
     "media_capabilities.cc",
     "media_capabilities.h",
-    "media_capabilities_query_callbacks.cc",
-    "media_capabilities_query_callbacks.h",
+    "media_capabilities_decoding_info_callbacks.cc",
+    "media_capabilities_decoding_info_callbacks.h",
+    "media_capabilities_encoding_info_callbacks.cc",
+    "media_capabilities_encoding_info_callbacks.h",
     "navigator_media_capabilities.cc",
     "navigator_media_capabilities.h",
   ]
