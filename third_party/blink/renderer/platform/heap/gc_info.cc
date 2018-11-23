@@ -42,14 +42,16 @@ constexpr size_t MaxTableSize() {
 }  // namespace
 
 GCInfoTable* GCInfoTable::global_table_ = nullptr;
+constexpr uint32_t GCInfoTable::kMaxIndex;
 
 void GCInfoTable::CreateGlobalTable() {
   DEFINE_STATIC_LOCAL(GCInfoTable, table, ());
   global_table_ = &table;
 }
 
-void GCInfoTable::EnsureGCInfoIndex(const GCInfo* gc_info,
-                                    uint32_t* gc_info_index_slot) {
+uint32_t GCInfoTable::EnsureGCInfoIndex(
+    const GCInfo* gc_info,
+    std::atomic_uint32_t* gc_info_index_slot) {
   DCHECK(gc_info);
   DCHECK(gc_info_index_slot);
 
@@ -61,16 +63,18 @@ void GCInfoTable::EnsureGCInfoIndex(const GCInfo* gc_info,
   // If more than one thread ends up allocating a slot for
   // the same GCInfo, have later threads reuse the slot
   // allocated by the first.
-  if (*gc_info_index_slot)
-    return;
+  uint32_t gc_info_index = gc_info_index_slot->load(std::memory_order_acquire);
+  if (gc_info_index)
+    return gc_info_index;
 
-  uint32_t gc_info_index = ++current_index_;
+  gc_info_index = ++current_index_;
   CHECK(gc_info_index < GCInfoTable::kMaxIndex);
   if (current_index_ >= limit_)
     Resize();
 
   table_[gc_info_index] = gc_info;
-  ReleaseStore(gc_info_index_slot, gc_info_index);
+  gc_info_index_slot->store(gc_info_index, std::memory_order_release);
+  return gc_info_index;
 }
 
 void GCInfoTable::Resize() {
