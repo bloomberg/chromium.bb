@@ -6680,7 +6680,7 @@ drm_device_is_kms(struct drm_backend *b, struct udev_device *device)
 	const char *filename = udev_device_get_devnode(device);
 	const char *sysnum = udev_device_get_sysnum(device);
 	drmModeRes *res;
-	int id, fd;
+	int id = -1, fd;
 
 	if (!filename)
 		return false;

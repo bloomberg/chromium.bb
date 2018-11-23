@@ -2610,7 +2610,7 @@ recompute_selection(struct terminal *terminal)
 	int side_margin, top_margin;
 	int start_x, end_x;
 	int cw, ch;
-	union utf8_char *data;
+	union utf8_char *data = NULL;
 
 	cw = terminal->average_width;
 	ch = terminal->extents.height;
