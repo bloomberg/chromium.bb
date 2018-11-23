@@ -116,7 +116,7 @@ class MODULES_EXPORT Notification final
       ScriptState* script_state,
       V8NotificationPermissionCallback* deprecated_callback = nullptr);
 
-  static size_t maxActions();
+  static uint32_t maxActions();
 
   // EventTarget interface.
   ExecutionContext* GetExecutionContext() const final {
