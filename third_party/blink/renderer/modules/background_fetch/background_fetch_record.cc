@@ -14,6 +14,9 @@ BackgroundFetchRecord::BackgroundFetchRecord(Request* request,
     : request_(request), script_state_(script_state) {
   DCHECK(request_);
   DCHECK(script_state_);
+  response_ready_property_ =
+      new ResponseReadyProperty(ExecutionContext::From(script_state), this,
+                                ResponseReadyProperty::kResponseReady);
 }
 
 BackgroundFetchRecord::~BackgroundFetchRecord() = default;
@@ -54,14 +57,6 @@ void BackgroundFetchRecord::ResolveResponseReadyProperty() {
 }
 
 ScriptPromise BackgroundFetchRecord::responseReady(ScriptState* script_state) {
-  if (!response_ready_property_) {
-    response_ready_property_ =
-        new ResponseReadyProperty(ExecutionContext::From(script_state), this,
-                                  ResponseReadyProperty::kResponseReady);
-  }
-
-  ResolveResponseReadyProperty();
-
   return response_ready_property_->Promise(script_state->World());
 }
 
