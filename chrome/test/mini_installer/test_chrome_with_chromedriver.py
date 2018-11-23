@@ -56,6 +56,34 @@ def CreateChromedriver(args):
         time.sleep(0.5)
     raise
 
+  def CollectCrashReports(user_data_dir, output_dir):
+    """Searches for Chrome crash reports, collecting them for analysis.
+
+    Args:
+      user_data_dir: The full path of the User Data dir.
+      output_dir: If not None, a path to which collected crash reports are to be
+        moved.
+    """
+    report_dir = os.path.join(user_data_dir, 'Crashpad', 'reports')
+    dumps = []
+    try:
+      dumps = os.listdir(report_dir)
+    except OSError:
+      # Assume this is file not found, meaning no crash reports.
+      return
+    for dump in dumps:
+      dump_path = os.path.join(report_dir, dump)
+      if (output_dir):
+        target_path = os.path.join(output_dir, dump)
+        try:
+          shutil.copyfile(dump_path, target_path)
+          logging.error('Saved Chrome crash dump to %s', target_path)
+        except OSError:
+          logging.exception('Failed to copy Chrome crash dump from %s to %s',
+                            dump_path, target_path)
+      else:
+        logging.error('Found Chrome crash dump at %s', dump_path)
+
   driver = None
   user_data_dir = tempfile.mkdtemp()
   fd, log_file = tempfile.mkstemp()
@@ -78,6 +106,9 @@ def CreateChromedriver(args):
   finally:
     if driver:
       driver.quit()
+    # To help with local crash analysis, change None to tempfile.gettempdir().
+    # TODO(grt): Copy crash dumps into ${ISOLATED_OUTDIR}.
+    CollectCrashReports(user_data_dir, None)
     DeleteWithRetry(log_file, os.remove)
     DeleteWithRetry(user_data_dir, shutil.rmtree)
 
