@@ -380,16 +380,6 @@ TEST_F(DeviceInfoSyncBridgeTest, LocalProviderInitRace) {
   EXPECT_TRUE(local_device()->GetLocalDeviceInfo()->Equals(*devices[0]));
 }
 
-// Simulate shutting down sync during the ModelTypeStore callbacks. The pulse
-// timer should still be initialized, even though reconcile never occurs.
-TEST_F(DeviceInfoSyncBridgeTest, ClearProviderDuringInit) {
-  InitializeBridge();
-  local_device()->Clear();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0u, bridge()->GetAllDeviceInfo().size());
-  EXPECT_TRUE(bridge()->IsPulseTimerRunningForTest());
-}
-
 TEST_F(DeviceInfoSyncBridgeTest, GetClientTagNormal) {
   InitializeBridge();
   const std::string guid = "abc";
@@ -584,26 +574,6 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplyDeleteNonexistent) {
   EXPECT_EQ(1, change_count());
 }
 
-TEST_F(DeviceInfoSyncBridgeTest, ClearProviderAndApply) {
-  // This will initialize the provider a first time.
-  InitializeAndPump();
-  EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
-
-  const DeviceInfoSpecifics specifics = CreateSpecifics(1);
-
-  local_device()->Clear();
-  auto error1 = bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
-                                           EntityAddList({specifics}));
-  EXPECT_FALSE(error1);
-  EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
-
-  local_device()->Initialize(CreateModel(kDefaultLocalSuffix));
-  auto error2 = bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
-                                           EntityAddList({specifics}));
-  EXPECT_FALSE(error2);
-  EXPECT_EQ(2u, bridge()->GetAllDeviceInfo().size());
-}
-
 TEST_F(DeviceInfoSyncBridgeTest, MergeEmpty) {
   InitializeAndPump();
 
@@ -700,26 +670,6 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeLocalGuidBeforeReconcile) {
   EXPECT_EQ(0u, bridge()->GetAllDeviceInfo().size());
 }
 
-TEST_F(DeviceInfoSyncBridgeTest, ClearProviderAndMerge) {
-  // This will initialize the provider a first time.
-  InitializeAndPump();
-  EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
-
-  const DeviceInfoSpecifics specifics = CreateSpecifics(1);
-
-  local_device()->Clear();
-  auto error1 = bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
-                                        EntityAddList({specifics}));
-  EXPECT_FALSE(error1);
-  EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
-
-  local_device()->Initialize(CreateModel(kDefaultLocalSuffix));
-  auto error2 = bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
-                                        EntityAddList({specifics}));
-  EXPECT_FALSE(error2);
-  EXPECT_EQ(2u, bridge()->GetAllDeviceInfo().size());
-}
-
 TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevices) {
   InitializeAndPump();
   EXPECT_EQ(1, bridge()->CountActiveDevices());
@@ -774,13 +724,6 @@ TEST_F(DeviceInfoSyncBridgeTest, SendLocalData) {
 
   // Ensure |last_updated| is about now, plus or minus a little bit.
   EXPECT_CALL(*processor(), Put(_, HasSpecifics(HasLastUpdatedAboutNow()), _));
-  ForcePulse();
-  EXPECT_EQ(2, change_count());
-
-  // After clearing, pulsing should no-op and not result in a processor put or
-  // a notification to observers.
-  EXPECT_CALL(*processor(), Put(_, _, _)).Times(0);
-  local_device()->Clear();
   ForcePulse();
   EXPECT_EQ(2, change_count());
 }
