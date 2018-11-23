@@ -104,8 +104,9 @@ a:focus {
 
 .dialog-navigation-list-footer {
   display: flex;
-  flex: none;
+  flex: 0 1 auto;
   flex-direction: column;
+  overflow: auto;
 }
 
 /* A vertical splitter between the roots list and the file list. It is actually
@@ -2080,7 +2081,6 @@ list.autocomplete-suggestions > [lead] {
 #progress-center {
   background-color: transparent;
   border-top: 1px solid rgb(214, 214, 214);
-  overflow: hidden;
   position: relative;
   transition: background-color 300ms linear,
               border 300ms linear;
