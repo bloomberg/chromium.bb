@@ -6,6 +6,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -57,6 +58,27 @@ void PaintTimingDetector::DidChangePerformanceTiming() {
   if (!loader)
     return;
   loader->DidChangePerformanceTiming();
+}
+
+unsigned PaintTimingDetector::CalculateVisualSize(
+    const LayoutRect& invalidated_rect,
+    const PaintLayer& painting_layer) const {
+  // This case should be dealt with outside the function.
+  DCHECK(!invalidated_rect.IsEmpty());
+
+  // As Layout objects live in different transform spaces, the object's rect
+  // should be projected to the viewport's transform space.
+  IntRect visual_rect = EnclosedIntRect(invalidated_rect);
+  painting_layer.GetLayoutObject().FirstFragment().MapRectToFragment(
+      painting_layer.GetLayoutObject().View()->FirstFragment(), visual_rect);
+
+  // A visual rect means the part of the rect that's visible within
+  // the viewport. We define the size of it as visual size.
+  ScrollableArea* scrollable_area = frame_view_->GetScrollableArea();
+  DCHECK(scrollable_area);
+  IntRect viewport = scrollable_area->VisibleContentRect();
+  visual_rect.Intersect(viewport);
+  return visual_rect.Height() * visual_rect.Width();
 }
 
 void PaintTimingDetector::Dispose() {

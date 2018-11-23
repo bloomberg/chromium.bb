@@ -134,33 +134,6 @@ void ImagePaintTimingDetector::PopulateTraceValue(
                   IdentifiersFactory::FrameId(&frame_view_->GetFrame()));
 }
 
-IntRect ImagePaintTimingDetector::CalculateTransformedRect(
-    LayoutRect& invalidated_rect,
-    const PaintLayer& painting_layer) const {
-  const auto* local_transform = painting_layer.GetLayoutObject()
-                                    .FirstFragment()
-                                    .LocalBorderBoxProperties()
-                                    .Transform();
-  const auto* ancestor_transform = painting_layer.GetLayoutObject()
-                                       .View()
-                                       ->FirstFragment()
-                                       .LocalBorderBoxProperties()
-                                       .Transform();
-  FloatRect invalidated_rect_abs = FloatRect(invalidated_rect);
-  if (invalidated_rect_abs.IsEmpty() || invalidated_rect_abs.IsZero())
-    return IntRect();
-  DCHECK(local_transform);
-  DCHECK(ancestor_transform);
-  GeometryMapper::SourceToDestinationRect(local_transform, ancestor_transform,
-                                          invalidated_rect_abs);
-  IntRect invalidated_rect_in_viewport = RoundedIntRect(invalidated_rect_abs);
-  ScrollableArea* scrollable_area = frame_view_->GetScrollableArea();
-  DCHECK(scrollable_area);
-  IntRect viewport = scrollable_area->VisibleContentRect();
-  invalidated_rect_in_viewport.Intersect(viewport);
-  return invalidated_rect_in_viewport;
-}
-
 void ImagePaintTimingDetector::OnLargestImagePaintDetected(
     const ImageRecord& largest_image_record) {
   largest_image_paint_ = largest_image_record.first_paint_time_after_loaded;
@@ -357,14 +330,14 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
     recorded_node_count_++;
     if (recorded_node_count_ < kImageNodeNumberLimit) {
       LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
-      // Do not record first size until invalidated_rect's size becomes
+      // Before the image resource is loaded, <img> has size 0, so we do not
+      // record the first size until the invalidated rect's size becomes
       // non-empty.
       if (invalidated_rect.IsEmpty())
         return;
-      IntRect invalidated_rect_in_viewport =
-          CalculateTransformedRect(invalidated_rect, painting_layer);
-      int rect_size = invalidated_rect_in_viewport.Height() *
-                      invalidated_rect_in_viewport.Width();
+      unsigned rect_size =
+          frame_view_->GetPaintTimingDetector().CalculateVisualSize(
+              invalidated_rect, painting_layer);
       if (rect_size == 0) {
         // When rect_size == 0, it either means the image is size 0 or the image
         // is out of viewport. Either way, we don't track this image anymore, to

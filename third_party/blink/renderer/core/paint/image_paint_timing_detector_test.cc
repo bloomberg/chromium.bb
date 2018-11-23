@@ -163,6 +163,20 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_OneImage) {
   EXPECT_TRUE(record->loaded);
 }
 
+TEST_F(ImagePaintTimingDetectorTest,
+       IgnoreImageUntilInvalidatedRectSizeNonZero) {
+  SetBodyInnerHTML(R"HTML(
+    <img id="target"></img>
+  )HTML");
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(CountRecords(), 0u);
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  ImageRecord* record = FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_EQ(CountRecords(), 1u);
+}
+
 TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_Largest) {
   SetBodyInnerHTML(R"HTML(
     <img id="smaller"></img>

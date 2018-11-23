@@ -17,7 +17,6 @@
 
 namespace blink {
 class PaintLayer;
-class IntRect;
 class LayoutObject;
 class TracedValue;
 class LocalFrameView;
@@ -78,8 +77,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void PopulateTraceValue(TracedValue&,
                           const ImageRecord& first_image_paint,
                           unsigned report_count) const;
-  IntRect CalculateTransformedRect(LayoutRect& visual_rect,
-                                   const PaintLayer&) const;
   // This is provided for unit test to force invoking swap promise callback.
   void ReportSwapTime(unsigned max_frame_index_to_time,
                       WebLayerTreeView::SwapResult,
