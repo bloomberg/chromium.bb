@@ -1,10 +1,8 @@
 <!DOCType html>
 <html>
-<script src=/resources/testdriver.js></script>
-<script src=/resources/testdriver-vendor.js></script>
 <script src=event-timing-support.js></script>
 <button id='button_child_frame' onclick='2'>Generate a 'click' event</button>
-<img src=slow-image.py>
+<img src=slow-image.php>
 <script>
   const clickTimeMin = performance.now();
   clickAndBlockMain('button_child_frame');
