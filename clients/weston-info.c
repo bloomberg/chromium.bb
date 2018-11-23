@@ -594,10 +594,10 @@ print_tablet_tool_info(const struct tablet_tool_info *info)
 {
 	printf("\t\ttablet_tool: %s\n", tablet_tool_type_to_str(info->type));
 	if (info->hardware_serial) {
-		printf("\t\t\thardware serial: %lx\n", info->hardware_serial);
+		printf("\t\t\thardware serial: %" PRIx64 "\n", info->hardware_serial);
 	}
 	if (info->hardware_id_wacom) {
-		printf("\t\t\thardware wacom: %lx\n", info->hardware_id_wacom);
+		printf("\t\t\thardware wacom: %" PRIx64 "\n", info->hardware_id_wacom);
 	}
 
 	printf("\t\t\tcapabilities:");
