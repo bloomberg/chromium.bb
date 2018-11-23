@@ -17,6 +17,7 @@ import struct
 import subprocess
 import sys
 import time
+import zipfile
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -154,6 +155,36 @@ def diff_binary(first_filepath, second_filepath, file_len):
   return result
 
 
+def diff_zips(first_filepath, second_filepath):
+  with zipfile.ZipFile(first_filepath) as z1, \
+       zipfile.ZipFile(second_filepath) as z2:
+    names1 = z1.namelist()
+    names2 = z2.namelist()
+    # This kind of difference is rare, so don't put effort into printing the
+    # exact difference.
+    if names1 != names2:
+      diff = sorted(set(names1).symmetric_difference(names2))
+      if diff:
+        return '  Zip file lists differ:\n' + '\n'.join(
+            '    ' + f for f in diff)
+      else:
+        return '  Zips contain same files, but in different orders.'
+
+    diffs = []
+    for info1 in z1.infolist():
+      info2 = z2.getinfo(info1.filename)
+      # Check for the two most common errors. The binary diff will still run
+      # to check the rest.
+      if info1.CRC != info2.CRC:
+        diffs.append('  {}: CRCs differ'.format(info1.filename))
+      if info1.date_time != info2.date_time:
+        diffs.append('  {}: Timestamps differ'.format(info1.filename))
+    # Don't be too spammy.
+    if len(diffs) > 5:
+      diffs[5:] = ['   ...']
+  return '\n'.join(diffs)
+
+
 def memoize(f):
   memo = {}
   def helper(*args):
@@ -196,12 +227,18 @@ def compare_files(first_filepath, second_filepath):
       return '\n' + '\n'.join('  ' + line for line in diff.splitlines())
     # else, falls through binary comparison, it must be binary equal too.
 
+  ret = None
   file_len = os.stat(first_filepath).st_size
   if file_len != os.stat(second_filepath).st_size:
-    return 'different size: %d != %d' % (
-        file_len, os.stat(second_filepath).st_size)
+    ret = 'different size: %d != %d' % (file_len,
+                                        os.stat(second_filepath).st_size)
+  else:
+    ret = diff_binary(first_filepath, second_filepath, file_len)
 
-  return diff_binary(first_filepath, second_filepath, file_len)
+  if ret and zipfile.is_zipfile(first_filepath) and zipfile.is_zipfile(
+      second_filepath):
+    ret += '\n' + diff_zips(first_filepath, second_filepath)
+  return ret
 
 
 def get_deps(ninja_path, build_dir, target):
