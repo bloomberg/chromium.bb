@@ -14,7 +14,7 @@
       Opening <ph name="SITE_NAME">$1<ex>google.com</ex></ph>…
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM" desc="Text on the payment request primary button to confirm payment information [CHAR-LIMIT=32]" formatter_data="android_java">
-      Confirm
+      Continue
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_TERMS" desc="The text for the terms and service acceptance checkbox. Sentence-cased." formatter_data="android_java">
       I know the terms &amp; conditions, privacy policy and right of withdrawal of <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="ORIGIN">%1$s<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph> (leave unchecked to read).
