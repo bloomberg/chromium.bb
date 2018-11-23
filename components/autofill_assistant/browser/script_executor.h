@@ -130,7 +130,7 @@ class ScriptExecutor : public ActionDelegate {
       base::OnceCallback<void(bool, const std::string&)> callback) override;
   void LoadURL(const GURL& url) override;
   void Shutdown() override;
-  void CloseCustomTab() override;
+  void Close() override;
   void Restart() override;
   ClientMemory* GetClientMemory() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;

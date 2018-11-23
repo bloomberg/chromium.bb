@@ -36,7 +36,7 @@ void ShowDetailsAction::OnShowDetails(ProcessActionCallback callback,
                                       ActionDelegate* delegate,
                                       bool can_continue) {
   if (!can_continue) {
-    delegate->CloseCustomTab();
+    delegate->Close();
   }
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));

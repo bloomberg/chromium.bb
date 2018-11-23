@@ -252,7 +252,7 @@ void ScriptExecutor::Shutdown() {
   }
 }
 
-void ScriptExecutor::CloseCustomTab() {
+void ScriptExecutor::Close() {
   at_end_ = CLOSE_CUSTOM_TAB;
   should_stop_script_ = true;
 }

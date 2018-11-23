@@ -39,6 +39,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill_assistant.ui.BottomBarAnimations;
@@ -86,7 +87,7 @@ class AutofillAssistantUiDelegate {
     private static final SimpleDateFormat sDetailsDateFormat =
             new SimpleDateFormat("EEE, MMM d", Locale.getDefault());
 
-    private final CustomTabActivity mActivity;
+    private final ChromeActivity mActivity;
     private final Client mClient;
     private final ViewGroup mCoordinatorView;
     private final View mFullContainer;
@@ -252,7 +253,7 @@ class AutofillAssistantUiDelegate {
      * @param activity The ChromeActivity
      * @param client The client to forward events to
      */
-    public AutofillAssistantUiDelegate(CustomTabActivity activity, Client client) {
+    public AutofillAssistantUiDelegate(ChromeActivity activity, Client client) {
         mActivity = activity;
         mClient = client;
 
@@ -473,10 +474,15 @@ class AutofillAssistantUiDelegate {
     }
 
     /**
-     * Closes the Chrome Custom Tab.
+     * Closes the activity.
+     *
+     * Note: The close() logic here assumes that |mActivity| is a CustomTabActivity since in the
+     * more general case we probably just want to close the active tab instead of the entire Chrome
+     * activity.
      */
-    public void closeCustomTab() {
-        mActivity.finishAndClose(false);
+    public void close() {
+        assert mActivity instanceof CustomTabActivity;
+        mActivity.finish();
     }
 
     /** Called to show overlay. */

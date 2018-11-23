@@ -132,9 +132,9 @@ class UiDelegateHolder {
     /**
      * Closes the Chrome Custom Tab.
      */
-    void closeCustomTab() {
+    void close() {
         shutdown();
-        mUiDelegate.closeCustomTab();
+        mUiDelegate.close();
     }
 
     /**

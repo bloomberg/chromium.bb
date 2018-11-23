@@ -28,7 +28,7 @@ class MockUiController : public UiController {
   MOCK_METHOD0(HideOverlay, void());
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(ShutdownGracefully, void());
-  MOCK_METHOD0(CloseCustomTab, void());
+  MOCK_METHOD0(Close, void());
   MOCK_METHOD1(UpdateScripts, void(const std::vector<ScriptHandle>& scripts));
 
   void Choose(const std::vector<UiController::Choice>& choices,
