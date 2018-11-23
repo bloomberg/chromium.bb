@@ -172,6 +172,9 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
     UIImageView* gradientView =
         [[UIImageView alloc] initWithImage:gradientImage];
     gradientView.translatesAutoresizingMaskIntoConstraints = NO;
+    if (base::i18n::IsRTL()) {
+      gradientView.transform = CGAffineTransformMakeRotation(M_PI);
+    }
     [self insertSubview:gradientView belowSubview:trailingView];
 
     UIView* topGrayLine = [[UIView alloc] init];
