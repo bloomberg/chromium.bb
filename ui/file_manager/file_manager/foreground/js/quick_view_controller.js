@@ -201,10 +201,11 @@ QuickViewController.prototype.onOpenInNewButtonTap_ = function(event) {
  * @private
  */
 QuickViewController.prototype.onKeyDownToOpen_ = function(event) {
-  if (this.entries_.length == 0)
-    return;
   if (event.key === ' ') {
     event.preventDefault();
+    if (this.entries_.length != 1) {
+      return;
+    }
     event.stopImmediatePropagation();
     this.display_(QuickViewUma.WayToOpen.SPACE_KEY);
   }
