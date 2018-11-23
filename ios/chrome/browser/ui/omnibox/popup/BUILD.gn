@@ -84,3 +84,24 @@ source_set("unit_tests") {
     "//ui/base",
   ]
 }
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "omnibox_popup_egtest.mm",
+  ]
+  deps = [
+    ":popup_internal",
+    "//base",
+    "//base/test:test_support",
+    "//components/omnibox/browser",
+    "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/tab_grid:egtest_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
+    "//ios/third_party/earl_grey:earl_grey+link",
+    "//testing/gmock",
+  ]
+  libs = [ "XCTest.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
