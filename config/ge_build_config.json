@@ -2239,7 +2239,7 @@
       "reference_board_name": "rammus",
       "arch": "X86_INTERNAL",
       "builder": "RELEASE",
-      "experimental": true,
+      "experimental": false,
       "models": [
         {
           "board_name": "rammus",
