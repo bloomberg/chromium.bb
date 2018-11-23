@@ -26,7 +26,7 @@ using ::testing::_;
 using ::testing::AllOf;
 using ::testing::Contains;
 using ::testing::DoAll;
-using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::Field;
 using ::testing::Invoke;
 using ::testing::IsEmpty;
@@ -85,8 +85,7 @@ class ScriptExecutorTest : public testing::Test,
 
   ClientMemory* GetClientMemory() override { return &memory_; }
 
-  void SetTouchableElementArea(
-      const std::vector<std::vector<std::string>>& elements) {}
+  void SetTouchableElementArea(const std::vector<Selector>& elements) {}
 
   const std::map<std::string, std::string>& GetParameters() override {
     return parameters_;
@@ -618,10 +617,10 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfPreconditionsDontMatch) {
   SetupInterrupt("interrupt", "interrupt_trigger");
 
   EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(_, ElementsAre("element"), _))
+              OnElementCheck(_, Eq(Selector({"element"})), _))
       .WillRepeatedly(RunOnceCallback<2>(true));
   EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(_, ElementsAre("interrupt_trigger"), _))
+              OnElementCheck(_, Eq(Selector({"interrupt_trigger"})), _))
       .WillRepeatedly(RunOnceCallback<2>(false));
 
   EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))

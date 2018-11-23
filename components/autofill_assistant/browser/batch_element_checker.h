@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/selector.h"
 
 namespace autofill_assistant {
 class WebController;
@@ -64,22 +65,22 @@ class BatchElementChecker {
 
   // Checks an an element.
   //
-  // kElementCheck checks whether at least one element given by |selectors|
+  // kElementCheck checks whether at least one element given by |selector|
   // exists on the web page.
   //
-  // kVisibilityCheck checks whether at least one element given by |selectors|
+  // kVisibilityCheck checks whether at least one element given by |selector|
   // is visible on the page.
   //
   // New element checks cannot be added once Run has been called.
   void AddElementCheck(ElementCheckType check_type,
-                       const std::vector<std::string>& selectors,
+                       const Selector& selector,
                        ElementCheckCallback callback);
 
-  // Gets the value of |selectors| and return the result through |callback|. The
+  // Gets the value of |selector| and return the result through |callback|. The
   // returned value will be the empty string in case of error or empty value.
   //
   // New field checks cannot be added once Run has been called.
-  void AddFieldValueCheck(const std::vector<std::string>& selectors,
+  void AddFieldValueCheck(const Selector& selector,
                           GetFieldValueCallback callback);
 
   // Runs the checks until all elements exist or for |duration|, whichever one
@@ -129,15 +130,15 @@ class BatchElementChecker {
 
   WebController* const web_controller_;
 
-  // A map of ElementCheck arguments (check_type, selectors) to callbacks that
+  // A map of ElementCheck arguments (check_type, selector) to callbacks that
   // take the result of the check.
-  std::map<std::pair<ElementCheckType, std::vector<std::string>>,
+  std::map<std::pair<ElementCheckType, Selector>,
            std::vector<ElementCheckCallback>>
       element_check_callbacks_;
 
-  // A map of GetFieldValue arguments (selectors) to callbacks that take the
+  // A map of GetFieldValue arguments (selector) to callbacks that take the
   // field value.
-  std::map<std::vector<std::string>, std::vector<GetFieldValueCallback>>
+  std::map<Selector, std::vector<GetFieldValueCallback>>
       get_field_value_callbacks_;
   int pending_checks_count_;
   bool all_found_;

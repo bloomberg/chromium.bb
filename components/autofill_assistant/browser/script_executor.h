@@ -67,7 +67,7 @@ class ScriptExecutor : public ActionDelegate {
   struct Result {
     bool success = false;
     AtEnd at_end = AtEnd::CONTINUE;
-    std::vector<std::vector<std::string>> touchable_elements;
+    std::vector<Selector> touchable_elements;
 
     Result();
     Result(const Result& other);
@@ -80,14 +80,14 @@ class ScriptExecutor : public ActionDelegate {
   // Override ActionDelegate:
   std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() override;
   void ShortWaitForElementExist(
-      const std::vector<std::string>& selectors,
+      const Selector& selector,
       base::OnceCallback<void(bool)> callback) override;
   void WaitForElementVisible(base::TimeDelta max_wait_time,
                              bool allow_interrupt,
-                             const std::vector<std::string>& selectors,
+                             const Selector& selector,
                              base::OnceCallback<void(bool)> callback) override;
   void ShowStatusMessage(const std::string& message) override;
-  void ClickOrTapElement(const std::vector<std::string>& selectors,
+  void ClickOrTapElement(const Selector& selector,
                          base::OnceCallback<void(bool)> callback) override;
   void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
@@ -100,33 +100,33 @@ class ScriptExecutor : public ActionDelegate {
   void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) override;
   void FillAddressForm(const autofill::AutofillProfile* profile,
-                       const std::vector<std::string>& selectors,
+                       const Selector& selector,
                        base::OnceCallback<void(bool)> callback) override;
   void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) override;
   void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
                     const base::string16& cvc,
-                    const std::vector<std::string>& selectors,
+                    const Selector& selector,
                     base::OnceCallback<void(bool)> callback) override;
-  void SelectOption(const std::vector<std::string>& selectors,
+  void SelectOption(const Selector& selector,
                     const std::string& selected_option,
                     base::OnceCallback<void(bool)> callback) override;
-  void HighlightElement(const std::vector<std::string>& selectors,
+  void HighlightElement(const Selector& selector,
                         base::OnceCallback<void(bool)> callback) override;
-  void FocusElement(const std::vector<std::string>& selectors,
+  void FocusElement(const Selector& selector,
                     base::OnceCallback<void(bool)> callback) override;
   void SetTouchableElements(
-      const std::vector<std::vector<std::string>>& element_selectors) override;
-  void SetFieldValue(const std::vector<std::string>& selectors,
+      const std::vector<Selector>& element_selectors) override;
+  void SetFieldValue(const Selector& selector,
                      const std::string& value,
                      bool simulate_key_presses,
                      base::OnceCallback<void(bool)> callback) override;
-  void SetAttribute(const std::vector<std::string>& selectors,
+  void SetAttribute(const Selector& selector,
                     const std::vector<std::string>& attribute,
                     const std::string& value,
                     base::OnceCallback<void(bool)> callback) override;
   void GetOuterHtml(
-      const std::vector<std::string>& selectors,
+      const Selector& selector,
       base::OnceCallback<void(bool, const std::string&)> callback) override;
   void LoadURL(const GURL& url) override;
   void Shutdown() override;
@@ -161,7 +161,7 @@ class ScriptExecutor : public ActionDelegate {
     WaitWithInterrupts(const ScriptExecutor* main_script,
                        base::TimeDelta max_wait_time,
                        ElementCheckType check_type,
-                       const std::vector<std::string>& selectors,
+                       const Selector& selectors,
                        WaitWithInterrupts::Callback callback);
     ~WaitWithInterrupts();
 
@@ -180,7 +180,7 @@ class ScriptExecutor : public ActionDelegate {
     const ScriptExecutor* main_script_;
     const base::TimeDelta max_wait_time_;
     const ElementCheckType check_type_;
-    const std::vector<std::string> selectors_;
+    const Selector selector_;
     WaitWithInterrupts::Callback callback_;
 
     std::unique_ptr<BatchElementChecker> batch_element_checker_;
@@ -207,7 +207,7 @@ class ScriptExecutor : public ActionDelegate {
   void OnProcessedAction(std::unique_ptr<ProcessedActionProto> action);
   void WaitForElement(base::TimeDelta max_wait_time,
                       ElementCheckType check_type,
-                      const std::vector<std::string>& selectors,
+                      const Selector& selectors,
                       base::OnceCallback<void(bool)> callback);
   void OnWaitForElementVisible(
       base::OnceCallback<void(bool)> element_found_callback,
@@ -229,7 +229,7 @@ class ScriptExecutor : public ActionDelegate {
   bool should_stop_script_;
   bool should_clean_contextual_ui_on_finish_;
   ActionProto::ActionInfoCase previous_action_type_;
-  std::vector<std::vector<std::string>> touchable_elements_;
+  std::vector<Selector> touchable_elements_;
   std::map<std::string, ScriptStatusProto>* scripts_state_;
 
   // Set of interrupts that might run during wait for dom actions with

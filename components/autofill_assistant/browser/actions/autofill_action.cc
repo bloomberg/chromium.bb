@@ -99,8 +99,7 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     is_autofill_card_ = false;
     prompt_ = proto.use_address().prompt();
     name_ = proto.use_address().name();
-    selectors_ =
-        ExtractVector(proto.use_address().form_field_element().selectors());
+    selector_ = ExtractSelector(proto.use_address().form_field_element());
     fill_form_message_ = proto.use_address().strings().fill_form();
     check_form_message_ = proto.use_address().strings().check_form();
     required_fields_value_status_.resize(
@@ -111,8 +110,7 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     is_autofill_card_ = true;
     prompt_ = proto.use_card().prompt();
     name_ = "";
-    selectors_ =
-        ExtractVector(proto.use_card().form_field_element().selectors());
+    selector_ = ExtractSelector(proto.use_card().form_field_element());
     fill_form_message_ = proto.use_card().strings().fill_form();
     check_form_message_ = proto.use_card().strings().check_form();
     show_overlay_ = proto.use_card().show_overlay();
@@ -142,7 +140,7 @@ void AutofillAction::InternalProcessAction(
       return;
     }
 
-    if (selectors_.empty()) {
+    if (selector_.empty()) {
       // If there is no selector, finish the action directly.
       EndAction(/* successful= */ true);
       return;
@@ -194,7 +192,7 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
                                                       std::move(address));
   }
 
-  if (selectors_.empty()) {
+  if (selector_.empty()) {
     // If there is no selector, finish the action directly. This can be the case
     // when we want to trigger the selection of address or card at the beginning
     // of the script and use it later.
@@ -213,9 +211,9 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
 
 void AutofillAction::FillFormWithData(ActionDelegate* delegate) {
   delegate->ShortWaitForElementExist(
-      selectors_, base::BindOnce(&AutofillAction::OnWaitForElement,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 base::Unretained(delegate)));
+      selector_, base::BindOnce(&AutofillAction::OnWaitForElement,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                base::Unretained(delegate)));
 }
 
 void AutofillAction::OnWaitForElement(ActionDelegate* delegate,
@@ -225,7 +223,7 @@ void AutofillAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
-  DCHECK(!selectors_.empty());
+  DCHECK(!selector_.empty());
   if (is_autofill_card_) {
     // TODO(crbug.com/806868): Consider refactoring SelfDeleteFullCardRequester
     // so as to unit test it.
@@ -242,7 +240,7 @@ void AutofillAction::OnWaitForElement(ActionDelegate* delegate,
       delegate->GetClientMemory()->selected_address(name_);
   DCHECK(profile);
   delegate->FillAddressForm(
-      profile, selectors_,
+      profile, selector_,
       base::BindOnce(&AutofillAction::OnAddressFormFilled,
                      weak_ptr_factory_.GetWeakPtr(), delegate));
 }
@@ -258,7 +256,7 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
     return;
   }
 
-  delegate->FillCardForm(std::move(card), cvc, selectors_,
+  delegate->FillCardForm(std::move(card), cvc, selector_,
                          base::BindOnce(&AutofillAction::OnCardFormFilled,
                                         weak_ptr_factory_.GetWeakPtr()));
 }
@@ -294,7 +292,7 @@ void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
     auto& required_address_field = proto_.use_address().required_fields(i);
     DCHECK_GT(required_address_field.element().selectors_size(), 0);
     batch_element_checker_->AddFieldValueCheck(
-        ExtractVector(required_address_field.element().selectors()),
+        ExtractSelector(required_address_field.element()),
         base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
                        // this instance owns batch_element_checker_
                        base::Unretained(this), i));
@@ -401,8 +399,7 @@ void AutofillAction::SetFallbackFieldValuesSequentially(
   DCHECK_GT(
       required_fields.Get(required_fields_index).element().selectors_size(), 0);
   delegate->SetFieldValue(
-      ExtractVector(
-          required_fields.Get(required_fields_index).element().selectors()),
+      ExtractSelector(required_fields.Get(required_fields_index).element()),
       fallback_value,
       required_fields.Get(required_fields_index).simulate_key_presses(),
       base::BindOnce(&AutofillAction::OnSetFallbackFieldValue,

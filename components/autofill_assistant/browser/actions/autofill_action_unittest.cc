@@ -22,14 +22,14 @@ namespace autofill_assistant {
 namespace {
 
 using ::testing::_;
-using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::IsNull;
 using ::testing::Not;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::StrNe;
-using ::testing::Invoke;
 
 class MockPersonalDataManager : public autofill::PersonalDataManager {
  public:
@@ -225,7 +225,7 @@ TEST_F(AutofillActionTest, ValidationSucceeds) {
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), ElementsAre(kFakeSelector), _))
+              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   // Validation succeeds.
@@ -254,22 +254,23 @@ TEST_F(AutofillActionTest, FallbackFails) {
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), ElementsAre(kFakeSelector), _))
+              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   // Validation fails when getting FIRST_NAME.
-  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("#email"), _))
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Eq(Selector({"#email"})), _))
       .WillOnce(RunOnceCallback<1>(true, "not empty"));
   EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(ElementsAre("#first_name"), _))
+              OnGetFieldValue(Eq(Selector({"#first_name"})), _))
       .WillOnce(RunOnceCallback<1>(true, ""));
   EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(ElementsAre("#last_name"), _))
+              OnGetFieldValue(Eq(Selector({"#last_name"})), _))
       .WillOnce(RunOnceCallback<1>(true, "not empty"));
 
   // Fallback fails.
   EXPECT_CALL(mock_action_delegate_,
-              OnSetFieldValue(ElementsAre("#first_name"), kFirstName, _))
+              OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
       .WillOnce(RunOnceCallback<2>(false));
 
   ExpectActionToStopScript(action_proto, kCheckForm);
@@ -294,25 +295,26 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), ElementsAre(kFakeSelector), _))
+              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   {
     InSequence seq;
 
     // Validation fails when getting FIRST_NAME.
-    EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("#email"), _))
+    EXPECT_CALL(mock_web_controller_,
+                OnGetFieldValue(Eq(Selector({"#email"})), _))
         .WillOnce(RunOnceCallback<1>(true, "not empty"));
     EXPECT_CALL(mock_web_controller_,
-                OnGetFieldValue(ElementsAre("#first_name"), _))
+                OnGetFieldValue(Eq(Selector({"#first_name"})), _))
         .WillOnce(RunOnceCallback<1>(true, ""));
     EXPECT_CALL(mock_web_controller_,
-                OnGetFieldValue(ElementsAre("#last_name"), _))
+                OnGetFieldValue(Eq(Selector({"#last_name"})), _))
         .WillOnce(RunOnceCallback<1>(true, "not empty"));
 
     // Fallback succeeds.
     EXPECT_CALL(mock_action_delegate_,
-                OnSetFieldValue(ElementsAre("#first_name"), kFirstName, _))
+                OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
         .WillOnce(RunOnceCallback<2>(true));
 
     // Second validation succeeds.

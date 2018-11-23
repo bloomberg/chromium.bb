@@ -20,6 +20,7 @@
 namespace autofill_assistant {
 using ::testing::_;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::Field;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
@@ -33,10 +34,11 @@ class ScriptTrackerTest : public testing::Test,
  public:
   void SetUp() override {
     ON_CALL(mock_web_controller_,
-            OnElementCheck(kExistenceCheck, ElementsAre("exists"), _))
+            OnElementCheck(kExistenceCheck, Eq(Selector({"exists"})), _))
         .WillByDefault(RunOnceCallback<2>(true));
-    ON_CALL(mock_web_controller_,
-            OnElementCheck(kExistenceCheck, ElementsAre("does_not_exist"), _))
+    ON_CALL(
+        mock_web_controller_,
+        OnElementCheck(kExistenceCheck, Eq(Selector({"does_not_exist"})), _))
         .WillByDefault(RunOnceCallback<2>(false));
     ON_CALL(mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
 
@@ -71,7 +73,7 @@ class ScriptTrackerTest : public testing::Test,
   content::WebContents* GetWebContents() override { return nullptr; }
 
   virtual void SetTouchableElementArea(
-      const std::vector<std::vector<std::string>>& elements) override {}
+      const std::vector<Selector>& elements) override {}
 
   // Overrides ScriptTracker::Listener
   void OnRunnableScriptsChanged(
@@ -297,8 +299,9 @@ TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
 }
 
 TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
-  EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(kExistenceCheck, ElementsAre("maybe_exists"), _))
+  EXPECT_CALL(
+      mock_web_controller_,
+      OnElementCheck(kExistenceCheck, Eq(Selector({"maybe_exists"})), _))
       .WillOnce(RunOnceCallback<2>(false));
 
   SupportsScriptResponseProto scripts;
@@ -309,8 +312,9 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
   EXPECT_THAT(runnable_scripts(), IsEmpty());
 
   // DOM has changed; OnElementExists now returns true.
-  EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(kExistenceCheck, ElementsAre("maybe_exists"), _))
+  EXPECT_CALL(
+      mock_web_controller_,
+      OnElementCheck(kExistenceCheck, Eq(Selector({"maybe_exists"})), _))
       .WillOnce(RunOnceCallback<2>(true));
   tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
 

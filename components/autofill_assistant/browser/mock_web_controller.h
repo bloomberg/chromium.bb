@@ -24,51 +24,51 @@ class MockWebController : public WebController {
 
   MOCK_METHOD1(LoadURL, void(const GURL&));
 
-  void ClickOrTapElement(const std::vector<std::string>& selectors,
+  void ClickOrTapElement(const Selector& selector,
                          base::OnceCallback<void(bool)> callback) override {
     // Transforming callback into a references allows using RunOnceCallback on
     // the argument.
-    OnClickOrTapElement(selectors, callback);
+    OnClickOrTapElement(selector, callback);
   }
   MOCK_METHOD2(OnClickOrTapElement,
-               void(const std::vector<std::string>& selectors,
+               void(const Selector& selector,
                     base::OnceCallback<void(bool)>& callback));
 
-  void FocusElement(const std::vector<std::string>& selectors,
+  void FocusElement(const Selector& selector,
                     base::OnceCallback<void(bool)> callback) override {
-    OnFocusElement(selectors, callback);
+    OnFocusElement(selector, callback);
   }
   MOCK_METHOD2(OnFocusElement,
-               void(const std::vector<std::string>& selectors,
+               void(const Selector& selector,
                     base::OnceCallback<void(bool)>& callback));
 
   void ElementCheck(ElementCheckType check_type,
-                    const std::vector<std::string>& selectors,
+                    const Selector& selector,
                     base::OnceCallback<void(bool)> callback) override {
-    OnElementCheck(check_type, selectors, callback);
+    OnElementCheck(check_type, selector, callback);
   }
   MOCK_METHOD3(OnElementCheck,
                void(ElementCheckType check_type,
-                    const std::vector<std::string>& selectors,
+                    const Selector& selector,
                     base::OnceCallback<void(bool)>& callback));
 
   void GetFieldValue(
-      const std::vector<std::string>& selectors,
+      const Selector& selector,
       base::OnceCallback<void(bool, const std::string&)> callback) override {
-    OnGetFieldValue(selectors, callback);
+    OnGetFieldValue(selector, callback);
   }
   MOCK_METHOD2(
       OnGetFieldValue,
-      void(const std::vector<std::string>& selectors,
+      void(const Selector& selector,
            base::OnceCallback<void(bool, const std::string&)>& callback));
 
   void GetElementPosition(
-      const std::vector<std::string>& selectors,
+      const Selector& selector,
       base::OnceCallback<void(bool, const RectF&)> callback) override {
-    OnGetElementPosition(selectors, callback);
+    OnGetElementPosition(selector, callback);
   }
   MOCK_METHOD2(OnGetElementPosition,
-               void(const std::vector<std::string>& selectors,
+               void(const Selector& selector,
                     base::OnceCallback<void(bool, const RectF&)>& callback));
 
   void HasCookie(base::OnceCallback<void(bool)> callback) override {

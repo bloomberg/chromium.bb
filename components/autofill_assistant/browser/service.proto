@@ -394,6 +394,7 @@ message WaitForDomProto {
   optional int32 timeout_ms = 1;
 
   // The element to wait for.
+  // TODO(crbug.com/806868): Use ElementReferenceProto instead.
   repeated string selectors = 2;
 
   // If true, run scripts flagged with 'interrupt=true' as soon as their

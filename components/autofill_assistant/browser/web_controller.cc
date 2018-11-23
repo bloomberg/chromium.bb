@@ -21,7 +21,6 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill_assistant/browser/rectf.h"
-#include "components/autofill_assistant/browser/service.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -336,30 +335,30 @@ void WebController::LoadURL(const GURL& url) {
       content::NavigationController::LoadURLParams(url));
 }
 
-void WebController::ClickOrTapElement(const std::vector<std::string>& selectors,
+void WebController::ClickOrTapElement(const Selector& selector,
                                       base::OnceCallback<void(bool)> callback) {
 #if defined(OS_ANDROID)
-  TapElement(selectors, std::move(callback));
+  TapElement(selector, std::move(callback));
 #else
   // TODO(crbug.com/806868): Remove 'ClickElement' since this feature is only
   // available on Android.
-  ClickElement(selectors, std::move(callback));
+  ClickElement(selector, std::move(callback));
 #endif
 }
 
-void WebController::ClickElement(const std::vector<std::string>& selectors,
+void WebController::ClickElement(const Selector& selector,
                                  base::OnceCallback<void(bool)> callback) {
-  DCHECK(!selectors.empty());
-  FindElement(selectors, /* strict_mode= */ true,
+  DCHECK(!selector.empty());
+  FindElement(selector, /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForClickOrTap,
                              weak_ptr_factory_.GetWeakPtr(),
                              std::move(callback), /* is_a_click= */ true));
 }
 
-void WebController::TapElement(const std::vector<std::string>& selectors,
+void WebController::TapElement(const Selector& selector,
                                base::OnceCallback<void(bool)> callback) {
-  DCHECK(!selectors.empty());
-  FindElement(selectors, /* strict_mode= */ true,
+  DCHECK(!selector.empty());
+  FindElement(selector, /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForClickOrTap,
                              weak_ptr_factory_.GetWeakPtr(),
                              std::move(callback), /* is_a_click= */ false));
@@ -517,12 +516,12 @@ void WebController::OnDispatchTouchEventEnd(
 }
 
 void WebController::ElementCheck(ElementCheckType check_type,
-                                 const std::vector<std::string>& selectors,
+                                 const Selector& selector,
                                  base::OnceCallback<void(bool)> callback) {
-  DCHECK(!selectors.empty());
+  DCHECK(!selector.empty());
   // We don't use strict_mode because we only check for the existence of at
   // least one such element and we don't act on it.
-  FindElement(selectors, /* strict_mode= */ false,
+  FindElement(selector, /* strict_mode= */ false,
               base::BindOnce(&WebController::OnFindElementForCheck,
                              weak_ptr_factory_.GetWeakPtr(), check_type,
                              std::move(callback)));
@@ -555,18 +554,18 @@ void WebController::OnGetBoxModelForVisible(
            std::move(callback));
 }
 
-void WebController::FindElement(const std::vector<std::string>& selectors,
+void WebController::FindElement(const Selector& selector,
                                 bool strict_mode,
                                 FindElementCallback callback) {
   devtools_client_->GetRuntime()->Evaluate(
       std::string(kGetDocumentElement),
       base::BindOnce(&WebController::OnGetDocumentElement,
-                     weak_ptr_factory_.GetWeakPtr(), selectors, strict_mode,
+                     weak_ptr_factory_.GetWeakPtr(), selector, strict_mode,
                      std::move(callback)));
 }
 
 void WebController::OnGetDocumentElement(
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     bool strict_mode,
     FindElementCallback callback,
     std::unique_ptr<runtime::EvaluateResult> result) {
@@ -581,7 +580,7 @@ void WebController::OnGetDocumentElement(
     return;
   }
 
-  RecursiveFindElement(result->GetResult()->GetObjectId(), 0, selectors,
+  RecursiveFindElement(result->GetResult()->GetObjectId(), 0, selector,
                        strict_mode, std::move(element_result),
                        std::move(callback));
 }
@@ -589,14 +588,14 @@ void WebController::OnGetDocumentElement(
 void WebController::RecursiveFindElement(
     const std::string& object_id,
     size_t index,
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     bool strict_mode,
     std::unique_ptr<FindElementResult> element_result,
     FindElementCallback callback) {
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
   argument.emplace_back(runtime::CallArgument::Builder()
                             .SetValue(base::Value::ToUniquePtrValue(
-                                base::Value(selectors[index])))
+                                base::Value(selector.selectors[index])))
                             .Build());
   argument.emplace_back(
       runtime::CallArgument::Builder()
@@ -609,14 +608,14 @@ void WebController::RecursiveFindElement(
           .SetFunctionDeclaration(std::string(kQuerySelectorAll))
           .Build(),
       base::BindOnce(&WebController::OnQuerySelectorAll,
-                     weak_ptr_factory_.GetWeakPtr(), index, selectors,
+                     weak_ptr_factory_.GetWeakPtr(), index, selector,
                      strict_mode, std::move(element_result),
                      std::move(callback)));
 }
 
 void WebController::OnQuerySelectorAll(
     size_t index,
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     bool strict_mode,
     std::unique_ptr<FindElementResult> element_result,
     FindElementCallback callback,
@@ -627,7 +626,7 @@ void WebController::OnQuerySelectorAll(
   }
 
   // Return object id of the element.
-  if (selectors.size() == index + 1) {
+  if (selector.selectors.size() == index + 1) {
     element_result->object_id = result->GetResult()->GetObjectId();
     std::move(callback).Run(std::move(element_result));
     return;
@@ -639,14 +638,14 @@ void WebController::OnQuerySelectorAll(
           .Build(),
       base::BindOnce(
           &WebController::OnDescribeNode, weak_ptr_factory_.GetWeakPtr(),
-          result->GetResult()->GetObjectId(), index, selectors, strict_mode,
+          result->GetResult()->GetObjectId(), index, selector, strict_mode,
           std::move(element_result), std::move(callback)));
 }
 
 void WebController::OnDescribeNode(
     const std::string& object_id,
     size_t index,
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     bool strict_mode,
     std::unique_ptr<FindElementResult> element_result,
     FindElementCallback callback,
@@ -706,19 +705,19 @@ void WebController::OnDescribeNode(
             .SetBackendNodeId(backend_ids[0])
             .Build(),
         base::BindOnce(&WebController::OnResolveNode,
-                       weak_ptr_factory_.GetWeakPtr(), index, selectors,
+                       weak_ptr_factory_.GetWeakPtr(), index, selector,
                        strict_mode, std::move(element_result),
                        std::move(callback)));
     return;
   }
 
-  RecursiveFindElement(object_id, ++index, selectors, strict_mode,
+  RecursiveFindElement(object_id, ++index, selector, strict_mode,
                        std::move(element_result), std::move(callback));
 }
 
 void WebController::OnResolveNode(
     size_t index,
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     bool strict_mode,
     std::unique_ptr<FindElementResult> element_result,
     FindElementCallback callback,
@@ -729,7 +728,7 @@ void WebController::OnResolveNode(
     return;
   }
 
-  RecursiveFindElement(result->GetObject()->GetObjectId(), ++index, selectors,
+  RecursiveFindElement(result->GetObject()->GetObjectId(), ++index, selector,
                        strict_mode, std::move(element_result),
                        std::move(callback));
 }
@@ -797,22 +796,22 @@ void WebController::OnFocusElement(
 }
 
 void WebController::FillAddressForm(const autofill::AutofillProfile* profile,
-                                    const std::vector<std::string>& selectors,
+                                    const Selector& selector,
                                     base::OnceCallback<void(bool)> callback) {
   auto data_to_autofill = std::make_unique<FillFormInputData>();
   data_to_autofill->profile =
       std::make_unique<autofill::AutofillProfile>(*profile);
-  FindElement(selectors,
+  FindElement(selector,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForFillingForm,
                              weak_ptr_factory_.GetWeakPtr(),
-                             std::move(data_to_autofill), selectors,
+                             std::move(data_to_autofill), selector,
                              std::move(callback)));
 }
 
 void WebController::OnFindElementForFillingForm(
     std::unique_ptr<FillFormInputData> data_to_autofill,
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<FindElementResult> element_result) {
   if (element_result->object_id.empty()) {
@@ -823,12 +822,12 @@ void WebController::OnFindElementForFillingForm(
 
   ContentAutofillDriver* driver = ContentAutofillDriver::GetForRenderFrameHost(
       element_result->container_frame_host);
-  DCHECK(!selectors.empty());
+  DCHECK(!selector.empty());
   // TODO(crbug.com/806868): Figure out whether there are cases where we need
   // more than one selector, and come up with a solution that can figure out the
   // right number of selectors to include.
   driver->GetAutofillAgent()->GetElementFormAndFieldData(
-      std::vector<std::string>(1, selectors.back()),
+      std::vector<std::string>(1, selector.selectors.back()),
       base::BindOnce(&WebController::OnGetFormAndFieldDataForFillingForm,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(data_to_autofill), std::move(callback),
@@ -869,23 +868,23 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
 
 void WebController::FillCardForm(std::unique_ptr<autofill::CreditCard> card,
                                  const base::string16& cvc,
-                                 const std::vector<std::string>& selectors,
+                                 const Selector& selector,
                                  base::OnceCallback<void(bool)> callback) {
   auto data_to_autofill = std::make_unique<FillFormInputData>();
   data_to_autofill->card = std::move(card);
   data_to_autofill->cvc = cvc;
-  FindElement(selectors,
+  FindElement(selector,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForFillingForm,
                              weak_ptr_factory_.GetWeakPtr(),
-                             std::move(data_to_autofill), selectors,
+                             std::move(data_to_autofill), selector,
                              std::move(callback)));
 }
 
-void WebController::SelectOption(const std::vector<std::string>& selectors,
+void WebController::SelectOption(const Selector& selector,
                                  const std::string& selected_option,
                                  base::OnceCallback<void(bool)> callback) {
-  FindElement(selectors,
+  FindElement(selector,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForSelectOption,
                              weak_ptr_factory_.GetWeakPtr(), selected_option,
@@ -933,10 +932,10 @@ void WebController::OnSelectOption(
   OnResult(result->GetResult()->GetValue()->GetBool(), std::move(callback));
 }
 
-void WebController::HighlightElement(const std::vector<std::string>& selectors,
+void WebController::HighlightElement(const Selector& selector,
                                      base::OnceCallback<void(bool)> callback) {
   FindElement(
-      selectors,
+      selector,
       /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForHighlightElement,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -979,21 +978,21 @@ void WebController::OnHighlightElement(
   OnResult(result->GetResult()->GetValue()->GetBool(), std::move(callback));
 }
 
-void WebController::FocusElement(const std::vector<std::string>& selectors,
+void WebController::FocusElement(const Selector& selector,
                                  base::OnceCallback<void(bool)> callback) {
-  DCHECK(!selectors.empty());
+  DCHECK(!selector.empty());
   FindElement(
-      selectors,
+      selector,
       /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForFocusElement,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WebController::GetFieldValue(
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     base::OnceCallback<void(bool, const std::string&)> callback) {
   FindElement(
-      selectors,
+      selector,
       /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForGetFieldValue,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -1032,7 +1031,7 @@ void WebController::OnGetValueAttribute(
            std::move(callback));
 }
 
-void WebController::SetFieldValue(const std::vector<std::string>& selectors,
+void WebController::SetFieldValue(const Selector& selector,
                                   const std::string& value,
                                   bool simulate_key_presses,
                                   base::OnceCallback<void(bool)> callback) {
@@ -1041,21 +1040,21 @@ void WebController::SetFieldValue(const std::vector<std::string>& selectors,
     // TODO(crbug.com/806868): Disable keyboard during this action and then
     // reset to previous state.
     InternalSetFieldValue(
-        selectors, "",
+        selector, "",
         base::BindOnce(&WebController::OnClearFieldForDispatchKeyEvent,
-                       weak_ptr_factory_.GetWeakPtr(), selectors, value,
+                       weak_ptr_factory_.GetWeakPtr(), selector, value,
                        std::move(callback)));
     return;
   }
 
-  InternalSetFieldValue(selectors, value, std::move(callback));
+  InternalSetFieldValue(selector, value, std::move(callback));
 }
 
 void WebController::InternalSetFieldValue(
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     const std::string& value,
     base::OnceCallback<void(bool)> callback) {
-  FindElement(selectors,
+  FindElement(selector,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForSetFieldValue,
                              weak_ptr_factory_.GetWeakPtr(), value,
@@ -1063,7 +1062,7 @@ void WebController::InternalSetFieldValue(
 }
 
 void WebController::OnClearFieldForDispatchKeyEvent(
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     const std::string& value,
     base::OnceCallback<void(bool)> callback,
     bool clear_status) {
@@ -1080,7 +1079,7 @@ void WebController::OnClearFieldForDispatchKeyEvent(
   // investigation for this timing issue. One possible reason is that events
   // from different devices are not guarranteed to be handled in order (needs a
   // way to make sure previous events have been handled).
-  ClickElement(selectors,
+  ClickElement(selector,
                base::BindOnce(&WebController::OnClickElementForDispatchKeyEvent,
                               weak_ptr_factory_.GetWeakPtr(), value,
                               std::move(callback)));
@@ -1170,13 +1169,13 @@ void WebController::OnSetValueAttribute(
   OnResult(result && !result->HasExceptionDetails(), std::move(callback));
 }
 
-void WebController::SetAttribute(const std::vector<std::string>& selectors,
+void WebController::SetAttribute(const Selector& selector,
                                  const std::vector<std::string>& attribute,
                                  const std::string& value,
                                  base::OnceCallback<void(bool)> callback) {
-  DCHECK_GT(selectors.size(), 0u);
+  DCHECK(!selector.empty());
   DCHECK_GT(attribute.size(), 0u);
-  FindElement(selectors,
+  FindElement(selector,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForSetAttribute,
                              weak_ptr_factory_.GetWeakPtr(), attribute, value,
@@ -1225,10 +1224,10 @@ void WebController::OnSetAttribute(
 }
 
 void WebController::GetOuterHtml(
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     base::OnceCallback<void(bool, const std::string&)> callback) {
   FindElement(
-      selectors,
+      selector,
       /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForGetOuterHtml,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -1240,10 +1239,10 @@ WebController::CreateBatchElementChecker() {
 }
 
 void WebController::GetElementPosition(
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     base::OnceCallback<void(bool, const RectF&)> callback) {
   FindElement(
-      selectors, /* strict_mode= */ true,
+      selector, /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForPosition,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

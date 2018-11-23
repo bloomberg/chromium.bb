@@ -40,4 +40,13 @@ std::vector<std::string> Action::ExtractVector(
   }
   return vector;
 }
+
+Selector Action::ExtractSelector(const ElementReferenceProto& element) {
+  Selector a_selector;
+  for (const auto& selector : element.selectors()) {
+    a_selector.selectors.emplace_back(selector);
+  }
+  return a_selector;
+}
+
 }  // namespace autofill_assistant

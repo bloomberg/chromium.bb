@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/rectf.h"
+#include "components/autofill_assistant/browser/selector.h"
 
 namespace autofill_assistant {
 class WebController;
@@ -28,7 +29,7 @@ class ElementArea {
   // there are elements to check.
   //
   // The area is updated asynchronously, so Contains will not work right away.
-  void SetElements(const std::vector<std::vector<std::string>>& elements);
+  void SetElements(const std::vector<Selector>& elements);
 
   // Clears the set of elements to check.
   void ClearElements() { SetElements({}); }
@@ -71,7 +72,7 @@ class ElementArea {
   // an element. Coordinates are values between 0 and 1, relative to the size of
   // the visible viewport.
   struct ElementPosition {
-    std::vector<std::string> selector;
+    Selector selector;
     RectF rect;
 
     ElementPosition();
@@ -80,7 +81,7 @@ class ElementArea {
   };
 
   void KeepUpdatingPositions();
-  void OnGetElementPosition(const std::vector<std::string>& selector,
+  void OnGetElementPosition(const Selector& selector,
                             bool found,
                             const RectF& rect);
   void ReportUpdate();

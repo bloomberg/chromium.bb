@@ -28,14 +28,18 @@ WaitForDomAction::~WaitForDomAction() {}
 void WaitForDomAction::InternalProcessAction(ActionDelegate* delegate,
                                              ProcessActionCallback callback) {
   DCHECK_GT(proto_.wait_for_dom().selectors_size(), 0);
+  Selector a_selector;
+  for (const auto& selector : proto_.wait_for_dom().selectors()) {
+    a_selector.selectors.emplace_back(selector);
+  }
+
   base::TimeDelta max_wait_time = kDefaultCheckDuration;
   int timeout_ms = proto_.wait_for_dom().timeout_ms();
   if (timeout_ms > 0)
     max_wait_time = base::TimeDelta::FromMilliseconds(timeout_ms);
 
   delegate->WaitForElementVisible(
-      max_wait_time, proto_.wait_for_dom().allow_interrupt(),
-      ExtractVector(proto_.wait_for_dom().selectors()),
+      max_wait_time, proto_.wait_for_dom().allow_interrupt(), a_selector,
       base::BindOnce(&WaitForDomAction::OnCheckDone,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

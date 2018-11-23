@@ -11,7 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
-using ::testing::ElementsAre;
+using ::testing::Eq;
 
 namespace autofill_assistant {
 
@@ -41,17 +41,17 @@ TEST_F(ElementAreaTest, Empty) {
 }
 
 TEST_F(ElementAreaTest, ElementNotFound) {
-  element_area_.SetElements({{"#not_found"}});
+  element_area_.SetElements({Selector({"#not_found"})});
   EXPECT_TRUE(element_area_.IsEmpty());
   EXPECT_FALSE(element_area_.Contains(0.5f, 0.5f));
 }
 
 TEST_F(ElementAreaTest, OneElement) {
   EXPECT_CALL(mock_web_controller_,
-              OnGetElementPosition(ElementsAre("#found"), _))
+              OnGetElementPosition(Eq(Selector({"#found"})), _))
       .WillOnce(RunOnceCallback<1>(true, RectF(0.25f, 0.25f, 0.75f, 0.75f)));
 
-  element_area_.SetElements({{"#found"}});
+  element_area_.SetElements({Selector({"#found"})});
   EXPECT_FALSE(element_area_.IsEmpty());
   EXPECT_TRUE(element_area_.Contains(0.5f, 0.5f));
   EXPECT_FALSE(element_area_.Contains(0.1f, 0.5f));
@@ -62,13 +62,14 @@ TEST_F(ElementAreaTest, OneElement) {
 
 TEST_F(ElementAreaTest, TwoElements) {
   EXPECT_CALL(mock_web_controller_,
-              OnGetElementPosition(ElementsAre("#top_left"), _))
+              OnGetElementPosition(Eq(Selector({"#top_left"})), _))
       .WillOnce(RunOnceCallback<1>(true, RectF(0.0f, 0.0f, 0.25f, 0.25f)));
   EXPECT_CALL(mock_web_controller_,
-              OnGetElementPosition(ElementsAre("#bottom_right"), _))
+              OnGetElementPosition(Eq(Selector({"#bottom_right"})), _))
       .WillOnce(RunOnceCallback<1>(true, RectF(0.25f, 0.25f, 1.0f, 1.0f)));
 
-  element_area_.SetElements({{"#top_left"}, {"#bottom_right"}});
+  element_area_.SetElements(
+      {Selector({"#top_left"}), Selector({"#bottom_right"})});
   EXPECT_FALSE(element_area_.IsEmpty());
   EXPECT_TRUE(element_area_.Contains(0.1f, 0.1f));
   EXPECT_TRUE(element_area_.Contains(0.9f, 0.9f));
@@ -79,11 +80,11 @@ TEST_F(ElementAreaTest, TwoElements) {
 TEST_F(ElementAreaTest, ElementMovesAfterUpdate) {
   testing::InSequence seq;
   EXPECT_CALL(mock_web_controller_,
-              OnGetElementPosition(ElementsAre("#element"), _))
+              OnGetElementPosition(Eq(Selector({"#element"})), _))
       .WillOnce(RunOnceCallback<1>(true, RectF(0.0f, 0.25f, 1.0f, 0.5f)))
       .WillOnce(RunOnceCallback<1>(true, RectF(0.0f, 0.5f, 1.0f, 0.75f)));
 
-  element_area_.SetElements({{"#element"}});
+  element_area_.SetElements({Selector({"#element"})});
 
   EXPECT_FALSE(element_area_.Contains(0.5f, 0.1f));
   EXPECT_TRUE(element_area_.Contains(0.5f, 0.4f));
@@ -101,11 +102,11 @@ TEST_F(ElementAreaTest, ElementMovesAfterUpdate) {
 TEST_F(ElementAreaTest, ElementMovesWithTime) {
   testing::InSequence seq;
   EXPECT_CALL(mock_web_controller_,
-              OnGetElementPosition(ElementsAre("#element"), _))
+              OnGetElementPosition(Eq(Selector({"#element"})), _))
       .WillOnce(RunOnceCallback<1>(true, RectF(0.0f, 0.25f, 1.0f, 0.5f)))
       .WillOnce(RunOnceCallback<1>(true, RectF(0.0f, 0.5f, 1.0f, 0.75f)));
 
-  element_area_.SetElements({{"#element"}});
+  element_area_.SetElements({Selector({"#element"})});
 
   EXPECT_FALSE(element_area_.Contains(0.5f, 0.1f));
   EXPECT_TRUE(element_area_.Contains(0.5f, 0.4f));
