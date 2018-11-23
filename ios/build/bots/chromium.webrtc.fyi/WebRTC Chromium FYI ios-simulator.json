@@ -20,17 +20,17 @@
   "sdk": "iphonesimulator10.0",
   "tests": [
     {
-      "include": "common_tests.json",
+      "include": "webrtc_tests.json",
       "device type": "iPhone 6s Plus",
       "os": "11.4"
     },
     {
-      "include": "common_tests.json",
+      "include": "webrtc_tests.json",
       "device type": "iPhone 6s",
       "os": "11.4"
     },
     {
-      "include": "common_tests.json",
+      "include": "webrtc_tests.json",
       "device type": "iPad Air 2",
       "os": "11.4"
     }
