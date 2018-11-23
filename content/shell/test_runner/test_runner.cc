@@ -102,18 +102,7 @@ void ConvertAndSet(gin::Arguments* args, int* set_param) {
 
 void ConvertAndSet(gin::Arguments* args, bool* set_param) {
   v8::Local<v8::Value> value = args->PeekNext();
-  v8::Maybe<bool> result =
-      value->BooleanValue(args->GetHolderCreationContext());
-
-  if (result.IsNothing()) {
-    // Skip so the error is thrown for the correct argument as PeekNext doesn't
-    // update the current argument pointer.
-    args->Skip();
-    args->ThrowError();
-    return;
-  }
-
-  *set_param = result.ToChecked();
+  *set_param = value->BooleanValue(args->isolate());
 }
 
 void ConvertAndSet(gin::Arguments* args, blink::WebString* set_param) {
