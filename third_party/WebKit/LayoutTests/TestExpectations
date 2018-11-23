@@ -1474,6 +1474,7 @@ crbug.com/591099 virtual/layout_ng_experimental/printing/thead-repeats-with-tran
 crbug.com/591099 virtual/layout_ng_experimental/printing/thead-under-multicol.html [ Failure ]
 crbug.com/829804 virtual/layout_ng_experimental/printing/webgl-oversized-printing.html [ Skip ]
 crbug.com/824918 virtual/layout_ng_experimental/printing/width-overflow.html [ Failure ]
+Bug(none) virtual/layout_ng_experimental/fragmentation/scrolling-contents-scroll.html [ Crash Failure ]
 
 # Flexbox in NG
 #
