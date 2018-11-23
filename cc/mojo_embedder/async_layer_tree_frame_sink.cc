@@ -206,7 +206,7 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
   else
     hit_test_region_list = client_->BuildHitTestData();
 
-  if (show_hit_test_borders)
+  if (show_hit_test_borders && hit_test_region_list)
     hit_test_region_list->flags |= viz::HitTestRegionFlags::kHitTestDebug;
 
   if (last_submitted_local_surface_id_ != local_surface_id_) {
