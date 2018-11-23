@@ -22,8 +22,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #endif
 
 namespace browsing_data_counter_utils {
@@ -81,8 +81,8 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataCounterUtilsBrowserTest,
 #if defined(OS_CHROMEOS)
   // In browser tests, the profile may already by authenticated with stub
   // account |user_manager::kStubUserEmail|.
-  AccountInfo info = SigninManagerFactory::GetForProfile(profile)
-                         ->GetAuthenticatedAccountInfo();
+  AccountInfo info =
+      IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountInfo();
   username = info.email;
 #endif
   if (username.empty())
