@@ -271,43 +271,4 @@ testcase.requestMountSourceFile = function() {
   requestMountNotInMenuInternal('manifest_source_file.json');
 };
 
-/**
- * Tests that pressing the eject button on a FSP adds a message to screen
- * reader.
- */
-testcase.providerEject = function() {
-  const manifest = 'manifest_source_file.json';
-  const steps = getSetupSteps(manifest).concat([
-    // Click to eject Test (1) provider/volume.
-    function() {
-      const ejectQuery =
-          ['#directory-tree [volume-type-for-testing="provided"] .root-eject'];
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ejectQuery, this.next);
-    },
-    // Wait a11y-msg to have some text.
-    function(result) {
-      chrome.test.assertTrue(result, 'click eject failed');
-      remoteCall.waitForElement(appId, '#a11y-msg:not(:empty)').then(this.next);
-    },
-    // Fetch A11y messages.
-    function() {
-      remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, [])
-          .then(this.next);
-    },
-    // Check that opening the file was announced to screen reader.
-    function(a11yMessages) {
-      chrome.test.assertTrue(a11yMessages instanceof Array);
-      chrome.test.assertEq(1, a11yMessages.length);
-      chrome.test.assertEq('Test (1) has been ejected.', a11yMessages[0]);
-      this.next();
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
-
-  StepsRunner.run(steps);
-};
-
 })();

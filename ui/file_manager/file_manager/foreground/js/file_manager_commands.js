@@ -530,10 +530,7 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
       return;
     }
 
-    const label = volumeInfo.label || '';
-    fileManager.volumeManager.unmount(volumeInfo, () => {
-      const msg = strf('A11Y_VOLUME_EJECT', label);
-      fileManager.ui.speakA11yMessage(msg);
+    fileManager.volumeManager.unmount(volumeInfo, function() {
     }, errorCallback.bind(null, volumeInfo.volumeType));
   },
   /**
