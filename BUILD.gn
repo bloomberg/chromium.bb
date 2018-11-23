@@ -15,18 +15,18 @@ import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
-import("//media/media_options.gni")
+import("//gpu/vulkan/features.gni")
 import("//media/gpu/args.gni")
+import("//media/media_options.gni")
 import("//remoting/remoting_enable.gni")
+import("//testing/test.gni")
 import("//third_party/openh264/openh264_args.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 import("//ui/base/ui_features.gni")
-import("//ui/webui/webui_features.gni")
 import("//ui/ozone/ozone.gni")
+import("//ui/webui/webui_features.gni")
 import("//v8/gni/v8.gni")
 import("//v8/snapshot_toolchain.gni")
-import("//gpu/vulkan/features.gni")
-import("//testing/test.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -400,7 +400,6 @@ group("gn_all") {
       "//ash:ash_unittests",
       "//ash/app_list:app_list_demo",
       "//ash/app_list:app_list_unittests",
-      "//chrome/browser/resources/chromeos/zip_archiver/cpp:ziparchiver_unittests",
       "//chromeos:chromeos_unittests",
       "//chromeos/components:chromeos_components_unittests",
       "//chromeos/components/proximity_auth:proximity_auth_unittests",

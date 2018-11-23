@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
-
 static_library("zip_archiver_library") {
   sources = [
     "compressor.cc",
@@ -44,16 +42,15 @@ static_library("zip_archiver_library") {
   ]
 }
 
-test("ziparchiver_unittests") {
+source_set("ziparchiver_unittests") {
+  testonly = true
   sources = [
     "compressor_archive_minizip_unittest.cc",
-    "test_module.cc",
     "volume_archive_minizip_unittest.cc",
   ]
 
   deps = [
     ":zip_archiver_library",
-    "//base/test:run_all_unittests",
     "//testing/gtest",
   ]
 
