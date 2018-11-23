@@ -190,12 +190,13 @@ void ScriptExecutor::HighlightElement(const Selector& selector,
 
 void ScriptExecutor::FocusElement(const Selector& selector,
                                   base::OnceCallback<void(bool)> callback) {
+  last_focused_element_selector_ = selector;
   delegate_->GetWebController()->FocusElement(selector, std::move(callback));
 }
 
 void ScriptExecutor::SetTouchableElements(
-    const std::vector<Selector>& element_selectors) {
-  touchable_elements_ = element_selectors;
+    const std::vector<Selector>& element_selector) {
+  touchable_elements_ = element_selector;
 }
 
 void ScriptExecutor::ShowProgressBar(int progress, const std::string& message) {
@@ -515,6 +516,7 @@ void ScriptExecutor::WaitWithInterrupts::OnAllDone() {
 
 void ScriptExecutor::WaitWithInterrupts::RunInterrupt(const Script* interrupt) {
   batch_element_checker_.reset();
+  SavePreInterruptState();
   interrupt_executor_ = std::make_unique<ScriptExecutor>(
       interrupt->handle.path, main_script_->initial_server_payload_,
       /* listener= */ nullptr, main_script_->scripts_state_, &no_interrupts_,
@@ -532,6 +534,7 @@ void ScriptExecutor::WaitWithInterrupts::OnInterruptDone(
     RunCallback(false, &result);
     return;
   }
+  RestorePreInterruptUiState();
   // TODO(crbug.com/806868): Forward global state change from the server_payload
   // of a successfully run interrupt to the main script.
 
@@ -544,10 +547,44 @@ void ScriptExecutor::WaitWithInterrupts::OnInterruptDone(
 void ScriptExecutor::WaitWithInterrupts::RunCallback(
     bool found,
     const ScriptExecutor::Result* result) {
-  // stop element checking in one is still in progress
+  // stop element checking if one is still in progress
   batch_element_checker_.reset();
-  if (callback_)
-    std::move(callback_).Run(found, result);
+  if (!callback_)
+    return;
+
+  RestorePreInterruptScroll(found);
+  std::move(callback_).Run(found, result);
+}
+
+void ScriptExecutor::WaitWithInterrupts::SavePreInterruptState() {
+  if (saved_pre_interrupt_state_)
+    return;
+
+  pre_interrupt_status_ =
+      main_script_->delegate_->GetUiController()->GetStatusMessage();
+  saved_pre_interrupt_state_ = true;
+}
+
+void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptUiState() {
+  if (!saved_pre_interrupt_state_)
+    return;
+
+  main_script_->delegate_->GetUiController()->ShowStatusMessage(
+      pre_interrupt_status_);
+}
+
+void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptScroll(
+    bool element_found) {
+  if (!saved_pre_interrupt_state_)
+    return;
+
+  auto* delegate = main_script_->delegate_;
+  if (element_found) {
+    delegate->GetWebController()->FocusElement(selector_, base::DoNothing());
+  } else if (!main_script_->last_focused_element_selector_.empty()) {
+    delegate->GetWebController()->FocusElement(
+        main_script_->last_focused_element_selector_, base::DoNothing());
+  }
 }
 
 void ScriptExecutor::OnChosen(
