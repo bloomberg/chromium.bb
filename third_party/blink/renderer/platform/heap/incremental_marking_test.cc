@@ -11,8 +11,6 @@
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
-#include "third_party/blink/renderer/platform/heap/heap_terminated_array.h"
-#include "third_party/blink/renderer/platform/heap/heap_terminated_array_builder.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -1108,52 +1106,6 @@ TEST(IncrementalMarkingTest, HeapHashCountedSetSwap) {
       ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
       container1.swap(container2);
     }
-  }
-}
-
-// =============================================================================
-// HeapTerminatedArray support. ================================================
-// =============================================================================
-
-class TerminatedArrayNode {
-  DISALLOW_NEW();
-
- public:
-  TerminatedArrayNode(Object* obj) : obj_(obj), is_last_in_array_(false) {}
-
-  // TerminatedArray support.
-  bool IsLastInArray() const { return is_last_in_array_; }
-  void SetLastInArray(bool flag) { is_last_in_array_ = flag; }
-
-  void Trace(blink::Visitor* visitor) { visitor->Trace(obj_); }
-
- private:
-  Member<Object> obj_;
-  bool is_last_in_array_;
-};
-
-}  // namespace incremental_marking_test
-}  // namespace blink
-
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::incremental_marking_test::TerminatedArrayNode);
-
-namespace blink {
-namespace incremental_marking_test {
-
-TEST(IncrementalMarkingTest, HeapTerminatedArrayBuilder) {
-  Object* obj = Object::Create();
-  HeapTerminatedArray<TerminatedArrayNode>* array = nullptr;
-  {
-    // The builder allocates the backing store on Oilpans heap, effectively
-    // triggering a write barrier.
-    HeapTerminatedArrayBuilder<TerminatedArrayNode> builder(array);
-    builder.Grow(1);
-    {
-      ExpectWriteBarrierFires scope(ThreadState::Current(), {obj});
-      builder.Append(TerminatedArrayNode(obj));
-    }
-    array = builder.Release();
   }
 }
 
