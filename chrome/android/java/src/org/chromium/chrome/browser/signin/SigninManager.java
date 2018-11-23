@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.ActivityState;
@@ -30,6 +31,9 @@ import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Android wrapper of the SigninManager which provides access from the Java layer.
@@ -177,6 +181,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private final ObserverList<SignInStateObserver> mSignInStateObservers = new ObserverList<>();
     private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
             new ObserverList<>();
+    private List<Runnable> mCallbacksWaitingForPendingOperation = new ArrayList<>();
     private boolean mSigninAllowedByPolicy;
 
     /**
@@ -491,11 +496,45 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
         Log.d(TAG, "Signin completed.");
         mSignInState = null;
+        notifyCallbacksWaitingForOperation();
         notifySignInAllowedChanged();
 
         for (SignInStateObserver observer : mSignInStateObservers) {
             observer.onSignedIn();
         }
+    }
+
+    /**
+     * Returns true if a sign-in or sign-out operation is in progress. See also
+     * {@link #runAfterOperationInProgress}.
+     */
+    @MainThread
+    public boolean isOperationInProgress() {
+        ThreadUtils.assertOnUiThread();
+        return mSignInState != null || mSignOutState != null;
+    }
+
+    /**
+     * Schedules the runnable to be invoked after currently ongoing a sign-in or sign-out operation
+     * is finished. If there's no operation is progress, posts the callback to the UI thread right
+     * away. See also {@link #isOperationInProgress}.
+     */
+    @MainThread
+    public void runAfterOperationInProgress(Runnable runnable) {
+        ThreadUtils.assertOnUiThread();
+        if (isOperationInProgress()) {
+            mCallbacksWaitingForPendingOperation.add(runnable);
+            return;
+        }
+        ThreadUtils.postOnUiThread(runnable);
+    }
+
+    private void notifyCallbacksWaitingForOperation() {
+        ThreadUtils.assertOnUiThread();
+        for (Runnable callback : mCallbacksWaitingForPendingOperation) {
+            callback.run();
+        }
+        mCallbacksWaitingForPendingOperation.clear();
     }
 
     /**
@@ -574,6 +613,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         SignInState signInState = mSignInState;
         assert signInState != null;
         mSignInState = null;
+        notifyCallbacksWaitingForOperation();
 
         if (signInState.mCallback != null) {
             signInState.mCallback.onSignInAborted();
@@ -670,6 +710,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             ThreadUtils.postOnUiThread(mSignOutState.mCallback);
         }
         mSignOutState = null;
+        notifyCallbacksWaitingForOperation();
 
         for (SignInStateObserver observer : mSignInStateObservers) {
             observer.onSignedOut();
