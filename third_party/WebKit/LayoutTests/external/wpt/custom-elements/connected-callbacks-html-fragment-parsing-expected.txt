@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Custom Elements: the HTML fragment parsing algorithm must not create a custom element synchronously Uncaught ReferenceError: document_types is not defined
+Harness: the test ran to completion.
+

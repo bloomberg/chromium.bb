@@ -1,0 +1,17 @@
+This is a testharness.js-based test.
+FAIL nodeValue on Node must enqueue an attributeChanged reaction when replacing an existing attribute define_new_custom_element is not defined
+FAIL nodeValue on Node must not enqueue an attributeChanged reaction when replacing an existing unobserved attribute define_new_custom_element is not defined
+FAIL textContent on Node must enqueue an attributeChanged reaction when replacing an existing attribute define_new_custom_element is not defined
+FAIL textContent on Node must not enqueue an attributeChanged reaction when replacing an existing unobserved attribute define_new_custom_element is not defined
+FAIL cloneNode on Node must enqueue an attributeChanged reaction when cloning an element with an observed attribute define_new_custom_element is not defined
+FAIL cloneNode on Node must not enqueue an attributeChanged reaction when cloning an element with an unobserved attribute define_new_custom_element is not defined
+FAIL cloneNode on Node must enqueue an attributeChanged reaction when cloning an element only for observed attributes define_new_custom_element is not defined
+FAIL insertBefore on ChildNode must enqueue a connected reaction define_new_custom_element is not defined
+FAIL insertBefore on ChildNode must enqueue a disconnected reaction, an adopted reaction, and a connected reaction when the custom element was in another document define_new_custom_element is not defined
+FAIL appendChild on ChildNode must enqueue a connected reaction define_new_custom_element is not defined
+FAIL appendChild on ChildNode must enqueue a disconnected reaction, an adopted reaction, and a connected reaction when the custom element was in another document define_new_custom_element is not defined
+FAIL replaceChild on ChildNode must enqueue a connected reaction define_new_custom_element is not defined
+FAIL replaceChild on ChildNode must enqueue a disconnected reaction, an adopted reaction, and a connected reaction when the custom element was in another document define_new_custom_element is not defined
+FAIL removeChild on ChildNode must enqueue a disconnected reaction define_new_custom_element is not defined
+Harness: the test ran to completion.
+

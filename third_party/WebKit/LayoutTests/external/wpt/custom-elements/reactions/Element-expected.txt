@@ -1,0 +1,44 @@
+This is a testharness.js-based test.
+FAIL id on Element must enqueue an attributeChanged reaction when adding id content attribute define_new_custom_element is not defined
+FAIL id on Element must enqueue an attributeChanged reaction when replacing an existing attribute define_new_custom_element is not defined
+FAIL className on Element must enqueue an attributeChanged reaction when adding class content attribute define_new_custom_element is not defined
+FAIL className on Element must enqueue an attributeChanged reaction when replacing an existing attribute define_new_custom_element is not defined
+FAIL slot on Element must enqueue an attributeChanged reaction when adding slot content attribute define_new_custom_element is not defined
+FAIL slot on Element must enqueue an attributeChanged reaction when replacing an existing attribute define_new_custom_element is not defined
+FAIL setAttribute on Element must enqueue an attributeChanged reaction when adding an attribute define_new_custom_element is not defined
+FAIL setAttribute on Element must not enqueue an attributeChanged reaction when adding an unobserved attribute define_new_custom_element is not defined
+FAIL setAttribute on Element must enqueue an attributeChanged reaction when replacing an existing attribute define_new_custom_element is not defined
+FAIL setAttribute on Element must enqueue an attributeChanged reaction when replacing an existing unobserved attribute define_new_custom_element is not defined
+FAIL setAttributeNS on Element must enqueue an attributeChanged reaction when adding an attribute define_new_custom_element is not defined
+FAIL setAttributeNS on Element must not enqueue an attributeChanged reaction when adding an unobserved attribute define_new_custom_element is not defined
+FAIL setAttributeNS on Element must enqueue an attributeChanged reaction when replacing an existing attribute define_new_custom_element is not defined
+FAIL setAttributeNS on Element must enqueue an attributeChanged reaction when replacing an existing unobserved attribute define_new_custom_element is not defined
+FAIL removeAttribute on Element must not enqueue an attributeChanged reaction when removing an unobserved attribute define_new_custom_element is not defined
+FAIL removeAttribute on Element must enqueue an attributeChanged reaction when removing an existing attribute define_new_custom_element is not defined
+FAIL removeAttribute on Element must not enqueue an attributeChanged reaction when removing an existing unobserved attribute define_new_custom_element is not defined
+FAIL removeAttributeNS on Element must not enqueue an attributeChanged reaction when removing an unobserved attribute define_new_custom_element is not defined
+FAIL removeAttributeNS on Element must enqueue an attributeChanged reaction when removing an existing attribute define_new_custom_element is not defined
+FAIL removeAttributeNS on Element must not enqueue an attributeChanged reaction when removing an existing unobserved attribute define_new_custom_element is not defined
+FAIL setAttributeNode on Element must enqueue an attributeChanged reaction when adding an attribute define_new_custom_element is not defined
+FAIL setAttributeNode on Element must not enqueue an attributeChanged reaction when adding an unobserved attribute define_new_custom_element is not defined
+FAIL setAttributeNode on Element must enqueue an attributeChanged reaction when replacing an existing attribute define_new_custom_element is not defined
+FAIL setAttributeNode on Element must enqueue an attributeChanged reaction when replacing an existing unobserved attribute define_new_custom_element is not defined
+FAIL setAttributeNodeNS on Element must enqueue an attributeChanged reaction when adding an attribute define_new_custom_element is not defined
+FAIL setAttributeNodeNS on Element must not enqueue an attributeChanged reaction when adding an unobserved attribute define_new_custom_element is not defined
+FAIL setAttributeNodeNS on Element must enqueue an attributeChanged reaction when replacing an existing attribute define_new_custom_element is not defined
+FAIL setAttributeNodeNS on Element must enqueue an attributeChanged reaction when replacing an existing unobserved attribute define_new_custom_element is not defined
+FAIL removeAttributeNode on Element must not enqueue an attributeChanged reaction when removing an unobserved attribute define_new_custom_element is not defined
+FAIL removeAttributeNode on Element must enqueue an attributeChanged reaction when removing an existing attribute define_new_custom_element is not defined
+FAIL removeAttributeNode on Element must not enqueue an attributeChanged reaction when removing an existing unobserved attribute define_new_custom_element is not defined
+FAIL insertAdjacentElement on Element must enqueue a connected reaction define_new_custom_element is not defined
+FAIL insertAdjacentElement on Element must enqueue a disconnected reaction, an adopted reaction, and a connected reaction when the custom element was in another document define_new_custom_element is not defined
+FAIL innerHTML on Element must enqueue a connected reaction for a newly constructed custom element define_new_custom_element is not defined
+FAIL innerHTML on Element must enqueue a attributeChanged reaction for a newly constructed custom element define_new_custom_element is not defined
+FAIL innerHTML on Element must enqueue a disconnected reaction define_new_custom_element is not defined
+FAIL outerHTML on Element must enqueue a connected reaction for a newly constructed custom element define_new_custom_element is not defined
+FAIL outerHTML on Element must enqueue a attributeChanged reaction for a newly constructed custom element define_new_custom_element is not defined
+FAIL outerHTML on Element must enqueue a disconnected reaction define_new_custom_element is not defined
+FAIL insertAdjacentHTML on Element must enqueue a connected reaction for a newly constructed custom element define_new_custom_element is not defined
+FAIL insertAdjacentHTML on Element must enqueue a attributeChanged reaction for a newly constructed custom element define_new_custom_element is not defined
+Harness: the test ran to completion.
+

@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught ReferenceError: document_types is not defined
+PASS Inserting a custom element into the owner document must not enqueue and invoke adoptedCallback
+Harness: the test ran to completion.
+

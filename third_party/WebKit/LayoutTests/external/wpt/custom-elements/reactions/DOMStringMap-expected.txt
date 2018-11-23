@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+FAIL setter on DOMStringMap must enqueue an attributeChanged reaction when adding an observed data attribute define_new_custom_element is not defined
+FAIL setter on DOMStringMap must not enqueue an attributeChanged reaction when adding an unobserved data attribute define_new_custom_element is not defined
+FAIL setter on DOMStringMap must enqueue an attributeChanged reaction when mutating the value of an observed data attribute define_new_custom_element is not defined
+FAIL setter on DOMStringMap must enqueue an attributeChanged reaction when mutating the value of an observed data attribute to the same value define_new_custom_element is not defined
+FAIL setter on DOMStringMap must not enqueue an attributeChanged reaction when mutating the value of an unobserved data attribute define_new_custom_element is not defined
+FAIL deleter on DOMStringMap must enqueue an attributeChanged reaction when removing an observed data attribute define_new_custom_element is not defined
+FAIL deleter on DOMStringMap must not enqueue an attributeChanged reaction when removing an unobserved data attribute define_new_custom_element is not defined
+FAIL deleter on DOMStringMap must not enqueue an attributeChanged reaction when it does not remove a data attribute define_new_custom_element is not defined
+Harness: the test ran to completion.
+
