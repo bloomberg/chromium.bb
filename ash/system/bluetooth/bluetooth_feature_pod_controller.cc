@@ -4,6 +4,8 @@
 
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
 
+#include <utility>
+
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -12,9 +14,11 @@
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/i18n/number_formatting.h"
+#include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using device::mojom::BluetoothSystem;
+using device::mojom::BluetoothDeviceInfo;
 
 namespace ash {
 
@@ -91,10 +95,12 @@ void BluetoothFeaturePodController::UpdateButton() {
   }
 
   BluetoothDeviceList connected_devices;
-  for (const auto& device :
+  for (auto& device :
        Shell::Get()->tray_bluetooth_helper()->GetAvailableBluetoothDevices()) {
-    if (device.connected)
-      connected_devices.push_back(device);
+    if (device->connection_state ==
+        BluetoothDeviceInfo::ConnectionState::kConnected) {
+      connected_devices.push_back(std::move(device));
+    }
   }
 
   if (connected_devices.size() > 1) {
@@ -107,7 +113,8 @@ void BluetoothFeaturePodController::UpdateButton() {
         IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_TOOLTIP,
         device_count));
   } else if (connected_devices.size() == 1) {
-    const base::string16& device_name = connected_devices.back().display_name;
+    const base::string16 device_name =
+        device::GetBluetoothDeviceNameForDisplay(connected_devices.back());
     button_->SetVectorIcon(kUnifiedMenuBluetoothConnectedIcon);
     button_->SetLabel(device_name);
     button_->SetSubLabel(l10n_util::GetStringUTF16(

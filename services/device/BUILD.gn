@@ -121,6 +121,7 @@ source_set("tests") {
     "//services/device/geolocation:test_support",
     "//services/device/power_monitor",
     "//services/device/public/cpp:device_features",
+    "//services/device/public/cpp/bluetooth:bluetooth_tests",
     "//services/device/public/cpp/power_monitor",
     "//services/device/public/mojom",
     "//services/device/wake_lock",

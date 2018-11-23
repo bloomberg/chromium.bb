@@ -8,13 +8,6 @@ using device::mojom::BluetoothSystem;
 
 namespace ash {
 
-BluetoothDeviceInfo::BluetoothDeviceInfo() = default;
-
-BluetoothDeviceInfo::BluetoothDeviceInfo(const BluetoothDeviceInfo& other) =
-    default;
-
-BluetoothDeviceInfo::~BluetoothDeviceInfo() = default;
-
 TrayBluetoothHelper::TrayBluetoothHelper() = default;
 
 TrayBluetoothHelper::~TrayBluetoothHelper() = default;

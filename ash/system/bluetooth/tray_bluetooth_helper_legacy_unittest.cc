@@ -25,9 +25,9 @@ namespace {
 // Returns true if device with |address| exists in the filtered device list.
 // Returns false otherwise.
 bool ExistInFilteredDevices(const std::string& address,
-                            BluetoothDeviceList filtered_devices) {
+                            const BluetoothDeviceList& filtered_devices) {
   for (const auto& device : filtered_devices) {
-    if (device.address == address)
+    if (device->address == address)
       return true;
   }
   return false;

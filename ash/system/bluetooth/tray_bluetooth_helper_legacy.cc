@@ -20,6 +20,8 @@
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 
 using device::mojom::BluetoothSystem;
+using device::mojom::BluetoothDeviceInfo;
+using device::mojom::BluetoothDeviceInfoPtr;
 
 namespace ash {
 namespace {
@@ -34,14 +36,66 @@ void BluetoothSetDiscoveringError() {
 void BluetoothDeviceConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {}
 
-BluetoothDeviceInfo GetBluetoothDeviceInfo(device::BluetoothDevice* device) {
-  BluetoothDeviceInfo info;
-  info.address = device->GetAddress();
-  info.display_name = device->GetNameForDisplay();
-  info.connected = device->IsConnected();
-  info.connecting = device->IsConnecting();
-  info.paired = device->IsPaired();
-  info.device_type = device->GetDeviceType();
+BluetoothDeviceInfoPtr GetBluetoothDeviceInfo(device::BluetoothDevice* device) {
+  BluetoothDeviceInfoPtr info = BluetoothDeviceInfo::New();
+  info->address = device->GetAddress();
+  info->name = device->GetName();
+  info->is_paired = device->IsPaired();
+
+  switch (device->GetDeviceType()) {
+    case device::BluetoothDeviceType::UNKNOWN:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kUnknown;
+      break;
+    case device::BluetoothDeviceType::COMPUTER:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kComputer;
+      break;
+    case device::BluetoothDeviceType::PHONE:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kPhone;
+      break;
+    case device::BluetoothDeviceType::MODEM:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kModem;
+      break;
+    case device::BluetoothDeviceType::AUDIO:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kAudio;
+      break;
+    case device::BluetoothDeviceType::CAR_AUDIO:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kCarAudio;
+      break;
+    case device::BluetoothDeviceType::VIDEO:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kVideo;
+      break;
+    case device::BluetoothDeviceType::PERIPHERAL:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kPeripheral;
+      break;
+    case device::BluetoothDeviceType::JOYSTICK:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kJoystick;
+      break;
+    case device::BluetoothDeviceType::GAMEPAD:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kGamepad;
+      break;
+    case device::BluetoothDeviceType::KEYBOARD:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kKeyboard;
+      break;
+    case device::BluetoothDeviceType::MOUSE:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kMouse;
+      break;
+    case device::BluetoothDeviceType::TABLET:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kTablet;
+      break;
+    case device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO:
+      info->device_type = BluetoothDeviceInfo::DeviceType::kKeyboardMouseCombo;
+      break;
+  }
+
+  if (device->IsConnecting()) {
+    info->connection_state = BluetoothDeviceInfo::ConnectionState::kConnecting;
+  } else if (device->IsConnected()) {
+    info->connection_state = BluetoothDeviceInfo::ConnectionState::kConnected;
+  } else {
+    info->connection_state =
+        BluetoothDeviceInfo::ConnectionState::kNotConnected;
+  }
+
   return info;
 }
 
@@ -70,11 +124,12 @@ void TrayBluetoothHelperLegacy::Initialize() {
 
 BluetoothDeviceList TrayBluetoothHelperLegacy::GetAvailableBluetoothDevices()
     const {
-  BluetoothDeviceList device_list;
   device::BluetoothAdapter::DeviceList devices =
       device::FilterBluetoothDeviceList(adapter_->GetDevices(),
                                         device::BluetoothFilterType::KNOWN,
                                         kMaximumDevicesShown);
+
+  BluetoothDeviceList device_list;
   for (device::BluetoothDevice* device : devices)
     device_list.push_back(GetBluetoothDeviceInfo(device));
 
