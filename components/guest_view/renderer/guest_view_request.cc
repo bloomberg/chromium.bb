@@ -45,7 +45,8 @@ void GuestViewRequest::ExecuteCallbackIfAvailable(
   v8::MicrotasksScope microtasks(
       isolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
 
-  callback->Call(context->Global(), argc, argv.get());
+  callback->Call(context, context->Global(), argc, argv.get())
+      .FromMaybe(v8::Local<v8::Value>());
 }
 
 GuestViewAttachRequest::GuestViewAttachRequest(
