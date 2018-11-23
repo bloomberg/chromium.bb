@@ -51,13 +51,13 @@ class MockActionDelegate : public ActionDelegate {
                void(const Selector& selector,
                     base::OnceCallback<void(bool)> callback));
 
-  void Choose(const std::vector<std::string>& suggestions,
+  void Choose(const std::vector<UiController::Choice>& choices,
               base::OnceCallback<void(const std::string&)> callback) override {
-    OnChoose(suggestions, callback);
+    OnChoose(choices, callback);
   }
 
   MOCK_METHOD2(OnChoose,
-               void(const std::vector<std::string>& suggestions,
+               void(const std::vector<UiController::Choice>& choice,
                     base::OnceCallback<void(const std::string&)>& callback));
 
   MOCK_METHOD1(ForceChoose, void(const std::string&));

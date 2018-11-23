@@ -132,8 +132,8 @@ class AutofillAssistantUiDelegate {
          */
         void onScriptSelected(String scriptPath);
 
-        /** Called when a suggestion has been selected. */
-        void onSuggestionSelected(String suggestion);
+        /** Called when a choice has been selected, with the result of {@link Choice#getData()}. */
+        void onChoice(byte[] serverPayload);
 
         /**
          * Called when an address has been selected.
@@ -211,6 +211,27 @@ class AutofillAssistantUiDelegate {
         /** Returns whether the script should be highlighted. */
         public boolean isHighlight() {
             return mHighlight;
+        }
+    }
+
+    /** A choice to pass to {@link AutofillAssistantUiDelegate#onChoose}. */
+    static class Choice {
+        private final String mName;
+        private final byte[] mServerPayload;
+
+        /** Returns the localized name to display. */
+        String getName() {
+            return mName;
+        }
+
+        /** Returns the server payload associated with this choice, to pass to the callback. */
+        byte[] getServerPayload() {
+            return mServerPayload;
+        }
+
+        Choice(String name, byte[] serverPayload) {
+            mName = name;
+            mServerPayload = serverPayload;
         }
     }
 
@@ -664,14 +685,14 @@ class AutofillAssistantUiDelegate {
         mTouchEventFilter.setPartialOverlay(enabled, boxes);
     }
 
-    /** Shows chip with the given suggestions. */
-    public void showSuggestions(List<String> suggestions) {
+    /** Shows chip with the given choices. */
+    public void showChoices(List<Choice> choices) {
         List<View> childViews = new ArrayList<>();
-        for (String suggestion : suggestions) {
-            TextView chipView = createChipView(suggestion, ChipStyle.CHIP_ASSISTIVE);
+        for (Choice choice : choices) {
+            TextView chipView = createChipView(choice.getName(), ChipStyle.CHIP_ASSISTIVE);
             chipView.setOnClickListener(unusedView -> {
                 clearCarousel();
-                mClient.onSuggestionSelected(suggestion);
+                mClient.onChoice(choice.getServerPayload());
             });
             childViews.add(chipView);
         }

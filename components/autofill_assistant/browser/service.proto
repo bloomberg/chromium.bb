@@ -259,7 +259,7 @@ message ProcessedActionProto {
   optional ProcessedActionStatusProto status = 2;
 
   oneof result_data {
-    PromptProto.Result prompt_result = 5;
+    PromptProto.Choice prompt_choice = 5;
     string html_source = 12;
     // Should be set as a result of GetPaymentInformationAction.
     PaymentDetails payment_details = 15;
@@ -435,29 +435,33 @@ message NavigateProto {
   optional string url = 1;
 }
 
-// Allow the selection of one or more suggestions. If FocusElement was called
-// just before, allow interaction with the touchable element area, otherwise
-// don't allow any interactions.
+// Allow choosing one or more possibility. If FocusElement was called just
+// before, allow interaction with the touchable element area, otherwise don't
+// allow any interactions.
 message PromptProto {
-  message Result {
-    // One of the suggestions from PromptProto.suggestion or
-    // PromptProto.AutoSelect.result.
-    optional string result = 1;
-  }
-
-  // Localized text message to display.
+  // Display this message to the user.
   optional string message = 1;
 
-  // Localized suggestions to propose.
-  repeated string suggestion = 2;
+  // A choice that is made either directly by clicking on a chip or button, or
+  // implicitly by making a change on the website that is then detected by
+  // looking for the existence of an element.
+  //
+  // One of these protos must is transmitted as-is back to the server as part of
+  // ProcessedActionProto.
+  message Choice {
+    oneof type {
+      // A localized text message to display.
+      string name = 2;
 
-  // Auto-select the prompt with the given result once the given element exists.
-  message AutoSelect {
-    // Result to send to the server.
-    optional string result = 1;
-    optional ElementReferenceProto element = 2;
+      // Auto-select if the given element exist.
+      ElementReferenceProto element_exists = 4;
+    }
+
+    // Server payload originally sent by the server. This should
+    // be transmitted as-is by the client without interpreting.
+    optional bytes server_payload = 5;
   }
-  repeated AutoSelect auto_select = 3;
+  repeated Choice choices = 4;
 }
 
 message ContactDetailsProto {

@@ -26,13 +26,13 @@ class PromptAction : public Action {
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
 
-  void OnElementExist(const std::string& result, bool exists);
+  void OnElementExist(const std::string& payload, bool exists);
   void OnElementChecksDone(ActionDelegate* delegate);
-  void OnSuggestionChosen(const std::string& chosen);
+  void OnSuggestionChosen(const std::string& payload);
 
   ProcessActionCallback callback_;
 
-  std::string forced_result_;
+  std::string forced_payload_;
   std::unique_ptr<BatchElementChecker> batch_element_checker_;
   base::WeakPtrFactory<PromptAction> weak_ptr_factory_;
 
