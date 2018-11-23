@@ -31,7 +31,10 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 @property(nonatomic, weak) UIView* keyboardReplacementView;
 
 // The custom view that should be shown in the input accessory view.
-@property(nonatomic, strong) FormInputAccessoryView* customAccessoryView;
+@property(nonatomic, strong) FormInputAccessoryView* inputAccessoryView;
+
+// The leading view with the suggestions in FormInputAccessoryView.
+@property(nonatomic, strong) FormSuggestionView* formSuggestionView;
 
 // If this view controller is paused it shouldn't add its views to the keyboard.
 @property(nonatomic, getter=isPaused) BOOL paused;
@@ -49,13 +52,16 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   BOOL _suggestionsHaveBeenShown;
 }
 
+@synthesize navigationDelegate = _navigationDelegate;
+@synthesize formInputNextButtonEnabled = _formInputNextButtonEnabled;
+@synthesize formInputPreviousButtonEnabled = _formInputPreviousButtonEnabled;
+
 #pragma mark - Life Cycle
 
 - (instancetype)init {
   self = [super init];
   if (self) {
     _suggestionsHaveBeenShown = NO;
-
     if (IsIPadIdiom()) {
       _grayBackgroundView = [[UIView alloc] init];
       _grayBackgroundView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -106,70 +112,76 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, view);
 }
 
+- (void)unlockManualFallbackView {
+  [self.formSuggestionView unlockTrailingView];
+}
+
+- (void)lockManualFallbackView {
+  [self.formSuggestionView lockTrailingView];
+}
+
 #pragma mark - FormInputAccessoryConsumer
 
 - (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
                 suggestionClient:(id<FormSuggestionClient>)suggestionClient
-              navigationDelegate:
-                  (id<FormInputAccessoryViewDelegate>)navigationDelegate
               isHardwareKeyboard:(BOOL)hardwareKeyboard {
-  FormSuggestionView* formSuggestionView =
-      [[FormSuggestionView alloc] initWithFrame:CGRectZero
-                                         client:suggestionClient
-                                    suggestions:suggestions];
+  // On ipad if the keyboard isn't visible don't show the custom view.
+  if (IsIPadIdiom() &&
+      (CGRectIntersection([UIScreen mainScreen].bounds, _keyboardFrame)
+               .size.height == 0 ||
+       CGRectEqualToRect(_keyboardFrame, CGRectZero))) {
+    [self removeCustomInputAccessoryView];
+    return;
+  }
 
-  if (IsIPadIdiom()) {
-    // On iPad, there's no inputAccessoryView available, so we attach the custom
-    // view directly to the keyboard view instead.
-    [self.customAccessoryView removeFromSuperview];
-    [self.grayBackgroundView removeFromSuperview];
-
-    // If the keyboard isn't visible don't show the custom view.
-    if (CGRectIntersection([UIScreen mainScreen].bounds, _keyboardFrame)
-                .size.height == 0 ||
-        CGRectEqualToRect(_keyboardFrame, CGRectZero)) {
-      self.customAccessoryView = nil;
-      return;
-    }
-
-    if (!autofill::features::IsPasswordManualFallbackEnabled()) {
-      // Check that |manualFillAccessoryViewController| was not instantiated.
-      DCHECK(!self.manualFillAccessoryViewController);
-      // If this is a form suggestion view and no suggestions have been
-      // triggered yet, don't show the custom view.
-      if (formSuggestionView) {
-        int numSuggestions = [[formSuggestionView suggestions] count];
-        if (!_suggestionsHaveBeenShown && numSuggestions == 0) {
-          self.customAccessoryView = nil;
-          return;
-        }
+  // Check that |manualFillAccessoryViewController| was not instantiated if flag
+  // is disabled. And return early if there are no suggestions on iPad.
+  if (!autofill::features::IsPasswordManualFallbackEnabled()) {
+    DCHECK(!self.manualFillAccessoryViewController);
+    if (IsIPadIdiom()) {
+      // On iPad, there's no inputAccessoryView available, so we attach the
+      // custom view directly to the keyboard view instead. If this is a form
+      // suggestion view and no suggestions have been triggered yet, don't show
+      // the custom view.
+      if (suggestions && !_suggestionsHaveBeenShown && !suggestions.count) {
+        [self removeCustomInputAccessoryView];
+        return;
       }
       _suggestionsHaveBeenShown = YES;
     }
-    self.customAccessoryView = [[FormInputAccessoryView alloc] init];
-    [self.customAccessoryView
-        setUpWithLeadingView:formSuggestionView
-          customTrailingView:self.manualFillAccessoryViewController.view];
-    [self addCustomAccessoryViewIfNeeded];
-  } else if (hardwareKeyboard) {
-    // On iPhones, when using a hardware keyboard, for most models, there's no
-    // space to show suggestions because of the on-screen menu button.
-    [self restoreOriginalInputAccessoryView];
-    self.customAccessoryView = [[FormInputAccessoryView alloc] init];
-    [self.customAccessoryView setUpWithLeadingView:[[UIView alloc] init]
-                                navigationDelegate:navigationDelegate];
-    [self addCustomAccessoryViewIfNeeded];
-  } else {
-    // On iPhone, the custom view replaces the default UI of the
-    // inputAccessoryView.
-    [self restoreOriginalInputAccessoryView];
-    formSuggestionView.trailingView =
-        self.manualFillAccessoryViewController.view;
-    self.customAccessoryView = [[FormInputAccessoryView alloc] init];
-    [self.customAccessoryView setUpWithLeadingView:formSuggestionView
-                                navigationDelegate:navigationDelegate];
-    [self addCustomAccessoryViewIfNeeded];
   }
+
+  // Create the views if they don't exist already.
+  if (!self.formSuggestionView) {
+    self.formSuggestionView = [[FormSuggestionView alloc] init];
+  }
+
+  [self.formSuggestionView updateClient:suggestionClient
+                            suggestions:suggestions];
+
+  if (!self.inputAccessoryView) {
+    self.inputAccessoryView = [[FormInputAccessoryView alloc] init];
+    if (IsIPadIdiom()) {
+      [self.inputAccessoryView
+          setUpWithLeadingView:self.formSuggestionView
+            customTrailingView:self.manualFillAccessoryViewController.view];
+    } else {
+      self.formSuggestionView.trailingView =
+          self.manualFillAccessoryViewController.view;
+      [self.inputAccessoryView setUpWithLeadingView:self.formSuggestionView
+                                 navigationDelegate:self.navigationDelegate];
+      self.inputAccessoryView.nextButton.enabled =
+          self.formInputNextButtonEnabled;
+      self.inputAccessoryView.previousButton.enabled =
+          self.formInputPreviousButtonEnabled;
+    }
+  }
+
+  // On iPhones, when using a hardware keyboard, for most models, there's no
+  // space to show suggestions because of the on-screen menu button.
+  self.inputAccessoryView.leadingView.hidden = hardwareKeyboard;
+
+  [self addInputAccessoryViewIfNeeded];
 }
 
 - (void)restoreOriginalKeyboardView {
@@ -198,18 +210,36 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   }
 }
 
+#pragma mark - Setters
+
+- (void)setFormInputNextButtonEnabled:(BOOL)formInputNextButtonEnabled {
+  if (formInputNextButtonEnabled == _formInputNextButtonEnabled) {
+    return;
+  }
+  _formInputNextButtonEnabled = formInputNextButtonEnabled;
+  self.inputAccessoryView.nextButton.enabled = _formInputNextButtonEnabled;
+}
+
+- (void)setFormInputPreviousButtonEnabled:(BOOL)formInputPreviousButtonEnabled {
+  if (formInputPreviousButtonEnabled == _formInputPreviousButtonEnabled) {
+    return;
+  }
+  _formInputPreviousButtonEnabled = formInputPreviousButtonEnabled;
+  self.inputAccessoryView.previousButton.enabled =
+      _formInputPreviousButtonEnabled;
+}
+
 #pragma mark - Private
 
 // Removes the custom views related to the input accessory view.
 - (void)removeCustomInputAccessoryView {
-  [self.customAccessoryView removeFromSuperview];
+  [self.inputAccessoryView removeFromSuperview];
   [self.grayBackgroundView removeFromSuperview];
 }
 
 // Removes the custom input accessory views and clears the references.
 - (void)restoreOriginalInputAccessoryView {
   [self removeCustomInputAccessoryView];
-  self.customAccessoryView = nil;
 }
 
 // This searches in a keyboard view hierarchy for the best candidate to
@@ -266,11 +296,10 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 - (void)keyboardWillShow:(NSNotification*)notification {
-  // [iPhone, iOS 10] If the customAccessoryView has not been added to the
-  // hierarchy, do it here. This can happen is the view is provided before the
-  // keyboard view is created by the system, i.e. the first time the keyboard
-  // will appear.
+  // If the inputAccessoryView has not been added to the hierarchy, do it here.
+  // This can happen when returning from a full screen view controller.
   if (!IsIPadIdiom()) {
+    [self addInputAccessoryViewIfNeeded];
     [self addCustomKeyboardViewIfNeeded];
   }
 }
@@ -290,12 +319,12 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   }
   // On ipad we hide the views so they don't stick around at the bottom. Only
   // needed on iPad because we add the view directly to the keyboard view.
-  if (IsIPadIdiom() && self.customAccessoryView) {
+  if (IsIPadIdiom() && self.inputAccessoryView) {
     if (CGRectEqualToRect(_keyboardFrame, CGRectZero)) {
-      self.customAccessoryView.hidden = true;
+      self.inputAccessoryView.hidden = true;
       self.grayBackgroundView.hidden = true;
     } else {
-      self.customAccessoryView.hidden = false;
+      self.inputAccessoryView.hidden = false;
       self.grayBackgroundView.hidden = false;
     }
   }
@@ -310,25 +339,25 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   }
 }
 
-// Adds the customAccessoryView and the backgroundView (on iPads), if those are
+// Adds the inputAccessoryView and the backgroundView (on iPads), if those are
 // not already in the hierarchy.
-- (void)addCustomAccessoryViewIfNeeded {
+- (void)addInputAccessoryViewIfNeeded {
   if (self.isPaused) {
     return;
   }
-  if (self.customAccessoryView && !self.customAccessoryView.superview) {
+  if (self.inputAccessoryView && !self.inputAccessoryView.superview) {
     if (IsIPadIdiom()) {
       UIView* keyboardView = [self getKeyboardView];
-      self.customAccessoryView.translatesAutoresizingMaskIntoConstraints = NO;
-      [keyboardView addSubview:self.customAccessoryView];
+      self.inputAccessoryView.translatesAutoresizingMaskIntoConstraints = NO;
+      [keyboardView addSubview:self.inputAccessoryView];
       [NSLayoutConstraint activateConstraints:@[
-        [self.customAccessoryView.leadingAnchor
+        [self.inputAccessoryView.leadingAnchor
             constraintEqualToAnchor:keyboardView.leadingAnchor],
-        [self.customAccessoryView.trailingAnchor
+        [self.inputAccessoryView.trailingAnchor
             constraintEqualToAnchor:keyboardView.trailingAnchor],
-        [self.customAccessoryView.bottomAnchor
+        [self.inputAccessoryView.bottomAnchor
             constraintEqualToAnchor:keyboardView.topAnchor],
-        [self.customAccessoryView.heightAnchor
+        [self.inputAccessoryView.heightAnchor
             constraintEqualToConstant:autofill::kInputAccessoryHeight]
       ]];
       if (!self.grayBackgroundView.superview) {
@@ -338,10 +367,10 @@ CGFloat const kInputAccessoryHeight = 44.0f;
       }
     } else {
       UIResponder* firstResponder = GetFirstResponder();
-      UIView* inputAccessoryView = firstResponder.inputAccessoryView;
-      if (inputAccessoryView) {
-        [inputAccessoryView addSubview:self.customAccessoryView];
-        AddSameConstraints(self.customAccessoryView, inputAccessoryView);
+      if (firstResponder.inputAccessoryView) {
+        [firstResponder.inputAccessoryView addSubview:self.inputAccessoryView];
+        AddSameConstraints(self.inputAccessoryView,
+                           firstResponder.inputAccessoryView);
       }
     }
   }

@@ -19,7 +19,7 @@ class WebState;
 }  // namespace web
 
 @class FormSuggestion;
-@protocol FormInputAccessoryViewDelegate;
+@protocol FormInputNavigator;
 @protocol FormInputSuggestionsProvider;
 
 // Block type to provide form suggestions asynchronously.
@@ -31,8 +31,7 @@ typedef void (^FormSuggestionsReadyCompletion)(
 @protocol FormInputSuggestionsProvider<FormSuggestionClient>
 
 // A delegate for form navigation.
-@property(nonatomic, assign) id<FormInputAccessoryViewDelegate>
-    accessoryViewDelegate;
+@property(nonatomic, weak) id<FormInputNavigator> formInputNavigator;
 
 // Asynchronously retrieves form suggestions from this provider for the
 // specified form/field and returns it via |accessoryViewUpdateBlock|. View

@@ -177,7 +177,6 @@
   }
 
   [self.childCoordinators addObject:passwordCoordinator];
-  [self.formInputAccessoryMediator disableSuggestions];
 }
 
 - (void)startCardsFromButton:(UIButton*)button {
@@ -195,7 +194,6 @@
   }
 
   [self.childCoordinators addObject:cardCoordinator];
-  [self.formInputAccessoryMediator disableSuggestions];
 }
 
 - (void)startAddressFromButton:(UIButton*)button {
@@ -212,7 +210,6 @@
   }
 
   [self.childCoordinators addObject:addressCoordinator];
-  [self.formInputAccessoryMediator disableSuggestions];
 }
 
 #pragma mark - ManualFillAccessoryViewControllerDelegate
@@ -220,21 +217,28 @@
 - (void)keyboardButtonPressed {
   [self stopChildren];
   [self.formInputAccessoryMediator enableSuggestions];
+  [self.formInputAccessoryViewController unlockManualFallbackView];
 }
 
 - (void)accountButtonPressed:(UIButton*)sender {
   [self stopChildren];
   [self startAddressFromButton:sender];
+  [self.formInputAccessoryViewController lockManualFallbackView];
+  [self.formInputAccessoryMediator disableSuggestions];
 }
 
 - (void)cardButtonPressed:(UIButton*)sender {
   [self stopChildren];
   [self startCardsFromButton:sender];
+  [self.formInputAccessoryViewController lockManualFallbackView];
+  [self.formInputAccessoryMediator disableSuggestions];
 }
 
 - (void)passwordButtonPressed:(UIButton*)sender {
   [self stopChildren];
   [self startPasswordsFromButton:sender];
+  [self.formInputAccessoryViewController lockManualFallbackView];
+  [self.formInputAccessoryMediator disableSuggestions];
 }
 
 #pragma mark - PasswordCoordinatorDelegate

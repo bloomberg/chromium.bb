@@ -13,6 +13,16 @@
 
 @protocol FormInputAccessoryConsumer<NSObject>
 
+// Delegate used for form navigation.
+@property(nonatomic, weak) id<FormInputAccessoryViewDelegate>
+    navigationDelegate;
+
+// Enables or disables the next button if any.
+@property(nonatomic) BOOL formInputNextButtonEnabled;
+
+// Enables or disables the previous button if any.
+@property(nonatomic) BOOL formInputPreviousButtonEnabled;
+
 // Removes the animations on the custom keyboard view.
 - (void)removeAnimationsOnKeyboardView;
 
@@ -33,8 +43,6 @@
 // |isHardwareKeyboard| is true if a hardware keyboard is in use.
 - (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
                 suggestionClient:(id<FormSuggestionClient>)suggestionClient
-              navigationDelegate:
-                  (id<FormInputAccessoryViewDelegate>)navigationDelegate
               isHardwareKeyboard:(BOOL)hardwareKeyboard;
 
 @end
