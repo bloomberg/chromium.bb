@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.os.Bundle;
 
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -34,7 +34,7 @@ public class AutofillAssistantFacade {
     }
 
     /** Starts Autofill Assistant on the given {@code activity}. */
-    public static void start(CustomTabActivity activity) {
+    public static void start(ChromeActivity activity) {
         Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
         parameters.remove(PARAMETER_ENABLED);
 
@@ -51,9 +51,10 @@ public class AutofillAssistantFacade {
         uiDelegate.startOrSkipInitScreen();
     }
 
-    private static void initTabObservers(
-            CustomTabActivity activity, UiDelegateHolder delegateHolder) {
+    private static void initTabObservers(ChromeActivity activity, UiDelegateHolder delegateHolder) {
         // Shut down Autofill Assistant when the tab is detached from the activity.
+        //
+        // Note: For now this logic assumes that |activity| is a CustomTabActivity.
         Tab activityTab = activity.getActivityTab();
         activityTab.addObserver(new EmptyTabObserver() {
             @Override

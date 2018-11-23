@@ -168,8 +168,8 @@ class ActionDelegate {
   // Shut down Autofill Assistant at the end of the current script.
   virtual void Shutdown() = 0;
 
-  // Shut down Autofill Assistant and close the CCT.
-  virtual void CloseCustomTab() = 0;
+  // Shut down Autofill Assistant and closes Chrome.
+  virtual void Close() = 0;
 
   // Restart Autofill Assistant at the end of the current script with a cleared
   // state.

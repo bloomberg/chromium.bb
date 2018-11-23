@@ -145,7 +145,7 @@ class MockActionDelegate : public ActionDelegate {
            base::OnceCallback<void(bool, const std::string&)> callback));
   MOCK_METHOD1(LoadURL, void(const GURL& url));
   MOCK_METHOD0(Shutdown, void());
-  MOCK_METHOD0(CloseCustomTab, void());
+  MOCK_METHOD0(Close, void());
   MOCK_METHOD0(Restart, void());
   MOCK_METHOD0(GetClientMemory, ClientMemory*());
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());

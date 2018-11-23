@@ -293,7 +293,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       return;
 
     case ScriptExecutor::CLOSE_CUSTOM_TAB:
-      GetUiController()->CloseCustomTab();
+      GetUiController()->Close();
       return;
 
     case ScriptExecutor::RESTART:

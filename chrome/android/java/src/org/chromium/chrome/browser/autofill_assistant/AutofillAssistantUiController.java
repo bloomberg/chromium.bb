@@ -16,8 +16,8 @@ import org.chromium.base.LocaleUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
@@ -70,10 +70,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /**
      * Construct Autofill Assistant UI controller.
      *
-     * @param activity The CustomTabActivity of the controller associated with.
+     * @param activity The ChromeActivity of the controller associated with.
      */
-    public AutofillAssistantUiController(
-            CustomTabActivity activity, Map<String, String> parameters) {
+    public AutofillAssistantUiController(ChromeActivity activity, Map<String, String> parameters) {
         mWebContents = activity.getActivityTab().getWebContents();
         mInitialUrl = activity.getInitialIntent().getDataString();
 
@@ -208,8 +207,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @CalledByNative
-    private void onCloseCustomTab() {
-        mUiDelegateHolder.closeCustomTab();
+    private void onClose() {
+        mUiDelegateHolder.close();
     }
 
     @CalledByNative

@@ -141,8 +141,8 @@ void UiControllerAndroid::ShutdownGracefully() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
-void UiControllerAndroid::CloseCustomTab() {
-  Java_AutofillAssistantUiController_onCloseCustomTab(
+void UiControllerAndroid::Close() {
+  Java_AutofillAssistantUiController_onClose(
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 

@@ -59,8 +59,8 @@ class UiController {
   // Warning: this indirectly deletes the caller.
   virtual void ShutdownGracefully() = 0;
 
-  // Shuts down Autofill Assistant and closes CCT.
-  virtual void CloseCustomTab() = 0;
+  // Shuts down Autofill Assistant and closes Chrome.
+  virtual void Close() = 0;
 
   // Update the list of scripts in the UI.
   virtual void UpdateScripts(const std::vector<ScriptHandle>& scripts) = 0;

@@ -43,7 +43,7 @@ class UiControllerAndroid : public UiController,
   void HideOverlay() override;
   void Shutdown() override;
   void ShutdownGracefully() override;
-  void CloseCustomTab() override;
+  void Close() override;
   void UpdateScripts(const std::vector<ScriptHandle>& scripts) override;
   void Choose(const std::vector<UiController::Choice>& choices,
               base::OnceCallback<void(const std::string&)> callback) override;
