@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL contentEditable on ElementContentEditable must enqueue an attributeChanged reaction when adding contenteditable content attribute define_new_custom_element is not defined
+FAIL contentEditable on ElementContentEditable must enqueue an attributeChanged reaction when replacing an existing attribute define_new_custom_element is not defined
+Harness: the test ran to completion.
+

@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught ReferenceError: test_with_window is not defined
 PASS HTML parser must not instantiate custom elements inside template elements
 PASS HTML parser must not use the registry of the owner element's document inside an iframe
 PASS HTML parser must use the registry of the content document inside an iframe
@@ -7,7 +8,5 @@ PASS HTML parser must use the registry of window.document in a document created 
 PASS HTML parser must use the registry of window.document in a document created by document.implementation.createXHTMLDocument()
 PASS HTML parser must use the registry of window.document in a document created by new Document
 PASS HTML parser must use the registry of window.document in a document created by XMLHttpRequest
-FAIL document.write() must not instantiate a custom element without a defined insertion point assert_false: expected false got true
-FAIL document.writeln() must not instantiate a custom element without a defined insertion point assert_false: expected false got true
 Harness: the test ran to completion.
 

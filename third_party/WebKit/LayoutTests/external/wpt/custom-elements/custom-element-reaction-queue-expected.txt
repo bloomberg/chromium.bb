@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Custom Elements: Each element must have its own custom element reaction queue Uncaught ReferenceError: test_with_window is not defined
+Harness: the test ran to completion.
+
