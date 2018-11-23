@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
+#include "chrome/browser/chromeos/policy/device_policy_cloud_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/hostname_handler.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
@@ -40,6 +42,7 @@
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -56,7 +59,9 @@
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
+#include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/proxy_policy_provider.h"
+#include "components/policy/policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -123,9 +128,20 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
       state_keys_broker_ = std::make_unique<ServerBackedStateKeysBroker>(
           chromeos::DBusThreadManager::Get()->GetSessionManagerClient());
 
+      base::FilePath device_policy_external_data_path;
+      CHECK(base::PathService::Get(chromeos::DIR_DEVICE_POLICY_EXTERNAL_DATA,
+                                   &device_policy_external_data_path));
+
+      auto external_data_manager =
+          std::make_unique<DevicePolicyCloudExternalDataManager>(
+              base::BindRepeating(&GetChromePolicyDetails),
+              GetBackgroundTaskRunner(), device_policy_external_data_path,
+              device_cloud_policy_store.get());
+
       device_cloud_policy_manager_ = new DeviceCloudPolicyManagerChromeOS(
           std::move(device_cloud_policy_store),
-          base::ThreadTaskRunnerHandle::Get(), state_keys_broker_.get());
+          std::move(external_data_manager), base::ThreadTaskRunnerHandle::Get(),
+          state_keys_broker_.get());
       providers_for_init_.push_back(
           base::WrapUnique<ConfigurationPolicyProvider>(
               device_cloud_policy_manager_));
