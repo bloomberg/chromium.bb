@@ -238,8 +238,8 @@ public class TracingPreferencesTest {
         deleteIntent.send();
         callbackHelper.waitForCallback(3 /* currentCallCount */);
 
-        // The temporary file should be deleted.
-        Assert.assertFalse(tempFile.exists());
+        // The temporary file should be deleted asynchronously.
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(false, () -> tempFile.exists()));
 
         // Notification should be deleted, too.
         waitForNotificationManagerMutation();
