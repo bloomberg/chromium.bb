@@ -37,6 +37,10 @@
 #include "chrome/browser/printing/print_view_manager_basic.h"
 #endif
 
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/conflicts/module_database_win.h"
+#endif
+
 using content::BrowserThread;
 
 namespace printing {
@@ -237,6 +241,10 @@ void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
 void PrintingMessageFilter::OnScriptedPrint(
     const PrintHostMsg_ScriptedPrint_Params& params,
     IPC::Message* reply_msg) {
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  ModuleDatabase::GetInstance()->DisableThirdPartyBlocking();
+#endif
+
   scoped_refptr<PrinterQuery> printer_query =
       queue_->PopPrinterQuery(params.cookie);
   if (!printer_query.get()) {

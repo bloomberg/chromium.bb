@@ -18,11 +18,10 @@
 #include "components/crash/core/common/crash_key.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome_elf/third_party_dlls/logging_api.h"
+#include "chrome_elf/third_party_dlls/public_api.h"
 #endif
 
 namespace {
-
 // Returns true if the module is signed by Google.
 bool IsGoogleModule(base::StringPiece16 subject) {
   static const wchar_t kGoogle[] = L"Google Inc";
@@ -157,15 +156,23 @@ void ThirdPartyMetricsRecorder::RecordHeartbeatMetrics() {
       "ThirdPartyModules.Heartbeat.UniqueBlockedModulesCount",
       GetUniqueBlockedModulesCount());
 
-  uint32_t blocked_modules_count = GetBlockedModulesCount();
-  UMA_HISTOGRAM_COUNTS_1M("ThirdPartyModules.Heartbeat.BlockedModulesCount",
-                          blocked_modules_count);
+  if (record_blocked_modules_count_) {
+    uint32_t blocked_modules_count = GetBlockedModulesCount();
+    UMA_HISTOGRAM_COUNTS_1M("ThirdPartyModules.Heartbeat.BlockedModulesCount",
+                            blocked_modules_count);
 
-  // Stop recording when |blocked_modules_count| gets too high. This is to avoid
-  // dealing with the possible integer overflow that would result in emitting
-  // wrong values. The exact cutoff point is not important but it must be higher
-  // than the max value for the histogram (1M in this case).
-  if (blocked_modules_count > std::numeric_limits<uint32_t>::max() / 2)
-    heartbeat_metrics_timer_.Reset();
+    // Stop recording when |blocked_modules_count| gets too high. This is to
+    // avoid dealing with the possible integer overflow that would result in
+    // emitting wrong values. The exact cutoff point is not important but it
+    // must be higher than the max value for the histogram (1M in this case).
+    // It's ok to continue logging the count of unique blocked modules because
+    // there's no expectation that this count can reach a high value.
+    if (blocked_modules_count > std::numeric_limits<uint32_t>::max() / 2)
+      record_blocked_modules_count_ = false;
+  }
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "ThirdPartyModules.Heartbeat.PrintingWorkaround.BlockingEnabled",
+      hook_enabled_);
 }
 #endif

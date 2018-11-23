@@ -256,10 +256,10 @@ static_library("third_party_dlls") {
 source_set("third_party_shared_defines") {
   sources = [
     "sha1/sha1.h",
-    "third_party_dlls/logging_api.cc",
-    "third_party_dlls/logging_api.h",
     "third_party_dlls/packed_list_format.cc",
     "third_party_dlls/packed_list_format.h",
+    "third_party_dlls/public_api.cc",
+    "third_party_dlls/public_api.h",
     "third_party_dlls/status_codes.cc",
     "third_party_dlls/status_codes.h",
   ]

@@ -4,6 +4,7 @@
 
 #include "chrome_elf/third_party_dlls/hook.h"
 
+#include <atomic>
 #include <limits>
 #include <memory>
 
@@ -18,6 +19,7 @@
 #include "chrome_elf/third_party_dlls/main.h"
 #include "chrome_elf/third_party_dlls/packed_list_file.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
+#include "chrome_elf/third_party_dlls/public_api.h"
 #include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/nt_internals.h"
@@ -48,6 +50,9 @@ NtUnmapViewOfSectionFunction g_nt_unmap_view_of_section_func = nullptr;
 
 // Set if and when ApplyHook() has been successfully executed.
 bool g_hook_active = false;
+
+// Indicates if the hook was disabled after the hook was activated.
+std::atomic<bool> g_hook_disabled(false);
 
 // Set up NTDLL function pointers.
 bool InitImports() {
@@ -267,6 +272,9 @@ NTSTATUS NewNtMapViewOfSectionImpl(
                                        commit_size, offset, view_size, inherit,
                                        allocation_type, protect);
 
+  if (g_hook_disabled.load(std::memory_order_relaxed))
+    return ret;
+
   // If there was an OS-level failure, if the mapping target is NOT this
   // process, or if the section is not a (valid) Portable Executable,
   // we're not interested.  Return the OS-level result code.
@@ -485,3 +493,9 @@ bool GetDataFromImageForTesting(PVOID mapped_image,
 }
 
 }  // namespace third_party_dlls
+
+using namespace third_party_dlls;
+
+void DisableHook() {
+  g_hook_disabled.store(true, std::memory_order_relaxed);
+}

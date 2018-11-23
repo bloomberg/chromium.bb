@@ -42,3 +42,6 @@ EXPORTS
   RegisterLogNotification
   GetBlockedModulesCount
   GetUniqueBlockedModulesCount
+
+  ; From chrome_elf/third_party_dlls/hook.cc
+  DisableHook

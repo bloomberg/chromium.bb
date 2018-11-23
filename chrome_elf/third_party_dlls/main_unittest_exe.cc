@@ -17,9 +17,9 @@
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/product_install_details.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
-#include "chrome_elf/third_party_dlls/logging_api.h"
 #include "chrome_elf/third_party_dlls/main.h"
 #include "chrome_elf/third_party_dlls/packed_list_file.h"
+#include "chrome_elf/third_party_dlls/public_api.h"
 
 using namespace third_party_dlls::main_unittest_exe;
 

@@ -10,7 +10,7 @@
 #include "base/win/windows_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome_elf/chrome_elf_main.h"
-#include "chrome_elf/third_party_dlls/logging_api.h"
+#include "chrome_elf/third_party_dlls/public_api.h"
 
 // This function is a temporary workaround for https://crbug.com/655788. We
 // need to come up with a better way to initialize crash reporting that can
@@ -43,7 +43,7 @@ void SetMetricsClientId(const char* client_id) {}
 //------------------------------------------------------------------------------
 // chrome_elf\third_party_dlls export test stubs.
 // - For use by \\chrome\browser\conflicts\* testing.
-// - Stubs should shadow third_party_dlls\logging_api.h and logs_unittest.cc.
+// - Stubs should shadow third_party_dlls\public_api.h and logs_unittest.cc.
 //------------------------------------------------------------------------------
 
 struct TestLogEntry {
@@ -104,3 +104,5 @@ uint32_t GetBlockedModulesCount() {
 uint32_t GetUniqueBlockedModulesCount() {
   return 0;
 }
+
+void DisableHook() {}
