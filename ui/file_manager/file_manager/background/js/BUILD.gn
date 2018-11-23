@@ -22,6 +22,7 @@ group("closure_compile") {
   testonly = true
   deps = [
     ":closure_compile_module",
+    ":test_support_type_check",
     ":unit_tests_type_check",
   ]
 }
@@ -50,7 +51,6 @@ js_type_check("closure_compile_module") {
     ":media_import_handler",
     ":media_scanner",
     ":metadata_proxy",
-    ":mock_volume_manager",
     ":progress_center",
     ":runtime_loaded_test_util",
     ":task_queue",
@@ -60,6 +60,15 @@ js_type_check("closure_compile_module") {
     ":volume_manager_factory",
     ":volume_manager_impl",
     ":volume_manager_util",
+  ]
+}
+
+js_type_check("test_support_type_check") {
+  testonly = true
+  deps = [
+    ":mock_media_scanner",
+    ":mock_volume_manager",
+    ":test_import_history",
   ]
 }
 
@@ -255,6 +264,7 @@ js_library("media_import_handler") {
 js_library("mock_media_scanner") {
   testonly = true
   deps = [
+    ":media_scanner",
     ":test_import_history",
   ]
   externs_list = [ "../../../externs/background/media_scanner.js" ]
@@ -310,6 +320,7 @@ js_library("test_import_history") {
   testonly = true
   deps = [
     ":import_history",
+    "//ui/webui/resources/js:webui_resource_test",
   ]
 }
 
