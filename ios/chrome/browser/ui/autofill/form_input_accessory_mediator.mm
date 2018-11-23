@@ -70,6 +70,10 @@
 // The WebState this instance is observing. Can be null.
 @property(nonatomic, assign) web::WebState* webState;
 
+// Track the use of hardware keyboard, when there's a notification of keyboard
+// use but no keyboard on the screen.
+@property(nonatomic, assign) BOOL hardwareKeyboard;
+
 @end
 
 @implementation FormInputAccessoryMediator {
@@ -404,7 +408,8 @@ queryViewBlockForProvider:(id<FormInputSuggestionsProvider>)provider
   if (self.suggestionsDisabled) {
     [self.consumer showAccessorySuggestions:@[]
                            suggestionClient:provider
-                         navigationDelegate:self.formInputAccessoryHandler];
+                         navigationDelegate:self.formInputAccessoryHandler
+                         isHardwareKeyboard:self.hardwareKeyboard];
   } else {
     // If suggestions are enabled update |currentProvider|.
     self.currentProvider = provider;
@@ -412,13 +417,20 @@ queryViewBlockForProvider:(id<FormInputSuggestionsProvider>)provider
   // Post it to the consumer.
   [self.consumer showAccessorySuggestions:suggestions
                          suggestionClient:provider
-                       navigationDelegate:self.formInputAccessoryHandler];
+                       navigationDelegate:self.formInputAccessoryHandler
+                       isHardwareKeyboard:self.hardwareKeyboard];
 }
 
 #pragma mark - Keyboard Notifications
 
 // When the keyboard is shown, send the last suggestions to the consumer.
 - (void)handleKeyboardWillShow:(NSNotification*)notification {
+  NSDictionary* userInfo = [notification userInfo];
+  CGRect keyboardFrame =
+      [[userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  self.hardwareKeyboard =
+      !CGRectContainsRect([UIScreen mainScreen].bounds, keyboardFrame);
+
   if (self.lastSuggestions) {
     [self updateWithProvider:self.lastProvider
                  suggestions:self.lastSuggestions];

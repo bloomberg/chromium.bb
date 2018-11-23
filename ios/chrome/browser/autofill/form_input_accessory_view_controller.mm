@@ -111,7 +111,8 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 - (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
                 suggestionClient:(id<FormSuggestionClient>)suggestionClient
               navigationDelegate:
-                  (id<FormInputAccessoryViewDelegate>)navigationDelegate {
+                  (id<FormInputAccessoryViewDelegate>)navigationDelegate
+              isHardwareKeyboard:(BOOL)hardwareKeyboard {
   FormSuggestionView* formSuggestionView =
       [[FormSuggestionView alloc] initWithFrame:CGRectZero
                                          client:suggestionClient
@@ -149,6 +150,14 @@ CGFloat const kInputAccessoryHeight = 44.0f;
     [self.customAccessoryView
         setUpWithLeadingView:formSuggestionView
           customTrailingView:self.manualFillAccessoryViewController.view];
+    [self addCustomAccessoryViewIfNeeded];
+  } else if (hardwareKeyboard) {
+    // On iPhones, when using a hardware keyboard, for most models, there's no
+    // space to show suggestions because of the on-screen menu button.
+    [self restoreOriginalInputAccessoryView];
+    self.customAccessoryView = [[FormInputAccessoryView alloc] init];
+    [self.customAccessoryView setUpWithLeadingView:[[UIView alloc] init]
+                                navigationDelegate:navigationDelegate];
     [self addCustomAccessoryViewIfNeeded];
   } else {
     // On iPhone, the custom view replaces the default UI of the
