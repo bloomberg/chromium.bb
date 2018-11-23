@@ -355,34 +355,68 @@ FileTasks.UMA_ZIP_HANDLER_TASK_IDS_ = Object.freeze([
 ]);
 
 /**
+ * Returns whether the system is currently offline.
+ *
+ * @param {!VolumeManager} volumeManager
+ * @return {boolean} True if the network status is offline.
+ * @private
+ */
+FileTasks.isOffline_ = function(volumeManager) {
+  var connection = volumeManager.getDriveConnectionState();
+  return connection.type == VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+      connection.reason == VolumeManagerCommon.DriveConnectionReason.NO_NETWORK;
+};
+
+/**
+ * Records a metric, as well as recording online and offline versions of it.
+ *
+ * @param {!VolumeManager} volumeManager
+ * @param {string} name Metric name.
+ * @param {!*} value Enum value.
+ * @param {!Array<*>} values Array of valid values.
+ */
+FileTasks.recordEnumWithOnlineAndOffline_ = function(
+    volumeManager, name, value, values) {
+  metrics.recordEnum(name, value, values);
+  if (FileTasks.isOffline_(volumeManager))
+    metrics.recordEnum(name + '.Offline', value, values);
+  else
+    metrics.recordEnum(name + '.Online', value, values);
+};
+
+/**
  * Records trial of opening file grouped by extensions.
  *
+ * @param {!VolumeManager} volumeManager
  * @param {Array<!Entry>} entries The entries to be opened.
  * @private
  */
-FileTasks.recordViewingFileTypeUMA_ = function(entries) {
+FileTasks.recordViewingFileTypeUMA_ = function(volumeManager, entries) {
   for (var i = 0; i < entries.length; i++) {
     var entry = entries[i];
     var extension = FileType.getExtension(entry).toLowerCase();
     if (FileTasks.UMA_INDEX_KNOWN_EXTENSIONS.indexOf(extension) < 0) {
       extension = 'other';
     }
-    metrics.recordEnum(
-        'ViewingFileType', extension, FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
+    FileTasks.recordEnumWithOnlineAndOffline_(
+        volumeManager, 'ViewingFileType', extension,
+        FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
   }
 };
 
 /**
  * Records trial of opening file grouped by root types.
  *
+ * @param {!VolumeManager} volumeManager
  * @param {?VolumeManagerCommon.RootType} rootType The type of the root where
  *     entries are being opened.
  * @private
  */
-FileTasks.recordViewingRootTypeUMA_ = function(rootType) {
+FileTasks.recordViewingRootTypeUMA_ = function(volumeManager, rootType) {
   if (rootType !== null) {
-    metrics.recordEnum(
-        'ViewingRootType', rootType, VolumeManagerCommon.RootTypesForUMA);
+    FileTasks.recordEnumWithOnlineAndOffline_(
+        volumeManager, 'ViewingRootType', rootType,
+        VolumeManagerCommon.RootTypesForUMA);
   }
 };
 
@@ -662,9 +696,9 @@ FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
  *     default task is executed, or the error is occurred.
  */
 FileTasks.prototype.executeDefault = function(opt_callback) {
-  FileTasks.recordViewingFileTypeUMA_(this.entries_);
+  FileTasks.recordViewingFileTypeUMA_(this.volumeManager_, this.entries_);
   FileTasks.recordViewingRootTypeUMA_(
-      this.directoryModel_.getCurrentRootType());
+      this.volumeManager_, this.directoryModel_.getCurrentRootType());
   this.executeDefaultInternal_(opt_callback);
 };
 
@@ -798,9 +832,9 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
  * @param {chrome.fileManagerPrivate.FileTask} task FileTask.
  */
 FileTasks.prototype.execute = function(task) {
-  FileTasks.recordViewingFileTypeUMA_(this.entries_);
+  FileTasks.recordViewingFileTypeUMA_(this.volumeManager_, this.entries_);
   FileTasks.recordViewingRootTypeUMA_(
-      this.directoryModel_.getCurrentRootType());
+      this.volumeManager_, this.directoryModel_.getCurrentRootType());
   this.executeInternal_(task);
 };
 
