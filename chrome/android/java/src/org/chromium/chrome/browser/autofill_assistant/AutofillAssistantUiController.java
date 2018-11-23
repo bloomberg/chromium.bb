@@ -222,19 +222,22 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         assert scriptNames.length == scriptPaths.length;
         assert scriptNames.length == scriptsHighlightFlags.length;
 
-        ArrayList<AutofillAssistantUiDelegate.ScriptHandle> scriptHandles = new ArrayList<>();
-        // Note that scriptNames, scriptPaths and scriptsHighlightFlags are one-on-one matched by
+        List<AutofillAssistantUiDelegate.ScriptHandle> scriptHandles = new ArrayList<>();
+        // Note that scriptNames, scriptsHighlightFlags and scriptPaths are one-on-one matched by
         // index.
         for (int i = 0; i < scriptNames.length; i++) {
             scriptHandles.add(new AutofillAssistantUiDelegate.ScriptHandle(
-                    scriptNames[i], scriptPaths[i], scriptsHighlightFlags[i]));
+                    scriptNames[i], scriptsHighlightFlags[i], scriptPaths[i]));
         }
 
         mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.updateScripts(scriptHandles));
     }
 
     @CalledByNative
-    private void onChoose(String[] names, byte[][] serverPayloads) {
+    private void onChoose(String[] names, byte[][] serverPayloads, boolean[] highlightFlags) {
+        assert names.length == serverPayloads.length;
+        assert names.length == highlightFlags.length;
+
         // An empty choice list is supported, as selection can still be forced. onForceChoose should
         // be a no-op in this case.
         if (names.length == 0) return;
@@ -242,7 +245,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         List<AutofillAssistantUiDelegate.Choice> choices = new ArrayList<>();
         assert (names.length == serverPayloads.length);
         for (int i = 0; i < names.length; i++) {
-            choices.add(new AutofillAssistantUiDelegate.Choice(names[i], serverPayloads[i]));
+            choices.add(new AutofillAssistantUiDelegate.Choice(
+                    names[i], highlightFlags[i], serverPayloads[i]));
         }
         mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.showChoices(choices));
     }

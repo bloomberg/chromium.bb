@@ -35,6 +35,7 @@ void PromptAction::InternalProcessAction(ActionDelegate* delegate,
     choices.emplace_back();
     auto& choice = choices.back();
     choice.name = choice_proto.name();
+    choice.highlight = choice_proto.highlight();
     choice_proto.SerializeToString(&choice.server_payload);
   }
   delegate->Choose(choices, base::BindOnce(&PromptAction::OnSuggestionChosen,

@@ -27,6 +27,9 @@ class UiController {
     // Localized string to display.
     std::string name;
 
+    // If true, highlight this choice in the UI.
+    bool highlight = false;
+
     // Opaque data to send back to the callback. Not necessarily a UTF8 string.
     std::string server_payload;
   };
