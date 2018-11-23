@@ -177,19 +177,15 @@ constexpr size_t kDefaultEventTimingBufferSize = 150;
 Performance::Performance(
     TimeTicks time_origin,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : resource_timing_buffer_size_limit_(kDefaultResourceTimingBufferSize),
+    : resource_timing_buffer_size_(kDefaultResourceTimingBufferSize),
       event_timing_buffer_max_size_(kDefaultEventTimingBufferSize),
       user_timing_(nullptr),
       time_origin_(time_origin),
       observer_filter_options_(PerformanceEntry::kInvalid),
-      task_runner_(std::move(task_runner)),
-      deliver_observations_timer_(task_runner_,
+      deliver_observations_timer_(std::move(task_runner),
                                   this,
-                                  &Performance::DeliverObservationsTimerFired),
-      resource_timing_buffer_full_timer_(
-          task_runner_,
-          this,
-          &Performance::FireResourceTimingBufferFull) {}
+                                  &Performance::DeliverObservationsTimerFired) {
+}
 
 Performance::~Performance() = default;
 
@@ -383,7 +379,9 @@ void Performance::clearResourceTimings() {
 }
 
 void Performance::setResourceTimingBufferSize(unsigned size) {
-  resource_timing_buffer_size_limit_ = size;
+  resource_timing_buffer_size_ = size;
+  if (IsResourceTimingBufferFull())
+    DispatchEvent(*Event::Create(event_type_names::kResourcetimingbufferfull));
 }
 
 bool Performance::PassesTimingAllowCheck(
@@ -456,6 +454,10 @@ bool Performance::AllowsTimingRedirect(
 void Performance::GenerateAndAddResourceTiming(
     const ResourceTimingInfo& info,
     const AtomicString& initiator_type) {
+  if (IsResourceTimingBufferFull() &&
+      !HasObserverFor(PerformanceEntry::kResource))
+    return;
+
   ExecutionContext* context = GetExecutionContext();
   const SecurityOrigin* security_origin = GetSecurityOrigin(context);
   if (!security_origin)
@@ -533,20 +535,15 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
 
 void Performance::AddResourceTiming(const WebResourceTimingInfo& info,
                                     const AtomicString& initiator_type) {
+  if (IsResourceTimingBufferFull() &&
+      !HasObserverFor(PerformanceEntry::kResource))
+    return;
+
   PerformanceEntry* entry =
       PerformanceResourceTiming::Create(info, time_origin_, initiator_type);
   NotifyObserversOfEntry(*entry);
-  // https://w3c.github.io/resource-timing/#dfn-add-a-performanceresourcetiming-entry
-  if (CanAddResourceTimingEntry() &&
-      !resource_timing_buffer_full_event_pending_) {
-    resource_timing_buffer_.push_back(entry);
-    return;
-  }
-  if (!resource_timing_buffer_full_event_pending_) {
-    resource_timing_buffer_full_event_pending_ = true;
-    resource_timing_buffer_full_timer_.StartOneShot(TimeDelta(), FROM_HERE);
-  }
-  resource_timing_secondary_buffer_.push_back(entry);
+  if (!IsResourceTimingBufferFull())
+    AddResourceTimingBuffer(*entry);
 }
 
 // Called after loadEventEnd happens.
@@ -559,35 +556,6 @@ void Performance::NotifyNavigationTimingToObservers() {
 
 bool Performance::IsEventTimingBufferFull() const {
   return event_timing_buffer_.size() >= event_timing_buffer_max_size_;
-}
-
-void Performance::CopySecondaryBuffer() {
-  // https://w3c.github.io/resource-timing/#dfn-copy-secondary-buffer
-  while (resource_timing_secondary_buffer_.size() &&
-         CanAddResourceTimingEntry()) {
-    PerformanceEntry* entry = resource_timing_secondary_buffer_.front();
-    DCHECK(entry);
-    resource_timing_secondary_buffer_.pop_front();
-    resource_timing_buffer_.push_back(entry);
-  }
-}
-
-void Performance::FireResourceTimingBufferFull(TimerBase*) {
-  // https://w3c.github.io/resource-timing/#dfn-fire-a-buffer-full-event
-  while (resource_timing_secondary_buffer_.size()) {
-    int excess_entries_before = resource_timing_secondary_buffer_.size();
-    if (!CanAddResourceTimingEntry()) {
-      DispatchEvent(
-          *Event::Create(event_type_names::kResourcetimingbufferfull));
-    }
-    CopySecondaryBuffer();
-    int excess_entries_after = resource_timing_secondary_buffer_.size();
-    if (excess_entries_after >= excess_entries_before) {
-      resource_timing_secondary_buffer_.clear();
-      break;
-    }
-  }
-  resource_timing_buffer_full_event_pending_ = false;
 }
 
 void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
@@ -605,7 +573,6 @@ void Performance::clearEventTimings() {
   event_timing_buffer_.clear();
 }
 
-// TODO(yoav): EventTiming should follow a simpler buffering model.
 void Performance::setEventTimingBufferMaxSize(unsigned size) {
   event_timing_buffer_max_size_ = size;
   if (IsEventTimingBufferFull())
@@ -633,9 +600,15 @@ void Performance::AddPaintTiming(PerformancePaintTiming::PaintType type,
   NotifyObserversOfEntry(*entry);
 }
 
-bool Performance::CanAddResourceTimingEntry() {
-  // https://w3c.github.io/resource-timing/#dfn-can-add-resource-timing-entry
-  return resource_timing_buffer_.size() < resource_timing_buffer_size_limit_;
+void Performance::AddResourceTimingBuffer(PerformanceEntry& entry) {
+  resource_timing_buffer_.push_back(&entry);
+
+  if (IsResourceTimingBufferFull())
+    DispatchEvent(*Event::Create(event_type_names::kResourcetimingbufferfull));
+}
+
+bool Performance::IsResourceTimingBufferFull() {
+  return resource_timing_buffer_.size() >= resource_timing_buffer_size_;
 }
 
 void Performance::AddLongTaskTiming(
@@ -988,7 +961,6 @@ void Performance::BuildJSONValue(V8ObjectBuilder& builder) const {
 
 void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_timing_buffer_);
-  visitor->Trace(resource_timing_secondary_buffer_);
   visitor->Trace(event_timing_buffer_);
   visitor->Trace(navigation_timing_);
   visitor->Trace(user_timing_);
