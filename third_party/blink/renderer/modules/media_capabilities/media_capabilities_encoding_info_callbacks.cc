@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_query_callbacks.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_encoding_info_callbacks.h"
 
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_info.h"
 
 namespace blink {
 
-MediaCapabilitiesQueryCallbacks::MediaCapabilitiesQueryCallbacks(
+MediaCapabilitiesEncodingInfoCallbacks::MediaCapabilitiesEncodingInfoCallbacks(
     ScriptPromiseResolver* resolver)
     : resolver_(resolver) {}
 
-MediaCapabilitiesQueryCallbacks::~MediaCapabilitiesQueryCallbacks() = default;
+MediaCapabilitiesEncodingInfoCallbacks::
+    ~MediaCapabilitiesEncodingInfoCallbacks() = default;
 
-void MediaCapabilitiesQueryCallbacks::OnSuccess(
+void MediaCapabilitiesEncodingInfoCallbacks::OnSuccess(
     std::unique_ptr<WebMediaCapabilitiesInfo> result) {
   if (!resolver_->GetExecutionContext() ||
       resolver_->GetExecutionContext()->IsContextDestroyed()) {
@@ -29,7 +30,7 @@ void MediaCapabilitiesQueryCallbacks::OnSuccess(
   resolver_->Resolve(std::move(info));
 }
 
-void MediaCapabilitiesQueryCallbacks::OnError() {
+void MediaCapabilitiesEncodingInfoCallbacks::OnError() {
   NOTREACHED();
 }
 

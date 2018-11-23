@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_callbacks.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
 
 using ::testing::_;
@@ -34,7 +34,7 @@ class MockVideoDecodePerfHistory : public mojom::VideoDecodePerfHistory {
 };
 
 class MockWebMediaCapabilitiesQueryCallbacks
-    : public blink::WebMediaCapabilitiesQueryCallbacks {
+    : public blink::WebMediaCapabilitiesDecodingInfoCallbacks {
  public:
   ~MockWebMediaCapabilitiesQueryCallbacks() override = default;
 

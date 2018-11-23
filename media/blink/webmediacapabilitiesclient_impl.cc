@@ -143,7 +143,7 @@ WebMediaCapabilitiesClientImpl::~WebMediaCapabilitiesClientImpl() = default;
 
 namespace {
 void VideoPerfInfoCallback(
-    blink::ScopedWebCallbacks<blink::WebMediaCapabilitiesQueryCallbacks>
+    blink::ScopedWebCallbacks<blink::WebMediaCapabilitiesDecodingInfoCallbacks>
         scoped_callbacks,
     std::unique_ptr<blink::WebMediaCapabilitiesInfo> info,
     bool is_smooth,
@@ -155,14 +155,16 @@ void VideoPerfInfoCallback(
 }
 
 void OnGetPerfInfoError(
-    std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks> callbacks) {
+    std::unique_ptr<blink::WebMediaCapabilitiesDecodingInfoCallbacks>
+        callbacks) {
   callbacks->OnError();
 }
 }  // namespace
 
 void WebMediaCapabilitiesClientImpl::DecodingInfo(
     const blink::WebMediaConfiguration& configuration,
-    std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks> callbacks) {
+    std::unique_ptr<blink::WebMediaCapabilitiesDecodingInfoCallbacks>
+        callbacks) {
   std::unique_ptr<blink::WebMediaCapabilitiesInfo> info(
       new blink::WebMediaCapabilitiesInfo());
 
