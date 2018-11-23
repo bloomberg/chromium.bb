@@ -92,7 +92,8 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
             CustomTabIntentDataProvider intentDataProvider,
             CustomTabsConnection customTabsConnection,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            TabObserverRegistrar tabObserverRegistrar, ActivityTabProvider activityTabProvider) {
+            TabObserverRegistrar tabObserverRegistrar,
+            ActivityTabProvider activityTabProvider) {
         mClientAppDataRecorder = clientAppDataRecorder;
         mCustomTabsConnection = customTabsConnection;
         mIntentDataProvider = intentDataProvider;
@@ -140,6 +141,11 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
             mCustomTabsConnection.resetPostMessageHandlerForSession(
                     mIntentDataProvider.getSession(), null);
         }
+    }
+
+    /** Returns whether the given |url| is on an Origin that the package has been verified for. */
+    public boolean isPageOnVerifiedOrigin(String url) {
+        return OriginVerifier.isValidOrigin(mClientPackageName, new Origin(url), RELATIONSHIP);
     }
 
     /**
