@@ -929,7 +929,7 @@ main(int argc, char *argv[]) {
 
 	if (!has_next) simple_error("table expected", &parser, &event);
 
-	int MAXTABLES = 10;
+	int MAXTABLES = 150;
 	char *tables[MAXTABLES + 1];
 	while ((tables[0] = read_table(&event, &parser, display_table))) {
 		yaml_event_delete(&event);
