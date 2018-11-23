@@ -325,8 +325,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @CalledByNative
-    private void onShowDetails(String title, String url, String description, int year, int month,
-            int day, int hour, int minute, int second) {
+    private void onShowDetails(String title, String url, String description, String mId, int year,
+            int month, int day, int hour, int minute, int second) {
         Date date;
         if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
             Calendar calendar = Calendar.getInstance();
@@ -339,7 +339,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         }
 
         maybeUpdateDetails(new Details(
-                title, url, date, description, /* isFinal= */ true, Collections.emptySet()));
+                title, url, date, description, mId, /* isFinal= */ true, Collections.emptySet()));
     }
 
     @CalledByNative
