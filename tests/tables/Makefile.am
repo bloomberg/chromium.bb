@@ -14,7 +14,6 @@ EXTRA_DIST =					\
 	non-letters-as-caps.utb			\
 	old-caps-opcodes-1.utb			\
 	old-caps-opcodes-2.utb			\
-	pass0_typebuf.ctb			\
 	pass2.ctb				\
 	squash_space_with_context_1.utb		\
 	squash_space_with_correct.utb		\
