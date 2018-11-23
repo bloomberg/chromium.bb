@@ -45,13 +45,6 @@ config("chromium_sqlite3_compile_options") {
     # prefer to control distribution to worker threads.
     "SQLITE_MAX_WORKER_THREADS=0",
 
-    # Allow 256MB mmap footprint per connection.  Should not be too open-ended
-    # as that could cause memory fragmentation.  50MB encompasses the 99th
-    # percentile of Chrome databases in the wild.
-    # TODO(pwnall): A 64-bit-specific value could be 1G or more.
-    # TODO(pwnall): Figure out if exceeding this is costly.
-    "SQLITE_MAX_MMAP_SIZE=268435456",
-
     # The default POSIX permissions for a newly created SQLite database.
     #
     # If unspecified, this defaults to 0644. All the data stored by Chrome is
@@ -139,6 +132,24 @@ config("chromium_sqlite3_compile_options") {
     # Uses isnan() in the C99 standard library.
     "SQLITE_HAVE_ISNAN",
   ]
+
+  if (is_win) {
+    defines += [
+      # TODO(crbug.com/897576): Remove the Windows special-casing when we figure
+      #                         out if it's causing the crashes in the
+      #                         referenced bug.
+      "SQLITE_MAX_MMAP_SIZE=0",
+    ]
+  } else {
+    defines += [
+      # Allow 256MB mmap footprint per connection.  Should not be too open-ended
+      # as that could cause memory fragmentation.  50MB encompasses the 99th
+      # percentile of Chrome databases in the wild.
+      # TODO(pwnall): A 64-bit-specific value could be 1G or more.
+      # TODO(pwnall): Figure out if exceeding this is costly.
+      "SQLITE_MAX_MMAP_SIZE=268435456",
+    ]
+  }
 
   # On OSX, SQLite has extra logic for detecting the use of network
   # filesystems (e.g., AFS, NFS) and for working around locking problems in
