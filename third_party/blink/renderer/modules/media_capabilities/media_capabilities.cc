@@ -12,12 +12,12 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
-#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_info.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_query_callbacks.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_decoding_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_encoding_configuration.h"
@@ -246,8 +246,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
 
   Platform::Current()->MediaCapabilitiesClient()->DecodingInfo(
       ToWebMediaConfiguration(configuration),
-      std::make_unique<CallbackPromiseAdapter<MediaCapabilitiesInfo, void>>(
-          resolver));
+      std::make_unique<MediaCapabilitiesQueryCallbacks>(resolver));
 
   return promise;
 }
@@ -295,8 +294,8 @@ ScriptPromise MediaCapabilities::encodingInfo(
 
   handler->EncodingInfo(
       ToWebMediaConfiguration(configuration),
-      std::make_unique<CallbackPromiseAdapter<MediaCapabilitiesInfo, void>>(
-          resolver));
+      std::make_unique<MediaCapabilitiesQueryCallbacks>(resolver));
+
   return promise;
 }
 

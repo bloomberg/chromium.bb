@@ -3722,12 +3722,6 @@ interface MediaCapabilities
     attribute @@toStringTag
     method constructor
     method decodingInfo
-interface MediaCapabilitiesInfo
-    attribute @@toStringTag
-    getter powerEfficient
-    getter smooth
-    getter supported
-    method constructor
 interface MediaDeviceInfo
     attribute @@toStringTag
     getter deviceId
