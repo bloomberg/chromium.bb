@@ -148,7 +148,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
   // at the current target. It should only be used to influence UMA metrics
   // and not change functionality since observing the presence of listeners
   // is dangerous.
-  virtual void DoneDispatchingEventAtCurrentTarget() {}
+  virtual void DoneDispatchingEventAtCurrentTarget();
 
   void SetRelatedTargetIfExists(EventTarget* related_target);
 
@@ -292,6 +292,14 @@ class CORE_EXPORT Event : public ScriptWrappable {
     return prevent_default_called_on_uncancelable_event_;
   }
 
+  bool executedListenerOrDefaultAction() const {
+    return executed_listener_or_default_action_;
+  }
+
+  void SetExecutedListenerOrDefaultAction() {
+    executed_listener_or_default_action_ = true;
+  }
+
   bool LegacyDidListenersThrow() const {
     return legacy_did_listeners_throw_flag_;
   }
@@ -329,6 +337,9 @@ class CORE_EXPORT Event : public ScriptWrappable {
   unsigned default_handled_ : 1;
   unsigned was_initialized_ : 1;
   unsigned is_trusted_ : 1;
+  // Only if at least one listeners or default actions are executed on an event
+  // does Event Timing report it.
+  unsigned executed_listener_or_default_action_ : 1;
 
   // Whether preventDefault was called when |handling_passive_| is
   // true. This field is reset on each call to SetHandlingPassive.

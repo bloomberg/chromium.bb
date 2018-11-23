@@ -98,6 +98,7 @@ Event::Event(const AtomicString& event_type,
       default_handled_(false),
       was_initialized_(true),
       is_trusted_(false),
+      executed_listener_or_default_action_(false),
       prevent_default_called_on_uncancelable_event_(false),
       legacy_did_listeners_throw_flag_(false),
       fire_only_capture_listeners_at_target_(false),
@@ -270,6 +271,10 @@ void Event::SetTarget(EventTarget* target) {
   target_ = target;
   if (target_)
     ReceivedTarget();
+}
+
+void Event::DoneDispatchingEventAtCurrentTarget() {
+  SetExecutedListenerOrDefaultAction();
 }
 
 void Event::SetRelatedTargetIfExists(EventTarget* related_target) {
