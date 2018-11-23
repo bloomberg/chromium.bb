@@ -1961,7 +1961,8 @@ TEST_F(RenderWidgetHostTest, VisualPropertiesDeviceScale) {
 }
 
 // Make sure no dragging occurs after renderer exited. See crbug.com/704832.
-TEST_F(RenderWidgetHostTest, RendererExitedNoDrag) {
+// DISABLED for crbug.com/908012
+TEST_F(RenderWidgetHostTest, DISABLED_RendererExitedNoDrag) {
   host_->SetView(new TestView(host_.get()));
 
   EXPECT_EQ(delegate_->mock_delegate_view()->start_dragging_count(), 0);
