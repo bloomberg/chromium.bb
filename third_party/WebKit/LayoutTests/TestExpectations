@@ -62,6 +62,7 @@ crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 # The following tests need to remove the assumption that user activation is
 # available in child/sibling frames.  This assumption doesn't hold with User
 # Activation v2 (UAv2).
+crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Timeout ]
 crbug.com/860713 bluetooth/characteristic/notifications/notification-after-disconnection.html [ Failure ]
 crbug.com/860713 external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Failure ]
 crbug.com/860713 external/wpt/bluetooth/requestDevice/request-from-iframe.https.html [ Failure ]
@@ -76,6 +77,9 @@ crbug.com/860713 external/wpt/bluetooth/server/getPrimaryServices/gen-discovery-
 crbug.com/860713 external/wpt/bluetooth/service/getCharacteristic/gen-reconnect-during.https.html [ Failure ]
 crbug.com/860713 external/wpt/bluetooth/service/getCharacteristics/gen-reconnect-during-with-uuid.https.html [ Failure ]
 crbug.com/860713 external/wpt/bluetooth/service/getCharacteristics/gen-reconnect-during.https.html [ Failure ]
+
+# The following tests passes only with User Activation v2 (UAv2) enabled.
+crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-containing-iframe-manual.tentative.html [ Failure ]
 
 # The following fail only on Mac.
 crbug.com/891427 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Pass Failure Timeout Crash ]
