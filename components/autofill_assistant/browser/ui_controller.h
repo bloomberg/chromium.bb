@@ -22,6 +22,15 @@ class DetailsProto;
 // Controller to control autofill assistant UI.
 class UiController {
  public:
+  // A choice, for Choose().
+  struct Choice {
+    // Localized string to display.
+    std::string name;
+
+    // Opaque data to send back to the callback. Not necessarily a UTF8 string.
+    std::string server_payload;
+  };
+
   virtual ~UiController() = default;
 
   // Set assistant UI delegate called by assistant UI controller.
@@ -52,15 +61,15 @@ class UiController {
   // Update the list of scripts in the UI.
   virtual void UpdateScripts(const std::vector<ScriptHandle>& scripts) = 0;
 
-  // Show UI to ask user to select one of the suggestions. Sends the selected
-  // suggestion to the callback.
+  // Show UI to ask user to make a choice. Sends the server_payload of the
+  // choice to the callback.
   virtual void Choose(
-      const std::vector<std::string>& suggestions,
+      const std::vector<Choice>& choices,
       base::OnceCallback<void(const std::string&)> callback) = 0;
 
   // Cancels a choose action in progress. Calls the registered callback, if any,
-  // with the given result.
-  virtual void ForceChoose(const std::string& choice) = 0;
+  // with the given server_payload.
+  virtual void ForceChoose(const std::string& server_payload) = 0;
 
   // Show UI to ask user to choose an address in personal data manager. GUID of
   // the chosen address will be returned through callback, otherwise empty

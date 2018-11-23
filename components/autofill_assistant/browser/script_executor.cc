@@ -124,7 +124,7 @@ void ScriptExecutor::GetPaymentInformation(
 }
 
 void ScriptExecutor::Choose(
-    const std::vector<std::string>& suggestions,
+    const std::vector<UiController::Choice>& choices,
     base::OnceCallback<void(const std::string&)> callback) {
   if (!touchable_elements_.empty()) {
     // Choose reproduces the end-of-script appearance and behavior during script
@@ -141,7 +141,7 @@ void ScriptExecutor::Choose(
     // ScriptExecutor::OnChosen
   }
   delegate_->GetUiController()->Choose(
-      suggestions,
+      choices,
       base::BindOnce(&ScriptExecutor::OnChosen, weak_ptr_factory_.GetWeakPtr(),
                      std::move(callback)));
 }
@@ -552,12 +552,10 @@ void ScriptExecutor::WaitWithInterrupts::RunCallback(
 
 void ScriptExecutor::OnChosen(
     base::OnceCallback<void(const std::string&)> callback,
-    const std::string& choice) {
-  // This simulates the beginning of a script and removes any touchable element
-  // area set by Choose().
+    const std::string& payload) {
   delegate_->GetUiController()->ShowOverlay();
   delegate_->ClearTouchableElementArea();
-  std::move(callback).Run(choice);
+  std::move(callback).Run(payload);
 }
 
 }  // namespace autofill_assistant

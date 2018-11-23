@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/selector.h"
+#include "components/autofill_assistant/browser/ui_controller.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 class GURL;
@@ -79,7 +80,7 @@ class ActionDelegate {
   // allowing access to the touchable elements set previously, in the same
   // script.
   virtual void Choose(
-      const std::vector<std::string>& suggestions,
+      const std::vector<UiController::Choice>& choices,
       base::OnceCallback<void(const std::string&)> callback) = 0;
 
   // Cancels a choose action in progress and pass the given result to the

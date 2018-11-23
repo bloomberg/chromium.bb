@@ -180,16 +180,16 @@ void UiControllerAndroid::OnScriptSelected(
   ui_delegate_->OnScriptSelected(script_path);
 }
 
-void UiControllerAndroid::OnSuggestionSelected(
+void UiControllerAndroid::OnChoice(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jstring>& jsuggestion) {
+    const JavaParamRef<jbyteArray>& jserver_payload) {
   if (!choice_callback_)  // possibly duplicate call
     return;
 
-  std::string suggestion;
-  base::android::ConvertJavaStringToUTF8(env, jsuggestion, &suggestion);
-  std::move(choice_callback_).Run(suggestion);
+  std::string server_payload;
+  base::android::JavaByteArrayToString(env, jserver_payload, &server_payload);
+  std::move(choice_callback_).Run(server_payload);
 }
 
 void UiControllerAndroid::OnAddressSelected(
@@ -307,15 +307,22 @@ UiControllerAndroid::OnRequestDebugContext(
 }
 
 void UiControllerAndroid::Choose(
-    const std::vector<std::string>& suggestions,
+    const std::vector<UiController::Choice>& choices,
     base::OnceCallback<void(const std::string&)> callback) {
   DCHECK(!choice_callback_);
   choice_callback_ = std::move(callback);
 
+  std::vector<std::string> names;
+  std::vector<std::string> server_payload;
+  for (const auto& choice : choices) {
+    names.emplace_back(choice.name);
+    server_payload.emplace_back(choice.server_payload);
+  }
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onChoose(
       env, java_autofill_assistant_ui_controller_,
-      base::android::ToJavaArrayOfStrings(env, suggestions));
+      base::android::ToJavaArrayOfStrings(env, names),
+      base::android::ToJavaArrayOfByteArray(env, server_payload));
 }
 
 void UiControllerAndroid::ForceChoose(const std::string& result) {

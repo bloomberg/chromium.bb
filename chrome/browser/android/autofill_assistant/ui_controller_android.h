@@ -44,7 +44,7 @@ class UiControllerAndroid : public UiController,
   void ShutdownGracefully() override;
   void CloseCustomTab() override;
   void UpdateScripts(const std::vector<ScriptHandle>& scripts) override;
-  void Choose(const std::vector<std::string>& suggestions,
+  void Choose(const std::vector<UiController::Choice>& choices,
               base::OnceCallback<void(const std::string&)> callback) override;
   void ForceChoose(const std::string& result) override;
   void ChooseAddress(
@@ -92,10 +92,9 @@ class UiControllerAndroid : public UiController,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jscript_path);
-  void OnSuggestionSelected(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller,
-      const base::android::JavaParamRef<jstring>& jsuggestion);
+  void OnChoice(JNIEnv* env,
+                const base::android::JavaParamRef<jobject>& jcaller,
+                const base::android::JavaParamRef<jbyteArray>& jserver_payload);
   void OnAddressSelected(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,

@@ -23,7 +23,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -137,8 +136,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @Override
-    public void onSuggestionSelected(String suggestion) {
-        nativeOnSuggestionSelected(mUiControllerAndroid, suggestion);
+    public void onChoice(byte[] serverPayload) {
+        nativeOnChoice(mUiControllerAndroid, serverPayload);
     }
 
     @Override
@@ -231,13 +230,17 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @CalledByNative
-    private void onChoose(String[] suggestions) {
-        // An empty suggestion list is supported. Selection can still be forced. onForceChoose
-        // should be a no-op in this case.
-        if (suggestions.length == 0) return;
+    private void onChoose(String[] names, byte[][] serverPayloads) {
+        // An empty choice list is supported, as selection can still be forced. onForceChoose should
+        // be a no-op in this case.
+        if (names.length == 0) return;
 
-        mUiDelegateHolder.performUiOperation(
-                uiDelegate -> uiDelegate.showSuggestions(Arrays.asList(suggestions)));
+        List<AutofillAssistantUiDelegate.Choice> choices = new ArrayList<>();
+        assert (names.length == serverPayloads.length);
+        for (int i = 0; i < names.length; i++) {
+            choices.add(new AutofillAssistantUiDelegate.Choice(names[i], serverPayloads[i]));
+        }
+        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.showChoices(choices));
     }
 
     @CalledByNative
@@ -470,8 +473,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             long nativeUiControllerAndroid, float distanceXRatio, float distanceYRatio);
     private native void nativeUpdateTouchableArea(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
-    private native void nativeOnSuggestionSelected(
-            long nativeUiControllerAndroid, String selection);
+    private native void nativeOnChoice(long nativeUiControllerAndroid, byte[] serverPayload);
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnShowDetails(long nativeUiControllerAndroid, boolean canContinue);

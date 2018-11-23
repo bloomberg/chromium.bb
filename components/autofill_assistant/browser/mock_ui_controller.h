@@ -30,12 +30,12 @@ class MockUiController : public UiController {
   MOCK_METHOD0(CloseCustomTab, void());
   MOCK_METHOD1(UpdateScripts, void(const std::vector<ScriptHandle>& scripts));
 
-  void Choose(const std::vector<std::string>& suggestions,
+  void Choose(const std::vector<UiController::Choice>& choices,
               base::OnceCallback<void(const std::string&)> callback) override {
-    OnChoose(suggestions, callback);
+    OnChoose(choices, callback);
   }
   MOCK_METHOD2(OnChoose,
-               void(const std::vector<std::string>& suggestions,
+               void(const std::vector<UiController::Choice>& choices,
                     base::OnceCallback<void(const std::string&)>& callback));
 
   void ChooseAddress(

@@ -94,7 +94,7 @@ class ScriptExecutor : public ActionDelegate {
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
       const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) override;
-  void Choose(const std::vector<std::string>& suggestions,
+  void Choose(const std::vector<UiController::Choice>& choice,
               base::OnceCallback<void(const std::string&)> callback) override;
   void ForceChoose(const std::string&) override;
   void ChooseAddress(
