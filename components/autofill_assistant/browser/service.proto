@@ -449,13 +449,14 @@ message PromptProto {
   // One of these protos must is transmitted as-is back to the server as part of
   // ProcessedActionProto.
   message Choice {
-    oneof type {
-      // A localized text message to display.
-      string name = 2;
+    // Localized text message to display. Not required if element_exists is set.
+    optional string name = 2;
 
-      // Auto-select if the given element exist.
-      ElementReferenceProto element_exists = 4;
-    }
+    // If set, the choice should be highlighted. Ignored unless name is set.
+    optional bool highlight = 3;
+
+    // Optionally auto-select this choice if the given element exist.
+    optional ElementReferenceProto element_exists = 4;
 
     // Server payload originally sent by the server. This should
     // be transmitted as-is by the client without interpreting.

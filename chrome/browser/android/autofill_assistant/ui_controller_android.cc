@@ -324,15 +324,19 @@ void UiControllerAndroid::Choose(
 
   std::vector<std::string> names;
   std::vector<std::string> server_payload;
+  bool highlights[choices.size()];
+  int i = 0;
   for (const auto& choice : choices) {
     names.emplace_back(choice.name);
     server_payload.emplace_back(choice.server_payload);
+    highlights[i++] = choice.highlight;
   }
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onChoose(
       env, java_autofill_assistant_ui_controller_,
       base::android::ToJavaArrayOfStrings(env, names),
-      base::android::ToJavaArrayOfByteArray(env, server_payload));
+      base::android::ToJavaArrayOfByteArray(env, server_payload),
+      base::android::ToJavaBooleanArray(env, highlights, choices.size()));
 }
 
 void UiControllerAndroid::ForceChoose(const std::string& result) {

@@ -181,58 +181,61 @@ class AutofillAssistantUiDelegate {
         void onInitOk();
     }
 
-    /**
-     * Java side equivalent of autofill_assistant::ScriptHandle.
-     */
-    protected static class ScriptHandle {
-        /** The display name of this script. */
+    /** Describes a chip to display. */
+    static class Chip {
         private final String mName;
-        /** The script path. */
-        private final String mPath;
-        /** Whether the script should be highlighted. */
         private final boolean mHighlight;
-
-        /** Constructor. */
-        public ScriptHandle(String name, String path, boolean highlight) {
-            mName = name;
-            mPath = path;
-            mHighlight = highlight;
-        }
-
-        /** Returns the display name. */
-        public String getName() {
-            return mName;
-        }
-
-        /** Returns the script path. */
-        public String getPath() {
-            return mPath;
-        }
-
-        /** Returns whether the script should be highlighted. */
-        public boolean isHighlight() {
-            return mHighlight;
-        }
-    }
-
-    /** A choice to pass to {@link AutofillAssistantUiDelegate#onChoose}. */
-    static class Choice {
-        private final String mName;
-        private final byte[] mServerPayload;
 
         /** Returns the localized name to display. */
         String getName() {
             return mName;
         }
 
-        /** Returns the server payload associated with this choice, to pass to the callback. */
-        byte[] getServerPayload() {
-            return mServerPayload;
+        /** Returns {@code true} if the choice should be highlight. */
+        boolean isHighlight() {
+            return mHighlight;
         }
 
-        Choice(String name, byte[] serverPayload) {
+        Chip(String name, boolean highlight) {
             mName = name;
+            mHighlight = highlight;
+        }
+    }
+
+    /** Functional interface that acts on a chip. */
+    interface ChipAction<T extends Chip> {
+        void apply(T chip);
+    }
+
+    /** Java side equivalent of autofill_assistant::ScriptHandle. */
+    static class ScriptHandle extends Chip {
+        private final String mPath;
+
+        /** Constructor. */
+        ScriptHandle(String name, boolean highlight, String path) {
+            super(name, highlight);
+            mPath = path;
+        }
+
+        /** Returns the script path. */
+        String getPath() {
+            return mPath;
+        }
+    }
+
+    /** Java side equivalent of autofill_assistant::UiController::Choice. */
+    static class Choice extends Chip {
+        private final byte[] mServerPayload;
+
+        /** Constructor. */
+        Choice(String name, boolean highlight, byte[] serverPayload) {
+            super(name, highlight);
             mServerPayload = serverPayload;
+        }
+
+        /** Returns the serverPayload that corresponds to that choice. */
+        byte[] getServerPayload() {
+            return mServerPayload;
         }
     }
 
@@ -319,34 +322,36 @@ class AutofillAssistantUiDelegate {
      *
      * @param scriptHandles List of scripts to show.
      */
-    public void updateScripts(ArrayList<ScriptHandle> scriptHandles) {
+    public void updateScripts(List<ScriptHandle> scriptHandles) {
         if (scriptHandles.isEmpty()) {
             clearCarousel();
             return;
         }
 
-        boolean alignRight = hasHighlightedScript(scriptHandles);
+        addChips(scriptHandles, scriptHandle -> {
+            clearCarousel();
+            mClient.onScriptSelected(scriptHandle.getPath());
+        });
+    }
+
+    private <T extends Chip> void addChips(Iterable<T> chips, ChipAction<T> onClick) {
+        boolean alignRight = hasHighlightedScript(chips);
         @ChipStyle
         int nonHighlightStyle = alignRight ? ChipStyle.BUTTON_HAIRLINE : ChipStyle.CHIP_ASSISTIVE;
-        ArrayList<View> childViews = new ArrayList<>();
-        for (int i = 0; i < scriptHandles.size(); i++) {
-            ScriptHandle scriptHandle = scriptHandles.get(i);
+        List<View> childViews = new ArrayList<>();
+        for (T chip : chips) {
             @ChipStyle
-            int chipStyle =
-                    scriptHandle.isHighlight() ? ChipStyle.BUTTON_FILLED : nonHighlightStyle;
-            TextView chipView = createChipView(scriptHandle.getName(), chipStyle);
-            chipView.setOnClickListener((unusedView) -> {
-                clearCarousel();
-                mClient.onScriptSelected(scriptHandle.getPath());
-            });
+            int chipStyle = chip.isHighlight() ? ChipStyle.BUTTON_FILLED : nonHighlightStyle;
+            TextView chipView = createChipView(chip.getName(), chipStyle);
+            chipView.setOnClickListener((unusedView) -> onClick.apply(chip));
             childViews.add(chipView);
         }
         setCarouselChildViews(childViews, alignRight);
     }
 
-    private boolean hasHighlightedScript(ArrayList<ScriptHandle> scripts) {
-        for (int i = 0; i < scripts.size(); i++) {
-            if (scripts.get(i).isHighlight()) {
+    private boolean hasHighlightedScript(Iterable<? extends Chip> chips) {
+        for (Chip chip : chips) {
+            if (chip.isHighlight()) {
                 return true;
             }
         }
@@ -693,16 +698,10 @@ class AutofillAssistantUiDelegate {
 
     /** Shows chip with the given choices. */
     public void showChoices(List<Choice> choices) {
-        List<View> childViews = new ArrayList<>();
-        for (Choice choice : choices) {
-            TextView chipView = createChipView(choice.getName(), ChipStyle.CHIP_ASSISTIVE);
-            chipView.setOnClickListener(unusedView -> {
-                clearCarousel();
-                mClient.onChoice(choice.getServerPayload());
-            });
-            childViews.add(chipView);
-        }
-        setCarouselChildViews(childViews, /* alignRight= */ false);
+        addChips(choices, choice -> {
+            clearCarousel();
+            mClient.onChoice(choice.getServerPayload());
+        });
     }
 
     /**
