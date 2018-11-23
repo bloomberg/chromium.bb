@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -103,7 +104,6 @@ public class BookmarksTest {
         assertClientBookmarkCount(0);
         assertServerBookmarkCountWithName(0, TITLE);
         assertServerBookmarkCountWithName(0, MODIFIED_TITLE);
-        assertServerBookmarkCountWithName(0, FOLDER_TITLE);
     }
 
     // Test syncing a new bookmark from server to client.
@@ -315,6 +315,7 @@ public class BookmarksTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
+    @DisabledTest(message = "crbug.com/823484")
     public void testUploadMovedBookmark() throws Exception {
         // Add the entity to test moving.
         BookmarkId bookmarkId = addClientBookmark(TITLE, URL);
