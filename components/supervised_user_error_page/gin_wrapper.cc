@@ -100,7 +100,8 @@ void GinWrapper::OnAccessRequestAdded(bool success) {
   v8::MicrotasksScope microtasks(isolate,
                                  v8::MicrotasksScope::kDoNotRunMicrotasks);
 
-  callback->Call(context->Global(), 1, &args);
+  callback->Call(context, context->Global(), 1, &args)
+      .FromMaybe(v8::Local<v8::Value>());
 }
 
 gin::ObjectTemplateBuilder GinWrapper::GetObjectTemplateBuilder(
