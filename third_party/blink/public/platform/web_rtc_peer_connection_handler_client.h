@@ -56,6 +56,8 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
       webrtc::PeerConnectionInterface::IceGatheringState) = 0;
   virtual void DidChangeIceConnectionState(
       webrtc::PeerConnectionInterface::IceConnectionState) = 0;
+  virtual void DidChangePeerConnectionState(
+      webrtc::PeerConnectionInterface::PeerConnectionState){};
   virtual void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) = 0;
   virtual void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) = 0;
   virtual void DidModifyTransceivers(
