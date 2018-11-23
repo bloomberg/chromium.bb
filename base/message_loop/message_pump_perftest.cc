@@ -83,6 +83,9 @@ class ScheduleWorkTest : public testing::Test {
 
   void ScheduleWork(MessageLoop::Type target_type, int num_scheduling_threads) {
 #if defined(OS_ANDROID)
+    // Test randomly times out on Android (crbug.com/906686).
+    return;
+
     if (target_type == MessageLoop::TYPE_JAVA) {
       java_thread_.reset(new android::JavaHandlerThread("target"));
       java_thread_->Start();

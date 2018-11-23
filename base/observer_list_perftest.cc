@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -61,7 +62,13 @@ typedef ::testing::Types<UnsafeObserver, TestCheckedObserver> ObserverTypes;
 TYPED_TEST_CASE(ObserverListPerfTest, ObserverTypes);
 
 // Performance test for base::ObserverList and Checked Observers.
-TYPED_TEST(ObserverListPerfTest, NotifyPerformance) {
+// Times out on Android (crbug.com/906686).
+#if defined(OS_ANDROID)
+#define MAYBE_NotifyPerformance DISABLED_NotifyPerformance
+#else
+#define MAYBE_NotifyPerformance NotifyPerformance
+#endif
+TYPED_TEST(ObserverListPerfTest, MAYBE_NotifyPerformance) {
   constexpr int kMaxObservers = 128;
 #if DCHECK_IS_ON()
   // The test takes about 100x longer in debug builds, mostly due to sequence
