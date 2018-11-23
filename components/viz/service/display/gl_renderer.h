@@ -294,8 +294,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
       int width,
       int height,
       const gfx::ColorSpace& color_space);
-  void ReduceAvailableOverlayTextures(
-      const std::vector<std::unique_ptr<OverlayTexture>>& most_recent);
+  void ReduceAvailableOverlayTextures();
 
   // Schedules the |ca_layer_overlay|, which is guaranteed to have a non-null
   // |rpdq| parameter. Returns ownership of a GL texture that contains the

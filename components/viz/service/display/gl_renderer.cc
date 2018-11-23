@@ -3116,7 +3116,7 @@ void GLRenderer::ScheduleCALayers() {
         ca_layer_overlay.edge_aa_mask, bounds_rect, filter);
   }
 
-  ReduceAvailableOverlayTextures(awaiting_swap_overlay_textures_);
+  ReduceAvailableOverlayTextures();
 }
 
 void GLRenderer::ScheduleDCLayers() {
@@ -3401,8 +3401,7 @@ GLRenderer::FindOrCreateOverlayTexture(const RenderPassId& render_pass_id,
   return result;
 }
 
-void GLRenderer::ReduceAvailableOverlayTextures(
-    const std::vector<std::unique_ptr<OverlayTexture>>& most_recent) {
+void GLRenderer::ReduceAvailableOverlayTextures() {
   // Overlay resources may get returned back to the compositor at varying rates,
   // so we may get a number of resources returned at once, then none for a
   // while. As such, we want to hold onto enough resources to not have to create
