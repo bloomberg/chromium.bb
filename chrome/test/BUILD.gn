@@ -7,8 +7,8 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//chrome/common/features.gni")
 import("//chrome/chrome_repack_locales.gni")
+import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
@@ -22,8 +22,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//remoting/remoting_enable.gni")
 import("//rlz/buildflags/buildflags.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//services/catalog/public/tools/catalog.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/widevine/cdm/widevine.gni")
@@ -3480,6 +3480,7 @@ test("unit_tests") {
       "//ash:test_support_with_content",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/strings",
+      "//chrome/browser/resources/chromeos/zip_archiver/cpp:ziparchiver_unittests",
     ]
   }
 
