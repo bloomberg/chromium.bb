@@ -11,6 +11,8 @@ import android.animation.TimeAnimator;
 import android.animation.TimeAnimator.TimeListener;
 import android.util.Log;
 
+import org.chromium.base.annotations.JniStaticNatives;
+
 /**
  * Record Android animation frame rate and save it to UMA histogram. This is mainly for monitoring
  * any jankiness of short Chrome Android animations. It is limited to few seconds of recording.
@@ -71,8 +73,8 @@ public class AnimationFrameTimeHistogram {
      */
     public void endRecording() {
         if (mRecorder.endRecording()) {
-            nativeSaveHistogram(mHistogramName,
-                    mRecorder.getFrameTimesMs(), mRecorder.getFrameTimesCount());
+            AnimationFrameTimeHistogramJni.get().saveHistogram(
+                    mHistogramName, mRecorder.getFrameTimesMs(), mRecorder.getFrameTimesCount());
         }
         mRecorder.cleanUp();
     }
@@ -141,5 +143,8 @@ public class AnimationFrameTimeHistogram {
         }
     }
 
-    private native void nativeSaveHistogram(String histogramName, long[] frameTimesMs, int count);
+    @JniStaticNatives
+    interface Natives {
+        void saveHistogram(String histogramName, long[] frameTimesMs, int count);
+    }
 }
