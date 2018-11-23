@@ -535,6 +535,10 @@ message DetailsProto {
   optional DateTimeProto datetime = 3;
 
   optional string description = 4;
+
+  // Mid that comes from Knowledge Graph. Uniquely identify the object that this
+  // proto describes.
+  optional string m_id = 5;
 }
 
 // Show contextual information.
