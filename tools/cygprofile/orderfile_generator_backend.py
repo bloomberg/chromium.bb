@@ -726,7 +726,7 @@ class OrderfileGenerator(object):
       with file(self._options.manual_symbol_offsets) as f:
         symbol_offsets = [int(x) for x in f.xreadlines()]
       processor = process_profiles.SymbolOffsetProcessor(
-          self._options.manual_libname)
+          self._compiler.manual_libname)
       generator = cyglog_to_orderfile.OffsetOrderfileGenerator(
           processor, cyglog_to_orderfile.ObjectFileProcessor(
               self._options.manual_objdir))
