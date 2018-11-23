@@ -94,7 +94,7 @@ content::WebContents* Controller::GetWebContents() {
 }
 
 void Controller::SetTouchableElementArea(
-    const std::vector<std::vector<std::string>>& elements) {
+    const std::vector<Selector>& elements) {
   touchable_element_area_.SetElements(elements);
 }
 

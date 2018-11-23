@@ -30,22 +30,20 @@ BatchElementChecker::BatchElementChecker(WebController* web_controller)
 
 BatchElementChecker::~BatchElementChecker() {}
 
-void BatchElementChecker::AddElementCheck(
-    ElementCheckType check_type,
-    const std::vector<std::string>& selectors,
-    ElementCheckCallback callback) {
+void BatchElementChecker::AddElementCheck(ElementCheckType check_type,
+                                          const Selector& selector,
+                                          ElementCheckCallback callback) {
   DCHECK(!started_);
 
-  element_check_callbacks_[std::make_pair(check_type, selectors)].emplace_back(
+  element_check_callbacks_[std::make_pair(check_type, selector)].emplace_back(
       std::move(callback));
 }
 
-void BatchElementChecker::AddFieldValueCheck(
-    const std::vector<std::string>& selectors,
-    GetFieldValueCallback callback) {
+void BatchElementChecker::AddFieldValueCheck(const Selector& selector,
+                                             GetFieldValueCallback callback) {
   DCHECK(!started_);
 
-  get_field_value_callbacks_[selectors].emplace_back(std::move(callback));
+  get_field_value_callbacks_[selector].emplace_back(std::move(callback));
 }
 
 void BatchElementChecker::Run(const base::TimeDelta& duration,

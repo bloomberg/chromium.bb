@@ -67,7 +67,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void RunElementChecks(ElementCheckType check_type,
-                        const std::vector<std::vector<std::string>>& selectors,
+                        const std::vector<Selector>& selectors,
                         const std::vector<bool> results) {
     base::RunLoop run_loop;
     ASSERT_EQ(selectors.size(), results.size());
@@ -93,10 +93,10 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     }
   }
 
-  void ClickElement(const std::vector<std::string>& selectors) {
+  void ClickElement(const Selector& selector) {
     base::RunLoop run_loop;
     web_controller_->ClickElement(
-        selectors,
+        selector,
         base::BindOnce(&WebControllerBrowserTest::ClickElementCallback,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -108,10 +108,10 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     done_callback.Run();
   }
 
-  void TapElement(const std::vector<std::string>& selectors) {
+  void TapElement(const Selector& selector) {
     base::RunLoop run_loop;
     web_controller_->TapElement(
-        selectors,
+        selector,
         base::BindOnce(&WebControllerBrowserTest::ClickElementCallback,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -122,29 +122,29 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     done_callback.Run();
   }
 
-  void WaitForElementRemove(const std::vector<std::string>& selectors) {
+  void WaitForElementRemove(const Selector& selector) {
     base::RunLoop run_loop;
     web_controller_->ElementCheck(
-        kExistenceCheck, selectors,
+        kExistenceCheck, selector,
         base::BindOnce(&WebControllerBrowserTest::OnWaitForElementRemove,
                        base::Unretained(this), run_loop.QuitClosure(),
-                       selectors));
+                       selector));
     run_loop.Run();
   }
 
   void OnWaitForElementRemove(const base::Closure& done_callback,
-                              const std::vector<std::string>& selectors,
+                              const Selector& selector,
                               bool result) {
     done_callback.Run();
     if (result) {
-      WaitForElementRemove(selectors);
+      WaitForElementRemove(selector);
     }
   }
 
-  void FocusElement(const std::vector<std::string>& selectors) {
+  void FocusElement(const Selector& selector) {
     base::RunLoop run_loop;
     web_controller_->FocusElement(
-        selectors,
+        selector,
         base::BindOnce(&WebControllerBrowserTest::OnFocusElement,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -155,12 +155,11 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     std::move(done_callback).Run();
   }
 
-  bool SelectOption(const std::vector<std::string>& selectors,
-                    const std::string& option) {
+  bool SelectOption(const Selector& selector, const std::string& option) {
     base::RunLoop run_loop;
     bool result;
     web_controller_->SelectOption(
-        selectors, option,
+        selector, option,
         base::BindOnce(&WebControllerBrowserTest::OnSelectOption,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -175,13 +174,13 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     std::move(done_callback).Run();
   }
 
-  bool HighlightElement(const std::vector<std::string>& selectors) {
+  bool HighlightElement(const Selector& selector) {
     base::RunLoop run_loop;
     bool result;
     web_controller_->HighlightElement(
-        selectors, base::BindOnce(&WebControllerBrowserTest::OnHighlightElement,
-                                  base::Unretained(this),
-                                  run_loop.QuitClosure(), &result));
+        selector, base::BindOnce(&WebControllerBrowserTest::OnHighlightElement,
+                                 base::Unretained(this), run_loop.QuitClosure(),
+                                 &result));
     run_loop.Run();
     return result;
   }
@@ -193,15 +192,13 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     std::move(done_callback).Run();
   }
 
-  bool GetOuterHtml(const std::vector<std::string>& selectors,
-                    std::string* html_output) {
+  bool GetOuterHtml(const Selector& selector, std::string* html_output) {
     base::RunLoop run_loop;
     bool result;
     web_controller_->GetOuterHtml(
-        selectors,
-        base::BindOnce(&WebControllerBrowserTest::OnGetOuterHtml,
-                       base::Unretained(this), run_loop.QuitClosure(), &result,
-                       html_output));
+        selector, base::BindOnce(&WebControllerBrowserTest::OnGetOuterHtml,
+                                 base::Unretained(this), run_loop.QuitClosure(),
+                                 &result, html_output));
     run_loop.Run();
     return result;
   }
@@ -216,12 +213,12 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     done_callback.Run();
   }
 
-  void FindElement(const std::vector<std::string>& selectors,
+  void FindElement(const Selector& selector,
                    size_t expected_index,
                    bool is_main_frame) {
     base::RunLoop run_loop;
     web_controller_->FindElement(
-        selectors,
+        selector,
         /* strict_mode= */ true,
         base::BindOnce(&WebControllerBrowserTest::OnFindElement,
                        base::Unretained(this), run_loop.QuitClosure(),
@@ -245,7 +242,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     ASSERT_FALSE(result->object_id.empty());
   }
 
-  void GetFieldsValue(const std::vector<std::vector<std::string>>& selectors,
+  void GetFieldsValue(const std::vector<Selector>& selectors,
                       const std::vector<std::string>& expected_values) {
     base::RunLoop run_loop;
     ASSERT_EQ(selectors.size(), expected_values.size());
@@ -272,13 +269,13 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     }
   }
 
-  bool SetFieldValue(const std::vector<std::string>& selectors,
+  bool SetFieldValue(const Selector& selector,
                      const std::string& value,
                      bool simulate_key_presses) {
     base::RunLoop run_loop;
     bool result;
     web_controller_->SetFieldValue(
-        selectors, value, simulate_key_presses,
+        selector, value, simulate_key_presses,
         base::BindOnce(&WebControllerBrowserTest::OnSetFieldValue,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -293,13 +290,13 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     std::move(done_callback).Run();
   }
 
-  bool SetAttribute(const std::vector<std::string>& selectors,
+  bool SetAttribute(const Selector& selector,
                     const std::vector<std::string>& attribute,
                     const std::string& value) {
     base::RunLoop run_loop;
     bool result;
     web_controller_->SetAttribute(
-        selectors, attribute, value,
+        selector, attribute, value,
         base::BindOnce(&WebControllerBrowserTest::OnSetAttribute,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -354,62 +351,62 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentElementsVisible) {
-  std::vector<std::vector<std::string>> selectors;
+  std::vector<Selector> selectors;
   std::vector<bool> results;
 
-  std::vector<std::string> a_selector;
-  a_selector.emplace_back("#button");
+  Selector a_selector;
+  a_selector.selectors.emplace_back("#button");
   selectors.emplace_back(a_selector);
   results.emplace_back(true);
 
-  a_selector.emplace_back("#whatever");
+  a_selector.selectors.emplace_back("#whatever");
   selectors.emplace_back(a_selector);
   results.emplace_back(false);
 
   // IFrame.
-  a_selector.clear();
-  a_selector.emplace_back("#iframe");
-  a_selector.emplace_back("#button");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#iframe");
+  a_selector.selectors.emplace_back("#button");
   selectors.emplace_back(a_selector);
   results.emplace_back(true);
 
-  a_selector.emplace_back("#whatever");
+  a_selector.selectors.emplace_back("#whatever");
   selectors.emplace_back(a_selector);
   results.emplace_back(false);
 
-  a_selector.clear();
-  a_selector.emplace_back("#iframe");
-  a_selector.emplace_back("[name=name]");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#iframe");
+  a_selector.selectors.emplace_back("[name=name]");
   selectors.emplace_back(a_selector);
   results.emplace_back(true);
 
   // Shadow DOM.
-  a_selector.clear();
-  a_selector.emplace_back("#iframe");
-  a_selector.emplace_back("#shadowsection");
-  a_selector.emplace_back("#shadowbutton");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#iframe");
+  a_selector.selectors.emplace_back("#shadowsection");
+  a_selector.selectors.emplace_back("#shadowbutton");
   selectors.emplace_back(a_selector);
   results.emplace_back(true);
 
-  a_selector.emplace_back("#whatever");
+  a_selector.selectors.emplace_back("#whatever");
   selectors.emplace_back(a_selector);
   results.emplace_back(false);
 
   // IFrame inside IFrame.
-  a_selector.clear();
-  a_selector.emplace_back("#iframe");
-  a_selector.emplace_back("#iframe");
-  a_selector.emplace_back("#button");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#iframe");
+  a_selector.selectors.emplace_back("#iframe");
+  a_selector.selectors.emplace_back("#button");
   selectors.emplace_back(a_selector);
   results.emplace_back(true);
 
-  a_selector.emplace_back("#whatever");
+  a_selector.selectors.emplace_back("#whatever");
   selectors.emplace_back(a_selector);
   results.emplace_back(false);
 
   // Hidden element.
-  a_selector.clear();
-  a_selector.emplace_back("#hidden");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#hidden");
   selectors.emplace_back(a_selector);
   results.emplace_back(false);
 
@@ -417,25 +414,25 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentElementsVisible) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementExists) {
-  std::vector<std::vector<std::string>> selectors;
+  std::vector<Selector> selectors;
   std::vector<bool> results;
 
-  std::vector<std::string> a_selector;
+  Selector a_selector;
 
   // A visible element
-  a_selector.emplace_back("#button");
+  a_selector.selectors.emplace_back("#button");
   selectors.emplace_back(a_selector);
   results.emplace_back(true);
 
   // A hidden element.
-  a_selector.clear();
-  a_selector.emplace_back("#hidden");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#hidden");
   selectors.emplace_back(a_selector);
   results.emplace_back(true);
 
   // A nonexistent element.
-  a_selector.clear();
-  a_selector.emplace_back("#doesnotexist");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#doesnotexist");
   selectors.emplace_back(a_selector);
   results.emplace_back(false);
 
@@ -443,44 +440,44 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementExists) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#button");
-  ClickElement(selectors);
+  Selector selector;
+  selector.selectors.emplace_back("#button");
+  ClickElement(selector);
 
-  WaitForElementRemove(selectors);
+  WaitForElementRemove(selector);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
                        ClickElementInIFrame) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("#shadowsection");
-  selectors.emplace_back("#shadowbutton");
-  ClickElement(selectors);
+  Selector selector;
+  selector.selectors.emplace_back("#iframe");
+  selector.selectors.emplace_back("#shadowsection");
+  selector.selectors.emplace_back("#shadowbutton");
+  ClickElement(selector);
 
-  selectors.clear();
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("#button");
-  WaitForElementRemove(selectors);
+  selector.selectors.clear();
+  selector.selectors.emplace_back("#iframe");
+  selector.selectors.emplace_back("#button");
+  WaitForElementRemove(selector);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElement) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#touch_area_two");
-  TapElement(selectors);
-  WaitForElementRemove(selectors);
+  Selector selector;
+  selector.selectors.emplace_back("#touch_area_two");
+  TapElement(selector);
+  WaitForElementRemove(selector);
 
-  selectors.clear();
-  selectors.emplace_back("#touch_area_one");
-  TapElement(selectors);
-  WaitForElementRemove(selectors);
+  selector.selectors.clear();
+  selector.selectors.emplace_back("#touch_area_one");
+  TapElement(selector);
+  WaitForElementRemove(selector);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementMovingOutOfView) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#touch_area_three");
-  TapElement(selectors);
-  WaitForElementRemove(selectors);
+  Selector selector;
+  selector.selectors.emplace_back("#touch_area_three");
+  TapElement(selector);
+  WaitForElementRemove(selector);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementAfterPageIsIdle) {
@@ -488,50 +485,50 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementAfterPageIsIdle) {
   // timeout.
   WaitTillPageIsIdle(base::TimeDelta::FromHours(1));
 
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#touch_area_one");
-  TapElement(selectors);
+  Selector selector;
+  selector.selectors.emplace_back("#touch_area_one");
+  TapElement(selector);
 
-  WaitForElementRemove(selectors);
+  WaitForElementRemove(selector);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementInIFrame) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("#touch_area");
-  TapElement(selectors);
+  Selector selector;
+  selector.selectors.emplace_back("#iframe");
+  selector.selectors.emplace_back("#touch_area");
+  TapElement(selector);
 
-  WaitForElementRemove(selectors);
+  WaitForElementRemove(selector);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElement) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#button");
-  FindElement(selectors, 0, true);
+  Selector selector;
+  selector.selectors.emplace_back("#button");
+  FindElement(selector, 0, true);
 
   // IFrame.
-  selectors.clear();
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("#button");
-  FindElement(selectors, 0, false);
+  selector.selectors.clear();
+  selector.selectors.emplace_back("#iframe");
+  selector.selectors.emplace_back("#button");
+  FindElement(selector, 0, false);
 
-  selectors.clear();
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("[name=name]");
-  FindElement(selectors, 0, false);
+  selector.selectors.clear();
+  selector.selectors.emplace_back("#iframe");
+  selector.selectors.emplace_back("[name=name]");
+  FindElement(selector, 0, false);
 
   // IFrame inside IFrame.
-  selectors.clear();
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("#button");
-  FindElement(selectors, 1, false);
+  selector.selectors.clear();
+  selector.selectors.emplace_back("#iframe");
+  selector.selectors.emplace_back("#iframe");
+  selector.selectors.emplace_back("#button");
+  FindElement(selector, 1, false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("#focus");
+  Selector selector;
+  selector.selectors.emplace_back("#iframe");
+  selector.selectors.emplace_back("#focus");
 
   // The element is not visible initially.
   const std::string checkNotVisibleScript = R"(
@@ -542,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
       iframeRect.y + divRect.y > window.innerHeight;
   )";
   EXPECT_EQ(true, content::EvalJs(shell(), checkNotVisibleScript));
-  FocusElement(selectors);
+  FocusElement(selector);
 
   // Verify that the scroll moved the div in the iframe into view.
   const std::string checkVisibleScript = R"(
@@ -577,10 +574,10 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#select");
-  EXPECT_FALSE(SelectOption(selectors, "incorrect_label"));
-  ASSERT_TRUE(SelectOption(selectors, "two"));
+  Selector selector;
+  selector.selectors.emplace_back("#select");
+  EXPECT_FALSE(SelectOption(selector, "incorrect_label"));
+  ASSERT_TRUE(SelectOption(selector, "two"));
 
   const std::string javascript = R"(
     let select = document.querySelector("#select");
@@ -588,19 +585,19 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
   )";
   EXPECT_EQ("Two", content::EvalJs(shell(), javascript));
 
-  ASSERT_TRUE(SelectOption(selectors, "one"));
+  ASSERT_TRUE(SelectOption(selector, "one"));
   EXPECT_EQ("One", content::EvalJs(shell(), javascript));
 
-  selectors.clear();
-  selectors.emplace_back("#incorrect_selector");
-  EXPECT_FALSE(SelectOption(selectors, "two"));
+  selector.selectors.clear();
+  selector.selectors.emplace_back("#incorrect_selector");
+  EXPECT_FALSE(SelectOption(selector, "two"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIframe) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("select[name=state]");
-  ASSERT_TRUE(SelectOption(selectors, "NY"));
+  Selector selector;
+  selector.selectors.emplace_back("#iframe");
+  selector.selectors.emplace_back("select[name=state]");
+  ASSERT_TRUE(SelectOption(selector, "NY"));
 
   const std::string javascript = R"(
     let iframe = document.querySelector("iframe").contentDocument;
@@ -611,21 +608,21 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIframe) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetOuterHtml) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#testOuterHtml");
+  Selector selector;
+  selector.selectors.emplace_back("#testOuterHtml");
   std::string html;
-  ASSERT_TRUE(GetOuterHtml(selectors, &html));
+  ASSERT_TRUE(GetOuterHtml(selector, &html));
   EXPECT_EQ(
       R"(<div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>)",
       html);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
-  std::vector<std::vector<std::string>> selectors;
+  std::vector<Selector> selectors;
   std::vector<std::string> expected_values;
 
-  std::vector<std::string> a_selector;
-  a_selector.emplace_back("#input1");
+  Selector a_selector;
+  a_selector.selectors.emplace_back("#input1");
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("helloworld1");
   GetFieldsValue(selectors, expected_values);
@@ -637,8 +634,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   GetFieldsValue(selectors, expected_values);
 
   selectors.clear();
-  a_selector.clear();
-  a_selector.emplace_back("#uppercase_input");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#uppercase_input");
   selectors.emplace_back(a_selector);
   EXPECT_TRUE(
       SetFieldValue(a_selector, "baz", /* simulate_key_presses= */ true));
@@ -647,8 +644,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   GetFieldsValue(selectors, expected_values);
 
   selectors.clear();
-  a_selector.clear();
-  a_selector.emplace_back("#invalid_selector");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#invalid_selector");
   selectors.emplace_back(a_selector);
   expected_values.clear();
   expected_values.emplace_back("");
@@ -659,15 +656,15 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SetAttribute) {
-  std::vector<std::string> selectors;
+  Selector selector;
   std::vector<std::string> attribute;
 
-  selectors.emplace_back("#full_height_section");
+  selector.selectors.emplace_back("#full_height_section");
   attribute.emplace_back("style");
   attribute.emplace_back("backgroundColor");
   std::string value = "red";
 
-  EXPECT_TRUE(SetAttribute(selectors, attribute, value));
+  EXPECT_TRUE(SetAttribute(selector, attribute, value));
   const std::string javascript = R"(
     document.querySelector("#full_height_section").style.backgroundColor;
   )";
@@ -675,31 +672,31 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SetAttribute) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentGetFieldsValue) {
-  std::vector<std::vector<std::string>> selectors;
+  std::vector<Selector> selectors;
   std::vector<std::string> expected_values;
 
-  std::vector<std::string> a_selector;
-  a_selector.emplace_back("#input1");
+  Selector a_selector;
+  a_selector.selectors.emplace_back("#input1");
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("helloworld1");
 
-  a_selector.clear();
-  a_selector.emplace_back("#input2");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#input2");
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("helloworld2");
 
-  a_selector.clear();
-  a_selector.emplace_back("#input3");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#input3");
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("helloworld3");
 
-  a_selector.clear();
-  a_selector.emplace_back("#input4");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#input4");
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("helloworld4");
 
-  a_selector.clear();
-  a_selector.emplace_back("#input5");
+  a_selector.selectors.clear();
+  a_selector.selectors.emplace_back("#input5");
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("helloworld5");
 
@@ -714,15 +711,15 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, NavigateToUrl) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, HighlightElement) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#select");
+  Selector selector;
+  selector.selectors.emplace_back("#select");
 
   const std::string javascript = R"(
     let select = document.querySelector("#select");
     select.style.boxShadow;
   )";
   EXPECT_EQ("", content::EvalJs(shell(), javascript));
-  ASSERT_TRUE(HighlightElement(selectors));
+  ASSERT_TRUE(HighlightElement(selector));
   // We only make sure that the element has a non-empty boxShadow style without
   // requiring an exact string match.
   EXPECT_NE("", content::EvalJs(shell(), javascript));

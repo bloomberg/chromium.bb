@@ -76,6 +76,8 @@ jumbo_static_library("browser") {
     "script_precondition.h",
     "script_tracker.cc",
     "script_tracker.h",
+    "selector.cc",
+    "selector.h",
     "service.cc",
     "service.h",
     "ui_controller.cc",

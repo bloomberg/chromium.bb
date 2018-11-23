@@ -34,7 +34,7 @@ void PromptAction::InternalProcessAction(ActionDelegate* delegate,
     batch_element_checker_ = delegate->CreateBatchElementChecker();
     for (const auto& auto_select : proto_.prompt().auto_select()) {
       batch_element_checker_->AddElementCheck(
-          kExistenceCheck, ExtractVector(auto_select.element().selectors()),
+          kExistenceCheck, ExtractSelector(auto_select.element()),
           base::BindOnce(&PromptAction::OnElementExist, base::Unretained(this),
                          auto_select.result()));
     }

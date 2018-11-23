@@ -30,7 +30,6 @@ class ClickAction : public Action {
                         bool element_found);
   void OnClick(ProcessActionCallback callback, bool status);
 
-  std::vector<std::string> target_element_selectors_;
   base::WeakPtrFactory<ClickAction> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickAction);

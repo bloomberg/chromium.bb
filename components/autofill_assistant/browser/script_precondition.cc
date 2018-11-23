@@ -19,19 +19,22 @@ namespace autofill_assistant {
 std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
     const std::string& script_path,
     const ScriptPreconditionProto& script_precondition_proto) {
-  std::vector<std::vector<std::string>> elements_exist;
+  std::vector<Selector> elements_exist;
   for (const auto& element : script_precondition_proto.elements_exist()) {
-    std::vector<std::string> selectors;
-    for (const auto& selector : element.selectors()) {
-      selectors.emplace_back(selector);
-    }
-    if (selectors.empty()) {
+    // TODO(crbug.com/806868): Check if we shouldn't skip the script when this
+    // happens.
+    if (element.selectors_size() == 0) {
       DLOG(WARNING)
           << "Empty selectors in script precondition for script path: "
           << script_path << ".";
       continue;
     }
-    elements_exist.emplace_back(selectors);
+
+    Selector a_selector;
+    for (const auto& selector : element.selectors()) {
+      a_selector.selectors.emplace_back(selector);
+    }
+    elements_exist.emplace_back(std::move(a_selector));
   }
 
   std::set<std::string> domain_match;
@@ -103,20 +106,19 @@ void ScriptPrecondition::Check(
   }
   for (const auto& value_match : form_value_match_) {
     DCHECK(!value_match.element().selectors().empty());
-    std::vector<std::string> selectors;
+    Selector a_selector;
     for (const auto& selector : value_match.element().selectors()) {
-      selectors.emplace_back(selector);
+      a_selector.selectors.emplace_back(selector);
     }
-    DCHECK(!selectors.empty());
 
     batch_checks->AddFieldValueCheck(
-        selectors, base::BindOnce(&ScriptPrecondition::OnGetFieldValue,
-                                  weak_ptr_factory_.GetWeakPtr()));
+        a_selector, base::BindOnce(&ScriptPrecondition::OnGetFieldValue,
+                                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
 ScriptPrecondition::ScriptPrecondition(
-    const std::vector<std::vector<std::string>>& elements_exist,
+    const std::vector<Selector>& elements_exist,
     const std::set<std::string>& domain_match,
     std::vector<std::unique_ptr<re2::RE2>> path_pattern,
     const std::vector<ScriptParameterMatchProto>& parameter_match,

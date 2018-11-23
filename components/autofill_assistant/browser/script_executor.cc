@@ -78,25 +78,25 @@ ScriptExecutor::CreateBatchElementChecker() {
 }
 
 void ScriptExecutor::ShortWaitForElementExist(
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     base::OnceCallback<void(bool)> callback) {
-  WaitForElement(kShortWaitForElementDeadline, kExistenceCheck, selectors,
+  WaitForElement(kShortWaitForElementDeadline, kExistenceCheck, selector,
                  std::move(callback));
 }
 
 void ScriptExecutor::WaitForElementVisible(
     base::TimeDelta max_wait_time,
     bool allow_interrupt,
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     base::OnceCallback<void(bool)> callback) {
   if (!allow_interrupt || ordered_interrupts_->empty()) {
     // No interrupts to worry about. Just run normal wait.
-    WaitForElement(max_wait_time, kVisibilityCheck, selectors,
+    WaitForElement(max_wait_time, kVisibilityCheck, selector,
                    std::move(callback));
     return;
   }
   wait_with_interrupts_ = std::make_unique<WaitWithInterrupts>(
-      this, max_wait_time, kVisibilityCheck, selectors,
+      this, max_wait_time, kVisibilityCheck, selector,
       base::BindOnce(&ScriptExecutor::OnWaitForElementVisible,
                      base::Unretained(this), std::move(callback)));
   wait_with_interrupts_->Run();
@@ -107,9 +107,9 @@ void ScriptExecutor::ShowStatusMessage(const std::string& message) {
 }
 
 void ScriptExecutor::ClickOrTapElement(
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->ClickOrTapElement(selectors,
+  delegate_->GetWebController()->ClickOrTapElement(selector,
                                                    std::move(callback));
 }
 
@@ -156,9 +156,9 @@ void ScriptExecutor::ChooseAddress(
 }
 
 void ScriptExecutor::FillAddressForm(const autofill::AutofillProfile* profile,
-                                     const std::vector<std::string>& selectors,
+                                     const Selector& selector,
                                      base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->FillAddressForm(profile, selectors,
+  delegate_->GetWebController()->FillAddressForm(profile, selector,
                                                  std::move(callback));
 }
 
@@ -169,32 +169,32 @@ void ScriptExecutor::ChooseCard(
 
 void ScriptExecutor::FillCardForm(std::unique_ptr<autofill::CreditCard> card,
                                   const base::string16& cvc,
-                                  const std::vector<std::string>& selectors,
+                                  const Selector& selector,
                                   base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->FillCardForm(std::move(card), cvc, selectors,
+  delegate_->GetWebController()->FillCardForm(std::move(card), cvc, selector,
                                               std::move(callback));
 }
 
-void ScriptExecutor::SelectOption(const std::vector<std::string>& selectors,
+void ScriptExecutor::SelectOption(const Selector& selector,
                                   const std::string& selected_option,
                                   base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->SelectOption(selectors, selected_option,
+  delegate_->GetWebController()->SelectOption(selector, selected_option,
                                               std::move(callback));
 }
 
-void ScriptExecutor::HighlightElement(const std::vector<std::string>& selectors,
+void ScriptExecutor::HighlightElement(const Selector& selector,
                                       base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->HighlightElement(selectors,
+  delegate_->GetWebController()->HighlightElement(selector,
                                                   std::move(callback));
 }
 
-void ScriptExecutor::FocusElement(const std::vector<std::string>& selectors,
+void ScriptExecutor::FocusElement(const Selector& selector,
                                   base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->FocusElement(selectors, std::move(callback));
+  delegate_->GetWebController()->FocusElement(selector, std::move(callback));
 }
 
 void ScriptExecutor::SetTouchableElements(
-    const std::vector<std::vector<std::string>>& element_selectors) {
+    const std::vector<Selector>& element_selectors) {
   touchable_elements_ = element_selectors;
 }
 
@@ -214,26 +214,26 @@ void ScriptExecutor::HideOverlay() {
   delegate_->GetUiController()->HideOverlay();
 }
 
-void ScriptExecutor::SetFieldValue(const std::vector<std::string>& selectors,
+void ScriptExecutor::SetFieldValue(const Selector& selector,
                                    const std::string& value,
                                    bool simulate_key_presses,
                                    base::OnceCallback<void(bool)> callback) {
   delegate_->GetWebController()->SetFieldValue(
-      selectors, value, simulate_key_presses, std::move(callback));
+      selector, value, simulate_key_presses, std::move(callback));
 }
 
-void ScriptExecutor::SetAttribute(const std::vector<std::string>& selectors,
+void ScriptExecutor::SetAttribute(const Selector& selector,
                                   const std::vector<std::string>& attribute,
                                   const std::string& value,
                                   base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->SetAttribute(selectors, attribute, value,
+  delegate_->GetWebController()->SetAttribute(selector, attribute, value,
                                               std::move(callback));
 }
 
 void ScriptExecutor::GetOuterHtml(
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     base::OnceCallback<void(bool, const std::string&)> callback) {
-  delegate_->GetWebController()->GetOuterHtml(selectors, std::move(callback));
+  delegate_->GetWebController()->GetOuterHtml(selector, std::move(callback));
 }
 
 void ScriptExecutor::LoadURL(const GURL& url) {
@@ -399,10 +399,10 @@ void ScriptExecutor::OnProcessedAction(
 
 void ScriptExecutor::WaitForElement(base::TimeDelta max_wait_time,
                                     ElementCheckType check_type,
-                                    const std::vector<std::string>& selectors,
+                                    const Selector& selector,
                                     base::OnceCallback<void(bool)> callback) {
   std::unique_ptr<BatchElementChecker> checker = CreateBatchElementChecker();
-  checker->AddElementCheck(check_type, selectors, base::DoNothing());
+  checker->AddElementCheck(check_type, selector, base::DoNothing());
   checker->Run(max_wait_time,
                /* try_done= */ base::DoNothing(),
                /* all_done= */
@@ -436,12 +436,12 @@ ScriptExecutor::WaitWithInterrupts::WaitWithInterrupts(
     const ScriptExecutor* main_script,
     base::TimeDelta max_wait_time,
     ElementCheckType check_type,
-    const std::vector<std::string>& selectors,
+    const Selector& selector,
     WaitWithInterrupts::Callback callback)
     : main_script_(main_script),
       max_wait_time_(max_wait_time),
       check_type_(check_type),
-      selectors_(selectors),
+      selector_(selector),
       callback_(std::move(callback)),
       element_found_(false) {}
 
@@ -455,7 +455,7 @@ void ScriptExecutor::WaitWithInterrupts::Run() {
       main_script_->delegate_->GetWebController()->CreateBatchElementChecker();
 
   batch_element_checker_->AddElementCheck(
-      check_type_, selectors_,
+      check_type_, selector_,
       base::BindOnce(&WaitWithInterrupts::OnElementCheckDone,
                      base::Unretained(this)));
   for (const auto* interrupt : *main_script_->ordered_interrupts_) {

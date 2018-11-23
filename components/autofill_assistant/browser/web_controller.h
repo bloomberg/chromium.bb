@@ -19,6 +19,7 @@
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
 #include "components/autofill_assistant/browser/rectf.h"
+#include "components/autofill_assistant/browser/selector.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -65,57 +66,55 @@ class WebController {
   virtual void LoadURL(const GURL& url);
 
   // Perform a mouse left button click or a touch tap on the element given by
-  // |selectors| and return the result through callback.
-  // CSS selectors in |selectors| are ordered from top frame to the frame
-  // contains the element and the element.
-  virtual void ClickOrTapElement(const std::vector<std::string>& selectors,
+  // |selector| and return the result through callback.
+  virtual void ClickOrTapElement(const Selector& selector,
                                  base::OnceCallback<void(bool)> callback);
 
-  // Fill the address form given by |selectors| with the given address
+  // Fill the address form given by |selector| with the given address
   // |profile|.
   virtual void FillAddressForm(const autofill::AutofillProfile* profile,
-                               const std::vector<std::string>& selectors,
+                               const Selector& selector,
                                base::OnceCallback<void(bool)> callback);
 
-  // Fill the card form given by |selectors| with the given |card| and its
+  // Fill the card form given by |selector| with the given |card| and its
   // |cvc|.
   virtual void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
                             const base::string16& cvc,
-                            const std::vector<std::string>& selectors,
+                            const Selector& selector,
                             base::OnceCallback<void(bool)> callback);
 
-  // Select the option given by |selectors| and the value of the option to be
+  // Select the option given by |selector| and the value of the option to be
   // picked.
-  virtual void SelectOption(const std::vector<std::string>& selectors,
+  virtual void SelectOption(const Selector& selector,
                             const std::string& selected_option,
                             base::OnceCallback<void(bool)> callback);
 
-  // Highlight an element given by |selectors|.
-  virtual void HighlightElement(const std::vector<std::string>& selectors,
+  // Highlight an element given by |selector|.
+  virtual void HighlightElement(const Selector& selector,
                                 base::OnceCallback<void(bool)> callback);
 
-  // Focus on element given by |selectors|.
-  virtual void FocusElement(const std::vector<std::string>& selectors,
+  // Focus on element given by |selector|.
+  virtual void FocusElement(const Selector& selector,
                             base::OnceCallback<void(bool)> callback);
 
-  // Set the |value| of field |selectors| and return the result through
+  // Set the |value| of field |selector| and return the result through
   // |callback|. If |simulate_key_presses| is true, the value will be set by
   // clicking the field and then simulating key presses, otherwise the `value`
   // attribute will be set directly.
-  virtual void SetFieldValue(const std::vector<std::string>& selectors,
+  virtual void SetFieldValue(const Selector& selector,
                              const std::string& value,
                              bool simulate_key_presses,
                              base::OnceCallback<void(bool)> callback);
 
-  // Set the |value| of the |attribute| of the element given by |selectors|.
-  virtual void SetAttribute(const std::vector<std::string>& selectors,
+  // Set the |value| of the |attribute| of the element given by |selector|.
+  virtual void SetAttribute(const Selector& selector,
                             const std::vector<std::string>& attribute,
                             const std::string& value,
                             base::OnceCallback<void(bool)> callback);
 
-  // Return the outerHTML of |selectors|.
+  // Return the outerHTML of |selector|.
   virtual void GetOuterHtml(
-      const std::vector<std::string>& selectors,
+      const Selector& selector,
       base::OnceCallback<void(bool, const std::string&)> callback);
 
   // Create a helper for checking element existence and field value.
@@ -129,7 +128,7 @@ class WebController {
   // coordinates expressed as numbers between 0 and 1, relative to the width or
   // height of the visible viewport.
   virtual void GetElementPosition(
-      const std::vector<std::string>& selectors,
+      const Selector& selector,
       base::OnceCallback<void(bool, const RectF&)> callback);
 
   // Scroll the view by the given distance.
@@ -150,24 +149,24 @@ class WebController {
 
   // Checks an element for:
   //
-  // kExistenceCheck: Checks whether at least one element given by |selectors|
+  // kExistenceCheck: Checks whether at least one element given by |selector|
   // exists on the web page.
   //
-  // kVisibilityCheck: Checks whether at least on element given by |selectors|
+  // kVisibilityCheck: Checks whether at least on element given by |selector|
   // is visible on the web page.
   //
   // Normally done through BatchElementChecker.
   virtual void ElementCheck(ElementCheckType type,
-                            const std::vector<std::string>& selectors,
+                            const Selector& selector,
                             base::OnceCallback<void(bool)> callback);
 
-  // Get the value of |selectors| and return the result through |callback|. The
+  // Get the value of |selector| and return the result through |callback|. The
   // returned value might be false, if the element cannot be found, true and the
   // empty string in case of error or empty value.
   //
   // Normally done through BatchElementChecker.
   virtual void GetFieldValue(
-      const std::vector<std::string>& selectors,
+      const Selector& selector,
       base::OnceCallback<void(bool, const std::string&)> callback);
 
  private:
@@ -217,17 +216,14 @@ class WebController {
     DISALLOW_COPY_AND_ASSIGN(ElementPositionGetter);
   };
 
-  // Perform a mouse left button click on the element given by |selectors| and
+  // Perform a mouse left button click on the element given by |selector| and
   // return the result through callback.
-  // CSS selectors in |selectors| are ordered from top frame to the frame
-  // contains the element and the element.
-  void ClickElement(const std::vector<std::string>& selectors,
+  void ClickElement(const Selector& selector,
                     base::OnceCallback<void(bool)> callback);
 
-  // Perform a touch tap on the element given by |selectors| and return the
-  // result through callback. CSS selectors in |selectors| are ordered from top
-  // frame to the frame contains the element and the element.
-  void TapElement(const std::vector<std::string>& selectors,
+  // Perform a touch tap on the element given by |selector| and return the
+  // result through callback.
+  void TapElement(const Selector& selector,
                   base::OnceCallback<void(bool)> callback);
 
   struct FindElementResult {
@@ -299,38 +295,38 @@ class WebController {
   void OnGetBoxModelForVisible(base::OnceCallback<void(bool)> callback,
                                std::unique_ptr<dom::GetBoxModelResult> result);
 
-  // Find the element given by |selectors|. If multiple elements match
-  // |selectors| and if |strict_mode| is false, return the first one that is
+  // Find the element given by |selector|. If multiple elements match
+  // |selector| and if |strict_mode| is false, return the first one that is
   // found. Otherwise if |strict-mode| is true, do not return any.
-  void FindElement(const std::vector<std::string>& selectors,
+  void FindElement(const Selector& selector,
                    bool strict_mode,
                    FindElementCallback callback);
-  void OnGetDocumentElement(const std::vector<std::string>& selectors,
+  void OnGetDocumentElement(const Selector& selector,
                             bool strict_mode,
                             FindElementCallback callback,
                             std::unique_ptr<runtime::EvaluateResult> result);
   void RecursiveFindElement(const std::string& object_id,
                             size_t index,
-                            const std::vector<std::string>& selectors,
+                            const Selector& selector,
                             bool strict_mode,
                             std::unique_ptr<FindElementResult> element_result,
                             FindElementCallback callback);
   void OnQuerySelectorAll(
       size_t index,
-      const std::vector<std::string>& selectors,
+      const Selector& selector,
       bool strict_mode,
       std::unique_ptr<FindElementResult> element_result,
       FindElementCallback callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnDescribeNode(const std::string& object_id,
                       size_t index,
-                      const std::vector<std::string>& selectors,
+                      const Selector& selector,
                       bool strict_mode,
                       std::unique_ptr<FindElementResult> element_result,
                       FindElementCallback callback,
                       std::unique_ptr<dom::DescribeNodeResult> result);
   void OnResolveNode(size_t index,
-                     const std::vector<std::string>& selectors,
+                     const Selector& selector,
                      bool strict_mode,
                      std::unique_ptr<FindElementResult> element_result,
                      FindElementCallback callback,
@@ -344,7 +340,7 @@ class WebController {
                 base::OnceCallback<void(bool, const std::string&)> callback);
   void OnFindElementForFillingForm(
       std::unique_ptr<FillFormInputData> data_to_autofill,
-      const std::vector<std::string>& selectors,
+      const Selector& selector,
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<FindElementResult> element_result);
   void OnGetFormAndFieldDataForFillingForm(
@@ -376,14 +372,13 @@ class WebController {
   void OnGetValueAttribute(
       base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void InternalSetFieldValue(const std::vector<std::string>& selectors,
+  void InternalSetFieldValue(const Selector& selector,
                              const std::string& value,
                              base::OnceCallback<void(bool)> callback);
-  void OnClearFieldForDispatchKeyEvent(
-      const std::vector<std::string>& selectors,
-      const std::string& value,
-      base::OnceCallback<void(bool)> callback,
-      bool clear_status);
+  void OnClearFieldForDispatchKeyEvent(const Selector& selector,
+                                       const std::string& value,
+                                       base::OnceCallback<void(bool)> callback,
+                                       bool clear_status);
   void OnClickElementForDispatchKeyEvent(
       const std::string& value,
       base::OnceCallback<void(bool)> callback,

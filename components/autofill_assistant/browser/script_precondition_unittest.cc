@@ -20,7 +20,7 @@ namespace autofill_assistant {
 namespace {
 
 using ::testing::_;
-using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::Invoke;
 
 // A callback that expects to be called immediately.
@@ -56,17 +56,18 @@ class ScriptPreconditionTest : public testing::Test {
  public:
   void SetUp() override {
     ON_CALL(mock_web_controller_,
-            OnElementCheck(kExistenceCheck, ElementsAre("exists"), _))
+            OnElementCheck(kExistenceCheck, Eq(Selector({"exists"})), _))
         .WillByDefault(RunOnceCallback<2>(true));
-    ON_CALL(mock_web_controller_,
-            OnElementCheck(kExistenceCheck, ElementsAre("does_not_exist"), _))
+    ON_CALL(
+        mock_web_controller_,
+        OnElementCheck(kExistenceCheck, Eq(Selector({"does_not_exist"})), _))
         .WillByDefault(RunOnceCallback<2>(false));
 
     SetUrl("http://www.example.com/path");
-    ON_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("exists"), _))
+    ON_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"exists"})), _))
         .WillByDefault(RunOnceCallback<1>(true, "foo"));
     ON_CALL(mock_web_controller_,
-            OnGetFieldValue(ElementsAre("does_not_exist"), _))
+            OnGetFieldValue(Eq(Selector({"does_not_exist"})), _))
         .WillByDefault(RunOnceCallback<1>(false, ""));
   }
 
@@ -179,7 +180,7 @@ TEST_F(ScriptPreconditionTest, BadPathPattern) {
 
 TEST_F(ScriptPreconditionTest, IgnoreEmptyElementsExist) {
   EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(kExistenceCheck, ElementsAre("exists"), _))
+              OnElementCheck(kExistenceCheck, Eq(Selector({"exists"})), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   ScriptPreconditionProto proto;

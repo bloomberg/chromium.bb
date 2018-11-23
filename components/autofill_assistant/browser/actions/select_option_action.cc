@@ -28,7 +28,7 @@ void SelectOptionAction::InternalProcessAction(ActionDelegate* delegate,
   DCHECK_GT(select_option.element().selectors_size(), 0);
 
   delegate->ShortWaitForElementExist(
-      ExtractVector(select_option.element().selectors()),
+      ExtractSelector(select_option.element()),
       base::BindOnce(&SelectOptionAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));
@@ -44,7 +44,7 @@ void SelectOptionAction::OnWaitForElement(ActionDelegate* delegate,
   }
 
   delegate->SelectOption(
-      ExtractVector(proto_.select_option().element().selectors()),
+      ExtractSelector(proto_.select_option().element()),
       proto_.select_option().selected_option(),
       base::BindOnce(&::autofill_assistant::SelectOptionAction::OnSelectOption,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

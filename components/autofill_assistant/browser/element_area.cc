@@ -28,8 +28,7 @@ ElementArea::ElementArea(WebController* web_controller)
 
 ElementArea::~ElementArea() = default;
 
-void ElementArea::SetElements(
-    const std::vector<std::vector<std::string>>& elements) {
+void ElementArea::SetElements(const std::vector<Selector>& elements) {
   element_positions_.clear();
 
   for (const auto& selector : elements) {
@@ -92,7 +91,7 @@ void ElementArea::KeepUpdatingPositions() {
       kCheckDelay);
 }
 
-void ElementArea::OnGetElementPosition(const std::vector<std::string>& selector,
+void ElementArea::OnGetElementPosition(const Selector& selector,
                                        bool found,
                                        const RectF& rect) {
   for (auto& position : element_positions_) {
