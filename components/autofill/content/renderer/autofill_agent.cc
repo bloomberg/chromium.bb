@@ -1129,6 +1129,7 @@ bool AutofillAgent::FindTheUniqueNewVersionOfOldElement(
         potential_match_encountered = true;
       } else if (current_element.AutofillSection() !=
                      original_element_section &&
+                 !matching_element.IsNull() &&
                  matching_element.AutofillSection() !=
                      original_element_section) {
         // The so far matching fields are equally bad. Continue the search if
@@ -1137,6 +1138,7 @@ bool AutofillAgent::FindTheUniqueNewVersionOfOldElement(
         matching_element.Reset();
       } else if (current_element.AutofillSection() ==
                      original_element_section &&
+                 !matching_element.IsNull() &&
                  matching_element.AutofillSection() ==
                      original_element_section) {
         // If two or more fields have the matching name and section, we can't
