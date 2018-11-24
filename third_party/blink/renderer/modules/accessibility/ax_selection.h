@@ -10,6 +10,7 @@
 #include <ostream>
 
 #include <base/logging.h>
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_position.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -38,7 +39,13 @@ class MODULES_EXPORT AXSelection final {
  public:
   class Builder;
 
-  static const AXSelection FromSelection(
+  static void ClearCurrentSelection(const Document&);
+
+  static AXSelection FromCurrentSelection(
+      const Document&,
+      const AXSelectionBehavior = AXSelectionBehavior::kExtendToValidDOMRange);
+
+  static AXSelection FromSelection(
       const SelectionInDOMTree&,
       const AXSelectionBehavior = AXSelectionBehavior::kExtendToValidDOMRange);
 

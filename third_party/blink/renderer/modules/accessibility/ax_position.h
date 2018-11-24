@@ -109,7 +109,8 @@ class MODULES_EXPORT AXPosition final {
   // When the same character offset could correspond to two possible caret
   // positions, upstream means it's on the previous line rather than the next
   // line.
-  TextAffinity Affinity() const { return affinity_; }
+  // Only valid for text positions.
+  TextAffinity Affinity() const;
 
   // Verifies if the anchor is present and if it's set to a live object with a
   // connected node.
