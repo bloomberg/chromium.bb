@@ -98,6 +98,18 @@ class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
                                 const Attributes&,
                                 Event*,
                                 HTMLFormControlElement* submit_button);
+
+  FormSubmission(SubmitMethod,
+                 const KURL& action,
+                 const AtomicString& target,
+                 const AtomicString& content_type,
+                 HTMLFormElement*,
+                 scoped_refptr<EncodedFormData>,
+                 const String& boundary,
+                 Event*);
+  // FormSubmission for DialogMethod
+  explicit FormSubmission(const String& result);
+
   void Trace(blink::Visitor*);
 
   FrameLoadRequest CreateFrameLoadRequest(Document* origin_document);
@@ -115,17 +127,6 @@ class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
   const String& Result() const { return result_; }
 
  private:
-  FormSubmission(SubmitMethod,
-                 const KURL& action,
-                 const AtomicString& target,
-                 const AtomicString& content_type,
-                 HTMLFormElement*,
-                 scoped_refptr<EncodedFormData>,
-                 const String& boundary,
-                 Event*);
-  // FormSubmission for DialogMethod
-  explicit FormSubmission(const String& result);
-
   // FIXME: Hold an instance of Attributes instead of individual members.
   SubmitMethod method_;
   KURL action_;

@@ -29,6 +29,7 @@ class CORE_EXPORT FontFaceSetWorker final
  public:
   static const char kSupplementName[];
 
+  explicit FontFaceSetWorker(WorkerGlobalScope&);
   ~FontFaceSetWorker() override;
 
   ScriptPromise ready(ScriptState*) override;
@@ -65,10 +66,8 @@ class CORE_EXPORT FontFaceSetWorker final
 
  private:
   static FontFaceSetWorker* Create(WorkerGlobalScope& worker) {
-    return new FontFaceSetWorker(worker);
+    return MakeGarbageCollected<FontFaceSetWorker>(worker);
   }
-
-  explicit FontFaceSetWorker(WorkerGlobalScope&);
 
   void FireDoneEventIfPossible() override;
   DISALLOW_COPY_AND_ASSIGN(FontFaceSetWorker);

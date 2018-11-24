@@ -28,6 +28,11 @@ class MODULES_EXPORT FederatedCredential final : public Credential {
       const String& name,
       const KURL& icon_url);
 
+  FederatedCredential(const String& id,
+                      scoped_refptr<const SecurityOrigin> provider,
+                      const String& name,
+                      const KURL& icon_url);
+
   scoped_refptr<const SecurityOrigin> GetProviderAsOrigin() const {
     return provider_;
   }
@@ -49,11 +54,6 @@ class MODULES_EXPORT FederatedCredential final : public Credential {
   }
 
  private:
-  FederatedCredential(const String& id,
-                      scoped_refptr<const SecurityOrigin> provider,
-                      const String& name,
-                      const KURL& icon_url);
-
   const scoped_refptr<const SecurityOrigin> provider_;
   const String name_;
   const KURL icon_url_;

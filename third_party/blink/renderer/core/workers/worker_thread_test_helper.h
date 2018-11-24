@@ -119,7 +119,8 @@ class WorkerThreadForTest : public WorkerThread {
  protected:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) override {
-    return new FakeWorkerGlobalScope(std::move(creation_params), this);
+    return MakeGarbageCollected<FakeWorkerGlobalScope>(
+        std::move(creation_params), this);
   }
 
  private:

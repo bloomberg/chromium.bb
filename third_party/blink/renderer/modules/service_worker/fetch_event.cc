@@ -28,8 +28,8 @@ namespace blink {
 FetchEvent* FetchEvent::Create(ScriptState* script_state,
                                const AtomicString& type,
                                const FetchEventInit* initializer) {
-  return new FetchEvent(script_state, type, initializer, nullptr, nullptr,
-                        false);
+  return MakeGarbageCollected<FetchEvent>(script_state, type, initializer,
+                                          nullptr, nullptr, false);
 }
 
 FetchEvent* FetchEvent::Create(ScriptState* script_state,
@@ -38,8 +38,9 @@ FetchEvent* FetchEvent::Create(ScriptState* script_state,
                                FetchRespondWithObserver* respond_with_observer,
                                WaitUntilObserver* wait_until_observer,
                                bool navigation_preload_sent) {
-  return new FetchEvent(script_state, type, initializer, respond_with_observer,
-                        wait_until_observer, navigation_preload_sent);
+  return MakeGarbageCollected<FetchEvent>(
+      script_state, type, initializer, respond_with_observer,
+      wait_until_observer, navigation_preload_sent);
 }
 
 Request* FetchEvent::request() const {

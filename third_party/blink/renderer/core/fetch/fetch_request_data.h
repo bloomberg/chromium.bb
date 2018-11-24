@@ -43,6 +43,8 @@ class FetchRequestData final
   // Call Request::refreshBody() after calling clone() or pass().
   FetchRequestData* Clone(ScriptState*, ExceptionState&);
   FetchRequestData* Pass(ScriptState*, ExceptionState&);
+
+  FetchRequestData();
   ~FetchRequestData();
 
   void SetMethod(AtomicString method) { method_ = method; }
@@ -115,8 +117,6 @@ class FetchRequestData final
   void Trace(blink::Visitor*);
 
  private:
-  FetchRequestData();
-
   FetchRequestData* CloneExceptBody();
 
   AtomicString method_;

@@ -146,7 +146,14 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
    public:
     static LoadFontPromiseResolver* Create(FontFaceArray faces,
                                            ScriptState* script_state) {
-      return new LoadFontPromiseResolver(faces, script_state);
+      return MakeGarbageCollected<LoadFontPromiseResolver>(faces, script_state);
+    }
+
+    LoadFontPromiseResolver(FontFaceArray faces, ScriptState* script_state)
+        : num_loading_(faces.size()),
+          error_occured_(false),
+          resolver_(ScriptPromiseResolver::Create(script_state)) {
+      font_faces_.swap(faces);
     }
 
     void LoadFonts();
@@ -158,13 +165,6 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
     void Trace(blink::Visitor*) override;
 
    private:
-    LoadFontPromiseResolver(FontFaceArray faces, ScriptState* script_state)
-        : num_loading_(faces.size()),
-          error_occured_(false),
-          resolver_(ScriptPromiseResolver::Create(script_state)) {
-      font_faces_.swap(faces);
-    }
-
     HeapVector<Member<FontFace>> font_faces_;
     int num_loading_;
     bool error_occured_;

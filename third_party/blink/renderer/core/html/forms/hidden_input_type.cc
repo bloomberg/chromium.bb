@@ -42,7 +42,7 @@ namespace blink {
 using namespace html_names;
 
 InputType* HiddenInputType::Create(HTMLInputElement& element) {
-  return new HiddenInputType(element);
+  return MakeGarbageCollected<HiddenInputType>(element);
 }
 
 void HiddenInputType::Trace(blink::Visitor* visitor) {

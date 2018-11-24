@@ -35,7 +35,7 @@ FEBlend::FEBlend(Filter* filter, BlendMode mode)
     : FilterEffect(filter), mode_(mode) {}
 
 FEBlend* FEBlend::Create(Filter* filter, BlendMode mode) {
-  return new FEBlend(filter, mode);
+  return MakeGarbageCollected<FEBlend>(filter, mode);
 }
 
 bool FEBlend::SetBlendMode(BlendMode mode) {

@@ -24,6 +24,9 @@ class CORE_EXPORT FetchManager final : public GarbageCollected<FetchManager>,
 
  public:
   static FetchManager* Create(ExecutionContext*);
+
+  explicit FetchManager(ExecutionContext*);
+
   ScriptPromise Fetch(ScriptState*,
                       FetchRequestData*,
                       AbortSignal*,
@@ -33,8 +36,6 @@ class CORE_EXPORT FetchManager final : public GarbageCollected<FetchManager>,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit FetchManager(ExecutionContext*);
-
   class Loader;
 
   // Removes loader from |m_loaders|.

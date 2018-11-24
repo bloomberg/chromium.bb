@@ -203,9 +203,9 @@ FetchRespondWithObserver* FetchRespondWithObserver::Create(
     network::mojom::RequestContextFrameType frame_type,
     mojom::RequestContextType request_context,
     WaitUntilObserver* observer) {
-  return new FetchRespondWithObserver(context, fetch_event_id, request_url,
-                                      request_mode, redirect_mode, frame_type,
-                                      request_context, observer);
+  return MakeGarbageCollected<FetchRespondWithObserver>(
+      context, fetch_event_id, request_url, request_mode, redirect_mode,
+      frame_type, request_context, observer);
 }
 
 // This function may be called when an exception is scheduled. Thus, it must

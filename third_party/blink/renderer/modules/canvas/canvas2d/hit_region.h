@@ -17,9 +17,10 @@ namespace blink {
 class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
  public:
   static HitRegion* Create(const Path& path, const HitRegionOptions* options) {
-    return new HitRegion(path, options);
+    return MakeGarbageCollected<HitRegion>(path, options);
   }
 
+  HitRegion(const Path&, const HitRegionOptions*);
   virtual ~HitRegion() = default;
 
   void RemovePixels(const Path&);
@@ -33,8 +34,6 @@ class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
   void Trace(blink::Visitor*);
 
  private:
-  HitRegion(const Path&, const HitRegionOptions*);
-
   String id_;
   Member<Element> control_;
   Path path_;
@@ -45,7 +44,11 @@ class HitRegionManager final : public GarbageCollected<HitRegionManager> {
   WTF_MAKE_NONCOPYABLE(HitRegionManager);
 
  public:
-  static HitRegionManager* Create() { return new HitRegionManager; }
+  static HitRegionManager* Create() {
+    return MakeGarbageCollected<HitRegionManager>();
+  }
+
+  HitRegionManager() = default;
 
   void AddHitRegion(HitRegion*);
 
@@ -64,8 +67,6 @@ class HitRegionManager final : public GarbageCollected<HitRegionManager> {
   void Trace(blink::Visitor*);
 
  private:
-  HitRegionManager() = default;
-
   typedef HeapListHashSet<Member<HitRegion>> HitRegionList;
   typedef HitRegionList::const_reverse_iterator HitRegionIterator;
   typedef HeapHashMap<String, Member<HitRegion>> HitRegionIdMap;

@@ -27,9 +27,14 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
                              V8PositionCallback* position_callback,
                              V8PositionErrorCallback* position_error_callback,
                              const PositionOptions* options) {
-    return new GeoNotifier(geolocation, position_callback,
-                           position_error_callback, options);
+    return MakeGarbageCollected<GeoNotifier>(geolocation, position_callback,
+                                             position_error_callback, options);
   }
+
+  GeoNotifier(Geolocation*,
+              V8PositionCallback*,
+              V8PositionErrorCallback*,
+              const PositionOptions*);
   ~GeoNotifier() = default;
   void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override { return "GeoNotifier"; }
@@ -64,8 +69,14 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
         scoped_refptr<base::SingleThreadTaskRunner> web_task_runner,
         GeoNotifier* notifier,
         void (GeoNotifier::*member_func)(TimerBase*)) {
-      return new Timer(web_task_runner, notifier, member_func);
+      return MakeGarbageCollected<Timer>(web_task_runner, notifier,
+                                         member_func);
     }
+
+    explicit Timer(scoped_refptr<base::SingleThreadTaskRunner> web_task_runner,
+                   GeoNotifier* notifier,
+                   void (GeoNotifier::*member_func)(TimerBase*))
+        : timer_(web_task_runner, notifier, member_func), notifier_(notifier) {}
 
     void Trace(blink::Visitor*);
 
@@ -75,19 +86,9 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
     bool IsActive() const { return timer_.IsActive(); }
 
    private:
-    explicit Timer(scoped_refptr<base::SingleThreadTaskRunner> web_task_runner,
-                   GeoNotifier* notifier,
-                   void (GeoNotifier::*member_func)(TimerBase*))
-        : timer_(web_task_runner, notifier, member_func), notifier_(notifier) {}
-
     TaskRunnerTimer<GeoNotifier> timer_;
     Member<GeoNotifier> notifier_;
   };
-
-  GeoNotifier(Geolocation*,
-              V8PositionCallback*,
-              V8PositionErrorCallback*,
-              const PositionOptions*);
 
   // Runs the error callback if there is a fatal error. Otherwise, if a
   // cached position must be used, registers itself for receiving one.

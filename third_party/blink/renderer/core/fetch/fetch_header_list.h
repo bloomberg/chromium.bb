@@ -28,7 +28,9 @@ class CORE_EXPORT FetchHeaderList final
   static FetchHeaderList* Create();
   FetchHeaderList* Clone() const;
 
+  FetchHeaderList();
   ~FetchHeaderList();
+
   void Append(const String&, const String&);
   void Set(const String&, const String&);
   // FIXME: Implement parse()
@@ -53,8 +55,6 @@ class CORE_EXPORT FetchHeaderList final
   void Trace(blink::Visitor* visitor) {}
 
  private:
-  FetchHeaderList();
-
   // While using STL data structures in Blink is not very common or
   // encouraged, we do need a multimap here. The closest WTF structure
   // comparable to what we need would be a

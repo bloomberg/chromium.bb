@@ -91,7 +91,7 @@ FormData::FormData() : encoding_(UTF8Encoding()) {}
 
 FormData* FormData::Create(HTMLFormElement* form,
                            ExceptionState& exception_state) {
-  auto* form_data = new FormData();
+  auto* form_data = MakeGarbageCollected<FormData>();
   // TODO(tkent): Null check should be unnecessary.  We should remove
   // LegacyInterfaceTypeChecking from form_data.idl.  crbug.com/561338
   if (!form)
@@ -111,7 +111,7 @@ void FormData::Trace(blink::Visitor* visitor) {
 }
 
 void FormData::append(const String& name, const String& value) {
-  entries_.push_back(new Entry(name, value));
+  entries_.push_back(MakeGarbageCollected<Entry>(name, value));
 }
 
 void FormData::append(ScriptState* script_state,
@@ -177,11 +177,11 @@ bool FormData::has(const String& name) {
 }
 
 void FormData::set(const String& name, const String& value) {
-  SetEntry(new Entry(name, value));
+  SetEntry(MakeGarbageCollected<Entry>(name, value));
 }
 
 void FormData::set(const String& name, Blob* blob, const String& filename) {
-  SetEntry(new Entry(name, blob, filename));
+  SetEntry(MakeGarbageCollected<Entry>(name, blob, filename));
 }
 
 void FormData::SetEntry(const Entry* entry) {
@@ -204,7 +204,7 @@ void FormData::SetEntry(const Entry* entry) {
 }
 
 void FormData::append(const String& name, Blob* blob, const String& filename) {
-  entries_.push_back(new Entry(name, blob, filename));
+  entries_.push_back(MakeGarbageCollected<Entry>(name, blob, filename));
 }
 
 void FormData::AppendFromElement(const String& name, int value) {
@@ -212,11 +212,13 @@ void FormData::AppendFromElement(const String& name, int value) {
 }
 
 void FormData::AppendFromElement(const String& name, File* file) {
-  entries_.push_back(new Entry(Normalize(name), file, String()));
+  entries_.push_back(
+      MakeGarbageCollected<Entry>(Normalize(name), file, String()));
 }
 
 void FormData::AppendFromElement(const String& name, const String& value) {
-  entries_.push_back(new Entry(Normalize(name), Normalize(value)));
+  entries_.push_back(
+      MakeGarbageCollected<Entry>(Normalize(name), Normalize(value)));
 }
 
 CString FormData::Encode(const String& string) const {

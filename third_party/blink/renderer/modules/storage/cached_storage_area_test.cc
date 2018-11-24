@@ -38,10 +38,10 @@ class CachedStorageAreaTest : public testing::Test,
           kOrigin, mock_storage_area_.GetInterfacePtr(),
           scheduler::GetSingleThreadTaskRunnerForTesting(), this);
     }
-    source_area_ = new FakeAreaSource(kPageUrl);
+    source_area_ = MakeGarbageCollected<FakeAreaSource>(kPageUrl);
     source_area_id_ = cached_area_->RegisterSource(source_area_);
     source_ = kPageUrl.GetString() + "\n" + source_area_id_;
-    source_area2_ = new FakeAreaSource(kPageUrl2);
+    source_area2_ = MakeGarbageCollected<FakeAreaSource>(kPageUrl2);
     cached_area_->RegisterSource(source_area2_);
   }
 

@@ -52,6 +52,9 @@ class CORE_EXPORT FileInputType final : public InputType,
 
  public:
   static InputType* Create(HTMLInputElement&);
+
+  FileInputType(HTMLInputElement&);
+
   void Trace(blink::Visitor*) override;
   using InputType::GetElement;
   static Vector<String> FilesFromFormControlState(const FormControlState&);
@@ -63,7 +66,6 @@ class CORE_EXPORT FileInputType final : public InputType,
   void SetFilesFromPaths(const Vector<String>&) override;
 
  private:
-  FileInputType(HTMLInputElement&);
   InputTypeView* CreateView() override;
   const AtomicString& FormControlType() const override;
   FormControlState SaveFormControlState() const override;

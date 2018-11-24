@@ -47,8 +47,10 @@ class MODULES_EXPORT FileEntry final : public Entry {
  public:
   static FileEntry* Create(DOMFileSystemBase* file_system,
                            const String& full_path) {
-    return new FileEntry(file_system, full_path);
+    return MakeGarbageCollected<FileEntry>(file_system, full_path);
   }
+
+  FileEntry(DOMFileSystemBase*, const String& full_path);
 
   void createWriter(V8FileWriterCallback*, V8ErrorCallback* = nullptr);
   void file(V8FileCallback*, V8ErrorCallback* = nullptr);
@@ -56,9 +58,6 @@ class MODULES_EXPORT FileEntry final : public Entry {
   bool isFile() const override { return true; }
 
   void Trace(blink::Visitor*) override;
-
- private:
-  FileEntry(DOMFileSystemBase*, const String& full_path);
 };
 
 DEFINE_TYPE_CASTS(FileEntry, Entry, entry, entry->isFile(), entry.isFile());

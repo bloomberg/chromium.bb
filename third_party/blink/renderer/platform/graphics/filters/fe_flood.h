@@ -32,6 +32,8 @@ class PLATFORM_EXPORT FEFlood final : public FilterEffect {
  public:
   static FEFlood* Create(Filter*, const Color&, float);
 
+  FEFlood(Filter*, const Color&, float);
+
   Color FloodColor() const;
   bool SetFloodColor(const Color&);
 
@@ -47,8 +49,6 @@ class PLATFORM_EXPORT FEFlood final : public FilterEffect {
                                           int indention) const override;
 
  private:
-  FEFlood(Filter*, const Color&, float);
-
   sk_sp<PaintFilter> CreateImageFilter() override;
 
   Color flood_color_;

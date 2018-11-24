@@ -22,6 +22,8 @@ class GamepadHapticActuator final : public ScriptWrappable {
 
  public:
   static GamepadHapticActuator* Create(int pad_index);
+
+  GamepadHapticActuator(int pad_index, device::GamepadHapticActuatorType);
   ~GamepadHapticActuator() override;
 
   const String& type() const { return type_; }
@@ -36,8 +38,6 @@ class GamepadHapticActuator final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  GamepadHapticActuator(int pad_index, device::GamepadHapticActuatorType);
-
   void OnPlayEffectCompleted(ScriptPromiseResolver*,
                              device::mojom::GamepadHapticsResult);
   void OnResetCompleted(ScriptPromiseResolver*,

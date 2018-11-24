@@ -47,6 +47,8 @@ class CORE_EXPORT FontResource final : public Resource {
   static FontResource* Fetch(FetchParameters&,
                              ResourceFetcher*,
                              FontResourceClient*);
+
+  FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
   ~FontResource() override;
 
   void DidAddClient(ResourceClient*) override;
@@ -77,10 +79,9 @@ class CORE_EXPORT FontResource final : public Resource {
 
     Resource* Create(const ResourceRequest& request,
                      const ResourceLoaderOptions& options) const override {
-      return new FontResource(request, options);
+      return MakeGarbageCollected<FontResource>(request, options);
     }
   };
-  FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
 
   void NotifyFinished() override;
   void FontLoadShortLimitCallback();

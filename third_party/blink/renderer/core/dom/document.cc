@@ -7696,11 +7696,12 @@ void Document::ReportFeaturePolicyViolation(
   if (!frame)
     return;
   const String& feature_name = GetNameForFeature(feature);
-  FeaturePolicyViolationReportBody* body = new FeaturePolicyViolationReportBody(
-      feature_name, "Feature policy violation",
-      (disposition == mojom::FeaturePolicyDisposition::kReport ? "report"
-                                                               : "enforce"),
-      SourceLocation::Capture());
+  FeaturePolicyViolationReportBody* body =
+      MakeGarbageCollected<FeaturePolicyViolationReportBody>(
+          feature_name, "Feature policy violation",
+          (disposition == mojom::FeaturePolicyDisposition::kReport ? "report"
+                                                                   : "enforce"),
+          SourceLocation::Capture());
   Report* report =
       new Report("feature-policy-violation", Url().GetString(), body);
   ReportingContext::From(this)->QueueReport(report);

@@ -284,10 +284,11 @@ TEST_F(BodyStreamBufferTest, DrainAsFormData) {
   scoped_refptr<EncodedFormData> input_form_data =
       data->EncodeMultiPartFormData();
 
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(
-      scope.GetScriptState(),
-      new FormDataBytesConsumer(scope.GetExecutionContext(), input_form_data),
-      nullptr);
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(),
+                           MakeGarbageCollected<FormDataBytesConsumer>(
+                               scope.GetExecutionContext(), input_form_data),
+                           nullptr);
 
   EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
   EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));

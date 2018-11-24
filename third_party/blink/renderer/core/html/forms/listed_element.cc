@@ -41,12 +41,13 @@ class FormAttributeTargetObserver : public IdTargetObserver {
  public:
   static FormAttributeTargetObserver* Create(const AtomicString& id,
                                              ListedElement*);
+
+  FormAttributeTargetObserver(const AtomicString& id, ListedElement*);
+
   void Trace(blink::Visitor*) override;
   void IdTargetChanged() override;
 
  private:
-  FormAttributeTargetObserver(const AtomicString& id, ListedElement*);
-
   Member<ListedElement> element_;
 };
 
@@ -311,7 +312,7 @@ HTMLElement& ToHTMLElement(ListedElement& listed_element) {
 FormAttributeTargetObserver* FormAttributeTargetObserver::Create(
     const AtomicString& id,
     ListedElement* element) {
-  return new FormAttributeTargetObserver(id, element);
+  return MakeGarbageCollected<FormAttributeTargetObserver>(id, element);
 }
 
 FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomicString& id,

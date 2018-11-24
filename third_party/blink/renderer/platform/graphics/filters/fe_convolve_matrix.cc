@@ -57,8 +57,9 @@ FEConvolveMatrix* FEConvolveMatrix::Create(Filter* filter,
                                            EdgeModeType edge_mode,
                                            bool preserve_alpha,
                                            const Vector<float>& kernel_matrix) {
-  return new FEConvolveMatrix(filter, kernel_size, divisor, bias, target_offset,
-                              edge_mode, preserve_alpha, kernel_matrix);
+  return MakeGarbageCollected<FEConvolveMatrix>(filter, kernel_size, divisor,
+                                                bias, target_offset, edge_mode,
+                                                preserve_alpha, kernel_matrix);
 }
 
 FloatRect FEConvolveMatrix::MapEffect(const FloatRect& rect) const {

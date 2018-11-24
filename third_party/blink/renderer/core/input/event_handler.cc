@@ -162,11 +162,12 @@ EventHandler::EventHandler(LocalFrame& frame)
           new KeyboardEventManager(frame, *scroll_manager_)),
       pointer_event_manager_(
           new PointerEventManager(frame, *mouse_event_manager_)),
-      gesture_manager_(new GestureManager(frame,
-                                          *scroll_manager_,
-                                          *mouse_event_manager_,
-                                          *pointer_event_manager_,
-                                          *selection_controller_)),
+      gesture_manager_(
+          MakeGarbageCollected<GestureManager>(frame,
+                                               *scroll_manager_,
+                                               *mouse_event_manager_,
+                                               *pointer_event_manager_,
+                                               *selection_controller_)),
       active_interval_timer_(frame.GetTaskRunner(TaskType::kUserInteraction),
                              this,
                              &EventHandler::ActiveIntervalTimerFired) {}

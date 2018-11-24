@@ -53,7 +53,7 @@ namespace blink {
 
 // static
 GamepadHapticActuator* GamepadHapticActuator::Create(int pad_index) {
-  return new GamepadHapticActuator(
+  return MakeGarbageCollected<GamepadHapticActuator>(
       pad_index, device::GamepadHapticActuatorType::kDualRumble);
 }
 

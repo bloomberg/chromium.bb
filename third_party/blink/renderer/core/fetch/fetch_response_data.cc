@@ -45,14 +45,15 @@ FetchResponseData* FetchResponseData::Create() {
   // "Unless stated otherwise, a response's url is null, status is 200, status
   // message is the empty byte sequence, header list is an empty header list,
   // and body is null."
-  return new FetchResponseData(Type::kDefault, 200, g_empty_atom);
+  return MakeGarbageCollected<FetchResponseData>(Type::kDefault, 200,
+                                                 g_empty_atom);
 }
 
 FetchResponseData* FetchResponseData::CreateNetworkErrorResponse() {
   // "A network error is a response whose status is always 0, status message
   // is always the empty byte sequence, header list is aways an empty list,
   // and body is always null."
-  return new FetchResponseData(Type::kError, 0, g_empty_atom);
+  return MakeGarbageCollected<FetchResponseData>(Type::kError, 0, g_empty_atom);
 }
 
 FetchResponseData* FetchResponseData::CreateWithBuffer(
@@ -67,8 +68,8 @@ FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
   // "A basic filtered response is a filtered response whose type is |basic|,
   // header list excludes any headers in internal response's header list whose
   // name is `Set-Cookie` or `Set-Cookie2`."
-  FetchResponseData* response =
-      new FetchResponseData(Type::kBasic, status_, status_message_);
+  FetchResponseData* response = MakeGarbageCollected<FetchResponseData>(
+      Type::kBasic, status_, status_message_);
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.first))
@@ -91,8 +92,8 @@ FetchResponseData* FetchResponseData::CreateCorsFilteredResponse(
   // `Pragma`, and except those whose name is one of the values resulting from
   // parsing `Access-Control-Expose-Headers` in internal response's header
   // list."
-  FetchResponseData* response =
-      new FetchResponseData(Type::kCors, status_, status_message_);
+  FetchResponseData* response = MakeGarbageCollected<FetchResponseData>(
+      Type::kCors, status_, status_message_);
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     const String& name = header.first;
@@ -118,7 +119,7 @@ FetchResponseData* FetchResponseData::CreateOpaqueFilteredResponse() const {
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque
   FetchResponseData* response =
-      new FetchResponseData(Type::kOpaque, 0, g_empty_atom);
+      MakeGarbageCollected<FetchResponseData>(Type::kOpaque, 0, g_empty_atom);
   response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
 }
@@ -131,8 +132,8 @@ FetchResponseData* FetchResponseData::CreateOpaqueRedirectFilteredResponse()
   // header list is the empty list, body is null, and cache state is 'none'."
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect
-  FetchResponseData* response =
-      new FetchResponseData(Type::kOpaqueRedirect, 0, g_empty_atom);
+  FetchResponseData* response = MakeGarbageCollected<FetchResponseData>(
+      Type::kOpaqueRedirect, 0, g_empty_atom);
   response->SetURLList(url_list_);
   response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;

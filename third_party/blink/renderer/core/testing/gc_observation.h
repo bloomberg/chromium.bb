@@ -43,8 +43,10 @@ class GCObservation final : public ScriptWrappable {
 
  public:
   static GCObservation* Create(v8::Local<v8::Value> observed_value) {
-    return new GCObservation(observed_value);
+    return MakeGarbageCollected<GCObservation>(observed_value);
   }
+
+  explicit GCObservation(v8::Local<v8::Value>);
 
   // Caution: It is only feasible to determine whether an object was
   // "near death"; it may have been kept alive through a weak
@@ -53,8 +55,6 @@ class GCObservation final : public ScriptWrappable {
   bool wasCollected() const { return observed_.IsEmpty(); }
 
  private:
-  explicit GCObservation(v8::Local<v8::Value>);
-
   ScopedPersistent<v8::Value> observed_;
 };
 

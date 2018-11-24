@@ -44,6 +44,10 @@ class CORE_EXPORT FetchResponseData final
   static FetchResponseData* CreateNetworkErrorResponse();
   static FetchResponseData* CreateWithBuffer(BodyStreamBuffer*);
 
+  FetchResponseData(network::mojom::FetchResponseType,
+                    unsigned short,
+                    AtomicString);
+
   FetchResponseData* CreateBasicFilteredResponse() const;
   FetchResponseData* CreateCorsFilteredResponse(
       const WebHTTPHeaderSet& exposed_headers) const;
@@ -106,10 +110,6 @@ class CORE_EXPORT FetchResponseData final
   void Trace(blink::Visitor*);
 
  private:
-  FetchResponseData(network::mojom::FetchResponseType,
-                    unsigned short,
-                    AtomicString);
-
   network::mojom::FetchResponseType type_;
   std::unique_ptr<TerminationReason> termination_reason_;
   Vector<KURL> url_list_;

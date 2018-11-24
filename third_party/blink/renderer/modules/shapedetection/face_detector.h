@@ -23,10 +23,11 @@ class MODULES_EXPORT FaceDetector final : public ShapeDetector {
  public:
   static FaceDetector* Create(ExecutionContext*, const FaceDetectorOptions*);
 
+  FaceDetector(ExecutionContext*, const FaceDetectorOptions*);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  FaceDetector(ExecutionContext*, const FaceDetectorOptions*);
   ~FaceDetector() override = default;
 
   ScriptPromise DoDetect(ScriptPromiseResolver*, SkBitmap) override;

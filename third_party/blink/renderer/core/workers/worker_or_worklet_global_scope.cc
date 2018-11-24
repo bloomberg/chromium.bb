@@ -120,8 +120,8 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
   DCHECK(IsContextThread());
   if (inside_settings_resource_fetcher_)
     return inside_settings_resource_fetcher_;
-  inside_settings_resource_fetcher_ =
-      CreateFetcherInternal(new FetchClientSettingsObjectImpl(*this));
+  inside_settings_resource_fetcher_ = CreateFetcherInternal(
+      MakeGarbageCollected<FetchClientSettingsObjectImpl>(*this));
   return inside_settings_resource_fetcher_;
 }
 

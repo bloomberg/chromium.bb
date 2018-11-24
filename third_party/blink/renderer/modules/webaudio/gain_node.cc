@@ -154,7 +154,7 @@ GainNode* GainNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new GainNode(context);
+  return MakeGarbageCollected<GainNode>(context);
 }
 
 GainNode* GainNode::Create(BaseAudioContext* context,

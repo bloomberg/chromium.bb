@@ -14,7 +14,7 @@ FormDataEvent::FormDataEvent(FormData& form_data)
       form_data_(form_data) {}
 
 FormDataEvent* FormDataEvent::Create(FormData& form_data) {
-  return new FormDataEvent(form_data);
+  return MakeGarbageCollected<FormDataEvent>(form_data);
 }
 
 void FormDataEvent::Trace(Visitor* visitor) {

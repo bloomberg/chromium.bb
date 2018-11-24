@@ -767,7 +767,7 @@ FocusController::FocusController(Page* page)
       is_emulating_focus_(false) {}
 
 FocusController* FocusController::Create(Page* page) {
-  return new FocusController(page);
+  return MakeGarbageCollected<FocusController>(page);
 }
 
 void FocusController::SetFocusedFrame(Frame* frame, bool notify_embedder) {

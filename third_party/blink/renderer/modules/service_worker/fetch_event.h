@@ -56,6 +56,12 @@ class MODULES_EXPORT FetchEvent final
                             WaitUntilObserver*,
                             bool navigation_preload_sent);
 
+  FetchEvent(ScriptState*,
+             const AtomicString& type,
+             const FetchEventInit*,
+             FetchRespondWithObserver*,
+             WaitUntilObserver*,
+             bool navigation_preload_sent);
   ~FetchEvent() override;
 
   Request* request() const;
@@ -83,14 +89,6 @@ class MODULES_EXPORT FetchEvent final
   bool HasPendingActivity() const override;
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  FetchEvent(ScriptState*,
-             const AtomicString& type,
-             const FetchEventInit*,
-             FetchRespondWithObserver*,
-             WaitUntilObserver*,
-             bool navigation_preload_sent);
 
  private:
   Member<FetchRespondWithObserver> observer_;

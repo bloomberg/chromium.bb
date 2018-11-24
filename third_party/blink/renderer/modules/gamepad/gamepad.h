@@ -42,7 +42,9 @@ class Gamepad final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Gamepad* Create() { return new Gamepad; }
+  static Gamepad* Create() { return MakeGarbageCollected<Gamepad>(); }
+
+  Gamepad();
   ~Gamepad() override;
 
   typedef Vector<double> DoubleVector;
@@ -87,8 +89,6 @@ class Gamepad final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  Gamepad();
-
   String id_;
   unsigned index_;
   bool connected_;

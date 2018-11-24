@@ -55,7 +55,8 @@ TEST(StorageControllerTest, CacheLimit) {
   const String kKey("key");
   const String kValue("value");
   const KURL kPageUrl("http://dom_storage/page");
-  Persistent<FakeAreaSource> source_area = new FakeAreaSource(kPageUrl);
+  Persistent<FakeAreaSource> source_area =
+      MakeGarbageCollected<FakeAreaSource>(kPageUrl);
 
   mojom::blink::StoragePartitionServicePtr storage_partition_service_ptr;
   PostCrossThreadTask(
@@ -109,7 +110,8 @@ TEST(StorageControllerTest, CacheLimitSessionStorage) {
   const String kValue("value");
   const KURL kPageUrl("http://dom_storage/page");
 
-  Persistent<FakeAreaSource> source_area = new FakeAreaSource(kPageUrl);
+  Persistent<FakeAreaSource> source_area =
+      MakeGarbageCollected<FakeAreaSource>(kPageUrl);
 
   auto task_runner = base::CreateSequencedTaskRunnerWithTraits({});
 

@@ -472,7 +472,7 @@ const char Fullscreen::kSupplementName[] = "Fullscreen";
 Fullscreen& Fullscreen::From(Document& document) {
   Fullscreen* fullscreen = FromIfExists(document);
   if (!fullscreen) {
-    fullscreen = new Fullscreen(document);
+    fullscreen = MakeGarbageCollected<Fullscreen>(document);
     ProvideTo(document, fullscreen);
   }
   return *fullscreen;
@@ -620,7 +620,7 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
     }
 
     From(document).pending_requests_.push_back(
-        new PendingRequest(&pending, request_type, resolver));
+        MakeGarbageCollected<PendingRequest>(&pending, request_type, resolver));
     LocalFrame& frame = *document.GetFrame();
     frame.GetChromeClient().EnterFullscreen(frame, options);
   } else {

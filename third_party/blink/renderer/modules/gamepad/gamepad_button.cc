@@ -7,7 +7,7 @@
 namespace blink {
 
 GamepadButton* GamepadButton::Create() {
-  return new GamepadButton();
+  return MakeGarbageCollected<GamepadButton>();
 }
 
 GamepadButton::GamepadButton() : value_(0.), pressed_(false), touched_(false) {}

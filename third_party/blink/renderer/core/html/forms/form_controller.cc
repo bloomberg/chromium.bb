@@ -310,14 +310,17 @@ class FormKeyGenerator final
     : public GarbageCollectedFinalized<FormKeyGenerator> {
 
  public:
-  static FormKeyGenerator* Create() { return new FormKeyGenerator; }
+  static FormKeyGenerator* Create() {
+    return MakeGarbageCollected<FormKeyGenerator>();
+  }
+
+  FormKeyGenerator() = default;
+
   void Trace(blink::Visitor* visitor) { visitor->Trace(form_to_key_map_); }
   const AtomicString& FormKey(const HTMLFormControlElementWithState&);
   void WillDeleteForm(HTMLFormElement*);
 
  private:
-  FormKeyGenerator() = default;
-
   using FormToKeyMap = HeapHashMap<Member<HTMLFormElement>, AtomicString>;
   using FormSignatureToNextIndexMap = HashMap<String, unsigned>;
   FormToKeyMap form_to_key_map_;

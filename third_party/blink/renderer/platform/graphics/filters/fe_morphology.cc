@@ -44,7 +44,7 @@ FEMorphology* FEMorphology::Create(Filter* filter,
                                    MorphologyOperatorType type,
                                    float radius_x,
                                    float radius_y) {
-  return new FEMorphology(filter, type, radius_x, radius_y);
+  return MakeGarbageCollected<FEMorphology>(filter, type, radius_x, radius_y);
 }
 
 MorphologyOperatorType FEMorphology::MorphologyOperator() const {

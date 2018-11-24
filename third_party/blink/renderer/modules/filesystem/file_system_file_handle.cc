@@ -50,7 +50,8 @@ ScriptPromise FileSystemFileHandle::createWriter(ScriptState* script_state) {
               [](ScriptPromiseResolver* resolver, base::File::Error result,
                  mojom::blink::FileWriterPtr writer) {
                 if (result == base::File::FILE_OK) {
-                  resolver->Resolve(new FileSystemWriter(std::move(writer)));
+                  resolver->Resolve(MakeGarbageCollected<FileSystemWriter>(
+                      std::move(writer)));
                 } else {
                   resolver->Reject(file_error::CreateDOMException(result));
                 }

@@ -11,7 +11,8 @@ namespace blink {
 Gyroscope* Gyroscope::Create(ExecutionContext* execution_context,
                              const SpatialSensorOptions* options,
                              ExceptionState& exception_state) {
-  return new Gyroscope(execution_context, options, exception_state);
+  return MakeGarbageCollected<Gyroscope>(execution_context, options,
+                                         exception_state);
 }
 
 // static

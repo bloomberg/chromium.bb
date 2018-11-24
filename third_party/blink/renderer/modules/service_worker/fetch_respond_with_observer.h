@@ -22,6 +22,14 @@ class WaitUntilObserver;
 // notifies the client.
 class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
  public:
+  FetchRespondWithObserver(ExecutionContext*,
+                           int fetch_event_id,
+                           const KURL& request_url,
+                           network::mojom::FetchRequestMode,
+                           network::mojom::FetchRedirectMode,
+                           network::mojom::RequestContextFrameType,
+                           mojom::RequestContextType,
+                           WaitUntilObserver*);
   ~FetchRespondWithObserver() override = default;
 
   static FetchRespondWithObserver* Create(
@@ -42,16 +50,6 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
   void OnNoResponse() override;
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  FetchRespondWithObserver(ExecutionContext*,
-                           int fetch_event_id,
-                           const KURL& request_url,
-                           network::mojom::FetchRequestMode,
-                           network::mojom::FetchRedirectMode,
-                           network::mojom::RequestContextFrameType,
-                           mojom::RequestContextType,
-                           WaitUntilObserver*);
 
  private:
   const KURL request_url_;

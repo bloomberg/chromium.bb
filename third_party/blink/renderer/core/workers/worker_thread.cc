@@ -510,10 +510,11 @@ void WorkerThread::ImportClassicScriptOnWorkerThread(
         outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
   To<WorkerGlobalScope>(GlobalScope())
-      ->ImportClassicScriptPausable(script_url,
-                                    new FetchClientSettingsObjectSnapshot(
-                                        std::move(outside_settings_object)),
-                                    stack_id);
+      ->ImportClassicScriptPausable(
+          script_url,
+          MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+              std::move(outside_settings_object)),
+          stack_id);
 }
 
 void WorkerThread::ImportModuleScriptOnWorkerThread(
@@ -525,10 +526,11 @@ void WorkerThread::ImportModuleScriptOnWorkerThread(
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like
   // Worklets.
   To<WorkerGlobalScope>(GlobalScope())
-      ->ImportModuleScriptPausable(script_url,
-                                   new FetchClientSettingsObjectSnapshot(
-                                       std::move(outside_settings_object)),
-                                   credentials_mode);
+      ->ImportModuleScriptPausable(
+          script_url,
+          MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+              std::move(outside_settings_object)),
+          credentials_mode);
 }
 
 void WorkerThread::PrepareForShutdownOnWorkerThread() {

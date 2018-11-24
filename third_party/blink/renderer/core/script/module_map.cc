@@ -22,7 +22,11 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   USING_GARBAGE_COLLECTED_MIXIN(ModuleMap::Entry);
 
  public:
-  static Entry* Create(ModuleMap* map) { return new Entry(map); }
+  static Entry* Create(ModuleMap* map) {
+    return MakeGarbageCollected<Entry>(map);
+  }
+
+  explicit Entry(ModuleMap*);
   ~Entry() override {}
 
   void Trace(blink::Visitor*) override;
@@ -35,8 +39,6 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   ModuleScript* GetModuleScript() const;
 
  private:
-  explicit Entry(ModuleMap*);
-
   void DispatchFinishedNotificationAsync(SingleModuleClient*);
 
   // Implements ModuleScriptLoaderClient

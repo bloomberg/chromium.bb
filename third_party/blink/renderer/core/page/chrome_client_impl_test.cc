@@ -199,10 +199,10 @@ class PagePopupSuppressionTest : public testing::Test {
     chrome_client_impl_ =
         ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
     LocalFrame* frame = helper_.LocalMainFrame()->GetFrame();
-    color_chooser_client_ =
-        new FakeColorChooserClient(frame->GetDocument()->documentElement());
-    date_time_chooser_client_ =
-        new FakeDateTimeChooserClient(frame->GetDocument()->documentElement());
+    color_chooser_client_ = MakeGarbageCollected<FakeColorChooserClient>(
+        frame->GetDocument()->documentElement());
+    date_time_chooser_client_ = MakeGarbageCollected<FakeDateTimeChooserClient>(
+        frame->GetDocument()->documentElement());
     select_ = HTMLSelectElement::Create(*(frame->GetDocument()));
   }
 

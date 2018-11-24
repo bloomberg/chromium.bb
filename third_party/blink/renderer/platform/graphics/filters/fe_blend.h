@@ -32,6 +32,8 @@ class PLATFORM_EXPORT FEBlend final : public FilterEffect {
  public:
   static FEBlend* Create(Filter*, BlendMode);
 
+  FEBlend(Filter*, BlendMode);
+
   BlendMode GetBlendMode() const { return mode_; }
   bool SetBlendMode(BlendMode);
 
@@ -39,8 +41,6 @@ class PLATFORM_EXPORT FEBlend final : public FilterEffect {
                                           int indention) const override;
 
  private:
-  FEBlend(Filter*, BlendMode);
-
   sk_sp<PaintFilter> CreateImageFilter() override;
 
   BlendMode mode_;
