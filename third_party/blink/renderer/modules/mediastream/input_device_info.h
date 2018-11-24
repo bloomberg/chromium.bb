@@ -21,16 +21,16 @@ class InputDeviceInfo final : public MediaDeviceInfo {
                                  const String& group_id,
                                  MediaDeviceType);
 
-  void SetVideoInputCapabilities(mojom::blink::VideoInputDeviceCapabilitiesPtr);
-
-  MediaTrackCapabilities* getCapabilities() const;
-
- private:
   InputDeviceInfo(const String& device_id,
                   const String& label,
                   const String& group_id,
                   MediaDeviceType);
 
+  void SetVideoInputCapabilities(mojom::blink::VideoInputDeviceCapabilitiesPtr);
+
+  MediaTrackCapabilities* getCapabilities() const;
+
+ private:
   WebMediaStreamSource::Capabilities platform_capabilities_;
 };
 

@@ -38,7 +38,8 @@ InputDeviceInfo* InputDeviceInfo::Create(const String& device_id,
                                          const String& label,
                                          const String& group_id,
                                          MediaDeviceType device_type) {
-  return new InputDeviceInfo(device_id, label, group_id, device_type);
+  return MakeGarbageCollected<InputDeviceInfo>(device_id, label, group_id,
+                                               device_type);
 }
 
 InputDeviceInfo::InputDeviceInfo(const String& device_id,

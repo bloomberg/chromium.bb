@@ -63,7 +63,8 @@ void InstalledAppController::ProvideTo(
     LocalFrame& frame,
     WebRelatedAppsFetcher* related_apps_fetcher) {
   Supplement<LocalFrame>::ProvideTo(
-      frame, new InstalledAppController(frame, related_apps_fetcher));
+      frame, MakeGarbageCollected<InstalledAppController>(
+                 frame, related_apps_fetcher));
 }
 
 InstalledAppController* InstalledAppController::From(LocalFrame& frame) {

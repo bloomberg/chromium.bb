@@ -275,15 +275,15 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
 }
 
 LocalFrameView* LocalFrameView::Create(LocalFrame& frame) {
-  LocalFrameView* view = new LocalFrameView(frame, IntRect());
+  LocalFrameView* view = MakeGarbageCollected<LocalFrameView>(frame, IntRect());
   view->Show();
   return view;
 }
 
 LocalFrameView* LocalFrameView::Create(LocalFrame& frame,
                                        const IntSize& initial_size) {
-  LocalFrameView* view =
-      new LocalFrameView(frame, IntRect(IntPoint(), initial_size));
+  LocalFrameView* view = MakeGarbageCollected<LocalFrameView>(
+      frame, IntRect(IntPoint(), initial_size));
   view->SetLayoutSizeInternal(initial_size);
 
   view->Show();

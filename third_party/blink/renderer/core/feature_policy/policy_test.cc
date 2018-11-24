@@ -50,8 +50,9 @@ class IFramePolicyTest : public PolicyTest {
  public:
   void SetUp() override {
     PolicyTest::SetUp();
-    policy_ = new IFramePolicy(document_, {},
-                               SecurityOrigin::CreateFromString(kSelfOrigin));
+    policy_ = MakeGarbageCollected<IFramePolicy>(
+        document_, ParsedFeaturePolicy(),
+        SecurityOrigin::CreateFromString(kSelfOrigin));
   }
 };
 

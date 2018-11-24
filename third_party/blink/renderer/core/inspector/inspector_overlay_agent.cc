@@ -169,8 +169,12 @@ class InspectorOverlayAgent::InspectorOverlayChromeClient final
  public:
   static InspectorOverlayChromeClient* Create(ChromeClient& client,
                                               InspectorOverlayAgent& overlay) {
-    return new InspectorOverlayChromeClient(client, overlay);
+    return MakeGarbageCollected<InspectorOverlayChromeClient>(client, overlay);
   }
+
+  InspectorOverlayChromeClient(ChromeClient& client,
+                               InspectorOverlayAgent& overlay)
+      : client_(&client), overlay_(&overlay) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(client_);
@@ -194,10 +198,6 @@ class InspectorOverlayAgent::InspectorOverlayChromeClient final
   void InvalidateRect(const IntRect&) override { overlay_->Invalidate(); }
 
  private:
-  InspectorOverlayChromeClient(ChromeClient& client,
-                               InspectorOverlayAgent& overlay)
-      : client_(&client), overlay_(&overlay) {}
-
   Member<ChromeClient> client_;
   Member<InspectorOverlayAgent> overlay_;
 };

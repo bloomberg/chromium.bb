@@ -33,8 +33,8 @@ InteractiveDetector* InteractiveDetector::From(Document& document) {
   InteractiveDetector* detector =
       Supplement<Document>::From<InteractiveDetector>(document);
   if (!detector) {
-    detector = new InteractiveDetector(document,
-                                       new NetworkActivityChecker(&document));
+    detector = MakeGarbageCollected<InteractiveDetector>(
+        document, new NetworkActivityChecker(&document));
     Supplement<Document>::ProvideTo(document, detector);
   }
   return detector;

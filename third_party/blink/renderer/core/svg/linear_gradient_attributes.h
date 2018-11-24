@@ -95,8 +95,10 @@ class LinearGradientAttributesWrapper
     : public GarbageCollectedFinalized<LinearGradientAttributesWrapper> {
  public:
   static LinearGradientAttributesWrapper* Create() {
-    return new LinearGradientAttributesWrapper;
+    return MakeGarbageCollected<LinearGradientAttributesWrapper>();
   }
+
+  LinearGradientAttributesWrapper() = default;
 
   LinearGradientAttributes& Attributes() { return attributes_; }
   void Set(const LinearGradientAttributes& attributes) {
@@ -105,8 +107,6 @@ class LinearGradientAttributesWrapper
   void Trace(blink::Visitor* visitor) { visitor->Trace(attributes_); }
 
  private:
-  LinearGradientAttributesWrapper() = default;
-
   LinearGradientAttributes attributes_;
 };
 

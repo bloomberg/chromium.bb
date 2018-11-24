@@ -58,6 +58,8 @@ class CORE_EXPORT InteractiveDetector
   // Exposed for tests. See crbug.com/810381. We must use a consistent address
   // for the supplement name.
   static const char* SupplementName();
+
+  explicit InteractiveDetector(Document&, NetworkActivityChecker*);
   ~InteractiveDetector() override = default;
 
   // Calls to CurrentTimeTicksInSeconds is expensive, so we try not to call it
@@ -114,8 +116,6 @@ class CORE_EXPORT InteractiveDetector
 
  private:
   friend class InteractiveDetectorTest;
-
-  explicit InteractiveDetector(Document&, NetworkActivityChecker*);
 
   TimeTicks interactive_time_;
   TimeTicks interactive_detection_time_;

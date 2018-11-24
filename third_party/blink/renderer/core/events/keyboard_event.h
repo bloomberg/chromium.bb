@@ -44,17 +44,21 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
     kDomKeyLocationNumpad = 0x03
   };
 
-  static KeyboardEvent* Create() { return new KeyboardEvent; }
+  static KeyboardEvent* Create() {
+    return MakeGarbageCollected<KeyboardEvent>();
+  }
 
   static KeyboardEvent* Create(const WebKeyboardEvent& web_event,
                                LocalDOMWindow* dom_window) {
-    return new KeyboardEvent(web_event, dom_window);
+    return MakeGarbageCollected<KeyboardEvent>(web_event, dom_window);
   }
 
   static KeyboardEvent* Create(ScriptState*,
                                const AtomicString& type,
                                const KeyboardEventInit*);
 
+  KeyboardEvent();
+  KeyboardEvent(const WebKeyboardEvent&, LocalDOMWindow*);
   KeyboardEvent(const AtomicString&, const KeyboardEventInit*);
   ~KeyboardEvent() override;
 
@@ -90,9 +94,6 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   void Trace(blink::Visitor*) override;
 
  private:
-  KeyboardEvent();
-  KeyboardEvent(const WebKeyboardEvent&, LocalDOMWindow*);
-
   void InitLocationModifiers(unsigned location);
 
   std::unique_ptr<WebKeyboardEvent> key_event_;

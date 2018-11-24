@@ -38,7 +38,8 @@ InertEffect* InertEffect::Create(KeyframeEffectModelBase* effect,
                                  const Timing& timing,
                                  bool paused,
                                  double inherited_time) {
-  return new InertEffect(effect, timing, paused, inherited_time);
+  return MakeGarbageCollected<InertEffect>(effect, timing, paused,
+                                           inherited_time);
 }
 
 InertEffect::InertEffect(KeyframeEffectModelBase* model,

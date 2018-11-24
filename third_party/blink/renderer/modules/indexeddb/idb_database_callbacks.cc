@@ -33,7 +33,7 @@
 namespace blink {
 
 IDBDatabaseCallbacks* IDBDatabaseCallbacks::Create() {
-  return new IDBDatabaseCallbacks();
+  return MakeGarbageCollected<IDBDatabaseCallbacks>();
 }
 
 IDBDatabaseCallbacks::IDBDatabaseCallbacks() : database_(nullptr) {}

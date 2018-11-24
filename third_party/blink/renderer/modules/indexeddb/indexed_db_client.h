@@ -55,16 +55,15 @@ class IndexedDBClient : public GarbageCollected<IndexedDBClient>,
   static IndexedDBClient* Create(LocalFrame&);
   static IndexedDBClient* Create(WorkerClients&);
 
+  explicit IndexedDBClient(LocalFrame&);
+  explicit IndexedDBClient(WorkerClients&);
+
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "IndexedDBClient"; }
 
   bool AllowIndexedDB(ExecutionContext*);
 
   static IndexedDBClient* From(ExecutionContext*);
-
- private:
-  explicit IndexedDBClient(LocalFrame&);
-  explicit IndexedDBClient(WorkerClients&);
 };
 
 void ProvideIndexedDBClientTo(LocalFrame&, IndexedDBClient*);

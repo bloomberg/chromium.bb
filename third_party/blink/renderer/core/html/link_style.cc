@@ -36,7 +36,7 @@ static bool StyleSheetTypeIsSupported(const String& type) {
 }
 
 LinkStyle* LinkStyle::Create(HTMLLinkElement* owner) {
-  return new LinkStyle(owner);
+  return MakeGarbageCollected<LinkStyle>(owner);
 }
 
 LinkStyle::LinkStyle(HTMLLinkElement* owner)

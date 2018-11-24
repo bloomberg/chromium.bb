@@ -53,6 +53,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
  public:
   static LocalFrameClientImpl* Create(WebLocalFrameImpl*);
 
+  explicit LocalFrameClientImpl(WebLocalFrameImpl*);
   ~LocalFrameClientImpl() override;
 
   void Trace(blink::Visitor*) override;
@@ -299,8 +300,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   bool UsePrintingLayout() const override;
 
  private:
-  explicit LocalFrameClientImpl(WebLocalFrameImpl*);
-
   bool IsLocalFrameClientImpl() const override { return true; }
   WebDevToolsAgentImpl* DevToolsAgent();
 

@@ -71,6 +71,11 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
                                 ExceptionState&);
   static KeyframeEffect* Create(ScriptState*, KeyframeEffect*, ExceptionState&);
 
+  KeyframeEffect(Element*,
+                 KeyframeEffectModelBase*,
+                 const Timing&,
+                 Priority,
+                 EventDelegate*);
   ~KeyframeEffect() override;
 
   bool IsKeyframeEffect() const override { return true; }
@@ -128,12 +133,6 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   void Trace(blink::Visitor*) override;
 
  private:
-  KeyframeEffect(Element*,
-                 KeyframeEffectModelBase*,
-                 const Timing&,
-                 Priority,
-                 EventDelegate*);
-
   EffectModel::CompositeOperation CompositeInternal() const;
 
   void ApplyEffects();

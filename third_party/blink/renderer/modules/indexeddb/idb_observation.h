@@ -29,6 +29,7 @@ class IDBObservation final : public ScriptWrappable {
   // Consumes the WebIDBObservation.
   static IDBObservation* Create(WebIDBObservation, v8::Isolate*);
 
+  IDBObservation(WebIDBObservation, v8::Isolate*);
   ~IDBObservation() override;
 
   void Trace(blink::Visitor*) override;
@@ -39,8 +40,6 @@ class IDBObservation final : public ScriptWrappable {
   const String& type() const;
 
  private:
-  IDBObservation(WebIDBObservation, v8::Isolate*);
-
   Member<IDBKeyRange> key_range_;
   Member<IDBAny> value_;
   const mojom::IDBOperationType operation_type_;

@@ -43,6 +43,8 @@ class MODULES_EXPORT IDBDatabaseCallbacks
     : public GarbageCollectedFinalized<IDBDatabaseCallbacks> {
  public:
   static IDBDatabaseCallbacks* Create();
+
+  IDBDatabaseCallbacks();
   virtual ~IDBDatabaseCallbacks();
   void Trace(blink::Visitor*);
 
@@ -64,10 +66,6 @@ class MODULES_EXPORT IDBDatabaseCallbacks
   std::unique_ptr<WebIDBDatabaseCallbacks> CreateWebCallbacks();
   void DetachWebCallbacks();
   void WebCallbacksDestroyed();
-
- protected:
-  // Exposed to subclasses for unit tests.
-  IDBDatabaseCallbacks();
 
  private:
   // The initial IDBOpenDBRequest, final IDBDatabase, and/or

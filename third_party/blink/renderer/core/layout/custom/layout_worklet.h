@@ -35,6 +35,7 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
   static LayoutWorklet* From(LocalDOMWindow&);
   static LayoutWorklet* Create(LocalFrame*);
 
+  explicit LayoutWorklet(LocalFrame*);
   ~LayoutWorklet() override;
 
   typedef HeapHashMap<String, Member<DocumentLayoutDefinition>>
@@ -49,8 +50,6 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
   void Trace(blink::Visitor*) override;
 
  protected:
-  explicit LayoutWorklet(LocalFrame*);
-
   // TODO(ikilpatrick): Make selection of the global scope non-deterministic.
   wtf_size_t SelectGlobalScope() final { return 0u; }
 

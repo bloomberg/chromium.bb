@@ -52,8 +52,8 @@ IDBCursor* IDBCursor::Create(std::unique_ptr<WebIDBCursor> backend,
                              IDBRequest* request,
                              const Source& source,
                              IDBTransaction* transaction) {
-  return new IDBCursor(std::move(backend), direction, request, source,
-                       transaction);
+  return MakeGarbageCollected<IDBCursor>(std::move(backend), direction, request,
+                                         source, transaction);
 }
 
 IDBCursor::IDBCursor(std::unique_ptr<WebIDBCursor> backend,

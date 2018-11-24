@@ -47,17 +47,11 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
       WaitUntilObserver* observer,
       ResolveType type,
       PromiseSettledCallback callback) {
-    ThenFunction* self =
-        new ThenFunction(script_state, observer, type, std::move(callback));
+    ThenFunction* self = MakeGarbageCollected<ThenFunction>(
+        script_state, observer, type, std::move(callback));
     return self->BindToV8Function();
   }
 
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(observer_);
-    ScriptFunction::Trace(visitor);
-  }
-
- private:
   ThenFunction(ScriptState* script_state,
                WaitUntilObserver* observer,
                ResolveType type,
@@ -67,6 +61,12 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
         resolve_type_(type),
         callback_(std::move(callback)) {}
 
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(observer_);
+    ScriptFunction::Trace(visitor);
+  }
+
+ private:
   ScriptValue Call(ScriptValue value) override {
     DCHECK(observer_);
     DCHECK(resolve_type_ == kFulfilled || resolve_type_ == kRejected);

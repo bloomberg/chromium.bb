@@ -133,7 +133,7 @@ RTCIceTransport* RTCIceTransportTest::CreateIceTransport(
 }
 
 MockEventListener* RTCIceTransportTest::CreateMockEventListener() {
-  MockEventListener* event_listener = new MockEventListener();
+  MockEventListener* event_listener = MakeGarbageCollected<MockEventListener>();
   mock_event_listeners_.push_back(event_listener);
   return event_listener;
 }

@@ -174,8 +174,8 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
         kJSMessageSource, kWarningMessageLevel, message.ToString()));
   }
 
-  return new IIRFilterNode(context, feedforward_coef, feedback_coef,
-                           is_filter_stable);
+  return MakeGarbageCollected<IIRFilterNode>(context, feedforward_coef,
+                                             feedback_coef, is_filter_stable);
 }
 
 IIRFilterNode* IIRFilterNode::Create(BaseAudioContext* context,

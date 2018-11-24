@@ -101,11 +101,12 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
                                   const DocumentInit&,
                                   bool force_xhtml);
   static LocalDOMWindow* Create(LocalFrame& frame) {
-    return new LocalDOMWindow(frame);
+    return MakeGarbageCollected<LocalDOMWindow>(frame);
   }
 
   static LocalDOMWindow* From(const ScriptState*);
 
+  explicit LocalDOMWindow(LocalFrame&);
   ~LocalDOMWindow() override;
 
   LocalFrame* GetFrame() const { return ToLocalFrame(DOMWindow::GetFrame()); }
@@ -341,7 +342,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   bool IsRemoteDOMWindow() const override { return false; }
   void WarnUnusedPreloads(TimerBase*);
 
-  explicit LocalDOMWindow(LocalFrame&);
   void Dispose();
 
   void DispatchLoadEvent();

@@ -592,8 +592,9 @@ ScriptPromise MediaKeySession::load(ScriptState* script_state,
   //    (Available as getExecutionContext()->getSecurityOrigin() anytime.)
 
   // 7. Let promise be a new promise.
-  LoadSessionResultPromise* result = new LoadSessionResultPromise(
-      script_state, this, "MediaKeySession", "load");
+  LoadSessionResultPromise* result =
+      MakeGarbageCollected<LoadSessionResultPromise>(script_state, this,
+                                                     "MediaKeySession", "load");
   ScriptPromise promise = result->Promise();
 
   // 8. Run the following steps asynchronously (done in loadTask())

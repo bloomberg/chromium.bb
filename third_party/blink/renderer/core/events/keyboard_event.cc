@@ -86,7 +86,7 @@ KeyboardEvent* KeyboardEvent::Create(ScriptState* script_state,
         initializer->ctrlKey(), initializer->altKey(), initializer->shiftKey(),
         initializer->metaKey());
   }
-  return new KeyboardEvent(type, initializer);
+  return MakeGarbageCollected<KeyboardEvent>(type, initializer);
 }
 
 KeyboardEvent::KeyboardEvent() : location_(kDomKeyLocationStandard) {}

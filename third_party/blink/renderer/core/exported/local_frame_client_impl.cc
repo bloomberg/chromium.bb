@@ -165,7 +165,7 @@ LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
     : web_frame_(frame) {}
 
 LocalFrameClientImpl* LocalFrameClientImpl::Create(WebLocalFrameImpl* frame) {
-  return new LocalFrameClientImpl(frame);
+  return MakeGarbageCollected<LocalFrameClientImpl>(frame);
 }
 
 LocalFrameClientImpl::~LocalFrameClientImpl() = default;

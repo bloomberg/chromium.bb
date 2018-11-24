@@ -19,7 +19,7 @@
 namespace blink {
 
 IDBObserver* IDBObserver::Create(V8IDBObserverCallback* callback) {
-  return new IDBObserver(callback);
+  return MakeGarbageCollected<IDBObserver>(callback);
 }
 
 IDBObserver::IDBObserver(V8IDBObserverCallback* callback)

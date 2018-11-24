@@ -30,7 +30,7 @@ LayoutWorklet* LayoutWorklet::From(LocalDOMWindow& window) {
 
 // static
 LayoutWorklet* LayoutWorklet::Create(LocalFrame* frame) {
-  return new LayoutWorklet(frame);
+  return MakeGarbageCollected<LayoutWorklet>(frame);
 }
 
 LayoutWorklet::LayoutWorklet(LocalFrame* frame)
@@ -63,7 +63,7 @@ bool LayoutWorklet::NeedsToCreateGlobalScope() {
 
 WorkletGlobalScopeProxy* LayoutWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
-  return new LayoutWorkletGlobalScopeProxy(
+  return MakeGarbageCollected<LayoutWorkletGlobalScopeProxy>(
       To<Document>(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
       pending_layout_registry_, GetNumberOfGlobalScopes() + 1);
 }

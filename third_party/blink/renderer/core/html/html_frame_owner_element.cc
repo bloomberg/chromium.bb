@@ -428,7 +428,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     // near the viewport or visible.
     should_lazy_load_children_ = false;
 
-    lazy_load_frame_observer_ = new LazyLoadFrameObserver(*this);
+    lazy_load_frame_observer_ =
+        MakeGarbageCollected<LazyLoadFrameObserver>(*this);
 
     if (RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled())
       lazy_load_frame_observer_->StartTrackingVisibilityMetrics();

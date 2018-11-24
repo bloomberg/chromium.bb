@@ -16,10 +16,10 @@ const char NavigatorKeyboard::kSupplementName[] = "NavigatorKeyboard";
 
 NavigatorKeyboard::NavigatorKeyboard(Navigator& navigator)
     : Supplement<Navigator>(navigator),
-      keyboard_(
-          new Keyboard(GetSupplementable()->GetFrame()
-                           ? GetSupplementable()->GetFrame()->GetDocument()
-                           : nullptr)) {}
+      keyboard_(MakeGarbageCollected<Keyboard>(
+          GetSupplementable()->GetFrame()
+              ? GetSupplementable()->GetFrame()->GetDocument()
+              : nullptr)) {}
 
 // static
 Keyboard* NavigatorKeyboard::keyboard(Navigator& navigator) {

@@ -51,9 +51,13 @@ class IDBIndex final : public ScriptWrappable {
   static IDBIndex* Create(scoped_refptr<IDBIndexMetadata> metadata,
                           IDBObjectStore* object_store,
                           IDBTransaction* transaction) {
-    return new IDBIndex(std::move(metadata), object_store, transaction);
+    return MakeGarbageCollected<IDBIndex>(std::move(metadata), object_store,
+                                          transaction);
   }
+
+  IDBIndex(scoped_refptr<IDBIndexMetadata>, IDBObjectStore*, IDBTransaction*);
   ~IDBIndex() override;
+
   void Trace(blink::Visitor*) override;
 
   // Implement the IDL
@@ -120,8 +124,6 @@ class IDBIndex final : public ScriptWrappable {
   WebIDBDatabase* BackendDB() const;
 
  private:
-  IDBIndex(scoped_refptr<IDBIndexMetadata>, IDBObjectStore*, IDBTransaction*);
-
   const IDBIndexMetadata& Metadata() const { return *metadata_; }
 
   IDBRequest* GetInternal(ScriptState*,

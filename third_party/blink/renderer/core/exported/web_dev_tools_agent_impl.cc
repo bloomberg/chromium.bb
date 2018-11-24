@@ -302,7 +302,8 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
       probe_sink_(web_local_frame_impl_->GetFrame()->GetProbeSink()),
       resource_content_loader_(InspectorResourceContentLoader::Create(
           web_local_frame_impl_->GetFrame())),
-      inspected_frames_(new InspectedFrames(web_local_frame_impl_->GetFrame())),
+      inspected_frames_(MakeGarbageCollected<InspectedFrames>(
+          web_local_frame_impl_->GetFrame())),
       resource_container_(
           MakeGarbageCollected<InspectorResourceContainer>(inspected_frames_)),
       include_view_agents_(include_view_agents) {

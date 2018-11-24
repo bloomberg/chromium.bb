@@ -12,8 +12,8 @@
 namespace blink {
 
 Keyboard::Keyboard(ExecutionContext* context)
-    : keyboard_lock_(new KeyboardLock(context)),
-      keyboard_layout_(new KeyboardLayout(context)) {}
+    : keyboard_lock_(MakeGarbageCollected<KeyboardLock>(context)),
+      keyboard_layout_(MakeGarbageCollected<KeyboardLayout>(context)) {}
 
 Keyboard::~Keyboard() = default;
 

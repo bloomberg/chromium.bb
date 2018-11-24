@@ -18,11 +18,11 @@
 namespace blink {
 
 IndexedDBClient* IndexedDBClient::Create(LocalFrame& frame) {
-  return new IndexedDBClient(frame);
+  return MakeGarbageCollected<IndexedDBClient>(frame);
 }
 
 IndexedDBClient* IndexedDBClient::Create(WorkerClients& worker_clients) {
-  return new IndexedDBClient(worker_clients);
+  return MakeGarbageCollected<IndexedDBClient>(worker_clients);
 }
 
 IndexedDBClient::IndexedDBClient(LocalFrame& frame)

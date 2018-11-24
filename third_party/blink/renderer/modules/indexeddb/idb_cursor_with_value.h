@@ -46,6 +46,12 @@ class IDBCursorWithValue final : public IDBCursor {
                                     IDBRequest*,
                                     const Source&,
                                     IDBTransaction*);
+
+  IDBCursorWithValue(std::unique_ptr<WebIDBCursor>,
+                     mojom::IDBCursorDirection,
+                     IDBRequest*,
+                     const Source&,
+                     IDBTransaction*);
   ~IDBCursorWithValue() override;
 
   // The value attribute defined in the IDL is simply implemented in IDBCursor
@@ -54,13 +60,6 @@ class IDBCursorWithValue final : public IDBCursor {
 
   bool IsKeyCursor() const override { return false; }
   bool IsCursorWithValue() const override { return true; }
-
- private:
-  IDBCursorWithValue(std::unique_ptr<WebIDBCursor>,
-                     mojom::IDBCursorDirection,
-                     IDBRequest*,
-                     const Source&,
-                     IDBTransaction*);
 };
 
 DEFINE_TYPE_CASTS(IDBCursorWithValue,
