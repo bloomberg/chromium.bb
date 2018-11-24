@@ -1712,3 +1712,23 @@ protocol/%-server-protocol.h : $(top_srcdir)/protocol/%.xml
 
 protocol/%-client-protocol.h : $(top_srcdir)/protocol/%.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header < $< > $@
+
+EXTRA_DIST +=					\
+	clients/meson.build			\
+	compositor/meson.build			\
+	data/meson.build			\
+	desktop-shell/meson.build		\
+	fullscreen-shell/meson.build		\
+	ivi-shell/meson.build			\
+	libweston-desktop/meson.build		\
+	libweston/git-version.h.meson		\
+	libweston/meson.build			\
+	man/meson.build				\
+	meson.build				\
+	meson_options.txt			\
+	protocol/meson.build			\
+	remoting/meson.build			\
+	shared/meson.build			\
+	tests/meson.build			\
+	wcap/meson.build			\
+	xwayland/meson.build
