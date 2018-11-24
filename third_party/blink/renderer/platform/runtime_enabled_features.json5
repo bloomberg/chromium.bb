@@ -647,8 +647,13 @@
       // Tracks "jank" from layout objects changing their visual location
       // between animation frames (see crbug.com/581518).
       name: "JankTracking",
-      implied_by: ["LayoutJankAPI"],
+      implied_by: ["LayoutJankAPI", "JankTrackingSweepLine"],
       status: "experimental",
+    },
+    {
+      // Modifies JankTracking to use O(n log n) sweep line algorithm for
+      // computing the area of the jank region.
+      name: "JankTrackingSweepLine",
     },
     {
       name: "KeyboardFocusableScrollers",

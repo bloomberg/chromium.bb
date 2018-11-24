@@ -4,16 +4,16 @@
 
 import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
-import("//build/toolchain/toolchain.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
+import("//build/toolchain/toolchain.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/blink/renderer/bindings/bindings.gni")
 import("//third_party/blink/renderer/bindings/modules/v8/generated.gni")
 import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
+import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/config.gni")
 import("//third_party/blink/renderer/core/core.gni")
-import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/modules/modules_idl_files.gni")
 import("//third_party/blink/renderer/platform/platform_generated.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -1991,6 +1991,7 @@ jumbo_source_set("unit_tests") {
     "layout/collapsed_border_value_test.cc",
     "layout/custom/layout_worklet_test.cc",
     "layout/grid_test.cc",
+    "layout/jank_region_test.cc",
     "layout/jank_tracker_test.cc",
     "layout/layout_block_test.cc",
     "layout/layout_box_model_object_test.cc",
