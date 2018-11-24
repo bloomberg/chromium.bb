@@ -54,6 +54,9 @@ bool g_hook_active = false;
 // Indicates if the hook was disabled after the hook was activated.
 std::atomic<bool> g_hook_disabled(false);
 
+// Set to a different NTSTATUS if an error occured while applying the hook.
+std::atomic<int32_t> g_apply_hook_result(STATUS_SUCCESS);
+
 // Set up NTDLL function pointers.
 bool InitImports() {
   HMODULE ntdll = ::GetModuleHandleW(sandbox::kNtdllName);
@@ -462,8 +465,12 @@ ThirdPartyStatus ApplyHook() {
                    thunk_storage, sizeof(sandbox::ThunkData), nullptr);
 #endif  // defined(_WIN64)
 
-  if (!NT_SUCCESS(ntstatus))
+  if (!NT_SUCCESS(ntstatus)) {
+    // Remember the status code.
+    g_apply_hook_result.store(ntstatus, std::memory_order_relaxed);
+
     return ThirdPartyStatus::kHookApplyFailure;
+  }
 
   // Mark the thunk storage (original system service) as executable and prevent
   // any future writes to it.
@@ -498,4 +505,8 @@ using namespace third_party_dlls;
 
 void DisableHook() {
   g_hook_disabled.store(true, std::memory_order_relaxed);
+}
+
+int32_t GetApplyHookResult() {
+  return g_apply_hook_result.load(std::memory_order_relaxed);
 }
