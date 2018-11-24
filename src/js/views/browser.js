@@ -111,6 +111,7 @@ cca.views.Browser.prototype.entering = function(picture) {
 cca.views.Browser.prototype.leaving = function() {
   this.scrollTracker_.stop();
   this.setSelectedIndex(null);
+  return true;
 };
 
 /**

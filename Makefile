@@ -117,9 +117,10 @@ RESOURCES = \
 	src/js/views/camera/options.js \
 	src/js/views/camera/preview.js \
 	src/js/views/camera/recordtime.js \
-	src/js/views/view.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \
+	src/js/views/view.js \
+	src/js/views/warning.js \
 	src/sounds/record_end.ogg \
 	src/sounds/record_start.ogg \
 	src/sounds/shutter.ogg \

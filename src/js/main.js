@@ -35,6 +35,12 @@ cca.App = function(aspectRatio) {
   this.browserView_ = new cca.views.Browser(this.model_);
 
   /**
+   * @type {cca.views.Warning}
+   * @private
+   */
+  this.warningView_ = new cca.views.Warning();
+
+  /**
    * @type {cca.views.Dialog}
    * @private
    */
@@ -67,11 +73,16 @@ cca.App = function(aspectRatio) {
 cca.App.prototype.start = function() {
   cca.util.setupElementsAria();
   cca.tooltip.setup();
-  cca.nav.setup([this.cameraView_, this.browserView_, this.dialogView_]);
+  cca.nav.setup([
+    this.cameraView_,
+    this.browserView_,
+    this.warningView_,
+    this.dialogView_,
+  ]);
   cca.models.FileSystem.initialize(() => {
     // Prompt to migrate pictures if needed.
     var message = chrome.i18n.getMessage('migratePicturesMsg');
-    return cca.nav.dialog(message, false).then((acked) => {
+    return cca.nav.open('dialog', message, false).then((acked) => {
       if (!acked) {
         throw 'no-migrate';
       }
@@ -81,14 +92,14 @@ cca.App.prototype.start = function() {
     this.cameraView_.prepare();
     this.browserView_.prepare();
     this.model_.load([this.cameraView_.galleryButton, this.browserView_]);
-    cca.nav.camera();
+    cca.nav.open('camera');
   }).catch((error) => {
     console.error(error);
     if (error == 'no-migrate') {
       chrome.app.window.current().close();
       return;
     }
-    cca.App.onError('filesystem-failure', 'errorMsgFileSystemFailed');
+    cca.nav.open('warning', 'filesystem-failure');
   });
 };
 
@@ -154,31 +165,6 @@ cca.App.prototype.onKeyPressed_ = function(event) {
     return;
   }
   cca.nav.onKeyPressed(event);
-};
-
-/**
- * Shows an error message.
- * @param {string} identifier Identifier of the error.
- * @param {string} message Message for the error.
- */
-cca.App.onError = function(identifier, message) {
-  // TODO(yuli): Implement error-identifier to look up messages/hints and handle
-  // multiple errors. Make 'error' a view to block buttons on other views.
-  document.body.classList.add('has-error');
-  // Use setTimeout to wait for error-view to be visible by screen reader.
-  setTimeout(() => {
-    document.querySelector('#error-msg').textContent =
-        chrome.i18n.getMessage(message) || message;
-  }, 0);
-};
-
-/**
- * Removes the error message when an error goes away.
- * @param {string} identifier Identifier of the error.
- */
-cca.App.onErrorRecovered = function(identifier) {
-  document.body.classList.remove('has-error');
-  document.querySelector('#error-msg').textContent = '';
 };
 
 /**

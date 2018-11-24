@@ -100,7 +100,7 @@ cca.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
       }
     });
   } else {
-    cca.nav.browser(picture);
+    cca.nav.open('browser', picture);
   }
 };
 
