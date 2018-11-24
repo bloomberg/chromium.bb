@@ -131,7 +131,7 @@ void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
       case ::syncer::APP_LIST:                                   \
         PER_DATA_TYPE_MACRO("AppList");                          \
         break;                                                   \
-      case ::syncer::WIFI_CREDENTIALS:                           \
+      case ::syncer::DEPRECATED_WIFI_CREDENTIALS:                \
         PER_DATA_TYPE_MACRO("WifiCredentials");                  \
         break;                                                   \
       case ::syncer::SUPERVISED_USER_WHITELISTS:                 \

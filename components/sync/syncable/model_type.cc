@@ -129,7 +129,7 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      "Deprecated Articles", sync_pb::EntitySpecifics::kArticleFieldNumber, 28},
     {APP_LIST, "APP_LIST", "app_list", "App List",
      sync_pb::EntitySpecifics::kAppListFieldNumber, 29},
-    {WIFI_CREDENTIALS, "WIFI_CREDENTIAL", "wifi_credentials",
+    {DEPRECATED_WIFI_CREDENTIALS, "WIFI_CREDENTIAL", "wifi_credentials",
      "WiFi Credentials", sync_pb::EntitySpecifics::kWifiCredentialFieldNumber,
      32},
     {SUPERVISED_USER_WHITELISTS, "MANAGED_USER_WHITELIST",
@@ -263,7 +263,7 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case APP_LIST:
       specifics->mutable_app_list();
       break;
-    case WIFI_CREDENTIALS:
+    case DEPRECATED_WIFI_CREDENTIALS:
       specifics->mutable_wifi_credential();
       break;
     case SUPERVISED_USER_WHITELISTS:
@@ -416,7 +416,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_app_list())
     return APP_LIST;
   if (specifics.has_wifi_credential())
-    return WIFI_CREDENTIALS;
+    return DEPRECATED_WIFI_CREDENTIALS;
   if (specifics.has_managed_user_whitelist())
     return SUPERVISED_USER_WHITELISTS;
   if (specifics.has_arc_package())

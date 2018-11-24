@@ -374,7 +374,7 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
       return prefs::kSyncArticles;
     case APP_LIST:
       return prefs::kSyncAppList;
-    case WIFI_CREDENTIALS:
+    case DEPRECATED_WIFI_CREDENTIALS:
       return prefs::kSyncWifiCredentials;
     case SUPERVISED_USER_WHITELISTS:
       return prefs::kSyncSupervisedUserWhitelists;
