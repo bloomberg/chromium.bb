@@ -94,6 +94,8 @@ blink_core_sources("layout") {
     "intersection_geometry.cc",
     "intersection_geometry.h",
     "intrinsic_sizing_info.h",
+    "jank_region.cc",
+    "jank_region.h",
     "jank_tracker.cc",
     "jank_tracker.h",
     "layout_analyzer.cc",

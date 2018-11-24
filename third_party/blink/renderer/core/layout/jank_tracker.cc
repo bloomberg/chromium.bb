@@ -81,6 +81,15 @@ static void RegionToTracedValue(const Region& region,
   value.EndArray();
 }
 
+static void RegionToTracedValue(const JankRegion& region,
+                                double granularity_scale,
+                                TracedValue& value) {
+  Region old_region;
+  for (IntRect rect : region.GetRects())
+    old_region.Unite(Region(rect));
+  RegionToTracedValue(old_region, granularity_scale, value);
+}
+
 JankTracker::JankTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       score_(0.0),
@@ -131,8 +140,13 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
   visible_old_rect.Scale(scale);
   visible_new_rect.Scale(scale);
 
-  region_.Unite(Region(visible_old_rect));
-  region_.Unite(Region(visible_new_rect));
+  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled()) {
+    region_experimental_.AddRect(visible_old_rect);
+    region_experimental_.AddRect(visible_new_rect);
+  } else {
+    region_.Unite(Region(visible_old_rect));
+    region_.Unite(Region(visible_new_rect));
+  }
 }
 
 void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
@@ -166,7 +180,12 @@ void JankTracker::NotifyCompositedLayerMoved(const PaintLayer& paint_layer,
 }
 
 void JankTracker::NotifyPrePaintFinished() {
-  if (!IsActive() || region_.IsEmpty())
+  if (!IsActive())
+    return;
+  bool use_sweep_line = RuntimeEnabledFeatures::JankTrackingSweepLineEnabled();
+  bool region_is_empty =
+      use_sweep_line ? region_experimental_.IsEmpty() : region_.IsEmpty();
+  if (region_is_empty)
     return;
 
   IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
@@ -177,7 +196,9 @@ void JankTracker::NotifyPrePaintFinished() {
     return;
 
   double viewport_area = double(viewport.Width()) * double(viewport.Height());
-  double jank_fraction = region_.Area() / viewport_area;
+  uint64_t region_area =
+      use_sweep_line ? region_experimental_.Area() : region_.Area();
+  double jank_fraction = region_area / viewport_area;
   DCHECK_GT(jank_fraction, 0);
 
   score_ += jank_fraction;
@@ -202,7 +223,10 @@ void JankTracker::NotifyPrePaintFinished() {
     }
   }
 
-  region_ = Region();
+  if (use_sweep_line)
+    region_experimental_.Reset();
+  else
+    region_ = Region();
 }
 
 void JankTracker::NotifyInput(const WebInputEvent& event) {
@@ -242,7 +266,10 @@ std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
   value->SetDouble("jank_fraction", jank_fraction);
   value->SetDouble("cumulative_score", score_);
   value->SetDouble("max_distance", max_distance_);
-  RegionToTracedValue(region_, granularity_scale, *value);
+  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
+    RegionToTracedValue(region_experimental_, granularity_scale, *value);
+  else
+    RegionToTracedValue(region_, granularity_scale, *value);
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   return value;
 }
