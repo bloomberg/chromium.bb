@@ -120,6 +120,7 @@ cca.nav.hide_ = function(index) {
 cca.nav.activate_ = function(index) {
   // Restore the view's child elements' tabindex and then focus the view.
   var view = cca.nav.views_[index];
+  view.root.setAttribute('aria-hidden', 'false');
   view.root.querySelectorAll('[data-tabindex]').forEach((element) => {
     element.setAttribute('tabindex', element.dataset.tabindex);
     element.removeAttribute('data-tabindex');
@@ -133,6 +134,7 @@ cca.nav.activate_ = function(index) {
  */
 cca.nav.inactivate_ = function(index) {
   var view = cca.nav.views_[index];
+  view.root.setAttribute('aria-hidden', 'true');
   view.root.querySelectorAll('[tabindex]').forEach((element) => {
     element.dataset.tabindex = element.getAttribute('tabindex');
     element.setAttribute('tabindex', '-1');
@@ -158,15 +160,13 @@ cca.nav.setTabIndex = function(view, element, tabIndex) {
 };
 
 /**
- * Opens a navigation session of the view; shows/hides a view upon entering and
- * leaving the view.
+ * Opens a navigation session of the view; shows the view before entering it and
+ * hides the view after leaving it for the ended session.
  * @param {string} id View identifier.
- * @param {...*} args Optional rest parameters for navigating the view.
+ * @param {...*} args Optional rest parameters for entering the view.
  * @return {!Promise<*>} Promise for the operation or result.
- * @private
  */
-cca.nav.open_ = function(id, ...args) {
-  // Enter the view shown; its navigation ends after leaving the view.
+cca.nav.open = function(id, ...args) {
   var index = cca.nav.findIndex_(id);
   return cca.nav.show_(index).enter(...args).finally(() => {
     cca.nav.hide_(index);
@@ -174,30 +174,14 @@ cca.nav.open_ = function(id, ...args) {
 };
 
 /**
- * Opens a navigation session of camera-view.
- * @return {!Promise} Promise for the operation.
+ * Closes the current navigation session of the view by leaving it.
+ * @param {string} id View identifier.
+ * @param {*=} condition Optional condition for leaving the view.
+ * @return {boolean} Whether successfully leaving the view or not.
  */
-cca.nav.camera = function() {
-  return cca.nav.open_('camera');
-};
-
-/**
- * Opens a navigation session of browser-view.
- * @param {cca.models.Gallery.Picture} picture Picture to be selected.
- * @return {!Promise} Promise for the operation.
- */
-cca.nav.browser = function(picture) {
-  return cca.nav.open_('browser', picture);
-};
-
-/**
- * Opens a navigation session of dialog-view.
- * @param {string} message Message of the dialog.
- * @param {boolean} cancellable Whether the dialog is cancellable.
- * @return {!Promise<boolean>} Promise for the result.
- */
-cca.nav.dialog = function(message, cancellable) {
-  return cca.nav.open_('dialog', message, cancellable);
+cca.nav.close = function(id, condition) {
+  var index = cca.nav.findIndex_(id);
+  return cca.nav.views_[index].leave(condition);
 };
 
 /**
@@ -205,8 +189,7 @@ cca.nav.dialog = function(message, cancellable) {
  * @param {Event} event Key press event.
  */
 cca.nav.onKeyPressed = function(event) {
-  if (cca.nav.topmostIndex_ >= 0 &&
-      !document.body.classList.contains('has-error')) {
+  if (cca.nav.topmostIndex_ >= 0) {
     cca.nav.views_[cca.nav.topmostIndex_].onKeyPressed(event);
   }
 };

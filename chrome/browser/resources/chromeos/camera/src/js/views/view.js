@@ -87,18 +87,24 @@ cca.views.View.prototype.enter = function(...args) {
 
 /**
  * Hook called when leaving the view.
+ * @param {*=} condition Optional condition for leaving the view.
+ * @return {boolean} Whether able to leaving the view or not.
  */
-cca.views.View.prototype.leaving = function() {
+cca.views.View.prototype.leaving = function(condition) {
+  return true;
 };
 
 /**
  * Leaves the view.
- * @param {*=} result Optional result for the ended navigation session.
+ * @param {*=} condition Optional condition for leaving the view and also as the
+ *     result for the ended session.
+ * @return {boolean} Whether able to leaving the view or not.
  */
-cca.views.View.prototype.leave = function(result) {
-  if (this.session_) {
-    this.leaving();
-    this.session_.end(result);
+cca.views.View.prototype.leave = function(condition) {
+  if (this.session_ && this.leaving(condition)) {
+    this.session_.end(condition);
     this.session_ = null;
+    return true;
   }
+  return false;
 };

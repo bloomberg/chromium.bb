@@ -417,7 +417,7 @@ body.mode-switching:not(.capturing) #camera-mode {
 #camera,
 #browser,
 #dialog,
-#error {
+#warning {
   bottom: 0;
   left: 0;
   opacity: 0;
@@ -431,7 +431,7 @@ body.mode-switching:not(.capturing) #camera-mode {
 body.camera #camera,
 body.browser #browser,
 body.dialog #dialog,
-body.has-error #error {
+body.warning #warning {
   opacity: 1;
   visibility: visible;
 }
@@ -749,7 +749,7 @@ body.capturing.grid #preview-grid-vertical {
   }
 }
 
-#error,
+#warning,
 #dialog {
   align-items: center;
   display: flex;
@@ -757,12 +757,12 @@ body.capturing.grid #preview-grid-vertical {
   z-index: 1;
 }
 
-#error {
+#warning {
   background: black;
   color: white;
 }
 
-#error #error-msg {
+#warning #error-msg {
   text-align: center;
   font-size: 18px;
   font-family: 'Roboto', sans-serif;

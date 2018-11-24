@@ -521,7 +521,7 @@ cca.views.Camera.prototype.start_ = function() {
         this.options_.updateValues(constraints, this.preview_.stream);
         document.body.classList.add('capturing');
         this.updateControls_();
-        cca.App.onErrorRecovered('no-camera');
+        cca.nav.close('warning', 'no-camera');
       }).catch((error) => {
         console.error(error);
         return new Promise((resolve) => {
@@ -534,7 +534,7 @@ cca.views.Camera.prototype.start_ = function() {
   }).catch((error) => {
     if (error != 'suspend') {
       console.error(error);
-      cca.App.onError('no-camera', 'errorMsgNoCamera');
+      cca.nav.open('warning', 'no-camera');
     }
     // Schedule to retry.
     if (this.retryStartTimeout_) {
