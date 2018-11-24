@@ -267,22 +267,6 @@ FloatRect ComputeTextFloatRect(const EphemeralRange&);
 // |FirstRectForRange| requires up-to-date layout.
 IntRect FirstRectForRange(const EphemeralRange&);
 
-// Export below functions only for |VisibleUnit| family.
-enum BoundarySearchContextAvailability {
-  kDontHaveMoreContext,
-  kMayHaveMoreContext
-};
-
-typedef unsigned (*BoundarySearchFunction)(const UChar*,
-                                           unsigned length,
-                                           unsigned offset,
-                                           BoundarySearchContextAvailability,
-                                           bool& need_more_context);
-
-Position PreviousBoundary(const VisiblePosition&, BoundarySearchFunction);
-PositionInFlatTree PreviousBoundary(const VisiblePositionInFlatTree&,
-                                    BoundarySearchFunction);
-
 CORE_EXPORT PositionWithAffinity
 AdjustForwardPositionToAvoidCrossingEditingBoundaries(
     const PositionWithAffinity&,
