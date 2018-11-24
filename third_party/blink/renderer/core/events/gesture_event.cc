@@ -70,7 +70,7 @@ GestureEvent* GestureEvent::Create(AbstractView* view,
     default:
       return nullptr;
   }
-  return new GestureEvent(event_type, view, event);
+  return MakeGarbageCollected<GestureEvent>(event_type, view, event);
 }
 
 GestureEvent::GestureEvent(const AtomicString& event_type,

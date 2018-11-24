@@ -99,14 +99,14 @@ static void ReportGeolocationViolation(Document* doc) {
 }  // namespace
 
 Geolocation* Geolocation::Create(ExecutionContext* context) {
-  Geolocation* geolocation = new Geolocation(context);
+  Geolocation* geolocation = MakeGarbageCollected<Geolocation>(context);
   return geolocation;
 }
 
 Geolocation::Geolocation(ExecutionContext* context)
     : ContextLifecycleObserver(context),
       PageVisibilityObserver(GetDocument()->GetPage()),
-      watchers_(new GeolocationWatchers()) {}
+      watchers_(MakeGarbageCollected<GeolocationWatchers>()) {}
 
 Geolocation::~Geolocation() = default;
 

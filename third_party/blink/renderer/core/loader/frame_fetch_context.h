@@ -74,6 +74,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   static void ProvideDocumentToContext(FetchContext&, Document*);
 
+  FrameFetchContext(DocumentLoader*, Document*);
   ~FrameFetchContext() override;
 
   bool IsFrameFetchContext() override { return true; }
@@ -191,8 +192,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   struct FrozenState;
 
   static ResourceFetcher* CreateFetcher(DocumentLoader*, Document*);
-
-  FrameFetchContext(DocumentLoader*, Document*);
 
   // Convenient accessors below can be used to transparently access the
   // relevant document loader or frame in either cases without null-checks.

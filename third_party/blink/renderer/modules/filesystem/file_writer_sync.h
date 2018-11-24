@@ -50,8 +50,10 @@ class FileWriterSync final : public ScriptWrappable,
 
  public:
   static FileWriterSync* Create(ExecutionContext* context) {
-    return new FileWriterSync(context);
+    return MakeGarbageCollected<FileWriterSync>(context);
   }
+
+  explicit FileWriterSync(ExecutionContext* context);
   ~FileWriterSync() override;
   void Trace(blink::Visitor*) override;
 
@@ -70,7 +72,6 @@ class FileWriterSync final : public ScriptWrappable,
   void DoCancel() override;
 
  private:
-  explicit FileWriterSync(ExecutionContext* context);
   void PrepareForWrite();
 
   base::File::Error error_;

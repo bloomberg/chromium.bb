@@ -69,7 +69,8 @@ FEImage* FEImage::CreateWithImage(
     Filter* filter,
     scoped_refptr<Image> image,
     SVGPreserveAspectRatio* preserve_aspect_ratio) {
-  return new FEImage(filter, std::move(image), preserve_aspect_ratio);
+  return MakeGarbageCollected<FEImage>(filter, std::move(image),
+                                       preserve_aspect_ratio);
 }
 
 FEImage* FEImage::CreateWithIRIReference(
@@ -77,7 +78,8 @@ FEImage* FEImage::CreateWithIRIReference(
     TreeScope& tree_scope,
     const String& href,
     SVGPreserveAspectRatio* preserve_aspect_ratio) {
-  return new FEImage(filter, tree_scope, href, preserve_aspect_ratio);
+  return MakeGarbageCollected<FEImage>(filter, tree_scope, href,
+                                       preserve_aspect_ratio);
 }
 
 static FloatRect GetLayoutObjectRepaintRect(LayoutObject* layout_object) {

@@ -59,6 +59,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
  public:
   static FileReader* Create(ExecutionContext*);
 
+  explicit FileReader(ExecutionContext*);
   ~FileReader() override;
 
   enum ReadyState { kEmpty = 0, kLoading = 1, kDone = 2 };
@@ -103,8 +104,6 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
 
  private:
   class ThrottlingController;
-
-  explicit FileReader(ExecutionContext*);
 
   void Terminate();
   void ReadInternal(Blob*, FileReaderLoader::ReadType, ExceptionState&);

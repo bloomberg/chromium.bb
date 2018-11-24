@@ -54,6 +54,10 @@ class FakeDecodedResource final : public Resource {
         fetcher->RequestResource(params, Factory(), client));
   }
 
+  FakeDecodedResource(const ResourceRequest& request,
+                      const ResourceLoaderOptions& options)
+      : Resource(request, ResourceType::kMock, options) {}
+
   void AppendData(const char* data, size_t len) override {
     Resource::AppendData(data, len);
     SetDecodedSize(this->size());
@@ -68,13 +72,9 @@ class FakeDecodedResource final : public Resource {
 
     Resource* Create(const ResourceRequest& request,
                      const ResourceLoaderOptions& options) const override {
-      return new FakeDecodedResource(request, options);
+      return MakeGarbageCollected<FakeDecodedResource>(request, options);
     }
   };
-
-  FakeDecodedResource(const ResourceRequest& request,
-                      const ResourceLoaderOptions& options)
-      : Resource(request, ResourceType::kMock, options) {}
 
   void DestroyDecodedDataIfPossible() override { SetDecodedSize(0); }
 };

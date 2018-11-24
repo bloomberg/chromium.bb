@@ -32,7 +32,7 @@ namespace blink {
 FEMerge::FEMerge(Filter* filter) : FilterEffect(filter) {}
 
 FEMerge* FEMerge::Create(Filter* filter) {
-  return new FEMerge(filter);
+  return MakeGarbageCollected<FEMerge>(filter);
 }
 
 sk_sp<PaintFilter> FEMerge::CreateImageFilter() {

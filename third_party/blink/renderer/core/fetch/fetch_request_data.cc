@@ -22,7 +22,7 @@
 namespace blink {
 
 FetchRequestData* FetchRequestData::Create() {
-  return new FetchRequestData();
+  return MakeGarbageCollected<FetchRequestData>();
 }
 
 FetchRequestData* FetchRequestData::Create(
@@ -37,8 +37,8 @@ FetchRequestData* FetchRequestData::Create(
   if (scoped_refptr<EncodedFormData> body = web_request.Body()) {
     request->SetBuffer(new BodyStreamBuffer(
         script_state,
-        new FormDataBytesConsumer(ExecutionContext::From(script_state),
-                                  std::move(body)),
+        MakeGarbageCollected<FormDataBytesConsumer>(
+            ExecutionContext::From(script_state), std::move(body)),
         nullptr /* AbortSignal */));
   } else if (web_request.GetBlobDataHandle()) {
     request->SetBuffer(new BodyStreamBuffer(

@@ -46,7 +46,7 @@ class HeadersIterationSource final
 }  // namespace
 
 Headers* Headers::Create(ExceptionState&) {
-  return new Headers;
+  return MakeGarbageCollected<Headers>();
 }
 
 Headers* Headers::Create(const HeadersInit& init,
@@ -61,7 +61,7 @@ Headers* Headers::Create(const HeadersInit& init,
 }
 
 Headers* Headers::Create(FetchHeaderList* header_list) {
-  return new Headers(header_list);
+  return MakeGarbageCollected<Headers>(header_list);
 }
 
 Headers* Headers::Clone() const {

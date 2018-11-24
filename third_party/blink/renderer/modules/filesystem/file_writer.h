@@ -56,6 +56,8 @@ class FileWriter final : public EventTargetWithInlineData,
 
  public:
   static FileWriter* Create(ExecutionContext*);
+
+  explicit FileWriter(ExecutionContext*);
   ~FileWriter() override;
 
   enum ReadyState { kInit = 0, kWriting = 1, kDone = 2 };
@@ -105,8 +107,6 @@ class FileWriter final : public EventTargetWithInlineData,
     kOperationTruncate,
     kOperationAbort
   };
-
-  explicit FileWriter(ExecutionContext*);
 
   void CompleteAbort();
 

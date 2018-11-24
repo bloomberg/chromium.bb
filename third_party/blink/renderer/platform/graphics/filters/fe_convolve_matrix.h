@@ -50,6 +50,15 @@ class PLATFORM_EXPORT FEConvolveMatrix final : public FilterEffect {
                                   bool,
                                   const Vector<float>&);
 
+  FEConvolveMatrix(Filter*,
+                   const IntSize&,
+                   float,
+                   float,
+                   const IntPoint&,
+                   EdgeModeType,
+                   bool,
+                   const Vector<float>&);
+
   bool SetDivisor(float);
   bool SetBias(float);
   bool SetTargetOffset(const IntPoint&);
@@ -60,15 +69,6 @@ class PLATFORM_EXPORT FEConvolveMatrix final : public FilterEffect {
                                           int indention) const override;
 
  private:
-  FEConvolveMatrix(Filter*,
-                   const IntSize&,
-                   float,
-                   float,
-                   const IntPoint&,
-                   EdgeModeType,
-                   bool,
-                   const Vector<float>&);
-
   FloatRect MapEffect(const FloatRect&) const final;
 
   sk_sp<PaintFilter> CreateImageFilter() override;

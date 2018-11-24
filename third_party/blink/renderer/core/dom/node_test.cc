@@ -297,13 +297,15 @@ TEST_F(NodeTest, HasMediaControlAncestor_Fail) {
 }
 
 TEST_F(NodeTest, HasMediaControlAncestor_MediaControlElement) {
-  FakeMediaControlElement* node = new FakeMediaControlElement(GetDocument());
+  FakeMediaControlElement* node =
+      MakeGarbageCollected<FakeMediaControlElement>(GetDocument());
   EXPECT_TRUE(node->HasMediaControlAncestor());
   EXPECT_TRUE(InitializeUserAgentShadowTree(node)->HasMediaControlAncestor());
 }
 
 TEST_F(NodeTest, HasMediaControlAncestor_MediaControls) {
-  FakeMediaControls* node = new FakeMediaControls(GetDocument());
+  FakeMediaControls* node =
+      MakeGarbageCollected<FakeMediaControls>(GetDocument());
   EXPECT_TRUE(node->HasMediaControlAncestor());
   EXPECT_TRUE(InitializeUserAgentShadowTree(node)->HasMediaControlAncestor());
 }

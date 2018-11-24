@@ -31,7 +31,7 @@ namespace blink {
 FETile::FETile(Filter* filter) : FilterEffect(filter) {}
 
 FETile* FETile::Create(Filter* filter) {
-  return new FETile(filter);
+  return MakeGarbageCollected<FETile>(filter);
 }
 
 FloatRect FETile::MapInputs(const FloatRect& rect) const {

@@ -767,7 +767,8 @@ TEST_F(CacheStorageTest, Add) {
   Request* request = NewRequestFromUrl(url);
   Response* response = Response::Create(
       GetScriptState(),
-      new BodyStreamBuffer(GetScriptState(), new FormDataBytesConsumer(content),
+      new BodyStreamBuffer(GetScriptState(),
+                           MakeGarbageCollected<FormDataBytesConsumer>(content),
                            nullptr),
       content_type, ResponseInit::Create(), exception_state);
   fetcher->SetResponse(response);

@@ -36,7 +36,7 @@ class FocusEvent final : public UIEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FocusEvent* Create() { return new FocusEvent; }
+  static FocusEvent* Create() { return MakeGarbageCollected<FocusEvent>(); }
 
   static FocusEvent* Create(const AtomicString& type,
                             Bubbles bubbles,
@@ -44,14 +44,23 @@ class FocusEvent final : public UIEvent {
                             int detail,
                             EventTarget* related_target,
                             InputDeviceCapabilities* source_capabilities) {
-    return new FocusEvent(type, bubbles, view, detail, related_target,
-                          source_capabilities);
+    return MakeGarbageCollected<FocusEvent>(
+        type, bubbles, view, detail, related_target, source_capabilities);
   }
 
   static FocusEvent* Create(const AtomicString& type,
                             const FocusEventInit* initializer) {
-    return new FocusEvent(type, initializer);
+    return MakeGarbageCollected<FocusEvent>(type, initializer);
   }
+
+  FocusEvent();
+  FocusEvent(const AtomicString& type,
+             Bubbles,
+             AbstractView*,
+             int,
+             EventTarget*,
+             InputDeviceCapabilities*);
+  FocusEvent(const AtomicString& type, const FocusEventInit*);
 
   EventTarget* relatedTarget() const { return related_target_.Get(); }
   void SetRelatedTarget(EventTarget* related_target) {
@@ -66,15 +75,6 @@ class FocusEvent final : public UIEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  FocusEvent();
-  FocusEvent(const AtomicString& type,
-             Bubbles,
-             AbstractView*,
-             int,
-             EventTarget*,
-             InputDeviceCapabilities*);
-  FocusEvent(const AtomicString& type, const FocusEventInit*);
-
   Member<EventTarget> related_target_;
 };
 

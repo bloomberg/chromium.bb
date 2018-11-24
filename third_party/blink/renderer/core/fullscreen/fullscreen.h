@@ -59,7 +59,9 @@ class CORE_EXPORT Fullscreen final
  public:
   static const char kSupplementName[];
 
+  explicit Fullscreen(Document&);
   virtual ~Fullscreen();
+
   static Fullscreen& From(Document&);
   static Element* FullscreenElementFrom(Document&);
   static Element* FullscreenElementForBindingFrom(TreeScope&);
@@ -106,8 +108,6 @@ class CORE_EXPORT Fullscreen final
 
  private:
   static Fullscreen* FromIfExists(Document&);
-
-  explicit Fullscreen(Document&);
 
   Document* GetDocument();
 

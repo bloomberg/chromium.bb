@@ -152,7 +152,8 @@ File* File::Create(
 
 File* File::CreateWithRelativePath(const String& path,
                                    const String& relative_path) {
-  File* file = new File(path, File::kAllContentTypes, File::kIsUserVisible);
+  File* file = MakeGarbageCollected<File>(path, File::kAllContentTypes,
+                                          File::kIsUserVisible);
   file->relative_path_ = relative_path;
   return file;
 }
@@ -248,7 +249,7 @@ File::File(const File& other)
       relative_path_(other.relative_path_) {}
 
 File* File::Clone(const String& name) const {
-  File* file = new File(*this);
+  File* file = MakeGarbageCollected<File>(*this);
   if (!name.IsNull())
     file->name_ = name;
   return file;

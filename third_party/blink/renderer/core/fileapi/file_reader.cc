@@ -83,7 +83,7 @@ class FileReader::ThrottlingController final
     ThrottlingController* controller =
         Supplement<ExecutionContext>::From<ThrottlingController>(*context);
     if (!controller) {
-      controller = new ThrottlingController(*context);
+      controller = MakeGarbageCollected<ThrottlingController>(*context);
       ProvideTo(*context, controller);
     }
     return controller;
@@ -120,6 +120,10 @@ class FileReader::ThrottlingController final
     probe::AsyncTaskCanceled(context, reader);
   }
 
+  explicit ThrottlingController(ExecutionContext& context)
+      : Supplement<ExecutionContext>(context),
+        max_running_readers_(kMaxOutstandingRequestsPerThread) {}
+
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(pending_readers_);
     visitor->Trace(running_readers_);
@@ -127,10 +131,6 @@ class FileReader::ThrottlingController final
   }
 
  private:
-  explicit ThrottlingController(ExecutionContext& context)
-      : Supplement<ExecutionContext>(context),
-        max_running_readers_(kMaxOutstandingRequestsPerThread) {}
-
   void PushReader(FileReader* reader) {
     if (pending_readers_.IsEmpty() &&
         running_readers_.size() < max_running_readers_) {
@@ -193,7 +193,7 @@ const char FileReader::ThrottlingController::kSupplementName[] =
     "FileReaderThrottlingController";
 
 FileReader* FileReader::Create(ExecutionContext* context) {
-  return new FileReader(context);
+  return MakeGarbageCollected<FileReader>(context);
 }
 
 FileReader::FileReader(ExecutionContext* context)

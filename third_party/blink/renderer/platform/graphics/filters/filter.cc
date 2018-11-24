@@ -49,11 +49,13 @@ Filter* Filter::Create(const FloatRect& reference_box,
                        const FloatRect& filter_region,
                        float scale,
                        UnitScaling unit_scaling) {
-  return new Filter(reference_box, filter_region, scale, unit_scaling);
+  return MakeGarbageCollected<Filter>(reference_box, filter_region, scale,
+                                      unit_scaling);
 }
 
 Filter* Filter::Create(float scale) {
-  return new Filter(FloatRect(), FloatRect(), scale, kUserSpace);
+  return MakeGarbageCollected<Filter>(FloatRect(), FloatRect(), scale,
+                                      kUserSpace);
 }
 
 void Filter::Trace(blink::Visitor* visitor) {

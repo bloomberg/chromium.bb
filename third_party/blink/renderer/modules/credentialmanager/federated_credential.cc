@@ -28,7 +28,7 @@ FederatedCredential* FederatedCredential::Create(
   if (exception_state.HadException())
     return nullptr;
 
-  return new FederatedCredential(
+  return MakeGarbageCollected<FederatedCredential>(
       data->id(), SecurityOrigin::Create(provider_url), data->name(), icon_url);
 }
 
@@ -37,7 +37,8 @@ FederatedCredential* FederatedCredential::Create(
     scoped_refptr<const SecurityOrigin> provider,
     const String& name,
     const KURL& icon_url) {
-  return new FederatedCredential(id, provider, name, icon_url);
+  return MakeGarbageCollected<FederatedCredential>(id, provider, name,
+                                                   icon_url);
 }
 
 FederatedCredential::FederatedCredential(

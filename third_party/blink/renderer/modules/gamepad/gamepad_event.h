@@ -19,12 +19,16 @@ class GamepadEvent : public Event {
                               Bubbles bubbles,
                               Cancelable cancelable,
                               Gamepad* gamepad) {
-    return new GamepadEvent(type, bubbles, cancelable, gamepad);
+    return MakeGarbageCollected<GamepadEvent>(type, bubbles, cancelable,
+                                              gamepad);
   }
   static GamepadEvent* Create(const AtomicString& type,
                               const GamepadEventInit* initializer) {
-    return new GamepadEvent(type, initializer);
+    return MakeGarbageCollected<GamepadEvent>(type, initializer);
   }
+
+  GamepadEvent(const AtomicString& type, Bubbles, Cancelable, Gamepad*);
+  GamepadEvent(const AtomicString&, const GamepadEventInit*);
   ~GamepadEvent() override;
 
   Gamepad* getGamepad() const { return gamepad_.Get(); }
@@ -32,10 +36,6 @@ class GamepadEvent : public Event {
   const AtomicString& InterfaceName() const override;
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  GamepadEvent(const AtomicString& type, Bubbles, Cancelable, Gamepad*);
-  GamepadEvent(const AtomicString&, const GamepadEventInit*);
 
  private:
   Member<Gamepad> gamepad_;

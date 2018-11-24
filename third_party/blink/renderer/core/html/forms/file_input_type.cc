@@ -72,7 +72,7 @@ inline FileInputType::FileInputType(HTMLInputElement& element)
       file_list_(FileList::Create()) {}
 
 InputType* FileInputType::Create(HTMLInputElement& element) {
-  return new FileInputType(element);
+  return MakeGarbageCollected<FileInputType>(element);
 }
 
 void FileInputType::Trace(blink::Visitor* visitor) {

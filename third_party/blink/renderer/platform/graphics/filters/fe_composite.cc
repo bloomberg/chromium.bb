@@ -47,7 +47,7 @@ FEComposite* FEComposite::Create(Filter* filter,
                                  float k2,
                                  float k3,
                                  float k4) {
-  return new FEComposite(filter, type, k1, k2, k3, k4);
+  return MakeGarbageCollected<FEComposite>(filter, type, k1, k2, k3, k4);
 }
 
 CompositeOperationType FEComposite::Operation() const {

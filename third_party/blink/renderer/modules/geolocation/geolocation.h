@@ -60,6 +60,8 @@ class MODULES_EXPORT Geolocation final
 
  public:
   static Geolocation* Create(ExecutionContext*);
+
+  explicit Geolocation(ExecutionContext*);
   ~Geolocation() override;
   void Trace(blink::Visitor*) override;
 
@@ -152,8 +154,6 @@ class MODULES_EXPORT Geolocation final
     }
     void ClearWithoutTimerCheck() { BaseClass::clear(); }
   };
-
-  explicit Geolocation(ExecutionContext*);
 
   bool HasListeners() const {
     return !one_shots_.IsEmpty() || !watchers_->IsEmpty();

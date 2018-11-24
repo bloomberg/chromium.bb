@@ -65,9 +65,13 @@ class FrontendMenuProvider final : public ContextMenuProvider {
  public:
   static FrontendMenuProvider* Create(DevToolsHost* devtools_host,
                                       WebVector<WebMenuItemInfo> items) {
-    return new FrontendMenuProvider(devtools_host, std::move(items));
+    return MakeGarbageCollected<FrontendMenuProvider>(devtools_host,
+                                                      std::move(items));
   }
 
+  FrontendMenuProvider(DevToolsHost* devtools_host,
+                       WebVector<WebMenuItemInfo> items)
+      : devtools_host_(devtools_host), items_(std::move(items)) {}
   ~FrontendMenuProvider() override {
     // Verify that this menu provider has been detached.
     DCHECK(!devtools_host_);
@@ -101,10 +105,6 @@ class FrontendMenuProvider final : public ContextMenuProvider {
   }
 
  private:
-  FrontendMenuProvider(DevToolsHost* devtools_host,
-                       WebVector<WebMenuItemInfo> items)
-      : devtools_host_(devtools_host), items_(std::move(items)) {}
-
   Member<DevToolsHost> devtools_host_;
   WebVector<WebMenuItemInfo> items_;
 };

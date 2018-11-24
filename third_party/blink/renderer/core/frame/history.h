@@ -51,7 +51,11 @@ class CORE_EXPORT History final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(History);
 
  public:
-  static History* Create(LocalFrame* frame) { return new History(frame); }
+  static History* Create(LocalFrame* frame) {
+    return MakeGarbageCollected<History>(frame);
+  }
+
+  explicit History(LocalFrame*);
 
   unsigned length(ExceptionState&) const;
   SerializedScriptValue* state(ExceptionState&);
@@ -82,8 +86,6 @@ class CORE_EXPORT History final : public ScriptWrappable,
   FRIEND_TEST_ALL_PREFIXES(HistoryTest, CanChangeToURL);
   FRIEND_TEST_ALL_PREFIXES(HistoryTest, CanChangeToURLInFileOrigin);
   FRIEND_TEST_ALL_PREFIXES(HistoryTest, CanChangeToURLInUniqueOrigin);
-
-  explicit History(LocalFrame*);
 
   static bool CanChangeToUrl(const KURL&,
                              const SecurityOrigin*,

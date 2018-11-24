@@ -308,7 +308,7 @@ FontFaceSetIterable::IterationSource* FontFaceSet::StartIteration(
     for (const auto& font_face : non_css_connected_faces_)
       font_faces.push_back(font_face);
   }
-  return new IterationSource(font_faces);
+  return MakeGarbageCollected<IterationSource>(font_faces);
 }
 
 }  // namespace blink

@@ -86,23 +86,22 @@ class FilterOperationsWrapper
     : public GarbageCollected<FilterOperationsWrapper> {
  public:
   static FilterOperationsWrapper* Create() {
-    return new FilterOperationsWrapper();
+    return MakeGarbageCollected<FilterOperationsWrapper>();
   }
 
   static FilterOperationsWrapper* Create(const FilterOperations& operations) {
-    return new FilterOperationsWrapper(operations);
+    return MakeGarbageCollected<FilterOperationsWrapper>(operations);
   }
+
+  FilterOperationsWrapper() = default;
+  explicit FilterOperationsWrapper(const FilterOperations& operations)
+      : operations_(operations) {}
 
   const FilterOperations& Operations() const { return operations_; }
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(operations_); }
 
  private:
-  FilterOperationsWrapper() = default;
-
-  explicit FilterOperationsWrapper(const FilterOperations& operations)
-      : operations_(operations) {}
-
   FilterOperations operations_;
 };
 

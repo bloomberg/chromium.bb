@@ -45,7 +45,7 @@ static const int kMaxRecursionDepth = 3;
 static const double kProgressNotificationIntervalMS = 50;
 
 FileWriter* FileWriter::Create(ExecutionContext* context) {
-  return new FileWriter(context);
+  return MakeGarbageCollected<FileWriter>(context);
 }
 
 FileWriter::FileWriter(ExecutionContext* context)

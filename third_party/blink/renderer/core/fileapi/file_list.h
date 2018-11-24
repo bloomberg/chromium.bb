@@ -38,7 +38,9 @@ class CORE_EXPORT FileList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FileList* Create() { return new FileList; }
+  static FileList* Create() { return MakeGarbageCollected<FileList>(); }
+
+  FileList();
 
   unsigned length() const { return files_.size(); }
   File* item(unsigned index) const;
@@ -51,8 +53,6 @@ class CORE_EXPORT FileList final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  FileList();
-
   HeapVector<Member<File>> files_;
 };
 

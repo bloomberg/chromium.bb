@@ -210,10 +210,17 @@ class FetchManager::Loader final
                         FetchRequestData* request,
                         bool is_isolated_world,
                         AbortSignal* signal) {
-    return new Loader(execution_context, fetch_manager, resolver, request,
-                      is_isolated_world, signal);
+    return MakeGarbageCollected<Loader>(execution_context, fetch_manager,
+                                        resolver, request, is_isolated_world,
+                                        signal);
   }
 
+  Loader(ExecutionContext*,
+         FetchManager*,
+         ScriptPromiseResolver*,
+         FetchRequestData*,
+         bool is_isolated_world,
+         AbortSignal*);
   ~Loader() override;
   void Trace(blink::Visitor*) override;
 
@@ -305,8 +312,8 @@ class FetchManager::Loader final
         SubresourceIntegrityHelper::DoReport(*loader_->GetExecutionContext(),
                                              report_info);
         if (check_result) {
-          updater_->Update(
-              new FormDataBytesConsumer(buffer_.data(), buffer_.size()));
+          updater_->Update(MakeGarbageCollected<FormDataBytesConsumer>(
+              buffer_.data(), buffer_.size()));
           loader_->resolver_->Resolve(response_);
           loader_->resolver_.Clear();
           // FetchManager::Loader::didFinishLoading() can
@@ -349,13 +356,6 @@ class FetchManager::Loader final
   };
 
  private:
-  Loader(ExecutionContext*,
-         FetchManager*,
-         ScriptPromiseResolver*,
-         FetchRequestData*,
-         bool is_isolated_world,
-         AbortSignal*);
-
   void PerformSchemeFetch(ExceptionState&);
   void PerformNetworkError(const String& message);
   void PerformHTTPFetch(ExceptionState&);
@@ -602,7 +602,7 @@ void FetchManager::Loader::DidReceiveResponse(
     resolver_.Clear();
   } else {
     DCHECK(!integrity_verifier_);
-    integrity_verifier_ = new SRIVerifier(
+    integrity_verifier_ = MakeGarbageCollected<SRIVerifier>(
         std::move(handle), sri_consumer, r, this,
         fetch_request_data_->Integrity(), response.Url(),
         r->GetResponse()->GetType(),
@@ -954,7 +954,7 @@ void FetchManager::Loader::NotifyFinished() {
 }
 
 FetchManager* FetchManager::Create(ExecutionContext* execution_context) {
-  return new FetchManager(execution_context);
+  return MakeGarbageCollected<FetchManager>(execution_context);
 }
 
 FetchManager::FetchManager(ExecutionContext* execution_context)

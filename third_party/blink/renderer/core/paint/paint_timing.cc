@@ -157,7 +157,7 @@ void PaintTiming::Trace(blink::Visitor* visitor) {
 
 PaintTiming::PaintTiming(Document& document)
     : Supplement<Document>(document),
-      fmp_detector_(new FirstMeaningfulPaintDetector(this)) {}
+      fmp_detector_(MakeGarbageCollected<FirstMeaningfulPaintDetector>(this)) {}
 
 LocalFrame* PaintTiming::GetFrame() const {
   return GetSupplementable()->GetFrame();

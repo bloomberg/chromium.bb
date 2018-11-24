@@ -266,7 +266,8 @@ struct FrameFetchContext::FrozenState final
 
 ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
                                                   Document* document) {
-  FrameFetchContext* context = new FrameFetchContext(loader, document);
+  FrameFetchContext* context =
+      MakeGarbageCollected<FrameFetchContext>(loader, document);
   ResourceFetcher* fetcher = ResourceFetcher::Create(context);
 
   if (loader && context->GetSettings()->GetSavePreviousDocumentResources() !=
@@ -293,7 +294,7 @@ FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
                          !GetSettings()->GetDataSaverHoldbackWebApi()) {
   if (document_) {
     fetch_client_settings_object_ =
-        new FetchClientSettingsObjectImpl(*document_);
+        MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document_);
   }
   DCHECK(GetFrame());
 }
@@ -304,7 +305,7 @@ void FrameFetchContext::ProvideDocumentToContext(FetchContext& context,
   CHECK(context.IsFrameFetchContext());
   static_cast<FrameFetchContext&>(context).document_ = document;
   static_cast<FrameFetchContext&>(context).fetch_client_settings_object_ =
-      new FetchClientSettingsObjectImpl(*document);
+      MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document);
 }
 
 FrameFetchContext::~FrameFetchContext() {
@@ -1445,7 +1446,7 @@ FetchContext* FrameFetchContext::Detach() {
     return this;
 
   if (document_) {
-    frozen_state_ = new FrozenState(
+    frozen_state_ = MakeGarbageCollected<FrozenState>(
         Url(), GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetSiteForCookies(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
@@ -1454,14 +1455,15 @@ FetchContext* FrameFetchContext::Detach() {
         document_->CreateFetchClientSettingsObjectSnapshot();
   } else {
     // Some getters are unavailable in this case.
-    frozen_state_ = new FrozenState(
+    frozen_state_ = MakeGarbageCollected<FrozenState>(
         NullURL(), GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetSiteForCookies(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsMainFrame(), IsSVGImageChromeClient());
-    fetch_client_settings_object_ = new FetchClientSettingsObjectSnapshot(
-        NullURL(), nullptr, kReferrerPolicyDefault, String(),
-        HttpsState::kNone);
+    fetch_client_settings_object_ =
+        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+            NullURL(), nullptr, kReferrerPolicyDefault, String(),
+            HttpsState::kNone);
   }
 
   // This is needed to break a reference cycle in which off-heap

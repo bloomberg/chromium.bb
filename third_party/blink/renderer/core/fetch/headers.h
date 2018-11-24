@@ -39,6 +39,10 @@ class CORE_EXPORT Headers final : public ScriptWrappable,
   // Shares the FetchHeaderList. Called when creating a Request or Response.
   static Headers* Create(FetchHeaderList*);
 
+  Headers();
+  // Shares the FetchHeaderList. Called when creating a Request or Response.
+  explicit Headers(FetchHeaderList*);
+
   Headers* Clone() const;
 
   // Headers.idl implementation.
@@ -59,10 +63,6 @@ class CORE_EXPORT Headers final : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
  private:
-  Headers();
-  // Shares the FetchHeaderList. Called when creating a Request or Response.
-  explicit Headers(FetchHeaderList*);
-
   // These methods should only be called when size() would return 0.
   void FillWith(const Vector<Vector<String>>&, ExceptionState&);
   void FillWith(const Vector<std::pair<String, String>>&, ExceptionState&);

@@ -237,15 +237,18 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
   class OnDidOpenFileSystemV8Impl : public OnDidOpenFileSystemCallback {
    public:
     static OnDidOpenFileSystemV8Impl* Create(V8FileSystemCallback* callback) {
-      return callback ? new OnDidOpenFileSystemV8Impl(callback) : nullptr;
+      return callback
+                 ? MakeGarbageCollected<OnDidOpenFileSystemV8Impl>(callback)
+                 : nullptr;
     }
+
+    OnDidOpenFileSystemV8Impl(V8FileSystemCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
+
     void Trace(blink::Visitor*) override;
     void OnSuccess(DOMFileSystem*) override;
 
    private:
-    OnDidOpenFileSystemV8Impl(V8FileSystemCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
     Member<V8PersistentCallbackInterface<V8FileSystemCallback>> callback_;
   };
 
@@ -354,15 +357,18 @@ class FileWriterCallbacks final : public FileSystemCallbacksBase {
   class OnDidCreateFileWriterV8Impl : public OnDidCreateFileWriterCallback {
    public:
     static OnDidCreateFileWriterV8Impl* Create(V8FileWriterCallback* callback) {
-      return callback ? new OnDidCreateFileWriterV8Impl(callback) : nullptr;
+      return callback
+                 ? MakeGarbageCollected<OnDidCreateFileWriterV8Impl>(callback)
+                 : nullptr;
     }
+
+    OnDidCreateFileWriterV8Impl(V8FileWriterCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
+
     void Trace(blink::Visitor*) override;
     void OnSuccess(FileWriterBase*) override;
 
    private:
-    OnDidCreateFileWriterV8Impl(V8FileWriterCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
     Member<V8PersistentCallbackInterface<V8FileWriterCallback>> callback_;
   };
 

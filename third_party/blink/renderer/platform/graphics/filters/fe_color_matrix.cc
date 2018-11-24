@@ -40,7 +40,7 @@ FEColorMatrix::FEColorMatrix(Filter* filter,
 FEColorMatrix* FEColorMatrix::Create(Filter* filter,
                                      ColorMatrixType type,
                                      const Vector<float>& values) {
-  return new FEColorMatrix(filter, type, values);
+  return MakeGarbageCollected<FEColorMatrix>(filter, type, values);
 }
 
 ColorMatrixType FEColorMatrix::GetType() const {

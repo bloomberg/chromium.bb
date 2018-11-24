@@ -39,9 +39,10 @@ class LayoutTextFragment;
 class CORE_EXPORT FirstLetterPseudoElement final : public PseudoElement {
  public:
   static FirstLetterPseudoElement* Create(Element* parent) {
-    return new FirstLetterPseudoElement(parent);
+    return MakeGarbageCollected<FirstLetterPseudoElement>(parent);
   }
 
+  explicit FirstLetterPseudoElement(Element*);
   ~FirstLetterPseudoElement() override;
 
   static LayoutText* FirstLetterTextLayoutObject(const Element&);
@@ -59,8 +60,6 @@ class CORE_EXPORT FirstLetterPseudoElement final : public PseudoElement {
   Node* InnerNodeForHitTesting() const override;
 
  private:
-  explicit FirstLetterPseudoElement(Element*);
-
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
 
   void AttachFirstLetterTextLayoutObjects(LayoutText* first_letter_text);

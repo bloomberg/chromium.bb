@@ -52,8 +52,8 @@ FEComponentTransfer* FEComponentTransfer::Create(
     const ComponentTransferFunction& green_func,
     const ComponentTransferFunction& blue_func,
     const ComponentTransferFunction& alpha_func) {
-  return new FEComponentTransfer(filter, red_func, green_func, blue_func,
-                                 alpha_func);
+  return MakeGarbageCollected<FEComponentTransfer>(filter, red_func, green_func,
+                                                   blue_func, alpha_func);
 }
 
 static void Identity(unsigned char*, const ComponentTransferFunction&) {}

@@ -23,7 +23,7 @@ namespace blink {
 
 FaceDetector* FaceDetector::Create(ExecutionContext* context,
                                    const FaceDetectorOptions* options) {
-  return new FaceDetector(context, options);
+  return MakeGarbageCollected<FaceDetector>(context, options);
 }
 
 FaceDetector::FaceDetector(ExecutionContext* context,

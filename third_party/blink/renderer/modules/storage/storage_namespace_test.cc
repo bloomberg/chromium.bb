@@ -53,7 +53,8 @@ TEST_F(StorageNamespaceTest, BasicStorageAreas) {
   const String kValue("value");
   const String kSessionStorageNamespace("abcd");
   const KURL kPageUrl("http://dom_storage/page");
-  Persistent<FakeAreaSource> source_area = new FakeAreaSource(kPageUrl);
+  Persistent<FakeAreaSource> source_area =
+      MakeGarbageCollected<FakeAreaSource>(kPageUrl);
 
   mojom::blink::StoragePartitionServicePtr storage_partition_service_ptr;
   PostCrossThreadTask(

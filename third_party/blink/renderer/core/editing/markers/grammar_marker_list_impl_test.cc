@@ -15,7 +15,8 @@ namespace blink {
 
 class GrammarMarkerListImplTest : public testing::Test {
  protected:
-  GrammarMarkerListImplTest() : marker_list_(new GrammarMarkerListImpl()) {}
+  GrammarMarkerListImplTest()
+      : marker_list_(MakeGarbageCollected<GrammarMarkerListImpl>()) {}
 
   Persistent<GrammarMarkerListImpl> marker_list_;
 };

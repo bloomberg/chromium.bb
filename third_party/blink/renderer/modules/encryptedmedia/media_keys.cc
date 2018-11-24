@@ -344,8 +344,9 @@ ScriptPromise MediaKeys::getStatusForPolicy(
   String min_hdcp_version = media_keys_policy->minHdcpVersion();
 
   // Let promise be a new promise.
-  GetStatusForPolicyResultPromise* result = new GetStatusForPolicyResultPromise(
-      script_state, this, "MediaKeys", "getStatusForPolicy");
+  GetStatusForPolicyResultPromise* result =
+      MakeGarbageCollected<GetStatusForPolicyResultPromise>(
+          script_state, this, "MediaKeys", "getStatusForPolicy");
   ScriptPromise promise = result->Promise();
 
   // Run the following steps asynchronously. See GetStatusForPolicyTask().

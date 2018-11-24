@@ -103,7 +103,8 @@ FrameSelection::FrameSelection(LocalFrame& frame)
       focused_(frame.GetPage() &&
                frame.GetPage()->GetFocusController().FocusedFrame() == frame),
       is_directional_(ShouldAlwaysUseDirectionalSelection(frame_)),
-      frame_caret_(new FrameCaret(frame, *selection_editor_)) {}
+      frame_caret_(
+          MakeGarbageCollected<FrameCaret>(frame, *selection_editor_)) {}
 
 FrameSelection::~FrameSelection() = default;
 

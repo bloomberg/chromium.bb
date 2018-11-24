@@ -27,11 +27,14 @@ class GlobalCookieStoreImpl final
     GlobalCookieStoreImpl* supplement =
         Supplement<T>::template From<GlobalCookieStoreImpl>(supplementable);
     if (!supplement) {
-      supplement = new GlobalCookieStoreImpl(supplementable);
+      supplement = MakeGarbageCollected<GlobalCookieStoreImpl>(supplementable);
       Supplement<T>::ProvideTo(supplementable, supplement);
     }
     return *supplement;
   }
+
+  explicit GlobalCookieStoreImpl(T& supplementable)
+      : Supplement<T>(supplementable) {}
 
   CookieStore* GetCookieStore(T& scope) {
     if (!cookie_store_) {
@@ -55,9 +58,6 @@ class GlobalCookieStoreImpl final
   }
 
  private:
-  explicit GlobalCookieStoreImpl(T& supplementable)
-      : Supplement<T>(supplementable) {}
-
   Member<CookieStore> cookie_store_;
 };
 

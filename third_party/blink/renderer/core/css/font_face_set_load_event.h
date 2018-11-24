@@ -45,15 +45,17 @@ class FontFaceSetLoadEvent final : public Event {
   static FontFaceSetLoadEvent* Create(
       const AtomicString& type,
       const FontFaceSetLoadEventInit* initializer) {
-    return new FontFaceSetLoadEvent(type, initializer);
+    return MakeGarbageCollected<FontFaceSetLoadEvent>(type, initializer);
   }
 
   static FontFaceSetLoadEvent* CreateForFontFaces(
       const AtomicString& type,
       const FontFaceArray& fontfaces = FontFaceArray()) {
-    return new FontFaceSetLoadEvent(type, fontfaces);
+    return MakeGarbageCollected<FontFaceSetLoadEvent>(type, fontfaces);
   }
 
+  FontFaceSetLoadEvent(const AtomicString&, const FontFaceArray&);
+  FontFaceSetLoadEvent(const AtomicString&, const FontFaceSetLoadEventInit*);
   ~FontFaceSetLoadEvent() override;
 
   FontFaceArray fontfaces() const { return fontfaces_; }
@@ -63,9 +65,6 @@ class FontFaceSetLoadEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  FontFaceSetLoadEvent(const AtomicString&, const FontFaceArray&);
-  FontFaceSetLoadEvent(const AtomicString&, const FontFaceSetLoadEventInit*);
-
   FontFaceArray fontfaces_;
 };
 

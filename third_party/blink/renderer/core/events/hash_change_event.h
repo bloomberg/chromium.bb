@@ -31,15 +31,31 @@ class HashChangeEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HashChangeEvent* Create() { return new HashChangeEvent; }
+  static HashChangeEvent* Create() {
+    return MakeGarbageCollected<HashChangeEvent>();
+  }
 
   static HashChangeEvent* Create(const String& old_url, const String& new_url) {
-    return new HashChangeEvent(old_url, new_url);
+    return MakeGarbageCollected<HashChangeEvent>(old_url, new_url);
   }
 
   static HashChangeEvent* Create(const AtomicString& type,
                                  const HashChangeEventInit* initializer) {
-    return new HashChangeEvent(type, initializer);
+    return MakeGarbageCollected<HashChangeEvent>(type, initializer);
+  }
+
+  HashChangeEvent() = default;
+  HashChangeEvent(const String& old_url, const String& new_url)
+      : Event(event_type_names::kHashchange, Bubbles::kNo, Cancelable::kNo),
+        old_url_(old_url),
+        new_url_(new_url) {}
+  HashChangeEvent(const AtomicString& type,
+                  const HashChangeEventInit* initializer)
+      : Event(type, initializer) {
+    if (initializer->hasOldURL())
+      old_url_ = initializer->oldURL();
+    if (initializer->hasNewURL())
+      new_url_ = initializer->newURL();
   }
 
   const String& oldURL() const { return old_url_; }
@@ -52,22 +68,6 @@ class HashChangeEvent final : public Event {
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
-  HashChangeEvent() = default;
-
-  HashChangeEvent(const String& old_url, const String& new_url)
-      : Event(event_type_names::kHashchange, Bubbles::kNo, Cancelable::kNo),
-        old_url_(old_url),
-        new_url_(new_url) {}
-
-  HashChangeEvent(const AtomicString& type,
-                  const HashChangeEventInit* initializer)
-      : Event(type, initializer) {
-    if (initializer->hasOldURL())
-      old_url_ = initializer->oldURL();
-    if (initializer->hasNewURL())
-      new_url_ = initializer->newURL();
-  }
-
   String old_url_;
   String new_url_;
 };

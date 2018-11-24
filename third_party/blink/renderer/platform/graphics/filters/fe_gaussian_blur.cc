@@ -60,7 +60,7 @@ FEGaussianBlur::FEGaussianBlur(Filter* filter, float x, float y)
     : FilterEffect(filter), std_x_(x), std_y_(y) {}
 
 FEGaussianBlur* FEGaussianBlur::Create(Filter* filter, float x, float y) {
-  return new FEGaussianBlur(filter, x, y);
+  return MakeGarbageCollected<FEGaussianBlur>(filter, x, y);
 }
 
 FloatRect FEGaussianBlur::MapEffect(const FloatSize& std_deviation,

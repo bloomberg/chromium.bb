@@ -45,8 +45,8 @@ FEDisplacementMap* FEDisplacementMap::Create(
     ChannelSelectorType x_channel_selector,
     ChannelSelectorType y_channel_selector,
     float scale) {
-  return new FEDisplacementMap(filter, x_channel_selector, y_channel_selector,
-                               scale);
+  return MakeGarbageCollected<FEDisplacementMap>(filter, x_channel_selector,
+                                                 y_channel_selector, scale);
 }
 
 FloatRect FEDisplacementMap::MapEffect(const FloatRect& rect) const {

@@ -67,13 +67,14 @@ class CORE_EXPORT File final : public Blob {
 
   static File* Create(const String& path,
                       ContentTypeLookupPolicy policy = kWellKnownContentTypes) {
-    return new File(path, policy, File::kIsUserVisible);
+    return MakeGarbageCollected<File>(path, policy, File::kIsUserVisible);
   }
 
   static File* Create(const String& name,
                       double modification_time,
                       scoped_refptr<BlobDataHandle> blob_data_handle) {
-    return new File(name, modification_time, std::move(blob_data_handle));
+    return MakeGarbageCollected<File>(name, modification_time,
+                                      std::move(blob_data_handle));
   }
 
   // For deserialization.
@@ -86,9 +87,9 @@ class CORE_EXPORT File final : public Blob {
       uint64_t size,
       double last_modified,
       scoped_refptr<BlobDataHandle> blob_data_handle) {
-    return new File(path, name, relative_path, user_visibility,
-                    has_snapshot_data, size, last_modified,
-                    std::move(blob_data_handle));
+    return MakeGarbageCollected<File>(
+        path, name, relative_path, user_visibility, has_snapshot_data, size,
+        last_modified, std::move(blob_data_handle));
   }
   static File* CreateFromIndexedSerialization(
       const String& path,
@@ -96,8 +97,9 @@ class CORE_EXPORT File final : public Blob {
       uint64_t size,
       double last_modified,
       scoped_refptr<BlobDataHandle> blob_data_handle) {
-    return new File(path, name, String(), kIsNotUserVisible, true, size,
-                    last_modified, std::move(blob_data_handle));
+    return MakeGarbageCollected<File>(path, name, String(), kIsNotUserVisible,
+                                      true, size, last_modified,
+                                      std::move(blob_data_handle));
   }
 
   static File* CreateWithRelativePath(const String& path,
@@ -112,14 +114,34 @@ class CORE_EXPORT File final : public Blob {
   static File* CreateForFileSystemFile(const String& name,
                                        const FileMetadata& metadata,
                                        UserVisibility user_visibility) {
-    return new File(name, metadata, user_visibility);
+    return MakeGarbageCollected<File>(name, metadata, user_visibility);
   }
 
   static File* CreateForFileSystemFile(const KURL& url,
                                        const FileMetadata& metadata,
                                        UserVisibility user_visibility) {
-    return new File(url, metadata, user_visibility);
+    return MakeGarbageCollected<File>(url, metadata, user_visibility);
   }
+
+  File(const String& path, ContentTypeLookupPolicy, UserVisibility);
+  File(const String& path,
+       const String& name,
+       ContentTypeLookupPolicy,
+       UserVisibility);
+  File(const String& path,
+       const String& name,
+       const String& relative_path,
+       UserVisibility,
+       bool has_snapshot_data,
+       uint64_t size,
+       double last_modified,
+       scoped_refptr<BlobDataHandle>);
+  File(const String& name,
+       double modification_time,
+       scoped_refptr<BlobDataHandle>);
+  File(const String& name, const FileMetadata&, UserVisibility);
+  File(const KURL& file_system_url, const FileMetadata&, UserVisibility);
+  File(const File&);
 
   KURL FileSystemURL() const {
 #if DCHECK_IS_ON()
@@ -132,10 +154,12 @@ class CORE_EXPORT File final : public Blob {
   // associated DOM properties) that differs from the one provided in the path.
   static File* CreateForUserProvidedFile(const String& path,
                                          const String& display_name) {
-    if (display_name.IsEmpty())
-      return new File(path, File::kAllContentTypes, File::kIsUserVisible);
-    return new File(path, display_name, File::kAllContentTypes,
-                    File::kIsUserVisible);
+    if (display_name.IsEmpty()) {
+      return MakeGarbageCollected<File>(path, File::kAllContentTypes,
+                                        File::kIsUserVisible);
+    }
+    return MakeGarbageCollected<File>(
+        path, display_name, File::kAllContentTypes, File::kIsUserVisible);
   }
 
   static File* CreateForFileSystemFile(
@@ -143,8 +167,9 @@ class CORE_EXPORT File final : public Blob {
       const String& name,
       ContentTypeLookupPolicy policy = kWellKnownContentTypes) {
     if (name.IsEmpty())
-      return new File(path, policy, File::kIsNotUserVisible);
-    return new File(path, name, policy, File::kIsNotUserVisible);
+      return MakeGarbageCollected<File>(path, policy, File::kIsNotUserVisible);
+    return MakeGarbageCollected<File>(path, name, policy,
+                                      File::kIsNotUserVisible);
   }
 
   File* Clone(const String& name = String()) const;
@@ -196,26 +221,6 @@ class CORE_EXPORT File final : public Blob {
   bool HasSameSource(const File& other) const;
 
  private:
-  File(const String& path, ContentTypeLookupPolicy, UserVisibility);
-  File(const String& path,
-       const String& name,
-       ContentTypeLookupPolicy,
-       UserVisibility);
-  File(const String& path,
-       const String& name,
-       const String& relative_path,
-       UserVisibility,
-       bool has_snapshot_data,
-       uint64_t size,
-       double last_modified,
-       scoped_refptr<BlobDataHandle>);
-  File(const String& name,
-       double modification_time,
-       scoped_refptr<BlobDataHandle>);
-  File(const String& name, const FileMetadata&, UserVisibility);
-  File(const KURL& file_system_url, const FileMetadata&, UserVisibility);
-  File(const File&);
-
   void InvalidateSnapshotMetadata() { snapshot_size_ = -1; }
 
   // Returns File's last modified time (in MS since Epoch.)

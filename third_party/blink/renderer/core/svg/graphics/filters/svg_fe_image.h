@@ -43,6 +43,9 @@ class FEImage final : public FilterEffect {
                                          const String&,
                                          SVGPreserveAspectRatio*);
 
+  FEImage(Filter*, scoped_refptr<Image>, SVGPreserveAspectRatio*);
+  FEImage(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
+
   // feImage does not perform color interpolation of any kind, so doesn't
   // depend on the value of color-interpolation-filters.
   void SetOperatingInterpolationSpace(InterpolationSpace) override {}
@@ -54,8 +57,6 @@ class FEImage final : public FilterEffect {
 
  private:
   ~FEImage() override = default;
-  FEImage(Filter*, scoped_refptr<Image>, SVGPreserveAspectRatio*);
-  FEImage(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
   LayoutObject* ReferencedLayoutObject() const;
 
   FilterEffectType GetFilterEffectType() const override {

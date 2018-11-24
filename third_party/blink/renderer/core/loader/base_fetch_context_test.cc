@@ -47,7 +47,8 @@ class MockBaseFetchContext final : public BaseFetchContext {
             execution_context->GetTaskRunner(blink::TaskType::kInternalTest)),
         execution_context_(execution_context),
         fetch_client_settings_object_(
-            new FetchClientSettingsObjectImpl(*execution_context)) {}
+            MakeGarbageCollected<FetchClientSettingsObjectImpl>(
+                *execution_context)) {}
   ~MockBaseFetchContext() override = default;
 
   // BaseFetchContext overrides:

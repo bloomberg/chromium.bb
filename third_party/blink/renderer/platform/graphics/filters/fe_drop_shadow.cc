@@ -50,8 +50,8 @@ FEDropShadow* FEDropShadow::Create(Filter* filter,
                                    float dy,
                                    const Color& shadow_color,
                                    float shadow_opacity) {
-  return new FEDropShadow(filter, std_x, std_y, dx, dy, shadow_color,
-                          shadow_opacity);
+  return MakeGarbageCollected<FEDropShadow>(filter, std_x, std_y, dx, dy,
+                                            shadow_color, shadow_opacity);
 }
 
 FloatRect FEDropShadow::MapEffect(const FloatSize& std_deviation,

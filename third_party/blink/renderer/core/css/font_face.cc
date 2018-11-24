@@ -138,7 +138,8 @@ FontFace* FontFace::Create(ExecutionContext* context,
                            const AtomicString& family,
                            const String& source,
                            const FontFaceDescriptors* descriptors) {
-  FontFace* font_face = new FontFace(context, family, descriptors);
+  FontFace* font_face =
+      MakeGarbageCollected<FontFace>(context, family, descriptors);
 
   const CSSValue* src = ParseCSSValue(context, source, AtRuleDescriptorID::Src);
   if (!src || !src->IsValueList()) {
@@ -156,7 +157,8 @@ FontFace* FontFace::Create(ExecutionContext* context,
                            const AtomicString& family,
                            DOMArrayBuffer* source,
                            const FontFaceDescriptors* descriptors) {
-  FontFace* font_face = new FontFace(context, family, descriptors);
+  FontFace* font_face =
+      MakeGarbageCollected<FontFace>(context, family, descriptors);
   font_face->InitCSSFontFace(static_cast<const unsigned char*>(source->Data()),
                              source->ByteLength());
   return font_face;
@@ -166,7 +168,8 @@ FontFace* FontFace::Create(ExecutionContext* context,
                            const AtomicString& family,
                            DOMArrayBufferView* source,
                            const FontFaceDescriptors* descriptors) {
-  FontFace* font_face = new FontFace(context, family, descriptors);
+  FontFace* font_face =
+      MakeGarbageCollected<FontFace>(context, family, descriptors);
   font_face->InitCSSFontFace(
       static_cast<const unsigned char*>(source->BaseAddress()),
       source->byteLength());
@@ -186,7 +189,7 @@ FontFace* FontFace::Create(Document* document,
   if (!src || !src->IsValueList())
     return nullptr;
 
-  FontFace* font_face = new FontFace(document);
+  FontFace* font_face = MakeGarbageCollected<FontFace>(document);
 
   if (font_face->SetFamilyValue(*family) &&
       font_face->SetPropertyFromStyle(properties,
