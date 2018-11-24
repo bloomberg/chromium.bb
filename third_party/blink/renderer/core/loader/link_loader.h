@@ -103,8 +103,11 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
 
  public:
   static LinkLoader* Create(LinkLoaderClient* client) {
-    return new LinkLoader(client, client->GetLoadingTaskRunner());
+    return MakeGarbageCollected<LinkLoader>(client,
+                                            client->GetLoadingTaskRunner());
   }
+
+  LinkLoader(LinkLoaderClient*, scoped_refptr<base::SingleThreadTaskRunner>);
   ~LinkLoader() override;
 
   // from PrerenderClient
@@ -150,7 +153,6 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
 
  private:
   class FinishObserver;
-  LinkLoader(LinkLoaderClient*, scoped_refptr<base::SingleThreadTaskRunner>);
 
   void NotifyFinished();
   // SingleModuleClient implementation

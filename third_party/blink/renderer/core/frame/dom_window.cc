@@ -391,8 +391,10 @@ void DOMWindow::focus(LocalDOMWindow* incumbent_window) {
 }
 
 InputDeviceCapabilitiesConstants* DOMWindow::GetInputDeviceCapabilities() {
-  if (!input_capabilities_)
-    input_capabilities_ = new InputDeviceCapabilitiesConstants;
+  if (!input_capabilities_) {
+    input_capabilities_ =
+        MakeGarbageCollected<InputDeviceCapabilitiesConstants>();
+  }
   return input_capabilities_;
 }
 

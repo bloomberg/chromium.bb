@@ -44,7 +44,14 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
                                   int64_t transaction_id,
                                   int64_t version,
                                   IDBRequest::AsyncTraceState metrics);
+
+  IDBOpenDBRequest(ScriptState*,
+                   IDBDatabaseCallbacks*,
+                   int64_t transaction_id,
+                   int64_t version,
+                   IDBRequest::AsyncTraceState metrics);
   ~IDBOpenDBRequest() override;
+
   void Trace(blink::Visitor*) override;
 
   void EnqueueBlocked(int64_t existing_version) override;
@@ -74,12 +81,6 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   DispatchEventResult DispatchEventInternal(Event&) override;
 
  private:
-  IDBOpenDBRequest(ScriptState*,
-                   IDBDatabaseCallbacks*,
-                   int64_t transaction_id,
-                   int64_t version,
-                   IDBRequest::AsyncTraceState metrics);
-
   Member<IDBDatabaseCallbacks> database_callbacks_;
   const int64_t transaction_id_;
   int64_t version_;

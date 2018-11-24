@@ -267,16 +267,17 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
  protected:
   class MockEventListener final : public EventListener {
    public:
-    static MockEventListener* Create() { return new MockEventListener(); }
+    static MockEventListener* Create() {
+      return MakeGarbageCollected<MockEventListener>();
+    }
+
+    MockEventListener() : EventListener(kCPPEventListenerType) {}
 
     bool operator==(const EventListener& other) const final {
       return this == &other;
     }
 
     MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));
-
-   private:
-    MockEventListener() : EventListener(kCPPEventListenerType) {}
   };
 
   void SetUp() override {

@@ -68,7 +68,8 @@ InspectorResourceContentLoader::InspectorResourceContentLoader(
 void InspectorResourceContentLoader::Start() {
   started_ = true;
   HeapVector<Member<Document>> documents;
-  InspectedFrames* inspected_frames = new InspectedFrames(inspected_frame_);
+  InspectedFrames* inspected_frames =
+      MakeGarbageCollected<InspectedFrames>(inspected_frame_);
   for (LocalFrame* frame : *inspected_frames) {
     documents.push_back(frame->GetDocument());
     documents.AppendVector(InspectorPageAgent::ImportsForFrame(frame));
@@ -93,7 +94,8 @@ void InspectorResourceContentLoader::Start() {
       ResourceLoaderOptions options;
       options.initiator_info.name = fetch_initiator_type_names::kInternal;
       FetchParameters params(resource_request, options);
-      ResourceClient* resource_client = new ResourceClient(this);
+      ResourceClient* resource_client =
+          MakeGarbageCollected<ResourceClient>(this);
       // Prevent garbage collection by holding a reference to this resource.
       resources_.push_back(
           RawResource::Fetch(params, document->Fetcher(), resource_client));
@@ -114,7 +116,8 @@ void InspectorResourceContentLoader::Start() {
       ResourceLoaderOptions options;
       options.initiator_info.name = fetch_initiator_type_names::kInternal;
       FetchParameters params(resource_request, options);
-      ResourceClient* resource_client = new ResourceClient(this);
+      ResourceClient* resource_client =
+          MakeGarbageCollected<ResourceClient>(this);
       // Prevent garbage collection by holding a reference to this resource.
       resources_.push_back(CSSStyleSheetResource::Fetch(
           params, document->Fetcher(), resource_client));

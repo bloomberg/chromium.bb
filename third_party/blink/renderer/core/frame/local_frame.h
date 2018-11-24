@@ -118,6 +118,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
                             FrameOwner*,
                             InterfaceRegistry* = nullptr);
 
+  LocalFrame(LocalFrameClient*, Page&, FrameOwner*, InterfaceRegistry*);
+
   void Init();
   void SetView(LocalFrameView*);
   void CreateView(const IntSize&, const Color&);
@@ -410,8 +412,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
  private:
   friend class FrameNavigationDisabler;
-
-  LocalFrame(LocalFrameClient*, Page&, FrameOwner*, InterfaceRegistry*);
 
   // Frame protected overrides:
   void DetachImpl(FrameDetachType) override;

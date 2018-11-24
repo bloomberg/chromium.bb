@@ -19,7 +19,7 @@ class InputEvent final : public UIEvent {
  public:
   static InputEvent* Create(const AtomicString& type,
                             const InputEventInit* initializer) {
-    return new InputEvent(type, initializer);
+    return MakeGarbageCollected<InputEvent>(type, initializer);
   }
 
   // https://w3c.github.io/input-events/#h-interface-inputevent-attributes
@@ -97,6 +97,8 @@ class InputEvent final : public UIEvent {
                                  EventIsComposing,
                                  const StaticRangeVector*);
 
+  InputEvent(const AtomicString&, const InputEventInit*);
+
   String inputType() const;
   const String& data() const { return data_; }
   DataTransfer* dataTransfer() const { return data_transfer_.Get(); }
@@ -112,8 +114,6 @@ class InputEvent final : public UIEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  InputEvent(const AtomicString&, const InputEventInit*);
-
   InputType input_type_;
   String data_;
   Member<DataTransfer> data_transfer_;

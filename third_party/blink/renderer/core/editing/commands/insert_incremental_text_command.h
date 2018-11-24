@@ -17,10 +17,11 @@ class CORE_EXPORT InsertIncrementalTextCommand final
       const String&,
       RebalanceType = kRebalanceLeadingAndTrailingWhitespaces);
 
- private:
   InsertIncrementalTextCommand(Document&,
                                const String& text,
                                RebalanceType);
+
+ private:
   void DoApply(EditingState*) override;
 };
 

@@ -36,8 +36,9 @@ IDBObserverChanges* IDBObserverChanges::Create(
     const HeapVector<Member<IDBObservation>>& observations,
     const WebVector<int32_t>& observation_indices) {
   DCHECK_EQ(web_observations.size(), observations.size());
-  return new IDBObserverChanges(database, transaction, web_observations,
-                                observations, observation_indices);
+  return MakeGarbageCollected<IDBObserverChanges>(
+      database, transaction, web_observations, observations,
+      observation_indices);
 }
 
 IDBObserverChanges::IDBObserverChanges(

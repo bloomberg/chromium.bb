@@ -55,6 +55,13 @@ class CORE_EXPORT IntersectionObserver final
                                       ExceptionState& = ASSERT_NO_EXCEPTION);
   static void ResumeSuspendedObservers();
 
+  explicit IntersectionObserver(IntersectionObserverDelegate&,
+                                Element*,
+                                const Vector<Length>& root_margin,
+                                const Vector<float>& thresholds,
+                                DOMHighResTimeStamp delay,
+                                bool track_visibility);
+
   // API methods.
   void observe(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
   void unobserve(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -98,12 +105,6 @@ class CORE_EXPORT IntersectionObserver final
   static void SetThrottleDelayEnabledForTesting(bool);
 
  private:
-  explicit IntersectionObserver(IntersectionObserverDelegate&,
-                                Element*,
-                                const Vector<Length>& root_margin,
-                                const Vector<float>& thresholds,
-                                DOMHighResTimeStamp delay,
-                                bool track_visibility);
   void ClearWeakMembers(Visitor*);
 
   const TraceWrapperMember<IntersectionObserverDelegate> delegate_;

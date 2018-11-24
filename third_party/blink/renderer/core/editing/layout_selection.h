@@ -41,8 +41,10 @@ class SelectionPaintRange;
 class LayoutSelection final : public GarbageCollected<LayoutSelection> {
  public:
   static LayoutSelection* Create(FrameSelection& frame_selection) {
-    return new LayoutSelection(frame_selection);
+    return MakeGarbageCollected<LayoutSelection>(frame_selection);
   }
+
+  LayoutSelection(FrameSelection&);
 
   void SetHasPendingSelection();
   void Commit();
@@ -59,8 +61,6 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   void Trace(blink::Visitor*);
 
  private:
-  LayoutSelection(FrameSelection&);
-
   Member<FrameSelection> frame_selection_;
   bool has_pending_selection_ : 1;
 

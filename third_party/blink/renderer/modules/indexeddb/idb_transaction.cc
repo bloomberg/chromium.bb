@@ -55,7 +55,7 @@ IDBTransaction* IDBTransaction::CreateObserver(
   DCHECK(!scope.IsEmpty()) << "Observer transactions must operate on a "
                               "well-defined set of stores";
   IDBTransaction* transaction =
-      new IDBTransaction(execution_context, id, scope, db);
+      MakeGarbageCollected<IDBTransaction>(execution_context, id, scope, db);
   return transaction;
 }
 
@@ -68,7 +68,8 @@ IDBTransaction* IDBTransaction::CreateNonVersionChange(
   DCHECK_NE(mode, mojom::IDBTransactionMode::VersionChange);
   DCHECK(!scope.IsEmpty()) << "Non-version transactions should operate on a "
                               "well-defined set of stores";
-  return new IDBTransaction(script_state, id, scope, mode, db);
+  return MakeGarbageCollected<IDBTransaction>(script_state, id, scope, mode,
+                                              db);
 }
 
 IDBTransaction* IDBTransaction::CreateVersionChange(
@@ -77,8 +78,8 @@ IDBTransaction* IDBTransaction::CreateVersionChange(
     IDBDatabase* db,
     IDBOpenDBRequest* open_db_request,
     const IDBDatabaseMetadata& old_metadata) {
-  return new IDBTransaction(execution_context, id, db, open_db_request,
-                            old_metadata);
+  return MakeGarbageCollected<IDBTransaction>(execution_context, id, db,
+                                              open_db_request, old_metadata);
 }
 
 IDBTransaction::IDBTransaction(ExecutionContext* execution_context,

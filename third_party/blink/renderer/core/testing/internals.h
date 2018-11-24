@@ -89,10 +89,12 @@ class Internals final : public ScriptWrappable {
 
  public:
   static Internals* Create(ExecutionContext* context) {
-    return new Internals(context);
+    return MakeGarbageCollected<Internals>(context);
   }
 
   static void ResetToConsistentState(Page*);
+
+  explicit Internals(ExecutionContext*);
 
   String elementLayoutTreeAsText(Element*, ExceptionState&);
 
@@ -596,7 +598,6 @@ class Internals final : public ScriptWrappable {
   void addEmbedderCustomElementName(const AtomicString& name, ExceptionState&);
 
  private:
-  explicit Internals(ExecutionContext*);
   Document* ContextDocument() const;
   LocalFrame* GetFrame() const;
   Vector<String> IconURLs(Document*, int icon_types_mask) const;

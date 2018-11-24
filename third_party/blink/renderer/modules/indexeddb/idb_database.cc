@@ -99,7 +99,8 @@ IDBDatabase* IDBDatabase::Create(ExecutionContext* context,
                                  std::unique_ptr<WebIDBDatabase> database,
                                  IDBDatabaseCallbacks* callbacks,
                                  v8::Isolate* isolate) {
-  return new IDBDatabase(context, std::move(database), callbacks, isolate);
+  return MakeGarbageCollected<IDBDatabase>(context, std::move(database),
+                                           callbacks, isolate);
 }
 
 IDBDatabase::IDBDatabase(ExecutionContext* context,

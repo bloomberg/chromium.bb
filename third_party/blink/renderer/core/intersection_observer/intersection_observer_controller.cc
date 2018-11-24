@@ -18,7 +18,7 @@ namespace blink {
 IntersectionObserverController* IntersectionObserverController::Create(
     Document* document) {
   IntersectionObserverController* result =
-      new IntersectionObserverController(document);
+      MakeGarbageCollected<IntersectionObserverController>(document);
   result->PauseIfNeeded();
   return result;
 }

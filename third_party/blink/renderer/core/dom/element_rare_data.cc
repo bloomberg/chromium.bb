@@ -57,15 +57,18 @@ ElementRareData::~ElementRareData() {
 
 CSSStyleDeclaration& ElementRareData::EnsureInlineCSSStyleDeclaration(
     Element* owner_element) {
-  if (!cssom_wrapper_)
-    cssom_wrapper_ = new InlineCSSStyleDeclaration(owner_element);
+  if (!cssom_wrapper_) {
+    cssom_wrapper_ =
+        MakeGarbageCollected<InlineCSSStyleDeclaration>(owner_element);
+  }
   return *cssom_wrapper_;
 }
 
 InlineStylePropertyMap& ElementRareData::EnsureInlineStylePropertyMap(
     Element* owner_element) {
   if (!cssom_map_wrapper_) {
-    cssom_map_wrapper_ = new InlineStylePropertyMap(owner_element);
+    cssom_map_wrapper_ =
+        MakeGarbageCollected<InlineStylePropertyMap>(owner_element);
   }
   return *cssom_map_wrapper_;
 }

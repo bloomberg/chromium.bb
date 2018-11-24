@@ -110,6 +110,7 @@ class CORE_EXPORT LocalFrameView final
   static LocalFrameView* Create(LocalFrame&);
   static LocalFrameView* Create(LocalFrame&, const IntSize& initial_size);
 
+  explicit LocalFrameView(LocalFrame&, IntRect);
   ~LocalFrameView() override;
 
   void Invalidate() { InvalidateRect(IntRect(0, 0, Width(), Height())); }
@@ -720,8 +721,6 @@ class CORE_EXPORT LocalFrameView final
     UntracedMember<LocalFrameView> local_frame_view_;
   };
 #endif
-
-  explicit LocalFrameView(LocalFrame&, IntRect);
 
   void PaintInternal(GraphicsContext&,
                      const GlobalPaintFlags,

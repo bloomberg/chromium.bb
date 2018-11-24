@@ -42,7 +42,7 @@ class InteractiveDetectorTest : public testing::Test {
 
     Document* document = &dummy_page_holder_->GetDocument();
 
-    detector_ = new InteractiveDetector(
+    detector_ = MakeGarbageCollected<InteractiveDetector>(
         *document, new NetworkActivityCheckerForTest(document));
 
     // By this time, the DummyPageHolder has created an InteractiveDetector, and

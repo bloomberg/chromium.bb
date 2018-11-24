@@ -43,8 +43,11 @@ class IdleSpellCheckController::IdleCallback final
     : public ScriptedIdleTaskController::IdleTask {
  public:
   static IdleCallback* Create(IdleSpellCheckController* controller) {
-    return new IdleCallback(controller);
+    return MakeGarbageCollected<IdleCallback>(controller);
   }
+
+  explicit IdleCallback(IdleSpellCheckController* controller)
+      : controller_(controller) {}
 
   void Trace(blink::Visitor* visitor) final {
     visitor->Trace(controller_);
@@ -52,9 +55,6 @@ class IdleSpellCheckController::IdleCallback final
   }
 
  private:
-  explicit IdleCallback(IdleSpellCheckController* controller)
-      : controller_(controller) {}
-
   void invoke(IdleDeadline* deadline) final { controller_->Invoke(deadline); }
 
   const Member<IdleSpellCheckController> controller_;

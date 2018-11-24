@@ -68,7 +68,7 @@ const String& IDBObservation::type() const {
 
 IDBObservation* IDBObservation::Create(WebIDBObservation observation,
                                        v8::Isolate* isolate) {
-  return new IDBObservation(std::move(observation), isolate);
+  return MakeGarbageCollected<IDBObservation>(std::move(observation), isolate);
 }
 
 IDBObservation::IDBObservation(WebIDBObservation observation,

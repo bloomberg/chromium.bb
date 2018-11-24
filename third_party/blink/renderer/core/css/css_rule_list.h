@@ -74,8 +74,10 @@ template <class Rule>
 class LiveCSSRuleList final : public CSSRuleList {
  public:
   static LiveCSSRuleList* Create(Rule* rule) {
-    return new LiveCSSRuleList(rule);
+    return MakeGarbageCollected<LiveCSSRuleList>(rule);
   }
+
+  LiveCSSRuleList(Rule* rule) : rule_(rule) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(rule_);
@@ -83,8 +85,6 @@ class LiveCSSRuleList final : public CSSRuleList {
   }
 
  private:
-  LiveCSSRuleList(Rule* rule) : rule_(rule) {}
-
   unsigned length() const override { return rule_->length(); }
   CSSRule* item(unsigned index) const override { return rule_->Item(index); }
   CSSStyleSheet* GetStyleSheet() const override {

@@ -243,7 +243,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
                           Document* new_owner) override {
     logs_.push_back(kAdoptedCallback);
     EXPECT_EQ(element, element_);
-    adopted_.push_back(new Adopted(old_owner, new_owner));
+    adopted_.push_back(MakeGarbageCollected<Adopted>(old_owner, new_owner));
   }
 
   void RunAttributeChangedCallback(Element* element,
@@ -266,7 +266,7 @@ class LogUpgradeBuilder final : public TestCustomElementDefinitionBuilder {
 
   CustomElementDefinition* Build(const CustomElementDescriptor& descriptor,
                                  CustomElementDefinition::Id) override {
-    return new LogUpgradeDefinition(descriptor);
+    return MakeGarbageCollected<LogUpgradeDefinition>(descriptor);
   }
 
   DISALLOW_COPY_AND_ASSIGN(LogUpgradeBuilder);

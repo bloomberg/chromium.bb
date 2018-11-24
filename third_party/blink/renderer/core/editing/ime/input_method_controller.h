@@ -58,6 +58,8 @@ class CORE_EXPORT InputMethodController final
   };
 
   static InputMethodController* Create(LocalFrame&);
+
+  explicit InputMethodController(LocalFrame&);
   virtual ~InputMethodController();
   void Trace(blink::Visitor*) override;
 
@@ -119,8 +121,6 @@ class CORE_EXPORT InputMethodController final
   Member<LocalFrame> frame_;
   Member<Range> composition_range_;
   bool has_composition_;
-
-  explicit InputMethodController(LocalFrame&);
 
   Editor& GetEditor() const;
   LocalFrame& GetFrame() const {

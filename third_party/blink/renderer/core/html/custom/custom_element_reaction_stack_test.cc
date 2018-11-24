@@ -21,8 +21,9 @@ TEST(CustomElementReactionStackTest, one) {
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
   stack->Push();
-  stack->EnqueueToCurrentQueue(CreateElement("a"),
-                               new TestReaction({new Log('a', log)}));
+  stack->EnqueueToCurrentQueue(
+      CreateElement("a"),
+      new TestReaction({MakeGarbageCollected<Log>('a', log)}));
   stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'a'}))
@@ -34,10 +35,12 @@ TEST(CustomElementReactionStackTest, multipleElements) {
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
   stack->Push();
-  stack->EnqueueToCurrentQueue(CreateElement("a"),
-                               new TestReaction({new Log('a', log)}));
-  stack->EnqueueToCurrentQueue(CreateElement("a"),
-                               new TestReaction({new Log('b', log)}));
+  stack->EnqueueToCurrentQueue(
+      CreateElement("a"),
+      new TestReaction({MakeGarbageCollected<Log>('a', log)}));
+  stack->EnqueueToCurrentQueue(
+      CreateElement("a"),
+      new TestReaction({MakeGarbageCollected<Log>('b', log)}));
   stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'a', 'b'}))
@@ -49,8 +52,9 @@ TEST(CustomElementReactionStackTest, popTopEmpty) {
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
   stack->Push();
-  stack->EnqueueToCurrentQueue(CreateElement("a"),
-                               new TestReaction({new Log('a', log)}));
+  stack->EnqueueToCurrentQueue(
+      CreateElement("a"),
+      new TestReaction({MakeGarbageCollected<Log>('a', log)}));
   stack->Push();
   stack->PopInvokingReactions();
 
@@ -63,11 +67,13 @@ TEST(CustomElementReactionStackTest, popTop) {
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
   stack->Push();
-  stack->EnqueueToCurrentQueue(CreateElement("a"),
-                               new TestReaction({new Log('a', log)}));
+  stack->EnqueueToCurrentQueue(
+      CreateElement("a"),
+      new TestReaction({MakeGarbageCollected<Log>('a', log)}));
   stack->Push();
-  stack->EnqueueToCurrentQueue(CreateElement("a"),
-                               new TestReaction({new Log('b', log)}));
+  stack->EnqueueToCurrentQueue(
+      CreateElement("a"),
+      new TestReaction({MakeGarbageCollected<Log>('b', log)}));
   stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'b'}))
@@ -81,10 +87,13 @@ TEST(CustomElementReactionStackTest, requeueingDoesNotReorderElements) {
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
   stack->Push();
-  stack->EnqueueToCurrentQueue(element, new TestReaction({new Log('a', log)}));
-  stack->EnqueueToCurrentQueue(CreateElement("a"),
-                               new TestReaction({new Log('z', log)}));
-  stack->EnqueueToCurrentQueue(element, new TestReaction({new Log('b', log)}));
+  stack->EnqueueToCurrentQueue(
+      element, new TestReaction({MakeGarbageCollected<Log>('a', log)}));
+  stack->EnqueueToCurrentQueue(
+      CreateElement("a"),
+      new TestReaction({MakeGarbageCollected<Log>('z', log)}));
+  stack->EnqueueToCurrentQueue(
+      element, new TestReaction({MakeGarbageCollected<Log>('b', log)}));
   stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'a', 'b', 'z'}))
@@ -98,13 +107,17 @@ TEST(CustomElementReactionStackTest, oneReactionQueuePerElement) {
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
   stack->Push();
-  stack->EnqueueToCurrentQueue(element, new TestReaction({new Log('a', log)}));
-  stack->EnqueueToCurrentQueue(CreateElement("a"),
-                               new TestReaction({new Log('z', log)}));
+  stack->EnqueueToCurrentQueue(
+      element, new TestReaction({MakeGarbageCollected<Log>('a', log)}));
+  stack->EnqueueToCurrentQueue(
+      CreateElement("a"),
+      new TestReaction({MakeGarbageCollected<Log>('z', log)}));
   stack->Push();
-  stack->EnqueueToCurrentQueue(CreateElement("a"),
-                               new TestReaction({new Log('y', log)}));
-  stack->EnqueueToCurrentQueue(element, new TestReaction({new Log('b', log)}));
+  stack->EnqueueToCurrentQueue(
+      CreateElement("a"),
+      new TestReaction({MakeGarbageCollected<Log>('y', log)}));
+  stack->EnqueueToCurrentQueue(
+      element, new TestReaction({MakeGarbageCollected<Log>('b', log)}));
   stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'y', 'a', 'b'}))
@@ -149,7 +162,8 @@ TEST(CustomElementReactionStackTest, enqueueFromReaction) {
   stack->Push();
   stack->EnqueueToCurrentQueue(
       element, new TestReaction({new EnqueueToStack(
-                   stack, element, new TestReaction({new Log('a', log)}))}));
+                   stack, element,
+                   new TestReaction({MakeGarbageCollected<Log>('a', log)}))}));
   stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'a'})) << "enqueued reaction from another "

@@ -176,7 +176,10 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
                             const Source&,
                             IDBTransaction*,
                             AsyncTraceState);
+
+  IDBRequest(ScriptState*, const Source&, IDBTransaction*, AsyncTraceState);
   ~IDBRequest() override;
+
   void Trace(blink::Visitor*) override;
 
   v8::Isolate* GetIsolate() const { return isolate_; }
@@ -334,7 +337,6 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   }
 
  protected:
-  IDBRequest(ScriptState*, const Source&, IDBTransaction*, AsyncTraceState);
   void EnqueueEvent(Event*);
   virtual bool ShouldEnqueueEvent() const;
   void EnqueueResultInternal(IDBAny*);

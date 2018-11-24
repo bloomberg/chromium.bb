@@ -43,12 +43,14 @@ class IdTargetObserverRegistry final
 
  public:
   static IdTargetObserverRegistry* Create();
+
+  IdTargetObserverRegistry() : notifying_observers_in_set_(nullptr) {}
+
   void Trace(blink::Visitor*);
   void NotifyObservers(const AtomicString& id);
   bool HasObservers(const AtomicString& id) const;
 
  private:
-  IdTargetObserverRegistry() : notifying_observers_in_set_(nullptr) {}
   void AddObserver(const AtomicString& id, IdTargetObserver*);
   void RemoveObserver(const AtomicString& id, IdTargetObserver*);
   void NotifyObserversInternal(const AtomicString& id);

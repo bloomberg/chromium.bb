@@ -175,8 +175,8 @@ IntersectionObserver* IntersectionObserver::Create(
   if (exception_state.HadException())
     return nullptr;
 
-  return new IntersectionObserver(delegate, root, root_margin, thresholds,
-                                  delay, track_visibility);
+  return MakeGarbageCollected<IntersectionObserver>(
+      delegate, root, root_margin, thresholds, delay, track_visibility);
 }
 
 IntersectionObserver* IntersectionObserver::Create(
@@ -199,9 +199,9 @@ IntersectionObserver* IntersectionObserver::Create(
     ExceptionState& exception_state) {
   IntersectionObserverDelegateImpl* intersection_observer_delegate =
       new IntersectionObserverDelegateImpl(document, std::move(callback));
-  return new IntersectionObserver(*intersection_observer_delegate, nullptr,
-                                  root_margin, thresholds, delay,
-                                  track_visibility);
+  return MakeGarbageCollected<IntersectionObserver>(
+      *intersection_observer_delegate, nullptr, root_margin, thresholds, delay,
+      track_visibility);
 }
 
 IntersectionObserver::IntersectionObserver(
@@ -278,7 +278,7 @@ void IntersectionObserver::observe(Element* target,
     return;
 
   IntersectionObservation* observation =
-      new IntersectionObservation(*this, *target);
+      MakeGarbageCollected<IntersectionObservation>(*this, *target);
   target->EnsureIntersectionObserverData().AddObservation(*observation);
   observations_.insert(observation);
   if (target->isConnected()) {

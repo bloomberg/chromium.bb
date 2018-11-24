@@ -83,7 +83,26 @@ class MODULES_EXPORT IDBTransaction final
       IDBDatabase*,
       IDBOpenDBRequest*,
       const IDBDatabaseMetadata& old_metadata);
+
+  // For observer transactions.
+  IDBTransaction(ExecutionContext*,
+                 int64_t,
+                 const HashSet<String>& scope,
+                 IDBDatabase*);
+  // For non-upgrade transactions.
+  IDBTransaction(ScriptState*,
+                 int64_t,
+                 const HashSet<String>& scope,
+                 mojom::IDBTransactionMode,
+                 IDBDatabase*);
+  // For upgrade transactions.
+  IDBTransaction(ExecutionContext*,
+                 int64_t,
+                 IDBDatabase*,
+                 IDBOpenDBRequest*,
+                 const IDBDatabaseMetadata&);
   ~IDBTransaction() override;
+
   void Trace(blink::Visitor*) override;
 
   static mojom::IDBTransactionMode StringToMode(const String&);
@@ -168,26 +187,6 @@ class MODULES_EXPORT IDBTransaction final
 
  private:
   using IDBObjectStoreMap = HeapHashMap<String, Member<IDBObjectStore>>;
-
-  // For observer transactions.
-  IDBTransaction(ExecutionContext*,
-                 int64_t,
-                 const HashSet<String>& scope,
-                 IDBDatabase*);
-
-  // For non-upgrade transactions.
-  IDBTransaction(ScriptState*,
-                 int64_t,
-                 const HashSet<String>& scope,
-                 mojom::IDBTransactionMode,
-                 IDBDatabase*);
-
-  // For upgrade transactions.
-  IDBTransaction(ExecutionContext*,
-                 int64_t,
-                 IDBDatabase*,
-                 IDBOpenDBRequest*,
-                 const IDBDatabaseMetadata&);
 
   void EnqueueEvent(Event*);
 

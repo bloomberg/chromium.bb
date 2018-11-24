@@ -664,7 +664,7 @@ bool LinkLoader::LoadLink(
     resource = PrefetchIfNeeded(params, document);
   }
   if (resource)
-    finish_observer_ = new FinishObserver(this, resource);
+    finish_observer_ = MakeGarbageCollected<FinishObserver>(this, resource);
 
   ModulePreloadIfNeeded(params, document, nullptr, this);
 

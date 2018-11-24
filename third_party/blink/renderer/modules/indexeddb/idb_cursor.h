@@ -58,7 +58,14 @@ class IDBCursor : public ScriptWrappable {
                            IDBRequest*,
                            const Source&,
                            IDBTransaction*);
+
+  IDBCursor(std::unique_ptr<WebIDBCursor>,
+            mojom::IDBCursorDirection,
+            IDBRequest*,
+            const Source&,
+            IDBTransaction*);
   ~IDBCursor() override;
+
   void Trace(blink::Visitor*) override;
   void ContextWillBeDestroyed() { backend_.reset(); }
 
@@ -100,13 +107,6 @@ class IDBCursor : public ScriptWrappable {
   const IDBKey* IdbPrimaryKey() const;
   virtual bool IsKeyCursor() const { return true; }
   virtual bool IsCursorWithValue() const { return false; }
-
- protected:
-  IDBCursor(std::unique_ptr<WebIDBCursor>,
-            mojom::IDBCursorDirection,
-            IDBRequest*,
-            const Source&,
-            IDBTransaction*);
 
  private:
   IDBObjectStore* EffectiveObjectStore() const;

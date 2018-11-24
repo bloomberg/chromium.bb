@@ -26,9 +26,9 @@ LayoutWorkletGlobalScope* LayoutWorkletGlobalScope::Create(
     WorkerReportingProxy& reporting_proxy,
     PendingLayoutRegistry* pending_layout_registry,
     size_t global_scope_number) {
-  auto* global_scope =
-      new LayoutWorkletGlobalScope(frame, std::move(creation_params),
-                                   reporting_proxy, pending_layout_registry);
+  auto* global_scope = MakeGarbageCollected<LayoutWorkletGlobalScope>(
+      frame, std::move(creation_params), reporting_proxy,
+      pending_layout_registry);
   String context_name("LayoutWorklet #");
   context_name.append(String::Number(global_scope_number));
   global_scope->ScriptController()->InitializeContextIfNeeded(context_name,

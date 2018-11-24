@@ -48,8 +48,20 @@ class LayerRect final : public ScriptWrappable {
                            int node_offset_x,
                            int node_offset_y,
                            DOMRectReadOnly* rect) {
-    return new LayerRect(node, layer_type, node_offset_x, node_offset_y, rect);
+    return MakeGarbageCollected<LayerRect>(node, layer_type, node_offset_x,
+                                           node_offset_y, rect);
   }
+
+  LayerRect(Node* node,
+            const String& layer_name,
+            int node_offset_x,
+            int node_offset_y,
+            DOMRectReadOnly* rect)
+      : layer_associated_node_(node),
+        layer_type_(layer_name),
+        associated_node_offset_x_(node_offset_x),
+        associated_node_offset_y_(node_offset_y),
+        rect_(rect) {}
 
   Node* layerAssociatedNode() const { return layer_associated_node_.Get(); }
   String layerType() const { return layer_type_; }
@@ -64,17 +76,6 @@ class LayerRect final : public ScriptWrappable {
   }
 
  private:
-  LayerRect(Node* node,
-            const String& layer_name,
-            int node_offset_x,
-            int node_offset_y,
-            DOMRectReadOnly* rect)
-      : layer_associated_node_(node),
-        layer_type_(layer_name),
-        associated_node_offset_x_(node_offset_x),
-        associated_node_offset_y_(node_offset_y),
-        rect_(rect) {}
-
   Member<Node> layer_associated_node_;
   String layer_type_;
   int associated_node_offset_x_;

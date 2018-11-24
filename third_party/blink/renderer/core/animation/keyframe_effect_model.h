@@ -213,8 +213,15 @@ class KeyframeEffectModel final : public KeyframeEffectModelBase {
       const KeyframeVector& keyframes,
       CompositeOperation composite = kCompositeReplace,
       scoped_refptr<TimingFunction> default_keyframe_easing = nullptr) {
-    return new KeyframeEffectModel(keyframes, composite,
-                                   std::move(default_keyframe_easing));
+    return MakeGarbageCollected<KeyframeEffectModel<K>>(
+        keyframes, composite, std::move(default_keyframe_easing));
+  }
+
+  KeyframeEffectModel(const KeyframeVector& keyframes,
+                      CompositeOperation composite,
+                      scoped_refptr<TimingFunction> default_keyframe_easing)
+      : KeyframeEffectModelBase(composite, std::move(default_keyframe_easing)) {
+    keyframes_.AppendVector(keyframes);
   }
 
   KeyframeEffectModelBase* Clone() override {
@@ -227,13 +234,6 @@ class KeyframeEffectModel final : public KeyframeEffectModelBase {
   }
 
  private:
-  KeyframeEffectModel(const KeyframeVector& keyframes,
-                      CompositeOperation composite,
-                      scoped_refptr<TimingFunction> default_keyframe_easing)
-      : KeyframeEffectModelBase(composite, std::move(default_keyframe_easing)) {
-    keyframes_.AppendVector(keyframes);
-  }
-
   bool IsStringKeyframeEffectModel() const override { return false; }
   bool IsTransitionKeyframeEffectModel() const override { return false; }
 };

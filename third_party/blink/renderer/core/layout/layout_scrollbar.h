@@ -44,6 +44,8 @@ class LayoutScrollbar final : public Scrollbar {
   static Scrollbar* CreateCustomScrollbar(ScrollableArea*,
                                           ScrollbarOrientation,
                                           Element*);
+
+  LayoutScrollbar(ScrollableArea*, ScrollbarOrientation, Element*);
   ~LayoutScrollbar() override;
 
   // Return the thickness that a custom scrollbar would have, without actually
@@ -77,9 +79,6 @@ class LayoutScrollbar final : public Scrollbar {
   void SetVisualRect(const LayoutRect&) final;
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  LayoutScrollbar(ScrollableArea*, ScrollbarOrientation, Element*);
 
  private:
   friend class Scrollbar;

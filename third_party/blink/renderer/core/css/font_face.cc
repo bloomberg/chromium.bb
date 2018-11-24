@@ -740,7 +740,8 @@ void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue& src) {
         css_font_face_->AddSource(source);
       }
     } else {
-      css_font_face_->AddSource(new LocalFontFaceSource(item.GetResource()));
+      css_font_face_->AddSource(
+          MakeGarbageCollected<LocalFontFaceSource>(item.GetResource()));
     }
   }
 

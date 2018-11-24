@@ -68,7 +68,13 @@ class MODULES_EXPORT IDBDatabase final
                              std::unique_ptr<WebIDBDatabase>,
                              IDBDatabaseCallbacks*,
                              v8::Isolate*);
+
+  IDBDatabase(ExecutionContext*,
+              std::unique_ptr<WebIDBDatabase>,
+              IDBDatabaseCallbacks*,
+              v8::Isolate*);
   ~IDBDatabase() override;
+
   void Trace(blink::Visitor*) override;
 
   // Overwrites the database metadata, including object store and index
@@ -174,11 +180,6 @@ class MODULES_EXPORT IDBDatabase final
   DispatchEventResult DispatchEventInternal(Event&) override;
 
  private:
-  IDBDatabase(ExecutionContext*,
-              std::unique_ptr<WebIDBDatabase>,
-              IDBDatabaseCallbacks*,
-              v8::Isolate*);
-
   IDBObjectStore* createObjectStore(const String& name,
                                     const IDBKeyPath&,
                                     bool auto_increment,

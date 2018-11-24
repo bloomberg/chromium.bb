@@ -60,7 +60,7 @@ const AtomicString& TextTrackKindToString(WebInbandTextTrack::Kind kind) {
 }  // namespace
 
 InbandTextTrack* InbandTextTrack::Create(WebInbandTextTrack* web_track) {
-  return new InbandTextTrack(web_track);
+  return MakeGarbageCollected<InbandTextTrack>(web_track);
 }
 
 InbandTextTrack::InbandTextTrack(WebInbandTextTrack* web_track)

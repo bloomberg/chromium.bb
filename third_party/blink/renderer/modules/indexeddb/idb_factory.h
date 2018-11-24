@@ -46,11 +46,14 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBFactory* Create() { return new IDBFactory(); }
+  static IDBFactory* Create() { return MakeGarbageCollected<IDBFactory>(); }
   static IDBFactory* CreateForTest(
       std::unique_ptr<WebIDBFactory> web_idb_factory) {
-    return new IDBFactory(std::move(web_idb_factory));
+    return MakeGarbageCollected<IDBFactory>(std::move(web_idb_factory));
   }
+
+  IDBFactory();
+  IDBFactory(std::unique_ptr<WebIDBFactory>);
 
   // Implement the IDBFactory IDL
   IDBOpenDBRequest* open(ScriptState*, const String& name, ExceptionState&);
@@ -75,9 +78,6 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
   ScriptPromise GetDatabaseInfo(ScriptState*, ExceptionState&);
 
  private:
-  IDBFactory();
-  IDBFactory(std::unique_ptr<WebIDBFactory>);
-
   WebIDBFactory* GetFactory();
 
   IDBOpenDBRequest* OpenInternal(ScriptState*,

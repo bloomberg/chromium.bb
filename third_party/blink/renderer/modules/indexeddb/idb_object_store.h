@@ -53,8 +53,11 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
  public:
   static IDBObjectStore* Create(scoped_refptr<IDBObjectStoreMetadata> metadata,
                                 IDBTransaction* transaction) {
-    return new IDBObjectStore(std::move(metadata), transaction);
+    return MakeGarbageCollected<IDBObjectStore>(std::move(metadata),
+                                                transaction);
   }
+
+  IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata>, IDBTransaction*);
   ~IDBObjectStore() override = default;
 
   void Trace(blink::Visitor*) override;
@@ -186,8 +189,6 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
 
  private:
   using IDBIndexMap = HeapHashMap<String, Member<IDBIndex>>;
-
-  IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata>, IDBTransaction*);
 
   IDBIndex* createIndex(ScriptState*,
                         const String& name,

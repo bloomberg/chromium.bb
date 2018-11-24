@@ -30,7 +30,7 @@
 namespace blink {
 
 IdTargetObserverRegistry* IdTargetObserverRegistry::Create() {
-  return new IdTargetObserverRegistry();
+  return MakeGarbageCollected<IdTargetObserverRegistry>();
 }
 
 void IdTargetObserverRegistry::Trace(blink::Visitor* visitor) {

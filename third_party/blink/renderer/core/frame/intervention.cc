@@ -33,8 +33,8 @@ void Intervention::GenerateReport(const LocalFrame* frame,
     return;
 
   // Construct the intervention report.
-  InterventionReportBody* body =
-      new InterventionReportBody(id, message, SourceLocation::Capture());
+  InterventionReportBody* body = MakeGarbageCollected<InterventionReportBody>(
+      id, message, SourceLocation::Capture());
   Report* report =
       new Report("intervention", document->Url().GetString(), body);
 

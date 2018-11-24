@@ -27,6 +27,8 @@ class IntersectionObserverController
 
  public:
   static IntersectionObserverController* Create(Document*);
+
+  explicit IntersectionObserverController(Document*);
   ~IntersectionObserverController() override;
 
   void Unpause() override;
@@ -43,7 +45,6 @@ class IntersectionObserverController
   }
 
  private:
-  explicit IntersectionObserverController(Document*);
   void PostTaskToDeliverObservations();
 
  private:

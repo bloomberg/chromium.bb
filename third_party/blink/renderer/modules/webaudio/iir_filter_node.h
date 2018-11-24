@@ -47,6 +47,11 @@ class IIRFilterNode : public AudioNode {
                                const IIRFilterOptions*,
                                ExceptionState&);
 
+  IIRFilterNode(BaseAudioContext&,
+                const Vector<double>& denominator,
+                const Vector<double>& numerator,
+                bool is_filter_stable);
+
   void Trace(blink::Visitor*) override;
 
   // Get the magnitude and phase response of the filter at the given
@@ -57,11 +62,6 @@ class IIRFilterNode : public AudioNode {
                             ExceptionState&);
 
  private:
-  IIRFilterNode(BaseAudioContext&,
-                const Vector<double>& denominator,
-                const Vector<double>& numerator,
-                bool is_filter_stable);
-
   IIRProcessor* GetIIRFilterProcessor() const;
 };
 

@@ -48,7 +48,7 @@
 namespace blink {
 
 LinkImport* LinkImport::Create(HTMLLinkElement* owner) {
-  return new LinkImport(owner);
+  return MakeGarbageCollected<LinkImport>(owner);
 }
 
 LinkImport::LinkImport(HTMLLinkElement* owner)

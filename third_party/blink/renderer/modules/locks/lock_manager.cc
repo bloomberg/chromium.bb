@@ -290,7 +290,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   // promise, the current agent, environment’s id, origin, callback, name,
   // options’ mode dictionary member, options’ ifAvailable dictionary member,
   // and options’ steal dictionary member.
-  LockRequestImpl* request = new LockRequestImpl(
+  LockRequestImpl* request = MakeGarbageCollected<LockRequestImpl>(
       callback, resolver, name, mode, mojo::MakeRequest(&request_ptr), this);
   AddPendingRequest(request);
 

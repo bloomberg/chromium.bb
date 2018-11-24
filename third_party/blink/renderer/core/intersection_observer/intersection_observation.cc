@@ -123,10 +123,12 @@ void IntersectionObservation::Compute(unsigned flags) {
     FloatRect root_bounds(geometry.UnZoomedRootRect());
     FloatRect* root_bounds_pointer =
         report_root_bounds ? &root_bounds : nullptr;
-    IntersectionObserverEntry* new_entry = new IntersectionObserverEntry(
-        timestamp, new_visible_ratio, FloatRect(geometry.UnZoomedTargetRect()),
-        root_bounds_pointer, FloatRect(geometry.UnZoomedIntersectionRect()),
-        new_threshold_index > 0, is_visible, Target());
+    IntersectionObserverEntry* new_entry =
+        MakeGarbageCollected<IntersectionObserverEntry>(
+            timestamp, new_visible_ratio,
+            FloatRect(geometry.UnZoomedTargetRect()), root_bounds_pointer,
+            FloatRect(geometry.UnZoomedIntersectionRect()),
+            new_threshold_index > 0, is_visible, Target());
     entries_.push_back(new_entry);
     To<Document>(Observer()->GetExecutionContext())
         ->EnsureIntersectionObserverController()

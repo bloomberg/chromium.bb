@@ -53,7 +53,8 @@ KeyframeEffect* KeyframeEffect::Create(Element* target,
                                        const Timing& timing,
                                        Priority priority,
                                        EventDelegate* event_delegate) {
-  return new KeyframeEffect(target, model, timing, priority, event_delegate);
+  return MakeGarbageCollected<KeyframeEffect>(target, model, timing, priority,
+                                              event_delegate);
 }
 
 KeyframeEffect* KeyframeEffect::Create(
@@ -110,8 +111,9 @@ KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
                                        ExceptionState& exception_state) {
   Timing new_timing = source->SpecifiedTiming();
   KeyframeEffectModelBase* model = source->Model()->Clone();
-  return new KeyframeEffect(source->target(), model, new_timing,
-                            source->GetPriority(), source->GetEventDelegate());
+  return MakeGarbageCollected<KeyframeEffect>(source->target(), model,
+                                              new_timing, source->GetPriority(),
+                                              source->GetEventDelegate());
 }
 
 KeyframeEffect::KeyframeEffect(Element* target,

@@ -52,8 +52,10 @@ class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
 class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
   static LocalFrameClientWithParent* Create(LocalFrame* parent) {
-    return new LocalFrameClientWithParent(parent);
+    return MakeGarbageCollected<LocalFrameClientWithParent>(parent);
   }
+
+  explicit LocalFrameClientWithParent(LocalFrame* parent) : parent_(parent) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(parent_);
@@ -66,8 +68,6 @@ class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
   LocalFrame* Top() const override { return parent_.Get(); }
 
  private:
-  explicit LocalFrameClientWithParent(LocalFrame* parent) : parent_(parent) {}
-
   Member<LocalFrame> parent_;
 };
 

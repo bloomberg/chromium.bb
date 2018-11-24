@@ -84,12 +84,13 @@ class ListAttributeTargetObserver : public IdTargetObserver {
  public:
   static ListAttributeTargetObserver* Create(const AtomicString& id,
                                              HTMLInputElement*);
+
+  ListAttributeTargetObserver(const AtomicString& id, HTMLInputElement*);
+
   void Trace(blink::Visitor*) override;
   void IdTargetChanged() override;
 
  private:
-  ListAttributeTargetObserver(const AtomicString& id, HTMLInputElement*);
-
   Member<HTMLInputElement> element_;
 };
 
@@ -1799,7 +1800,7 @@ void HTMLInputElement::setWidth(unsigned width) {
 ListAttributeTargetObserver* ListAttributeTargetObserver::Create(
     const AtomicString& id,
     HTMLInputElement* element) {
-  return new ListAttributeTargetObserver(id, element);
+  return MakeGarbageCollected<ListAttributeTargetObserver>(id, element);
 }
 
 ListAttributeTargetObserver::ListAttributeTargetObserver(

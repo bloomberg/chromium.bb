@@ -17,7 +17,7 @@ namespace blink {
 TEST(CustomElementReactionQueueTest, invokeReactions_one) {
   std::vector<char> log;
   CustomElementReactionQueue* queue = new CustomElementReactionQueue();
-  queue->Add(new TestReaction({new Log('a', log)}));
+  queue->Add(new TestReaction({MakeGarbageCollected<Log>('a', log)}));
   queue->InvokeReactions(nullptr);
   EXPECT_EQ(log, std::vector<char>({'a'}))
       << "the reaction should have been invoked";
@@ -26,9 +26,9 @@ TEST(CustomElementReactionQueueTest, invokeReactions_one) {
 TEST(CustomElementReactionQueueTest, invokeReactions_many) {
   std::vector<char> log;
   CustomElementReactionQueue* queue = new CustomElementReactionQueue();
-  queue->Add(new TestReaction({new Log('a', log)}));
-  queue->Add(new TestReaction({new Log('b', log)}));
-  queue->Add(new TestReaction({new Log('c', log)}));
+  queue->Add(new TestReaction({MakeGarbageCollected<Log>('a', log)}));
+  queue->Add(new TestReaction({MakeGarbageCollected<Log>('b', log)}));
+  queue->Add(new TestReaction({MakeGarbageCollected<Log>('c', log)}));
   queue->InvokeReactions(nullptr);
   EXPECT_EQ(log, std::vector<char>({'a', 'b', 'c'}))
       << "the reaction should have been invoked";
@@ -38,16 +38,17 @@ TEST(CustomElementReactionQueueTest, invokeReactions_recursive) {
   std::vector<char> log;
   CustomElementReactionQueue* queue = new CustomElementReactionQueue();
 
-  CustomElementReaction* third = new TestReaction(
-      {new Log('c', log), new Recurse(queue)});  // "Empty" recursion
+  CustomElementReaction* third =
+      new TestReaction({MakeGarbageCollected<Log>('c', log),
+                        new Recurse(queue)});  // "Empty" recursion
 
   CustomElementReaction* second = new TestReaction(
-      {new Log('b', log),
+      {MakeGarbageCollected<Log>('b', log),
        new Enqueue(queue, third)});  // Unwinds one level of recursion
 
-  CustomElementReaction* first =
-      new TestReaction({new Log('a', log), new Enqueue(queue, second),
-                        new Recurse(queue)});  // Non-empty recursion
+  CustomElementReaction* first = new TestReaction(
+      {MakeGarbageCollected<Log>('a', log), new Enqueue(queue, second),
+       new Recurse(queue)});  // Non-empty recursion
 
   queue->Add(first);
   queue->InvokeReactions(nullptr);
@@ -59,11 +60,11 @@ TEST(CustomElementReactionQueueTest, clear_duringInvoke) {
   std::vector<char> log;
   CustomElementReactionQueue* queue = new CustomElementReactionQueue();
 
-  queue->Add(new TestReaction({new Log('a', log)}));
+  queue->Add(new TestReaction({MakeGarbageCollected<Log>('a', log)}));
   queue->Add(new TestReaction({new Call(WTF::Bind(
       [](CustomElementReactionQueue* queue, Element*) { queue->Clear(); },
       WrapPersistent(queue)))}));
-  queue->Add(new TestReaction({new Log('b', log)}));
+  queue->Add(new TestReaction({MakeGarbageCollected<Log>('b', log)}));
 
   queue->InvokeReactions(nullptr);
   EXPECT_EQ(log, std::vector<char>({'a'}))

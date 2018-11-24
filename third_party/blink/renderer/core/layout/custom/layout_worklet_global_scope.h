@@ -29,6 +29,11 @@ class CORE_EXPORT LayoutWorkletGlobalScope final : public WorkletGlobalScope {
       WorkerReportingProxy&,
       PendingLayoutRegistry*,
       size_t global_scope_number);
+
+  LayoutWorkletGlobalScope(LocalFrame*,
+                           std::unique_ptr<GlobalScopeCreationParams>,
+                           WorkerReportingProxy&,
+                           PendingLayoutRegistry*);
   ~LayoutWorkletGlobalScope() override;
   void Dispose() final;
 
@@ -44,11 +49,6 @@ class CORE_EXPORT LayoutWorkletGlobalScope final : public WorkletGlobalScope {
   void Trace(blink::Visitor*) override;
 
  private:
-  LayoutWorkletGlobalScope(LocalFrame*,
-                           std::unique_ptr<GlobalScopeCreationParams>,
-                           WorkerReportingProxy&,
-                           PendingLayoutRegistry*);
-
   // https://drafts.css-houdini.org/css-layout-api/#layout-definitions
   typedef HeapHashMap<String, TraceWrapperMember<CSSLayoutDefinition>>
       DefinitionMap;

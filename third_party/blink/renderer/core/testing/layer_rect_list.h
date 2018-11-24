@@ -46,7 +46,11 @@ class LayerRectList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static LayerRectList* Create() { return new LayerRectList; }
+  static LayerRectList* Create() {
+    return MakeGarbageCollected<LayerRectList>();
+  }
+
+  LayerRectList();
 
   unsigned length() const;
   LayerRect* item(unsigned index);
@@ -59,8 +63,6 @@ class LayerRectList final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  LayerRectList();
-
   HeapVector<Member<LayerRect>> list_;
 };
 
