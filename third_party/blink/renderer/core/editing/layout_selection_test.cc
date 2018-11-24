@@ -1156,4 +1156,15 @@ TEST_F(NGLayoutSelectionTest, BRStatus) {
       Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(layout_br)));
 }
 
+// https://crbug.com/907186
+TEST_F(NGLayoutSelectionTest, WBRStatus) {
+  SetSelectionAndUpdateLayoutSelection(
+      "<div style=\"width:0\">^foo<wbr>bar|</div>");
+  const LayoutObject* layout_wbr =
+      GetDocument().QuerySelector("wbr")->GetLayoutObject();
+  EXPECT_EQ(
+      LayoutSelectionStatus(3u, 4u, SelectSoftLineBreak::kSelected),
+      Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(layout_wbr)));
+}
+
 }  // namespace blink

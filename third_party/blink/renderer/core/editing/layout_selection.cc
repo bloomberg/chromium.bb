@@ -586,9 +586,8 @@ static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {
   // Even If |fragment| is before linebreak, if its direction differs to line
   // direction, we don't paint line break. See
   // paint/selection/text-selection-newline-mixed-ltr-rtl.html.
-  const ShapeResultView* shape_result =
-      ToNGPhysicalTextFragment(fragment.PhysicalFragment()).TextShapeResult();
-  return physical_line_box.BaseDirection() == shape_result->Direction();
+  return physical_line_box.BaseDirection() ==
+         fragment.PhysicalFragment().ResolvedDirection();
 }
 
 static Text* AssociatedTextNode(const LayoutText& text) {
