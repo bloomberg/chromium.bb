@@ -212,7 +212,7 @@ cca.util.animateOnce = function(element, callback) {
   element.classList.remove('animate');
   element.offsetWidth; // Force calculation to re-apply animation.
   element.classList.add('animate');
-  cca.util.waitAnimationCompleted(element, 0, () => {
+  cca.util.waitAnimationCompleted(element, () => {
     element.classList.remove('animate');
     if (callback) {
       callback();
@@ -231,10 +231,9 @@ cca.util.animateCancel = function(element) {
 /**
  * Waits for animation completed and calls the callback.
  * @param {HTMLElement} element Element to be animated.
- * @param {number} timeout Timeout for completion. 0 for no timeout.
  * @param {function()} callback Callback called on completion.
  */
-cca.util.waitAnimationCompleted = function(element, timeout, callback) {
+cca.util.waitAnimationCompleted = function(element, callback) {
   var completed = false;
   var onCompleted = (event) => {
     if (completed || (event && event.target != element)) {
@@ -245,9 +244,6 @@ cca.util.waitAnimationCompleted = function(element, timeout, callback) {
     element.removeEventListener('animationend', onCompleted);
     callback();
   };
-  if (timeout) {
-    setTimeout(onCompleted, timeout);
-  }
   // Assume only either 'transition' or 'animation' is applied on the element.
   // Listen to both end-events for its completion.
   element.addEventListener('transitionend', onCompleted);
@@ -421,7 +417,6 @@ cca.util.SmoothScroller.prototype.scrollTo = function(x, y, mode) {
       // animation is finished.
       cca.util.waitAnimationCompleted(
           this.padder_,
-          0,
           function() {
             // Check if the animation got invalidated by a later scroll.
             if (currentAnimationId == this.animationId_)
