@@ -2231,11 +2231,39 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   EXPECT_EQ("red.swingline@initech.com", value) << "for second field";
 }
 
-// The following three tests verify that we can autofill forms with multiple
+// The following four tests verify that we can autofill forms with multiple
 // nameless forms, and repetitive field names and make sure that the dynamic
 // refill would not trigger a wrong refill, regardless of the form.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       Dynamic_MultipleNoNameForms_BadNames_LastForm) {
+                       Dynamic_MultipleNoNameForms_BadNames_FourthForm) {
+  CreateTestProfile();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/multiple_noname_forms_badnames.html");
+
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname_4");
+  DoNothingAndWait(2);  // Wait to make sure possible refills have happened.
+  // Make sure the correct form was filled.
+  ExpectFieldValue("firstname_1", "");
+  ExpectFieldValue("lastname_1", "");
+  ExpectFieldValue("email_1", "");
+  ExpectFieldValue("firstname_2", "");
+  ExpectFieldValue("lastname_2", "");
+  ExpectFieldValue("email_2", "");
+  ExpectFieldValue("firstname_3", "");
+  ExpectFieldValue("lastname_3", "");
+  ExpectFieldValue("email_3", "");
+  ExpectFieldValue("firstname_4", "Milton");
+  ExpectFieldValue("lastname_4", "Waddams");
+  ExpectFieldValue("email_4", "red.swingline@initech.com");
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       Dynamic_MultipleNoNameForms_BadNames_ThirdForm) {
   CreateTestProfile();
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
@@ -2257,6 +2285,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   ExpectFieldValue("firstname_3", "Milton");
   ExpectFieldValue("lastname_3", "Waddams");
   ExpectFieldValue("email_3", "red.swingline@initech.com");
+  ExpectFieldValue("firstname_4", "");
+  ExpectFieldValue("lastname_4", "");
+  ExpectFieldValue("email_4", "");
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
