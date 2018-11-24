@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
@@ -14,6 +14,10 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
 namespace blink {
+
+//
+// AXSelection::Builder
+//
 
 AXSelection::Builder& AXSelection::Builder::SetBase(const AXPosition& base) {
   DCHECK(base.IsValid());
@@ -71,8 +75,41 @@ const AXSelection AXSelection::Builder::Build() {
   return selection_;
 }
 
+//
+// AXSelection
+//
+
 // static
-const AXSelection AXSelection::FromSelection(
+void AXSelection::ClearCurrentSelection(const Document& document) {
+  LocalFrame* frame = document.GetFrame();
+  if (!frame)
+    return;
+
+  FrameSelection& frame_selection = frame->Selection();
+  if (!frame_selection.IsAvailable())
+    return;
+
+  frame_selection.Clear();
+}
+
+// static
+AXSelection AXSelection::FromCurrentSelection(
+    const Document& document,
+    const AXSelectionBehavior selection_behavior) {
+  LocalFrame* frame = document.GetFrame();
+  if (!frame)
+    return {};
+
+  FrameSelection& frame_selection = frame->Selection();
+  if (!frame_selection.IsAvailable())
+    return {};
+
+  return FromSelection(frame_selection.GetSelectionInDOMTree(),
+                       selection_behavior);
+}
+
+// static
+AXSelection AXSelection::FromSelection(
     const SelectionInDOMTree& selection,
     const AXSelectionBehavior selection_behavior) {
   if (selection.IsNone())
@@ -181,7 +218,8 @@ const SelectionInDOMTree AXSelection::AsSelection(
   SelectionInDOMTree::Builder selection_builder;
   selection_builder.SetBaseAndExtent(dom_base.GetPosition(),
                                      dom_extent.GetPosition());
-  selection_builder.SetAffinity(extent_.Affinity());
+  if (extent_.IsTextPosition())
+    selection_builder.SetAffinity(extent_.Affinity());
   return selection_builder.Build();
 }
 
@@ -198,13 +236,51 @@ void AXSelection::Select(const AXSelectionBehavior selection_behavior) {
     NOTREACHED();
     return;
   }
+
   LocalFrame* frame = document->GetFrame();
   if (!frame) {
     NOTREACHED();
     return;
   }
+
   FrameSelection& frame_selection = frame->Selection();
-  frame_selection.SetSelection(selection, SetSelectionOptions());
+  if (!frame_selection.IsAvailable())
+    return;
+
+  SetSelectionOptions::Builder options_builder;
+  options_builder.SetIsDirectional(true)
+      .SetShouldCloseTyping(true)
+      .SetShouldClearTypingStyle(true);
+  frame_selection.ClearDocumentCachedRange();
+  frame_selection.SetSelection(selection, options_builder.Build());
+
+  // Cache the newly created document range. This doesn't affect the already
+  // applied selection. Note that DOM's |Range| object has a start and an end
+  // container that need to be in DOM order. See the DOM specification for more
+  // information: https://dom.spec.whatwg.org/#interface-range
+  Range* range = Range::Create(*document);
+  if (selection.Extent().IsNull()) {
+    DCHECK(selection.Base().IsNotNull())
+        << "AX selections converted to DOM selections should have at least one "
+           "endpoint non-null.\n"
+        << *this << '\n'
+        << selection;
+    range->setStart(selection.Base().ComputeContainerNode(),
+                    selection.Base().ComputeOffsetInContainerNode());
+    range->setEnd(selection.Base().ComputeContainerNode(),
+                  selection.Base().ComputeOffsetInContainerNode());
+  } else if (selection.Base() < selection.Extent()) {
+    range->setStart(selection.Base().ComputeContainerNode(),
+                    selection.Base().ComputeOffsetInContainerNode());
+    range->setEnd(selection.Extent().ComputeContainerNode(),
+                  selection.Extent().ComputeOffsetInContainerNode());
+  } else {
+    range->setStart(selection.Extent().ComputeContainerNode(),
+                    selection.Extent().ComputeOffsetInContainerNode());
+    range->setEnd(selection.Base().ComputeContainerNode(),
+                  selection.Base().ComputeOffsetInContainerNode());
+  }
+  frame_selection.CacheRangeOfDocument(range);
 }
 
 String AXSelection::ToString() const {

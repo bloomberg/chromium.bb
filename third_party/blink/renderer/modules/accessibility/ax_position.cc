@@ -348,6 +348,15 @@ int AXPosition::MaxTextOffset() const {
   return TextIterator::RangeLength(first_position, last_position);
 }
 
+TextAffinity AXPosition::Affinity() const {
+  if (!IsTextPosition()) {
+    NOTREACHED() << *this << " should be a text position.";
+    return TextAffinity::kDownstream;
+  }
+
+  return affinity_;
+}
+
 bool AXPosition::IsValid() const {
   if (!container_object_ || container_object_->IsDetached())
     return false;
