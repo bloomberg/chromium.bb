@@ -30,16 +30,6 @@
 
 #include <sys/types.h>
 
-#ifdef HAVE_EXECINFO_H
-#include <execinfo.h>
-#else
-static inline int
-backtrace(void **buffer, int size)
-{
-	return 0;
-}
-#endif
-
 int
 os_fd_set_cloexec(int fd);
 
