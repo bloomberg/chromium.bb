@@ -3,14 +3,21 @@
 <meta charset=utf-8 />
 <title>Event Timing only times certain types of trusted event.
 </title>
-<button id='button' onfocus='mainThreadBusy(100)'>Generate a 'click' event</button>
-<script src=/resources/testharness.js></script>
-<script src=/resources/testharnessreport.js></script>
-<script src=/resources/testdriver.js></script>
-<script src=/resources/testdriver-vendor.js></script>
+<button id='button' onclick='mainThreadBusy(100)'
+  onfocus='mainThreadBusy(100)'>Generate a 'click' event</button>
+<script src=../../../resources/testharness.js></script>
+<script src=../../../resources/testharnessreport.js></script>
 <script src=./resources/event-timing-support.js></script>
 <script>
   let trustedClickStart = 0;
+  function trustedClickAndBlockMain(id) {
+    return new Promise((resolve, reject) => {
+      trustedClickStart = performance.now();
+      clickOnElement(id);
+      mainThreadBusy(100);
+      resolve();
+    });
+  }
 
   function untrustedClickAndBlockMain(id) {
     return new Promise((resolve, reject) => {
@@ -53,8 +60,7 @@
     // trusted event of a type event timing doesn't cares about
     trustedFocusAndBlockMain('button').then(wait);
     // trusted event of a type event timing cares about
-    trustedClickStart = performance.now();
-    clickAndBlockMain('button').then(wait);
+    trustedClickAndBlockMain('button').then(wait);
   }, "Event Timing only times certain types of trusted event.");
 </script>
 </html>

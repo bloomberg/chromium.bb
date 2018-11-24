@@ -53,7 +53,7 @@
 
   function onMakeBusy() {
     log("busy start");
-    step_timeout(()=>{
+    setTimeout(()=>{
       mainThreadBusy(2000);
       log("busy end");
     }, 0);
