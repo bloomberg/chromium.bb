@@ -106,3 +106,7 @@ uint32_t GetUniqueBlockedModulesCount() {
 }
 
 void DisableHook() {}
+
+int32_t GetApplyHookResult() {
+  return 0;
+}

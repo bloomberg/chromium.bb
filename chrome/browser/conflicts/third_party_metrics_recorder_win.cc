@@ -40,6 +40,9 @@ ThirdPartyMetricsRecorder::ThirdPartyMetricsRecorder() {
       FROM_HERE, base::TimeDelta::FromMinutes(5),
       base::BindRepeating(&ThirdPartyMetricsRecorder::RecordHeartbeatMetrics,
                           base::Unretained(this)));
+
+  // Emit the result of applying the NtMapViewOfSection hook in chrome_elf.dll.
+  base::UmaHistogramSparse("ChromeElf.ApplyHookResult", GetApplyHookResult());
 #endif
 }
 

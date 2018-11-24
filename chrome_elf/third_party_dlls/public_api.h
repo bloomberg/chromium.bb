@@ -94,4 +94,8 @@ extern "C" uint32_t GetUniqueBlockedModulesCount();
 // hook but merely makes the hook forward the call to the original function.
 extern "C" void DisableHook();
 
+// Returns STATUS_SUCCESS if the hook was applied successfully, or the error
+// code on failure.
+extern "C" int32_t GetApplyHookResult();
+
 #endif  // CHROME_ELF_THIRD_PARTY_DLLS_PUBLIC_API_H_
