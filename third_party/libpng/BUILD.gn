@@ -126,8 +126,8 @@ if (is_win) {
 
 libpng_ossfuzz_seed_corpuses = [
   "//components/viz/test/data",
-  "//third_party/WebKit/LayoutTests/images/png-suite/samples",
-  "//third_party/WebKit/LayoutTests/images/resources/pngfuzz",
+  "//third_party/blink/web_tests/images/png-suite/samples",
+  "//third_party/blink/web_tests/resources/pngfuzz",
 ]
 
 fuzzer_test("libpng_read_fuzzer") {
