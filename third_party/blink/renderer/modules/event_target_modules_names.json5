@@ -29,6 +29,7 @@
     "MediaStreamTrack",
     "RTCDTMFSender",
     "RTCDataChannel",
+    "RTCDtlsTransport",
     "RTCPeerConnection",
     "NetworkInformation",
     "Notification",

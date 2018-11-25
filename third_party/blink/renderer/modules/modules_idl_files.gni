@@ -223,6 +223,7 @@ modules_idl_files =
           "peerconnection/rtc_certificate.idl",
           "peerconnection/rtc_data_channel.idl",
           "peerconnection/rtc_data_channel_event.idl",
+          "peerconnection/rtc_dtls_transport.idl",
           "peerconnection/rtc_dtmf_sender.idl",
           "peerconnection/rtc_dtmf_tone_change_event.idl",
           "peerconnection/rtc_ice_candidate.idl",

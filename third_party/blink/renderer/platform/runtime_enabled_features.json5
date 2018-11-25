@@ -1059,6 +1059,11 @@
       origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
       status: "experimental",
     },
+    // Enables the use of the RTCDtlsTransport object.
+    {
+      name: "RTCDtlsTransport",
+      status: "test",
+    },
     // Enables the use of the RTCIceTransport with extensions.
     {
       name: "RTCIceTransportExtension",
