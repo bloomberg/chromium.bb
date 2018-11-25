@@ -1002,6 +1002,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |DisplayCutoutHostImpl|.
   void NotifyViewportFitChanged(blink::mojom::ViewportFit value);
 
+  // Returns the current FindRequestManager associated with the WebContents;
+  // this won't create one if none exists.
+  FindRequestManager* GetFindRequestManagerForTesting() const;
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
@@ -1386,10 +1390,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       JavaScriptDialogManager* dialog_manager);
 
   // Returns the FindRequestManager, which may be found in an outer WebContents.
-  FindRequestManager* GetFindRequestManager();
+  FindRequestManager* GetFindRequestManager() const;
 
-  // Returns the FindRequestManager, or creates one if it doesn't already
-  // exist. The FindRequestManager may be found in an outer WebContents.
+  // Returns the FindRequestManager, or tries to create one if it doesn't
+  //  already exist. The FindRequestManager may be found in an outer
+  // WebContents. If this is an inner WebContents which is not yet attached to
+  // an outer WebContents the method will return nullptr.
   FindRequestManager* GetOrCreateFindRequestManager();
 
   // Removes a registered WebContentsBindingSet by interface name.

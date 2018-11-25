@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
@@ -75,6 +76,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+#include "content/public/test/find_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -4272,6 +4274,46 @@ IN_PROC_BROWSER_TEST_F(ChromeSignInWebViewTest,
   chrome::CloseTab(browser());
 }
 #endif
+
+// This test verifies that unattached guests are not included as the inner
+// WebContents. The test verifies this by triggering a find-in-page request on a
+// page with both an attached and an unattached <webview> and verifies that,
+// unlike the attached guest, no find requests are sent for the unattached
+// guest. For more context see https://crbug.com/897465.
+IN_PROC_BROWSER_TEST_F(ChromeSignInWebViewTest,
+                       NoFindInPageForUnattachedGuest) {
+  GURL signin_url{"chrome://chrome-signin"};
+  ui_test_utils::NavigateToURL(browser(), signin_url);
+  auto* embedder_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  auto* attached_guest = GetGuestViewManager()->WaitForNextGuestCreated();
+  GetGuestViewManager()->WaitUntilAttached(attached_guest);
+  // Now add a new <webview> and wait until its guest WebContents is created.
+  ASSERT_TRUE(ExecuteScript(embedder_web_contents,
+                            "var webview = document.createElement('webview');"
+                            "webview.src = 'data:text/html,foo';"
+                            "document.body.appendChild(webview);"));
+  // Right after this line, the guest is created but *not* attached (the
+  // callback for 'GuestViewInternal.createGuest' is invoked after this line;
+  // which is before attaching begins).
+  auto* unattached_guest = GetGuestViewManager()->GetLastGuestCreated();
+  EXPECT_NE(unattached_guest, attached_guest);
+  auto* find_helper = FindTabHelper::FromWebContents(embedder_web_contents);
+  find_helper->StartFinding(base::ASCIIToUTF16("doesn't matter"), true, true,
+                            false);
+  auto pending =
+      content::GetRenderFrameHostsWithPendingFindResults(embedder_web_contents);
+  // Request for main frame of the tab.
+  EXPECT_EQ(1U, pending.count(embedder_web_contents->GetMainFrame()));
+  // Request for main frame of the attached guest.
+  EXPECT_EQ(1U, pending.count(attached_guest->GetMainFrame()));
+  // No request for the unattached guest.
+  EXPECT_EQ(0U, pending.count(unattached_guest->GetMainFrame()));
+  // Sanity-check: try the set returned for guest.
+  pending =
+      content::GetRenderFrameHostsWithPendingFindResults(unattached_guest);
+  EXPECT_TRUE(pending.empty());
+}
 
 // This test class makes "isolated.com" an isolated origin, to be used in
 // testing isolated origins inside of a WebView.
