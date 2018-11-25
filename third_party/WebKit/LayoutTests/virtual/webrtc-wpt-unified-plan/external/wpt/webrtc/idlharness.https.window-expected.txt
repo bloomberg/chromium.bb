@@ -303,17 +303,17 @@ PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio'
 FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "stop()" with the proper type assert_inherits: property "stop" not found in prototype chain
 FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "setCodecPreferences([object Object])" with the proper type assert_inherits: property "setCodecPreferences" not found in prototype chain
 FAIL RTCRtpTransceiver interface: calling setCodecPreferences([object Object]) on new RTCPeerConnection().addTransceiver('audio') with too few arguments must throw TypeError assert_inherits: property "setCodecPreferences" not found in prototype chain
-FAIL RTCDtlsTransport interface: existence and properties of interface object assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
-FAIL RTCDtlsTransport interface object length assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
-FAIL RTCDtlsTransport interface object name assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
-FAIL RTCDtlsTransport interface: existence and properties of interface prototype object assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
-FAIL RTCDtlsTransport interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
-FAIL RTCDtlsTransport interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
-FAIL RTCDtlsTransport interface: attribute iceTransport assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
-FAIL RTCDtlsTransport interface: attribute state assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
-FAIL RTCDtlsTransport interface: operation getRemoteCertificates() assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
-FAIL RTCDtlsTransport interface: attribute onstatechange assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
-FAIL RTCDtlsTransport interface: attribute onerror assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
+PASS RTCDtlsTransport interface: existence and properties of interface object
+PASS RTCDtlsTransport interface object length
+PASS RTCDtlsTransport interface object name
+PASS RTCDtlsTransport interface: existence and properties of interface prototype object
+PASS RTCDtlsTransport interface: existence and properties of interface prototype object's "constructor" property
+PASS RTCDtlsTransport interface: existence and properties of interface prototype object's @@unscopables property
+PASS RTCDtlsTransport interface: attribute iceTransport
+PASS RTCDtlsTransport interface: attribute state
+PASS RTCDtlsTransport interface: operation getRemoteCertificates()
+PASS RTCDtlsTransport interface: attribute onstatechange
+PASS RTCDtlsTransport interface: attribute onerror
 FAIL RTCDtlsTransport must be primary interface of idlTestObjects.dtlsTransport assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL Stringification of idlTestObjects.dtlsTransport assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "iceTransport" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"

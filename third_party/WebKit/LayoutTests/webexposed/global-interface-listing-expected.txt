@@ -5509,6 +5509,16 @@ interface RTCDataChannelEvent : Event
     attribute @@toStringTag
     getter channel
     method constructor
+interface RTCDtlsTransport : EventTarget
+    attribute @@toStringTag
+    getter iceTransport
+    getter onerror
+    getter onstatechange
+    getter state
+    method constructor
+    method getRemoteCertificates
+    setter onerror
+    setter onstatechange
 interface RTCIceCandidate
     attribute @@toStringTag
     getter candidate
