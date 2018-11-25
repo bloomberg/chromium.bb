@@ -141,8 +141,7 @@ fuzzer_test("appcache_manifest_parser_fuzzer") {
     "//content/test:test_support",
   ]
   dict = "//content/test/data/fuzzer_dictionaries/appcache_manifest_parser_fuzzer.dict"
-  seed_corpus =
-      "//third_party/WebKit/LayoutTests/http/tests/appcache/resources/"
+  seed_corpus = "//third_party/blink/web_tests/http/tests/appcache/resources/"
 }
 
 fuzzer_test("merkle_integrity_source_stream_fuzzer") {

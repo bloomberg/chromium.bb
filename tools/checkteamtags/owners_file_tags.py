@@ -109,7 +109,7 @@ def aggregate_components_from_owners(all_owners_data, root,
     # is being exported in its own file and being used by sergiyb's scripts.
     # Add dir-to-team mapping unless there is also dir-to-component mapping.
     if (include_subdirs and team and not component and
-        rel_dirname.startswith('third_party/WebKit/LayoutTests')):
+        rel_dirname.startswith('third_party/blink/web_tests')):
       dir_to_team[rel_dirname] = team
 
     if include_subdirs and rel_dirname not in dir_to_component:

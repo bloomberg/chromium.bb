@@ -816,7 +816,7 @@ if (enable_vr || (enable_arcore && package_arcore)) {
 
     data = [
       "//chrome/test/data/xr/e2e_test_files/",
-      "//third_party/WebKit/LayoutTests/resources/testharness.js",
+      "//third_party/blink/web_tests/resources/testharness.js",
     ]
   }
 

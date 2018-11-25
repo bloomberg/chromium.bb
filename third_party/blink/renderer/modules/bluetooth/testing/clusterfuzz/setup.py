@@ -22,9 +22,9 @@ import sys
 SRC_PATH = os.path.join(
     os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir)
 LAYOUT_TESTS_RESOURCES_PATH = os.path.join(
-    SRC_PATH, 'third_party', 'WebKit', 'LayoutTests', 'resources')
+    SRC_PATH, 'third_party', 'blink', 'web_tests', 'resources')
 WEB_PLATFORM_TESTS_RESOURCES_PATH = os.path.join(
-    SRC_PATH, 'third_party', 'WebKit', 'LayoutTests', 'external', 'wpt',
+    SRC_PATH, 'third_party', 'blink', 'web_tests', 'external', 'wpt',
     'bluetooth', 'resources')
 COMMON_FUZZER_RESOURCES_PATH = os.path.join(
     SRC_PATH, 'testing', 'clusterfuzz', 'common')
