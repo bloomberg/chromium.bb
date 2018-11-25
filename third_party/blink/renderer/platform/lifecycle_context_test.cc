@@ -41,7 +41,7 @@ class DummyContext final
   USING_GARBAGE_COLLECTED_MIXIN(DummyContext);
 
  public:
-  static DummyContext* Create() { return new DummyContext; }
+  static DummyContext* Create() { return MakeGarbageCollected<DummyContext>(); }
 
   void Trace(blink::Visitor* visitor) override {
     LifecycleNotifier<DummyContext, TestingObserver>::Trace(visitor);

@@ -89,8 +89,8 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
   if (context->IsWorkerGlobalScope())
     UseCounter::Count(context, WebFeature::kNestedDedicatedWorker);
 
-  DedicatedWorker* worker =
-      new DedicatedWorker(context, script_request_url, options);
+  DedicatedWorker* worker = MakeGarbageCollected<DedicatedWorker>(
+      context, script_request_url, options);
   worker->Start();
   return worker;
 }
@@ -101,7 +101,8 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
     : AbstractWorker(context),
       script_request_url_(script_request_url),
       options_(options),
-      context_proxy_(new DedicatedWorkerMessagingProxy(context, this)) {
+      context_proxy_(
+          MakeGarbageCollected<DedicatedWorkerMessagingProxy>(context, this)) {
   DCHECK(context->IsContextThread());
   DCHECK(script_request_url_.IsValid());
   DCHECK(context_proxy_);

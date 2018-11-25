@@ -25,9 +25,10 @@ ScriptPromise FileSystemDirectoryHandle::getFile(
   flags->setCreateFlag(options->create());
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
-  filesystem()->GetFile(this, name, flags,
-                        new EntryCallbacks::OnDidGetEntryPromiseImpl(resolver),
-                        new PromiseErrorCallback(resolver));
+  filesystem()->GetFile(
+      this, name, flags,
+      MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(resolver),
+      new PromiseErrorCallback(resolver));
   return result;
 }
 
@@ -40,7 +41,8 @@ ScriptPromise FileSystemDirectoryHandle::getDirectory(
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
   filesystem()->GetDirectory(
-      this, name, flags, new EntryCallbacks::OnDidGetEntryPromiseImpl(resolver),
+      this, name, flags,
+      MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(resolver),
       new PromiseErrorCallback(resolver));
   return result;
 }

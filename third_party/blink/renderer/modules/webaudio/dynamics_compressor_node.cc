@@ -245,7 +245,7 @@ DynamicsCompressorNode* DynamicsCompressorNode::Create(
     return nullptr;
   }
 
-  return new DynamicsCompressorNode(context);
+  return MakeGarbageCollected<DynamicsCompressorNode>(context);
 }
 
 DynamicsCompressorNode* DynamicsCompressorNode::Create(

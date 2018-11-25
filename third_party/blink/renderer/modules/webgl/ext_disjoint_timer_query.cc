@@ -17,7 +17,7 @@ WebGLExtensionName EXTDisjointTimerQuery::GetName() const {
 
 EXTDisjointTimerQuery* EXTDisjointTimerQuery::Create(
     WebGLRenderingContextBase* context) {
-  return new EXTDisjointTimerQuery(context);
+  return MakeGarbageCollected<EXTDisjointTimerQuery>(context);
 }
 
 bool EXTDisjointTimerQuery::Supported(WebGLRenderingContextBase* context) {

@@ -447,7 +447,7 @@ void Editor::ApplyParagraphStyleToSelection(CSSPropertyValueSet* style,
 }
 
 Editor* Editor::Create(LocalFrame& frame) {
-  return new Editor(frame);
+  return MakeGarbageCollected<Editor>(frame);
 }
 
 Editor::Editor(LocalFrame& frame)

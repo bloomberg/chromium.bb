@@ -41,7 +41,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) override {
-    auto* global_scope = new DedicatedWorkerGlobalScope(
+    auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
         "fake worker name", std::move(creation_params), this, time_origin_);
     // Initializing a global scope with a dummy creation params may emit warning
     // messages (e.g., invalid CSP directives). Clear them here for tests that
@@ -175,7 +175,8 @@ class DedicatedWorkerTest : public PageTestBase {
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
     worker_messaging_proxy_ =
-        new DedicatedWorkerMessagingProxyForTest(&GetDocument());
+        MakeGarbageCollected<DedicatedWorkerMessagingProxyForTest>(
+            &GetDocument());
   }
 
   void TearDown() override {

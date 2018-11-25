@@ -17,21 +17,27 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DragEvent* Create() { return new DragEvent; }
+  static DragEvent* Create() { return MakeGarbageCollected<DragEvent>(); }
 
   static DragEvent* Create(const AtomicString& type,
                            const DragEventInit* initializer,
                            TimeTicks platform_time_stamp,
                            SyntheticEventType synthetic_event_type) {
-    return new DragEvent(type, initializer, platform_time_stamp,
-                         synthetic_event_type);
+    return MakeGarbageCollected<DragEvent>(
+        type, initializer, platform_time_stamp, synthetic_event_type);
   }
 
   static DragEvent* Create(const AtomicString& type,
                            const DragEventInit* initializer) {
-    return new DragEvent(type, initializer, CurrentTimeTicks(),
-                         kRealOrIndistinguishable);
+    return MakeGarbageCollected<DragEvent>(
+        type, initializer, CurrentTimeTicks(), kRealOrIndistinguishable);
   }
+
+  DragEvent();
+  DragEvent(const AtomicString& type,
+            const DragEventInit*,
+            TimeTicks platform_time_stamp,
+            SyntheticEventType);
 
   DataTransfer* getDataTransfer() const override {
     return IsDragEvent() ? data_transfer_.Get() : nullptr;
@@ -45,12 +51,6 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  DragEvent();
-  DragEvent(const AtomicString& type,
-            const DragEventInit*,
-            TimeTicks platform_time_stamp,
-            SyntheticEventType);
-
   Member<DataTransfer> data_transfer_;
 };
 

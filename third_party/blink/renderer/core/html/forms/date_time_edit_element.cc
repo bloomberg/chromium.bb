@@ -557,7 +557,7 @@ DateTimeEditElement* DateTimeEditElement::Create(
     Document& document,
     EditControlOwner& edit_control_owner) {
   DateTimeEditElement* container =
-      new DateTimeEditElement(document, edit_control_owner);
+      MakeGarbageCollected<DateTimeEditElement>(document, edit_control_owner);
   container->SetShadowPseudoId(AtomicString("-webkit-datetime-edit"));
   container->setAttribute(kIdAttr, shadow_element_names::DateTimeEdit());
   return container;

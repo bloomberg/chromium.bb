@@ -1873,10 +1873,11 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
     // element actually becomes visible to complete the load.
     if (IsHTMLVideoElement() && web_media_player_->DidLazyLoad() &&
         !is_potentially_playing) {
-      lazy_load_visibility_observer_ = new ElementVisibilityObserver(
-          this,
-          WTF::BindRepeating(&HTMLMediaElement::OnVisibilityChangedForLazyLoad,
-                             WrapWeakPersistent(this)));
+      lazy_load_visibility_observer_ =
+          MakeGarbageCollected<ElementVisibilityObserver>(
+              this, WTF::BindRepeating(
+                        &HTMLMediaElement::OnVisibilityChangedForLazyLoad,
+                        WrapWeakPersistent(this)));
       lazy_load_visibility_observer_->Start();
     }
   }

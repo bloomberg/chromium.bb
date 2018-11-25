@@ -30,7 +30,7 @@
 namespace blink {
 
 DeviceOrientationData* DeviceOrientationData::Create() {
-  return new DeviceOrientationData;
+  return MakeGarbageCollected<DeviceOrientationData>();
 }
 
 DeviceOrientationData* DeviceOrientationData::Create(
@@ -38,7 +38,8 @@ DeviceOrientationData* DeviceOrientationData::Create(
     const base::Optional<double>& beta,
     const base::Optional<double>& gamma,
     bool absolute) {
-  return new DeviceOrientationData(alpha, beta, gamma, absolute);
+  return MakeGarbageCollected<DeviceOrientationData>(alpha, beta, gamma,
+                                                     absolute);
 }
 
 DeviceOrientationData* DeviceOrientationData::Create(

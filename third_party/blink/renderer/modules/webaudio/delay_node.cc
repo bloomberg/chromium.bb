@@ -104,7 +104,7 @@ DelayNode* DelayNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new DelayNode(context, max_delay_time);
+  return MakeGarbageCollected<DelayNode>(context, max_delay_time);
 }
 
 DelayNode* DelayNode::Create(BaseAudioContext* context,

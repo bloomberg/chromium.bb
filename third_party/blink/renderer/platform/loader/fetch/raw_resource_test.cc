@@ -165,7 +165,7 @@ TEST_F(RawResourceTest, AddClientDuringCallback) {
   raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());
 
-  Persistent<DummyClient> dummy_client = new DummyClient();
+  Persistent<DummyClient> dummy_client = MakeGarbageCollected<DummyClient>();
   Persistent<AddingClient> adding_client =
       new AddingClient(dummy_client.Get(), raw);
   raw->AddClient(adding_client, platform_->test_task_runner().get());
@@ -208,7 +208,7 @@ TEST_F(RawResourceTest, RemoveClientDuringCallback) {
   raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());
 
-  Persistent<DummyClient> dummy_client = new DummyClient();
+  Persistent<DummyClient> dummy_client = MakeGarbageCollected<DummyClient>();
   Persistent<RemovingClient> removing_client =
       new RemovingClient(dummy_client.Get());
   raw->AddClient(dummy_client, platform_->test_task_runner().get());

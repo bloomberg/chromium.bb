@@ -309,7 +309,7 @@ void RemoteFrameView::SetupRenderThrottling() {
   if (!target_element)
     return;
 
-  visibility_observer_ = new ElementVisibilityObserver(
+  visibility_observer_ = MakeGarbageCollected<ElementVisibilityObserver>(
       target_element, WTF::BindRepeating(
                           [](RemoteFrameView* remote_view, bool is_visible) {
                             remote_view->UpdateRenderThrottlingStatus(

@@ -87,7 +87,7 @@ class DeviceOrientationEventPumpTest : public testing::Test {
   void SetUp() override {
     device::mojom::SensorProviderPtrInfo sensor_provider_ptr_info;
     sensor_provider_.Bind(mojo::MakeRequest(&sensor_provider_ptr_info));
-    auto* orientation_pump = new DeviceOrientationEventPump(
+    auto* orientation_pump = MakeGarbageCollected<DeviceOrientationEventPump>(
         base::ThreadTaskRunnerHandle::Get(), false /* absolute */);
     orientation_pump->SetSensorProviderForTesting(
         device::mojom::blink::SensorProviderPtr(
@@ -726,8 +726,9 @@ class DeviceAbsoluteOrientationEventPumpTest : public testing::Test {
   void SetUp() override {
     device::mojom::SensorProviderPtrInfo sensor_provider_ptr_info;
     sensor_provider_.Bind(mojo::MakeRequest(&sensor_provider_ptr_info));
-    auto* absolute_orientation_pump = new DeviceOrientationEventPump(
-        base::ThreadTaskRunnerHandle::Get(), true /* absolute */);
+    auto* absolute_orientation_pump =
+        MakeGarbageCollected<DeviceOrientationEventPump>(
+            base::ThreadTaskRunnerHandle::Get(), true /* absolute */);
     absolute_orientation_pump->SetSensorProviderForTesting(
         device::mojom::blink::SensorProviderPtr(
             device::mojom::blink::SensorProviderPtrInfo(

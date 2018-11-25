@@ -24,6 +24,8 @@ class MODULES_EXPORT DetectedText final : public ScriptWrappable {
                               DOMRectReadOnly*,
                               HeapVector<Member<Point2D>>);
 
+  DetectedText(String, DOMRectReadOnly*, HeapVector<Member<Point2D>>);
+
   const String& rawValue() const;
   DOMRectReadOnly* boundingBox() const;
   const HeapVector<Member<Point2D>>& cornerPoints() const;
@@ -32,8 +34,6 @@ class MODULES_EXPORT DetectedText final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  DetectedText(String, DOMRectReadOnly*, HeapVector<Member<Point2D>>);
-
   const String raw_value_;
   const Member<DOMRectReadOnly> bounding_box_;
   const HeapVector<Member<Point2D>> corner_points_;

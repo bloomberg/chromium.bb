@@ -23,6 +23,7 @@ class MODULES_EXPORT DeviceOrientationController
  public:
   static const char kSupplementName[];
 
+  explicit DeviceOrientationController(Document&);
   ~DeviceOrientationController() override;
 
   static DeviceOrientationController& From(Document&);
@@ -42,7 +43,6 @@ class MODULES_EXPORT DeviceOrientationController
       const AtomicString& event_name);
 
  protected:
-  explicit DeviceOrientationController(Document&);
   void RegisterWithOrientationEventPump(bool absolute);
 
   Member<DeviceOrientationEventPump> orientation_event_pump_;

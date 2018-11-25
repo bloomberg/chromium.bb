@@ -25,7 +25,8 @@ DeviceOrientationAbsoluteController& DeviceOrientationAbsoluteController::From(
   DeviceOrientationAbsoluteController* controller =
       Supplement<Document>::From<DeviceOrientationAbsoluteController>(document);
   if (!controller) {
-    controller = new DeviceOrientationAbsoluteController(document);
+    controller =
+        MakeGarbageCollected<DeviceOrientationAbsoluteController>(document);
     Supplement<Document>::ProvideTo(document, controller);
   }
   return *controller;

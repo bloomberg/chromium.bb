@@ -41,7 +41,7 @@ DeviceOrientationController& DeviceOrientationController::From(
   DeviceOrientationController* controller =
       Supplement<Document>::From<DeviceOrientationController>(document);
   if (!controller) {
-    controller = new DeviceOrientationController(document);
+    controller = MakeGarbageCollected<DeviceOrientationController>(document);
     ProvideTo(document, controller);
   }
   return *controller;
@@ -156,7 +156,7 @@ void DeviceOrientationController::RegisterWithOrientationEventPump(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         frame->GetTaskRunner(TaskType::kSensor);
     orientation_event_pump_ =
-        new DeviceOrientationEventPump(task_runner, absolute);
+        MakeGarbageCollected<DeviceOrientationEventPump>(task_runner, absolute);
   }
   orientation_event_pump_->AddController(this);
 }

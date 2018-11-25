@@ -55,8 +55,9 @@ FileSystemDirectoryIterator::FileSystemDirectoryIterator(
     DOMFileSystemBase* file_system,
     const String& full_path)
     : DirectoryReaderBase(file_system, full_path) {
-  Filesystem()->ReadDirectory(this, full_path_, new EntriesCallbackHelper(this),
-                              new ErrorCallbackHelper(this));
+  Filesystem()->ReadDirectory(this, full_path_,
+                              MakeGarbageCollected<EntriesCallbackHelper>(this),
+                              MakeGarbageCollected<ErrorCallbackHelper>(this));
 }
 
 ScriptPromise FileSystemDirectoryIterator::next(ScriptState* script_state) {

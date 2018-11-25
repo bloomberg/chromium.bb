@@ -36,8 +36,10 @@ class ExceptionState;
 class DatasetDOMStringMap final : public DOMStringMap {
  public:
   static DatasetDOMStringMap* Create(Element* element) {
-    return new DatasetDOMStringMap(element);
+    return MakeGarbageCollected<DatasetDOMStringMap>(element);
   }
+
+  explicit DatasetDOMStringMap(Element* element) : element_(element) {}
 
   void GetNames(Vector<String>&) override;
   String item(const String& name) override;
@@ -50,8 +52,6 @@ class DatasetDOMStringMap final : public DOMStringMap {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DatasetDOMStringMap(Element* element) : element_(element) {}
-
   Member<Element> element_;
 };
 

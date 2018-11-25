@@ -59,7 +59,7 @@ class EmptyPopupMenu : public PopupMenu {
 };
 
 PopupMenu* EmptyChromeClient::OpenPopupMenu(LocalFrame&, HTMLSelectElement&) {
-  return new EmptyPopupMenu();
+  return MakeGarbageCollected<EmptyPopupMenu>();
 }
 
 ColorChooser* EmptyChromeClient::OpenColorChooser(LocalFrame*,

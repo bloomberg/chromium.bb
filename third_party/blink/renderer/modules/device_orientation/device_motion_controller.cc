@@ -30,7 +30,7 @@ DeviceMotionController& DeviceMotionController::From(Document& document) {
   DeviceMotionController* controller =
       Supplement<Document>::From<DeviceMotionController>(document);
   if (!controller) {
-    controller = new DeviceMotionController(document);
+    controller = MakeGarbageCollected<DeviceMotionController>(document);
     ProvideTo(document, controller);
   }
   return *controller;
@@ -90,7 +90,8 @@ void DeviceMotionController::RegisterWithDispatcher() {
       return;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         frame->GetTaskRunner(TaskType::kSensor);
-    motion_event_pump_ = new DeviceMotionEventPump(task_runner);
+    motion_event_pump_ =
+        MakeGarbageCollected<DeviceMotionEventPump>(task_runner);
   }
   motion_event_pump_->SetController(this);
 }

@@ -47,8 +47,8 @@ void DevToolsFrontendImpl::BindMojoRequest(
     mojom::blink::DevToolsFrontendAssociatedRequest request) {
   if (!local_frame)
     return;
-  local_frame->ProvideSupplement(
-      new DevToolsFrontendImpl(*local_frame, std::move(request)));
+  local_frame->ProvideSupplement(MakeGarbageCollected<DevToolsFrontendImpl>(
+      *local_frame, std::move(request)));
 }
 
 // static

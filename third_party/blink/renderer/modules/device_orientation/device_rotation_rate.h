@@ -42,6 +42,8 @@ class MODULES_EXPORT DeviceRotationRate final : public ScriptWrappable {
   static DeviceRotationRate* Create(double alpha, double beta, double gamma);
   static DeviceRotationRate* Create(const DeviceRotationRateInit*);
 
+  DeviceRotationRate(double alpha, double beta, double gamma);
+
   bool HasRotationData() const;
 
   double alpha(bool& is_null) const;
@@ -49,8 +51,6 @@ class MODULES_EXPORT DeviceRotationRate final : public ScriptWrappable {
   double gamma(bool& is_null) const;
 
  private:
-  DeviceRotationRate(double alpha, double beta, double gamma);
-
   const double alpha_;
   const double beta_;
   const double gamma_;

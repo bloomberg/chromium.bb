@@ -50,6 +50,10 @@ class DatabaseAuthorizer
 
   static DatabaseAuthorizer* Create(DatabaseContext*,
                                     const String& database_info_table_name);
+
+  explicit DatabaseAuthorizer(DatabaseContext*,
+                              const String& database_info_table_name);
+
   void Trace(blink::Visitor*);
 
   int CreateTable(const String& table_name);
@@ -103,8 +107,6 @@ class DatabaseAuthorizer
   bool HadDeletes() const { return had_deletes_; }
 
  private:
-  explicit DatabaseAuthorizer(DatabaseContext*,
-                              const String& database_info_table_name);
   void AddWhitelistedFunctions();
   int DenyBasedOnTableName(const String&) const;
   int UpdateDeletesBasedOnTableName(const String&);

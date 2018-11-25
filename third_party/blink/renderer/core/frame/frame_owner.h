@@ -82,7 +82,9 @@ class CORE_EXPORT DummyFrameOwner final
   USING_GARBAGE_COLLECTED_MIXIN(DummyFrameOwner);
 
  public:
-  static DummyFrameOwner* Create() { return new DummyFrameOwner; }
+  static DummyFrameOwner* Create() {
+    return MakeGarbageCollected<DummyFrameOwner>();
+  }
 
   void Trace(blink::Visitor* visitor) override { FrameOwner::Trace(visitor); }
 

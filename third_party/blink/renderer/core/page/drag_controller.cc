@@ -150,7 +150,7 @@ DragController::DragController(Page* page)
       did_initiate_drag_(false) {}
 
 DragController* DragController::Create(Page* page) {
-  return new DragController(page);
+  return MakeGarbageCollected<DragController>(page);
 }
 
 static DocumentFragment* DocumentFragmentFromDragData(
@@ -1344,7 +1344,7 @@ bool DragController::IsCopyKeyDown(DragData* drag_data) {
 
 DragState& DragController::GetDragState() {
   if (!drag_state_)
-    drag_state_ = new DragState;
+    drag_state_ = MakeGarbageCollected<DragState>();
   return *drag_state_;
 }
 

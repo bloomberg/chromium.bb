@@ -76,8 +76,8 @@ class DeviceMotionEventPumpTest : public testing::Test {
   void SetUp() override {
     device::mojom::SensorProviderPtrInfo sensor_provider_ptr_info;
     sensor_provider_.Bind(mojo::MakeRequest(&sensor_provider_ptr_info));
-    auto* motion_pump =
-        new DeviceMotionEventPump(base::ThreadTaskRunnerHandle::Get());
+    auto* motion_pump = MakeGarbageCollected<DeviceMotionEventPump>(
+        base::ThreadTaskRunnerHandle::Get());
     motion_pump->SetSensorProviderForTesting(
         device::mojom::blink::SensorProviderPtr(
             device::mojom::blink::SensorProviderPtrInfo(

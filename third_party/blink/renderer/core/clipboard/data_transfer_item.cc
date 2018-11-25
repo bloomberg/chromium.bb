@@ -44,7 +44,7 @@ namespace blink {
 
 DataTransferItem* DataTransferItem::Create(DataTransfer* data_transfer,
                                            DataObjectItem* item) {
-  return new DataTransferItem(data_transfer, item);
+  return MakeGarbageCollected<DataTransferItem>(data_transfer, item);
 }
 
 String DataTransferItem::kind() const {

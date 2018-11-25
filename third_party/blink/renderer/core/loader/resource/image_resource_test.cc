@@ -1851,7 +1851,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
 
-  EmptyChromeClient* chrome_client = new EmptyChromeClient();
+  EmptyChromeClient* chrome_client = MakeGarbageCollected<EmptyChromeClient>();
   Page::PageClients clients;
   FillWithEmptyClients(clients);
   clients.chrome_client = chrome_client;

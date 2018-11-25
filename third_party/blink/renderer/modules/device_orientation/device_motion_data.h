@@ -45,6 +45,13 @@ class MODULES_EXPORT DeviceMotionData final
       DeviceRotationRate*,
       double interval);
   static DeviceMotionData* Create(const DeviceMotionEventInit*);
+
+  DeviceMotionData();
+  DeviceMotionData(DeviceAcceleration*,
+                   DeviceAcceleration* acceleration_including_gravity,
+                   DeviceRotationRate*,
+                   double interval);
+
   void Trace(blink::Visitor*);
 
   DeviceAcceleration* GetAcceleration() const { return acceleration_.Get(); }
@@ -58,12 +65,6 @@ class MODULES_EXPORT DeviceMotionData final
   bool CanProvideEventData() const;
 
  private:
-  DeviceMotionData();
-  DeviceMotionData(DeviceAcceleration*,
-                   DeviceAcceleration* acceleration_including_gravity,
-                   DeviceRotationRate*,
-                   double interval);
-
   Member<DeviceAcceleration> acceleration_;
   Member<DeviceAcceleration> acceleration_including_gravity_;
   Member<DeviceRotationRate> rotation_rate_;

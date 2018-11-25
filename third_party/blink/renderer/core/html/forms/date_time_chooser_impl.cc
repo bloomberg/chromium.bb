@@ -62,7 +62,8 @@ DateTimeChooserImpl* DateTimeChooserImpl::Create(
     ChromeClient* chrome_client,
     DateTimeChooserClient* client,
     const DateTimeChooserParameters& parameters) {
-  return new DateTimeChooserImpl(chrome_client, client, parameters);
+  return MakeGarbageCollected<DateTimeChooserImpl>(chrome_client, client,
+                                                   parameters);
 }
 
 DateTimeChooserImpl::~DateTimeChooserImpl() = default;

@@ -74,7 +74,8 @@ ExternalDateTimeChooser* ExternalDateTimeChooser::Create(
     DateTimeChooserClient* client,
     const DateTimeChooserParameters& parameters) {
   DCHECK(chrome_client);
-  ExternalDateTimeChooser* chooser = new ExternalDateTimeChooser(client);
+  ExternalDateTimeChooser* chooser =
+      MakeGarbageCollected<ExternalDateTimeChooser>(client);
   if (!chooser->OpenDateTimeChooser(chrome_client, web_view_client, parameters))
     chooser = nullptr;
   return chooser;

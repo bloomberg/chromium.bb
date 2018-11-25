@@ -52,7 +52,7 @@ inline DateInputType::DateInputType(HTMLInputElement& element)
     : BaseTemporalInputType(element) {}
 
 InputType* DateInputType::Create(HTMLInputElement& element) {
-  return new DateInputType(element);
+  return MakeGarbageCollected<DateInputType>(element);
 }
 
 void DateInputType::CountUsage() {

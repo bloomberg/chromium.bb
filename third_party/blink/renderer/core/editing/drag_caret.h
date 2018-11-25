@@ -47,6 +47,7 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
  public:
   static DragCaret* Create();
 
+  DragCaret();
   virtual ~DragCaret();
 
   // Paint invalidation methods delegating to CaretDisplayItemClient.
@@ -70,8 +71,6 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   void Trace(blink::Visitor*) override;
 
  private:
-  DragCaret();
-
   // Implementations of |SynchronousMutationObserver|
   void NodeChildrenWillBeRemoved(ContainerNode&) final;
   void NodeWillBeRemoved(Node&) final;

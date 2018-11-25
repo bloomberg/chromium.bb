@@ -38,16 +38,26 @@ class DeviceOrientationEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  DeviceOrientationEvent();
+  DeviceOrientationEvent(const AtomicString&,
+                         const DeviceOrientationEventInit*);
+  DeviceOrientationEvent(const AtomicString& event_type,
+                         DeviceOrientationData*);
   ~DeviceOrientationEvent() override;
-  static DeviceOrientationEvent* Create() { return new DeviceOrientationEvent; }
+
+  static DeviceOrientationEvent* Create() {
+    return MakeGarbageCollected<DeviceOrientationEvent>();
+  }
   static DeviceOrientationEvent* Create(
       const AtomicString& event_type,
       const DeviceOrientationEventInit* initializer) {
-    return new DeviceOrientationEvent(event_type, initializer);
+    return MakeGarbageCollected<DeviceOrientationEvent>(event_type,
+                                                        initializer);
   }
   static DeviceOrientationEvent* Create(const AtomicString& event_type,
                                         DeviceOrientationData* orientation) {
-    return new DeviceOrientationEvent(event_type, orientation);
+    return MakeGarbageCollected<DeviceOrientationEvent>(event_type,
+                                                        orientation);
   }
 
   DeviceOrientationData* Orientation() const { return orientation_.Get(); }
@@ -62,12 +72,6 @@ class DeviceOrientationEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  DeviceOrientationEvent();
-  DeviceOrientationEvent(const AtomicString&,
-                         const DeviceOrientationEventInit*);
-  DeviceOrientationEvent(const AtomicString& event_type,
-                         DeviceOrientationData*);
-
   Member<DeviceOrientationData> orientation_;
 };
 

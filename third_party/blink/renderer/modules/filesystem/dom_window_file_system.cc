@@ -179,12 +179,15 @@ ScriptPromise CreateFileHandle(ScriptState* script_state,
   // TODO(mek): Try to create handle directly rather than having to do more
   // IPCs to get the actual entries.
   if (is_directory) {
-    fs->GetDirectory(fs->root(), entry->base_name, FileSystemFlags::Create(),
-                     new EntryCallbacks::OnDidGetEntryPromiseImpl(new_resolver),
-                     new PromiseErrorCallback(new_resolver));
+    fs->GetDirectory(
+        fs->root(), entry->base_name, FileSystemFlags::Create(),
+        MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(
+            new_resolver),
+        new PromiseErrorCallback(new_resolver));
   } else {
     fs->GetFile(fs->root(), entry->base_name, FileSystemFlags::Create(),
-                new EntryCallbacks::OnDidGetEntryPromiseImpl(new_resolver),
+                MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(
+                    new_resolver),
                 new PromiseErrorCallback(new_resolver));
   }
   return result;

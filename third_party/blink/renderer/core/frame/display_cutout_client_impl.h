@@ -24,15 +24,15 @@ class CORE_EXPORT DisplayCutoutClientImpl final
       LocalFrame*,
       mojom::blink::DisplayCutoutClientAssociatedRequest);
 
+  DisplayCutoutClientImpl(LocalFrame*,
+                          mojom::blink::DisplayCutoutClientAssociatedRequest);
+
   // Notify the renderer that the safe areas have changed.
   void SetSafeArea(mojom::blink::DisplayCutoutSafeAreaPtr safe_area) override;
 
   void Trace(Visitor*);
 
  private:
-  DisplayCutoutClientImpl(LocalFrame*,
-                          mojom::blink::DisplayCutoutClientAssociatedRequest);
-
   Member<LocalFrame> frame_;
 
   mojo::AssociatedBinding<mojom::blink::DisplayCutoutClient> binding_;

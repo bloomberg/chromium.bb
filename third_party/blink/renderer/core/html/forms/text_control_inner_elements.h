@@ -45,8 +45,9 @@ class EditingViewPortElement final : public HTMLDivElement {
  public:
   static EditingViewPortElement* Create(Document&);
 
- protected:
   explicit EditingViewPortElement(Document&);
+
+ protected:
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
 
  private:

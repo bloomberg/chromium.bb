@@ -144,15 +144,17 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
   class OnDidGetEntryV8Impl : public OnDidGetEntryCallback {
    public:
     static OnDidGetEntryV8Impl* Create(V8EntryCallback* callback) {
-      return callback ? new OnDidGetEntryV8Impl(callback) : nullptr;
+      return callback ? MakeGarbageCollected<OnDidGetEntryV8Impl>(callback)
+                      : nullptr;
     }
+
+    OnDidGetEntryV8Impl(V8EntryCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
+
     void Trace(blink::Visitor*) override;
     void OnSuccess(Entry*) override;
 
    private:
-    OnDidGetEntryV8Impl(V8EntryCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
     Member<V8PersistentCallbackInterface<V8EntryCallback>> callback_;
   };
 

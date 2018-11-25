@@ -56,9 +56,10 @@ class ResizeObserver;
 class ElementRareData : public NodeRareData {
  public:
   static ElementRareData* Create(NodeRenderingData* node_layout_data) {
-    return new ElementRareData(node_layout_data);
+    return MakeGarbageCollected<ElementRareData>(node_layout_data);
   }
 
+  explicit ElementRareData(NodeRenderingData*);
   ~ElementRareData();
 
   void SetPseudoElement(PseudoId, PseudoElement*);
@@ -180,7 +181,8 @@ class ElementRareData : public NodeRareData {
   }
   ElementIntersectionObserverData& EnsureIntersectionObserverData() {
     if (!intersection_observer_data_) {
-      intersection_observer_data_ = new ElementIntersectionObserverData();
+      intersection_observer_data_ =
+          MakeGarbageCollected<ElementIntersectionObserverData>();
     }
     return *intersection_observer_data_;
   }
@@ -241,8 +243,6 @@ class ElementRareData : public NodeRareData {
 
   WeakMember<DisplayLockContext> display_lock_context_;
   bool did_attach_internals_ = false;
-
-  explicit ElementRareData(NodeRenderingData*);
 };
 
 inline LayoutSize DefaultMinimumSizeForResizing() {

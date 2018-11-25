@@ -43,6 +43,13 @@ class MODULES_EXPORT DeviceOrientationData final
                                        const base::Optional<double>& gamma,
                                        bool absolute);
   static DeviceOrientationData* Create(const DeviceOrientationEventInit*);
+
+  DeviceOrientationData();
+  DeviceOrientationData(const base::Optional<double>& alpha,
+                        const base::Optional<double>& beta,
+                        const base::Optional<double>& gamma,
+                        bool absolute);
+
   void Trace(blink::Visitor* visitor) {}
 
   double Alpha() const;
@@ -56,12 +63,6 @@ class MODULES_EXPORT DeviceOrientationData final
   bool CanProvideEventData() const;
 
  private:
-  DeviceOrientationData();
-  DeviceOrientationData(const base::Optional<double>& alpha,
-                        const base::Optional<double>& beta,
-                        const base::Optional<double>& gamma,
-                        bool absolute);
-
   base::Optional<double> alpha_;
   base::Optional<double> beta_;
   base::Optional<double> gamma_;

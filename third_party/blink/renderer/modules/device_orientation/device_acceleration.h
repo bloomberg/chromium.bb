@@ -42,6 +42,8 @@ class MODULES_EXPORT DeviceAcceleration final : public ScriptWrappable {
   static DeviceAcceleration* Create(double x, double y, double z);
   static DeviceAcceleration* Create(const DeviceAccelerationInit*);
 
+  DeviceAcceleration(double x, double y, double z);
+
   bool HasAccelerationData() const;
 
   double x(bool& is_null) const;
@@ -49,8 +51,6 @@ class MODULES_EXPORT DeviceAcceleration final : public ScriptWrappable {
   double z(bool& is_null) const;
 
  private:
-  DeviceAcceleration(double x, double y, double z);
-
   const double x_;
   const double y_;
   const double z_;

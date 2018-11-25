@@ -23,6 +23,9 @@ class MODULES_EXPORT DetectedFace final : public ScriptWrappable {
   static DetectedFace* Create(DOMRectReadOnly*,
                               const HeapVector<Member<Landmark>>&);
 
+  explicit DetectedFace(DOMRectReadOnly*);
+  DetectedFace(DOMRectReadOnly*, const HeapVector<Member<Landmark>>&);
+
   DOMRectReadOnly* boundingBox() const;
   const HeapVector<Member<Landmark>>& landmarks() const;
 
@@ -30,9 +33,6 @@ class MODULES_EXPORT DetectedFace final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DetectedFace(DOMRectReadOnly*);
-  DetectedFace(DOMRectReadOnly*, const HeapVector<Member<Landmark>>&);
-
   const Member<DOMRectReadOnly> bounding_box_;
   const HeapVector<Member<Landmark>> landmarks_;
 };
