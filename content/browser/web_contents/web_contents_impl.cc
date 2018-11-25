@@ -238,7 +238,11 @@ void ResetAccessibility(RenderFrameHost* rfh) {
 bool GetInnerWebContentsHelper(
     std::vector<WebContentsImpl*>* all_guest_contents,
     WebContents* guest_contents) {
-  all_guest_contents->push_back(static_cast<WebContentsImpl*>(guest_contents));
+  auto* web_contents_impl = static_cast<WebContentsImpl*>(guest_contents);
+  if (web_contents_impl->GetBrowserPluginGuest()->attached() &&
+      !GuestMode::IsCrossProcessFrameGuest(web_contents_impl)) {
+    all_guest_contents->push_back(web_contents_impl);
+  }
   return false;
 }
 
@@ -1172,6 +1176,10 @@ void WebContentsImpl::NotifyViewportFitChanged(
     observer.ViewportFitChanged(value);
 }
 
+FindRequestManager* WebContentsImpl::GetFindRequestManagerForTesting() const {
+  return GetFindRequestManager();
+}
+
 #if !defined(OS_ANDROID)
 void WebContentsImpl::UpdateZoom() {
   RenderWidgetHostImpl* rwh = GetRenderViewHost()->GetWidget();
@@ -1215,14 +1223,16 @@ WebContentsBindingSet* WebContentsImpl::GetBindingSet(
 }
 
 std::vector<WebContentsImpl*> WebContentsImpl::GetInnerWebContents() {
+  std::vector<WebContentsImpl*> all_inner_contents;
   if (browser_plugin_embedder_) {
-    std::vector<WebContentsImpl*> inner_contents;
     GetBrowserContext()->GetGuestManager()->ForEachGuest(
-        this, base::BindRepeating(&GetInnerWebContentsHelper, &inner_contents));
-    return inner_contents;
+        this,
+        base::BindRepeating(&GetInnerWebContentsHelper, &all_inner_contents));
   }
-
-  return node_.GetInnerWebContents();
+  const auto& inner_contents = node_.GetInnerWebContents();
+  all_inner_contents.insert(all_inner_contents.end(), inner_contents.begin(),
+                            inner_contents.end());
+  return all_inner_contents;
 }
 
 std::vector<WebContentsImpl*> WebContentsImpl::GetWebContentsAndAllInner() {
@@ -6422,8 +6432,8 @@ std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(const GURL& url) {
   return nullptr;
 }
 
-FindRequestManager* WebContentsImpl::GetFindRequestManager() {
-  for (WebContentsImpl* contents = this; contents;
+FindRequestManager* WebContentsImpl::GetFindRequestManager() const {
+  for (const auto* contents = this; contents;
        contents = contents->GetOuterWebContents()) {
     if (contents->find_request_manager_)
       return contents->find_request_manager_.get();
@@ -6435,6 +6445,8 @@ FindRequestManager* WebContentsImpl::GetFindRequestManager() {
 FindRequestManager* WebContentsImpl::GetOrCreateFindRequestManager() {
   if (FindRequestManager* manager = GetFindRequestManager())
     return manager;
+
+  DCHECK(!browser_plugin_guest_ || GetOuterWebContents());
 
   // No existing FindRequestManager found, so one must be created.
   find_request_manager_.reset(new FindRequestManager(this));

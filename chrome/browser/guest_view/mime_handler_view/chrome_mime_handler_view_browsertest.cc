@@ -2,28 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/guid.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/stream_handle.h"
+#include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/find_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
+#include "extensions/common/constants.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/webview/webview.h"
@@ -39,6 +51,10 @@ using extensions::TestMimeHandlerViewGuest;
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
+
+namespace {
+constexpr char kTestExtensionId[] = "oickdpebdnfbgkcaoklfcdhjniefkcji";
+}
 
 // Note: This file contains several old WebViewGuest tests which were for
 // certain BrowserPlugin features and no longer made sense for the new
@@ -102,7 +118,6 @@ class ChromeMimeHandlerViewBrowserPluginTest
     const extensions::Extension* extension =
         LoadExtension(test_data_dir_.AppendASCII("mime_handler_view"));
     ASSERT_TRUE(extension);
-    const char kTestExtensionId[] = "oickdpebdnfbgkcaoklfcdhjniefkcji";
     CHECK_EQ(kTestExtensionId, extension->id());
 
     extensions::ResultCatcher catcher;
@@ -124,7 +139,40 @@ class ChromeMimeHandlerViewBrowserPluginTest
     return embedder_web_contents_;
   }
 
+  // Creates a bogus StreamContainer for the first tab. This is not intended to
+  // be really consumed by MimeHandler API.
+  std::unique_ptr<extensions::StreamContainer> CreateFakeStreamContainer(
+      const GURL& url,
+      std::string* view_id) {
+    *view_id = base::GenerateGUID();
+    auto stream_info = std::make_unique<content::StreamInfo>();
+    stream_info->handle = std::make_unique<FakeStreamHandle>(url);
+    stream_info->original_url = url;
+    stream_info->mime_type = "application/pdf";
+    stream_info->response_headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/2 200 OK");
+    return std::make_unique<extensions::StreamContainer>(
+        std::move(stream_info), 0 /* tab_id */, false /* embedded */,
+        GURL(std::string(extensions::kExtensionScheme) +
+             kTestExtensionId) /* handler_url */,
+        kTestExtensionId, nullptr /* transferrable_loader */, url);
+  }
+
  private:
+  class FakeStreamHandle : public content::StreamHandle {
+   public:
+    explicit FakeStreamHandle(const GURL& url) : url_(url) {}
+    ~FakeStreamHandle() override {}
+
+    const GURL& GetURL() override { return url_; }
+    void AddCloseListener(const base::RepeatingClosure& callback) override {}
+
+   private:
+    const GURL url_;
+
+    DISALLOW_COPY_AND_ASSIGN(FakeStreamHandle);
+  };
+
   TestGuestViewManagerFactory factory_;
   content::WebContents* guest_web_contents_;
   content::WebContents* embedder_web_contents_;
@@ -151,6 +199,55 @@ class FocusChangeWaiter {
   content::WebContents* web_contents_;
   bool expected_focus_;
 };
+
+// This test creates two guest views in a tab: a normal attached
+// MimeHandlerViewGuest, and then another MHVG which is unattached. Right after
+// the second GuestView's WebContents is created a find request is send to the
+// tab's WebContents. The test then verifies that the set of outstanding
+// RenderFrameHosts with find request in flight includes all frames but the one
+// from the unattached guest. For more context see https://crbug.com/897465.
+IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
+                       NoFindInPageForUnattachedGuest) {
+  InitializeTestPage(embedded_test_server()->GetURL("/testBasic.csv"));
+  auto* main_frame = embedder_web_contents()->GetMainFrame();
+  auto* attached_guest_main_frame = guest_web_contents()->GetMainFrame();
+  std::string view_id;
+  auto stream_container = CreateFakeStreamContainer(GURL("foo.com"), &view_id);
+  extensions::MimeHandlerStreamManager::Get(
+      embedder_web_contents()->GetBrowserContext())
+      ->AddStream(view_id, std::move(stream_container),
+                  main_frame->GetFrameTreeNodeId(),
+                  main_frame->GetProcess()->GetID(),
+                  main_frame->GetRoutingID());
+  base::DictionaryValue create_params;
+  create_params.SetString(mime_handler_view::kViewId, view_id);
+  // The actual test logic is inside the callback.
+  GuestViewManager::WebContentsCreatedCallback callback = base::BindOnce(
+      [](content::WebContents* embedder_contents,
+         content::RenderFrameHost* attached_guest_rfh,
+         content::WebContents* guest_contents) {
+        auto* guest_main_frame = guest_contents->GetMainFrame();
+        auto* find_helper = FindTabHelper::FromWebContents(embedder_contents);
+        find_helper->StartFinding(base::ASCIIToUTF16("doesn't matter"), true,
+                                  true, false);
+        auto pending = content::GetRenderFrameHostsWithPendingFindResults(
+            embedder_contents);
+        // Request for main frame of the tab.
+        EXPECT_EQ(1U, pending.count(embedder_contents->GetMainFrame()));
+        // Request for main frame of the attached guest.
+        EXPECT_EQ(1U, pending.count(attached_guest_rfh));
+        // No request for the unattached guest.
+        EXPECT_EQ(0U, pending.count(guest_main_frame));
+        // Sanity-check: try the set returned for guest.
+        pending =
+            content::GetRenderFrameHostsWithPendingFindResults(guest_contents);
+        EXPECT_TRUE(pending.empty());
+      },
+      embedder_web_contents(), attached_guest_main_frame);
+  GetGuestViewManager()->CreateGuest(MimeHandlerViewGuest::Type,
+                                     embedder_web_contents(), create_params,
+                                     std::move(callback));
+}
 
 // Flaky under MSan: https://crbug.com/837757
 #if defined(MEMORY_SANITIZER)
