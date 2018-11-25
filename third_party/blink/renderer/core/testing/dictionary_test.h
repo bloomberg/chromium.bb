@@ -27,7 +27,11 @@ class DictionaryTest : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DictionaryTest* Create() { return new DictionaryTest(); }
+  static DictionaryTest* Create() {
+    return MakeGarbageCollected<DictionaryTest>();
+  }
+
+  DictionaryTest();
   ~DictionaryTest() override;
 
   // Stores all members into corresponding fields
@@ -51,8 +55,6 @@ class DictionaryTest : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  DictionaryTest();
-
   void Reset();
 
   void GetInternals(InternalDictionary*);

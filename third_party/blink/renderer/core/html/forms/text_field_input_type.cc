@@ -60,8 +60,6 @@ using namespace html_names;
 
 class DataListIndicatorElement final : public HTMLDivElement {
  private:
-  inline DataListIndicatorElement(Document& document)
-      : HTMLDivElement(document) {}
   inline HTMLInputElement* HostInput() const {
     return ToHTMLInputElement(OwnerShadowHost());
   }
@@ -98,12 +96,16 @@ class DataListIndicatorElement final : public HTMLDivElement {
 
  public:
   static DataListIndicatorElement* Create(Document& document) {
-    DataListIndicatorElement* element = new DataListIndicatorElement(document);
+    DataListIndicatorElement* element =
+        MakeGarbageCollected<DataListIndicatorElement>(document);
     element->SetShadowPseudoId(
         AtomicString("-webkit-calendar-picker-indicator"));
     element->setAttribute(kIdAttr, shadow_element_names::PickerIndicator());
     return element;
   }
+
+  inline DataListIndicatorElement(Document& document)
+      : HTMLDivElement(document) {}
 };
 
 TextFieldInputType::TextFieldInputType(HTMLInputElement& element)

@@ -40,7 +40,8 @@ namespace blink {
 DatabaseAuthorizer* DatabaseAuthorizer::Create(
     DatabaseContext* database_context,
     const String& database_info_table_name) {
-  return new DatabaseAuthorizer(database_context, database_info_table_name);
+  return MakeGarbageCollected<DatabaseAuthorizer>(database_context,
+                                                  database_info_table_name);
 }
 
 DatabaseAuthorizer::DatabaseAuthorizer(DatabaseContext* database_context,

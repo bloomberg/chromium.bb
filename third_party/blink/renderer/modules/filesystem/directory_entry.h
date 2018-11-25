@@ -51,8 +51,11 @@ class MODULES_EXPORT DirectoryEntry final : public Entry {
  public:
   static DirectoryEntry* Create(DOMFileSystemBase* file_system,
                                 const String& full_path) {
-    return new DirectoryEntry(file_system, full_path);
+    return MakeGarbageCollected<DirectoryEntry>(file_system, full_path);
   }
+
+  DirectoryEntry(DOMFileSystemBase*, const String& full_path);
+
   bool isDirectory() const override { return true; }
 
   DirectoryReader* createReader();
@@ -68,9 +71,6 @@ class MODULES_EXPORT DirectoryEntry final : public Entry {
                          V8ErrorCallback* = nullptr) const;
 
   void Trace(blink::Visitor*) override;
-
- private:
-  DirectoryEntry(DOMFileSystemBase*, const String& full_path);
 };
 
 DEFINE_TYPE_CASTS(DirectoryEntry,

@@ -215,7 +215,7 @@ bool IsRootEditableElementWithCounting(const Element& element) {
 }  // namespace
 
 Element* Element::Create(const QualifiedName& tag_name, Document* document) {
-  return new Element(tag_name, document, kCreateElement);
+  return MakeGarbageCollected<Element>(tag_name, document, kCreateElement);
 }
 
 Element::Element(const QualifiedName& tag_name,
@@ -398,7 +398,7 @@ ElementAnimations* Element::GetElementAnimations() const {
 ElementAnimations& Element::EnsureElementAnimations() {
   ElementRareData& rare_data = EnsureElementRareData();
   if (!rare_data.GetElementAnimations())
-    rare_data.SetElementAnimations(new ElementAnimations());
+    rare_data.SetElementAnimations(MakeGarbageCollected<ElementAnimations>());
   return *rare_data.GetElementAnimations();
 }
 

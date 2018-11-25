@@ -42,19 +42,17 @@ class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
       const DeleteSelectionOptions& options,
       InputEvent::InputType input_type = InputEvent::InputType::kNone,
       const Position& reference_move_position = Position()) {
-    return new DeleteSelectionCommand(document, options, input_type,
-                                      reference_move_position);
+    return MakeGarbageCollected<DeleteSelectionCommand>(
+        document, options, input_type, reference_move_position);
   }
   static DeleteSelectionCommand* Create(
       const VisibleSelection& selection,
       const DeleteSelectionOptions& options,
       InputEvent::InputType input_type = InputEvent::InputType::kNone) {
-    return new DeleteSelectionCommand(selection, options, input_type);
+    return MakeGarbageCollected<DeleteSelectionCommand>(selection, options,
+                                                        input_type);
   }
 
-  void Trace(blink::Visitor*) override;
-
- private:
   DeleteSelectionCommand(Document&,
                          const DeleteSelectionOptions&,
                          InputEvent::InputType,
@@ -63,6 +61,9 @@ class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
                          const DeleteSelectionOptions&,
                          InputEvent::InputType);
 
+  void Trace(blink::Visitor*) override;
+
+ private:
   void DoApply(EditingState*) override;
   InputEvent::InputType GetInputType() const override;
 

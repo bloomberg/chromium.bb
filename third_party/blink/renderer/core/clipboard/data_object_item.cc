@@ -41,13 +41,15 @@ namespace blink {
 
 DataObjectItem* DataObjectItem::CreateFromString(const String& type,
                                                  const String& data) {
-  DataObjectItem* item = new DataObjectItem(kStringKind, type);
+  DataObjectItem* item =
+      MakeGarbageCollected<DataObjectItem>(kStringKind, type);
   item->data_ = data;
   return item;
 }
 
 DataObjectItem* DataObjectItem::CreateFromFile(File* file) {
-  DataObjectItem* item = new DataObjectItem(kFileKind, file->type());
+  DataObjectItem* item =
+      MakeGarbageCollected<DataObjectItem>(kFileKind, file->type());
   item->file_ = file;
   return item;
 }
@@ -55,7 +57,8 @@ DataObjectItem* DataObjectItem::CreateFromFile(File* file) {
 DataObjectItem* DataObjectItem::CreateFromFileWithFileSystemId(
     File* file,
     const String& file_system_id) {
-  DataObjectItem* item = new DataObjectItem(kFileKind, file->type());
+  DataObjectItem* item =
+      MakeGarbageCollected<DataObjectItem>(kFileKind, file->type());
   item->file_ = file;
   item->file_system_id_ = file_system_id;
   return item;
@@ -63,7 +66,8 @@ DataObjectItem* DataObjectItem::CreateFromFileWithFileSystemId(
 
 DataObjectItem* DataObjectItem::CreateFromURL(const String& url,
                                               const String& title) {
-  DataObjectItem* item = new DataObjectItem(kStringKind, kMimeTypeTextURIList);
+  DataObjectItem* item =
+      MakeGarbageCollected<DataObjectItem>(kStringKind, kMimeTypeTextURIList);
   item->data_ = url;
   item->title_ = title;
   return item;
@@ -71,7 +75,8 @@ DataObjectItem* DataObjectItem::CreateFromURL(const String& url,
 
 DataObjectItem* DataObjectItem::CreateFromHTML(const String& html,
                                                const KURL& base_url) {
-  DataObjectItem* item = new DataObjectItem(kStringKind, kMimeTypeTextHTML);
+  DataObjectItem* item =
+      MakeGarbageCollected<DataObjectItem>(kStringKind, kMimeTypeTextHTML);
   item->data_ = html;
   item->base_url_ = base_url;
   return item;
@@ -82,7 +87,7 @@ DataObjectItem* DataObjectItem::CreateFromSharedBuffer(
     const KURL& source_url,
     const String& filename_extension,
     const AtomicString& content_disposition) {
-  DataObjectItem* item = new DataObjectItem(
+  DataObjectItem* item = MakeGarbageCollected<DataObjectItem>(
       kFileKind,
       MIMETypeRegistry::GetWellKnownMIMETypeForExtension(filename_extension));
   item->shared_buffer_ = std::move(buffer);
@@ -95,9 +100,12 @@ DataObjectItem* DataObjectItem::CreateFromSharedBuffer(
 
 DataObjectItem* DataObjectItem::CreateFromClipboard(const String& type,
                                                     uint64_t sequence_number) {
-  if (type == kMimeTypeImagePng)
-    return new DataObjectItem(kFileKind, type, sequence_number);
-  return new DataObjectItem(kStringKind, type, sequence_number);
+  if (type == kMimeTypeImagePng) {
+    return MakeGarbageCollected<DataObjectItem>(kFileKind, type,
+                                                sequence_number);
+  }
+  return MakeGarbageCollected<DataObjectItem>(kStringKind, type,
+                                              sequence_number);
 }
 
 DataObjectItem::DataObjectItem(ItemKind kind, const String& type)

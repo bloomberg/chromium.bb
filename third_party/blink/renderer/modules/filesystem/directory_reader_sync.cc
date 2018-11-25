@@ -43,8 +43,11 @@ class DirectoryReaderSync::EntriesCallbackHelper final
     : public EntriesCallbacks::OnDidGetEntriesCallback {
  public:
   static EntriesCallbackHelper* Create(DirectoryReaderSync* reader) {
-    return new EntriesCallbackHelper(reader);
+    return MakeGarbageCollected<EntriesCallbackHelper>(reader);
   }
+
+  explicit EntriesCallbackHelper(DirectoryReaderSync* reader)
+      : reader_(reader) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
@@ -60,9 +63,6 @@ class DirectoryReaderSync::EntriesCallbackHelper final
   }
 
  private:
-  explicit EntriesCallbackHelper(DirectoryReaderSync* reader)
-      : reader_(reader) {}
-
   Member<DirectoryReaderSync> reader_;
 };
 
@@ -70,8 +70,10 @@ class DirectoryReaderSync::ErrorCallbackHelper final
     : public ErrorCallbackBase {
  public:
   static ErrorCallbackHelper* Create(DirectoryReaderSync* reader) {
-    return new ErrorCallbackHelper(reader);
+    return MakeGarbageCollected<ErrorCallbackHelper>(reader);
   }
+
+  explicit ErrorCallbackHelper(DirectoryReaderSync* reader) : reader_(reader) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
@@ -83,8 +85,6 @@ class DirectoryReaderSync::ErrorCallbackHelper final
   }
 
  private:
-  explicit ErrorCallbackHelper(DirectoryReaderSync* reader) : reader_(reader) {}
-
   Member<DirectoryReaderSync> reader_;
 };
 

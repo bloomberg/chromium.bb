@@ -31,7 +31,7 @@ namespace blink {
 DeviceRotationRate* DeviceRotationRate::Create(double alpha,
                                                double beta,
                                                double gamma) {
-  return new DeviceRotationRate(alpha, beta, gamma);
+  return MakeGarbageCollected<DeviceRotationRate>(alpha, beta, gamma);
 }
 
 DeviceRotationRate* DeviceRotationRate::Create(

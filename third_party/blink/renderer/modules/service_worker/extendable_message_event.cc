@@ -9,14 +9,15 @@ namespace blink {
 ExtendableMessageEvent* ExtendableMessageEvent::Create(
     const AtomicString& type,
     const ExtendableMessageEventInit* initializer) {
-  return new ExtendableMessageEvent(type, initializer);
+  return MakeGarbageCollected<ExtendableMessageEvent>(type, initializer);
 }
 
 ExtendableMessageEvent* ExtendableMessageEvent::Create(
     const AtomicString& type,
     const ExtendableMessageEventInit* initializer,
     WaitUntilObserver* observer) {
-  return new ExtendableMessageEvent(type, initializer, observer);
+  return MakeGarbageCollected<ExtendableMessageEvent>(type, initializer,
+                                                      observer);
 }
 
 ExtendableMessageEvent* ExtendableMessageEvent::Create(
@@ -24,7 +25,8 @@ ExtendableMessageEvent* ExtendableMessageEvent::Create(
     const String& origin,
     MessagePortArray* ports,
     WaitUntilObserver* observer) {
-  return new ExtendableMessageEvent(std::move(data), origin, ports, observer);
+  return MakeGarbageCollected<ExtendableMessageEvent>(std::move(data), origin,
+                                                      ports, observer);
 }
 
 ExtendableMessageEvent* ExtendableMessageEvent::Create(
@@ -33,8 +35,8 @@ ExtendableMessageEvent* ExtendableMessageEvent::Create(
     MessagePortArray* ports,
     ServiceWorkerClient* source,
     WaitUntilObserver* observer) {
-  ExtendableMessageEvent* event =
-      new ExtendableMessageEvent(std::move(data), origin, ports, observer);
+  ExtendableMessageEvent* event = MakeGarbageCollected<ExtendableMessageEvent>(
+      std::move(data), origin, ports, observer);
   event->source_as_client_ = source;
   return event;
 }
@@ -45,8 +47,8 @@ ExtendableMessageEvent* ExtendableMessageEvent::Create(
     MessagePortArray* ports,
     ServiceWorker* source,
     WaitUntilObserver* observer) {
-  ExtendableMessageEvent* event =
-      new ExtendableMessageEvent(std::move(data), origin, ports, observer);
+  ExtendableMessageEvent* event = MakeGarbageCollected<ExtendableMessageEvent>(
+      std::move(data), origin, ports, observer);
   event->source_as_service_worker_ = source;
   return event;
 }

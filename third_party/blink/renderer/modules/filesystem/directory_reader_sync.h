@@ -49,9 +49,10 @@ class DirectoryReaderSync : public DirectoryReaderBase {
  public:
   static DirectoryReaderSync* Create(DOMFileSystemBase* file_system,
                                      const String& full_path) {
-    return new DirectoryReaderSync(file_system, full_path);
+    return MakeGarbageCollected<DirectoryReaderSync>(file_system, full_path);
   }
 
+  DirectoryReaderSync(DOMFileSystemBase*, const String& full_path);
   ~DirectoryReaderSync() override = default;
 
   EntrySyncHeapVector readEntries(ExceptionState&);
@@ -61,8 +62,6 @@ class DirectoryReaderSync : public DirectoryReaderBase {
  private:
   class EntriesCallbackHelper;
   class ErrorCallbackHelper;
-
-  DirectoryReaderSync(DOMFileSystemBase*, const String& full_path);
 
   bool has_called_read_directory_ = false;
   EntrySyncHeapVector entries_;

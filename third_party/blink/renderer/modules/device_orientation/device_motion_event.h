@@ -40,15 +40,22 @@ class DeviceMotionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  DeviceMotionEvent();
+  DeviceMotionEvent(const AtomicString&, const DeviceMotionEventInit*);
+  DeviceMotionEvent(const AtomicString& event_type, const DeviceMotionData*);
   ~DeviceMotionEvent() override;
-  static DeviceMotionEvent* Create() { return new DeviceMotionEvent; }
+
+  static DeviceMotionEvent* Create() {
+    return MakeGarbageCollected<DeviceMotionEvent>();
+  }
   static DeviceMotionEvent* Create(const AtomicString& event_type,
                                    const DeviceMotionEventInit* initializer) {
-    return new DeviceMotionEvent(event_type, initializer);
+    return MakeGarbageCollected<DeviceMotionEvent>(event_type, initializer);
   }
   static DeviceMotionEvent* Create(const AtomicString& event_type,
                                    const DeviceMotionData* device_motion_data) {
-    return new DeviceMotionEvent(event_type, device_motion_data);
+    return MakeGarbageCollected<DeviceMotionEvent>(event_type,
+                                                   device_motion_data);
   }
 
   const DeviceMotionData* GetDeviceMotionData() const {
@@ -65,10 +72,6 @@ class DeviceMotionEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  DeviceMotionEvent();
-  DeviceMotionEvent(const AtomicString&, const DeviceMotionEventInit*);
-  DeviceMotionEvent(const AtomicString& event_type, const DeviceMotionData*);
-
   Member<const DeviceMotionData> device_motion_data_;
 };
 

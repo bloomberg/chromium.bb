@@ -136,7 +136,7 @@ void MediaControlsRotateToFullscreenDelegate::OnStateChange() {
            << needs_visibility_observer;
 
   if (needs_visibility_observer && !visibility_observer_) {
-    visibility_observer_ = new ElementVisibilityObserver(
+    visibility_observer_ = MakeGarbageCollected<ElementVisibilityObserver>(
         video_element_,
         WTF::BindRepeating(
             &MediaControlsRotateToFullscreenDelegate::OnVisibilityChange,

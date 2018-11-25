@@ -290,8 +290,11 @@ DEFINE_FILTER_OPERATION_TYPE_CASTS(BlurFilterOperation, BLUR);
 class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
  public:
   static DropShadowFilterOperation* Create(const ShadowData& shadow) {
-    return new DropShadowFilterOperation(shadow);
+    return MakeGarbageCollected<DropShadowFilterOperation>(shadow);
   }
+
+  DropShadowFilterOperation(const ShadowData& shadow)
+      : FilterOperation(DROP_SHADOW), shadow_(shadow) {}
 
   const ShadowData& Shadow() const { return shadow_; }
 
@@ -309,9 +312,6 @@ class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
         static_cast<const DropShadowFilterOperation*>(&o);
     return shadow_ == other->shadow_;
   }
-
-  DropShadowFilterOperation(const ShadowData& shadow)
-      : FilterOperation(DROP_SHADOW), shadow_(shadow) {}
 
   ShadowData shadow_;
 };

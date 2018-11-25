@@ -232,7 +232,7 @@ DataTransfer* DataTransfer::Create() {
 DataTransfer* DataTransfer::Create(DataTransferType type,
                                    DataTransferAccessPolicy policy,
                                    DataObject* data_object) {
-  return new DataTransfer(type, policy, data_object);
+  return MakeGarbageCollected<DataTransfer>(type, policy, data_object);
 }
 
 DataTransfer::~DataTransfer() = default;

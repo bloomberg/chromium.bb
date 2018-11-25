@@ -51,8 +51,10 @@ class DirectoryReader::EntriesCallbackHelper final
     : public EntriesCallbacks::OnDidGetEntriesCallback {
  public:
   static EntriesCallbackHelper* Create(DirectoryReader* reader) {
-    return new EntriesCallbackHelper(reader);
+    return MakeGarbageCollected<EntriesCallbackHelper>(reader);
   }
+
+  explicit EntriesCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
@@ -64,8 +66,6 @@ class DirectoryReader::EntriesCallbackHelper final
   }
 
  private:
-  explicit EntriesCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
-
   // FIXME: This Member keeps the reader alive until all of the readDirectory
   // results are received. crbug.com/350285
   Member<DirectoryReader> reader_;
@@ -74,8 +74,10 @@ class DirectoryReader::EntriesCallbackHelper final
 class DirectoryReader::ErrorCallbackHelper final : public ErrorCallbackBase {
  public:
   static ErrorCallbackHelper* Create(DirectoryReader* reader) {
-    return new ErrorCallbackHelper(reader);
+    return MakeGarbageCollected<ErrorCallbackHelper>(reader);
   }
+
+  explicit ErrorCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
 
   void Invoke(base::File::Error error) override { reader_->OnError(error); }
 
@@ -85,8 +87,6 @@ class DirectoryReader::ErrorCallbackHelper final : public ErrorCallbackBase {
   }
 
  private:
-  explicit ErrorCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
-
   Member<DirectoryReader> reader_;
 };
 

@@ -48,6 +48,10 @@ class CORE_EXPORT DateTimeChooserImpl final : public DateTimeChooser,
   static DateTimeChooserImpl* Create(ChromeClient*,
                                      DateTimeChooserClient*,
                                      const DateTimeChooserParameters&);
+
+  DateTimeChooserImpl(ChromeClient*,
+                      DateTimeChooserClient*,
+                      const DateTimeChooserParameters&);
   ~DateTimeChooserImpl() override;
 
   // DateTimeChooser functions:
@@ -57,9 +61,6 @@ class CORE_EXPORT DateTimeChooserImpl final : public DateTimeChooser,
   void Trace(blink::Visitor*) override;
 
  private:
-  DateTimeChooserImpl(ChromeClient*,
-                      DateTimeChooserClient*,
-                      const DateTimeChooserParameters&);
   // PagePopupClient functions:
   void WriteDocument(SharedBuffer*) override;
   void SelectFontsFromOwnerDocument(Document&) override {}

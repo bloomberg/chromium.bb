@@ -53,6 +53,11 @@ class Database final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  Database(DatabaseContext*,
+           const String& name,
+           const String& expected_version,
+           const String& display_name,
+           unsigned estimated_size);
   ~Database() override;
   void Trace(blink::Visitor*) override;
 
@@ -128,11 +133,6 @@ class Database final : public ScriptWrappable {
   class DatabaseTransactionTask;
   class DatabaseTableNamesTask;
 
-  Database(DatabaseContext*,
-           const String& name,
-           const String& expected_version,
-           const String& display_name,
-           unsigned estimated_size);
   bool PerformOpenAndVerify(bool set_version_in_new_database,
                             DatabaseError&,
                             String& error_message);

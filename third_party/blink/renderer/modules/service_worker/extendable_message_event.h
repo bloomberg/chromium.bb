@@ -41,6 +41,16 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
       ServiceWorker* source,
       WaitUntilObserver*);
 
+  ExtendableMessageEvent(const AtomicString& type,
+                         const ExtendableMessageEventInit* initializer);
+  ExtendableMessageEvent(const AtomicString& type,
+                         const ExtendableMessageEventInit* initializer,
+                         WaitUntilObserver*);
+  ExtendableMessageEvent(scoped_refptr<SerializedScriptValue> data,
+                         const String& origin,
+                         MessagePortArray* ports,
+                         WaitUntilObserver*);
+
   SerializedScriptValue* SerializedData() const {
     return serialized_data_.get();
   }
@@ -58,16 +68,6 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  ExtendableMessageEvent(const AtomicString& type,
-                         const ExtendableMessageEventInit* initializer);
-  ExtendableMessageEvent(const AtomicString& type,
-                         const ExtendableMessageEventInit* initializer,
-                         WaitUntilObserver*);
-  ExtendableMessageEvent(scoped_refptr<SerializedScriptValue> data,
-                         const String& origin,
-                         MessagePortArray* ports,
-                         WaitUntilObserver*);
-
   scoped_refptr<SerializedScriptValue> serialized_data_;
   String origin_;
   String last_event_id_;

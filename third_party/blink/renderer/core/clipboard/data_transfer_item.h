@@ -52,6 +52,8 @@ class CORE_EXPORT DataTransferItem final : public ScriptWrappable {
  public:
   static DataTransferItem* Create(DataTransfer*, DataObjectItem*);
 
+  DataTransferItem(DataTransfer*, DataObjectItem*);
+
   String kind() const;
   String type() const;
 
@@ -64,8 +66,6 @@ class CORE_EXPORT DataTransferItem final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  DataTransferItem(DataTransfer*, DataObjectItem*);
-
   void RunGetAsStringTask(
       ExecutionContext*,
       V8PersistentCallbackFunction<V8FunctionStringCallback>*,

@@ -11,15 +11,16 @@ namespace blink {
 
 DetectedBarcode* DetectedBarcode::Create() {
   HeapVector<Member<Point2D>> empty_list;
-  return new DetectedBarcode(g_empty_string,
-                             DOMRectReadOnly::Create(0, 0, 0, 0), empty_list);
+  return MakeGarbageCollected<DetectedBarcode>(
+      g_empty_string, DOMRectReadOnly::Create(0, 0, 0, 0), empty_list);
 }
 
 DetectedBarcode* DetectedBarcode::Create(
     String raw_value,
     DOMRectReadOnly* bounding_box,
     HeapVector<Member<Point2D>> corner_points) {
-  return new DetectedBarcode(raw_value, bounding_box, corner_points);
+  return MakeGarbageCollected<DetectedBarcode>(raw_value, bounding_box,
+                                               corner_points);
 }
 
 const String& DetectedBarcode::rawValue() const {

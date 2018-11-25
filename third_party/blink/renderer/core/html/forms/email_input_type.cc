@@ -160,7 +160,7 @@ EmailInputType::EmailInputType(HTMLInputElement& element)
     : BaseTextInputType(element) {}
 
 InputType* EmailInputType::Create(HTMLInputElement& element) {
-  return new EmailInputType(element);
+  return MakeGarbageCollected<EmailInputType>(element);
 }
 
 void EmailInputType::CountUsage() {

@@ -51,6 +51,8 @@ class CORE_EXPORT DataTransferItemList final : public ScriptWrappable {
  public:
   static DataTransferItemList* Create(DataTransfer*, DataObject*);
 
+  DataTransferItemList(DataTransfer*, DataObject*);
+
   uint32_t length() const;
   DataTransferItem* item(uint32_t index);
   void deleteItem(uint32_t index, ExceptionState&);
@@ -63,8 +65,6 @@ class CORE_EXPORT DataTransferItemList final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  DataTransferItemList(DataTransfer*, DataObject*);
-
   Member<DataTransfer> data_transfer_;
   Member<DataObject> data_object_;
 };

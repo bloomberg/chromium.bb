@@ -17,10 +17,9 @@ class EXTsRGB final : public WebGLExtension {
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
-  WebGLExtensionName GetName() const override;
-
- private:
   explicit EXTsRGB(WebGLRenderingContextBase*);
+
+  WebGLExtensionName GetName() const override;
 };
 
 }  // namespace blink

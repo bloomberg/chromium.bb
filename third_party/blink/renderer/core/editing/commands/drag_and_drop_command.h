@@ -17,15 +17,15 @@ namespace blink {
 class DragAndDropCommand final : public CompositeEditCommand {
  public:
   static DragAndDropCommand* Create(Document& document) {
-    return new DragAndDropCommand(document);
+    return MakeGarbageCollected<DragAndDropCommand>(document);
   }
+
+  explicit DragAndDropCommand(Document&);
 
   bool IsCommandGroupWrapper() const override;
   bool IsDragAndDropCommand() const override;
 
  private:
-  explicit DragAndDropCommand(Document&);
-
   void DoApply(EditingState*) override;
   InputEvent::InputType GetInputType() const override;
 };

@@ -76,29 +76,36 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
   };
   static float no_font_delta_;
 
-  static EditingStyle* Create() { return new EditingStyle(); }
+  static EditingStyle* Create() { return MakeGarbageCollected<EditingStyle>(); }
 
   static EditingStyle* Create(ContainerNode* node,
                               PropertiesToInclude properties_to_include =
                                   kOnlyEditingInheritableProperties) {
-    return new EditingStyle(node, properties_to_include);
+    return MakeGarbageCollected<EditingStyle>(node, properties_to_include);
   }
 
   static EditingStyle* Create(const Position& position,
                               PropertiesToInclude properties_to_include =
                                   kOnlyEditingInheritableProperties) {
-    return new EditingStyle(position, properties_to_include);
+    return MakeGarbageCollected<EditingStyle>(position, properties_to_include);
   }
 
   static EditingStyle* Create(const CSSPropertyValueSet* style) {
-    return new EditingStyle(style);
+    return MakeGarbageCollected<EditingStyle>(style);
   }
 
   static EditingStyle* Create(CSSPropertyID property_id,
                               const String& value,
                               SecureContextMode secure_context_mode) {
-    return new EditingStyle(property_id, value, secure_context_mode);
+    return MakeGarbageCollected<EditingStyle>(property_id, value,
+                                              secure_context_mode);
   }
+
+  EditingStyle() = default;
+  EditingStyle(ContainerNode*, PropertiesToInclude);
+  EditingStyle(const Position&, PropertiesToInclude);
+  explicit EditingStyle(const CSSPropertyValueSet*);
+  EditingStyle(CSSPropertyID, const String& value, SecureContextMode);
 
   MutableCSSPropertyValueSet* Style() { return mutable_style_.Get(); }
   bool GetTextDirection(WritingDirection&) const;
@@ -176,11 +183,6 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
                                            const String& value);
 
  private:
-  EditingStyle() = default;
-  EditingStyle(ContainerNode*, PropertiesToInclude);
-  EditingStyle(const Position&, PropertiesToInclude);
-  explicit EditingStyle(const CSSPropertyValueSet*);
-  EditingStyle(CSSPropertyID, const String& value, SecureContextMode);
   void Init(Node*, PropertiesToInclude);
   void RemoveInheritedColorsIfNeeded(const ComputedStyle*);
   void ReplaceFontSizeByKeywordIfPossible(const ComputedStyle*,

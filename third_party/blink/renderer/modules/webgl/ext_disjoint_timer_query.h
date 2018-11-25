@@ -22,6 +22,8 @@ class EXTDisjointTimerQuery final : public WebGLExtension {
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
+  explicit EXTDisjointTimerQuery(WebGLRenderingContextBase*);
+
   WebGLExtensionName GetName() const override;
 
   WebGLTimerQueryEXT* createQueryEXT();
@@ -37,7 +39,6 @@ class EXTDisjointTimerQuery final : public WebGLExtension {
 
  private:
   friend class WebGLTimerQueryEXT;
-  explicit EXTDisjointTimerQuery(WebGLRenderingContextBase*);
 
   Member<WebGLTimerQueryEXT> current_elapsed_query_;
 };

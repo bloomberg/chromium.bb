@@ -218,7 +218,8 @@ void ModulesInitializer::InitInspectorAgentSession(
     Page* page) const {
   session->Append(MakeGarbageCollected<InspectorIndexedDBAgent>(
       inspected_frames, session->V8Session()));
-  session->Append(new DeviceOrientationInspectorAgent(inspected_frames));
+  session->Append(
+      MakeGarbageCollected<DeviceOrientationInspectorAgent>(inspected_frames));
   session->Append(
       MakeGarbageCollected<InspectorDOMStorageAgent>(inspected_frames));
   if (allow_view_agents) {

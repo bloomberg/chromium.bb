@@ -861,9 +861,14 @@ class DeleteObjectStoreEntriesListener final : public EventListener {
  public:
   static DeleteObjectStoreEntriesListener* Create(
       std::unique_ptr<DeleteObjectStoreEntriesCallback> request_callback) {
-    return new DeleteObjectStoreEntriesListener(std::move(request_callback));
+    return MakeGarbageCollected<DeleteObjectStoreEntriesListener>(
+        std::move(request_callback));
   }
 
+  DeleteObjectStoreEntriesListener(
+      std::unique_ptr<DeleteObjectStoreEntriesCallback> request_callback)
+      : EventListener(EventListener::kCPPEventListenerType),
+        request_callback_(std::move(request_callback)) {}
   ~DeleteObjectStoreEntriesListener() override = default;
 
   bool operator==(const EventListener& other) const override {
@@ -881,11 +886,6 @@ class DeleteObjectStoreEntriesListener final : public EventListener {
   }
 
  private:
-  DeleteObjectStoreEntriesListener(
-      std::unique_ptr<DeleteObjectStoreEntriesCallback> request_callback)
-      : EventListener(EventListener::kCPPEventListenerType),
-        request_callback_(std::move(request_callback)) {}
-
   std::unique_ptr<DeleteObjectStoreEntriesCallback> request_callback_;
 };
 

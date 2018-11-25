@@ -77,8 +77,8 @@ void DedicatedWorkerThread::ClearWorkerBackingThread() {
 
 WorkerOrWorkletGlobalScope* DedicatedWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
-  return new DedicatedWorkerGlobalScope(name_, std::move(creation_params), this,
-                                        time_origin_);
+  return MakeGarbageCollected<DedicatedWorkerGlobalScope>(
+      name_, std::move(creation_params), this, time_origin_);
 }
 
 }  // namespace blink

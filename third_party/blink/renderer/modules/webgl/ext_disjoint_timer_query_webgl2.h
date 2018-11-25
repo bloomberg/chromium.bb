@@ -23,14 +23,13 @@ class EXTDisjointTimerQueryWebGL2 final : public WebGLExtension {
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
+  explicit EXTDisjointTimerQueryWebGL2(WebGLRenderingContextBase*);
+
   WebGLExtensionName GetName() const override;
 
   void queryCounterEXT(WebGLQuery*, GLenum);
 
   void Trace(blink::Visitor*) override;
-
- private:
-  explicit EXTDisjointTimerQueryWebGL2(WebGLRenderingContextBase*);
 };
 
 }  // namespace blink

@@ -42,13 +42,15 @@ TEST(CustomElementReactionQueueTest, invokeReactions_recursive) {
       new TestReaction({MakeGarbageCollected<Log>('c', log),
                         new Recurse(queue)});  // "Empty" recursion
 
-  CustomElementReaction* second = new TestReaction(
-      {MakeGarbageCollected<Log>('b', log),
-       new Enqueue(queue, third)});  // Unwinds one level of recursion
+  CustomElementReaction* second =
+      new TestReaction({MakeGarbageCollected<Log>('b', log),
+                        MakeGarbageCollected<Enqueue>(
+                            queue, third)});  // Unwinds one level of recursion
 
-  CustomElementReaction* first = new TestReaction(
-      {MakeGarbageCollected<Log>('a', log), new Enqueue(queue, second),
-       new Recurse(queue)});  // Non-empty recursion
+  CustomElementReaction* first =
+      new TestReaction({MakeGarbageCollected<Log>('a', log),
+                        MakeGarbageCollected<Enqueue>(queue, second),
+                        new Recurse(queue)});  // Non-empty recursion
 
   queue->Add(first);
   queue->InvokeReactions(nullptr);

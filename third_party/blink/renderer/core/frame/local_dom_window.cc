@@ -1297,7 +1297,7 @@ void LocalDOMWindow::SetModulator(Modulator* modulator) {
 
 External* LocalDOMWindow::external() {
   if (!external_)
-    external_ = new External;
+    external_ = MakeGarbageCollected<External>();
   return external_;
 }
 

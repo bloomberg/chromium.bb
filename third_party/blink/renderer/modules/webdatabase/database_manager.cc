@@ -144,8 +144,8 @@ Database* DatabaseManager::OpenDatabaseInternal(
   DatabaseContext* backend_context = DatabaseContextFor(context)->Backend();
   if (DatabaseTracker::Tracker().CanEstablishDatabase(
           backend_context, name, display_name, estimated_size, error)) {
-    Database* backend = new Database(backend_context, name, expected_version,
-                                     display_name, estimated_size);
+    Database* backend = MakeGarbageCollected<Database>(
+        backend_context, name, expected_version, display_name, estimated_size);
     if (backend->OpenAndVerifyVersion(set_version_in_new_database, error,
                                       error_message, creation_callback))
       return backend;

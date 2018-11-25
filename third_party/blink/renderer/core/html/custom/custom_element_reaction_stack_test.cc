@@ -161,7 +161,7 @@ TEST(CustomElementReactionStackTest, enqueueFromReaction) {
   CustomElementReactionStack* stack = new CustomElementReactionStack();
   stack->Push();
   stack->EnqueueToCurrentQueue(
-      element, new TestReaction({new EnqueueToStack(
+      element, new TestReaction({MakeGarbageCollected<EnqueueToStack>(
                    stack, element,
                    new TestReaction({MakeGarbageCollected<Log>('a', log)}))}));
   stack->PopInvokingReactions();

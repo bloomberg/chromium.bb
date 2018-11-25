@@ -156,6 +156,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
  public:
   static Element* Create(const QualifiedName&, Document*);
+
+  Element(const QualifiedName& tag_name, Document*, ConstructionType);
   ~Element() override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy, kBeforecopy);
@@ -897,8 +899,6 @@ class CORE_EXPORT Element : public ContainerNode {
   bool StyleRecalcBlockedByDisplayLock() const;
 
  protected:
-  Element(const QualifiedName& tag_name, Document*, ConstructionType);
-
   const ElementData* GetElementData() const { return element_data_.Get(); }
   UniqueElementData& EnsureUniqueElementData();
 

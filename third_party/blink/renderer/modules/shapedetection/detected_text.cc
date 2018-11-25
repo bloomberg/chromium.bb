@@ -11,14 +11,15 @@ namespace blink {
 
 DetectedText* DetectedText::Create() {
   HeapVector<Member<Point2D>> empty_list;
-  return new DetectedText(g_empty_string, DOMRectReadOnly::Create(0, 0, 0, 0),
-                          empty_list);
+  return MakeGarbageCollected<DetectedText>(
+      g_empty_string, DOMRectReadOnly::Create(0, 0, 0, 0), empty_list);
 }
 
 DetectedText* DetectedText::Create(String raw_value,
                                    DOMRectReadOnly* bounding_box,
                                    HeapVector<Member<Point2D>> corner_points) {
-  return new DetectedText(raw_value, bounding_box, corner_points);
+  return MakeGarbageCollected<DetectedText>(raw_value, bounding_box,
+                                            corner_points);
 }
 
 const String& DetectedText::rawValue() const {

@@ -71,6 +71,8 @@ class CORE_EXPORT DataTransfer final : public ScriptWrappable,
   static DataTransfer* Create(DataTransferType,
                               DataTransferAccessPolicy,
                               DataObject*);
+
+  DataTransfer(DataTransferType, DataTransferAccessPolicy, DataObject*);
   ~DataTransfer() override;
 
   bool IsForCopyAndPaste() const { return transfer_type_ == kCopyAndPaste; }
@@ -157,8 +159,6 @@ class CORE_EXPORT DataTransfer final : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
  private:
-  DataTransfer(DataTransferType, DataTransferAccessPolicy, DataObject*);
-
   void setDragImage(ImageResourceContent*, Node*, const IntPoint&);
 
   bool HasFileOfType(const String&) const;

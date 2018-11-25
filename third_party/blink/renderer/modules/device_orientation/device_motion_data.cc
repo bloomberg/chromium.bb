@@ -37,8 +37,8 @@ DeviceMotionData* DeviceMotionData::Create(
     DeviceAcceleration* acceleration_including_gravity,
     DeviceRotationRate* rotation_rate,
     double interval) {
-  return new DeviceMotionData(acceleration, acceleration_including_gravity,
-                              rotation_rate, interval);
+  return MakeGarbageCollected<DeviceMotionData>(
+      acceleration, acceleration_including_gravity, rotation_rate, interval);
 }
 
 DeviceMotionData* DeviceMotionData::Create(const DeviceMotionEventInit* init) {
@@ -54,7 +54,7 @@ DeviceMotionData* DeviceMotionData::Create(const DeviceMotionEventInit* init) {
 }
 
 DeviceMotionData* DeviceMotionData::Create() {
-  return new DeviceMotionData;
+  return MakeGarbageCollected<DeviceMotionData>();
 }
 
 DeviceMotionData::DeviceMotionData() : interval_(0) {}

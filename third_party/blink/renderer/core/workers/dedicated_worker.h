@@ -53,6 +53,9 @@ class CORE_EXPORT DedicatedWorker final
                                  const WorkerOptions*,
                                  ExceptionState&);
 
+  DedicatedWorker(ExecutionContext*,
+                  const KURL& script_request_url,
+                  const WorkerOptions*);
   ~DedicatedWorker() override;
 
   void postMessage(ScriptState*,
@@ -81,10 +84,6 @@ class CORE_EXPORT DedicatedWorker final
   void Trace(blink::Visitor*) override;
 
  private:
-  DedicatedWorker(ExecutionContext*,
-                  const KURL& script_request_url,
-                  const WorkerOptions*);
-
   // Starts the worker.
   void Start();
 

@@ -29,7 +29,7 @@
 namespace blink {
 
 DeviceAcceleration* DeviceAcceleration::Create(double x, double y, double z) {
-  return new DeviceAcceleration(x, y, z);
+  return MakeGarbageCollected<DeviceAcceleration>(x, y, z);
 }
 
 DeviceAcceleration* DeviceAcceleration::Create(

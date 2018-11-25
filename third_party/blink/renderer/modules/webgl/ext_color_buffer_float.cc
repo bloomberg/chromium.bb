@@ -18,7 +18,7 @@ WebGLExtensionName EXTColorBufferFloat::GetName() const {
 
 EXTColorBufferFloat* EXTColorBufferFloat::Create(
     WebGLRenderingContextBase* context) {
-  return new EXTColorBufferFloat(context);
+  return MakeGarbageCollected<EXTColorBufferFloat>(context);
 }
 
 bool EXTColorBufferFloat::Supported(WebGLRenderingContextBase* context) {

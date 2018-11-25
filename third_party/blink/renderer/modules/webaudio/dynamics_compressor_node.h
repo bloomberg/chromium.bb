@@ -92,6 +92,9 @@ class MODULES_EXPORT DynamicsCompressorNode final : public AudioNode {
   static DynamicsCompressorNode* Create(BaseAudioContext*,
                                         const DynamicsCompressorOptions*,
                                         ExceptionState&);
+
+  DynamicsCompressorNode(BaseAudioContext&);
+
   void Trace(blink::Visitor*) override;
 
   AudioParam* threshold() const;
@@ -102,7 +105,6 @@ class MODULES_EXPORT DynamicsCompressorNode final : public AudioNode {
   AudioParam* release() const;
 
  private:
-  DynamicsCompressorNode(BaseAudioContext&);
   DynamicsCompressorHandler& GetDynamicsCompressorHandler() const;
 
   Member<AudioParam> threshold_;

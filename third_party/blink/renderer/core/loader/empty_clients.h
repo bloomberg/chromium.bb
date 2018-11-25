@@ -76,7 +76,9 @@ namespace blink {
 
 class CORE_EXPORT EmptyChromeClient : public ChromeClient {
  public:
-  static EmptyChromeClient* Create() { return new EmptyChromeClient; }
+  static EmptyChromeClient* Create() {
+    return MakeGarbageCollected<EmptyChromeClient>();
+  }
 
   ~EmptyChromeClient() override = default;
   void ChromeDestroyed() override {}
@@ -224,7 +226,11 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
 class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
  public:
-  static EmptyLocalFrameClient* Create() { return new EmptyLocalFrameClient; }
+  static EmptyLocalFrameClient* Create() {
+    return MakeGarbageCollected<EmptyLocalFrameClient>();
+  }
+
+  EmptyLocalFrameClient() = default;
   ~EmptyLocalFrameClient() override = default;
 
   bool HasWebView() const override { return true; }  // mainly for assertions
@@ -389,8 +395,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   Frame* FindFrame(const AtomicString& name) const override;
 
  protected:
-  EmptyLocalFrameClient() = default;
-
   // Not owned
   WebTextCheckClient* text_check_client_;
 

@@ -9,7 +9,7 @@ namespace blink {
 WorkletGroupEffectProxy::WorkletGroupEffectProxy(int num_effects)
     : effects_(num_effects) {
   for (int i = 0; i < num_effects; ++i)
-    effects_[i] = new EffectProxy();
+    effects_[i] = MakeGarbageCollected<EffectProxy>();
 }
 
 void WorkletGroupEffectProxy::Trace(blink::Visitor* visitor) {

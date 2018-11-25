@@ -30,7 +30,7 @@ class ExtendableCookieChangeEvent final : public ExtendableEvent {
       HeapVector<Member<CookieListItem>> changed,
       HeapVector<Member<CookieListItem>> deleted,
       WaitUntilObserver* wait_until_observer) {
-    return new ExtendableCookieChangeEvent(
+    return MakeGarbageCollected<ExtendableCookieChangeEvent>(
         type, std::move(changed), std::move(deleted), wait_until_observer);
   }
 
@@ -38,9 +38,16 @@ class ExtendableCookieChangeEvent final : public ExtendableEvent {
   static ExtendableCookieChangeEvent* Create(
       const AtomicString& type,
       const ExtendableCookieChangeEventInit* initializer) {
-    return new ExtendableCookieChangeEvent(type, initializer);
+    return MakeGarbageCollected<ExtendableCookieChangeEvent>(type, initializer);
   }
 
+  ExtendableCookieChangeEvent(const AtomicString& type,
+                              HeapVector<Member<CookieListItem>> changed,
+                              HeapVector<Member<CookieListItem>> deleted,
+                              WaitUntilObserver*);
+  ExtendableCookieChangeEvent(
+      const AtomicString& type,
+      const ExtendableCookieChangeEventInit* initializer);
   ~ExtendableCookieChangeEvent() override;
 
   const HeapVector<Member<CookieListItem>>& changed() const { return changed_; }
@@ -53,13 +60,6 @@ class ExtendableCookieChangeEvent final : public ExtendableEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  ExtendableCookieChangeEvent(const AtomicString& type,
-                              HeapVector<Member<CookieListItem>> changed,
-                              HeapVector<Member<CookieListItem>> deleted,
-                              WaitUntilObserver*);
-  ExtendableCookieChangeEvent(
-      const AtomicString& type,
-      const ExtendableCookieChangeEventInit* initializer);
 
   HeapVector<Member<CookieListItem>> changed_;
   HeapVector<Member<CookieListItem>> deleted_;

@@ -68,7 +68,7 @@ DataObject* DataObject::CreateFromString(const String& data) {
 }
 
 DataObject* DataObject::Create() {
-  return new DataObject;
+  return MakeGarbageCollected<DataObject>();
 }
 
 DataObject::~DataObject() = default;

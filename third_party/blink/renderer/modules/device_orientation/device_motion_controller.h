@@ -22,6 +22,7 @@ class MODULES_EXPORT DeviceMotionController final
  public:
   static const char kSupplementName[];
 
+  explicit DeviceMotionController(Document&);
   ~DeviceMotionController() override;
 
   static DeviceMotionController& From(Document&);
@@ -33,8 +34,6 @@ class MODULES_EXPORT DeviceMotionController final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DeviceMotionController(Document&);
-
   // Inherited from PlatformEventController.
   void RegisterWithDispatcher() override;
   void UnregisterWithDispatcher() override;

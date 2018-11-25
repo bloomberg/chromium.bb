@@ -96,7 +96,6 @@ class DefaultAudioDestinationNode final : public AudioDestinationNode {
   static DefaultAudioDestinationNode* Create(BaseAudioContext*,
                                              const WebAudioLatencyHint&);
 
- private:
   explicit DefaultAudioDestinationNode(BaseAudioContext&,
                                        const WebAudioLatencyHint&);
 };

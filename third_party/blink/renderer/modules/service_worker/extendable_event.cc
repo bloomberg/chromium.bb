@@ -39,13 +39,13 @@ namespace blink {
 ExtendableEvent* ExtendableEvent::Create(
     const AtomicString& type,
     const ExtendableEventInit* event_init) {
-  return new ExtendableEvent(type, event_init);
+  return MakeGarbageCollected<ExtendableEvent>(type, event_init);
 }
 
 ExtendableEvent* ExtendableEvent::Create(const AtomicString& type,
                                          const ExtendableEventInit* event_init,
                                          WaitUntilObserver* observer) {
-  return new ExtendableEvent(type, event_init, observer);
+  return MakeGarbageCollected<ExtendableEvent>(type, event_init, observer);
 }
 
 ExtendableEvent::~ExtendableEvent() = default;

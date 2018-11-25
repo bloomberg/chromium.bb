@@ -28,8 +28,9 @@ TEST_F(ElementVisibilityObserverTest, ObserveElementWithoutDocumentFrame) {
   Document& document = *helper_.LocalMainFrame()->GetFrame()->GetDocument();
   HTMLElement* element = HTMLDivElement::Create(
       *DOMImplementation::Create(document)->createHTMLDocument("test"));
-  ElementVisibilityObserver* observer = new ElementVisibilityObserver(
-      element, ElementVisibilityObserver::VisibilityCallback());
+  ElementVisibilityObserver* observer =
+      MakeGarbageCollected<ElementVisibilityObserver>(
+          element, ElementVisibilityObserver::VisibilityCallback());
   observer->Start();
   observer->Stop();
   // It should not crash.
@@ -44,7 +45,8 @@ TEST_F(ElementVisibilityObserverTest, ObserveElementWithRemoteFrameParent) {
 
   Persistent<HTMLElement> element = HTMLDivElement::Create(document);
   ElementVisibilityObserver* observer =
-      new ElementVisibilityObserver(element, WTF::BindRepeating([](bool) {}));
+      MakeGarbageCollected<ElementVisibilityObserver>(
+          element, WTF::BindRepeating([](bool) {}));
   observer->Start();
   observer->DeliverObservationsForTesting();
   observer->Stop();

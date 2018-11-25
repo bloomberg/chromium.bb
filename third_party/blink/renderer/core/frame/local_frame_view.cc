@@ -366,7 +366,7 @@ void LocalFrameView::SetupRenderThrottling() {
   if (!target_element)
     return;
 
-  visibility_observer_ = new ElementVisibilityObserver(
+  visibility_observer_ = MakeGarbageCollected<ElementVisibilityObserver>(
       target_element, WTF::BindRepeating(
                           [](LocalFrameView* frame_view, bool is_visible) {
                             if (!frame_view)

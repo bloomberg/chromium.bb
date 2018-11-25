@@ -798,7 +798,7 @@ PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
                                            HTMLSelectElement& select) {
   NotifyPopupOpeningObservers();
   if (WebViewImpl::UseExternalPopupMenus())
-    return new ExternalPopupMenu(frame, select, *web_view_);
+    return MakeGarbageCollected<ExternalPopupMenu>(frame, select, *web_view_);
 
   DCHECK(RuntimeEnabledFeatures::PagePopupEnabled());
   return InternalPopupMenu::Create(this, select);

@@ -18,7 +18,7 @@ WebGLExtensionName EXTShaderTextureLOD::GetName() const {
 
 EXTShaderTextureLOD* EXTShaderTextureLOD::Create(
     WebGLRenderingContextBase* context) {
-  return new EXTShaderTextureLOD(context);
+  return MakeGarbageCollected<EXTShaderTextureLOD>(context);
 }
 
 bool EXTShaderTextureLOD::Supported(WebGLRenderingContextBase* context) {

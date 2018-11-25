@@ -55,6 +55,8 @@ class CORE_EXPORT DragController final
  public:
   static DragController* Create(Page*);
 
+  explicit DragController(Page*);
+
   DragOperation DragEnteredOrUpdated(DragData*, LocalFrame& local_root);
   void DragExited(DragData*, LocalFrame& local_root);
   void PerformDrag(DragData*, LocalFrame& local_root);
@@ -90,8 +92,6 @@ class CORE_EXPORT DragController final
   void Trace(blink::Visitor*);
 
  private:
-  explicit DragController(Page*);
-
   DispatchEventResult DispatchTextInputEventFor(LocalFrame*, DragData*);
   bool CanProcessDrag(DragData*, LocalFrame& local_root);
   bool ConcludeEditDrag(DragData*);

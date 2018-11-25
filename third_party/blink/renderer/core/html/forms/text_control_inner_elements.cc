@@ -63,7 +63,8 @@ EditingViewPortElement::EditingViewPortElement(Document& document)
 }
 
 EditingViewPortElement* EditingViewPortElement::Create(Document& document) {
-  EditingViewPortElement* element = new EditingViewPortElement(document);
+  EditingViewPortElement* element =
+      MakeGarbageCollected<EditingViewPortElement>(document);
   element->setAttribute(kIdAttr, shadow_element_names::EditingViewPort());
   return element;
 }

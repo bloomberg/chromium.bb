@@ -76,7 +76,7 @@ void DraggedIsolatedFileSystemImpl::PrepareForDataObject(
     DataObject* data_object) {
   DCHECK(IsMainThread());
   DraggedIsolatedFileSystemImpl* file_system =
-      new DraggedIsolatedFileSystemImpl();
+      MakeGarbageCollected<DraggedIsolatedFileSystemImpl>();
   ProvideTo(*data_object, file_system);
 }
 

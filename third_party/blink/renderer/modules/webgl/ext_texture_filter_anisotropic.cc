@@ -40,7 +40,7 @@ WebGLExtensionName EXTTextureFilterAnisotropic::GetName() const {
 
 EXTTextureFilterAnisotropic* EXTTextureFilterAnisotropic::Create(
     WebGLRenderingContextBase* context) {
-  return new EXTTextureFilterAnisotropic(context);
+  return MakeGarbageCollected<EXTTextureFilterAnisotropic>(context);
 }
 
 bool EXTTextureFilterAnisotropic::Supported(

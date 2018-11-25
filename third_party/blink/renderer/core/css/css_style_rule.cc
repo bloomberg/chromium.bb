@@ -44,7 +44,7 @@ static SelectorTextCache& GetSelectorTextCache() {
 CSSStyleRule::CSSStyleRule(StyleRule* style_rule, CSSStyleSheet* parent)
     : CSSRule(parent),
       style_rule_(style_rule),
-      style_map_(new DeclaredStylePropertyMap(this)) {}
+      style_map_(MakeGarbageCollected<DeclaredStylePropertyMap>(this)) {}
 
 CSSStyleRule::~CSSStyleRule() = default;
 
