@@ -19,6 +19,12 @@ T* advance_by_byte_size(T* p, unsigned byte_size) {
   return reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(p) + byte_size);
 }
 
+template <class T>
+const T* advance_by_byte_size(const T* p, unsigned byte_size) {
+  return reinterpret_cast<const T*>(reinterpret_cast<const uint8_t*>(p) +
+                                    byte_size);
+}
+
 }  // namespace
 
 void GetGlyphWidthForHarfBuzz(const SkFont& font,
@@ -38,8 +44,8 @@ void GetGlyphWidthForHarfBuzz(const SkFont& font,
 
 void GetGlyphWidthForHarfBuzz(const SkFont& font,
                               unsigned count,
-                              hb_codepoint_t* glyphs,
-                              unsigned glyph_stride,
+                              const hb_codepoint_t* glyphs,
+                              const unsigned glyph_stride,
                               hb_position_t* advances,
                               unsigned advance_stride) {
   // Batch the call to getWidths because its function entry cost is not
@@ -65,6 +71,12 @@ void GetGlyphWidthForHarfBuzz(const SkFont& font,
   }
 }
 
+// HarfBuzz callback to retrieve glyph extents, mainly used by HarfBuzz for
+// fallback mark positioning, i.e. the situation when the font does not have
+// mark anchors or other mark positioning rules, but instead HarfBuzz is
+// supposed to heuristically place combining marks around base glyphs. HarfBuzz
+// does this by measuring "ink boxes" of glyphs, and placing them according to
+// Unicode mark classes. Above, below, centered or left or right, etc.
 void GetGlyphExtentsForHarfBuzz(const SkFont& font,
                                 hb_codepoint_t codepoint,
                                 hb_glyph_extents_t* extents) {
@@ -74,7 +86,15 @@ void GetGlyphExtentsForHarfBuzz(const SkFont& font,
   SkRect sk_bounds;
   uint16_t glyph = codepoint;
 
+#if defined(OS_MACOSX)
+  // TODO(drott): Remove this once we have better metrics bounds
+  // on Mac, https://bugs.chromium.org/p/skia/issues/detail?id=5328
+  SkPath path;
+  font.getPath(glyph, &path);
+  sk_bounds = path.getBounds();
+#else
   font.getWidths(&glyph, 1, nullptr, &sk_bounds);
+#endif
   if (!font.isSubpixel()) {
     // Use roundOut() rather than round() to avoid rendering glyphs
     // outside the visual overflow rect. crbug.com/452914.

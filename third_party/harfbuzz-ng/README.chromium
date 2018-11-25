@@ -1,9 +1,9 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 1.9.0.1f14107f7
-Date: 20181005
-Revision: 1f14107f71a6c3da8270ed21c3588f945fa91733
+Version: 2.1.1
+Date: 20181124
+Revision: 992b7128656e72f935089dc2e12c2d2a25511886
 Security Critical: yes
 License: MIT
 License File: src/COPYING
@@ -33,23 +33,15 @@ cherry-pick is needed for M65, push to "refs/heads/chromium/m65" and reference
 the new commit in DEPS. Take a look at
 https://chromium-review.googlesource.com/c/chromium/src/+/937502 for an example.
 
-Currently we are intentionally not building the following files from HarfBuzz.
+Currently we are intentionally not building the following files from
+HarfBuzz. Specifically, we are not building hb-coretext any longer, as we rely
+on HarfBuzz' built-in AAT shaping.
     dump-indic-data.cc
     dump-khmer-data.cc
     dump-myanmar-data.cc
     dump-use-data.cc
-    hb-aat-fmtx-table.hh
-    hb-aat-gcid-table.hh
-    hb-aat-layout-ankr-table.hh
-    hb-aat-layout-bsln-table.hh
-    hb-aat-layout-common-private.hh
-    hb-aat-layout-feat-table.hh
-    hb-aat-layout-kerx-table.hh
-    hb-aat-layout-morx-table.hh
-    hb-aat-layout-private.hh
-    hb-aat-layout-trak-table.hh
-    hb-aat-layout.cc
-    hb-aat-ltag-table.hh
+    hb-coretext.h
+    hb-coretext.cc
     hb-directwrite.cc
     hb-directwrite.h
     hb-fallback-shape.cc

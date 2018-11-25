@@ -32,7 +32,6 @@
 
 #include <memory>
 
-#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
@@ -49,9 +48,6 @@
 
 #include <hb-ot.h>
 #include <hb.h>
-#if defined(OS_MACOSX)
-#include <hb-coretext.h>
-#endif
 
 #include <SkPaint.h>
 #include <SkPath.h>
@@ -123,6 +119,14 @@ static hb_bool_t HarfBuzzGetGlyph(hb_font_t* hb_font,
                            variation_selector, glyph);
 }
 
+static hb_bool_t HarfBuzzGetNominalGlyph(hb_font_t* hb_font,
+                                         void* font_data,
+                                         hb_codepoint_t unicode,
+                                         hb_codepoint_t* glyph,
+                                         void* user_data) {
+  return HarfBuzzGetGlyph(hb_font, font_data, unicode, 0, glyph, user_data);
+}
+
 static hb_position_t HarfBuzzGetGlyphHorizontalAdvance(hb_font_t* hb_font,
                                                        void* font_data,
                                                        hb_codepoint_t glyph,
@@ -135,14 +139,15 @@ static hb_position_t HarfBuzzGetGlyphHorizontalAdvance(hb_font_t* hb_font,
   return advance;
 }
 
-static void HarfBuzzGetGlyphHorizontalAdvances(hb_font_t* font,
-                                               void* font_data,
-                                               unsigned count,
-                                               hb_codepoint_t* first_glyph,
-                                               unsigned int glyph_stride,
-                                               hb_position_t* first_advance,
-                                               unsigned int advance_stride,
-                                               void* user_data) {
+static void HarfBuzzGetGlyphHorizontalAdvances(
+    hb_font_t* font,
+    void* font_data,
+    unsigned count,
+    const hb_codepoint_t* first_glyph,
+    unsigned int glyph_stride,
+    hb_position_t* first_advance,
+    unsigned int advance_stride,
+    void* user_data) {
   HarfBuzzFontData* hb_font_data =
       reinterpret_cast<HarfBuzzFontData*>(font_data);
   GetGlyphWidthForHarfBuzz(hb_font_data->font_, count, first_glyph,
@@ -186,29 +191,6 @@ static hb_position_t HarfBuzzGetGlyphVerticalAdvance(hb_font_t* hb_font,
   Glyph the_glyph = glyph;
   float advance_height = -vertical_data->AdvanceHeight(the_glyph);
   return SkiaScalarToHarfBuzzPosition(SkFloatToScalar(advance_height));
-}
-
-static hb_position_t HarfBuzzGetGlyphHorizontalKerning(
-    hb_font_t*,
-    void* font_data,
-    hb_codepoint_t left_glyph,
-    hb_codepoint_t right_glyph,
-    void*) {
-  HarfBuzzFontData* hb_font_data =
-      reinterpret_cast<HarfBuzzFontData*>(font_data);
-
-  SkTypeface* typeface = hb_font_data->font_.getTypeface();
-
-  const uint16_t glyphs[2] = {static_cast<uint16_t>(left_glyph),
-                              static_cast<uint16_t>(right_glyph)};
-  int32_t kerning_adjustments[1] = {0};
-
-  if (typeface->getKerningPairAdjustments(glyphs, 2, kerning_adjustments)) {
-    return SkiaScalarToHarfBuzzPosition(SkIntToScalar(kerning_adjustments[0]) *
-                                        hb_font_data->SizePerUnit(*typeface));
-  }
-
-  return 0;
 }
 
 static hb_bool_t HarfBuzzGetGlyphExtents(hb_font_t* hb_font,
@@ -304,13 +286,16 @@ static hb_font_funcs_t* HarfBuzzSkiaGetFontFuncs() {
   // HarfBuzz will use the fallback implementation if they aren't set.
   if (!funcs) {
     funcs = hb_font_funcs_create();
-    hb_font_funcs_set_glyph_func(funcs, HarfBuzzGetGlyph, nullptr, nullptr);
+    hb_font_funcs_set_variation_glyph_func(funcs, HarfBuzzGetGlyph, nullptr,
+                                           nullptr);
+    hb_font_funcs_set_nominal_glyph_func(funcs, HarfBuzzGetNominalGlyph,
+                                         nullptr, nullptr);
     hb_font_funcs_set_glyph_h_advance_func(
         funcs, HarfBuzzGetGlyphHorizontalAdvance, nullptr, nullptr);
     hb_font_funcs_set_glyph_h_advances_func(
         funcs, HarfBuzzGetGlyphHorizontalAdvances, nullptr, nullptr);
-    hb_font_funcs_set_glyph_h_kerning_func(
-        funcs, HarfBuzzGetGlyphHorizontalKerning, nullptr, nullptr);
+    // TODO(https://crbug.com/899718): Replace vertical metrics callbacks with
+    // HarfBuzz VORG/VMTX internal implementation by deregistering those.
     hb_font_funcs_set_glyph_v_advance_func(
         funcs, HarfBuzzGetGlyphVerticalAdvance, nullptr, nullptr);
     hb_font_funcs_set_glyph_v_origin_func(funcs, HarfBuzzGetGlyphVerticalOrigin,
@@ -356,17 +341,6 @@ static void DeleteTypefaceStream(void* stream_asset_ptr) {
 }
 
 hb_face_t* HarfBuzzFace::CreateFace() {
-#if defined(OS_MACOSX)
-  // hb_face_t needs to be instantiated using the CoreText constructor for
-  // compatibility with AAT font, in which case HarfBuzz' CoreText backend is
-  // used. If we encounter a FreeType backed SkTypeface, for variable fonts on
-  // Mac OS < 10.12, follow the regular OpenType-only codepath below.
-  if (platform_data_->CgFont()) {
-    hb_face_t* face = hb_coretext_face_create(platform_data_->CgFont());
-    DCHECK(face);
-    return face;
-  }
-#endif
   hb_face_t* face = nullptr;
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(BooleanHistogram, zero_copy_success_histogram,

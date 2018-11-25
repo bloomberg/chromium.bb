@@ -45,6 +45,16 @@ if (use_system_harfbuzz) {
     visibility = [ "//third_party:freetype_harfbuzz" ]
 
     sources = [
+      "src/src/hb-aat-layout-ankr-table.hh",
+      "src/src/hb-aat-layout-bsln-table.hh",
+      "src/src/hb-aat-layout-feat-table.hh",
+      "src/src/hb-aat-layout-kerx-table.hh",
+      "src/src/hb-aat-layout-morx-table.hh",
+      "src/src/hb-aat-layout-trak-table.hh",
+      "src/src/hb-aat-layout.cc",
+      "src/src/hb-aat-ltag-table.hh",
+      "src/src/hb-aat-map.cc",
+      "src/src/hb-aat-map.hh",
       "src/src/hb-atomic.hh",
       "src/src/hb-blob.cc",
       "src/src/hb-blob.h",
@@ -103,7 +113,10 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-math.cc",
       "src/src/hb-ot-math.h",
       "src/src/hb-ot-maxp-table.hh",
+      "src/src/hb-ot-name-language.cc",
+      "src/src/hb-ot-name-language.hh",
       "src/src/hb-ot-name-table.hh",
+      "src/src/hb-ot-name.cc",
       "src/src/hb-ot-os2-unicode-ranges.hh",
       "src/src/hb-ot-post-macroman.hh",
       "src/src/hb-ot-shape-complex-arabic-fallback.hh",
@@ -128,6 +141,8 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-shape-complex-use-table.cc",
       "src/src/hb-ot-shape-complex-use.cc",
       "src/src/hb-ot-shape-complex-use.hh",
+      "src/src/hb-ot-shape-complex-vowel-constraints.cc",
+      "src/src/hb-ot-shape-complex-vowel-constraints.hh",
       "src/src/hb-ot-shape-complex.hh",
       "src/src/hb-ot-shape-fallback.cc",
       "src/src/hb-ot-shape-fallback.hh",
@@ -137,7 +152,6 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-shape.h",
       "src/src/hb-ot-shape.hh",
       "src/src/hb-ot-tag.cc",
-      "src/src/hb-ot-tag.h",
       "src/src/hb-ot-var-avar-table.hh",
       "src/src/hb-ot-var-fvar-table.hh",
       "src/src/hb-ot-var-hvar-table.hh",
@@ -218,7 +232,10 @@ if (use_system_harfbuzz) {
       "//third_party/icu:icuuc",
     ]
 
-    if (is_mac) {
+    # TODO(https://crbug.com/894354): Change this to is_mac to revert to
+    # CoreText AAT. Remove this backstop and the whole hb-coretext build clause
+    # here once we have reliably switched to HarfBuzz AAT for one stable cycle.
+    if (false) {
       sources += [
         "src/src/hb-coretext.cc",
         "src/src/hb-coretext.h",
