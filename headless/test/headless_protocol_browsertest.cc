@@ -44,7 +44,7 @@ class HeadlessProtocolBrowserTest
  public:
   HeadlessProtocolBrowserTest() {
     embedded_test_server()->ServeFilesFromSourceDirectory(
-        "third_party/WebKit/LayoutTests/http/tests/inspector-protocol");
+        "third_party/blink/web_tests/http/tests/inspector-protocol");
     EXPECT_TRUE(embedded_test_server()->Start());
   }
 

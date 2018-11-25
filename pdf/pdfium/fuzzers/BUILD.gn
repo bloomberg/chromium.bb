@@ -211,8 +211,8 @@ if (pdf_enable_xfa) {
       seed_corpuses = [
         "corpora/pdf_codec_png",
         "//components/viz/test/data",
-        "//third_party/WebKit/LayoutTests/images/png-suite/samples",
-        "//third_party/WebKit/LayoutTests/images/resources/pngfuzz",
+        "//third_party/blink/web_tests/images/png-suite/samples",
+        "//third_party/blink/web_tests/images/resources/pngfuzz",
       ]
     }
   }

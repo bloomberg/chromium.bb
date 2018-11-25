@@ -32,7 +32,7 @@ bool ShouldUseInnerTextDump(const std::string& test_path) {
   // progress here in a per-directory manner.
   // TODO(xiaochengh): Progressively allow more tests to use innerText.
   // Remove this function once rebaseline is complete.
-  return test_path >= "LayoutTests/a" && test_path < "LayoutTests/t";
+  return test_path >= "web_tests/a" && test_path < "web_tests/t";
 }
 }  // namespace
 

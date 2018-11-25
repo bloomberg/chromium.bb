@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <title>Layout Tests</title>
 <!--
-Displays LayoutTests results.
+Displays web_tests results.
 -->
 <style>
 body {
@@ -226,7 +226,7 @@ p, h2, h3, h4 {
   Select format that works best for what you are trying to accomplish
   using "format" popup. Following formats are available:</p>
   <h4>1. Plain text</h4>
-  <pre>fast/forms/<a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/forms/validation-bubble-appearance-rtl-ui.html?q=validation-bubble-appearance-rtl-ui.html&dr">validation-bubble-appearance-rtl-ui.html</a></pre>
+  <pre>fast/forms/<a href="https://cs.chromium.org/chromium/src/third_party/blink/web_tests/fast/forms/validation-bubble-appearance-rtl-ui.html?q=validation-bubble-appearance-rtl-ui.html&dr">validation-bubble-appearance-rtl-ui.html</a></pre>
   <p>Plain text shows the test path.</p>
 
   <h4>2. TestExpectations</a></h4>
@@ -252,7 +252,7 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
   <h4>3. Crash site</h4>
   <pre>
 ### Crash site: Internals.cpp(3455)
-  editing/pasteboard/<a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/editing/pasteboard/copy-paste-white-space.html?q=copy-paste-white-space.html&dr">copy-paste-white-space.html</a></pre>
+  editing/pasteboard/<a href="https://cs.chromium.org/chromium/src/third_party/blink/web_tests/editing/pasteboard/copy-paste-white-space.html?q=copy-paste-white-space.html&dr">copy-paste-white-space.html</a></pre>
   <p>Crash site groups "Crash" tests with similar stack traces together. For best results, use it while filtering only crashes.</p>
   <h4>4. Text mismatch</h4>
   <pre>
@@ -280,8 +280,8 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
   <h3>Flagging</h3>
   <p>Tests can be flagged by clicking on that square box on the right hand side. View all flagged tests with "Flagged" filter. "F" is the keyboard shortcut.
   <h3>Bugs</h3>
-  <p>If you are unhappy with results, please file a bug, or fix it <a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/harness/results.html">here</a>.</p>
-  <p><code>window.localStorage.setItem("testLocationOverride", "file://path/to/your/LayoutTests")</code> is a secret preference to redirect test links to a custom url.</p>
+  <p>If you are unhappy with results, please file a bug, or fix it <a href="https://cs.chromium.org/chromium/src/third_party/blink/web_tests/fast/harness/results.html">here</a>.</p>
+  <p><code>window.localStorage.setItem("testLocationOverride", "file://path/to/your/web_tests")</code> is a secret preference to redirect test links to a custom url.</p>
 </div>
 <div id="summary">
   <p><span class="fix-width">Passed</span><span id="summary_passed"></span></p>
@@ -493,19 +493,19 @@ class PathParser {
   testBaseHref() {
     if (window.localStorage.getItem("testLocationOverride")) {
       // Experimental preference.
-      // Use "window.localStorage.setItem("testLocationOverride", "file://path/to/your/LayoutTests")
+      // Use "window.localStorage.setItem("testLocationOverride", "file://path/to/your/web_tests")
       return window.localStorage.getItem("testLocationOverride");
     } else if (PathParserGlobals.layout_tests_dir) {
       return PathParserGlobals.layout_tests_dir;
     } else if (location.toString().indexOf('file://') == 0) {
       // tests were run locally.
-      return "../../../third_party/WebKit/LayoutTests";
+      return "../../../third_party/blink/web_tests";
     } else if (PathParserGlobals.chromium_revision) {
       // Existing crrev list is incorrect:  https://crbug.com/750347
       let correctedRevision = PathParserGlobals.chromium_revision.replace("refs/heads/master@{#", "").replace("}", "");
-      return "https://crrev.com/" + correctedRevision + "/third_party/WebKit/LayoutTests";
+      return "https://crrev.com/" + correctedRevision + "/third_party/blink/web_tests";
     } else {
-      return "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests";
+      return "https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/web_tests";
     }
   }
 } // class PathParser

@@ -707,7 +707,7 @@ test("headless_browsertests") {
     "lib/dom_tree_extraction_expected_styles.txt",
     "$root_out_dir/headless_lib.pak",
     "//net/tools/testserver/",
-    "//third_party/WebKit/LayoutTests/http/tests/inspector-protocol/",
+    "//third_party/blink/web_tests/http/tests/inspector-protocol/",
     "//third_party/pyftpdlib/",
     "//third_party/pywebsocket/",
     "//third_party/tlslite/",

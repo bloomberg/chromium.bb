@@ -1473,7 +1473,7 @@
       'WebKit Linux Trusty ASAN': {
         'args': [
           '--additional-expectations',
-          '../../third_party/WebKit/LayoutTests/ASANExpectations',
+          '../../third_party/blink/web_tests/ASANExpectations',
           '--time-out-ms',
           '48000',
           '--enable-sanitizer',
@@ -1490,7 +1490,7 @@
       'WebKit Linux Trusty Leak': {
         'args': [
           '--additional-expectations',
-          '../../third_party/WebKit/LayoutTests/LeakExpectations',
+          '../../third_party/blink/web_tests/LeakExpectations',
           '--time-out-ms',
           '48000',
           '--enable-leak-detection',
@@ -1507,7 +1507,7 @@
       'WebKit Linux Trusty MSAN': {
         'args': [
           '--additional-expectations',
-          '../../third_party/WebKit/LayoutTests/MSANExpectations',
+          '../../third_party/blink/web_tests/MSANExpectations',
           '--time-out-ms',
           '66000',
           '--enable-sanitizer',

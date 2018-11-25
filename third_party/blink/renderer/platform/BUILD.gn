@@ -1927,7 +1927,7 @@ group("blink_platform_unittests_data") {
 
     # Required by some image decoder tests.
     "image-decoders/testing/",
-    "//third_party/WebKit/LayoutTests/images/resources/",
+    "//third_party/blink/web_tests/images/resources/",
   ]
 }
 
@@ -1991,7 +1991,7 @@ fuzzer_test("mhtml_parser_fuzzer") {
     ":platform",
   ]
   dict = "//testing/libfuzzer/fuzzers/dicts/mhtml.dict"
-  seed_corpus = "//third_party/WebKit/LayoutTests/mhtml"
+  seed_corpus = "//third_party/blink/web_tests/mhtml"
   additional_configs = [
     "//third_party/blink/renderer/platform/wtf:wtf_config",
     "//third_party/blink/renderer:config",
@@ -2022,8 +2022,8 @@ fuzzer_test("blink_png_decoder_fuzzer") {
   dict = "//testing/libfuzzer/fuzzers/dicts/png.dict"
   seed_corpuses = [
     "//components/viz/test/data",
-    "//third_party/WebKit/LayoutTests/images/png-suite/samples",
-    "//third_party/WebKit/LayoutTests/images/resources/pngfuzz",
+    "//third_party/blink/web_tests/images/png-suite/samples",
+    "//third_party/blink/web_tests/images/resources/pngfuzz",
   ]
 }
 

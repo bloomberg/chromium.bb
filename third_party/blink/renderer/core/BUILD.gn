@@ -2311,7 +2311,7 @@ fuzzer_test("stylesheet_contents_fuzzer") {
     "../platform:blink_fuzzer_test_support",
   ]
   dict = "//third_party/blink/renderer/core/css/css.dict"
-  seed_corpus = "//third_party/WebKit/LayoutTests/fast/css/resources"
+  seed_corpus = "//third_party/blink/web_tests/fast/css/resources"
   libfuzzer_options = [ "max_len=1024" ]
 }
 
@@ -2334,7 +2334,7 @@ fuzzer_test("html_preload_scanner_fuzzer") {
     "html/parser/html_preload_scanner_fuzzer.cc",
     "html/parser/text_resource_decoder_for_fuzzing.h",
   ]
-  seed_corpus = "//third_party/WebKit/LayoutTests/fast/parser"
+  seed_corpus = "//third_party/blink/web_tests/fast/parser"
   deps = [
     ":core",
     "../platform:blink_fuzzer_test_support",

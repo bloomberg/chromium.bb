@@ -259,11 +259,11 @@
     'blink_audio': {
       'filepath': 'third_party/blink/renderer/platform/audio' \
                   '|third_party/blink/renderer/modules/webaudio' \
-                  '|third_party/WebKit/LayoutTests/external/wpt/webaudio',
+                  '|third_party/blink/web_tests/external/wpt/webaudio',
     },
     'blink_battery_status': {
       'filepath': 'third_party/blink/renderer/modules/battery/' \
-                  '|third_party/WebKit/LayoutTests/battery-status/' \
+                  '|third_party/blink/web_tests/battery-status/' \
                   '|third_party/blink/renderer/core/frame/platform_event_(controller|dispatcher)'
     },
     'blink_bindings': {
@@ -310,24 +310,24 @@
     },
     'blink_css_flexbox': {
       'filepath': 'third_party/blink/renderer/core/rendering/.*flex' \
-                  '|third_party/WebKit/LayoutTests/fast/deprecated-flexbox/' \
-                  '|third_party/WebKit/LayoutTests/css3/flexbox/' \
-                  '|third_party/WebKit/LayoutTests/ietestcenter/css3/flexbox/'
+                  '|third_party/blink/web_tests/fast/deprecated-flexbox/' \
+                  '|third_party/blink/web_tests/css3/flexbox/' \
+                  '|third_party/blink/web_tests/ietestcenter/css3/flexbox/'
     },
     'blink_css_fragmentation_tests': {
-      'filepath': 'third_party/WebKit/LayoutTests/fast/multicol/' \
-                  '|third_party/WebKit/LayoutTests/fast/pagination/' \
-                  '|third_party/WebKit/LayoutTests/fragmentation/' \
-                  '|third_party/WebKit/LayoutTests/printing/'
+      'filepath': 'third_party/blink/web_tests/fast/multicol/' \
+                  '|third_party/blink/web_tests/fast/pagination/' \
+                  '|third_party/blink/web_tests/fragmentation/' \
+                  '|third_party/blink/web_tests/printing/'
     },
     'blink_css_grid_layout': {
       'filepath': 'third_party/blink/renderer/core/layout/.*grid' \
                   '|third_party/blink/renderer/core/paint/.*grid' \
                   '|third_party/blink/renderer/core/css/.*grid' \
-                  '|third_party/WebKit/LayoutTests/fast/css-grid-layout/' \
-                  '|third_party/WebKit/LayoutTests/ietestcenter/css3/grid/' \
-                  '|third_party/WebKit/LayoutTests/platform/.*/fast/css-grid-layout/' \
-                  '|third_party/WebKit/LayoutTests/platform/.*/ietestcenter/css3/grid/'
+                  '|third_party/blink/web_tests/fast/css-grid-layout/' \
+                  '|third_party/blink/web_tests/ietestcenter/css3/grid/' \
+                  '|third_party/blink/web_tests/platform/.*/fast/css-grid-layout/' \
+                  '|third_party/blink/web_tests/platform/.*/ietestcenter/css3/grid/'
     },
     'blink_custom_elements': {
       'filepath': 'third_party/blink/renderer/core/html/custom/' \
@@ -337,7 +337,7 @@
       'filepath': 'content/browser/device_sensors/' \
                   '|content/test/data/device_sensors/' \
                   '|third_party/blink/renderer/modules/device_orientation/' \
-                  '|third_party/WebKit/LayoutTests/device_orientation/' \
+                  '|third_party/blink/web_tests/device_orientation/' \
                   '|third_party/blink/renderer/core/frame/platform_event_(controller|dispatcher)' \
                   '|third_party/blink/renderer/core/frame/device_single_window_event_controller'
     },
@@ -363,14 +363,14 @@
       'filepath': 'third_party/blink/renderer/modules/filesystem/' \
                   '|third_party/blink/renderer/core/fileapi/' \
                   '|third_party/blink/renderer/platform/.*file' \
-                  '|third_party/WebKit/LayoutTests/fast/file' \
+                  '|third_party/blink/web_tests/fast/file' \
                   '|third_party/blink/public/.*_file'
     },
     'blink_frames': {
       'filepath': 'third_party/blink/renderer/core/frame/'
     },
     'blink_geolocation': {
-      'filepath': 'third_party/WebKit/LayoutTests/geolocation-api/' \
+      'filepath': 'third_party/blink/web_tests/geolocation-api/' \
                   '|third_party/blink/renderer/modules/geolocation/' \
                   '|third_party/blink/public/web/.*geolocation'
     },
@@ -391,7 +391,7 @@
                   '|third_party/blink/public/platform/modules/indexeddb' \
                   '|third_party/blink/public/mojom/indexeddb' \
                   '|third_party/blink/renderer/modules/indexeddb/' \
-                  '|third_party/WebKit/LayoutTests/storage/indexeddb'
+                  '|third_party/blink/web_tests/storage/indexeddb'
     },
     'blink_input': {
       'filepath': 'third_party/blink/renderer/core/input/'
@@ -420,7 +420,7 @@
                   '|third_party/blink/renderer/modules/(encryptedmedia|mediasource)' \
                   '|third_party/blink/renderer/platform/drm/' \
                   '|third_party/blink/renderer/platform/graphics/media/' \
-                  '|third_party/WebKit/LayoutTests/media/' \
+                  '|third_party/blink/web_tests/media/' \
                   '|third_party/blink/public/.*_media'
     },
     'blink_media_queries': {
@@ -434,14 +434,14 @@
                   '|third_party/blink/renderer/platform/mediastream/' \
                   '|third_party/blink/renderer/platform/exported/web_media_stream' \
                   '|third_party/blink/renderer/platform/exported/web_rtc' \
-                  '|third_party/WebKit/LayoutTests/fast/mediastream/'
+                  '|third_party/blink/web_tests/fast/mediastream/'
     },
     'blink_modules': {
       'filepath': 'third_party/blink/renderer/modules'
     },
     'blink_navigator_content_utils': {
       'filepath': 'third_party/blink/renderer/modules/navigatorcontentutils' \
-                  '|third_party/WebKit/LayoutTests/fast/dom/navigatorcontentutils'
+                  '|third_party/blink/web_tests/fast/dom/navigatorcontentutils'
     },
     'blink_out_of_process_frames': {
       'filepath': 'third_party/blink/renderer/core/frame/frame_owner' \
@@ -454,8 +454,8 @@
     },
     'blink_paintworklet': {
       'filepath': 'third_party/blink/renderer/modules/csspaint/' \
-                  '|third_party/WebKit/LayoutTests/http/tests/csspaint/' \
-                  '|third_party/WebKit/LayoutTests/externla/wpt/css/css-paint-api/'
+                  '|third_party/blink/web_tests/http/tests/csspaint/' \
+                  '|third_party/blink/web_tests/externla/wpt/css/css-paint-api/'
     },
     'blink_performance_timing': {
       'filepath': 'third_party/blink/renderer/core/timing/'
@@ -517,12 +517,12 @@
     },
     'blink_service_worker' : {
       'filepath': 'third_party/blink/renderer/modules/service_worker' \
-                  '|third_party/WebKit/LayoutTests/http/tests/serviceworker' \
-                  '|third_party/WebKit/LayoutTests/external/wpt/service-workers'
+                  '|third_party/blink/web_tests/http/tests/serviceworker' \
+                  '|third_party/blink/web_tests/external/wpt/service-workers'
     },
     'blink_service_worker_tests' : {
-      'filepath': 'third_party/WebKit/LayoutTests/http/tests/serviceworker' \
-                  '|third_party/WebKit/LayoutTests/external/wpt/service-workers'
+      'filepath': 'third_party/blink/web_tests/http/tests/serviceworker' \
+                  '|third_party/blink/web_tests/external/wpt/service-workers'
     },
     'blink_shadow_dom': {
       'filepath': 'third_party/blink/renderer/core/dom/.*shadow' \
@@ -534,7 +534,7 @@
       'filepath': 'third_party/blink/renderer/core/editing/spellcheck'
     },
     'blink_spv2_layout_tests': {
-      'filepath': 'third_party/WebKit/LayoutTests/virtual/spv2'
+      'filepath': 'third_party/blink/web_tests/virtual/spv2'
     },
     'blink_streams': {
       'filepath': 'third_party/blink/renderer/core/streams/'
@@ -551,10 +551,10 @@
                   '|third_party/blink/renderer/core/html/meida/html_media_element' \
                   '|third_party/blink/renderer/core/html/shadow/media_control' \
                   '|third_party/blink/renderer/core/css/mediaControl' \
-                  '|third_party/WebKit/LayoutTests/media/track/'
+                  '|third_party/blink/web_tests/media/track/'
     },
     'blink_vibration': {
-      'filepath': 'third_party/WebKit/LayoutTests/vibration/' \
+      'filepath': 'third_party/blink/web_tests/vibration/' \
                   '|third_party/blink/renderer/modules/vibration/'
     },
     'blink_viewport_interaction': {
@@ -565,7 +565,7 @@
                   '|third_party/blink/renderer/core/html/html_meta_element'
     },
     'blink_w3ctests': {
-      'filepath': 'third_party/WebKit/LayoutTests/external/' \
+      'filepath': 'third_party/blink/web_tests/external/' \
                   '|third_party/blink/tools/blinkpy/w3c/'
     },
     'blink_webp': {
@@ -578,9 +578,9 @@
     },
     'blink_workers': {
       'filepath': 'third_party/blink/renderer/core/workers' \
-                  '|third_party/WebKit/LayoutTests/http/tests/workers' \
-                  '|third_party/WebKit/LayoutTests/fast/workers' \
-                  '|third_party/WebKit/LayoutTests/external/wpt/workers'
+                  '|third_party/blink/web_tests/http/tests/workers' \
+                  '|third_party/blink/web_tests/fast/workers' \
+                  '|third_party/blink/web_tests/external/wpt/workers'
     },
     'blink_wtf': {
       'filepath': 'third_party/blink/renderer/platform/wtf',
@@ -1101,7 +1101,7 @@
       'filepath': 'content/renderer/media_capture_from_element/' \
                   '|third_party/blink/renderer/modules/mediacapture/' \
                   '|third_party/blink/renderer/platform/exported/web_canvas_capture' \
-                  '|third_party/WebKit/LayoutTests/fast/mediacapturefromelement/' \
+                  '|third_party/blink/web_tests/fast/mediacapturefromelement/' \
                   '|third_party/blink/public/platform/web_canvas_capture'
     },
     'media_controls': {
@@ -1124,7 +1124,7 @@
       'filepath': 'content/renderer/media_recorder/' \
                   '|third_party/blink/renderer/modules/mediarecorder/' \
                   '|third_party/blink/renderer/platform/exported/web_media_recorder' \
-                  '|third_party/WebKit/LayoutTests/fast/mediarecorder/' \
+                  '|third_party/blink/web_tests/fast/mediarecorder/' \
                   '|third_party/blink/public/platform/web_media_recorder'
     },
     'media_remoting': {
@@ -1261,8 +1261,8 @@
         'content/public/common/platform_notification|'\
         'content/renderer/notification_|'\
         'chrome/notification_helper/|'\
-        'third_party/WebKit/LayoutTests/external/wpt/notifications|'\
-        'third_party/WebKit/LayoutTests/http/tests/notifications|'\
+        'third_party/blink/web_tests/external/wpt/notifications|'\
+        'third_party/blink/web_tests/http/tests/notifications|'\
         'third_party/blink/renderer/modules/notifications|'\
         'third_party/blink/public/platform/modules/notifications|'\
         'ui/message_center/'
@@ -1367,9 +1367,9 @@
                   '|ios/chrome/browser/ui/payments'\
                   '|ios/web/payments'\
                   '|ios/web/public/payments'\
-                  '|third_party/WebKit/LayoutTests/external/wpt/payment-request'\
-                  '|third_party/WebKit/LayoutTests/http/tests/payments'\
-                  '|third_party/WebKit/LayoutTests/payments'\
+                  '|third_party/blink/web_tests/external/wpt/payment-request'\
+                  '|third_party/blink/web_tests/http/tests/payments'\
+                  '|third_party/blink/web_tests/payments'\
                   '|third_party/blink/public/platform/modules/payments'\
                   '|third_party/blink/renderer/modules/payments'
     },
@@ -1418,7 +1418,7 @@
     'presentation': {
       'filepath': 'content/(browser|common|renderer)/presentation/' \
                   '|third_party/blink/public/platform/modules/presentation/' \
-                  '|third_party/WebKit/LayoutTests/presentation/' \
+                  '|third_party/blink/web_tests/presentation/' \
                   '|third_party/blink/renderer/modules/presentation/'
     },
     'print_preview': {
@@ -1702,8 +1702,8 @@
                   '|chrome/android/javatests/src/org/chromium/chrome/browser/WebShare.*'\
                   '|chrome/browser/ui/views/webshare/'\
                   '|chrome/browser/webshare/'\
-                  '|third_party/WebKit/LayoutTests/webshare/'\
-                  '|third_party/WebKit/LayoutTests/external/wpt/web-share/'\
+                  '|third_party/blink/web_tests/webshare/'\
+                  '|third_party/blink/web_tests/external/wpt/web-share/'\
                   '|third_party/blink/public/platform/modules/webshare/'\
                   '|third_party/blink/renderer/modules/webshare/',
     },

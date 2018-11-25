@@ -114,8 +114,8 @@ fuzzer_test("libsrtp_fuzzer") {
 
 libpng_seed_corpuses = [
   "//components/viz/test/data",
-  "//third_party/WebKit/LayoutTests/images/png-suite/samples",
-  "//third_party/WebKit/LayoutTests/images/resources/pngfuzz",
+  "//third_party/blink/web_tests/images/png-suite/samples",
+  "//third_party/blink/web_tests/images/resources/pngfuzz",
 ]
 
 fuzzer_test("gfx_png_image_fuzzer") {
