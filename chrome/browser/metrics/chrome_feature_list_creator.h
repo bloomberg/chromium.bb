@@ -5,13 +5,8 @@
 #ifndef CHROME_BROWSER_METRICS_CHROME_FEATURE_LIST_CREATOR_H_
 #define CHROME_BROWSER_METRICS_CHROME_FEATURE_LIST_CREATOR_H_
 
-#include <memory>
-#include <string>
-
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -49,16 +44,6 @@ class ChromeFeatureListCreator {
   std::unique_ptr<policy::ChromeBrowserPolicyConnector>
   TakeChromeBrowserPolicyConnector();
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  std::unique_ptr<first_run::MasterPrefs> TakeMasterPrefs();
-#endif
-
-  // Returns result of |ApplyFirstRunPrefs()|.
-  int master_prefs_apply_result() const {
-    DCHECK_NE(-1, master_prefs_apply_result_);
-    return master_prefs_apply_result_;
-  }
-
   // Passes ownership of the |pref_service_factory_| to the caller.
   std::unique_ptr<prefs::InProcessPrefServiceFactory> TakePrefServiceFactory();
 
@@ -77,12 +62,6 @@ class ChromeFeatureListCreator {
   void ConvertFlagsToSwitches();
   void SetupFieldTrials();
   void CreateMetricsServices();
-  void SetupMasterPrefs();
-
-  // Applies any preferences (to local state) needed for first run. This is
-  // always called and early outs if not first-run. Return value is an exit
-  // status, RESULT_CODE_NORMAL_EXIT indicates success.
-  int ApplyFirstRunPrefs();
 
   // If TakePrefService() is called, the caller will take the ownership
   // of this variable. Stop using this variable afterwards.
@@ -106,13 +85,6 @@ class ChromeFeatureListCreator {
       browser_policy_connector_;
 
   std::unique_ptr<prefs::InProcessPrefServiceFactory> pref_service_factory_;
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  std::unique_ptr<first_run::MasterPrefs> master_prefs_;
-#endif
-
-  // Keeps result of |ApplyFirstRunPrefs()|
-  int master_prefs_apply_result_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeFeatureListCreator);
 };
