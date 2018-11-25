@@ -1405,55 +1405,54 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
           "third_party/MEgalopolis/MEgalopolisExtra.woff"),
       16, &ligatures);
 
-  // RA and CA form ligatures, most glyph pairs have kerning.
-  String string(u"ABRACADABRA");
-  HarfBuzzShaper shaper(string);
+  // $ ./hb-shape   --shaper=ot --features="dlig=1,kern" --show-flags
+  // MEgalopolisExtra.ttf  "RADDAYoVaDD"
+  // [R_A=0+1150|D=2+729|D=3+699|A=4+608#1|Y=5+608#1|o=6+696#1|V=7+652#1|a=8+657#1|D=9+729|D=10+729]
+  // RA Ligature, unkerned D D, D A kerns, A Y kerns, Y o kerns, o V kerns, V a
+  // kerns, no kerning with D.
+  String test_word(u"RADDAYoVaDD");
+  unsigned safe_to_break_positions[] = {2, 3, 9, 10};
+  HarfBuzzShaper shaper(test_word);
   scoped_refptr<ShapeResult> result =
       shaper.Shape(&testFont, TextDirection::kLtr);
-  EXPECT_EQ(6u, result->NextSafeToBreakOffset(1));    // After CA ligature.
-  EXPECT_EQ(6u, result->NextSafeToBreakOffset(6));    // After CA ligature.
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(7));   // At end of string.
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(9));   // At end of string.
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(10));  // At end of string.
 
-  // Add zero-width spaces at the safe to break offsets.
-  String refString(u"ABRACA\u200BDAB\u200BRA");
-  HarfBuzzShaper refShaper(refString);
+  unsigned compare_safe_to_break_position = 0;
+  for (unsigned i = 1; i < test_word.length() - 1; ++i) {
+    EXPECT_EQ(safe_to_break_positions[compare_safe_to_break_position],
+              result->NextSafeToBreakOffset(i));
+    if (i == safe_to_break_positions[compare_safe_to_break_position])
+      compare_safe_to_break_position++;
+  }
+
+  // Add zero-width spaces at some of the safe to break offsets.
+  String inserted_zero_width_spaces = test_word;
+  inserted_zero_width_spaces.Ensure16Bit();
+  unsigned enlarged_by = 0;
+  for (unsigned safe_to_break_position : safe_to_break_positions) {
+    inserted_zero_width_spaces.insert(u"\u200B",
+                                      safe_to_break_position + enlarged_by++);
+  }
+  HarfBuzzShaper refShaper(inserted_zero_width_spaces);
   scoped_refptr<ShapeResult> referenceResult =
       refShaper.Shape(&testFont, TextDirection::kLtr);
 
   // Results should be identical if it truly is safe to break at the designated
-  // safe-to-break offsets
+  // safe-to-break offsets because otherwise, the zero-width spaces would have
+  // altered the text spacing, for example by breaking apart ligatures or
+  // kerning pairs.
   EXPECT_EQ(result->SnappedWidth(), referenceResult->SnappedWidth());
   EXPECT_EQ(result->Bounds(), referenceResult->Bounds());
-  EXPECT_EQ(result->SnappedStartPositionForOffset(0),
-            referenceResult->SnappedStartPositionForOffset(0));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(1),
-            referenceResult->SnappedStartPositionForOffset(1));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(2),
-            referenceResult->SnappedStartPositionForOffset(2));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(3),
-            referenceResult->SnappedStartPositionForOffset(3));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(4),
-            referenceResult->SnappedStartPositionForOffset(4));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(5),
-            referenceResult->SnappedStartPositionForOffset(5));
 
-  // First zero-width space is at position 6 so the the matching character in
-  // the reference results is 7.
-  EXPECT_EQ(result->SnappedStartPositionForOffset(6),
-            referenceResult->SnappedStartPositionForOffset(7));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(7),
-            referenceResult->SnappedStartPositionForOffset(8));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(8),
-            referenceResult->SnappedStartPositionForOffset(9));
-
-  // Second zero-width space is at position 9 so the the matching character in
-  // the reference results is 11.
-  EXPECT_EQ(result->SnappedStartPositionForOffset(9),
-            referenceResult->SnappedStartPositionForOffset(11));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(10),
-            referenceResult->SnappedStartPositionForOffset(12));
+  // Zero-width spaces were inserted, so we need to account for that by
+  // offseting the index that we compare against.
+  unsigned inserts_offset = 0;
+  for (unsigned i = 0; i < test_word.length(); ++i) {
+    if (i == safe_to_break_positions[inserts_offset])
+      inserts_offset++;
+    EXPECT_EQ(
+        result->SnappedStartPositionForOffset(i),
+        referenceResult->SnappedStartPositionForOffset(i + inserts_offset));
+  }
 }
 
 // TODO(crbug.com/870712): This test fails on Mac due to AAT shaping and

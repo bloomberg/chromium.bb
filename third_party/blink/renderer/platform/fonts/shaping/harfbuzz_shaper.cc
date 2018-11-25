@@ -39,6 +39,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_iterator.h"
@@ -236,14 +237,6 @@ inline bool ShapeRange(hb_buffer_t* buffer,
                               ? HarfBuzzFace::PrepareForVerticalLayout
                               : HarfBuzzFace::NoVerticalLayout);
   hb_shape(hb_font, buffer, font_features, font_features_size);
-
-  // We cannot round all glyph positions during hb_shape because the
-  // hb_font_funcs_set_glyph_h_kerning_func only works for legacy kerning.
-  // OpenType uses gpos tables for kerning and harfbuzz does not call
-  // the callback to let us round as we go.
-  // Without this rounding, we get inconsistent spacing between kern points
-  // if subpixel positioning is disabled.
-  // See http://crbug.com/740385.
   if (!face->ShouldSubpixelPosition())
     RoundHarfBuzzBufferPositions(buffer);
 

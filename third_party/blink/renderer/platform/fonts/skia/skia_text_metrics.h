@@ -20,7 +20,7 @@ void GetGlyphWidthForHarfBuzz(const SkFont&,
                               hb_position_t* width);
 void GetGlyphWidthForHarfBuzz(const SkFont&,
                               unsigned count,
-                              hb_codepoint_t* first_glyph,
+                              const hb_codepoint_t* first_glyph,
                               unsigned glyph_stride,
                               hb_position_t* first_advance,
                               unsigned advance_stride);

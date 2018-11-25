@@ -3528,8 +3528,14 @@ TEST_F(RenderTextTest, Multiline_LineBreakerBehavior) {
             test_api()->lines()[j].segments[0].char_range.start(),
             test_api()->lines()[j].segments[segment_size - 1].char_range.end());
       EXPECT_EQ(kTestScenarios[i].char_ranges[j], line_range);
-      EXPECT_EQ(kTestScenarios[i].char_ranges[j].length() * kGlyphSize,
-                test_api()->lines()[j].size.width());
+      // Depending on kerning pairs in the font, a run's length is not strictly
+      // equal to number of glyphs * kGlyphsize. Size should match within a
+      // small margin.
+      const float kSizeMargin = 0.127;
+      EXPECT_LT(
+          std::abs(kTestScenarios[i].char_ranges[j].length() * kGlyphSize -
+                   test_api()->lines()[j].size.width()),
+          kSizeMargin);
     }
   }
 }

@@ -19,13 +19,6 @@
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/skia_util.h"
 
-#if defined(OS_MACOSX)
-#include <hb-coretext.h>
-
-#include "base/mac/scoped_cftyperef.h"
-#include "third_party/skia/include/ports/SkTypeface_mac.h"
-#endif
-
 namespace gfx {
 
 namespace {
@@ -106,6 +99,14 @@ hb_bool_t GetGlyph(hb_font_t* font,
   return !!*glyph;
 }
 
+hb_bool_t GetNominalGlyph(hb_font_t* font,
+                          void* data,
+                          hb_codepoint_t unicode,
+                          hb_codepoint_t* glyph,
+                          void* user_data) {
+  return GetGlyph(font, data, unicode, 0, glyph, user_data);
+}
+
 // Returns the horizontal advance value of the |glyph|.
 hb_position_t GetGlyphHorizontalAdvance(hb_font_t* font,
                                         void* data,
@@ -178,7 +179,8 @@ hb_bool_t GetGlyphExtents(hb_font_t* font,
 class FontFuncs {
  public:
   FontFuncs() : font_funcs_(hb_font_funcs_create()) {
-    hb_font_funcs_set_glyph_func(font_funcs_, GetGlyph, 0, 0);
+    hb_font_funcs_set_variation_glyph_func(font_funcs_, GetGlyph, 0, 0);
+    hb_font_funcs_set_nominal_glyph_func(font_funcs_, GetNominalGlyph, 0, 0);
     hb_font_funcs_set_glyph_h_advance_func(
         font_funcs_, GetGlyphHorizontalAdvance, 0, 0);
     hb_font_funcs_set_glyph_h_kerning_func(
@@ -242,18 +244,6 @@ class HarfBuzzFace {
   }
 
   void Init(SkTypeface* skia_face) {
-#if defined(OS_MACOSX)
-    // On Mac, hb_face_t needs to be instantiated using the CoreText constructor
-    // when there is an underlying CTFont. Otherwise the wrong shaping engine is
-    // chosen. See also HarfBuzzFace.cpp in Blink.
-    if (CTFontRef ct_font = SkTypeface_GetCTFontRef(skia_face)) {
-      base::ScopedCFTypeRef<CGFontRef> cg_font(
-          CTFontCopyGraphicsFont(ct_font, nullptr));
-      face_ = hb_coretext_face_create(cg_font);
-      DCHECK(face_);
-      return;
-    }
-#endif
     SkSafeRef(skia_face);
     face_ = hb_face_create_for_tables(GetFontTable, skia_face, UnrefSkTypeface);
     DCHECK(face_);
@@ -283,13 +273,6 @@ hb_font_t* CreateHarfBuzzFont(sk_sp<SkTypeface> skia_face,
     face_cache->first.Init(skia_face.get());
 
   hb_font_t* harfbuzz_font = nullptr;
-#if defined(OS_MACOSX)
-  // Since we have a CTFontRef available at the right size, associate it with
-  // the hb_font_t. This avoids Harfbuzz doing its own lookup by typeface name,
-  // which requires talking to the font server again.
-  if (CTFontRef ct_font = SkTypeface_GetCTFontRef(skia_face.get()))
-    harfbuzz_font = hb_coretext_font_create(ct_font);
-#endif
   if (!harfbuzz_font)
     harfbuzz_font = hb_font_create(face_cache->first.get());
 
