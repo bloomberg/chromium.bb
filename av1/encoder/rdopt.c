@@ -11032,11 +11032,22 @@ static int inter_mode_search_order_independent_skip(
   const MV_REFERENCE_FRAME *ref_frame = av1_mode_order[mode_index].ref_frame;
   const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
   int skip_motion_mode = 0;
+
+  if (mode_skip_mask[ref_frame[0]] & (1 << this_mode)) {
+    return 1;
+  }
+
+  if ((ref_frame_skip_mask[0] & (1 << ref_frame[0])) &&
+      (ref_frame_skip_mask[1] & (1 << AOMMAX(0, ref_frame[1])))) {
+    return 1;
+  }
+
   // If no valid mode has been found so far in PARTITION_NONE when finding a
   // valid partition is required, do not skip mode.
   if (search_state->best_rd == INT64_MAX && mbmi->partition == PARTITION_NONE &&
       x->must_find_valid_partition)
     return 0;
+
   if (mbmi->partition != PARTITION_NONE && mbmi->partition != PARTITION_SPLIT) {
     const int ref_type = av1_ref_frame_type(ref_frame);
     int skip_ref = ctx->skip_ref_frame_mask & (1 << ref_type);
@@ -11176,15 +11187,6 @@ static int inter_mode_search_order_independent_skip(
          get_relative_dist(order_hint_info, ref_offsets[1],
                            current_frame->order_hint) > 0))
       return 1;
-  }
-
-  if (mode_skip_mask[ref_frame[0]] & (1 << this_mode)) {
-    return 1;
-  }
-
-  if ((ref_frame_skip_mask[0] & (1 << ref_frame[0])) &&
-      (ref_frame_skip_mask[1] & (1 << AOMMAX(0, ref_frame[1])))) {
-    return 1;
   }
 
   if (skip_repeated_mv(cm, x, this_mode, ref_frame, search_state)) {
