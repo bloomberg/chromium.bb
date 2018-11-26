@@ -2704,6 +2704,8 @@ int LayoutBlockFlow::LineCount(
 }
 
 LayoutUnit LayoutBlockFlow::FirstLineBoxBaseline() const {
+  if (ShouldApplyLayoutContainment())
+    return LayoutUnit(-1);
   // Orthogonal grid items can participante in baseline alignment along column
   // axis.
   if (IsWritingModeRoot() && !IsRubyRun() && !IsGridItem())
