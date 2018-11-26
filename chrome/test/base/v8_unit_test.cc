@@ -135,8 +135,7 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& test_fixture,
     return false;
 
   // Ok if ran successfully, passed tests, and didn't have console errors.
-  return result->BooleanValue(context).ToChecked() && g_test_result_ok &&
-         !g_had_errors;
+  return result->BooleanValue(isolate) && g_test_result_ok && !g_had_errors;
 }
 
 void V8UnitTest::InitPathsAndLibraries() {
@@ -355,9 +354,7 @@ void V8UnitTest::ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args) {
   EXPECT_EQ(2U, test_result->Length());
   if (::testing::Test::HasNonfatalFailure())
     return;
-  g_test_result_ok = test_result->Get(0)
-                         ->BooleanValue(isolate->GetCurrentContext())
-                         .ToChecked();
+  g_test_result_ok = test_result->Get(0)->BooleanValue(isolate);
   if (!g_test_result_ok) {
     v8::String::Utf8Value message(isolate, test_result->Get(1));
     LOG(ERROR) << *message;
