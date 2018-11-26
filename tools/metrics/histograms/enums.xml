@@ -29666,6 +29666,7 @@ from previous Chrome versions.
   <int value="-1269084216" label="ash-md"/>
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
   <int value="-1267958145" label="disable-pdf-material-ui"/>
+  <int value="-1262730949" label="EnableDspHotword:enabled"/>
   <int value="-1262152606" label="disable-lock-screen-apps"/>
   <int value="-1261972671" label="OmniboxDocumentProvider:disabled"/>
   <int value="-1261263046"
@@ -30841,6 +30842,7 @@ from previous Chrome versions.
   <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
   <int value="963671232" label="DrawOcclusion:disabled"/>
   <int value="966415988" label="SyncPseudoUSSPasswords:enabled"/>
+  <int value="969340095" label="EnableDspHotword:disabled"/>
   <int value="972228058" label="SyncUSSSessions:disabled"/>
   <int value="973601997" label="SafeBrowsingUseLocalBlacklistsV2:disabled"/>
   <int value="975104092" label="show-taps"/>
