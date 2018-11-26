@@ -4455,8 +4455,6 @@ test("unit_tests") {
       "../browser/ui/app_list/search/tests/tokenized_string_unittest.cc",
       "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
       "../browser/ui/app_list/test/fake_app_list_model_updater.h",
-      "../browser/ui/app_list/test/fake_profile.cc",
-      "../browser/ui/app_list/test/fake_profile.h",
     ]
     deps += [
       # TODO(wutao): Put new icons resources to ash/public/cpp/vector_icons/
