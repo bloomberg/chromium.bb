@@ -126,6 +126,10 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // OnGotCameraInfoOnIpcThread.
   base::WaitableEvent builtin_camera_info_updated_;
 
+  // Signaled/Reset when |pending_external_camera_info_.empty()| is changed.
+  base::WaitableEvent external_camera_info_updated_;
+  std::unordered_set<int> pending_external_camera_info_;
+
   // Signaled/Reset when |camera_info_.empty()| is changed.
   base::WaitableEvent has_camera_connected_;
 
