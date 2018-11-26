@@ -48,8 +48,9 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {TRACE_DISABLED_BY_DEFAULT("memory-infra"), "*", kMemoryDumpAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("system_stats"), "*", nullptr},
     {TRACE_DISABLED_BY_DEFAULT("v8.gc"), "*", kV8GCAllowedArgs},
-    {"ui", "QueryLinkedFontsFromRegistry", nullptr},
     {"ui", "CachedFontLinkSettings::GetLinkedFonts", nullptr},
+    {"ui", "QueryLinkedFontsFromRegistry", nullptr},
+    {"ui", "UserEvent", nullptr},
     {nullptr, nullptr, nullptr}};
 
 const char* kMetadataWhitelist[] = {"chrome-library-name",
