@@ -112,7 +112,7 @@ void LogLists(const std::vector<Item*>& list_a,
   }
 }
 
-bool WalletDataAndMetadataMatchImpl(
+bool WalletDataAndMetadataMatchAndAddressesHaveConverted(
     int profile_a,
     const std::vector<CreditCard*>& server_cards_a,
     const std::vector<AutofillProfile*>& server_profiles_a,
@@ -126,6 +126,12 @@ bool WalletDataAndMetadataMatchImpl(
   if (!ListsMatch(profile_a, server_profiles_a, profile_b, server_profiles_b)) {
     LogLists(server_profiles_a, server_profiles_b);
     return false;
+  }
+  // Check that all server profiles have converted to local ones.
+  for (AutofillProfile* profile : server_profiles_a) {
+    if (!profile->has_converted()) {
+      return false;
+    }
   }
   return true;
 }
@@ -238,11 +244,14 @@ void UpdateServerAddressMetadata(int profile,
 }
 
 sync_pb::SyncEntity CreateDefaultSyncWalletCard() {
-  return CreateSyncWalletCard(kDefaultCardID, kDefaultCardLastFour);
+  return CreateSyncWalletCard(kDefaultCardID, kDefaultCardLastFour,
+                              kDefaultBillingAddressID);
 }
 
-sync_pb::SyncEntity CreateSyncWalletCard(const std::string& name,
-                                         const std::string& last_four) {
+sync_pb::SyncEntity CreateSyncWalletCard(
+    const std::string& name,
+    const std::string& last_four,
+    const std::string& billing_address_id) {
   sync_pb::SyncEntity entity;
   entity.set_name(name);
   entity.set_id_string(name);
@@ -263,7 +272,9 @@ sync_pb::SyncEntity CreateSyncWalletCard(const std::string& name,
   credit_card->set_name_on_card(kDefaultCardName);
   credit_card->set_status(sync_pb::WalletMaskedCreditCard::VALID);
   credit_card->set_type(kDefaultCardType);
-  credit_card->set_billing_address_id(kDefaultBillingAddressID);
+  if (!billing_address_id.empty()) {
+    credit_card->set_billing_address_id(billing_address_id);
+  }
   return entity;
 }
 
@@ -397,6 +408,12 @@ std::vector<AutofillProfile*> GetServerProfiles(int profile) {
   return pdm->GetServerProfiles();
 }
 
+std::vector<AutofillProfile*> GetLocalProfiles(int profile) {
+  WaitForPDMToRefresh(profile);
+  PersonalDataManager* pdm = GetPersonalDataManager(profile);
+  return pdm->GetProfiles();
+}
+
 std::vector<CreditCard*> GetServerCreditCards(int profile) {
   WaitForPDMToRefresh(profile);
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
@@ -430,7 +447,7 @@ bool AutofillWalletChecker::IsExitConditionSatisfied() {
       wallet_helper::GetPersonalDataManager(profile_a_);
   autofill::PersonalDataManager* pdm_b =
       wallet_helper::GetPersonalDataManager(profile_b_);
-  return WalletDataAndMetadataMatchImpl(
+  return WalletDataAndMetadataMatchAndAddressesHaveConverted(
       profile_a_, pdm_a->GetServerCreditCards(), pdm_a->GetServerProfiles(),
       profile_b_, pdm_b->GetServerCreditCards(), pdm_b->GetServerProfiles());
 }
