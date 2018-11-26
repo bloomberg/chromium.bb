@@ -21,10 +21,12 @@
 #include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -43,6 +45,26 @@ using content::OpenURLParams;
 using content::Referrer;
 
 namespace {
+
+bool AreCommittedInterstitialsEnabled() {
+  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
+}
+
+content::InterstitialPageDelegate* GetInterstitialDelegate(
+    content::WebContents* tab) {
+  if (AreCommittedInterstitialsEnabled()) {
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            tab);
+    if (!helper)
+      return nullptr;
+    return helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
+  }
+  content::InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+  if (!interstitial_page)
+    return nullptr;
+  return interstitial_page->GetDelegateForTesting();
+}
 
 class LoginPromptBrowserTest : public InProcessBrowserTest {
  public:
@@ -1416,7 +1438,9 @@ IN_PROC_BROWSER_TEST_F(
 // the navigation at (2) isn't (navigations ending up in interstitials don't
 // immediately commit). So just checking for cross origin navigation before
 // prompting the auth interstitial is not sufficient, must also check if there
-// is any other interstitial being displayed.
+// is any other interstitial being displayed. With committed SSL interstitials,
+// the navigation is actually cross domain since the interstitial is actually
+// a committed navigation, but we still expect the same behavior.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        ShouldReplaceExistingInterstitialWhenNavigated) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1437,9 +1461,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   // Navigate to an auth url and wait for the login prompt.
   {
     WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(OpenURLParams(auth_url, Referrer(),
-                                     WindowOpenDisposition::CURRENT_TAB,
-                                     ui::PAGE_TRANSITION_TYPED, false));
+    ui_test_utils::NavigateToURL(browser(), auth_url);
     ASSERT_EQ("127.0.0.1", contents->GetURL().host());
     ASSERT_TRUE(contents->GetURL().SchemeIs("http"));
     auth_needed_waiter.Wait();
@@ -1463,29 +1485,33 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   // schemes don't match (http vs https).
   {
     ASSERT_EQ("127.0.0.1", broken_ssl_page.host());
-    browser()->OpenURL(OpenURLParams(broken_ssl_page, Referrer(),
-                                     WindowOpenDisposition::CURRENT_TAB,
-                                     ui::PAGE_TRANSITION_TYPED, false));
+    ui_test_utils::NavigateToURL(browser(), broken_ssl_page);
     ASSERT_EQ("127.0.0.1", contents->GetURL().host());
     ASSERT_TRUE(contents->GetURL().SchemeIs("https"));
-    content::WaitForInterstitialAttach(contents);
-    EXPECT_TRUE(contents->ShowingInterstitialPage());
-    EXPECT_EQ(SSLBlockingPage::kTypeForTesting, contents->GetInterstitialPage()
-                                                    ->GetDelegateForTesting()
-                                                    ->GetTypeForTesting());
-    EXPECT_EQ(auth_url, contents->GetLastCommittedURL());
+    if (AreCommittedInterstitialsEnabled()) {
+      ASSERT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
+    } else {
+      content::WaitForInterstitialAttach(contents);
+      EXPECT_TRUE(contents->ShowingInterstitialPage());
+      EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
+                contents->GetInterstitialPage()
+                    ->GetDelegateForTesting()
+                    ->GetTypeForTesting());
+      EXPECT_EQ(auth_url, contents->GetLastCommittedURL());
+    }
   }
 
   // An overrideable SSL interstitial is now being displayed. Navigate to the
   // auth URL again. This is again a cross origin navigation, but last committed
   // URL is the same as the auth URL (since SSL navigation never committed).
   // Should still replace SSL interstitial with an auth interstitial even though
-  // last committed URL and the new URL is the same.
+  // last committed URL and the new URL is the same. With committed SSL
+  // interstitials enabled we still check for the behavior, but the
+  // SSL interstitial will be a committed navigation so it will be handled as a
+  // cross origin navigation.
   {
     WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(OpenURLParams(auth_url, Referrer(),
-                                     WindowOpenDisposition::CURRENT_TAB,
-                                     ui::PAGE_TRANSITION_TYPED, false));
+    ui_test_utils::NavigateToURL(browser(), auth_url);
     ASSERT_EQ("127.0.0.1", contents->GetURL().host());
     ASSERT_TRUE(contents->GetURL().SchemeIs("http"));
     ASSERT_TRUE(contents->ShowingInterstitialPage());
@@ -1535,21 +1561,30 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
   // Redirect to a broken SSL page. This redirect should not accidentally
   // proceed through the SSL interstitial.
-  WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
-  EXPECT_TRUE(content::ExecuteScript(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      std::string("window.location = '") + broken_ssl_page.spec() + "'"));
-  content::WaitForInterstitialAttach(contents);
-  auth_cancelled_waiter.Wait();
+  if (AreCommittedInterstitialsEnabled()) {
+    content::TestNavigationObserver observer(contents);
+    EXPECT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        std::string("window.location = '") + broken_ssl_page.spec() + "'"));
+    observer.Wait();
+  } else {
+    WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+    EXPECT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        std::string("window.location = '") + broken_ssl_page.spec() + "'"));
+    content::WaitForInterstitialAttach(contents);
+    auth_cancelled_waiter.Wait();
+    // If the interstitial was accidentally clicked through, this wait may time
+    // out.
+    EXPECT_TRUE(WaitForRenderFrameReady(
+        contents->GetInterstitialPage()->GetMainFrame()));
+  }
 
-  // If the interstitial was accidentally clicked through, this wait may time
-  // out.
-  EXPECT_TRUE(
-      WaitForRenderFrameReady(contents->GetInterstitialPage()->GetMainFrame()));
-  EXPECT_TRUE(contents->ShowingInterstitialPage());
-  EXPECT_EQ(SSLBlockingPage::kTypeForTesting, contents->GetInterstitialPage()
-                                                  ->GetDelegateForTesting()
-                                                  ->GetTypeForTesting());
+  content::InterstitialPageDelegate* delegate =
+      GetInterstitialDelegate(contents);
+
+  EXPECT_TRUE(delegate);
+  EXPECT_EQ(SSLBlockingPage::kTypeForTesting, delegate->GetTypeForTesting());
 }
 
 // Test where Basic HTTP authentication is disabled.
