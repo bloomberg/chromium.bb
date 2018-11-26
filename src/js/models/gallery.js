@@ -149,8 +149,8 @@ cca.models.Gallery.prototype.load = function(observers) {
   this.observers_ = observers;
   this.loaded_ = cca.models.FileSystem.getEntries().then(
       ([pictureEntries, thumbnailEntriesByName]) => {
-    return this.loadStoredPictures_(pictureEntries, thumbnailEntriesByName);
-  });
+        return this.loadStoredPictures_(pictureEntries, thumbnailEntriesByName);
+      });
 
   this.loaded_.then((pictures) => {
     pictures.forEach((picture) => {

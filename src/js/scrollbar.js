@@ -71,8 +71,7 @@ cca.ScrollBar = function(scroller) {
   this.track.appendChild(this.thumb);
 
   // Add event handlers.
-  this.thumb.addEventListener('mousedown',
-                              this.onThumbPressed_.bind(this));
+  this.thumb.addEventListener('mousedown', this.onThumbPressed_.bind(this));
   window.addEventListener('mouseup', this.onMouseUp_.bind(this));
   window.addEventListener('mousemove', this.onMouseMove_.bind(this));
 
@@ -300,9 +299,9 @@ cca.HorizontalScrollBar.prototype.getScrollPosition = function() {
  * @override
  */
 cca.HorizontalScrollBar.prototype.setScrollPosition = function(value) {
-  this.scroller.scrollTo(value,
-                         this.scroller.element.scrollTop,
-                         cca.util.SmoothScroller.Mode.INSTANT);
+  this.scroller.scrollTo(
+      value, this.scroller.element.scrollTop,
+      cca.util.SmoothScroller.Mode.INSTANT);
 };
 
 /**

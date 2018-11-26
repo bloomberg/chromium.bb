@@ -415,13 +415,11 @@ cca.util.SmoothScroller.prototype.scrollTo = function(x, y, mode) {
 
       // Remove translation, and switch to scrollLeft/scrollTop when the
       // animation is finished.
-      cca.util.waitAnimationCompleted(
-          this.padder_,
-          function() {
-            // Check if the animation got invalidated by a later scroll.
-            if (currentAnimationId == this.animationId_)
-              this.flushScroll_();
-         }.bind(this));
+      cca.util.waitAnimationCompleted(this.padder_, () => {
+        // Check if the animation got invalidated by a later scroll.
+        if (currentAnimationId == this.animationId_)
+          this.flushScroll_();
+      });
       break;
   }
 };
