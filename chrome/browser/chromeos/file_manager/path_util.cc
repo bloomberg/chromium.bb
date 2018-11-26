@@ -483,10 +483,13 @@ bool ExtractMountNameAndFullPath(const base::FilePath& absolute_path,
     return false;
   const std::string& value = virtual_path.value();
   size_t pos = value.find(base::FilePath::kSeparators[0]);
-  if (pos == std::string::npos)
-    return false;
   *mount_name = value.substr(0, pos);
-  *full_path = value.substr(pos);
+  // Set full_path to '/' if |absolute_path| is a root.
+  if (pos == std::string::npos) {
+    *full_path = "/";
+  } else {
+    *full_path = value.substr(pos);
+  }
   return true;
 }
 
