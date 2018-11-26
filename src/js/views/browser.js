@@ -246,7 +246,7 @@ cca.views.Browser.prototype.updatePicturesResolutions_ = function() {
     wrapper.replaceChild(element, wrapper.firstElementChild);
     cca.nav.setTabIndex(this, element, -1);
     cca.views.Browser.updateElementSize_(wrapper);
-  };
+  }.bind(this);
 
   var updateImage = function(wrapper, url) {
     var img = wrappedElement(wrapper, 'IMG');
