@@ -133,26 +133,26 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
   ServiceWorkerRemoteProviderEndpoint PrepareServiceWorkerProviderHost(
       const GURL& document_url) {
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-    GURL topmost_frame_url = document_url;
-    CreateProviderHostInternal(document_url, topmost_frame_url,
+    GURL site_for_cookies = document_url;
+    CreateProviderHostInternal(document_url, site_for_cookies,
                                &remote_endpoint);
     return remote_endpoint;
   }
 
   ServiceWorkerRemoteProviderEndpoint
-  PrepareServiceWorkerProviderHostWithTopmostFrameUrl(
+  PrepareServiceWorkerProviderHostWithSiteForCookies(
       const GURL& document_url,
-      const GURL& topmost_frame_url) {
+      const GURL& site_for_cookies) {
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-    CreateProviderHostInternal(document_url, topmost_frame_url,
+    CreateProviderHostInternal(document_url, site_for_cookies,
                                &remote_endpoint);
     return remote_endpoint;
   }
 
   ServiceWorkerProviderHost* CreateProviderHost(const GURL& document_url) {
-    GURL topmost_frame_url = document_url;
+    GURL site_for_cookies = document_url;
     remote_endpoints_.emplace_back();
-    return CreateProviderHostInternal(document_url, document_url,
+    return CreateProviderHostInternal(document_url, site_for_cookies,
                                       &remote_endpoints_.back());
   }
 
@@ -174,7 +174,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
                         mojom::ServiceWorkerProviderHostInfoPtr info) {
     // In production code, the loader/request handler does this.
     host->SetDocumentUrl(GURL("https://www.example.com/page"));
-    host->SetTopmostFrameUrl(GURL("https://www.example.com/page"));
+    host->SetSiteForCookies(GURL("https://www.example.com/page"));
 
     // In production code, the OnProviderCreated IPC is received which
     // does this.
@@ -297,7 +297,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
  private:
   ServiceWorkerProviderHost* CreateProviderHostInternal(
       const GURL& document_url,
-      const GURL& topmost_frame_url,
+      const GURL& site_for_cookies,
       ServiceWorkerRemoteProviderEndpoint* remote_endpoint) {
     base::WeakPtr<ServiceWorkerProviderHost> host =
         ServiceWorkerProviderHost::PreCreateNavigationHost(
@@ -309,7 +309,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
     host->CompleteNavigationInitialized(helper_->mock_render_process_id(),
                                         std::move(info));
     host->SetDocumentUrl(document_url);
-    host->SetTopmostFrameUrl(topmost_frame_url);
+    host->SetSiteForCookies(site_for_cookies);
     return host.get();
   }
 
@@ -383,11 +383,11 @@ TEST_P(ServiceWorkerProviderHostTest, UpdateURLs_SameOriginRedirect) {
   ServiceWorkerProviderHost* host = CreateProviderHost(url1);
   const std::string uuid1 = host->client_uuid();
   EXPECT_EQ(url1, host->document_url());
-  EXPECT_EQ(url1, host->topmost_frame_url());
+  EXPECT_EQ(url1, host->site_for_cookies());
 
   host->UpdateURLs(url2, url2);
   EXPECT_EQ(url2, host->document_url());
-  EXPECT_EQ(url2, host->topmost_frame_url());
+  EXPECT_EQ(url2, host->site_for_cookies());
   EXPECT_EQ(uuid1, host->client_uuid());
 
   EXPECT_EQ(host, context_->GetProviderHostByClientID(host->client_uuid()));
@@ -400,11 +400,11 @@ TEST_P(ServiceWorkerProviderHostTest, UpdateURLs_CrossOriginRedirect) {
   ServiceWorkerProviderHost* host = CreateProviderHost(url1);
   const std::string uuid1 = host->client_uuid();
   EXPECT_EQ(url1, host->document_url());
-  EXPECT_EQ(url1, host->topmost_frame_url());
+  EXPECT_EQ(url1, host->site_for_cookies());
 
   host->UpdateURLs(url2, url2);
   EXPECT_EQ(url2, host->document_url());
-  EXPECT_EQ(url2, host->topmost_frame_url());
+  EXPECT_EQ(url2, host->site_for_cookies());
   EXPECT_NE(uuid1, host->client_uuid());
 
   EXPECT_FALSE(context_->GetProviderHostByClientID(uuid1));
@@ -556,7 +556,7 @@ TEST_P(ServiceWorkerProviderHostTest,
       SetBrowserClientForTesting(&test_browser_client);
 
   ServiceWorkerRemoteProviderEndpoint remote_endpoint =
-      PrepareServiceWorkerProviderHostWithTopmostFrameUrl(
+      PrepareServiceWorkerProviderHostWithSiteForCookies(
           GURL("https://www.example.com/foo"),
           GURL("https://www.example.com/top"));
 
@@ -884,7 +884,7 @@ TEST_P(ServiceWorkerProviderHostTest,
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
             &provider_info);
     const GURL url("https://www.example.com/shared_worker.js");
-    host->SetTopmostFrameUrl(url);
+    host->SetSiteForCookies(url);
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
     host->CompleteSharedWorkerPreparation();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));

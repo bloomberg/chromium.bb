@@ -90,7 +90,7 @@ class ServiceWorkerURLTrackingRequestHandler
       return nullptr;
     const GURL stripped_url = net::SimplifyUrlForRequest(request->url());
     provider_host_->SetDocumentUrl(stripped_url);
-    provider_host_->SetTopmostFrameUrl(request->site_for_cookies());
+    provider_host_->SetSiteForCookies(request->site_for_cookies());
     return nullptr;
   }
 
@@ -105,7 +105,7 @@ class ServiceWorkerURLTrackingRequestHandler
     const GURL stripped_url =
         net::SimplifyUrlForRequest(tentative_resource_request.url);
     provider_host_->SetDocumentUrl(stripped_url);
-    provider_host_->SetTopmostFrameUrl(
+    provider_host_->SetSiteForCookies(
         tentative_resource_request.site_for_cookies);
     // Fall back to network.
     std::move(callback).Run({});
@@ -459,10 +459,10 @@ ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
 }
 
 void ServiceWorkerProviderHost::UpdateURLs(const GURL& document_url,
-                                           const GURL& topmost_frame_url) {
+                                           const GURL& site_for_cookies) {
   GURL previous_url = document_url_;
   SetDocumentUrl(document_url);
-  SetTopmostFrameUrl(topmost_frame_url);
+  SetSiteForCookies(site_for_cookies);
   auto current_origin = url::Origin::Create(previous_url);
   auto new_origin = url::Origin::Create(document_url_);
   // Update client id on cross origin redirects. This corresponds to the HTML
@@ -507,14 +507,15 @@ void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
     SyncMatchingRegistrations();
 }
 
-void ServiceWorkerProviderHost::SetTopmostFrameUrl(const GURL& url) {
+void ServiceWorkerProviderHost::SetSiteForCookies(const GURL& url) {
   DCHECK(IsProviderForClient());
-  topmost_frame_url_ = url;
+  site_for_cookies_ = url;
 }
 
-const GURL& ServiceWorkerProviderHost::topmost_frame_url() const {
-  DCHECK(IsProviderForClient());
-  return topmost_frame_url_;
+const GURL& ServiceWorkerProviderHost::site_for_cookies() const {
+  if (IsProviderForClient())
+    return site_for_cookies_;
+  return running_hosted_version_->script_url();
 }
 
 void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
@@ -668,8 +669,7 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
 bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope) {
   DCHECK(IsContextAlive());
   return GetContentClient()->browser()->AllowServiceWorker(
-      scope, IsProviderForClient() ? topmost_frame_url() : document_url(),
-      context_->wrapper()->resource_context(),
+      scope, site_for_cookies(), context_->wrapper()->resource_context(),
       base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
                           render_process_id_, frame_id()));
 }

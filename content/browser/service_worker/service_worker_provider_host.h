@@ -271,9 +271,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // for posting messages.
   mojom::ControllerServiceWorkerPtr GetControllerServiceWorkerPtr();
 
-  // Sets the |document_url_|, |topmost_frame_url_| and updates the uuid if it's
+  // Sets the |document_url_|, |site_for_cookies_| and updates the uuid if it's
   // cross origin transition. This is for service worker clients.
-  void UpdateURLs(const GURL& document_url, const GURL& topmost_frame_url);
+  void UpdateURLs(const GURL& document_url, const GURL& site_for_cookies);
 
   // Sets the |document_url_|.  When this object is for a client,
   // |matching_registrations_| gets also updated to ensure that |document_url_|
@@ -288,11 +288,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void SetDocumentUrl(const GURL& url);
   const GURL& document_url() const { return document_url_; }
 
-  // For service worker clients. Sets the |topmost_frame_url|.
-  void SetTopmostFrameUrl(const GURL& url);
-  // For service worker clients, used for permission checks. Use document_url()
-  // instead if |this| is for a service worker execution context.
-  const GURL& topmost_frame_url() const;
+  // The URL representing the first-party site for this context. See
+  // |network::ResourceRequest::site_for_cookies| for details.
+  // SetSiteForCookies() can only be called if |this| is for a service worker
+  // client. For service worker execution contexts, site_for_cookies() always
+  // returns the service worker script URL.
+  void SetSiteForCookies(const GURL& url);
+  const GURL& site_for_cookies() const;
 
   blink::mojom::ServiceWorkerProviderType provider_type() const {
     return info_->type;
@@ -640,7 +642,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   WebContentsGetter web_contents_getter_;
 
   GURL document_url_;
-  GURL topmost_frame_url_;
+  GURL site_for_cookies_;
 
   // Keyed by registration scope URL length.
   using ServiceWorkerRegistrationMap =
