@@ -24,7 +24,6 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/external_data_fetcher.h"
-#include "components/policy/core/common/external_data_manager.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
@@ -47,39 +46,18 @@ namespace {
 // Otherwise, the policy will be set to a base::Value of the original
 // |json_string|. This way, the faulty value can still be seen in
 // chrome://policy along with any errors/warnings.
-void SetJsonDevicePolicy(
-    const std::string& policy_name,
-    const std::string& json_string,
-    std::unique_ptr<ExternalDataFetcher> external_data_fetcher,
-    PolicyMap* policies) {
+void SetJsonDevicePolicy(const std::string& policy_name,
+                         const std::string& json_string,
+                         PolicyMap* policies) {
   std::string error;
   std::unique_ptr<base::Value> decoded_json =
       DecodeJsonStringAndNormalize(json_string, policy_name, &error);
   auto value_to_set = decoded_json ? std::move(decoded_json)
                                    : std::make_unique<base::Value>(json_string);
   policies->Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                POLICY_SOURCE_CLOUD, std::move(value_to_set),
-                std::move(external_data_fetcher));
+                POLICY_SOURCE_CLOUD, std::move(value_to_set), nullptr);
   if (!error.empty())
     policies->AddError(policy_name, error);
-}
-
-void SetJsonDevicePolicy(const std::string& policy_name,
-                         const std::string& json_string,
-                         PolicyMap* policies) {
-  SetJsonDevicePolicy(policy_name, json_string,
-                      /* external_data_fetcher */ nullptr, policies);
-}
-
-void SetExternalDataDevicePolicy(
-    const std::string& policy_name,
-    const std::string& json_string,
-    base::WeakPtr<ExternalDataManager> external_data_manager,
-    PolicyMap* policies) {
-  SetJsonDevicePolicy(
-      policy_name, json_string,
-      std::make_unique<ExternalDataFetcher>(external_data_manager, policy_name),
-      policies);
 }
 
 // Decodes a protobuf integer to an IntegerValue. Returns NULL in case the input
@@ -745,22 +723,6 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
   }
 }
 
-void DecodeExternalDataPolicies(
-    const em::ChromeDeviceSettingsProto& policy,
-    base::WeakPtr<ExternalDataManager> external_data_manager,
-    PolicyMap* policies) {
-  // TODO(https://crbug.com/814364): Migrate device wallpaper here.
-  if (policy.has_native_device_printers()) {
-    const em::DeviceNativePrintersProto& container(
-        policy.native_device_printers());
-    if (container.has_external_policy()) {
-      SetExternalDataDevicePolicy(key::kDeviceNativePrinters,
-                                  container.external_policy(),
-                                  external_data_manager, policies);
-    }
-  }
-}
-
 void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                            PolicyMap* policies) {
   if (policy.has_device_policy_refresh_rate()) {
@@ -970,6 +932,15 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     std::make_unique<base::Value>(container.name()), nullptr);
   }
 
+  if (policy.has_native_device_printers()) {
+    const em::DeviceNativePrintersProto& container(
+        policy.native_device_printers());
+    if (container.has_external_policy()) {
+      SetJsonDevicePolicy(key::kDeviceNativePrinters,
+                          container.external_policy(), policies);
+    }
+  }
+
   if (policy.has_native_device_printers_access_mode()) {
     const em::DeviceNativePrintersAccessModeProto& container(
         policy.native_device_printers_access_mode());
@@ -1165,17 +1136,14 @@ std::unique_ptr<base::Value> DecodeJsonStringAndNormalize(
   return root;
 }
 
-void DecodeDevicePolicy(
-    const em::ChromeDeviceSettingsProto& policy,
-    base::WeakPtr<ExternalDataManager> external_data_manager,
-    PolicyMap* policies) {
+void DecodeDevicePolicy(const em::ChromeDeviceSettingsProto& policy,
+                        PolicyMap* policies) {
   // Decode the various groups of policies.
   DecodeLoginPolicies(policy, policies);
   DecodeNetworkPolicies(policy, policies);
   DecodeReportingPolicies(policy, policies);
   DecodeAutoUpdatePolicies(policy, policies);
   DecodeAccessibilityPolicies(policy, policies);
-  DecodeExternalDataPolicies(policy, external_data_manager, policies);
   DecodeGenericPolicies(policy, policies);
 }
 

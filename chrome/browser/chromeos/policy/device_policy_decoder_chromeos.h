@@ -8,8 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/weak_ptr.h"
-
 namespace enterprise_management {
 class ChromeDeviceSettingsProto;
 }
@@ -20,7 +18,6 @@ class Value;
 
 namespace policy {
 
-class ExternalDataManager;
 class PolicyMap;
 
 // Decodes a JSON string to a base::Value and validates it against the schema
@@ -38,7 +35,6 @@ std::unique_ptr<base::Value> DecodeJsonStringAndNormalize(
 // PolicyMap.
 void DecodeDevicePolicy(
     const enterprise_management::ChromeDeviceSettingsProto& policy,
-    base::WeakPtr<ExternalDataManager> external_data_manager,
     PolicyMap* policies);
 
 }  // namespace policy

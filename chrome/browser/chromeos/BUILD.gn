@@ -1500,8 +1500,6 @@ source_set("chromeos") {
     "policy/device_local_account_policy_store.h",
     "policy/device_network_configuration_updater.cc",
     "policy/device_network_configuration_updater.h",
-    "policy/device_policy_cloud_external_data_manager.cc",
-    "policy/device_policy_cloud_external_data_manager.h",
     "policy/device_policy_decoder_chromeos.cc",
     "policy/device_policy_decoder_chromeos.h",
     "policy/device_policy_remover.h",

@@ -38,7 +38,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/install_attributes.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -50,7 +49,6 @@
 #include "content/public/browser/network_service_instance.h"
 #include "crypto/sha2.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;
@@ -111,7 +109,6 @@ bool ForcedReEnrollmentEnabled() {
 
 DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
     std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
-    std::unique_ptr<CloudExternalDataManager> external_data_manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     ServerBackedStateKeysBroker* state_keys_broker)
     : CloudPolicyManager(
@@ -121,7 +118,6 @@ DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
           task_runner,
           base::BindRepeating(&content::GetNetworkConnectionTracker)),
       device_store_(std::move(store)),
-      external_data_manager_(std::move(external_data_manager)),
       state_keys_broker_(state_keys_broker),
       task_runner_(task_runner),
       local_state_(nullptr) {}
@@ -203,7 +199,6 @@ void DeviceCloudPolicyManagerChromeOS::Shutdown() {
   syslog_uploader_.reset();
   heartbeat_scheduler_.reset();
   state_keys_update_subscription_.reset();
-  external_data_manager_->Disconnect();
   CloudPolicyManager::Shutdown();
   signin_profile_forwarding_schema_registry_.reset();
 }
@@ -274,9 +269,6 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
       new DeviceCommandsFactoryChromeOS()));
   core()->TrackRefreshDelayPref(local_state_,
                                 prefs::kDevicePolicyRefreshRate);
-
-  external_data_manager_->Connect(
-      g_browser_process->shared_url_loader_factory());
 
   enrollment_policy_observer_.reset(
       new chromeos::attestation::EnrollmentPolicyObserver(client()));
