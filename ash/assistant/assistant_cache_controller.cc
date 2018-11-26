@@ -26,34 +26,34 @@ namespace {
 // Conversation starters -------------------------------------------------------
 
 const base::Feature kConversationStartersFeature{
-    "ChromeOSAssistantConversationStarters", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ChromeOSAssistantConversationStarters", base::FEATURE_ENABLED_BY_DEFAULT};
 
 constexpr base::FeatureParam<bool> kImBoredChipEnabled{
-    &kConversationStartersFeature, "im-bored-chip-enabled", false};
+    &kConversationStartersFeature, "im-bored-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kOpenFilesChipEnabled{
-    &kConversationStartersFeature, "open-files-chip-enabled", false};
+    &kConversationStartersFeature, "open-files-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kPlayMusicChipEnabled{
-    &kConversationStartersFeature, "play-music-chip-enabled", false};
+    &kConversationStartersFeature, "play-music-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kSendAnEmailChipEnabled{
-    &kConversationStartersFeature, "send-an-email-chip-enabled", false};
+    &kConversationStartersFeature, "send-an-email-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kSetAReminderChipEnabled{
-    &kConversationStartersFeature, "set-a-reminder-chip-enabled", false};
+    &kConversationStartersFeature, "set-a-reminder-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kWhatCanYouDoChipEnabled{
-    &kConversationStartersFeature, "what-can-you-do-chip-enabled", false};
+    &kConversationStartersFeature, "what-can-you-do-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kWhatsOnMyCalendarChipEnabled{
-    &kConversationStartersFeature, "whats-on-my-calendar-chip-enabled", false};
+    &kConversationStartersFeature, "whats-on-my-calendar-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kWhatsOnMyScreenChipEnabled{
-    &kConversationStartersFeature, "whats-on-my-screen-chip-enabled", false};
+    &kConversationStartersFeature, "whats-on-my-screen-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kWhatsTheWeatherChipEnabled{
-    &kConversationStartersFeature, "whats-the-weather-chip-enabled", false};
+    &kConversationStartersFeature, "whats-the-weather-chip-enabled", true};
 
 constexpr int kMaxNumOfConversationStarters = 3;
 
