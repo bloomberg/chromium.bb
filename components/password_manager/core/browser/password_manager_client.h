@@ -12,6 +12,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/hsts_query.h"
+#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "net/cert/cert_status_flags.h"
@@ -269,7 +270,8 @@ class PasswordManagerClient {
   virtual void UpdateFormManagers() {}
 
   // Causes a navigation to the manage passwords page.
-  virtual void NavigateToManagePasswordsPage() {}
+  virtual void NavigateToManagePasswordsPage(ManagePasswordsReferrer referrer) {
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

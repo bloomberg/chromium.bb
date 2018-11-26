@@ -376,18 +376,20 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
   }
 }
 
-void ManagePasswordsBubbleModel::OnManageClicked() {
+void ManagePasswordsBubbleModel::OnManageClicked(
+    password_manager::ManagePasswordsReferrer referrer) {
   interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_MANAGE);
   if (delegate_)
-    delegate_->NavigateToPasswordManagerSettingsPage();
+    delegate_->NavigateToPasswordManagerSettingsPage(referrer);
 }
 
 void ManagePasswordsBubbleModel::
-    OnNavigateToPasswordManagerAccountDashboardLinkClicked() {
+    OnNavigateToPasswordManagerAccountDashboardLinkClicked(
+        password_manager::ManagePasswordsReferrer referrer) {
   interaction_keeper_->set_dismissal_reason(
       metrics_util::CLICKED_PASSWORDS_DASHBOARD);
   if (delegate_)
-    delegate_->NavigateToPasswordManagerAccountDashboard();
+    delegate_->NavigateToPasswordManagerAccountDashboard(referrer);
 }
 
 void ManagePasswordsBubbleModel::OnAutoSignInToastTimeout() {

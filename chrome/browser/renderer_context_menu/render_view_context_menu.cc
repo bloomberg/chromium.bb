@@ -2090,7 +2090,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS:
-      NavigateToManagePasswordsPage(GetBrowser());
+      NavigateToManagePasswordsPage(
+          GetBrowser(),
+          password_manager::ManagePasswordsReferrer::kPasswordContextMenu);
       password_manager::metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
           password_manager::metrics_util::
               SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU);

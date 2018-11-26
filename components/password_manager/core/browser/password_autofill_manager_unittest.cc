@@ -94,7 +94,8 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 
   MOCK_METHOD0(GeneratePassword, void());
   MOCK_METHOD0(GetFaviconService, favicon::FaviconService*());
-  MOCK_METHOD0(NavigateToManagePasswordsPage, void());
+  MOCK_METHOD1(NavigateToManagePasswordsPage,
+               void(password_manager::ManagePasswordsReferrer));
 
  private:
   MockPasswordManagerDriver driver_;
@@ -653,7 +654,10 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD, 1);
     // Clicking at the "Show all passwords row" should trigger a call to open
     // the Password Manager settings page and hide the popup.
-    EXPECT_CALL(*client, NavigateToManagePasswordsPage);
+    EXPECT_CALL(
+        *client,
+        NavigateToManagePasswordsPage(
+            password_manager::ManagePasswordsReferrer::kPasswordDropdown));
     EXPECT_CALL(*autofill_client, HideAutofillPopup());
     password_autofill_manager_->DidAcceptSuggestion(
         base::string16(), autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 0);

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_VIEW_UTILS_H_
 
 #include "base/strings/string16.h"
+#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -73,12 +74,21 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form);
 // syncs the PRIORITY_PREFERENCE). The view appearance might depend on it.
 bool IsSyncingAutosignSetting(Profile* profile);
 
+// Constructs a URL to the Google Password Manager with the specified
+// |referrer|.
+GURL GetGooglePasswordManagerURL(
+    password_manager::ManagePasswordsReferrer referrer);
+
 // Navigates to the Google Password Manager, i.e. passwords.google.com.
-void NavigateToGooglePasswordManager(Profile* profile);
+void NavigateToGooglePasswordManager(
+    Profile* profile,
+    password_manager::ManagePasswordsReferrer referrer);
 
 // Navigates to either the Google Password Manager or the Chrome Password
 // Settings page, depending on the user's password syncing state and whether the
 // corresponding feature flag is enabled.
-void NavigateToManagePasswordsPage(Browser* browser);
+void NavigateToManagePasswordsPage(
+    Browser* browser,
+    password_manager::ManagePasswordsReferrer referrer);
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_VIEW_UTILS_H_

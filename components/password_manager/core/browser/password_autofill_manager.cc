@@ -205,7 +205,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kGenerate);
   } else if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
-    password_client_->NavigateToManagePasswordsPage();
+    password_client_->NavigateToManagePasswordsPage(
+        ManagePasswordsReferrer::kPasswordDropdown);
     metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
     metrics_util::LogPasswordDropdownItemSelected(

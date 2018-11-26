@@ -624,7 +624,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   if (sender == passwords_button_) {
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_PasswordsClicked"));
-    NavigateToManagePasswordsPage(browser_);
+    NavigateToManagePasswordsPage(
+        browser_, password_manager::ManagePasswordsReferrer::kProfileChooser);
   } else if (sender == credit_cards_button_) {
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_PaymentsClicked"));

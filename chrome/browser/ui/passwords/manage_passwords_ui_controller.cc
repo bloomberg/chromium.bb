@@ -450,14 +450,17 @@ void ManagePasswordsUIController::ChooseCredential(
   UpdateBubbleAndIconVisibility();
 }
 
-void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
+void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage(
+    password_manager::ManagePasswordsReferrer referrer) {
   NavigateToManagePasswordsPage(
-      chrome::FindBrowserWithWebContents(web_contents()));
+      chrome::FindBrowserWithWebContents(web_contents()), referrer);
 }
 
-void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard() {
+void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard(
+    password_manager::ManagePasswordsReferrer referrer) {
   NavigateToGooglePasswordManager(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+      referrer);
 }
 
 void ManagePasswordsUIController::EnableSync(const AccountInfo& account,
