@@ -54,7 +54,7 @@ class PLATFORM_EXPORT OriginAccessEntry {
   OriginAccessEntry(
       const String& protocol,
       const String& host,
-      network::cors::OriginAccessEntry::MatchMode,
+      network::mojom::CorsOriginAccessMatchMode,
       network::mojom::CorsOriginAccessMatchPriority priority =
           network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   OriginAccessEntry(OriginAccessEntry&& from);

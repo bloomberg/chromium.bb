@@ -81,8 +81,9 @@ void OriginAccessList::SetForOrigin(
   for (const auto& pattern : patterns) {
     native_patterns.push_back(OriginAccessEntry(
         pattern->protocol, pattern->domain,
-        pattern->allow_subdomains ? OriginAccessEntry::kAllowSubdomains
-                                  : OriginAccessEntry::kDisallowSubdomains,
+        pattern->allow_subdomains
+            ? mojom::CorsOriginAccessMatchMode::kAllowSubdomains
+            : mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
         pattern->priority));
   }
 }
@@ -97,8 +98,9 @@ void OriginAccessList::AddForOrigin(const url::Origin& source_origin,
   std::string source = source_origin.Serialize();
   (*map)[source].push_back(OriginAccessEntry(
       pattern->protocol, pattern->domain,
-      pattern->allow_subdomains ? OriginAccessEntry::kAllowSubdomains
-                                : OriginAccessEntry::kDisallowSubdomains,
+      pattern->allow_subdomains
+          ? mojom::CorsOriginAccessMatchMode::kAllowSubdomains
+          : mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
       pattern->priority));
 }
 
