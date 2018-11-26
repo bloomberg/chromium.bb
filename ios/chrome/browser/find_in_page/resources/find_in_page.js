@@ -22,6 +22,9 @@ __gCrWeb.findInPage = {};
  * Node, otherwise the match involves multiple HTML TEXT Nodes.
  */
 class Match {
+  /**
+   * @param{Array<Node>} nodes All <chrome_find> Nodes of this match.
+   */
   constructor(nodes) {
     this.nodes = nodes;
   }
@@ -82,7 +85,6 @@ __gCrWeb.findInPage.selectedMatchIndex = -1;
  */
 class Replacement {
   /**
-   * Contructor for Replacement.
    * @param {Node} The HTML Node containing search result.
    * @param {Array<Node>} New HTML Nodes created for substitution of |oldNode|.
    */
@@ -221,23 +223,24 @@ function getRegex_(findText) {
 };
 
 /**
- * Get current timestamp.
- * @return {number} timestamp.
+ * A timer that checks timeout for long tasks.
  */
-__gCrWeb.findInPage.time = function() {
-  return (new Date).getTime();
-};
+class Timer {
+  /**
+   * @param {Number} timeoutMs Timeout in milliseconds.
+   */
+  constructor(timeoutMs) {
+    this.beginTime = Date.now();
+    this.timeoutMs = timeoutMs;
+  }
 
-/**
- * After |timeCheck| iterations, return true if |now| - |start| is greater than
- * |timeout|.
- * @return {boolean} Find in page needs to return.
- */
-__gCrWeb.findInPage.overTime = function() {
-  return (
-      __gCrWeb.findInPage.time() - __gCrWeb.findInPage.startTime >
-      __gCrWeb.findInPage.timeout);
-};
+  /**
+   * @return {Boolean} Whether this timer has been reached.
+   */
+  overtime() {
+    return Date.now() - this.beginTime > this.timeoutMs;
+  }
+}
 
 /**
  * Looks for a phrase in the DOM.
@@ -294,8 +297,7 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
   if (searchInProgress_ == false)
     return NO_RESULTS;
 
-  __gCrWeb.findInPage.timeout = timeout;
-  __gCrWeb.findInPage.startTime = __gCrWeb.findInPage.time();
+  let timer = new Timer(timeout);
 
   let regex = __gCrWeb.findInPage.regex;
   // Go through every node in DFS fashion.
@@ -350,7 +352,7 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
       }
     }
 
-    if (__gCrWeb.findInPage.overTime())
+    if (timer.overtime())
       return '[false]';
 
     if (__gCrWeb.findInPage.stack.length > 0) {
@@ -362,7 +364,7 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
 
   // Execute replacements to highlight search results.
   for (let i = replacementsIndex_; i < replacements_.length; ++i) {
-    if (__gCrWeb.findInPage.overTime()) {
+    if (timer.overtime()) {
       replacementsIndex_ = i;
       return __gCrWeb.stringify([false]);
     }
@@ -374,7 +376,7 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
   let maxVisible = MAX_VISIBLE_ELEMENTS;
   for (let index = __gCrWeb.findInPage.visibleIndex; index < max; index++) {
     let match = __gCrWeb.findInPage.matches[index];
-    if (__gCrWeb.findInPage.overTime()) {
+    if (timer.overtime()) {
       __gCrWeb.findInPage.visibleIndex = index;
       return __gCrWeb.stringify([false]);
     }
