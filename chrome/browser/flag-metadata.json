@@ -2065,8 +2065,8 @@
   },
   {
     "name": "enable-websocket-auth-connection-reuse",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "blink-network-dev" ],
+    "expiry_milestone": 73
   },
   {
     "name": "enable-webvr",
