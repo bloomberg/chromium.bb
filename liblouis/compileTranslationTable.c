@@ -3934,6 +3934,9 @@ compileTranslationTable(const char *tableList, CharacterClass **characterClasses
 
 	/* Compile things that are necesary for the proper operation of
 	 * liblouis or liblouisxml or liblouisutdml */
+	/* TODO: These definitions seem to be necessary for proper functioning of
+	   liblouisutdml. Find a way to satisfy those requirements without hard coding
+	   some characters in every table notably behind the users back */
 	compileString("space \\x001b 1b escape", characterClasses, characterClassAttribute,
 			opcodeLengths, newRuleOffset, newRule, ruleNames, &table);
 	compileString("space \\xffff 123456789abcdef ENDSEGMENT", characterClasses,
