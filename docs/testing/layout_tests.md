@@ -23,7 +23,7 @@ Before you can run the layout tests, you need to build the `blink_tests` target
 to get `content_shell` and all of the other needed binaries.
 
 ```bash
-autoninja -C out/Release blink_tests
+autoninja -C out/Default blink_tests
 ```
 
 On **Android** (layout test support
