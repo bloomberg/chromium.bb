@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -41,7 +42,7 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
   if (!base::CreateDirectory(mac_os)) {
     return false;
   }
-  const char *data = "#! testbundle\n";
+  const char* data = "#! testbundle\n";
   int len = strlen(data);
   if (base::WriteFile(*executable, data, len) != len) {
     return false;
@@ -53,7 +54,7 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
   const char info_plist_format[] =
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
       "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" "
-          "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+      "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
       "<plist version=\"1.0\">\n"
       "<dict>\n"
       "  <key>CFBundleDevelopmentRegion</key>\n"
@@ -71,9 +72,7 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
       "</dict>\n"
       "</plist>\n";
   std::string info_plist_data =
-      base::StringPrintf(info_plist_format,
-                         name.c_str(),
-                         name.c_str(),
+      base::StringPrintf(info_plist_format, name.c_str(), name.c_str(),
                          version_info::GetVersionNumber().c_str());
   len = info_plist_data.length();
   if (base::WriteFile(info_plist, info_plist_data.c_str(), len) != len) {
@@ -81,11 +80,9 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
   }
   const UInt8* bundle_root_path =
       reinterpret_cast<const UInt8*>(bundle_root->value().c_str());
-  base::ScopedCFTypeRef<CFURLRef> url(
-      CFURLCreateFromFileSystemRepresentation(kCFAllocatorDefault,
-                                              bundle_root_path,
-                                              bundle_root->value().length(),
-                                              true));
+  base::ScopedCFTypeRef<CFURLRef> url(CFURLCreateFromFileSystemRepresentation(
+      kCFAllocatorDefault, bundle_root_path, bundle_root->value().length(),
+      true));
   base::ScopedCFTypeRef<CFBundleRef> bundle(
       CFBundleCreate(kCFAllocatorDefault, url));
   return bundle.get();
@@ -109,8 +106,7 @@ MockLaunchd::MockLaunchd(
       write_called_(false),
       delete_called_(false) {}
 
-MockLaunchd::~MockLaunchd() {
-}
+MockLaunchd::~MockLaunchd() {}
 
 CFDictionaryRef MockLaunchd::CopyJobDictionary(CFStringRef label) {
   if (!as_service_) {
@@ -122,19 +118,16 @@ CFDictionaryRef MockLaunchd::CopyJobDictionary(CFStringRef label) {
 
   CFStringRef program = CFSTR(LAUNCH_JOBKEY_PROGRAM);
   CFStringRef program_pid = CFSTR(LAUNCH_JOBKEY_PID);
-  const void *keys[] = { program, program_pid };
+  const void* keys[] = {program, program_pid};
   base::ScopedCFTypeRef<CFStringRef> path(
       base::SysUTF8ToCFStringRef(file_.value()));
   int process_id = base::GetCurrentProcId();
   base::ScopedCFTypeRef<CFNumberRef> pid(
       CFNumberCreate(NULL, kCFNumberIntType, &process_id));
-  const void *values[] = { path, pid };
-  static_assert(arraysize(keys) == arraysize(values),
+  const void* values[] = {path, pid};
+  static_assert(base::size(keys) == base::size(values),
                 "keys must have the same number of elements as values");
-  return CFDictionaryCreate(kCFAllocatorDefault,
-                            keys,
-                            values,
-                            arraysize(keys),
+  return CFDictionaryCreate(kCFAllocatorDefault, keys, values, base::size(keys),
                             &kCFTypeDictionaryKeyCallBacks,
                             &kCFTypeDictionaryValueCallBacks);
 }
@@ -145,20 +138,17 @@ CFDictionaryRef MockLaunchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
   CFStringRef program_args = CFSTR(LAUNCH_JOBKEY_PROGRAMARGUMENTS);
   base::ScopedCFTypeRef<CFStringRef> path(
       base::SysUTF8ToCFStringRef(file_.value()));
-  const void *array_values[] = { path.get() };
+  const void* array_values[] = {path.get()};
   base::ScopedCFTypeRef<CFArrayRef> args(CFArrayCreate(
       kCFAllocatorDefault, array_values, 1, &kCFTypeArrayCallBacks));
 
   if (!create_socket_) {
-    const void *keys[] = { program, program_args };
-    const void *values[] = { path, args };
-    static_assert(arraysize(keys) == arraysize(values),
+    const void* keys[] = {program, program_args};
+    const void* values[] = {path, args};
+    static_assert(base::size(keys) == base::size(values),
                   "keys must have the same number of elements as values");
-    return CFDictionaryCreate(kCFAllocatorDefault,
-                              keys,
-                              values,
-                              arraysize(keys),
-                              &kCFTypeDictionaryKeyCallBacks,
+    return CFDictionaryCreate(kCFAllocatorDefault, keys, values,
+                              base::size(keys), &kCFTypeDictionaryKeyCallBacks,
                               &kCFTypeDictionaryValueCallBacks);
   }
 
@@ -178,8 +168,7 @@ CFDictionaryRef MockLaunchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
   signature.protocolFamily = PF_UNIX;
   signature.socketType = SOCK_STREAM;
   signature.protocol = 0;
-  size_t unix_addr_len = offsetof(struct sockaddr_un,
-                                  sun_path) + path_len + 1;
+  size_t unix_addr_len = offsetof(struct sockaddr_un, sun_path) + path_len + 1;
   base::ScopedCFTypeRef<CFDataRef> address(
       CFDataCreate(NULL, reinterpret_cast<UInt8*>(&unix_addr), unix_addr_len));
   signature.address = address;
@@ -191,43 +180,36 @@ CFDictionaryRef MockLaunchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
   EXPECT_NE(-1, local_pipe);
   if (local_pipe == -1) {
     if (error) {
-      *error = CFErrorCreate(kCFAllocatorDefault, kCFErrorDomainPOSIX,
-                             errno, NULL);
+      *error =
+          CFErrorCreate(kCFAllocatorDefault, kCFErrorDomainPOSIX, errno, NULL);
     }
     return NULL;
   }
 
   base::ScopedCFTypeRef<CFNumberRef> socket_fd(
       CFNumberCreate(NULL, kCFNumberIntType, &local_pipe));
-  const void *socket_array_values[] = { socket_fd };
+  const void* socket_array_values[] = {socket_fd};
   base::ScopedCFTypeRef<CFArrayRef> sockets(CFArrayCreate(
       kCFAllocatorDefault, socket_array_values, 1, &kCFTypeArrayCallBacks));
   CFStringRef socket_dict_key = CFSTR("ServiceProcessSocket");
-  const void *socket_keys[] = { socket_dict_key };
-  const void *socket_values[] = { sockets };
-  static_assert(arraysize(socket_keys) == arraysize(socket_values),
+  const void* socket_keys[] = {socket_dict_key};
+  const void* socket_values[] = {sockets};
+  static_assert(base::size(socket_keys) == base::size(socket_values),
                 "socket_keys must have the same number of elements "
                 "as socket_values");
-  base::ScopedCFTypeRef<CFDictionaryRef> socket_dict(
-      CFDictionaryCreate(kCFAllocatorDefault,
-                         socket_keys,
-                         socket_values,
-                         arraysize(socket_keys),
-                         &kCFTypeDictionaryKeyCallBacks,
-                         &kCFTypeDictionaryValueCallBacks));
-  const void *keys[] = { program, program_args, socket_key };
-  const void *values[] = { path, args, socket_dict };
-  static_assert(arraysize(keys) == arraysize(values),
+  base::ScopedCFTypeRef<CFDictionaryRef> socket_dict(CFDictionaryCreate(
+      kCFAllocatorDefault, socket_keys, socket_values, base::size(socket_keys),
+      &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
+  const void* keys[] = {program, program_args, socket_key};
+  const void* values[] = {path, args, socket_dict};
+  static_assert(base::size(keys) == base::size(values),
                 "keys must have the same number of elements as values");
-  return CFDictionaryCreate(kCFAllocatorDefault,
-                            keys,
-                            values,
-                            arraysize(keys),
+  return CFDictionaryCreate(kCFAllocatorDefault, keys, values, base::size(keys),
                             &kCFTypeDictionaryKeyCallBacks,
                             &kCFTypeDictionaryValueCallBacks);
 }
 
-bool MockLaunchd::RemoveJob(CFStringRef label, CFErrorRef* error) {
+bool MockLaunchd::RemoveJob(const std::string& label) {
   remove_called_ = true;
   std::move(quit_closure_).Run();
   return true;
@@ -242,10 +224,9 @@ bool MockLaunchd::RestartJob(Domain domain,
   return true;
 }
 
-CFMutableDictionaryRef MockLaunchd::CreatePlistFromFile(
-    Domain domain,
-    Type type,
-    CFStringRef name)  {
+CFMutableDictionaryRef MockLaunchd::CreatePlistFromFile(Domain domain,
+                                                        Type type,
+                                                        CFStringRef name) {
   base::ScopedCFTypeRef<CFDictionaryRef> dict(CopyDictionaryByCheckingIn(NULL));
   return CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, dict);
 }
@@ -258,9 +239,7 @@ bool MockLaunchd::WritePlistToFile(Domain domain,
   return true;
 }
 
-bool MockLaunchd::DeletePlist(Domain domain,
-                              Type type,
-                              CFStringRef name) {
+bool MockLaunchd::DeletePlist(Domain domain, Type type, CFStringRef name) {
   delete_called_ = true;
   return true;
 }

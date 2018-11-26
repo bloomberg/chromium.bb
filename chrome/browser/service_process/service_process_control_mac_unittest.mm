@@ -9,57 +9,39 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
+#include "chrome/common/mac/service_management.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/google_toolbox_for_mac/src/Foundation/GTMServiceManagement.h"
 
-namespace {
-
-// Returns the parameters needed to launch a really simple script from launchd.
-NSDictionary* TestJobDictionary(NSString* label_ns) {
-  NSString* shell_script_ns = @"sleep 10; echo TestGTMSMJobSubmitRemove";
-  base::scoped_nsobject<NSMutableArray> job_arguments(
-      [[NSMutableArray alloc] init]);
-  [job_arguments addObject:@"/bin/sh"];
-  [job_arguments addObject:@"-c"];
-  [job_arguments addObject:shell_script_ns];
-
-  NSMutableDictionary* job_dictionary_ns = [NSMutableDictionary dictionary];
-  [job_dictionary_ns setObject:label_ns forKey:@LAUNCH_JOBKEY_LABEL];
-  [job_dictionary_ns setObject:[NSNumber numberWithBool:YES]
-                        forKey:@LAUNCH_JOBKEY_RUNATLOAD];
-  [job_dictionary_ns setObject:job_arguments
-                        forKey:@LAUNCH_JOBKEY_PROGRAMARGUMENTS];
-  return job_dictionary_ns;
-};
-
-}  // namespace
-
-TEST(ServiceProcessControlMac, TestGTMSMJobSubmitRemove) {
+TEST(ServiceProcessControlMac, TestJobSubmitRemove) {
   NSString* label_ns = @"com.chromium.ServiceProcessStateFileManipulationTest";
   std::string label(label_ns.UTF8String);
-  CFStringRef label_cf = base::mac::NSToCFCast(label_ns);
 
   // If the job is loaded or running, remove it.
   pid_t pid = base::mac::PIDForJob(label);
-  CFErrorRef error = NULL;
   if (pid >= 0)
-    ASSERT_TRUE(GTMSMJobRemove(label_cf, &error));
+    ASSERT_TRUE(mac::services::RemoveJob(label));
 
   // The job should not be loaded or running.
   pid = base::mac::PIDForJob(label);
   EXPECT_LT(pid, 0);
 
   // Submit a new job.
-  NSDictionary* job_dictionary_ns = TestJobDictionary(label_ns);
-  CFDictionaryRef job_dictionary_cf = base::mac::NSToCFCast(job_dictionary_ns);
-  ASSERT_TRUE(GTMSMJobSubmit(job_dictionary_cf, &error));
+  mac::services::JobOptions options;
+  options.label = label;
+  options.executable_path = "/bin/sh";
+  options.arguments = {"sh", "-c", "sleep 10; echo TestJobSubmitRemove"};
+  options.socket_name = "";
+  options.socket_key = "";
+  options.run_at_load = true;
+  options.auto_launch = false;
+  ASSERT_TRUE(mac::services::SubmitJob(options));
 
   // The new job should be running.
   pid = base::mac::PIDForJob(label);
   EXPECT_GT(pid, 0);
 
   // Remove the job.
-  ASSERT_TRUE(GTMSMJobRemove(label_cf, &error));
+  ASSERT_TRUE(mac::services::RemoveJob(label));
 
   // Wait for the job to be killed.
   base::TimeDelta timeout_in_ms = TestTimeouts::action_timeout();
@@ -77,5 +59,5 @@ TEST(ServiceProcessControlMac, TestGTMSMJobSubmitRemove) {
   EXPECT_LT(pid, 0);
 
   // Attempting to remove the job again should fail.
-  EXPECT_FALSE(GTMSMJobRemove(label_cf, &error));
+  EXPECT_FALSE(mac::services::RemoveJob(label));
 }
