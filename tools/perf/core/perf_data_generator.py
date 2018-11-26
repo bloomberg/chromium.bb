@@ -308,11 +308,6 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           ],
         },
         {
-          'isolate': 'performance_browser_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
           'isolate': 'media_perftests',
           'num_shards': 1,
           'telemetry': False,
@@ -352,11 +347,6 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           ],
         },
         {
-          'isolate': 'performance_browser_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
           'isolate': 'load_library_perf_tests',
           'num_shards': 1,
           'telemetry': False,
@@ -390,11 +380,6 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
               '--test-shard-map-filename=win_7_nvidia_gpu_perf_map.json',
               '--assert-gpu-compositing',
           ],
-        },
-        {
-          'isolate': 'performance_browser_tests',
-          'num_shards': 1,
-          'telemetry': False,
         },
         {
           'isolate': 'load_library_perf_tests',
