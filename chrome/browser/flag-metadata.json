@@ -767,8 +767,13 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-assistant-dsp",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-assistant-voice-match",
-    // "owners": [ "your-team" ],
+    "owners": [ "croissant-eng" ],
     "expiry_milestone": 76
   },
   {
@@ -1403,7 +1408,7 @@
   },
   {
     "name": "enable-native-google-assistant",
-    // "owners": [ "your-team" ],
+    "owners": [ "croissant-eng" ],
     "expiry_milestone": 76
   },
   {

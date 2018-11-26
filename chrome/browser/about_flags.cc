@@ -4404,6 +4404,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantVoiceMatchName,
      flag_descriptions::kEnableAssistantVoiceMatchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantVoiceMatch)},
+
+    {"enable-assistant-dsp", flag_descriptions::kEnableGoogleAssistantDspName,
+     flag_descriptions::kEnableGoogleAssistantDspDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::assistant::features::kEnableDspHotword)},
 #endif  // defined(OS_CHROMEOS)
 
     {"enable-blink-heap-unified-garbage-collection",

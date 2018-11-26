@@ -2009,6 +2009,9 @@ extern const char kEnableFullscreenHandwritingVirtualKeyboardDescription[];
 extern const char kEnableGoogleAssistantName[];
 extern const char kEnableGoogleAssistantDescription[];
 
+extern const char kEnableGoogleAssistantDspName[];
+extern const char kEnableGoogleAssistantDspDescription[];
+
 extern const char kEnableHomeLauncherName[];
 extern const char kEnableHomeLauncherDescription[];
 

@@ -3335,6 +3335,13 @@ const char kEnableGoogleAssistantDescription[] =
     "Enable an experimental Assistant implementation that will work on all "
     "Chromebooks.";
 
+const char kEnableGoogleAssistantDspName[] =
+    "Enable Google Assistant with hardware-based hotword";
+const char kEnableGoogleAssistantDspDescription[] =
+    "Enable an experimental feature that uses hardware-based hotword detection "
+    "for Assistant. Only a limited number of devices have this type of "
+    "hardware support.";
+
 const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";
