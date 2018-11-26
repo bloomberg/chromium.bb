@@ -659,7 +659,6 @@ enum AuthenticationState {
       // returns to "IdentityPicker". In that case, there is no need to create a
       // new UnifiedConsentCoordinator. The current one should be used.
       _unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
-      _unifiedConsentCoordinator.interactable = YES;
       _unifiedConsentCoordinator.delegate = self;
       if (_selectedIdentity)
         _unifiedConsentCoordinator.selectedIdentity = _selectedIdentity;

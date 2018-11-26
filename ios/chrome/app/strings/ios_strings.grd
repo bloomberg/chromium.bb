@@ -516,27 +516,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_CLEAR_SAVED_PASSWORDS" desc="Label for the option in settings to clear saved passwords. In titlecase. [Length: 20em] [iOS only]">
         Saved Passwords
       </message>
-      <message name="IDS_IOS_CONSENT_BUMP_IM_IN" desc="Title for the Consent Bump 'accept' button. If the user press this button, then the users agrees to the consent bump prompt.">
-        Yes, I'm in
-      </message>
-      <message name="IDS_IOS_CONSENT_BUMP_NO_CHANGE_TEXT" desc="Text for the Consent Bump personalization option to not make any change to the existing sync options. [iOS only]">
-        The data sync to Google and the features you use will not change
-      </message>
-      <message name="IDS_IOS_CONSENT_BUMP_NO_CHANGE_TITLE" desc="Title for the Consent Bump personalization option to not make any change to the existing sync options. [iOS only]">
-        Make no changes
-      </message>
-      <message name="IDS_IOS_CONSENT_BUMP_MORE" desc="Title for the button in the ConsentBump to display more options for personalizing the sync settings. [iOS only]">
-        More Options
-      </message>
-      <message name="IDS_IOS_CONSENT_BUMP_PERSONALIZATION_TITLE" desc="Title for the Consent Bump personalization menu, presented when the user wants more informations and control over the sync personalization. [iOS only]">
-        Control Sync, Personalization, and More
-      </message>
-      <message name="IDS_IOS_CONSENT_BUMP_REVIEW_TITLE" desc="Title for the Consent Bump personalization option to review the existing settings once the current screen is dismissed. [iOS only]">
-        Review your settings on the next screen
-      </message>
-      <message name="IDS_IOS_CONSENT_BUMP_TURN_ON_TITLE" desc="Title for the Consent Bump personalization option to turn on the sync. [iOS only]">
-        Turn on sync, personalization, and other Google services
-      </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST" desc="The iOS menu item for adding a link to the reading list.">
         Read Later
       </message>

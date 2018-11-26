@@ -39,7 +39,6 @@
 @synthesize unifiedConsentMediator = _unifiedConsentMediator;
 @synthesize unifiedConsentViewController = _unifiedConsentViewController;
 @synthesize settingsLinkWasTapped = _settingsLinkWasTapped;
-@synthesize interactable = _interactable;
 @synthesize identityChooserCoordinator = _identityChooserCoordinator;
 @synthesize identitySelectedByUser = _identitySelectedByUser;
 
@@ -55,7 +54,6 @@
 }
 
 - (void)start {
-  self.unifiedConsentViewController.interactable = self.interactable;
   [self.unifiedConsentMediator start];
 }
 
@@ -105,8 +103,8 @@
 - (void)unifiedConsentViewControllerViewDidAppear:
     (UnifiedConsentViewController*)controller {
   // Only opens automatically the identity chooser dialog if the user didn't
-  // select an identity and the dialog is interactable.
-  if (self.identitySelectedByUser || !self.interactable)
+  // select an identity.
+  if (self.identitySelectedByUser)
     return;
   CGFloat midX = CGRectGetMidX(self.unifiedConsentViewController.view.bounds);
   CGFloat midY = CGRectGetMidY(self.unifiedConsentViewController.view.bounds);

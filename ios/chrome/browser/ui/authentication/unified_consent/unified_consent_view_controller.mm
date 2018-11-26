@@ -93,7 +93,6 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
     _imageBackgroundViewHeightConstraint;
 @synthesize noIdentityConstraint = _noIdentityConstraint;
 @synthesize openSettingsStringId = _openSettingsStringId;
-@synthesize interactable = _interactable;
 @synthesize scrollView = _scrollView;
 @synthesize settingsLinkController = _settingsLinkController;
 @synthesize withIdentityConstraint = _withIdentityConstraint;
@@ -110,7 +109,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   self.noIdentityConstraint.active = NO;
   self.withIdentityConstraint.active = YES;
   [self.identityPickerView setIdentityName:fullName email:email];
-  [self setSettingsLinkURLShown:self.interactable];
+  [self setSettingsLinkURLShown:YES];
 }
 
 - (void)updateIdentityPickerViewWithAvatar:(UIImage*)avatar {
@@ -141,15 +140,6 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   CGFloat scrollLimit =
       self.scrollView.contentSize.height + self.scrollView.contentInset.bottom;
   return scrollPosition >= scrollLimit;
-}
-
-- (void)setInteractable:(BOOL)interactable {
-  _interactable = interactable;
-  if (!self.viewLoaded)
-    return;
-
-  self.identityPickerView.canChangeIdentity = interactable;
-  [self setSettingsLinkURLShown:interactable];
 }
 
 #pragma mark - UIViewController
@@ -201,7 +191,6 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   // Identity picker view.
   self.identityPickerView =
       [[IdentityPickerView alloc] initWithFrame:CGRectZero];
-  self.identityPickerView.canChangeIdentity = self.interactable;
   self.identityPickerView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.identityPickerView addTarget:self
                               action:@selector(identityPickerAction:forEvent:)
