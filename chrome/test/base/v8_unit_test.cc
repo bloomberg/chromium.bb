@@ -126,7 +126,9 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& test_fixture,
       params};
 
   v8::TryCatch try_catch(isolate);
-  v8::Local<v8::Value> result = function->Call(context->Global(), 3, args);
+  v8::Local<v8::Value> result =
+      function->Call(context, context->Global(), 3, args)
+          .FromMaybe(v8::Local<v8::Value>());
   // The test fails if an exception was thrown.
   EXPECT_FALSE(result.IsEmpty());
   if (::testing::Test::HasNonfatalFailure())
@@ -315,7 +317,9 @@ void V8UnitTest::TestFunction(const std::string& function_name) {
       v8::Local<v8::Function>::Cast(function_property);
 
   v8::TryCatch try_catch(isolate);
-  v8::Local<v8::Value> result = function->Call(context->Global(), 0, NULL);
+  v8::Local<v8::Value> result =
+      function->Call(context, context->Global(), 0, NULL)
+          .FromMaybe(v8::Local<v8::Value>());
   // The test fails if an exception was thrown.
   if (result.IsEmpty())
     FAIL() << ExceptionToString(try_catch);
