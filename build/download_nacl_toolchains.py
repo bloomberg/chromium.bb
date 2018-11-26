@@ -11,11 +11,6 @@ import sys
 
 
 def Main(args):
-  # Exit early if disable_nacl=1.
-  if 'disable_nacl=1' in os.environ.get('GYP_DEFINES', ''):
-    return 0
-  if 'OS=android' in os.environ.get('GYP_DEFINES', ''):
-    return 0
   script_dir = os.path.dirname(os.path.abspath(__file__))
   src_dir = os.path.dirname(script_dir)
   nacl_dir = os.path.join(src_dir, 'native_client')
