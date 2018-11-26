@@ -142,6 +142,12 @@ class {{interface.name}} {
   }
 }
 
+{#--- Enums #}
+{% from "lite/enum_definition.tmpl" import enum_def %}
+{%- for enum in interface.enums %}
+{{ enum_def("%s.%s"|format(interface.name, enum.name), enum) }}
+{%-  endfor %}
+
 /** @const {!string} */
 {{interface.name}}.$interfaceName = '{{mojom_namespace}}.{{interface.name}}';
 
