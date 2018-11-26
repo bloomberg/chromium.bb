@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/assistant/model/assistant_query_history.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -119,6 +120,12 @@ class AssistantInteractionModel {
   // Updates the speech level in dB.
   void SetSpeechLevel(float speech_level_db);
 
+  // Returns the reference to query history.
+  AssistantQueryHistory& query_history() { return query_history_; }
+
+  // Returns the const reference to query history.
+  const AssistantQueryHistory& query_history() const { return query_history_; }
+
  private:
   void NotifyInteractionStateChanged();
   void NotifyInputModalityChanged();
@@ -134,6 +141,7 @@ class AssistantInteractionModel {
   InteractionState interaction_state_ = InteractionState::kInactive;
   InputModality input_modality_ = InputModality::kKeyboard;
   MicState mic_state_ = MicState::kClosed;
+  AssistantQueryHistory query_history_;
   std::unique_ptr<AssistantQuery> committed_query_;
   std::unique_ptr<AssistantQuery> pending_query_;
   std::unique_ptr<AssistantResponse> pending_response_;
