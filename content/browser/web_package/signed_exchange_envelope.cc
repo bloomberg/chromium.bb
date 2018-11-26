@@ -89,20 +89,14 @@ bool ParseRequestMap(const cbor::Value& value,
     return false;
   }
   base::StringPiece method_str = method_iter->second.GetBytestringAsString();
-  // 3. If exchange’s request method is not safe (Section 4.2.1 of [RFC7231])
-  // or not cacheable (Section 4.2.3 of [RFC7231]), return “invalid”.
-  // [spec text]
-  //
-  // Note: Per [RFC7231],
-  //       Safe methods are "GET", "HEAD", "OPTIONS", and "TRACE".
-  //       Cachable methods are "GET", "HEAD", and "POST",
-  //       and we only allow methods that satisfy both.
-  if (method_str != "GET" && method_str != "HEAD") {
+  // https://wicg.github.io/webpackage/loading.html#parse-cbor-headers
+  // If any of the following is true, return a failure:
+  // - ...
+  // - headers[0][`:method`] is not `GET`. [spec text]
+  if (method_str != "GET") {
     signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy,
-        base::StringPrintf(
-            "Request method is not safe or not cacheable. method: %s",
-            method_str.as_string().c_str()));
+        devtools_proxy, base::StringPrintf("Request method must be GET, but %s",
+                                           method_str.as_string().c_str()));
     return false;
   }
   out->set_request_method(method_str);
