@@ -394,7 +394,6 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
 
-  WebApplicationInfo web_app_info;
   std::map<GURL, std::vector<SkBitmap>> icon_map;
 
   blink::Manifest manifest;
@@ -402,6 +401,8 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest.scope = GURL(kAppScope);
   {
+    WebApplicationInfo web_app_info;
+    web_app_info.open_as_window = true;
     TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
     helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                              base::Unretained(&helper)));
@@ -431,6 +432,8 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
   }
   {
+    WebApplicationInfo web_app_info;
+    web_app_info.open_as_window = false;
     TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
     helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                              base::Unretained(&helper)));
