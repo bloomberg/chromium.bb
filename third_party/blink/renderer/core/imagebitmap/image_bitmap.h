@@ -123,8 +123,8 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   scoped_refptr<Uint8Array> CopyBitmapData();
   scoped_refptr<Uint8Array> CopyBitmapData(AlphaDisposition,
                                            DataU8ColorType = kRGBAColorType);
-  unsigned long width() const;
-  unsigned long height() const;
+  unsigned width() const;
+  unsigned height() const;
   IntSize Size() const;
 
   bool IsNeutered() const { return is_neutered_; }
