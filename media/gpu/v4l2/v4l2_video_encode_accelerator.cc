@@ -221,21 +221,21 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
     if (!output_layout) {
       VLOGF(1) << "Invalid image processor output layout";
       return false;
-  }
+    }
 
     // Convert from |config.input_format| to |device_input_format_|, keeping the
     // size at |visible_size_| and requiring the output buffers to be of at
     // least |input_allocated_size_|. Unretained is safe because |this| owns
     // image processor and there will be no callbacks after processor destroys.
-  image_processor_ = V4L2ImageProcessor::Create(
-      V4L2Device::Create(), V4L2_MEMORY_USERPTR, V4L2_MEMORY_MMAP,
-      *input_layout, *output_layout, visible_size_, visible_size_,
-      kImageProcBufferCount,
-      base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
-                 base::Unretained(this)));
-  if (!image_processor_) {
-    VLOGF(1) << "Failed initializing image processor";
-    return false;
+    image_processor_ = V4L2ImageProcessor::Create(
+        V4L2Device::Create(), V4L2_MEMORY_USERPTR, V4L2_MEMORY_MMAP,
+        *input_layout, *output_layout, visible_size_, visible_size_,
+        kImageProcBufferCount,
+        base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
+                   base::Unretained(this)));
+    if (!image_processor_) {
+      VLOGF(1) << "Failed initializing image processor";
+      return false;
     }
     // The output of image processor is the input of encoder. Output coded
     // width of processor must be the same as input coded width of encoder.
