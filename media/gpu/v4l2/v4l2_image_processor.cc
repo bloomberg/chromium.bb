@@ -65,21 +65,28 @@ V4L2ImageProcessor::JobRecord::JobRecord() : output_buffer_index(-1) {}
 
 V4L2ImageProcessor::JobRecord::~JobRecord() {}
 
-V4L2ImageProcessor::V4L2ImageProcessor(scoped_refptr<V4L2Device> device,
-                                       v4l2_memory input_memory_type,
-                                       v4l2_memory output_memory_type,
-                                       const VideoFrameLayout& input_layout,
-                                       const VideoFrameLayout& output_layout,
-                                       gfx::Size input_visible_size,
-                                       gfx::Size output_visible_size,
-                                       size_t num_buffers,
-                                       const base::Closure& error_cb)
+V4L2ImageProcessor::V4L2ImageProcessor(
+    scoped_refptr<V4L2Device> device,
+    VideoFrame::StorageType input_storage_type,
+    VideoFrame::StorageType output_storage_type,
+    v4l2_memory input_memory_type,
+    v4l2_memory output_memory_type,
+    OutputMode output_mode,
+    const VideoFrameLayout& input_layout,
+    const VideoFrameLayout& output_layout,
+    gfx::Size input_visible_size,
+    gfx::Size output_visible_size,
+    size_t num_buffers,
+    const base::Closure& error_cb)
     : input_layout_(input_layout),
       input_visible_size_(input_visible_size),
       input_memory_type_(input_memory_type),
+      input_storage_type_(input_storage_type),
       output_layout_(output_layout),
       output_visible_size_(output_visible_size),
       output_memory_type_(output_memory_type),
+      output_storage_type_(output_storage_type),
+      output_mode_(output_mode),
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       device_(device),
       device_thread_("V4L2ImageProcessorThread"),
@@ -120,11 +127,30 @@ void V4L2ImageProcessor::NotifyErrorOnChildThread(
   error_cb_.Run();
 }
 
+namespace {
+
+v4l2_memory InputStorageTypeToV4L2Memory(VideoFrame::StorageType storage_type) {
+  switch (storage_type) {
+    case VideoFrame::STORAGE_OWNED_MEMORY:
+    case VideoFrame::STORAGE_UNOWNED_MEMORY:
+    case VideoFrame::STORAGE_SHMEM:
+    case VideoFrame::STORAGE_MOJO_SHARED_BUFFER:
+      return V4L2_MEMORY_USERPTR;
+    case VideoFrame::STORAGE_DMABUFS:
+      return V4L2_MEMORY_DMABUF;
+    default:
+      return static_cast<v4l2_memory>(0);
+  }
+}
+
+}  // namespace
+
 // static
 std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
       scoped_refptr<V4L2Device> device,
-      v4l2_memory input_memory_type,
-      v4l2_memory output_memory_type,
+      VideoFrame::StorageType input_storage_type,
+      VideoFrame::StorageType output_storage_type,
+      OutputMode output_mode,
       const VideoFrameLayout& input_layout,
       const VideoFrameLayout& output_layout,
       gfx::Size input_visible_size,
@@ -137,10 +163,23 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
     VLOGF(1) << "Failed creating V4L2Device";
     return nullptr;
   }
-  DCHECK(input_memory_type == V4L2_MEMORY_USERPTR ||
-         input_memory_type == V4L2_MEMORY_DMABUF);
-  DCHECK(output_memory_type == V4L2_MEMORY_MMAP ||
-         output_memory_type == V4L2_MEMORY_DMABUF);
+
+  const v4l2_memory input_memory_type = InputStorageTypeToV4L2Memory(
+      input_storage_type);
+  if (input_memory_type == 0) {
+    VLOGF(1) << "Unsupported input storage type: " << input_storage_type;
+    return nullptr;
+  }
+
+  // Note that for v4l2 IP, output storage type must be STORAGE_DMABUFS.
+  // And output_memory_type depends on its output mode.
+  if (output_storage_type != VideoFrame::STORAGE_DMABUFS) {
+    VLOGF(1) << "Unsupported output storage type: " << output_storage_type;
+    return nullptr;
+  }
+  const v4l2_memory output_memory_type =
+      output_mode == ImageProcessor::OutputMode::ALLOCATE ? V4L2_MEMORY_MMAP
+                                                          : V4L2_MEMORY_DMABUF;
 
   if (!device->IsImageProcessingSupported()) {
     VLOGF(1) << "V4L2ImageProcessor not supported in this platform";
@@ -214,7 +253,8 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   }
 
   auto processor = base::WrapUnique(new V4L2ImageProcessor(
-      std::move(device), input_memory_type, output_memory_type,
+      std::move(device), input_storage_type, output_storage_type,
+      input_memory_type, output_memory_type, output_mode,
       *negotiated_input_layout, *negotiated_output_layout, input_visible_size,
       output_visible_size, num_buffers, std::move(error_cb)));
   if (!processor->Initialize()) {
@@ -320,6 +360,18 @@ gfx::Size V4L2ImageProcessor::input_allocated_size() const {
 
 gfx::Size V4L2ImageProcessor::output_allocated_size() const {
   return output_layout_.coded_size();
+}
+
+VideoFrame::StorageType V4L2ImageProcessor::input_storage_type() const {
+  return input_storage_type_;
+}
+
+VideoFrame::StorageType V4L2ImageProcessor::output_storage_type() const {
+  return output_storage_type_;
+}
+
+ImageProcessor::OutputMode V4L2ImageProcessor::output_mode() const {
+  return output_mode_;
 }
 
 bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> frame,

@@ -2353,10 +2353,10 @@ bool V4L2VideoDecodeAccelerator::ResetImageProcessor() {
 bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
   VLOGF(2);
   DCHECK(!image_processor_);
-  const v4l2_memory input_memory_type = V4L2_MEMORY_DMABUF;
-  const v4l2_memory output_memory_type =
-      (output_mode_ == Config::OutputMode::ALLOCATE ? V4L2_MEMORY_MMAP
-                                                    : V4L2_MEMORY_DMABUF);
+  const ImageProcessor::OutputMode image_processor_output_mode =
+      (output_mode_ == Config::OutputMode::ALLOCATE
+           ? ImageProcessor::OutputMode::ALLOCATE
+           : ImageProcessor::OutputMode::IMPORT);
 
   auto input_layout = VideoFrameLayout::Create(
       V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
@@ -2376,9 +2376,9 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
   // Unretained is safe because |this| owns image processor and there will be
   // no callbacks after processor destroys.
   image_processor_ = V4L2ImageProcessor::Create(
-      image_processor_device_, input_memory_type, output_memory_type,
-      *input_layout, *output_layout, visible_size_, visible_size_,
-      output_buffer_map_.size(),
+      image_processor_device_, VideoFrame::STORAGE_DMABUFS,
+      VideoFrame::STORAGE_DMABUFS, image_processor_output_mode, *input_layout,
+      *output_layout, visible_size_, visible_size_, output_buffer_map_.size(),
       base::Bind(&V4L2VideoDecodeAccelerator::ImageProcessorError,
                  base::Unretained(this)));
 
