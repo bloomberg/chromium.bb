@@ -55,11 +55,7 @@ class NavigationPredictorBrowserTest
     const std::vector<base::Feature> features = {
         blink::features::kRecordAnchorMetricsVisible,
         blink::features::kRecordAnchorMetricsClicked};
-    if (GetParam()) {
-      feature_list_.InitWithFeatures(features, {});
-    } else {
-      feature_list_.InitWithFeatures({}, features);
-    }
+    feature_list_.InitWithFeatures(features, {});
   }
 
   void SetUp() override {
@@ -99,36 +95,22 @@ class NavigationPredictorBrowserTest
   DISALLOW_COPY_AND_ASSIGN(NavigationPredictorBrowserTest);
 };
 
-// Enable and disable feature blink::features::kRecordAnchorMetricsVisible.
-INSTANTIATE_TEST_CASE_P(, NavigationPredictorBrowserTest, testing::Bool());
-
-// Test that with feature blink::features::kRecordAnchorMetricsVisible enabled,
-// the browser process can receive anchor element metrics on page load. And when
-// the feature is disabled, there is no metric received.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, Pipeline) {
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, Pipeline) {
   base::HistogramTester histogram_tester;
 
   const GURL& url = GetTestURL("/simple_page_with_anchors.html");
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 3, 1);
-    // Same document anchor element should be removed after merge.
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
-  } else {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
-  }
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 3, 1);
+  // Same document anchor element should be removed after merge.
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
 }
 
 // Test that no metrics are recorded in off-the-record profiles.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, PipelineOffTheRecord) {
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, PipelineOffTheRecord) {
   base::HistogramTester histogram_tester;
 
   const GURL& url = GetTestURL("/simple_page_with_anchors.html");
@@ -144,7 +126,7 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, PipelineOffTheRecord) {
 
 // Test that the browser does not process anchor element metrics from an http
 // web page on page load.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, PipelineHttp) {
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, PipelineHttp) {
   base::HistogramTester histogram_tester;
 
   const GURL& url = GetHttpTestURL("/simple_page_with_anchors.html");
@@ -159,7 +141,7 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, PipelineHttp) {
 
 // Test that anchor elements within an iframe tagged as an ad are discarded when
 // predicting next navigation.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, PipelineAdsFrameTagged) {
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, PipelineAdsFrameTagged) {
   // iframe_ads_simple_page_with_anchors.html is an iframe referenced by
   // page_with_ads_iframe.html.
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
@@ -171,32 +153,24 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, PipelineAdsFrameTagged) {
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 5, 1);
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 5, 1);
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
 
-    RetryForHistogramUntilCountReached(
-        &histogram_tester, "AnchorElementMetrics.IsAdFrameElement", 4);
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "AnchorElementMetrics.IsAdFrameElement", 4);
 
-    histogram_tester.ExpectTotalCount("AnchorElementMetrics.IsAdFrameElement",
-                                      7);
-    histogram_tester.ExpectBucketCount("AnchorElementMetrics.IsAdFrameElement",
-                                       0 /* false */, 5);
-    histogram_tester.ExpectBucketCount("AnchorElementMetrics.IsAdFrameElement",
-                                       1 /* true */, 2);
-
-  } else {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
-  }
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.IsAdFrameElement", 7);
+  histogram_tester.ExpectBucketCount("AnchorElementMetrics.IsAdFrameElement",
+                                     0 /* false */, 5);
+  histogram_tester.ExpectBucketCount("AnchorElementMetrics.IsAdFrameElement",
+                                     1 /* true */, 2);
 }
 
 // Test that anchor elements within an iframe not tagged as ad are not discarded
 // when predicting next navigation.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        PipelineAdsFrameNotTagged) {
   base::HistogramTester histogram_tester;
 
@@ -204,47 +178,34 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 7, 1);
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 7, 1);
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
 
-    RetryForHistogramUntilCountReached(
-        &histogram_tester, "AnchorElementMetrics.IsAdFrameElement", 7);
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "AnchorElementMetrics.IsAdFrameElement", 7);
 
-    histogram_tester.ExpectUniqueSample("AnchorElementMetrics.IsAdFrameElement",
-                                        0 /* false */, 7);
-
-  } else {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
-  }
+  histogram_tester.ExpectUniqueSample("AnchorElementMetrics.IsAdFrameElement",
+                                      0 /* false */, 7);
 }
 
 // Test that navigation score of anchor elements can be calculated on page load.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, NavigationScore) {
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, NavigationScore) {
   base::HistogramTester histogram_tester;
 
   const GURL& url = GetTestURL("/simple_page_with_anchors.html");
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Visible.HighestNavigationScore", 1);
-  } else {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
-  }
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Visible.HighestNavigationScore", 1);
 }
 
 // Simulate a click at the anchor element.
 // Test that timing info (DurationLoadToFirstClick) can be recorded.
 // And that the navigation score can be looked up.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, ClickAnchorElement) {
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, ClickAnchorElement) {
   base::HistogramTester histogram_tester;
 
   const GURL& url = GetTestURL("/simple_page_with_anchors.html");
@@ -256,30 +217,23 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, ClickAnchorElement) {
       "document.getElementById('google').click();"));
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsClicked)) {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Clicked.DurationLoadToFirstClick", 1);
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Clicked.NavigationScore", 1);
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.DurationLoadToFirstClick", 1);
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.NavigationScore", 1);
 
-    histogram_tester.ExpectUniqueSample(
-        "NavigationPredictor.OnNonDSE.ActionTaken",
-        NavigationPredictor::Action::kNone, 1);
-
-  } else {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Clicked.HrefEngagementScore2", 0);
-  }
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kNone, 1);
 }
 
 // Simulate a click at the anchor element.
 // Test that the action accuracy is properly recorded.
 // User clicks on an anchor element that points to a origin different than the
 // origin of the URL prefetched.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        ActionAccuracy_DifferentOrigin) {
   base::HistogramTester histogram_tester;
 
@@ -292,37 +246,30 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
       "document.getElementById('google').click();"));
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsClicked)) {
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
-    // Same document anchor element should be removed after merge.
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
-    histogram_tester.ExpectUniqueSample(
-        "NavigationPredictor.OnNonDSE.ActionTaken",
-        NavigationPredictor::Action::kPrefetch, 1);
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
+  // Same document anchor element should be removed after merge.
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kPrefetch, 1);
 
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
 
-    histogram_tester.ExpectUniqueSample(
-        "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
-        NavigationPredictor::ActionAccuracy::
-            kPrefetchActionClickToDifferentOrigin,
-        1);
-
-  } else {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
-  }
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
+      NavigationPredictor::ActionAccuracy::
+          kPrefetchActionClickToDifferentOrigin,
+      1);
 }
 
 // Simulate a click at the anchor element.
 // Test that the action accuracy is properly recorded.
 // User clicks on an anchor element that points to same URL as the URL
 // prefetched.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        ActionAccuracy_SameOrigin) {
   base::HistogramTester histogram_tester;
 
@@ -335,33 +282,26 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
       "document.getElementById('example').click();"));
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsClicked)) {
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
-    // Same document anchor element should be removed after merge.
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
-    histogram_tester.ExpectUniqueSample(
-        "NavigationPredictor.OnNonDSE.ActionTaken",
-        NavigationPredictor::Action::kPrefetch, 1);
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
+  // Same document anchor element should be removed after merge.
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kPrefetch, 1);
 
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
 
-    histogram_tester.ExpectUniqueSample(
-        "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
-        NavigationPredictor::ActionAccuracy::kPrefetchActionClickToSameURL, 1);
-
-  } else {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
-  }
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
+      NavigationPredictor::ActionAccuracy::kPrefetchActionClickToSameURL, 1);
 }
 
 // Simulate a click at the anchor element in off-the-record profile. Metrics
 // should not be recorded.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        ClickAnchorElementOffTheRecord) {
   base::HistogramTester histogram_tester;
 
@@ -382,7 +322,7 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
 
 // Simulate click at the anchor element.
 // Test that correct area ranks are recorded.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, AreaRank) {
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, AreaRank) {
   base::HistogramTester histogram_tester;
 
   // This test file contains 5 anchors with different size.
@@ -395,18 +335,15 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, AreaRank) {
       "document.getElementById('medium').click();"));
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsClicked)) {
-    histogram_tester.ExpectUniqueSample("AnchorElementMetrics.Clicked.AreaRank",
-                                        2, 1);
-    histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
-                                      5);
-  }
+  histogram_tester.ExpectUniqueSample("AnchorElementMetrics.Clicked.AreaRank",
+                                      2, 1);
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
+                                    5);
 }
 
 // Test that MergeMetricsSameTargetUrl merges anchor elements having the same
 // href. The html file contains two anchor elements having the same href.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        MergeMetricsSameTargetUrl_ClickHrefWithNoMergedImage) {
   base::HistogramTester histogram_tester;
 
@@ -414,14 +351,8 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
-    histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
-                                      1);
-  } else {
-    histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
-                                      0);
-  }
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
+                                    1);
 
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -431,16 +362,13 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
   // Anchor element with id 'diffHref' points to an href. No image in the
   // webpage also points to an image. So, clicking on this non-image anchor
   // element, should not be recorded as "ContainsImage".
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage", 0);
-  }
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage", 0);
 }
 
 // Test that MergeMetricsSameTargetUrl merges anchor elements having the same
 // href. The html file contains two anchor elements having the same href.
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        MergeMetricsSameTargetUrl_ClickHrefWithMergedImage) {
   base::HistogramTester histogram_tester;
 
@@ -448,14 +376,8 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
-    histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
-                                      1);
-  } else {
-    histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
-                                      0);
-  }
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
+                                    1);
 
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -465,14 +387,11 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
   // Anchor element with id 'google' points to an href. Another image in the
   // webpage also points to an image. So, even though we clicked on a non-image
   // anchor element, it should be recorded as "ContainsImage".
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
     histogram_tester.ExpectTotalCount(
         "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage", 1);
-  }
 }
 
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        AnchorElementClickedOnSearchEnginePage) {
   static const char kShortName[] = "test";
   static const char kSearchURL[] = "/anchors_same_href.html?q={searchTerms}";
@@ -504,16 +423,13 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
 
   // Anchor element with id 'google' points to an href that's on a different
   // host.
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage", 1);
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Clicked.OnDSE.SameHost", 0, 1);
-  }
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage", 1);
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Clicked.OnDSE.SameHost", 0, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        AnchorElementClickedOnNonSearchEnginePage) {
   static const char kShortName[] = "test";
   static const char kSearchURL[] = "/somne_other_url.html?q={searchTerms}";
@@ -545,16 +461,13 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
 
   // Anchor element with id 'google' points to an href that's on a different
   // host.
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage", 1);
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Clicked.OnNonDSE.SameHost", 0, 1);
-  }
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage", 1);
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Clicked.OnNonDSE.SameHost", 0, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        ActionPrefetch_NoSameHostAnchorElement) {
   base::HistogramTester histogram_tester;
 
@@ -562,23 +475,17 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 3, 1);
-    // Same document anchor element should be removed after merge.
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
-    histogram_tester.ExpectUniqueSample(
-        "NavigationPredictor.OnNonDSE.ActionTaken",
-        NavigationPredictor::Action::kNone, 1);
-  } else {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
-  }
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 3, 1);
+  // Same document anchor element should be removed after merge.
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kNone, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        ActionPrefetch_SameHostAnchorElement) {
   base::HistogramTester histogram_tester;
 
@@ -586,20 +493,14 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRecordAnchorMetricsVisible)) {
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
-    // Same document anchor element should be removed after merge.
-    histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
-    histogram_tester.ExpectUniqueSample(
-        "NavigationPredictor.OnNonDSE.ActionTaken",
-        NavigationPredictor::Action::kPrefetch, 1);
-  } else {
-    histogram_tester.ExpectTotalCount(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
-  }
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
+  // Same document anchor element should be removed after merge.
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kPrefetch, 1);
 }
 
 // Tests that the browser only receives anchor elements that are in the

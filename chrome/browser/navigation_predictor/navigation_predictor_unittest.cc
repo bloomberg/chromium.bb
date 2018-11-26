@@ -8,10 +8,12 @@
 
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "url/gurl.h"
 
@@ -24,6 +26,10 @@ class TestNavigationPredictor : public NavigationPredictor {
       content::RenderFrameHost* render_frame_host)
       : NavigationPredictor(render_frame_host), binding_(this) {
     binding_.Bind(std::move(request));
+    const std::vector<base::Feature> features = {
+        blink::features::kRecordAnchorMetricsVisible,
+        blink::features::kRecordAnchorMetricsClicked};
+    feature_list_.InitWithFeatures(features, {});
   }
 
   ~TestNavigationPredictor() override {}
@@ -45,6 +51,8 @@ class TestNavigationPredictor : public NavigationPredictor {
 
   // Maps from target URL to area rank of the anchor element.
   mutable std::map<GURL, int> area_rank_map_;
+
+  base::test::ScopedFeatureList feature_list_;
 
   // Used to bind Mojo interface
   mojo::Binding<AnchorElementMetricsHost> binding_;
