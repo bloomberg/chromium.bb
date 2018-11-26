@@ -26,6 +26,9 @@ class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
   USING_GARBAGE_COLLECTED_MIXIN(OnPurgeMemoryListener);
 
   void OnPurgeMemory() override {
+    if (!base::FeatureList::IsEnabled(kCompressParkableStringsInBackground))
+      return;
+
     ParkableStringManager::Instance().ParkAllIfRendererBackgrounded(
         ParkableStringImpl::ParkingMode::kAlways);
   }
@@ -42,6 +45,9 @@ ParkableStringManager::~ParkableStringManager() = default;
 void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
   DCHECK(IsMainThread());
   backgrounded_ = backgrounded;
+
+  if (!base::FeatureList::IsEnabled(kCompressParkableStringsInBackground))
+    return;
 
   if (backgrounded_) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -148,11 +154,9 @@ void ParkableStringManager::OnUnparked(ParkableStringImpl* was_parked_string,
 void ParkableStringManager::ParkAllIfRendererBackgrounded(
     ParkableStringImpl::ParkingMode mode) {
   DCHECK(IsMainThread());
+  DCHECK(base::FeatureList::IsEnabled(kCompressParkableStringsInBackground));
 
   if (!IsRendererBackgrounded())
-    return;
-
-  if (!base::FeatureList::IsEnabled(kCompressParkableStringsInBackground))
     return;
 
   size_t total_size = 0;
@@ -193,6 +197,7 @@ size_t ParkableStringManager::Size() const {
 
 void ParkableStringManager::DropStringsWithCompressedDataAndRecordStatistics() {
   DCHECK(IsMainThread());
+  DCHECK(base::FeatureList::IsEnabled(kCompressParkableStringsInBackground));
   DCHECK(waiting_to_record_stats_);
   waiting_to_record_stats_ = false;
   if (!should_record_stats_)
