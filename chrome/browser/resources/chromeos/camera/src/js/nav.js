@@ -111,7 +111,7 @@ cca.nav.hide_ = function(index) {
     cca.nav.topmostIndex_ = next;
   }
   document.body.classList.remove(cca.nav.views_[index].root.id);
-}
+};
 
 /**
  * Activates the view to be focusable.
@@ -144,7 +144,7 @@ cca.nav.inactivate_ = function(index) {
  * Sets the element's tabindex on the view.
  * @param {cca.views.View} view View that the element is on.
  * @param {HTMLElement} element Element whose tabindex to be set.
- * @param {number} tabindex Tab-index of the element.
+ * @param {number} tabIndex Tab-index of the element.
  */
 cca.nav.setTabIndex = function(view, element, tabIndex) {
   if ((cca.nav.topmostIndex_ >= 0) &&
