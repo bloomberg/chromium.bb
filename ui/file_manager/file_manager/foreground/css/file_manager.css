@@ -2296,3 +2296,8 @@ cr-input:not(:defined) {
   position: absolute;
   z-index: 1000;  /* same height as files-tooltip */
 }
+
+files-toast {
+  /* Must be above the splitter (500) but below menu-like UI (550). */
+  z-index: 520;
+}
