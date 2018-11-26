@@ -29,6 +29,11 @@ from slave import build_directory
 SRC_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..'))
 
+# Add Catapult to the path so we can import the chartjson-histogramset
+# conversion.
+sys.path.append(os.path.join(SRC_DIR, 'third_party', 'catapult', 'tracing'))
+from tracing.value import convert_chart_json
+
 # If something adds a static initializer, revert it, don't increase these
 # numbers. We don't accept regressions in static initializers.
 #
@@ -569,6 +574,12 @@ def main():
   option_parser.add_option('--json', help='Path to JSON output file')
   option_parser.add_option('--failures',
                            help='Path to JSON output file for failures')
+  # This needs to be --output-dir (and not something like --output-directory) in
+  # order to work properly with the build-side runtest.py script that's
+  # currently used for dashboard uploading results from this script.
+  option_parser.add_option('--output-dir',
+                           help='Directory to dump data in the HistogramSet '
+                                'format')
 
   options, args = option_parser.parse_args()
 
@@ -588,6 +599,18 @@ def main():
   if options.json:
     with open(options.json, 'w') as f:
       json.dump(results_collector.results, f)
+
+  if options.output_dir:
+    histogram_path = os.path.join(options.output_dir, 'perf_results.json')
+    with open(histogram_path, 'w') as f:
+      json.dump(results_collector.results, f)
+    histogram_result = convert_chart_json.ConvertChartJson(histogram_path)
+    if histogram_result.returncode != 0:
+      sys.stderr.write(
+          'chartjson conversion failed: %s\n' % histogram_result.stdout)
+      return histogram_result.returncode
+    with open(histogram_path, 'w') as f:
+      f.write(histogram_result.stdout)
 
   if options.failures:
     with open(options.failures, 'w') as f:
