@@ -450,12 +450,6 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   LaunchType launch_type =
       web_app_info_.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
 
-  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing)) {
-    DCHECK_NE(web_app::ForInstallableSite::kUnknown, for_installable_site_);
-    launch_type = for_installable_site_ == web_app::ForInstallableSite::kYes
-                      ? LAUNCH_TYPE_WINDOW
-                      : LAUNCH_TYPE_REGULAR;
-  }
   profile_->GetPrefs()->SetInteger(pref_names::kBookmarkAppCreationLaunchType,
                                    launch_type);
 
