@@ -10,8 +10,8 @@
 #   //third_party/blink/public/mojom/service_worker/
 #   //third_party/blink/public/platform/modules/service_worker/
 #   //third_party/blink/public/web/modules/service_worker/
-#   //third_party/WebKit/LayoutTests/external/wpt/service-workers/
 #   //third_party/blink/renderer/modules/service_worker/
+#   //third_party/blink/web_tests/external/wpt/service-workers/
 
 falken@chromium.org
 horo@chromium.org

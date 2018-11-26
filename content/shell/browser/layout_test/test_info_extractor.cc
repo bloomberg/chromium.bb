@@ -91,18 +91,10 @@ std::unique_ptr<TestInfo> GetTestInfoFromLayoutTestName(
     if (!base::PathExists(local_file)) {
       base::FilePath base_path;
       base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kTestsInBlink)) {
         local_file = base_path.Append(FILE_PATH_LITERAL("third_party"))
                          .Append(FILE_PATH_LITERAL("blink"))
                          .Append(FILE_PATH_LITERAL("web_tests"))
                          .Append(local_file);
-      } else {
-        local_file = base_path.Append(FILE_PATH_LITERAL("third_party"))
-                         .Append(FILE_PATH_LITERAL("WebKit"))
-                         .Append(FILE_PATH_LITERAL("LayoutTests"))
-                         .Append(local_file);
-      }
     }
     test_url = net::FilePathToFileURL(base::MakeAbsoluteFilePath(local_file));
   }

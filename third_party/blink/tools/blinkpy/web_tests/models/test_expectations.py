@@ -212,7 +212,7 @@ class TestExpectationParser(object):
         if not self._port.test_exists(expectation_line.name) and not self._port.test_exists(expectation_line.name + '-disabled'):
             # Log a warning here since you hit this case any
             # time you update TestExpectations without syncing
-            # the LayoutTests directory
+            # the web_tests directory
             expectation_line.warnings.append('Path does not exist.')
             return False
         return True
@@ -884,17 +884,17 @@ class TestExpectations(object):
     in which case the expectations apply to all test cases in that
     directory and any subdirectory. The format is along the lines of:
 
-      LayoutTests/fast/js/fixme.js [ Failure ]
-      LayoutTests/fast/js/flaky.js [ Failure Pass ]
-      LayoutTests/fast/js/crash.js [ Crash Failure Pass Timeout ]
+      fast/js/fixme.js [ Failure ]
+      fast/js/flaky.js [ Failure Pass ]
+      fast/js/crash.js [ Crash Failure Pass Timeout ]
       ...
 
     To add specifiers:
-      LayoutTests/fast/js/no-good.js
-      [ Debug ] LayoutTests/fast/js/no-good.js [ Pass Timeout ]
-      [ Debug ] LayoutTests/fast/js/no-good.js [ Pass Skip Timeout ]
-      [ Linux Debug ] LayoutTests/fast/js/no-good.js [ Pass Skip Timeout ]
-      [ Linux Win ] LayoutTests/fast/js/no-good.js [ Pass Skip Timeout ]
+      fast/js/no-good.js
+      [ Debug ] fast/js/no-good.js [ Pass Timeout ]
+      [ Debug ] fast/js/no-good.js [ Pass Skip Timeout ]
+      [ Linux Debug ] fast/js/no-good.js [ Pass Skip Timeout ]
+      [ Linux Win ] fast/js/no-good.js [ Pass Skip Timeout ]
 
     Skip: Doesn't run the test.
     Slow: The test takes a long time to run, but does not timeout indefinitely.

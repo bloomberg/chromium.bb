@@ -899,7 +899,7 @@ TEST_F(DecimalTest, PredicatesSpecialValues) {
   EXPECT_FALSE(Decimal::Nan().IsZero());
 }
 
-// LayoutTests/fast/forms/number/number-stepup-stepdown-from-renderer
+// web_tests/fast/forms/number/number-stepup-stepdown-from-renderer
 TEST_F(DecimalTest, RealWorldExampleNumberStepUpStepDownFromRenderer) {
   EXPECT_DECIMAL_STREQ("10", StepDown("0", "100", "10", "19", 1));
   EXPECT_DECIMAL_STREQ("90", StepUp("0", "99", "10", "89", 1));

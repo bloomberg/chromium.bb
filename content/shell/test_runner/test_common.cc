@@ -16,9 +16,6 @@ namespace test_runner {
 
 namespace {
 
-const char layout_tests_pattern[] = "/LayoutTests/";
-const std::string::size_type layout_tests_pattern_size =
-    sizeof(layout_tests_pattern) - 1;
 const char web_tests_pattern[] = "/web_tests/";
 const std::string::size_type web_tests_pattern_size =
     sizeof(web_tests_pattern) - 1;
@@ -42,10 +39,6 @@ std::string NormalizeLayoutTestURL(const std::string& url) {
   std::string result = url;
   size_t pos;
   if (!url.find(file_url_pattern) &&
-      ((pos = url.find(layout_tests_pattern)) != std::string::npos)) {
-    // adjust file URLs to match upstream results.
-    result.replace(0, pos + layout_tests_pattern_size, file_test_prefix);
-  } else if (!url.find(file_url_pattern) &&
              ((pos = url.find(web_tests_pattern)) != std::string::npos)) {
     // adjust file URLs to match upstream results.
     result.replace(0, pos + web_tests_pattern_size, file_test_prefix);

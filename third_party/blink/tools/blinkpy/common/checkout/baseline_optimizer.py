@@ -360,7 +360,7 @@ class BaselineOptimizer(object):
         return frozenset(directories)
 
     def _optimize_result_for_root(self, new_results_by_directory):
-        # The root directory (i.e. LayoutTests) is the only one not
+        # The root directory (i.e. web_tests) is the only one not
         # corresponding to a specific platform. As such, baselines in
         # directories that immediately precede the root on search paths may
         # be promoted up if they are all the same.

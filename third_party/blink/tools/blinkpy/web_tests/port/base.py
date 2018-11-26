@@ -47,7 +47,6 @@ from blinkpy.common import find_files
 from blinkpy.common import read_checksum_from_png
 from blinkpy.common.memoized import memoized
 from blinkpy.common.path_finder import PathFinder
-from blinkpy.common.path_finder import TESTS_IN_BLINK
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.path import abspath_to_uri
 from blinkpy.w3c.wpt_manifest import WPTManifest
@@ -232,7 +231,7 @@ class Port(object):
 
     def primary_driver_flag(self):
         """Returns the driver flag that is used for flag-specific expectations and baselines. This
-           is the flag in LayoutTests/additional-driver-flag.setting, if present, otherwise the
+           is the flag in web_tests/additional-driver-flag.setting, if present, otherwise the
            first flag passed by --additional-driver-flag.
         """
         flag_file = self._filesystem.join(self.layout_tests_dir(), 'additional-driver-flag.setting')
@@ -264,9 +263,6 @@ class Port(object):
             self.get_option('repeat_each') > 1 or
             self.get_option('iterations') > 1):
             flags += ['--reset-shell-between-tests']
-
-        if TESTS_IN_BLINK:
-            flags += ['--tests-in-blink']
         return flags
 
     def supports_per_test_timeout(self):
@@ -533,7 +529,7 @@ class Port(object):
         platform specific.
 
         Args:
-            test_name: Name of test file (usually a relative path under LayoutTests/)
+            test_name: Name of test file (usually a relative path under web_tests/)
             extension: File extension of the expected results, including dot;
                 e.g. '.txt' or '.png'.  This should not be None, but may be an
                 empty string.
@@ -586,7 +582,7 @@ class Port(object):
         the other baseline and filename manipulation routines.
 
         Args:
-            test_name: Name of test file (usually a relative path under LayoutTests/)
+            test_name: Name of test file (usually a relative path under web_tests/)
             extension: File extension of the expected results, including dot;
                 e.g. '.txt' or '.png'.  This should not be None, but may be an
                 empty string.
@@ -1011,7 +1007,7 @@ class Port(object):
         return self._options.ensure_value(name, default_value)
 
     def relative_test_filename(self, filename):
-        """Returns a Unix-style path for a filename relative to LayoutTests.
+        """Returns a Unix-style path for a filename relative to web_tests.
 
         Ports may legitimately return absolute paths here if no relative path
         makes sense.

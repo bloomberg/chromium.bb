@@ -174,7 +174,7 @@ class PLATFORM_EXPORT Character {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#space-character
     // This function returns true for 0x000B also, so that this is backward
     // compatible.  Otherwise, the test
-    // LayoutTests/canvas/philip/tests/2d.text.draw.space.collapse.space.html
+    // web_tests/canvas/philip/tests/2d.text.draw.space.collapse.space.html
     // will fail
     return c == 0x0009 || (c >= 0x000A && c <= 0x000D);
   }

@@ -155,7 +155,7 @@ static bool PlanCounter(LayoutObject& object,
   switch (style.StyleType()) {
     case kPseudoIdNone:
       // Sometimes nodes have more than one layout object. Only the first one
-      // gets the counter. See LayoutTests/http/tests/css/counter-crash.html
+      // gets the counter. See web_tests/http/tests/css/counter-crash.html
       if (generating_node->GetLayoutObject() != &object)
         return false;
       break;

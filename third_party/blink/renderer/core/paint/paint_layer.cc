@@ -245,7 +245,7 @@ PaintLayerCompositor* PaintLayer::Compositor() const {
 void PaintLayer::ContentChanged(ContentChangeType change_type) {
   // updateLayerCompositingState will query compositingReasons for accelerated
   // overflow scrolling.  This is tripped by
-  // LayoutTests/compositing/content-changed-chicken-egg.html
+  // web_tests/compositing/content-changed-chicken-egg.html
   DisableCompositingQueryAsserts disabler;
 
   if (Compositor()) {

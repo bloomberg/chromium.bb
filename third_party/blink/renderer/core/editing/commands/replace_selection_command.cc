@@ -1442,7 +1442,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
 
   {
     // TODO(dominicc): refNode may not be connected, for example in
-    // LayoutTests/editing/inserting/insert-table-in-paragraph-crash.html .
+    // web_tests/editing/inserting/insert-table-in-paragraph-crash.html .
     // Refactor this so there's a relationship between the conditions
     // where refNode is dereferenced and refNode is connected.
     bool ref_node_was_connected = inserted_nodes.RefNode()->isConnected();

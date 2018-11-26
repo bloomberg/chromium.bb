@@ -55,12 +55,8 @@ base::FilePath BlinkRootFilePath() {
 base::FilePath LayoutTestsFilePath() {
   base::FilePath path;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
-  base::FilePath web_tests_path = base::MakeAbsoluteFilePath(
-      path.Append(FILE_PATH_LITERAL("third_party/blink/web_tests")));
-  if (base::PathExists(web_tests_path))
-    return web_tests_path;
   return base::MakeAbsoluteFilePath(
-      path.Append(FILE_PATH_LITERAL("third_party/WebKit/LayoutTests")));
+      path.Append(FILE_PATH_LITERAL("third_party/blink/web_tests")));
 }
 
 }  // namespace

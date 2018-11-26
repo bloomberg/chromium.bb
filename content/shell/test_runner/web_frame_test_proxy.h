@@ -44,8 +44,9 @@ class TEST_RUNNER_EXPORT WebFrameTestProxyBase {
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxyBase);
 };
 
-// WebFrameTestProxy is used during LayoutTests instead of a RenderFrameImpl to
-// inject test-only behaviour by overriding methods in the base class.
+// WebFrameTestProxy is used during running web tests instead of a
+// RenderFrameImpl to inject test-only behaviour by overriding methods in the
+// base class.
 class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl,
                                              public WebFrameTestProxyBase {
  public:

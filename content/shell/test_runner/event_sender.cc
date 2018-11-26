@@ -429,7 +429,7 @@ void PopulateCustomItems(const WebVector<WebMenuItemInfo>& customItems,
 }
 
 // Because actual context menu is implemented by the browser side,
-// this function does only what LayoutTests are expecting:
+// this function does only what web_tests are expecting:
 // - Many test checks the count of items. So returning non-zero value makes
 // sense.
 // - Some test compares the count before and after some action. So changing the

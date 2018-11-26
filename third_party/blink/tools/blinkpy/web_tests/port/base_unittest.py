@@ -807,7 +807,7 @@ class PortTest(LoggingTestCase):
     def test_can_load_actual_virtual_test_suite_file(self):
         port = Port(SystemHost(), 'baseport')
 
-        # If this call returns successfully, we found and loaded the LayoutTests/VirtualTestSuites.
+        # If this call returns successfully, we found and loaded the web_tests/VirtualTestSuites.
         _ = port.virtual_test_suites()
 
     def test_good_virtual_test_suite_file(self):
@@ -816,7 +816,7 @@ class PortTest(LoggingTestCase):
             port.host.filesystem.join(port.layout_tests_dir(), 'VirtualTestSuites'),
             '[{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]}]')
 
-        # If this call returns successfully, we found and loaded the LayoutTests/VirtualTestSuites.
+        # If this call returns successfully, we found and loaded the web_tests/VirtualTestSuites.
         _ = port.virtual_test_suites()
 
     def test_duplicate_virtual_test_suite_in_file(self):

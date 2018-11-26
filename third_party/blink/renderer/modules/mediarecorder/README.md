@@ -49,7 +49,7 @@ can be flushed using `requestData()` or `stop()`.  `event.data` contains the
 recorded `Blob`.
 
 [`MediaRecorderOptions`]: https://w3c.github.io/mediacapture-record/#mediarecorderoptions-section
-[isTypeSupported()]: https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/fast/mediarecorder/MediaRecorder-isTypeSupported.html
+[isTypeSupported()]: https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/web_tests/fast/mediarecorder/MediaRecorder-isTypeSupported.html
 
 ## Implementation in Chromium
 
@@ -91,12 +91,12 @@ alternative is to use a Javascript library to reconstruct the Cues (see the
 
 ## Testing
 
-Media Recorder layout tests are located in [LayoutTests/fast/mediarecorder], and
-[LayoutTests/external/mediacapture-record], unittests in [content] and [media]
+Media Recorder layout tests are located in [web_tests/fast/mediarecorder], and
+[web_tests/external/mediacapture-record], unittests in [content] and [media]
 and [browsertests].
 
-[LayoutTests/fast/mediarecorder]: https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/fast/mediarecorder/
-[LayoutTests/external/mediacapture-record]: https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/external/wpt/mediacapture-record/
+[web_tests/fast/mediarecorder]: https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/web_tests/fast/mediarecorder/
+[web_tests/external/mediacapture-record]: https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/web_tests/external/wpt/mediacapture-record/
 [content]: https://chromium.googlesource.com/chromium/src/+/master/content/renderer/media_recorder/
 [media]: https://chromium.googlesource.com/chromium/src/+/master/media/muxers
 [browsertests]: https://chromium.googlesource.com/chromium/src/+/master/content/browser/webrtc/webrtc_media_recorder_browsertest.cc

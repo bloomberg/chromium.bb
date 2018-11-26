@@ -272,8 +272,6 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
         expectations = TestExpectations(self._port, self.get_basic_tests())
         self.assertEquals(expectations._shorten_filename('/out-of-checkout/TestExpectations'),
                           '/out-of-checkout/TestExpectations')
-        self.assertEquals(expectations._shorten_filename('/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'),
-                          'third_party/WebKit/LayoutTests/TestExpectations')
         self.assertEquals(expectations._shorten_filename('/mock-checkout/third_party/blink/web_tests/TestExpectations'),
                           'third_party/blink/web_tests/TestExpectations')
 

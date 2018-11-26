@@ -626,7 +626,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("waitUntilExternalURLLoad",
                  &TestRunnerBindings::WaitUntilExternalURLLoad)
 
-      // webHistoryItemCount is used by tests in LayoutTests\http\tests\history
+      // webHistoryItemCount is used by tests in web_tests\http\tests\history
       .SetProperty("webHistoryItemCount",
                    &TestRunnerBindings::WebHistoryItemCount)
       .SetMethod("windowCount", &TestRunnerBindings::WindowCount);

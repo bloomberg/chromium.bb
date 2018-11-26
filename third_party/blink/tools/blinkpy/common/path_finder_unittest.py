@@ -6,7 +6,6 @@ import unittest
 
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
-from blinkpy.common.path_finder import TESTS_IN_BLINK
 from blinkpy.common.system.filesystem_mock import MockFileSystem
 
 
@@ -34,14 +33,9 @@ class TestPathFinder(unittest.TestCase):
         filesystem.path_to_module = lambda _: (
             'C:\\mock-checkout\\third_party\\blink\\tools\\blinkpy\\foo.py')
         finder = PathFinder(filesystem)
-        if TESTS_IN_BLINK:
-            self.assertEqual(
-                finder.layout_tests_dir(),
-                'C:\\mock-checkout\\third_party\\blink\\web_tests')
-        else:
-            self.assertEqual(
-                finder.layout_tests_dir(),
-                'C:\\mock-checkout\\third_party\\WebKit\\LayoutTests')
+        self.assertEqual(
+            finder.layout_tests_dir(),
+            'C:\\mock-checkout\\third_party\\blink\\web_tests')
 
     def test_perf_tests_dir(self):
         finder = PathFinder(MockFileSystem())

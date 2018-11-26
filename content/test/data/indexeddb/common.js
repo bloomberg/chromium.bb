@@ -74,7 +74,7 @@ function deleteAllObjectStores(db)
 }
 
 // The following functions are based on
-// WebKit/LayoutTests/fast/js/resources/js-test-pre.js
+// blink/web_tests/resources/js-test.js
 // so that the tests will look similar to the existing layout tests.
 function stringify(v)
 {
