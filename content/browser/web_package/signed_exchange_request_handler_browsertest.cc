@@ -46,6 +46,7 @@
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -433,7 +434,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
 
 enum class SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam {
   kLegacy,
-  kServiceWorkerServicification
+  kServiceWorkerServicification,
+  kNetworkService
 };
 
 class SignedExchangeRequestHandlerWithServiceWorkerBrowserTest
@@ -443,14 +445,23 @@ class SignedExchangeRequestHandlerWithServiceWorkerBrowserTest
  public:
   SignedExchangeRequestHandlerWithServiceWorkerBrowserTest() = default;
   void SetUp() override {
-    if (GetParam() ==
-        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam ::
-            kServiceWorkerServicification) {
-      feature_list_.InitWithFeatures(
-          {blink::features::kServiceWorkerServicification}, {});
-    } else {
-      feature_list_.InitWithFeatures(
-          {}, {blink::features::kServiceWorkerServicification});
+    switch (GetParam()) {
+      case SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
+          kLegacy:
+        feature_list_.InitWithFeatures(
+            {}, {blink::features::kServiceWorkerServicification,
+                 network::features::kNetworkService});
+        break;
+      case SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
+          kServiceWorkerServicification:
+        feature_list_.InitWithFeatures(
+            {blink::features::kServiceWorkerServicification},
+            {network::features::kNetworkService});
+        break;
+      case SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
+          kNetworkService:
+        feature_list_.InitAndEnableFeature(network::features::kNetworkService);
+        break;
     }
     SignedExchangeRequestHandlerBrowserTestBase::SetUp();
   }
@@ -462,16 +473,11 @@ class SignedExchangeRequestHandlerWithServiceWorkerBrowserTest
       SignedExchangeRequestHandlerWithServiceWorkerBrowserTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
-    SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
-    SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
-    testing::Values(
-        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::kLegacy,
-        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
-            kServiceWorkerServicification));
-
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
-                       Simple) {
+                       LogicalUrlInServiceWorkerScope) {
+  // SW-scope: https://test.example.org/test/
+  // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
+  // SXG logical URL: https://test.example.org/test/
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/sxg/test.example.org.public.pem.cbor");
@@ -500,8 +506,133 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   TitleWatcher title_watcher(shell()->web_contents(), title);
   title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("Generated"));
   NavigateToURL(shell(), url);
+  // The page content shoud be served from the signed exchange.
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+                       NotControlledByDistributorsSW) {
+  // SW-scope: http://127.0.0.1:PORT/sxg/
+  // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
+  // SXG logical URL: https://test.example.org/test/
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallMockCert();
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL install_sw_url = embedded_test_server()->GetURL(
+      "/sxg/no-respond-with-service-worker.html");
+
+  {
+    base::string16 title = base::ASCIIToUTF16("Done");
+    TitleWatcher title_watcher(shell()->web_contents(), title);
+    NavigateToURL(shell(), install_sw_url);
+    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  }
+
+  base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  NavigateToURL(shell(), embedded_test_server()->GetURL(
+                             "/sxg/test.example.org_test.sxg"));
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+
+  // The page must not be controlled by the service worker of the physical URL.
+  EXPECT_EQ(false, EvalJs(shell(), "!!navigator.serviceWorker.controller"));
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+                       NotControlledBySameOriginDistributorsSW) {
+  // SW-scope: https://test.example.org/scope/
+  // SXG physical URL: https://test.example.org/scope/test.example.org_test.sxg
+  // SXG logical URL: https://test.example.org/test/
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallMockCert();
+
+  InstallUrlInterceptor(GURL("https://test.example.org/scope/test.sxg"),
+                        "content/test/data/sxg/test.example.org_test.sxg");
+
+  const GURL install_sw_url = GURL(
+      "https://test.example.org/scope/no-respond-with-service-worker.html");
+
+  InstallUrlInterceptor(
+      install_sw_url,
+      "content/test/data/sxg/no-respond-with-service-worker.html");
+  InstallUrlInterceptor(
+      GURL("https://test.example.org/scope/no-respond-with-service-worker.js"),
+      "content/test/data/sxg/no-respond-with-service-worker.js");
+
+  {
+    base::string16 title = base::ASCIIToUTF16("Done");
+    TitleWatcher title_watcher(shell()->web_contents(), title);
+    NavigateToURL(shell(), install_sw_url);
+    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  }
+
+  base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  NavigateToURL(shell(), GURL("https://test.example.org/scope/test.sxg"));
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+
+  // The page must not be controlled by the service worker of the physical URL.
+  EXPECT_EQ(false, EvalJs(shell(), "!!navigator.serviceWorker.controller"));
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+                       RegisterServiceWorkerFromSignedExchange) {
+  // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
+  // SXG logical URL: https://test.example.org/test/
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallMockCert();
+
+  InstallUrlInterceptor(
+      GURL("https://test.example.org/test/publisher-service-worker.js"),
+      "content/test/data/sxg/publisher-service-worker.js");
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
+
+  {
+    base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
+    TitleWatcher title_watcher(shell()->web_contents(), title);
+    NavigateToURL(shell(), url);
+    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  }
+
+  const std::string register_sw_script =
+      "(async function() {"
+      "  try {"
+      "    const registration = await navigator.serviceWorker.register("
+      "        'publisher-service-worker.js', {scope: './'});"
+      "    window.domAutomationController.send(true);"
+      "  } catch (e) {"
+      "    window.domAutomationController.send(false);"
+      "  }"
+      "})();";
+  bool result = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
+                                          register_sw_script, &result));
+  // serviceWorker.register() fails because the document URL of
+  // ServiceWorkerProviderHost is empty.
+  EXPECT_FALSE(result);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+    SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+    testing::Values(
+        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::kLegacy,
+        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
+            kServiceWorkerServicification,
+        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
+            kNetworkService));
 
 struct SignedExchangeAcceptHeaderBrowserTestParam {
   SignedExchangeAcceptHeaderBrowserTestParam(
