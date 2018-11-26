@@ -392,6 +392,11 @@ TEST(FileManagerPathUtilTest, ExtractMountNameAndFullPath) {
   EXPECT_EQ(mount_name, downloads_mount_name);
   EXPECT_EQ(full_path, "/" + relative_path);
 
+  EXPECT_TRUE(
+      ExtractMountNameAndFullPath(downloads_path, &mount_name, &full_path));
+  EXPECT_EQ(mount_name, downloads_mount_name);
+  EXPECT_EQ(full_path, "/");
+
   EXPECT_FALSE(ExtractMountNameAndFullPath(base::FilePath("/unknown/path"),
                                            &mount_name, &full_path));
 }
