@@ -803,7 +803,7 @@ extern int translation_direction;
  * Return 1 if given translation mode is valid. Return 0 otherwise.
  */
 int EXPORT_CALL
-isValidMode(int mode);
+_lou_isValidMode(int mode);
 
 #ifdef __cplusplus
 }

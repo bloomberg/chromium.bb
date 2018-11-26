@@ -243,7 +243,7 @@ const int validTranslationModes[] = { noContractions, compbrlAtCursor, dotsIO,
 	compbrlLeftCursor, ucBrl, noUndefinedDots, partialTrans };
 
 int EXPORT_CALL
-isValidMode(int mode) {
+_lou_isValidMode(int mode) {
 	for (int i = 0; i < (sizeof(validTranslationModes) / sizeof(*validTranslationModes));
 			i++) {
 		if (validTranslationModes[i] == mode) {
