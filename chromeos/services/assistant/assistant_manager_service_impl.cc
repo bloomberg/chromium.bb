@@ -107,6 +107,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     network::NetworkConnectionTracker* network_connection_tracker)
     : action_module_(std::make_unique<action::CrosActionModule>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      chromium_api_delegate_(),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(this)),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
@@ -784,6 +785,8 @@ AssistantManagerServiceImpl::StartAssistantInternal(
   assistant_manager_internal->SetDisplayConnection(display_connection_.get());
   assistant_manager_internal->RegisterActionModule(action_module_.get());
   assistant_manager_internal->SetAssistantManagerDelegate(this);
+  assistant_manager_internal->GetFuchsiaApiHelperOrDie()->SetFuchsiaApiDelegate(
+      &chromium_api_delegate_);
   assistant_manager->AddConversationStateListener(this);
   assistant_manager->AddDeviceStateListener(this);
 
