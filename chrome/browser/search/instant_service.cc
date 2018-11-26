@@ -620,8 +620,6 @@ void InstantService::BuildThemeInfo() {
   }
 }
 
-// TODO(crbug.com/863942): Should switching default search provider retain the
-// copy of user uploaded photos?
 void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
   // Reset the pref if the feature is disabled.
   if (!features::IsCustomBackgroundsEnabled()) {
@@ -636,19 +634,8 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
   }
 
   // Attempt to get custom background URL from preferences.
-  const base::DictionaryValue* background_info =
-      pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict);
-  const base::Value* background_url =
-      background_info->FindKey(kNtpCustomBackgroundURL);
-  if (!background_url) {
-    ResetCustomBackgroundThemeInfo();
-    return;
-  }
-
-  // Verify that the custom background URL is valid.
-  GURL custom_background_url(
-      background_info->FindKey(kNtpCustomBackgroundURL)->GetString());
-  if (!custom_background_url.is_valid()) {
+  GURL custom_background_url;
+  if (!IsCustomBackgroundPrefValid(custom_background_url)) {
     ResetCustomBackgroundThemeInfo();
     return;
   }
@@ -743,6 +730,34 @@ void InstantService::FallbackToDefaultThemeInfo() {
   theme_info_->custom_background_attribution_line_1 = std::string();
   theme_info_->custom_background_attribution_line_2 = std::string();
   theme_info_->custom_background_attribution_action_url = GURL();
+}
+
+bool InstantService::IsCustomBackgroundSet() {
+  GURL custom_background_url;
+  if (!IsCustomBackgroundPrefValid(custom_background_url))
+    return false;
+
+  if (IsLocalFileUrl(custom_background_url) &&
+      !pref_service_->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool InstantService::IsCustomBackgroundPrefValid(GURL& custom_background_url) {
+  const base::DictionaryValue* background_info =
+      profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);
+  if (!background_info)
+    return false;
+
+  const base::Value* background_url =
+      background_info->FindKey(kNtpCustomBackgroundURL);
+  if (!background_url)
+    return false;
+
+  custom_background_url = GURL(background_url->GetString());
+  return custom_background_url.is_valid();
 }
 
 void InstantService::RemoveLocalBackgroundImageCopy() {

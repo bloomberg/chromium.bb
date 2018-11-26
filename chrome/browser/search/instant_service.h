@@ -132,6 +132,9 @@ class InstantService : public KeyedService,
 
   void AddValidBackdropUrlForTesting(const GURL& url) const;
 
+  // Check if a custom background has been set by the user.
+  bool IsCustomBackgroundSet();
+
  private:
   class SearchProviderObserver;
 
@@ -177,6 +180,10 @@ class InstantService : public KeyedService,
   void FallbackToDefaultThemeInfo();
 
   void RemoveLocalBackgroundImageCopy();
+
+  // Returns false if the custom background pref cannot be parsed, otherwise
+  // returns true and sets custom_background_url to the value in the pref.
+  bool IsCustomBackgroundPrefValid(GURL& custom_background_url);
 
   // Update the background pref to point to
   // chrome-search://local-ntp/background.jpg
