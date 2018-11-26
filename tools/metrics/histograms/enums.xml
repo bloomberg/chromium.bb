@@ -30021,7 +30021,6 @@ from previous Chrome versions.
   <int value="-596337171" label="disable-ash-sidebar"/>
   <int value="-593536514" label="ExperimentalTabController:enabled"/>
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
-  <int value="-584624723" label="AndroidSiteSettingsUI:enabled"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-572112724" label="DialogTouchBar:disabled"/>
   <int value="-567920515" label="disable-experimental-hotwording"/>
@@ -30102,6 +30101,7 @@ from previous Chrome versions.
   <int value="-424701311" label="SignedHTTPExchange:disabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-416660617" label="EnforceTLS13Downgrade:disabled"/>
+  <int value="-415186532" label="AndroidSiteSettingsUIRefresh:enabled"/>
   <int value="-410852857" label="ImprovedA2HS:disabled"/>
   <int value="-406850932" label="EnableEmojiContextMenu:enabled"/>
   <int value="-405380243" label="enable-encryption-migration"/>
@@ -30466,6 +30466,7 @@ from previous Chrome versions.
   <int value="303058039" label="AccountConsistency:disabled"/>
   <int value="303252119" label="AutofillExpandedPopupViews:disabled"/>
   <int value="304901781" label="NewUsbBackend:enabled"/>
+  <int value="306641800" label="AndroidSiteSettingsUIRefresh:disabled"/>
   <int value="307543404" label="disable-team-drives"/>
   <int value="313253630" label="AutofillRefreshStyleAndroid:enabled"/>
   <int value="313303258" label="WebPaymentsModifiers:disabled"/>
@@ -30780,7 +30781,6 @@ from previous Chrome versions.
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
   <int value="860336036" label="ChromeModernDesign:enabled"/>
   <int value="862453793" label="TranslateUI2016Q2:enabled"/>
-  <int value="863770274" label="AndroidSiteSettingsUI:disabled"/>
   <int value="867512869" label="mark-non-secure-as"/>
   <int value="868009556" label="AutofillUpstream:enabled"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>

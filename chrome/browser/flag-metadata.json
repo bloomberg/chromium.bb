@@ -107,8 +107,8 @@
     "expiry_milestone": 76
   },
   {
-    "name": "android-site-settings-ui",
-    // "owners": [ "your-team" ],
+    "name": "android-site-settings-ui-refresh",
+    "owners": [ "hkamila" ],
     "expiry_milestone": 76
   },
   {
