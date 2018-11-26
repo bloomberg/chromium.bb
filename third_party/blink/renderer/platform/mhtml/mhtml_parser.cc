@@ -91,7 +91,9 @@ void QuotedPrintableDecode(const char* data,
 // files.
 class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
  public:
-  static MIMEHeader* Create() { return new MIMEHeader; }
+  static MIMEHeader* Create() { return MakeGarbageCollected<MIMEHeader>(); }
+
+  MIMEHeader();
 
   enum Encoding {
     kQuotedPrintable,
@@ -125,8 +127,6 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
   void Trace(blink::Visitor* visitor) {}
 
  private:
-  MIMEHeader();
-
   static Encoding ParseContentTransferEncoding(const String&);
 
   String content_type_;

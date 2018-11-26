@@ -12,7 +12,7 @@ namespace blink {
 
 NavigatorContentUtilsClient* NavigatorContentUtilsClient::Create(
     WebLocalFrameImpl* web_frame) {
-  return new NavigatorContentUtilsClient(web_frame);
+  return MakeGarbageCollected<NavigatorContentUtilsClient>(web_frame);
 }
 
 NavigatorContentUtilsClient::NavigatorContentUtilsClient(

@@ -74,7 +74,7 @@ void DataConsumerHandleTestUtil::Thread::Initialize() {
                                 DOMWrapperWorld::WorldType::kTesting));
   }
   if (initialization_policy_ >= kWithExecutionContext) {
-    execution_context_ = new NullExecutionContext();
+    execution_context_ = MakeGarbageCollected<NullExecutionContext>();
   }
   waitable_event_->Signal();
 }

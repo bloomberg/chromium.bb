@@ -3073,8 +3073,9 @@ String AXNodeObject::NativeTextAlternative(
             RecursiveTextAlternative(*figcaption_ax_object, false, visited);
 
         if (related_objects) {
-          local_related_objects.push_back(new NameSourceRelatedObject(
-              figcaption_ax_object, text_alternative));
+          local_related_objects.push_back(
+              MakeGarbageCollected<NameSourceRelatedObject>(
+                  figcaption_ax_object, text_alternative));
           *related_objects = local_related_objects;
           local_related_objects.clear();
         }
@@ -3135,7 +3136,8 @@ String AXNodeObject::NativeTextAlternative(
             RecursiveTextAlternative(*caption_ax_object, false, visited);
         if (related_objects) {
           local_related_objects.push_back(
-              new NameSourceRelatedObject(caption_ax_object, text_alternative));
+              MakeGarbageCollected<NameSourceRelatedObject>(caption_ax_object,
+                                                            text_alternative));
           *related_objects = local_related_objects;
           local_related_objects.clear();
         }
@@ -3193,7 +3195,8 @@ String AXNodeObject::NativeTextAlternative(
             RecursiveTextAlternative(*title_ax_object, false, visited);
         if (related_objects) {
           local_related_objects.push_back(
-              new NameSourceRelatedObject(title_ax_object, text_alternative));
+              MakeGarbageCollected<NameSourceRelatedObject>(title_ax_object,
+                                                            text_alternative));
           *related_objects = local_related_objects;
           local_related_objects.clear();
         }
@@ -3227,7 +3230,8 @@ String AXNodeObject::NativeTextAlternative(
 
         if (related_objects) {
           local_related_objects.push_back(
-              new NameSourceRelatedObject(legend_ax_object, text_alternative));
+              MakeGarbageCollected<NameSourceRelatedObject>(legend_ax_object,
+                                                            text_alternative));
           *related_objects = local_related_objects;
           local_related_objects.clear();
         }
@@ -3286,7 +3290,8 @@ String AXNodeObject::NativeTextAlternative(
       if (title_ax_object) {
         if (related_objects) {
           local_related_objects.push_back(
-              new NameSourceRelatedObject(title_ax_object, text_alternative));
+              MakeGarbageCollected<NameSourceRelatedObject>(title_ax_object,
+                                                            text_alternative));
           *related_objects = local_related_objects;
           local_related_objects.clear();
         }
@@ -3454,9 +3459,11 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
         AXObjectSet visited;
         description =
             RecursiveTextAlternative(*caption_ax_object, false, visited);
-        if (related_objects)
+        if (related_objects) {
           related_objects->push_back(
-              new NameSourceRelatedObject(caption_ax_object, description));
+              MakeGarbageCollected<NameSourceRelatedObject>(caption_ax_object,
+                                                            description));
+        }
 
         if (description_sources) {
           DescriptionSource& source = description_sources->back();

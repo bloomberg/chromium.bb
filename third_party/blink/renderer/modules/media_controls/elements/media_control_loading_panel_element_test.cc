@@ -31,7 +31,8 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
     media_controls_ =
         static_cast<MediaControlsImpl*>(media_element_->GetMediaControls());
     ASSERT_NE(media_controls_, nullptr);
-    loading_element_ = new MediaControlLoadingPanelElement(*media_controls_);
+    loading_element_ =
+        MakeGarbageCollected<MediaControlLoadingPanelElement>(*media_controls_);
   }
 
  protected:

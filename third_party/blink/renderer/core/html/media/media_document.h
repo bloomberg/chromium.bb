@@ -33,12 +33,12 @@ namespace blink {
 class MediaDocument final : public HTMLDocument {
  public:
   static MediaDocument* Create(const DocumentInit& initializer) {
-    return new MediaDocument(initializer);
+    return MakeGarbageCollected<MediaDocument>(initializer);
   }
 
- private:
   MediaDocument(const DocumentInit&);
 
+ private:
   DocumentParser* CreateParser() override;
 
   void DefaultEventHandler(Event&) override;

@@ -25,11 +25,11 @@ class NavigatorPresentation final
   static NavigatorPresentation& From(Navigator&);
   static Presentation* presentation(Navigator&);
 
+  NavigatorPresentation();
+
   void Trace(blink::Visitor*) override;
 
  private:
-  NavigatorPresentation();
-
   Presentation* presentation();
 
   Member<Presentation> presentation_;

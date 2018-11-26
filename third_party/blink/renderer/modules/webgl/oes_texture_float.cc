@@ -44,7 +44,7 @@ WebGLExtensionName OESTextureFloat::GetName() const {
 }
 
 OESTextureFloat* OESTextureFloat::Create(WebGLRenderingContextBase* context) {
-  return new OESTextureFloat(context);
+  return MakeGarbageCollected<OESTextureFloat>(context);
 }
 
 bool OESTextureFloat::Supported(WebGLRenderingContextBase* context) {

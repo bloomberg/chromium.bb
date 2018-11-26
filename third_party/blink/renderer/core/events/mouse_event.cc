@@ -115,7 +115,7 @@ MouseEvent* MouseEvent::Create(ScriptState* script_state,
         initializer->ctrlKey(), initializer->altKey(), initializer->shiftKey(),
         initializer->metaKey());
   }
-  return new MouseEvent(type, initializer);
+  return MakeGarbageCollected<MouseEvent>(type, initializer);
 }
 
 MouseEvent* MouseEvent::Create(const AtomicString& event_type,
@@ -123,8 +123,9 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
                                TimeTicks platform_time_stamp,
                                SyntheticEventType synthetic_event_type,
                                WebMenuSourceType menu_source_type) {
-  return new MouseEvent(event_type, initializer, platform_time_stamp,
-                        synthetic_event_type, menu_source_type);
+  return MakeGarbageCollected<MouseEvent>(
+      event_type, initializer, platform_time_stamp, synthetic_event_type,
+      menu_source_type);
 }
 
 MouseEvent* MouseEvent::Create(const AtomicString& event_type,
@@ -159,8 +160,8 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
 
   TimeTicks timestamp = underlying_event ? underlying_event->PlatformTimeStamp()
                                          : CurrentTimeTicks();
-  MouseEvent* created_event =
-      new MouseEvent(event_type, initializer, timestamp, synthetic_type);
+  MouseEvent* created_event = MakeGarbageCollected<MouseEvent>(
+      event_type, initializer, timestamp, synthetic_type);
 
   created_event->SetTrusted(creation_scope ==
                             SimulatedClickCreationScope::kFromUserAgent);

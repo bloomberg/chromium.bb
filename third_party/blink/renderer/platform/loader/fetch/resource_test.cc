@@ -169,7 +169,8 @@ TEST(ResourceTest, RevalidationFailed) {
 
   EXPECT_EQ(original_cache_handler, resource->CacheHandler());
 
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
@@ -216,7 +217,8 @@ TEST(ResourceTest, RevalidationSucceeded) {
 
   EXPECT_EQ(original_cache_handler, resource->CacheHandler());
 
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
@@ -250,7 +252,8 @@ TEST(ResourceTest, RevalidationSucceededForResourceWithoutBody) {
   // Simulate a successful revalidation.
   resource->SetRevalidatingRequest(ResourceRequest(url));
 
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
@@ -303,7 +306,8 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
   EXPECT_EQ("custom value",
             resource->GetResponse().HttpHeaderField("x-custom"));
 
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   resource->AddClient(client, nullptr);
 
   // Perform a revalidation step.
@@ -371,7 +375,8 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   EXPECT_EQ(url, resource->LastResourceRequest().Url());
   EXPECT_EQ(original_cache_handler, resource->CacheHandler());
 
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   resource->AddClient(client, nullptr);
 
   // The revalidating request is redirected.
@@ -408,7 +413,8 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   EXPECT_TRUE(client->NotifyFinishedCalled());
 
   // Test the case where a client is added after revalidation is completed.
-  Persistent<MockResourceClient> client2 = new MockResourceClient;
+  Persistent<MockResourceClient> client2 =
+      MakeGarbageCollected<MockResourceClient>();
   auto* platform = static_cast<TestingPlatformSupportWithMockScheduler*>(
       Platform::Current());
   resource->AddClient(client2, platform->test_task_runner().get());

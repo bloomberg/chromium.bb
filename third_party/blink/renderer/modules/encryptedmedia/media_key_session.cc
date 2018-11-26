@@ -156,17 +156,17 @@ class MediaKeySession::PendingAction final
       DOMArrayBuffer* init_data) {
     DCHECK(result);
     DCHECK(init_data);
-    return new PendingAction(kGenerateRequest, result, init_data_type,
-                             init_data, String());
+    return MakeGarbageCollected<PendingAction>(
+        kGenerateRequest, result, init_data_type, init_data, String());
   }
 
   static PendingAction* CreatePendingLoadRequest(
       ContentDecryptionModuleResult* result,
       const String& session_id) {
     DCHECK(result);
-    return new PendingAction(kLoad, result,
-                             WebEncryptedMediaInitDataType::kUnknown, nullptr,
-                             session_id);
+    return MakeGarbageCollected<PendingAction>(
+        kLoad, result, WebEncryptedMediaInitDataType::kUnknown, nullptr,
+        session_id);
   }
 
   static PendingAction* CreatePendingUpdate(
@@ -174,35 +174,27 @@ class MediaKeySession::PendingAction final
       DOMArrayBuffer* data) {
     DCHECK(result);
     DCHECK(data);
-    return new PendingAction(kUpdate, result,
-                             WebEncryptedMediaInitDataType::kUnknown, data,
-                             String());
+    return MakeGarbageCollected<PendingAction>(
+        kUpdate, result, WebEncryptedMediaInitDataType::kUnknown, data,
+        String());
   }
 
   static PendingAction* CreatePendingClose(
       ContentDecryptionModuleResult* result) {
     DCHECK(result);
-    return new PendingAction(kClose, result,
-                             WebEncryptedMediaInitDataType::kUnknown, nullptr,
-                             String());
+    return MakeGarbageCollected<PendingAction>(
+        kClose, result, WebEncryptedMediaInitDataType::kUnknown, nullptr,
+        String());
   }
 
   static PendingAction* CreatePendingRemove(
       ContentDecryptionModuleResult* result) {
     DCHECK(result);
-    return new PendingAction(kRemove, result,
-                             WebEncryptedMediaInitDataType::kUnknown, nullptr,
-                             String());
+    return MakeGarbageCollected<PendingAction>(
+        kRemove, result, WebEncryptedMediaInitDataType::kUnknown, nullptr,
+        String());
   }
 
-  ~PendingAction() = default;
-
-  void Trace(blink::Visitor* visitor) {
-    visitor->Trace(result_);
-    visitor->Trace(data_);
-  }
-
- private:
   PendingAction(Type type,
                 ContentDecryptionModuleResult* result,
                 WebEncryptedMediaInitDataType init_data_type,
@@ -213,7 +205,14 @@ class MediaKeySession::PendingAction final
         init_data_type_(init_data_type),
         data_(data),
         string_data_(string_data) {}
+  ~PendingAction() = default;
 
+  void Trace(blink::Visitor* visitor) {
+    visitor->Trace(result_);
+    visitor->Trace(data_);
+  }
+
+ private:
   const Type type_;
   const Member<ContentDecryptionModuleResult> result_;
   const WebEncryptedMediaInitDataType init_data_type_;
@@ -342,7 +341,8 @@ MediaKeySession* MediaKeySession::Create(
     ScriptState* script_state,
     MediaKeys* media_keys,
     WebEncryptedMediaSessionType session_type) {
-  return new MediaKeySession(script_state, media_keys, session_type);
+  return MakeGarbageCollected<MediaKeySession>(script_state, media_keys,
+                                               session_type);
 }
 
 MediaKeySession::MediaKeySession(ScriptState* script_state,
@@ -354,7 +354,7 @@ MediaKeySession::MediaKeySession(ScriptState* script_state,
       media_keys_(media_keys),
       session_type_(session_type),
       expiration_(std::numeric_limits<double>::quiet_NaN()),
-      key_statuses_map_(new MediaKeyStatusMap()),
+      key_statuses_map_(MakeGarbageCollected<MediaKeyStatusMap>()),
       is_uninitialized_(true),
       is_callable_(false),
       is_closing_or_closed_(false),
@@ -497,8 +497,9 @@ ScriptPromise MediaKeySession::generateRequest(
   //    (Done in constructor.)
 
   // 9. Let promise be a new promise.
-  NewSessionResultPromise* result = new NewSessionResultPromise(
-      script_state, this, "MediaKeySession", "generateRequest");
+  NewSessionResultPromise* result =
+      MakeGarbageCollected<NewSessionResultPromise>(
+          script_state, this, "MediaKeySession", "generateRequest");
   ScriptPromise promise = result->Promise();
 
   // 10. Run the following steps asynchronously (done in generateRequestTask())

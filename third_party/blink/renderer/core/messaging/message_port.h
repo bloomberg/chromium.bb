@@ -58,6 +58,8 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
  public:
   static MessagePort* Create(ExecutionContext&);
+
+  explicit MessagePort(ExecutionContext&);
   ~MessagePort() override;
 
   void postMessage(ScriptState*,
@@ -130,9 +132,6 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   ::MojoHandle EntangledHandleForTesting() const;
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  explicit MessagePort(ExecutionContext&);
 
  private:
   // mojo::MessageReceiver implementation.

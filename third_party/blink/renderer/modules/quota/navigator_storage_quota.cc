@@ -45,7 +45,7 @@ NavigatorStorageQuota& NavigatorStorageQuota::From(Navigator& navigator) {
   NavigatorStorageQuota* supplement =
       Supplement<Navigator>::From<NavigatorStorageQuota>(navigator);
   if (!supplement) {
-    supplement = new NavigatorStorageQuota(navigator);
+    supplement = MakeGarbageCollected<NavigatorStorageQuota>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

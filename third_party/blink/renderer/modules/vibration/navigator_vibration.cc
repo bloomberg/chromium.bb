@@ -45,7 +45,7 @@ NavigatorVibration& NavigatorVibration::From(Navigator& navigator) {
   NavigatorVibration* navigator_vibration =
       Supplement<Navigator>::From<NavigatorVibration>(navigator);
   if (!navigator_vibration) {
-    navigator_vibration = new NavigatorVibration(navigator);
+    navigator_vibration = MakeGarbageCollected<NavigatorVibration>(navigator);
     ProvideTo(navigator, navigator_vibration);
   }
   return *navigator_vibration;

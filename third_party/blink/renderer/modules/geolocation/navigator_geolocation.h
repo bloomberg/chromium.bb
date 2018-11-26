@@ -44,14 +44,14 @@ class NavigatorGeolocation final
   static Geolocation* geolocation(Navigator&);
   Geolocation* geolocation();
 
+  explicit NavigatorGeolocation(Navigator&);
+
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override {
     return "NavigatorGeolocation";
   }
 
  private:
-  explicit NavigatorGeolocation(Navigator&);
-
   TraceWrapperMember<Geolocation> geolocation_;
 };
 

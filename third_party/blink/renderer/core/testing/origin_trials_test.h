@@ -22,7 +22,11 @@ class OriginTrialsTest : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OriginTrialsTest* Create() { return new OriginTrialsTest(); }
+  static OriginTrialsTest* Create() {
+    return MakeGarbageCollected<OriginTrialsTest>();
+  }
+
+  OriginTrialsTest() = default;
   ~OriginTrialsTest() override = default;
 
   bool normalAttribute() { return true; }
@@ -55,9 +59,6 @@ class OriginTrialsTest : public ScriptWrappable {
   static bool secureStaticMethod() { return true; }
 
   bool impliedAttribute() { return true; }
-
- private:
-  OriginTrialsTest() = default;
 };
 
 }  // namespace blink

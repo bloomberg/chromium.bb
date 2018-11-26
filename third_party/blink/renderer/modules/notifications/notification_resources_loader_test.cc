@@ -34,7 +34,7 @@ constexpr char kResourcesLoaderIcon3000x2000[] = "3000x2000.png";
 class NotificationResourcesLoaderTest : public PageTestBase {
  public:
   NotificationResourcesLoaderTest()
-      : loader_(new NotificationResourcesLoader(
+      : loader_(MakeGarbageCollected<NotificationResourcesLoader>(
             Bind(&NotificationResourcesLoaderTest::DidFetchResources,
                  WTF::Unretained(this)))) {}
 

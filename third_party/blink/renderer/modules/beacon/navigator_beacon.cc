@@ -34,7 +34,7 @@ NavigatorBeacon& NavigatorBeacon::From(Navigator& navigator) {
   NavigatorBeacon* supplement =
       Supplement<Navigator>::From<NavigatorBeacon>(navigator);
   if (!supplement) {
-    supplement = new NavigatorBeacon(navigator);
+    supplement = MakeGarbageCollected<NavigatorBeacon>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

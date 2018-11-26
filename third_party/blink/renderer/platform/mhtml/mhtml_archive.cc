@@ -230,7 +230,7 @@ MHTMLArchive* MHTMLArchive::Create(const KURL& url,
     return nullptr;  // Invalid MHTML file.
   }
 
-  MHTMLArchive* archive = new MHTMLArchive;
+  MHTMLArchive* archive = MakeGarbageCollected<MHTMLArchive>();
   archive->date_ = parser.CreationDate();
 
   size_t resources_count = resources.size();

@@ -40,7 +40,6 @@ class OESStandardDerivatives final : public WebGLExtension {
 
   WebGLExtensionName GetName() const override;
 
- private:
   explicit OESStandardDerivatives(WebGLRenderingContextBase*);
 };
 

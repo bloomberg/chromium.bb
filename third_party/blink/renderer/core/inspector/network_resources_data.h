@@ -201,8 +201,11 @@ class NetworkResourcesData final
 
   static NetworkResourcesData* Create(size_t total_buffer_size,
                                       size_t resource_buffer_size) {
-    return new NetworkResourcesData(total_buffer_size, resource_buffer_size);
+    return MakeGarbageCollected<NetworkResourcesData>(total_buffer_size,
+                                                      resource_buffer_size);
   }
+
+  NetworkResourcesData(size_t total_buffer_size, size_t resource_buffer_size);
   ~NetworkResourcesData();
 
   void ResourceCreated(ExecutionContext*,
@@ -242,8 +245,6 @@ class NetworkResourcesData final
   void Trace(blink::Visitor*);
 
  private:
-  NetworkResourcesData(size_t total_buffer_size, size_t resource_buffer_size);
-
   ResourceData* ResourceDataForRequestId(const String& request_id) const;
   void EnsureNoDataForRequestId(const String& request_id);
   bool EnsureFreeSpace(size_t);

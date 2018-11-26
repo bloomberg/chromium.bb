@@ -485,7 +485,7 @@ void ImageResource::ResponseReceived(
   DCHECK(!multipart_parser_);
   // If there's no boundary, just handle the request normally.
   if (response.IsMultipart() && !response.MultipartBoundary().IsEmpty()) {
-    multipart_parser_ = new MultipartImageResourceParser(
+    multipart_parser_ = MakeGarbageCollected<MultipartImageResourceParser>(
         response, response.MultipartBoundary(), this);
   }
 

@@ -49,7 +49,7 @@ struct SameSizeAsNodeRareData {
 };
 
 NodeMutationObserverData* NodeMutationObserverData::Create() {
-  return new NodeMutationObserverData;
+  return MakeGarbageCollected<NodeMutationObserverData>();
 }
 
 static_assert(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData),

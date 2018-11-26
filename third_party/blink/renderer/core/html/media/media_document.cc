@@ -58,13 +58,13 @@ using namespace html_names;
 class MediaDocumentParser : public RawDataDocumentParser {
  public:
   static MediaDocumentParser* Create(MediaDocument* document) {
-    return new MediaDocumentParser(document);
+    return MakeGarbageCollected<MediaDocumentParser>(document);
   }
 
- private:
   explicit MediaDocumentParser(Document* document)
       : RawDataDocumentParser(document), did_build_document_structure_(false) {}
 
+ private:
   void AppendBytes(const char*, size_t) override;
 
   void CreateDocumentStructure();

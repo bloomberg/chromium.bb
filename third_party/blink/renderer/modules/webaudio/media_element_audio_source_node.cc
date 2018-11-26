@@ -232,7 +232,7 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
   }
 
   MediaElementAudioSourceNode* node =
-      new MediaElementAudioSourceNode(context, media_element);
+      MakeGarbageCollected<MediaElementAudioSourceNode>(context, media_element);
 
   if (node) {
     media_element.SetAudioSourceNode(node);

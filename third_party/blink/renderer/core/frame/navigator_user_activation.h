@@ -24,11 +24,11 @@ class CORE_EXPORT NavigatorUserActivation final
   static UserActivation* userActivation(Navigator& navigator);
   UserActivation* userActivation();
 
+  explicit NavigatorUserActivation(Navigator&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorUserActivation(Navigator&);
-
   static NavigatorUserActivation& From(Navigator&);
 
   Member<UserActivation> user_activation_;

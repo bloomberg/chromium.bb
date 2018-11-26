@@ -47,6 +47,8 @@ class CORE_EXPORT OffscreenCanvas final
 
  public:
   static OffscreenCanvas* Create(unsigned width, unsigned height);
+
+  explicit OffscreenCanvas(const IntSize&);
   ~OffscreenCanvas() override;
   void Dispose();
 
@@ -173,7 +175,6 @@ class CORE_EXPORT OffscreenCanvas final
   int32_t memory_usage_ = 0;
 
   friend class OffscreenCanvasTest;
-  explicit OffscreenCanvas(const IntSize&);
   using ContextFactoryVector =
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
   static ContextFactoryVector& RenderingContextFactories();

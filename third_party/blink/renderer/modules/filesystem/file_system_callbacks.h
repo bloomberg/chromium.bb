@@ -316,15 +316,17 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
   class OnDidReadMetadataV8Impl : public OnDidReadMetadataCallback {
    public:
     static OnDidReadMetadataV8Impl* Create(V8MetadataCallback* callback) {
-      return callback ? new OnDidReadMetadataV8Impl(callback) : nullptr;
+      return callback ? MakeGarbageCollected<OnDidReadMetadataV8Impl>(callback)
+                      : nullptr;
     }
+
+    OnDidReadMetadataV8Impl(V8MetadataCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
+
     void Trace(blink::Visitor*) override;
     void OnSuccess(Metadata*) override;
 
    private:
-    OnDidReadMetadataV8Impl(V8MetadataCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
     Member<V8PersistentCallbackInterface<V8MetadataCallback>> callback_;
   };
 

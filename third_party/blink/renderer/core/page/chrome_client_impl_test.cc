@@ -283,8 +283,8 @@ TEST_F(FileChooserQueueTest, DerefQueuedChooser) {
   base::RunLoop run_loop;
   MockFileChooser chooser(&frame->GetInterfaceProvider(),
                           run_loop.QuitClosure());
-  auto* client1 = new MockFileChooserClient(frame);
-  auto* client2 = new MockFileChooserClient(frame);
+  auto* client1 = MakeGarbageCollected<MockFileChooserClient>(frame);
+  auto* client2 = MakeGarbageCollected<MockFileChooserClient>(frame);
   mojom::blink::FileChooserParams params;
   params.title = g_empty_string;
   scoped_refptr<FileChooser> chooser1 = FileChooser::Create(client1, params);

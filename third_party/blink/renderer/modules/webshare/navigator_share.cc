@@ -85,7 +85,7 @@ NavigatorShare& NavigatorShare::From(Navigator& navigator) {
   NavigatorShare* supplement =
       Supplement<Navigator>::From<NavigatorShare>(navigator);
   if (!supplement) {
-    supplement = new NavigatorShare();
+    supplement = MakeGarbageCollected<NavigatorShare>();
     ProvideTo(navigator, supplement);
   }
   return *supplement;
@@ -144,7 +144,8 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ShareClientImpl* client = new ShareClientImpl(this, resolver);
+  ShareClientImpl* client =
+      MakeGarbageCollected<ShareClientImpl>(this, resolver);
   clients_.insert(client);
   ScriptPromise promise = resolver->Promise();
 

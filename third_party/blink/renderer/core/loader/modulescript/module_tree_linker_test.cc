@@ -201,7 +201,8 @@ class ModuleTreeLinkerTest : public PageTestBase {
 void ModuleTreeLinkerTest::SetUp() {
   PageTestBase::SetUp(IntSize(500, 500));
   ScriptState* script_state = ToScriptStateForMainWorld(&GetFrame());
-  modulator_ = new ModuleTreeLinkerTestModulator(script_state);
+  modulator_ =
+      MakeGarbageCollected<ModuleTreeLinkerTestModulator>(script_state);
 }
 
 TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {

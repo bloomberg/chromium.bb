@@ -56,7 +56,7 @@ MediaStream* MediaStream::Create(ExecutionContext* context) {
   MediaStreamTrackVector audio_tracks;
   MediaStreamTrackVector video_tracks;
 
-  return new MediaStream(context, audio_tracks, video_tracks);
+  return MakeGarbageCollected<MediaStream>(context, audio_tracks, video_tracks);
 }
 
 MediaStream* MediaStream::Create(ExecutionContext* context,
@@ -72,7 +72,7 @@ MediaStream* MediaStream::Create(ExecutionContext* context,
   for (MediaStreamTrack* track : stream->video_tracks_)
     ProcessTrack(track, video_tracks);
 
-  return new MediaStream(context, audio_tracks, video_tracks);
+  return MakeGarbageCollected<MediaStream>(context, audio_tracks, video_tracks);
 }
 
 MediaStream* MediaStream::Create(ExecutionContext* context,
@@ -84,20 +84,20 @@ MediaStream* MediaStream::Create(ExecutionContext* context,
     ProcessTrack(track, track->kind() == "audio" ? audio_tracks : video_tracks);
   }
 
-  return new MediaStream(context, audio_tracks, video_tracks);
+  return MakeGarbageCollected<MediaStream>(context, audio_tracks, video_tracks);
 }
 
 MediaStream* MediaStream::Create(ExecutionContext* context,
                                  MediaStreamDescriptor* stream_descriptor) {
-  return new MediaStream(context, stream_descriptor);
+  return MakeGarbageCollected<MediaStream>(context, stream_descriptor);
 }
 
 MediaStream* MediaStream::Create(ExecutionContext* context,
                                  MediaStreamDescriptor* stream_descriptor,
                                  const MediaStreamTrackVector& audio_tracks,
                                  const MediaStreamTrackVector& video_tracks) {
-  return new MediaStream(context, stream_descriptor, audio_tracks,
-                         video_tracks);
+  return MakeGarbageCollected<MediaStream>(context, stream_descriptor,
+                                           audio_tracks, video_tracks);
 }
 
 MediaStream::MediaStream(ExecutionContext* context,

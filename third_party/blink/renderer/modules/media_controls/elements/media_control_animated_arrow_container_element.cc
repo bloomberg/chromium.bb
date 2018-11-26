@@ -37,7 +37,8 @@ void MediaControlAnimatedArrowContainerElement::AnimatedArrow::ShowInternal() {
   last_arrow_ = getElementById("arrow-3");
   svg_container_ = getElementById("jump");
 
-  event_listener_ = new MediaControlAnimationEventListener(this);
+  event_listener_ =
+      MakeGarbageCollected<MediaControlAnimationEventListener>(this);
 }
 
 void MediaControlAnimatedArrowContainerElement::AnimatedArrow::

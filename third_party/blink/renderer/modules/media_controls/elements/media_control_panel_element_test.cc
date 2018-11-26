@@ -28,7 +28,8 @@ class MediaControlPanelElementTest : public PageTestBase {
     media_controls_ =
         static_cast<MediaControlsImpl*>(media_element_->GetMediaControls());
     ASSERT_NE(media_controls_, nullptr);
-    panel_element_ = new MediaControlPanelElement(*media_controls_);
+    panel_element_ =
+        MakeGarbageCollected<MediaControlPanelElement>(*media_controls_);
   }
 
  protected:

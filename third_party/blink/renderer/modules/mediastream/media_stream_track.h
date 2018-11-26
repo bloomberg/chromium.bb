@@ -57,6 +57,12 @@ class MODULES_EXPORT MediaStreamTrack
 
  public:
   static MediaStreamTrack* Create(ExecutionContext*, MediaStreamComponent*);
+
+  MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
+  MediaStreamTrack(ExecutionContext*,
+                   MediaStreamComponent*,
+                   MediaStreamSource::ReadyState,
+                   bool stopped);
   ~MediaStreamTrack() override;
 
   String kind() const;
@@ -111,12 +117,6 @@ class MODULES_EXPORT MediaStreamTrack
 
  private:
   friend class CanvasCaptureMediaStreamTrack;
-
-  MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
-  MediaStreamTrack(ExecutionContext*,
-                   MediaStreamComponent*,
-                   MediaStreamSource::ReadyState,
-                   bool stopped);
 
   // MediaStreamSourceObserver
   void SourceChangedState() override;

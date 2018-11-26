@@ -18,7 +18,7 @@ MediaCapabilities* NavigatorMediaCapabilities::mediaCapabilities(
   NavigatorMediaCapabilities& self =
       NavigatorMediaCapabilities::From(navigator);
   if (!self.capabilities_)
-    self.capabilities_ = new MediaCapabilities();
+    self.capabilities_ = MakeGarbageCollected<MediaCapabilities>();
   return self.capabilities_.Get();
 }
 
@@ -35,7 +35,7 @@ NavigatorMediaCapabilities& NavigatorMediaCapabilities::From(
   NavigatorMediaCapabilities* supplement =
       Supplement<Navigator>::From<NavigatorMediaCapabilities>(navigator);
   if (!supplement) {
-    supplement = new NavigatorMediaCapabilities(navigator);
+    supplement = MakeGarbageCollected<NavigatorMediaCapabilities>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

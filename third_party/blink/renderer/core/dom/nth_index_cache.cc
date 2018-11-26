@@ -157,7 +157,8 @@ void NthIndexCache::CacheNthIndexDataForParent(Element& element) {
   ParentMap::AddResult add_result =
       parent_map_->insert(element.parentNode(), nullptr);
   DCHECK(add_result.is_new_entry);
-  add_result.stored_value->value = new NthIndexData(*element.parentNode());
+  add_result.stored_value->value =
+      MakeGarbageCollected<NthIndexData>(*element.parentNode());
 }
 
 NthIndexCache::IndexByType& NthIndexCache::EnsureTypeIndexMap(
@@ -179,8 +180,8 @@ void NthIndexCache::CacheNthOfTypeIndexDataForParent(Element& element) {
   IndexByType::AddResult add_result = EnsureTypeIndexMap(*element.parentNode())
                                           .insert(element.tagName(), nullptr);
   DCHECK(add_result.is_new_entry);
-  add_result.stored_value->value =
-      new NthIndexData(*element.parentNode(), element.TagQName());
+  add_result.stored_value->value = MakeGarbageCollected<NthIndexData>(
+      *element.parentNode(), element.TagQName());
 }
 
 unsigned NthIndexData::NthIndex(Element& element) const {

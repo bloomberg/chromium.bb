@@ -50,6 +50,11 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
                                      const OfflineAudioContextOptions*,
                                      ExceptionState&);
 
+  OfflineAudioContext(Document*,
+                      unsigned number_of_channels,
+                      size_t number_of_frames,
+                      float sample_rate,
+                      ExceptionState&);
   ~OfflineAudioContext() override;
 
   void Trace(blink::Visitor*) override;
@@ -97,12 +102,6 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   bool HasPendingActivity() const final;
 
  private:
-  OfflineAudioContext(Document*,
-                      unsigned number_of_channels,
-                      size_t number_of_frames,
-                      float sample_rate,
-                      ExceptionState&);
-
   // Fetch directly the destination handler.
   OfflineAudioDestinationHandler& DestinationHandler();
 

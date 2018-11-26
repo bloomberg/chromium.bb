@@ -108,7 +108,7 @@ MediaSession::MediaSession(ExecutionContext* execution_context)
       client_binding_(this) {}
 
 MediaSession* MediaSession::Create(ExecutionContext* execution_context) {
-  return new MediaSession(execution_context);
+  return MakeGarbageCollected<MediaSession>(execution_context);
 }
 
 void MediaSession::Dispose() {

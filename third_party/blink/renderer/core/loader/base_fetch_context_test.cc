@@ -128,10 +128,11 @@ class MockBaseFetchContext final : public BaseFetchContext {
 class BaseFetchContextTest : public testing::Test {
  protected:
   void SetUp() override {
-    execution_context_ = new NullExecutionContext();
+    execution_context_ = MakeGarbageCollected<NullExecutionContext>();
     static_cast<NullExecutionContext*>(execution_context_.Get())
         ->SetUpSecurityContext();
-    fetch_context_ = new MockBaseFetchContext(execution_context_);
+    fetch_context_ =
+        MakeGarbageCollected<MockBaseFetchContext>(execution_context_);
   }
 
   Persistent<ExecutionContext> execution_context_;

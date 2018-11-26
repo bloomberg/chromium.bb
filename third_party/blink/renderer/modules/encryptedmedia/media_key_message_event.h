@@ -38,14 +38,19 @@ class MediaKeyMessageEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  MediaKeyMessageEvent();
+  MediaKeyMessageEvent(const AtomicString& type,
+                       const MediaKeyMessageEventInit* initializer);
   ~MediaKeyMessageEvent() override;
 
-  static MediaKeyMessageEvent* Create() { return new MediaKeyMessageEvent; }
+  static MediaKeyMessageEvent* Create() {
+    return MakeGarbageCollected<MediaKeyMessageEvent>();
+  }
 
   static MediaKeyMessageEvent* Create(
       const AtomicString& type,
       const MediaKeyMessageEventInit* initializer) {
-    return new MediaKeyMessageEvent(type, initializer);
+    return MakeGarbageCollected<MediaKeyMessageEvent>(type, initializer);
   }
 
   const AtomicString& InterfaceName() const override;
@@ -56,10 +61,6 @@ class MediaKeyMessageEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  MediaKeyMessageEvent();
-  MediaKeyMessageEvent(const AtomicString& type,
-                       const MediaKeyMessageEventInit* initializer);
-
   String message_type_;
   Member<DOMArrayBuffer> message_;
 };

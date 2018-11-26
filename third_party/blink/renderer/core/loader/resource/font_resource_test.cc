@@ -120,7 +120,8 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   // on future CSSFontFaceSrcValue::Fetch calls. This tests wants to ensure
   // correct behavior in the case where we reuse a FontResource without it being
   // a "cache hit" in ResourceFetcher's view.
-  Persistent<MockFontResourceClient> client = new MockFontResourceClient;
+  Persistent<MockFontResourceClient> client =
+      MakeGarbageCollected<MockFontResourceClient>();
   FontResource& resource = src_value->Fetch(&document, client);
 
   fetcher->StartLoad(&resource);
@@ -141,7 +142,8 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   EXPECT_FALSE(client->FontLoadLongLimitExceededCalled());
 
   // Add client now, FontLoadShortLimitExceeded() should be called.
-  Persistent<MockFontResourceClient> client2 = new MockFontResourceClient;
+  Persistent<MockFontResourceClient> client2 =
+      MakeGarbageCollected<MockFontResourceClient>();
   FontResource& resource2 = src_value->Fetch(&document, client2);
   EXPECT_EQ(&resource, &resource2);
   EXPECT_TRUE(client2->FontLoadShortLimitExceededCalled());
@@ -152,7 +154,8 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   EXPECT_TRUE(client->FontLoadLongLimitExceededCalled());
 
   // Add client now, both callbacks should be called.
-  Persistent<MockFontResourceClient> client3 = new MockFontResourceClient;
+  Persistent<MockFontResourceClient> client3 =
+      MakeGarbageCollected<MockFontResourceClient>();
   FontResource& resource3 = src_value->Fetch(&document, client3);
   EXPECT_EQ(&resource, &resource3);
   EXPECT_TRUE(client3->FontLoadShortLimitExceededCalled());

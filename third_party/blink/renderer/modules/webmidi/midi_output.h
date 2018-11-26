@@ -54,6 +54,14 @@ class MIDIOutput final : public MIDIPort {
                             const String& name,
                             const String& version,
                             midi::mojom::PortState);
+
+  MIDIOutput(MIDIAccess*,
+             unsigned port_index,
+             const String& id,
+             const String& manufacturer,
+             const String& name,
+             const String& version,
+             midi::mojom::PortState);
   ~MIDIOutput() override;
 
   void send(NotShared<DOMUint8Array>, double timestamp, ExceptionState&);
@@ -66,14 +74,6 @@ class MIDIOutput final : public MIDIPort {
   void Trace(blink::Visitor*) override;
 
  private:
-  MIDIOutput(MIDIAccess*,
-             unsigned port_index,
-             const String& id,
-             const String& manufacturer,
-             const String& name,
-             const String& version,
-             midi::mojom::PortState);
-
   void DidOpen(bool opened) override;
   void SendInternal(DOMUint8Array*, base::TimeTicks timestamp, ExceptionState&);
 

@@ -28,6 +28,8 @@ class NetworkInformation final
 
  public:
   static NetworkInformation* Create(ExecutionContext*);
+
+  explicit NetworkInformation(ExecutionContext*);
   ~NetworkInformation() override;
 
   String type() const;
@@ -70,7 +72,6 @@ class NetworkInformation final
                             const RegisteredEventListener&) final;
 
  private:
-  explicit NetworkInformation(ExecutionContext*);
   void StartObserving();
   void StopObserving();
 

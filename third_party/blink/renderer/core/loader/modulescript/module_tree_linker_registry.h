@@ -20,16 +20,17 @@ class CORE_EXPORT ModuleTreeLinkerRegistry
       public NameClient {
  public:
   static ModuleTreeLinkerRegistry* Create() {
-    return new ModuleTreeLinkerRegistry;
+    return MakeGarbageCollected<ModuleTreeLinkerRegistry>();
   }
+
+  ModuleTreeLinkerRegistry() = default;
+
   void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override {
     return "ModuleTreeLinkerRegistry";
   }
 
  private:
-  ModuleTreeLinkerRegistry() = default;
-
   friend class ModuleTreeLinker;
   void AddFetcher(ModuleTreeLinker*);
   void ReleaseFinishedFetcher(ModuleTreeLinker*);

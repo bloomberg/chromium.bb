@@ -34,7 +34,8 @@ class MediaControlScrubbingMessageElementTest : public PageTestBase {
         static_cast<MediaControlsImpl*>(media_element_->GetMediaControls());
     ASSERT_NE(nullptr, media_controls_);
     message_element_ =
-        new MediaControlScrubbingMessageElement(*media_controls_);
+        MakeGarbageCollected<MediaControlScrubbingMessageElement>(
+            *media_controls_);
   }
 
  protected:

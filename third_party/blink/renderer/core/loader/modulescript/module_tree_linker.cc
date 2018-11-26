@@ -27,9 +27,9 @@ void ModuleTreeLinker::Fetch(
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client) {
-  ModuleTreeLinker* fetcher =
-      new ModuleTreeLinker(fetch_client_settings_object, destination, modulator,
-                           custom_fetch_type, registry, client);
+  ModuleTreeLinker* fetcher = MakeGarbageCollected<ModuleTreeLinker>(
+      fetch_client_settings_object, destination, modulator, custom_fetch_type,
+      registry, client);
   registry->AddFetcher(fetcher);
   fetcher->FetchRoot(url, options);
   DCHECK(fetcher->IsFetching());
@@ -44,9 +44,9 @@ void ModuleTreeLinker::FetchDescendantsForInlineScript(
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client) {
   DCHECK(module_script);
-  ModuleTreeLinker* fetcher =
-      new ModuleTreeLinker(fetch_client_settings_object, destination, modulator,
-                           custom_fetch_type, registry, client);
+  ModuleTreeLinker* fetcher = MakeGarbageCollected<ModuleTreeLinker>(
+      fetch_client_settings_object, destination, modulator, custom_fetch_type,
+      registry, client);
   registry->AddFetcher(fetcher);
   fetcher->FetchRootInline(module_script);
   DCHECK(fetcher->IsFetching());

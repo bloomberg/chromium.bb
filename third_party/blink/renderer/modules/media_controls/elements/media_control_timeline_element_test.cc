@@ -32,8 +32,8 @@ class MediaControlTimelineElementTest : public PageTestBase {
     PageTestBase::SetUp(IntSize(100, 100));
 
     video_ = HTMLVideoElement::Create(GetDocument());
-    controls_ = new MediaControlsImpl(*video_);
-    timeline_ = new MediaControlTimelineElement(*controls_);
+    controls_ = MakeGarbageCollected<MediaControlsImpl>(*video_);
+    timeline_ = MakeGarbageCollected<MediaControlTimelineElement>(*controls_);
 
     controls_->InitializeControls();
 

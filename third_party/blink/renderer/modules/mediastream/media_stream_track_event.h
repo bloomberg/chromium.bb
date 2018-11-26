@@ -44,6 +44,10 @@ class MediaStreamTrackEvent final : public Event {
   static MediaStreamTrackEvent* Create(const AtomicString& type,
                                        const MediaStreamTrackEventInit*);
 
+  MediaStreamTrackEvent(const AtomicString& type, MediaStreamTrack*);
+  MediaStreamTrackEvent(const AtomicString& type,
+                        const MediaStreamTrackEventInit*);
+
   MediaStreamTrack* track() const;
 
   // Event
@@ -52,10 +56,6 @@ class MediaStreamTrackEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  MediaStreamTrackEvent(const AtomicString& type, MediaStreamTrack*);
-  MediaStreamTrackEvent(const AtomicString& type,
-                        const MediaStreamTrackEventInit*);
-
   Member<MediaStreamTrack> track_;
 };
 

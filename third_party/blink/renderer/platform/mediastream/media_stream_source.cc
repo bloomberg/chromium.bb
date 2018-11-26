@@ -41,8 +41,8 @@ MediaStreamSource* MediaStreamSource::Create(const String& id,
                                              bool remote,
                                              ReadyState ready_state,
                                              bool requires_consumer) {
-  return new MediaStreamSource(id, type, name, remote, ready_state,
-                               requires_consumer);
+  return MakeGarbageCollected<MediaStreamSource>(
+      id, type, name, remote, ready_state, requires_consumer);
 }
 
 MediaStreamSource::MediaStreamSource(const String& id,

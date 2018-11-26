@@ -252,6 +252,13 @@ class DevToolsSession::Notification {
         new Notification(std::move(notification)));
   }
 
+  explicit Notification(std::unique_ptr<protocol::Serializable> notification)
+      : blink_notification_(std::move(notification)) {}
+
+  explicit Notification(
+      std::unique_ptr<v8_inspector::StringBuffer> notification)
+      : v8_notification_(std::move(notification)) {}
+
   String Serialize() {
     if (blink_notification_) {
       serialized_ = blink_notification_->serialize();
@@ -264,13 +271,6 @@ class DevToolsSession::Notification {
   }
 
  private:
-  explicit Notification(std::unique_ptr<protocol::Serializable> notification)
-      : blink_notification_(std::move(notification)) {}
-
-  explicit Notification(
-      std::unique_ptr<v8_inspector::StringBuffer> notification)
-      : v8_notification_(std::move(notification)) {}
-
   std::unique_ptr<protocol::Serializable> blink_notification_;
   std::unique_ptr<v8_inspector::StringBuffer> v8_notification_;
   String serialized_;

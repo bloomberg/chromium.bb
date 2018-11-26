@@ -35,10 +35,11 @@ class MODULES_EXPORT NavigatorServiceWorker final
   static ServiceWorkerContainer* serviceWorker(ScriptState*,
                                                Navigator&,
                                                String& error_message);
+
+  explicit NavigatorServiceWorker(Navigator&);
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorServiceWorker(Navigator&);
   ServiceWorkerContainer* serviceWorker(LocalFrame*, ExceptionState&);
   ServiceWorkerContainer* serviceWorker(LocalFrame*, String& error_message);
 };

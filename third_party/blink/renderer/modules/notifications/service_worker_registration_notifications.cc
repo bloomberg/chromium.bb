@@ -128,10 +128,11 @@ void ServiceWorkerRegistrationNotifications::PrepareShow(
     ScriptPromiseResolver* resolver) {
   scoped_refptr<const SecurityOrigin> origin =
       GetExecutionContext()->GetSecurityOrigin();
-  NotificationResourcesLoader* loader = new NotificationResourcesLoader(
-      WTF::Bind(&ServiceWorkerRegistrationNotifications::DidLoadResources,
-                WrapWeakPersistent(this), std::move(origin), data->Clone(),
-                WrapPersistent(resolver)));
+  NotificationResourcesLoader* loader =
+      MakeGarbageCollected<NotificationResourcesLoader>(
+          WTF::Bind(&ServiceWorkerRegistrationNotifications::DidLoadResources,
+                    WrapWeakPersistent(this), std::move(origin), data->Clone(),
+                    WrapPersistent(resolver)));
   loaders_.insert(loader);
   loader->Start(GetExecutionContext(), *data);
 }

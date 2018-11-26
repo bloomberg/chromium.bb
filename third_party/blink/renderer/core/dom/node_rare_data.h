@@ -42,6 +42,8 @@ class NodeMutationObserverData final
  public:
   static NodeMutationObserverData* Create();
 
+  NodeMutationObserverData() = default;
+
   const HeapVector<TraceWrapperMember<MutationObserverRegistration>>&
   Registry() {
     return registry_;
@@ -60,8 +62,6 @@ class NodeMutationObserverData final
   void Trace(blink::Visitor* visitor);
 
  private:
-  NodeMutationObserverData() = default;
-
   HeapVector<TraceWrapperMember<MutationObserverRegistration>> registry_;
   HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>
       transient_registry_;
@@ -120,7 +120,16 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
                      public NodeRareDataBase {
  public:
   static NodeRareData* Create(NodeRenderingData* node_layout_data) {
-    return new NodeRareData(node_layout_data);
+    return MakeGarbageCollected<NodeRareData>(node_layout_data);
+  }
+
+  explicit NodeRareData(NodeRenderingData* node_layout_data)
+      : NodeRareDataBase(node_layout_data),
+        connected_frame_count_(0),
+        element_flags_(0),
+        restyle_flags_(0),
+        is_element_rare_data_(false) {
+    CHECK_NE(node_layout_data, nullptr);
   }
 
   void ClearNodeLists() { node_lists_.Clear(); }
@@ -185,16 +194,6 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   void Trace(blink::Visitor*);
   void TraceAfterDispatch(blink::Visitor*);
   void FinalizeGarbageCollectedObject();
-
- protected:
-  explicit NodeRareData(NodeRenderingData* node_layout_data)
-      : NodeRareDataBase(node_layout_data),
-        connected_frame_count_(0),
-        element_flags_(0),
-        restyle_flags_(0),
-        is_element_rare_data_(false) {
-    CHECK_NE(node_layout_data, nullptr);
-  }
 
  private:
   NodeListsNodeData& CreateNodeLists();

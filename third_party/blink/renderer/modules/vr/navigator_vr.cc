@@ -51,7 +51,7 @@ NavigatorVR* NavigatorVR::From(Document& document) {
 NavigatorVR& NavigatorVR::From(Navigator& navigator) {
   NavigatorVR* supplement = Supplement<Navigator>::From<NavigatorVR>(navigator);
   if (!supplement) {
-    supplement = new NavigatorVR(navigator);
+    supplement = MakeGarbageCollected<NavigatorVR>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

@@ -115,6 +115,10 @@ class OscillatorNode final : public AudioScheduledSourceNode {
   static OscillatorNode* Create(BaseAudioContext*,
                                 const OscillatorOptions*,
                                 ExceptionState&);
+
+  OscillatorNode(BaseAudioContext&,
+                 const String& oscillator_type,
+                 PeriodicWave* wave_table);
   void Trace(blink::Visitor*) override;
 
   String type() const;
@@ -124,9 +128,6 @@ class OscillatorNode final : public AudioScheduledSourceNode {
   void setPeriodicWave(PeriodicWave*);
 
  private:
-  OscillatorNode(BaseAudioContext&,
-                 const String& oscillator_type,
-                 PeriodicWave* wave_table);
   OscillatorHandler& GetOscillatorHandler() const;
 
   Member<AudioParam> frequency_;

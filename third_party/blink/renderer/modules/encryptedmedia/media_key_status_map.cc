@@ -21,9 +21,12 @@ class MediaKeyStatusMap::MapEntry final
     : public GarbageCollectedFinalized<MediaKeyStatusMap::MapEntry> {
  public:
   static MapEntry* Create(WebData key_id, const String& status) {
-    return new MapEntry(key_id, status);
+    return MakeGarbageCollected<MapEntry>(key_id, status);
   }
 
+  MapEntry(WebData key_id, const String& status)
+      : key_id_(DOMArrayBuffer::Create(scoped_refptr<SharedBuffer>(key_id))),
+        status_(status) {}
   virtual ~MapEntry() = default;
 
   DOMArrayBuffer* KeyId() const { return key_id_.Get(); }
@@ -60,10 +63,6 @@ class MediaKeyStatusMap::MapEntry final
   virtual void Trace(blink::Visitor* visitor) { visitor->Trace(key_id_); }
 
  private:
-  MapEntry(WebData key_id, const String& status)
-      : key_id_(DOMArrayBuffer::Create(scoped_refptr<SharedBuffer>(key_id))),
-        status_(status) {}
-
   const Member<DOMArrayBuffer> key_id_;
   const String status_;
 };
@@ -149,7 +148,7 @@ ScriptValue MediaKeyStatusMap::get(ScriptState* script_state,
 
 PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource*
 MediaKeyStatusMap::StartIteration(ScriptState*, ExceptionState&) {
-  return new MapIterationSource(this);
+  return MakeGarbageCollected<MapIterationSource>(this);
 }
 
 void MediaKeyStatusMap::Trace(blink::Visitor* visitor) {

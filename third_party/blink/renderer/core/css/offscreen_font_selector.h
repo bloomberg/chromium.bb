@@ -22,8 +22,10 @@ class FontDescription;
 class CORE_EXPORT OffscreenFontSelector : public FontSelector {
  public:
   static OffscreenFontSelector* Create(ExecutionContext* context) {
-    return new OffscreenFontSelector(context);
+    return MakeGarbageCollected<OffscreenFontSelector>(context);
   }
+
+  explicit OffscreenFontSelector(ExecutionContext*);
   ~OffscreenFontSelector() override;
 
   unsigned Version() const override { return 1; }
@@ -64,8 +66,6 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
   void Trace(blink::Visitor*) override;
 
  protected:
-  explicit OffscreenFontSelector(ExecutionContext*);
-
   void DispatchInvalidationCallbacks();
 
  private:

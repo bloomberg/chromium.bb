@@ -44,7 +44,7 @@ WebGLExtensionName OESVertexArrayObject::GetName() const {
 
 OESVertexArrayObject* OESVertexArrayObject::Create(
     WebGLRenderingContextBase* context) {
-  return new OESVertexArrayObject(context);
+  return MakeGarbageCollected<OESVertexArrayObject>(context);
 }
 
 WebGLVertexArrayObjectOES* OESVertexArrayObject::createVertexArrayOES() {

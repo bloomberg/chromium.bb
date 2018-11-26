@@ -37,8 +37,8 @@ class NotificationImageLoaderTest : public PageTestBase {
   NotificationImageLoaderTest()
       :  // Use an arbitrary type, since it only affects which UMA bucket we
          // use.
-        loader_(
-            new NotificationImageLoader(NotificationImageLoader::Type::kIcon)) {
+        loader_(MakeGarbageCollected<NotificationImageLoader>(
+            NotificationImageLoader::Type::kIcon)) {
     EnablePlatform();
   }
 

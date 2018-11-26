@@ -586,7 +586,7 @@ void MutableCSSPropertyValueSet::RemoveEquivalentProperties(
 }
 
 MutableCSSPropertyValueSet* CSSPropertyValueSet::MutableCopy() const {
-  return new MutableCSSPropertyValueSet(*this);
+  return MakeGarbageCollected<MutableCSSPropertyValueSet>(*this);
 }
 
 MutableCSSPropertyValueSet* CSSPropertyValueSet::CopyPropertiesInSet(
@@ -664,13 +664,13 @@ void CSSPropertyValueSet::ShowStyle() {
 
 MutableCSSPropertyValueSet* MutableCSSPropertyValueSet::Create(
     CSSParserMode css_parser_mode) {
-  return new MutableCSSPropertyValueSet(css_parser_mode);
+  return MakeGarbageCollected<MutableCSSPropertyValueSet>(css_parser_mode);
 }
 
 MutableCSSPropertyValueSet* MutableCSSPropertyValueSet::Create(
     const CSSPropertyValue* properties,
     unsigned count) {
-  return new MutableCSSPropertyValueSet(properties, count);
+  return MakeGarbageCollected<MutableCSSPropertyValueSet>(properties, count);
 }
 
 void CSSLazyPropertyParser::Trace(blink::Visitor* visitor) {}

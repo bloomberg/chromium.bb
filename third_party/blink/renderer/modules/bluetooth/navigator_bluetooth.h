@@ -30,11 +30,11 @@ class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
   // IDL exposed interface:
   Bluetooth* bluetooth();
 
+  explicit NavigatorBluetooth(Navigator&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorBluetooth(Navigator&);
-
   Member<Bluetooth> bluetooth_;
 };
 

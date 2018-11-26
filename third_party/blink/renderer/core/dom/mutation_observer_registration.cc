@@ -40,8 +40,8 @@ MutationObserverRegistration* MutationObserverRegistration::Create(
     Node* registration_node,
     MutationObserverOptions options,
     const HashSet<AtomicString>& attribute_filter) {
-  return new MutationObserverRegistration(observer, registration_node, options,
-                                          attribute_filter);
+  return MakeGarbageCollected<MutationObserverRegistration>(
+      observer, registration_node, options, attribute_filter);
 }
 
 MutationObserverRegistration::MutationObserverRegistration(

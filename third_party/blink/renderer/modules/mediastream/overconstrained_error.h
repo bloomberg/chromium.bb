@@ -17,13 +17,13 @@ class OverconstrainedError final : public ScriptWrappable {
   static OverconstrainedError* Create(const String& constraint,
                                       const String& message);
 
+  OverconstrainedError(const String& constraint, const String& message);
+
   String name() const { return "OverconstrainedError"; }
   const String& constraint() const { return constraint_; }
   const String& message() const { return message_; }
 
  private:
-  OverconstrainedError(const String& constraint, const String& message);
-
   String constraint_;
   String message_;
 };

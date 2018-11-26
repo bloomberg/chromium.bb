@@ -83,7 +83,9 @@ class MockIdleTask : public ScriptedIdleTaskController::IdleTask {
 
 class ScriptedIdleTaskControllerTest : public testing::Test {
  public:
-  void SetUp() override { execution_context_ = new NullExecutionContext(); }
+  void SetUp() override {
+    execution_context_ = MakeGarbageCollected<NullExecutionContext>();
+  }
 
  protected:
   Persistent<ExecutionContext> execution_context_;

@@ -51,7 +51,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
     kPositionless,
   };
 
-  static MouseEvent* Create() { return new MouseEvent; }
+  static MouseEvent* Create() { return MakeGarbageCollected<MouseEvent>(); }
 
   static MouseEvent* Create(const AtomicString& event_type,
                             const MouseEventInit*,
@@ -68,6 +68,14 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
                             Event* underlying_event,
                             SimulatedClickCreationScope);
 
+  MouseEvent(const AtomicString& type,
+             const MouseEventInit*,
+             TimeTicks platform_time_stamp,
+             SyntheticEventType = kRealOrIndistinguishable,
+             WebMenuSourceType = kMenuSourceNone);
+  MouseEvent(const AtomicString& type, const MouseEventInit* init)
+      : MouseEvent(type, init, CurrentTimeTicks()) {}
+  MouseEvent();
   ~MouseEvent() override;
 
   static unsigned short WebInputEventModifiersToButtons(unsigned modifiers);
@@ -194,17 +202,6 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   void Trace(blink::Visitor*) override;
 
  protected:
-  MouseEvent(const AtomicString& type,
-             const MouseEventInit*,
-             TimeTicks platform_time_stamp,
-             SyntheticEventType = kRealOrIndistinguishable,
-             WebMenuSourceType = kMenuSourceNone);
-
-  MouseEvent(const AtomicString& type, const MouseEventInit* init)
-      : MouseEvent(type, init, CurrentTimeTicks()) {}
-
-  MouseEvent();
-
   short RawButton() const { return button_; }
 
   void ReceivedTarget() override;

@@ -56,6 +56,8 @@ class MODULES_EXPORT NavigatorGamepad final
 
   static NavigatorGamepad* From(Document&);
   static NavigatorGamepad& From(Navigator&);
+
+  explicit NavigatorGamepad(Navigator&);
   ~NavigatorGamepad() override;
 
   static GamepadList* getGamepads(Navigator&);
@@ -64,8 +66,6 @@ class MODULES_EXPORT NavigatorGamepad final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorGamepad(Navigator&);
-
   void DispatchOneEvent();
   void DidRemoveGamepadEventListeners();
   bool StartUpdatingIfAttached();

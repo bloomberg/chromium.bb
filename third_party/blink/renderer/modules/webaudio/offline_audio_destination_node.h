@@ -158,7 +158,6 @@ class OfflineAudioDestinationNode final : public AudioDestinationNode {
                                              size_t frames_to_process,
                                              float sample_rate);
 
- private:
   OfflineAudioDestinationNode(BaseAudioContext&,
                               unsigned number_of_channels,
                               size_t frames_to_process,

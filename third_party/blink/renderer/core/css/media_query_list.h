@@ -53,6 +53,10 @@ class CORE_EXPORT MediaQueryList final
   static MediaQueryList* Create(ExecutionContext*,
                                 MediaQueryMatcher*,
                                 scoped_refptr<MediaQuerySet>);
+
+  MediaQueryList(ExecutionContext*,
+                 MediaQueryMatcher*,
+                 scoped_refptr<MediaQuerySet>);
   ~MediaQueryList() override;
 
   String media() const;
@@ -86,10 +90,6 @@ class CORE_EXPORT MediaQueryList final
   ExecutionContext* GetExecutionContext() const override;
 
  private:
-  MediaQueryList(ExecutionContext*,
-                 MediaQueryMatcher*,
-                 scoped_refptr<MediaQuerySet>);
-
   bool UpdateMatches();
 
   Member<MediaQueryMatcher> matcher_;

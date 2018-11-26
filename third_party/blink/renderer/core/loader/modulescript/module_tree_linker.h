@@ -57,6 +57,13 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
       ModuleTreeLinkerRegistry*,
       ModuleTreeClient*);
 
+  ModuleTreeLinker(
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+      mojom::RequestContextType destination,
+      Modulator*,
+      ModuleScriptCustomFetchType,
+      ModuleTreeLinkerRegistry*,
+      ModuleTreeClient*);
   ~ModuleTreeLinker() override = default;
   void Trace(blink::Visitor*) override;
 
@@ -66,14 +73,6 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   bool HasFinished() const { return state_ == State::kFinished; }
 
  private:
-  ModuleTreeLinker(
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      mojom::RequestContextType destination,
-      Modulator*,
-      ModuleScriptCustomFetchType,
-      ModuleTreeLinkerRegistry*,
-      ModuleTreeClient*);
-
   enum class State {
     kInitial,
     // Running fetch of the module script corresponding to the target node.

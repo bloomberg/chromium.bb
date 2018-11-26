@@ -25,8 +25,11 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
  public:
   static OverscrollController* Create(const VisualViewport& visual_viewport,
                                       ChromeClient& chrome_client) {
-    return new OverscrollController(visual_viewport, chrome_client);
+    return MakeGarbageCollected<OverscrollController>(visual_viewport,
+                                                      chrome_client);
   }
+
+  OverscrollController(const VisualViewport&, ChromeClient&);
 
   void ResetAccumulated(bool reset_x, bool reset_y);
 
@@ -44,8 +47,6 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
   void Trace(blink::Visitor*);
 
  private:
-  OverscrollController(const VisualViewport&, ChromeClient&);
-
   WeakMember<const VisualViewport> visual_viewport_;
   WeakMember<ChromeClient> chrome_client_;
 

@@ -70,6 +70,8 @@ class PLATFORM_EXPORT MediaStreamComponent final
   static MediaStreamComponent* Create(MediaStreamSource*);
   static MediaStreamComponent* Create(const String& id, MediaStreamSource*);
 
+  MediaStreamComponent(const String& id, MediaStreamSource*);
+
   MediaStreamComponent* Clone() const;
 
   // |m_trackData| may hold pointers to GC objects indirectly, and it may touch
@@ -110,8 +112,6 @@ class PLATFORM_EXPORT MediaStreamComponent final
   void Trace(blink::Visitor*);
 
  private:
-  MediaStreamComponent(const String& id, MediaStreamSource*);
-
   // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
   // calls into chromium to get a rendered audio stream.
 

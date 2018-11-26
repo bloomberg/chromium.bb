@@ -19,7 +19,8 @@ namespace blink {
 MediaMetadata* MediaMetadata::Create(ScriptState* script_state,
                                      const MediaMetadataInit* metadata,
                                      ExceptionState& exception_state) {
-  return new MediaMetadata(script_state, metadata, exception_state);
+  return MakeGarbageCollected<MediaMetadata>(script_state, metadata,
+                                             exception_state);
 }
 
 MediaMetadata::MediaMetadata(ScriptState* script_state,

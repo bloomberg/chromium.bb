@@ -29,6 +29,8 @@ class MojoWatcher final : public ScriptWrappable,
                              const MojoHandleSignals*,
                              V8MojoWatchCallback*,
                              ExecutionContext*);
+
+  MojoWatcher(ExecutionContext*, V8MojoWatchCallback*);
   ~MojoWatcher() override;
 
   MojoResult cancel();
@@ -44,7 +46,6 @@ class MojoWatcher final : public ScriptWrappable,
  private:
   friend class V8MojoWatcher;
 
-  MojoWatcher(ExecutionContext*, V8MojoWatchCallback*);
   MojoResult Watch(mojo::Handle, const MojoHandleSignals*);
   MojoResult Arm(MojoResult* ready_result);
 

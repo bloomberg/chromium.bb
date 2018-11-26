@@ -107,7 +107,7 @@ const AtomicString& MediaSource::EndedKeyword() {
 }
 
 MediaSource* MediaSource::Create(ExecutionContext* context) {
-  return new MediaSource(context);
+  return MakeGarbageCollected<MediaSource>(context);
 }
 
 MediaSource::MediaSource(ExecutionContext* context)

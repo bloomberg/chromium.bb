@@ -24,8 +24,10 @@ class ModulePendingScript;
 class ModulePendingScriptTreeClient final : public ModuleTreeClient {
  public:
   static ModulePendingScriptTreeClient* Create() {
-    return new ModulePendingScriptTreeClient();
+    return MakeGarbageCollected<ModulePendingScriptTreeClient>();
   }
+
+  ModulePendingScriptTreeClient();
   ~ModulePendingScriptTreeClient() override = default;
 
   void SetPendingScript(ModulePendingScript* client);
@@ -35,8 +37,6 @@ class ModulePendingScriptTreeClient final : public ModuleTreeClient {
   void Trace(blink::Visitor*) override;
 
  private:
-  ModulePendingScriptTreeClient();
-
   // Implements ModuleTreeClient
   void NotifyModuleTreeLoadFinished(ModuleScript*) override;
 
@@ -52,9 +52,13 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
   static ModulePendingScript* Create(ScriptElementBase* element,
                                      ModulePendingScriptTreeClient* client,
                                      bool is_external) {
-    return new ModulePendingScript(element, client, is_external);
+    return MakeGarbageCollected<ModulePendingScript>(element, client,
+                                                     is_external);
   }
 
+  ModulePendingScript(ScriptElementBase*,
+                      ModulePendingScriptTreeClient*,
+                      bool is_external);
   ~ModulePendingScript() override;
 
   void NotifyModuleTreeLoadFinished();
@@ -66,10 +70,6 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
   void Trace(blink::Visitor*) override;
 
  private:
-  ModulePendingScript(ScriptElementBase*,
-                      ModulePendingScriptTreeClient*,
-                      bool is_external);
-
   // PendingScript
   mojom::ScriptType GetScriptType() const override {
     return mojom::ScriptType::kModule;

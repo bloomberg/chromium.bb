@@ -17,7 +17,7 @@ OnRequestCanvasDrawListener::~OnRequestCanvasDrawListener() = default;
 // static
 OnRequestCanvasDrawListener* OnRequestCanvasDrawListener::Create(
     std::unique_ptr<WebCanvasCaptureHandler> handler) {
-  return new OnRequestCanvasDrawListener(std::move(handler));
+  return MakeGarbageCollected<OnRequestCanvasDrawListener>(std::move(handler));
 }
 
 void OnRequestCanvasDrawListener::SendNewFrame(

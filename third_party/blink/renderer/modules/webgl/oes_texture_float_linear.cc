@@ -39,7 +39,7 @@ WebGLExtensionName OESTextureFloatLinear::GetName() const {
 
 OESTextureFloatLinear* OESTextureFloatLinear::Create(
     WebGLRenderingContextBase* context) {
-  return new OESTextureFloatLinear(context);
+  return MakeGarbageCollected<OESTextureFloatLinear>(context);
 }
 
 bool OESTextureFloatLinear::Supported(WebGLRenderingContextBase* context) {

@@ -34,6 +34,7 @@ class NotificationManager final
 
   static NotificationManager* From(ExecutionContext* context);
 
+  explicit NotificationManager(ExecutionContext& context);
   ~NotificationManager();
 
   // Returns the notification permission status of the current origin. This
@@ -78,8 +79,6 @@ class NotificationManager final
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  explicit NotificationManager(ExecutionContext& context);
-
   void DidDisplayPersistentNotification(
       ScriptPromiseResolver* resolver,
       mojom::blink::PersistentNotificationError error);

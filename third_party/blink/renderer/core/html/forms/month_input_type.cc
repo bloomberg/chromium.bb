@@ -51,7 +51,7 @@ static const int kMonthDefaultStepBase = 0;
 static const int kMonthStepScaleFactor = 1;
 
 InputType* MonthInputType::Create(HTMLInputElement& element) {
-  return new MonthInputType(element);
+  return MakeGarbageCollected<MonthInputType>(element);
 }
 
 void MonthInputType::CountUsage() {

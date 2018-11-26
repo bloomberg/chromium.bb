@@ -153,8 +153,9 @@ MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::Create(
   std::unique_ptr<AudioSourceProvider> provider =
       audio_track->CreateWebAudioSource();
 
-  MediaStreamAudioSourceNode* node = new MediaStreamAudioSourceNode(
-      context, media_stream, audio_track, std::move(provider));
+  MediaStreamAudioSourceNode* node =
+      MakeGarbageCollected<MediaStreamAudioSourceNode>(
+          context, media_stream, audio_track, std::move(provider));
 
   if (!node)
     return nullptr;

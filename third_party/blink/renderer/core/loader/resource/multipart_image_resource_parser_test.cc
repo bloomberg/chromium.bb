@@ -92,7 +92,8 @@ TEST(MultipartResponseTest, NoStartBoundary) {
   boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
-      new MultipartImageResourceParser(response, boundary, client);
+      MakeGarbageCollected<MultipartImageResourceParser>(response, boundary,
+                                                         client);
   const char kData[] =
       "Content-type: text/plain\n\n"
       "This is a sample response\n"
@@ -119,7 +120,8 @@ TEST(MultipartResponseTest, NoEndBoundary) {
   boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
-      new MultipartImageResourceParser(response, boundary, client);
+      MakeGarbageCollected<MultipartImageResourceParser>(response, boundary,
+                                                         client);
   const char kData[] =
       "bound\nContent-type: text/plain\n\n"
       "This is a sample response\n";
@@ -144,7 +146,8 @@ TEST(MultipartResponseTest, NoStartAndEndBoundary) {
   boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
-      new MultipartImageResourceParser(response, boundary, client);
+      MakeGarbageCollected<MultipartImageResourceParser>(response, boundary,
+                                                         client);
   const char kData[] =
       "Content-type: text/plain\n\n"
       "This is a sample response\n";
@@ -170,7 +173,8 @@ TEST(MultipartResponseTest, MalformedBoundary) {
   boundary.Append("--bound", 7);
 
   MultipartImageResourceParser* parser =
-      new MultipartImageResourceParser(response, boundary, client);
+      MakeGarbageCollected<MultipartImageResourceParser>(response, boundary,
+                                                         client);
   const char kData[] =
       "--bound\n"
       "Content-type: text/plain\n\n"
@@ -217,7 +221,8 @@ void VariousChunkSizesTest(const TestChunk chunks[],
   boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
-      new MultipartImageResourceParser(response, boundary, client);
+      MakeGarbageCollected<MultipartImageResourceParser>(response, boundary,
+                                                         client);
 
   for (int i = 0; i < chunks_size; ++i) {
     ASSERT_LT(chunks[i].start_position, chunks[i].end_position);
@@ -321,7 +326,8 @@ TEST(MultipartResponseTest, SmallChunk) {
   boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
-      new MultipartImageResourceParser(response, boundary, client);
+      MakeGarbageCollected<MultipartImageResourceParser>(response, boundary,
+                                                         client);
 
   // Test chunks of size 1, 2, and 0.
   const char kData[] =
@@ -356,7 +362,8 @@ TEST(MultipartResponseTest, MultipleBoundaries) {
   boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
-      new MultipartImageResourceParser(response, boundary, client);
+      MakeGarbageCollected<MultipartImageResourceParser>(response, boundary,
+                                                         client);
 
   const char kData[] = "--bound\r\n\r\n--bound\r\n\r\nfoofoo--bound--";
   parser->AppendData(kData, strlen(kData));
@@ -378,7 +385,8 @@ TEST(MultipartResponseTest, EatLeadingLF) {
       "\n\n\n--bound\n\ncontent-type: 2\n\n"
       "\n\n\n--bound\ncontent-type: 3\n\n";
   MultipartImageResourceParser* parser =
-      new MultipartImageResourceParser(response, boundary, client);
+      MakeGarbageCollected<MultipartImageResourceParser>(response, boundary,
+                                                         client);
 
   for (size_t i = 0; i < strlen(kData); ++i)
     parser->AppendData(&kData[i], 1);
@@ -408,7 +416,8 @@ TEST(MultipartResponseTest, EatLeadingCRLF) {
       "\r\n\r\n\r\n--bound\r\n\r\ncontent-type: 2\r\n\r\n"
       "\r\n\r\n\r\n--bound\r\ncontent-type: 3\r\n\r\n";
   MultipartImageResourceParser* parser =
-      new MultipartImageResourceParser(response, boundary, client);
+      MakeGarbageCollected<MultipartImageResourceParser>(response, boundary,
+                                                         client);
 
   for (size_t i = 0; i < strlen(kData); ++i)
     parser->AppendData(&kData[i], 1);

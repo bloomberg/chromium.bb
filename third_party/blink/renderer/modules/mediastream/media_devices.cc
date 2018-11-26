@@ -62,7 +62,7 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
 }  // namespace
 
 MediaDevices* MediaDevices::Create(ExecutionContext* context) {
-  MediaDevices* media_devices = new MediaDevices(context);
+  MediaDevices* media_devices = MakeGarbageCollected<MediaDevices>(context);
   media_devices->PauseIfNeeded();
   return media_devices;
 }

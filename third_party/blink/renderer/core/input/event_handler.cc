@@ -156,8 +156,10 @@ EventHandler::EventHandler(LocalFrame& frame)
               ? MakeGarbageCollected<EventHandlerRegistry>(*frame_)
               : &frame_->LocalFrameRoot().GetEventHandlerRegistry()),
       scroll_manager_(new ScrollManager(frame)),
-      mouse_event_manager_(new MouseEventManager(frame, *scroll_manager_)),
-      mouse_wheel_event_manager_(new MouseWheelEventManager(frame)),
+      mouse_event_manager_(
+          MakeGarbageCollected<MouseEventManager>(frame, *scroll_manager_)),
+      mouse_wheel_event_manager_(
+          MakeGarbageCollected<MouseWheelEventManager>(frame)),
       keyboard_event_manager_(
           MakeGarbageCollected<KeyboardEventManager>(frame, *scroll_manager_)),
       pointer_event_manager_(

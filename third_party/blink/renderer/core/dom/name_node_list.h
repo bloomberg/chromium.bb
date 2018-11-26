@@ -37,14 +37,13 @@ class CORE_EXPORT NameNodeList final : public LiveNodeList {
                               CollectionType type,
                               const AtomicString& name) {
     DCHECK_EQ(type, kNameNodeListType);
-    return new NameNodeList(root_node, name);
+    return MakeGarbageCollected<NameNodeList>(root_node, name);
   }
 
+  NameNodeList(ContainerNode& root_node, const AtomicString& name);
   ~NameNodeList() override;
 
  private:
-  NameNodeList(ContainerNode& root_node, const AtomicString& name);
-
   bool ElementMatches(const Element&) const override;
 
   AtomicString name_;

@@ -24,7 +24,7 @@ NavigatorUserMedia& NavigatorUserMedia::From(Navigator& navigator) {
   NavigatorUserMedia* supplement =
       Supplement<Navigator>::From<NavigatorUserMedia>(navigator);
   if (!supplement) {
-    supplement = new NavigatorUserMedia(navigator);
+    supplement = MakeGarbageCollected<NavigatorUserMedia>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

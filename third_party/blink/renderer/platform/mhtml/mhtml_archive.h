@@ -55,6 +55,8 @@ class PLATFORM_EXPORT MHTMLArchive final
  public:
   static MHTMLArchive* Create(const KURL&, scoped_refptr<const SharedBuffer>);
 
+  MHTMLArchive();
+
   // Every outcome when loading an archive with MHTMLArchive::Create (mirroring
   // MHTMLLoadResult in tools/metrics/histograms/enums.xml).
   enum class LoadResult {
@@ -119,8 +121,6 @@ class PLATFORM_EXPORT MHTMLArchive final
   void Trace(blink::Visitor*);
 
  private:
-  MHTMLArchive();
-
   static void ReportLoadResult(LoadResult result);
 
   void SetMainResource(ArchiveResource*);

@@ -1640,7 +1640,7 @@ String AXObject::TextFromElements(
           *ax_element, in_aria_labelledby_traversal, visited);
       visited.insert(ax_element);
       local_related_objects.push_back(
-          new NameSourceRelatedObject(ax_element, result));
+          MakeGarbageCollected<NameSourceRelatedObject>(ax_element, result));
       if (!result.IsEmpty()) {
         if (!accumulated_text.IsEmpty())
           accumulated_text.Append(' ');

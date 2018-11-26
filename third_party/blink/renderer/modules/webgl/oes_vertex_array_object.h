@@ -41,15 +41,14 @@ class OESVertexArrayObject final : public WebGLExtension {
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
+  explicit OESVertexArrayObject(WebGLRenderingContextBase*);
+
   WebGLExtensionName GetName() const override;
 
   WebGLVertexArrayObjectOES* createVertexArrayOES();
   void deleteVertexArrayOES(WebGLVertexArrayObjectOES*);
   GLboolean isVertexArrayOES(WebGLVertexArrayObjectOES*);
   void bindVertexArrayOES(WebGLVertexArrayObjectOES*);
-
- private:
-  explicit OESVertexArrayObject(WebGLRenderingContextBase*);
 };
 
 }  // namespace blink
