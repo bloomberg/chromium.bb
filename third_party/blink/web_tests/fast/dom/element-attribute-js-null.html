@@ -1,28 +1,10 @@
-<html>
-<head>
-    <style type="text/css">
-        .pass { color: green; }
-        .fail { color: red; }
-    </style>
+<!doctype HTML>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
     <script>
-        function printOut(msg)
-        {
-            var console = document.getElementById("console");
-            var span = document.createElement('span');
-            span.innerHTML = msg + '<br>';
-            console.appendChild(span);
-        }
-
-        function resultStringifier(result)
-        {
-            if (result === "")
-                return "<b>the empty string</b>";
-            else if (result === null)
-                return "<b>null</b>";
-            else if (result === undefined)
-                return "<b>undefined</b>";
-            return "the string '" + result + "'";
-        }
+        // TODO(yosin): We should merge this test into
+        // "external/wpt/html/dom/reflection*.*" to avoid duplicated test cases.
+        // This test setting various attributes of a elements to JavaScript null
 
         function resolve(url)
         {
@@ -31,39 +13,26 @@
             return a.href;
         }
 
-        function nullTestElementAttribute(elementType, element, attr, expected, isUrl)
+        function nullTestElementAttribute(elementType, element, attr)
         {
-            var exceptionThrown;
-            try {
-                element[attr] = null;
-            } catch (ec) {
-                exceptionThrown = ec;
-            }
-            var result;
-            if (exceptionThrown) {
-                if (expected === 'exception')
-                    result = "<span class='pass'>TEST SUCCEEDED:</span> Exception (" + exceptionThrown + ") was thrown as expected.";
+            const expectedValue = attr.expectedNull;
+            test(() => {
+                if (attr.isException) {
+                        assert_throws(expectedValue,
+                                      () => element[attr.name] = null);
+                    return;
+                }
+                element[attr.name] = null;
+                const actualValue = element[attr.name];
+                if (attr.isUrl)
+                  assert_equals(actualValue, resolve(expectedValue));
                 else
-                    result = "<span class='fail'>TEST FAILED:</span> An exception was thrown unexpectedly.";
-            } else {
-                if (expected === 'exception')
-                    result = "<span class='fail'>TEST FAILED:</span> An exception should have been thrown.";
-                else if (isUrl && element[attr] === resolve(expected))
-                    result = "<span class='pass'>TEST SUCCEEDED:</span> The value was " + resultStringifier(expected) + " resolved as a URL.";
-                else if (!isUrl && element[attr] === expected)
-                    result = "<span class='pass'>TEST SUCCEEDED:</span> The value was " + resultStringifier(expected) + ".";
-                else
-                    result = "<span class='fail'>TEST FAILED:</span> The value should have been " + resultStringifier(expected) + " but was " + resultStringifier(element[attr]) + ".";
-            }
-            result += " [tested " + elementType + "." + attr + "]";
-            printOut(result);
+                  assert_equals(actualValue, expectedValue);
+            }, `${elementType}.${attr.name}`);
         }
 
         function runTests()
         {
-            if (window.testRunner)
-                testRunner.dumpAsText();
-
             // Others to test:
             //  Core DOM
             //    Attr.value (expected: null)
@@ -87,7 +56,9 @@
                         {name: 'id', expectedNull: 'null'},
                         {name: 'className', expectedNull: 'null'},
                         {name: 'innerHTML', expectedNull: ''},
-                        {name: 'outerHTML', expectedNull: 'exception'}
+                        {name: 'outerHTML',
+                         expectedNull: 'NoModificationAllowedError',
+                         isException: true}
                     ]
                 },
                 {
@@ -99,8 +70,11 @@
                         {name: 'lang', expectedNull: 'null'},
                         {name: 'dir', expectedNull: ''},
                         {name: 'innerText', expectedNull: ''},
-                        {name: 'outerText', expectedNull: 'exception'},
-                        {name: 'contentEditable', expectedNull: 'exception'}
+                        {name: 'outerText',
+                         expectedNull: 'NoModificationAllowedError',
+                         isException: true},
+                        {name: 'contentEditable', expectedNull: 'SyntaxError',
+                         isException: true}
                     ]
                 },
                 {
@@ -666,20 +640,10 @@
                 }
             ];
 
-            for (element in listing) {
-                var type = listing[element].type;
-                var elementToUse = listing[element].elementToUse;
-                var attrs = listing[element].attributes;
-                for (attr in attrs) {
-                    nullTestElementAttribute(type, elementToUse, attrs[attr].name, attrs[attr].expectedNull, attrs[attr].isUrl);
-                }
-                printOut('');
+            for (const {type, elementToUse, attributes} of listing) {
+                for (const attr of attributes)
+                    nullTestElementAttribute(type, elementToUse, attr);
             }
         }
+        runTests();
     </script>
-</head>
-<body onload="runTests()">
-    <p>This test setting various attributes of a elements to JavaScript null.</p>
-    <div id="console"></div>
-</body>
-</html>
