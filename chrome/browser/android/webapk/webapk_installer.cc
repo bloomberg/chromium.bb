@@ -217,6 +217,17 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   if (shortcut_info.share_target) {
     webapk::ShareTarget* share_target = web_app_manifest->add_share_targets();
     share_target->set_action(shortcut_info.share_target->action.spec());
+    if (shortcut_info.share_target->method == ShareTarget::Method::kPost) {
+      share_target->set_method("POST");
+    } else {
+      share_target->set_method("GET");
+    }
+    if (shortcut_info.share_target->enctype ==
+        ShareTarget::Enctype::kMultipart) {
+      share_target->set_enctype("multipart/form-data");
+    } else {
+      share_target->set_enctype("application/x-www-form-urlencoded");
+    }
     webapk::ShareTargetParams* share_target_params =
         share_target->mutable_params();
     share_target_params->set_title(
@@ -225,6 +236,16 @@ std::unique_ptr<std::string> BuildProtoInBackground(
         base::UTF16ToUTF8(shortcut_info.share_target->params.text));
     share_target_params->set_url(
         base::UTF16ToUTF8(shortcut_info.share_target->params.url));
+
+    for (const ShareTargetParamsFile& share_target_params_file :
+         shortcut_info.share_target->params.files) {
+      webapk::ShareTargetParamsFile* share_files =
+          share_target_params->add_files();
+      share_files->set_name(base::UTF16ToUTF8(share_target_params_file.name));
+      for (base::string16 mime_type : share_target_params_file.accept) {
+        share_files->add_accept(base::UTF16ToUTF8(mime_type));
+      }
+    }
   }
 
   if (shortcut_info.best_primary_icon_url.is_empty()) {

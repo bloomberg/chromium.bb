@@ -16,17 +16,43 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
+// https://pr-preview.s3.amazonaws.com/ewilligers/web-share-target/pull/53.html#sharetargetfiles-and-its-members
+struct ShareTargetParamsFile {
+  base::string16 name;
+  std::vector<base::string16> accept;
+  ShareTargetParamsFile();
+  ShareTargetParamsFile(const ShareTargetParamsFile& other);
+  ~ShareTargetParamsFile();
+};
+
 // https://wicg.github.io/web-share-target/#dom-sharetargetparams
 struct ShareTargetParams {
   base::string16 title;
   base::string16 text;
   base::string16 url;
+  std::vector<ShareTargetParamsFile> files;
+  ShareTargetParams();
+  ShareTargetParams(const ShareTargetParams& other);
+  ~ShareTargetParams();
 };
 
 // https://wicg.github.io/web-share-target/#dom-sharetarget
 struct ShareTarget {
+  // This enum is used to indicate the HTTP method used by the share target.
+  // kGet stands for GET request, and kPost stands for POST request.
+  enum Method { kGet = 0, kPost = 1 };
+
+  // This enum is used to indicate the HTTP enctype used by the share target.
+  // kApplication stands for application/x-www-form-urlencoded enctype, and
+  // kMultipart stands for multipart/form-data enctype.
+  enum Enctype { kApplication = 0, kMultipart = 1 };
+
   GURL action;
+  Method method;
+  Enctype enctype;
   ShareTargetParams params;
+  ShareTarget();
+  ~ShareTarget();
 };
 
 // Information needed to create a shortcut via ShortcutHelper.
