@@ -227,10 +227,6 @@ FileManagerPrivateGetPreferencesFunction::Run() {
       base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
                             ->GetCurrentTimezoneID());
 
-  drive::EventLogger* logger = file_manager::util::GetLogger(profile);
-  if (logger)
-    logger->Log(logging::LOG_INFO, "%s succeeded.", name());
-
   return RespondNow(OneArgument(result.ToValue()));
 }
 
@@ -247,9 +243,6 @@ FileManagerPrivateSetPreferencesFunction::Run() {
     service->SetBoolean(drive::prefs::kDisableDriveOverCellular,
                         *params->change_info.cellular_disabled);
 
-  drive::EventLogger* logger = file_manager::util::GetLogger(profile);
-  if (logger)
-    logger->Log(logging::LOG_INFO, "%s succeeded.", name());
   return RespondNow(NoArguments());
 }
 

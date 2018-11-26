@@ -1450,10 +1450,6 @@ FileManagerPrivateGetDriveConnectionStateFunction::Run() {
           ->network_state_handler()
           ->FirstNetworkByType(chromeos::NetworkTypePattern::Mobile());
 
-  drive::EventLogger* logger = file_manager::util::GetLogger(
-      Profile::FromBrowserContext(browser_context()));
-  if (logger)
-    logger->Log(logging::LOG_INFO, "%s succeeded.", name());
   return RespondNow(ArgumentList(
       api::file_manager_private::GetDriveConnectionState::Results::Create(
           result)));
