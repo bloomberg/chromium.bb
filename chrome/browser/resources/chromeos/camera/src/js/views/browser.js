@@ -389,18 +389,18 @@ cca.views.Browser.prototype.onPictureDeleted = function(picture) {
  * @override
  */
 cca.views.Browser.prototype.addPictureToDOM = function(picture) {
-  var wrapper = document.createElement('div');
-  cca.nav.setTabIndex(this, wrapper, -1);
-  cca.util.makeUnfocusableByMouse(wrapper);
-  wrapper.className = 'media-wrapper';
-  wrapper.id = 'browser-picture-' + (this.lastPictureIndex_++);
-  wrapper.setAttribute('role', 'option');
-  wrapper.setAttribute('aria-selected', 'false');
-
   // Display high-res picture if no cached thumbnail.
   // TODO(yuli): Fix wrappers' size to avoid scrolling for changed elements.
   var thumbnailURL = picture.thumbnailURL;
   Promise.resolve(thumbnailURL || picture.pictureURL()).then((url) => {
+    var wrapper = document.createElement('div');
+    cca.nav.setTabIndex(this, wrapper, -1);
+    cca.util.makeUnfocusableByMouse(wrapper);
+    wrapper.className = 'media-wrapper';
+    wrapper.id = 'browser-picture-' + (this.lastPictureIndex_++);
+    wrapper.setAttribute('role', 'option');
+    wrapper.setAttribute('aria-selected', 'false');
+
     var isVideo = !thumbnailURL && picture.isMotionPicture;
     var element = wrapper.appendChild(document.createElement(
         isVideo ? 'video' : 'img'));
