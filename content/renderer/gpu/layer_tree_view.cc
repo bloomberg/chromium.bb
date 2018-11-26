@@ -687,8 +687,10 @@ void LayerTreeView::RequestNewLayerTreeFrameSink() {
     return;
   }
 
-  delegate_->RequestNewLayerTreeFrameSink(base::BindOnce(
-      &LayerTreeView::SetLayerTreeFrameSink, weak_factory_.GetWeakPtr()));
+  delegate_->RequestNewLayerTreeFrameSink(
+      /*for_warmup=*/false,
+      base::BindOnce(&LayerTreeView::SetLayerTreeFrameSink,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void LayerTreeView::DidInitializeLayerTreeFrameSink() {}

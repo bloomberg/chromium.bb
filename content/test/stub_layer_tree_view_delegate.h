@@ -22,6 +22,7 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void BeginMainFrame(base::TimeTicks frame_time) override {}
   void RecordEndOfFrameMetrics(base::TimeTicks) override {}
   void RequestNewLayerTreeFrameSink(
+      bool for_warmup,
       LayerTreeFrameSinkCallback callback) override;
   void DidCommitAndDrawCompositorFrame() override {}
   void DidCommitCompositorFrame() override {}

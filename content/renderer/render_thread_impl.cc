@@ -1887,11 +1887,11 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
   return gpu_channel;
 }
 
-void RenderThreadImpl::RequestNewLayerTreeFrameSink(
-    int routing_id,
+std::unique_ptr<cc::LayerTreeFrameSink>
+RenderThreadImpl::RequestNewLayerTreeFrameSink(
+    int widget_routing_id,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
-    LayerTreeFrameSinkCallback callback,
     mojom::RenderFrameMetadataObserverClientRequest
         render_frame_metadata_observer_client_request,
     mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
@@ -1900,7 +1900,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   // machine where gpu compositing doesn't work. Don't crash in that case.
   if (layout_test_mode() && is_gpu_compositing_disabled_) {
     LOG(FATAL) << "Layout tests require gpu compositing, but it is disabled.";
-    return;
+    return nullptr;
   }
 
   const base::CommandLine& command_line =
@@ -1933,25 +1933,25 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
 #if defined(USE_AURA)
   if (features::IsMultiProcessMash()) {
-    if (!RendererWindowTreeClient::Get(routing_id)) {
-      std::move(callback).Run(nullptr);
-      return;
+    if (!RendererWindowTreeClient::Get(widget_routing_id)) {
+      return nullptr;
     }
     scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
     // If the channel could not be established correctly, then return null. This
     // would cause the compositor to wait and try again at a later time.
     if (!channel) {
-      std::move(callback).Run(nullptr);
-      return;
+      return nullptr;
     }
-    RendererWindowTreeClient::Get(routing_id)
-        ->RequestLayerTreeFrameSink(
-            gpu_->CreateContextProvider(std::move(channel)),
-            GetGpuMemoryBufferManager(), std::move(callback));
+    std::unique_ptr<cc::LayerTreeFrameSink> sink =
+        RendererWindowTreeClient::Get(widget_routing_id)
+            ->RequestLayerTreeFrameSink(
+                gpu_->CreateContextProvider(std::move(channel)),
+                GetGpuMemoryBufferManager());
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-        routing_id, std::move(render_frame_metadata_observer_client_request),
+        widget_routing_id,
+        std::move(render_frame_metadata_observer_client_request),
         std::move(render_frame_metadata_observer_ptr));
-    return;
+    return sink;
   }
 #endif
 
@@ -1964,15 +1964,14 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (is_gpu_compositing_disabled_) {
     DCHECK(!layout_test_mode());
     frame_sink_provider_->CreateForWidget(
-        routing_id, std::move(compositor_frame_sink_request),
+        widget_routing_id, std::move(compositor_frame_sink_request),
         std::move(compositor_frame_sink_client));
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-        routing_id, std::move(render_frame_metadata_observer_client_request),
+        widget_routing_id,
+        std::move(render_frame_metadata_observer_client_request),
         std::move(render_frame_metadata_observer_ptr));
-    std::move(callback).Run(
-        std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-            nullptr, nullptr, &params));
-    return;
+    return std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
+        nullptr, nullptr, &params);
   }
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
@@ -1980,16 +1979,14 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (!gpu_channel_host) {
     // Wait and try again. We may hear that the compositing mode has switched
     // to software in the meantime.
-    std::move(callback).Run(nullptr);
-    return;
+    return nullptr;
   }
 
   scoped_refptr<viz::RasterContextProvider> worker_context_provider =
       SharedCompositorWorkerContextProvider(/*try_gpu_rasterization=*/true);
   if (!worker_context_provider) {
     // Cause the compositor to wait and try again.
-    std::move(callback).Run(nullptr);
-    return;
+    return nullptr;
   }
 
   // The renderer compositor context doesn't do a lot of stuff, so we don't
@@ -2025,11 +2022,10 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
   if (layout_test_deps_) {
     if (!layout_test_deps_->UseDisplayCompositorPixelDump()) {
-      std::move(callback).Run(layout_test_deps_->CreateLayerTreeFrameSink(
-          routing_id, std::move(gpu_channel_host), std::move(context_provider),
-          std::move(worker_context_provider), GetGpuMemoryBufferManager(),
-          this));
-      return;
+      return layout_test_deps_->CreateLayerTreeFrameSink(
+          widget_routing_id, std::move(gpu_channel_host),
+          std::move(context_provider), std::move(worker_context_provider),
+          GetGpuMemoryBufferManager(), this);
     } else if (!params.compositor_task_runner) {
       // The frame sink provider expects a compositor task runner, but we might
       // not have that if we're running layout tests in single threaded mode.
@@ -2040,33 +2036,32 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
 #if defined(OS_ANDROID)
   if (GetContentClient()->UsingSynchronousCompositing()) {
-    RenderWidget* widget = RenderWidget::FromRoutingID(routing_id);
+    RenderWidget* widget = RenderWidget::FromRoutingID(widget_routing_id);
     if (widget) {
-      std::move(callback).Run(std::make_unique<SynchronousLayerTreeFrameSink>(
+      return std::make_unique<SynchronousLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),
           compositor_task_runner_, GetGpuMemoryBufferManager(),
-          sync_message_filter(), routing_id, g_next_layer_tree_frame_sink_id++,
+          sync_message_filter(), widget_routing_id,
+          g_next_layer_tree_frame_sink_id++,
           std::move(params.synthetic_begin_frame_source),
           widget->widget_input_handler_manager()
               ->GetSynchronousCompositorRegistry(),
-          std::move(frame_swap_message_queue)));
-      return;
+          std::move(frame_swap_message_queue));
     } else {
       NOTREACHED();
     }
   }
 #endif
   frame_sink_provider_->CreateForWidget(
-      routing_id, std::move(compositor_frame_sink_request),
+      widget_routing_id, std::move(compositor_frame_sink_request),
       std::move(compositor_frame_sink_client));
   frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-      routing_id, std::move(render_frame_metadata_observer_client_request),
+      widget_routing_id,
+      std::move(render_frame_metadata_observer_client_request),
       std::move(render_frame_metadata_observer_ptr));
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
-  std::move(callback).Run(
-      std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-          std::move(context_provider), std::move(worker_context_provider),
-          &params));
+  return std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
+      std::move(context_provider), std::move(worker_context_provider), &params);
 }
 
 blink::AssociatedInterfaceRegistry*
