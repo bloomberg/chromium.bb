@@ -165,7 +165,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   // for the IP address check.
   OriginAccessEntry access_entry(
       origin->Protocol(), effective_domain,
-      network::cors::OriginAccessEntry::MatchMode::kAllowSubdomains);
+      network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
   if (effective_domain.IsEmpty() || access_entry.HostIsIPAddress()) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kSecurityError,
@@ -179,7 +179,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   if (!relying_party_id.IsNull()) {
     OriginAccessEntry access_entry(
         origin->Protocol(), relying_party_id,
-        network::cors::OriginAccessEntry::kAllowSubdomains);
+        network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
     if (relying_party_id.IsEmpty() ||
         access_entry.MatchesDomain(*origin) !=
             network::cors::OriginAccessEntry::kMatchesOrigin) {

@@ -166,7 +166,8 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
       } else {
         OriginAccessEntry access_entry(
             request.Url().Protocol(), request.Url().Host(),
-            network::cors::OriginAccessEntry::kAllowRegisterableDomains);
+            network::mojom::CorsOriginAccessMatchMode::
+                kAllowRegisterableDomains);
         if (access_entry.MatchesOrigin(*GetSecurityOrigin()) ==
             network::cors::OriginAccessEntry::kMatchesOrigin) {
           site_value = "same-site";

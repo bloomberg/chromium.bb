@@ -29,7 +29,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_SECURITY_POLICY_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_SECURITY_POLICY_H_
 
-#include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom-shared.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
