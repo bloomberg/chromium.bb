@@ -319,6 +319,7 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
                         !legacy_device_id.empty());
 #endif
   std::string seed;
+  CHECK(ui::ResourceBundle::HasSharedInstance());
 #if defined(GOOGLE_CHROME_BUILD)
   seed = ui::ResourceBundle::GetSharedInstance()
              .GetRawDataResource(IDR_PREF_HASH_SEED_BIN)

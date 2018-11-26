@@ -12,6 +12,7 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/installer/util/master_preferences.h"
 
 class GURL;
 class Profile;
@@ -67,8 +68,6 @@ struct MasterPrefs {
   std::vector<GURL> new_tabs;
   std::vector<GURL> bookmarks;
   std::string import_bookmarks_path;
-  std::string compressed_variations_seed;
-  std::string variations_seed_signature;
   std::string suppress_default_browser_prompt_for_version;
 };
 
@@ -157,6 +156,11 @@ uint16_t auto_import_state();
 // Set a master preferences file path that overrides platform defaults.
 void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs);
 
+// Loads master preferences from the master preference file into the installer
+// master preferences. Returns the pointer to installer::MasterPreferences
+// object if successful; otherwise, returns nullptr.
+std::unique_ptr<installer::MasterPreferences> LoadMasterPrefs();
+
 // The master_preferences is a JSON file with the same entries as the
 // 'Default\Preferences' file. This function locates this file from a standard
 // location, processes it, and uses its content to initialize the preferences
@@ -172,6 +176,7 @@ void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs);
 // 'master_preferences' file.
 ProcessMasterPreferencesResult ProcessMasterPreferences(
     const base::FilePath& user_data_dir,
+    std::unique_ptr<installer::MasterPreferences> install_prefs,
     MasterPrefs* out_prefs);
 
 }  // namespace first_run

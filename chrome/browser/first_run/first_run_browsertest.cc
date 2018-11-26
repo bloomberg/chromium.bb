@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -28,6 +29,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/variations/metrics.h"
+#include "components/variations/pref_names.h"
+#include "components/variations/variations_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -300,5 +304,60 @@ INSTANTIATE_TEST_CASE_P(
             kSettingsEnforcementGroupEnforceAlwaysWithDSE,
         chrome_prefs::internals::
             kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE));
+
+#define COMPRESSED_SEED_TEST_VALUE                                             \
+  "H4sICMNRYFcAA3NlZWRfYmluAOPSMEwxsjQxM0lLMk4xt0hLMzQ1NUs1TTI1NUw2MzExT05KNj" \
+  "dJNU1LMRDay8glH+rrqBual5mWX5SbWVKpG1KUmZija2igG5BalJyaVyLRMGfSUlYLRif2lNS0" \
+  "xNKcEi9uLhhTgNGLh4sjvSi/"                                                   \
+  "tCDewBCFZ4TCM0bhmaDwTFF4Zig8cxSeBQrPUoARAEVeJPrqAAAA"
+#define SEED_SIGNATURE_TEST_VALUE                                              \
+  "MEQCIDD1IVxjzWYncun+9IGzqYjZvqxxujQEayJULTlbTGA/AiAr0oVmEgVUQZBYq5VLOSvy96" \
+  "JkMYgzTkHPwbv7K/CmgA=="
+
+constexpr char kCompressedSeedTestValue[] = COMPRESSED_SEED_TEST_VALUE;
+constexpr char kSignatureValue[] = SEED_SIGNATURE_TEST_VALUE;
+
+extern const char kWithVariationsPrefs[] =
+    "{\n"
+    "  \"variations_compressed_seed\": \"" COMPRESSED_SEED_TEST_VALUE
+    "\",\n"
+    "  \"variations_seed_signature\": \"" SEED_SIGNATURE_TEST_VALUE
+    "\"\n"
+    "}\n";
+
+class FirstRunMasterPrefsVariationsSeedTest
+    : public FirstRunMasterPrefsBrowserTestT<kWithVariationsPrefs> {
+ public:
+  FirstRunMasterPrefsVariationsSeedTest() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        variations::switches::kDisableFieldTrialTestingConfig);
+  }
+  ~FirstRunMasterPrefsVariationsSeedTest() override = default;
+
+ protected:
+  base::HistogramTester histogram_tester_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FirstRunMasterPrefsVariationsSeedTest);
+};
+
+#undef COMPRESSED_SEED_TEST_VALUE
+#undef SEED_SIGNATURE_TEST_VALUE
+
+IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsVariationsSeedTest, Test) {
+  // Tests variation migration from master_preferences to local_state.
+  EXPECT_EQ(kCompressedSeedTestValue,
+            g_browser_process->local_state()->GetString(
+                variations::prefs::kVariationsCompressedSeed));
+  EXPECT_EQ(kSignatureValue, g_browser_process->local_state()->GetString(
+                                 variations::prefs::kVariationsSeedSignature));
+
+  // Verify variations loaded in VariationsService by metrics.
+  histogram_tester_.ExpectUniqueSample("Variations.SeedLoadResult",
+                                       variations::StoreSeedResult::SUCCESS, 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Variations.LoadSeedSignature",
+      variations::VerifySignatureResult::VALID_SIGNATURE, 1);
+}
 
 #endif  // !defined(OS_CHROMEOS)
