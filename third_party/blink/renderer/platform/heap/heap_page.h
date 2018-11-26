@@ -146,33 +146,38 @@ uint32_t ComputeRandomMagic();
 // HeapObjectHeader is a 64-bit (64-bit platforms) or 32-bit (32-bit platforms)
 // object that has the following layout:
 //
-// | random magic value (32 bits) | <- present on 64-bit platforms only
+// | random magic value (32 bits) | Only present on 64-bit platforms.
 // | gc_info_index (14 bits)      |
-// | DOM mark bit (1 bit)         |
-// | size (14 bits)               |
-// | dead bit (1 bit)             |
-// | freed bit (1 bit)            |
+// | unused (1 bit)               |
+// | size (14 bits)               | Actually 17 bits because sizes are aligned.
+// | wrapper mark bit (1 bit)     |
+// | unused (1 bit)               |
 // | mark bit (1 bit)             |
 //
-// - For non-large objects, 14 bits are enough for |size| because the Blink page
-//   size is 2^kBlinkPageSizeLog2 (kBlinkPageSizeLog2 = 17) bytes, and each
-//   object is guaranteed to be aligned on a kAllocationGranularity-byte
-//   boundary.
-// - For large objects, |size| is 0. The actual size of a large object is
+// Notes:
+// - 14 bits for |gc_info_index} (type information) are enough as there are
+//   fewer than 2^14 types allocated in Blink.
+// - |size| for regular objects is encoded with 14 bits but can actually
+//   represent sizes up to |kBlinkPageSize| (2^17) because allocations are
+//   always 8 byte aligned (see kAllocationGranularity).
+// - |size| for large objects is encoded as 0. The size of a large object is
 //   stored in |LargeObjectPage::PayloadSize()|.
-// - 1 bit used to mark DOM trees for V8.
-// - 14 bits are enough for |gc_info_index| because there are fewer than 2^14
-//   types in Blink.
-constexpr size_t kHeaderWrapperMarkBitMask = 1u << kBlinkPageSizeLog2;
-constexpr size_t kHeaderGCInfoIndexShift = kBlinkPageSizeLog2 + 1;
-constexpr size_t kHeaderGCInfoIndexMask = (static_cast<size_t>((1 << 14) - 1))
-                                          << kHeaderGCInfoIndexShift;
-constexpr size_t kHeaderSizeMask = (static_cast<size_t>((1 << 14) - 1)) << 3;
-constexpr size_t kHeaderMarkBitMask = 1;
-constexpr size_t kHeaderFreedBitMask = 2;
-constexpr size_t kLargeObjectSizeInHeader = 0;
-constexpr size_t kGcInfoIndexForFreeListHeader = 0;
+constexpr uint32_t kHeaderMarkBitMask = 1;
+constexpr uint32_t kHeaderUnusedBit1Mask = 2;
+constexpr uint32_t kHeaderWrapperMarkBitMask = 4;
+constexpr uint32_t kHeaderSizeMask = ((uint32_t{1} << 14) - 1) << 3;
+constexpr uint32_t kHeaderUnusedBit2Mask = uint32_t{1} << 17;
+constexpr uint32_t kHeaderGCInfoIndexShift = 18;
+constexpr uint32_t kHeaderGCInfoSize = uint32_t{1} << 14;
+constexpr uint32_t kHeaderGCInfoIndexMask = (kHeaderGCInfoSize - 1)
+                                            << kHeaderGCInfoIndexShift;
+
+constexpr uint32_t kLargeObjectSizeInHeader = 0;
+constexpr uint32_t kGcInfoIndexForFreeListHeader = 0;
 constexpr size_t kNonLargeObjectPageSizeMax = 1 << kBlinkPageSizeLog2;
+
+static_assert(kHeaderGCInfoSize == GCInfoTable::kMaxIndex,
+              "GCInfoTable size and and header GCInfo index size must match");
 
 static_assert(
     kNonLargeObjectPageSizeMax >= kBlinkPageSize,
@@ -184,29 +189,37 @@ class PLATFORM_EXPORT HeapObjectHeader {
  public:
   enum HeaderLocation { kNormalPage, kLargePage };
 
+  // The following values are used when zapping free list entries.
+  // Regular zapping value.
+  static const uint32_t kZappedMagic = 0xDEAD4321;
+  // On debug and sanitizer builds the zap values differ, indicating when free
+  // list entires are allowed to be reused.
+  static const uint32_t kZappedMagicAllowed = 0x2a2a2a2a;
+  static const uint32_t kZappedMagicForbidden = 0x2c2c2c2c;
+
+  static HeapObjectHeader* FromPayload(const void*);
+
+  // Checks sanity of the header given a payload pointer.
+  static void CheckFromPayload(const void*);
+
   // If |gc_info_index| is 0, this header is interpreted as a free list header.
-  NO_SANITIZE_ADDRESS
-  inline HeapObjectHeader(size_t, size_t, HeaderLocation);
+  HeapObjectHeader(size_t, size_t, HeaderLocation);
 
   NO_SANITIZE_ADDRESS bool IsFree() const {
-    return encoded_ & kHeaderFreedBitMask;
+    return GcInfoIndex() == kGcInfoIndexForFreeListHeader;
   }
-
-  size_t size() const;
 
   NO_SANITIZE_ADDRESS uint32_t GcInfoIndex() const {
     return (encoded_ & kHeaderGCInfoIndexMask) >> kHeaderGCInfoIndexShift;
   }
 
-  NO_SANITIZE_ADDRESS void SetSize(size_t size) {
-    DCHECK_LT(size, kNonLargeObjectPageSizeMax);
-    CheckHeader();
-    encoded_ = static_cast<uint32_t>(size) | (encoded_ & ~kHeaderSizeMask);
-  }
+  size_t size() const;
+  void SetSize(size_t size);
 
   bool IsWrapperHeaderMarked() const;
   void MarkWrapperHeader();
   void UnmarkWrapperHeader();
+
   bool IsMarked() const;
   void Mark();
   void Unmark();
@@ -219,26 +232,11 @@ class PLATFORM_EXPORT HeapObjectHeader {
   Address PayloadEnd();
 
   void Finalize(Address, size_t);
-  static HeapObjectHeader* FromPayload(const void*);
-
-  // Some callers formerly called |FromPayload| only for its side-effect of
-  // calling |CheckHeader| (which is now private). This function does that, but
-  // its explanatory name makes the intention at the call sites easier to
-  // understand, and is public.
-  static void CheckFromPayload(const void*);
 
   // Returns true if magic number is valid.
   bool IsValid() const;
   // Returns true if magic number is valid or zapped.
   bool IsValidOrZapped() const;
-
-  // The following values are used when zapping free list entries.
-  // Regular zapping value.
-  static const uint32_t kZappedMagic = 0xDEAD4321;
-  // On debug and sanitizer builds the zap values differ, indicating when free
-  // list entires are allowed to be reused.
-  static const uint32_t kZappedMagicAllowed = 0x2a2a2a2a;
-  static const uint32_t kZappedMagicForbidden = 0x2c2c2c2c;
 
  protected:
 #if DCHECK_IS_ON() && defined(ARCH_CPU_64_BITS)
@@ -892,6 +890,18 @@ PLATFORM_EXPORT ALWAYS_INLINE BasePage* PageFromObject(const void* object) {
   return page;
 }
 
+inline HeapObjectHeader* HeapObjectHeader::FromPayload(const void* payload) {
+  Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
+  HeapObjectHeader* header =
+      reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
+  header->CheckHeader();
+  return header;
+}
+
+inline void HeapObjectHeader::CheckFromPayload(const void* payload) {
+  (void)FromPayload(payload);
+}
+
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
   size_t result = encoded_ & kHeaderSizeMask;
   // Large objects should not refer to header->size() but use
@@ -899,6 +909,12 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
   DCHECK(result != kLargeObjectSizeInHeader);
   DCHECK(!PageFromObject(this)->IsLargeObjectPage());
   return result;
+}
+
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::SetSize(size_t size) {
+  DCHECK_LT(size, kNonLargeObjectPageSizeMax);
+  CheckHeader();
+  encoded_ = static_cast<uint32_t>(size) | (encoded_ & ~kHeaderSizeMask);
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValid() const {
@@ -941,18 +957,6 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() {
   }
   DCHECK(!PageFromObject(this)->IsLargeObjectPage());
   return size - sizeof(HeapObjectHeader);
-}
-
-inline HeapObjectHeader* HeapObjectHeader::FromPayload(const void* payload) {
-  Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
-  HeapObjectHeader* header =
-      reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
-  header->CheckHeader();
-  return header;
-}
-
-inline void HeapObjectHeader::CheckFromPayload(const void* payload) {
-  (void)FromPayload(payload);
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsWrapperHeaderMarked()
@@ -1079,9 +1083,10 @@ inline void ObjectStartBitmap::Iterate(Callback callback) const {
   }
 }
 
-inline HeapObjectHeader::HeapObjectHeader(size_t size,
-                                          size_t gc_info_index,
-                                          HeaderLocation header_location) {
+NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
+    size_t size,
+    size_t gc_info_index,
+    HeaderLocation header_location) {
   // sizeof(HeapObjectHeader) must be equal to or smaller than
   // |kAllocationGranularity|, because |HeapObjectHeader| is used as a header
   // for a freed entry. Given that the smallest entry size is
@@ -1098,11 +1103,7 @@ inline HeapObjectHeader::HeapObjectHeader(size_t size,
   DCHECK(gc_info_index < GCInfoTable::kMaxIndex);
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
   DCHECK(!(size & kAllocationMask));
-  encoded_ = static_cast<uint32_t>(
-      (gc_info_index << kHeaderGCInfoIndexShift) | size |
-      (gc_info_index == kGcInfoIndexForFreeListHeader ? kHeaderFreedBitMask
-                                                      : 0));
-
+  encoded_ = uint32_t{(gc_info_index << kHeaderGCInfoIndexShift) | size};
   if (header_location == kNormalPage) {
     DCHECK(!PageFromObject(this)->IsLargeObjectPage());
     static_cast<NormalPage*>(PageFromObject(this))
