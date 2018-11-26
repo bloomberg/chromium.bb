@@ -1360,7 +1360,6 @@ enum class ShowTabSwitcherSnapshotResult {
 #pragma mark - Promo support
 
 - (void)scheduleShowPromo {
-  [self.mainBVC.dispatcher showConsentBumpIfNeeded];
   // Don't show promos if first run is shown.  (Note:  This flag is only YES
   // while the first run UI is visible.  However, as this function is called
   // immediately after the UI is shown, it's a safe check.)

@@ -24,8 +24,6 @@ const CGFloat kAuthenticationTextColorAlpha = 0.54;
 const CGFloat kAuthenticationSeparatorColorAlpha = 0.12;
 const CGFloat kAuthenticationSeparatorHeight = 1;
 
-const CGFloat kAuthenticationCheckmarkSize = 18;
 const int kAuthenticationCheckmarkColor = 0x1A73E8;
 
 NSString* const kAuthenticationHeaderImageName = @"unified_consent_header";
-NSString* const kAuthenticationCheckmarkImageName = @"authentication_checkmark";

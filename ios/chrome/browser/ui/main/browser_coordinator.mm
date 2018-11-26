@@ -13,8 +13,6 @@
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
@@ -34,10 +32,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface BrowserCoordinator ()<ConsentBumpCoordinatorDelegate,
-                                 FormInputAccessoryCoordinatorDelegate,
-                                 RepostFormTabHelperDelegate,
-                                 WebStateListObserving>
+@interface BrowserCoordinator () <FormInputAccessoryCoordinatorDelegate,
+                                  RepostFormTabHelperDelegate,
+                                  WebStateListObserving>
 
 // Handles command dispatching.
 @property(nonatomic, strong) CommandDispatcher* dispatcher;
@@ -48,9 +45,6 @@
 
 // Coordinator for UI related to launching external apps.
 @property(nonatomic, strong) AppLauncherCoordinator* appLauncherCoordinator;
-
-// Coordinator to ask the user for the new consent.
-@property(nonatomic, strong) ConsentBumpCoordinator* consentBumpCoordinator;
 
 // Coordinator in charge of the presenting autofill options above the
 // keyboard.
@@ -87,7 +81,6 @@
 @synthesize dispatcher = _dispatcher;
 // Child coordinators
 @synthesize appLauncherCoordinator = _appLauncherCoordinator;
-@synthesize consentBumpCoordinator = _consentBumpCoordinator;
 @synthesize formInputAccessoryCoordinator = _formInputAccessoryCoordinator;
 @synthesize qrScannerCoordinator = _qrScannerCoordinator;
 @synthesize readingListCoordinator = _readingListCoordinator;
@@ -153,9 +146,6 @@
 
   self.appLauncherCoordinator = [[AppLauncherCoordinator alloc]
       initWithBaseViewController:self.viewController];
-
-  /* ConsentBumpCoordinator is created and started by a BrowserCommand */
-
   self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState
@@ -187,9 +177,6 @@
   // ChromeCoordinator, and does not have a |-stop| method.
   self.appLauncherCoordinator = nil;
 
-  [self.consentBumpCoordinator stop];
-  self.consentBumpCoordinator = nil;
-
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
 
@@ -210,27 +197,6 @@
 
   [self.storeKitCoordinator stop];
   self.storeKitCoordinator = nil;
-}
-
-#pragma mark - BrowserCoordinatorCommands
-
-- (void)showConsentBumpIfNeeded {
-  DCHECK(!self.consentBumpCoordinator);
-  if (![ConsentBumpCoordinator
-          shouldShowConsentBumpWithBrowserState:self.browserState]) {
-    return;
-  }
-  self.consentBumpCoordinator = [[ConsentBumpCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                    browserState:self.browserState];
-  self.consentBumpCoordinator.delegate = self;
-  [self.consentBumpCoordinator start];
-  self.consentBumpCoordinator.viewController.modalPresentationStyle =
-      UIModalPresentationFormSheet;
-  [self.viewController
-      presentViewController:self.consentBumpCoordinator.viewController
-                   animated:YES
-                 completion:nil];
 }
 
 - (void)showReadingList {
@@ -262,25 +228,6 @@
   self.recentTabsCoordinator.loader = self.viewController;
   self.recentTabsCoordinator.dispatcher = self.applicationCommandHandler;
   [self.recentTabsCoordinator start];
-}
-
-#pragma mark - ConsentBumpCoordinatorDelegate
-
-- (void)consentBumpCoordinator:(ConsentBumpCoordinator*)coordinator
-    didFinishNeedingToShowSettings:(BOOL)shouldShowSettings {
-  DCHECK(self.consentBumpCoordinator);
-  DCHECK(self.consentBumpCoordinator.viewController);
-  auto completion = ^{
-    if (shouldShowSettings) {
-      [self.applicationCommandHandler
-          showGoogleServicesSettingsFromViewController:self.viewController];
-    }
-  };
-  [self.consentBumpCoordinator.viewController
-      dismissViewControllerAnimated:YES
-                         completion:completion];
-  [self.consentBumpCoordinator stop];
-  self.consentBumpCoordinator = nil;
 }
 
 #pragma mark - FormInputAccessoryCoordinatorDelegate
