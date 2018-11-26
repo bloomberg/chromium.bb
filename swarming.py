@@ -243,8 +243,9 @@ def trigger_task_shards(swarming, task_request, shards):
   def convert(index):
     req = task_request_to_raw_request(task_request)
     if shards > 1:
-      req['task_slices'][0]['properties']['env'] = setup_googletest(
-          req['task_slices'][0]['properties']['env'], shards, index)
+      for task_slice in req['task_slices']:
+        task_slice['properties']['env'] = setup_googletest(
+            task_slice['properties']['env'], shards, index)
       req['name'] += ':%s:%s' % (index, shards)
     return req
 
