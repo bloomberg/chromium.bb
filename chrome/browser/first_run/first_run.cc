@@ -270,25 +270,6 @@ base::FilePath& GetMasterPrefsPathForTesting() {
   return *s;
 }
 
-// Loads master preferences from the master preference file into the installer
-// master preferences. Returns the pointer to installer::MasterPreferences
-// object if successful; otherwise, returns nullptr.
-std::unique_ptr<installer::MasterPreferences> LoadMasterPrefs() {
-  base::FilePath master_prefs_path;
-  if (!GetMasterPrefsPathForTesting().empty())
-    master_prefs_path = GetMasterPrefsPathForTesting();
-  else
-    master_prefs_path = base::FilePath(first_run::internal::MasterPrefsPath());
-
-  if (master_prefs_path.empty())
-    return nullptr;
-  auto install_prefs =
-      std::make_unique<installer::MasterPreferences>(master_prefs_path);
-  if (!install_prefs->read_from_file())
-    return nullptr;
-  return install_prefs;
-}
-
 // Makes chrome the user's default browser according to policy or
 // |make_chrome_default_for_user| if no policy is set.
 void ProcessDefaultBrowserPolicy(bool make_chrome_default_for_user) {
@@ -349,11 +330,6 @@ void SetupMasterPrefsFromInstallPrefs(
   install_prefs.GetString(
       installer::master_preferences::kDistroImportBookmarksFromFilePref,
       &out_prefs->import_bookmarks_path);
-
-  out_prefs->compressed_variations_seed =
-      install_prefs.GetCompressedVariationsSeed();
-  out_prefs->variations_seed_signature =
-      install_prefs.GetVariationsSeedSignature();
 
   install_prefs.GetString(
       installer::master_preferences::kDistroSuppressDefaultBrowserPromptPref,
@@ -491,13 +467,27 @@ void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs) {
   GetMasterPrefsPathForTesting() = master_prefs;
 }
 
+std::unique_ptr<installer::MasterPreferences> LoadMasterPrefs() {
+  base::FilePath master_prefs_path;
+  if (!GetMasterPrefsPathForTesting().empty())
+    master_prefs_path = GetMasterPrefsPathForTesting();
+  else
+    master_prefs_path = base::FilePath(first_run::internal::MasterPrefsPath());
+
+  if (master_prefs_path.empty())
+    return nullptr;
+  auto install_prefs =
+      std::make_unique<installer::MasterPreferences>(master_prefs_path);
+  if (!install_prefs->read_from_file())
+    return nullptr;
+  return install_prefs;
+}
+
 ProcessMasterPreferencesResult ProcessMasterPreferences(
     const base::FilePath& user_data_dir,
+    std::unique_ptr<installer::MasterPreferences> install_prefs,
     MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
-
-  std::unique_ptr<installer::MasterPreferences> install_prefs =
-      LoadMasterPrefs();
 
   if (install_prefs.get()) {
     if (!internal::ShowPostInstallEULAIfNeeded(install_prefs.get()))

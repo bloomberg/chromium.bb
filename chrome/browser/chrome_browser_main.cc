@@ -876,11 +876,14 @@ int ChromeBrowserMainParts::PreCreateThreads() {
   result_code_ = PreCreateThreadsImpl();
 
   if (result_code_ == service_manager::RESULT_CODE_NORMAL_EXIT) {
-#if !defined(OS_ANDROID)
     // These members must be initialized before exiting this function normally.
-    DCHECK(master_prefs_.get());
+#if !defined(OS_ANDROID)
     DCHECK(browser_creator_.get());
-#endif  // !defined(OS_ANDROID)
+#endif
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+    DCHECK(master_prefs_.get());
+#endif
+
     for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
       chrome_extra_parts_[i]->PreCreateThreads();
   }
@@ -912,10 +915,6 @@ int ChromeBrowserMainParts::OnLocalStateLoaded(
   }
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_ANDROID)
-  master_prefs_ = std::make_unique<first_run::MasterPrefs>();
-#endif
-
   if (browser_process_->actual_locale().empty()) {
     *failed_to_load_resource_bundle = true;
     return chrome::RESULT_CODE_MISSING_DATA;
@@ -939,14 +938,20 @@ int ChromeBrowserMainParts::ApplyFirstRunPrefs() {
 // Android does first run in Java instead of native.
 // Chrome OS has its own out-of-box-experience code.
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  master_prefs_ = std::make_unique<first_run::MasterPrefs>();
+
+  std::unique_ptr<installer::MasterPreferences> installer_master_prefs =
+      chrome_feature_list_creator_->TakeMasterPrefs();
+  if (!installer_master_prefs)
+    return service_manager::RESULT_CODE_NORMAL_EXIT;
+
   // On first run, we need to process the predictor preferences before the
   // browser's profile_manager object is created, but after ResourceBundle
   // is initialized.
-  if (!first_run::IsChromeFirstRun())
-    return service_manager::RESULT_CODE_NORMAL_EXIT;
-
   first_run::ProcessMasterPreferencesResult pmp_result =
-      first_run::ProcessMasterPreferences(user_data_dir_, master_prefs_.get());
+      first_run::ProcessMasterPreferences(user_data_dir_,
+                                          std::move(installer_master_prefs),
+                                          master_prefs_.get());
   if (pmp_result == first_run::EULA_EXIT_NOW)
     return chrome::RESULT_CODE_EULA_REFUSED;
 
@@ -957,23 +962,6 @@ int ChromeBrowserMainParts::ApplyFirstRunPrefs() {
   // in first_run.h.
 
   PrefService* local_state = g_browser_process->local_state();
-  // Store the initial VariationsService seed in local state, if it exists
-  // in master prefs.
-  if (!master_prefs_->compressed_variations_seed.empty()) {
-    local_state->SetString(variations::prefs::kVariationsCompressedSeed,
-                           master_prefs_->compressed_variations_seed);
-    if (!master_prefs_->variations_seed_signature.empty()) {
-      local_state->SetString(variations::prefs::kVariationsSeedSignature,
-                             master_prefs_->variations_seed_signature);
-    }
-    // Set the variation seed date to the current system time. If the user's
-    // clock is incorrect, this may cause some field trial expiry checks to
-    // not do the right thing until the next seed update from the server,
-    // when this value will be updated.
-    local_state->SetInt64(variations::prefs::kVariationsSeedDate,
-                          base::Time::Now().ToInternalValue());
-  }
-
   if (!master_prefs_->suppress_default_browser_prompt_for_version.empty()) {
     local_state->SetString(
         prefs::kBrowserSuppressDefaultBrowserPrompt,
@@ -1970,7 +1958,11 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   ignore_result(browser_process_.release());
 
   browser_shutdown::ShutdownPostThreadsStop(restart_flags);
+
+#if !defined(OS_CHROMEOS)
   master_prefs_.reset();
+#endif  // !defined(OS_CHROMEOS)
+
   process_singleton_.reset();
   device_event_log::Shutdown();
 
