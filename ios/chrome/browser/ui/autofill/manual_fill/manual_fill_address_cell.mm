@@ -86,6 +86,9 @@ static const CGFloat SideMargins = 16;
 // A button showing the address associated last name.
 @property(nonatomic, strong) UIButton* lastNameButton;
 
+// A button showing the company name.
+@property(nonatomic, strong) UIButton* companyButton;
+
 // A button showing the address line 1.
 @property(nonatomic, strong) UIButton* line1Button;
 
@@ -109,6 +112,12 @@ static const CGFloat SideMargins = 16;
 
 // A button showing country.
 @property(nonatomic, strong) UIButton* countryButton;
+
+// A button showing a phone number.
+@property(nonatomic, strong) UIButton* phoneNumberButton;
+
+// A button showing an email address.
+@property(nonatomic, strong) UIButton* emailAddressButton;
 
 // The content delegate for this item.
 @property(nonatomic, weak) id<ManualFillContentDelegate> delegate;
@@ -134,13 +143,15 @@ static const CGFloat SideMargins = 16;
   [self.firstNameButton setTitle:@"" forState:UIControlStateNormal];
   [self.middleNameButton setTitle:@"" forState:UIControlStateNormal];
   [self.lastNameButton setTitle:@"" forState:UIControlStateNormal];
+  [self.companyButton setTitle:@"" forState:UIControlStateNormal];
   [self.line1Button setTitle:@"" forState:UIControlStateNormal];
   [self.line2Button setTitle:@"" forState:UIControlStateNormal];
   [self.zipButton setTitle:@"" forState:UIControlStateNormal];
   [self.cityButton setTitle:@"" forState:UIControlStateNormal];
   [self.stateButton setTitle:@"" forState:UIControlStateNormal];
   [self.countryButton setTitle:@"" forState:UIControlStateNormal];
-  [self.line2Button setTitle:@"" forState:UIControlStateNormal];
+  [self.phoneNumberButton setTitle:@"" forState:UIControlStateNormal];
+  [self.emailAddressButton setTitle:@"" forState:UIControlStateNormal];
   self.delegate = nil;
 }
 
@@ -234,6 +245,15 @@ static const CGFloat SideMargins = 16;
     [verticalLeadViews addObject:nameLineViews.firstObject];
   }
 
+  // Company line.
+  if (address.company.length) {
+    [self.companyButton setTitle:address.company forState:UIControlStateNormal];
+    [verticalLeadViews addObject:self.companyButton];
+    self.companyButton.hidden = NO;
+  } else {
+    self.companyButton.hidden = YES;
+  }
+
   // Address line 1.
   if (address.line1.length) {
     [self.line1Button setTitle:address.line1 forState:UIControlStateNormal];
@@ -318,6 +338,24 @@ static const CGFloat SideMargins = 16;
     [verticalLeadViews addObject:stateCountryLineViews.firstObject];
   }
 
+  if (address.phoneNumber.length) {
+    [self.phoneNumberButton setTitle:address.phoneNumber
+                            forState:UIControlStateNormal];
+    [verticalLeadViews addObject:self.phoneNumberButton];
+    self.phoneNumberButton.hidden = NO;
+  } else {
+    self.phoneNumberButton.hidden = YES;
+  }
+
+  if (address.emailAddress.length) {
+    [self.emailAddressButton setTitle:address.emailAddress
+                             forState:UIControlStateNormal];
+    [verticalLeadViews addObject:self.emailAddressButton];
+    self.emailAddressButton.hidden = NO;
+  } else {
+    self.emailAddressButton.hidden = YES;
+  }
+
   self.verticalConstraints = VerticalConstraintsSpacingForViewsInContainer(
       verticalLeadViews, self.contentView);
 }
@@ -367,6 +405,12 @@ static const CGFloat SideMargins = 16;
       ],
       self.firstNameButton);
 
+  self.companyButton = CreateButtonWithSelectorAndTarget(
+      @selector(userDidTapAddressInfo:), self);
+  [self.contentView addSubview:self.companyButton];
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.companyButton ], guide,
+                                                0);
+
   self.line1Button = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.line1Button];
@@ -408,6 +452,18 @@ static const CGFloat SideMargins = 16;
 
   SyncBaselinesForViewsOnView(
       @[ self.countrySeparatorLabel, self.countryButton ], self.stateButton);
+
+  self.phoneNumberButton = CreateButtonWithSelectorAndTarget(
+      @selector(userDidTapAddressInfo:), self);
+  [self.contentView addSubview:self.phoneNumberButton];
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.phoneNumberButton ],
+                                                guide, 0);
+
+  self.emailAddressButton = CreateButtonWithSelectorAndTarget(
+      @selector(userDidTapAddressInfo:), self);
+  [self.contentView addSubview:self.emailAddressButton];
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.emailAddressButton ],
+                                                guide, 0);
 
   self.nameLineConstraints = @[];
   self.zipCityLineConstraints = @[];
