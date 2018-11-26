@@ -24,10 +24,16 @@
 
   # https://crbug.com/330263
   'linux': [
-    'zucchini_apply_fuzzer_seed_corpus.zip',
+    # https://crbug.com/908463
+    'fontconfig_caches/df1acc8c-39d5-4a8b-8507-b1a7396ac3ac-le64.cache-7',
 
-    'mr_extension',
-    'mr_extension/release',
+    # nacl stuff, https://crbug.com/429358
+    'nacl_helper_nonsfi',
+    'nacl_helper_nonsfi_unittests_main',
+    'nacl_test_data/nonsfi/irt_exception_test_pnacl_newlib_x32_nonsfi.nexe',
+    'nacl_test_data/nonsfi/irt_manifest_file_pnacl_newlib_x32_nonsfi.nexe',
+    'ppapi_nacl_tests_pnacl_newlib_x32_nonsfi.nexe',
+    'test_data/ppapi/tests/extensions/packaged_app/nonsfi/ppapi_tests_extensions_packaged_app_pnacl_newlib_x32_nonsfi.nexe',
   ],
 
   'linux_component': [
@@ -196,8 +202,7 @@
     'mini_installer_tests.zip',
     'policy_templates.zip',
 
-    # These are no longer deterministic now that two different build dirs
-    # are being used:
+    # nacl stuff, https://crbug.com/429358
     'nacl_test_data\\extension_vcache_test\\glibc\\extension_validation_cache_glibc_x86_32.nexe',
     'nacl_test_data\\extension_vcache_test\\glibc\\extension_validation_cache_glibc_x86_64.nexe',
     'nacl_test_data\\extension_vcache_test\\glibc\\extension_validation_cache_libs\\lib32\\libppapi_cpp_lib.dll',
