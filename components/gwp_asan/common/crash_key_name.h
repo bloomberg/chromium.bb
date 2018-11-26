@@ -9,8 +9,8 @@ namespace gwp_asan {
 namespace internal {
 
 // The name of the crash key used to convey the address of the
-// GuardedPageAllocator to the crash handler.
-const char kGpaCrashKey[] = "guarded-page-allocator-address";
+// AllocatorBaseState to the crash handler.
+const char kGpaCrashKey[] = "allocator-base-state-address";
 
 }  // namespace internal
 }  // namespace gwp_asan

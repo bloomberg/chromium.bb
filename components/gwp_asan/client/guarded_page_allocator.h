@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_GWP_ASAN_COMMON_GUARDED_PAGE_ALLOCATOR_H_
-#define COMPONENTS_GWP_ASAN_COMMON_GUARDED_PAGE_ALLOCATOR_H_
+#ifndef COMPONENTS_GWP_ASAN_CLIENT_GUARDED_PAGE_ALLOCATOR_H_
+#define COMPONENTS_GWP_ASAN_CLIENT_GUARDED_PAGE_ALLOCATOR_H_
 
 #include <atomic>
 
@@ -12,7 +12,8 @@
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "base/threading/platform_thread.h"
+#include "components/gwp_asan/client/export.h"
+#include "components/gwp_asan/common/allocator_state.h"
 
 namespace gwp_asan {
 namespace internal {
@@ -22,21 +23,12 @@ namespace internal {
 // platforms.)
 unsigned CountTrailingZeroBits64(uint64_t x);
 
-class GuardedPageAllocator {
+// This class encompasses the allocation and deallocation logic on top of the
+// AllocatorState. Its members are not inspected or used by the crash handler.
+class GWP_ASAN_EXPORT GuardedPageAllocator {
  public:
-  // Maximum number of pages this class can allocate.
-  static constexpr size_t kGpaMaxPages = 64;
-
   // Default maximum alignment for all returned allocations.
   static constexpr size_t kGpaAllocAlignment = 16;
-
-  enum class ErrorType {
-    kUseAfterFree = 0,
-    kBufferUnderflow = 1,
-    kBufferOverflow = 2,
-    kDoubleFree = 3,
-    kUnknown = 4,
-  };
 
   // Configures this allocator to map memory for num_pages pages (excluding
   // guard pages). num_pages must be in the range [1, kGpaMaxPages]. Init should
@@ -46,14 +38,13 @@ class GuardedPageAllocator {
   // On success, returns a pointer to size bytes of page-guarded memory. On
   // failure, returns nullptr. The allocation is not guaranteed to be
   // zero-filled. Failure can occur if memory could not be mapped or protected,
-  // if the allocation is greather than a page in size, or if all guarded pages
-  // are already allocated.
+  // or if all guarded pages are already allocated.
   //
   // The align parameter specifies a power of two to align the allocation up to.
   // It must be less than or equal to the allocation size. If it's left as zero
   // it will default to the default alignment the allocator chooses.
   //
-  // Precondition: Init() must have been called, align <= size
+  // Precondition: Init() must have been called, align <= size <= page_size_
   void* Allocate(size_t size, size_t align = 0);
 
   // Deallocates memory pointed to by ptr. ptr must have been previously
@@ -64,38 +55,19 @@ class GuardedPageAllocator {
   // previously returned by a call to Allocate.
   size_t GetRequestedSize(const void* ptr) const;
 
+  // Get the address of the GuardedPageAllocator crash key (the address of the
+  // the shared allocator state with the crash handler.)
+  uintptr_t GetCrashKeyAddress() const;
+
   // Returns true if ptr points to memory managed by this class.
   inline bool PointerIsMine(const void* ptr) const {
-    uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-    return pages_base_addr_ <= addr && addr < pages_end_addr_;
+    return state_.PointerIsMine(reinterpret_cast<uintptr_t>(ptr));
   }
 
  private:
   using BitMap = uint64_t;
-  static_assert(kGpaMaxPages == sizeof(BitMap) * 8,
+  static_assert(AllocatorState::kGpaMaxPages == sizeof(BitMap) * 8,
                 "Maximum number of pages is the size of free_pages_ bitmap");
-
-  // Structure for storing data about a slot.
-  struct SlotMetadata {
-    // Information saved for allocations and deallocations.
-    struct AllocationInfo {
-      // (De)allocation thread id or base::kInvalidThreadId if no (de)allocation
-      // occurred.
-      base::PlatformThreadId tid = base::kInvalidThreadId;
-      // Address of stack trace addresses or null if no (de)allocation occurred.
-      uintptr_t trace_addr = 0;
-      // Stack trace length or 0 if no (de)allocation occurred.
-      size_t trace_len = 0;
-    };
-
-    // Size of the allocation
-    size_t alloc_size = 0;
-    // The allocation address.
-    uintptr_t alloc_ptr = 0;
-
-    AllocationInfo alloc;
-    AllocationInfo dealloc;
-  };
 
   // Does not allocate any memory for the allocator, to finish initializing call
   // Init().
@@ -122,24 +94,6 @@ class GuardedPageAllocator {
   // Marks the specified slot as unreserved.
   void FreeSlot(size_t slot) LOCKS_EXCLUDED(lock_);
 
-  // Returns the address of the page that addr resides on.
-  uintptr_t GetPageAddr(uintptr_t addr) const;
-
-  // Returns an address somewhere on the valid page nearest to addr.
-  uintptr_t GetNearestValidPage(uintptr_t addr) const;
-
-  // Returns the slot number for the page nearest to addr.
-  size_t GetNearestSlot(uintptr_t addr) const;
-
-  // Returns the likely error type given an exception address and whether its
-  // previously been allocated and deallocated.
-  ErrorType GetErrorType(uintptr_t addr,
-                         bool allocated,
-                         bool deallocated) const;
-
-  uintptr_t SlotToAddr(size_t slot) const;
-  size_t AddrToSlot(uintptr_t addr) const;
-
   // Allocate num_pages_ stack traces.
   void AllocateStackTraces();
 
@@ -157,6 +111,9 @@ class GuardedPageAllocator {
   void RecordAllocationInSlot(size_t slot, size_t size, void* ptr);
   void RecordDeallocationInSlot(size_t slot);
 
+  // Allocator state shared with with the crash analyzer.
+  AllocatorState state_;
+
   // Allocator lock that protects free_pages_.
   base::Lock lock_;
 
@@ -164,24 +121,11 @@ class GuardedPageAllocator {
   // Bit=1: Free. Bit=0: Reserved.
   BitMap free_pages_ GUARDED_BY(lock_) = 0;
 
-  // Information about every allocation, including its size, offset, and
-  // pointers to the allocation/deallocation stack traces (if present.)
-  SlotMetadata data_[kGpaMaxPages] = {};
-
-  uintptr_t pages_base_addr_ = 0;  // Points to start of mapped region.
-  uintptr_t pages_end_addr_ = 0;   // Points to the end of mapped region.
-  uintptr_t first_page_addr_ = 0;  // Points to first allocatable page.
-  size_t num_pages_ = 0;  // Number of pages mapped (excluding guard pages).
-  size_t page_size_ = 0;  // Page size.
-
-  // Set to true if a double free has occurred.
-  std::atomic<bool> double_free_detected_{false};
-
-  // StackTrace objects for every slot in AllocateStateBase::data_. We avoid
+  // StackTrace objects for every slot in AllocatorState::data_. We avoid
   // statically allocating the StackTrace objects because they are large and
   // the allocator may be initialized with num_pages_ < kGpaMaxPages.
-  base::debug::StackTrace* alloc_traces[kGpaMaxPages];
-  base::debug::StackTrace* dealloc_traces[kGpaMaxPages];
+  base::debug::StackTrace* alloc_traces[AllocatorState::kGpaMaxPages];
+  base::debug::StackTrace* dealloc_traces[AllocatorState::kGpaMaxPages];
 
   // Required for a singleton to access the constructor.
   friend base::NoDestructor<GuardedPageAllocator>;
@@ -197,4 +141,4 @@ class GuardedPageAllocator {
 }  // namespace internal
 }  // namespace gwp_asan
 
-#endif  // COMPONENTS_GWP_ASAN_COMMON_GUARDED_PAGE_ALLOCATOR_H_
+#endif  // COMPONENTS_GWP_ASAN_CLIENT_GUARDED_PAGE_ALLOCATOR_H_

@@ -2,29 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-assert(is_win, "GWP-ASan currently only supports Windows.")
-
 static_library("common") {
   sources = [
+    "allocator_state.cc",
+    "allocator_state.h",
     "crash_key_name.h",
-    "guarded_page_allocator.cc",
-    "guarded_page_allocator.h",
-    "guarded_page_allocator_win.cc",
   ]
 
   deps = [
     "//base",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "guarded_page_allocator_unittest.cc",
-  ]
-  deps = [
-    ":common",
-    "//base/test:test_support",
-    "//testing/gtest",
   ]
 }

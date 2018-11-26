@@ -12,8 +12,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/gwp_asan/client/guarded_page_allocator.h"
 #include "components/gwp_asan/client/sampling_allocator_shims.h"
-#include "components/gwp_asan/common/guarded_page_allocator.h"
 
 namespace gwp_asan {
 
@@ -23,8 +23,8 @@ namespace {
 const base::Feature kGwpAsan{"GwpAsanMalloc",
                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::FeatureParam<int> kAllocationsParam{
-    &kGwpAsan, "TotalAllocations", GuardedPageAllocator::kGpaMaxPages};
+const base::FeatureParam<int> kAllocationsParam{&kGwpAsan, "TotalAllocations",
+                                                AllocatorState::kGpaMaxPages};
 
 const base::FeatureParam<int> kAllocationSamplingParam{
     &kGwpAsan, "AllocationSamplingFrequency", 128};
@@ -39,7 +39,7 @@ bool EnableForMalloc() {
   int total_allocations = kAllocationsParam.Get();
   if (total_allocations < 1 ||
       total_allocations >
-          base::checked_cast<int>(GuardedPageAllocator::kGpaMaxPages)) {
+          base::checked_cast<int>(AllocatorState::kGpaMaxPages)) {
     DLOG(ERROR) << "GWP-ASan TotalAllocations is out-of-range: "
                 << total_allocations;
     return false;
