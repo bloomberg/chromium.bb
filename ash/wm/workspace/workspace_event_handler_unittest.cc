@@ -171,9 +171,8 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   generator2.ReleaseLeftButton();
   generator2.set_flags(ui::EF_IS_DOUBLE_CLICK);
   generator2.PressLeftButton();
-  generator2.MoveMouseTo(generator.current_location(), 1);
+  generator2.MoveMouseTo(generator2.current_location(), 1);
   generator2.ReleaseLeftButton();
-  generator.DoubleClickLeftButton();
   bounds_in_screen = window->GetBoundsInScreen();
   EXPECT_EQ(restored_bounds.x(), bounds_in_screen.x());
   EXPECT_EQ(restored_bounds.width(), bounds_in_screen.width());
