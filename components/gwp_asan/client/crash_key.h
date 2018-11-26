@@ -5,13 +5,14 @@
 #ifndef COMPONENTS_GWP_ASAN_CLIENT_CRASH_KEY_H_
 #define COMPONENTS_GWP_ASAN_CLIENT_CRASH_KEY_H_
 
+#include "components/gwp_asan/common/allocator_state.h"
+
 namespace gwp_asan {
 namespace internal {
 
 // Registers a crash key that both signals to the crash handler that GWP-ASan
-// has been enabled and also where to find the GuardedPageAllocator for this
-// process.
-void RegisterAllocatorAddress(void* gpa_ptr);
+// has been enabled and also where to find the AllocatorState for this process.
+void RegisterAllocatorAddress(uintptr_t ptr);
 
 }  // namespace internal
 }  // namespace gwp_asan

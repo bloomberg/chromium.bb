@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/gwp_asan/common/guarded_page_allocator.h"
+#include "components/gwp_asan/client/guarded_page_allocator.h"
 
 #include <array>
 #include <set>
@@ -16,7 +16,7 @@
 namespace gwp_asan {
 namespace internal {
 
-static constexpr size_t kGpaMaxPages = GuardedPageAllocator::kGpaMaxPages;
+static constexpr size_t kGpaMaxPages = AllocatorState::kGpaMaxPages;
 
 class GuardedPageAllocatorTest : public testing::Test {
  protected:
@@ -120,18 +120,20 @@ TEST_F(GuardedPageAllocatorTest, AllocationAlignment) {
 }
 
 TEST_F(GuardedPageAllocatorTest, GetNearestValidPageEdgeCases) {
-  EXPECT_EQ(gpa_.GetPageAddr(gpa_.GetNearestValidPage(gpa_.pages_base_addr_)),
-            gpa_.first_page_addr_);
-  EXPECT_EQ(
-      gpa_.GetPageAddr(gpa_.GetNearestValidPage(gpa_.pages_end_addr_ - 1)),
-      gpa_.pages_end_addr_ - (2 * gpa_.page_size_));
+  EXPECT_EQ(gpa_.state_.GetPageAddr(
+                gpa_.state_.GetNearestValidPage(gpa_.state_.pages_base_addr)),
+            gpa_.state_.first_page_addr);
+  EXPECT_EQ(gpa_.state_.GetPageAddr(gpa_.state_.GetNearestValidPage(
+                gpa_.state_.pages_end_addr - 1)),
+            gpa_.state_.pages_end_addr - (2 * gpa_.state_.page_size));
 }
 
 TEST_F(GuardedPageAllocatorTest, GetErrorTypeEdgeCases) {
-  EXPECT_EQ(gpa_.GetErrorType(gpa_.pages_base_addr_, true, false),
-            GuardedPageAllocator::ErrorType::kBufferUnderflow);
-  EXPECT_EQ(gpa_.GetErrorType(gpa_.pages_end_addr_ - 1, true, false),
-            GuardedPageAllocator::ErrorType::kBufferOverflow);
+  EXPECT_EQ(gpa_.state_.GetErrorType(gpa_.state_.pages_base_addr, true, false),
+            AllocatorState::ErrorType::kBufferUnderflow);
+  EXPECT_EQ(
+      gpa_.state_.GetErrorType(gpa_.state_.pages_end_addr - 1, true, false),
+      AllocatorState::ErrorType::kBufferOverflow);
 }
 
 class GuardedPageAllocatorParamTest

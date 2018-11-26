@@ -16,8 +16,8 @@
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/gwp_asan/client/guarded_page_allocator.h"
 #include "components/gwp_asan/common/crash_key_name.h"
-#include "components/gwp_asan/common/guarded_page_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -83,7 +83,7 @@ bool allocationCheck(std::function<void*(void)> allocate,
 }
 
 MULTIPROCESS_TEST_MAIN(BasicFunctionality) {
-  InstallAllocatorHooks(GuardedPageAllocator::kGpaMaxPages, kSamplingFrequency);
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
 
   const size_t page_size = base::GetPageSize();
   int failures = 0;
@@ -133,7 +133,7 @@ TEST_F(SamplingAllocatorShimsTest, BasicFunctionality) {
 }
 
 MULTIPROCESS_TEST_MAIN(Realloc) {
-  InstallAllocatorHooks(GuardedPageAllocator::kGpaMaxPages, kSamplingFrequency);
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
 
   void* alloc = GetGpaForTesting().Allocate(base::GetPageSize());
   CHECK_NE(alloc, nullptr);
@@ -159,7 +159,7 @@ TEST_F(SamplingAllocatorShimsTest, Realloc) {
 }
 
 MULTIPROCESS_TEST_MAIN(Calloc) {
-  InstallAllocatorHooks(GuardedPageAllocator::kGpaMaxPages, kSamplingFrequency);
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
 
   for (size_t i = 0; i < kLoopIterations; i++) {
     unsigned char* alloc =
@@ -184,13 +184,15 @@ TEST_F(SamplingAllocatorShimsTest, Calloc) {
 }
 
 MULTIPROCESS_TEST_MAIN(CrashKey) {
-  InstallAllocatorHooks(GuardedPageAllocator::kGpaMaxPages, kSamplingFrequency);
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
 
   std::string crash_key = crash_reporter::GetCrashKeyValue(kGpaCrashKey);
 
   uint64_t value;
-  if (!base::HexStringToUInt64(crash_key, &value) ||
-      value != reinterpret_cast<uintptr_t>(&GetGpaForTesting()))
+  if (!base::HexStringToUInt64(crash_key, &value))
+    return kFailure;
+
+  if (value != GetGpaForTesting().GetCrashKeyAddress())
     return kFailure;
 
   return kSuccess;

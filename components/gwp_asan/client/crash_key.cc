@@ -12,10 +12,9 @@
 namespace gwp_asan {
 namespace internal {
 
-void RegisterAllocatorAddress(void* gpa_ptr) {
+void RegisterAllocatorAddress(uintptr_t ptr) {
   static crash_reporter::CrashKeyString<24> gpa_crash_key(kGpaCrashKey);
-  gpa_crash_key.Set(
-      base::StringPrintf("%zx", reinterpret_cast<uintptr_t>(gpa_ptr)));
+  gpa_crash_key.Set(base::StringPrintf("%zx", ptr));
 }
 
 }  // namespace internal

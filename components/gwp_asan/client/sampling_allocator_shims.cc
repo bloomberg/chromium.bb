@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "components/gwp_asan/client/crash_key.h"
 #include "components/gwp_asan/client/export.h"
-#include "components/gwp_asan/common/guarded_page_allocator.h"
+#include "components/gwp_asan/client/guarded_page_allocator.h"
 
 #if defined(OS_WIN)
 #include "components/gwp_asan/client/sampling_allocator_shims_win.h"
@@ -232,7 +232,7 @@ GWP_ASAN_EXPORT GuardedPageAllocator& GetGpaForTesting() {
 void InstallAllocatorHooks(size_t num_pages, size_t sampling_frequency) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   GetGpa().Init(num_pages);
-  RegisterAllocatorAddress(&GetGpa());
+  RegisterAllocatorAddress(GetGpa().GetCrashKeyAddress());
   sampling_state.Init(sampling_frequency);
   base::allocator::InsertAllocatorDispatch(&g_allocator_dispatch);
 #else
