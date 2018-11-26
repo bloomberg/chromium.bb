@@ -42,7 +42,7 @@ constexpr base::TimeDelta kHighBufferThresholdURL(
 constexpr base::TimeDelta kLowBufferThresholdMediaSource(
     base::TimeDelta::FromMilliseconds(0));
 constexpr base::TimeDelta kHighBufferThresholdMediaSource(
-    base::TimeDelta::FromMilliseconds(300));
+    base::TimeDelta::FromMilliseconds(1000));
 
 // Buffering parameters when load_type is kLoadTypeCommunication.
 constexpr base::TimeDelta kLowBufferThresholdCommunication(
