@@ -285,9 +285,8 @@ void BackgroundFetchRegistration::UpdateRecord(
 
   // Per the spec, resolve with a valid response, if there is one available,
   // even if the fetch has been aborted.
-  if (response) {
-    record->SetResponse(response);
-    record->UpdateState(BackgroundFetchRecord::State::kSettled);
+  if (!response.is_null()) {
+    record->SetResponseAndUpdateState(response);
     return;
   }
 
