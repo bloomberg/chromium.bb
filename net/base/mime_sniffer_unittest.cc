@@ -456,6 +456,13 @@ TEST(MimeSnifferTest, AudioVideoTest) {
                                          &mime_type));
   EXPECT_EQ("audio/mpeg", mime_type);
   mime_type.clear();
+
+  const char kAMRTestData[] =
+      "\x23\x21\x41\x4d\x52\x0a\x3c\x53\x0a\x7c\xe8\xb8\x41\xa5\x80\xca";
+  EXPECT_TRUE(SniffMimeTypeFromLocalData(kAMRTestData, sizeof(kAMRTestData) - 1,
+                                         &mime_type));
+  EXPECT_EQ("audio/amr", mime_type);
+  mime_type.clear();
 }
 
 TEST(MimeSnifferTest, ImageTest) {

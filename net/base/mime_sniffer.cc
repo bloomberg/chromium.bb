@@ -229,6 +229,8 @@ static const MagicNumber kExtraMagicNumbers[] = {
   MAGIC_NUMBER("application/x-shockwave-flash", "FWS"),
   MAGIC_NUMBER("video/x-flv", "FLV"),
   MAGIC_NUMBER("audio/x-flac", "fLaC"),
+  // Per https://tools.ietf.org/html/rfc3267#section-8.1
+  MAGIC_NUMBER("audio/amr", "#!AMR\n"),
 
   // RAW image types.
   MAGIC_NUMBER("image/x-canon-cr2", "II\x2a\x00\x10\x00\x00\x00CR"),
