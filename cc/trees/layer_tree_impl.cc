@@ -969,6 +969,8 @@ bool LayerTreeImpl::ClampBrowserControlsShownRatio() {
 }
 
 bool LayerTreeImpl::SetCurrentBrowserControlsShownRatio(float ratio) {
+  TRACE_EVENT1("cc", "LayerTreeImpl::SetCurrentBrowserControlsShownRatio",
+               "ratio", ratio);
   bool changed = top_controls_shown_ratio_->SetCurrent(ratio);
   changed |= ClampBrowserControlsShownRatio();
   return changed;

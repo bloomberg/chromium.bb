@@ -94,6 +94,10 @@ void BrowserControlsOffsetManager::UpdateBrowserControlsState(
   DCHECK(!(constraints == BrowserControlsState::kHidden &&
            current == BrowserControlsState::kShown));
 
+  TRACE_EVENT2("cc", "BrowserControlsOffsetManager::UpdateBrowserControlsState",
+               "constraints", static_cast<int>(constraints), "current",
+               static_cast<int>(current));
+
   // If the constraints have changed we need to inform Blink about it since
   // that'll affect main thread scrolling as well as layout.
   if (permitted_state_ != constraints) {
@@ -114,6 +118,7 @@ void BrowserControlsOffsetManager::UpdateBrowserControlsState(
       current == BrowserControlsState::kHidden)
     final_shown_ratio = 0.f;
   if (final_shown_ratio == TopControlsShownRatio()) {
+    TRACE_EVENT_INSTANT0("cc", "Ratio Unchanged", TRACE_EVENT_SCOPE_THREAD);
     ResetAnimations();
     return;
   }
