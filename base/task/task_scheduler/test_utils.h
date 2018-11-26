@@ -44,6 +44,8 @@ class MockSchedulerTaskRunnerDelegate : public SchedulerTaskRunnerDelegate {
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
+  void UpdatePriority(scoped_refptr<Sequence> sequence,
+                      TaskPriority priority) override;
 
   void SetWorkerPool(SchedulerWorkerPool* worker_pool);
 

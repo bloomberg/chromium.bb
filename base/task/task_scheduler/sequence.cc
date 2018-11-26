@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/critical_closure.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/task_features.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -87,6 +89,12 @@ SequenceSortKey Sequence::Transaction::GetSortKey() const {
 
 bool Sequence::Transaction::IsEmpty() const {
   return sequence_->queue_.empty();
+}
+
+void Sequence::Transaction::UpdatePriority(TaskPriority priority) {
+  if (FeatureList::IsEnabled(kAllTasksUserBlocking))
+    return;
+  sequence_->traits_.UpdatePriority(priority);
 }
 
 void Sequence::SetHeapHandle(const HeapHandle& handle) {

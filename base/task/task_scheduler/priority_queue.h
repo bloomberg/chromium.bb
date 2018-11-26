@@ -56,10 +56,10 @@ class BASE_EXPORT PriorityQueue {
     // PriorityQueue is empty.
     bool RemoveSequence(scoped_refptr<Sequence> sequence);
 
-    // Updates the sort key of |sequence| to |sequence_sort_key|. No-ops if
-    // |sequence| is not in the PriorityQueue or the PriorityQueue is empty.
-    void UpdateSortKey(scoped_refptr<Sequence> sequence,
-                       const SequenceSortKey& sequence_sort_key);
+    // Updates the sort key of the Sequence in |sequence_and_transaction| to
+    // match its current traits. No-ops if the Sequence is not in the
+    // PriorityQueue or the PriorityQueue is empty.
+    void UpdateSortKey(SequenceAndTransaction sequence_and_transaction);
 
     // Returns true if the PriorityQueue is empty.
     bool IsEmpty() const;

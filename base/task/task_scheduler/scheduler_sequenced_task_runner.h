@@ -39,7 +39,10 @@ class BASE_EXPORT SchedulerSequencedTaskRunner : public SequencedTaskRunner {
  private:
   ~SchedulerSequencedTaskRunner() override;
 
-  const TaskTraits traits_;
+  // Updates the priority for tasks posted through this TaskRunner to
+  // |priority|.
+  void UpdatePriority(TaskPriority priority);
+
   SchedulerTaskRunnerDelegate* const scheduler_task_runner_delegate_;
 
   // Sequence for all Tasks posted through this TaskRunner.

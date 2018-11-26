@@ -135,7 +135,7 @@ class TaskSchedulerWorkerPoolImplTestBase
   // SchedulerWorkerPool::Delegate:
   void ReEnqueueSequence(
       SequenceAndTransaction sequence_and_transaction) override {
-    worker_pool_->ReEnqueueSequence(std::move(sequence_and_transaction));
+    worker_pool_->ReEnqueueSequence(std::move(sequence_and_transaction), false);
   }
 
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolImplTestBase);

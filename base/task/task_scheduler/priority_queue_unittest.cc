@@ -34,8 +34,7 @@ class ThreadBeginningTransaction : public SimpleThread {
 
   // SimpleThread:
   void Run() override {
-    std::unique_ptr<PriorityQueue::Transaction> transaction =
-        priority_queue_->BeginTransaction();
+    auto transaction = priority_queue_->BeginTransaction();
     transaction_began_.Signal();
   }
 
@@ -79,17 +78,13 @@ class TaskSchedulerPriorityQueueWithSequencesTest : public testing::Test {
       MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::BEST_EFFORT));
   SequenceSortKey sort_key_d = sequence_d->BeginTransaction().GetSortKey();
 
- private:
   PriorityQueue pq;
-
- protected:
-  std::unique_ptr<PriorityQueue::Transaction> transaction =
-      pq.BeginTransaction();
 };
 
 }  // namespace
 
 TEST_F(TaskSchedulerPriorityQueueWithSequencesTest, PushPopPeek) {
+  auto transaction = pq.BeginTransaction();
   EXPECT_TRUE(transaction->IsEmpty());
 
   // Push |sequence_a| in the PriorityQueue. It becomes the sequence with the
@@ -133,6 +128,7 @@ TEST_F(TaskSchedulerPriorityQueueWithSequencesTest, PushPopPeek) {
 }
 
 TEST_F(TaskSchedulerPriorityQueueWithSequencesTest, RemoveSequence) {
+  auto transaction = pq.BeginTransaction();
   EXPECT_TRUE(transaction->IsEmpty());
 
   // Push all test Sequences into the PriorityQueue. |sequence_b|
@@ -171,49 +167,88 @@ TEST_F(TaskSchedulerPriorityQueueWithSequencesTest, RemoveSequence) {
 }
 
 TEST_F(TaskSchedulerPriorityQueueWithSequencesTest, UpdateSortKey) {
-  EXPECT_TRUE(transaction->IsEmpty());
+  {
+    auto transaction = pq.BeginTransaction();
+    EXPECT_TRUE(transaction->IsEmpty());
 
-  // Push all test Sequences into the PriorityQueue. |sequence_b|
-  // becomes the sequence with the highest priority.
-  transaction->Push(sequence_a, sort_key_a);
-  transaction->Push(sequence_b, sort_key_b);
-  transaction->Push(sequence_c, sort_key_c);
-  transaction->Push(sequence_d, sort_key_d);
-  EXPECT_EQ(sort_key_b, transaction->PeekSortKey());
+    // Push all test Sequences into the PriorityQueue. |sequence_b|
+    // becomes the sequence with the highest priority.
+    transaction->Push(sequence_a, sort_key_a);
+    transaction->Push(sequence_b, sort_key_b);
+    transaction->Push(sequence_c, sort_key_c);
+    transaction->Push(sequence_d, sort_key_d);
+    EXPECT_EQ(sort_key_b, transaction->PeekSortKey());
 
-  // Downgrade |sequence_b| from USER_BLOCKING to BEST_EFFORT. |sequence_c|
-  // (USER_BLOCKING priority) becomes the sequence with the highest priority.
-  const SequenceSortKey best_effort_sort_key =
-      SequenceSortKey(TaskPriority::BEST_EFFORT, TimeTicks::Now());
-  transaction->UpdateSortKey(sequence_b, best_effort_sort_key);
-  EXPECT_EQ(sort_key_c, transaction->PeekSortKey());
+    // End |transaction| to respect lock acquisition order (a Sequence lock
+    // can't be taken after a PriorityQueue lock).
+  }
 
-  // Update |sequence_c|'s sort key to one with the same priority. |sequence_c|
-  // (USER_BLOCKING priority) is still the sequence with the highest priority.
-  const SequenceSortKey user_blocking_sort_key =
-      SequenceSortKey(TaskPriority::USER_BLOCKING, TimeTicks::Now());
-  transaction->UpdateSortKey(sequence_c, user_blocking_sort_key);
-  // Note: |sequence_c| is popped for comparison as |sort_key_c| becomes
-  // obsolete. |sequence_a| (USER_VISIBLE priority) becomes the sequence with
-  // the highest priority.
-  EXPECT_EQ(sequence_c, transaction->PopSequence());
-  EXPECT_EQ(sort_key_a, transaction->PeekSortKey());
+  {
+    // Downgrade |sequence_b| from USER_BLOCKING to BEST_EFFORT. |sequence_c|
+    // (USER_BLOCKING priority) becomes the sequence with the highest priority.
+    auto sequence_b_and_transaction =
+        SequenceAndTransaction::FromSequence(sequence_b);
+    sequence_b_and_transaction.transaction.UpdatePriority(
+        TaskPriority::BEST_EFFORT);
 
-  // Upgrade |sequence_d| from BEST_EFFORT to USER_BLOCKING. |sequence_d|
-  // becomes the sequence with the highest priority.
-  transaction->UpdateSortKey(sequence_d, user_blocking_sort_key);
-  // Note: |sequence_d| is popped for comparison as |sort_key_d| becomes
-  // obsolete.
-  EXPECT_EQ(sequence_d, transaction->PopSequence());
+    auto transaction = pq.BeginTransaction();
+    transaction->UpdateSortKey(std::move(sequence_b_and_transaction));
+    EXPECT_EQ(sort_key_c, transaction->PeekSortKey());
+  }
 
-  // No-op if UpdateSortKey() is called on a Sequence not in the PriorityQueue.
-  EXPECT_EQ(sort_key_a, transaction->PeekSortKey());
-  transaction->UpdateSortKey(sequence_d, user_blocking_sort_key);
-  EXPECT_EQ(sequence_a, transaction->PopSequence());
-  EXPECT_EQ(sequence_b, transaction->PopSequence());
+  {
+    // Update |sequence_c|'s sort key to one with the same priority.
+    // |sequence_c| (USER_BLOCKING priority) is still the sequence with the
+    // highest priority.
+    auto sequence_c_and_transaction =
+        SequenceAndTransaction::FromSequence(sequence_c);
+    sequence_c_and_transaction.transaction.UpdatePriority(
+        TaskPriority::USER_BLOCKING);
+
+    auto transaction = pq.BeginTransaction();
+    transaction->UpdateSortKey(std::move(sequence_c_and_transaction));
+
+    // Note: |sequence_c| is popped for comparison as |sort_key_c| becomes
+    // obsolete. |sequence_a| (USER_VISIBLE priority) becomes the sequence with
+    // the highest priority.
+    EXPECT_EQ(sequence_c, transaction->PopSequence());
+    EXPECT_EQ(sort_key_a, transaction->PeekSortKey());
+  }
+
+  {
+    // Upgrade |sequence_d| from BEST_EFFORT to USER_BLOCKING. |sequence_d|
+    // becomes the sequence with the highest priority.
+    auto sequence_d_and_transaction =
+        SequenceAndTransaction::FromSequence(sequence_d);
+    sequence_d_and_transaction.transaction.UpdatePriority(
+        TaskPriority::USER_BLOCKING);
+
+    auto transaction = pq.BeginTransaction();
+    transaction->UpdateSortKey(std::move(sequence_d_and_transaction));
+
+    // Note: |sequence_d| is popped for comparison as |sort_key_d| becomes
+    // obsolete.
+    EXPECT_EQ(sequence_d, transaction->PopSequence());
+    // No-op if UpdateSortKey() is called on a Sequence not in the
+    // PriorityQueue.
+    EXPECT_EQ(sort_key_a, transaction->PeekSortKey());
+  }
+
+  {
+    auto sequence_d_and_transaction =
+        SequenceAndTransaction::FromSequence(sequence_d);
+
+    auto transaction = pq.BeginTransaction();
+    transaction->UpdateSortKey(std::move(sequence_d_and_transaction));
+    EXPECT_EQ(sequence_a, transaction->PopSequence());
+    EXPECT_EQ(sequence_b, transaction->PopSequence());
+  }
 
   // No-op if UpdateSortKey() is called on an empty PriorityQueue.
-  transaction->UpdateSortKey(sequence_b, sort_key_b);
+  auto sequence_b_and_transaction =
+      SequenceAndTransaction::FromSequence(sequence_b);
+  auto transaction = pq.BeginTransaction();
+  transaction->UpdateSortKey(std::move(sequence_b_and_transaction));
   EXPECT_TRUE(transaction->IsEmpty());
 }
 
@@ -224,10 +259,8 @@ TEST(TaskSchedulerPriorityQueueTest, IllegalTwoTransactionsSameThread) {
   PriorityQueue pq_b;
 
   EXPECT_DCHECK_DEATH({
-    std::unique_ptr<PriorityQueue::Transaction> transaction_a =
-        pq_a.BeginTransaction();
-    std::unique_ptr<PriorityQueue::Transaction> transaction_b =
-        pq_b.BeginTransaction();
+    auto transaction_a = pq_a.BeginTransaction();
+    auto transaction_b = pq_b.BeginTransaction();
   });
 }
 
@@ -239,8 +272,7 @@ TEST(TaskSchedulerPriorityQueueTest, TwoTransactionsTwoThreads) {
   PriorityQueue pq;
 
   // Call BeginTransaction() on this thread and keep the Transaction alive.
-  std::unique_ptr<PriorityQueue::Transaction> transaction =
-      pq.BeginTransaction();
+  auto transaction = pq.BeginTransaction();
 
   // Call BeginTransaction() on another thread.
   ThreadBeginningTransaction thread_beginning_transaction(&pq);

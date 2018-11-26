@@ -12,8 +12,7 @@ namespace internal {
 SchedulerSequencedTaskRunner::SchedulerSequencedTaskRunner(
     const TaskTraits& traits,
     SchedulerTaskRunnerDelegate* scheduler_task_runner_delegate)
-    : traits_(traits),
-      scheduler_task_runner_delegate_(scheduler_task_runner_delegate),
+    : scheduler_task_runner_delegate_(scheduler_task_runner_delegate),
       sequence_(MakeRefCounted<Sequence>(traits)) {}
 
 SchedulerSequencedTaskRunner::~SchedulerSequencedTaskRunner() = default;
@@ -42,6 +41,10 @@ bool SchedulerSequencedTaskRunner::PostNonNestableDelayedTask(
 
 bool SchedulerSequencedTaskRunner::RunsTasksInCurrentSequence() const {
   return sequence_->token() == SequenceToken::GetForCurrentThread();
+}
+
+void SchedulerSequencedTaskRunner::UpdatePriority(TaskPriority priority) {
+  scheduler_task_runner_delegate_->UpdatePriority(sequence_, priority);
 }
 
 }  // namespace internal

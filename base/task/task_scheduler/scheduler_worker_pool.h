@@ -63,10 +63,11 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   virtual void JoinForTesting() = 0;
 
   // Enqueues the Sequence in |sequence_and_transaction| in the worker pool's
-  // priority queue, then wakes up a worker if the worker pool is not bound to
-  // the current thread, i.e. if the Sequence is changing pools.
+  // priority queue, then wakes up a worker if |is_changing_pools|, i.e. if the
+  // Sequence came from a different worker pool.
   virtual void ReEnqueueSequence(
-      SequenceAndTransaction sequence_and_transaction) = 0;
+      SequenceAndTransaction sequence_and_transaction,
+      bool is_changing_pools) = 0;
 
   // Called when the Sequence in |sequence_and_transaction| can be scheduled.
   // It is expected that TaskTracker::RunNextTask() will be called with

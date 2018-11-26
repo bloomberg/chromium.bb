@@ -289,6 +289,7 @@ void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
 
 void SchedulerWorkerPoolImpl::PushSequenceToPriorityQueue(
     SequenceAndTransaction sequence_and_transaction) {
+  DCHECK(sequence_and_transaction.sequence);
   shared_priority_queue_.BeginTransaction()->Push(
       std::move(sequence_and_transaction.sequence),
       sequence_and_transaction.transaction.GetSortKey());
@@ -373,9 +374,10 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
 }
 
 void SchedulerWorkerPoolImpl::ReEnqueueSequence(
-    SequenceAndTransaction sequence_and_transaction) {
+    SequenceAndTransaction sequence_and_transaction,
+    bool is_changing_pools) {
   PushSequenceToPriorityQueue(std::move(sequence_and_transaction));
-  if (!IsBoundToCurrentThread())
+  if (is_changing_pools)
     WakeUpOneWorker();
 }
 
@@ -401,6 +403,20 @@ void SchedulerWorkerPoolImpl::MaximizeMayBlockThresholdForTesting() {
 void SchedulerWorkerPoolImpl::RecordNumWorkersHistogram() const {
   AutoSchedulerLock auto_lock(lock_);
   num_workers_histogram_->Add(workers_.size());
+}
+
+void SchedulerWorkerPoolImpl::UpdateSortKey(
+    SequenceAndTransaction sequence_and_transaction) {
+  // TODO(fdoray): A worker should be woken up when the priority of a
+  // BEST_EFFORT task is increased and |num_running_best_effort_tasks_| is
+  // equal to |max_best_effort_tasks_|.
+  shared_priority_queue_.BeginTransaction()->UpdateSortKey(
+      std::move(sequence_and_transaction));
+}
+
+bool SchedulerWorkerPoolImpl::RemoveSequence(scoped_refptr<Sequence> sequence) {
+  return shared_priority_queue_.BeginTransaction()->RemoveSequence(
+      std::move(sequence));
 }
 
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::

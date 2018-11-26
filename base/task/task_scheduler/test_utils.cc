@@ -106,6 +106,10 @@ bool MockSchedulerTaskRunnerDelegate::IsRunningPoolWithTraits(
   return worker_pool_->IsBoundToCurrentThread();
 }
 
+void MockSchedulerTaskRunnerDelegate::UpdatePriority(
+    scoped_refptr<Sequence> sequence,
+    TaskPriority priority) {}
+
 void MockSchedulerTaskRunnerDelegate::SetWorkerPool(
     SchedulerWorkerPool* worker_pool) {
   worker_pool_ = worker_pool;
