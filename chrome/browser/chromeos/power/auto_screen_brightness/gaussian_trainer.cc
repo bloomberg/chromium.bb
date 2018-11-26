@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/gaussian_trainer.h"
 
 #include "base/metrics/field_trial_params.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chromeos/chromeos_features.h"
 
 #include <algorithm>
@@ -124,13 +125,13 @@ double Gaussian(double x, double sigma) {
 
 GaussianTrainer::Params::Params() = default;
 
-// TODO(jiameng): log errors in UMA if any value is invalid.
 GaussianTrainer::GaussianTrainer() {
   params_.brightness_bound_scale = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "brightness_bound_scale",
       params_.brightness_bound_scale);
   if (params_.brightness_bound_scale <= 0.0) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 
@@ -139,6 +140,7 @@ GaussianTrainer::GaussianTrainer() {
       params_.brightness_bound_offset);
   if (params_.brightness_bound_offset < 0.0) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 
@@ -147,6 +149,7 @@ GaussianTrainer::GaussianTrainer() {
       params_.brightness_step_size);
   if (params_.brightness_step_size <= 0.0) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 
@@ -154,6 +157,7 @@ GaussianTrainer::GaussianTrainer() {
       features::kAutoScreenBrightness, "sigma", params_.sigma);
   if (params_.sigma <= 0.0) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 
@@ -165,6 +169,7 @@ GaussianTrainer::GaussianTrainer() {
       params_.high_log_lux_threshold);
   if (params_.low_log_lux_threshold >= params_.high_log_lux_threshold) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 
@@ -182,31 +187,37 @@ GaussianTrainer::GaussianTrainer() {
 
   if (params_.min_grad_low_lux < 0.0 || params_.min_grad_low_lux >= 1.0) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 
   if (params_.min_grad_high_lux < 0.0 || params_.min_grad_high_lux >= 1.0) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 
   if (params_.min_grad < 0.0 || params_.min_grad >= 1.0) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 
   if (params_.min_grad < params_.min_grad_low_lux) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 
   if (params_.min_grad < params_.min_grad_high_lux) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 
   if (params_.max_grad < 1.0) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 
@@ -215,6 +226,7 @@ GaussianTrainer::GaussianTrainer() {
       params_.min_brightness);
   if (params_.min_brightness < 0.0) {
     valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
     return;
   }
 }

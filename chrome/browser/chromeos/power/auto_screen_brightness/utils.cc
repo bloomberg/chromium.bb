@@ -9,6 +9,10 @@ namespace chromeos {
 namespace power {
 namespace auto_screen_brightness {
 
+void LogParameterError(ParameterError error) {
+  UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.ParameterError", error);
+}
+
 void LogDataError(DataError error) {
   UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.DataError", error);
 }

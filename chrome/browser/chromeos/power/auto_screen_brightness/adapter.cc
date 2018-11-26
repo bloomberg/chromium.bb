@@ -174,13 +174,13 @@ double Adapter::GetDarkeningThresholdForTesting() const {
   return *darkening_lux_threshold_;
 }
 
-// TODO(jiameng): add UMA metrics to record errors.
 void Adapter::InitParams() {
   params_.brightening_lux_threshold_ratio = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "brightening_lux_threshold_ratio",
       params_.brightening_lux_threshold_ratio);
   if (params_.brightening_lux_threshold_ratio <= 0) {
     adapter_status_ = Status::kDisabled;
+    LogParameterError(ParameterError::kAdapterError);
     return;
   }
 
@@ -190,6 +190,7 @@ void Adapter::InitParams() {
   if (params_.darkening_lux_threshold_ratio <= 0 ||
       params_.darkening_lux_threshold_ratio > 1) {
     adapter_status_ = Status::kDisabled;
+    LogParameterError(ParameterError::kAdapterError);
     return;
   }
 
@@ -201,6 +202,7 @@ void Adapter::InitParams() {
   if (params_.immediate_brightening_lux_threshold_ratio <
       params_.brightening_lux_threshold_ratio) {
     adapter_status_ = Status::kDisabled;
+    LogParameterError(ParameterError::kAdapterError);
     return;
   }
 
@@ -213,6 +215,7 @@ void Adapter::InitParams() {
           params_.darkening_lux_threshold_ratio ||
       params_.immediate_darkening_lux_threshold_ratio > 1) {
     adapter_status_ = Status::kDisabled;
+    LogParameterError(ParameterError::kAdapterError);
     return;
   }
 
@@ -227,6 +230,7 @@ void Adapter::InitParams() {
           params_.min_time_between_brightness_changes.InSeconds());
   if (min_seconds_between_brightness_changes < 0) {
     adapter_status_ = Status::kDisabled;
+    LogParameterError(ParameterError::kAdapterError);
     return;
   }
   params_.min_time_between_brightness_changes =
@@ -236,6 +240,7 @@ void Adapter::InitParams() {
       features::kAutoScreenBrightness, "model_curve", 2);
   if (model_curve < 0 || model_curve > 2) {
     adapter_status_ = Status::kDisabled;
+    LogParameterError(ParameterError::kAdapterError);
     return;
   }
   params_.model_curve = static_cast<ModelCurve>(model_curve);

@@ -3295,6 +3295,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="kBrightnessPercent"/>
 </enum>
 
+<enum name="AutoScreenBrightnessParameterError">
+  <int value="0" label="ModelError"/>
+  <int value="1" label="AdapterError"/>
+</enum>
+
 <enum name="AutoScreenBrightnessUserAdjustment">
   <obsolete>
     Deprecated as of 11/2018. The corresponding histogram has been deprecated.
