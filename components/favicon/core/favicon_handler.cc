@@ -121,16 +121,30 @@ bool FaviconURLEquals(const FaviconURL& lhs, const FaviconURL& rhs) {
 FaviconHandler::FaviconCandidate
 FaviconHandler::FaviconCandidate::FromFaviconURL(
     const favicon::FaviconURL& favicon_url,
-    const std::vector<int>& desired_pixel_sizes) {
+    const std::vector<int>& desired_pixel_sizes,
+    bool want_largest_icon) {
   FaviconCandidate candidate;
   candidate.icon_url = favicon_url.icon_url;
   candidate.icon_type = favicon_url.icon_type;
-  // TODO(crbug.com/705900): For candidates without explicit size information,
-  // sizes could be inferred for the most common cases. Namely, .ico files tend
-  // to contain the 16x16 bitmap, which would allow to improve the
-  // prioritization on desktop.
-  SelectFaviconFrameIndices(favicon_url.icon_sizes, desired_pixel_sizes,
-                            /*best_indices=*/nullptr, &candidate.score);
+
+  if (!favicon_url.icon_sizes.empty()) {
+    // For candidates with explicit size information, the score is computed
+    // based on similarity with |desired_pixel_sizes|.
+    SelectFaviconFrameIndices(favicon_url.icon_sizes, desired_pixel_sizes,
+                              /*best_indices=*/nullptr, &candidate.score);
+  } else if (want_largest_icon) {
+    // If looking for largest icon (mobile), candidates without explicit size
+    // information are scored low because they are likely small.
+    candidate.score = 0.0f;
+  } else {
+    // If looking for small icons (desktop), candidates without explicit size
+    // information are scored highest, as high as candidates with an ideal
+    // explicit size information. This guarantees all candidates without
+    // explicit size information will be processed until an ideal candidate is
+    // found (if available).
+    candidate.score = 1.0f;
+  }
+
   return candidate;
 }
 
@@ -222,24 +236,19 @@ bool FaviconHandler::UpdateFaviconCandidate(
   if (downloaded_favicon.candidate.score > best_favicon_.candidate.score)
     best_favicon_ = downloaded_favicon;
 
-  if (download_largest_icon_) {
-    // The size of the downloaded icon may not match the declared size. It's
-    // important to stop downloading if:
-    // - current candidate is only candidate.
-    // - next candidate has sizes attribute and it is not better than the best
-    //   one observed so far, which means any following candidate should also
-    //   be worse or equal too.
-    // - next candidate doesn't have sizes attributes, which means further
-    //   candidates don't have sizes attribute either (because the score lowest
-    //   and hence get sorted last during prioritization). We stop immediately
-    //   to avoid downloading them all, although we don't have the certainty
-    //   that no better favicon is among them.
-    return current_candidate_index_ + 1 >= final_candidates_->size() ||
-           (*final_candidates_)[current_candidate_index_ + 1].score <=
-               best_favicon_.candidate.score;
-  } else {
-    return best_favicon_.candidate.score == 1;
-  }
+  // Stop downloading if the current candidate is the last candidate.
+  if (current_candidate_index_ + 1 >= final_candidates_->size())
+    return true;
+
+  // |next_candidate_score| is based on the sizes provided in the <link> tag,
+  // see FaviconCandidate::FromFaviconURL().
+  float next_candidate_score =
+      (*final_candidates_)[current_candidate_index_ + 1].score;
+
+  // Stop downloading if the next candidate is not better than the best one
+  // observed so far, which means any following candidate should also be worse
+  // or equal too.
+  return next_candidate_score <= best_favicon_.candidate.score;
 }
 
 void FaviconHandler::SetFavicon(const GURL& icon_url,
@@ -420,8 +429,8 @@ void FaviconHandler::OnGotFinalIconURLCandidates(
   for (const FaviconURL& candidate : candidates) {
     if (!candidate.icon_url.is_empty() &&
         (icon_types_.count(candidate.icon_type) != 0)) {
-      sorted_candidates.push_back(
-          FaviconCandidate::FromFaviconURL(candidate, desired_pixel_sizes));
+      sorted_candidates.push_back(FaviconCandidate::FromFaviconURL(
+          candidate, desired_pixel_sizes, download_largest_icon_));
     }
   }
 
