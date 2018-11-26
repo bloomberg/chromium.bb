@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/frame/ash_frame_caption_controller.h"  // mash-ok
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
@@ -425,9 +424,9 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
     // at its usual insets.
     const int min_tabstrip_width =
         browser_view()->tabstrip()->GetMinimumSize().width();
-    min_width = std::max(
-        min_width,
-        min_tabstrip_width + GetTabStripLeftInset() + GetTabStripRightInset());
+    min_width =
+        std::max(min_width, min_tabstrip_width + GetTabStripLeftInset() +
+                                GetTabStripRightInset());
   }
   return gfx::Size(min_width, min_client_view_size.height());
 }
@@ -720,8 +719,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
   // Home Launcher feature is enabled, since it gives the user the ability to
   // minimize all windows when pressing the Launcher button on the shelf.
   const bool hide_caption_buttons_in_tablet_mode =
-      !browser_view()->browser()->is_app() &&
-      app_list_features::IsHomeLauncherEnabled();
+      !browser_view()->browser()->is_app();
   if (hide_caption_buttons_in_tablet_mode && TabletModeClient::Get() &&
       TabletModeClient::Get()->tablet_mode_enabled()) {
     return false;

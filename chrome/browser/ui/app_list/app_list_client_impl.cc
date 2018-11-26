@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -47,6 +48,11 @@
 namespace {
 
 AppListClientImpl* g_app_list_client_instance = nullptr;
+
+bool IsTabletMode() {
+  return TabletModeClient::Get() &&
+         TabletModeClient::Get()->tablet_mode_enabled();
+}
 
 }  // namespace
 
@@ -446,7 +452,7 @@ void AppListClientImpl::ActivateApp(Profile* profile,
       extension->id(), AppListSourceToLaunchSource(source), event_flags,
       GetAppListDisplayId());
 
-  if (!IsHomeLauncherEnabledInTabletMode())
+  if (!IsTabletMode())
     DismissView();
 }
 
@@ -459,7 +465,7 @@ void AppListClientImpl::LaunchApp(Profile* profile,
       ash::ShelfID(extension->id()), AppListSourceToLaunchSource(source),
       event_flags, display_id);
 
-  if (!IsHomeLauncherEnabledInTabletMode())
+  if (!IsTabletMode())
     DismissView();
 }
 

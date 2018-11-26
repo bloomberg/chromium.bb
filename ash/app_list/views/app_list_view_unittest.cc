@@ -610,42 +610,6 @@ INSTANTIATE_TEST_CASE_P(,
                         AppListViewFocusTest,
                         testing::ValuesIn(kAppListViewFocusTestParams));
 
-// Test behaviors in tablet mode when homcher launcher feature is enabled.
-class AppListViewHomeLauncherTest : public AppListViewTest {
- public:
-  AppListViewHomeLauncherTest() = default;
-  ~AppListViewHomeLauncherTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        app_list_features::kEnableHomeLauncher);
-    AppListViewTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListViewHomeLauncherTest);
-};
-
-// Test behaviors in tablet mode when homcher launcher feature is not enabled.
-class AppListViewNonHomeLauncherTest : public AppListViewTest {
- public:
-  AppListViewNonHomeLauncherTest() = default;
-  ~AppListViewNonHomeLauncherTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(
-        app_list_features::kEnableHomeLauncher);
-    AppListViewTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListViewNonHomeLauncherTest);
-};
-
 }  // namespace
 
 // Tests that the initial focus is on search box.
@@ -1632,39 +1596,6 @@ TEST_F(AppListViewTest, LeaveTabletModeClosed) {
   ASSERT_EQ(AppListViewState::CLOSED, view_->app_list_state());
 }
 
-// Tests that escape works after leaving tablet mode from search.
-TEST_F(AppListViewNonHomeLauncherTest, LeaveTabletModeEscapeKeyToFullscreen) {
-  // Put into fullscreen using tablet mode.
-  Initialize(0, true, false);
-  views::Textfield* search_box =
-      view_->app_list_main_view()->search_box_view()->search_box();
-
-  Show();
-  search_box->SetText(base::string16());
-  search_box->InsertText(base::UTF8ToUTF16("nothing"));
-  view_->OnTabletModeChanged(false);
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-
-  ASSERT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
-}
-
-// Tests that escape twice closes after leaving tablet mode from search.
-TEST_F(AppListViewNonHomeLauncherTest, LeaveTabletModeEscapeKeyTwiceToClosed) {
-  // Put into fullscreen using tablet mode.
-  Initialize(0, true, false);
-  views::Textfield* search_box =
-      view_->app_list_main_view()->search_box_view()->search_box();
-
-  Show();
-  search_box->SetText(base::string16());
-  search_box->InsertText(base::UTF8ToUTF16("nothing"));
-  view_->OnTabletModeChanged(false);
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-
-  ASSERT_EQ(AppListViewState::CLOSED, view_->app_list_state());
-}
-
 // Tests that opening in peeking mode sets the correct height.
 TEST_P(AppListViewTest, OpenInPeekingCorrectHeight) {
   Initialize(0, false, false);
@@ -2074,34 +2005,8 @@ TEST_F(AppListViewTest, DontShowContextMenuBetweenAppsInClamshellMode) {
   EXPECT_TRUE(view_->GetWidget()->IsVisible());
 }
 
-// Tests that pressing escape when in tablet mode closes the app list.
-TEST_F(AppListViewNonHomeLauncherTest, EscapeKeyTabletModeFullscreenToClosed) {
-  // Put into fullscreen by using tablet mode.
-  Initialize(0, true, false);
-
-  Show();
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-
-  ASSERT_EQ(AppListViewState::CLOSED, view_->app_list_state());
-}
-
-// Tests that leaving tablet mode when in tablet search causes no change.
-TEST_F(AppListViewNonHomeLauncherTest, LeaveTabletModeNoChange) {
-  // Put into fullscreen using tablet mode.
-  Initialize(0, true, false);
-  views::Textfield* search_box =
-      view_->app_list_main_view()->search_box_view()->search_box();
-
-  Show();
-  search_box->SetText(base::string16());
-  search_box->InsertText(base::UTF8ToUTF16("something"));
-  view_->OnTabletModeChanged(false);
-
-  ASSERT_EQ(AppListViewState::FULLSCREEN_SEARCH, view_->app_list_state());
-}
-
 // Tests the back action in home launcher.
-TEST_F(AppListViewHomeLauncherTest, BackAction) {
+TEST_F(AppListViewTest, BackAction) {
   // Put into fullscreen using tablet mode.
   Initialize(0, true, false);
 

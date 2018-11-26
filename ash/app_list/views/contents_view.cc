@@ -311,7 +311,7 @@ void ContentsView::UpdateExpandArrowOpacity(double progress,
 
   // Don't show |expand_arrow_view_| when the home launcher gestures are
   // disabled in tablet mode.
-  if (app_list_view_->IsHomeLauncherEnabledInTabletMode() &&
+  if (app_list_view_->is_tablet_mode() &&
       !app_list_features::IsHomeLauncherGesturesEnabled()) {
     expand_arrow_view_->layer()->SetOpacity(0);
     return;
@@ -436,7 +436,7 @@ bool ContentsView::Back() {
           GetAppsContainerView()->apps_grid_view()->pagination_model();
       if (GetAppsContainerView()->IsInFolderView()) {
         GetAppsContainerView()->app_list_folder_view()->CloseFolderPage();
-      } else if (app_list_view_->IsHomeLauncherEnabledInTabletMode() &&
+      } else if (app_list_view_->is_tablet_mode() &&
                  pagination_model->total_pages() > 0 &&
                  pagination_model->selected_page() > 0) {
         pagination_model->SelectPage(

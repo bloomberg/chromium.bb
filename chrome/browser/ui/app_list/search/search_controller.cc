@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 
 namespace app_list {
 
@@ -48,8 +49,10 @@ void SearchController::OpenResult(ChromeSearchResult* result, int event_flags) {
 
   // Launching apps can take some time. It looks nicer to dismiss the app list.
   // Do not close app list for home launcher.
-  if (!list_controller_->IsHomeLauncherEnabledInTabletMode())
+  if (!TabletModeClient::Get() ||
+      !TabletModeClient::Get()->tablet_mode_enabled()) {
     list_controller_->DismissView();
+  }
 }
 
 void SearchController::InvokeResultAction(ChromeSearchResult* result,

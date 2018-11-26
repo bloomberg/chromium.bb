@@ -216,9 +216,6 @@ class ASH_EXPORT AppListControllerImpl
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
-  // Returns true if the home launcher is enabled in tablet mode.
-  bool IsHomeLauncherEnabledInTabletMode() const;
-
   // Performs the 'back' action for the active page.
   void Back();
 
@@ -269,9 +266,6 @@ class ASH_EXPORT AppListControllerImpl
 
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
-
-  // Whether the home launcher feature is enabled.
-  const bool is_home_launcher_enabled_;
 
   // Each time overview mode is exited, set this variable based on whether
   // overview mode is sliding out, so the home launcher knows what to do when

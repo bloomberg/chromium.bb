@@ -21,6 +21,7 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/containers/unique_ptr_adapters.h"
@@ -96,8 +97,8 @@ bool IsBlurAllowed() {
 bool ShouldSlideInOutOverview(const std::vector<aura::Window*>& windows) {
   // No sliding if home launcher is not available.
   if (!Shell::Get()
-           ->app_list_controller()
-           ->IsHomeLauncherEnabledInTabletMode()) {
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled()) {
     return false;
   }
 

@@ -95,10 +95,10 @@ bool IsTabletModeEnabled() {
       ->IsTabletModeWindowManagerEnabled();
 }
 
-// TODO(sammiequon): This should be the same as IsTabletModeEnabled once home
-// launcher flag is removed.
 bool IsHomeLauncherEnabledInTabletMode() {
-  return app_list_features::IsHomeLauncherEnabled() && IsTabletModeEnabled();
+  // Home launcher flag is enabled by default and removed, so this is the same
+  // as checking tablet mode state.
+  return IsTabletModeEnabled();
 }
 
 }  // namespace

@@ -1044,7 +1044,7 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
   // If a tap/long-press occurs within a valid tile, it is usually a mistake and
   // should not close the launcher in clamshell mode. Otherwise, we should let
   // those events pass to the ancestor views.
-  if (!contents_view_->app_list_view()->IsHomeLauncherEnabledInTabletMode() &&
+  if (!contents_view_->app_list_view()->is_tablet_mode() &&
       (event->type() == ui::ET_GESTURE_TAP ||
        event->type() == ui::ET_GESTURE_LONG_PRESS)) {
     if (EventIsBetweenOccupiedTiles(event)) {
@@ -1063,7 +1063,7 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
   // If the event is a scroll down in clamshell mode on the first page, don't
   // let |pagination_controller_| handle it. Unless it occurs in a folder.
   if (!folder_delegate_ && event->type() == ui::ET_GESTURE_SCROLL_BEGIN &&
-      !contents_view_->app_list_view()->IsHomeLauncherEnabledInTabletMode() &&
+      !contents_view_->app_list_view()->is_tablet_mode() &&
       pagination_model_.selected_page() == 0 &&
       event->details().scroll_y_hint() > 0) {
     return;
@@ -1079,8 +1079,7 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 bool AppsGridView::OnMousePressed(const ui::MouseEvent& event) {
-  return !contents_view_->app_list_view()
-              ->IsHomeLauncherEnabledInTabletMode() &&
+  return !contents_view_->app_list_view()->is_tablet_mode() &&
          event.IsLeftMouseButton() && EventIsBetweenOccupiedTiles(&event);
 }
 

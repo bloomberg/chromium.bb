@@ -55,6 +55,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -524,7 +525,8 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
     return ash::SHELF_ACTION_WINDOW_MINIMIZED;
   }
 
-  if (app_list_client && app_list_client->IsHomeLauncherEnabledInTabletMode()) {
+  if (TabletModeClient::Get() &&
+      TabletModeClient::Get()->tablet_mode_enabled()) {
     // Run slide down animation to show the window.
     wm::SetWindowVisibilityAnimationType(
         native_window, ash::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN);

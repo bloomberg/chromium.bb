@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -51,8 +50,7 @@ const extensions::Extension* GetExtension(Profile* profile,
 }  // namespace
 
 AppListControllerDelegate::AppListControllerDelegate()
-    : is_home_launcher_enabled_(app_list_features::IsHomeLauncherEnabled()),
-      weak_ptr_factory_(this) {}
+    : weak_ptr_factory_(this) {}
 
 AppListControllerDelegate::~AppListControllerDelegate() {}
 
@@ -79,8 +77,7 @@ bool AppListControllerDelegate::UserMayModifySettings(
   const extensions::Extension* extension = GetExtension(profile, app_id);
   const extensions::ManagementPolicy* policy =
       extensions::ExtensionSystem::Get(profile)->management_policy();
-  return extension &&
-         policy->UserMayModifySettings(extension, NULL);
+  return extension && policy->UserMayModifySettings(extension, NULL);
 }
 
 bool AppListControllerDelegate::CanDoShowAppInfoFlow() {
@@ -124,17 +121,15 @@ void AppListControllerDelegate::UninstallApp(Profile* profile,
   uninstaller->Run();
 }
 
-bool AppListControllerDelegate::IsAppFromWebStore(
-    Profile* profile,
-    const std::string& app_id) {
+bool AppListControllerDelegate::IsAppFromWebStore(Profile* profile,
+                                                  const std::string& app_id) {
   const extensions::Extension* extension = GetExtension(profile, app_id);
   return extension && extension->from_webstore();
 }
 
-void AppListControllerDelegate::ShowAppInWebStore(
-    Profile* profile,
-    const std::string& app_id,
-    bool is_search_result) {
+void AppListControllerDelegate::ShowAppInWebStore(Profile* profile,
+                                                  const std::string& app_id,
+                                                  bool is_search_result) {
   const extensions::Extension* extension = GetExtension(profile, app_id);
   if (!extension)
     return;
@@ -143,25 +138,23 @@ void AppListControllerDelegate::ShowAppInWebStore(
   DCHECK_NE(url, GURL::EmptyGURL());
 
   const std::string source = AppListSourceToString(
-      is_search_result ?
-          AppListControllerDelegate::LAUNCH_FROM_APP_LIST_SEARCH :
-          AppListControllerDelegate::LAUNCH_FROM_APP_LIST);
-  OpenURL(profile, net::AppendQueryParameter(
-                       url, extension_urls::kWebstoreSourceField, source),
+      is_search_result ? AppListControllerDelegate::LAUNCH_FROM_APP_LIST_SEARCH
+                       : AppListControllerDelegate::LAUNCH_FROM_APP_LIST);
+  OpenURL(profile,
+          net::AppendQueryParameter(url, extension_urls::kWebstoreSourceField,
+                                    source),
           ui::PAGE_TRANSITION_LINK, WindowOpenDisposition::CURRENT_TAB);
 }
 
-bool AppListControllerDelegate::HasOptionsPage(
-    Profile* profile,
-    const std::string& app_id) {
+bool AppListControllerDelegate::HasOptionsPage(Profile* profile,
+                                               const std::string& app_id) {
   const extensions::Extension* extension = GetExtension(profile, app_id);
   return extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile) &&
          extension && extensions::OptionsPageInfo::HasOptionsPage(extension);
 }
 
-void AppListControllerDelegate::ShowOptionsPage(
-    Profile* profile,
-    const std::string& app_id) {
+void AppListControllerDelegate::ShowOptionsPage(Profile* profile,
+                                                const std::string& app_id) {
   const extensions::Extension* extension = GetExtension(profile, app_id);
   if (!extension)
     return;
@@ -185,7 +178,8 @@ void AppListControllerDelegate::SetExtensionLaunchType(
 }
 
 bool AppListControllerDelegate::IsExtensionInstalled(
-    Profile* profile, const std::string& app_id) {
+    Profile* profile,
+    const std::string& app_id) {
   return !!GetExtension(profile, app_id);
 }
 
@@ -209,9 +203,4 @@ void AppListControllerDelegate::OnSearchStarted() {
 #if BUILDFLAG(ENABLE_RLZ)
   rlz::RLZTracker::RecordAppListSearch();
 #endif
-}
-
-bool AppListControllerDelegate::IsHomeLauncherEnabledInTabletMode() const {
-  return is_home_launcher_enabled_ && TabletModeClient::Get() &&
-         TabletModeClient::Get()->tablet_mode_enabled();
 }

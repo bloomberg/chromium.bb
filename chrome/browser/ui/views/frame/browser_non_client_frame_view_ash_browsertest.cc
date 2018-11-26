@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -22,7 +21,7 @@
 #include "ash/shell.h"                                   // mash-ok
 #include "ash/wm/overview/window_selector_controller.h"  // mash-ok
 #include "ash/wm/splitview/split_view_controller.h"      // mash-ok
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"   // mash-ok
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -1354,41 +1353,8 @@ class HomeLauncherBrowserNonClientFrameViewAshTest
     command_line->AppendSwitch(ash::switches::kAshEnableTabletMode);
   }
 
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        app_list_features::kEnableHomeLauncher);
-    TopChromeMdParamTest<InProcessBrowserTest>::SetUp();
-  }
-
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherBrowserNonClientFrameViewAshTest);
-};
-
-class NonHomeLauncherBrowserNonClientFrameViewAshTest
-    : public TopChromeMdParamTest<InProcessBrowserTest> {
- public:
-  NonHomeLauncherBrowserNonClientFrameViewAshTest() = default;
-  ~NonHomeLauncherBrowserNonClientFrameViewAshTest() override = default;
-
-  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
-    TopChromeMdParamTest<InProcessBrowserTest>::SetUpDefaultCommandLine(
-        command_line);
-
-    command_line->AppendSwitch(ash::switches::kAshEnableTabletMode);
-  }
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(
-        app_list_features::kEnableHomeLauncher);
-    TopChromeMdParamTest<InProcessBrowserTest>::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(NonHomeLauncherBrowserNonClientFrameViewAshTest);
 };
 
 }  // namespace
@@ -1442,68 +1408,6 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 }
 
-// Tests that the header of a snapped browser window in splitview mode uses
-// the same header height of a maximized window. The test will fail when home
-// launcher is enabled, because caption button container is made invisible
-// intentionally.
-IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
-                       HeaderHeightForSnappedBrowserInSplitView) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  Widget* widget = browser_view->GetWidget();
-  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-
-  widget->GetNativeWindow()->SetProperty(
-      aura::client::kResizeBehaviorKey,
-      ws::mojom::kResizeBehaviorCanMaximize |
-          ws::mojom::kResizeBehaviorCanResize);
-
-  const int restored_height = frame_view->frame_header_->GetHeaderHeight();
-
-  // Setting the tablet mode must be done before calculating the expected height
-  // since the height may change depending on the tablet mode when in the
-  // dynamic refresh MD mode.
-  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
-
-  // Maximize the widget and store its frame header height.
-  widget->Maximize();
-  const int expected_height = frame_view->frame_header_->GetHeaderHeight();
-  EXPECT_NE(expected_height, restored_height);
-  widget->Restore();
-  // Restored in tablet mode has the same header height as maximized in tablet
-  // mode.
-  EXPECT_EQ(expected_height, frame_view->frame_header_->GetHeaderHeight());
-
-  ToggleOverview();
-
-  if (features::IsUsingWindowService()) {
-    ash::mojom::ShellTestApiPtr shell_test_api;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-    base::RunLoop run_loop;
-    shell_test_api->SnapWindowInSplitView(content::mojom::kBrowserServiceName,
-                                          frame_view->GetServerWindowId(), true,
-                                          run_loop.QuitClosure());
-    run_loop.Run();
-  } else {
-    ash::Shell* shell = ash::Shell::Get();
-    ash::SplitViewController* split_view_controller =
-        shell->split_view_controller();
-    split_view_controller->BindRequest(
-        mojo::MakeRequest(&frame_view->split_view_controller_));
-    split_view_controller->AddObserver(
-        frame_view->CreateInterfacePtrForTesting());
-    frame_view->split_view_controller_.FlushForTesting();
-
-    split_view_controller->SnapWindow(widget->GetNativeWindow(),
-                                      ash::SplitViewController::LEFT);
-    frame_view->split_view_controller_.FlushForTesting();
-  }
-
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  EXPECT_EQ(expected_height, frame_view->frame_header_->GetHeaderHeight());
-}
-
 #define INSTANTIATE_TEST_CASE(name) \
   INSTANTIATE_TEST_CASE_P(, name, ::testing::Values(false, true))
 
@@ -1512,4 +1416,3 @@ INSTANTIATE_TEST_CASE(ImmersiveModeBrowserViewTest);
 INSTANTIATE_TEST_CASE(HostedAppNonClientFrameViewAshTest);
 INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshBackButtonTest);
 INSTANTIATE_TEST_CASE(HomeLauncherBrowserNonClientFrameViewAshTest);
-INSTANTIATE_TEST_CASE(NonHomeLauncherBrowserNonClientFrameViewAshTest);

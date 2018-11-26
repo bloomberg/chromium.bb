@@ -235,9 +235,11 @@ void AnimateHideWindow_BrightnessGrayscale(aura::Window* window) {
 bool AnimateShowWindow_SlideDown(aura::Window* window) {
   AppListControllerImpl* app_list_controller =
       Shell::Get()->app_list_controller();
+  const TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
 
-  if (app_list_controller &&
-      app_list_controller->IsHomeLauncherEnabledInTabletMode()) {
+  if (app_list_controller && tablet_mode_controller &&
+      tablet_mode_controller->IsTabletModeWindowManagerEnabled()) {
     // Slide down the window from above screen to show and, meanwhile, slide
     // down the home launcher off screen.
     HomeLauncherGestureHandler* handler =

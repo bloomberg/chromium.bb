@@ -204,26 +204,6 @@ class PopulatedAppListTest : public AshTestBase,
 // the parameterized tests.
 INSTANTIATE_TEST_CASE_P(, AppListPresenterDelegateTest, testing::Bool());
 
-// Test a variety of behaviors in tablet mode when home launcher is not enabled.
-class AppListPresenterDelegateNonHomeLauncherTest
-    : public AppListPresenterDelegateTest {
- public:
-  AppListPresenterDelegateNonHomeLauncherTest() = default;
-  ~AppListPresenterDelegateNonHomeLauncherTest() override = default;
-
-  // testing::Test:
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {}, {app_list_features::kEnableHomeLauncher});
-    AppListPresenterDelegateTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateNonHomeLauncherTest);
-};
-
 TEST_F(PopulatedAppListTest, TappingAppsGridClosesVirtualKeyboard) {
   InitializeAppsGrid();
   app_list_test_model_->PopulateApps(2);
@@ -454,36 +434,6 @@ TEST_F(AppListPresenterDelegateTest, TabletModeTextStateTransitions) {
 }
 
 // Tests that the app list state responds correctly to tablet mode being
-// enabled while the app list is being shown.
-TEST_F(AppListPresenterDelegateNonHomeLauncherTest,
-       PeekingToFullscreenWhenTabletModeIsActive) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
-  // Enable tablet mode, this should force the app list to switch to the
-  // fullscreen equivalent of the current state.
-  EnableTabletMode(true);
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-  // Disable tablet mode, the state of the app list should not change.
-  EnableTabletMode(false);
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-  // Enter text in the searchbox, the app list should transition to fullscreen
-  // search.
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_SEARCH);
-
-  // Delete the text in the searchbox, the app list should transition to
-  // fullscreen all apps. generator->PressKey(ui::KeyboardCode::VKEY_BACK, 0);
-  generator->PressKey(ui::KeyboardCode::VKEY_BACK, 0);
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-}
-
-// Tests that the app list state responds correctly to tablet mode being
 // enabled while the app list is being shown with half launcher.
 TEST_F(AppListPresenterDelegateTest, HalfToFullscreenWhenTabletModeIsActive) {
   // TODO(newcomer): Investigate mash failures crbug.com/726838
@@ -571,49 +521,6 @@ TEST_F(AppListPresenterDelegateTest, AppListViewDragHandler) {
 
   // Execute a long downward drag, this should close the app list.
   generator->GestureScrollSequence(gfx::Point(10, 10), gfx::Point(10, 900),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
-  GetAppListTestHelper()->CheckVisibility(false);
-}
-
-// Tests that the app list view handles drag properly in tablet mode.
-TEST_F(AppListPresenterDelegateNonHomeLauncherTest,
-       AppListViewDragHandlerTabletModeFromAllApps) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
-  EnableTabletMode(true);
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  // Drag down.
-  generator->GestureScrollSequence(gfx::Point(0, 0), gfx::Point(0, 720),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
-  GetAppListTestHelper()->CheckVisibility(false);
-}
-
-// Tests that the state of the app list changes properly with drag input from
-// fullscreen search.
-TEST_F(AppListPresenterDelegateNonHomeLauncherTest,
-       AppListViewDragHandlerTabletModeFromSearch) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
-  EnableTabletMode(true);
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-
-  // Type in the search box to transition to |FULLSCREEN_SEARCH|.
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_SEARCH);
-
-  // Drag down, this should close the app list.
-  generator->GestureScrollSequence(gfx::Point(0, 0), gfx::Point(0, 720),
                                    base::TimeDelta::FromMilliseconds(100), 10);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
@@ -1210,9 +1117,7 @@ class AppListPresenterDelegateHomeLauncherTest
   // testing::Test:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {app_list_features::kEnableHomeLauncher,
-         app_list_features::kEnableBackgroundBlur},
-        {});
+        {app_list_features::kEnableBackgroundBlur}, {});
     AppListPresenterDelegateTest::SetUp();
     GetAppListTestHelper()->WaitUntilIdle();
   }

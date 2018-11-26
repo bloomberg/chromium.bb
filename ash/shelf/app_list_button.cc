@@ -23,6 +23,7 @@
 #include "ash/shell_state.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -54,10 +55,10 @@ bool IsAssistantEnabled() {
          chromeos::switches::IsAssistantEnabled();
 }
 
-bool IsHomeLauncherShown() {
+bool IsTabletMode() {
   return Shell::Get()
-      ->app_list_controller()
-      ->IsHomeLauncherEnabledInTabletMode();
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
 }
 
 }  // namespace
@@ -99,7 +100,7 @@ AppListButton::~AppListButton() {
 void AppListButton::OnAppListShown() {
   // Do not show a highlight in tablet mode since the "homecher" view is always
   // open in the background.
-  if (!IsHomeLauncherShown())
+  if (!IsTabletMode())
     AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   is_showing_app_list_ = true;
   shelf_->UpdateAutoHideState();
@@ -124,7 +125,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
         assistant_overlay_->EndAnimation();
         assistant_animation_delay_timer_->Stop();
       }
-      if (IsHomeLauncherShown())
+      if (IsTabletMode())
         AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED, event);
       ImageButton::OnGestureEvent(event);
       return;
@@ -137,8 +138,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
             base::Bind(&AppListButton::StartVoiceInteractionAnimation,
                        base::Unretained(this)));
       }
-      if (!Shell::Get()->app_list_controller()->IsVisible() ||
-          IsHomeLauncherShown()) {
+      if (!Shell::Get()->app_list_controller()->IsVisible() || IsTabletMode()) {
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
       }
       ImageButton::OnGestureEvent(event);

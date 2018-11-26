@@ -3850,10 +3850,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-    {"enable-home-launcher", flag_descriptions::kEnableHomeLauncherName,
-     flag_descriptions::kEnableHomeLauncherDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableHomeLauncher)},
-
     {"enable-apps-grid-gap", flag_descriptions::kEnableAppsGridGapFeatureName,
      flag_descriptions::kEnableAppsGridGapFeatureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppsGridGapFeature)},

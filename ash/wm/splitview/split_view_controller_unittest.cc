@@ -102,6 +102,12 @@ class TestBubbleDialogDelegateView : public views::BubbleDialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegateView);
 };
 
+bool IsTabletMode() {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
+}
+
 }  // namespace
 
 class SplitViewControllerTest : public AshTestBase {
@@ -2985,7 +2991,7 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_TRUE(window3->IsVisible());
   EXPECT_TRUE(window4->IsVisible());
 
-  if (Shell::Get()->app_list_controller()->IsHomeLauncherEnabledInTabletMode())
+  if (IsTabletMode())
     EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible());
 
   // 1) Start dragging |window1|. |window2| is the source window.
@@ -3001,7 +3007,7 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_FALSE(window4->IsVisible());
 
   // Test that home launcher should be dismissed.
-  if (Shell::Get()->app_list_controller()->IsHomeLauncherEnabledInTabletMode())
+  if (IsTabletMode())
     EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
 
   // Test that during dragging, we could not show a hidden window.
@@ -3016,7 +3022,7 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_TRUE(window4->IsVisible());
 
   // Test that home launcher should be reshown.
-  if (Shell::Get()->app_list_controller()->IsHomeLauncherEnabledInTabletMode())
+  if (IsTabletMode())
     EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible());
 }
 
