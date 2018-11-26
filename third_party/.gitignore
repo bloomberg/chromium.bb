@@ -173,6 +173,7 @@
 /perl
 /ppapi
 /proguard/lib/
+/protoc_javalite/protoc-gen-javalite
 /psyco_win32
 /pthreads-win32
 /py_trace_event/src
