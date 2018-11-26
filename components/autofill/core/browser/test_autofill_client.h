@@ -65,7 +65,6 @@ class TestAutofillClient : public AutofillClient {
                                     base::OnceClosure callback) override;
 #if defined(OS_ANDROID)
   void ConfirmAccountNameFixFlow(
-      std::unique_ptr<base::DictionaryValue> legal_message,
       base::OnceCallback<void(const base::string16&)> callback) override;
 #endif  // defined(OS_ANDROID)
 

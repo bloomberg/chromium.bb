@@ -10,11 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/legal_message_line.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace autofill {
 
@@ -24,15 +19,10 @@ class CardNameFixFlowViewDelegateMobile {
  public:
   CardNameFixFlowViewDelegateMobile(
       const base::string16& inferred_cardholder_name,
-      std::unique_ptr<base::DictionaryValue> legal_message,
       base::OnceCallback<void(const base::string16&)>
           upload_save_card_callback);
 
   ~CardNameFixFlowViewDelegateMobile();
-
-  const LegalMessageLines& GetLegalMessageLines() const {
-    return legal_messages_;
-  }
 
   int GetIconId() const;
   base::string16 GetTitleText() const;
@@ -47,9 +37,6 @@ class CardNameFixFlowViewDelegateMobile {
   // The callback to save the credit card to Google Payments once user accepts
   // fix flow.
   base::OnceCallback<void(const base::string16&)> upload_save_card_callback_;
-
-  // The legal messages to show in the fix flow.
-  LegalMessageLines legal_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(CardNameFixFlowViewDelegateMobile);
 };

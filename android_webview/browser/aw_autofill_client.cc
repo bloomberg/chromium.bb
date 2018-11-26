@@ -282,7 +282,6 @@ void AwAutofillClient::ShowLocalCardMigrationDialog(
 }
 
 void AwAutofillClient::ConfirmAccountNameFixFlow(
-    std::unique_ptr<base::DictionaryValue> legal_message,
     base::OnceCallback<void(const base::string16&)> callback) {
   NOTIMPLEMENTED();
 }

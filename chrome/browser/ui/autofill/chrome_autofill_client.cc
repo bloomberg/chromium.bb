@@ -318,12 +318,11 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
 
 #if defined(OS_ANDROID)
 void ChromeAutofillClient::ConfirmAccountNameFixFlow(
-    std::unique_ptr<base::DictionaryValue> legal_message,
     base::OnceCallback<void(const base::string16&)> callback) {
   std::unique_ptr<CardNameFixFlowViewDelegateMobile>
       card_name_fix_flow_view_delegate_mobile =
           std::make_unique<CardNameFixFlowViewDelegateMobile>(
-              GetAccountHolderName(), std::move(legal_message),
+              GetAccountHolderName(),
               /*upload_save_card_callback=*/std::move(callback));
 
   card_name_fix_flow_view_android_ =

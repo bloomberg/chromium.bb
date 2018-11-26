@@ -34,11 +34,6 @@ class CardNameFixFlowViewAndroid {
   void PromptDismissed(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
 
-  void OnLegalMessageLinkClicked(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& url);
-
   void Show();
 
  private:

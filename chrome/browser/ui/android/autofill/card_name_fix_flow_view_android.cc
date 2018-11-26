@@ -45,17 +45,6 @@ void CardNameFixFlowViewAndroid::Show() {
       confirm, ResourceMapper::MapFromChromiumId(delegate_->GetIconId()),
       view_android->GetWindowAndroid()->GetJavaObject()));
 
-  for (const auto& line : delegate_->GetLegalMessageLines()) {
-    Java_AutofillNameFixFlowBridge_addLegalMessageLine(
-        env, java_object_,
-        base::android::ConvertUTF16ToJavaString(env, line.text()));
-    for (const auto& link : line.links()) {
-      Java_AutofillNameFixFlowBridge_addLinkToLastLegalMessageLine(
-          env, java_object_, link.range.start(), link.range.end(),
-          base::android::ConvertUTF8ToJavaString(env, link.url.spec()));
-    }
-  }
-
   Java_AutofillNameFixFlowBridge_show(
       env, java_object_, view_android->GetWindowAndroid()->GetJavaObject());
 }
@@ -72,16 +61,6 @@ void CardNameFixFlowViewAndroid::PromptDismissed(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   delete this;
-}
-
-void CardNameFixFlowViewAndroid::OnLegalMessageLinkClicked(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& url) {
-  web_contents_->OpenURL(content::OpenURLParams(
-      GURL(base::android::ConvertJavaStringToUTF16(env, url)),
-      content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, /*is_renderer_initiated=*/false));
 }
 
 }  // namespace autofill

@@ -211,9 +211,8 @@ class AutofillClient : public RiskDataLoader {
 
 #if defined(OS_ANDROID)
   // Run |callback| if the card should be uploaded to payments with updated
-  // name from the user. Displays the contents of |legal_message| to the user.
+  // name from the user.
   virtual void ConfirmAccountNameFixFlow(
-      std::unique_ptr<base::DictionaryValue> legal_message,
       base::OnceCallback<void(const base::string16&)> callback) = 0;
 #endif  // defined(OS_ANDROID)
 

@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/android/feed/feed_java_sources.gni")
 import("//components/feed/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
-import("//chrome/android/feed/feed_java_sources.gni")
 
 chrome_java_sources = [
   "java/src/com/google/android/apps/chrome/appwidget/bookmarks/BookmarkThumbnailWidgetProvider.java",
@@ -93,6 +93,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill/AutofillNameFixFlowBridge.java",
   "java/src/org/chromium/chrome/browser/autofill/AutofillNameFixFlowPrompt.java",
   "java/src/org/chromium/chrome/browser/autofill/AutofillPopupBridge.java",
+  "java/src/org/chromium/chrome/browser/autofill/AutofillUiUtils.java",
   "java/src/org/chromium/chrome/browser/autofill/CardUnmaskBridge.java",
   "java/src/org/chromium/chrome/browser/autofill/CardUnmaskPrompt.java",
   "java/src/org/chromium/chrome/browser/autofill/CreditCardScannerBridge.java",
