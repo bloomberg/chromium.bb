@@ -15,11 +15,13 @@ html {
   --md-menu-size: 12px;
   --md-tile-height: 112px;
   --md-tile-margin: 16px;
+  --md-tile-padding-bottom: 10px;
   --md-tile-padding-horizontal: 4px;
-  --md-tile-padding-vertical: 16px;
+  --md-tile-padding-top: 16px;
   --md-tile-width: 112px;
   --md-title-font-size: 12px;
-  --md-title-height: 16px;
+  --md-title-height: 24px;
+
 
   /* Constants. */
   --tile-height: 128px;
@@ -392,8 +394,7 @@ html[dir=rtl] .mv-favicon {
   opacity: 1;
   position: relative;
   transition-property:
-      background, background-color, border-color, box-shadow, opacity,
-      text-shadow;
+      background, background-color, border-color, box-shadow, opacity, filter;
   width: var(--md-tile-width);
 }
 
@@ -411,12 +412,8 @@ html[dir=rtl] .mv-favicon {
 
 .md-tile {
   cursor: pointer;
-  padding: var(--md-tile-padding-vertical) var(--md-tile-padding-horizontal);
-}
-
-body.using-theme .md-tile-container .md-tile {
-  /* The theme title pill adds 2*4px of vertical padding. */
-  padding-bottom: calc(var(--md-tile-padding-vertical) - 2*4px);
+  padding: var(--md-tile-padding-top) var(--md-tile-padding-horizontal)
+    var(--md-tile-padding-bottom);
 }
 
 .md-empty-tile {
@@ -512,10 +509,11 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
   font-weight: 500;
   height: var(--md-title-height);
   line-height: var(--md-title-height);
+  overflow: hidden;
   text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   width: 96px;
-  word-break: break-word;
-  word-wrap: break-word;
 }
 
 /* Font weight on Mac and ChromeOS looks heavier on default background and
@@ -527,19 +525,20 @@ body.mac-chromeos .md-title {
 /* Apply when a custom background is set */
 body.dark-theme .md-tile-container:not(.reorder) .md-title {
   color: rgb(248, 249, 250);
-  text-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
 }
 
 /* Apply only when a theme is installed */
 body.using-theme .md-title-container {
   background-color: white;
-  border-radius: 12px;
-  padding: 4px;
+  /* Necessary for a "pill" shape. Using 50% creates an oval. */
+  border-radius: 500px;
+  padding: 0 4px;
 }
 
 body.using-theme .md-tile-container:not(.reorder) .md-title {
   color: rgba(33, 32, 36, 0.86);
-  text-shadow: unset;
+  filter: unset;
 }
 
 .md-menu {

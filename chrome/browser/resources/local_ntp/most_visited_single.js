@@ -171,13 +171,6 @@ var NUM_TITLE_LINES = 1;
 
 
 /**
- * Largest minimum font size in settings.
- * @const {number}
- */
-const LARGEST_MINIMUM_FONT_SIZE = 24;
-
-
-/**
  * The origin of this request, i.e. 'https://www.google.TLD' for the remote NTP,
  * or 'chrome-search://local-ntp' for the local NTP.
  * @const {string}
@@ -467,10 +460,6 @@ var swapInNewTiles = function() {
   // If this is Material Design, re-balance the tiles if there are more than
   // |MD_MAX_TILES_PER_ROW| in order to make even rows.
   if (isMDEnabled) {
-    // Called after appending to document so that css styles are active.
-    truncateTitleText(
-        parent.lastChild.querySelectorAll('.' + CLASSES.MD_TITLE));
-
     if (cur.childNodes.length > MD_MAX_TILES_PER_ROW) {
       cur.style.maxWidth = 'calc(var(--md-tile-width) * ' +
           Math.ceil(cur.childNodes.length / 2) + ')';
@@ -508,28 +497,6 @@ function updateTileVisibility() {
   const tilesPerRow = Math.trunc(document.body.offsetWidth / MD_TILE_WIDTH);
   for (let i = MD_NUM_TILES_ALWAYS_VISIBLE; i < allTiles.length; i++)
     allTiles[i].style.display = (i < tilesPerRow * 2) ? 'block' : 'none';
-}
-
-
-/**
- * Truncates titles that are longer than one line and appends an ellipsis. Text
- * overflow in CSS ("text-overflow: ellipsis") requires "overflow: hidden",
- * which will cut off the title's text shadow. Only used for Material Design
- * tiles.
- */
-function truncateTitleText(titles) {
-  for (let i = 0; i < titles.length; i++) {
-    let el = titles[i];
-    const originalTitle = el.innerText;
-    let truncatedTitle = el.innerText;
-    while (el.scrollHeight > LARGEST_MINIMUM_FONT_SIZE
-    && truncatedTitle.length > 0) {
-      el.innerText = (truncatedTitle = truncatedTitle.slice(0, -1)) + '\u2026';
-    }
-    if (truncatedTitle.length === 0) {
-      console.error('Title truncation failed: ' + originalTitle);
-    }
-  }
 }
 
 
