@@ -41,6 +41,7 @@ class OmniboxInputs extends OmniboxElement {
   setupElementListeners_() {
     const onQueryInputsChanged = this.onQueryInputsChanged_.bind(this);
     const onDisplayInputsChanged = this.onDisplayInputsChanged_.bind(this);
+    const onFilterInputsChange = this.onFilterInputChange_.bind(this);
 
     this.$$('input-text').addEventListener('input', onQueryInputsChanged);
     this.$$('lock-cursor-position')
@@ -59,11 +60,16 @@ class OmniboxInputs extends OmniboxElement {
         .addEventListener('click', () => this.onCopyOutput_('text'));
     this.$$('copy-json')
         .addEventListener('click', () => this.onCopyOutput_('json'));
+    this.$$('filter-text').addEventListener('input', onFilterInputsChange);
+    this.$$('filter-hide').addEventListener('change', onFilterInputsChange);
   }
+
+  // TODO (manukh) rename below on*InputsChanged methods to on*Changed to reduce
+  // verbosity.
 
   /** @private */
   onQueryInputsChanged_() {
-    /** @type {QueryInputs} */
+    /** @type {!QueryInputs} */
     const queryInputs = {
       inputText: this.$$('input-text').value,
       cursorPosition: this.cursorPosition_,
@@ -77,7 +83,7 @@ class OmniboxInputs extends OmniboxElement {
 
   /** @private */
   onDisplayInputsChanged_() {
-    /** @type {DisplayInputs} */
+    /** @type {!DisplayInputs} */
     const displayInputs = {
       showIncompleteResults: this.$$('show-incomplete-results').checked,
       showDetails: this.$$('show-details').checked,
@@ -103,6 +109,16 @@ class OmniboxInputs extends OmniboxElement {
    */
   onCopyOutput_(format) {
     this.dispatchEvent(new CustomEvent('copy-request', {detail: format}));
+  }
+
+  /** @private */
+  onFilterInputChange_() {
+    this.dispatchEvent(new CustomEvent('filter-input-changed', {
+      detail: {
+        filterText: this.$$('filter-text').value,
+        filterHide: this.$$('filter-hide').checked,
+      }
+    }));
   }
 }
 

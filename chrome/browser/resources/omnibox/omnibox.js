@@ -65,11 +65,11 @@
     }
   }
 
-  /** @type {BrowserProxy} */
+  /** @type {!BrowserProxy} */
   const browserProxy = new BrowserProxy();
-  /** @type {OmniboxInputs} */
+  /** @type {!OmniboxInputs} */
   let omniboxInputs;
-  /** @type {omnibox_output.OmniboxOutput} */
+  /** @type {!omnibox_output.OmniboxOutput} */
   let omniboxOutput;
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -95,5 +95,9 @@
         event => event.detail === 'text' ?
             omniboxOutput.copyDelegate.copyTextOutput() :
             omniboxOutput.copyDelegate.copyJsonOutput());
+    omniboxInputs.addEventListener(
+        'filter-input-changed',
+        event => omniboxOutput.filterDelegate.filter(
+            event.detail.filterText, event.detail.filterHide));
   });
 })();

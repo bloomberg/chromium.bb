@@ -175,7 +175,7 @@ cr.define('omnibox_output', function() {
    * provides a single public interface to interact with the output:
    * 1. Render tables from responses  (RenderDelegate)
    * 2. Control visibility based on display options (TODO)
-   * 3. Control visibility and coloring based on search text (TODO)
+   * 3. Control visibility and coloring based on search text (FilterDelegate)
    * 4. Export and copy output (CopyDelegate)
    * 5. Preserve inputs and reset inputs to default (TODO)
    * 6. Export and import inputs (TODO)
@@ -195,26 +195,28 @@ cr.define('omnibox_output', function() {
     constructor() {
       super('omnibox-output-template');
 
-      /** @type {RenderDelegate} */
+      /** @type {!RenderDelegate} */
       this.renderDelegate = new RenderDelegate(this.$$('contents'));
-      /** @type {CopyDelegate} */
+      /** @type {!CopyDelegate} */
       this.copyDelegate = new CopyDelegate(this);
+      /** @type {!FilterDelegate} */
+      this.filterDelegate = new FilterDelegate(this);
 
       /** @type {!Array<!mojom.OmniboxResult>} */
       this.responses = [];
-      /** @private {QueryInputs} */
-      this.queryInputs_ = /** @type {QueryInputs} */ ({});
-      /** @private {DisplayInputs} */
-      this.displayInputs_ = /** @type {DisplayInputs} */ ({});
+      /** @private {!QueryInputs} */
+      this.queryInputs_ = /** @type {!QueryInputs} */ ({});
+      /** @private {!DisplayInputs} */
+      this.displayInputs_ = /** @type {!DisplayInputs} */ ({});
     }
 
-    /** @param {QueryInputs} queryInputs */
+    /** @param {!QueryInputs} queryInputs */
     updateQueryInputs(queryInputs) {
       this.queryInputs_ = queryInputs;
       this.refresh_();
     }
 
-    /** @param {DisplayInputs} displayInputs */
+    /** @param {!DisplayInputs} displayInputs */
     updateDisplayInputs(displayInputs) {
       this.displayInputs_ = displayInputs;
       this.refresh_();
@@ -236,52 +238,55 @@ cr.define('omnibox_output', function() {
       this.renderDelegate.refresh(
           this.queryInputs_, this.responses, this.displayInputs_);
     }
+
+    /** @return {!Array<!OutputMatch>} */
+    get matches() {
+      return this.renderDelegate.matches;
+    }
   }
 
   // Responsible for rendering the output HTML.
   class RenderDelegate {
-    /** @param {Element} containerElement */
+    /** @param {!Element} containerElement */
     constructor(containerElement) {
-      this.containerElement = containerElement;
+      /** @private {!Element} */
+      this.containerElement_ = containerElement;
     }
 
     /**
-     * @param {QueryInputs} queryInputs
+     * @param {!QueryInputs} queryInputs
      * @param {!Array<!mojom.OmniboxResult>} responses
-     * @param {DisplayInputs} displayInputs
+     * @param {!DisplayInputs} displayInputs
      */
     refresh(queryInputs, responses, displayInputs) {
-      this.clearOutput_();
-      if (responses.length) {
-        if (displayInputs.showIncompleteResults) {
-          responses.forEach(
-              response => this.addOutputResultsGroup_(
-                  response, queryInputs, displayInputs));
-        } else {
-          this.addOutputResultsGroup_(
-              responses[responses.length - 1], queryInputs, displayInputs);
-        }
-      }
-    }
+      if (!responses.length)
+        return;
 
-    /**
-     * @private
-     * @param {!mojom.OmniboxResult} response
-     * @param {QueryInputs} queryInputs
-     * @param {DisplayInputs} displayInputs
-     */
-    addOutputResultsGroup_(response, queryInputs, displayInputs) {
-      this.containerElement.appendChild(
-          new OutputResultsGroup(response, queryInputs.cursorPosition)
-              .render(
+      /** @private {!Array<OutputResultsGroup>} */
+      this.resultsGroup_;
+
+      if (displayInputs.showIncompleteResults) {
+        this.resultsGroup_ = responses.map(
+            response =>
+                new OutputResultsGroup(response, queryInputs.cursorPosition));
+      } else {
+        const lastResponse = responses[responses.length - 1];
+        this.resultsGroup_ =
+            [new OutputResultsGroup(lastResponse, queryInputs.cursorPosition)];
+      }
+
+      this.clearOutput_();
+      this.resultsGroup_.forEach(
+          resultsGroup =>
+              this.containerElement_.appendChild(resultsGroup.render(
                   displayInputs.showDetails,
                   displayInputs.showIncompleteResults,
-                  displayInputs.showAllProviders));
+                  displayInputs.showAllProviders)));
     }
 
     /** @private */
     clearOutput_() {
-      let contents = this.containerElement;
+      const contents = this.containerElement_;
       // Clears all children.
       while (contents.firstChild)
         contents.removeChild(contents.firstChild);
@@ -289,7 +294,12 @@ cr.define('omnibox_output', function() {
 
     /** @return {string} */
     get visibletableText() {
-      return this.containerElement.innerText;
+      return this.containerElement_.innerText;
+    }
+
+    /** @return {!Array<!OutputMatch>} */
+    get matches() {
+      return this.resultsGroup_.flatMap(resultsGroup => resultsGroup.matches);
     }
   }
 
@@ -316,10 +326,10 @@ cr.define('omnibox_output', function() {
         host: resultsGroup.host,
         isTypedHost: resultsGroup.isTypedHost
       };
-      /** @type {OutputResultsTable} */
+      /** @type {!OutputResultsTable} */
       this.combinedResults =
           new OutputResultsTable(resultsGroup.combinedResults);
-      /** @type {Array<OutputResultsTable>} */
+      /** @type {!Array<!OutputResultsTable>} */
       this.individualResultsList =
           resultsGroup.resultsByProvider
               .map(resultsWrapper => resultsWrapper.results)
@@ -332,7 +342,7 @@ cr.define('omnibox_output', function() {
      * @param {boolean} showDetails
      * @param {boolean} showIncompleteResults
      * @param {boolean} showAllProviders
-     * @return {Element}
+     * @return {!Element}
      */
     render(showDetails, showIncompleteResults, showAllProviders) {
       const resultsGroupNode =
@@ -352,7 +362,7 @@ cr.define('omnibox_output', function() {
 
     /**
      * @private
-     * @return {Element}
+     * @return {!Element}
      */
     renderDetails_() {
       const details =
@@ -370,7 +380,7 @@ cr.define('omnibox_output', function() {
     /**
      * @private
      * @param {boolean} showDetails
-     * @return {Element}
+     * @return {!Element}
      */
     renderIndividualResults_(showDetails) {
       const individualResultsNode = OmniboxElement.getTemplate(
@@ -380,6 +390,13 @@ cr.define('omnibox_output', function() {
               individualResults.render(showDetails)));
       return individualResultsNode;
     }
+
+    /** @return {!Array<!OutputMatch>} */
+    get matches() {
+      return [this.combinedResults]
+          .concat(this.individualResultsList)
+          .flatMap(results => results.matches);
+    }
   }
 
   /**
@@ -387,16 +404,16 @@ cr.define('omnibox_output', function() {
    * rendered by OutputMatch below.
    */
   class OutputResultsTable {
-    /** @param {Array<!mojom.AutocompleteMatch>} results */
+    /** @param {!Array<!mojom.AutocompleteMatch>} results */
     constructor(results) {
-      /** @type {Array<OutputMatch>} */
+      /** @type {!Array<!OutputMatch>} */
       this.matches = results.map(match => new OutputMatch(match));
     }
 
     /**
      * Creates a HTML Node representing this data.
      * @param {boolean} showDetails
-     * @return {Element}
+     * @return {!Element}
      */
     render(showDetails) {
       const resultsTable = OmniboxElement.getTemplate('results-table-template');
@@ -437,12 +454,15 @@ cr.define('omnibox_output', function() {
           this.additionalProperties[propertyName] = propertyValue;
         }
       });
+
+      /** @type {!Element} */
+      this.associatedElement;
     }
 
     /**
      * Creates a HTML Node representing this data.
      * @param {boolean} showDetails
-     * @return {Element}
+     * @return {!Element}
      */
     render(showDetails) {
       const row = document.createElement('tr');
@@ -464,7 +484,8 @@ cr.define('omnibox_output', function() {
         row.appendChild(
             OutputMatch.renderJsonProperty_(this.additionalProperties));
       }
-      return row;
+      this.associatedElement = row;
+      return this.associatedElement;
     }
 
     /**
@@ -472,7 +493,7 @@ cr.define('omnibox_output', function() {
      * rendering becomes more substantial
      * @private
      * @param {string} propertyValue
-     * @return {Element}
+     * @return {!Element}
      */
     static renderTextProperty_(propertyValue) {
       const cell = document.createElement('td');
@@ -483,7 +504,7 @@ cr.define('omnibox_output', function() {
     /**
      * @private
      * @param {Object} propertyValue
-     * @return {Element}
+     * @return {!Element}
      */
     static renderJsonProperty_(propertyValue) {
       const cell = document.createElement('td');
@@ -496,7 +517,7 @@ cr.define('omnibox_output', function() {
     /**
      * @private
      * @param {boolean} propertyValue
-     * @return {Element}
+     * @return {!Element}
      */
     static renderBooleanProperty_(propertyValue) {
       const cell = document.createElement('td');
@@ -510,11 +531,11 @@ cr.define('omnibox_output', function() {
     /**
      * @private
      * @param {string} propertyValue
-     * @return {Element}
+     * @return {!Element}
      */
     static renderLinkProperty_(propertyValue) {
-      let cell = document.createElement('td');
-      let link = document.createElement('a');
+      const cell = document.createElement('td');
+      const link = document.createElement('a');
       link.textContent = propertyValue;
       link.href = propertyValue;
       cell.appendChild(link);
@@ -525,7 +546,7 @@ cr.define('omnibox_output', function() {
      * @private
      * @param {boolean} showDetails
      * @param {boolean} showAdditionalHeader
-     * @return {Element}
+     * @return {!Element}
      */
     static renderHeader_(showDetails, showAdditionalHeader) {
       const row = document.createElement('tr');
@@ -548,7 +569,7 @@ cr.define('omnibox_output', function() {
      * @param {string} name
      * @param {string=} url
      * @param {string=} tooltip
-     * @return {Element}
+     * @return {!Element}
      */
     static renderHeaderCell_(name, url, tooltip) {
       const cell = document.createElement('th');
@@ -565,7 +586,7 @@ cr.define('omnibox_output', function() {
     }
 
     /**
-     * @return {Array<PresentationInfoRecord>} Array representing which columns
+     * @return {!Array<!PresentationInfoRecord>} Array representing which columns
      * need to be displayed.
      */
     static displayedProperties(showDetails) {
@@ -586,18 +607,18 @@ cr.define('omnibox_output', function() {
 
   /** Responsible for setting clipboard contents. */
   class CopyDelegate {
-    /** @param {omnibox_output.OmniboxOutput} omniboxOutput */
+    /** @param {!omnibox_output.OmniboxOutput} omniboxOutput */
     constructor(omniboxOutput) {
-      /** @type {omnibox_output.OmniboxOutput} */
-      this.omniboxOutput = omniboxOutput;
+      /** @private {!omnibox_output.OmniboxOutput} */
+      this.omniboxOutput_ = omniboxOutput;
     }
 
     copyTextOutput() {
-      this.copy_(this.omniboxOutput.renderDelegate.visibletableText);
+      this.copy_(this.omniboxOutput_.renderDelegate.visibletableText);
     }
 
     copyJsonOutput() {
-      this.copy_(JSON.stringify(this.omniboxOutput.responses, null, 2));
+      this.copy_(JSON.stringify(this.omniboxOutput_.responses, null, 2));
     }
 
     /**
@@ -607,6 +628,74 @@ cr.define('omnibox_output', function() {
     copy_(value) {
       navigator.clipboard.writeText(value).catch(
           error => console.error('unable to copy to clipboard:', error));
+    }
+  }
+
+  /** Responsible for highlighting and hiding rows using filter text. */
+  class FilterDelegate {
+    /** @param {!omnibox_output.OmniboxOutput} omniboxOutput */
+    constructor(omniboxOutput) {
+      /** @private {!omnibox_output.OmniboxOutput} */
+      this.omniboxOutput_ = omniboxOutput;
+    }
+
+    /**
+     * @param {string} filterText
+     * @param {boolean} filterHide
+     */
+    filter(filterText, filterHide) {
+      this.omniboxOutput_.matches.filter(match => match.associatedElement)
+          .forEach(match => {
+            const row = match.associatedElement;
+            row.classList.remove('filtered-hidden');
+            row.classList.remove('filtered-highlighted');
+
+            if (!filterText)
+              return;
+
+            const isMatch = FilterDelegate.filterMatch_(match, filterText);
+            row.classList.toggle('filtered-hidden', filterHide && !isMatch);
+            row.classList.toggle(
+                'filtered-highlighted', !filterHide && isMatch);
+          });
+    }
+
+    /**
+     * Checks if a omnibox match fuzzy-matches a filter string. Each character
+     * of filterText must be present in the match text, either adjacent to the
+     * previous matched character, or at the start of a new word (see
+     * textToWords_).
+     * E.g. `abc` matches `abc`, `a big cat`, `a-bigCat`, `a very big cat`, and
+     * `an amBer cat`; but does not match `abigcat` or `an amber cat`.
+     * `green rainbow` is matched by `gre rain`, but not by `gre bow`.
+     * One exception is the first character, which may be matched mid-word.
+     * E.g. `een rain` can also match `green rainbow`.
+     * @private
+     * @param {!OutputMatch} match
+     * @param {string} filterText
+     * @return {boolean}
+     */
+    static filterMatch_(match, filterText) {
+      const row = match.associatedElement;
+      const cells = Array.from(row.querySelectorAll('td'));
+      const regexFilter = Array.from(filterText).join('(.*\\.)?');
+      return cells
+          .map(cell => FilterDelegate.textToWords_(cell.textContent).join('.'))
+          .some(text => text.match(regexFilter));
+    }
+
+    /**
+     * Splits a string into words, delimited by either capital letters, groups
+     * of digits, or non alpha characters.
+     * E.g., `https://google.com/the-dog-ate-134pies` will be split to:
+     * https, :, /, /, google, ., com, /, the, -, dog, -, ate, -, 134, pies
+     * We don't use `Array.split`, because we want to group digits, e.g. 134.
+     * @private
+     * @param {string} text
+     * @return {!Array<string>}
+     */
+    static textToWords_(text) {
+      return text.match(/[a-z]+|[A-Z][a-z]*|\d+|./g) || [];
     }
   }
 
