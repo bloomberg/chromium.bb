@@ -357,7 +357,8 @@ void ShelfLayoutManager::ProcessGestureEventOfAutoHideShelf(
   // event dispatching do its work.
   if (IsVisible() || in_shutdown_) {
     // Tap outside of the AUTO_HIDE_SHOWN shelf should hide it.
-    if (!IsShelfWindow(target) && visibility_state() == SHELF_AUTO_HIDE &&
+    if (!is_shelf_window && !IsStatusAreaWindow(target) &&
+        visibility_state() == SHELF_AUTO_HIDE &&
         state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN &&
         event->type() == ui::ET_GESTURE_TAP) {
       UpdateAutoHideState();
