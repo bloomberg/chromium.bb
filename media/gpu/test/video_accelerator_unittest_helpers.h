@@ -12,6 +12,7 @@
 #include "base/synchronization/lock.h"
 
 namespace media {
+namespace test {
 
 // Helper class allowing one thread to wait on a notification from another.
 // If notifications come in faster than they are Wait()'d for, they are
@@ -57,6 +58,7 @@ StateEnum ClientStateNotification<StateEnum>::Wait() {
   return ret;
 }
 
+}  // namespace test
 }  // namespace media
 
 #endif  // MEDIA_GPU_TEST_VIDEO_ACCELERATOR_UNITTEST_HELPERS_H_
