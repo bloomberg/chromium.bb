@@ -47,7 +47,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
-#include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/cloud/mock_signing_service.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -106,11 +105,9 @@ class TestingDeviceCloudPolicyManagerChromeOS
  public:
   TestingDeviceCloudPolicyManagerChromeOS(
       std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
-      std::unique_ptr<CloudExternalDataManager> external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       ServerBackedStateKeysBroker* state_keys_broker)
       : DeviceCloudPolicyManagerChromeOS(std::move(store),
-                                         std::move(external_data_manager),
                                          task_runner,
                                          state_keys_broker) {
     set_component_policy_disabled_for_testing(true);
@@ -160,9 +157,8 @@ class DeviceCloudPolicyManagerChromeOSTest
         &device_settings_service_, install_attributes_.get(),
         base::ThreadTaskRunnerHandle::Get());
     manager_ = std::make_unique<TestingDeviceCloudPolicyManagerChromeOS>(
-        base::WrapUnique(store_),
-        std::make_unique<MockCloudExternalDataManager>(),
-        base::ThreadTaskRunnerHandle::Get(), &state_keys_broker_);
+        base::WrapUnique(store_), base::ThreadTaskRunnerHandle::Get(),
+        &state_keys_broker_);
 
     RegisterLocalState(local_state_.registry());
     manager_->Init(&schema_registry_);

@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/policy/value_validation/onc_device_policy_value_validator.h"
 #include "chromeos/settings/install_attributes.h"
 #include "components/ownership/owner_key_util.h"
-#include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -169,7 +168,7 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
     PolicyMap new_policy_map;
     if (is_managed()) {
       DecodeDevicePolicy(*device_settings_service_->device_settings(),
-                         external_data_manager(), &new_policy_map);
+                         &new_policy_map);
     }
     policy_map_.Swap(&new_policy_map);
 
