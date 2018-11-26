@@ -578,13 +578,6 @@ RemoteCallFilesApp.prototype.navigateWithDirectoryTree = function(
                    .replace(/^\/team_drives/, '')
                    .replace(/^\/Computers/, '');
 
-        // TODO(lucmult): Remove this once MyFilesVolume is rolled out.
-        // Remove /Downloads duplication when MyFilesVolume is enabled.
-        if (volumeType == 'downloads' && path.startsWith('/Downloads') &&
-            rootLabel.endsWith('/Downloads')) {
-          rootLabel = rootLabel.replace('/Downloads', '');
-        }
-
         // Wait until the Files app is navigated to the path.
         return this.waitUntilCurrentDirectoryIsChanged(
             windowId, `/${rootLabel}${path}`);
