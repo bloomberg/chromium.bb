@@ -126,8 +126,7 @@ class ContentSettingMediaImageModel : public ContentSettingImageModel {
 
   std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
-      WebContents* web_contents,
-      Profile* profile) override;
+      WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaImageModel);
@@ -215,13 +214,9 @@ ContentSettingSimpleImageModel::ContentSettingSimpleImageModel(
 std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingSimpleImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
-    WebContents* web_contents,
-    Profile* profile) {
+    WebContents* web_contents) {
   return ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-      delegate,
-      web_contents,
-      profile,
-      content_type());
+      delegate, web_contents, content_type());
 }
 
 // static
@@ -548,10 +543,9 @@ bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
 std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingMediaImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
-    WebContents* web_contents,
-    Profile* profile) {
-  return std::make_unique<ContentSettingMediaStreamBubbleModel>(
-      delegate, web_contents, profile);
+    WebContents* web_contents) {
+  return std::make_unique<ContentSettingMediaStreamBubbleModel>(delegate,
+                                                                web_contents);
 }
 
 // Blocked Framebust -----------------------------------------------------------
@@ -573,10 +567,9 @@ bool ContentSettingFramebustBlockImageModel::UpdateAndGetVisibility(
 std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingFramebustBlockImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
-    WebContents* web_contents,
-    Profile* profile) {
+    WebContents* web_contents) {
   return std::make_unique<ContentSettingFramebustBlockBubbleModel>(
-      delegate, web_contents, profile);
+      delegate, web_contents);
 }
 
 // Sensors ---------------------------------------------------------------------
@@ -639,12 +632,12 @@ ContentSettingImageModel::ContentSettingImageModel(ImageType image_type)
 std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingImageModel::CreateBubbleModel(
     ContentSettingBubbleModel::Delegate* delegate,
-    content::WebContents* web_contents,
-    Profile* profile) {
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
   UMA_HISTOGRAM_ENUMERATION(
       "ContentSettings.ImagePressed", image_type(),
       ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
-  return CreateBubbleModelImpl(delegate, web_contents, profile);
+  return CreateBubbleModelImpl(delegate, web_contents);
 }
 
 // static

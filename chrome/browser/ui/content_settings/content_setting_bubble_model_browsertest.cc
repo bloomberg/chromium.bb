@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, MainFrame) {
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           browser()->content_setting_bubble_model_delegate(),
           browser()->tab_strip_model()->GetActiveWebContents(),
-          browser()->profile(), CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+          CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
   model->OnCustomLinkClicked();
 
   // Wait for reload
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsMixedScriptIgnoreCertErrorsTest,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           browser()->content_setting_bubble_model_delegate(),
           browser()->tab_strip_model()->GetActiveWebContents(),
-          browser()->profile(), CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+          CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
   model->SetRapporServiceImplForTesting(&rappor_service);
   model->OnCustomLinkClicked();
 
@@ -187,8 +187,7 @@ class ContentSettingBubbleModelMediaStreamTest : public InProcessBrowserTest {
             state, std::string(), std::string(), std::string(), std::string());
     std::unique_ptr<ContentSettingBubbleModel> bubble(
         new ContentSettingMediaStreamBubbleModel(
-            browser()->content_setting_bubble_model_delegate(), original_tab,
-            browser()->profile()));
+            browser()->content_setting_bubble_model_delegate(), original_tab));
 
     // Click the manage button, which opens in a new tab or window. Wait until
     // it loads.
@@ -264,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelPopupTest,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           browser()->content_setting_bubble_model_delegate(),
           browser()->tab_strip_model()->GetActiveWebContents(),
-          browser()->profile(), CONTENT_SETTINGS_TYPE_POPUPS));
+          CONTENT_SETTINGS_TYPE_POPUPS));
   std::unique_ptr<FakeOwner> owner =
       FakeOwner::Create(*model, kDisallowButtonIndex);
 
@@ -341,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptOopifTest,
   std::unique_ptr<ContentSettingBubbleModel> model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           browser()->content_setting_bubble_model_delegate(), web_contents,
-          browser()->profile(), CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+          CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
   model->OnCustomLinkClicked();
 
   // Wait for reload and verify that mixed content is allowed.

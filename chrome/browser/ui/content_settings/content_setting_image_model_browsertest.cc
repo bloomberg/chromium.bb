@@ -54,11 +54,10 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest, CreateBubbleModel) {
           ImageType::MIDI_SYSEX,
       };
 
-  Profile* profile = browser()->profile();
   for (auto type : content_settings_to_test) {
     auto model = ContentSettingImageModel::CreateForContentType(type);
     std::unique_ptr<ContentSettingBubbleModel> bubble(
-        model->CreateBubbleModel(nullptr, web_contents, profile));
+        model->CreateBubbleModel(nullptr, web_contents));
 
     // All of the above content settings should create a
     // ContentSettingSimpleBubbleModel that is tied to a particular setting,
@@ -78,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest, CreateBubbleModel) {
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (auto& model : models) {
-    EXPECT_TRUE(model->CreateBubbleModel(nullptr, web_contents, profile));
+    EXPECT_TRUE(model->CreateBubbleModel(nullptr, web_contents));
     EXPECT_TRUE(image_types.insert(model->image_type()).second);
   }
 }
@@ -116,10 +115,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
 
   auto model = ContentSettingImageModel::CreateForContentType(ImageType::ADS);
-  Profile* profile = browser()->profile();
   std::unique_ptr<ContentSettingBubbleModel> bubble(model->CreateBubbleModel(
-      browser()->content_setting_bubble_model_delegate(), web_contents,
-      profile));
+      browser()->content_setting_bubble_model_delegate(), web_contents));
 
   content::TestNavigationObserver observer(nullptr);
   observer.StartWatchingNewWebContents();
