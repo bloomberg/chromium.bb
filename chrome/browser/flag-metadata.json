@@ -2674,6 +2674,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "only-new-password-form-parsing",
+    "owners": [ "dvadym" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "openvr",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

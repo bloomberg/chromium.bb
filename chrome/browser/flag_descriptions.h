@@ -753,6 +753,9 @@ extern const char kNewPasswordFormParsingForSavingDescription[];
 extern const char kNewRemotePlaybackPipelineName[];
 extern const char kNewRemotePlaybackPipelineDescription[];
 
+extern const char kOnlyNewPasswordFormParsingName[];
+extern const char kOnlyNewPasswordFormParsingDescription[];
+
 extern const char kUseSurfaceLayerForVideoName[];
 extern const char kUseSurfaceLayerForVideoDescription[];
 

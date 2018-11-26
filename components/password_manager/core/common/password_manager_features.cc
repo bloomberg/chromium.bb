@@ -79,6 +79,11 @@ const base::Feature kNewPasswordFormParsing = {
 const base::Feature kNewPasswordFormParsingForSaving = {
     "new-password-form-parsing-for-saving", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables new password form parsing mechanism for saving passwords and disables
+// the old parser, details in https://goo.gl/QodPH1
+const base::Feature kOnlyNewParser = {"only-new-password-form-parsing",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Performs a one-off migration (with retries) from a native backend into
 // logindb. Passwords are served from the new location.
 const base::Feature kMigrateLinuxToLoginDB = {
