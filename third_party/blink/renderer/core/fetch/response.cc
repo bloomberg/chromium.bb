@@ -157,7 +157,7 @@ Response* Response::Create(ScriptState* script_state,
   if (body_value.IsUndefined() || body_value.IsNull()) {
     // Note: The IDL processor cannot handle this situation. See
     // https://crbug.com/335871.
-  } else if (V8Blob::hasInstance(body, isolate)) {
+  } else if (V8Blob::HasInstance(body, isolate)) {
     Blob* blob = V8Blob::ToImpl(body.As<v8::Object>());
     body_buffer = new BodyStreamBuffer(
         script_state,
@@ -180,7 +180,7 @@ Response* Response::Create(ScriptState* script_state,
         script_state,
         MakeGarbageCollected<FormDataBytesConsumer>(array_buffer_view),
         nullptr /* AbortSignal */);
-  } else if (V8FormData::hasInstance(body, isolate)) {
+  } else if (V8FormData::HasInstance(body, isolate)) {
     scoped_refptr<EncodedFormData> form_data =
         V8FormData::ToImpl(body.As<v8::Object>())->EncodeMultiPartFormData();
     // Here we handle formData->boundary() as a C-style string. See
@@ -192,7 +192,7 @@ Response* Response::Create(ScriptState* script_state,
                              MakeGarbageCollected<FormDataBytesConsumer>(
                                  execution_context, std::move(form_data)),
                              nullptr /* AbortSignal */);
-  } else if (V8URLSearchParams::hasInstance(body, isolate)) {
+  } else if (V8URLSearchParams::HasInstance(body, isolate)) {
     scoped_refptr<EncodedFormData> form_data =
         V8URLSearchParams::ToImpl(body.As<v8::Object>())->ToEncodedFormData();
     body_buffer =
@@ -201,7 +201,7 @@ Response* Response::Create(ScriptState* script_state,
                                  execution_context, std::move(form_data)),
                              nullptr /* AbortSignal */);
     content_type = "application/x-www-form-urlencoded;charset=UTF-8";
-  } else if (V8ReadableStream::hasInstance(body, isolate)) {
+  } else if (V8ReadableStream::HasInstance(body, isolate)) {
     UseCounter::Count(execution_context,
                       WebFeature::kFetchResponseConstructionWithStream);
     body_buffer = new BodyStreamBuffer(

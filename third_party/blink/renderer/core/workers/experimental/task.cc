@@ -67,7 +67,7 @@ void TaskBase::InitializeArgumentsOnMainThread(
   Vector<size_t> prerequisites_indices;
   for (size_t i = 0; i < arguments_.size(); i++) {
     // Normal case: if the argument isn't a Task, just serialize it.
-    if (!V8Task::hasInstance(arguments[i].V8Value(), isolate)) {
+    if (!V8Task::HasInstance(arguments[i].V8Value(), isolate)) {
       arguments_[i].serialized_value =
           SerializedScriptValue::SerializeAndSwallowExceptions(
               isolate, arguments[i].V8Value());

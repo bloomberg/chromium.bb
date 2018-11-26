@@ -34,6 +34,12 @@ Extends IdlTypeBase and IdlUnionType with property |union_arguments|.
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             '..', '..', 'build', 'scripts'))
+from blinkbuild.name_style_converter import NameStyleConverter
 from idl_definitions import IdlArgument, IdlOperation
 from idl_types import IdlTypeBase, IdlUnionType, inherits_interface
 from v8_globals import includes
@@ -184,6 +190,7 @@ def method_context(interface, method, is_visible=True):
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': argument_contexts,
+        'camel_case_name': NameStyleConverter(name).to_upper_camel_case(),
         'cpp_type': (v8_types.cpp_template_type('base::Optional', idl_type.cpp_type)
                      if idl_type.is_explicit_nullable else idl_type.cpp_type),
         'cpp_value': this_cpp_value,

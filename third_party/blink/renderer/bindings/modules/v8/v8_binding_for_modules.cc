@@ -270,9 +270,9 @@ static bool IsImplicitProperty(v8::Isolate* isolate,
     return true;
   if (value->IsArray() && name == "length")
     return true;
-  if (V8Blob::hasInstance(value, isolate))
+  if (V8Blob::HasInstance(value, isolate))
     return name == "size" || name == "type";
-  if (V8File::hasInstance(value, isolate))
+  if (V8File::HasInstance(value, isolate))
     return name == "name" || name == "lastModified" ||
            name == "lastModifiedDate";
   return false;
@@ -321,7 +321,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
       return nullptr;
     v8::Local<v8::Object> object = v8_value.As<v8::Object>();
 
-    if (V8Blob::hasInstance(object, isolate)) {
+    if (V8Blob::HasInstance(object, isolate)) {
       if (element == "size") {
         v8_value = v8::Number::New(isolate, V8Blob::ToImpl(object)->size());
         continue;
@@ -333,7 +333,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
       // Fall through.
     }
 
-    if (V8File::hasInstance(object, isolate)) {
+    if (V8File::HasInstance(object, isolate)) {
       if (element == "name") {
         v8_value = V8String(isolate, V8File::ToImpl(object)->name());
         continue;

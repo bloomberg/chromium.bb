@@ -168,17 +168,17 @@ std::unique_ptr<v8_inspector::StringBuffer> ThreadDebugger::valueSubtype(
   static const char kArray[] = "array";
   static const char kError[] = "error";
   static const char kBlob[] = "blob";
-  if (V8Node::hasInstance(value, isolate_))
+  if (V8Node::HasInstance(value, isolate_))
     return ToV8InspectorStringBuffer(kNode);
-  if (V8NodeList::hasInstance(value, isolate_) ||
-      V8DOMTokenList::hasInstance(value, isolate_) ||
-      V8HTMLCollection::hasInstance(value, isolate_) ||
-      V8HTMLAllCollection::hasInstance(value, isolate_)) {
+  if (V8NodeList::HasInstance(value, isolate_) ||
+      V8DOMTokenList::HasInstance(value, isolate_) ||
+      V8HTMLCollection::HasInstance(value, isolate_) ||
+      V8HTMLAllCollection::HasInstance(value, isolate_)) {
     return ToV8InspectorStringBuffer(kArray);
   }
-  if (V8DOMException::hasInstance(value, isolate_))
+  if (V8DOMException::HasInstance(value, isolate_))
     return ToV8InspectorStringBuffer(kError);
-  if (V8Blob::hasInstance(value, isolate_))
+  if (V8Blob::HasInstance(value, isolate_))
     return ToV8InspectorStringBuffer(kBlob);
   return nullptr;
 }

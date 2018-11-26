@@ -74,13 +74,13 @@ void V8TestInterfaceOrTestInterfaceEmpty::ToImpl(v8::Isolate* isolate, v8::Local
   if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
-  if (V8TestInterface::hasInstance(v8Value, isolate)) {
+  if (V8TestInterface::HasInstance(v8Value, isolate)) {
     TestInterfaceImplementation* cppValue = V8TestInterface::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.SetTestInterface(cppValue);
     return;
   }
 
-  if (V8TestInterfaceEmpty::hasInstance(v8Value, isolate)) {
+  if (V8TestInterfaceEmpty::HasInstance(v8Value, isolate)) {
     TestInterfaceEmpty* cppValue = V8TestInterfaceEmpty::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.SetTestInterfaceEmpty(cppValue);
     return;

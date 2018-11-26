@@ -149,7 +149,7 @@ class CORE_EXPORT BindingSecurity {
   // |accessingWindow| or |targetWindow| is a RemoteDOMWindow, but remember that
   // only limited operations are allowed on a RemoteDOMWindow.
   //
-  // This function should be only used from V8Window::namedPropertyGetterCustom.
+  // This function should be only used from V8Window::NamedPropertyGetterCustom.
   friend class V8Window;
   static bool ShouldAllowNamedAccessTo(const DOMWindow* accessing_window,
                                        const DOMWindow* target_window);

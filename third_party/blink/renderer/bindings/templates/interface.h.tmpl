@@ -17,7 +17,7 @@ class ScriptState;
 class {{v8_class}}Constructor {
   STATIC_ONLY({{v8_class}}Constructor);
  public:
-  static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static void NamedConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info);
   static const WrapperTypeInfo wrapperTypeInfo;
 };
@@ -29,11 +29,11 @@ class {{v8_class}} {
   {% if is_array_buffer_or_view %}
   {{exported}}static {{cpp_class}}* ToImpl(v8::Local<v8::Object> object);
   {% else %}
-  {{exported}}static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-  {{exported}}static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  {{exported}}static bool HasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> FindInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  {{exported}}static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
   {% if has_named_properties_object %}
-  {{exported}}static v8::Local<v8::FunctionTemplate> domTemplateForNamedPropertiesObject(v8::Isolate*, const DOMWrapperWorld&);
+  {{exported}}static v8::Local<v8::FunctionTemplate> DomTemplateForNamedPropertiesObject(v8::Isolate*, const DOMWrapperWorld&);
   {% endif %}
   static {{cpp_class}}* ToImpl(v8::Local<v8::Object> object) {
     return ToScriptWrappable(object)->ToImpl<{{cpp_class}}>();
@@ -47,62 +47,62 @@ class {{v8_class}} {
   {% endif %}
   {% for method in methods %}
   {% if method.is_custom %}
-  static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+  static void {{method.camel_case_name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   {% endif %}
   {% if method.is_custom_call_prologue %}
-  static void {{method.name}}MethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>&, {{cpp_class}}*);
+  static void {{method.camel_case_name}}MethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>&, {{cpp_class}}*);
   {% endif %}
   {% if method.is_custom_call_epilogue %}
-  static void {{method.name}}MethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, {{cpp_class}}*);
+  static void {{method.camel_case_name}}MethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, {{cpp_class}}*);
   {% endif %}
   {% endfor %}
   {% if has_custom_constructor %}
-  static void constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+  static void ConstructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   {% endif %}
   {% for attribute in attributes %}
   {% if attribute.has_custom_getter %}{# FIXME: and not attribute.implemented_by #}
   {% if attribute.is_data_type_property %}
-  static void {{attribute.name}}AttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
+  static void {{attribute.camel_case_name}}AttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
   {% else %}
-  static void {{attribute.name}}AttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+  static void {{attribute.camel_case_name}}AttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   {% endif %}
   {% endif %}
   {% if attribute.has_custom_setter %}{# FIXME: and not attribute.implemented_by #}
   {% if attribute.is_data_type_property %}
-  static void {{attribute.name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
+  static void {{attribute.camel_case_name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
   {% else %}
-  static void {{attribute.name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
+  static void {{attribute.camel_case_name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
   {% endif %}
   {% endif %}
   {% endfor %}
   {# Custom special operations #}
   {% if indexed_property_getter and indexed_property_getter.is_custom %}
-  static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
+  static void IndexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if indexed_property_setter and indexed_property_setter.is_custom %}
-  static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+  static void IndexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if indexed_property_deleter and indexed_property_deleter.is_custom %}
-  static void indexedPropertyDeleterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);
+  static void IndexedPropertyDeleterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);
   {% endif %}
   {% if named_property_getter and named_property_getter.is_custom %}
-  static void namedPropertyGetterCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Value>&);
+  static void NamedPropertyGetterCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if named_property_setter and named_property_setter.is_custom %}
-  static void namedPropertySetterCustom(const AtomicString&, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+  static void NamedPropertySetterCustom(const AtomicString&, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if named_property_getter and named_property_getter.is_custom_property_query %}
-  static void namedPropertyQueryCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Integer>&);
+  static void NamedPropertyQueryCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Integer>&);
   {% endif %}
   {% if named_property_deleter and named_property_deleter.is_custom %}
-  static void namedPropertyDeleterCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Boolean>&);
+  static void NamedPropertyDeleterCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Boolean>&);
   {% endif %}
   {% if named_property_getter and named_property_getter.is_custom_property_enumerator %}
-  static void namedPropertyEnumeratorCustom(const v8::PropertyCallbackInfo<v8::Array>&);
+  static void NamedPropertyEnumeratorCustom(const v8::PropertyCallbackInfo<v8::Array>&);
   {% endif %}
   {# END custom special operations #}
   {% if has_custom_legacy_call_as_function %}
-  static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+  static void LegacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   {% endif %}
   {# Custom internal fields #}
   {# persistentHandleIndex must be the last field, if it is present.
@@ -137,47 +137,47 @@ class {{v8_class}} {
       InstallRuntimeEnabledFeaturesFunction,
       InstallRuntimeEnabledFeaturesOnTemplateFunction,
       InstallConditionalFeaturesFunction);
-  {{exported}}static void install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
+  {{exported}}static void Install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
   {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
-  {{exported}}static void register{{method.name | blink_capitalize}}MethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
+  {{exported}}static void Register{{method.camel_case_name}}MethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
   {% endfor %}
   {% endif %}
 
   {% for feature in optional_features %}
 
-  static void install{{feature.name}}(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-  static void install{{feature.name}}(ScriptState*, v8::Local<v8::Object> instance);
+  static void Install{{feature.name}}(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
+  static void Install{{feature.name}}(ScriptState*, v8::Local<v8::Object> instance);
   {% if not feature.needs_instance %}
-  static void install{{feature.name}}(ScriptState*);
+  static void Install{{feature.name}}(ScriptState*);
   {% endif %}
   {% endfor %}
 
   // Callback functions
   {% if constructors or has_custom_constructor or has_html_constructor %}
-  {{exported}}static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  {{exported}}static void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   {% endif %}
   {% for constant in constants | has_special_getter %}
-  {{exported}}static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void {{constant.camel_case_name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endfor %}
 
   {% for attribute in attributes %}
   {% if attribute.is_cached_accessor %}
-  {{exported}}static v8::Local<v8::Private> {{attribute.name}}CachedPropertyKey(v8::Isolate*);
+  {{exported}}static v8::Local<v8::Private> {{attribute.camel_case_name}}CachedPropertyKey(v8::Isolate*);
   {% endif %}
   {% for world_suffix in attribute.world_suffixes %}
   {% if not attribute.constructor_type %}
-  {{exported}}static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(
+  {{exported}}static void {{attribute.camel_case_name}}AttributeGetterCallback{{world_suffix}}(
     {%- if attribute.is_data_type_property -%}
     v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&
     {%- else -%}
     const v8::FunctionCallbackInfo<v8::Value>&
     {%- endif -%});
   {% else %}
-  {{exported}}static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void {{attribute.camel_case_name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if attribute.has_setter %}
-  {{exported}}static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(
+  {{exported}}static void {{attribute.camel_case_name}}AttributeSetterCallback{{world_suffix}}(
     {%- if attribute.is_data_type_property -%}
     v8::Local<v8::Name>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&
     {%- else -%}
@@ -197,66 +197,66 @@ class {{v8_class}} {
         (not method.overloads and method.visible) %}
   {# A single callback is generated for overloaded methods #}
   {# with considering partial overloads #}
-  {{exported}}static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>&);
+  {{exported}}static void {{method.camel_case_name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>&);
   {% endif %}
   {% if method.is_cross_origin and method.visible %}
-  {{exported}}static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void {{method.camel_case_name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% endif %}
   {% endfor %}
   {% endfor %}
   {% if iterator_method %}
-  {{exported}}static void {{iterator_method.name}}MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  {{exported}}static void {{iterator_method.camel_case_name}}MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   {% endif %}
   {% if has_origin_safe_method_setter %}
   {{exported}}static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
   {% endif %}
 
   {% if has_access_check_callbacks and not is_partial %}
-  {{exported}}static bool securityCheck(v8::Local<v8::Context>, v8::Local<v8::Object>, v8::Local<v8::Value>);
+  {{exported}}static bool SecurityCheck(v8::Local<v8::Context>, v8::Local<v8::Object>, v8::Local<v8::Value>);
   {% if has_cross_origin_named_getter %}
-  {{exported}}static void crossOriginNamedGetter(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void CrossOriginNamedGetter(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if has_cross_origin_named_setter %}
-  {{exported}}static void crossOriginNamedSetter(v8::Local<v8::Name>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void CrossOriginNamedSetter(v8::Local<v8::Name>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if has_cross_origin_named_enumerator %}
-  {{exported}}static void crossOriginNamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&);
+  {{exported}}static void CrossOriginNamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&);
   {% endif %}
   {% if has_cross_origin_indexed_getter %}
-  {{exported}}static void crossOriginIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void CrossOriginIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% endif %}
 
   {% if named_property_getter %}
-  {{exported}}static void namedPropertyGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void NamedPropertyGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if named_property_setter %}
-  {{exported}}static void namedPropertySetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void NamedPropertySetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if named_property_deleter %}
-  {{exported}}static void namedPropertyDeleterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Boolean>&);
+  {{exported}}static void NamedPropertyDeleterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Boolean>&);
   {% endif %}
   {% if named_property_getter and named_property_getter.is_enumerable %}
-  {{exported}}static void namedPropertyQueryCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Integer>&);
+  {{exported}}static void NamedPropertyQueryCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Integer>&);
   {% endif %}
   {% if named_property_getter and named_property_getter.is_enumerable %}
-  {{exported}}static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>&);
+  {{exported}}static void NamedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>&);
   {% endif %}
   {% if indexed_property_getter or named_property_getter %}
-  {{exported}}static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void IndexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if indexed_property_getter or named_property_setter %}
-  {{exported}}static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void IndexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if indexed_property_getter or named_property_getter %}
-  {{exported}}static void indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void IndexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if indexed_property_deleter or named_property_deleter %}
-  {{exported}}static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>&);
+  {{exported}}static void IndexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>&);
   {% endif %}
   {% if indexed_property_getter %}
-  {{exported}}static void indexedPropertyDefinerCallback(uint32_t index, const v8::PropertyDescriptor&, const v8::PropertyCallbackInfo<v8::Value>&);
+  {{exported}}static void IndexedPropertyDefinerCallback(uint32_t index, const v8::PropertyDescriptor&, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
 
   {% if needs_runtime_enabled_installer %}

@@ -28,7 +28,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestInterfaceEmpty::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInterfaceEmpty::domTemplate,
+    V8TestInterfaceEmpty::DomTemplate,
     nullptr,
     "TestInterfaceEmpty",
     nullptr,
@@ -62,7 +62,7 @@ namespace test_interface_empty_v8_internal {
 
 }  // namespace test_interface_empty_v8_internal
 
-static void installV8TestInterfaceEmptyTemplate(
+static void InstallV8TestInterfaceEmptyTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -100,20 +100,20 @@ void V8TestInterfaceEmpty::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceEmpty::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceEmptyTemplate);
+v8::Local<v8::FunctionTemplate> V8TestInterfaceEmpty::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestInterfaceEmptyTemplate);
 }
 
-bool V8TestInterfaceEmpty::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestInterfaceEmpty::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestInterfaceEmpty::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestInterfaceEmpty::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceEmpty* V8TestInterfaceEmpty::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterfaceEmpty* NativeValueTraits<TestInterfaceEmpty>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

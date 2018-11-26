@@ -618,7 +618,7 @@ String ReplaceUnmatchedSurrogates(const String& string) {
 XPathNSResolver* ToXPathNSResolver(ScriptState* script_state,
                                    v8::Local<v8::Value> value) {
   XPathNSResolver* resolver = nullptr;
-  if (V8XPathNSResolver::hasInstance(value, script_state->GetIsolate())) {
+  if (V8XPathNSResolver::HasInstance(value, script_state->GetIsolate())) {
     resolver = V8XPathNSResolver::ToImpl(v8::Local<v8::Object>::Cast(value));
   } else if (value->IsObject()) {
     resolver =
@@ -631,7 +631,7 @@ DOMWindow* ToDOMWindow(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   if (value.IsEmpty() || !value->IsObject())
     return nullptr;
 
-  v8::Local<v8::Object> window_wrapper = V8Window::findInstanceInPrototypeChain(
+  v8::Local<v8::Object> window_wrapper = V8Window::FindInstanceInPrototypeChain(
       v8::Local<v8::Object>::Cast(value), isolate);
   if (!window_wrapper.IsEmpty())
     return V8Window::ToImpl(window_wrapper);

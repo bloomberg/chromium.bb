@@ -33,7 +33,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestInterfaceNamedConstructor2::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInterfaceNamedConstructor2::domTemplate,
+    V8TestInterfaceNamedConstructor2::DomTemplate,
     nullptr,
     "TestInterfaceNamedConstructor2",
     nullptr,
@@ -75,7 +75,7 @@ namespace test_interface_named_constructor_2_v8_internal {
 #endif
 const WrapperTypeInfo V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInterfaceNamedConstructor2Constructor::domTemplate,
+    V8TestInterfaceNamedConstructor2Constructor::DomTemplate,
     nullptr,
     "TestInterfaceNamedConstructor2",
     nullptr,
@@ -116,7 +116,7 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
   V8SetReturnValue(info, wrapper);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor2Constructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor2Constructor::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   static int domTemplateKey; // This address is used for a key to look up the dom template.
   V8PerIsolateData* data = V8PerIsolateData::From(isolate);
   v8::Local<v8::FunctionTemplate> result = data->FindInterfaceTemplate(world, &domTemplateKey);
@@ -127,7 +127,7 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor2Constructor::dom
   v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
   instanceTemplate->SetInternalFieldCount(V8TestInterfaceNamedConstructor2::internalFieldCount);
   result->SetClassName(V8AtomicString(isolate, "Audio"));
-  result->Inherit(V8TestInterfaceNamedConstructor2::domTemplate(isolate, world));
+  result->Inherit(V8TestInterfaceNamedConstructor2::DomTemplate(isolate, world));
   data->SetInterfaceTemplate(world, &domTemplateKey, result);
   return result;
 }
@@ -161,7 +161,7 @@ void V8TestInterfaceNamedConstructor2Constructor::NamedConstructorAttributeGette
   V8SetReturnValue(info, namedConstructor);
 }
 
-static void installV8TestInterfaceNamedConstructor2Template(
+static void InstallV8TestInterfaceNamedConstructor2Template(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -199,20 +199,20 @@ void V8TestInterfaceNamedConstructor2::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor2::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceNamedConstructor2Template);
+v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor2::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestInterfaceNamedConstructor2Template);
 }
 
-bool V8TestInterfaceNamedConstructor2::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestInterfaceNamedConstructor2::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestInterfaceNamedConstructor2::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestInterfaceNamedConstructor2::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceNamedConstructor2* V8TestInterfaceNamedConstructor2::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterfaceNamedConstructor2* NativeValueTraits<TestInterfaceNamedConstructor2>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

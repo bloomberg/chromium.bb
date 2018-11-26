@@ -138,6 +138,7 @@ def attribute_context(interface, attribute, interfaces):
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
         'activity_logging_world_check': v8_utilities.activity_logging_world_check(attribute),  # [ActivityLogging]
         'cached_attribute_validation_method': cached_attribute_validation_method,
+        'camel_case_name': NameStyleConverter(attribute.name).to_upper_camel_case(),
         'constructor_type': constructor_type,
         'context_enabled_feature_name': v8_utilities.context_enabled_feature_name(attribute),
         'cpp_name': cpp_name(attribute),

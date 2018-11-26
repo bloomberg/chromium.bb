@@ -38,7 +38,7 @@ void InstallOriginTrialFeaturesForCore(
     if (settings && settings->isMojoJSEnabled()) {
       v8::Local<v8::Object> instance_object =
           script_state->GetContext()->Global();
-      V8Window::installMojoJS(isolate, world, instance_object, prototype_object,
+      V8Window::InstallMojoJS(isolate, world, instance_object, prototype_object,
                               interface_object);
     }
   }

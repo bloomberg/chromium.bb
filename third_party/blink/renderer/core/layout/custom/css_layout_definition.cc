@@ -167,7 +167,7 @@ bool CSSLayoutDefinition::Instance::Layout(
     v8::Local<v8::Value> value = iterator.GetValue().ToLocalChecked();
 
     // Process a single fragment request.
-    if (V8LayoutFragmentRequest::hasInstance(value, isolate)) {
+    if (V8LayoutFragmentRequest::HasInstance(value, isolate)) {
       CustomLayoutFragmentRequest* fragment_request =
           V8LayoutFragmentRequest::ToImpl(v8::Local<v8::Object>::Cast(value));
 

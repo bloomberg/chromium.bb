@@ -3,7 +3,7 @@
 
 {##############################################################################}
 {% macro attribute_getter(attribute, world_suffix) %}
-static void {{attribute.name}}AttributeGetter{{world_suffix}}(
+static void {{attribute.camel_case_name}}AttributeGetter{{world_suffix}}(
 {%- if attribute.is_data_type_property %}
 const v8::PropertyCallbackInfo<v8::Value>& info
 {%- else %}
@@ -17,7 +17,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.is_lenient_this %}
   // [LenientThis]
   // Make sure that info.Holder() really points to an instance if [LenientThis].
-  if (!{{v8_class}}::hasInstance(info.Holder(), info.GetIsolate()))
+  if (!{{v8_class}}::HasInstance(info.Holder(), info.GetIsolate()))
     return; // Return silently because of [LenientThis].
   {% elif attribute.has_promise_type %}
   // This attribute returns a Promise.
@@ -29,7 +29,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   // Returning a Promise type requires us to disable some of V8's type checks,
   // so we have to manually check that info.Holder() really points to an
   // instance of the type.
-  if (!{{v8_class}}::hasInstance(info.Holder(), info.GetIsolate())) {
+  if (!{{v8_class}}::HasInstance(info.Holder(), info.GetIsolate())) {
     exceptionState.ThrowTypeError("Illegal invocation");
     return;
   }
@@ -41,7 +41,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.is_save_same_object %}
   // [SaveSameObject]
-  {% set same_object_private_key = interface_name + attribute.name[0]|capitalize + attribute.name[1:] %}
+  {% set same_object_private_key = interface_name + attribute.camel_case_name %}
   // If you see a compile error that
   //   V8PrivateProperty::GetSameObject{{same_object_private_key}}
   // is not defined, then you need to register your attribute at
@@ -77,7 +77,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   // [CachedAttribute]
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
-          "{{cpp_class}}#{{attribute.name.capitalize()}}");
+          "{{cpp_class}}#{{attribute.camel_case_name}}");
   if (!static_cast<const {{cpp_class}}*>(impl)->{{attribute.cached_attribute_validation_method}}()) {
     v8::Local<v8::Value> v8Value;
     if (propertySymbol.GetOrUndefined(holder).ToLocal(&v8Value) && !v8Value->IsUndefined()) {
@@ -108,7 +108,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {{define_exception_state}}
   if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), {{attribute.cpp_value}}, BindingSecurity::ErrorReportOption::kDoNotReport)) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      WebFeature::kCrossOrigin{{interface_name}}{{attribute.name|blink_capitalize}});
+                      WebFeature::kCrossOrigin{{interface_name}}{{attribute.camel_case_name}});
     V8SetReturnValueNull(info);
     return;
   }
@@ -233,7 +233,7 @@ if ({{cpp_value}}.IsEmpty()) {
 
 {##############################################################################}
 {% macro attribute_getter_callback(attribute, world_suffix) %}
-void {{v8_class_or_partial}}::{{attribute.name}}AttributeGetterCallback{{world_suffix}}(
+void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeGetterCallback{{world_suffix}}(
 {%- if attribute.is_data_type_property %}
 v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info
 {%- else %}
@@ -270,9 +270,9 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if attribute.has_custom_getter %}
-  {{v8_class}}::{{attribute.name}}AttributeGetterCustom(info);
+  {{v8_class}}::{{attribute.camel_case_name}}AttributeGetterCustom(info);
   {% else %}
-  {{internal_namespace}}::{{attribute.name}}AttributeGetter{{world_suffix}}(info);
+  {{internal_namespace}}::{{attribute.camel_case_name}}AttributeGetter{{world_suffix}}(info);
   {% endif %}
 }
 {% endmacro %}
@@ -280,7 +280,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro constructor_getter_callback(attribute, world_suffix) %}
-void {{v8_class_or_partial}}::{{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::{{attribute.camel_case_name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(attribute.runtime_call_stats.constructor_getter_callback_counter) }}
   {% if attribute.deprecate_as %}
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.deprecate_as}});
@@ -301,7 +301,7 @@ void {{v8_class_or_partial}}::{{attribute.name}}ConstructorGetterCallback{{world
 
 {##############################################################################}
 {% macro attribute_setter(attribute, world_suffix) %}
-static void {{attribute.name}}AttributeSetter{{world_suffix}}(
+static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
 {%- if attribute.has_cross_origin_setter %}
 v8::Local<v8::Value> v8Value, const V8CrossOriginSetterInfo& info
 {%- elif attribute.is_data_type_property %}
@@ -323,7 +323,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.is_lenient_this %}
   // [LenientThis]
   // Make sure that info.Holder() really points to an instance if [LenientThis].
-  if (!{{v8_class}}::hasInstance(holder, isolate))
+  if (!{{v8_class}}::HasInstance(holder, isolate))
     return; // Return silently because of [LenientThis].
   {% endif %}
 
@@ -446,7 +446,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   // [CachedAttribute]
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
-      isolate, "{{cpp_class}}#{{attribute.name.capitalize()}}")
+      isolate, "{{cpp_class}}#{{attribute.camel_case_name}}")
       .DeleteProperty(holder, v8::Undefined(isolate));
   {% endif %}
   {% endif %}{# attribute.is_put_forwards #}
@@ -457,7 +457,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro attribute_setter_callback(attribute, world_suffix) %}
-void {{v8_class_or_partial}}::{{attribute.name}}AttributeSetterCallback{{world_suffix}}(
+void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallback{{world_suffix}}(
 {%- if attribute.is_data_type_property %}
 v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 {%- else %}
@@ -501,11 +501,11 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if attribute.has_custom_setter %}
-  {{v8_class}}::{{attribute.name}}AttributeSetterCustom(v8Value, info);
+  {{v8_class}}::{{attribute.camel_case_name}}AttributeSetterCustom(v8Value, info);
   {% elif attribute.has_cross_origin_setter %}
-  {{internal_namespace}}::{{attribute.name}}AttributeSetter(v8Value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
+  {{internal_namespace}}::{{attribute.camel_case_name}}AttributeSetter(v8Value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
   {% else %}
-  {{internal_namespace}}::{{attribute.name}}AttributeSetter{{world_suffix}}(v8Value, info);
+  {{internal_namespace}}::{{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(v8Value, info);
   {% endif %}
   {% endif %}{# attribute.is_lenient_setter #}
 }
@@ -516,11 +516,11 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {% macro build_attribute_or_accessor_configuration(attribute, config_type) %}
 {% from 'utilities.cc.tmpl' import property_location %}
 {% if attribute.constructor_type %}
-  {% set getter_callback = '%s::%sConstructorGetterCallback' % (v8_class_or_partial, attribute.name) %}
+  {% set getter_callback = '%s::%sConstructorGetterCallback' % (v8_class_or_partial, attribute.camel_case_name) %}
   {% set setter_callback = 'nullptr' %}
 {% else %}{# regular attributes #}
-  {% set getter_callback = '%s::%sAttributeGetterCallback' % (v8_class_or_partial, attribute.name) %}
-  {% set setter_callback = '%s::%sAttributeSetterCallback' % (v8_class_or_partial, attribute.name)
+  {% set getter_callback = '%s::%sAttributeGetterCallback' % (v8_class_or_partial, attribute.camel_case_name) %}
+  {% set setter_callback = '%s::%sAttributeSetterCallback' % (v8_class_or_partial, attribute.camel_case_name)
       if attribute.has_setter else 'nullptr' %}
 {% endif %}
 

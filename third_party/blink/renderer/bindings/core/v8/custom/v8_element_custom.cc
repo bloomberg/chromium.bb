@@ -14,7 +14,7 @@ namespace blink {
 
 // HTMLElement -----------------------------------------------------------------
 
-void V8Element::innerHTMLAttributeSetterCustom(
+void V8Element::InnerHTMLAttributeSetterCustom(
     v8::Local<v8::Value> value,
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
@@ -47,7 +47,7 @@ void V8Element::innerHTMLAttributeSetterCustom(
   impl->setInnerHTML(cpp_value, exception_state);
 }
 
-void V8Element::outerHTMLAttributeSetterCustom(
+void V8Element::OuterHTMLAttributeSetterCustom(
     v8::Local<v8::Value> value,
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();

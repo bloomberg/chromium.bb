@@ -28,9 +28,9 @@ namespace blink {
 class V8TestSubObject {
   STATIC_ONLY(V8TestSubObject);
  public:
-  MODULES_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-  MODULES_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  MODULES_EXPORT static bool HasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> FindInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  MODULES_EXPORT static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestSubObject* ToImpl(v8::Local<v8::Object> object) {
     return ToScriptWrappable(object)->ToImpl<TestSubObject>();
   }
@@ -40,10 +40,10 @@ class V8TestSubObject {
 
   // Callback functions
 
-  MODULES_EXPORT static void unforgeableStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void unforgeableStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void unforgeableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void unforgeableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void UnforgeableStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void UnforgeableStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void UnforgeableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void UnforgeableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   static void InstallRuntimeEnabledFeaturesOnTemplate(
       v8::Isolate*,

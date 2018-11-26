@@ -10,7 +10,7 @@
 
 namespace blink {
 
-void V8ExtendableMessageEvent::constructorCustom(
+void V8ExtendableMessageEvent::ConstructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
@@ -59,7 +59,7 @@ void V8ExtendableMessageEvent::constructorCustom(
   V8SetReturnValue(info, wrapper);
 }
 
-void V8ExtendableMessageEvent::dataAttributeGetterCustom(
+void V8ExtendableMessageEvent::DataAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExtendableMessageEvent* event =
       V8ExtendableMessageEvent::ToImpl(info.Holder());

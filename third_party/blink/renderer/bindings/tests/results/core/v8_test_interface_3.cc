@@ -33,7 +33,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestInterface3::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInterface3::domTemplate,
+    V8TestInterface3::DomTemplate,
     nullptr,
     "TestInterface3",
     nullptr,
@@ -65,7 +65,7 @@ static_assert(
 
 namespace test_interface_3_v8_internal {
 
-static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void LengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestInterface3* impl = V8TestInterface3::ToImpl(holder);
@@ -73,7 +73,7 @@ static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& inf
   V8SetReturnValueUnsigned(info, impl->length());
 }
 
-static void readonlyStringifierAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ReadonlyStringifierAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestInterface3* impl = V8TestInterface3::ToImpl(holder);
@@ -81,7 +81,7 @@ static void readonlyStringifierAttributeAttributeGetter(const v8::FunctionCallba
   V8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
 }
 
-static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void VoidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterface3* impl = V8TestInterface3::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
@@ -99,19 +99,19 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   impl->voidMethodDocument(document);
 }
 
-static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ToStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterface3* impl = V8TestInterface3::ToImpl(info.Holder());
 
   V8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
 }
 
-static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void IndexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
   // Steps 1.1 to 1.2.4 are covered here: we rely on indexedPropertyGetter() to
   // call the getter function and check that |index| is a valid property index,
   // in which case it will have set info.GetReturnValue() to something other
   // than undefined.
-  V8TestInterface3::indexedPropertyGetterCallback(index, info);
+  V8TestInterface3::IndexedPropertyGetterCallback(index, info);
   v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
   if (!getterValue->IsUndefined()) {
     // 1.2.5. Let |desc| be a newly created Property Descriptor with no fields.
@@ -130,91 +130,91 @@ static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallback
 
 }  // namespace test_interface_3_v8_internal
 
-void V8TestInterface3::lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterface3::LengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface3_length_Getter");
 
-  test_interface_3_v8_internal::lengthAttributeGetter(info);
+  test_interface_3_v8_internal::LengthAttributeGetter(info);
 }
 
-void V8TestInterface3::readonlyStringifierAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterface3::ReadonlyStringifierAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface3_readonlyStringifierAttribute_Getter");
 
-  test_interface_3_v8_internal::readonlyStringifierAttributeAttributeGetter(info);
+  test_interface_3_v8_internal::ReadonlyStringifierAttributeAttributeGetter(info);
 }
 
-void V8TestInterface3::voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterface3::VoidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface3_voidMethodDocument");
 
-  test_interface_3_v8_internal::voidMethodDocumentMethod(info);
+  test_interface_3_v8_internal::VoidMethodDocumentMethod(info);
 }
 
-void V8TestInterface3::toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterface3::ToStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface3_toString");
 
-  test_interface_3_v8_internal::toStringMethod(info);
+  test_interface_3_v8_internal::ToStringMethod(info);
 }
 
-void V8TestInterface3::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestInterface3::NamedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface3_NamedPropertyGetter");
 
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  V8TestInterface3::namedPropertyGetterCustom(propertyName, info);
+  V8TestInterface3::NamedPropertyGetterCustom(propertyName, info);
 }
 
-void V8TestInterface3::namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestInterface3::NamedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface3_NamedPropertySetter");
 
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  V8TestInterface3::namedPropertySetterCustom(propertyName, v8Value, info);
+  V8TestInterface3::NamedPropertySetterCustom(propertyName, v8Value, info);
 }
 
-void V8TestInterface3::namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+void V8TestInterface3::NamedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  V8TestInterface3::namedPropertyDeleterCustom(propertyName, info);
+  V8TestInterface3::NamedPropertyDeleterCustom(propertyName, info);
 }
 
-void V8TestInterface3::namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+void V8TestInterface3::NamedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface3_NamedPropertyQuery");
 
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  V8TestInterface3::namedPropertyQueryCustom(propertyName, info);
+  V8TestInterface3::NamedPropertyQueryCustom(propertyName, info);
 }
 
-void V8TestInterface3::namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
-  V8TestInterface3::namedPropertyEnumeratorCustom(info);
+void V8TestInterface3::NamedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
+  V8TestInterface3::NamedPropertyEnumeratorCustom(info);
 }
 
-void V8TestInterface3::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestInterface3::IndexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface3_IndexedPropertyGetter");
 
-  V8TestInterface3::indexedPropertyGetterCustom(index, info);
+  V8TestInterface3::IndexedPropertyGetterCustom(index, info);
 }
 
-void V8TestInterface3::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  test_interface_3_v8_internal::indexedPropertyDescriptor(index, info);
+void V8TestInterface3::IndexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  test_interface_3_v8_internal::IndexedPropertyDescriptor(index, info);
 }
 
-void V8TestInterface3::indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  V8TestInterface3::indexedPropertySetterCustom(index, v8Value, info);
+void V8TestInterface3::IndexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  V8TestInterface3::IndexedPropertySetterCustom(index, v8Value, info);
 }
 
-void V8TestInterface3::indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
-  V8TestInterface3::indexedPropertyDeleterCustom(index, info);
+void V8TestInterface3::IndexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+  V8TestInterface3::IndexedPropertyDeleterCustom(index, info);
 }
 
-void V8TestInterface3::indexedPropertyDefinerCallback(
+void V8TestInterface3::IndexedPropertyDefinerCallback(
     uint32_t index,
     const v8::PropertyDescriptor& desc,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -237,16 +237,16 @@ void V8TestInterface3::indexedPropertyDefinerCallback(
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestInterface3Accessors[] = {
-    { "length", V8TestInterface3::lengthAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "readonlyStringifierAttribute", V8TestInterface3::readonlyStringifierAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "length", V8TestInterface3::LengthAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "readonlyStringifierAttribute", V8TestInterface3::ReadonlyStringifierAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterface3Methods[] = {
-    {"voidMethodDocument", V8TestInterface3::voidMethodDocumentMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"toString", V8TestInterface3::toStringMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodDocument", V8TestInterface3::VoidMethodDocumentMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"toString", V8TestInterface3::ToStringMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
 };
 
-static void installV8TestInterface3Template(
+static void InstallV8TestInterface3Template(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -270,17 +270,17 @@ static void installV8TestInterface3Template(
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
-      V8TestInterface3::indexedPropertyGetterCallback,
-      V8TestInterface3::indexedPropertySetterCallback,
-      V8TestInterface3::indexedPropertyDescriptorCallback,
-      V8TestInterface3::indexedPropertyDeleterCallback,
+      V8TestInterface3::IndexedPropertyGetterCallback,
+      V8TestInterface3::IndexedPropertySetterCallback,
+      V8TestInterface3::IndexedPropertyDescriptorCallback,
+      V8TestInterface3::IndexedPropertyDeleterCallback,
       IndexedPropertyEnumerator<TestInterface3>,
-      V8TestInterface3::indexedPropertyDefinerCallback,
+      V8TestInterface3::IndexedPropertyDefinerCallback,
       v8::Local<v8::Value>(),
       v8::PropertyHandlerFlags::kNone);
   instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
   // Named properties
-  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestInterface3::namedPropertyGetterCallback, V8TestInterface3::namedPropertySetterCallback, V8TestInterface3::namedPropertyQueryCallback, V8TestInterface3::namedPropertyDeleterCallback, V8TestInterface3::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
+  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestInterface3::NamedPropertyGetterCallback, V8TestInterface3::NamedPropertySetterCallback, V8TestInterface3::NamedPropertyQueryCallback, V8TestInterface3::NamedPropertyDeleterCallback, V8TestInterface3::NamedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
   instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 
   // Array iterator (@@iterator)
@@ -314,20 +314,20 @@ void V8TestInterface3::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterface3::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterface3Template);
+v8::Local<v8::FunctionTemplate> V8TestInterface3::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestInterface3Template);
 }
 
-bool V8TestInterface3::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestInterface3::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestInterface3::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestInterface3::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterface3* V8TestInterface3::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterface3* NativeValueTraits<TestInterface3>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

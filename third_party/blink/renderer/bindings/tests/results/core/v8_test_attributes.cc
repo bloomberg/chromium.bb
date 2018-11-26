@@ -32,7 +32,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestAttributes::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestAttributes::domTemplate,
+    V8TestAttributes::DomTemplate,
     nullptr,
     "TestAttributes",
     nullptr,
@@ -64,10 +64,10 @@ static_assert(
 
 namespace test_attributes_v8_internal {
 
-static void lenientThisLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void LenientThisLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   // [LenientThis]
   // Make sure that info.Holder() really points to an instance if [LenientThis].
-  if (!V8TestAttributes::hasInstance(info.Holder(), info.GetIsolate()))
+  if (!V8TestAttributes::HasInstance(info.Holder(), info.GetIsolate()))
     return; // Return silently because of [LenientThis].
 
   v8::Local<v8::Object> holder = info.Holder();
@@ -77,7 +77,7 @@ static void lenientThisLongAttributeAttributeGetter(const v8::FunctionCallbackIn
   V8SetReturnValueInt(info, impl->lenientThisLongAttribute());
 }
 
-static void stringPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void StringPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   // This attribute returns a Promise.
   // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
   // must be turned into a Promise rejection.
@@ -87,7 +87,7 @@ static void stringPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo
   // Returning a Promise type requires us to disable some of V8's type checks,
   // so we have to manually check that info.Holder() really points to an
   // instance of the type.
-  if (!V8TestAttributes::hasInstance(info.Holder(), info.GetIsolate())) {
+  if (!V8TestAttributes::HasInstance(info.Holder(), info.GetIsolate())) {
     exceptionState.ThrowTypeError("Illegal invocation");
     return;
   }
@@ -99,10 +99,10 @@ static void stringPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo
   V8SetReturnValue(info, impl->stringPromiseAttribute().V8Value());
 }
 
-static void lenientThisStringPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void LenientThisStringPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   // [LenientThis]
   // Make sure that info.Holder() really points to an instance if [LenientThis].
-  if (!V8TestAttributes::hasInstance(info.Holder(), info.GetIsolate()))
+  if (!V8TestAttributes::HasInstance(info.Holder(), info.GetIsolate()))
     return; // Return silently because of [LenientThis].
 
   v8::Local<v8::Object> holder = info.Holder();
@@ -112,7 +112,7 @@ static void lenientThisStringPromiseAttributeAttributeGetter(const v8::FunctionC
   V8SetReturnValue(info, impl->lenientThisStringPromiseAttribute().V8Value());
 }
 
-static void raisesExceptionShortPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void RaisesExceptionShortPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   // This attribute returns a Promise.
   // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
   // must be turned into a Promise rejection.
@@ -122,7 +122,7 @@ static void raisesExceptionShortPromiseAttributeAttributeGetter(const v8::Functi
   // Returning a Promise type requires us to disable some of V8's type checks,
   // so we have to manually check that info.Holder() really points to an
   // instance of the type.
-  if (!V8TestAttributes::hasInstance(info.Holder(), info.GetIsolate())) {
+  if (!V8TestAttributes::HasInstance(info.Holder(), info.GetIsolate())) {
     exceptionState.ThrowTypeError("Illegal invocation");
     return;
   }
@@ -139,7 +139,7 @@ static void raisesExceptionShortPromiseAttributeAttributeGetter(const v8::Functi
   V8SetReturnValue(info, cppValue.V8Value());
 }
 
-static void lenientSetterBoolAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void LenientSetterBoolAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestAttributes* impl = V8TestAttributes::ToImpl(holder);
@@ -147,7 +147,7 @@ static void lenientSetterBoolAttributeAttributeGetter(const v8::FunctionCallback
   V8SetReturnValueBool(info, impl->lenientSetterBoolAttribute());
 }
 
-static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void FloatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestAttributes* impl = V8TestAttributes::ToImpl(holder);
@@ -157,56 +157,56 @@ static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
 
 }  // namespace test_attributes_v8_internal
 
-void V8TestAttributes::lenientThisLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestAttributes::LenientThisLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestAttributes_lenientThisLongAttribute_Getter");
 
-  test_attributes_v8_internal::lenientThisLongAttributeAttributeGetter(info);
+  test_attributes_v8_internal::LenientThisLongAttributeAttributeGetter(info);
 }
 
-void V8TestAttributes::stringPromiseAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestAttributes::StringPromiseAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestAttributes_stringPromiseAttribute_Getter");
 
-  test_attributes_v8_internal::stringPromiseAttributeAttributeGetter(info);
+  test_attributes_v8_internal::StringPromiseAttributeAttributeGetter(info);
 }
 
-void V8TestAttributes::lenientThisStringPromiseAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestAttributes::LenientThisStringPromiseAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestAttributes_lenientThisStringPromiseAttribute_Getter");
 
-  test_attributes_v8_internal::lenientThisStringPromiseAttributeAttributeGetter(info);
+  test_attributes_v8_internal::LenientThisStringPromiseAttributeAttributeGetter(info);
 }
 
-void V8TestAttributes::raisesExceptionShortPromiseAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestAttributes::RaisesExceptionShortPromiseAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestAttributes_raisesExceptionShortPromiseAttribute_Getter");
 
-  test_attributes_v8_internal::raisesExceptionShortPromiseAttributeAttributeGetter(info);
+  test_attributes_v8_internal::RaisesExceptionShortPromiseAttributeAttributeGetter(info);
 }
 
-void V8TestAttributes::lenientSetterBoolAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestAttributes::LenientSetterBoolAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestAttributes_lenientSetterBoolAttribute_Getter");
 
-  test_attributes_v8_internal::lenientSetterBoolAttributeAttributeGetter(info);
+  test_attributes_v8_internal::LenientSetterBoolAttributeAttributeGetter(info);
 }
 
-void V8TestAttributes::lenientSetterBoolAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestAttributes::LenientSetterBoolAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   // Setter for lenientSetterBoolAttribute is no-op because [LenientSetter] is specified.
 }
 
-void V8TestAttributes::floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestAttributes::FloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestAttributes_floatAttribute_Getter");
 
-  test_attributes_v8_internal::floatAttributeAttributeGetter(info);
+  test_attributes_v8_internal::FloatAttributeAttributeGetter(info);
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestAttributesAccessors[] = {
-    { "lenientThisLongAttribute", V8TestAttributes::lenientThisLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "stringPromiseAttribute", V8TestAttributes::stringPromiseAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "lenientThisStringPromiseAttribute", V8TestAttributes::lenientThisStringPromiseAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "raisesExceptionShortPromiseAttribute", V8TestAttributes::raisesExceptionShortPromiseAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "lenientSetterBoolAttribute", V8TestAttributes::lenientSetterBoolAttributeAttributeGetterCallback, V8TestAttributes::lenientSetterBoolAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "floatAttribute", V8TestAttributes::floatAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "lenientThisLongAttribute", V8TestAttributes::LenientThisLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "stringPromiseAttribute", V8TestAttributes::StringPromiseAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "lenientThisStringPromiseAttribute", V8TestAttributes::LenientThisStringPromiseAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "raisesExceptionShortPromiseAttribute", V8TestAttributes::RaisesExceptionShortPromiseAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "lenientSetterBoolAttribute", V8TestAttributes::LenientSetterBoolAttributeAttributeGetterCallback, V8TestAttributes::LenientSetterBoolAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "floatAttribute", V8TestAttributes::FloatAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
-static void installV8TestAttributesTemplate(
+static void InstallV8TestAttributesTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -247,20 +247,20 @@ void V8TestAttributes::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestAttributes::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestAttributesTemplate);
+v8::Local<v8::FunctionTemplate> V8TestAttributes::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestAttributesTemplate);
 }
 
-bool V8TestAttributes::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestAttributes::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestAttributes::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestAttributes::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestAttributes* V8TestAttributes::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestAttributes* NativeValueTraits<TestAttributes>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

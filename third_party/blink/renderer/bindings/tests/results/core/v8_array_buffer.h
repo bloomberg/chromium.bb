@@ -34,7 +34,7 @@ class V8ArrayBuffer {
 
   // Callback functions
 
-  CORE_EXPORT static void byteLengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void ByteLengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 template <>

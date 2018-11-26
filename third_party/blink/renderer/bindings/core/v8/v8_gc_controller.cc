@@ -115,7 +115,7 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
     }
 
     if (class_id == WrapperTypeInfo::kNodeClassId) {
-      DCHECK(V8Node::hasInstance(wrapper, isolate_));
+      DCHECK(V8Node::HasInstance(wrapper, isolate_));
       Node* node = V8Node::ToImpl(wrapper);
       if (node->HasEventListeners()) {
         v8::Persistent<v8::Object>::Cast(*value).MarkActive();

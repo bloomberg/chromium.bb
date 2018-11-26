@@ -205,7 +205,7 @@ bool DictionaryHelper::Get(const Dictionary& dictionary,
 
     // FIXME: this will need to be changed so it can also return an AudioTrack
     // or a VideoTrack once we add them.
-    v8::Local<v8::Object> track = V8TextTrack::findInstanceInPrototypeChain(
+    v8::Local<v8::Object> track = V8TextTrack::FindInstanceInPrototypeChain(
         wrapper, dictionary.GetIsolate());
     if (!track.IsEmpty())
       source = V8TextTrack::ToImpl(track);

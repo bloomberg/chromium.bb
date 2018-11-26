@@ -34,9 +34,9 @@ class V8ArrayBufferView {
 
   // Callback functions
 
-  CORE_EXPORT static void bufferAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void byteOffsetAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void byteLengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void BufferAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void ByteOffsetAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void ByteLengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 template <>

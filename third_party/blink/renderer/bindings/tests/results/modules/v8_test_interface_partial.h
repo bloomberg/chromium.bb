@@ -29,8 +29,8 @@ class ScriptState;
 class V8TestInterfacePartial {
   STATIC_ONLY(V8TestInterfacePartial);
  public:
-  static void initialize();
-  static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+  static void Initialize();
+  static void ImplementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static void InstallConditionalFeatures(
       v8::Local<v8::Context>,
       const DOMWrapperWorld&,
@@ -39,9 +39,9 @@ class V8TestInterfacePartial {
       v8::Local<v8::Function> interface,
       v8::Local<v8::FunctionTemplate> interface_template);
 
-  static void installOriginTrialPartialFeature(ScriptState*, v8::Local<v8::Object> instance);
-  static void installOriginTrialPartialFeature(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-  static void installOriginTrialPartialFeature(ScriptState*);
+  static void InstallOriginTrialPartialFeature(ScriptState*, v8::Local<v8::Object> instance);
+  static void InstallOriginTrialPartialFeature(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
+  static void InstallOriginTrialPartialFeature(ScriptState*);
 
   static void InstallRuntimeEnabledFeaturesOnTemplate(
       v8::Isolate*,
@@ -49,20 +49,20 @@ class V8TestInterfacePartial {
       v8::Local<v8::FunctionTemplate> interface_template);
 
   // Callback functions
-  static void partial4LongAttributeAttributeGetterCallback(    const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void partial4LongAttributeAttributeSetterCallback(    const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void partial4StaticLongAttributeAttributeGetterCallback(    const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void partial4StaticLongAttributeAttributeSetterCallback(    const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void Partial4LongAttributeAttributeGetterCallback(    const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void Partial4LongAttributeAttributeSetterCallback(    const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void Partial4StaticLongAttributeAttributeGetterCallback(    const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void Partial4StaticLongAttributeAttributeSetterCallback(    const v8::FunctionCallbackInfo<v8::Value>& info);
 
-  static void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void partial2VoidTestEnumModulesRecordMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void unscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void unionWithTypedefMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void partial4VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void partial4StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void PartialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void Partial2VoidTestEnumModulesRecordMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void UnscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void UnionWithTypedefMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void Partial4VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void Partial4StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
 
  private:
-  static void installV8TestInterfaceTemplate(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
+  static void InstallV8TestInterfaceTemplate(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 };
 
 }  // namespace blink

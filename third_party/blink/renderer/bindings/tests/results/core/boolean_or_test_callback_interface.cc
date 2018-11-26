@@ -69,7 +69,7 @@ void V8BooleanOrTestCallbackInterface::ToImpl(v8::Isolate* isolate, v8::Local<v8
   if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
-  if (V8TestCallbackInterface::hasInstance(v8Value, isolate)) {
+  if (V8TestCallbackInterface::HasInstance(v8Value, isolate)) {
     V8TestCallbackInterface* cppValue = V8TestCallbackInterface::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.SetTestCallbackInterface(cppValue);
     return;

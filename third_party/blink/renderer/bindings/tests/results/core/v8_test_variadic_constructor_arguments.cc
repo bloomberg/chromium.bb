@@ -31,7 +31,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestVariadicConstructorArguments::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestVariadicConstructorArguments::domTemplate,
+    V8TestVariadicConstructorArguments::DomTemplate,
     nullptr,
     "TestVariadicConstructorArguments",
     nullptr,
@@ -63,7 +63,7 @@ static_assert(
 
 namespace test_variadic_constructor_arguments_v8_internal {
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestVariadicConstructorArguments_ConstructorCallback");
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestVariadicConstructorArguments");
@@ -81,7 +81,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 }  // namespace test_variadic_constructor_arguments_v8_internal
 
-void V8TestVariadicConstructorArguments::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestVariadicConstructorArguments::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestVariadicConstructorArguments_Constructor");
 
   if (!info.IsConstructCall()) {
@@ -94,16 +94,16 @@ void V8TestVariadicConstructorArguments::constructorCallback(const v8::FunctionC
     return;
   }
 
-  test_variadic_constructor_arguments_v8_internal::constructor(info);
+  test_variadic_constructor_arguments_v8_internal::Constructor(info);
 }
 
-static void installV8TestVariadicConstructorArgumentsTemplate(
+static void InstallV8TestVariadicConstructorArgumentsTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestVariadicConstructorArguments::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestVariadicConstructorArguments::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestVariadicConstructorArguments::constructorCallback);
+  interfaceTemplate->SetCallHandler(V8TestVariadicConstructorArguments::ConstructorCallback);
   interfaceTemplate->SetLength(0);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
@@ -137,20 +137,20 @@ void V8TestVariadicConstructorArguments::InstallRuntimeEnabledFeaturesOnTemplate
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestVariadicConstructorArguments::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestVariadicConstructorArgumentsTemplate);
+v8::Local<v8::FunctionTemplate> V8TestVariadicConstructorArguments::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestVariadicConstructorArgumentsTemplate);
 }
 
-bool V8TestVariadicConstructorArguments::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestVariadicConstructorArguments::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestVariadicConstructorArguments::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestVariadicConstructorArguments::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestVariadicConstructorArguments* V8TestVariadicConstructorArguments::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestVariadicConstructorArguments* NativeValueTraits<TestVariadicConstructorArguments>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

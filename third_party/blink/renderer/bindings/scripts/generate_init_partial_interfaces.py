@@ -93,7 +93,7 @@ def main():
     includes = ['#include "third_party/blink/renderer/bindings/modules/v8/%s.h"' %
                 build_basename(interface_name)
                 for interface_name in interface_names]
-    initialize_calls = ['  %s::initialize();' % interface_name
+    initialize_calls = ['  %s::Initialize();' % interface_name
                         for interface_name in interface_names]
 
     content = _INIT_PARTIAL_INTERFACE % (

@@ -672,6 +672,7 @@ def check(path, contents):
     # TODO(tkent): Remove 'Test' after the great mv.
     if (ext not in ('.cc', '.cpp', '.h', '.mm')
             or path.find('/testing/') >= 0
+            or path.find('/tests/') >= 0
             or basename.endswith('Test')
             or basename.endswith('_test')
             or basename.endswith('_test_helpers')

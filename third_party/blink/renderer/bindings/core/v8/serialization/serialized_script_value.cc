@@ -482,7 +482,7 @@ bool SerializedScriptValue::ExtractTransferables(
       return false;
     }
     // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
-    if (V8MessagePort::hasInstance(transferable_object, isolate)) {
+    if (V8MessagePort::HasInstance(transferable_object, isolate)) {
       MessagePort* port = V8MessagePort::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
       // Check for duplicate MessagePorts.
@@ -494,7 +494,7 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.message_ports.push_back(port);
-    } else if (V8MojoHandle::hasInstance(transferable_object, isolate)) {
+    } else if (V8MojoHandle::HasInstance(transferable_object, isolate)) {
       MojoHandle* handle = V8MojoHandle::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
       // Check for duplicate MojoHandles.
@@ -528,7 +528,7 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.array_buffers.push_back(shared_array_buffer);
-    } else if (V8ImageBitmap::hasInstance(transferable_object, isolate)) {
+    } else if (V8ImageBitmap::HasInstance(transferable_object, isolate)) {
       ImageBitmap* image_bitmap = V8ImageBitmap::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
       if (transferables.image_bitmaps.Contains(image_bitmap)) {
@@ -539,7 +539,7 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.image_bitmaps.push_back(image_bitmap);
-    } else if (V8OffscreenCanvas::hasInstance(transferable_object, isolate)) {
+    } else if (V8OffscreenCanvas::HasInstance(transferable_object, isolate)) {
       OffscreenCanvas* offscreen_canvas = V8OffscreenCanvas::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
       if (transferables.offscreen_canvases.Contains(offscreen_canvas)) {
@@ -551,7 +551,7 @@ bool SerializedScriptValue::ExtractTransferables(
       }
       transferables.offscreen_canvases.push_back(offscreen_canvas);
     } else if (RuntimeEnabledFeatures::TransferableStreamsEnabled() &&
-               V8ReadableStream::hasInstance(transferable_object, isolate)) {
+               V8ReadableStream::HasInstance(transferable_object, isolate)) {
       ReadableStream* stream = V8ReadableStream::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
       if (transferables.readable_streams.Contains(stream)) {

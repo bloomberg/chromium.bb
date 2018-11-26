@@ -33,8 +33,13 @@
 
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
+import os
+import sys
 from operator import or_
 
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             '..', '..', 'build', 'scripts'))
+from blinkbuild.name_style_converter import NameStyleConverter
 from idl_definitions import IdlAttribute, IdlOperation, IdlArgument
 from idl_types import IdlType, inherits_interface
 from overload_set_algorithm import effective_overload_set_by_length
@@ -829,6 +834,7 @@ def constant_context(constant, interface):
     extended_attributes = constant.extended_attributes
 
     return {
+        'camel_case_name': NameStyleConverter(constant.name).to_upper_camel_case(),
         'cpp_class': extended_attributes.get('PartialInterfaceImplementedAs'),
         'cpp_type': constant.idl_type.cpp_type,
         'deprecate_as': v8_utilities.deprecate_as(constant),  # [DeprecateAs]
@@ -873,8 +879,7 @@ def compute_method_overloads_context_by_type(interface, methods):
         # package necessary information into |method.overloads| for that method.
         overloads[-1]['overloads'] = overloads_context(interface, overloads)
         overloads[-1]['overloads']['name'] = name
-
-
+        overloads[-1]['overloads']['camel_case_name'] = NameStyleConverter(name).to_upper_camel_case()
 
 
 def overloads_context(interface, overloads):
@@ -897,6 +902,7 @@ def overloads_context(interface, overloads):
     effective_overloads_by_length = effective_overload_set_by_length(overloads)
     lengths = [length for length, _ in effective_overloads_by_length]
     name = overloads[0].get('name', '<constructor>')
+    camel_case_name = NameStyleConverter(name).to_upper_camel_case()
 
     runtime_determined_lengths = None
     function_length = lengths[0]
@@ -925,7 +931,7 @@ def overloads_context(interface, overloads):
                 runtime_determined_lengths.append(
                     (length, sorted(runtime_enabled_feature_names)))
             function_length = ('%s::%sMethodLength()'
-                               % (internal_namespace(interface), name))
+                               % (internal_namespace(interface), camel_case_name))
 
         # Check if all overloads with the longest required arguments list are
         # runtime enabled, in which case we need to have a runtime determined
@@ -948,7 +954,7 @@ def overloads_context(interface, overloads):
                 runtime_determined_maxargs.append(
                     (length, sorted(runtime_enabled_feature_names)))
             maxarg = ('%s::%sMethodMaxArg()' %
-                      (internal_namespace(interface), name))
+                      (internal_namespace(interface), camel_case_name))
 
     # Check and fail if overloads disagree about whether the return type
     # is a Promise or not.
@@ -1171,7 +1177,7 @@ def resolution_tests_methods(effective_overloads):
     # ...
     for idl_type, method in idl_types_methods:
         if idl_type.is_wrapper_type and not idl_type.is_array_buffer_or_view:
-            test = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(
+            test = 'V8{idl_type}::HasInstance({cpp_value}, info.GetIsolate())'.format(
                 idl_type=idl_type.base_type, cpp_value=cpp_value)
             yield test, method
 

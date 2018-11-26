@@ -148,19 +148,19 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
   if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
-  if (V8Event::hasInstance(v8Value, isolate)) {
+  if (V8Event::HasInstance(v8Value, isolate)) {
     Event* cppValue = V8Event::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.SetEvent(cppValue);
     return;
   }
 
-  if (V8Node::hasInstance(v8Value, isolate)) {
+  if (V8Node::HasInstance(v8Value, isolate)) {
     Node* cppValue = V8Node::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.SetNode(cppValue);
     return;
   }
 
-  if (V8XMLHttpRequest::hasInstance(v8Value, isolate)) {
+  if (V8XMLHttpRequest::HasInstance(v8Value, isolate)) {
     XMLHttpRequest* cppValue = V8XMLHttpRequest::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.SetXMLHttpRequest(cppValue);
     return;

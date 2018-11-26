@@ -30,15 +30,15 @@ namespace blink {
 class V8TestInterface5 {
   STATIC_ONLY(V8TestInterface5);
  public:
-  MODULES_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-  MODULES_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  MODULES_EXPORT static bool HasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> FindInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  MODULES_EXPORT static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestInterface5Implementation* ToImpl(v8::Local<v8::Object> object) {
     return ToScriptWrappable(object)->ToImpl<TestInterface5Implementation>();
   }
   MODULES_EXPORT static TestInterface5Implementation* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   MODULES_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+  static void LegacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   MODULES_EXPORT static void InstallConditionalFeatures(
@@ -51,53 +51,53 @@ class V8TestInterface5 {
 
   // Callback functions
 
-  MODULES_EXPORT static void testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void testInterfaceConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void floatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void unrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void unrestrictedDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void unrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void unrestrictedFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void alwaysExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void alwaysExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void workerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void workerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void windowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void windowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void TestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void TestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void TestInterfaceConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void DoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void DoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void FloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void FloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void UnrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void UnrestrictedDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void UnrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void UnrestrictedFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void StaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void LengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void AlwaysExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void AlwaysExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void WorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void WorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void WindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void WindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
-  MODULES_EXPORT static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void alwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void workerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void windowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void alwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void workerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void windowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void windowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void voidMethodBooleanOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void voidMethodDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void voidMethodVoidExperimentalCallbackFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void voidMethodVoidCallbackFunctionModulesArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void VoidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void VoidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void VoidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void VoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void AlwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void WorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void WindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void AlwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void WorkerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void WindowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void WindowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void VoidMethodBooleanOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void VoidMethodDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void VoidMethodVoidExperimentalCallbackFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void VoidMethodVoidCallbackFunctionModulesArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void ToStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
-  MODULES_EXPORT static void namedPropertyGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void namedPropertyQueryCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Integer>&);
-  MODULES_EXPORT static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>&);
-  MODULES_EXPORT static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
-  MODULES_EXPORT static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>&);
-  MODULES_EXPORT static void indexedPropertyDefinerCallback(uint32_t index, const v8::PropertyDescriptor&, const v8::PropertyCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void NamedPropertyGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void NamedPropertyQueryCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Integer>&);
+  MODULES_EXPORT static void NamedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>&);
+  MODULES_EXPORT static void IndexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void IndexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void IndexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
+  MODULES_EXPORT static void IndexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>&);
+  MODULES_EXPORT static void IndexedPropertyDefinerCallback(uint32_t index, const v8::PropertyDescriptor&, const v8::PropertyCallbackInfo<v8::Value>&);
 
   static void InstallRuntimeEnabledFeaturesOnTemplate(
       v8::Isolate*,

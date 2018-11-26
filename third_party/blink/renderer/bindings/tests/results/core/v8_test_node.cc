@@ -32,7 +32,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestNode::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestNode::domTemplate,
+    V8TestNode::DomTemplate,
     nullptr,
     "TestNode",
     &V8Node::wrapperTypeInfo,
@@ -64,7 +64,7 @@ static_assert(
 
 namespace test_node_v8_internal {
 
-static void hrefAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void HrefAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestNode* impl = V8TestNode::ToImpl(holder);
@@ -72,7 +72,7 @@ static void hrefAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
   V8SetReturnValueString(info, impl->href(), info.GetIsolate());
 }
 
-static void hrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void HrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -89,7 +89,7 @@ static void hrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   impl->setHref(cppValue);
 }
 
-static void hrefThrowsAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void HrefThrowsAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestNode* impl = V8TestNode::ToImpl(holder);
@@ -97,7 +97,7 @@ static void hrefThrowsAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>&
   V8SetReturnValueString(info, impl->hrefThrows(), info.GetIsolate());
 }
 
-static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void HrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -116,7 +116,7 @@ static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Fu
   impl->setHrefThrows(cppValue, exceptionState);
 }
 
-static void hrefCallWithAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void HrefCallWithAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestNode* impl = V8TestNode::ToImpl(holder);
@@ -124,7 +124,7 @@ static void hrefCallWithAttributeGetter(const v8::FunctionCallbackInfo<v8::Value
   V8SetReturnValueString(info, impl->hrefCallWith(), info.GetIsolate());
 }
 
-static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void HrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -143,7 +143,7 @@ static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   impl->setHrefCallWith(executionContext, CurrentDOMWindow(info.GetIsolate()), EnteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
-static void hrefByteStringAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void HrefByteStringAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestNode* impl = V8TestNode::ToImpl(holder);
@@ -151,7 +151,7 @@ static void hrefByteStringAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
   V8SetReturnValueString(info, impl->hrefByteString(), info.GetIsolate());
 }
 
-static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void HrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -170,7 +170,7 @@ static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   impl->setHrefByteString(cppValue);
 }
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_ConstructorCallback");
 
   TestNode* impl = TestNode::Create();
@@ -181,70 +181,70 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 }  // namespace test_node_v8_internal
 
-void V8TestNode::hrefAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestNode::HrefAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_href_Getter");
 
-  test_node_v8_internal::hrefAttributeGetter(info);
+  test_node_v8_internal::HrefAttributeGetter(info);
 }
 
-void V8TestNode::hrefAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestNode::HrefAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_href_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  test_node_v8_internal::hrefAttributeSetter(v8Value, info);
+  test_node_v8_internal::HrefAttributeSetter(v8Value, info);
 }
 
-void V8TestNode::hrefThrowsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestNode::HrefThrowsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefThrows_Getter");
 
-  test_node_v8_internal::hrefThrowsAttributeGetter(info);
+  test_node_v8_internal::HrefThrowsAttributeGetter(info);
 }
 
-void V8TestNode::hrefThrowsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestNode::HrefThrowsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefThrows_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  test_node_v8_internal::hrefThrowsAttributeSetter(v8Value, info);
+  test_node_v8_internal::HrefThrowsAttributeSetter(v8Value, info);
 }
 
-void V8TestNode::hrefCallWithAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestNode::HrefCallWithAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefCallWith_Getter");
 
-  test_node_v8_internal::hrefCallWithAttributeGetter(info);
+  test_node_v8_internal::HrefCallWithAttributeGetter(info);
 }
 
-void V8TestNode::hrefCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestNode::HrefCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefCallWith_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  test_node_v8_internal::hrefCallWithAttributeSetter(v8Value, info);
+  test_node_v8_internal::HrefCallWithAttributeSetter(v8Value, info);
 }
 
-void V8TestNode::hrefByteStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestNode::HrefByteStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefByteString_Getter");
 
-  test_node_v8_internal::hrefByteStringAttributeGetter(info);
+  test_node_v8_internal::HrefByteStringAttributeGetter(info);
 }
 
-void V8TestNode::hrefByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestNode::HrefByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefByteString_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  test_node_v8_internal::hrefByteStringAttributeSetter(v8Value, info);
+  test_node_v8_internal::HrefByteStringAttributeSetter(v8Value, info);
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestNodeAccessors[] = {
-    { "href", V8TestNode::hrefAttributeGetterCallback, V8TestNode::hrefAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "hrefThrows", V8TestNode::hrefThrowsAttributeGetterCallback, V8TestNode::hrefThrowsAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "hrefCallWith", V8TestNode::hrefCallWithAttributeGetterCallback, V8TestNode::hrefCallWithAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "hrefByteString", V8TestNode::hrefByteStringAttributeGetterCallback, V8TestNode::hrefByteStringAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "href", V8TestNode::HrefAttributeGetterCallback, V8TestNode::HrefAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "hrefThrows", V8TestNode::HrefThrowsAttributeGetterCallback, V8TestNode::HrefThrowsAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "hrefCallWith", V8TestNode::HrefCallWithAttributeGetterCallback, V8TestNode::HrefCallWithAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "hrefByteString", V8TestNode::HrefByteStringAttributeGetterCallback, V8TestNode::HrefByteStringAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
-void V8TestNode::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestNode::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_Constructor");
 
   if (!info.IsConstructCall()) {
@@ -257,16 +257,16 @@ void V8TestNode::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& 
     return;
   }
 
-  test_node_v8_internal::constructor(info);
+  test_node_v8_internal::Constructor(info);
 }
 
-static void installV8TestNodeTemplate(
+static void InstallV8TestNodeTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestNode::wrapperTypeInfo.interface_name, V8Node::domTemplate(isolate, world), V8TestNode::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestNode::constructorCallback);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestNode::wrapperTypeInfo.interface_name, V8Node::DomTemplate(isolate, world), V8TestNode::internalFieldCount);
+  interfaceTemplate->SetCallHandler(V8TestNode::ConstructorCallback);
   interfaceTemplate->SetLength(0);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
@@ -303,20 +303,20 @@ void V8TestNode::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestNode::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestNodeTemplate);
+v8::Local<v8::FunctionTemplate> V8TestNode::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestNodeTemplate);
 }
 
-bool V8TestNode::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestNode::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestNode::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestNode::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestNode* V8TestNode::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestNode* NativeValueTraits<TestNode>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
