@@ -29245,6 +29245,8 @@ from previous Chrome versions.
   <int value="-1956747298" label="LayeredAPI:enabled"/>
   <int value="-1956349722" label="disable-smooth-scrolling"/>
   <int value="-1955923385" label="EnableGamepadButtonAxisEvents:enabled"/>
+  <int value="-1954246274"
+      label="enable-experimental-accessibility-switch-access"/>
   <int value="-1953121360" label="EphemeralTab:disabled"/>
   <int value="-1948540128" label="disable-webrtc-hw-encoding (deprecated)"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>

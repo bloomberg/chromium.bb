@@ -13,6 +13,10 @@ namespace switches {
 const char kEnableExperimentalAccessibilityFeatures[] =
     "enable-experimental-accessibility-features";
 
+// Shows setting to enable Switch Access before it has launched.
+const char kEnableExperimentalAccessibilitySwitchAccess[] =
+    "enable-experimental-accessibility-switch-access";
+
 bool AreExperimentalAccessibilityFeaturesEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityFeatures);
