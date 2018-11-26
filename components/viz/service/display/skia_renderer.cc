@@ -803,9 +803,9 @@ void SkiaRenderer::AddTileQuadToBatch(const TileDrawQuad* quad,
     if (quad->IsBottomEdge())
       aa_flags |= SkCanvas::kBottom_QuadAAFlag;
   }
-  batched_tiles_.push_back(
-      SkCanvas::ImageSetEntry{sk_ref_sp(image), uv_rect,
-                              gfx::RectToSkRect(quad->visible_rect), aa_flags});
+  batched_tiles_.push_back(SkCanvas::ImageSetEntry{
+      sk_ref_sp(image), uv_rect, gfx::RectToSkRect(quad->visible_rect),
+      quad->shared_quad_state->opacity, aa_flags});
 }
 
 void SkiaRenderer::DrawBatchedTileQuads() {
@@ -823,9 +823,8 @@ void SkiaRenderer::DrawBatchedTileQuads() {
   SkFilterQuality filter_quality = batched_tile_state_.is_nearest_neighbor
                                        ? kNone_SkFilterQuality
                                        : kLow_SkFilterQuality;
-  current_canvas_->experimental_DrawImageSetV0(
-      &batched_tiles_.front(), batched_tiles_.size(),
-      batched_tile_state_.shared_quad_state->opacity, filter_quality,
+  current_canvas_->experimental_DrawImageSetV1(
+      &batched_tiles_.front(), batched_tiles_.size(), filter_quality,
       batched_tile_state_.shared_quad_state->blend_mode);
   current_canvas_->resetMatrix();
   batched_tiles_.clear();
