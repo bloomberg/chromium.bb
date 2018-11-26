@@ -5,9 +5,11 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/gaussian_trainer.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/monotone_cubic_spline.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chromeos/chromeos_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,6 +70,8 @@ class GaussianTrainerTest : public testing::Test {
   MonotoneCubicSpline global_curve_;
   MonotoneCubicSpline personal_curve_;
   base::SimpleTestTickClock tick_clock_;
+
+  base::HistogramTester histogram_tester_;
 
   std::unique_ptr<GaussianTrainer> gaussian_trainer_;
 
@@ -505,12 +509,26 @@ TEST_F(GaussianTrainerTest, PersonalCurveFailingSlopeConstraints) {
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 }
 
+// Valid parameters.
+TEST_F(GaussianTrainerTest, ValidParameters) {
+  std::map<std::string, std::string> params = default_params_;
+  params["min_grad"] = "0.8";
+  ResetModelWithParams(params);
+
+  EXPECT_TRUE(gaussian_trainer_->HasValidConfiguration());
+  histogram_tester_.ExpectTotalCount("AutoScreenBrightness.ParameterError", 0);
+}
+
 // Invalid parameters.
 TEST_F(GaussianTrainerTest, InvalidParameters) {
   std::map<std::string, std::string> params = default_params_;
   params["min_grad"] = "1.2";
   ResetModelWithParams(params);
+
   EXPECT_FALSE(gaussian_trainer_->HasValidConfiguration());
+  histogram_tester_.ExpectUniqueSample(
+      "AutoScreenBrightness.ParameterError",
+      static_cast<int>(ParameterError::kModelError), 1);
 }
 
 }  // namespace auto_screen_brightness

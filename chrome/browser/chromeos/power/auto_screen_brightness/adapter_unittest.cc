@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/fake_brightness_monitor.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/modeller.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/monotone_cubic_spline.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -218,6 +219,8 @@ class AdapterTest : public testing::Test {
   FakeAlsReader fake_als_reader_;
   FakeBrightnessMonitor fake_brightness_monitor_;
   FakeModeller fake_modeller_;
+
+  base::HistogramTester histogram_tester_;
 
   const std::map<std::string, std::string> default_params_ = {
       {"brightening_lux_threshold_ratio", "0.1"},
@@ -643,6 +646,28 @@ TEST_F(AdapterTest, FeatureDisabled) {
   fake_als_reader_.ReportAmbientLightUpdate(10);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 0);
+}
+
+TEST_F(AdapterTest, ValidParameters) {
+  std::map<std::string, std::string> params = default_params_;
+  params["darkening_lux_threshold_ratio"] = "0.5";
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       global_curve_, personal_curve_, params);
+
+  histogram_tester_.ExpectTotalCount("AutoScreenBrightness.ParameterError", 0);
+}
+
+TEST_F(AdapterTest, InvalidParameters) {
+  std::map<std::string, std::string> params = default_params_;
+  params["darkening_lux_threshold_ratio"] = "2";
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       global_curve_, personal_curve_, params);
+
+  histogram_tester_.ExpectUniqueSample(
+      "AutoScreenBrightness.ParameterError",
+      static_cast<int>(ParameterError::kAdapterError), 1);
 }
 
 }  // namespace auto_screen_brightness
