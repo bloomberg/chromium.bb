@@ -390,8 +390,8 @@ CommandHandler.MenuCommandsForUMA = {
   HIDDEN_FILES_HIDE: 'toggle-hidden-files-off',
   MOBILE_DATA_ON: 'drive-sync-settings-enabled',
   MOBILE_DATA_OFF: 'drive-sync-settings-disabled',
-  SHOW_GOOGLE_DOCS_FILES_OFF: 'drive-hosted-settings-disabled',
-  SHOW_GOOGLE_DOCS_FILES_ON: 'drive-hosted-settings-enabled',
+  DEPRECATED_SHOW_GOOGLE_DOCS_FILES_OFF: 'drive-hosted-settings-disabled',
+  DEPRECATED_SHOW_GOOGLE_DOCS_FILES_ON: 'drive-hosted-settings-enabled',
   HIDDEN_ANDROID_FOLDERS_SHOW: 'toggle-hidden-android-folders-on',
   HIDDEN_ANDROID_FOLDERS_HIDE: 'toggle-hidden-android-folders-off',
   SHARE_WITH_LINUX: 'share-with-linux',
@@ -417,8 +417,8 @@ CommandHandler.ValidMenuCommandsForUMA = [
   CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_HIDE,
   CommandHandler.MenuCommandsForUMA.MOBILE_DATA_ON,
   CommandHandler.MenuCommandsForUMA.MOBILE_DATA_OFF,
-  CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_ON,
-  CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_OFF,
+  CommandHandler.MenuCommandsForUMA.DEPRECATED_SHOW_GOOGLE_DOCS_FILES_OFF,
+  CommandHandler.MenuCommandsForUMA.DEPRECATED_SHOW_GOOGLE_DOCS_FILES_ON,
   CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_SHOW,
   CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_HIDE,
   CommandHandler.MenuCommandsForUMA.SHARE_WITH_LINUX,
@@ -900,42 +900,6 @@ CommandHandler.COMMANDS_['drive-sync-settings'] = /** @type {Command} */ ({
     event.canExecute = fileManager.directoryModel.isOnDrive() &&
         fileManager.volumeManager.getDriveConnectionState()
             .hasCellularNetworkAccess;
-    event.command.setHidden(!event.canExecute);
-  }
-});
-
-/**
- * Toggles drive hosted settings.
- * @type {Command}
- */
-CommandHandler.COMMANDS_['drive-hosted-settings'] = /** @type {Command} */ ({
-  /**
-   * @param {!Event} event Command event.
-   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
-   */
-  execute: function(event, fileManager) {
-    // If checked, showing drive hosted files is enabled.
-    var nowHostedFilesEnabled =
-        fileManager.ui.gearMenu.hostedButton.hasAttribute('checked');
-    var nowHostedFilesDisabled = !nowHostedFilesEnabled;
-
-    /*
-    var changeInfo = {hostedFilesDisabled: !nowHostedFilesDisabled};
-    */
-    var changeInfo = {};
-    changeInfo['hostedFilesDisabled'] = !nowHostedFilesDisabled;
-    chrome.fileManagerPrivate.setPreferences(changeInfo);
-    CommandHandler.recordMenuItemSelected_(
-        nowHostedFilesDisabled ?
-            CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_OFF :
-            CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_ON);
-  },
-  /**
-   * @param {!Event} event Command event.
-   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
-   */
-  canExecute: function(event, fileManager) {
-    event.canExecute = fileManager.directoryModel.isOnDrive();
     event.command.setHidden(!event.canExecute);
   }
 });

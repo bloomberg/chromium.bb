@@ -12,7 +12,6 @@ namespace prefs {
 
 extern const char kDisableDrive[];
 extern const char kDisableDriveOverCellular[];
-extern const char kDisableDriveHostedFiles[];
 extern const char kDriveFsProfileSalt[];
 extern const char kDriveFsPinnedMigrated[];
 extern const char kDriveFsWasLaunchedAtLeastOnce[];

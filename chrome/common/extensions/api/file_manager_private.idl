@@ -548,7 +548,6 @@ dictionary FileWatchEvent {
 dictionary Preferences {
   boolean driveEnabled;
   boolean cellularDisabled;
-  boolean hostedFilesDisabled;
   boolean searchSuggestEnabled;
   boolean use24hourClock;
   boolean allowRedeemOffers;
@@ -557,7 +556,6 @@ dictionary Preferences {
 
 dictionary PreferencesChange {
   boolean? cellularDisabled;
-  boolean? hostedFilesDisabled;
 };
 
 dictionary SearchParams {

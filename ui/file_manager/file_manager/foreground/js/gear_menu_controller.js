@@ -161,10 +161,5 @@ GearMenuController.prototype.onPreferencesChanged_ = function() {
       this.gearMenu_.syncButton.setAttribute('checked', '');
     else
       this.gearMenu_.syncButton.removeAttribute('checked');
-
-    if (!prefs.hostedFilesDisabled)
-      this.gearMenu_.hostedButton.setAttribute('checked', '');
-    else
-      this.gearMenu_.hostedButton.removeAttribute('checked');
   }.bind(this));
 };

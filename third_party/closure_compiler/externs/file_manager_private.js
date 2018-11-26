@@ -389,7 +389,6 @@ chrome.fileManagerPrivate.FileWatchEvent;
  * @typedef {{
  *   driveEnabled: boolean,
  *   cellularDisabled: boolean,
- *   hostedFilesDisabled: boolean,
  *   searchSuggestEnabled: boolean,
  *   use24hourClock: boolean,
  *   allowRedeemOffers: boolean,
@@ -401,7 +400,6 @@ chrome.fileManagerPrivate.Preferences;
 /**
  * @typedef {{
  *   cellularDisabled: (boolean|undefined),
- *   hostedFilesDisabled: (boolean|undefined)
  * }}
  */
 chrome.fileManagerPrivate.PreferencesChange;

@@ -214,8 +214,6 @@ FileManagerPrivateGetPreferencesFunction::Run() {
                          !drive_integration_service->mount_failed();
   result.cellular_disabled =
       service->GetBoolean(drive::prefs::kDisableDriveOverCellular);
-  result.hosted_files_disabled =
-      service->GetBoolean(drive::prefs::kDisableDriveHostedFiles);
   result.search_suggest_enabled =
       service->GetBoolean(prefs::kSearchSuggestEnabled);
   result.use24hour_clock = service->GetBoolean(prefs::kUse24HourClock);
@@ -248,10 +246,6 @@ FileManagerPrivateSetPreferencesFunction::Run() {
   if (params->change_info.cellular_disabled)
     service->SetBoolean(drive::prefs::kDisableDriveOverCellular,
                         *params->change_info.cellular_disabled);
-
-  if (params->change_info.hosted_files_disabled)
-    service->SetBoolean(drive::prefs::kDisableDriveHostedFiles,
-                        *params->change_info.hosted_files_disabled);
 
   drive::EventLogger* logger = file_manager::util::GetLogger(profile);
   if (logger)
