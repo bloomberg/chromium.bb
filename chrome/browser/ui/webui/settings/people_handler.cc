@@ -951,6 +951,10 @@ PeopleHandler::GetSyncStatusDictionary() {
 
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
   DCHECK(signin);
+
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+  DCHECK(identity_manager);
+
 #if !defined(OS_CHROMEOS)
   // Signout is not allowed if the user has policy (crbug.com/172204).
   if (!signin_util::IsUserSignoutAllowedForProfile(profile_)) {
@@ -995,8 +999,9 @@ PeopleHandler::GetSyncStatusDictionary() {
       "disabled", !service || disallowed_by_policy ||
                       !service->GetUserSettings()->IsSyncAllowedByPlatform());
   sync_status->SetBoolean("signedIn", signin->IsAuthenticated());
-  sync_status->SetString("signedInUsername",
-                         signin_ui_util::GetAuthenticatedUsername(signin));
+  sync_status->SetString(
+      "signedInUsername",
+      signin_ui_util::GetAuthenticatedUsername(identity_manager));
   sync_status->SetBoolean("hasUnrecoverableError",
                           service && service->HasUnrecoverableError());
   return sync_status;
