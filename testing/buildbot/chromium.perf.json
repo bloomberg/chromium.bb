@@ -470,45 +470,6 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "performance_browser_tests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
-        ],
-        "isolate_name": "performance_browser_tests",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_browser_tests",
-        "override_compile_targets": [
-          "performance_browser_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
-            }
-          ],
-          "expiration": 7200,
-          "hard_timeout": 25200,
-          "ignore_task_failure": false,
-          "io_timeout": 1800,
-          "shards": 1,
-          "upload_test_results": true
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      },
-      {
-        "args": [
-          "--gtest-benchmark-name",
           "validating_command_buffer_perftests",
           "--non-telemetry=true",
           "--migrated-test=true",
@@ -684,45 +645,6 @@
         "name": "media_perftests",
         "override_compile_targets": [
           "media_perftests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "102b:0532",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
-            }
-          ],
-          "expiration": 7200,
-          "hard_timeout": 25200,
-          "ignore_task_failure": false,
-          "io_timeout": 1800,
-          "shards": 1,
-          "upload_test_results": true
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      },
-      {
-        "args": [
-          "--gtest-benchmark-name",
-          "performance_browser_tests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
-        ],
-        "isolate_name": "performance_browser_tests",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_browser_tests",
-        "override_compile_targets": [
-          "performance_browser_tests"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1890,45 +1812,6 @@
         "name": "media_perftests",
         "override_compile_targets": [
           "media_perftests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "chrome.tests.perf"
-            }
-          ],
-          "expiration": 7200,
-          "hard_timeout": 25200,
-          "ignore_task_failure": false,
-          "io_timeout": 1800,
-          "shards": 1,
-          "upload_test_results": true
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      },
-      {
-        "args": [
-          "--gtest-benchmark-name",
-          "performance_browser_tests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
-        ],
-        "isolate_name": "performance_browser_tests",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_browser_tests",
-        "override_compile_targets": [
-          "performance_browser_tests"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
