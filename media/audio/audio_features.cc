@@ -18,7 +18,7 @@ const base::Feature kCrOSSystemAEC{"CrOSSystemAEC",
 #if defined(OS_WIN)
 // Increases the input audio endpoint buffer size. http://crbug.com/830624.
 const base::Feature kIncreaseInputAudioBufferSize{
-    "IncreaseInputAudioBufferSize", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IncreaseInputAudioBufferSize", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 }  // namespace features
