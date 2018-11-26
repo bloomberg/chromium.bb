@@ -142,7 +142,6 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
     FcBool	    was_valid, was_processed = FcFalse;
     int		    i;
     const FcChar8   *sysroot = FcConfigGetSysRoot (config);
-	FcChar8 *rooted_dir = NULL;
 
     /*
      * Now scan all of the directories into separate databases
@@ -158,26 +157,21 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	    fflush (stdout);
 	}
 
-	if (rooted_dir)
-	{
-		FcStrFree(rooted_dir);
-		rooted_dir = NULL;
-	}
-	
-	if (sysroot)
-	{
-		rooted_dir = FcStrPlus(sysroot, dir);
-	}
-	else {
-		rooted_dir = FcStrCopy(dir);
-	}
-
 	if (FcStrSetMember (processed_dirs, dir))
 	{
 	    if (verbose)
 		printf (_("skipping, looped directory detected\n"));
 	    continue;
 	}
+
+    FcChar8 *rooted_dir = NULL;
+    if (sysroot)
+    {
+        rooted_dir = FcStrPlus(sysroot, dir);
+    }
+    else {
+        rooted_dir = FcStrCopy(dir);
+    }
 
 	if (stat ((char *) rooted_dir, &statb) == -1)
 	{
@@ -195,6 +189,9 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	    }
 	    continue;
 	}
+
+    FcStrFree(rooted_dir);
+    rooted_dir = NULL;
 
 	if (!S_ISDIR (statb.st_mode))
 	{
@@ -275,10 +272,6 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	FcStrListDone (sublist);
     }
 
-	if (rooted_dir)
-	{
-		FcStrFree(rooted_dir);
-	}
     if (error_on_no_fonts && !was_processed)
 	ret++;
     return ret;
