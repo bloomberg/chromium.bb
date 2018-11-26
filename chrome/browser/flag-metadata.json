@@ -1770,67 +1770,67 @@
   },
   {
     "name": "enable-sync-pseudo-uss-app-list",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-apps",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-dictionary",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-extension-settings",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-extensions",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-favicons",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-history-delete-directives",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-passwords",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-preferences",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-priority-preferences",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-search-engines",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-supervised-users",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-pseudo-uss-themes",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1840,12 +1840,12 @@
   },
   {
     "name": "enable-sync-uss-bookmarks",
-    // "owners": [ "your-team" ],
+    "owners": [ "mamir", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-sync-uss-sessions",
-    // "owners": [ "your-team" ],
+    "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -3010,22 +3010,22 @@
   },
   {
     "name": "sync-USS-autofill-profile",
-    // "owners": [ "your-team" ],
+    "owners": [ "jkrcal", "treib", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "sync-USS-autofill-wallet-data",
-    // "owners": [ "your-team" ],
+    "owners": [ "jkrcal", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "sync-standalone-transport",
-    // "owners": [ "your-team" ],
+    "owners": [ "treib", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "sync-support-secondary-account",
-    // "owners": [ "your-team" ],
+    "owners": [ "treib", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -3210,7 +3210,7 @@
   },
   {
     "name": "use-sync-sandbox",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
