@@ -3,28 +3,17 @@
 // found in the LICENSE file.
 
 /**
- * @constructor
- * @struct
- * @extends {cr.EventTarget}
+ * FileOperationManager: manager of file operations. Implementations of this
+ * interface must @extends {cr.EventTarget}.
+ *
+ * @interface
+ * @extends {EventTarget}
  */
 function FileOperationManager() {}
 
-/**
- * Adds an event listener for the tasks.
- * @param {string} type The name of the event.
- * @param {EventListenerType} handler The handler for the event.  This is called
- *     when the event is dispatched.
- * @override
- */
-FileOperationManager.prototype.addEventListener = function(type, handler) {};
-
-/**
- * Removes an event listener for the tasks.
- * @param {string} type The name of the event.
- * @param {EventListenerType} handler The handler to be removed.
- * @override
- */
-FileOperationManager.prototype.removeEventListener = function(type, handler) {};
+FileOperationManager.prototype = /** @struct */ {
+  __proto__: EventTarget.prototype,
+};
 
 /**
  * Says if there are any tasks in the queue.
