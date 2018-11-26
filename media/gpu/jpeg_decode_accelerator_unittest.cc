@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This has to be included first.
+// See http://code.google.com/p/googletest/issues/detail?id=371
+#include "testing/gtest/include/gtest/gtest.h"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -30,7 +34,6 @@
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/video/jpeg_decode_accelerator.h"
 #include "mojo/core/embedder/embedder.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -243,10 +246,9 @@ enum ClientState {
 class JpegClient : public JpegDecodeAccelerator::Client {
  public:
   // JpegClient takes ownership of |note|.
-  JpegClient(
-      const std::vector<ParsedJpegImage*>& test_image_files,
-      std::unique_ptr<media::test::ClientStateNotification<ClientState>> note,
-      bool is_skip);
+  JpegClient(const std::vector<ParsedJpegImage*>& test_image_files,
+             std::unique_ptr<ClientStateNotification<ClientState>> note,
+             bool is_skip);
   ~JpegClient() override;
   void CreateJpegDecoder();
   void StartDecode(int32_t bitstream_buffer_id, bool do_prepare_memory = true);
@@ -259,9 +261,7 @@ class JpegClient : public JpegDecodeAccelerator::Client {
                    JpegDecodeAccelerator::Error error) override;
 
   // Accessors.
-  media::test::ClientStateNotification<ClientState>* note() const {
-    return note_.get();
-  }
+  ClientStateNotification<ClientState>* note() const { return note_.get(); }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(JpegClientTest, GetMeanAbsoluteDifference);
@@ -284,7 +284,7 @@ class JpegClient : public JpegDecodeAccelerator::Client {
   ClientState state_;
 
   // Used to notify another thread about the state. JpegClient owns this.
-  std::unique_ptr<media::test::ClientStateNotification<ClientState>> note_;
+  std::unique_ptr<ClientStateNotification<ClientState>> note_;
 
   // Skip JDA decode result. Used for testing performance.
   bool is_skip_;
@@ -311,7 +311,7 @@ class JpegClient : public JpegDecodeAccelerator::Client {
 
 JpegClient::JpegClient(
     const std::vector<ParsedJpegImage*>& test_image_files,
-    std::unique_ptr<media::test::ClientStateNotification<ClientState>> note,
+    std::unique_ptr<ClientStateNotification<ClientState>> note,
     bool is_skip)
     : test_image_files_(test_image_files),
       state_(CS_CREATED),
@@ -588,8 +588,7 @@ void JpegDecodeAcceleratorTest::TestDecode(
 
   for (size_t i = 0; i < num_concurrent_decoders; i++) {
     auto client = std::make_unique<JpegClient>(
-        images,
-        std::make_unique<media::test::ClientStateNotification<ClientState>>(),
+        images, std::make_unique<ClientStateNotification<ClientState>>(),
         false /* is_skip */);
     scoped_clients.emplace_back(
         new ScopedJpegClient(decoder_thread.task_runner(), std::move(client)));
@@ -625,8 +624,7 @@ void JpegDecodeAcceleratorTest::PerfDecodeByJDA(
   ASSERT_TRUE(decoder_thread.Start());
 
   auto client = std::make_unique<JpegClient>(
-      images,
-      std::make_unique<media::test::ClientStateNotification<ClientState>>(),
+      images, std::make_unique<ClientStateNotification<ClientState>>(),
       true /* is_skip */);
   auto scoped_client = std::make_unique<ScopedJpegClient>(
       decoder_thread.task_runner(), std::move(client));
@@ -660,8 +658,7 @@ void JpegDecodeAcceleratorTest::PerfDecodeBySW(
   LOG_ASSERT(images.size() == 1);
 
   std::unique_ptr<JpegClient> client = std::make_unique<JpegClient>(
-      images,
-      std::make_unique<media::test::ClientStateNotification<ClientState>>(),
+      images, std::make_unique<ClientStateNotification<ClientState>>(),
       true /* is_skip */);
 
   const int32_t bitstream_buffer_id = 0;

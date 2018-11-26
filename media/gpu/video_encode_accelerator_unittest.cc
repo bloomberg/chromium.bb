@@ -1185,8 +1185,7 @@ class VEAClientBase : public VideoEncodeAccelerator::Client {
   }
 
  protected:
-  explicit VEAClientBase(
-      media::test::ClientStateNotification<ClientState>* note)
+  VEAClientBase(ClientStateNotification<ClientState>* note)
       : note_(note), next_output_buffer_id_(0) {}
 
   bool has_encoder() { return encoder_.get(); }
@@ -1197,7 +1196,7 @@ class VEAClientBase : public VideoEncodeAccelerator::Client {
 
   // Used to notify another thread about the state. VEAClientBase does not own
   // this.
-  media::test::ClientStateNotification<ClientState>* note_;
+  ClientStateNotification<ClientState>* note_;
 
   // All methods of this class should be run on the same thread.
   base::ThreadChecker thread_checker_;
@@ -1209,7 +1208,7 @@ class VEAClientBase : public VideoEncodeAccelerator::Client {
 class VEAClient : public VEAClientBase {
  public:
   VEAClient(TestStream* test_stream,
-            media::test::ClientStateNotification<ClientState>* note,
+            ClientStateNotification<ClientState>* note,
             bool save_to_file,
             unsigned int keyframe_period,
             bool force_bitrate,
@@ -1419,7 +1418,7 @@ class VEAClient : public VEAClientBase {
 };
 
 VEAClient::VEAClient(TestStream* test_stream,
-                     media::test::ClientStateNotification<ClientState>* note,
+                     ClientStateNotification<ClientState>* note,
                      bool save_to_file,
                      unsigned int keyframe_period,
                      bool force_bitrate,
@@ -2122,7 +2121,7 @@ class SimpleVEAClientBase : public VEAClientBase {
                                size_t output_buffer_size) override;
 
  protected:
-  SimpleVEAClientBase(media::test::ClientStateNotification<ClientState>* note,
+  SimpleVEAClientBase(ClientStateNotification<ClientState>* note,
                       const int width,
                       const int height);
 
@@ -2138,7 +2137,7 @@ class SimpleVEAClientBase : public VEAClientBase {
 };
 
 SimpleVEAClientBase::SimpleVEAClientBase(
-    media::test::ClientStateNotification<ClientState>* note,
+    ClientStateNotification<ClientState>* note,
     const int width,
     const int height)
     : VEAClientBase(note),
@@ -2215,8 +2214,7 @@ void SimpleVEAClientBase::FeedEncoderWithOutput(base::SharedMemory* shm,
 // frame before getting any input.
 class VEANoInputClient : public SimpleVEAClientBase {
  public:
-  explicit VEANoInputClient(
-      media::test::ClientStateNotification<ClientState>* note);
+  explicit VEANoInputClient(ClientStateNotification<ClientState>* note);
   void DestroyEncoder();
 
   // VideoDecodeAccelerator::Client implementation.
@@ -2233,8 +2231,7 @@ class VEANoInputClient : public SimpleVEAClientBase {
   std::unique_ptr<base::OneShotTimer> timer_;
 };
 
-VEANoInputClient::VEANoInputClient(
-    media::test::ClientStateNotification<ClientState>* note)
+VEANoInputClient::VEANoInputClient(ClientStateNotification<ClientState>* note)
     : SimpleVEAClientBase(note, 320, 240) {}
 
 void VEANoInputClient::DestroyEncoder() {
@@ -2272,7 +2269,7 @@ void VEANoInputClient::BitstreamBufferReady(
 class VEACacheLineUnalignedInputClient : public SimpleVEAClientBase {
  public:
   explicit VEACacheLineUnalignedInputClient(
-      media::test::ClientStateNotification<ClientState>* note);
+      ClientStateNotification<ClientState>* note);
 
   // VideoDecodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
@@ -2288,7 +2285,7 @@ class VEACacheLineUnalignedInputClient : public SimpleVEAClientBase {
 };
 
 VEACacheLineUnalignedInputClient::VEACacheLineUnalignedInputClient(
-    media::test::ClientStateNotification<ClientState>* note)
+    ClientStateNotification<ClientState>* note)
     : SimpleVEAClientBase(note, 368, 368) {
 }  // 368 is divisible by 16 but not 32
 
@@ -2404,9 +2401,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
       std::get<7>(GetParam()) || g_env->verify_all_output();
   const bool verify_output_timestamp = std::get<8>(GetParam());
 
-  std::vector<
-      std::unique_ptr<media::test::ClientStateNotification<ClientState>>>
-      notes;
+  std::vector<std::unique_ptr<ClientStateNotification<ClientState>>> notes;
   std::vector<std::unique_ptr<VEAClient>> clients;
   base::Thread vea_client_thread("EncoderClientThread");
   StartVEAThread(&vea_client_thread);
@@ -2431,8 +2426,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
         (save_to_file &&
          !g_env->test_streams_[test_stream_index]->out_filename.empty());
 
-    notes.push_back(
-        std::make_unique<media::test::ClientStateNotification<ClientState>>());
+    notes.push_back(std::make_unique<ClientStateNotification<ClientState>>());
     clients.push_back(std::make_unique<VEAClient>(
         g_env->test_streams_[test_stream_index].get(), notes.back().get(),
         encoder_save_to_file, keyframe_period, force_bitrate, test_perf,
@@ -2484,8 +2478,8 @@ class VideoEncodeAcceleratorSimpleTest : public ::testing::TestWithParam<int> {
 
 template <class TestClient>
 void SimpleTestFunc() {
-  std::unique_ptr<media::test::ClientStateNotification<ClientState>> note(
-      new media::test::ClientStateNotification<ClientState>());
+  std::unique_ptr<ClientStateNotification<ClientState>> note(
+      new ClientStateNotification<ClientState>());
   std::unique_ptr<TestClient> client(new TestClient(note.get()));
   base::Thread vea_client_thread("EncoderClientThread");
   ASSERT_TRUE(vea_client_thread.Start());

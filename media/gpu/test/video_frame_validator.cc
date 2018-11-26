@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "media/gpu/test/video_frame_validator.h"
+// TODO(dstaessens@) Avoid depending on video_decode_accelerator here.
+#include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 
 #include <libyuv.h>
 
@@ -11,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 
 namespace media {
 namespace test {
