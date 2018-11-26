@@ -10,6 +10,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/after_startup_task_utils.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -86,10 +88,6 @@ enum VoiceError {
 
   VOICE_ERROR_MAX
 };
-
-// Key used in prefs::kNtpCustomBackgroundDict to save a background image URL.
-// TODO(crbug.com/873699): Refactor customization check for better testability.
-const char kNtpCustomBackgroundURL[] = "background_url";
 
 // Logs BackgroundCustomization availability on the NTP,
 void LogBackgroundCustomizationAvailability(
@@ -490,15 +488,9 @@ bool NTPUserDataLogger::ThemeIsConfigured() const {
 }
 
 bool NTPUserDataLogger::CustomBackgroundIsConfigured() const {
-  const base::DictionaryValue* background_info =
-      profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);
-  const base::Value* background_url =
-      background_info->FindKey(kNtpCustomBackgroundURL);
-  if (!background_url) {
-    return false;
-  }
-  GURL custom_background_url(background_url->GetString());
-  return custom_background_url.is_valid();
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile_);
+  return instant_service->IsCustomBackgroundSet();
 }
 
 void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
