@@ -129,15 +129,7 @@ TEST_F(StructTraitsTest, Transform) {
   EXPECT_EQ(col4row4, output.matrix().get(3, 3));
 }
 
-// AcceleratedWidgets can only be sent between processes on some platforms.
-#if defined(OS_WIN) || defined(USE_OZONE) || defined(USE_X11) || \
-    defined(OS_MACOSX)
-#define MAYBE_AcceleratedWidget AcceleratedWidget
-#else
-#define MAYBE_AcceleratedWidget DISABLED_AcceleratedWidget
-#endif
-
-TEST_F(StructTraitsTest, MAYBE_AcceleratedWidget) {
+TEST_F(StructTraitsTest, AcceleratedWidget) {
   gfx::AcceleratedWidget input(CastToAcceleratedWidget(1001));
   gfx::AcceleratedWidget output;
   mojo::test::SerializeAndDeserialize<gfx::mojom::AcceleratedWidget>(&input,
