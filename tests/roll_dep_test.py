@@ -37,6 +37,9 @@ class FakeRepos(fake_repos.FakeReposBase):
             'deps = {',
             ' "src/foo": "%(git_base)srepo_2@%(repo_2_revision)s",',
             '}',
+            'hooks = [',
+            '  {"action": ["foo", "--android", "{checkout_android}"]}',
+            ']',
         ]) % {
             'git_base': self.git_base,
             'repo_2_revision': self.git_hashes['repo_2'][1][0],
@@ -90,6 +93,9 @@ class RollDepTest(fake_repos.FakeReposTestBase):
         'deps = {',
         ' "src/foo": "' + self.git_base + 'repo_2@' + expected_revision + '",',
         '}',
+        'hooks = [',
+        '  {"action": ["foo", "--android", "{checkout_android}"]}',
+        ']',
     ], contents.splitlines())
 
     commit_message = self.call(['git', 'log', '-n', '1'])[0]
@@ -118,6 +124,9 @@ class RollDepTest(fake_repos.FakeReposTestBase):
         'deps = {',
         ' "src/foo": "' + self.git_base + 'repo_2@' + expected_revision + '",',
         '}',
+        'hooks = [',
+        '  {"action": ["foo", "--android", "{checkout_android}"]}',
+        ']',
     ], contents.splitlines())
 
     commit_message = self.call(['git', 'log', '-n', '1'])[0]
