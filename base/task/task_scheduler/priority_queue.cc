@@ -122,19 +122,21 @@ bool PriorityQueue::Transaction::RemoveSequence(
 }
 
 void PriorityQueue::Transaction::UpdateSortKey(
-    scoped_refptr<Sequence> sequence,
-    const SequenceSortKey& sequence_sort_key) {
-  DCHECK(sequence);
+    SequenceAndTransaction sequence_and_transaction) {
+  DCHECK(sequence_and_transaction.sequence);
 
   if (IsEmpty())
     return;
 
-  const HeapHandle heap_handle = sequence->heap_handle();
+  const HeapHandle heap_handle =
+      sequence_and_transaction.sequence->heap_handle();
   if (!heap_handle.IsValid())
     return;
 
+  auto sort_key = sequence_and_transaction.transaction.GetSortKey();
   outer_queue_->container_.ChangeKey(
-      heap_handle, SequenceAndSortKey(std::move(sequence), sequence_sort_key));
+      heap_handle, SequenceAndSortKey(
+                       std::move(sequence_and_transaction.sequence), sort_key));
 }
 
 bool PriorityQueue::Transaction::IsEmpty() const {

@@ -79,6 +79,9 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
 
     bool IsEmpty() const;
 
+    // Sets Sequence priority to |priority|.
+    void UpdatePriority(TaskPriority priority);
+
     // Returns the traits of all Tasks in the Sequence.
     TaskTraits traits() const { return sequence_->traits_; }
 
@@ -139,7 +142,7 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
   SequenceLocalStorageMap sequence_local_storage_;
 
   // The TaskTraits of all Tasks in the Sequence.
-  const TaskTraits traits_;
+  TaskTraits traits_;
 
   // A reference to the SchedulerParallelTaskRunner that created this Sequence,
   // if any. Used to remove Sequence from the TaskRunner's list of Sequence

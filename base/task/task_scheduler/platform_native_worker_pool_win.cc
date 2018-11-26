@@ -61,7 +61,8 @@ void PlatformNativeWorkerPoolWin::JoinForTesting() {
 }
 
 void PlatformNativeWorkerPoolWin::ReEnqueueSequence(
-    SequenceAndTransaction sequence_and_transaction) {
+    SequenceAndTransaction sequence_and_transaction,
+    bool is_changing_pools) {
   OnCanScheduleSequence(std::move(sequence_and_transaction));
 }
 

@@ -310,8 +310,12 @@ void TaskSchedulerImpl::ReEnqueueSequence(
     SequenceAndTransaction sequence_and_transaction) {
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(
       sequence_and_transaction.transaction.traits());
-  GetWorkerPoolForTraits(new_traits)
-      ->ReEnqueueSequence(std::move(sequence_and_transaction));
+  SchedulerWorkerPool* const destination_worker_pool =
+      GetWorkerPoolForTraits(new_traits);
+  const bool is_changing_pools =
+      !destination_worker_pool->IsBoundToCurrentThread();
+  destination_worker_pool->ReEnqueueSequence(
+      std::move(sequence_and_transaction), is_changing_pools);
 }
 
 bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
@@ -353,6 +357,38 @@ bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
 bool TaskSchedulerImpl::IsRunningPoolWithTraits(
     const TaskTraits& traits) const {
   return GetWorkerPoolForTraits(traits)->IsBoundToCurrentThread();
+}
+
+void TaskSchedulerImpl::UpdatePriority(scoped_refptr<Sequence> sequence,
+                                       TaskPriority priority) {
+  auto sequence_and_transaction =
+      SequenceAndTransaction::FromSequence(std::move(sequence));
+
+  SchedulerWorkerPoolImpl* const current_worker_pool =
+      GetWorkerPoolForTraits(sequence_and_transaction.transaction.traits());
+  sequence_and_transaction.transaction.UpdatePriority(priority);
+  SchedulerWorkerPoolImpl* const new_worker_pool =
+      GetWorkerPoolForTraits(sequence_and_transaction.transaction.traits());
+
+  if (new_worker_pool == current_worker_pool) {
+    // |sequence|'s position needs to be updated within its current pool.
+    current_worker_pool->UpdateSortKey(std::move(sequence_and_transaction));
+  } else {
+    // |sequence| is changing pools; remove it from its current pool and
+    // reenqueue it.
+    const bool sequence_was_found =
+        current_worker_pool->RemoveSequence(sequence_and_transaction.sequence);
+    if (sequence_was_found) {
+      DCHECK(sequence_and_transaction.sequence);
+      // |sequence| was removed from |current_worker_pool| and is being
+      // reenqueued into |new_worker_pool|, a different pool; set argument
+      // |is_changing_pools| to true to notify |new_worker_pool| that
+      // |sequence| came from a different pool.
+      const bool is_changing_pools = true;
+      new_worker_pool->ReEnqueueSequence(std::move(sequence_and_transaction),
+                                         is_changing_pools);
+    }
+  }
 }
 
 SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolForTraits(

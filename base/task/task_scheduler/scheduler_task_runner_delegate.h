@@ -37,6 +37,13 @@ class BASE_EXPORT SchedulerTaskRunnerDelegate {
   // SchedulerParallelTaskRunner (as determined by |traits|) is running on
   // this thread.
   virtual bool IsRunningPoolWithTraits(const TaskTraits& traits) const = 0;
+
+  // Invoked when the priority of |sequence|'s TaskRunner is updated. The
+  // implementation must update |sequence|'s priority to |priority|, then place
+  // |sequence| in the correct priority-queue position within the appropriate
+  // worker pool.
+  virtual void UpdatePriority(scoped_refptr<Sequence> sequence,
+                              TaskPriority priority) = 0;
 };
 
 }  // namespace internal

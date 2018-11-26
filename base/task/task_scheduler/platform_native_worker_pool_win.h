@@ -42,8 +42,8 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin : public SchedulerWorkerPool {
 
   // SchedulerWorkerPool:
   void JoinForTesting() override;
-  void ReEnqueueSequence(
-      SequenceAndTransaction sequence_and_transaction) override;
+  void ReEnqueueSequence(SequenceAndTransaction sequence_and_transaction,
+                         bool is_changing_pools) override;
 
  private:
   // Callback that gets run by |pool_|. It runs a task off the next sequence on

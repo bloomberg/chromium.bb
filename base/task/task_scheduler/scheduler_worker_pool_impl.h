@@ -95,8 +95,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // SchedulerWorkerPool:
   void JoinForTesting() override;
-  void ReEnqueueSequence(
-      SequenceAndTransaction sequence_and_transaction) override;
+  void ReEnqueueSequence(SequenceAndTransaction sequence_and_transaction,
+                         bool is_changing_pools) override;
 
   const HistogramBase* num_tasks_before_detach_histogram() const {
     return num_tasks_before_detach_histogram_;
@@ -147,6 +147,15 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Records number of worker.
   void RecordNumWorkersHistogram() const;
+
+  // Updates the position of the Sequence in |sequence_and_transaction| in
+  // |shared_priority_queue| based on the Sequence's current traits.
+  void UpdateSortKey(SequenceAndTransaction sequence_and_transaction);
+
+  // Removes |sequence| from |shared_priority_queue_|. Returns true if
+  // successful, or false if |sequence| is not currently in
+  // |shared_priority_queue_|, such as when a worker is running a task from it.
+  bool RemoveSequence(scoped_refptr<Sequence> sequence);
 
  private:
   class SchedulerWorkerDelegateImpl;

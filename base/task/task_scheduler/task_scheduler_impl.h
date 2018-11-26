@@ -113,6 +113,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
+  void UpdatePriority(scoped_refptr<Sequence> sequence,
+                      TaskPriority priority) override;
 
   const std::unique_ptr<TaskTrackerImpl> task_tracker_;
   std::unique_ptr<Thread> service_thread_;
