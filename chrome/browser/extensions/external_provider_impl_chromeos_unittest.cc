@@ -19,8 +19,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -31,8 +30,6 @@
 #include "chromeos/system/statistics_provider.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -203,12 +200,11 @@ TEST_F(ExternalProviderImplChromeOSTest, DISABLED_PolicyDisabled) {
   // Log user in, start sync.
   TestingBrowserProcess::GetGlobal()->SetProfileManager(
       new ProfileManagerWithoutInit(temp_dir().GetPath()));
-  SigninManagerBase* signin =
-      SigninManagerFactory::GetForProfile(profile_.get());
-  signin->SetAuthenticatedAccountInfo("gaia-id-test_user@gmail.com",
-                                      "test_user@gmail.com");
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
-      ->UpdateCredentials("test_user@gmail.com", "oauth2_login_token");
+
+  auto identity_test_env_profile_adaptor =
+      std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
+  identity_test_env_profile_adaptor->identity_test_env()
+      ->MakePrimaryAccountAvailable("test_user@gmail.com");
 
   // App sync will wait for priority sync to complete.
   service_->CheckForExternalUpdates();
@@ -231,10 +227,10 @@ TEST_F(ExternalProviderImplChromeOSTest, PriorityCompleted) {
   InitServiceWithExternalProviders(true);
 
   // User is logged in.
-  SigninManagerBase* signin =
-      SigninManagerFactory::GetForProfile(profile_.get());
-  signin->SetAuthenticatedAccountInfo("gaia-id-test_user@gmail.com",
-                                      "test_user@gmail.com");
+  auto identity_test_env_profile_adaptor =
+      std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
+  identity_test_env_profile_adaptor->identity_test_env()->SetPrimaryAccount(
+      "test_user@gmail.com");
 
   // App sync will wait for priority sync to complete.
   service_->CheckForExternalUpdates();
