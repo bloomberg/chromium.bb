@@ -42,6 +42,10 @@ media_router::MediaRouter* GetMediaRouter() {
   return router;
 }
 
+// "Cast for Education" extension uses this string and expects the client to
+// interpret it as "signed-in user's domain".
+constexpr char const kDefaultDomain[] = "default";
+
 }  // namespace
 
 // This class caches the values that the observers give us so we can query them
@@ -105,11 +109,13 @@ void CastDeviceCache::OnSinksReceived(const MediaSinks& sinks) {
     if (sink.name().empty())
       continue;
 
-    // Hide all sinks which have a domain (ie, castouts) to meet privacy
-    // requirements. This will be enabled once UI can display the domain. See
-    // crbug.com/624016.
-    if (sink.domain() && !sink.domain()->empty())
+    // Hide all sinks which have a non-default domain (ie, castouts) to meet
+    // privacy requirements. This will be enabled once UI can display the
+    // domain. See crbug.com/624016.
+    if (sink.domain() && !sink.domain()->empty() &&
+        sink.domain() != kDefaultDomain) {
       continue;
+    }
 
     sinks_.push_back(sink);
   }
