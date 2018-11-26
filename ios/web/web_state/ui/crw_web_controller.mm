@@ -4947,7 +4947,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       !context->GetUrl().SchemeIs(url::kAboutScheme)) {
     [self updateSSLStatusForCurrentNavigationItem];
     [self updateHTML5HistoryState];
-    if (!context->IsLoadingErrorPage()) {
+    if (!context->IsLoadingErrorPage() && !IsRestoreSessionUrl(webViewURL)) {
       [self setNavigationItemTitle:[_webView title]];
     }
   }

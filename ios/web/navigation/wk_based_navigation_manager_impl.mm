@@ -105,6 +105,8 @@ void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
       std::move(callback).Run();
     }
     restore_session_completion_callbacks_.clear();
+
+    LoadIfNecessary();
   }
 
   details.previous_item_index = GetPreviousItemIndex();
