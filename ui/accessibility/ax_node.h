@@ -181,13 +181,9 @@ class AX_EXPORT AXNode final {
     return data().GetHtmlAttribute(attribute, value);
   }
 
-  // Finds the position of this node within its container, relative to others
-  // with the same role.
-  // Returns 1-based index if present in container, and 0 if not.
-  int32_t PosInSet() const;
-  // Calculates the number of elements within node's container that have the
-  // same role as node. Returns 0 if the node is not present wihtin a container.
-  int32_t SetSize() const;
+  // PosInSet and SetSize public methods
+  int32_t GetPosInSet();
+  int32_t GetSetSize();
 
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
@@ -255,16 +251,21 @@ class AX_EXPORT AXNode final {
   void IdVectorToNodeVector(std::vector<int32_t>& ids,
                             std::vector<AXNode*>* nodes) const;
 
-  // Helpers for PosInset and SetSize
-  // Returns true if the PosInSet or SetSize attributes are used in node's role
+  // Helpers for GetPosInSet and GetSetSize.
+  // Returns true if the role of parent container matches the role of node.
+  // Returns false otherwise.
+  bool ContainerRoleMatches(AXNode* parent) const;
+  // Returns true if the node's role uses PosInSet and SetSize
+  // Returns false otherwise.
   bool IsSetSizePosInSetUsedInRole() const;
-  // Calculates 0-based index of first element with PosInSet assigned.
-  // Returns -1 if no elements assign PosInSet
-  int32_t FirstAssignedPosInSet() const;
-  // Calculates node's position relative to first PosInSet-assigned element.
-  // Returns node's 0-based index within container (relative to nodes with the
-  // same role) if no element assigned PosInSet
-  int32_t RelativePosFromFirstAssigned(int32_t earliest_index) const;
+  // Finds and returns a pointer to node's container.
+  AXNode* GetContainer() const;
+  // Populates items vector with all nodes within container whose roles match.
+  void PopulateContainerItems(AXNode* container,
+                              AXNode* local_parent,
+                              std::vector<AXNode*>& items) const;
+  // Computes pos_in_set and set_size values for this node.
+  void ComputeSetSizePosInSet(int32_t* out_pos_in_set, int32_t* out_set_size);
 
   OwnerTree* tree_;  // Owns this.
   int index_in_parent_;
