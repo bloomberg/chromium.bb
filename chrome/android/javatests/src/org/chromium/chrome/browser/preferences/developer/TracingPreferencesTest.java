@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -41,13 +42,13 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
 import org.chromium.chrome.browser.preferences.TextMessagePreference;
 import org.chromium.chrome.browser.tracing.TracingController;
 import org.chromium.chrome.browser.tracing.TracingNotificationManager;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -276,9 +277,7 @@ public class TracingPreferencesTest {
     @MediumTest
     @Feature({"Preferences"})
     @Features.EnableFeatures(ChromeFeatureList.DEVELOPER_PREFERENCES)
-    @DisableIf.Build(sdk_is_less_than = 21, message = "crbug.com/908118")
     public void testSelectCategories() throws Exception {
-        Context context = ContextUtils.getApplicationContext();
         // We need a renderer so that its tracing categories will be populated.
         mActivityTestRule.startMainActivityOnBlankPage();
         Preferences activity =
@@ -304,16 +303,19 @@ public class TracingPreferencesTest {
             Preference categoriesPref = categoriesPrefAndSampleCategory.first;
             String sampleCategoryName = categoriesPrefAndSampleCategory.second;
 
-            // Click the preference, which should open a new preferences fragment in a new activity.
-            Preferences categoriesActivity = ActivityUtils.waitForActivity(
-                    InstrumentationRegistry.getInstrumentation(), Preferences.class, () -> {
-                        ThreadUtils.runOnUiThreadBlocking(() -> {
-                            PreferencesTest.clickPreference(fragment, categoriesPref);
-                        });
-                    });
+            // Simulate clicking the preference, which should open a new preferences fragment in
+            // a new activity.
+            Context context = InstrumentationRegistry.getTargetContext();
+            Assert.assertNotNull(categoriesPref.getExtras());
+            Assert.assertFalse(categoriesPref.getExtras().isEmpty());
+            Intent intent = PreferencesLauncher.createIntentForSettingsPage(context,
+                    TracingCategoriesPreferences.class.getName(), categoriesPref.getExtras());
+            Preferences categoriesActivity =
+                    (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(
+                            intent);
 
-            PreferenceFragment categoriesFragment = ActivityUtils.waitForFragmentToAttach(
-                    categoriesActivity, PreferenceFragment.class);
+            PreferenceFragment categoriesFragment =
+                    (PreferenceFragment) categoriesActivity.getFragmentForTest();
             Assert.assertEquals(TracingCategoriesPreferences.class, categoriesFragment.getClass());
 
             CheckBoxPreference sampleCategoryPref =
@@ -332,14 +334,6 @@ public class TracingPreferencesTest {
             boolean finallyEnabled =
                     TracingPreferences.getEnabledCategories().contains(sampleCategoryName);
             Assert.assertNotEquals(originallyEnabled, finallyEnabled);
-
-            // Return to original activity.
-            Preferences originalActivity = ActivityUtils.waitForActivity(
-                    InstrumentationRegistry.getInstrumentation(), Preferences.class, () -> {
-                        ThreadUtils.runOnUiThreadBlocking(() -> { categoriesActivity.finish(); });
-                    });
-
-            Assert.assertEquals(activity, originalActivity);
         }
     }
 
