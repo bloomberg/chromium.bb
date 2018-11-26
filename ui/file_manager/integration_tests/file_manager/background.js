@@ -463,6 +463,7 @@ window.addEventListener('load', function() {
     function(paths) {
       var roots = JSON.parse(paths);
       RootPath.DOWNLOADS = roots.downloads;
+      RootPath.DOWNLOADS_PATH = roots.downloads_path;
       RootPath.DRIVE = roots.drive;
       RootPath.ANDROID_FILES = roots.android_files;
       sendBrowserTestCommand({name: 'getTestName'}, steps.shift());
