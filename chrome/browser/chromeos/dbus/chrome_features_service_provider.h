@@ -51,9 +51,6 @@ class ChromeFeaturesServiceProvider
   void IsShillSandboxingEnabled(
       dbus::MethodCall* method_call,
       dbus::ExportedObject::ResponseSender response_sender);
-  void IsFsNosymfollowEnabled(
-      dbus::MethodCall* method_call,
-      dbus::ExportedObject::ResponseSender response_sender);
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.
