@@ -173,8 +173,8 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
   void FinishNavigation(ServiceWorkerProviderHost* host,
                         mojom::ServiceWorkerProviderHostInfoPtr info) {
     // In production code, the loader/request handler does this.
-    host->SetDocumentUrl(GURL("https://www.example.com/page"));
-    host->SetSiteForCookies(GURL("https://www.example.com/page"));
+    const GURL url("https://www.example.com/page");
+    host->UpdateURLs(url, url);
 
     // In production code, the OnProviderCreated IPC is received which
     // does this.
@@ -308,8 +308,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
 
     host->CompleteNavigationInitialized(helper_->mock_render_process_id(),
                                         std::move(info));
-    host->SetDocumentUrl(document_url);
-    host->SetSiteForCookies(site_for_cookies);
+    host->UpdateURLs(document_url, site_for_cookies);
     return host.get();
   }
 
@@ -884,7 +883,7 @@ TEST_P(ServiceWorkerProviderHostTest,
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
             &provider_info);
     const GURL url("https://www.example.com/shared_worker.js");
-    host->SetSiteForCookies(url);
+    host->UpdateURLs(url, url);
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
     host->CompleteSharedWorkerPreparation();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
