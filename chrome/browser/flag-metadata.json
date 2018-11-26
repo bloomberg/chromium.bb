@@ -249,17 +249,17 @@
   {
     "name": "autofill-enforce-min-required-fields-for-heuristics",
     "owners": [ "rogerm" ],
-    "expiry_milestone": 72
+    "expiry_milestone": 73
   },
   {
     "name": "autofill-enforce-min-required-fields-for-query",
     "owners": [ "rogerm" ],
-    "expiry_milestone": 72
+    "expiry_milestone": 73
   },
   {
     "name": "autofill-enforce-min-required-fields-for-upload",
     "owners": [ "rogerm" ],
-    "expiry_milestone": 72
+    "expiry_milestone": 73
   },
   {
     "name": "autofill-keyboard-accessory-view",
