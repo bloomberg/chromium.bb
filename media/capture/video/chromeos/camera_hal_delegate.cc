@@ -90,6 +90,9 @@ CameraHalDelegate::CameraHalDelegate(
       builtin_camera_info_updated_(
           base::WaitableEvent::ResetPolicy::MANUAL,
           base::WaitableEvent::InitialState::NOT_SIGNALED),
+      external_camera_info_updated_(
+          base::WaitableEvent::ResetPolicy::MANUAL,
+          base::WaitableEvent::InitialState::SIGNALED),
       has_camera_connected_(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED),
       num_builtin_cameras_(0),
@@ -213,6 +216,11 @@ void CameraHalDelegate::GetDeviceDescriptors(
     return;
   }
 
+  if (!external_camera_info_updated_.TimedWait(
+          base::TimeDelta::FromSeconds(1))) {
+    LOG(ERROR) << "Failed to get camera info from all external cameras";
+  }
+
   if (IsRunningOnVM() && IsVividLoaded()) {
     has_camera_connected_.TimedWait(base::TimeDelta::FromSeconds(1));
   }
@@ -250,6 +258,7 @@ void CameraHalDelegate::GetDeviceDescriptors(
   // TODO(jcliang): Remove this after JS API supports query camera facing
   // (http://crbug.com/543997).
   std::sort(device_descriptors->begin(), device_descriptors->end());
+  DVLOG(1) << "Number of device descriptors: " << device_descriptors->size();
 }
 
 void CameraHalDelegate::GetCameraInfo(int32_t camera_id,
@@ -300,9 +309,11 @@ void CameraHalDelegate::ResetMojoInterfaceOnIpcThread() {
   builtin_camera_info_updated_.Reset();
   camera_module_has_been_set_.Reset();
   has_camera_connected_.Reset();
+  external_camera_info_updated_.Signal();
 
   // Clear all cached camera info, especially external cameras.
   camera_info_.clear();
+  pending_external_camera_info_.clear();
 }
 
 bool CameraHalDelegate::UpdateBuiltInCameraInfo() {
@@ -414,6 +425,10 @@ void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
     }
   } else {
     // It's an external camera.
+    pending_external_camera_info_.erase(camera_id);
+    if (pending_external_camera_info_.empty()) {
+      external_camera_info_updated_.Signal();
+    }
     NotifyVideoCaptureDevicesChanged();
   }
 
@@ -445,6 +460,10 @@ void CameraHalDelegate::CameraDeviceStatusChange(
         // Get info for the newly connected external camera.
         // |has_camera_connected_| might be signaled in
         // OnGotCameraInfoOnIpcThread().
+        pending_external_camera_info_.insert(camera_id);
+        if (pending_external_camera_info_.size() == 1) {
+          external_camera_info_updated_.Reset();
+        }
         GetCameraInfoOnIpcThread(
             camera_id,
             base::BindOnce(&CameraHalDelegate::OnGotCameraInfoOnIpcThread, this,
