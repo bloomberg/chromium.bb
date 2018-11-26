@@ -2639,6 +2639,8 @@ crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 crbug.com/491764 http/tests/devtools/service-workers/user-agent-override.js [ Pass Timeout ]
 
 # Fails with leak detector.
+crbug.com/733494 [ Linux ] media/autoplay/document-user-activation.html [ Skip ]
+crbug.com/733494 [ Linux ] virtual/video-surface-layer/media/autoplay/document-user-activation.html [ Skip ]
 crbug.com/769885 [ Linux ] virtual/android/fullscreen/full-screen-frameset.html [ Skip ]
 
 
