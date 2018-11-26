@@ -153,6 +153,10 @@ ACTION(InvokeEmptyConsumerWithForms) {
 
 ACTION_P(SaveToScopedPtr, scoped) { scoped->reset(arg0); }
 
+ACTION(DeletePtr) {
+  delete arg0;
+}
+
 void SanitizeFormData(FormData* form) {
   form->main_frame_origin = url::Origin();
   for (FormFieldData& field : form->fields) {
@@ -204,6 +208,10 @@ class PasswordManagerTest : public testing::Test {
 
     ON_CALL(client_, GetMainFrameURL()).WillByDefault(ReturnRef(test_url_));
     ON_CALL(client_, GetMetricsRecorder()).WillByDefault(Return(nullptr));
+    ON_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
+        .WillByDefault(WithArg<0>(DeletePtr()));
+    ON_CALL(client_, ShowManualFallbackForSavingPtr(_, _, _))
+        .WillByDefault(WithArg<0>(DeletePtr()));
   }
 
   void TearDown() override {
