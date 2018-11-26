@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -274,10 +273,7 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(message = "Disable on Oreo which is flaky now.  https://crbug.com/906788",
-            sdk_is_less_than = Build.VERSION_CODES.P, sdk_is_greater_than = Build.VERSION_CODES.N)
-    public void
-    testSearchBookmarks() throws Exception {
+    public void testSearchBookmarks() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
