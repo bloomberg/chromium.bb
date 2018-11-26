@@ -1988,49 +1988,40 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   WritingMode child_writing_mode =
       child.IsInline() ? style.GetWritingMode() : child_style.GetWritingMode();
 
-  NGConstraintSpaceBuilder space_builder(ConstraintSpace(), child_writing_mode,
-                                         child_data.is_new_fc);
+  NGConstraintSpaceBuilder builder(ConstraintSpace(), child_writing_mode,
+                                   child_data.is_new_fc);
+  SetOrthogonalFallbackInlineSizeIfNeeded(Style(), child, &builder);
 
   if (!IsParallelWritingMode(ConstraintSpace().GetWritingMode(),
-                             child_writing_mode)) {
-    space_builder.SetIsShrinkToFit(child_style.LogicalWidth().IsAuto());
-    // TODO(mstensho): The spec [1] says to use the size of the nearest
-    // scrollport as constraint, if that's smaller than the initial containing
-    // block, but we haven't implemented that yet; we always just use the
-    // initial containing block size.
-    //
-    // [1] https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
-    LayoutUnit fallback_size = CalculateOrthogonalFallbackInlineSize(
-        Style(), ConstraintSpace().InitialContainingBlockSize());
-    space_builder.SetOrthogonalFallbackInlineSize(fallback_size);
-  }
+                             child_writing_mode))
+    builder.SetIsShrinkToFit(child_style.LogicalWidth().IsAuto());
 
-  space_builder.SetAvailableSize(child_available_size)
+  builder.SetAvailableSize(child_available_size)
       .SetPercentageResolutionSize(child_percentage_size_)
       .SetReplacedPercentageResolutionSize(replaced_child_percentage_size_);
 
   if (Node().IsTableCell()) {
     // If we have a fixed block-size we are in the "layout" phase.
-    space_builder.SetTableCellChildLayoutPhase(
+    builder.SetTableCellChildLayoutPhase(
         ConstraintSpace().IsFixedSizeBlock()
             ? NGTableCellChildLayoutPhase::kLayout
             : NGTableCellChildLayoutPhase::kMeasure);
   }
 
   if (NGBaseline::ShouldPropagateBaselines(child))
-    space_builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
+    builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
 
-  space_builder.SetBfcOffset(child_data.bfc_offset_estimate)
+  builder.SetBfcOffset(child_data.bfc_offset_estimate)
       .SetMarginStrut(child_data.margin_strut);
 
   if (!container_builder_.BfcBlockOffset() &&
       ConstraintSpace().FloatsBfcBlockOffset()) {
-    space_builder.SetFloatsBfcBlockOffset(
+    builder.SetFloatsBfcBlockOffset(
         ConstraintSpace().FloatsBfcBlockOffset().value());
   }
 
   if (floats_bfc_block_offset)
-    space_builder.SetFloatsBfcBlockOffset(floats_bfc_block_offset);
+    builder.SetFloatsBfcBlockOffset(floats_bfc_block_offset);
 
   LayoutUnit clearance_offset = constraint_space_.IsNewFormattingContext()
                                     ? LayoutUnit::Min()
@@ -2039,24 +2030,23 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     LayoutUnit child_clearance_offset =
         exclusion_space_.ClearanceOffset(ResolvedClear(child_style, Style()));
     clearance_offset = std::max(clearance_offset, child_clearance_offset);
-    space_builder.SetTextDirection(child_style.Direction());
+    builder.SetTextDirection(child_style.Direction());
 
     // PositionListMarker() requires a first line baseline.
     if (container_builder_.UnpositionedListMarker()) {
-      space_builder.AddBaselineRequest(
+      builder.AddBaselineRequest(
           {NGBaselineAlgorithmType::kFirstLine, style.GetFontBaseline()});
     }
   } else {
-    space_builder.SetTextDirection(style.Direction());
+    builder.SetTextDirection(style.Direction());
   }
-  space_builder.SetClearanceOffset(clearance_offset);
+  builder.SetClearanceOffset(clearance_offset);
   if (child_data.force_clearance)
-    space_builder.SetShouldForceClearance(true);
+    builder.SetShouldForceClearance(true);
 
   if (!child_data.is_new_fc) {
-    space_builder.SetExclusionSpace(exclusion_space_);
-    space_builder.SetAdjoiningFloatTypes(
-        container_builder_.AdjoiningFloatTypes());
+    builder.SetExclusionSpace(exclusion_space_);
+    builder.SetAdjoiningFloatTypes(container_builder_.AdjoiningFloatTypes());
   }
 
   LayoutUnit space_available;
@@ -2072,15 +2062,14 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // block-start is the same throughout the entire fragmentainer (although it
     // really only matters at the beginning of each fragmentainer, we don't need
     // to bother to check whether we're actually at the start).
-    space_builder.SetSeparateLeadingFragmentainerMargins(
+    builder.SetSeparateLeadingFragmentainerMargins(
         ConstraintSpace().HasSeparateLeadingFragmentainerMargins());
-    space_builder.SetFragmentainerBlockSize(
+    builder.SetFragmentainerBlockSize(
         ConstraintSpace().FragmentainerBlockSize());
-    space_builder.SetFragmentainerSpaceAtBfcStart(space_available);
-    space_builder.SetFragmentationType(
-        ConstraintSpace().BlockFragmentationType());
+    builder.SetFragmentainerSpaceAtBfcStart(space_available);
+    builder.SetFragmentationType(ConstraintSpace().BlockFragmentationType());
   }
-  return space_builder.ToConstraintSpace();
+  return builder.ToConstraintSpace();
 }
 
 LayoutUnit NGBlockLayoutAlgorithm::ComputeLineBoxBaselineOffset(

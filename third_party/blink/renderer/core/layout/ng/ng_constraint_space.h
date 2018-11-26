@@ -82,7 +82,6 @@ class CORE_EXPORT NGConstraintSpace final {
 
   NGConstraintSpace(const NGConstraintSpace& other)
       : available_size_(other.available_size_),
-        initial_containing_block_size_(other.initial_containing_block_size_),
         exclusion_space_(other.exclusion_space_),
         bitfields_(other.bitfields_) {
     if (HasRareData())
@@ -92,7 +91,6 @@ class CORE_EXPORT NGConstraintSpace final {
   }
   NGConstraintSpace(NGConstraintSpace&& other)
       : available_size_(other.available_size_),
-        initial_containing_block_size_(other.initial_containing_block_size_),
         exclusion_space_(std::move(other.exclusion_space_)),
         bitfields_(other.bitfields_) {
     if (HasRareData()) {
@@ -105,7 +103,6 @@ class CORE_EXPORT NGConstraintSpace final {
 
   NGConstraintSpace& operator=(const NGConstraintSpace& other) {
     available_size_ = other.available_size_;
-    initial_containing_block_size_ = other.initial_containing_block_size_;
     if (HasRareData())
       delete rare_data_;
     if (other.HasRareData())
@@ -118,7 +115,6 @@ class CORE_EXPORT NGConstraintSpace final {
   }
   NGConstraintSpace& operator=(NGConstraintSpace&& other) {
     available_size_ = other.available_size_;
-    initial_containing_block_size_ = other.initial_containing_block_size_;
     if (HasRareData())
       delete rare_data_;
     if (other.HasRareData()) {
@@ -257,10 +253,6 @@ class CORE_EXPORT NGConstraintSpace final {
     // TODO(mstensho): Figure out why we get here. It seems wrong, but we do get
     // here in some grid layout situations.
     return LayoutUnit();
-  }
-
-  NGPhysicalSize InitialContainingBlockSize() const {
-    return initial_containing_block_size_;
   }
 
   LayoutUnit FragmentainerBlockSize() const {
@@ -522,10 +514,8 @@ class CORE_EXPORT NGConstraintSpace final {
  private:
   friend class NGConstraintSpaceBuilder;
 
-  NGConstraintSpace(WritingMode writing_mode, NGPhysicalSize icb_size)
-      : initial_containing_block_size_(icb_size),
-        bfc_offset_(),
-        bitfields_(writing_mode) {}
+  explicit NGConstraintSpace(WritingMode writing_mode)
+      : bfc_offset_(), bitfields_(writing_mode) {}
 
   // This struct defines all of the inputs to layout which we consider rare.
   // Primarily this is:
@@ -635,7 +625,6 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   NGLogicalSize available_size_;
-  NGPhysicalSize initial_containing_block_size_;
 
   // To save a little space, we union these two fields. rare_data_ is valid if
   // the kHasRareData bitfield is set, otherwise bfc_offset_ is valid.

@@ -107,11 +107,9 @@ class NGInlineNodeTest : public NGLayoutTest {
   void CreateLine(
       NGInlineNode node,
       Vector<scoped_refptr<const NGPhysicalTextFragment>>* fragments_out) {
-    NGPhysicalSize icb_size(LayoutUnit(200), LayoutUnit(200));
-
     NGConstraintSpace constraint_space =
         NGConstraintSpaceBuilder(WritingMode::kHorizontalTb,
-                                 WritingMode::kHorizontalTb, icb_size,
+                                 WritingMode::kHorizontalTb,
                                  /* is_new_fc */ false)
             .SetAvailableSize({LayoutUnit::Max(), LayoutUnit(-1)})
             .ToConstraintSpace();

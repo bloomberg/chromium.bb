@@ -28,7 +28,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
                            bool is_new_fc)
       : NGConstraintSpaceBuilder(parent_space.GetWritingMode(),
                                  out_writing_mode,
-                                 parent_space.InitialContainingBlockSize(),
                                  is_new_fc) {
     // Propagate the intermediate layout bit to the child constraint space.
     if (parent_space.IsIntermediateLayout())
@@ -44,10 +43,9 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   // unless we force it.
   NGConstraintSpaceBuilder(WritingMode parent_writing_mode,
                            WritingMode out_writing_mode,
-                           const NGPhysicalSize& icb_size,
                            bool is_new_fc,
                            bool force_orthogonal_writing_mode_root = false)
-      : space_(out_writing_mode, icb_size),
+      : space_(out_writing_mode),
         is_in_parallel_flow_(
             IsParallelWritingMode(parent_writing_mode, out_writing_mode)),
         is_new_fc_(is_new_fc),

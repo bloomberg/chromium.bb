@@ -21,8 +21,6 @@ class NGAbsoluteUtilsTest : public testing::Test {
                                           WritingMode out_writing_mode) {
     NGConstraintSpaceBuilder builder(
         WritingMode::kHorizontalTb, out_writing_mode,
-        /* icb_size */
-        ToNGPhysicalSize(container_size_, WritingMode::kHorizontalTb),
         /* is_new_fc */ true);
     builder.SetAvailableSize(container_size_);
     builder.SetTextDirection(direction);

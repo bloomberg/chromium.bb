@@ -19,7 +19,6 @@ namespace {
 
 struct SameSizeAsNGConstraintSpace {
   NGLogicalSize available_size;
-  NGPhysicalSize initial_containing_block_size;
   union {
     NGBfcOffset bfc_offset;
     void* rare_data;
@@ -108,16 +107,8 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   // DCHECK(is_new_fc,
   //  box.IsLayoutBlock() && ToLayoutBlock(box).CreatesNewFormattingContext());
 
-  IntSize int_icb_size = box.View()->GetLayoutSize(kExcludeScrollbars);
-  NGPhysicalSize icb_size{LayoutUnit(int_icb_size.Width()),
-                          LayoutUnit(int_icb_size.Height())};
-
-  // The initial containing block size cannot be indefinite.
-  DCHECK_GE(icb_size.width, LayoutUnit());
-  DCHECK_GE(icb_size.height, LayoutUnit());
-
-  NGConstraintSpaceBuilder builder(writing_mode, writing_mode, icb_size,
-                                   is_new_fc, !parallel_containing_block);
+  NGConstraintSpaceBuilder builder(writing_mode, writing_mode, is_new_fc,
+                                   !parallel_containing_block);
 
   if (!box.IsWritingModeRoot() || box.IsGridItem()) {
     // Add all types because we don't know which baselines will be requested.
@@ -149,9 +140,6 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
     return false;
 
   if (!MaySkipLayout(other))
-    return false;
-
-  if (initial_containing_block_size_ != other.initial_containing_block_size_)
     return false;
 
   if (!HasRareData() && !other.HasRareData() &&

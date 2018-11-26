@@ -24,7 +24,6 @@ class NGInlineLayoutTest : public SimTest {
     return NGConstraintSpaceBuilder(
                block_flow->Style()->GetWritingMode(),
                block_flow->Style()->GetWritingMode(),
-               /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite},
                /* is_new_fc */ false)
         .SetAvailableSize(NGLogicalSize(LayoutUnit(), LayoutUnit()))
         .SetPercentageResolutionSize(NGLogicalSize(LayoutUnit(), LayoutUnit()))
