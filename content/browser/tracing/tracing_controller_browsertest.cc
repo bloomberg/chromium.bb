@@ -138,7 +138,7 @@ class TracingControllerTest : public ContentBrowserTest {
   void GetCategoriesDoneCallbackTest(base::Closure quit_callback,
                                      const std::set<std::string>& categories) {
     get_categories_done_callback_count_++;
-    EXPECT_TRUE(categories.size() > 0);
+    EXPECT_FALSE(categories.empty());
     std::move(quit_callback).Run();
   }
 
@@ -154,7 +154,7 @@ class TracingControllerTest : public ContentBrowserTest {
     disable_recording_done_callback_count_++;
     last_metadata_ = std::move(metadata);
     last_data_ = data->data();
-    EXPECT_TRUE(data->size() > 0);
+    EXPECT_FALSE(data->data().empty());
     std::move(quit_callback).Run();
   }
 
@@ -399,19 +399,19 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   TestStartAndStopTracingString();
   // Check that a number of important keys exist in the metadata dictionary. The
   // values are not checked to ensure the test is robust.
-  EXPECT_TRUE(last_metadata() != nullptr);
+  ASSERT_NE(last_metadata(), nullptr);
   std::string network_type;
   last_metadata()->GetString("network-type", &network_type);
-  EXPECT_TRUE(network_type.length() > 0);
+  EXPECT_FALSE(network_type.empty());
   std::string user_agent;
   last_metadata()->GetString("user-agent", &user_agent);
-  EXPECT_TRUE(user_agent.length() > 0);
+  EXPECT_FALSE(user_agent.empty());
   std::string os_name;
   last_metadata()->GetString("os-name", &os_name);
-  EXPECT_TRUE(os_name.length() > 0);
+  EXPECT_FALSE(os_name.empty());
   std::string command_line;
   last_metadata()->GetString("command_line", &command_line);
-  EXPECT_TRUE(command_line.length() > 0);
+  EXPECT_FALSE(command_line.empty());
   std::string trace_config;
   last_metadata()->GetString("trace-config", &trace_config);
   EXPECT_EQ(TraceConfig().ToString(), trace_config);
@@ -422,28 +422,28 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
                        DISABLED_NotWhitelistedMetadataStripped) {
   TestStartAndStopTracingStringWithFilter();
   // Check that a number of important keys exist in the metadata dictionary.
-  EXPECT_TRUE(last_metadata() != nullptr);
+  ASSERT_NE(last_metadata(), nullptr);
   std::string network_type;
   last_metadata()->GetString("network-type", &network_type);
-  EXPECT_TRUE(network_type.length() > 0);
+  EXPECT_FALSE(network_type.empty());
   EXPECT_TRUE(network_type != "__stripped__");
   std::string os_name;
   last_metadata()->GetString("os-name", &os_name);
-  EXPECT_TRUE(os_name.length() > 0);
+  EXPECT_FALSE(os_name.empty());
   EXPECT_TRUE(os_name != "__stripped__");
   std::string user_agent;
   last_metadata()->GetString("user-agent", &user_agent);
-  EXPECT_TRUE(user_agent.length() > 0);
+  EXPECT_FALSE(user_agent.empty());
   EXPECT_TRUE(user_agent != "__stripped__");
 
   // Check that the not whitelisted metadata is stripped.
   std::string not_whitelisted;
   last_metadata()->GetString("not-whitelisted", &not_whitelisted);
-  EXPECT_TRUE(not_whitelisted.length() > 0);
+  EXPECT_FALSE(not_whitelisted.empty());
   EXPECT_TRUE(not_whitelisted == "__stripped__");
 
   // Also check the string data.
-  EXPECT_TRUE(last_data().size() > 0);
+  EXPECT_FALSE(last_data().empty());
   EXPECT_TRUE(last_data().find("cpu-brand") != std::string::npos);
   EXPECT_TRUE(last_data().find("network-type") != std::string::npos);
   EXPECT_TRUE(last_data().find("os-name") != std::string::npos);
@@ -553,7 +553,6 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_SystemTraceEvents) {
     return;
 
   TestStartAndStopTracingString(true /* enable_systrace */);
-  EXPECT_TRUE(last_data().size() > 0);
   EXPECT_TRUE(last_data().find("systemTraceEvents") != std::string::npos);
 }
 
