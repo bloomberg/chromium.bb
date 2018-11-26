@@ -2451,6 +2451,17 @@ TEST_F(ShelfLayoutManagerTest, TapOutsideOfAutoHideShownShelf) {
   tap_location = window_bounds.origin() + gfx::Vector2d(10, 10);
   generator->GestureTapAt(tap_location);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Swipe up to show the auto-hide shelf again.
+  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Tap the system tray that inside the status area should not hide the shelf
+  // but open the systrem tray bubble.
+  generator->GestureTapAt(
+      GetPrimaryUnifiedSystemTray()->GetBoundsInScreen().CenterPoint());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
