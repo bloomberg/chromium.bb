@@ -2120,7 +2120,6 @@ virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-a
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onerror-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onresult-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-stop-manual.https.html [ WontFix ]
-external/wpt/pointerevents/pointerevent_pointermove-manual.html [ WontFix ]
 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ WontFix ]
 
 # ====== Tests incompatible with the default Site Isolation from here ======
