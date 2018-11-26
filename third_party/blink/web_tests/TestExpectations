@@ -5561,4 +5561,5 @@ crbug.com/906320 [ Mac10.13 ] virtual/site-isolated-code-cache/http/tests/devtoo
 
 # Sheriff 2018-11-26
 crbug.com/908276 [ Mac10.10 ] external/wpt/webstorage/storage_setitem.html [ Pass Timeout ]
+crbug.com/908347 [ Mac ] external/wpt/event-timing/event-timing-timingconditions.html [ Failure Pass ]
 
