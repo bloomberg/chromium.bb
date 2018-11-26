@@ -19,6 +19,9 @@
 // The addressee's last name.
 @property(nonatomic, readonly) NSString* lastName;
 
+// The company name.
+@property(nonatomic, readonly) NSString* company;
+
 // The first line of this address.
 @property(nonatomic, readonly) NSString* line1;
 
@@ -37,16 +40,26 @@
 // The country of the address.
 @property(nonatomic, readonly) NSString* country;
 
+// The home phone number.
+@property(nonatomic, readonly) NSString* phoneNumber;
+
+// The profile email address.
+@property(nonatomic, readonly) NSString* emailAddress;
+
 // Default init.
 - (instancetype)initWithFirstName:(NSString*)firstName
               middleNameOrInitial:(NSString*)middleNameOrInitial
                          lastName:(NSString*)lastName
+                          company:(NSString*)company
                             line1:(NSString*)line1
                             line2:(NSString*)line2
                               zip:(NSString*)zip
                              city:(NSString*)city
                             state:(NSString*)state
-                          country:(NSString*)country NS_DESIGNATED_INITIALIZER;
+                          country:(NSString*)country
+                      phoneNumber:(NSString*)phoneNumber
+                     emailAddress:(NSString*)emailAddress
+    NS_DESIGNATED_INITIALIZER;
 
 // Unavailable. Please use |initWithFirstName:middleNameOrInitial:lastName:
 // line1:line2:zip:city:state:country:|.

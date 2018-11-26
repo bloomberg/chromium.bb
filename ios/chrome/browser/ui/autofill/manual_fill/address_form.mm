@@ -39,6 +39,8 @@ NSString* FieldValueOfTypeOnProfile(const autofill::AutofillProfile& profile,
         FieldValueOfTypeOnProfile(profile, autofill::NAME_MIDDLE_INITIAL);
   }
   NSString* lastName = FieldValueOfTypeOnProfile(profile, autofill::NAME_LAST);
+  NSString* company =
+      FieldValueOfTypeOnProfile(profile, autofill::COMPANY_NAME);
   NSString* line1 =
       FieldValueOfTypeOnProfile(profile, autofill::ADDRESS_HOME_LINE1);
   NSString* line2 =
@@ -51,16 +53,23 @@ NSString* FieldValueOfTypeOnProfile(const autofill::AutofillProfile& profile,
       FieldValueOfTypeOnProfile(profile, autofill::ADDRESS_HOME_STATE);
   NSString* country =
       FieldValueOfTypeOnProfile(profile, autofill::ADDRESS_HOME_COUNTRY);
+  NSString* phoneNumber =
+      FieldValueOfTypeOnProfile(profile, autofill::PHONE_HOME_WHOLE_NUMBER);
+  NSString* emailAddress =
+      FieldValueOfTypeOnProfile(profile, autofill::EMAIL_ADDRESS);
 
   return [self initWithFirstName:firstName
              middleNameOrInitial:middleNameOrInitial
                         lastName:lastName
+                         company:company
                            line1:line1
                            line2:line2
                              zip:zip
                             city:city
                            state:state
-                         country:country];
+                         country:country
+                     phoneNumber:phoneNumber
+                    emailAddress:emailAddress];
 }
 
 + (NSArray<ManualFillAddress*>*)manualFillAddressesFromProfiles:
