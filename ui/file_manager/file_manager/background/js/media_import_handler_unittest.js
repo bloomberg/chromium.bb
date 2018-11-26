@@ -26,9 +26,6 @@ var mockCopier;
 /** @type {!MockFileSystem} */
 var destinationFileSystem;
 
-/** @type {!importer.TestDuplicateFinder.Factory} */
-var duplicateFinderFactory;
-
 /** @type {!Promise<!DirectoryEntry>} */
 var destinationFactory;
 
@@ -93,7 +90,6 @@ function setUp() {
   mediaScanner = new TestMediaScanner();
   destinationFileSystem = new MockFileSystem('googleDriveFilesystem');
   destinationFactory = Promise.resolve(destinationFileSystem.root);
-  duplicateFinderFactory = new importer.TestDuplicateFinder.Factory();
   driveSyncHandler = new MockDriveSyncHandler();
 
   mediaImporter = new importer.MediaImportHandler(
