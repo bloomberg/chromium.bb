@@ -562,7 +562,7 @@ static void V3Cross(const Vector3 a, const Vector3 b, Vector3 result) {
 static bool Decompose(const TransformationMatrix::Matrix4& mat,
                       TransformationMatrix::DecomposedType& result) {
   TransformationMatrix::Matrix4 local_matrix;
-  memcpy(local_matrix, mat, sizeof(TransformationMatrix::Matrix4));
+  memcpy(&local_matrix, &mat, sizeof(TransformationMatrix::Matrix4));
 
   // Normalize the matrix.
   if (local_matrix[3][3] == 0)
@@ -576,7 +576,7 @@ static bool Decompose(const TransformationMatrix::Matrix4& mat,
   // perspectiveMatrix is used to solve for perspective, but it also provides
   // an easy way to test for singularity of the upper 3x3 component.
   TransformationMatrix::Matrix4 perspective_matrix;
-  memcpy(perspective_matrix, local_matrix,
+  memcpy(&perspective_matrix, &local_matrix,
          sizeof(TransformationMatrix::Matrix4));
   for (i = 0; i < 3; i++)
     perspective_matrix[i][3] = 0;
@@ -1431,6 +1431,11 @@ TransformationMatrix& TransformationMatrix::Multiply(
   ST_DP(v_tmp_m2, &(matrix_[3][0]));
   ST_DP(v_tmp_m3, &(matrix_[3][2]));
 #elif defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
+  static_assert(alignof(TransformationMatrix) == 16,
+                "TransformationMatrix must be aligned.");
+  static_assert(alignof(TransformationMatrix::Matrix4) == 16,
+                "Matrix4 must be aligned.");
+
   // x86_64 has 16 XMM registers which is enough to do the multiplication fully
   // in registers.
   __m128d matrix_block_a = _mm_load_pd(&(matrix_[0][0]));
