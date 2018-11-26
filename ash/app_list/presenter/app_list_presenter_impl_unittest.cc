@@ -67,7 +67,7 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
                                                  bool is_visible) override {
     return base::TimeDelta::FromMilliseconds(0);
   }
-  bool IsHomeLauncherEnabledInTabletMode() override { return false; }
+  bool IsTabletMode() const override { return false; }
   bool GetOnScreenKeyboardShown() override { return false; }
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override {
     return container_->GetRootWindow();

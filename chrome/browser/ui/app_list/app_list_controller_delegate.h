@@ -22,7 +22,7 @@ namespace extensions {
 class Extension;
 class ExtensionSet;
 class InstallTracker;
-}
+}  // namespace extensions
 
 namespace gfx {
 class Rect;
@@ -113,8 +113,7 @@ class AppListControllerDelegate {
   void UninstallApp(Profile* profile, const std::string& app_id);
 
   // True if the app was installed from the web store.
-  bool IsAppFromWebStore(Profile* profile,
-                         const std::string& app_id);
+  bool IsAppFromWebStore(Profile* profile, const std::string& app_id);
 
   // Shows the user the webstore site for the given app.
   void ShowAppInWebStore(Profile* profile,
@@ -130,12 +129,11 @@ class AppListControllerDelegate {
   // Gets/sets the launch type for an app.
   // The launch type specifies whether a hosted app should launch as a separate
   // window, fullscreened or as a tab.
-  extensions::LaunchType GetExtensionLaunchType(
-      Profile* profile, const std::string& app_id);
-  virtual void SetExtensionLaunchType(
-      Profile* profile,
-      const std::string& extension_id,
-      extensions::LaunchType launch_type);
+  extensions::LaunchType GetExtensionLaunchType(Profile* profile,
+                                                const std::string& app_id);
+  virtual void SetExtensionLaunchType(Profile* profile,
+                                      const std::string& extension_id,
+                                      extensions::LaunchType launch_type);
 
   // Returns true if the given extension is installed.
   virtual bool IsExtensionInstalled(Profile* profile,
@@ -149,13 +147,7 @@ class AppListControllerDelegate {
   // Called when a search is started using the app list search box.
   void OnSearchStarted();
 
-  // Returns true if the home launcher is enabled in tablet mode.
-  bool IsHomeLauncherEnabledInTabletMode() const;
-
  private:
-  // Whether the home launcher feature flag is enabled.
-  const bool is_home_launcher_enabled_;
-
   base::WeakPtrFactory<AppListControllerDelegate> weak_ptr_factory_;
 };
 

@@ -35,11 +35,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnablePlayStoreAppSearch;
 // Enables in-app data search.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppDataSearch;
 
-// Enables the home launcher in tablet mode. In this mode, the launcher will be
-// always shown right on top of the wallpaper. Home button will minimize all
-// windows instead of toggling the launcher.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableHomeLauncher;
-
 // Enables using gestures to show or hide the home launcher.
 // TODO(crbug.com/872319): Remove this after the feature is launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableHomeLauncherGestures;
@@ -71,7 +66,6 @@ bool ASH_PUBLIC_EXPORT IsAppShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
-bool ASH_PUBLIC_EXPORT IsHomeLauncherEnabled();
 bool ASH_PUBLIC_EXPORT IsHomeLauncherGesturesEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppsGridGapFeatureEnabled();

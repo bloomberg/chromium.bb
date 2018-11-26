@@ -119,8 +119,7 @@ void AppListPresenterImpl::Show(int64_t display_id,
   if (is_visible_) {
     // Launcher is always visible on the internal display when home launcher is
     // enabled in tablet mode.
-    if (display_id != GetDisplayId() &&
-        !delegate_->IsHomeLauncherEnabledInTabletMode()) {
+    if (display_id != GetDisplayId() && !delegate_->IsTabletMode()) {
       Dismiss(event_time_stamp);
     }
     return;
@@ -372,8 +371,7 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
     aura::Window* applist_container = applist_window->parent();
     if (applist_container->Contains(lost_focus) &&
         (!gained_focus || !applist_container->Contains(gained_focus)) &&
-        !switches::ShouldNotDismissOnBlur() &&
-        !delegate_->IsHomeLauncherEnabledInTabletMode()) {
+        !switches::ShouldNotDismissOnBlur() && !delegate_->IsTabletMode()) {
       Dismiss(base::TimeTicks());
     }
     if (applist_container->Contains(gained_focus) &&

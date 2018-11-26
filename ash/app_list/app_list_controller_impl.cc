@@ -39,9 +39,18 @@
 
 namespace ash {
 
+namespace {
+
+bool IsTabletMode() {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
+}
+
+}  // namespace
+
 AppListControllerImpl::AppListControllerImpl()
-    : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
-      is_home_launcher_enabled_(app_list_features::IsHomeLauncherEnabled()) {
+    : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)) {
   model_.AddObserver(this);
 
   SessionController* session_controller = Shell::Get()->session_controller();
@@ -57,8 +66,7 @@ AppListControllerImpl::AppListControllerImpl()
   Shell::Get()->AddShellObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
 
-  if (is_home_launcher_enabled_ &&
-      app_list_features::IsHomeLauncherGesturesEnabled()) {
+  if (app_list_features::IsHomeLauncherGesturesEnabled()) {
     home_launcher_gesture_handler_ =
         std::make_unique<HomeLauncherGestureHandler>(this);
   }
@@ -373,7 +381,7 @@ void AppListControllerImpl::OnAppListItemAdded(app_list::AppListItem* item) {
 
 void AppListControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* /* pref_service */) {
-  if (!IsHomeLauncherEnabledInTabletMode()) {
+  if (!IsTabletMode()) {
     DismissAppList();
     return;
   }
@@ -436,7 +444,7 @@ void AppListControllerImpl::UpdateYPositionAndOpacity(
     int y_position_in_screen,
     float background_opacity) {
   // Avoid changing app list opacity and position when homecher is enabled.
-  if (IsHomeLauncherEnabledInTabletMode())
+  if (IsTabletMode())
     return;
   presenter_.UpdateYPositionAndOpacity(y_position_in_screen,
                                        background_opacity);
@@ -445,7 +453,7 @@ void AppListControllerImpl::UpdateYPositionAndOpacity(
 void AppListControllerImpl::EndDragFromShelf(
     app_list::AppListViewState app_list_state) {
   // Avoid dragging app list when homecher is enabled.
-  if (IsHomeLauncherEnabledInTabletMode())
+  if (IsTabletMode())
     return;
   presenter_.EndDragFromShelf(app_list_state);
 }
@@ -485,7 +493,7 @@ void AppListControllerImpl::FlushForTesting() {
 }
 
 void AppListControllerImpl::OnOverviewModeStarting() {
-  if (!IsHomeLauncherEnabledInTabletMode()) {
+  if (!IsTabletMode()) {
     DismissAppList();
     return;
   }
@@ -501,7 +509,7 @@ void AppListControllerImpl::OnOverviewModeStarting() {
 }
 
 void AppListControllerImpl::OnOverviewModeEnding() {
-  if (!IsHomeLauncherEnabledInTabletMode())
+  if (!IsTabletMode())
     return;
 
   // Animate the launcher if overview mode is sliding out. Let
@@ -519,7 +527,7 @@ void AppListControllerImpl::OnOverviewModeEnding() {
 
 void AppListControllerImpl::OnOverviewModeEndingAnimationComplete(
     bool canceled) {
-  if (!IsHomeLauncherEnabledInTabletMode() || canceled)
+  if (!IsTabletMode() || canceled)
     return;
 
   presenter_.ScheduleOverviewModeAnimation(/*start=*/false,
@@ -532,9 +540,6 @@ void AppListControllerImpl::OnTabletModeStarted() {
     presenter_.GetView()->OnTabletModeChanged(true);
   }
 
-  if (!is_home_launcher_enabled_)
-    return;
-
   // Show the app list if the tablet mode starts.
   ShowHomeLauncher();
 }
@@ -543,8 +548,6 @@ void AppListControllerImpl::OnTabletModeEnded() {
   if (IsVisible())
     presenter_.GetView()->OnTabletModeChanged(false);
 
-  if (!is_home_launcher_enabled_)
-    return;
   // Dismiss the app list if the tablet mode ends.
   DismissAppList();
 }
@@ -592,7 +595,7 @@ void AppListControllerImpl::OnDisplayConfigurationChanged() {
   // To avoid crashes, we must ensure that the Home Launcher shown status is as
   // expected if it's enabled and we're still in tablet mode.
   // https://crbug.com/900956.
-  const bool should_be_shown = IsHomeLauncherEnabledInTabletMode();
+  const bool should_be_shown = IsTabletMode();
   if (should_be_shown == GetTargetVisibility())
     return;
 
@@ -600,12 +603,6 @@ void AppListControllerImpl::OnDisplayConfigurationChanged() {
     ShowHomeLauncher();
   else
     DismissAppList();
-}
-
-bool AppListControllerImpl::IsHomeLauncherEnabledInTabletMode() const {
-  return is_home_launcher_enabled_ && Shell::Get()
-                                          ->tablet_mode_controller()
-                                          ->IsTabletModeWindowManagerEnabled();
 }
 
 void AppListControllerImpl::Back() {
@@ -616,7 +613,7 @@ void AppListControllerImpl::OnAppListButtonPressed(
     int64_t display_id,
     app_list::AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
-  if (!IsHomeLauncherEnabledInTabletMode()) {
+  if (!IsTabletMode()) {
     ToggleAppList(display_id, show_source, event_time_stamp);
     return;
   }
@@ -671,7 +668,7 @@ void AppListControllerImpl::OnAppListButtonPressed(
 // Methods of |client_|:
 
 void AppListControllerImpl::StartAssistant() {
-  if (!IsHomeLauncherEnabledInTabletMode())
+  if (!IsTabletMode())
     DismissAppList();
 
   ash::Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
@@ -714,7 +711,7 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
   if (client_)
     client_->OpenSearchResult(result_id, event_flags);
 
-  if (IsHomeLauncherEnabledInTabletMode() && presenter_.IsVisible())
+  if (IsTabletMode() && presenter_.IsVisible())
     presenter_.GetView()->CloseOpenedPage();
 }
 
@@ -770,7 +767,7 @@ void AppListControllerImpl::ActivateItem(const std::string& id,
   if (client_)
     client_->ActivateItem(id, event_flags);
 
-  if (IsHomeLauncherEnabledInTabletMode() && presenter_.IsVisible())
+  if (IsTabletMode() && presenter_.IsVisible())
     presenter_.GetView()->CloseOpenedPage();
 }
 
@@ -924,7 +921,7 @@ app_list::AppListFolderItem* AppListControllerImpl::FindFolderItem(
 }
 
 void AppListControllerImpl::UpdateHomeLauncherVisibility() {
-  if (!IsHomeLauncherEnabledInTabletMode() || !presenter_.GetWindow())
+  if (!IsTabletMode() || !presenter_.GetWindow())
     return;
 
   const bool in_overview =
@@ -946,8 +943,7 @@ void AppListControllerImpl::UpdateAssistantVisibility() {
 }
 
 int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
-  if (IsHomeLauncherEnabledInTabletMode() &&
-      !Shell::Get()->display_manager()->IsInUnifiedMode()) {
+  if (IsTabletMode() && !Shell::Get()->display_manager()->IsInUnifiedMode()) {
     return display::Display::HasInternalDisplay()
                ? display::Display::InternalDisplayId()
                : display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -959,7 +955,7 @@ int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
 }
 
 void AppListControllerImpl::ShowHomeLauncher() {
-  DCHECK(IsHomeLauncherEnabledInTabletMode());
+  DCHECK(IsTabletMode());
 
   if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     return;

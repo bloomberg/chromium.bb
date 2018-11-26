@@ -20,8 +20,6 @@ const base::Feature kEnablePlayStoreAppSearch{
     "EnablePlayStoreAppSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppDataSearch{"EnableAppDataSearch",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableHomeLauncher{"EnableHomeLauncher",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableHomeLauncherGestures{
     "HomeLauncherGestures", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableSettingsShortcutSearch{
@@ -59,10 +57,6 @@ bool IsPlayStoreAppSearchEnabled() {
 
 bool IsAppDataSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppDataSearch);
-}
-
-bool IsHomeLauncherEnabled() {
-  return base::FeatureList::IsEnabled(kEnableHomeLauncher);
 }
 
 bool IsHomeLauncherGesturesEnabled() {
