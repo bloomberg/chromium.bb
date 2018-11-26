@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.preferences.autofill.AutofillPaymentMethodsFragment;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfilesFragment;
@@ -101,11 +102,13 @@ public class PreferencesLauncher {
 
     @CalledByNative
     private static void showAutofillProfileSettings(WebContents webContents) {
+        RecordUserAction.record("AutofillAddressesViewed");
         showSettingSubpage(webContents, AutofillProfilesFragment.class);
     }
 
     @CalledByNative
     private static void showAutofillCreditCardSettings(WebContents webContents) {
+        RecordUserAction.record("AutofillCreditCardsViewed");
         showSettingSubpage(webContents, AutofillPaymentMethodsFragment.class);
     }
 
