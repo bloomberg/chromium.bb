@@ -18,6 +18,10 @@
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "v8/include/v8.h"
 
+#if DCHECK_IS_ON()
+#include "base/debug/stack_trace.h"
+#endif
+
 namespace blink {
 
 // This class wraps v8::Promise::Resolver and provides the following
@@ -49,16 +53,7 @@ class CORE_EXPORT ScriptPromiseResolver
   // from the destructor's assert.
   EAGERLY_FINALIZE();
 
-  ~ScriptPromiseResolver() override {
-    // This assertion fails if:
-    //  - promise() is called at least once and
-    //  - this resolver is destructed before it is resolved, rejected,
-    //    detached, the V8 isolate is terminated or the associated
-    //    ExecutionContext is stopped.
-    DCHECK(state_ == kDetached || !is_promise_called_ ||
-           !GetScriptState()->ContextIsValid() || !GetExecutionContext() ||
-           GetExecutionContext()->IsContextDestroyed());
-  }
+  ~ScriptPromiseResolver() override;
 #endif
 
   // Anything that can be passed to toV8 can be passed to this function.
@@ -179,6 +174,8 @@ class CORE_EXPORT ScriptPromiseResolver
 #if DCHECK_IS_ON()
   // True if promise() is called.
   bool is_promise_called_ = false;
+
+  base::debug::StackTrace create_stack_trace_{8};
 #endif
 };
 
