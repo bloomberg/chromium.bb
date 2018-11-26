@@ -39,7 +39,7 @@ class MODULES_EXPORT WebIDBCursor {
   virtual ~WebIDBCursor() = default;
 
   // Used to implement IDBCursor.advance().
-  virtual void Advance(unsigned long count, WebIDBCallbacks*) = 0;
+  virtual void Advance(uint32_t count, WebIDBCallbacks*) = 0;
 
   // Used to implement IDBCursor.continue() and IDBCursor.continuePrimaryKey().
   //

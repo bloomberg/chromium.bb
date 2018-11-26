@@ -28,7 +28,7 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
                    int64_t transaction_id);
   ~WebIDBCursorImpl() override;
 
-  void Advance(unsigned long count, WebIDBCallbacks* callback) override;
+  void Advance(uint32_t count, WebIDBCallbacks* callback) override;
   void CursorContinue(WebIDBKeyView key,
                       WebIDBKeyView primary_key,
                       WebIDBCallbacks* callback) override;

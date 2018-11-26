@@ -48,8 +48,7 @@ WebIDBCursorImpl::~WebIDBCursorImpl() {
   IndexedDBDispatcher::UnregisterCursor(this);
 }
 
-void WebIDBCursorImpl::Advance(unsigned long count,
-                               WebIDBCallbacks* callbacks_ptr) {
+void WebIDBCursorImpl::Advance(uint32_t count, WebIDBCallbacks* callbacks_ptr) {
   std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   if (count <= prefetch_keys_.size()) {
     CachedAdvance(count, callbacks.get());
