@@ -1087,14 +1087,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
   }
-
-  if (policy.has_plugin_vm_image()) {
-    const em::PluginVmImageProto& container(policy.plugin_vm_image());
-    if (container.has_plugin_vm_image()) {
-      SetJsonDevicePolicy(key::kPluginVmImage, container.plugin_vm_image(),
-                          policies);
-    }
-  }
 }
 
 }  // namespace

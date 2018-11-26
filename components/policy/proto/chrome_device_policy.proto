@@ -1096,12 +1096,6 @@ message PluginVmAllowedProto {
   optional bool plugin_vm_allowed = 1;
 }
 
-// The url and hash specified in JSON format that can be used to set the
-// device-level PluginVm image.
-message PluginVmImageProto {
-  optional string plugin_vm_image = 1;
-}
-
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1198,5 +1192,4 @@ message ChromeDeviceSettingsProto {
       device_wifi_fast_transition_enabled = 73;
   optional DeviceDisplayResolutionProto device_display_resolution = 74;
   optional PluginVmAllowedProto plugin_vm_allowed = 75;
-  optional PluginVmImageProto plugin_vm_image = 76;
 }
