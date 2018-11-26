@@ -8,12 +8,10 @@
 #include <memory>
 #include <set>
 #include <utility>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
@@ -74,10 +72,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   friend class SharedWorkerServiceImplTest;
   friend class SharedWorkerHostTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkServiceRestartBrowserTest, SharedWorker);
-
-  static void AddAdditionalRequestHeaders(
-      network::ResourceRequest* resource_request,
-      BrowserContext* browser_context);
 
   void CreateWorker(
       std::unique_ptr<SharedWorkerInstance> instance,
