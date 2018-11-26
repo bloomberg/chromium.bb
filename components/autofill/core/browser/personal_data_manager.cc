@@ -475,6 +475,7 @@ void PersonalDataManager::Init(
     identity::IdentityManager* identity_manager,
     AutofillProfileValidator* client_profile_validator,
     history::HistoryService* history_service,
+    GaiaCookieManagerService* cookie_manager_service,
     bool is_off_the_record) {
   CountryNames::SetLocaleString(app_locale_);
   database_helper_->Init(profile_database, account_database);
@@ -492,6 +493,11 @@ void PersonalDataManager::Init(
   history_service_ = history_service;
   if (history_service_)
     history_service_->AddObserver(this);
+
+  // Listen for cookie deletion by the user.
+  cookie_manager_service_ = cookie_manager_service;
+  if (cookie_manager_service_)
+    cookie_manager_service_->AddObserver(this);
 
   identity_manager_ = identity_manager;
   is_off_the_record_ = is_off_the_record;
@@ -535,6 +541,10 @@ void PersonalDataManager::Shutdown() {
   if (history_service_)
     history_service_->RemoveObserver(this);
   history_service_ = nullptr;
+
+  if (cookie_manager_service_)
+    cookie_manager_service_->RemoveObserver(this);
+  cookie_manager_service_ = nullptr;
 }
 
 void PersonalDataManager::OnSyncServiceInitialized(
@@ -742,6 +752,11 @@ bool PersonalDataManager::IsSyncFeatureEnabled() const {
 
   return !sync_service_->GetAuthenticatedAccountInfo().IsEmpty() &&
          !database_helper_->IsUsingAccountStorageForServerData();
+}
+
+void PersonalDataManager::OnGaiaCookieDeletedByUserAction() {
+  // Clear all the Sync Transport feature opt-ins.
+  ::autofill::prefs::ClearSyncTransportOptIns(pref_service_);
 }
 
 void PersonalDataManager::AddObserver(PersonalDataManagerObserver* observer) {

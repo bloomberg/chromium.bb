@@ -33,6 +33,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
@@ -70,6 +71,7 @@ class PersonalDataManager : public KeyedService,
                             public AutofillWebDataServiceObserverOnUISequence,
                             public history::HistoryServiceObserver,
                             public syncer::SyncServiceObserver,
+                            public GaiaCookieManagerService::Observer,
                             public AccountInfoGetter {
  public:
   explicit PersonalDataManager(const std::string& app_locale);
@@ -90,6 +92,7 @@ class PersonalDataManager : public KeyedService,
             identity::IdentityManager* identity_manager,
             AutofillProfileValidator* client_profile_validator,
             history::HistoryService* history_service,
+            GaiaCookieManagerService* cookie_manager_service,
             bool is_off_the_record);
 
   // KeyedService:
@@ -119,6 +122,20 @@ class PersonalDataManager : public KeyedService,
   // AccountInfoGetter:
   AccountInfo GetAccountInfoForPaymentsServer() const override;
   bool IsSyncFeatureEnabled() const override;
+
+  // GaiaCookieManagerService::Observer:
+  void OnAddAccountToCookieCompleted(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) override {}
+  void OnSetAccountsInCookieCompleted(
+      const GoogleServiceAuthError& error) override {}
+  void OnLogOutAccountsFromCookieCompleted(
+      const GoogleServiceAuthError& error) override {}
+  void OnGaiaAccountsInCookieUpdated(
+      const std::vector<gaia::ListedAccount>& accounts,
+      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+      const GoogleServiceAuthError& error) override {}
+  void OnGaiaCookieDeletedByUserAction() override;
 
   // Adds a listener to be notified of PersonalDataManager events.
   virtual void AddObserver(PersonalDataManagerObserver* observer);
@@ -727,10 +744,15 @@ class PersonalDataManager : public KeyedService,
   // The PrefService that this instance uses. Must outlive this instance.
   PrefService* pref_service_ = nullptr;
 
-  // The HistoryService to observed by the personal data manager. Must
+  // The HistoryService to be observed by the personal data manager. Must
   // outlive this instance. This unowned pointer is retained so the PDM can
   // remove itself from the history service's observer list on shutdown.
   history::HistoryService* history_service_ = nullptr;
+
+  // The GaiaCookieManagerService to be observed by the personal data manager.
+  // Must outlive this instance. This unowned pointer is retained so the PDM can
+  // remove itself from the cookie manager service's observer list on shutdown.
+  GaiaCookieManagerService* cookie_manager_service_ = nullptr;
 
   // Pref registrar for managing the change observers.
   PrefChangeRegistrar pref_registrar_;

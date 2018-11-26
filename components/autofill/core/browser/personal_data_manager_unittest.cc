@@ -199,7 +199,8 @@ class PersonalDataManagerTestBase {
             : nullptr,
         prefs_.get(), identity_test_env_.identity_manager(),
         TestAutofillProfileValidator::GetInstance(),
-        /*history_service=*/nullptr, is_incognito);
+        /*history_service=*/nullptr, /*cookie_manager_sevice=*/nullptr,
+        is_incognito);
 
     personal_data_->AddObserver(&personal_data_observer_);
     AccountInfo account_info;
@@ -7113,6 +7114,21 @@ TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
     EXPECT_EQ(kSyncServiceAccountEmail,
               personal_data_->GetAccountInfoForPaymentsServer().email);
   }
+}
+
+TEST_F(PersonalDataManagerTest, OnGaiaCookieDeletedByUserAction) {
+  // Set up some sync transport opt-ins in the prefs.
+  ::autofill::prefs::SetUserOptedInWalletSyncTransport(prefs_.get(), "account1",
+                                                       true);
+  EXPECT_FALSE(
+      prefs_->GetDictionary(prefs::kAutofillSyncTransportOptIn)->DictEmpty());
+
+  // Simulate that the cookies get cleared by the user.
+  personal_data_->OnGaiaCookieDeletedByUserAction();
+
+  // Make sure the pref is now empty.
+  EXPECT_TRUE(
+      prefs_->GetDictionary(prefs::kAutofillSyncTransportOptIn)->DictEmpty());
 }
 
 }  // namespace autofill
