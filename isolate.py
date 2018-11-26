@@ -56,6 +56,15 @@ EXIT_CODE_UPLOAD_ERROR = 101
 ISOLATED_GEN_JSON_VERSION = 1
 
 
+# Warning printed when variables are used. This is meant to reduce the use of
+# variables.
+_VARIABLE_WARNING = """\
+WARNING: --config-variables, --path-variables and --extra-variables
+will be unsupported soon. Please contact the LUCI team.
+https://crbug.com/907880
+"""
+
+
 class ExecutionError(Exception):
   """A generic error occurred."""
   def __str__(self):
@@ -1205,6 +1214,10 @@ def process_isolate_options(parser, options, cwd=None, require_isolated=True):
       (k, try_make_int(v)) for k, v in options.config_variables)
   options.path_variables = dict(options.path_variables)
   options.extra_variables = dict(options.extra_variables)
+  # Account for default EXECUTABLE_SUFFIX.
+  if (options.config_variables or options.path_variables or
+      len(options.extra_variables) > 1):
+    sys.stderr.write(_VARIABLE_WARNING)
 
   # Normalize the path in --isolate.
   if options.isolate:
