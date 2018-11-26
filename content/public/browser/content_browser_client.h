@@ -381,7 +381,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the UI thread.
   virtual bool CanCommitURL(RenderProcessHost* process_host, const GURL& url);
 
-  // Returns whether a URL should be allowed to open from a specific context.
+  // Returns whether |url| should be allowed to open from the context indicated
+  // by |site_instance|.
   // This also applies in cases where the new URL will open in another process.
   virtual bool ShouldAllowOpenURL(SiteInstance* site_instance, const GURL& url);
 
@@ -1033,9 +1034,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   GetReceiverPresentationServiceDelegate(WebContents* web_contents);
 
   // Allows programmatic opening of a new tab/window without going through
-  // another WebContents. For example, from a Worker. |callback| will be
+  // another WebContents. For example, from a Worker. |site_instance|
+  // describes the context initiating the navigation. |callback| will be
   // invoked with the appropriate WebContents* when available.
-  virtual void OpenURL(BrowserContext* browser_context,
+  virtual void OpenURL(SiteInstance* site_instance,
                        const OpenURLParams& params,
                        const base::Callback<void(WebContents*)>& callback);
 

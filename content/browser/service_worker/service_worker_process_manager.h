@@ -104,6 +104,8 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
     storage_partition_ = storage_partition;
   }
 
+  SiteInstance* GetSiteInstanceForWorker(int embedded_worker_id);
+
  private:
   friend class ServiceWorkerProcessManagerTest;
 

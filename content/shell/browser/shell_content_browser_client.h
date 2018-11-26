@@ -74,7 +74,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       override;
   net::NetLog* GetNetLog() override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
-  void OpenURL(BrowserContext* browser_context,
+  void OpenURL(SiteInstance* site_instance,
                const OpenURLParams& params,
                const base::Callback<void(WebContents*)>& callback) override;
   scoped_refptr<LoginDelegate> CreateLoginDelegate(

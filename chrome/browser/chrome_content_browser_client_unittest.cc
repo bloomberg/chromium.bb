@@ -29,6 +29,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -103,8 +104,9 @@ TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
     // only be ran on platforms where OpenURL is implemented synchronously.
     // See https://crbug.com/457667.
     content::WebContents* web_contents = nullptr;
-    client.OpenURL(browser()->profile(),
-                   params,
+    scoped_refptr<content::SiteInstance> site_instance =
+        content::SiteInstance::Create(browser()->profile());
+    client.OpenURL(site_instance.get(), params,
                    base::Bind(&DidOpenURLForWindowTest, &web_contents));
 
     EXPECT_TRUE(web_contents);

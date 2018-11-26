@@ -1388,7 +1388,8 @@ void ServiceWorkerVersion::OpenWindow(
   }
 
   service_worker_client_utils::OpenWindow(
-      url, script_url_, embedded_worker_->process_id(), context_, type,
+      url, script_url_, embedded_worker_->embedded_worker_id(),
+      embedded_worker_->process_id(), context_, type,
       base::BindOnce(&OnOpenWindowFinished, std::move(callback)));
 }
 
