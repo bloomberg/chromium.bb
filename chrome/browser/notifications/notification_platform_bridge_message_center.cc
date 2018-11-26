@@ -147,3 +147,6 @@ void NotificationPlatformBridgeMessageCenter::SetReadyCallback(
     NotificationBridgeReadyCallback callback) {
   std::move(callback).Run(true /* success */);
 }
+
+void NotificationPlatformBridgeMessageCenter::DisplayServiceShutDown(
+    Profile* profile) {}

@@ -5,19 +5,25 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SYSTEM_NOTIFICATION_HELPER_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SYSTEM_NOTIFICATION_HELPER_H_
 
-#include "base/files/file_path.h"
-#include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
-#include "chrome/browser/profiles/profile.h"
+#include <memory>
+#include <string>
+
+#include "base/macros.h"
 #include "ui/message_center/public/cpp/notification.h"
 
+class NotificationDisplayService;
+
 // This class assists in displaying notifications that do not have an associated
-// Profile. It uses a system profile which may not be loaded. Thus, Display() is
-// not always synchronous.
+// Profile.
 class SystemNotificationHelper {
  public:
-  // Returns the singleton instance.
+  // Returns the global instance.
   static SystemNotificationHelper* GetInstance();
+
+  // Note that only single instance of this class should be created. The
+  // instance is retrievable by SystemNotificationHelper::GetInstance().
+  SystemNotificationHelper();
+  ~SystemNotificationHelper();
 
   // Displays a notification which isn't tied to a normal user profile. The
   // notification will be displayed asynchronously if the generic profile has
@@ -27,29 +33,15 @@ class SystemNotificationHelper {
   // Closes a notification which isn't tied to a normal user profile.
   void Close(const std::string& notification_id);
 
-  // Loads the profile used for the profile-agnostic NotificationDisplayService.
-  static Profile* GetProfileForTesting();
+  void SetSystemServiceForTesting(
+      std::unique_ptr<NotificationDisplayService> service);
 
  private:
-  friend struct base::DefaultSingletonTraits<SystemNotificationHelper>;
+  // Gets or creates a NotificationDisplayService for system notifications.
+  NotificationDisplayService* GetSystemService();
 
-  SystemNotificationHelper();
-  ~SystemNotificationHelper();
-
-  void DoDisplayNotification(const std::string& notification_id,
-                             Profile* profile,
-                             Profile::CreateStatus status);
-
-  // Returns the path for a non-user-specific profile. This will be used for
-  // system notifications which aren't tied to a particular normal profile.
-  static base::FilePath GetProfilePath();
-
-  // Notifications are added to this queue when the system profile has not yet
-  // been loaded. They are removed in Close() if it's called before the profile
-  // loads, or after the notification is displayed if that happens first.
-  std::map<std::string, message_center::Notification> pending_notifications_;
-
-  base::WeakPtrFactory<SystemNotificationHelper> weak_factory_{this};
+  // The global system NotificationDisaplyService, not bound to any profile.
+  std::unique_ptr<NotificationDisplayService> system_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNotificationHelper);
 };

@@ -106,6 +106,13 @@ void ForwardNotificationOperationOnUiThread(
   if (!g_browser_process)
     return;
 
+  // Profile ID can be empty for system notifications, which are not bound to a
+  // profile, but system notifications are transient and thus not handled by
+  // this NotificationPlatformBridge.
+  // When transient notifications are supported, this should route the
+  // notification response to the system NotificationDisplayService.
+  DCHECK(!profile_id.empty());
+
   g_browser_process->profile_manager()->LoadProfile(
       profile_id, incognito,
       base::BindOnce(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
@@ -824,6 +831,8 @@ void NotificationPlatformBridgeWin::SetReadyCallback(
       base::BindOnce(&NotificationPlatformBridgeWinImpl::SetReadyCallback,
                      impl_, std::move(callback)));
 }
+
+void NotificationPlatformBridgeWin::DisplayServiceShutDown(Profile* profile) {}
 
 // static
 bool NotificationPlatformBridgeWin::HandleActivation(

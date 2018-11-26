@@ -33,6 +33,7 @@ class NotificationPlatformBridgeLinux : public NotificationPlatformBridge {
   void GetDisplayed(Profile* profile,
                     GetDisplayedNotificationsCallback callback) const override;
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
+  void DisplayServiceShutDown(Profile* profile) override;
 
  private:
   friend class NotificationPlatformBridgeLinuxTest;

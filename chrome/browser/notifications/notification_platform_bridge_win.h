@@ -38,6 +38,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   void GetDisplayed(Profile* profile,
                     GetDisplayedNotificationsCallback callback) const override;
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
+  void DisplayServiceShutDown(Profile* profile) override;
 
   // Handles notification activation encoded in |command_line| from the
   // notification_helper process.

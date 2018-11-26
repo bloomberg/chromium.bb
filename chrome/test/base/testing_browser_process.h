@@ -29,6 +29,7 @@ class IOThread;
 class NotificationPlatformBridge;
 class NotificationUIManager;
 class PrefService;
+class SystemNotificationHelper;
 class WatchDogThread;
 
 namespace content {
@@ -158,6 +159,8 @@ class TestingBrowserProcess : public BrowserProcess {
       std::unique_ptr<NotificationUIManager> notification_ui_manager);
   void SetNotificationPlatformBridge(
       std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge);
+  void SetSystemNotificationHelper(
+      std::unique_ptr<SystemNotificationHelper> system_notification_helper);
   void SetRapporServiceImpl(rappor::RapporServiceImpl* rappor_service);
   void SetShuttingDown(bool is_shutting_down);
   void ShutdownBrowserPolicyConnector();
@@ -178,6 +181,7 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<ProfileManager> profile_manager_;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
   std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge_;
+  std::unique_ptr<SystemNotificationHelper> system_notification_helper_;
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
 #if BUILDFLAG(ENABLE_PRINTING)

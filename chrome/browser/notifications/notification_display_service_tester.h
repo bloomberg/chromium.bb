@@ -29,6 +29,9 @@ class Notification;
 // synchronous.
 class NotificationDisplayServiceTester {
  public:
+  // |profile| - the profile with which |display_service_| will be associated.
+  //     It can be nullptr, in which case |display_service_| will be set up as a
+  //     system notification display service.
   explicit NotificationDisplayServiceTester(Profile* profile);
   ~NotificationDisplayServiceTester();
 

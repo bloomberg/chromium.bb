@@ -26,6 +26,10 @@ class Profile;
 // notification bridges.
 class NotificationDisplayServiceImpl : public NotificationDisplayService {
  public:
+  // Note that |profile| might be nullptr for notification display service used
+  // for system notifications. The system instance is owned by
+  // SystemNotificationHelper, and is only expected to handle TRANSIENT
+  // notifications.
   explicit NotificationDisplayServiceImpl(Profile* profile);
   ~NotificationDisplayServiceImpl() override;
 
@@ -59,6 +63,7 @@ class NotificationDisplayServiceImpl : public NotificationDisplayService {
       NotificationHandler::Type notification_type);
 
   // NotificationDisplayService implementation:
+  void Shutdown() override;
   void Display(NotificationHandler::Type notification_type,
                const message_center::Notification& notification,
                std::unique_ptr<NotificationCommon::Metadata> metadata =

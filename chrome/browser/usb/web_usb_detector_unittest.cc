@@ -75,8 +75,10 @@ class WebUsbDetectorTest : public BrowserWithTestWindowTest {
     chromeos::ProfileHelper::Get()->SetActiveUserIdForTesting(kProfileName);
 #endif
     BrowserList::SetLastActive(browser());
+    TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
+        std::make_unique<SystemNotificationHelper>());
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
-        SystemNotificationHelper::GetProfileForTesting());
+        nullptr /* profile */);
 
     web_usb_detector_.reset(new WebUsbDetector());
     // Set a fake USB device manager before Initialize().

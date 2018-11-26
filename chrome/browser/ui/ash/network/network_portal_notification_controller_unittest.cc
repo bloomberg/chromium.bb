@@ -5,9 +5,10 @@
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
@@ -41,8 +42,10 @@ class NetworkPortalNotificationControllerTest
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kEnableNetworkPortalNotification);
 
+    TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
+        std::make_unique<SystemNotificationHelper>());
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
-        ProfileHelper::GetSigninProfile());
+        nullptr /* profile */);
   }
 
  protected:

@@ -43,6 +43,7 @@ class ChromeResourceDispatcherHostDelegate;
 class DevToolsAutoOpener;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
+class SystemNotificationHelper;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 class PluginsResourceService;
@@ -317,6 +318,9 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
   std::unique_ptr<NotificationPlatformBridge> notification_bridge_;
+
+  // Use SystemNotificationHelper::GetInstance to get this instance.
+  std::unique_ptr<SystemNotificationHelper> system_notification_helper_;
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   std::unique_ptr<BackgroundModeManager> background_mode_manager_;
