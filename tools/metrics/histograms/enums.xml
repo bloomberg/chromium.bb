@@ -28769,6 +28769,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Failed"/>
   <int value="2" label="Copied everything"/>
   <int value="3" label="The standard login database is encrypted"/>
+  <int value="4" label="The migration is about to be attempted"/>
+  <int value="5" label="No access to the native backend"/>
+  <int value="6" label="Could not create or write into the temporary file"/>
+  <int value="7" label="Could not read from the native backend"/>
+  <int value="8" label="Could not replace old database"/>
 </enum>
 
 <enum name="LinuxSandboxStatus">

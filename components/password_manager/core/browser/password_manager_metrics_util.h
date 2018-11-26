@@ -287,7 +287,17 @@ enum class LinuxBackendMigrationStatus {
   kCopiedAll = 2,
   // The standard login database is encrypted.
   kLoginDBReplaced = 3,
-  kMaxValue = kLoginDBReplaced
+  // The migration is about to be attempted.
+  kStarted = 4,
+  // No access to the native backend.
+  kPostponed = 5,
+  // Could not create or write into the temporary file.
+  kFailedCreatedEncrypted = 6,
+  // Could not read from the native backend.
+  kFailedAccessNative = 7,
+  // Could not replace old database.
+  kFailedReplace = 8,
+  kMaxValue = kFailedReplace
 };
 
 // Type of the password drop-down shown on focus field.
