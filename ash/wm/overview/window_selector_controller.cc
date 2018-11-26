@@ -512,7 +512,6 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
 
   // Do nothing if no item was retrieved, or if the retrieved item is
   // unsnappable.
-  // TODO(sammiequon): Bounce the window if it is not snappable.
   if (!item_to_snap ||
       !split_view_controller->CanSnap(item_to_snap->GetWindow())) {
     return;
