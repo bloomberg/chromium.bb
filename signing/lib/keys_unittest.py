@@ -431,9 +431,9 @@ class TestKeyVersions(cros_test_lib.TempDirTestCase):
 class TestKeyset(cros_test_lib.TempDirTestCase):
   """Test Keyset class."""
 
-  def _get_keyset(self):
+  def _get_keyset(self, has_loem_ini=True):
     """Returns keyset with a few keys."""
-    kc = KeysetMock(self.tempdir, has_loem_ini=True)
+    kc = KeysetMock(self.tempdir, has_loem_ini=has_loem_ini)
 
     # Add a few more keys for this build.
     for key_name in ['key1', 'key2', 'key3', 'key4']:
@@ -497,6 +497,18 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
     ks0.AddBuildtargetKey('root_key', 'loem9', k9)
 
     self.assertEqual(ks0._buildtarget_keys['loem9']['root_key'], k9)
+
+  def testGetBuildtargetKeysWithLoemIni(self):
+    ks0 = self._get_keyset()
+    expected_keys = ks0.GetBuildtargetKeys('root_key')
+    expected = {k: ks0._buildtarget_keys[k]['root_key']
+                for k in ks0._buildtarget_keys.keys()}
+    self.assertDictEqual(expected, expected_keys)
+
+  def testGetBuildtargetKeysWithoutLoemIni(self):
+    ks0 = self._get_keyset(has_loem_ini=False)
+    expected_keys = ks0.GetBuildtargetKeys('root_key')
+    self.assertDictEqual({'root_key': ks0.keys['root_key']}, expected_keys)
 
   def testGetBuildKeysetMissmatch(self):
     ks0 = self._get_keyset()
