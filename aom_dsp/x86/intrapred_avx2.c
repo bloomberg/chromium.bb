@@ -1260,7 +1260,6 @@ static void highbd_dr_prediction_z1_16xN_avx2(int N, uint16_t *dst,
                                               const uint16_t *above,
                                               int upsample_above, int dx) {
   __m256i dstvec[64];
-
   highbd_dr_prediction_z1_16xN_internal_avx2(N, dstvec, above, upsample_above,
                                              dx);
   for (int i = 0; i < N; i++) {
@@ -1307,7 +1306,7 @@ static AOM_FORCE_INLINE void highbd_dr_prediction_z1_32xN_internal_avx2(
 
     for (int j = 0; j < 32; j += 16) {
       int mdif = max_base_x - (base + j);
-      if (mdif == 0) {
+      if (mdif <= 0) {
         res1 = a_mbase_x;
       } else {
         a0 = _mm256_cvtepu16_epi32(
@@ -1325,17 +1324,17 @@ static AOM_FORCE_INLINE void highbd_dr_prediction_z1_32xN_internal_avx2(
         res[0] = _mm256_packus_epi32(
             res[0],
             _mm256_castsi128_si256(_mm256_extracti128_si256(res[0], 1)));
-
-        a0_1 = _mm256_cvtepu16_epi32(
-            _mm_loadu_si128((__m128i *)(above + base + 8 + j)));
-        a1_1 = _mm256_cvtepu16_epi32(
-            _mm_loadu_si128((__m128i *)(above + base + 9 + j)));
-
-        diff = _mm256_sub_epi32(a1_1, a0_1);  // a[x+1] - a[x]
-        a32 = _mm256_slli_epi32(a0_1, 5);     // a[x] * 32
-        a32 = _mm256_add_epi32(a32, a16);     // a[x] * 32 + 16
-        b = _mm256_mullo_epi32(diff, shift);
         if (mdif > 8) {
+          a0_1 = _mm256_cvtepu16_epi32(
+              _mm_loadu_si128((__m128i *)(above + base + 8 + j)));
+          a1_1 = _mm256_cvtepu16_epi32(
+              _mm_loadu_si128((__m128i *)(above + base + 9 + j)));
+
+          diff = _mm256_sub_epi32(a1_1, a0_1);  // a[x+1] - a[x]
+          a32 = _mm256_slli_epi32(a0_1, 5);     // a[x] * 32
+          a32 = _mm256_add_epi32(a32, a16);     // a[x] * 32 + 16
+          b = _mm256_mullo_epi32(diff, shift);
+
           res[1] = _mm256_add_epi32(a32, b);
           res[1] = _mm256_srli_epi32(res[1], 5);
           res[1] = _mm256_packus_epi32(
@@ -1424,7 +1423,7 @@ static void highbd_dr_prediction_z1_64xN_avx2(int N, uint16_t *dst,
     __m128i a0_128, a0_1_128, a1_128, a1_1_128;
     for (int j = 0; j < 64; j += 16) {
       int mdif = max_base_x - (base + j);
-      if (mdif == 0) {
+      if (mdif <= 0) {
         _mm256_storeu_si256((__m256i *)(dst + j), a_mbase_x);
       } else {
         a0_128 = _mm_loadu_si128((__m128i *)(above + base + j));
