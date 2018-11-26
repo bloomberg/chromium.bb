@@ -245,11 +245,9 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
 // If the specified VS is not in the font, it's mapped to .notdef.
 // then hb_ot_hide_default_ignorables() swaps it to a space with zero-advance.
 // http://lists.freedesktop.org/archives/harfbuzz/2015-May/004888.html
-#if !defined(OS_MACOSX)
       EXPECT_EQ(TestInfo(result)->FontDataForTesting(0)->SpaceGlyph(),
                 TestInfo(result)->GlyphForTesting(0, 1))
           << test.name;
-#endif
       EXPECT_EQ(0.f, TestInfo(result)->AdvanceForTesting(0, 1)) << test.name;
     } else {
       EXPECT_EQ(1u, num_glyphs) << test.name;
@@ -413,8 +411,9 @@ TEST_F(HarfBuzzShaperTest, ShapeLatinSegment) {
 }
 
 // Represents the case where a part of a cluster has a different color.
-// <div>0x647<span style="color: red;">0x64A</span></div>
-// TODO(crbug.com/689155): Still fails on Mac, AAT?
+// <div>0x647<span style="color: red;">0x64A</span></
+// Cannot be enabled on Mac yet, compare
+// https:// https://github.com/harfbuzz/harfbuzz/issues/1415
 #if defined(OS_MACOSX)
 #define MAYBE_ShapeArabicWithContext DISABLED_ShapeArabicWithContext
 #else
@@ -723,17 +722,14 @@ static struct GlyphDataRangeTestData {
     // The two code points form a grapheme cluster, which produces two glyphs.
     // Character index array should be [0, 0].
     {u"\u05E9\u05B0", TextDirection::kRtl, 0, 0, 1, 0, 2},
-#if !defined(OS_MACOSX)
     // ZWJ tests taken from fast/text/international/zerowidthjoiner.html
     // Character index array should be [6, 3, 3, 3, 0, 0, 0].
-    // Mac shapes differently and that glyph index expectations do not match.
     {u"\u0639\u200D\u200D\u0639\u200D\u200D\u0639", TextDirection::kRtl, 0, 0,
      1, 4, 7},
     {u"\u0639\u200D\u200D\u0639\u200D\u200D\u0639", TextDirection::kRtl, 0, 2,
      5, 1, 4},
     {u"\u0639\u200D\u200D\u0639\u200D\u200D\u0639", TextDirection::kRtl, 0, 4,
      7, 0, 1},
-#endif
 };
 
 std::ostream& operator<<(std::ostream& ostream,
@@ -1455,9 +1451,9 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
   }
 }
 
-// TODO(crbug.com/870712): This test fails on Mac due to AAT shaping and
-// font fallback differences on Android.
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+// TODO(crbug.com/870712): This test fails due to font fallback differences on
+// Android.
+#if defined(OS_ANDROID)
 #define MAYBE_SafeToBreakArabicCommonLigatures \
   DISABLED_SafeToBreakArabicCommonLigatures
 #else
@@ -1474,33 +1470,27 @@ TEST_F(HarfBuzzShaperTest, MAYBE_SafeToBreakArabicCommonLigatures) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kRtl);
 
-  // Safe to break at 0, 3, 4, 5, 7, and 11.
-  EXPECT_EQ(0u, result->NextSafeToBreakOffset(0));
-  EXPECT_EQ(3u, result->NextSafeToBreakOffset(1));
-  EXPECT_EQ(3u, result->NextSafeToBreakOffset(2));
-  EXPECT_EQ(3u, result->NextSafeToBreakOffset(3));
-  EXPECT_EQ(4u, result->NextSafeToBreakOffset(4));
-  EXPECT_EQ(5u, result->NextSafeToBreakOffset(5));
-  EXPECT_EQ(7u, result->NextSafeToBreakOffset(6));
-  EXPECT_EQ(7u, result->NextSafeToBreakOffset(7));
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(8));
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(9));
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(10));
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(11));
-  EXPECT_EQ(12u, result->NextSafeToBreakOffset(12));
+  std::vector<unsigned> safe_to_break_positions;
+
+#if defined(OS_MACOSX)
+  safe_to_break_positions = {0, 2, 3, 4, 11};
+#else
+  safe_to_break_positions = {0, 3, 4, 5, 7, 11};
+#endif
+  unsigned compare_safe_to_break_position = 0;
+  for (unsigned i = 0; i < string.length() - 1; ++i) {
+    EXPECT_EQ(safe_to_break_positions[compare_safe_to_break_position],
+              result->NextSafeToBreakOffset(i));
+    if (i == safe_to_break_positions[compare_safe_to_break_position])
+      compare_safe_to_break_position++;
+  }
 }
 
 // TODO(layout-dev): Expand RTL test coverage and add tests for mixed
 // directionality strings.
 
 // Test when some characters are missing in |runs_|.
-// RTL on Mac may not have runs for all characters. crbug.com/774034
-#if defined(OS_MACOSX)
-#define MAYBE_SafeToBreakMissingRun DISABLED_SafeToBreakMissingRun
-#else
-#define MAYBE_SafeToBreakMissingRun SafeToBreakMissingRun
-#endif
-TEST_P(ShapeParameterTest, MAYBE_SafeToBreakMissingRun) {
+TEST_P(ShapeParameterTest, SafeToBreakMissingRun) {
   TextDirection direction = GetParam();
   scoped_refptr<ShapeResult> result = ShapeResult::Create(&font, 8, direction);
   result->InsertRunForTesting(2, 1, direction, {0});
