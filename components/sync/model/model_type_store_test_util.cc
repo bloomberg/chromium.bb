@@ -38,6 +38,14 @@ class ForwardingModelTypeStore : public ModelTypeStore {
     other_->ReadAllMetadata(std::move(callback));
   }
 
+  void ReadAllDataAndPreprocess(
+      PreprocessCallback preprocess_on_backend_sequence_callback,
+      CallbackWithResult completion_on_frontend_sequence_callback) override {
+    other_->ReadAllDataAndPreprocess(
+        std::move(preprocess_on_backend_sequence_callback),
+        std::move(completion_on_frontend_sequence_callback));
+  }
+
   std::unique_ptr<WriteBatch> CreateWriteBatch() override {
     return other_->CreateWriteBatch();
   }

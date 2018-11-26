@@ -18,6 +18,27 @@
 
 namespace syncer {
 
+namespace {
+
+base::Optional<ModelError> ReadAllDataAndPreprocessOnBackendSequence(
+    BlockingModelTypeStoreImpl* blocking_store,
+    ModelTypeStore::PreprocessCallback
+        preprocess_on_backend_sequence_callback) {
+  DCHECK(blocking_store);
+
+  auto record_list = std::make_unique<ModelTypeStoreBase::RecordList>();
+  base::Optional<ModelError> error =
+      blocking_store->ReadAllData(record_list.get());
+  if (error) {
+    return error;
+  }
+
+  return std::move(preprocess_on_backend_sequence_callback)
+      .Run(std::move(record_list));
+}
+
+}  // namespace
+
 ModelTypeStoreImpl::ModelTypeStoreImpl(
     ModelType type,
     std::unique_ptr<BlockingModelTypeStoreImpl, base::OnTaskRunnerDeleter>
@@ -122,6 +143,33 @@ void ModelTypeStoreImpl::ReadAllMetadataDone(
   }
 
   std::move(callback).Run({}, std::move(metadata_batch));
+}
+
+void ModelTypeStoreImpl::ReadAllDataAndPreprocess(
+    PreprocessCallback preprocess_on_backend_sequence_callback,
+    CallbackWithResult completion_on_frontend_sequence_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!preprocess_on_backend_sequence_callback.is_null());
+  DCHECK(!completion_on_frontend_sequence_callback.is_null());
+  auto task =
+      base::BindOnce(&ReadAllDataAndPreprocessOnBackendSequence,
+                     base::Unretained(backend_store_.get()),
+                     std::move(preprocess_on_backend_sequence_callback));
+  // ReadAllDataAndPreprocessDone() is only needed to guarantee that callbacks
+  // get cancelled if |this| gets destroyed.
+  auto reply =
+      base::BindOnce(&ModelTypeStoreImpl::ReadAllDataAndPreprocessDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(completion_on_frontend_sequence_callback));
+  base::PostTaskAndReplyWithResult(backend_task_runner_.get(), FROM_HERE,
+                                   std::move(task), std::move(reply));
+}
+
+void ModelTypeStoreImpl::ReadAllDataAndPreprocessDone(
+    CallbackWithResult callback,
+    const base::Optional<ModelError>& error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  std::move(callback).Run(error);
 }
 
 void ModelTypeStoreImpl::DeleteAllDataAndMetadata(CallbackWithResult callback) {

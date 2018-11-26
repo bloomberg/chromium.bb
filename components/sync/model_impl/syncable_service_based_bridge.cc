@@ -85,6 +85,27 @@ base::Optional<ModelError> ConvertToModelError(const SyncError& sync_error) {
   return base::nullopt;
 }
 
+// Parses the content of |record_list| into |*in_memory_store|. The output
+// parameter is first for binding purposes.
+base::Optional<ModelError> ParseInMemoryStoreOnBackendSequence(
+    SyncableServiceBasedBridge::InMemoryStore* in_memory_store,
+    std::unique_ptr<ModelTypeStore::RecordList> record_list) {
+  DCHECK(in_memory_store);
+  DCHECK(in_memory_store->empty());
+  DCHECK(record_list);
+
+  for (const ModelTypeStore::Record& record : *record_list) {
+    sync_pb::PersistedEntityData persisted_entity;
+    if (!persisted_entity.ParseFromString(record.value)) {
+      return ModelError(FROM_HERE, "Failed deserializing data.");
+    }
+
+    in_memory_store->emplace(record.id, std::move(persisted_entity));
+  }
+
+  return base::nullopt;
+}
+
 // Object to propagate local changes to the bridge, which will ultimately
 // propagate them to the server.
 class LocalChangeProcessor : public SyncChangeProcessor {
@@ -94,7 +115,7 @@ class LocalChangeProcessor : public SyncChangeProcessor {
       const base::RepeatingCallback<void(const base::Optional<ModelError>&)>&
           error_callback,
       ModelTypeStore* store,
-      std::map<std::string, sync_pb::PersistedEntityData>* in_memory_store,
+      SyncableServiceBasedBridge::InMemoryStore* in_memory_store,
       scoped_refptr<SyncableServiceBasedBridge::ModelCryptographer>
           cryptographer,
       ModelTypeChangeProcessor* other)
@@ -250,7 +271,7 @@ class LocalChangeProcessor : public SyncChangeProcessor {
   const base::RepeatingCallback<void(const base::Optional<ModelError>&)>
       error_callback_;
   ModelTypeStore* const store_;
-  std::map<std::string, sync_pb::PersistedEntityData>* const in_memory_store_;
+  SyncableServiceBasedBridge::InMemoryStore* const in_memory_store_;
   const scoped_refptr<SyncableServiceBasedBridge::ModelCryptographer>
       cryptographer_;
   ModelTypeChangeProcessor* const other_;
@@ -500,7 +521,7 @@ std::unique_ptr<SyncChangeProcessor>
 SyncableServiceBasedBridge::CreateLocalChangeProcessorForTesting(
     ModelType type,
     ModelTypeStore* store,
-    std::map<std::string, sync_pb::PersistedEntityData>* in_memory_store,
+    InMemoryStore* in_memory_store,
     ModelTypeChangeProcessor* other) {
   return std::make_unique<LocalChangeProcessor>(
       type, /*error_callback=*/base::DoNothing(), store, in_memory_store,
@@ -520,15 +541,21 @@ void SyncableServiceBasedBridge::OnStoreCreated(
   DCHECK(store);
   store_ = std::move(store);
 
-  store_->ReadAllData(
+  auto in_memory_store = std::make_unique<InMemoryStore>();
+  InMemoryStore* raw_in_memory_store = in_memory_store.get();
+  store_->ReadAllDataAndPreprocess(
+      base::BindOnce(&ParseInMemoryStoreOnBackendSequence,
+                     base::Unretained(raw_in_memory_store)),
       base::BindOnce(&SyncableServiceBasedBridge::OnReadAllDataForInit,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(in_memory_store)));
 }
 
 void SyncableServiceBasedBridge::OnReadAllDataForInit(
-    const base::Optional<ModelError>& error,
-    std::unique_ptr<ModelTypeStore::RecordList> record_list) {
+    std::unique_ptr<InMemoryStore> in_memory_store,
+    const base::Optional<ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(in_memory_store.get());
   DCHECK(in_memory_store_.empty());
 
   if (error) {
@@ -536,16 +563,7 @@ void SyncableServiceBasedBridge::OnReadAllDataForInit(
     return;
   }
 
-  for (const ModelTypeStore::Record& record : *record_list) {
-    sync_pb::PersistedEntityData persisted_entity;
-    if (!persisted_entity.ParseFromString(record.value)) {
-      change_processor()->ReportError(
-          {FROM_HERE, "Failed deserializing data."});
-      return;
-    }
-
-    in_memory_store_[record.id] = persisted_entity;
-  }
+  in_memory_store_ = std::move(*in_memory_store);
 
   store_->ReadAllMetadata(
       base::BindOnce(&SyncableServiceBasedBridge::OnReadAllMetadataForInit,
