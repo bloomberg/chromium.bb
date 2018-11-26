@@ -17,16 +17,10 @@ namespace autofill {
 
 CardNameFixFlowViewDelegateMobile::CardNameFixFlowViewDelegateMobile(
     const base::string16& inferred_cardholder_name,
-    std::unique_ptr<base::DictionaryValue> legal_message,
     base::OnceCallback<void(const base::string16&)> upload_save_card_callback)
     : inferred_cardholder_name_(inferred_cardholder_name),
       upload_save_card_callback_(std::move(upload_save_card_callback)) {
   DCHECK(!upload_save_card_callback_.is_null());
-  if (legal_message &&
-      !LegalMessageLine::Parse(*legal_message, &legal_messages_,
-                               /*escape_apostrophes=*/true)) {
-    return;
-  }
 }
 
 CardNameFixFlowViewDelegateMobile::~CardNameFixFlowViewDelegateMobile() {}

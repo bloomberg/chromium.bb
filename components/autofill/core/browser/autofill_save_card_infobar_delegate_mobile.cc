@@ -56,7 +56,8 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     DCHECK(upload_save_card_callback_.is_null());
     DCHECK(!local_save_card_callback_.is_null());
   }
-  if (legal_message && !should_request_name_from_user) {
+
+  if (legal_message) {
     if (!LegalMessageLine::Parse(*legal_message, &legal_messages_,
                                  /*escape_apostrophes=*/true)) {
       AutofillMetrics::LogCreditCardInfoBarMetric(
@@ -96,8 +97,8 @@ void AutofillSaveCardInfoBarDelegateMobile::OnLegalMessageLinkClicked(
 
 bool AutofillSaveCardInfoBarDelegateMobile::LegalMessagesParsedSuccessfully() {
   // If we are uploading to the server, verify that legal lines have been parsed
-  // into |legal_messages_| unless |should_request_name_from_user_| is enabled.
-  return !upload_ || !legal_messages_.empty() || should_request_name_from_user_;
+  // into |legal_messages_|.
+  return !upload_ || !legal_messages_.empty();
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::IsGooglePayBrandingEnabled() const {

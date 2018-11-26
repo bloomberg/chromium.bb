@@ -126,7 +126,6 @@ void TestAutofillClient::ConfirmSaveCreditCardLocally(
 
 #if defined(OS_ANDROID)
 void TestAutofillClient::ConfirmAccountNameFixFlow(
-    std::unique_ptr<base::DictionaryValue> legal_message,
     base::OnceCallback<void(const base::string16&)> callback) {
   credit_card_name_fix_flow_bubble_was_shown_ = true;
   std::move(callback).Run(base::string16(base::ASCIIToUTF16("Gaia Name")));

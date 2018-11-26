@@ -12,11 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.autofill.AutofillNameFixFlowPrompt.AutofillNameFixFlowPromptDelegate;
-import org.chromium.chrome.browser.autofill.AutofillNameFixFlowPrompt.LegalMessageLine;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * JNI call glue for AutofillNameFixFlowPrompt C++ and Java objects.
@@ -29,7 +25,6 @@ final class AutofillNameFixFlowBridge implements AutofillNameFixFlowPromptDelega
     private final String mInferredName;
     private final String mConfirmButtonLabel;
     private final int mIconId;
-    private final List<LegalMessageLine> mLegalMessageLines = new ArrayList<LegalMessageLine>();
     private AutofillNameFixFlowPrompt mNameFixFlowPrompt;
 
     private AutofillNameFixFlowBridge(long nativeCardNameFixFlowViewAndroid, String title,
@@ -58,29 +53,6 @@ final class AutofillNameFixFlowBridge implements AutofillNameFixFlowPromptDelega
                 confirmButtonLabel, iconId, windowAndroid);
     }
 
-    /**
-     * Adds a line of legal message plain text to the infobar.
-     *
-     * @param text The legal message plain text.
-     */
-    @CalledByNative
-    private void addLegalMessageLine(String text) {
-        mLegalMessageLines.add(new LegalMessageLine(text));
-    }
-
-    /**
-     * Marks up the last added line of legal message text with a link.
-     *
-     * @param start The inclusive offset of the start of the link in the text.
-     * @param end The exclusive offset of the end of the link in the text.
-     * @param url The URL to open when the link is clicked.
-     */
-    @CalledByNative
-    private void addLinkToLastLegalMessageLine(int start, int end, String url) {
-        mLegalMessageLines.get(mLegalMessageLines.size() - 1)
-                .links.add(new LegalMessageLine.Link(start, end, url));
-    }
-
     @Override
     public void onPromptDismissed() {
         nativePromptDismissed(mNativeCardNameFixFlowViewAndroid);
@@ -91,18 +63,13 @@ final class AutofillNameFixFlowBridge implements AutofillNameFixFlowPromptDelega
         nativeOnUserAccept(mNativeCardNameFixFlowViewAndroid, name);
     }
 
-    @Override
-    public void onLegalMessageLinkClicked(String url) {
-        nativeOnLegalMessageLinkClicked(mNativeCardNameFixFlowViewAndroid, url);
-    }
-
     /**
      * Shows a prompt for name fix flow.
      */
     @CalledByNative
     private void show(WindowAndroid windowAndroid) {
         mNameFixFlowPrompt = new AutofillNameFixFlowPrompt(mActivity, this, mTitle, mInferredName,
-                mLegalMessageLines, mConfirmButtonLabel, ResourceId.mapToDrawableId(mIconId));
+                mConfirmButtonLabel, ResourceId.mapToDrawableId(mIconId));
 
         if (mNameFixFlowPrompt != null) {
             mNameFixFlowPrompt.show((ChromeActivity) (windowAndroid.getActivity().get()));
@@ -119,6 +86,4 @@ final class AutofillNameFixFlowBridge implements AutofillNameFixFlowPromptDelega
 
     private native void nativePromptDismissed(long nativeCardNameFixFlowViewAndroid);
     private native void nativeOnUserAccept(long nativeCardNameFixFlowViewAndroid, String name);
-    private native void nativeOnLegalMessageLinkClicked(
-            long nativeCardNameFixFlowViewAndroid, String url);
 }

@@ -459,6 +459,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_NAME" desc="Label for text input field containing the name on a credit card. [CHAR-LIMIT=32]">
         Name on card
       </message>
+      <message name="IDS_AUTOFILL_CARD_HOLDER_NAME" desc="Label for text input field containing the name on a credit card. [CHAR-LIMIT=32]">
+        Cardholder name
+      </message>
       <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_NUMBER" desc="Label for text input field containing a card number. This can be a credit, debit, or prepaid card. [CHAR-LIMIT=32]">
         Card number
       </message>

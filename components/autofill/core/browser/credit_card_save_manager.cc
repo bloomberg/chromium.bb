@@ -446,20 +446,8 @@ void CreditCardSaveManager::OfferCardUploadSave() {
   if (!is_mobile_build || show_save_prompt_.value()) {
     user_did_accept_upload_prompt_ = false;
 
-    // legal_message_ ownership is always handled out to chrome autofill client
-    // and eventually to UI classes. In Android, cards name fix flows take two
-    // steps and legal messsage is shown only in second step, hence nullptr is
-    // sent now.
-    std::unique_ptr<base::DictionaryValue> legal_message_tmp;
-#if defined(OS_ANDROID)
-    legal_message_tmp =
-        should_request_name_from_user_ ? nullptr : std::move(legal_message_);
-#else
-    legal_message_tmp = std::move(legal_message_);
-#endif  // #if defined(OS_ANDROID)
-
     client_->ConfirmSaveCreditCardToCloud(
-        upload_request_.card, std::move(legal_message_tmp),
+        upload_request_.card, std::move(legal_message_),
         should_request_name_from_user_,
         should_request_expiration_date_from_user_, show_save_prompt_.value(),
         base::BindOnce(&CreditCardSaveManager::OnUserDidAcceptUpload,
@@ -761,7 +749,6 @@ void CreditCardSaveManager::OnUserDidAcceptUpload(
 #if defined(OS_ANDROID)
   if (should_request_name_from_user_) {
     client_->ConfirmAccountNameFixFlow(
-        std::move(legal_message_),
         base::BindOnce(
             &CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow,
             weak_ptr_factory_.GetWeakPtr()));
