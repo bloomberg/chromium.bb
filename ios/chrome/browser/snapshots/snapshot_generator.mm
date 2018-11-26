@@ -20,8 +20,11 @@
 #import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
 #include "ios/web/public/features.h"
 #import "ios/web/public/features.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_task_traits.h"
@@ -219,12 +222,18 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (void)updateWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
   DCHECK(_webState);
-  CGRect snapshotFrame = [self snapshotFrameVisibleFrameOnly:YES];
-  // WebState's |TakeSnapshot()| accepts a |rect| in the web view's coordinate
-  // space, but |-snapshotFrameVisibleFrameOnly:| returns a frame in the BVC's
-  // coordinate space.
-  CGRect webViewSnapshotFrame =
-      CGRectMake(0, 0, snapshotFrame.size.width, snapshotFrame.size.height);
+  CGRect webViewSnapshotFrame = [self snapshotFrameVisibleFrameOnly:YES];
+
+  bool usesContentInset =
+      ios::GetChromeBrowserProvider()
+          ->GetFullscreenProvider()
+          ->IsInitialized() ||
+      _webState->GetWebViewProxy().shouldUseViewContentInset;
+
+  if (!usesContentInset) {
+    webViewSnapshotFrame.origin = CGPointZero;
+  }
+
   if (CGRectIsEmpty(webViewSnapshotFrame)) {
     if (completion) {
       base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
@@ -265,7 +274,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
         if (overlays.count > 0) {
           snapshot = [strongSelf snapshotWithOverlays:overlays
                                              snapshot:snapshot
-                                                frame:snapshotFrame];
+                                                frame:webViewSnapshotFrame];
         }
         [strongSelf.snapshotCache setImage:snapshot
                              withSessionID:_snapshotSessionId];
