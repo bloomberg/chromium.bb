@@ -538,7 +538,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // http://dev.chromium.org/developers/design-documents/confirm-to-quit-experiment
 
   // This logic is only for keyboard-initiated quits.
-  if (![ConfirmQuitPanelController eventTriggersFeature:[app currentEvent]])
+  if ([[app currentEvent] type] != NSKeyDown)
     return NSTerminateNow;
 
   return [[ConfirmQuitPanelController sharedController]
