@@ -30,7 +30,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestNotEnumerableNamedGetter::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestNotEnumerableNamedGetter::domTemplate,
+    V8TestNotEnumerableNamedGetter::DomTemplate,
     nullptr,
     "TestNotEnumerableNamedGetter",
     nullptr,
@@ -62,7 +62,7 @@ static_assert(
 
 namespace test_not_enumerable_named_getter_v8_internal {
 
-static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void NamedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestNotEnumerableNamedGetter* impl = V8TestNotEnumerableNamedGetter::ToImpl(info.Holder());
   int32_t result = impl->AnonymousNamedGetter(name);
   if ()
@@ -70,7 +70,7 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
   V8SetReturnValueInt(info, result);
 }
 
-static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void NamedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   // This function is called when an IDL interface supports named properties
   // but not indexed properties. When a numeric property is queried, V8 calls
   // indexedPropertyDescriptorCallback(), which calls this function.
@@ -80,7 +80,7 @@ static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackIn
   // indexedPropertyGetterCallback, let it end up calling the named property
   // getter and, if all goes well, we create a v8::PropertyDescriptor with the
   // right values.
-  V8TestNotEnumerableNamedGetter::indexedPropertyGetterCallback(index, info);
+  V8TestNotEnumerableNamedGetter::IndexedPropertyGetterCallback(index, info);
   v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
   if (!getterValue->IsUndefined()) {
     v8::PropertyDescriptor desc(getterValue, false);
@@ -92,29 +92,29 @@ static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackIn
 
 }  // namespace test_not_enumerable_named_getter_v8_internal
 
-void V8TestNotEnumerableNamedGetter::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestNotEnumerableNamedGetter::NamedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNotEnumerableNamedGetter_NamedPropertyGetter");
 
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  test_not_enumerable_named_getter_v8_internal::namedPropertyGetter(propertyName, info);
+  test_not_enumerable_named_getter_v8_internal::NamedPropertyGetter(propertyName, info);
 }
 
-void V8TestNotEnumerableNamedGetter::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestNotEnumerableNamedGetter::IndexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNotEnumerableNamedGetter_IndexedPropertyGetter");
 
   const AtomicString& propertyName = AtomicString::Number(index);
 
-  test_not_enumerable_named_getter_v8_internal::namedPropertyGetter(propertyName, info);
+  test_not_enumerable_named_getter_v8_internal::NamedPropertyGetter(propertyName, info);
 }
 
-void V8TestNotEnumerableNamedGetter::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  test_not_enumerable_named_getter_v8_internal::namedPropertyDescriptor(index, info);
+void V8TestNotEnumerableNamedGetter::IndexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  test_not_enumerable_named_getter_v8_internal::NamedPropertyDescriptor(index, info);
 }
 
-static void installV8TestNotEnumerableNamedGetterTemplate(
+static void InstallV8TestNotEnumerableNamedGetterTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -132,9 +132,9 @@ static void installV8TestNotEnumerableNamedGetterTemplate(
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
-      V8TestNotEnumerableNamedGetter::indexedPropertyGetterCallback,
+      V8TestNotEnumerableNamedGetter::IndexedPropertyGetterCallback,
       nullptr,
-      V8TestNotEnumerableNamedGetter::indexedPropertyDescriptorCallback,
+      V8TestNotEnumerableNamedGetter::IndexedPropertyDescriptorCallback,
       nullptr,
       nullptr,
       nullptr,
@@ -142,7 +142,7 @@ static void installV8TestNotEnumerableNamedGetterTemplate(
       v8::PropertyHandlerFlags::kNone);
   instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
   // Named properties
-  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestNotEnumerableNamedGetter::namedPropertyGetterCallback, nullptr, nullptr, nullptr, nullptr, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
+  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestNotEnumerableNamedGetter::NamedPropertyGetterCallback, nullptr, nullptr, nullptr, nullptr, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
   instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 
   // Custom signature
@@ -167,20 +167,20 @@ void V8TestNotEnumerableNamedGetter::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestNotEnumerableNamedGetter::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestNotEnumerableNamedGetterTemplate);
+v8::Local<v8::FunctionTemplate> V8TestNotEnumerableNamedGetter::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestNotEnumerableNamedGetterTemplate);
 }
 
-bool V8TestNotEnumerableNamedGetter::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestNotEnumerableNamedGetter::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestNotEnumerableNamedGetter::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestNotEnumerableNamedGetter::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestNotEnumerableNamedGetter* V8TestNotEnumerableNamedGetter::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestNotEnumerableNamedGetter* NativeValueTraits<TestNotEnumerableNamedGetter>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

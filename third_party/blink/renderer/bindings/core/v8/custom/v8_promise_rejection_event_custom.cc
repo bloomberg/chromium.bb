@@ -14,7 +14,7 @@
 
 namespace blink {
 
-void V8PromiseRejectionEvent::promiseAttributeGetterCustom(
+void V8PromiseRejectionEvent::PromiseAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
 

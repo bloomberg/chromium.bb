@@ -233,7 +233,7 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     const char* interface_name,
     const char* property_name) {
   DCHECK(GetExecutionContext());
-  if (!V8Response::hasInstance(value.V8Value(),
+  if (!V8Response::HasInstance(value.V8Value(),
                                ToIsolate(GetExecutionContext()))) {
     OnResponseRejected(ServiceWorkerResponseError::kNoV8Instance);
     return;

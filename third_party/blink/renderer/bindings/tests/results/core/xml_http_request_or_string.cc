@@ -69,7 +69,7 @@ void V8XMLHttpRequestOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value>
   if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
-  if (V8XMLHttpRequest::hasInstance(v8Value, isolate)) {
+  if (V8XMLHttpRequest::HasInstance(v8Value, isolate)) {
     XMLHttpRequest* cppValue = V8XMLHttpRequest::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.SetXMLHttpRequest(cppValue);
     return;

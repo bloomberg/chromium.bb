@@ -224,7 +224,7 @@ void LocalWindowProxy::CreateContext() {
     // in some cases, e.g. loading XML files.
     if (context.IsEmpty()) {
       v8::Local<v8::ObjectTemplate> global_template =
-          V8Window::domTemplate(isolate, World())->InstanceTemplate();
+          V8Window::DomTemplate(isolate, World())->InstanceTemplate();
       CHECK(!global_template.IsEmpty());
       context = v8::Context::New(isolate, &extension_configuration,
                                  global_template, global_proxy);

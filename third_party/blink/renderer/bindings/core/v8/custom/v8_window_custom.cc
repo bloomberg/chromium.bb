@@ -63,7 +63,7 @@
 
 namespace blink {
 
-void V8Window::locationAttributeGetterCustom(
+void V8Window::LocationAttributeGetterCustom(
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   v8::Local<v8::Object> holder = info.Holder();
@@ -100,7 +100,7 @@ void V8Window::locationAttributeGetterCustom(
   V8SetReturnValue(info, wrapper);
 }
 
-void V8Window::eventAttributeGetterCustom(
+void V8Window::EventAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::ToImpl(info.Holder()));
   v8::Isolate* isolate = info.GetIsolate();
@@ -136,7 +136,7 @@ void V8Window::eventAttributeGetterCustom(
   V8SetReturnValue(info, js_event);
 }
 
-void V8Window::frameElementAttributeGetterCustom(
+void V8Window::FrameElementAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::ToImpl(info.Holder()));
   Element* frameElement = impl->frameElement();
@@ -161,7 +161,7 @@ void V8Window::frameElementAttributeGetterCustom(
   V8SetReturnValue(info, wrapper);
 }
 
-void V8Window::openerAttributeSetterCustom(
+void V8Window::OpenerAttributeSetterCustom(
     v8::Local<v8::Value> value,
     const v8::PropertyCallbackInfo<void>& info) {
   v8::Isolate* isolate = info.GetIsolate();
@@ -197,7 +197,7 @@ void V8Window::openerAttributeSetterCustom(
   }
 }
 
-void V8Window::namedPropertyGetterCustom(
+void V8Window::NamedPropertyGetterCustom(
     const AtomicString& name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   DOMWindow* window = V8Window::ToImpl(info.Holder());

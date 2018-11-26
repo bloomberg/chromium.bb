@@ -32,7 +32,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestInterfaceEventTarget::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInterfaceEventTarget::domTemplate,
+    V8TestInterfaceEventTarget::DomTemplate,
     nullptr,
     "TestInterfaceEventTarget",
     &V8EventTarget::wrapperTypeInfo,
@@ -74,7 +74,7 @@ namespace test_interface_event_target_v8_internal {
 #endif
 const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInterfaceEventTargetConstructor::domTemplate,
+    V8TestInterfaceEventTargetConstructor::DomTemplate,
     nullptr,
     "TestInterfaceEventTarget",
     nullptr,
@@ -107,7 +107,7 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
   V8SetReturnValue(info, wrapper);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   static int domTemplateKey; // This address is used for a key to look up the dom template.
   V8PerIsolateData* data = V8PerIsolateData::From(isolate);
   v8::Local<v8::FunctionTemplate> result = data->FindInterfaceTemplate(world, &domTemplateKey);
@@ -118,7 +118,7 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::domTempla
   v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
   instanceTemplate->SetInternalFieldCount(V8TestInterfaceEventTarget::internalFieldCount);
   result->SetClassName(V8AtomicString(isolate, "Name"));
-  result->Inherit(V8TestInterfaceEventTarget::domTemplate(isolate, world));
+  result->Inherit(V8TestInterfaceEventTarget::DomTemplate(isolate, world));
   data->SetInterfaceTemplate(world, &domTemplateKey, result);
   return result;
 }
@@ -152,12 +152,12 @@ void V8TestInterfaceEventTargetConstructor::NamedConstructorAttributeGetter(
   V8SetReturnValue(info, namedConstructor);
 }
 
-static void installV8TestInterfaceEventTargetTemplate(
+static void InstallV8TestInterfaceEventTargetTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEventTarget::wrapperTypeInfo.interface_name, V8EventTarget::domTemplate(isolate, world), V8TestInterfaceEventTarget::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEventTarget::wrapperTypeInfo.interface_name, V8EventTarget::DomTemplate(isolate, world), V8TestInterfaceEventTarget::internalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
@@ -190,20 +190,20 @@ void V8TestInterfaceEventTarget::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTarget::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceEventTargetTemplate);
+v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTarget::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestInterfaceEventTargetTemplate);
 }
 
-bool V8TestInterfaceEventTarget::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestInterfaceEventTarget::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestInterfaceEventTarget::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestInterfaceEventTarget::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceEventTarget* V8TestInterfaceEventTarget::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterfaceEventTarget* NativeValueTraits<TestInterfaceEventTarget>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

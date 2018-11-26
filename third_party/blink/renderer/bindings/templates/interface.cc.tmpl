@@ -6,7 +6,7 @@
 {% block indexed_property_getter %}
 {% if indexed_property_getter and not indexed_property_getter.is_custom %}
 {% set getter = indexed_property_getter %}
-static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void IndexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if getter.is_raises_exception %}
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kIndexedGetterContext, "{{interface_name}}");
   {% endif %}
@@ -41,14 +41,14 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 {% block indexed_property_getter_callback %}
 {% if indexed_property_getter or named_property_getter %}
 {% set getter = indexed_property_getter or named_property_getter %}
-void {{v8_class_or_partial}}::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::IndexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.indexed_property_getter_counter) }}
   {% if indexed_property_getter %}
 
   {% if getter.is_custom %}
-  {{v8_class}}::indexedPropertyGetterCustom(index, info);
+  {{v8_class}}::IndexedPropertyGetterCustom(index, info);
   {% else %}
-  {{internal_namespace}}::indexedPropertyGetter(index, info);
+  {{internal_namespace}}::IndexedPropertyGetter(index, info);
   {% endif %}
 
   {% else %}{# otherwise, named property #}
@@ -56,9 +56,9 @@ void {{v8_class_or_partial}}::indexedPropertyGetterCallback(uint32_t index, cons
   const AtomicString& propertyName = AtomicString::Number(index);
 
   {% if getter.is_custom %}
-  {{v8_class}}::namedPropertyGetterCustom(propertyName, info);
+  {{v8_class}}::NamedPropertyGetterCustom(propertyName, info);
   {% else %}
-  {{internal_namespace}}::namedPropertyGetter(propertyName, info);
+  {{internal_namespace}}::NamedPropertyGetter(propertyName, info);
   {% endif %}
 
   {% endif %}{# indexed_property_getter #}
@@ -73,7 +73,7 @@ void {{v8_class_or_partial}}::indexedPropertyGetterCallback(uint32_t index, cons
 {% from 'utilities.cc.tmpl' import v8_value_to_local_cpp_value %}
 {% if indexed_property_setter and not indexed_property_setter.is_custom %}
 {% set setter = indexed_property_setter %}
-static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void IndexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if setter.has_exception_state %}
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kIndexedSetterContext, "{{interface_name}}");
   {% endif %}
@@ -119,13 +119,13 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
 {% block indexed_property_setter_callback %}
 {% if indexed_property_getter or named_property_setter %}
 {% set setter = indexed_property_setter or named_property_setter %}
-void {{v8_class_or_partial}}::indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::IndexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if indexed_property_setter %}
 
   {% if setter.is_custom %}
-  {{v8_class}}::indexedPropertySetterCustom(index, v8Value, info);
+  {{v8_class}}::IndexedPropertySetterCustom(index, v8Value, info);
   {% else %}
-  {{internal_namespace}}::indexedPropertySetter(index, v8Value, info);
+  {{internal_namespace}}::IndexedPropertySetter(index, v8Value, info);
   {% endif %}
 
   {% elif named_property_setter %}
@@ -133,9 +133,9 @@ void {{v8_class_or_partial}}::indexedPropertySetterCallback(uint32_t index, v8::
   const AtomicString& propertyName = AtomicString::Number(index);
 
   {% if setter.is_custom %}
-  {{v8_class}}::namedPropertySetterCustom(propertyName, v8Value, info);
+  {{v8_class}}::NamedPropertySetterCustom(propertyName, v8Value, info);
   {% else %}
-  {{internal_namespace}}::namedPropertySetter(propertyName, v8Value, info);
+  {{internal_namespace}}::NamedPropertySetter(propertyName, v8Value, info);
   {% endif %}
 
   {% else %}{# neither of indexed_property_setter nor named_property_setter #}
@@ -163,13 +163,13 @@ void {{v8_class_or_partial}}::indexedPropertySetterCallback(uint32_t index, v8::
 {##############################################################################}
 {% block indexed_property_descriptor %}
 {% if indexed_property_getter %}
-static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void IndexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
   // Steps 1.1 to 1.2.4 are covered here: we rely on indexedPropertyGetter() to
   // call the getter function and check that |index| is a valid property index,
   // in which case it will have set info.GetReturnValue() to something other
   // than undefined.
-  {{v8_class_or_partial}}::indexedPropertyGetterCallback(index, info);
+  {{v8_class_or_partial}}::IndexedPropertyGetterCallback(index, info);
   v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
   if (!getterValue->IsUndefined()) {
     // 1.2.5. Let |desc| be a newly created Property Descriptor with no fields.
@@ -193,7 +193,7 @@ static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallback
 {##############################################################################}
 {% block named_property_descriptor %}
 {% if not indexed_property_getter and named_property_getter %}
-static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void NamedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   // This function is called when an IDL interface supports named properties
   // but not indexed properties. When a numeric property is queried, V8 calls
   // indexedPropertyDescriptorCallback(), which calls this function.
@@ -208,9 +208,9 @@ static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackIn
   // using descriptor and definer callbacks (bug 764633).
   const AtomicString& indexAsName = AtomicString::Number(index);
   {% if named_property_getter.is_custom_property_query %}
-  {{v8_class}}::namedPropertyQueryCustom(indexAsName, info);
+  {{v8_class}}::NamedPropertyQueryCustom(indexAsName, info);
   {% else %}
-  {{internal_namespace}}::namedPropertyQuery(indexAsName, info);
+  {{internal_namespace}}::NamedPropertyQuery(indexAsName, info);
   {% endif %}
   v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
   if (!getterValue->IsUndefined()) {
@@ -231,7 +231,7 @@ static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackIn
   // indexedPropertyGetterCallback, let it end up calling the named property
   // getter and, if all goes well, we create a v8::PropertyDescriptor with the
   // right values.
-  {{v8_class_or_partial}}::indexedPropertyGetterCallback(index, info);
+  {{v8_class_or_partial}}::IndexedPropertyGetterCallback(index, info);
   v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
   if (!getterValue->IsUndefined()) {
     v8::PropertyDescriptor desc(getterValue, {% if named_property_setter %}true{% else %}false{% endif %});
@@ -249,11 +249,11 @@ static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackIn
 {##############################################################################}
 {% block indexed_property_descriptor_callback %}
 {% if indexed_property_getter or named_property_getter %}
-void {{v8_class_or_partial}}::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::IndexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if indexed_property_getter %}
-  {{internal_namespace}}::indexedPropertyDescriptor(index, info);
+  {{internal_namespace}}::IndexedPropertyDescriptor(index, info);
   {% else %}{# The interface only supports named properties. #}
-  {{internal_namespace}}::namedPropertyDescriptor(index, info);
+  {{internal_namespace}}::NamedPropertyDescriptor(index, info);
   {% endif %}{# indexed_property_getter #}
 }
 
@@ -265,7 +265,7 @@ void {{v8_class_or_partial}}::indexedPropertyDescriptorCallback(uint32_t index, 
 {% block indexed_property_deleter %}
 {% if indexed_property_deleter and not indexed_property_deleter.is_custom %}
 {% set deleter = indexed_property_deleter %}
-static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+static void IndexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   {% if deleter.is_raises_exception %}
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kIndexedDeletionContext, "{{interface_name}}");
   {% endif %}
@@ -302,13 +302,13 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
 {% block indexed_property_deleter_callback %}
 {% if indexed_property_deleter or named_property_deleter %}
 {% set deleter = indexed_property_deleter or named_property_deleter %}
-void {{v8_class_or_partial}}::indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+void {{v8_class_or_partial}}::IndexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   {% if indexed_property_deleter %}
 
   {% if deleter.is_custom %}
-  {{v8_class}}::indexedPropertyDeleterCustom(index, info);
+  {{v8_class}}::IndexedPropertyDeleterCustom(index, info);
   {% else %}
-  {{internal_namespace}}::indexedPropertyDeleter(index, info);
+  {{internal_namespace}}::IndexedPropertyDeleter(index, info);
   {% endif %}
 
   {% else %}{# otherwise, named property #}
@@ -316,9 +316,9 @@ void {{v8_class_or_partial}}::indexedPropertyDeleterCallback(uint32_t index, con
   const AtomicString& propertyName = AtomicString::Number(index);
 
   {% if deleter.is_custom %}
-  {{v8_class}}::namedPropertyDeleterCustom(propertyName, info);
+  {{v8_class}}::NamedPropertyDeleterCustom(propertyName, info);
   {% else %}
-  {{internal_namespace}}::namedPropertyDeleter(propertyName, info);
+  {{internal_namespace}}::NamedPropertyDeleter(propertyName, info);
   {% endif %}
 
   {% endif %}{# indexed_property_deleter #}
@@ -331,7 +331,7 @@ void {{v8_class_or_partial}}::indexedPropertyDeleterCallback(uint32_t index, con
 {##############################################################################}
 {% block indexed_property_definer_callback %}
 {% if indexed_property_getter %}
-void {{v8_class_or_partial}}::indexedPropertyDefinerCallback(
+void {{v8_class_or_partial}}::IndexedPropertyDefinerCallback(
     uint32_t index,
     const v8::PropertyDescriptor& desc,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -379,7 +379,7 @@ void {{v8_class_or_partial}}::indexedPropertyDefinerCallback(
 {% block named_property_getter %}
 {% if named_property_getter and not named_property_getter.is_custom %}
 {% set getter = named_property_getter %}
-static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void NamedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if getter.is_raises_exception %}
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "{{interface_name}}", nameInUtf8.data());
@@ -408,16 +408,16 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
 {% block named_property_getter_callback %}
 {% if named_property_getter %}
 {% set getter = named_property_getter %}
-void {{v8_class_or_partial}}::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::NamedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.named_property_getter_counter) }}
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
   {% if getter.is_custom %}
-  {{v8_class}}::namedPropertyGetterCustom(propertyName, info);
+  {{v8_class}}::NamedPropertyGetterCustom(propertyName, info);
   {% else %}
-  {{internal_namespace}}::namedPropertyGetter(propertyName, info);
+  {{internal_namespace}}::NamedPropertyGetter(propertyName, info);
   {% endif %}
 }
 
@@ -430,7 +430,7 @@ void {{v8_class_or_partial}}::namedPropertyGetterCallback(v8::Local<v8::Name> na
 {% from 'utilities.cc.tmpl' import v8_value_to_local_cpp_value %}
 {% if named_property_setter and not named_property_setter.is_custom %}
 {% set setter = named_property_setter %}
-static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void NamedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if setter.has_exception_state %}
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kSetterContext, "{{interface_name}}", nameInUtf8.data());
@@ -479,16 +479,16 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
 {% block named_property_setter_callback %}
 {% if named_property_setter %}
 {% set setter = named_property_setter %}
-void {{v8_class_or_partial}}::namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::NamedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.named_property_setter_counter) }}
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
   {% if setter.is_custom %}
-  {{v8_class}}::namedPropertySetterCustom(propertyName, v8Value, info);
+  {{v8_class}}::NamedPropertySetterCustom(propertyName, v8Value, info);
   {% else %}
-  {{internal_namespace}}::namedPropertySetter(propertyName, v8Value, info);
+  {{internal_namespace}}::NamedPropertySetter(propertyName, v8Value, info);
   {% endif %}
 }
 
@@ -500,7 +500,7 @@ void {{v8_class_or_partial}}::namedPropertySetterCallback(v8::Local<v8::Name> na
 {% block named_property_deleter %}
 {% if named_property_deleter and not named_property_deleter.is_custom %}
 {% set deleter = named_property_deleter %}
-static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+static void NamedPropertyDeleter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   {% if deleter.is_raises_exception %}
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kDeletionContext, "{{interface_name}}", nameInUtf8.data());
@@ -540,15 +540,15 @@ static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCal
 {% block named_property_deleter_callback %}
 {% if named_property_deleter %}
 {% set deleter = named_property_deleter %}
-void {{v8_class_or_partial}}::namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+void {{v8_class_or_partial}}::NamedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
   {% if deleter.is_custom %}
-  {{v8_class}}::namedPropertyDeleterCustom(propertyName, info);
+  {{v8_class}}::NamedPropertyDeleterCustom(propertyName, info);
   {% else %}
-  {{internal_namespace}}::namedPropertyDeleter(propertyName, info);
+  {{internal_namespace}}::NamedPropertyDeleter(propertyName, info);
   {% endif %}
 }
 
@@ -564,7 +564,7 @@ void {{v8_class_or_partial}}::namedPropertyDeleterCallback(v8::Local<v8::Name> n
 {# If there is an enumerator, there MUST be a query method to properly
    communicate property attributes. #}
 {% if indexed_property_getter %}
-static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+static void NamedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
 {% else %}
 {# If we do not have an indexed property getter, this function is called #}
 {# from namedPropertyDescriptor(), whose v8::PropertyCallbackInfo has a #}
@@ -573,7 +573,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
 {# TODO(rakuco): remove this hack once we switch named property handlers to #}
 {# using descriptor and definer callbacks (bug 764633). #}
 template <typename T>
-static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<T>& info) {
+static void NamedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<T>& info) {
 {% endif %}
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "{{interface_name}}", nameInUtf8.data());
@@ -615,16 +615,16 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
 {% block named_property_query_callback %}
 {% if named_property_getter and named_property_getter.is_enumerable %}
 {% set getter = named_property_getter %}
-void {{v8_class_or_partial}}::namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+void {{v8_class_or_partial}}::NamedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.named_property_query_counter) }}
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
   {% if getter.is_custom_property_query %}
-  {{v8_class}}::namedPropertyQueryCustom(propertyName, info);
+  {{v8_class}}::NamedPropertyQueryCustom(propertyName, info);
   {% else %}
-  {{internal_namespace}}::namedPropertyQuery(propertyName, info);
+  {{internal_namespace}}::NamedPropertyQuery(propertyName, info);
   {% endif %}
 }
 
@@ -636,7 +636,7 @@ void {{v8_class_or_partial}}::namedPropertyQueryCallback(v8::Local<v8::Name> nam
 {% block named_property_enumerator %}
 {% if named_property_getter and named_property_getter.is_enumerable and
       not named_property_getter.is_custom_property_enumerator %}
-static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
+static void NamedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kEnumerationContext, "{{interface_name}}");
 
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(info.Holder());
@@ -656,11 +656,11 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 {% block named_property_enumerator_callback %}
 {% if named_property_getter and named_property_getter.is_enumerable %}
 {% set getter = named_property_getter %}
-void {{v8_class_or_partial}}::namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
+void {{v8_class_or_partial}}::NamedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
   {% if getter.is_custom_property_enumerator %}
-  {{v8_class}}::namedPropertyEnumeratorCustom(info);
+  {{v8_class}}::NamedPropertyEnumeratorCustom(info);
   {% else %}
-  {{internal_namespace}}::namedPropertyEnumerator(info);
+  {{internal_namespace}}::NamedPropertyEnumerator(info);
   {% endif %}
 }
 
@@ -677,7 +677,7 @@ void {{v8_class_or_partial}}::namedPropertyEnumeratorCallback(const v8::Property
 static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info) {
   if (!name->IsString())
     return;
-  v8::Local<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.Holder(), info.GetIsolate());
+  v8::Local<v8::Object> holder = {{v8_class}}::FindInstanceInPrototypeChain(info.Holder(), info.GetIsolate());
   if (holder.IsEmpty())
     return;
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(holder);
@@ -724,7 +724,7 @@ void {{v8_class_or_partial}}::{{cpp_class}}OriginSafeMethodSetterCallback(v8::Lo
 #endif
 const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    {{v8_class}}Constructor::domTemplate,
+    {{v8_class}}Constructor::DomTemplate,
     {{install_conditional_features_func or 'nullptr'}},
     "{{interface_name}}",
     nullptr,
@@ -737,7 +737,7 @@ const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = {
 #endif
 
 {{generate_constructor(named_constructor)}}
-v8::Local<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+v8::Local<v8::FunctionTemplate> {{v8_class}}Constructor::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   static int domTemplateKey; // This address is used for a key to look up the dom template.
   V8PerIsolateData* data = V8PerIsolateData::From(isolate);
   v8::Local<v8::FunctionTemplate> result = data->FindInterfaceTemplate(world, &domTemplateKey);
@@ -748,7 +748,7 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate
   v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
   instanceTemplate->SetInternalFieldCount({{v8_class}}::internalFieldCount);
   result->SetClassName(V8AtomicString(isolate, "{{named_constructor.name}}"));
-  result->Inherit({{v8_class}}::domTemplate(isolate, world));
+  result->Inherit({{v8_class}}::DomTemplate(isolate, world));
   data->SetInterfaceTemplate(world, &domTemplateKey, result);
   return result;
 }
@@ -788,7 +788,7 @@ void {{v8_class}}Constructor::NamedConstructorAttributeGetter(
 {##############################################################################}
 {% block overloaded_constructor %}
 {% if constructor_overloads %}
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "{{interface_name}}");
   {# This follows the overload resolution algorithm. #}
   {# https://heycam.github.io/webidl/#dfn-overload-resolution-algorithm #}
@@ -801,7 +801,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
       {# Then resolve by testing argument #}
       {% for test, constructor in tests_constructors %}
       if ({{test}}) {
-        {{internal_namespace}}::constructor{{constructor.overload_index}}(info);
+        {{internal_namespace}}::Constructor{{constructor.overload_index}}(info);
         return;
       }
       {% if "exceptionState" in test %}
@@ -837,7 +837,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 {##############################################################################}
 {% block constructor_callback %}
 {% if constructors or has_custom_constructor or has_html_constructor %}
-void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void {{v8_class}}::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.constructor_counter) }}
   {% if measure_as %}
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{measure_as('Constructor')}});
@@ -853,11 +853,11 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
   }
 
   {% if has_custom_constructor %}
-  {{v8_class}}::constructorCustom(info);
+  {{v8_class}}::ConstructorCustom(info);
   {% elif has_html_constructor %}
   V8HTMLConstructor::HtmlConstructor(info, {{v8_class}}::wrapperTypeInfo, HTMLElementType::k{{interface_name}});
   {% else %}
-  {{internal_namespace}}::constructor(info);
+  {{internal_namespace}}::Constructor(info);
   {% endif %}
 }
 
@@ -873,7 +873,7 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
    properly supports the incumbent realm. #}
 {% set getter_callback =
        '%s::%sOriginSafeMethodGetterCallback' %
-       (v8_class_or_partial, method.name) %}
+       (v8_class_or_partial, method.camel_case_name) %}
 {% set setter_callback =
        '%s::%sOriginSafeMethodSetterCallback' % (v8_class_or_partial, cpp_class)
        if not method.is_unforgeable else 'nullptr' %}
@@ -892,7 +892,7 @@ static const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSaf
     {"{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds}
 {% endif %}
 };
-for (const auto& attributeConfig : {{method.name}}OriginSafeAttributeConfiguration)
+ for (const auto& attributeConfig : {{method.name}}OriginSafeAttributeConfiguration)
   V8DOMConfiguration::InstallAttribute(isolate, world, {{instance_template}}, {{prototype_template}}, attributeConfig);
 {%- endmacro %}
 
@@ -900,21 +900,21 @@ for (const auto& attributeConfig : {{method.name}}OriginSafeAttributeConfigurati
 {##############################################################################}
 {% macro install_indexed_property_handler(target) %}
 {% set indexed_property_getter_callback =
-       '%s::indexedPropertyGetterCallback' % v8_class_or_partial %}
+       '%s::IndexedPropertyGetterCallback' % v8_class_or_partial %}
 {% set indexed_property_setter_callback =
-       '%s::indexedPropertySetterCallback' % v8_class_or_partial
+       '%s::IndexedPropertySetterCallback' % v8_class_or_partial
        if indexed_property_getter or named_property_setter else 'nullptr' %}
 {% set indexed_property_descriptor_callback =
-       '%s::indexedPropertyDescriptorCallback' % v8_class_or_partial
+       '%s::IndexedPropertyDescriptorCallback' % v8_class_or_partial
        if indexed_property_getter or named_property_getter else 'nullptr' %}
 {% set indexed_property_deleter_callback =
-       '%s::indexedPropertyDeleterCallback' % v8_class_or_partial
+       '%s::IndexedPropertyDeleterCallback' % v8_class_or_partial
        if indexed_property_deleter or named_property_deleter else 'nullptr' %}
 {% set indexed_property_enumerator_callback =
        'IndexedPropertyEnumerator<%s>' % cpp_class
        if indexed_property_getter.is_enumerable else 'nullptr' %}
 {% set indexed_property_definer_callback =
-       '%s::indexedPropertyDefinerCallback' % v8_class_or_partial
+       '%s::IndexedPropertyDefinerCallback' % v8_class_or_partial
        if indexed_property_getter else 'nullptr' %}
 {% set property_handler_flags =
        'v8::PropertyHandlerFlags::kHasNoSideEffect'
@@ -935,18 +935,18 @@ v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
 {##############################################################################}
 {% macro install_named_property_handler(target) %}
 {% set named_property_getter_callback =
-       '%s::namedPropertyGetterCallback' % v8_class_or_partial %}
+       '%s::NamedPropertyGetterCallback' % v8_class_or_partial %}
 {% set named_property_setter_callback =
-       '%s::namedPropertySetterCallback' % v8_class_or_partial
+       '%s::NamedPropertySetterCallback' % v8_class_or_partial
        if named_property_setter else 'nullptr' %}
 {% set named_property_query_callback =
-       '%s::namedPropertyQueryCallback' % v8_class_or_partial
+       '%s::NamedPropertyQueryCallback' % v8_class_or_partial
        if named_property_getter.is_enumerable else 'nullptr' %}
 {% set named_property_deleter_callback =
-       '%s::namedPropertyDeleterCallback' % v8_class_or_partial
+       '%s::NamedPropertyDeleterCallback' % v8_class_or_partial
        if named_property_deleter else 'nullptr' %}
 {% set named_property_enumerator_callback =
-       '%s::namedPropertyEnumeratorCallback' % v8_class_or_partial
+       '%s::NamedPropertyEnumeratorCallback' % v8_class_or_partial
        if named_property_getter.is_enumerable else 'nullptr' %}
 {% set property_handler_flags_list =
        ['int(v8::PropertyHandlerFlags::kOnlyInterceptStrings)'] %}
@@ -969,8 +969,8 @@ v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig({{named_propert
 {##############################################################################}
 {% block get_dom_template %}
 {% if not is_array_buffer_or_view %}
-v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  {% set installTemplateFunction = '%s::install%sTemplateFunction' % (v8_class, v8_class) if has_partial_interface else 'install%sTemplate' % v8_class %}
+v8::Local<v8::FunctionTemplate> {{v8_class}}::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  {% set installTemplateFunction = '%s::install%sTemplateFunction' % (v8_class, v8_class) if has_partial_interface else 'Install%sTemplate' % v8_class %}
   return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), {{installTemplateFunction}});
 }
 
@@ -981,8 +981,8 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate, 
 {##############################################################################}
 {% block get_dom_template_for_named_properties_object %}
 {% if has_named_properties_object %}
-v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplateForNamedPropertiesObject(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  v8::Local<v8::FunctionTemplate> parentTemplate = V8{{parent_interface}}::domTemplate(isolate, world);
+v8::Local<v8::FunctionTemplate> {{v8_class}}::DomTemplateForNamedPropertiesObject(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  v8::Local<v8::FunctionTemplate> parentTemplate = V8{{parent_interface}}::DomTemplate(isolate, world);
 
   v8::Local<v8::FunctionTemplate> namedPropertiesObjectFunctionTemplate = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::IsValidConstructorMode);
   namedPropertiesObjectFunctionTemplate->SetClassName(V8AtomicString(isolate, "{{interface_name}}Properties"));
@@ -1006,11 +1006,11 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplateForNamedPropertiesObjec
 {% block has_instance %}
 {% if not is_array_buffer_or_view %}
 
-bool {{v8_class}}::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool {{v8_class}}::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> {{v8_class}}::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
@@ -1115,7 +1115,7 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
 {% if is_array_buffer_or_view %}
   return value->Is{{interface_name}}() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 {% else %}
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 {% endif %}
 }
 
@@ -1151,7 +1151,7 @@ InstallRuntimeEnabledFeaturesOnTemplateFunction
 {% endif %}
 
 InstallTemplateFunction {{v8_class}}::install{{v8_class}}TemplateFunction =
-    &{{v8_class}}::install{{v8_class}}Template;
+    &{{v8_class}}::Install{{v8_class}}Template;
 
 void {{v8_class}}::UpdateWrapperTypeInfo(
     InstallTemplateFunction install_template_function,
@@ -1180,7 +1180,7 @@ void {{v8_class}}::UpdateWrapperTypeInfo(
 }
 
 {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
-void {{v8_class}}::register{{method.name | blink_capitalize}}MethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&)) {
+void {{v8_class}}::Register{{method.camel_case_name}}MethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&)) {
   {{internal_namespace}}::{{method.name}}MethodForPartialInterface = method;
 }
 

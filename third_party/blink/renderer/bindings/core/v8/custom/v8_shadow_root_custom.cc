@@ -14,7 +14,7 @@ namespace blink {
 
 // HTMLShadowRoot --------------------------------------------------------------
 
-void V8ShadowRoot::innerHTMLAttributeSetterCustom(
+void V8ShadowRoot::InnerHTMLAttributeSetterCustom(
     v8::Local<v8::Value> value,
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();

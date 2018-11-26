@@ -27,19 +27,19 @@ namespace blink {
 class V8TestInterfaceCustomConstructor {
   STATIC_ONLY(V8TestInterfaceCustomConstructor);
  public:
-  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  CORE_EXPORT static bool HasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> FindInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestInterfaceCustomConstructor* ToImpl(v8::Local<v8::Object> object) {
     return ToScriptWrappable(object)->ToImpl<TestInterfaceCustomConstructor>();
   }
   CORE_EXPORT static TestInterfaceCustomConstructor* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+  static void ConstructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
-  CORE_EXPORT static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   static void InstallRuntimeEnabledFeaturesOnTemplate(
       v8::Isolate*,

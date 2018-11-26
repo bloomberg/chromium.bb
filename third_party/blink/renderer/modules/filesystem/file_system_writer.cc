@@ -27,11 +27,11 @@ ScriptPromise FileSystemWriter::write(ScriptState* script_state,
                                       ScriptValue data,
                                       ExceptionState& exception_state) {
   v8::Isolate* isolate = script_state->GetIsolate();
-  if (V8Blob::hasInstance(data.V8Value(), isolate)) {
+  if (V8Blob::HasInstance(data.V8Value(), isolate)) {
     Blob* blob = V8Blob::ToImpl(data.V8Value().As<v8::Object>());
     return WriteBlob(script_state, position, blob);
   }
-  if (!V8ReadableStream::hasInstance(data.V8Value(), isolate)) {
+  if (!V8ReadableStream::HasInstance(data.V8Value(), isolate)) {
     if (!exception_state.HadException())
       exception_state.ThrowTypeError("data should be a Blob or ReadableStream");
     return ScriptPromise();

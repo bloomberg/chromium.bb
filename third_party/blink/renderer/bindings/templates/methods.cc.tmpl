@@ -10,7 +10,7 @@ RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "{{counter}}");
 {% endmacro %}
 
 {% macro generate_method(method, world_suffix) %}
-static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void {{method.camel_case_name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {% filter format_remove_duplicates([
       'ExceptionState exceptionState',
       'ScriptState* scriptState = ']) %}
@@ -35,7 +35,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   {% if method.returns_promise %}
   // V8DOMConfiguration::kDoNotCheckHolder
   // Make sure that info.Holder() really points to an instance of the type.
-  if (!{{v8_class}}::hasInstance(info.Holder(), info.GetIsolate())) {
+  if (!{{v8_class}}::HasInstance(info.Holder(), info.GetIsolate())) {
     {{throw_type_error(method, '"Illegal invocation"')}}
     return;
   }
@@ -55,7 +55,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   {{define_exception_state}}
   if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), {{method.cpp_value}}, BindingSecurity::ErrorReportOption::kDoNotReport)) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      WebFeature::kCrossOrigin{{interface_name}}{{method.name|blink_capitalize}});
+                      WebFeature::kCrossOrigin{{interface_name}}{{method.camel_case_name}});
     V8SetReturnValueNull(info);
     return;
   }
@@ -206,7 +206,7 @@ if (info[{{argument.index}}]->IsFunction()) {
 }
 {% elif argument.is_variadic_wrapper_type %}
 for (int i = {{argument.index}}; i < info.Length(); ++i) {
-  if (!V8{{argument.idl_type}}::hasInstance(info[i], info.GetIsolate())) {
+  if (!V8{{argument.idl_type}}::HasInstance(info[i], info.GetIsolate())) {
     {{throw_argument_error(method, argument, "parameter %(index)d is not of type '%(type)s'.")}}
     return;
   }
@@ -275,7 +275,7 @@ if (!{{argument.name}}.IsUndefinedOrNull() && !{{argument.name}}.IsObject()) {
 {######################################}
 {% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
 {% if method.is_custom_call_prologue %}
-{{v8_class}}::{{method.name}}MethodPrologueCustom(info, impl);
+{{v8_class}}::{{method.camel_case_name}}MethodPrologueCustom(info, impl);
 {% endif %}
 {# Local variables #}
 {% if method.is_call_with_execution_context %}
@@ -339,7 +339,7 @@ else
 {% endif %}
 {%- endif %}{# None for void #}
 {% if method.is_custom_call_epilogue %}
-{{v8_class}}::{{method.name}}MethodEpilogueCustom(info, impl);
+{{v8_class}}::{{method.camel_case_name}}MethodEpilogueCustom(info, impl);
 {% endif %}
 {% endmacro %}
 
@@ -365,7 +365,7 @@ V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToE
 
 {##############################################################################}
 {% macro runtime_determined_length_method(overloads) %}
-static int {{overloads.name}}MethodLength() {
+static int {{overloads.camel_case_name}}MethodLength() {
   {% for length, runtime_enabled_features in overloads.runtime_determined_lengths %}
   {% for runtime_enabled_feature in runtime_enabled_features %}
   {% filter runtime_enabled(runtime_enabled_feature) %}
@@ -379,7 +379,7 @@ static int {{overloads.name}}MethodLength() {
 
 {##############################################################################}
 {% macro runtime_determined_maxarg_method(overloads) %}
-static int {{overloads.name}}MethodMaxArg() {
+static int {{overloads.camel_case_name}}MethodMaxArg() {
   {% for length, runtime_enabled_features in overloads.runtime_determined_maxargs %}
   {% for name in runtime_enabled_features %}
   {% filter runtime_enabled(name) %}
@@ -393,7 +393,7 @@ static int {{overloads.name}}MethodMaxArg() {
 
 {##############################################################################}
 {% macro overload_resolution_method(overloads, world_suffix) %}
-static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void {{overloads.camel_case_name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {% set fall_through_to_partial_overloads = not is_partial and overloads.has_partial_overloads %}
 
   {% if overloads.measure_all_as %}
@@ -480,7 +480,7 @@ if ({{test}}) {
   {% if method.deprecate_as and not overloads.deprecate_all_as %}
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.deprecate_as}});
   {% endif %}
-  {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
+  {{method.camel_case_name}}{{method.overload_index}}Method{{world_suffix}}(info);
   return;
 }
 {% endmacro %}
@@ -489,7 +489,7 @@ if ({{test}}) {
 
 {##############################################################################}
 {% macro method_callback(method, world_suffix) %}
-void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::{{method.camel_case_name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {% if method.runtime_call_stats.extended_attribute_defined %}
   {{ runtime_timer_scope(method.runtime_call_stats.method_counter) | trim | indent(2) }}
   {% else %}
@@ -515,9 +515,9 @@ void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(cons
   }
   {% endif %}
   {% if method.is_custom %}
-  {{v8_class}}::{{method.name}}MethodCustom(info);
+  {{v8_class}}::{{method.camel_case_name}}MethodCustom(info);
   {% else %}
-  {{internal_namespace}}::{{method.name}}Method{{world_suffix}}(info);
+  {{internal_namespace}}::{{method.camel_case_name}}Method{{world_suffix}}(info);
   {% endif %}
 }
 {% endmacro %}
@@ -528,14 +528,14 @@ void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(cons
 {# TODO(dcheng): Currently, bindings must create a function object for each
    realm as a hack to support the incumbent realm. Clean this up when Blink
    properly supports the incumbent realm. #}
-static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void {{method.camel_case_name}}OriginSafeMethodGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info) {
   static int domTemplateKey; // This address is used for a key to look up the dom template.
   V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
   const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interfaceTemplate = data->FindInterfaceTemplate(world, &{{v8_class}}::wrapperTypeInfo);
   v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interfaceTemplate);
 
-  v8::Local<v8::FunctionTemplate> methodTemplate = data->FindOrCreateOperationTemplate(world, &domTemplateKey, {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}, v8::Local<v8::Value>(), signature, {{method.length}});
+  v8::Local<v8::FunctionTemplate> methodTemplate = data->FindOrCreateOperationTemplate(world, &domTemplateKey, {{v8_class_or_partial}}::{{method.camel_case_name}}MethodCallback{{world_suffix}}, v8::Local<v8::Value>(), signature, {{method.length}});
   // Return the function by default, unless the user script has overwritten it.
   V8SetReturnValue(info, methodTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
 
@@ -558,9 +558,9 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
 {% endmacro %}
 
 {% macro origin_safe_method_getter_callback(method, world_suffix) %}
-void {{v8_class_or_partial}}::{{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::{{method.camel_case_name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(method.runtime_call_stats.origin_safe_method_getter_counter) }}
-  {{internal_namespace}}::{{method.name}}OriginSafeMethodGetter{{world_suffix}}(info);
+  {{internal_namespace}}::{{method.camel_case_name}}OriginSafeMethodGetter{{world_suffix}}(info);
 }
 {% endmacro %}
 
@@ -569,7 +569,7 @@ void {{v8_class_or_partial}}::{{method.name}}OriginSafeMethodGetterCallback{{wor
 {% macro generate_constructor(constructor) %}
 {% set name = '%sConstructorCallback' % v8_class
               if constructor.is_named_constructor else
-              'constructor%s' % (constructor.overload_index or '') %}
+              'Constructor%s' % (constructor.overload_index or '') %}
 static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(constructor.rcs_counter) }}
   {% set function_call = func_call_with_prep_of_args(constructor) %}
@@ -614,9 +614,9 @@ V8SetReturnValue(info, wrapper);
 {% macro method_configuration(method) %}
 {% from 'utilities.cc.tmpl' import property_location %}
 {% set method_callback =
-       '%s::%sMethodCallback' % (v8_class_or_partial, method.name) %}
+       '%s::%sMethodCallback' % (v8_class_or_partial, method.camel_case_name) %}
 {% set method_callback_for_main_world =
-       '%s::%sMethodCallbackForMainWorld' % (v8_class_or_partial, method.name)
+       '%s::%sMethodCallbackForMainWorld' % (v8_class_or_partial, method.camel_case_name)
        if method.is_per_world_bindings else 'nullptr' %}
 {% set property_attribute =
        'static_cast<v8::PropertyAttribute>(%s)' % ' | '.join(method.property_attributes)
@@ -627,7 +627,7 @@ V8SetReturnValue(info, wrapper);
        if method.is_check_security_for_receiver else 'V8DOMConfiguration::kDoNotCheckAccess' %}
 {% if method.is_per_world_bindings %}
 {% set method_callback_for_main_world =
-       '%s::%sMethodCallbackForMainWorld' % (v8_class_or_partial, method.name) %}
+       '%s::%sMethodCallbackForMainWorld' % (v8_class_or_partial, method.camel_case_name) %}
 {"{{method.name}}", {{method_callback_for_main_world}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, {{method.side_effect_type}}, V8DOMConfiguration::kMainWorld},
 {"{{method.name}}", {{method_callback}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, {{method.side_effect_type}}, V8DOMConfiguration::kNonMainWorlds}
 {%- else %}

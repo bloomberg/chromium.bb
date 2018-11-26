@@ -65,14 +65,14 @@ void GetIndexedOrNamed(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8SetReturnValue(info, result);
 }
 
-void V8HTMLAllCollection::legacyCallCustom(
+void V8HTMLAllCollection::LegacyCallCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(
       info.GetIsolate(), "Blink_V8HTMLAllCollection_legacyCallCustom");
   GetIndexedOrNamed(info);
 }
 
-void V8HTMLAllCollection::itemMethodCustom(
+void V8HTMLAllCollection::ItemMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(
       info.GetIsolate(), "Blink_V8HTMLAllCollection_itemMethodCustom");

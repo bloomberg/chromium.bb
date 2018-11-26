@@ -73,7 +73,7 @@ void V8ByteStringOrNodeList::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
   if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
-  if (V8NodeList::hasInstance(v8Value, isolate)) {
+  if (V8NodeList::HasInstance(v8Value, isolate)) {
     NodeList* cppValue = V8NodeList::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.SetNodeList(cppValue);
     return;

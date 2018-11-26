@@ -1139,7 +1139,7 @@ Response InspectorDOMAgent::NodeForRemoteObjectId(const String& object_id,
   if (!v8_session_->unwrapObject(&error, ToV8InspectorStringView(object_id),
                                  &value, &context, nullptr))
     return Response::Error(ToCoreString(std::move(error)));
-  if (!V8Node::hasInstance(value, isolate_))
+  if (!V8Node::HasInstance(value, isolate_))
     return Response::Error("Object id doesn't reference a Node");
   node = V8Node::ToImpl(v8::Local<v8::Object>::Cast(value));
   if (!node) {

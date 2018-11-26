@@ -35,7 +35,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestInterfaceNamedConstructor::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInterfaceNamedConstructor::domTemplate,
+    V8TestInterfaceNamedConstructor::DomTemplate,
     nullptr,
     "TestInterfaceNamedConstructor",
     nullptr,
@@ -69,7 +69,7 @@ namespace test_interface_named_constructor_v8_internal {
 
 }  // namespace test_interface_named_constructor_v8_internal
 
-void V8TestInterfaceNamedConstructor::testNamedConstructorConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceNamedConstructor::TestNamedConstructorConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNamedConstructor_testNamedConstructorConstructorAttribute_ConstructorGetterCallback");
 
   V8TestNamedConstructor::NamedConstructorAttributeGetter(property, info);
@@ -82,7 +82,7 @@ void V8TestInterfaceNamedConstructor::testNamedConstructorConstructorAttributeCo
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNamedConstructorAttributes[] = {
-    { "testNamedConstructorConstructorAttribute", V8TestInterfaceNamedConstructor::testNamedConstructorConstructorAttributeConstructorGetterCallback, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kReplaceWithDataProperty, V8DOMConfiguration::kAllWorlds },
+    { "testNamedConstructorConstructorAttribute", V8TestInterfaceNamedConstructor::TestNamedConstructorConstructorAttributeConstructorGetterCallback, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kReplaceWithDataProperty, V8DOMConfiguration::kAllWorlds },
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
@@ -96,7 +96,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNamedCons
 #endif
 const WrapperTypeInfo V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInterfaceNamedConstructorConstructor::domTemplate,
+    V8TestInterfaceNamedConstructorConstructor::DomTemplate,
     nullptr,
     "TestInterfaceNamedConstructor",
     nullptr,
@@ -190,7 +190,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
   V8SetReturnValue(info, wrapper);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructorConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructorConstructor::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   static int domTemplateKey; // This address is used for a key to look up the dom template.
   V8PerIsolateData* data = V8PerIsolateData::From(isolate);
   v8::Local<v8::FunctionTemplate> result = data->FindInterfaceTemplate(world, &domTemplateKey);
@@ -201,7 +201,7 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructorConstructor::domT
   v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
   instanceTemplate->SetInternalFieldCount(V8TestInterfaceNamedConstructor::internalFieldCount);
   result->SetClassName(V8AtomicString(isolate, "Audio"));
-  result->Inherit(V8TestInterfaceNamedConstructor::domTemplate(isolate, world));
+  result->Inherit(V8TestInterfaceNamedConstructor::DomTemplate(isolate, world));
   data->SetInterfaceTemplate(world, &domTemplateKey, result);
   return result;
 }
@@ -235,7 +235,7 @@ void V8TestInterfaceNamedConstructorConstructor::NamedConstructorAttributeGetter
   V8SetReturnValue(info, namedConstructor);
 }
 
-static void installV8TestInterfaceNamedConstructorTemplate(
+static void InstallV8TestInterfaceNamedConstructorTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -276,20 +276,20 @@ void V8TestInterfaceNamedConstructor::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceNamedConstructorTemplate);
+v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestInterfaceNamedConstructorTemplate);
 }
 
-bool V8TestInterfaceNamedConstructor::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestInterfaceNamedConstructor::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestInterfaceNamedConstructor::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestInterfaceNamedConstructor::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceNamedConstructor* V8TestInterfaceNamedConstructor::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterfaceNamedConstructor* NativeValueTraits<TestInterfaceNamedConstructor>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

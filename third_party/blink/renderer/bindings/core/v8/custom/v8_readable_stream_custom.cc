@@ -13,7 +13,7 @@
 
 namespace blink {
 
-void V8ReadableStream::constructorCustom(
+void V8ReadableStream::ConstructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(
       info.GetIsolate(), "Blink_ReadableStream_ConstructorCallback");

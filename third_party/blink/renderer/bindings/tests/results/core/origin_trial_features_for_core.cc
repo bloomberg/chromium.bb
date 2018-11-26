@@ -51,7 +51,7 @@ void InstallOriginTrialFeaturesForCore(
     if (settings && settings->isMojoJSEnabled()) {
       v8::Local<v8::Object> instance_object =
           script_state->GetContext()->Global();
-      V8Window::installMojoJS(isolate, world, instance_object, prototype_object,
+      V8Window::InstallMojoJS(isolate, world, instance_object, prototype_object,
                               interface_object);
     }
   }
@@ -59,7 +59,7 @@ void InstallOriginTrialFeaturesForCore(
   // and OriginTrialFeaturesForModules into a block.
   if (wrapper_type_info == &V8TestObject::wrapperTypeInfo) {
     if (origin_trials::FeatureNameEnabled(execution_context)) {
-      V8TestObject::installFeatureName(
+      V8TestObject::InstallFeatureName(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }
   }
@@ -79,7 +79,7 @@ void InstallPendingOriginTrialFeatureForCore(const String& feature,
   if (feature == origin_trials::kFeatureNameTrialName) {
     if (context_data->GetExistingConstructorAndPrototypeForType(
             &V8TestObject::wrapperTypeInfo, &prototype_object, &interface_object)) {
-      V8TestObject::installFeatureName(
+      V8TestObject::InstallFeatureName(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }
   }

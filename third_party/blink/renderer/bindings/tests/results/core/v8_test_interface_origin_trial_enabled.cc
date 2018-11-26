@@ -32,7 +32,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestInterfaceOriginTrialEnabled::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInterfaceOriginTrialEnabled::domTemplate,
+    V8TestInterfaceOriginTrialEnabled::DomTemplate,
     nullptr,
     "TestInterfaceOriginTrialEnabled",
     nullptr,
@@ -64,7 +64,7 @@ static_assert(
 
 namespace test_interface_origin_trial_enabled_v8_internal {
 
-static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void DoubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::ToImpl(holder);
@@ -72,7 +72,7 @@ static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
   V8SetReturnValue(info, impl->doubleAttribute());
 }
 
-static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void DoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -91,7 +91,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   impl->setDoubleAttribute(cppValue);
 }
 
-static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ConditionalLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::ToImpl(holder);
@@ -99,7 +99,7 @@ static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackIn
   V8SetReturnValueInt(info, impl->conditionalLongAttribute());
 }
 
-static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ConditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -118,7 +118,7 @@ static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   impl->setConditionalLongAttribute(cppValue);
 }
 
-static void conditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ConditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::ToImpl(holder);
@@ -126,11 +126,11 @@ static void conditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCa
   V8SetReturnValueInt(info, impl->conditionalReadOnlyLongAttribute());
 }
 
-static void staticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void StaticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8SetReturnValueString(info, TestInterfaceOriginTrialEnabled::staticStringAttribute(), info.GetIsolate());
 }
 
-static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void StaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -145,11 +145,11 @@ static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   TestInterfaceOriginTrialEnabled::setStaticStringAttribute(cppValue);
 }
 
-static void staticConditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void StaticConditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8SetReturnValueInt(info, TestInterfaceOriginTrialEnabled::staticConditionalReadOnlyLongAttribute());
 }
 
-static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void VoidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodDoubleArgFloatArg");
 
   TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::ToImpl(info.Holder());
@@ -172,13 +172,13 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
   impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
 }
 
-static void voidMethodPartialOverload1Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void VoidMethodPartialOverload1Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::ToImpl(info.Holder());
 
   impl->voidMethodPartialOverload();
 }
 
-static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void VoidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodPartialOverload");
 
   TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::ToImpl(info.Holder());
@@ -191,19 +191,19 @@ static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::
   impl->voidMethodPartialOverload(doubleArg);
 }
 
-static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void VoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   bool isArityError = false;
 
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        voidMethodPartialOverload1Method(info);
+        VoidMethodPartialOverload1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        voidMethodPartialOverload2Method(info);
+        VoidMethodPartialOverload2Method(info);
         return;
       }
       break;
@@ -219,83 +219,83 @@ static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
 
 }  // namespace test_interface_origin_trial_enabled_v8_internal
 
-void V8TestInterfaceOriginTrialEnabled::doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceOriginTrialEnabled::DoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_doubleAttribute_Getter");
 
-  test_interface_origin_trial_enabled_v8_internal::doubleAttributeAttributeGetter(info);
+  test_interface_origin_trial_enabled_v8_internal::DoubleAttributeAttributeGetter(info);
 }
 
-void V8TestInterfaceOriginTrialEnabled::doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceOriginTrialEnabled::DoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_doubleAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  test_interface_origin_trial_enabled_v8_internal::doubleAttributeAttributeSetter(v8Value, info);
+  test_interface_origin_trial_enabled_v8_internal::DoubleAttributeAttributeSetter(v8Value, info);
 }
 
-void V8TestInterfaceOriginTrialEnabled::conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceOriginTrialEnabled::ConditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_conditionalLongAttribute_Getter");
 
-  test_interface_origin_trial_enabled_v8_internal::conditionalLongAttributeAttributeGetter(info);
+  test_interface_origin_trial_enabled_v8_internal::ConditionalLongAttributeAttributeGetter(info);
 }
 
-void V8TestInterfaceOriginTrialEnabled::conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceOriginTrialEnabled::ConditionalLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_conditionalLongAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  test_interface_origin_trial_enabled_v8_internal::conditionalLongAttributeAttributeSetter(v8Value, info);
+  test_interface_origin_trial_enabled_v8_internal::ConditionalLongAttributeAttributeSetter(v8Value, info);
 }
 
-void V8TestInterfaceOriginTrialEnabled::conditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceOriginTrialEnabled::ConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_conditionalReadOnlyLongAttribute_Getter");
 
-  test_interface_origin_trial_enabled_v8_internal::conditionalReadOnlyLongAttributeAttributeGetter(info);
+  test_interface_origin_trial_enabled_v8_internal::ConditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
-void V8TestInterfaceOriginTrialEnabled::staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceOriginTrialEnabled::StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_staticStringAttribute_Getter");
 
-  test_interface_origin_trial_enabled_v8_internal::staticStringAttributeAttributeGetter(info);
+  test_interface_origin_trial_enabled_v8_internal::StaticStringAttributeAttributeGetter(info);
 }
 
-void V8TestInterfaceOriginTrialEnabled::staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceOriginTrialEnabled::StaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_staticStringAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  test_interface_origin_trial_enabled_v8_internal::staticStringAttributeAttributeSetter(v8Value, info);
+  test_interface_origin_trial_enabled_v8_internal::StaticStringAttributeAttributeSetter(v8Value, info);
 }
 
-void V8TestInterfaceOriginTrialEnabled::staticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceOriginTrialEnabled::StaticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_staticConditionalReadOnlyLongAttribute_Getter");
 
-  test_interface_origin_trial_enabled_v8_internal::staticConditionalReadOnlyLongAttributeAttributeGetter(info);
+  test_interface_origin_trial_enabled_v8_internal::StaticConditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
-void V8TestInterfaceOriginTrialEnabled::voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceOriginTrialEnabled::VoidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_voidMethodDoubleArgFloatArg");
 
-  test_interface_origin_trial_enabled_v8_internal::voidMethodDoubleArgFloatArgMethod(info);
+  test_interface_origin_trial_enabled_v8_internal::VoidMethodDoubleArgFloatArgMethod(info);
 }
 
-void V8TestInterfaceOriginTrialEnabled::voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceOriginTrialEnabled::VoidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_voidMethodPartialOverload");
 
-  test_interface_origin_trial_enabled_v8_internal::voidMethodPartialOverloadMethod(info);
+  test_interface_origin_trial_enabled_v8_internal::VoidMethodPartialOverloadMethod(info);
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceOriginTrialEnabledAccessors[] = {
-    { "doubleAttribute", V8TestInterfaceOriginTrialEnabled::doubleAttributeAttributeGetterCallback, V8TestInterfaceOriginTrialEnabled::doubleAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "staticStringAttribute", V8TestInterfaceOriginTrialEnabled::staticStringAttributeAttributeGetterCallback, V8TestInterfaceOriginTrialEnabled::staticStringAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "doubleAttribute", V8TestInterfaceOriginTrialEnabled::DoubleAttributeAttributeGetterCallback, V8TestInterfaceOriginTrialEnabled::DoubleAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "staticStringAttribute", V8TestInterfaceOriginTrialEnabled::StaticStringAttributeAttributeGetterCallback, V8TestInterfaceOriginTrialEnabled::StaticStringAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceOriginTrialEnabledMethods[] = {
-    {"voidMethodDoubleArgFloatArg", V8TestInterfaceOriginTrialEnabled::voidMethodDoubleArgFloatArgMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodPartialOverload", V8TestInterfaceOriginTrialEnabled::voidMethodPartialOverloadMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodDoubleArgFloatArg", V8TestInterfaceOriginTrialEnabled::VoidMethodDoubleArgFloatArgMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodPartialOverload", V8TestInterfaceOriginTrialEnabled::VoidMethodPartialOverloadMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
 };
 
-static void installV8TestInterfaceOriginTrialEnabledTemplate(
+static void InstallV8TestInterfaceOriginTrialEnabledTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -347,9 +347,9 @@ void V8TestInterfaceOriginTrialEnabled::InstallRuntimeEnabledFeaturesOnTemplate(
 
   if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
     static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
-        { "conditionalReadOnlyLongAttribute", V8TestInterfaceOriginTrialEnabled::conditionalReadOnlyLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-        { "staticConditionalReadOnlyLongAttribute", V8TestInterfaceOriginTrialEnabled::staticConditionalReadOnlyLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-        { "conditionalLongAttribute", V8TestInterfaceOriginTrialEnabled::conditionalLongAttributeAttributeGetterCallback, V8TestInterfaceOriginTrialEnabled::conditionalLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+        { "conditionalReadOnlyLongAttribute", V8TestInterfaceOriginTrialEnabled::ConditionalReadOnlyLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+        { "staticConditionalReadOnlyLongAttribute", V8TestInterfaceOriginTrialEnabled::StaticConditionalReadOnlyLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+        { "conditionalLongAttribute", V8TestInterfaceOriginTrialEnabled::ConditionalLongAttributeAttributeGetterCallback, V8TestInterfaceOriginTrialEnabled::ConditionalLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     };
     V8DOMConfiguration::InstallAccessors(
         isolate, world, instance_template, prototype_template, interface_template,
@@ -360,20 +360,20 @@ void V8TestInterfaceOriginTrialEnabled::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceOriginTrialEnabled::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceOriginTrialEnabledTemplate);
+v8::Local<v8::FunctionTemplate> V8TestInterfaceOriginTrialEnabled::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestInterfaceOriginTrialEnabledTemplate);
 }
 
-bool V8TestInterfaceOriginTrialEnabled::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestInterfaceOriginTrialEnabled::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestInterfaceOriginTrialEnabled::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestInterfaceOriginTrialEnabled::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceOriginTrialEnabled* V8TestInterfaceOriginTrialEnabled::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterfaceOriginTrialEnabled* NativeValueTraits<TestInterfaceOriginTrialEnabled>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

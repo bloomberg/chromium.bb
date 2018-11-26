@@ -134,7 +134,7 @@ TEST(ReadableStreamOperationsTest, IsReadableStream) {
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
                    scope.GetScriptState(), stream, ASSERT_NO_EXCEPTION)
                    .value_or(false));
-  ASSERT_TRUE(V8ReadableStream::hasInstance(stream.V8Value().As<v8::Object>(),
+  ASSERT_TRUE(V8ReadableStream::HasInstance(stream.V8Value().As<v8::Object>(),
                                             scope.GetIsolate()));
 
   ScriptValue internal_stream =

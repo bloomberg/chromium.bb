@@ -68,7 +68,7 @@ void V8TestInterface2OrUint8Array::ToImpl(v8::Isolate* isolate, v8::Local<v8::Va
   if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
-  if (V8TestInterface2::hasInstance(v8Value, isolate)) {
+  if (V8TestInterface2::HasInstance(v8Value, isolate)) {
     TestInterface2* cppValue = V8TestInterface2::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.SetTestInterface2(cppValue);
     return;

@@ -28,9 +28,9 @@ namespace blink {
 class V8TestNode {
   STATIC_ONLY(V8TestNode);
  public:
-  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  CORE_EXPORT static bool HasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> FindInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestNode* ToImpl(v8::Local<v8::Object> object) {
     return ToScriptWrappable(object)->ToImpl<TestNode>();
   }
@@ -39,16 +39,16 @@ class V8TestNode {
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
-  CORE_EXPORT static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
-  CORE_EXPORT static void hrefAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void hrefAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void hrefThrowsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void hrefThrowsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void hrefCallWithAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void hrefCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void hrefByteStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void hrefByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HrefAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HrefAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HrefThrowsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HrefThrowsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HrefCallWithAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HrefCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HrefByteStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HrefByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   static void InstallRuntimeEnabledFeaturesOnTemplate(
       v8::Isolate*,

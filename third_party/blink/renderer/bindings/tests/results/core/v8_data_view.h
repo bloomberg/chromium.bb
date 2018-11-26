@@ -37,10 +37,10 @@ class V8DataView {
 
   // Callback functions
 
-  CORE_EXPORT static void getUint8MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void getFloat64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void setUint8MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void setFloat64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void GetUint8MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void GetFloat64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void SetUint8MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void SetFloat64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 template <>

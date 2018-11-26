@@ -44,7 +44,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestTypedefs::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestTypedefs::domTemplate,
+    V8TestTypedefs::DomTemplate,
     nullptr,
     "TestTypedefs",
     nullptr,
@@ -76,7 +76,7 @@ static_assert(
 
 namespace test_typedefs_v8_internal {
 
-static void uLongLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ULongLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(holder);
@@ -84,7 +84,7 @@ static void uLongLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8:
   V8SetReturnValue(info, static_cast<double>(impl->uLongLongAttribute()));
 }
 
-static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ULongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -103,7 +103,7 @@ static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   impl->setULongLongAttribute(cppValue);
 }
 
-static void longWithClampAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void LongWithClampAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(holder);
@@ -111,7 +111,7 @@ static void longWithClampAttributeAttributeGetter(const v8::FunctionCallbackInfo
   V8SetReturnValueInt(info, impl->longWithClampAttribute());
 }
 
-static void longWithClampAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void LongWithClampAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -130,7 +130,7 @@ static void longWithClampAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   impl->setLongWithClampAttribute(cppValue);
 }
 
-static void domStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void DOMStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(holder);
@@ -141,7 +141,7 @@ static void domStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCa
   V8SetReturnValue(info, result);
 }
 
-static void domStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void DOMStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -161,7 +161,7 @@ static void domStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value>
   impl->setDomStringOrDoubleOrNullAttribute(cppValue);
 }
 
-static void voidMethodLongSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void VoidMethodLongSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodLongSequenceArg");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
@@ -184,7 +184,7 @@ static void voidMethodLongSequenceArgMethod(const v8::FunctionCallbackInfo<v8::V
   impl->voidMethodLongSequenceArg(longSequenceArg);
 }
 
-static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void VoidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodFloatArgStringArg");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
@@ -207,7 +207,7 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
   impl->voidMethodFloatArgStringArg(floatArg, stringArg);
 }
 
-static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void VoidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodTestCallbackInterfaceTypeArg");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
@@ -232,7 +232,7 @@ static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
   impl->voidMethodTestCallbackInterfaceTypeArg(testCallbackInterfaceTypeArg);
 }
 
-static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ULongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "uLongLongMethodTestInterfaceEmptyTypeSequenceArg");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
@@ -250,7 +250,7 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::Fun
   V8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
 }
 
-static void testInterfaceOrTestInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void TestInterfaceOrTestInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   TestInterfaceOrTestInterfaceEmpty result;
@@ -258,7 +258,7 @@ static void testInterfaceOrTestInterfaceEmptyMethodMethod(const v8::FunctionCall
   V8SetReturnValue(info, result);
 }
 
-static void domStringOrDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void DOMStringOrDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   StringOrDouble result;
@@ -266,7 +266,7 @@ static void domStringOrDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Val
   V8SetReturnValue(info, result);
 }
 
-static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ArrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "arrayOfStringsMethodArrayOfStringsArg");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
@@ -284,7 +284,7 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
   V8SetReturnValue(info, FreezeV8Object(ToV8(impl->arrayOfStringsMethodArrayOfStringsArg(frozenStringArrayArg), info.Holder(), info.GetIsolate()), info.GetIsolate()));
 }
 
-static void methodTakingRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void MethodTakingRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "methodTakingRecord");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
@@ -302,7 +302,7 @@ static void methodTakingRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   impl->methodTakingRecord(arg);
 }
 
-static void methodTakingOilpanValueRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void MethodTakingOilpanValueRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "methodTakingOilpanValueRecord");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
@@ -320,7 +320,7 @@ static void methodTakingOilpanValueRecordMethod(const v8::FunctionCallbackInfo<v
   impl->methodTakingOilpanValueRecord(arg);
 }
 
-static void unionWithRecordMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void UnionWithRecordMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "unionWithRecordMethod");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
@@ -338,13 +338,13 @@ static void unionWithRecordMethodMethod(const v8::FunctionCallbackInfo<v8::Value
   V8SetReturnValue(info, impl->unionWithRecordMethod(arg));
 }
 
-static void methodThatReturnsRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void MethodThatReturnsRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   V8SetReturnValue(info, ToV8(impl->methodThatReturnsRecord(), info.Holder(), info.GetIsolate()));
 }
 
-static void voidMethodNestedUnionTypeMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void VoidMethodNestedUnionTypeMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodNestedUnionType");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
@@ -362,7 +362,7 @@ static void voidMethodNestedUnionTypeMethod(const v8::FunctionCallbackInfo<v8::V
   impl->voidMethodNestedUnionType(arg);
 }
 
-static void voidMethodUnionWithTypedefMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void VoidMethodUnionWithTypedefMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodUnionWithTypedef");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
@@ -380,7 +380,7 @@ static void voidMethodUnionWithTypedefMethod(const v8::FunctionCallbackInfo<v8::
   impl->voidMethodUnionWithTypedef(arg);
 }
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_ConstructorCallback");
 
   if (UNLIKELY(info.Length() < 1)) {
@@ -401,130 +401,130 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 }  // namespace test_typedefs_v8_internal
 
-void V8TestTypedefs::uLongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::ULongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_uLongLongAttribute_Getter");
 
-  test_typedefs_v8_internal::uLongLongAttributeAttributeGetter(info);
+  test_typedefs_v8_internal::ULongLongAttributeAttributeGetter(info);
 }
 
-void V8TestTypedefs::uLongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::ULongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_uLongLongAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  test_typedefs_v8_internal::uLongLongAttributeAttributeSetter(v8Value, info);
+  test_typedefs_v8_internal::ULongLongAttributeAttributeSetter(v8Value, info);
 }
 
-void V8TestTypedefs::longWithClampAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::LongWithClampAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_longWithClampAttribute_Getter");
 
-  test_typedefs_v8_internal::longWithClampAttributeAttributeGetter(info);
+  test_typedefs_v8_internal::LongWithClampAttributeAttributeGetter(info);
 }
 
-void V8TestTypedefs::longWithClampAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::LongWithClampAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_longWithClampAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  test_typedefs_v8_internal::longWithClampAttributeAttributeSetter(v8Value, info);
+  test_typedefs_v8_internal::LongWithClampAttributeAttributeSetter(v8Value, info);
 }
 
-void V8TestTypedefs::tAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::TAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_tAttribute_ConstructorGetterCallback");
 
   V8ConstructorAttributeGetter(property, info, &V8TestInterface::wrapperTypeInfo);
 }
 
-void V8TestTypedefs::domStringOrDoubleOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::DOMStringOrDoubleOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_domStringOrDoubleOrNullAttribute_Getter");
 
-  test_typedefs_v8_internal::domStringOrDoubleOrNullAttributeAttributeGetter(info);
+  test_typedefs_v8_internal::DOMStringOrDoubleOrNullAttributeAttributeGetter(info);
 }
 
-void V8TestTypedefs::domStringOrDoubleOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::DOMStringOrDoubleOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_domStringOrDoubleOrNullAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  test_typedefs_v8_internal::domStringOrDoubleOrNullAttributeAttributeSetter(v8Value, info);
+  test_typedefs_v8_internal::DOMStringOrDoubleOrNullAttributeAttributeSetter(v8Value, info);
 }
 
-void V8TestTypedefs::voidMethodLongSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::VoidMethodLongSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_voidMethodLongSequenceArg");
 
-  test_typedefs_v8_internal::voidMethodLongSequenceArgMethod(info);
+  test_typedefs_v8_internal::VoidMethodLongSequenceArgMethod(info);
 }
 
-void V8TestTypedefs::voidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::VoidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_voidMethodFloatArgStringArg");
 
-  test_typedefs_v8_internal::voidMethodFloatArgStringArgMethod(info);
+  test_typedefs_v8_internal::VoidMethodFloatArgStringArgMethod(info);
 }
 
-void V8TestTypedefs::voidMethodTestCallbackInterfaceTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::VoidMethodTestCallbackInterfaceTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_voidMethodTestCallbackInterfaceTypeArg");
 
-  test_typedefs_v8_internal::voidMethodTestCallbackInterfaceTypeArgMethod(info);
+  test_typedefs_v8_internal::VoidMethodTestCallbackInterfaceTypeArgMethod(info);
 }
 
-void V8TestTypedefs::uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::ULongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_uLongLongMethodTestInterfaceEmptyTypeSequenceArg");
 
-  test_typedefs_v8_internal::uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(info);
+  test_typedefs_v8_internal::ULongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(info);
 }
 
-void V8TestTypedefs::testInterfaceOrTestInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::TestInterfaceOrTestInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_testInterfaceOrTestInterfaceEmptyMethod");
 
-  test_typedefs_v8_internal::testInterfaceOrTestInterfaceEmptyMethodMethod(info);
+  test_typedefs_v8_internal::TestInterfaceOrTestInterfaceEmptyMethodMethod(info);
 }
 
-void V8TestTypedefs::domStringOrDoubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::DOMStringOrDoubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_domStringOrDoubleMethod");
 
-  test_typedefs_v8_internal::domStringOrDoubleMethodMethod(info);
+  test_typedefs_v8_internal::DOMStringOrDoubleMethodMethod(info);
 }
 
-void V8TestTypedefs::arrayOfStringsMethodArrayOfStringsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::ArrayOfStringsMethodArrayOfStringsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_arrayOfStringsMethodArrayOfStringsArg");
 
-  test_typedefs_v8_internal::arrayOfStringsMethodArrayOfStringsArgMethod(info);
+  test_typedefs_v8_internal::ArrayOfStringsMethodArrayOfStringsArgMethod(info);
 }
 
-void V8TestTypedefs::methodTakingRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::MethodTakingRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_methodTakingRecord");
 
-  test_typedefs_v8_internal::methodTakingRecordMethod(info);
+  test_typedefs_v8_internal::MethodTakingRecordMethod(info);
 }
 
-void V8TestTypedefs::methodTakingOilpanValueRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::MethodTakingOilpanValueRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_methodTakingOilpanValueRecord");
 
-  test_typedefs_v8_internal::methodTakingOilpanValueRecordMethod(info);
+  test_typedefs_v8_internal::MethodTakingOilpanValueRecordMethod(info);
 }
 
-void V8TestTypedefs::unionWithRecordMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::UnionWithRecordMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_unionWithRecordMethod");
 
-  test_typedefs_v8_internal::unionWithRecordMethodMethod(info);
+  test_typedefs_v8_internal::UnionWithRecordMethodMethod(info);
 }
 
-void V8TestTypedefs::methodThatReturnsRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::MethodThatReturnsRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_methodThatReturnsRecord");
 
-  test_typedefs_v8_internal::methodThatReturnsRecordMethod(info);
+  test_typedefs_v8_internal::MethodThatReturnsRecordMethod(info);
 }
 
-void V8TestTypedefs::voidMethodNestedUnionTypeMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::VoidMethodNestedUnionTypeMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_voidMethodNestedUnionType");
 
-  test_typedefs_v8_internal::voidMethodNestedUnionTypeMethod(info);
+  test_typedefs_v8_internal::VoidMethodNestedUnionTypeMethod(info);
 }
 
-void V8TestTypedefs::voidMethodUnionWithTypedefMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::VoidMethodUnionWithTypedefMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_voidMethodUnionWithTypedef");
 
-  test_typedefs_v8_internal::voidMethodUnionWithTypedefMethod(info);
+  test_typedefs_v8_internal::VoidMethodUnionWithTypedefMethod(info);
 }
 
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
@@ -534,35 +534,35 @@ void V8TestTypedefs::voidMethodUnionWithTypedefMethodCallback(const v8::Function
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 static const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsAttributes[] = {
-    { "tAttribute", V8TestTypedefs::tAttributeConstructorGetterCallback, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kReplaceWithDataProperty, V8DOMConfiguration::kAllWorlds },
+    { "tAttribute", V8TestTypedefs::TAttributeConstructorGetterCallback, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kReplaceWithDataProperty, V8DOMConfiguration::kAllWorlds },
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestTypedefsAccessors[] = {
-    { "uLongLongAttribute", V8TestTypedefs::uLongLongAttributeAttributeGetterCallback, V8TestTypedefs::uLongLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "longWithClampAttribute", V8TestTypedefs::longWithClampAttributeAttributeGetterCallback, V8TestTypedefs::longWithClampAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "domStringOrDoubleOrNullAttribute", V8TestTypedefs::domStringOrDoubleOrNullAttributeAttributeGetterCallback, V8TestTypedefs::domStringOrDoubleOrNullAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "uLongLongAttribute", V8TestTypedefs::ULongLongAttributeAttributeGetterCallback, V8TestTypedefs::ULongLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "longWithClampAttribute", V8TestTypedefs::LongWithClampAttributeAttributeGetterCallback, V8TestTypedefs::LongWithClampAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "domStringOrDoubleOrNullAttribute", V8TestTypedefs::DOMStringOrDoubleOrNullAttributeAttributeGetterCallback, V8TestTypedefs::DOMStringOrDoubleOrNullAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
-    {"voidMethodLongSequenceArg", V8TestTypedefs::voidMethodLongSequenceArgMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodFloatArgStringArg", V8TestTypedefs::voidMethodFloatArgStringArgMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodTestCallbackInterfaceTypeArg", V8TestTypedefs::voidMethodTestCallbackInterfaceTypeArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"uLongLongMethodTestInterfaceEmptyTypeSequenceArg", V8TestTypedefs::uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"testInterfaceOrTestInterfaceEmptyMethod", V8TestTypedefs::testInterfaceOrTestInterfaceEmptyMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"domStringOrDoubleMethod", V8TestTypedefs::domStringOrDoubleMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"arrayOfStringsMethodArrayOfStringsArg", V8TestTypedefs::arrayOfStringsMethodArrayOfStringsArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"methodTakingRecord", V8TestTypedefs::methodTakingRecordMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"methodTakingOilpanValueRecord", V8TestTypedefs::methodTakingOilpanValueRecordMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"unionWithRecordMethod", V8TestTypedefs::unionWithRecordMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"methodThatReturnsRecord", V8TestTypedefs::methodThatReturnsRecordMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodNestedUnionType", V8TestTypedefs::voidMethodNestedUnionTypeMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodUnionWithTypedef", V8TestTypedefs::voidMethodUnionWithTypedefMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodLongSequenceArg", V8TestTypedefs::VoidMethodLongSequenceArgMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodFloatArgStringArg", V8TestTypedefs::VoidMethodFloatArgStringArgMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodTestCallbackInterfaceTypeArg", V8TestTypedefs::VoidMethodTestCallbackInterfaceTypeArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"uLongLongMethodTestInterfaceEmptyTypeSequenceArg", V8TestTypedefs::ULongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"testInterfaceOrTestInterfaceEmptyMethod", V8TestTypedefs::TestInterfaceOrTestInterfaceEmptyMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"domStringOrDoubleMethod", V8TestTypedefs::DOMStringOrDoubleMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"arrayOfStringsMethodArrayOfStringsArg", V8TestTypedefs::ArrayOfStringsMethodArrayOfStringsArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"methodTakingRecord", V8TestTypedefs::MethodTakingRecordMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"methodTakingOilpanValueRecord", V8TestTypedefs::MethodTakingOilpanValueRecordMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"unionWithRecordMethod", V8TestTypedefs::UnionWithRecordMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"methodThatReturnsRecord", V8TestTypedefs::MethodThatReturnsRecordMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodNestedUnionType", V8TestTypedefs::VoidMethodNestedUnionTypeMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodUnionWithTypedef", V8TestTypedefs::VoidMethodUnionWithTypedefMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
 };
 
-void V8TestTypedefs::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_Constructor");
 
   if (!info.IsConstructCall()) {
@@ -575,16 +575,16 @@ void V8TestTypedefs::constructorCallback(const v8::FunctionCallbackInfo<v8::Valu
     return;
   }
 
-  test_typedefs_v8_internal::constructor(info);
+  test_typedefs_v8_internal::Constructor(info);
 }
 
-static void installV8TestTypedefsTemplate(
+static void InstallV8TestTypedefsTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestTypedefs::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestTypedefs::constructorCallback);
+  interfaceTemplate->SetCallHandler(V8TestTypedefs::ConstructorCallback);
   interfaceTemplate->SetLength(1);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
@@ -627,20 +627,20 @@ void V8TestTypedefs::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestTypedefs::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestTypedefsTemplate);
+v8::Local<v8::FunctionTemplate> V8TestTypedefs::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestTypedefsTemplate);
 }
 
-bool V8TestTypedefs::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestTypedefs::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestTypedefs::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestTypedefs::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestTypedefs* V8TestTypedefs::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestTypedefs* NativeValueTraits<TestTypedefs>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

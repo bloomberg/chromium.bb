@@ -31,7 +31,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestInterfaceConstructor3::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInterfaceConstructor3::domTemplate,
+    V8TestInterfaceConstructor3::DomTemplate,
     nullptr,
     "TestInterfaceConstructor3",
     nullptr,
@@ -63,7 +63,7 @@ static_assert(
 
 namespace test_interface_constructor_3_v8_internal {
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor3_ConstructorCallback");
 
   if (UNLIKELY(info.Length() < 1)) {
@@ -84,7 +84,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 }  // namespace test_interface_constructor_3_v8_internal
 
-void V8TestInterfaceConstructor3::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceConstructor3::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor3_Constructor");
 
   if (!info.IsConstructCall()) {
@@ -97,16 +97,16 @@ void V8TestInterfaceConstructor3::constructorCallback(const v8::FunctionCallback
     return;
   }
 
-  test_interface_constructor_3_v8_internal::constructor(info);
+  test_interface_constructor_3_v8_internal::Constructor(info);
 }
 
-static void installV8TestInterfaceConstructor3Template(
+static void InstallV8TestInterfaceConstructor3Template(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceConstructor3::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor3::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestInterfaceConstructor3::constructorCallback);
+  interfaceTemplate->SetCallHandler(V8TestInterfaceConstructor3::ConstructorCallback);
   interfaceTemplate->SetLength(1);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
@@ -140,20 +140,20 @@ void V8TestInterfaceConstructor3::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceConstructor3::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceConstructor3Template);
+v8::Local<v8::FunctionTemplate> V8TestInterfaceConstructor3::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestInterfaceConstructor3Template);
 }
 
-bool V8TestInterfaceConstructor3::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestInterfaceConstructor3::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestInterfaceConstructor3::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestInterfaceConstructor3::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceConstructor3* V8TestInterfaceConstructor3::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterfaceConstructor3* NativeValueTraits<TestInterfaceConstructor3>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

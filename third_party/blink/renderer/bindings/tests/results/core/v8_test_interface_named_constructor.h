@@ -27,7 +27,7 @@ namespace blink {
 class V8TestInterfaceNamedConstructorConstructor {
   STATIC_ONLY(V8TestInterfaceNamedConstructorConstructor);
  public:
-  static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static void NamedConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info);
   static const WrapperTypeInfo wrapperTypeInfo;
 };
@@ -35,9 +35,9 @@ class V8TestInterfaceNamedConstructorConstructor {
 class V8TestInterfaceNamedConstructor {
   STATIC_ONLY(V8TestInterfaceNamedConstructor);
  public:
-  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  CORE_EXPORT static bool HasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> FindInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestInterfaceNamedConstructor* ToImpl(v8::Local<v8::Object> object) {
     return ToScriptWrappable(object)->ToImpl<TestInterfaceNamedConstructor>();
   }
@@ -47,7 +47,7 @@ class V8TestInterfaceNamedConstructor {
 
   // Callback functions
 
-  CORE_EXPORT static void testNamedConstructorConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void TestNamedConstructorConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
 
   static void InstallRuntimeEnabledFeaturesOnTemplate(
       v8::Isolate*,

@@ -5,7 +5,7 @@
 {% if member.is_array_buffer_or_view_type %}
 if (v8Value->Is{{member.type_name}}()) {
 {% else %}
-if (V8{{member.type_name}}::hasInstance(v8Value, isolate)) {
+if (V8{{member.type_name}}::HasInstance(v8Value, isolate)) {
 {% endif %}
 {% if member.is_array_buffer_view_or_typed_array %}
   {{member.cpp_local_type}} cppValue = ToNotShared<{{member.cpp_local_type}}>(isolate, v8Value, exceptionState);

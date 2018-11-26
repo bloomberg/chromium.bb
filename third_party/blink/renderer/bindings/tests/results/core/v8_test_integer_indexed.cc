@@ -36,7 +36,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestIntegerIndexed::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestIntegerIndexed::domTemplate,
+    V8TestIntegerIndexed::DomTemplate,
     nullptr,
     "TestIntegerIndexed",
     nullptr,
@@ -68,7 +68,7 @@ static_assert(
 
 namespace test_integer_indexed_v8_internal {
 
-static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void LengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestIntegerIndexed* impl = V8TestIntegerIndexed::ToImpl(holder);
@@ -76,7 +76,7 @@ static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& inf
   V8SetReturnValueInt(info, impl->length());
 }
 
-static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void LengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -95,7 +95,7 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
   impl->setLength(cppValue);
 }
 
-static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void VoidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestIntegerIndexed* impl = V8TestIntegerIndexed::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
@@ -113,7 +113,7 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   impl->voidMethodDocument(document);
 }
 
-static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void KeysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestIntegerIndexed", "keys");
 
   TestIntegerIndexed* impl = V8TestIntegerIndexed::ToImpl(info.Holder());
@@ -127,7 +127,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8SetReturnValue(info, result);
 }
 
-static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ValuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestIntegerIndexed", "values");
 
   TestIntegerIndexed* impl = V8TestIntegerIndexed::ToImpl(info.Holder());
@@ -141,7 +141,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8SetReturnValue(info, result);
 }
 
-static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ForEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestIntegerIndexed", "forEach");
 
   TestIntegerIndexed* impl = V8TestIntegerIndexed::ToImpl(info.Holder());
@@ -170,13 +170,13 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 }
 
-static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void IndexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
   // Steps 1.1 to 1.2.4 are covered here: we rely on indexedPropertyGetter() to
   // call the getter function and check that |index| is a valid property index,
   // in which case it will have set info.GetReturnValue() to something other
   // than undefined.
-  V8TestIntegerIndexed::indexedPropertyGetterCallback(index, info);
+  V8TestIntegerIndexed::IndexedPropertyGetterCallback(index, info);
   v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
   if (!getterValue->IsUndefined()) {
     // 1.2.5. Let |desc| be a newly created Property Descriptor with no fields.
@@ -195,105 +195,105 @@ static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallback
 
 }  // namespace test_integer_indexed_v8_internal
 
-void V8TestIntegerIndexed::lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestIntegerIndexed::LengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_length_Getter");
 
-  test_integer_indexed_v8_internal::lengthAttributeGetter(info);
+  test_integer_indexed_v8_internal::LengthAttributeGetter(info);
 }
 
-void V8TestIntegerIndexed::lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestIntegerIndexed::LengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_length_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  test_integer_indexed_v8_internal::lengthAttributeSetter(v8Value, info);
+  test_integer_indexed_v8_internal::LengthAttributeSetter(v8Value, info);
 }
 
-void V8TestIntegerIndexed::voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestIntegerIndexed::VoidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_voidMethodDocument");
 
-  test_integer_indexed_v8_internal::voidMethodDocumentMethod(info);
+  test_integer_indexed_v8_internal::VoidMethodDocumentMethod(info);
 }
 
-void V8TestIntegerIndexed::keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestIntegerIndexed::KeysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_keys");
 
-  test_integer_indexed_v8_internal::keysMethod(info);
+  test_integer_indexed_v8_internal::KeysMethod(info);
 }
 
-void V8TestIntegerIndexed::valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestIntegerIndexed::ValuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_values");
 
-  test_integer_indexed_v8_internal::valuesMethod(info);
+  test_integer_indexed_v8_internal::ValuesMethod(info);
 }
 
-void V8TestIntegerIndexed::forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestIntegerIndexed::ForEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_forEach");
 
-  test_integer_indexed_v8_internal::forEachMethod(info);
+  test_integer_indexed_v8_internal::ForEachMethod(info);
 }
 
-void V8TestIntegerIndexed::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestIntegerIndexed::NamedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_NamedPropertyGetter");
 
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  V8TestIntegerIndexed::namedPropertyGetterCustom(propertyName, info);
+  V8TestIntegerIndexed::NamedPropertyGetterCustom(propertyName, info);
 }
 
-void V8TestIntegerIndexed::namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestIntegerIndexed::NamedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_NamedPropertySetter");
 
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  V8TestIntegerIndexed::namedPropertySetterCustom(propertyName, v8Value, info);
+  V8TestIntegerIndexed::NamedPropertySetterCustom(propertyName, v8Value, info);
 }
 
-void V8TestIntegerIndexed::namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+void V8TestIntegerIndexed::NamedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  V8TestIntegerIndexed::namedPropertyDeleterCustom(propertyName, info);
+  V8TestIntegerIndexed::NamedPropertyDeleterCustom(propertyName, info);
 }
 
-void V8TestIntegerIndexed::namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+void V8TestIntegerIndexed::NamedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_NamedPropertyQuery");
 
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  V8TestIntegerIndexed::namedPropertyQueryCustom(propertyName, info);
+  V8TestIntegerIndexed::NamedPropertyQueryCustom(propertyName, info);
 }
 
-void V8TestIntegerIndexed::namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
-  V8TestIntegerIndexed::namedPropertyEnumeratorCustom(info);
+void V8TestIntegerIndexed::NamedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
+  V8TestIntegerIndexed::NamedPropertyEnumeratorCustom(info);
 }
 
-void V8TestIntegerIndexed::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestIntegerIndexed::IndexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_IndexedPropertyGetter");
 
-  V8TestIntegerIndexed::indexedPropertyGetterCustom(index, info);
+  V8TestIntegerIndexed::IndexedPropertyGetterCustom(index, info);
 }
 
-void V8TestIntegerIndexed::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  test_integer_indexed_v8_internal::indexedPropertyDescriptor(index, info);
+void V8TestIntegerIndexed::IndexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  test_integer_indexed_v8_internal::IndexedPropertyDescriptor(index, info);
 }
 
-void V8TestIntegerIndexed::indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  V8TestIntegerIndexed::indexedPropertySetterCustom(index, v8Value, info);
+void V8TestIntegerIndexed::IndexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  V8TestIntegerIndexed::IndexedPropertySetterCustom(index, v8Value, info);
 }
 
-void V8TestIntegerIndexed::indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
-  V8TestIntegerIndexed::indexedPropertyDeleterCustom(index, info);
+void V8TestIntegerIndexed::IndexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+  V8TestIntegerIndexed::IndexedPropertyDeleterCustom(index, info);
 }
 
-void V8TestIntegerIndexed::indexedPropertyDefinerCallback(
+void V8TestIntegerIndexed::IndexedPropertyDefinerCallback(
     uint32_t index,
     const v8::PropertyDescriptor& desc,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -316,17 +316,17 @@ void V8TestIntegerIndexed::indexedPropertyDefinerCallback(
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestIntegerIndexedAccessors[] = {
-    { "length", V8TestIntegerIndexed::lengthAttributeGetterCallback, V8TestIntegerIndexed::lengthAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "length", V8TestIntegerIndexed::LengthAttributeGetterCallback, V8TestIntegerIndexed::LengthAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedMethods[] = {
-    {"voidMethodDocument", V8TestIntegerIndexed::voidMethodDocumentMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"keys", V8TestIntegerIndexed::keysMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"values", V8TestIntegerIndexed::valuesMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"forEach", V8TestIntegerIndexed::forEachMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodDocument", V8TestIntegerIndexed::VoidMethodDocumentMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"keys", V8TestIntegerIndexed::KeysMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"values", V8TestIntegerIndexed::ValuesMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"forEach", V8TestIntegerIndexed::ForEachMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
 };
 
-static void installV8TestIntegerIndexedTemplate(
+static void InstallV8TestIntegerIndexedTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -350,17 +350,17 @@ static void installV8TestIntegerIndexedTemplate(
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
-      V8TestIntegerIndexed::indexedPropertyGetterCallback,
-      V8TestIntegerIndexed::indexedPropertySetterCallback,
-      V8TestIntegerIndexed::indexedPropertyDescriptorCallback,
-      V8TestIntegerIndexed::indexedPropertyDeleterCallback,
+      V8TestIntegerIndexed::IndexedPropertyGetterCallback,
+      V8TestIntegerIndexed::IndexedPropertySetterCallback,
+      V8TestIntegerIndexed::IndexedPropertyDescriptorCallback,
+      V8TestIntegerIndexed::IndexedPropertyDeleterCallback,
       IndexedPropertyEnumerator<TestIntegerIndexed>,
-      V8TestIntegerIndexed::indexedPropertyDefinerCallback,
+      V8TestIntegerIndexed::IndexedPropertyDefinerCallback,
       v8::Local<v8::Value>(),
       v8::PropertyHandlerFlags::kNone);
   instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
   // Named properties
-  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestIntegerIndexed::namedPropertyGetterCallback, V8TestIntegerIndexed::namedPropertySetterCallback, V8TestIntegerIndexed::namedPropertyQueryCallback, V8TestIntegerIndexed::namedPropertyDeleterCallback, V8TestIntegerIndexed::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
+  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestIntegerIndexed::NamedPropertyGetterCallback, V8TestIntegerIndexed::NamedPropertySetterCallback, V8TestIntegerIndexed::NamedPropertyQueryCallback, V8TestIntegerIndexed::NamedPropertyDeleterCallback, V8TestIntegerIndexed::NamedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
   instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 
   // Array iterator (@@iterator)
@@ -394,20 +394,20 @@ void V8TestIntegerIndexed::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestIntegerIndexed::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestIntegerIndexedTemplate);
+v8::Local<v8::FunctionTemplate> V8TestIntegerIndexed::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestIntegerIndexedTemplate);
 }
 
-bool V8TestIntegerIndexed::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestIntegerIndexed::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestIntegerIndexed::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestIntegerIndexed::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestIntegerIndexed* V8TestIntegerIndexed::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestIntegerIndexed* NativeValueTraits<TestIntegerIndexed>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

@@ -53,7 +53,7 @@ static v8::Local<v8::Value> CacheState(ScriptState* script_state,
   return state;
 }
 
-void V8PopStateEvent::stateAttributeGetterCustom(
+void V8PopStateEvent::StateAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ScriptState* script_state = ScriptState::Current(isolate);

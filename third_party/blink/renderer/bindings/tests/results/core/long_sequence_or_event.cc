@@ -69,7 +69,7 @@ void V8LongSequenceOrEvent::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
   if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
-  if (V8Event::hasInstance(v8Value, isolate)) {
+  if (V8Event::HasInstance(v8Value, isolate)) {
     Event* cppValue = V8Event::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.SetEvent(cppValue);
     return;

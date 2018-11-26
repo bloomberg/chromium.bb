@@ -33,7 +33,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestInterfaceEventInitConstructor::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInterfaceEventInitConstructor::domTemplate,
+    V8TestInterfaceEventInitConstructor::DomTemplate,
     nullptr,
     "TestInterfaceEventInitConstructor",
     &V8Event::wrapperTypeInfo,
@@ -65,7 +65,7 @@ static_assert(
 
 namespace test_interface_event_init_constructor_v8_internal {
 
-static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ReadonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestInterfaceEventInitConstructor* impl = V8TestInterfaceEventInitConstructor::ToImpl(holder);
@@ -73,7 +73,7 @@ static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInf
   V8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
 
-static void isTrustedAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void IsTrustedAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestInterfaceEventInitConstructor* impl = V8TestInterfaceEventInitConstructor::ToImpl(holder);
@@ -81,7 +81,7 @@ static void isTrustedAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& 
   V8SetReturnValueBool(info, impl->isTrusted());
 }
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_ConstructorCallback");
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceEventInitConstructor");
@@ -113,24 +113,24 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 }  // namespace test_interface_event_init_constructor_v8_internal
 
-void V8TestInterfaceEventInitConstructor::readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceEventInitConstructor::ReadonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_readonlyStringAttribute_Getter");
 
-  test_interface_event_init_constructor_v8_internal::readonlyStringAttributeAttributeGetter(info);
+  test_interface_event_init_constructor_v8_internal::ReadonlyStringAttributeAttributeGetter(info);
 }
 
-void V8TestInterfaceEventInitConstructor::isTrustedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceEventInitConstructor::IsTrustedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_isTrusted_Getter");
 
-  test_interface_event_init_constructor_v8_internal::isTrustedAttributeGetter(info);
+  test_interface_event_init_constructor_v8_internal::IsTrustedAttributeGetter(info);
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceEventInitConstructorAccessors[] = {
-    { "readonlyStringAttribute", V8TestInterfaceEventInitConstructor::readonlyStringAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "isTrusted", V8TestInterfaceEventInitConstructor::isTrustedAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "readonlyStringAttribute", V8TestInterfaceEventInitConstructor::ReadonlyStringAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "isTrusted", V8TestInterfaceEventInitConstructor::IsTrustedAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
-void V8TestInterfaceEventInitConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceEventInitConstructor::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_Constructor");
 
   if (!info.IsConstructCall()) {
@@ -143,16 +143,16 @@ void V8TestInterfaceEventInitConstructor::constructorCallback(const v8::Function
     return;
   }
 
-  test_interface_event_init_constructor_v8_internal::constructor(info);
+  test_interface_event_init_constructor_v8_internal::Constructor(info);
 }
 
-static void installV8TestInterfaceEventInitConstructorTemplate(
+static void InstallV8TestInterfaceEventInitConstructorTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEventInitConstructor::wrapperTypeInfo.interface_name, V8Event::domTemplate(isolate, world), V8TestInterfaceEventInitConstructor::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestInterfaceEventInitConstructor::constructorCallback);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEventInitConstructor::wrapperTypeInfo.interface_name, V8Event::DomTemplate(isolate, world), V8TestInterfaceEventInitConstructor::internalFieldCount);
+  interfaceTemplate->SetCallHandler(V8TestInterfaceEventInitConstructor::ConstructorCallback);
   interfaceTemplate->SetLength(2);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
@@ -189,20 +189,20 @@ void V8TestInterfaceEventInitConstructor::InstallRuntimeEnabledFeaturesOnTemplat
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceEventInitConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceEventInitConstructorTemplate);
+v8::Local<v8::FunctionTemplate> V8TestInterfaceEventInitConstructor::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestInterfaceEventInitConstructorTemplate);
 }
 
-bool V8TestInterfaceEventInitConstructor::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestInterfaceEventInitConstructor::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestInterfaceEventInitConstructor::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestInterfaceEventInitConstructor::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceEventInitConstructor* V8TestInterfaceEventInitConstructor::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterfaceEventInitConstructor* NativeValueTraits<TestInterfaceEventInitConstructor>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

@@ -31,7 +31,7 @@ namespace blink {
 #endif
 const WrapperTypeInfo V8TestInheritedLegacyUnenumerableNamedProperties::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    V8TestInheritedLegacyUnenumerableNamedProperties::domTemplate,
+    V8TestInheritedLegacyUnenumerableNamedProperties::DomTemplate,
     nullptr,
     "TestInheritedLegacyUnenumerableNamedProperties",
     &V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo,
@@ -63,7 +63,7 @@ static_assert(
 
 namespace test_inherited_legacy_unenumerable_named_properties_v8_internal {
 
-static void longAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::ToImpl(holder);
@@ -71,7 +71,7 @@ static void longAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Valu
   V8SetReturnValueInt(info, impl->longAttribute());
 }
 
-static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void NamedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::ToImpl(info.Holder());
   int32_t result = impl->AnonymousNamedGetter(name);
   if ()
@@ -80,7 +80,7 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
 }
 
 template <typename T>
-static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<T>& info) {
+static void NamedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<T>& info) {
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInheritedLegacyUnenumerableNamedProperties", nameInUtf8.data());
 
@@ -98,7 +98,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   V8SetReturnValueInt(info, v8::DontEnum | v8::ReadOnly);
 }
 
-static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void NamedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   // This function is called when an IDL interface supports named properties
   // but not indexed properties. When a numeric property is queried, V8 calls
   // indexedPropertyDescriptorCallback(), which calls this function.
@@ -111,7 +111,7 @@ static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackIn
   // TODO(rakuco): remove this hack once we switch named property handlers to
   // using descriptor and definer callbacks (bug 764633).
   const AtomicString& indexAsName = AtomicString::Number(index);
-  test_inherited_legacy_unenumerable_named_properties_v8_internal::namedPropertyQuery(indexAsName, info);
+  test_inherited_legacy_unenumerable_named_properties_v8_internal::NamedPropertyQuery(indexAsName, info);
   v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
   if (!getterValue->IsUndefined()) {
     DCHECK(getterValue->IsInt32());
@@ -127,7 +127,7 @@ static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackIn
   }
 }
 
-static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
+static void NamedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kEnumerationContext, "TestInheritedLegacyUnenumerableNamedProperties");
 
   TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::ToImpl(info.Holder());
@@ -141,58 +141,58 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 
 }  // namespace test_inherited_legacy_unenumerable_named_properties_v8_internal
 
-void V8TestInheritedLegacyUnenumerableNamedProperties::longAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInheritedLegacyUnenumerableNamedProperties::LongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInheritedLegacyUnenumerableNamedProperties_longAttribute_Getter");
 
-  test_inherited_legacy_unenumerable_named_properties_v8_internal::longAttributeAttributeGetter(info);
+  test_inherited_legacy_unenumerable_named_properties_v8_internal::LongAttributeAttributeGetter(info);
 }
 
-void V8TestInheritedLegacyUnenumerableNamedProperties::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestInheritedLegacyUnenumerableNamedProperties::NamedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInheritedLegacyUnenumerableNamedProperties_NamedPropertyGetter");
 
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  test_inherited_legacy_unenumerable_named_properties_v8_internal::namedPropertyGetter(propertyName, info);
+  test_inherited_legacy_unenumerable_named_properties_v8_internal::NamedPropertyGetter(propertyName, info);
 }
 
-void V8TestInheritedLegacyUnenumerableNamedProperties::namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+void V8TestInheritedLegacyUnenumerableNamedProperties::NamedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInheritedLegacyUnenumerableNamedProperties_NamedPropertyQuery");
 
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  test_inherited_legacy_unenumerable_named_properties_v8_internal::namedPropertyQuery(propertyName, info);
+  test_inherited_legacy_unenumerable_named_properties_v8_internal::NamedPropertyQuery(propertyName, info);
 }
 
-void V8TestInheritedLegacyUnenumerableNamedProperties::namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
-  test_inherited_legacy_unenumerable_named_properties_v8_internal::namedPropertyEnumerator(info);
+void V8TestInheritedLegacyUnenumerableNamedProperties::NamedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
+  test_inherited_legacy_unenumerable_named_properties_v8_internal::NamedPropertyEnumerator(info);
 }
 
-void V8TestInheritedLegacyUnenumerableNamedProperties::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestInheritedLegacyUnenumerableNamedProperties::IndexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInheritedLegacyUnenumerableNamedProperties_IndexedPropertyGetter");
 
   const AtomicString& propertyName = AtomicString::Number(index);
 
-  test_inherited_legacy_unenumerable_named_properties_v8_internal::namedPropertyGetter(propertyName, info);
+  test_inherited_legacy_unenumerable_named_properties_v8_internal::NamedPropertyGetter(propertyName, info);
 }
 
-void V8TestInheritedLegacyUnenumerableNamedProperties::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  test_inherited_legacy_unenumerable_named_properties_v8_internal::namedPropertyDescriptor(index, info);
+void V8TestInheritedLegacyUnenumerableNamedProperties::IndexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  test_inherited_legacy_unenumerable_named_properties_v8_internal::NamedPropertyDescriptor(index, info);
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestInheritedLegacyUnenumerableNamedPropertiesAccessors[] = {
-    { "longAttribute", V8TestInheritedLegacyUnenumerableNamedProperties::longAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "longAttribute", V8TestInheritedLegacyUnenumerableNamedProperties::LongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
-static void installV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate(
+static void InstallV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInheritedLegacyUnenumerableNamedProperties::wrapperTypeInfo.interface_name, V8TestSpecialOperationsNotEnumerable::domTemplate(isolate, world), V8TestInheritedLegacyUnenumerableNamedProperties::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInheritedLegacyUnenumerableNamedProperties::wrapperTypeInfo.interface_name, V8TestSpecialOperationsNotEnumerable::DomTemplate(isolate, world), V8TestInheritedLegacyUnenumerableNamedProperties::internalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
@@ -208,9 +208,9 @@ static void installV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate(
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
-      V8TestInheritedLegacyUnenumerableNamedProperties::indexedPropertyGetterCallback,
+      V8TestInheritedLegacyUnenumerableNamedProperties::IndexedPropertyGetterCallback,
       nullptr,
-      V8TestInheritedLegacyUnenumerableNamedProperties::indexedPropertyDescriptorCallback,
+      V8TestInheritedLegacyUnenumerableNamedProperties::IndexedPropertyDescriptorCallback,
       nullptr,
       nullptr,
       nullptr,
@@ -218,7 +218,7 @@ static void installV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate(
       v8::PropertyHandlerFlags::kNone);
   instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
   // Named properties
-  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestInheritedLegacyUnenumerableNamedProperties::namedPropertyGetterCallback, nullptr, V8TestInheritedLegacyUnenumerableNamedProperties::namedPropertyQueryCallback, nullptr, V8TestInheritedLegacyUnenumerableNamedProperties::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
+  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestInheritedLegacyUnenumerableNamedProperties::NamedPropertyGetterCallback, nullptr, V8TestInheritedLegacyUnenumerableNamedProperties::NamedPropertyQueryCallback, nullptr, V8TestInheritedLegacyUnenumerableNamedProperties::NamedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
   instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 
   // Custom signature
@@ -243,20 +243,20 @@ void V8TestInheritedLegacyUnenumerableNamedProperties::InstallRuntimeEnabledFeat
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInheritedLegacyUnenumerableNamedProperties::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate);
+v8::Local<v8::FunctionTemplate> V8TestInheritedLegacyUnenumerableNamedProperties::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate);
 }
 
-bool V8TestInheritedLegacyUnenumerableNamedProperties::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+bool V8TestInheritedLegacyUnenumerableNamedProperties::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestInheritedLegacyUnenumerableNamedProperties::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+v8::Local<v8::Object> V8TestInheritedLegacyUnenumerableNamedProperties::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInheritedLegacyUnenumerableNamedProperties* V8TestInheritedLegacyUnenumerableNamedProperties::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInheritedLegacyUnenumerableNamedProperties* NativeValueTraits<TestInheritedLegacyUnenumerableNamedProperties>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

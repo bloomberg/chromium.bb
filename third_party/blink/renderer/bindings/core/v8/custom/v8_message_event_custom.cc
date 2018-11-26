@@ -43,7 +43,7 @@
 
 namespace blink {
 
-void V8MessageEvent::dataAttributeGetterCustom(
+void V8MessageEvent::DataAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   auto private_cached_data =
@@ -101,7 +101,7 @@ void V8MessageEvent::dataAttributeGetterCustom(
   V8SetReturnValue(info, result);
 }
 
-void V8MessageEvent::initMessageEventMethodCustom(
+void V8MessageEvent::InitMessageEventMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exception_state(info.GetIsolate(),
                                  ExceptionState::kExecutionContext,
