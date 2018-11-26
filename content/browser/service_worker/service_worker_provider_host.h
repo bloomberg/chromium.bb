@@ -275,18 +275,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // cross origin transition. This is for service worker clients.
   void UpdateURLs(const GURL& document_url, const GURL& site_for_cookies);
 
-  // Sets the |document_url_|.  When this object is for a client,
-  // |matching_registrations_| gets also updated to ensure that |document_url_|
-  // is in scope of all |matching_registrations_|.
-  // |document_url_| is the service worker script URL if this is for a
-  // service worker execution context. It will be used when creating
-  // ServiceWorkerObjectHost or handling ServiceWorkerRegistration#{*} calls
-  // etc.
-  // TODO(leonhsl): We should rename |document_url_| to something more
-  // appropriate and/or split this class into one for clients vs one for service
-  // workers.
-  void SetDocumentUrl(const GURL& url);
-  const GURL& document_url() const { return document_url_; }
+  // The URL of this context. For service worker clients, this is the document
+  // URL (for documents) or script URL (for workers). For service worker
+  // execution contexts, this is the script URL.
+  const GURL& url() const;
 
   // The URL representing the first-party site for this context. See
   // |network::ResourceRequest::site_for_cookies| for details.
@@ -639,6 +631,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // tab where the navigation occurs.
   WebContentsGetter web_contents_getter_;
 
+  // For service worker clients.
   GURL document_url_;
   GURL site_for_cookies_;
 

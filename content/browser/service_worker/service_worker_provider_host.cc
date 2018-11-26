@@ -369,6 +369,8 @@ int ServiceWorkerProviderHost::frame_id() const {
 }
 
 bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
+  DCHECK(IsProviderForClient());
+
   // |document_url_| may be empty if loading has not begun, or
   // ServiceWorkerRequestHandler didn't handle the load (because e.g. another
   // handler did first, or the initial request URL was such that
@@ -384,7 +386,7 @@ bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
   std::set<std::string> schemes;
   GetContentClient()->browser()->GetSchemesBypassingSecureContextCheckWhitelist(
       &schemes);
-  return schemes.find(document_url().scheme()) != schemes.end();
+  return schemes.find(document_url_.scheme()) != schemes.end();
 }
 
 blink::mojom::ControllerServiceWorkerMode
@@ -459,10 +461,25 @@ ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
 void ServiceWorkerProviderHost::UpdateURLs(const GURL& document_url,
                                            const GURL& site_for_cookies) {
   DCHECK(IsProviderForClient());
+  DCHECK(!document_url.has_ref());
+  DCHECK(!controller());
+
   GURL previous_url = document_url_;
-  SetDocumentUrl(document_url);
+  document_url_ = document_url;
   site_for_cookies_ = site_for_cookies;
-  auto current_origin = url::Origin::Create(previous_url);
+  if (previous_url != document_url) {
+    // Revoke the token on URL change since any service worker holding the token
+    // may no longer be the potential controller of this frame and shouldn't
+    // have the power to display SSL dialogs for it.
+    if (info_->type == blink::mojom::ServiceWorkerProviderType::kForWindow) {
+      auto* registry = WebContentsGetterRegistry::GetInstance();
+      registry->Remove(fetch_request_window_id_);
+      fetch_request_window_id_ = base::UnguessableToken::Create();
+      registry->Add(fetch_request_window_id_, web_contents_getter());
+    }
+  }
+
+  auto previous_origin = url::Origin::Create(previous_url);
   auto new_origin = url::Origin::Create(document_url_);
   // Update client id on cross origin redirects. This corresponds to the HTML
   // standard's "process a navigation fetch" algorithm's step for discarding
@@ -472,7 +489,8 @@ void ServiceWorkerProviderHost::UpdateURLs(const GURL& document_url,
   // same as |reservedEnvironment|'s creation URL's origin, then:
   //    1. Run the environment discarding steps for |reservedEnvironment|.
   //    2. Set |reservedEnvironment| to null."
-  if (previous_url.is_valid() && !new_origin.IsSameOriginWith(current_origin)) {
+  if (previous_url.is_valid() &&
+      !new_origin.IsSameOriginWith(previous_origin)) {
     // Remove old controller since we know the controller is definitely
     // changed. We need to remove |this| from |controller_|'s controllee before
     // updating UUID since ServiceWorkerVersion has a map from uuid to provider
@@ -483,27 +501,14 @@ void ServiceWorkerProviderHost::UpdateURLs(const GURL& document_url,
     client_uuid_ = base::GenerateGUID();
     context_->RegisterProviderHostByClientID(client_uuid_, this);
   }
+
+  SyncMatchingRegistrations();
 }
 
-void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
-  DCHECK(!url.has_ref());
-  DCHECK(!controller());
-  if (document_url_ == url)
-    return;
-  document_url_ = url;
-
-  // Revoke the token on URL change since any service worker holding the token
-  // may no longer be the potential controller of this frame and shouldn't have
-  // the power to display SSL dialogs for it.
-  if (info_->type == blink::mojom::ServiceWorkerProviderType::kForWindow) {
-    auto* registry = WebContentsGetterRegistry::GetInstance();
-    registry->Remove(fetch_request_window_id_);
-    fetch_request_window_id_ = base::UnguessableToken::Create();
-    registry->Add(fetch_request_window_id_, web_contents_getter());
-  }
-
+const GURL& ServiceWorkerProviderHost::url() const {
   if (IsProviderForClient())
-    SyncMatchingRegistrations();
+    return document_url_;
+  return running_hosted_version_->script_url();
 }
 
 const GURL& ServiceWorkerProviderHost::site_for_cookies() const {
@@ -1012,7 +1017,7 @@ void ServiceWorkerProviderHost::Register(
                             std::string(), nullptr);
     return;
   }
-  std::vector<GURL> urls = {document_url(), options->scope, script_url};
+  std::vector<GURL> urls = {url(), options->scope, script_url};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
     mojo::ReportBadMessage(ServiceWorkerConsts::kBadMessageImproperOrigins);
     // ReportBadMessage() will kill the renderer process, but Mojo complains if
@@ -1087,7 +1092,7 @@ void ServiceWorkerProviderHost::RegistrationComplete(
 void ServiceWorkerProviderHost::GetRegistration(
     const GURL& client_url,
     GetRegistrationCallback callback) {
-  if (!CanServeContainerHostMethods(&callback, document_url(),
+  if (!CanServeContainerHostMethods(&callback, url(),
                                     kServiceWorkerGetRegistrationErrorPrefix,
                                     nullptr)) {
     return;
@@ -1115,7 +1120,7 @@ void ServiceWorkerProviderHost::GetRegistration(
 
 void ServiceWorkerProviderHost::GetRegistrations(
     GetRegistrationsCallback callback) {
-  if (!CanServeContainerHostMethods(&callback, document_url(),
+  if (!CanServeContainerHostMethods(&callback, url(),
                                     kServiceWorkerGetRegistrationsErrorPrefix,
                                     base::nullopt)) {
     return;
@@ -1135,7 +1140,7 @@ void ServiceWorkerProviderHost::GetRegistrations(
   TRACE_EVENT_ASYNC_BEGIN0(
       "ServiceWorker", "ServiceWorkerProviderHost::GetRegistrations", trace_id);
   context_->storage()->GetRegistrationsForOrigin(
-      document_url().GetOrigin(),
+      url().GetOrigin(),
       base::AdaptCallbackForRepeating(
           base::BindOnce(&ServiceWorkerProviderHost::GetRegistrationsComplete,
                          AsWeakPtr(), std::move(callback), trace_id)));
@@ -1300,7 +1305,7 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationMessage(
     *out_error = ServiceWorkerConsts::kBadMessageInvalidURL;
     return false;
   }
-  std::vector<GURL> urls = {document_url(), client_url};
+  std::vector<GURL> urls = {url(), client_url};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
     *out_error = ServiceWorkerConsts::kBadMessageImproperOrigins;
     return false;
@@ -1315,7 +1320,7 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationsMessage(
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
-  if (!OriginCanAccessServiceWorkers(document_url())) {
+  if (!OriginCanAccessServiceWorkers(url())) {
     *out_error = ServiceWorkerConsts::kBadMessageImproperOrigins;
     return false;
   }
@@ -1383,7 +1388,7 @@ bool ServiceWorkerProviderHost::CanServeContainerHostMethods(
 
   // TODO(falken): This check can be removed once crbug.com/439697 is fixed.
   // (Also see crbug.com/776408)
-  if (document_url().is_empty()) {
+  if (url().is_empty()) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kSecurity,
         std::string(error_prefix) +
