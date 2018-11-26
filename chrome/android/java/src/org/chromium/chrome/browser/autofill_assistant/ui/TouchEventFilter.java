@@ -250,6 +250,11 @@ public class TouchEventFilter
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getY() < getVisualViewportTop() || event.getY() > getVisualViewportBottom()) {
+            // The event is meant for the top or bottom bar. Let it through.
+            return false;
+        }
+
         // Note that partial overlays have precedence over full overlays
         if (mPartialOverlayEnabled) return dispatchTouchEventWithPartialOverlay(event);
         if (mFullOverlayEnabled) return dispatchTouchEventWithFullOverlay(event);
@@ -276,15 +281,12 @@ public class TouchEventFilter
                     // to avoid interrupting that scroll.
                     return false;
                 }
-            // fallthrough
+                // fall through
 
             case MotionEvent.ACTION_DOWN:
                 // Only let through events if they're meant for the touchable area of the screen.
                 int yTop = getVisualViewportTop();
                 int yBottom = getVisualViewportBottom();
-                if (event.getY() < yTop || event.getY() > yBottom) {
-                    return false; // Let it through. It's meant for the controls.
-                }
                 int height = yBottom - yTop;
                 boolean allowed = isInTouchableArea(((float) event.getX()) / getWidth(),
                         (((float) event.getY() - yTop + mBrowserScrollOffsetY + mOffsetY)
