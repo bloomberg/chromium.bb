@@ -23,8 +23,12 @@ source_set("headers") {
 
 common_sources = [
   "common/constants.h",
+  "common/context.h",
   "common/dictionary.c",
   "common/dictionary.h",
+  "common/platform.h",
+  "common/transform.c",
+  "common/transform.h",
   "common/version.h",
 ]
 
@@ -48,15 +52,12 @@ static_library("common_no_dictionary_data") {
 dec_sources = [
   "dec/bit_reader.c",
   "dec/bit_reader.h",
-  "dec/context.h",
   "dec/decode.c",
   "dec/huffman.c",
   "dec/huffman.h",
-  "dec/port.h",
   "dec/prefix.h",
   "dec/state.c",
   "dec/state.h",
-  "dec/transform.h",
 ]
 
 static_library("dec") {
@@ -98,7 +99,6 @@ static_library("dec_no_dictionary_data") {
 if (current_toolchain == host_toolchain) {
   executable("brotli") {
     sources = [
-      "common/constants.h",
       "enc/backward_references.c",
       "enc/backward_references.h",
       "enc/backward_references_hq.c",
@@ -121,20 +121,23 @@ if (current_toolchain == host_toolchain) {
       "enc/compress_fragment.h",
       "enc/compress_fragment_two_pass.c",
       "enc/compress_fragment_two_pass.h",
-      "enc/context.h",
       "enc/dictionary_hash.c",
       "enc/dictionary_hash.h",
       "enc/encode.c",
+      "enc/encoder_dict.c",
+      "enc/encoder_dict.h",
       "enc/entropy_encode.c",
       "enc/entropy_encode.h",
       "enc/entropy_encode_static.h",
       "enc/fast_log.h",
       "enc/find_match_length.h",
       "enc/hash.h",
+      "enc/hash_composite_inc.h",
       "enc/hash_forgetful_chain_inc.h",
       "enc/hash_longest_match64_inc.h",
       "enc/hash_longest_match_inc.h",
       "enc/hash_longest_match_quickly_inc.h",
+      "enc/hash_rolling_inc.h",
       "enc/hash_to_binary_tree_inc.h",
       "enc/histogram.c",
       "enc/histogram.h",
@@ -146,7 +149,7 @@ if (current_toolchain == host_toolchain) {
       "enc/metablock.c",
       "enc/metablock.h",
       "enc/metablock_inc.h",
-      "enc/port.h",
+      "enc/params.h",
       "enc/prefix.h",
       "enc/quality.h",
       "enc/ringbuffer.h",
