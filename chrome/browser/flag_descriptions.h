@@ -159,6 +159,9 @@ extern const char kCloudPrinterHandlerDescription[];
 extern const char kExperimentalAccessibilityFeaturesName[];
 extern const char kExperimentalAccessibilityFeaturesDescription[];
 
+extern const char kExperimentalAccessibilitySwitchAccessName[];
+extern const char kExperimentalAccessibilitySwitchAccessDescription[];
+
 extern const char kFCMInvalidationsName[];
 extern const char kFCMInvalidationsDescription[];
 

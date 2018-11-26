@@ -694,6 +694,11 @@ const char kExperimentalAccessibilityFeaturesName[] =
 const char kExperimentalAccessibilityFeaturesDescription[] =
     "Enable additional accessibility features in the Settings page.";
 
+const char kExperimentalAccessibilitySwitchAccessName[] =
+    "Experimental feature Switch Access";
+const char kExperimentalAccessibilitySwitchAccessDescription[] =
+    "Add a setting to enable the prototype of Switch Access";
+
 const char kVizDisplayCompositorName[] = "Viz Display Compositor (OOP-D)";
 const char kVizDisplayCompositorDescription[] =
     "If enabled, the display compositor runs as part of the viz service in the"

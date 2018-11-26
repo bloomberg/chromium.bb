@@ -333,6 +333,11 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kEnableExperimentalAccessibilityFeatures));
 
+  html_source->AddBoolean(
+      "showExperimentalAccessibilitySwitchAccess",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableExperimentalAccessibilitySwitchAccess));
+
   html_source->AddBoolean("dockedMagnifierFeatureEnabled",
                           ash::features::IsDockedMagnifierEnabled());
 #endif

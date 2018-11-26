@@ -51,7 +51,7 @@ SwitchAccessE2ETest.prototype = {
           base::Unretained(chromeos::AccessibilityManager::Get()),
           true);
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kEnableExperimentalAccessibilityFeatures);
+      ::switches::kEnableExperimentalAccessibilitySwitchAccess);
   chromeos::AccessibilityManager::Get()->SetSwitchAccessEnabled(true);
   WaitForExtension(extension_misc::kSwitchAccessExtensionId, load_cb);
     */ });

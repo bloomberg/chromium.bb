@@ -147,6 +147,14 @@ Polymer({
       },
     },
 
+    showExperimentalSwitchAccess_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean(
+            'showExperimentalAccessibilitySwitchAccess');
+      },
+    },
+
     /**
      * Whether the docked magnifier flag is enabled.
      * @private {boolean}

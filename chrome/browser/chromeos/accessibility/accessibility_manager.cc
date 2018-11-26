@@ -873,10 +873,10 @@ void AccessibilityManager::UpdateSwitchAccessFromPref() {
   // even if the preference is enabled, if the flag isn't also set.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilityFeatures)) {
+          ::switches::kEnableExperimentalAccessibilitySwitchAccess)) {
     if (enabled) {
       LOG(WARNING) << "Switch access enabled but experimental accessibility "
-                   << "features flag is not set.";
+                   << "switch access flag is not set.";
     }
     return;
   }
