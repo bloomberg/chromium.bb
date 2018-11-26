@@ -348,7 +348,7 @@ FloatRect SimpleFontData::PlatformBoundsForGlyph(Glyph glyph) const {
   static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
 
   SkRect bounds;
-  GetBoundsForGlyph(font_, glyph, &bounds);
+  SkFontGetBoundsForGlyph(font_, glyph, &bounds);
   return FloatRect(bounds);
 }
 
@@ -360,7 +360,7 @@ void SimpleFontData::BoundsForGlyphs(const Vector<Glyph, 256>& glyphs,
     return;
 
   DCHECK_EQ(bounds->size(), glyphs.size());
-  GetBoundsForGlyphs(font_, glyphs, bounds->data());
+  SkFontGetBoundsForGlyphs(font_, glyphs, bounds->data());
 }
 
 float SimpleFontData::PlatformWidthForGlyph(Glyph glyph) const {
@@ -369,7 +369,7 @@ float SimpleFontData::PlatformWidthForGlyph(Glyph glyph) const {
 
   static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
 
-  return GetWidthForGlyph(font_, glyph);
+  return SkFontGetWidthForGlyph(font_, glyph);
 }
 
 }  // namespace blink

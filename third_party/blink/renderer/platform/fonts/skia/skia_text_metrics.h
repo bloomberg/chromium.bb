@@ -15,22 +15,24 @@ class SkFont;
 
 namespace blink {
 
-void GetGlyphWidthForHarfBuzz(const SkFont&,
-                              hb_codepoint_t,
-                              hb_position_t* width);
-void GetGlyphWidthForHarfBuzz(const SkFont&,
-                              unsigned count,
-                              const hb_codepoint_t* first_glyph,
-                              unsigned glyph_stride,
-                              hb_position_t* first_advance,
-                              unsigned advance_stride);
-void GetGlyphExtentsForHarfBuzz(const SkFont&,
-                                hb_codepoint_t,
-                                hb_glyph_extents_t*);
+void SkFontGetGlyphWidthForHarfBuzz(const SkFont&,
+                                    hb_codepoint_t,
+                                    hb_position_t* width);
+void SkFontGetGlyphWidthForHarfBuzz(const SkFont&,
+                                    unsigned count,
+                                    const hb_codepoint_t* first_glyph,
+                                    unsigned glyph_stride,
+                                    hb_position_t* first_advance,
+                                    unsigned advance_stride);
+void SkFontGetGlyphExtentsForHarfBuzz(const SkFont&,
+                                      hb_codepoint_t,
+                                      hb_glyph_extents_t*);
 
-void GetBoundsForGlyph(const SkFont&, Glyph, SkRect* bounds);
-void GetBoundsForGlyphs(const SkFont&, const Vector<Glyph, 256>&, SkRect*);
-float GetWidthForGlyph(const SkFont&, Glyph);
+void SkFontGetBoundsForGlyph(const SkFont&, Glyph, SkRect* bounds);
+void SkFontGetBoundsForGlyphs(const SkFont&,
+                              const Vector<Glyph, 256>&,
+                              SkRect*);
+float SkFontGetWidthForGlyph(const SkFont&, Glyph);
 
 hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value);
 
