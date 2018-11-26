@@ -697,6 +697,25 @@ TEST_F(SecurityOriginTest, UrlOriginConversions) {
   }
 }
 
+TEST_F(SecurityOriginTest, InvalidWrappedUrls) {
+  const char* kTestCases[] = {
+      "blob:filesystem:ws:b/.",
+      "blob:filesystem:ftp://a/b",
+      "filesystem:filesystem:http://example.org:88/foo/bar",
+      "blob:blob:file://localhost/foo/bar",
+  };
+
+  for (const char* test_url : kTestCases) {
+    scoped_refptr<SecurityOrigin> target_origin =
+        SecurityOrigin::CreateFromString(test_url);
+    EXPECT_TRUE(target_origin->IsOpaque())
+        << test_url << " is not opaque as a blink::SecurityOrigin";
+    url::Origin origin = target_origin->ToUrlOrigin();
+    EXPECT_TRUE(origin.opaque())
+        << test_url << " is not opaque as a url::Origin";
+  }
+}
+
 TEST_F(SecurityOriginTest, EffectiveDomain) {
   constexpr struct {
     const char* expected_effective_domain;

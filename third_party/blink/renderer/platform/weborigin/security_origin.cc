@@ -98,11 +98,13 @@ static bool ShouldTreatAsOpaqueOrigin(const KURL& url) {
   if (!url.IsValid())
     return true;
 
-  // FIXME: Do we need to unwrap the URL further?
   KURL relevant_url;
   if (SecurityOrigin::ShouldUseInnerURL(url)) {
     relevant_url = SecurityOrigin::ExtractInnerURL(url);
     if (!relevant_url.IsValid())
+      return true;
+    // If the inner URL is also wrapped, the URL is invalid, so treat as opqaue.
+    if (SecurityOrigin::ShouldUseInnerURL(relevant_url))
       return true;
   } else {
     relevant_url = url;
