@@ -618,8 +618,8 @@
   },
   {
     "name": "disable-threaded-scrolling",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "bokan", "input-dev@chromium.org" ],
+    "expiry_milestone": -1
   },
   {
     "name": "disable-touch-adjustment",
@@ -2985,8 +2985,8 @@
   },
   {
     "name": "smooth-scrolling",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "bokan", "input-dev@chromium.org" ],
+    "expiry_milestone": 80
   },
   {
     "name": "sound-content-setting",
