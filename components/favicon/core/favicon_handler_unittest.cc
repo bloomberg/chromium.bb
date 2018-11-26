@@ -36,6 +36,7 @@ namespace favicon {
 namespace {
 
 using favicon_base::FaviconRawBitmapResult;
+using testing::_;
 using testing::AnyNumber;
 using testing::Assign;
 using testing::Contains;
@@ -45,7 +46,7 @@ using testing::Invoke;
 using testing::IsEmpty;
 using testing::Not;
 using testing::Return;
-using testing::_;
+using testing::SizeIs;
 
 using IntVector = std::vector<int>;
 using URLVector = std::vector<GURL>;
@@ -1403,6 +1404,43 @@ TEST_F(FaviconHandlerMultipleFaviconsTest,
 
 TEST_F(FaviconHandlerMultipleFaviconsTest, ChooseMinorUpsamplingOverHugeIcon) {
   EXPECT_EQ(17, DownloadTillDoneIgnoringHistory(IntVector{17, 256}));
+}
+
+// Test a page with multiple favicon candidates with explicit sizes information.
+// Only the best one should be downloaded.
+TEST_F(FaviconHandlerMultipleFaviconsTest,
+       StopsDownloadingWhenRemainingCandidatesWorse) {
+  RunHandlerWithCandidates(FaviconDriverObserver::NON_TOUCH_16_DIP,
+                           {
+                               FaviconURL(kIconURL16x16, kFavicon,
+                                          SizeVector(1U, gfx::Size(16, 16))),
+                               FaviconURL(kIconURL64x64, kFavicon,
+                                          SizeVector(1U, gfx::Size(64, 64))),
+                           });
+
+  EXPECT_THAT(delegate_.downloads(), SizeIs(1));
+}
+
+TEST_F(FaviconHandlerMultipleFaviconsTest,
+       DownloadsAllIconsWithoutSizesAttributeIfNotWantsLargest) {
+  RunHandlerWithCandidates(FaviconDriverObserver::NON_TOUCH_16_DIP,
+                           {
+                               FaviconURL(kIconURL16x16, kFavicon, kEmptySizes),
+                               FaviconURL(kIconURL64x64, kFavicon, kEmptySizes),
+                           });
+
+  EXPECT_THAT(delegate_.downloads(), SizeIs(2));
+}
+
+TEST_F(FaviconHandlerMultipleFaviconsTest,
+       DownloadsOnlyOneIconWithoutSizesAttributeIfWantsLargest) {
+  RunHandlerWithCandidates(FaviconDriverObserver::NON_TOUCH_LARGEST,
+                           {
+                               FaviconURL(kIconURL16x16, kFavicon, kEmptySizes),
+                               FaviconURL(kIconURL64x64, kFavicon, kEmptySizes),
+                           });
+
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL16x16));
 }
 
 TEST_F(FaviconHandlerTest, Report404) {
