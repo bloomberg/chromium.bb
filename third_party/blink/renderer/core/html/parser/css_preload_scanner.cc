@@ -156,12 +156,18 @@ inline void CSSPreloadScanner::Tokenize(UChar c,
       }
       break;
     case kRuleValue:
-      if (IsHTMLSpace<UChar>(c))
+      if (IsHTMLSpace<UChar>(c)) {
         state_ = kAfterRuleValue;
-      else if (c == ';')
+      } else if (c == ';') {
         EmitRule(source);
-      else
+      } else {
         rule_value_.Append(c);
+        // When reading the rule and hitting ')', which signifies the URL end,
+        // emit the rule.
+        if (c == ')') {
+          EmitRule(source);
+        }
+      }
       break;
     case kAfterRuleValue:
       if (IsHTMLSpace<UChar>(c))
@@ -185,14 +191,20 @@ static String ParseCSSStringOrURL(const String& string) {
   wtf_size_t offset = 0;
   wtf_size_t reduced_length = string.length();
 
+  // Remove whitespace from the rule start
   while (reduced_length && IsHTMLSpace<UChar>(string[offset])) {
     ++offset;
     --reduced_length;
   }
+  // Remove whitespace from the rule end
+  // TODO(yoav): Evaluate performance benefits of using raw string operations.
+  // TODO(yoav): Look into moving parsing to use better parsing primitives.
   while (reduced_length &&
-         IsHTMLSpace<UChar>(string[offset + reduced_length - 1]))
+         IsHTMLSpace<UChar>(string[offset + reduced_length - 1])) {
     --reduced_length;
+  }
 
+  // Skip the "url(" prefix and the ")" suffix
   if (reduced_length >= 5 && (string[offset] == 'u' || string[offset] == 'U') &&
       (string[offset + 1] == 'r' || string[offset + 1] == 'R') &&
       (string[offset + 2] == 'l' || string[offset + 2] == 'L') &&
@@ -201,28 +213,23 @@ static String ParseCSSStringOrURL(const String& string) {
     reduced_length -= 5;
   }
 
+  // Skip whitespace before and after the URL inside the "url()" parenthesis.
   while (reduced_length && IsHTMLSpace<UChar>(string[offset])) {
     ++offset;
     --reduced_length;
   }
   while (reduced_length &&
-         IsHTMLSpace<UChar>(string[offset + reduced_length - 1]))
-    --reduced_length;
-
-  if (reduced_length < 2 ||
-      string[offset] != string[offset + reduced_length - 1] ||
-      !(string[offset] == '\'' || string[offset] == '"'))
-    return String();
-  offset++;
-  reduced_length -= 2;
-
-  while (reduced_length && IsHTMLSpace<UChar>(string[offset])) {
-    ++offset;
+         IsHTMLSpace<UChar>(string[offset + reduced_length - 1])) {
     --reduced_length;
   }
-  while (reduced_length &&
-         IsHTMLSpace<UChar>(string[offset + reduced_length - 1]))
-    --reduced_length;
+
+  // Remove single-quotes or double-quotes from the URL
+  if ((reduced_length >= 2) &&
+      (string[offset] == string[offset + reduced_length - 1]) &&
+      (string[offset] == '\'' || string[offset] == '"')) {
+    offset++;
+    reduced_length -= 2;
+  }
 
   return string.Substring(offset, reduced_length);
 }
