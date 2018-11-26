@@ -253,8 +253,6 @@ class CORE_EXPORT FrameLoader final {
   void ClientDroppedNavigation();
   void MarkAsLoading();
 
-  Document* GetLastOriginDocument() { return last_origin_document_.Get(); }
-
  private:
   bool PrepareRequestForThisFrame(FrameLoadRequest&);
   WebFrameLoadType DetermineFrameLoadType(
@@ -337,8 +335,6 @@ class CORE_EXPORT FrameLoader final {
   bool detached_;
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
-
-  Member<Document> last_origin_document_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameLoader);
 };
