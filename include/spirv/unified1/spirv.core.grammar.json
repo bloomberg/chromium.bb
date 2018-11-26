@@ -6370,17 +6370,31 @@
           "version" : "None"
         },
         {
+          "enumerant" : "FragSizeEXT",
+          "value" : 5292 ,
+          "capabilities" : [ "FragmentDensityEXT", "ShadingRateNV" ],
+          "extensions" : [ "SPV_EXT_fragment_invocation_density", "SPV_NV_shading_rate" ],
+          "version" : "None"
+        },
+        {
           "enumerant" : "FragmentSizeNV",
           "value" : 5292 ,
-          "capabilities" : [ "ShadingRateNV" ],
-          "extensions" : [ "SPV_NV_shading_rate" ],
+          "capabilities" : [ "ShadingRateNV", "FragmentDensityEXT" ],
+          "extensions" : [ "SPV_NV_shading_rate", "SPV_EXT_fragment_invocation_density" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "FragInvocationCountEXT",
+          "value" : 5293,
+          "capabilities" : [ "FragmentDensityEXT", "ShadingRateNV" ],
+          "extensions" : [ "SPV_EXT_fragment_invocation_density", "SPV_NV_shading_rate" ],
           "version" : "None"
         },
         {
           "enumerant" : "InvocationsPerPixelNV",
           "value" : 5293,
-          "capabilities" : [ "ShadingRateNV" ],
-          "extensions" : [ "SPV_NV_shading_rate" ],
+          "capabilities" : [ "ShadingRateNV", "FragmentDensityEXT" ],
+          "extensions" : [ "SPV_NV_shading_rate", "SPV_EXT_fragment_invocation_density" ],
           "version" : "None"
         },
         {
@@ -7277,10 +7291,17 @@
           "version" : "None"
         },
         {
+          "enumerant" : "FragmentDensityEXT",
+          "value" : 5291,
+          "capabilities" : [ "Shader" ],
+          "extensions" : [ "SPV_EXT_fragment_invocation_density", "SPV_NV_shading_rate" ],
+          "version" : "None"
+        },
+        {
           "enumerant" : "ShadingRateNV",
           "value" : 5291,
           "capabilities" : [ "Shader" ],
-          "extensions" : [ "SPV_NV_shading_rate" ],
+          "extensions" : [ "SPV_NV_shading_rate", "SPV_EXT_fragment_invocation_density" ],
           "version" : "None"
         }
       ]
