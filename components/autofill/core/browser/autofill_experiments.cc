@@ -100,10 +100,13 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   // If the "allow all email domains" flag is off, restrict credit card upload
   // only to Google Accounts with @googlemail, @gmail, @google, or @chromium
   // domains.
+  // example.com is on the list because ChromeOS tests rely on using this. That
+  // should be fine, since example.com is an IANA reserved domain.
   if (!base::FeatureList::IsEnabled(
           features::kAutofillUpstreamAllowAllEmailDomains) &&
       !(domain == "googlemail.com" || domain == "gmail.com" ||
-        domain == "google.com" || domain == "chromium.org")) {
+        domain == "google.com" || domain == "chromium.org" ||
+        domain == "example.com")) {
     return false;
   }
 
