@@ -6,7 +6,9 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/dictation_chromeos.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 
 namespace chromeos {
@@ -40,6 +42,10 @@ class DictationTest : public InProcessBrowserTest {
   void SendSpeechResult(const char* result, bool is_final) {
     GetManager()->dictation_->OnSpeechResult(base::ASCIIToUTF16(result),
                                              is_final);
+  }
+
+  void NotifyTextInputStateChanged(ui::TextInputClient* client) {
+    GetManager()->dictation_->OnTextInputStateChanged(client);
   }
 
   ui::CompositionText GetLastCompositionText() {
@@ -143,6 +149,21 @@ IN_PROC_BROWSER_TEST_F(DictationTest, SwitchInputContext) {
   EXPECT_EQ(kSecondSpeechResult, input_context_handler2.last_commit_text());
 
   ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(DictationTest, ChangeInputField) {
+  // Turn on dictation and start speaking.
+  AccessibilityManager::Get()->ToggleDictation();
+  SendSpeechResult(kFinalSpeechResult, false /* is_final */);
+
+  // Change the input state to a new client.
+  std::unique_ptr<ui::TextInputClient> new_client =
+      std::make_unique<ui::DummyTextInputClient>();
+  NotifyTextInputStateChanged(new_client.get());
+
+  // Check that dictation has turned off.
+  EXPECT_EQ(1, input_context_handler_->commit_text_call_count());
+  EXPECT_EQ(kFinalSpeechResult, input_context_handler_->last_commit_text());
 }
 
 }  // namespace chromeos
