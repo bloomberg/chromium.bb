@@ -859,8 +859,10 @@ void NFC::OnWatch(const Vector<uint32_t>& ids,
     auto it = callbacks_.find(id);
     if (it != callbacks_.end()) {
       V8MessageCallback* callback = it->value;
-      ScriptState* script_state = callback->CallbackRelevantScriptState();
-      DCHECK(script_state);
+      ScriptState* script_state =
+          callback->CallbackRelevantScriptStateOrReportError("NFC", "watch");
+      if (!script_state)
+        continue;
       ScriptState::Scope scope(script_state);
       const NFCMessage* nfc_message = ToNFCMessage(script_state, message);
       callback->InvokeAndReportException(nullptr, nfc_message);

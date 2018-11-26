@@ -31,6 +31,20 @@ void CallbackInterfaceBase::Trace(Visitor* visitor) {
   visitor->Trace(incumbent_script_state_);
 }
 
+ScriptState* CallbackInterfaceBase::CallbackRelevantScriptStateOrReportError(
+    const char* interface,
+    const char* operation) {
+  // TODO(yukishiino): Implement this function.
+  return callback_relevant_script_state_;
+}
+
+ScriptState* CallbackInterfaceBase::CallbackRelevantScriptStateOrThrowException(
+    const char* interface,
+    const char* operation) {
+  // TODO(yukishiino): Implement this function.
+  return callback_relevant_script_state_;
+}
+
 V8PersistentCallbackInterfaceBase::V8PersistentCallbackInterfaceBase(
     CallbackInterfaceBase* callback_interface)
     : callback_interface_(callback_interface) {
