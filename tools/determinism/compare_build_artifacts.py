@@ -82,33 +82,8 @@ def get_files_to_compare_using_isolate(build_dir):
           for inner_file in files:
             ret_files.add(os.path.join(root, inner_file))
 
-  # Also add any .isolated files that exist.
-  for isolated in glob.glob(os.path.join(build_dir, '*.isolated')):
-    ret_files.add(isolated)
-
   # Convert back to a relpath since that's what the caller is expecting.
   return set(os.path.relpath(f, build_dir) for f in ret_files)
-
-
-def diff_dict(a, b):
-  """Returns a yaml-like textural diff of two dict.
-
-  It is currently optimized for the .isolated format.
-  """
-  out = ''
-  for key in set(a) | set(b):
-    va = a.get(key)
-    vb = b.get(key)
-    if va.__class__ != vb.__class__:
-      out += '- %s:  %r != %r\n' % (key, va, vb)
-    elif isinstance(va, dict):
-      c = diff_dict(va, vb)
-      if c:
-        out += '- %s:\n%s\n' % (
-            key, '\n'.join('  ' + l for l in c.splitlines()))
-    elif va != vb:
-      out += '- %s:  %s != %s\n' % (key, va, vb)
-  return out.rstrip()
 
 
 def diff_binary(first_filepath, second_filepath, file_len):
@@ -207,25 +182,6 @@ def compare_files(first_filepath, second_filepath):
     return 'file does not exist %s' % first_filepath
   if not os.path.exists(second_filepath):
     return 'file does not exist %s' % second_filepath
-
-
-  if first_filepath.endswith('.isolated'):
-    with open(first_filepath, 'rb') as f:
-      lhs = json.load(f)
-    with open(second_filepath, 'rb') as f:
-      rhs = json.load(f)
-    # The isolated files contain the name of the build dir.  Until that's
-    # fixed (https://crbug.com/907488), change the rhs to use the lhs's
-    # build dir -- we care more about the hash differences than about
-    # the name of the build dir.
-    with open(second_filepath, 'rb') as f:
-      lhs_cwd = lhs['relative_cwd'].replace('\\', '\\\\')
-      rhs_cwd = rhs['relative_cwd'].replace('\\', '\\\\')
-      rhs = json.loads(f.read().replace(rhs_cwd, lhs_cwd))
-    diff = diff_dict(lhs, rhs)
-    if diff:
-      return '\n' + '\n'.join('  ' + line for line in diff.splitlines())
-    # else, falls through binary comparison, it must be binary equal too.
 
   ret = None
   file_len = os.stat(first_filepath).st_size
