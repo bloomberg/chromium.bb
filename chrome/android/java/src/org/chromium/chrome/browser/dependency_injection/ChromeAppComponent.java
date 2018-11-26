@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 import javax.inject.Singleton;
 
@@ -30,6 +31,7 @@ public interface ChromeAppComponent {
             CustomTabActivityModule customTabActivityModule);
 
     CustomTabsConnection resolveCustomTabsConnection();
+    ChromePreferenceManager resolvePreferenceManager();
 
     // Temporary getters for DI migration process. All of these getters
     // should eventually be replaced with constructor injection.

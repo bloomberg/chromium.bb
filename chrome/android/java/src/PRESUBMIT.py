@@ -152,6 +152,8 @@ def _CheckAlertDialogBuilder(input_api, output_api):
           'ConfirmSyncDataStateMachineDelegate.java',
       'chrome/android/java/src/org/chromium/chrome/browser/preferences/'
           'datareduction/DataReductionStatsPreference.java',
+      'chrome/android/java/src/org/chromium/chrome/browser/browserservices/'
+          'ClearDataDialogActivity.java',
   )
   error_msg = '''
   AlertDialoga.Builder Check failed:

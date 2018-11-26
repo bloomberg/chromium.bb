@@ -791,4 +791,12 @@
     <style name="TextAppearance.OmniboxVerboseStatus" parent="@android:style/TextAppearance.Medium">
         <item name="android:textSize">@dimen/location_bar_url_text_size</item>
     </style>
+
+    <!-- Trusted Web Activities -->
+    <style name="ClearDataDialogActivityTheme" parent="FullscreenTransparentActivityTheme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowEnterAnimation">@null</item>
+        <item name="android:windowExitAnimation">@null</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
 </resources>

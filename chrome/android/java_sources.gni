@@ -182,6 +182,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/browserservices/BrowserSessionContentHandler.java",
   "java/src/org/chromium/chrome/browser/browserservices/BrowserSessionContentUtils.java",
   "java/src/org/chromium/chrome/browser/browserservices/BrowserSessionDataProvider.java",
+  "java/src/org/chromium/chrome/browser/browserservices/ClearDataDialogActivity.java",
   "java/src/org/chromium/chrome/browser/browserservices/ClearDataNotificationPublisher.java",
   "java/src/org/chromium/chrome/browser/browserservices/ClearDataService.java",
   "java/src/org/chromium/chrome/browser/browserservices/ClientAppBroadcastReceiver.java",

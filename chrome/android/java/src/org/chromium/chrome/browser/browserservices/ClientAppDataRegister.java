@@ -40,22 +40,28 @@ public class ClientAppDataRegister {
     /**
      * Saves to Preferences that the app with |uid| has the application name |appName| and when it
      * is removed or cleared, we should consider doing the same with Chrome data relevant to
-     * |domain|.
+     * |origin|. |domain| is stored as well in order to not have to derive it from origin while
+     * handling uninstallation or data clear, since that would require loading native libraries.
      */
-    public void registerPackageForDomain(int uid, String appName, String domain) {
+    public void registerPackageForOrigin(int uid, String appName, String packageName,
+            String domain, Origin origin) {
         // Store the UID in the main Chrome Preferences.
         Set<String> uids = getUids();
         uids.add(String.valueOf(uid));
         setUids(uids);
 
-        // Store the package name for the UID.
-        mPreferences.edit().putString(createAppNameKey(uid), appName).apply();
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString(createAppNameKey(uid), appName);
+        editor.putString(createPackageNameKey(uid), packageName);
+        writeToSet(editor, createDomainKey(uid), domain);
+        writeToSet(editor, createOriginKey(uid), origin.toString());
+        editor.apply();
+    }
 
-        // Store the domain for the UID.
-        String key = createDomainKey(uid);
-        Set<String> domains = new HashSet<>(mPreferences.getStringSet(key, Collections.emptySet()));
-        domains.add(domain);
-        mPreferences.edit().putStringSet(key, domains).apply();
+    private void writeToSet(SharedPreferences.Editor editor, String key, String newElement) {
+        Set<String> set = new HashSet<>(mPreferences.getStringSet(key, Collections.emptySet()));
+        set.add(newElement);
+        editor.putStringSet(key, set);
     }
 
     private void setUids(Set<String> uids) {
@@ -71,8 +77,12 @@ public class ClientAppDataRegister {
         uids.remove(String.valueOf(uid));
         setUids(uids);
 
-        mPreferences.edit().putString(createAppNameKey(uid), null).apply();
-        mPreferences.edit().putStringSet(createDomainKey(uid), null).apply();
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString(createAppNameKey(uid), null);
+        editor.putString(createPackageNameKey(uid), null);
+        editor.putStringSet(createDomainKey(uid), null);
+        editor.putStringSet(createOriginKey(uid), null);
+        editor.apply();
     }
 
     /* package */ boolean chromeHoldsDataForPackage(int uid) {
@@ -80,10 +90,17 @@ public class ClientAppDataRegister {
     }
 
     /**
-     * Gets the package name that was previously registered for the uid.
+     * Gets the application name that was previously registered for the uid.
      */
     /* package */ @Nullable String getAppNameForRegisteredUid(int uid) {
         return mPreferences.getString(createAppNameKey(uid), null);
+    }
+
+    /**
+     * Gets the package name that was previously registered for the uid.
+     */
+    /* package */ @Nullable String getPackageNameForRegisteredUid(int uid) {
+        return mPreferences.getString(createPackageNameKey(uid), null);
     }
 
     /**
@@ -95,18 +112,30 @@ public class ClientAppDataRegister {
     }
 
     /**
-     * Creates the Preferences key to access the app name.
-     * If you modify this you'll have to migrate old data.
+     * Gets all the origins that have been registered for the uid.
+     * Do not modify the set returned by this method.
      */
+    /* package */ Set<String> getOriginsForRegisteredUid(int uid) {
+        return mPreferences.getStringSet(createOriginKey(uid), Collections.emptySet());
+    }
+
+
+    // Methods below create the Preferences keys to access the data associated with given app uid.
+    // If you modify any of them you'll have to migrate old data.
+
     private static String createAppNameKey(int uid) {
         return uid + ".appName";
     }
 
-    /**
-     * Creates the Preferences key to access the set of domains for an app.
-     * If you modify this you'll have to migrate old data.
-     */
+    private static String createPackageNameKey(int uid) {
+        return uid + ".packageName";
+    }
+
     private static String createDomainKey(int uid) {
         return uid + ".domain";
+    }
+
+    private static String createOriginKey(int uid) {
+        return uid + ".origin";
     }
 }

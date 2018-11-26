@@ -16,6 +16,7 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
+import android.support.annotation.Nullable;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.Spannable;
@@ -51,15 +52,19 @@ import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.SearchUtils;
 import org.chromium.chrome.browser.preferences.website.Website.StoredDataClearedCallback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Shows a list of sites in a particular Site Settings category. For example, this could show all
@@ -74,6 +79,12 @@ public class SingleCategoryPreferences extends PreferenceFragment
     // e.g. Location/Popups/All sites (if blank).
     public static final String EXTRA_CATEGORY = "category";
     public static final String EXTRA_TITLE = "title";
+
+    /**
+     * If present, the list of websites will be filtered by domain using
+     * {@link UrlUtilities#getDomainAndRegistry}.
+     */
+    public static final String EXTRA_SELECTED_DOMAINS = "selected_domains";
 
     // The view to show when the list is empty.
     private TextView mEmptyView;
@@ -99,6 +110,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
     private List<WebsitePreference> mWebsites;
     // Whether tri-state ContentSetting is required.
     private boolean mRequiresTriStateSetting;
+
+    @Nullable
+    private Set<String> mSelectedDomains;
 
     // Keys for common ContentSetting toggle for categories. These two toggles are mutually
     // exclusive: a category should only show one of them, at most.
@@ -298,6 +312,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
         String title = getArguments().getString(EXTRA_TITLE);
         if (title != null) getActivity().setTitle(title);
+
+        mSelectedDomains = getArguments().containsKey(EXTRA_SELECTED_DOMAINS)
+                ? new HashSet<>(getArguments().getStringArrayList(EXTRA_SELECTED_DOMAINS))
+                : null;
 
         configureGlobalToggles();
 
@@ -576,6 +594,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
     }
 
     private boolean addWebsites(Collection<Website> sites) {
+        filterSelectedDomains(sites);
+
         List<WebsitePreference> websites = new ArrayList<>();
 
         // Find origins matching the current search.
@@ -648,6 +668,19 @@ public class SingleCategoryPreferences extends PreferenceFragment
         updateAllowedHeader(mAllowedSiteCount, !isBlocked());
 
         return websites.size() != 0;
+    }
+
+    private void filterSelectedDomains(Collection<Website> websites) {
+        if (mSelectedDomains == null) {
+            return;
+        }
+        for (Iterator<Website> it = websites.iterator(); it.hasNext();) {
+            String domain =
+                    UrlUtilities.getDomainAndRegistry(it.next().getAddress().getOrigin(), true);
+            if (!mSelectedDomains.contains(domain)) {
+                it.remove();
+            }
+        }
     }
 
     private boolean addChosenObjects(Collection<Website> sites) {

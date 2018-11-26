@@ -27,10 +27,10 @@ import android.widget.ListView;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
-import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -121,7 +121,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
             if (getActivity() == null) return;
 
             // TODO(mvanouwerkerk): Avoid modifying the outer class from this inner class.
-            mSite = mergePermissionInfoForTopLevelOrigin(mSiteAddress, sites);
+            mSite = mergePermissionAndStorageInfoForTopLevelOrigin(mSiteAddress, sites);
 
             displaySitePermissions();
         }
@@ -149,9 +149,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
      */
     public static Bundle createFragmentArgsForSite(String url) {
         Bundle fragmentArgs = new Bundle();
-        // TODO(mvanouwerkerk): Define a pure getOrigin method in UrlUtilities that is the
-        // equivalent of the call below, because this is perfectly fine for non-display purposes.
-        String origin = UrlFormatter.formatUrlForSecurityDisplay(url);
+        String origin = new Origin(url).toString();
         fragmentArgs.putSerializable(EXTRA_SITE_ADDRESS, WebsiteAddress.create(origin));
         return fragmentArgs;
     }
@@ -182,16 +180,16 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     /**
      * Given an address and a list of sets of websites, returns a new site with the same origin
-     * as |address| which has merged into it the permissions of the matching input sites. If a
-     * permission is found more than once, the one found first is used and the latter are ignored.
-     * This should not drop any relevant data as there should not be duplicates like that in the
-     * first place.
+     * as |address| which has merged into it the permissions and storage info of the matching input
+     * sites. If a permission is found more than once, the one found first is used and the latter
+     * are ignored. This should not drop any relevant data as there should not be duplicates like
+     * that in the first place.
      *
      * @param address The address to search for.
      * @param websites The websites to search in.
      * @return The merged website.
      */
-    private static Website mergePermissionInfoForTopLevelOrigin(
+    private static Website mergePermissionAndStorageInfoForTopLevelOrigin(
             WebsiteAddress address, Collection<Website> websites) {
         String origin = address.getOrigin();
         String host = Uri.parse(origin).getHost();

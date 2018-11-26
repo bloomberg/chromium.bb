@@ -480,6 +480,18 @@ public class ChromePreferenceManager {
     }
 
     /**
+     * Removes the record of accepting the Trusted Web Activity "Running in Chrome" disclosure for
+     * TWAs launched by the given package.
+     */
+    public void removeTwaDisclosureAcceptanceForPackage(String packageName) {
+        Set<String> packages = new HashSet<>(getTrustedWebActivityDisclosureAcceptedPackages());
+        if (packages.remove(packageName)) {
+            mSharedPreferences.edit().putStringSet(
+                    TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packages).apply();
+        }
+    }
+
+    /**
      * Checks whether the given package was previously passed to
      * {@link #setUserAcceptedTwaDisclosureForPackage(String)}.
      */

@@ -7,9 +7,12 @@ package org.chromium.chrome.browser.browserservices;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -60,19 +63,22 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
             Intent.ACTION_PACKAGE_FULLY_REMOVED
     ));
 
-    private final ClearDataNotificationPublisher mNotificationPublisher;
+    private final ClearDataStrategy mClearDataStrategy;
     private final ClientAppDataRegister mRegister;
+    private final ChromePreferenceManager mChromePreferenceManager;
 
     /** Constructor with default dependencies for Android. */
     public ClientAppBroadcastReceiver() {
-        this(new ClearDataNotificationPublisher(), new ClientAppDataRegister());
+        this(new DialogClearDataStrategy(), new ClientAppDataRegister(),
+                ChromeApplication.getComponent().resolvePreferenceManager());
     }
 
     /** Constructor to allow dependency injection in tests. */
-    public ClientAppBroadcastReceiver(ClearDataNotificationPublisher notificationPublisher,
-            ClientAppDataRegister register) {
-        mNotificationPublisher = notificationPublisher;
+    public ClientAppBroadcastReceiver(ClearDataStrategy strategy, ClientAppDataRegister register,
+            ChromePreferenceManager manager) {
+        mClearDataStrategy = strategy;
         mRegister = register;
+        mChromePreferenceManager = manager;
     }
 
     @Override
@@ -98,12 +104,57 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
             }
         }
 
-        String appName = mRegister.getAppNameForRegisteredUid(uid);
-        Set<String> domains = mRegister.getDomainsForRegisteredUid(uid);
+        boolean uninstalled = Intent.ACTION_PACKAGE_FULLY_REMOVED.equals(intent.getAction());
+        mClearDataStrategy.execute(context, mRegister, uid, uninstalled);
+        clearPreferences(uid, uninstalled);
+    }
 
-        for (String domain : domains) {
-            boolean uninstalled = Intent.ACTION_PACKAGE_FULLY_REMOVED.equals(intent.getAction());
-            mNotificationPublisher.showClearDataNotification(context, appName, domain, uninstalled);
+    private void clearPreferences(int uid, boolean uninstalled) {
+        String packageName = mRegister.getPackageNameForRegisteredUid(uid);
+        mChromePreferenceManager.removeTwaDisclosureAcceptanceForPackage(packageName);
+        if (uninstalled) {
+            mRegister.removePackage(uid);
+        }
+    }
+
+    interface ClearDataStrategy {
+        void execute(Context context, ClientAppDataRegister register, int uid, boolean uninstalled);
+    }
+
+    static class NotificationClearDataStrategy implements ClearDataStrategy {
+        private final ClearDataNotificationPublisher mNotificationPublisher;
+
+        NotificationClearDataStrategy(ClearDataNotificationPublisher notificationPublisher) {
+            mNotificationPublisher = notificationPublisher;
+        }
+
+        @Override
+        public void execute(Context context, ClientAppDataRegister register,
+                int uid, boolean uninstalled) {
+            String appName = register.getAppNameForRegisteredUid(uid);
+            Set<String> domains = register.getDomainsForRegisteredUid(uid);
+
+            for (String domain : domains) {
+                mNotificationPublisher.showClearDataNotification(context, appName, domain,
+                        uninstalled);
+            }
+        }
+    }
+
+    static class DialogClearDataStrategy implements ClearDataStrategy {
+        @Override
+        public void execute(Context context, ClientAppDataRegister register, int uid,
+                boolean uninstalled) {
+            // Retrieving domains and origins ahead of time, because the register is about to be
+            // cleaned up.
+            Set<String> domains = register.getDomainsForRegisteredUid(uid);
+            Set<String> origins = register.getOriginsForRegisteredUid(uid);
+            Intent intent = ClearDataDialogActivity.createIntent(context, domains, origins);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+            }
+            context.startActivity(intent);
         }
     }
 }
