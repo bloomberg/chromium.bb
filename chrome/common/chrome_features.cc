@@ -652,9 +652,6 @@ const base::Feature kUsbguard{"USBGuard", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kShillSandboxing{"ShillSandboxing",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable restriction of symlink traversal on user-supplied filesystems.
-const base::Feature kFsNosymfollow{"FsNosymfollow",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 // Enable showing a tab-modal dialog while a Web Authentication API request is

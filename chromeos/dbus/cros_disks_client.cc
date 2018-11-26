@@ -25,6 +25,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -170,6 +171,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
     writer.AppendString(source_format);
     std::vector<std::string> options =
         ComposeMountOptions(mount_options, mount_label, access_mode, remount);
+    if (base::FeatureList::IsEnabled(chromeos::features::kFsNosymfollow))
+      options.push_back("nosymfollow");
     writer.AppendArrayOfStrings(options);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::BindOnce(&CrosDisksClientImpl::OnMount,

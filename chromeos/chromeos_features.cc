@@ -55,6 +55,10 @@ const base::Feature kEnableUnifiedMultiDeviceSettings{
 const base::Feature kEnableUnifiedMultiDeviceSetup{
     "EnableUnifiedMultiDeviceSetup", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable restriction of symlink traversal on user-supplied filesystems.
+const base::Feature kFsNosymfollow{"FsNosymfollow",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // TODO(https://crbug.com/837156): Add this feature to chrome://flags.
 // If enabled, allows the qualified IME extension to connect to IME service.
 const base::Feature kImeServiceConnectable{"ImeServiceConnectable",

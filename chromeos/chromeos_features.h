@@ -26,6 +26,7 @@ CHROMEOS_EXPORT extern const base::Feature kDriveFs;
 CHROMEOS_EXPORT extern const base::Feature kMyFilesVolume;
 CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSettings;
 CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSetup;
+CHROMEOS_EXPORT extern const base::Feature kFsNosymfollow;
 CHROMEOS_EXPORT extern const base::Feature kImeServiceConnectable;
 CHROMEOS_EXPORT extern const base::Feature kInstantTethering;
 CHROMEOS_EXPORT extern const base::Feature kMultiDeviceApi;
