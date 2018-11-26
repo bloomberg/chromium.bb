@@ -781,3 +781,37 @@ TEST_F(AppListSyncableServiceTest, FirstAvailablePosition) {
   EXPECT_TRUE(page_break_position.CreateAfter().Equals(
       model_updater()->GetFirstAvailablePosition()));
 }
+
+// Test that installing an app between two items with the same position will put
+// that app at next available position. The test also ensures that no crash
+// occurs (See https://crbug.com/907637).
+TEST_F(AppListSyncableServiceTest, FirstAvailablePositionNotExist) {
+  RemoveAllExistingItems();
+
+  // Populate the first page with items and leave 1 empty slot at the end.
+  const int max_items_in_first_page =
+      app_list::AppListConfig::instance().GetMaxNumOfItemsPerPage(0);
+  syncer::StringOrdinal last_app_position =
+      syncer::StringOrdinal::CreateInitialOrdinal();
+  for (int i = 0; i < max_items_in_first_page - 1; ++i) {
+    std::unique_ptr<ChromeAppListItem> item =
+        std::make_unique<ChromeAppListItem>(
+            profile_.get(), GenerateId("item_id" + base::IntToString(i)),
+            model_updater());
+    item->SetPosition(last_app_position);
+    model_updater()->AddItem(std::move(item));
+    if (i < max_items_in_first_page - 2)
+      last_app_position = last_app_position.CreateAfter();
+  }
+
+  // Add a "page break" item at the end of first page with the same position as
+  // last app item.
+  std::unique_ptr<ChromeAppListItem> page_break_item =
+      std::make_unique<ChromeAppListItem>(
+          profile_.get(), GenerateId("page_break_item_id"), model_updater());
+  page_break_item->SetPosition(last_app_position);
+  page_break_item->SetIsPageBreak(true);
+  model_updater()->AddItem((std::move(page_break_item)));
+  EXPECT_TRUE(last_app_position.CreateAfter().Equals(
+      model_updater()->GetFirstAvailablePosition()));
+}
