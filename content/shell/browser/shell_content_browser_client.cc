@@ -377,13 +377,12 @@ ShellContentBrowserClient::GetDevToolsManagerDelegate() {
 }
 
 void ShellContentBrowserClient::OpenURL(
-    BrowserContext* browser_context,
+    SiteInstance* site_instance,
     const OpenURLParams& params,
     const base::Callback<void(WebContents*)>& callback) {
-  callback.Run(Shell::CreateNewWindow(browser_context,
-                                      params.url,
-                                      nullptr,
-                                      gfx::Size())->web_contents());
+  callback.Run(Shell::CreateNewWindow(site_instance->GetBrowserContext(),
+                                      params.url, nullptr, gfx::Size())
+                   ->web_contents());
 }
 
 scoped_refptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(

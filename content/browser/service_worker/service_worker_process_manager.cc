@@ -194,6 +194,15 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
   worker_process_map_.erase(it);
 }
 
+SiteInstance* ServiceWorkerProcessManager::GetSiteInstanceForWorker(
+    int embedded_worker_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto it = worker_process_map_.find(embedded_worker_id);
+  if (it == worker_process_map_.end())
+    return nullptr;
+  return it->second.get();
+}
+
 }  // namespace content
 
 namespace std {
