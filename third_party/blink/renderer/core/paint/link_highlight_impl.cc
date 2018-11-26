@@ -317,8 +317,8 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
       timing_function));
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
-      CompositorKeyframeModel::Create(*curve, CompositorTargetProperty::OPACITY,
-                                      0, 0);
+      CompositorKeyframeModel::Create(
+          *curve, compositor_target_property::OPACITY, 0, 0);
 
   content_layer_->SetIsDrawable(true);
   compositor_animation_->AddKeyframeModel(std::move(keyframe_model));

@@ -25,7 +25,7 @@ namespace blink {
 
 CompositorKeyframeModel::CompositorKeyframeModel(
     const CompositorAnimationCurve& curve,
-    CompositorTargetProperty::Type target_property,
+    compositor_target_property::Type target_property,
     int keyframe_model_id,
     int group_id) {
   if (!keyframe_model_id)
@@ -48,8 +48,9 @@ int CompositorKeyframeModel::Group() const {
   return keyframe_model_->group();
 }
 
-CompositorTargetProperty::Type CompositorKeyframeModel::TargetProperty() const {
-  return static_cast<CompositorTargetProperty::Type>(
+compositor_target_property::Type CompositorKeyframeModel::TargetProperty()
+    const {
+  return static_cast<compositor_target_property::Type>(
       keyframe_model_->target_property_id());
 }
 

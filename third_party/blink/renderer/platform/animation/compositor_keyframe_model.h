@@ -33,7 +33,7 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
 
   static std::unique_ptr<CompositorKeyframeModel> Create(
       const blink::CompositorAnimationCurve& curve,
-      CompositorTargetProperty::Type target,
+      compositor_target_property::Type target,
       int group_id,
       int keyframe_model_id) {
     return base::WrapUnique(new CompositorKeyframeModel(
@@ -46,7 +46,7 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
   int Id() const;
   int Group() const;
 
-  CompositorTargetProperty::Type TargetProperty() const;
+  compositor_target_property::Type TargetProperty() const;
 
   void SetElementId(CompositorElementId element_id);
 
@@ -80,7 +80,7 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
 
  private:
   CompositorKeyframeModel(const CompositorAnimationCurve&,
-                          CompositorTargetProperty::Type,
+                          compositor_target_property::Type,
                           int keyframe_model_id,
                           int group_id);
 

@@ -64,21 +64,21 @@ TEST_F(CompositorAnimationTest, NullDelegate) {
       CompositorFloatAnimationCurve::Create();
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       CompositorKeyframeModel::Create(
-          *curve, CompositorTargetProperty::TRANSFORM, 1, 0);
+          *curve, compositor_target_property::TRANSFORM, 1, 0);
   animation->AddKeyframeModel(std::move(keyframe_model));
 
   animation->SetAnimationDelegate(delegate.get());
   EXPECT_FALSE(delegate->finished_);
 
   cc_animation->NotifyKeyframeModelFinishedForTesting(
-      CompositorTargetProperty::TRANSFORM, 1);
+      compositor_target_property::TRANSFORM, 1);
   EXPECT_TRUE(delegate->finished_);
 
   delegate->ResetFlags();
 
   animation->SetAnimationDelegate(nullptr);
   cc_animation->NotifyKeyframeModelFinishedForTesting(
-      CompositorTargetProperty::TRANSFORM, 1);
+      compositor_target_property::TRANSFORM, 1);
   EXPECT_FALSE(delegate->finished_);
 }
 
@@ -94,15 +94,15 @@ TEST_F(CompositorAnimationTest, NotifyFromCCAfterCompositorAnimationDeletion) {
   std::unique_ptr<CompositorAnimationCurve> curve =
       CompositorFloatAnimationCurve::Create();
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
-      CompositorKeyframeModel::Create(*curve, CompositorTargetProperty::OPACITY,
-                                      1, 0);
+      CompositorKeyframeModel::Create(
+          *curve, compositor_target_property::OPACITY, 1, 0);
   animation->AddKeyframeModel(std::move(keyframe_model));
 
   animation->SetAnimationDelegate(delegate.get());
   EXPECT_FALSE(delegate->finished_);
 
   cc_animation->NotifyKeyframeModelFinishedForTesting(
-      CompositorTargetProperty::OPACITY, 1);
+      compositor_target_property::OPACITY, 1);
   EXPECT_TRUE(delegate->finished_);
   delegate->finished_ = false;
 
@@ -111,7 +111,7 @@ TEST_F(CompositorAnimationTest, NotifyFromCCAfterCompositorAnimationDeletion) {
 
   // No notifications. Doesn't crash.
   cc_animation->NotifyKeyframeModelFinishedForTesting(
-      CompositorTargetProperty::OPACITY, 1);
+      compositor_target_property::OPACITY, 1);
   EXPECT_FALSE(delegate->finished_);
 }
 

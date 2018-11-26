@@ -226,6 +226,7 @@ _CONFIG = [
             # Nested namespaces under the blink namespace
             'background_scheduler::.+',
             'canvas_heuristic_parameters::.+',
+            'compositor_target_property::.+',
             'cors::.+',
             'css_parsing_utils::.+',
             'cssvalue::.+',
