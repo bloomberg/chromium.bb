@@ -1654,6 +1654,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   if ([self isTabNativePage:currentTab]) {
     [currentTab.webController.view setNeedsLayout];
   }
+
+  // Update the tab strip placement.
+  if (self.tabStripView) {
+    [self showTabStripView:self.tabStripView];
+  }
 }
 
 - (void)viewDidLayoutSubviews {
