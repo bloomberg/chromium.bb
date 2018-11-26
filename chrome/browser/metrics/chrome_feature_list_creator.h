@@ -29,6 +29,10 @@ class ChromeFeatureListCreator {
   // base::FeatureList::SetInstance() to set the global instance.
   void CreateFeatureList();
 
+  // Sets the application locale and verifies (via a CHECK) that it matches
+  // what was used when creating field trials.
+  void SetApplicationLocale(const std::string& locale);
+
   // Gets the MetricsServicesManagerClient* used in this class.
   metrics_services_manager::MetricsServicesManagerClient*
   GetMetricsServicesManagerClient();
@@ -52,10 +56,6 @@ class ChromeFeatureListCreator {
     return browser_policy_connector_.get();
   }
   const std::string& actual_locale() { return actual_locale_; }
-
-  void SetApplicationLocale(const std::string& locale) {
-    actual_locale_ = locale;
-  }
 
  private:
   void CreatePrefService();

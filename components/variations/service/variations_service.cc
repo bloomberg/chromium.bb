@@ -419,6 +419,13 @@ GURL VariationsService::GetVariationsServerURL(HttpOptions http_options) {
   return server_url;
 }
 
+void VariationsService::EnsureLocaleEquals(const std::string& locale) {
+  // Uses a CHECK rather than a DCHECK to ensure that issues are caught since
+  // problems in this area may only appear in the wild due to official builds
+  // and end user machines.
+  CHECK_EQ(locale, field_trial_creator_.application_locale());
+}
+
 // static
 std::string VariationsService::GetDefaultVariationsServerURLForTesting() {
   return kDefaultServerUrl;

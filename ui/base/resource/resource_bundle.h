@@ -156,7 +156,7 @@ class UI_BASE_EXPORT ResourceBundle {
       const base::MemoryMappedFile::Region& region);
 
   // Check if the .pak for the given locale exists.
-  bool LocaleDataPakExists(const std::string& locale);
+  static bool LocaleDataPakExists(const std::string& locale);
 
   // Registers additional data pack files with this ResourceBundle.  When
   // looking for a DataResource, we will search these files after searching the
@@ -283,8 +283,8 @@ class UI_BASE_EXPORT ResourceBundle {
   // string if no locale data files are found and |test_file_exists| is true.
   // Used on Android to load the local file in the browser process and pass it
   // to the sandboxed renderer process.
-  base::FilePath GetLocaleFilePath(const std::string& app_locale,
-                                   bool test_file_exists);
+  static base::FilePath GetLocaleFilePath(const std::string& app_locale,
+                                          bool test_file_exists);
 
   // Returns the maximum scale factor currently loaded.
   // Returns SCALE_FACTOR_100P if no resource is loaded.

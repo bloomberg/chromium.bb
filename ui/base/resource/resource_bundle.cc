@@ -242,6 +242,7 @@ void ResourceBundle::LoadSecondaryLocaleDataWithPakFileRegion(
 }
 
 #if !defined(OS_ANDROID)
+// static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   return !GetLocaleFilePath(locale, true).empty();
 }
@@ -288,6 +289,7 @@ void ResourceBundle::AddDataPackFromFileRegion(
 }
 
 #if !defined(OS_MACOSX)
+// static
 base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
                                                  bool test_file_exists) {
   if (app_locale.empty())
@@ -316,9 +318,14 @@ base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
 #endif
   }
 
-  if (delegate_) {
-    locale_file_path =
-        delegate_->GetPathForLocalePack(locale_file_path, app_locale);
+  // Note: The delegate GetPathForLocalePack() override is currently only used
+  // by CastResourceDelegate, which does not call this function prior to
+  // initializing the ResourceBundle. This called earlier than that by the
+  // variations code which also has a CHECK that an inconsistent value does not
+  // get returned via VariationsService::EnsureLocaleEquals().
+  if (HasSharedInstance() && GetSharedInstance().delegate_) {
+    locale_file_path = GetSharedInstance().delegate_->GetPathForLocalePack(
+        locale_file_path, app_locale);
   }
 
   // Don't try to load empty values or values that are not absolute paths.
