@@ -61,6 +61,9 @@ class ModelTypeStore : public ModelTypeStoreBase {
   using ReadMetadataCallback =
       base::OnceCallback<void(const base::Optional<ModelError>& error,
                               std::unique_ptr<MetadataBatch> metadata_batch)>;
+  // Callback that runs on the backend sequence, see ReadAllDataAndPreprocess().
+  using PreprocessCallback = base::OnceCallback<base::Optional<ModelError>(
+      std::unique_ptr<RecordList> data_records)>;
 
   // Read operations return records either for all entries or only for ones
   // identified in |id_list|. |error| is nullopt if all records were read
@@ -73,6 +76,15 @@ class ModelTypeStore : public ModelTypeStoreBase {
   // ReadMetadataCallback will be invoked with three parameters: result of
   // operation, list of metadata records and global metadata.
   virtual void ReadAllMetadata(ReadMetadataCallback callback) = 0;
+
+  // Similar to ReadAllData() but allows some custom processing in the
+  // background sequence (e.g. proto parsing). Note that |preprocess_callback|
+  // will not run if reading itself triggers an error.
+  // |completion_on_frontend_sequence_callback| is guaranteed to outlive
+  // |preprocess_on_backend_sequence_callback|.
+  virtual void ReadAllDataAndPreprocess(
+      PreprocessCallback preprocess_on_backend_sequence_callback,
+      CallbackWithResult completion_on_frontend_sequence_callback) = 0;
 
   // Creates write batch for write operations.
   virtual std::unique_ptr<WriteBatch> CreateWriteBatch() = 0;

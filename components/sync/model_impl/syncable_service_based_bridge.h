@@ -38,6 +38,8 @@ class SyncableService;
 // considered an implementation detail.
 class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
  public:
+  using InMemoryStore = std::map<std::string, sync_pb::PersistedEntityData>;
+
   // Used for passwords only.
   // TODO(crbug.com/856941): Remove when PASSWORDS are migrated to USS, which
   // will likely make this API unnecessary.
@@ -96,18 +98,16 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
 
   // For testing.
   static std::unique_ptr<SyncChangeProcessor>
-  CreateLocalChangeProcessorForTesting(
-      ModelType type,
-      ModelTypeStore* store,
-      std::map<std::string, sync_pb::PersistedEntityData>* in_memory_store,
-      ModelTypeChangeProcessor* other);
+  CreateLocalChangeProcessorForTesting(ModelType type,
+                                       ModelTypeStore* store,
+                                       InMemoryStore* in_memory_store,
+                                       ModelTypeChangeProcessor* other);
 
  private:
   void OnStoreCreated(const base::Optional<ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
-  void OnReadAllDataForInit(
-      const base::Optional<ModelError>& error,
-      std::unique_ptr<ModelTypeStore::RecordList> record_list);
+  void OnReadAllDataForInit(std::unique_ptr<InMemoryStore> in_memory_store,
+                            const base::Optional<ModelError>& error);
   void OnReadAllMetadataForInit(const base::Optional<ModelError>& error,
                                 std::unique_ptr<MetadataBatch> metadata_batch);
   base::Optional<ModelError> MaybeStartSyncableService() WARN_UNUSED_RESULT;
@@ -134,7 +134,7 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
 
   // In-memory copy of |store_|, needed for remote deletions, because we need to
   // provide specifics of the deleted entity to the SyncableService.
-  std::map<std::string, sync_pb::PersistedEntityData> in_memory_store_;
+  InMemoryStore in_memory_store_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
