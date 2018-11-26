@@ -132,7 +132,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     InitializeHandler(request.get(), skip_service_worker, resource_type);
     ASSERT_TRUE(GetHandler(request.get()));
     MaybeCreateJob(request.get());
-    EXPECT_EQ(url, provider_host_->document_url().spec());
+    EXPECT_EQ(url, provider_host_->url().spec());
   }
 
   void InitializeHandlerForNavigationSimpleTest(const std::string& url,
@@ -239,12 +239,13 @@ TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTPS_SKIP) {
 TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_IMAGE) {
   InitializeProviderHostForWindow();
   // Check provider host's URL after initializing a handler for an image.
-  provider_host_->SetDocumentUrl(GURL("https://host/scope/doc"));
+  provider_host_.get()->UpdateURLs(GURL("https://host/scope/doc"),
+                                   GURL("https://host/scope/doc"));
   std::unique_ptr<net::URLRequest> request =
       CreateRequest("https://host/scope/image", "GET");
   InitializeHandler(request.get(), true, RESOURCE_TYPE_IMAGE);
   ASSERT_FALSE(GetHandler(request.get()));
-  EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->document_url());
+  EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->url());
 }
 
 TEST_F(ServiceWorkerRequestHandlerTest, InitializeForNavigation_HTTP) {

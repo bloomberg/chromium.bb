@@ -324,7 +324,7 @@ void AddNonWindowClient(const ServiceWorkerProviderHost* host,
     return;
 
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
-      host->document_url(), host->client_uuid(), host_client_type,
+      host->url(), host->client_uuid(), host_client_type,
       blink::mojom::PageVisibilityState::kHidden,
       false,  // is_focused
       network::mojom::RequestContextFrameType::kNone, base::TimeTicks(),
@@ -539,7 +539,7 @@ void GetClient(const ServiceWorkerProviderHost* provider_host,
   }
 
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
-      provider_host->document_url(), provider_host->client_uuid(),
+      provider_host->url(), provider_host->client_uuid(),
       provider_host->client_type(), blink::mojom::PageVisibilityState::kHidden,
       false,  // is_focused
       network::mojom::RequestContextFrameType::kNone, base::TimeTicks(),

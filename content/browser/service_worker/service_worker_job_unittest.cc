@@ -2007,18 +2007,18 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
 
   // Make an in-scope client.
   ServiceWorkerProviderHost* client = CreateControllee();
-  client->SetDocumentUrl(in_scope);
+  client->UpdateURLs(in_scope, in_scope);
 
   // Make an in-scope reserved client.
   base::WeakPtr<ServiceWorkerProviderHost> reserved_client =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
           {} /* web_contents_getter */);
-  reserved_client->SetDocumentUrl(in_scope);
+  reserved_client->UpdateURLs(in_scope, in_scope);
 
   // Make an out-scope client.
   ServiceWorkerProviderHost* out_scope_client = CreateControllee();
-  out_scope_client->SetDocumentUrl(out_scope);
+  out_scope_client->UpdateURLs(out_scope, out_scope);
 
   // Make a new registration.
   GURL script("https://www.example.com/service_worker.js");

@@ -692,8 +692,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
             33 /* dummy render process id */, 1 /* dummy provider_id */,
             true /* is_parent_frame_secure */,
             wrapper()->context()->AsWeakPtr(), &remote_endpoints_.back());
-    host->SetDocumentUrl(
-        embedded_test_server()->GetURL("/service_worker/host"));
+    const GURL url = embedded_test_server()->GetURL("/service_worker/host");
+    host->UpdateURLs(url, url);
     host->SetControllerRegistration(registration_,
                                     false /* notify_controllerchange */);
     wrapper()->context()->AddProviderHost(std::move(host));

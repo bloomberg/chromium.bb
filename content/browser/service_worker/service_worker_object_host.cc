@@ -188,7 +188,7 @@ ServiceWorkerObjectHost::ServiceWorkerObjectHost(
     scoped_refptr<ServiceWorkerVersion> version)
     : context_(context),
       provider_host_(provider_host),
-      provider_origin_(url::Origin::Create(provider_host->document_url())),
+      provider_origin_(url::Origin::Create(provider_host->url())),
       version_(std::move(version)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -275,8 +275,7 @@ void ServiceWorkerObjectHost::DispatchExtendableMessageEvent(
     std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort);
     return;
   }
-  DCHECK_EQ(provider_origin_,
-            url::Origin::Create(provider_host_->document_url()));
+  DCHECK_EQ(provider_origin_, url::Origin::Create(provider_host_->url()));
   switch (provider_host_->provider_type()) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:
       service_worker_client_utils::GetClient(

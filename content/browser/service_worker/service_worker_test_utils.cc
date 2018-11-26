@@ -194,8 +194,6 @@ CreateProviderHostForServiceWorkerContext(
           std::move(context), base::WrapRefCounted(hosted_version),
           &provider_info);
 
-  host->SetDocumentUrl(hosted_version->script_url());
-
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory;
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     loader_factory = network::SharedURLLoaderFactory::Create(

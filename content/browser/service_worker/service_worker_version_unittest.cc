@@ -586,7 +586,7 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
       33 /* dummy render process id */, 1 /* dummy provider_id */,
       true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
       &remote_endpoint);
-  host->SetDocumentUrl(registration_->scope());
+  host->UpdateURLs(registration_->scope(), registration_->scope());
   host->SetControllerRegistration(registration_, false);
   EXPECT_TRUE(version_->HasControllee());
   EXPECT_TRUE(host->controller());

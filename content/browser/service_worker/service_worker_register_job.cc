@@ -662,8 +662,7 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
                true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (!ServiceWorkerUtils::ScopeMatches(registration->scope(),
-                                          host->document_url())) {
+    if (!ServiceWorkerUtils::ScopeMatches(registration->scope(), host->url())) {
       continue;
     }
     host->AddMatchingRegistration(registration);

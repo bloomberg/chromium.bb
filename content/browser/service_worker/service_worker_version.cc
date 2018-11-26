@@ -1121,7 +1121,7 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
   ServiceWorkerProviderHost* provider_host =
       context_->GetProviderHostByClientID(client_uuid);
   if (!provider_host ||
-      provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+      provider_host->url().GetOrigin() != script_url_.GetOrigin()) {
     // The promise will be resolved to 'undefined'.
     // Note that we don't BadMessage here since Clients#get() can be passed an
     // arbitrary UUID. The BadMessages for the origin mismatches below are
@@ -1187,7 +1187,7 @@ void ServiceWorkerVersion::PostMessageToClient(
     // The client may already have been closed, just ignore.
     return;
   }
-  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+  if (provider_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received Client#postMessage() request for a cross-origin client.");
     binding_.Close();
@@ -1215,7 +1215,7 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
     std::move(callback).Run(nullptr /* client */);
     return;
   }
-  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+  if (provider_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received WindowClient#focus() request for a cross-origin client.");
     binding_.Close();
@@ -1270,7 +1270,7 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
                             std::string("The client was not found."));
     return;
   }
-  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+  if (provider_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received WindowClient#navigate() request for a cross-origin client.");
     binding_.Close();
@@ -1610,7 +1610,6 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   ServiceWorkerRegistration* registration =
       context_->GetLiveRegistration(registration_id_);
   DCHECK(registration);
-  provider_host_->SetDocumentUrl(script_url());
   service_worker_ptr_->InitializeGlobalScope(
       std::move(service_worker_host),
       provider_host_->CreateServiceWorkerRegistrationObjectInfo(
