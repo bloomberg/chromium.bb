@@ -1708,6 +1708,8 @@ jumbo_source_set("browser") {
     "shared_worker/shared_worker_script_loader_factory.h",
     "shared_worker/shared_worker_service_impl.cc",
     "shared_worker/shared_worker_service_impl.h",
+    "shared_worker/worker_script_fetch_initiator.cc",
+    "shared_worker/worker_script_fetch_initiator.h",
     "site_instance_impl.cc",
     "site_instance_impl.h",
     "speech/speech_recognition_dispatcher_host.cc",
