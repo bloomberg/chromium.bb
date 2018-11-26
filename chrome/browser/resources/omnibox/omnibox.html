@@ -72,8 +72,18 @@
         Show results per provider, not just merged results
       </label>
     </p>
-    <button id="copy-text" title="Copy visible table in text format. This is affected by the visibility of ouput; i.e. toggling `Show all details` affects what will be copied.">Copy as text</button>
-    <button id="copy-json" title="Copy responses in JSON format. This is not affected by the visibility of output and will copy responses in their entirety.">Copy as JSON</button>
+    <div class="section">
+      <button id="copy-text" title="Copy visible table in text format. This is affected by the visibility of ouput; i.e. toggling `Show all details` affects what will be copied.">Copy as text</button>
+      <button id="copy-json" title="Copy responses in JSON format. This is not affected by the visibility of output and will copy responses in their entirety.">Copy as JSON</button>
+    </div>
+    <div class="section">
+      <input id="filter-text" type="text" size="60" placeholder="Filter output">
+      <label class="toggle left-20">
+        <input id="filter-hide" type="checkbox">
+        <span class="toggle-off">Highlight</span>
+        <span class="toggle-on">Filter</span>
+      </label>
+    </div>
   </template>
 
   <template id="omnibox-output-template">
@@ -107,7 +117,11 @@
     </table>
   </template>
 
-  <omnibox-inputs id="omnibox-inputs" class="section"></omnibox-inputs>
-  <omnibox-output id="omnibox-output" class="section"></omnibox-output>
+  <div class="section">
+    <omnibox-inputs id="omnibox-inputs"></omnibox-inputs>
+  </div>
+  <div class="section">
+    <omnibox-output id="omnibox-output"></omnibox-output>
+  </div>
 </body>
 </html>

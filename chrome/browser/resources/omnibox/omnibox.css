@@ -10,13 +10,17 @@
   background-color: #C0C0C0;
 }
 
-.autocomplete-results-table td {
+.autocomplete-results-table tr {
   background-color: #F0F0F0;
 }
 
 .group-separator {
   display: block;
   text-decoration: underline;
+}
+
+.left-20 {
+  margin-left: 20px
 }
 
 .check-mark,
@@ -52,4 +56,33 @@ p {
 .additional-info-property,
 .additional-info-value {
   white-space: nowrap;
+}
+
+.filtered-hidden {
+  display: none;
+}
+
+.autocomplete-results-table .filtered-highlighted {
+  background-color: lightskyblue;
+  /* TODO(manukh) This is a placholder color until other ui changes occur. */
+}
+
+.toggle input,
+.toggle input:not(:checked) ~ .toggle-on,
+.toggle input:checked ~ .toggle-off {
+  display: none;
+}
+
+.toggle span {
+  user-select: none;
+  display: inline-block;
+  padding: 3px 5px;
+  min-width: 60px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid;
+}
+
+.toggle span:hover {
+  background-color: #f0f0f0;
 }

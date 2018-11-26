@@ -14,22 +14,41 @@ class OmniboxElement extends HTMLElement {
     this.attachShadow({mode: 'open'});
     const template = OmniboxElement.getTemplate(templateId);
     this.shadowRoot.appendChild(template);
+    /** @type {!ShadowRoot} */
+    this.shadowRoot;
   }
 
   /**
-   * Searches local shadow root for element by id
+   * Get an element that's known to exist within this OmniboxElement.
+   * Searches local shadow root for element by id.
    * @param {string} id
-   * @return {Element}
+   * @return {!Element}
    */
   $$(id) {
-    return this.shadowRoot.getElementById(id);
+    return OmniboxElement.getById_(id, (this.shadowRoot));
   }
 
   /**
+   * Get a template that's known to exist within the DOM document.
    * @param {string} templateId
-   * @return {Element}
+   * @return {!Element}
    */
   static getTemplate(templateId) {
-    return $(templateId).content.cloneNode(true);
+    return OmniboxElement.getById_(templateId).content.cloneNode(true);
+  }
+
+  /**
+   * Get an element that's known to exist by its ID. We use this instead of just
+   * calling getElementById because this lets us satisfy the JSCompiler type
+   * system.
+   * @private
+   * @param {string} id
+   * @param {!Node=} context
+   * @return {!Element}
+   */
+  static getById_(id, context) {
+    return assertInstanceof(
+        (context || document).getElementById(id), Element,
+        `Missing required element: ${id}`);
   }
 }

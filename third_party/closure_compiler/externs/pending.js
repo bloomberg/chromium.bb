@@ -112,3 +112,15 @@ Clipboard.prototype.writeText = function(text) {};
 
 /** @const {!Clipboard} */
 Navigator.prototype.clipboard;
+
+/**
+ * TODO(manukh): remove this once it is added to Closure Compiler itself.
+ * @see https://tc39.github.io/proposal-flatMap/#sec-Array.prototype.flatMap
+ * @param {?function(this:S, T, number, !Array<T>): R} callback
+ * @param {S=} opt_this
+ * @return {!Array<R>}
+ * @this {IArrayLike<T>|string}
+ * @template T,S,R
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap
+ */
+Array.prototype.flatMap = function(callback, opt_this) {};
