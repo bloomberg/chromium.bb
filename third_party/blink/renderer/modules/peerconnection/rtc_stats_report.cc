@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_stats_report.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -19,7 +20,8 @@ v8::Local<v8::Value> WebRTCStatsToValue(ScriptState* script_state,
   builder.AddString("type", stats->GetType());
 
   auto add_vector = [&builder](const WebString& name, auto web_vector) {
-    Vector<typename decltype(web_vector)::value_type> vector(web_vector.size());
+    Vector<typename decltype(web_vector)::value_type> vector(
+        SafeCast<wtf_size_t>(web_vector.size()));
     std::move(web_vector.begin(), web_vector.end(), vector.begin());
     builder.Add(name, vector);
   };
@@ -53,7 +55,7 @@ v8::Local<v8::Value> WebRTCStatsToValue(ScriptState* script_state,
         break;
       case kWebRTCStatsMemberTypeSequenceBool: {
         WebVector<int> sequence = member->ValueSequenceBool();
-        Vector<bool> vector(sequence.size());
+        Vector<bool> vector(SafeCast<wtf_size_t>(sequence.size()));
         std::copy(sequence.begin(), sequence.end(), vector.begin());
         builder.Add(name, vector);
         break;

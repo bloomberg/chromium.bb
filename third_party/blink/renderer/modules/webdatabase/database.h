@@ -177,7 +177,7 @@ class Database final : public ScriptWrappable {
   String name_;
   String expected_version_;
   String display_name_;
-  unsigned long estimated_size_;
+  unsigned estimated_size_;
   String filename_;
 
   DatabaseGuid guid_;

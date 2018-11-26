@@ -1051,14 +1051,14 @@ scoped_refptr<Uint8Array> ImageBitmap::CopyBitmapData() {
   return CopyImageData(image_);
 }
 
-unsigned long ImageBitmap::width() const {
+unsigned ImageBitmap::width() const {
   if (!image_)
     return 0;
   DCHECK_GT(image_->width(), 0);
   return image_->width();
 }
 
-unsigned long ImageBitmap::height() const {
+unsigned ImageBitmap::height() const {
   if (!image_)
     return 0;
   DCHECK_GT(image_->height(), 0);

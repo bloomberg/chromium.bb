@@ -926,7 +926,7 @@ void USBDevice::AsyncIsochronousTransferIn(
   DOMArrayBuffer* buffer = DOMArrayBuffer::Create(data.data(), data.size());
   HeapVector<Member<USBIsochronousInTransferPacket>> packets;
   packets.ReserveCapacity(mojo_packets.size());
-  size_t byte_offset = 0;
+  uint32_t byte_offset = 0;
   for (const auto& packet : mojo_packets) {
     DOMException* error = ConvertFatalTransferStatus(packet->status);
     if (error) {
