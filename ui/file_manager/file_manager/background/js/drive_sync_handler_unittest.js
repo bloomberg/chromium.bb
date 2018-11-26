@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 'use strict';
 
-// Mock items.
-var progressCenter = null;
+/**
+ * @type {!MockProgressCenter}
+ */
+var progressCenter;
 
-// Test target.
-var handler = null;
+/**
+ * @type {!DriveSyncHandlerImpl}
+ */
+var driveSyncHandler;
 
 /**
  * Mock of chrome.fileManagerPrivate.
@@ -90,9 +94,11 @@ window.strf = window.str;
 
 // Set up the test components.
 function setUp() {
-  // Make ProgressCenterHandler.
+  // Create a mock ProgressCenter.
   progressCenter = new MockProgressCenter();
-  handler = new DriveSyncHandler(progressCenter);
+
+  // Create DriveSyncHandlerImpl.
+  driveSyncHandler = new DriveSyncHandlerImpl(progressCenter);
 }
 
 // Test that in general case item IDs produced for errors are unique.
@@ -153,12 +159,12 @@ function testOffline() {
   assertEquals(1, Object.keys(progressCenter.items).length);
   assertEquals(
       ProgressItemState.PROGRESSING, progressCenter.items['drive-sync'].state);
-  assertTrue(handler.syncing);
+  assertTrue(driveSyncHandler.syncing);
 
   chrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_();
 
   assertEquals(1, Object.keys(progressCenter.items).length);
   assertEquals(
       ProgressItemState.CANCELED, progressCenter.items['drive-sync'].state);
-  assertFalse(handler.syncing);
+  assertFalse(driveSyncHandler.syncing);
 }

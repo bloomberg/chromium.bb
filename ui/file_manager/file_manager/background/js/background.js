@@ -53,7 +53,7 @@ function FileBrowserBackgroundImpl() {
    * Drive sync handler.
    * @type {!DriveSyncHandler}
    */
-  this.driveSyncHandler = new DriveSyncHandler(this.progressCenter);
+  this.driveSyncHandler = new DriveSyncHandlerImpl(this.progressCenter);
 
   /**
    * @type {!importer.DispositionChecker.CheckerFunction}

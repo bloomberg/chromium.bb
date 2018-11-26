@@ -44,6 +44,10 @@ importer.MediaImportHandler = function(
 
   /** @private {!DriveSyncHandler} */
   this.driveSyncHandler_ = driveSyncHandler;
+
+  if (this.driveSyncHandler_.getCompletedEventName() !== 'completed') {
+    throw new Error('invalid drive sync completed event name');
+  }
 };
 
 // The name of the Drive property used to tag imported files.  Used to look up
@@ -119,7 +123,7 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
     case UpdateType.COMPLETE:
       // Remove the event handler that gets attached for retries.
       this.driveSyncHandler_.removeEventListener(
-          DriveSyncHandler.COMPLETED_EVENT, task.driveListener_);
+          this.driveSyncHandler_.getCompletedEventName(), task.driveListener_);
 
       if (task.failedEntries.length > 0 &&
           task.failedEntries.length < task.importEntries.length) {
@@ -175,7 +179,7 @@ importer.MediaImportHandler.prototype.retryTaskFailedEntries_ = function(task) {
     this.queue_.queueTask(task);
   }.bind(this, task);
   this.driveSyncHandler_.addEventListener(
-      DriveSyncHandler.COMPLETED_EVENT, task.driveListener_);
+      this.driveSyncHandler_.getCompletedEventName(), task.driveListener_);
 };
 
 /**
@@ -285,7 +289,8 @@ importer.MediaImportHandler.ImportTask = function(
   /**
    * A placeholder for identifying the appropriate retry function for a given
    * task.
-   * @private {EventListenerType} */
+   * @private {EventListener}
+   */
   this.driveListener_ = null;
 };
 
