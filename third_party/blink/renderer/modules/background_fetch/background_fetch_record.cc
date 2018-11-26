@@ -21,7 +21,7 @@ BackgroundFetchRecord::BackgroundFetchRecord(Request* request,
 
 BackgroundFetchRecord::~BackgroundFetchRecord() = default;
 
-void BackgroundFetchRecord::ResolveResponseReadyProperty() {
+void BackgroundFetchRecord::ResolveResponseReadyProperty(Response* response) {
   if (!response_ready_property_ ||
       response_ready_property_->GetState() !=
           ScriptPromisePropertyBase::State::kPending) {
@@ -37,8 +37,8 @@ void BackgroundFetchRecord::ResolveResponseReadyProperty() {
           "The fetch was aborted before the record was processed."));
       return;
     case State::kSettled:
-      if (response_) {
-        response_ready_property_->Resolve(response_);
+      if (response) {
+        response_ready_property_->Resolve(response);
         return;
       }
 
@@ -69,22 +69,19 @@ void BackgroundFetchRecord::UpdateState(
   DCHECK_EQ(record_state_, State::kPending);
 
   record_state_ = updated_state;
-  ResolveResponseReadyProperty();
+  ResolveResponseReadyProperty(/* updated_response = */ nullptr);
 }
 
-void BackgroundFetchRecord::SetResponse(
+void BackgroundFetchRecord::SetResponseAndUpdateState(
     mojom::blink::FetchAPIResponsePtr& response) {
   DCHECK(record_state_ == State::kPending);
+  DCHECK(!response.is_null());
 
-  if (!response_) {
-    if (!script_state_->ContextIsValid())
-      return;
-    response_ = Response::Create(script_state_, *response);
-  }
+  if (!script_state_->ContextIsValid())
+    return;
+  record_state_ = State::kSettled;
 
-  DCHECK(response_);
-
-  ResolveResponseReadyProperty();
+  ResolveResponseReadyProperty(Response::Create(script_state_, *response));
 }
 
 bool BackgroundFetchRecord::IsRecordPending() {
@@ -93,7 +90,6 @@ bool BackgroundFetchRecord::IsRecordPending() {
 
 void BackgroundFetchRecord::Trace(blink::Visitor* visitor) {
   visitor->Trace(request_);
-  visitor->Trace(response_);
   visitor->Trace(response_ready_property_);
   visitor->Trace(script_state_);
   ScriptWrappable::Trace(visitor);
