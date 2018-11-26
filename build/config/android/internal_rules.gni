@@ -41,6 +41,7 @@ _java_target_whitelist = [
 _java_target_blacklist = [ "*:*_unpack_aar" ]
 
 _default_proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
+_r8_path = "//third_party/r8/lib/r8.jar"
 
 _dexlayout_path = "//third_party/android_build_tools/art/dexlayout"
 _profman_path = "//third_party/android_build_tools/art/profman"
@@ -3526,7 +3527,7 @@ template("create_android_app_bundle_module") {
       "--format=bundle-module",
       "--output-apk",
       rebase_path(invoker.module_zip_path, root_build_dir),
-      "--dex-file=${invoker.dex_path_file_arg}",
+      "--dex-file=@FileArg($_rebased_build_config:final_dex:path)",
       "--resource-apk=@FileArg(" +
           "$_rebased_build_config:deps_info:proto_resources_path)",
       "--assets=@FileArg($_rebased_build_config:assets)",
@@ -3548,40 +3549,51 @@ template("create_android_app_bundle_module") {
   }
 }
 
-# Extracts a bundle module's classes from jar created in the synchronized
-# proguarding step and packages them into a new jar.
+# Splits input dex file(s) based on given feature jars into seperate dex files
+# for each feature.
 #
 # Variables:
-#   proguarded_jar: Path to input jar produced by synchronized proguarding.
 #   proguard_mapping: Path to input proguard mapping produced by synchronized
-#     proguarding
-#   output_jar: Path to output jar file containing the module's optimized class
-#     files.
-#   build_config: Path to build config of module.
-#   is_base_module: True if this is processing a base module.
-template("generate_proguarded_module_jar") {
-  _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
-
+#     proguarding.
+#   input_dex_zip: Path to zipped dex files to split.
+#   all_modules: Path to list of all modules. Each Module must have
+#     build_config, name, and build_config_target properties.
+template("dexsplitter") {
   action_with_pydeps(target_name) {
     forward_variables_from(invoker, [ "deps" ])
-    script = "//build/android/gyp/generate_proguarded_module_jar.py"
-    outputs = [
-      invoker.output_jar,
+    script = "//build/android/gyp/dexsplitter.py"
+    inputs = [
+      invoker.input_dex_zip,
     ]
+    _stamp = "${target_gen_dir}/${target_name}.stamp"
+    outputs = [
+      _stamp,
+    ]
+
     depfile = "${target_gen_dir}/${target_name}.d"
     args = [
+      "--stamp",
+      rebase_path(_stamp, root_build_dir),
       "--depfile",
       rebase_path(depfile, root_build_dir),
-      "--proguarded-jar",
-      rebase_path(invoker.proguarded_jar, root_build_dir),
-      "--proguard-mapping",
+      "--r8-path",
+      rebase_path(_r8_path, root_build_dir),
+      "--input-dex-zip",
+      rebase_path(invoker.input_dex_zip, root_build_dir),
+      "--proguard-mapping-file",
       rebase_path(invoker.proguard_mapping, root_build_dir),
-      "--module-input-jars=@FileArg(${_rebased_build_config}:deps_info:java_runtime_classpath)",
-      "--output-jar",
-      rebase_path(invoker.output_jar, root_build_dir),
     ]
-    if (defined(invoker.is_base_module) && invoker.is_base_module) {
-      args += [ "--is-base-module" ]
+
+    foreach(_feature_module, invoker.all_modules) {
+      _rebased_module_build_config =
+          rebase_path(_feature_module.build_config, root_build_dir)
+      args += [
+        "--feature-name",
+        _feature_module.name,
+        "--feature-jars=@FileArg($_rebased_module_build_config:deps_info:java_runtime_classpath)",
+        "--dex-dest=@FileArg($_rebased_module_build_config:final_dex:path)",
+      ]
+      deps += [ _feature_module.build_config_target ]
     }
   }
 }
