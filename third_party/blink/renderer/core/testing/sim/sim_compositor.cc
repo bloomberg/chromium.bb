@@ -80,6 +80,7 @@ void SimCompositor::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
 }
 
 void SimCompositor::RequestNewLayerTreeFrameSink(
+    bool for_warmup,
     LayerTreeFrameSinkCallback callback) {
   // Make a valid LayerTreeFrameSink so the compositor will generate begin main
   // frames.
