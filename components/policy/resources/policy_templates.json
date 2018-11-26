@@ -710,6 +710,16 @@
       ],
     },
     {
+      'name': 'PluginVm',
+      'type': 'group',
+      'caption': '''PluginVm''',
+      'policies': [
+        'PluginVmAllowed',
+        'PluginVmImage',
+      ],
+      'desc': '''Configure <ph name="PLUGIN_VM_NAME">PluginVm</ph> related policies.''',
+    },
+    {
       'name': 'HomepageLocation',
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -13906,16 +13916,6 @@
       display settings.''',
     },
     {
-      'name': 'PluginVm',
-      'type': 'group',
-      'caption': '''PluginVm''',
-      'policies': [
-        'PluginVmAllowed',
-        'PluginVmImage',
-      ],
-      'desc': '''This is a group policy for PluginVm related policies.''',
-    },
-    {
       'name': 'PluginVmAllowed',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -13926,13 +13926,11 @@
       },
       'example_value': True,
       'id': 503,
-      'caption': '''Device is enabled to run PluginVm''',
+      'caption': '''Allow devices to use a <ph name="PLUGIN_VM_NAME">PluginVm</ph> on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
       'tags': [],
       'desc': '''Enable this device to run PluginVm.
 
-      If the policy is set to false or left unset, PluginVm is not enabled for the device.
-      If set to true, PluginVm is enabled for the device as long as other settings also allow it.
-      PluginVmAllowed needs to be true and PluginVmImage needs to be set for PluginVm to be allowed to run.''',
+      If the policy is set to false or left unset, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is not enabled for the device. If set to true, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is enabled for the device as long as other settings also allow it. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME">PluginVmAllowed</ph> needs to be true and <ph name="PLUGIN_VM_IMAGE_POLICY_NAME">PluginVmImage</ph> needs to be set for <ph name="PLUGIN_VM_NAME">PluginVm</ph> to be allowed to run.''',
     },
     {
       'name': 'PluginVmImage',
@@ -13941,19 +13939,19 @@
         'type': 'object',
         'properties': {
           'url': {
-            'description': 'The URL from which the PluginVm image can be downloaded.',
+            'description': 'The URL from which the <ph name="PLUGIN_VM_NAME">PluginVm</ph> image can be downloaded.',
             'type': 'string'
           },
           'hash': {
-            'description': 'The SHA-256 hash of the PluginVm image.',
+            'description': 'The SHA-256 hash of the <ph name="PLUGIN_VM_NAME">PluginVm</ph> image.',
             'type': 'string'
           }
         },
       },
       'supported_on': ['chrome_os:72-'],
-      'device_only': True,
       'features': {
         'dynamic_refresh': True,
+        'per_profile': False,
       },
       'example_value': {
         "url": "https://example.com/plugin_vm_image",
@@ -13962,7 +13960,7 @@
       'id': 504,
       'caption': '''PluginVm image''',
       'tags': [],
-      'desc': '''Configure device-level PluginVm image. The policy is set by specifying the URL from which the Chrome OS device can download the image and a SHA-256 hash used to verify the integrity of the download.
+      'desc': '''This policy specifies the <ph name="PLUGIN_VM_NAME">PluginVm</ph> image for a user. The policy is set by specifying the URL from which the device can download the image and a SHA-256 hash used to verify the integrity of the download.
 
       The policy should be specified as a string that expresses the URL and hash in the JSON format.''',
     },
