@@ -1363,9 +1363,9 @@ util.validateExternalDriveName = function(name, volumeInfo) {
 };
 
 /**
- * Adds a foregorund listener to the background page components.
- * The lisner will be removed when the foreground window is closed.
- * @param {!cr.EventTarget} target
+ * Adds a foreground listener to the background page components.
+ * The listener will be removed when the foreground window is closed.
+ * @param {!EventTarget} target
  * @param {string} type
  * @param {Function} handler
  */

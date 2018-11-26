@@ -115,7 +115,7 @@ function FileBrowserBackgroundImpl() {
       this.crostini.listen();
     }.bind(this));
 
-    this.fileOperationManager = new FileOperationManager();
+    this.fileOperationManager = new FileOperationManagerImpl();
     this.fileOperationHandler_ = new FileOperationHandler(
         this.fileOperationManager, this.progressCenter);
   }.bind(this));

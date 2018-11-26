@@ -67,6 +67,7 @@ js_type_check("test_support_type_check") {
   testonly = true
   deps = [
     ":mock_drive_sync_handler",
+    ":mock_file_operation_manager",
     ":mock_media_scanner",
     ":mock_progress_center",
     ":mock_volume_manager",
@@ -81,6 +82,7 @@ js_library("closure_compile_externs") {
     "../../../externs/background/drive_sync_handler.js",
     "../../../externs/background/file_browser_background.js",
     "../../../externs/background/file_browser_background_full.js",
+    "../../../externs/background/file_operation_manager.js",
     "../../../externs/background/import_history.js",
     "../../../externs/background/import_runner.js",
     "../../../externs/background/media_scanner.js",
@@ -216,11 +218,20 @@ js_library("file_operation_handler") {
   ]
 }
 
+js_library("mock_file_operation_manager") {
+  testonly = true
+  deps = [
+    ":file_operation_manager",
+  ]
+  externs_list = [ "../../../externs/background/file_operation_manager.js" ]
+}
+
 js_library("file_operation_manager") {
   deps = [
     ":file_operation_util",
     ":volume_manager_factory",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr:event_target",
   ]
 }
 

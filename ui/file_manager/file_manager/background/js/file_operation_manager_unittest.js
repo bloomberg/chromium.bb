@@ -255,7 +255,7 @@ volumeManagerFactory.getInstance = function() {
 
 /**
  * Test target.
- * @type {FileOperationManager}
+ * @type {FileOperationManagerImpl}
  */
 var fileOperationManager;
 
@@ -483,7 +483,7 @@ function testCopy(callback) {
       };
 
   volumeManager = new FakeVolumeManager();
-  fileOperationManager = new FileOperationManager();
+  fileOperationManager = new FileOperationManagerImpl();
 
   // Observing manager's events.
   var eventsPromise = waitForEvents(fileOperationManager);
@@ -541,7 +541,7 @@ function testCopyInSequential(callback) {
       blockableFakeStartCopy.startCopyFunc.bind(blockableFakeStartCopy);
 
   volumeManager = new FakeVolumeManager();
-  fileOperationManager = new FileOperationManager();
+  fileOperationManager = new FileOperationManagerImpl();
 
   var eventLogger = new EventLogger(fileOperationManager);
 
@@ -626,7 +626,7 @@ function testCopyInParallel(callback) {
       blockableFakeStartCopy.startCopyFunc.bind(blockableFakeStartCopy);
 
   volumeManager = new FakeVolumeManager();
-  fileOperationManager = new FileOperationManager();
+  fileOperationManager = new FileOperationManagerImpl();
 
   var eventLogger = new EventLogger(fileOperationManager);
 
@@ -696,7 +696,7 @@ function testCopyFails(callback) {
       return null;
     }
   };
-  fileOperationManager = new FileOperationManager();
+  fileOperationManager = new FileOperationManagerImpl();
 
   var eventLogger = new EventLogger(fileOperationManager);
 
@@ -737,7 +737,7 @@ function testMove(callback) {
       resolveTestFileSystemURL.bind(null, fileSystem);
 
   volumeManager = new FakeVolumeManager();
-  fileOperationManager = new FileOperationManager();
+  fileOperationManager = new FileOperationManagerImpl();
 
   // Observing manager's events.
   var eventsPromise = waitForEvents(fileOperationManager);
@@ -836,7 +836,7 @@ function testZip(callback) {
   };
 
   volumeManager = new FakeVolumeManager();
-  fileOperationManager = new FileOperationManager();
+  fileOperationManager = new FileOperationManagerImpl();
 
   // Observing manager's events.
   reportPromise(waitForEvents(fileOperationManager).then(function(events) {
