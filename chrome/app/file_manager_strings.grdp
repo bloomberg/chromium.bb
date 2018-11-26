@@ -989,9 +989,6 @@
   <message name="IDS_FILE_BROWSER_DRIVE_MOBILE_CONNECTION_OPTION" desc="Option that determines if we will allow Google Drive content sync over mobile connections.">
     Do not use mobile data for sync
   </message>
-  <message name="IDS_FILE_BROWSER_DRIVE_SHOW_HOSTED_FILES_OPTION" desc="Option that determines if we will show hosted Google Docs files in file browser.">
-    Show Google Docs files
-  </message>
   <message name="IDS_FILE_BROWSER_DRIVE_MENU_HELP" desc="In the Google Drive settings menu, name of the Help item.">
     Help
   </message>

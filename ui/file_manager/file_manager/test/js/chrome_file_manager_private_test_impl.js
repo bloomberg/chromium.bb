@@ -35,7 +35,6 @@ chrome.fileManagerPrivate = {
     allowRedeemOffers: true,
     cellularDisabled: true,
     driveEnabled: true,
-    hostedFilesDisabled: true,
     searchSuggestEnabled: true,
     timezone: 'Australia/Sydney',
     use24hourClock: false,

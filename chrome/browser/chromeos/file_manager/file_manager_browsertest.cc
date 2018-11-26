@@ -744,8 +744,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("showHiddenFilesDownloads").InGuestMode(),
         TestCase("showHiddenFilesDrive").DisableDriveFs(),
         TestCase("showHiddenFilesDrive").EnableDriveFs(),
-        TestCase("toogleGoogleDocsDrive").DisableDriveFs(),
-        TestCase("toogleGoogleDocsDrive").EnableDriveFs(),
         TestCase("showPasteIntoCurrentFolder"),
         TestCase("showSelectAllInCurrentFolder"),
         TestCase("showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles"),

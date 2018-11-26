@@ -691,7 +691,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     const char* kDriveRelatedPreferences[] = {
         drive::prefs::kDisableDrive,
         drive::prefs::kDisableDriveOverCellular,
-        drive::prefs::kDisableDriveHostedFiles,
         drive::prefs::kDriveFsWasLaunchedAtLeastOnce,
         drive::prefs::kDriveFsPinnedMigrated,
     };

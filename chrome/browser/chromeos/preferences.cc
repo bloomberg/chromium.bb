@@ -328,9 +328,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       drive::prefs::kDisableDriveOverCellular, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      drive::prefs::kDisableDriveHostedFiles, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(drive::prefs::kDriveFsWasLaunchedAtLeastOnce,
                                 false);
   registry->RegisterStringPref(drive::prefs::kDriveFsProfileSalt, "");
