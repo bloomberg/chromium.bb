@@ -12,10 +12,8 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/mojo_test_interface_factory.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/test/test_keyboard_controller_observer.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
@@ -240,19 +238,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   app_list_test_helper_ = std::make_unique<AppListTestHelper>();
 
   CreateWindowService();
-
-  // Create the test keyboard controller observer to respond to
-  // OnKeyboardLoadContents() and enable the virtual keyboard. Note: enabling
-  // the keyboard just makes it available, it does not show it or otherwise
-  // affect behavior.
-  test_keyboard_controller_observer_ =
-      std::make_unique<TestKeyboardControllerObserver>(
-          shell->ash_keyboard_controller());
-  shell->ash_keyboard_controller()->EnableKeyboard();
 }
 
 void AshTestHelper::TearDown() {
-  test_keyboard_controller_observer_.reset();
   app_list_test_helper_.reset();
 
   aura::test::SetEnvForTestWindows(nullptr);

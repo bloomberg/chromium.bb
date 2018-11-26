@@ -15,7 +15,6 @@
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -468,17 +467,6 @@ void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
 void AshTestBase::UnblockUserSession() {
   CreateUserSessions(1);
   GetSessionControllerClient()->UnlockScreen();
-}
-
-void AshTestBase::SetTouchKeyboardEnabled(bool enabled) {
-  auto flag = keyboard::mojom::KeyboardEnableFlag::kTouchEnabled;
-  if (enabled)
-    Shell::Get()->ash_keyboard_controller()->SetEnableFlag(flag);
-  else
-    Shell::Get()->ash_keyboard_controller()->ClearEnableFlag(flag);
-  // Ensure that observer methods and mojo calls between AshKeyboardController,
-  // keyboard::KeyboardController, and AshKeyboardUI complete.
-  base::RunLoop().RunUntilIdle();
 }
 
 void AshTestBase::DisableIME() {

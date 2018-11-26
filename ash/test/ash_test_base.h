@@ -226,10 +226,6 @@ class AshTestBase : public testing::Test {
   void BlockUserSession(UserSessionBlockReason block_reason);
   void UnblockUserSession();
 
-  // Enable or disable the keyboard for touch and run the message loop to
-  // allow observer operations to complete.
-  void SetTouchKeyboardEnabled(bool enabled);
-
   void DisableIME();
 
   // Swap the primary display with the secondary.

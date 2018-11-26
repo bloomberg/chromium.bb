@@ -51,7 +51,6 @@ namespace ash {
 class AppListTestHelper;
 class AshTestEnvironment;
 class AshTestViewsDelegate;
-class TestKeyboardControllerObserver;
 class TestShellDelegate;
 
 // A helper class that does common initialization required for Ash. Creates a
@@ -107,10 +106,6 @@ class AshTestHelper {
     return app_list_test_helper_.get();
   }
 
-  TestKeyboardControllerObserver* test_keyboard_controller_observer() {
-    return test_keyboard_controller_observer_.get();
-  }
-
   void reset_commandline() { command_line_.reset(); }
 
   // Gets a Connector that talks directly to the WindowService.
@@ -148,9 +143,6 @@ class AshTestHelper {
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 
   std::unique_ptr<AppListTestHelper> app_list_test_helper_;
-
-  std::unique_ptr<TestKeyboardControllerObserver>
-      test_keyboard_controller_observer_;
 
   service_manager::TestConnectorFactory test_connector_factory_;
   std::unique_ptr<service_manager::Connector> window_service_connector_;

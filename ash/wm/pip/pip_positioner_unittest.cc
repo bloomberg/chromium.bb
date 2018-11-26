@@ -18,6 +18,7 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 
@@ -57,7 +58,7 @@ class PipPositionerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    SetTouchKeyboardEnabled(true);
+    keyboard::SetTouchKeyboardEnabled(true);
     Shell::Get()->EnableKeyboard();
 
     UpdateWorkArea("400x400");
@@ -69,7 +70,7 @@ class PipPositionerTest : public AshTestBase {
   }
 
   void TearDown() override {
-    SetTouchKeyboardEnabled(false);
+    keyboard::SetTouchKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 
