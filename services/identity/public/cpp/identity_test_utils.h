@@ -125,6 +125,8 @@ void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
 void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                  AccountInfo account_info);
 
+std::string GetTestGaiaIdForEmail(const std::string& email);
+
 }  // namespace identity
 
 #endif  // SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_UTILS_H_
