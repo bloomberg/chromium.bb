@@ -407,7 +407,7 @@ void ServiceWorkerControlleeRequestHandler::
   }
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
-          registration->scope(), provider_host_->topmost_frame_url(),
+          registration->scope(), provider_host_->site_for_cookies(),
           resource_context_, provider_host_->web_contents_getter())) {
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
