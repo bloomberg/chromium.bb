@@ -206,7 +206,7 @@ public class SuggestionsBinder {
             setFaviconOnView(drawable, publisherFaviconSizePx);
         };
 
-        mImageFetcher.makeFaviconRequest(mSuggestion, publisherFaviconSizePx, faviconCallback);
+        mImageFetcher.makeFaviconRequest(mSuggestion, faviconCallback);
     }
 
     private void setThumbnail() {
