@@ -6371,7 +6371,8 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
       AddInsecureNavigationUpgrade(to_upgrade);
   }
 
-  const ContentSecurityPolicy* policy_to_inherit = nullptr;
+  Document* origin_document =
+      frame_ ? frame_->Loader().GetLastOriginDocument() : nullptr;
 
   if (IsSandboxed(kSandboxOrigin)) {
     cookie_url_ = url_;
@@ -6389,7 +6390,8 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
         security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
       if (owner->GetSecurityOrigin()->CanLoadLocalResources())
         security_origin->GrantLoadLocalResources();
-      policy_to_inherit = owner->GetContentSecurityPolicy();
+      if (url_.IsEmpty())
+        origin_document = owner;
     }
     SetSecurityOrigin(std::move(security_origin));
   } else if (Document* owner = initializer.OwnerDocument()) {
@@ -6397,7 +6399,8 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     // We alias the SecurityOrigins to match Firefox, see Bug 15313
     // https://bugs.webkit.org/show_bug.cgi?id=15313
     SetSecurityOrigin(owner->GetMutableSecurityOrigin());
-    policy_to_inherit = owner->GetContentSecurityPolicy();
+    if (url_.IsEmpty())
+      origin_document = owner;
   } else {
     cookie_url_ = url_;
     SetSecurityOrigin(SecurityOrigin::Create(url_));
@@ -6429,8 +6432,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     SetContentSecurityPolicy(
         ImportsController()->Master()->GetContentSecurityPolicy());
   } else {
-    InitContentSecurityPolicy(nullptr, policy_to_inherit,
-                              initializer.PreviousDocumentCSP());
+    InitContentSecurityPolicy(nullptr, origin_document);
   }
 
   if (Settings* settings = initializer.GetSettings()) {
@@ -6491,54 +6493,43 @@ void Document::InitSecureContextState() {
 // the document will take ownership of the policy
 // the second parameter specifies a policy to inherit meaning the document
 // will attempt to copy over the policy
-void Document::InitContentSecurityPolicy(
-    ContentSecurityPolicy* csp,
-    const ContentSecurityPolicy* policy_to_inherit,
-    const ContentSecurityPolicy* previous_document_csp) {
+void Document::InitContentSecurityPolicy(ContentSecurityPolicy* csp,
+                                         const Document* origin_document) {
   SetContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::Create());
 
   GetContentSecurityPolicy()->BindToExecutionContext(this);
 
-  // We inherit the parent/opener's CSP for documents with "local" schemes:
-  // 'about', 'blob', 'data', and 'filesystem'. We also inherit CSP for
-  // documents with empty/invalid URLs because we treat those URLs as
-  // 'about:blank' in Blink.
-  //
-  // https://w3c.github.io/webappsec-csp/#initialize-document-csp
-  //
-  // TODO(dcheng): This is similar enough to work we're doing in
-  // 'DocumentLoader::ensureWriter' that it might make sense to combine them.
-  if (policy_to_inherit) {
+  ContentSecurityPolicy* policy_to_inherit = nullptr;
+  if (origin_document)
+    policy_to_inherit = origin_document->GetContentSecurityPolicy();
+
+  // We should inherit the navigation initiator CSP if the document is loaded
+  // using a local-scheme url.
+  if (policy_to_inherit &&
+      (url_.IsEmpty() || url_.ProtocolIsAbout() || url_.ProtocolIsData() ||
+       url_.ProtocolIs("blob") || url_.ProtocolIs("filesystem"))) {
     GetContentSecurityPolicy()->CopyStateFrom(policy_to_inherit);
-  } else {
-    if (frame_) {
+  }
+
+  if (IsPluginDocument()) {
+    // TODO(andypaicu): This should inherit the origin document's plugin types
+    // but because this could be a OOPIF document it might not have access.
+    // In this situation we fallback on using the parent/opener.
+    if (origin_document) {
+      GetContentSecurityPolicy()->CopyPluginTypesFrom(
+          origin_document->GetContentSecurityPolicy());
+    } else if (frame_) {
       Frame* inherit_from = frame_->Tree().Parent()
                                 ? frame_->Tree().Parent()
                                 : frame_->Client()->Opener();
       if (inherit_from && frame_ != inherit_from) {
         DCHECK(inherit_from->GetSecurityContext() &&
                inherit_from->GetSecurityContext()->GetContentSecurityPolicy());
-        policy_to_inherit =
-            inherit_from->GetSecurityContext()->GetContentSecurityPolicy();
+        GetContentSecurityPolicy()->CopyPluginTypesFrom(
+            inherit_from->GetSecurityContext()->GetContentSecurityPolicy());
       }
     }
-
-    // If we don't have an opener or parent, inherit from the previous
-    // document CSP.
-    if (!policy_to_inherit)
-      policy_to_inherit = previous_document_csp;
-
-    // We should inherit the relevant CSP if the document is loaded using
-    // a local-scheme url.
-    if (policy_to_inherit &&
-        (url_.IsEmpty() || url_.ProtocolIsAbout() || url_.ProtocolIsData() ||
-         url_.ProtocolIs("blob") || url_.ProtocolIs("filesystem")))
-      GetContentSecurityPolicy()->CopyStateFrom(policy_to_inherit);
   }
-  // Plugin documents inherit their parent/opener's 'plugin-types' directive
-  // regardless of URL.
-  if (policy_to_inherit && IsPluginDocument())
-    GetContentSecurityPolicy()->CopyPluginTypesFrom(policy_to_inherit);
 }
 
 bool Document::IsSecureTransitionTo(const KURL& url) const {

@@ -660,22 +660,6 @@ bool ContentSecurityPolicy::AllowPluginTypeForDocument(
           type, type_attribute, url, reporting_policy))
     return false;
 
-  // CSP says that a plugin document in a nested browsing context should
-  // inherit the plugin-types of its parent.
-  //
-  // FIXME: The plugin-types directive should be pushed down into the
-  // current document instead of reaching up to the parent for it here.
-  LocalFrame* frame = document.GetFrame();
-  if (frame && frame->Tree().Parent() && document.IsPluginDocument()) {
-    ContentSecurityPolicy* parent_csp = frame->Tree()
-                                            .Parent()
-                                            ->GetSecurityContext()
-                                            ->GetContentSecurityPolicy();
-    if (parent_csp && !parent_csp->AllowPluginType(type, type_attribute, url,
-                                                   reporting_policy))
-      return false;
-  }
-
   return true;
 }
 
