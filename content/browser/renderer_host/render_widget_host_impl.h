@@ -409,6 +409,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const blink::WebMouseWheelEvent& wheel_event,
       const ui::LatencyInfo& latency) override;
 
+  // Retrieve an iterator over any RenderWidgetHosts that are immediately
+  // embedded within this one. This does not return hosts that are embedded
+  // indirectly (i.e. nested within embedded hosts).
+  std::unique_ptr<RenderWidgetHostIterator> GetEmbeddedRenderWidgetHosts();
+
   // Returns an emulator for this widget. See TouchEmulator for more details.
   TouchEmulator* GetTouchEmulator();
 

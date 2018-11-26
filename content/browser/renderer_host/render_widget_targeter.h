@@ -80,6 +80,11 @@ class RenderWidgetTargeter {
 
     virtual RenderWidgetHostViewBase* FindViewFromFrameSinkId(
         const viz::FrameSinkId& frame_sink_id) const = 0;
+
+    // Returns true if a further asynchronous query should be sent to the
+    // candidate RenderWidgetHostView.
+    virtual bool ShouldContinueHitTesting(
+        RenderWidgetHostViewBase* target_view) const = 0;
   };
 
   // The delegate must outlive this targeter.

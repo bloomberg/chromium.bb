@@ -25,6 +25,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/frame_messages.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -1554,6 +1555,28 @@ RenderWidgetHostInputEventRouter::FindViewFromFrameSinkId(
   // it likely means the RenderWidgetHostView has been destroyed but its
   // parent frame has not sent a new compositor frame since that happened.
   return iter == owner_map_.end() ? nullptr : iter->second;
+}
+
+bool RenderWidgetHostInputEventRouter::ShouldContinueHitTesting(
+    RenderWidgetHostViewBase* target_view) const {
+  // TODO(kenrb, riajiang): It would be better if we could determine if the
+  // event's point has a chance of hitting an embedded child and returning
+  // false if not, but Viz hit testing does not easily support that. This
+  // currently assumes any embedded view could potentially be the event
+  // target.
+  if (!use_viz_hit_test_)
+    return true;
+
+  // Determine if |view| has any embedded children that could potentially
+  // receive the event.
+  auto* widget_host =
+      static_cast<RenderWidgetHostImpl*>(target_view->GetRenderWidgetHost());
+  std::unique_ptr<RenderWidgetHostIterator> child_widgets(
+      widget_host->GetEmbeddedRenderWidgetHosts());
+  if (child_widgets->GetNextHost())
+    return true;
+
+  return false;
 }
 
 std::vector<RenderWidgetHostView*>
