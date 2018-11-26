@@ -24,16 +24,30 @@ class IdentityTestEnvironmentChromeBrowserStateAdaptor {
   CreateChromeBrowserStateForIdentityTestEnvironment();
 
   // Like the above, but additionally configures the returned ChromeBrowserState
-  // with |input_factories|.
+  // with |input_factories|. By default, internally constructs a
+  // TestURLLoaderFactory to use for cookie-related network requests. If this
+  // isn't desired (e.g., because the test is already using a
+  // TestURLLoaderFactory), set
+  // |create_fake_url_loader_factory_for_cookie_requests| to false.
   static std::unique_ptr<TestChromeBrowserState>
   CreateChromeBrowserStateForIdentityTestEnvironment(
-      const TestChromeBrowserState::TestingFactories& input_factories);
+      const TestChromeBrowserState::TestingFactories& input_factories,
+      bool create_fake_url_loader_factory_for_cookie_requests = true);
 
   // Creates and returns a TestChromeBrowserState that has been configured with
   // the given |builder|.
+  // See the above variant for comments on common parameters.
   static std::unique_ptr<TestChromeBrowserState>
   CreateChromeBrowserStateForIdentityTestEnvironment(
-      TestChromeBrowserState::Builder& builder);
+      TestChromeBrowserState::Builder& builder,
+      bool create_fake_url_loader_factory_for_cookie_requests = true);
+
+  // Sets the testing factories that identity::IdentityTestEnvironment
+  // requires explicitly on a Profile that is passed to it.
+  // See the above variant for comments on common parameters.
+  static void SetIdentityTestEnvironmentFactoriesOnBrowserContext(
+      TestChromeBrowserState* browser_state,
+      bool create_fake_url_loader_factory_for_cookie_requests = true);
 
   // Appends the set of testing factories that identity::IdentityTestEnvironment
   // requires to |factories_to_append_to|, which should be the set of testing
@@ -42,6 +56,8 @@ class IdentityTestEnvironmentChromeBrowserStateAdaptor {
   // fragile. This API is primarily for use in tests that do not create the
   // TestChromeBrowserState internally but rather simply supply the set of
   // TestingFactories to some external facility (e.g., a superclass).
+  // See CreateProfileForIdentityTestEnvironment() for comments on common
+  // parameters.
   static void AppendIdentityTestEnvironmentFactories(
       TestChromeBrowserState::TestingFactories* factories_to_append_to);
 

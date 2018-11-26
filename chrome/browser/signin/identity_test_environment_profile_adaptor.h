@@ -25,16 +25,31 @@ class IdentityTestEnvironmentProfileAdaptor {
   CreateProfileForIdentityTestEnvironment();
 
   // Like the above, but additionally configures the returned Profile with
-  // |input_factories|.
+  // |input_factories|. By default, internally constructs a
+  // TestURLLoaderFactory to use for cookie-related network requests. If this
+  // isn't desired (e.g., because the test is already using a
+  // TestURLLoaderFactory), set
+  // |create_fake_url_loader_factory_for_cookie_requests| to false.
   static std::unique_ptr<TestingProfile>
   CreateProfileForIdentityTestEnvironment(
-      const TestingProfile::TestingFactories& input_factories);
+      const TestingProfile::TestingFactories& input_factories,
+      bool create_fake_url_loader_factory_for_cookie_requests = true);
 
   // Creates and returns a TestingProfile that has been configured with the
   // given |builder| and the set of testing factories that
   // IdentityTestEnvironment requires.
+  // See the above variant for comments on common parameters.
   static std::unique_ptr<TestingProfile>
-  CreateProfileForIdentityTestEnvironment(TestingProfile::Builder& builder);
+  CreateProfileForIdentityTestEnvironment(
+      TestingProfile::Builder& builder,
+      bool create_fake_url_loader_factory_for_cookie_requests = true);
+
+  // Sets the testing factories that identity::IdentityTestEnvironment
+  // requires explicitly on a Profile that is passed to it.
+  // See the above variant for comments on common parameters.
+  static void SetIdentityTestEnvironmentFactoriesOnBrowserContext(
+      content::BrowserContext* browser_context,
+      bool create_fake_url_loader_factory_for_cookie_requests = true);
 
   // Appends the set of testing factories that identity::IdentityTestEnvironment
   // requires to |factories_to_append_to|, which should be the set of testing
@@ -43,8 +58,11 @@ class IdentityTestEnvironmentProfileAdaptor {
   // API is primarily for use in tests that do not create the TestingProfile
   // internally but rather simply supply the set of TestingFactories to some
   // external facility (e.g., a superclass).
+  // See CreateProfileForIdentityTestEnvironment() for comments on common
+  // parameters.
   static void AppendIdentityTestEnvironmentFactories(
-      TestingProfile::TestingFactories* factories_to_append_to);
+      TestingProfile::TestingFactories* factories_to_append_to,
+      bool create_fake_url_loader_factory_for_cookie_requests = true);
 
   // Constructs an adaptor that associates an IdentityTestEnvironment instance
   // with |profile| via the relevant backing objects. Note that

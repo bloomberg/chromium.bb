@@ -17,4 +17,8 @@ class BrowserState;
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerService(
     web::BrowserState* browser_state);
 
+std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithOptions(
+    bool create_fake_url_loader_factory_for_cookie_requests,
+    web::BrowserState* browser_state);
+
 #endif  // IOS_CHROME_BROWSER_SIGNIN_FAKE_GAIA_COOKIE_MANAGER_SERVICE_BUILDER_H_

@@ -442,8 +442,10 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
         context, base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
     GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
-        context, base::BindRepeating(
-                     &BuildFakeGaiaCookieManagerServiceNoFakeUrlFetcher));
+        context,
+        base::BindRepeating(
+            &BuildFakeGaiaCookieManagerServiceWithOptions,
+            /*create_fake_url_loader_factory_for_cookie_requests=*/false));
 
     // Ensure that AccountFetcherService is (1) created at all and (2) created
     // early enough for it to observe the Profile initialization process and

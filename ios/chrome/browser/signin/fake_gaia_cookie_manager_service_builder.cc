@@ -13,10 +13,19 @@
 
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerService(
     web::BrowserState* browser_state) {
+  return BuildFakeGaiaCookieManagerServiceWithOptions(
+      /*create_fake_url_loader_factory_for_cookie_requests=*/true,
+      browser_state);
+}
+
+std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithOptions(
+    bool create_fake_url_loader_factory_for_cookie_requests,
+    web::BrowserState* browser_state) {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state);
   return std::make_unique<FakeGaiaCookieManagerService>(
       ProfileOAuth2TokenServiceFactory::GetForBrowserState(
           chrome_browser_state),
-      SigninClientFactory::GetForBrowserState(chrome_browser_state));
+      SigninClientFactory::GetForBrowserState(chrome_browser_state),
+      create_fake_url_loader_factory_for_cookie_requests);
 }
