@@ -858,6 +858,12 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
   // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
   if (process_type.empty()) {
     startup_data_ = std::make_unique<StartupDataImpl>();
+
+    if (delegate_->ShouldCreateFeatureList()) {
+      DCHECK(!field_trial_list_);
+      field_trial_list_ = SetUpFieldTrialsAndFeatureList();
+    }
+
     startup_data_->thread = BrowserProcessSubThread::CreateIOThread();
     main_params.startup_data = startup_data_.get();
 
@@ -882,11 +888,6 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
     // BrowserMainLoop::MainMessageLoopStart().
     if (!base::MessageLoopCurrentForUI::IsSet())
       main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
-
-    if (delegate_->ShouldCreateFeatureList()) {
-      DCHECK(!field_trial_list_);
-      field_trial_list_ = SetUpFieldTrialsAndFeatureList();
-    }
 
     delegate_->PostEarlyInitialization(main_params.ui_task != nullptr);
 

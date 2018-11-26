@@ -182,6 +182,7 @@ void PpapiDispatcher::OnMsgInitializeNaClDispatcher(
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
 
+  base::FeatureList::ClearInstanceForTesting();
   base::FeatureList::InitializeInstance(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kEnableFeatures),
