@@ -44,6 +44,8 @@ public class AwMetricsServiceClient {
     private static final int GUID_SIZE = 32 + 4;
     private static final String GUID_FILE_NAME = "metrics_guid";
 
+    private static final String PLAY_STORE_PACKAGE_NAME = "com.android.vending";
+
     private static boolean isAppOptedOut(Context appContext) {
         try {
             ApplicationInfo info = appContext.getPackageManager().getApplicationInfo(
@@ -87,7 +89,17 @@ public class AwMetricsServiceClient {
 
     @CalledByNative
     private static String getAppPackageName() {
-        return ContextUtils.getApplicationContext().getPackageName();
+        Context appCtx = ContextUtils.getApplicationContext();
+        return shouldRecordPackageName(appCtx) ? appCtx.getPackageName() : null;
+    }
+
+    private static boolean shouldRecordPackageName(Context appCtx) {
+        // Only record if it is system apps or installed from PlayStore.
+        String packageName = appCtx.getPackageName();
+        String installerPackageName =
+                appCtx.getPackageManager().getInstallerPackageName(packageName);
+        return (appCtx.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) != 0
+                || (PLAY_STORE_PACKAGE_NAME.equals(installerPackageName));
     }
 
     public static native void nativeSetHaveMetricsConsent(boolean enabled);

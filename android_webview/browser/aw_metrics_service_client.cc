@@ -275,7 +275,9 @@ std::string AwMetricsServiceClient::GetAppPackageName() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> j_app_name =
       Java_AwMetricsServiceClient_getAppPackageName(env);
-  return ConvertJavaStringToUTF8(env, j_app_name);
+  if (j_app_name)
+    return ConvertJavaStringToUTF8(env, j_app_name);
+  return std::string();
 }
 
 AwMetricsServiceClient::AwMetricsServiceClient()
