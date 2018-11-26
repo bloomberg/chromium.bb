@@ -690,12 +690,12 @@
              "--disable-features=NetworkService"]
   },
   {
-    "prefix": "off-main-thread-worker-script-fetch",
+    "prefix": "omt-worker-fetch",
     "base": "external/wpt/workers",
     "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
   },
   {
-    "prefix": "off-main-thread-worker-script-fetch",
+    "prefix": "omt-worker-fetch",
     "base": "fast/workers",
     "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
   },

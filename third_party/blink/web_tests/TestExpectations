@@ -2892,7 +2892,7 @@ crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Timeo
 
 # These will be fixed when NetworkService gets enabled.
 crbug.com/800898 external/wpt/workers/shared-worker-from-blob-url.window.html [ Skip ]
-crbug.com/800898 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/shared-worker-from-blob-url.window.html [ Skip ]
+crbug.com/800898 virtual/omt-worker-fetch/external/wpt/workers/shared-worker-from-blob-url.window.html [ Skip ]
 
 crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/sandboxed-iframe.html [ Pass Timeout ]
 crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.html [ Pass Timeout ]
@@ -3913,13 +3913,13 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collap
 
 # SharedWorker are not exposed in WorkerGlobalScope.
 crbug.com/850662 external/wpt/workers/baseurl/alpha/sharedworker-in-worker.html [ Failure ]
-crbug.com/850662 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/baseurl/alpha/sharedworker-in-worker.html [ Failure ]
+crbug.com/850662 virtual/omt-worker-fetch/external/wpt/workers/baseurl/alpha/sharedworker-in-worker.html [ Failure ]
 
 # crbug.com/861564 is ongoing for module dedicated workers.
 crbug.com/861564 external/wpt/workers/baseurl/alpha/xhr-in-moduleworker.html [ Failure ]
 crbug.com/861564 external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect-module.html [ Failure ]
-crbug.com/861564 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/baseurl/alpha/xhr-in-moduleworker.html [ Failure ]
-crbug.com/861564 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect-module.html [ Failure ]
+crbug.com/861564 virtual/omt-worker-fetch/external/wpt/workers/baseurl/alpha/xhr-in-moduleworker.html [ Failure ]
+crbug.com/861564 virtual/omt-worker-fetch/external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect-module.html [ Failure ]
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
@@ -3947,40 +3947,40 @@ crbug.com/655458 external/wpt/workers/constructors/SharedWorker/interface-object
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/unresolvable-url.html [ Failure ]
 crbug.com/655458 external/wpt/workers/semantics/multiple-workers/007.html [ Timeout ]
 
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/interfaces/SharedWorkerGlobalScope/onconnect.html [ Failure ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/constructors/SharedWorker/setting-port-members.html [ Failure ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/constructors/SharedWorker/connect-event.html [ Failure ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/constructors/Worker/unresolvable-url.html [ Failure ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/semantics/reporting-errors/002.html [ Failure ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/semantics/run-a-worker/003.html [ Failure ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/Worker_terminate_event_queue.htm [ Pass Timeout ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/interfaces/WorkerUtils/navigator/language.html [ Failure ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/constructors/SharedWorker/interface-objects.html [ Failure ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/constructors/SharedWorker/unresolvable-url.html [ Failure ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/semantics/multiple-workers/007.html [ Timeout ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/interfaces/SharedWorkerGlobalScope/onconnect.html [ Failure ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/constructors/SharedWorker/setting-port-members.html [ Failure ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/constructors/SharedWorker/connect-event.html [ Failure ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/constructors/Worker/unresolvable-url.html [ Failure ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/semantics/reporting-errors/002.html [ Failure ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/semantics/run-a-worker/003.html [ Failure ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/Worker_terminate_event_queue.htm [ Pass Timeout ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/interfaces/WorkerUtils/navigator/language.html [ Failure ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/constructors/SharedWorker/interface-objects.html [ Failure ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/constructors/SharedWorker/unresolvable-url.html [ Failure ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/semantics/multiple-workers/007.html [ Timeout ]
 
 # Off-the-main-thread classic worker script fetch.
 # This fails because running a worker on an opaque origin is blocked.
-crbug.com/835717 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/opaque-origin.html [ Timeout ]
+crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/opaque-origin.html [ Timeout ]
 # These fail because of wrong base url.
-crbug.com/835717 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/baseurl/alpha/importScripts-in-worker.html [ Failure ]
-crbug.com/835717 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/baseurl/alpha/worker-in-worker.html [ Failure ]
-crbug.com/835717 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/baseurl/alpha/xhr-in-worker.html [ Failure ]
-crbug.com/835717 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect.html [ Failure ]
+crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/baseurl/alpha/importScripts-in-worker.html [ Failure ]
+crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/baseurl/alpha/worker-in-worker.html [ Failure ]
+crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/baseurl/alpha/xhr-in-worker.html [ Failure ]
+crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect.html [ Failure ]
 # This fails because off-the-main-thread script loading goes through different
 # loading path. Although we could remove this test. disable it for now.
-crbug.com/835717 virtual/off-main-thread-worker-script-fetch/fast/workers/chromium/worker-crash-with-invalid-location.html [ Skip ]
+crbug.com/835717 virtual/omt-worker-fetch/fast/workers/chromium/worker-crash-with-invalid-location.html [ Skip ]
 # Looks like calling |URL.revokeObjectURL(blob_url)| immediately after
 # |new Worker(blob_url)| fails worker start because off-the-main-thread worker
 # script loading changes the order of url revocation and script fetch.
 # See also crbug.com/800898.
-crbug.com/835717 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/dedicated-worker-from-blob-url.window.html [ Timeout ]
+crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/dedicated-worker-from-blob-url.window.html [ Timeout ]
 
 # This fails because AllowedByNoSniff::MimeTypeAsScript() blocks the nested worker's
 # worker script, because the script url has a .html file extension.
 crbug.com/655458 external/wpt/workers/semantics/multiple-workers/003.html [ Timeout ]
-crbug.com/655458 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Timeout ]
+crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Timeout ]
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 
@@ -5106,12 +5106,12 @@ crbug.com/595206 http/tests/devtools/startup/console/console-format-startup.js [
 crbug.com/864994 [ Mac ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-decode-ksc_5601.html [ Timeout Failure Pass ]
 
 crbug.com/865432 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-blob-url.any.worker.html [ Timeout Pass ]
-crbug.com/865432 [ Linux ] virtual/off-main-thread-worker-script-fetch/external/wpt/workers/modules/dedicated-worker-import-blob-url.any.worker.html [ Timeout Pass ]
+crbug.com/865432 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-blob-url.any.worker.html [ Timeout Pass ]
 
 crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Timeout Pass ]
 crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
-crbug.com/867532 [ Linux ] virtual/off-main-thread-worker-script-fetch/external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Timeout Pass ]
-crbug.com/867532 [ Linux ] virtual/off-main-thread-worker-script-fetch/external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
+crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Timeout Pass ]
+crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
 
 # Sheriff 2018-07-26
 crbug.com/867376 [ Mac ] css3/filters/filter-repaint-composited-fallback-crash.html [ Timeout Pass ]

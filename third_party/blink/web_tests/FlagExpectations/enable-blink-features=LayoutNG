@@ -419,7 +419,7 @@ crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touc
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Pass ]
 crbug.com/591099 virtual/new-remote-playback-pipeline/ [ Skip ]
-crbug.com/591099 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Pass ]
+crbug.com/591099 virtual/omt-worker-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Pass ]
 crbug.com/591099 virtual/outofblink-cors-ns/external/wpt/fetch/api/redirect/redirect-count.any.html [ Pass ]
 crbug.com/591099 virtual/outofblink-cors-ns/external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Pass ]
 crbug.com/591099 virtual/outofblink-cors-ns/external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Pass ]
