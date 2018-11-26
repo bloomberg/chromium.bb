@@ -64,6 +64,7 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/drag_messages.h"
@@ -3150,6 +3151,27 @@ RenderWidgetHostImpl::CollectSurfaceIdsForEviction() {
   if (!rvh)
     return {};
   return rvh->CollectSurfaceIdsForEviction();
+}
+
+std::unique_ptr<RenderWidgetHostIterator>
+RenderWidgetHostImpl::GetEmbeddedRenderWidgetHosts() {
+  // This iterates over all RenderWidgetHosts and returns those whose Views
+  // are children of this host's View.
+  std::unique_ptr<RenderWidgetHostIteratorImpl> hosts(
+      new RenderWidgetHostIteratorImpl());
+  auto* parent_view = static_cast<RenderWidgetHostViewBase*>(GetView());
+  for (auto& it : g_routing_id_widget_map.Get()) {
+    RenderWidgetHost* widget = it.second;
+
+    auto* view = static_cast<RenderWidgetHostViewBase*>(widget->GetView());
+    if (view && view->IsRenderWidgetHostViewChildFrame() &&
+        static_cast<RenderWidgetHostViewChildFrame*>(view)->GetParentView() ==
+            parent_view) {
+      hosts->Add(widget);
+    }
+  }
+
+  return std::move(hosts);
 }
 
 }  // namespace content

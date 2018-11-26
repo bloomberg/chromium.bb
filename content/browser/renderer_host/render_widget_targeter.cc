@@ -382,10 +382,11 @@ void RenderWidgetTargeter::FoundFrameSinkId(
   if (!view)
     view = target.get();
 
-  // If a client was asked to find a target, then it is necessary to keep
-  // asking the clients until a client claims an event for itself.
+  // If a client returned an embedded target, then it might be necessary to
+  // continue asking the clients until a client claims an event for itself.
   if (view == target.get() ||
-      unresponsive_views_.find(view) != unresponsive_views_.end()) {
+      unresponsive_views_.find(view) != unresponsive_views_.end() ||
+      !delegate_->ShouldContinueHitTesting(view)) {
     // Reduced scope is required since FoundTarget can trigger another query
     // which would end up linked to the current query.
     {
@@ -394,8 +395,8 @@ void RenderWidgetTargeter::FoundFrameSinkId(
                              TRACE_EVENT_FLAG_FLOW_IN, "step", "FoundTarget");
     }
 
-    FoundTarget(root_view.get(), view, *event, latency, target_location, false,
-                expected_frame_sink_id);
+    FoundTarget(root_view.get(), view, *event, latency, transformed_location,
+                false, expected_frame_sink_id);
   } else {
     QueryClientInternal(root_view.get(), view, *event, latency,
                         transformed_location, target.get(), target_location,

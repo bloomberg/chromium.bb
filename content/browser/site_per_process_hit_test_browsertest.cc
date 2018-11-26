@@ -2431,18 +2431,28 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   RenderWidgetHostMouseEventMonitor child_frame_monitor(
       child_node->current_frame_host()->GetRenderWidgetHost());
 
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://baz.com/\n"
+      "      C = http://bar.com/",
+      DepictFrameTree(root));
+
   RenderWidgetHostInputEventRouter* router =
       web_contents()->GetInputEventRouter();
 
+  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+
   // Shorten the timeout for purposes of this test.
   router->GetRenderWidgetTargeterForTests()
-      ->set_async_hit_test_timeout_delay_for_testing(
-          TestTimeouts::tiny_timeout());
+      ->set_async_hit_test_timeout_delay_for_testing(base::TimeDelta());
 
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+  EXPECT_TRUE(ExecuteScript(child_node, "lookBusy();"));
 
   // Target input event to child frame. It should get delivered to the main
   // frame instead because the child frame main thread is non-responsive.

@@ -132,6 +132,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // RenderWidgetTargeter::Delegate:
   RenderWidgetHostViewBase* FindViewFromFrameSinkId(
       const viz::FrameSinkId& frame_sink_id) const override;
+  bool ShouldContinueHitTesting(
+      RenderWidgetHostViewBase* target_view) const override;
 
   // Allows a target to claim or release capture of mouse events.
   void SetMouseCaptureTarget(RenderWidgetHostViewBase* target,
