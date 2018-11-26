@@ -294,13 +294,20 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder, /* create_new_folder.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("selectCreateFolderDownloads").InGuestMode(),
-                      TestCase("selectCreateFolderDownloads"),
-                      TestCase("createFolderDownloads").InGuestMode(),
-                      TestCase("createFolderDownloads"),
-                      TestCase("createFolderNestedDownloads"),
-                      TestCase("createFolderDrive").DisableDriveFs(),
-                      TestCase("createFolderDrive").EnableDriveFs()));
+    ::testing::Values(
+        TestCase("selectCreateFolderDownloads")
+            .InGuestMode()
+            .EnableMyFilesVolume(),
+        TestCase("selectCreateFolderDownloads"),
+        TestCase("selectCreateFolderDownloads").EnableMyFilesVolume(),
+        TestCase("createFolderDownloads").InGuestMode(),
+        TestCase("createFolderDownloads"),
+        TestCase("createFolderDownloads").EnableMyFilesVolume(),
+        TestCase("createFolderNestedDownloads"),
+        TestCase("createFolderNestedDownloads").EnableMyFilesVolume(),
+        TestCase("createFolderDrive").DisableDriveFs(),
+        TestCase("createFolderDrive").EnableDriveFs().EnableMyFilesVolume(),
+        TestCase("createFolderDrive").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     KeyboardOperations, /* keyboard_operations.js */
@@ -451,31 +458,44 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("dirCopyWithContextMenu"),
-                      TestCase("dirCopyWithContextMenu").InGuestMode(),
-                      TestCase("dirCopyWithKeyboard"),
-                      TestCase("dirCopyWithKeyboard").InGuestMode(),
-                      TestCase("dirCopyWithoutChangingCurrent"),
-                      TestCase("dirCutWithContextMenu"),
-                      TestCase("dirCutWithContextMenu").InGuestMode(),
-                      TestCase("dirCutWithKeyboard"),
-                      TestCase("dirCutWithKeyboard").InGuestMode(),
-                      TestCase("dirPasteWithContextMenu"),
-                      TestCase("dirPasteWithContextMenu").InGuestMode(),
-                      TestCase("dirPasteWithoutChangingCurrent"),
-                      TestCase("dirRenameWithContextMenu"),
-                      TestCase("dirRenameWithContextMenu").InGuestMode(),
-                      TestCase("dirRenameUpdateChildrenBreadcrumbs"),
-                      TestCase("dirRenameWithKeyboard"),
-                      TestCase("dirRenameWithKeyboard").InGuestMode(),
-                      TestCase("dirRenameWithoutChangingCurrent"),
-                      TestCase("dirRenameToEmptyString"),
-                      TestCase("dirRenameToEmptyString").InGuestMode(),
-                      TestCase("dirRenameToExisting"),
-                      TestCase("dirRenameToExisting").InGuestMode(),
-                      TestCase("dirCreateWithContextMenu"),
-                      TestCase("dirCreateWithKeyboard"),
-                      TestCase("dirCreateWithoutChangingCurrent")));
+    ::testing::Values(
+        TestCase("dirCopyWithContextMenu"),
+        TestCase("dirCopyWithContextMenu").InGuestMode(),
+        TestCase("dirCopyWithContextMenu").EnableMyFilesVolume(),
+        TestCase("dirCopyWithKeyboard"),
+        TestCase("dirCopyWithKeyboard").InGuestMode(),
+        TestCase("dirCopyWithKeyboard").EnableMyFilesVolume(),
+        TestCase("dirCopyWithoutChangingCurrent"),
+        TestCase("dirCutWithContextMenu"),
+        TestCase("dirCutWithContextMenu").InGuestMode(),
+        TestCase("dirCutWithContextMenu").EnableMyFilesVolume(),
+        TestCase("dirCutWithKeyboard"),
+        TestCase("dirCutWithKeyboard").InGuestMode(),
+        TestCase("dirCutWithKeyboard").EnableMyFilesVolume(),
+        TestCase("dirPasteWithContextMenu"),
+        TestCase("dirPasteWithContextMenu").InGuestMode(),
+        TestCase("dirPasteWithoutChangingCurrent"),
+        TestCase("dirRenameWithContextMenu"),
+        TestCase("dirRenameWithContextMenu").InGuestMode(),
+        TestCase("dirRenameWithContextMenu").EnableMyFilesVolume(),
+        TestCase("dirRenameUpdateChildrenBreadcrumbs"),
+        TestCase("dirRenameWithKeyboard"),
+        TestCase("dirRenameWithKeyboard").InGuestMode(),
+        TestCase("dirRenameWithKeyboard").EnableMyFilesVolume(),
+        TestCase("dirRenameWithoutChangingCurrent"),
+        TestCase("dirRenameWithoutChangingCurrent").EnableMyFilesVolume(),
+        TestCase("dirRenameToEmptyString"),
+        TestCase("dirRenameToEmptyString").InGuestMode(),
+        TestCase("dirRenameToEmptyString").EnableMyFilesVolume(),
+        TestCase("dirRenameToExisting"),
+        TestCase("dirRenameToExisting").InGuestMode(),
+        TestCase("dirRenameToExisting").EnableDriveFs(),
+        TestCase("dirCreateWithContextMenu"),
+        TestCase("dirCreateWithContextMenu").EnableMyFilesVolume(),
+        TestCase("dirCreateWithKeyboard"),
+        TestCase("dirCreateWithKeyboard").EnableMyFilesVolume(),
+        TestCase("dirCreateWithoutChangingCurrent").EnableMyFilesVolume(),
+        TestCase("dirCreateWithoutChangingCurrent")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DriveSpecific, /* drive_specific.js */
