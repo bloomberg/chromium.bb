@@ -27,9 +27,9 @@ const T* advance_by_byte_size(const T* p, unsigned byte_size) {
 
 }  // namespace
 
-void GetGlyphWidthForHarfBuzz(const SkFont& font,
-                              hb_codepoint_t codepoint,
-                              hb_position_t* width) {
+void SkFontGetGlyphWidthForHarfBuzz(const SkFont& font,
+                                    hb_codepoint_t codepoint,
+                                    hb_position_t* width) {
   DCHECK_LE(codepoint, 0xFFFFu);
   CHECK(width);
 
@@ -42,12 +42,12 @@ void GetGlyphWidthForHarfBuzz(const SkFont& font,
   *width = SkiaScalarToHarfBuzzPosition(sk_width);
 }
 
-void GetGlyphWidthForHarfBuzz(const SkFont& font,
-                              unsigned count,
-                              const hb_codepoint_t* glyphs,
-                              const unsigned glyph_stride,
-                              hb_position_t* advances,
-                              unsigned advance_stride) {
+void SkFontGetGlyphWidthForHarfBuzz(const SkFont& font,
+                                    unsigned count,
+                                    const hb_codepoint_t* glyphs,
+                                    const unsigned glyph_stride,
+                                    hb_position_t* advances,
+                                    unsigned advance_stride) {
   // Batch the call to getWidths because its function entry cost is not
   // cheap. getWidths accepts multiple glyphd ID, but not from a sparse
   // array that copy them to a regular array.
@@ -77,9 +77,9 @@ void GetGlyphWidthForHarfBuzz(const SkFont& font,
 // supposed to heuristically place combining marks around base glyphs. HarfBuzz
 // does this by measuring "ink boxes" of glyphs, and placing them according to
 // Unicode mark classes. Above, below, centered or left or right, etc.
-void GetGlyphExtentsForHarfBuzz(const SkFont& font,
-                                hb_codepoint_t codepoint,
-                                hb_glyph_extents_t* extents) {
+void SkFontGetGlyphExtentsForHarfBuzz(const SkFont& font,
+                                      hb_codepoint_t codepoint,
+                                      hb_glyph_extents_t* extents) {
   DCHECK_LE(codepoint, 0xFFFFu);
   CHECK(extents);
 
@@ -109,7 +109,7 @@ void GetGlyphExtentsForHarfBuzz(const SkFont& font,
   extents->height = SkiaScalarToHarfBuzzPosition(-sk_bounds.height());
 }
 
-void GetBoundsForGlyph(const SkFont& font, Glyph glyph, SkRect* bounds) {
+void SkFontGetBoundsForGlyph(const SkFont& font, Glyph glyph, SkRect* bounds) {
 #if defined(OS_MACOSX)
   // TODO(drott): Remove this once we have better metrics bounds
   // on Mac, https://bugs.chromium.org/p/skia/issues/detail?id=5328
@@ -127,12 +127,12 @@ void GetBoundsForGlyph(const SkFont& font, Glyph glyph, SkRect* bounds) {
   }
 }
 
-void GetBoundsForGlyphs(const SkFont& font,
-                        const Vector<Glyph, 256>& glyphs,
-                        SkRect* bounds) {
+void SkFontGetBoundsForGlyphs(const SkFont& font,
+                              const Vector<Glyph, 256>& glyphs,
+                              SkRect* bounds) {
 #if defined(OS_MACOSX)
   for (unsigned i = 0; i < glyphs.size(); i++) {
-    GetBoundsForGlyph(font, glyphs[i], &bounds[i]);
+    SkFontGetBoundsForGlyph(font, glyphs[i], &bounds[i]);
   }
 #else
   static_assert(sizeof(Glyph) == 2, "Skia expects 2 bytes glyph id.");
@@ -148,7 +148,7 @@ void GetBoundsForGlyphs(const SkFont& font,
 #endif
 }
 
-float GetWidthForGlyph(const SkFont& font, Glyph glyph) {
+float SkFontGetWidthForGlyph(const SkFont& font, Glyph glyph) {
   SkScalar sk_width;
   font.getWidths(&glyph, 1, &sk_width, nullptr);
 

@@ -304,7 +304,7 @@ void OpenTypeVerticalData::GetVerticalTranslationsForGlyphs(
       float top_side_bearing = top_side_bearing_f_unit * size_per_unit_;
 
       SkRect skiaBounds;
-      GetBoundsForGlyph(font, glyph, &skiaBounds);
+      SkFontGetBoundsForGlyph(font, glyph, &skiaBounds);
       FloatRect bounds(skiaBounds);
       out_xy_array[1] = bounds.Y() - top_side_bearing;
       continue;
