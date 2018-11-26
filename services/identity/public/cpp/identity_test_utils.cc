@@ -114,10 +114,16 @@ void OneShotIdentityManagerObserver::OnAccountsInCookieUpdated(
 
 // Helper function that updates the refresh token for |account_id| to
 // |new_token|. Blocks until the update is processed by |identity_manager|.
-void UpdateRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
-                                  IdentityManager* identity_manager,
-                                  const std::string& account_id,
-                                  const std::string& new_token) {
+void UpdateRefreshTokenForAccount(
+    ProfileOAuth2TokenService* token_service,
+    AccountTrackerService* account_tracker_service,
+    IdentityManager* identity_manager,
+    const std::string& account_id,
+    const std::string& new_token) {
+  DCHECK_EQ(account_tracker_service->GetAccountInfo(account_id).account_id,
+            account_id)
+      << "To set the refresh token for an unknown account, use "
+         "MakeAccountAvailable()";
   base::RunLoop run_loop;
   OneShotIdentityManagerObserver token_updated_observer(
       identity_manager, run_loop.QuitClosure(),
@@ -272,14 +278,17 @@ void SetRefreshTokenForAccount(IdentityManager* identity_manager,
                                const std::string& account_id) {
   std::string refresh_token = "refresh_token_for_" + account_id;
   UpdateRefreshTokenForAccount(identity_manager->GetTokenService(),
+                               identity_manager->GetAccountTrackerService(),
                                identity_manager, account_id, refresh_token);
 }
 
 void SetInvalidRefreshTokenForAccount(IdentityManager* identity_manager,
                                       const std::string& account_id) {
   UpdateRefreshTokenForAccount(
-      identity_manager->GetTokenService(), identity_manager, account_id,
-      OAuth2TokenServiceDelegate::kInvalidRefreshToken);
+      identity_manager->GetTokenService(),
+
+      identity_manager->GetAccountTrackerService(), identity_manager,
+      account_id, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
 }
 
 void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
