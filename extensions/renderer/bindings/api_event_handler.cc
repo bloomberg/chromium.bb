@@ -281,8 +281,10 @@ void APIEventHandler::FireEventInContext(
     // We don't store this in a template because the Data (event name) is
     // different for each instance. Luckily, this is called during dispatching
     // an event, rather than e.g. at initialization time.
-    v8::Local<v8::Function> dispatch_event = v8::Function::New(
-        isolate, &DispatchEvent, gin::StringToSymbol(isolate, event_name));
+    v8::Local<v8::Function> dispatch_event =
+        v8::Function::New(context, &DispatchEvent,
+                          gin::StringToSymbol(isolate, event_name))
+            .ToLocalChecked();
 
     v8::Local<v8::Value> massager_args[] = {args_array, dispatch_event};
     JSRunner::Get(context)->RunJSFunction(
