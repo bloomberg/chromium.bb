@@ -25,3 +25,12 @@
 
 .log-info {
 }
+
+summary {
+  font-size: 1.5em;
+}
+
+summary h2 {
+  display: inline;
+  font-size: inherit;
+}
