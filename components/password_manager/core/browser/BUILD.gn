@@ -98,6 +98,7 @@ jumbo_static_library("browser") {
     "login_database_win.cc",
     "login_model.cc",
     "login_model.h",
+    "manage_passwords_referrer.h",
     "new_password_form_manager.cc",
     "new_password_form_manager.h",
     "password_autofill_manager.cc",

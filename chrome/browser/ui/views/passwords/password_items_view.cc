@@ -295,6 +295,7 @@ gfx::Size PasswordItemsView::CalculatePreferredSize() const {
 
 void PasswordItemsView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  model()->OnManageClicked();
+  model()->OnManageClicked(
+      password_manager::ManagePasswordsReferrer::kManagePasswordsBubble);
   CloseBubble();
 }

@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
@@ -64,11 +65,12 @@ class ManagePasswordsBubbleModel {
   void OnSaveClicked();
 
   // Called by the view code when the manage button is clicked by the user.
-  void OnManageClicked();
+  void OnManageClicked(password_manager::ManagePasswordsReferrer referrer);
 
   // Called by the view code when the navigate to passwords.google.com link is
   // clicked by the user.
-  void OnNavigateToPasswordManagerAccountDashboardLinkClicked();
+  void OnNavigateToPasswordManagerAccountDashboardLinkClicked(
+      password_manager::ManagePasswordsReferrer referrer);
 
   // Called by the view code when the auto-signin toast is about to close due to
   // timeout.

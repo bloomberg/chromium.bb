@@ -890,12 +890,13 @@ void ChromePasswordManagerClient::UpdateFormManagers() {
   password_manager_.UpdateFormManagers();
 }
 
-void ChromePasswordManagerClient::NavigateToManagePasswordsPage() {
+void ChromePasswordManagerClient::NavigateToManagePasswordsPage(
+    password_manager::ManagePasswordsReferrer referrer) {
 #if defined(OS_ANDROID)
   chrome::android::PreferencesLauncher::ShowPasswordSettings(web_contents());
 #else
   ::NavigateToManagePasswordsPage(
-      chrome::FindBrowserWithWebContents(web_contents()));
+      chrome::FindBrowserWithWebContents(web_contents()), referrer);
 #endif
 }
 

@@ -373,8 +373,12 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickNever) {
 TEST_F(ManagePasswordsBubbleModelTest, ClickManage) {
   PretendManagingPasswords();
 
-  EXPECT_CALL(*controller(), NavigateToPasswordManagerSettingsPage());
-  model()->OnManageClicked();
+  EXPECT_CALL(
+      *controller(),
+      NavigateToPasswordManagerSettingsPage(
+          password_manager::ManagePasswordsReferrer::kManagePasswordsBubble));
+  model()->OnManageClicked(
+      password_manager::ManagePasswordsReferrer::kManagePasswordsBubble);
 
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, model()->state());
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_MANAGE);
@@ -551,9 +555,13 @@ TEST_P(ManagePasswordsBubbleModelManageLinkTest, OnManageClicked) {
 
   PretendManagingPasswords();
 
-  EXPECT_CALL(*controller(), NavigateToPasswordManagerSettingsPage());
+  EXPECT_CALL(
+      *controller(),
+      NavigateToPasswordManagerSettingsPage(
+          password_manager::ManagePasswordsReferrer::kManagePasswordsBubble));
 
-  model()->OnManageClicked();
+  model()->OnManageClicked(
+      password_manager::ManagePasswordsReferrer::kManagePasswordsBubble);
 }
 
 INSTANTIATE_TEST_CASE_P(Default,

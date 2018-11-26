@@ -38,7 +38,8 @@ class ManagePasswordsUIControllerMock : public ManagePasswordsUIController {
                void(const base::string16&, const base::string16&));
   MOCK_METHOD2(ChooseCredential, void(const autofill::PasswordForm&,
                                       password_manager::CredentialType));
-  MOCK_METHOD0(NavigateToPasswordManagerSettingsPage, void());
+  MOCK_METHOD1(NavigateToPasswordManagerSettingsPage,
+               void(password_manager::ManagePasswordsReferrer));
   MOCK_METHOD0(NavigateToChromeSignIn, void());
   MOCK_METHOD0(OnDialogHidden, void());
 
