@@ -4347,6 +4347,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Broken"/>
 </enum>
 
+<enum name="BooleanBrowserSwitch">
+  <int value="0" label="Stay"/>
+  <int value="1" label="Switch browser"/>
+</enum>
+
 <enum name="BooleanCacheHit">
   <int value="0" label="Miss"/>
   <int value="1" label="Hit"/>

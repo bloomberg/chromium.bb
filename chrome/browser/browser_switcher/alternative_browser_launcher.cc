@@ -5,6 +5,7 @@
 #include "chrome/browser/browser_switcher/alternative_browser_launcher.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "components/prefs/pref_service.h"
@@ -66,7 +67,10 @@ void AlternativeBrowserLauncherImpl::OnAltBrowserParametersChanged() {
 }
 
 bool AlternativeBrowserLauncherImpl::Launch(const GURL& url) const {
-  return driver_->TryLaunch(url);
+  SCOPED_UMA_HISTOGRAM_TIMER("BrowserSwitcher.LaunchTime");
+  bool success = driver_->TryLaunch(url);
+  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.LaunchSuccess", success);
+  return success;
 }
 
 }  // namespace browser_switcher
