@@ -15,13 +15,16 @@
 
 namespace {
 
-TestChromeBrowserState::TestingFactories GetIdentityTestEnvironmentFactories() {
-  return {{ios::GaiaCookieManagerServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeGaiaCookieManagerService)},
-          {ProfileOAuth2TokenServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeOAuth2TokenService)},
-          {ios::SigninManagerFactory::GetInstance(),
-           base::BindRepeating(&ios::BuildFakeSigninManager)}};
+TestChromeBrowserState::TestingFactories GetIdentityTestEnvironmentFactories(
+    bool create_fake_url_loader_factory_for_cookie_requests = true) {
+  return {
+      {ios::GaiaCookieManagerServiceFactory::GetInstance(),
+       base::BindRepeating(&BuildFakeGaiaCookieManagerServiceWithOptions,
+                           create_fake_url_loader_factory_for_cookie_requests)},
+      {ProfileOAuth2TokenServiceFactory::GetInstance(),
+       base::BindRepeating(&BuildFakeOAuth2TokenService)},
+      {ios::SigninManagerFactory::GetInstance(),
+       base::BindRepeating(&ios::BuildFakeSigninManager)}};
 }
 
 }  // namespace
@@ -38,26 +41,41 @@ IdentityTestEnvironmentChromeBrowserStateAdaptor::
 std::unique_ptr<TestChromeBrowserState>
 IdentityTestEnvironmentChromeBrowserStateAdaptor::
     CreateChromeBrowserStateForIdentityTestEnvironment(
-        const TestChromeBrowserState::TestingFactories& input_factories) {
+        const TestChromeBrowserState::TestingFactories& input_factories,
+        bool create_fake_url_loader_factory_for_cookie_requests) {
   TestChromeBrowserState::Builder builder;
 
   for (auto& input_factory : input_factories) {
     builder.AddTestingFactory(input_factory.first, input_factory.second);
   }
 
-  return CreateChromeBrowserStateForIdentityTestEnvironment(builder);
+  return CreateChromeBrowserStateForIdentityTestEnvironment(
+      builder, create_fake_url_loader_factory_for_cookie_requests);
 }
 
 // static
 std::unique_ptr<TestChromeBrowserState>
 IdentityTestEnvironmentChromeBrowserStateAdaptor::
     CreateChromeBrowserStateForIdentityTestEnvironment(
-        TestChromeBrowserState::Builder& builder) {
-  for (auto& identity_factory : GetIdentityTestEnvironmentFactories()) {
+        TestChromeBrowserState::Builder& builder,
+        bool create_fake_url_loader_factory_for_cookie_requests) {
+  for (auto& identity_factory : GetIdentityTestEnvironmentFactories(
+           create_fake_url_loader_factory_for_cookie_requests)) {
     builder.AddTestingFactory(identity_factory.first, identity_factory.second);
   }
 
   return builder.Build();
+}
+
+// static
+void IdentityTestEnvironmentChromeBrowserStateAdaptor::
+    SetIdentityTestEnvironmentFactoriesOnBrowserContext(
+        TestChromeBrowserState* browser_state,
+        bool create_fake_url_loader_factory_for_cookie_requests) {
+  for (const auto& factory_pair : GetIdentityTestEnvironmentFactories(
+           create_fake_url_loader_factory_for_cookie_requests)) {
+    factory_pair.first->SetTestingFactory(browser_state, factory_pair.second);
+  }
 }
 
 // static
