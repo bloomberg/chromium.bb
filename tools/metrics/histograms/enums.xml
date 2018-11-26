@@ -3672,6 +3672,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="207" label="RFH_CANNOT_RENDER_FALLBACK_CONTENT"/>
   <int value="208" label="RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE"/>
   <int value="209" label="RFH_INVALID_WEB_REPORTING_CRASH_ID"/>
+  <int value="210" label="RFH_DETACH_MAIN_FRAME"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">

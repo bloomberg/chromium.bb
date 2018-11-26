@@ -1909,6 +1909,12 @@ void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
 }
 
 void RenderFrameHostImpl::OnDetach() {
+  if (!parent_) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RFH_DETACH_MAIN_FRAME);
+    return;
+  }
+
   // If this frame is pending deletion, OnDetach() is the ACK this
   // RenderFrameHost is waiting for before going into the "Deleted" state.
   if (!is_active() && !is_waiting_for_swapout_ack_) {

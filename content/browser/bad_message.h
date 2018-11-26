@@ -235,6 +235,7 @@ enum BadMessageReason {
   RFH_CANNOT_RENDER_FALLBACK_CONTENT = 207,
   RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE = 208,
   RFH_INVALID_WEB_REPORTING_CRASH_ID = 209,
+  RFH_DETACH_MAIN_FRAME = 210,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
