@@ -5166,7 +5166,8 @@
         {
             "platforms": [
                 "linux",
-                "windows"
+                "windows",
+                "mac"
             ],
             "experiments": [
                 {
