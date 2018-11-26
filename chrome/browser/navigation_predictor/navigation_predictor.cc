@@ -105,6 +105,11 @@ NavigationPredictor::~NavigationPredictor() {
 void NavigationPredictor::Create(
     blink::mojom::AnchorElementMetricsHostRequest request,
     content::RenderFrameHost* render_frame_host) {
+  DCHECK(base::FeatureList::IsEnabled(
+      blink::features::kRecordAnchorMetricsClicked));
+  DCHECK(base::FeatureList::IsEnabled(
+      blink::features::kRecordAnchorMetricsVisible));
+
   // Only valid for the main frame.
   if (render_frame_host->GetParent())
     return;
@@ -195,6 +200,8 @@ TemplateURLService* NavigationPredictor::GetTemplateURLService() const {
 void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     blink::mojom::AnchorElementMetricsPtr metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(base::FeatureList::IsEnabled(
+      blink::features::kRecordAnchorMetricsClicked));
 
   if (browser_context_->IsOffTheRecord())
     return;
@@ -396,6 +403,9 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
 void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     std::vector<blink::mojom::AnchorElementMetricsPtr> metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(base::FeatureList::IsEnabled(
+      blink::features::kRecordAnchorMetricsVisible));
+
   // Each document should only report metrics once when page is loaded.
   DCHECK(navigation_scores_map_.empty());
 
