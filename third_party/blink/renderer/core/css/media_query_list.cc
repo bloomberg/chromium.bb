@@ -30,8 +30,8 @@ namespace blink {
 MediaQueryList* MediaQueryList::Create(ExecutionContext* context,
                                        MediaQueryMatcher* matcher,
                                        scoped_refptr<MediaQuerySet> media) {
-  return new MediaQueryList(context, matcher,
-                            scoped_refptr<MediaQuerySet>(media));
+  return MakeGarbageCollected<MediaQueryList>(
+      context, matcher, scoped_refptr<MediaQuerySet>(media));
 }
 
 MediaQueryList::MediaQueryList(ExecutionContext* context,

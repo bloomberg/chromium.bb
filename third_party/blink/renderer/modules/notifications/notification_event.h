@@ -21,14 +21,19 @@ class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
  public:
   static NotificationEvent* Create(const AtomicString& type,
                                    const NotificationEventInit* initializer) {
-    return new NotificationEvent(type, initializer);
+    return MakeGarbageCollected<NotificationEvent>(type, initializer);
   }
   static NotificationEvent* Create(const AtomicString& type,
                                    const NotificationEventInit* initializer,
                                    WaitUntilObserver* observer) {
-    return new NotificationEvent(type, initializer, observer);
+    return MakeGarbageCollected<NotificationEvent>(type, initializer, observer);
   }
 
+  NotificationEvent(const AtomicString& type,
+                    const NotificationEventInit* initializer);
+  NotificationEvent(const AtomicString& type,
+                    const NotificationEventInit* initializer,
+                    WaitUntilObserver* observer);
   ~NotificationEvent() override;
 
   Notification* getNotification() const { return notification_.Get(); }
@@ -41,12 +46,6 @@ class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  NotificationEvent(const AtomicString& type,
-                    const NotificationEventInit* initializer);
-  NotificationEvent(const AtomicString& type,
-                    const NotificationEventInit* initializer,
-                    WaitUntilObserver* observer);
-
   Member<Notification> notification_;
   String action_;
   String reply_;

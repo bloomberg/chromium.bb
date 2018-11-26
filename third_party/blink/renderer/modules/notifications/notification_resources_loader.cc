@@ -86,7 +86,8 @@ void NotificationResourcesLoader::LoadImage(
     return;
   }
 
-  NotificationImageLoader* image_loader = new NotificationImageLoader(type);
+  NotificationImageLoader* image_loader =
+      MakeGarbageCollected<NotificationImageLoader>(type);
   image_loaders_.push_back(image_loader);
   image_loader->Start(context, url, std::move(image_callback));
 }

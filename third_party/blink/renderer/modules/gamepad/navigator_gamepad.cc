@@ -189,7 +189,7 @@ NavigatorGamepad& NavigatorGamepad::From(Navigator& navigator) {
   NavigatorGamepad* supplement =
       Supplement<Navigator>::From<NavigatorGamepad>(navigator);
   if (!supplement) {
-    supplement = new NavigatorGamepad(navigator);
+    supplement = MakeGarbageCollected<NavigatorGamepad>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

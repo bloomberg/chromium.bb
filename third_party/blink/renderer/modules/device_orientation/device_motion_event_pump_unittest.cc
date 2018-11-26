@@ -84,7 +84,7 @@ class DeviceMotionEventPumpTest : public testing::Test {
                 sensor_provider_ptr_info.PassHandle(),
                 device::mojom::SensorProvider::Version_)));
 
-    controller_ = new MockDeviceMotionController(motion_pump);
+    controller_ = MakeGarbageCollected<MockDeviceMotionController>(motion_pump);
 
     ExpectAllThreeSensorsStateToBe(
         DeviceMotionEventPump::SensorState::NOT_INITIALIZED);

@@ -75,6 +75,11 @@ class MutationObserverInterestGroup final
                           &attribute_name);
   }
 
+  MutationObserverInterestGroup(
+      HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>&
+          observers,
+      MutationRecordDeliveryOptions old_value_flag);
+
   bool IsOldValueRequested();
   void EnqueueMutationRecord(MutationRecord*);
 
@@ -86,10 +91,6 @@ class MutationObserverInterestGroup final
       MutationType,
       MutationRecordDeliveryOptions old_value_flag,
       const QualifiedName* attribute_name = nullptr);
-  MutationObserverInterestGroup(
-      HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>&
-          observers,
-      MutationRecordDeliveryOptions old_value_flag);
 
   bool HasOldValue(MutationRecordDeliveryOptions options) {
     return options & old_value_flag_;

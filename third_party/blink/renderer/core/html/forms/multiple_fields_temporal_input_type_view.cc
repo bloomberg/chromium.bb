@@ -317,7 +317,8 @@ MultipleFieldsTemporalInputTypeView::MultipleFieldsTemporalInputTypeView(
 MultipleFieldsTemporalInputTypeView*
 MultipleFieldsTemporalInputTypeView::Create(HTMLInputElement& element,
                                             BaseTemporalInputType& input_type) {
-  return new MultipleFieldsTemporalInputTypeView(element, input_type);
+  return MakeGarbageCollected<MultipleFieldsTemporalInputTypeView>(element,
+                                                                   input_type);
 }
 
 MultipleFieldsTemporalInputTypeView::~MultipleFieldsTemporalInputTypeView() =

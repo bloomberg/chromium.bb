@@ -26,7 +26,7 @@ Keyboard* NavigatorKeyboard::keyboard(Navigator& navigator) {
   NavigatorKeyboard* supplement =
       Supplement<Navigator>::From<NavigatorKeyboard>(navigator);
   if (!supplement) {
-    supplement = new NavigatorKeyboard(navigator);
+    supplement = MakeGarbageCollected<NavigatorKeyboard>(navigator);
     ProvideTo(navigator, supplement);
   }
   return supplement->keyboard_;

@@ -87,7 +87,7 @@ inline bool HeapLinkedStack<T>::IsEmpty() {
 
 template <typename T>
 inline void HeapLinkedStack<T>::Push(const T& data) {
-  head_ = new Node(data, head_);
+  head_ = MakeGarbageCollected<Node>(data, head_);
   ++size_;
 }
 

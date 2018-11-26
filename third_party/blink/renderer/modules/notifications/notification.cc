@@ -113,8 +113,8 @@ Notification* Notification::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  Notification* notification =
-      new Notification(context, Type::kNonPersistent, std::move(data));
+  Notification* notification = MakeGarbageCollected<Notification>(
+      context, Type::kNonPersistent, std::move(data));
 
   // TODO(https://crbug.com/595685): Make |token| a constructor parameter
   // once persistent notifications have been mojofied too.
@@ -141,8 +141,8 @@ Notification* Notification::Create(ExecutionContext* context,
                                    const String& notification_id,
                                    mojom::blink::NotificationDataPtr data,
                                    bool showing) {
-  Notification* notification =
-      new Notification(context, Type::kPersistent, std::move(data));
+  Notification* notification = MakeGarbageCollected<Notification>(
+      context, Type::kPersistent, std::move(data));
   notification->SetState(showing ? State::kShowing : State::kClosed);
   notification->SetNotificationId(notification_id);
   return notification;
@@ -182,7 +182,7 @@ void Notification::PrepareShow() {
     return;
   }
 
-  loader_ = new NotificationResourcesLoader(
+  loader_ = MakeGarbageCollected<NotificationResourcesLoader>(
       WTF::Bind(&Notification::DidLoadResources, WrapWeakPersistent(this)));
   loader_->Start(GetExecutionContext(), *data_);
 }

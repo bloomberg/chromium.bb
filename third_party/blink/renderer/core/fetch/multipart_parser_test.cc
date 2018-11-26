@@ -73,7 +73,8 @@ TEST(MultipartParserTest, AppendDataInChunks) {
   boundary.Append("boundary", 8u);
   for (const size_t size : sizes) {
     MockMultipartParserClient* client = new MockMultipartParserClient;
-    MultipartParser* parser = new MultipartParser(boundary, client);
+    MultipartParser* parser =
+        MakeGarbageCollected<MultipartParser>(boundary, client);
 
     for (size_t i = 0u, length = strlen(kBytes); i < length; i += size)
       EXPECT_TRUE(parser->AppendData(kBytes + i, std::min(size, length - i)));
@@ -117,7 +118,8 @@ TEST(MultipartParserTest, Epilogue) {
   boundary.Append("boundary", 8u);
   for (size_t end : ends) {
     MockMultipartParserClient* client = new MockMultipartParserClient;
-    MultipartParser* parser = new MultipartParser(boundary, client);
+    MultipartParser* parser =
+        MakeGarbageCollected<MultipartParser>(boundary, client);
 
     EXPECT_TRUE(parser->AppendData(kBytes, strlen(kBytes) - end));
     EXPECT_EQ(end <= 12u, parser->Finish()) << " end=" << end;
@@ -159,7 +161,8 @@ TEST(MultipartParserTest, NoEndBoundary) {
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
   MockMultipartParserClient* client = new MockMultipartParserClient;
-  MultipartParser* parser = new MultipartParser(boundary, client);
+  MultipartParser* parser =
+      MakeGarbageCollected<MultipartParser>(boundary, client);
 
   EXPECT_TRUE(parser->AppendData(bytes, strlen(bytes)));
   EXPECT_FALSE(parser->Finish());  // No close delimiter.
@@ -178,7 +181,8 @@ TEST(MultipartParserTest, NoStartBoundary) {
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
   MockMultipartParserClient* client = new MockMultipartParserClient;
-  MultipartParser* parser = new MultipartParser(boundary, client);
+  MultipartParser* parser =
+      MakeGarbageCollected<MultipartParser>(boundary, client);
 
   EXPECT_FALSE(parser->AppendData(
       bytes, strlen(bytes)));  // Close delimiter before delimiter.
@@ -191,7 +195,8 @@ TEST(MultipartParserTest, NoStartNorEndBoundary) {
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
   MockMultipartParserClient* client = new MockMultipartParserClient;
-  MultipartParser* parser = new MultipartParser(boundary, client);
+  MultipartParser* parser =
+      MakeGarbageCollected<MultipartParser>(boundary, client);
 
   EXPECT_TRUE(parser->AppendData(bytes, strlen(bytes)));  // Valid preamble.
   EXPECT_FALSE(parser->Finish());                         // No parts.
@@ -211,7 +216,8 @@ TEST(MultipartParserTest, Preamble) {
   boundary.Append("boundary", 8u);
   for (const size_t start : kStarts) {
     MockMultipartParserClient* client = new MockMultipartParserClient;
-    MultipartParser* parser = new MultipartParser(boundary, client);
+    MultipartParser* parser =
+        MakeGarbageCollected<MultipartParser>(boundary, client);
 
     EXPECT_TRUE(parser->AppendData(kBytes + start, strlen(kBytes + start)));
     EXPECT_TRUE(parser->Finish());
@@ -269,7 +275,8 @@ TEST(MultipartParserTest, PreambleWithMalformedBoundary) {
   boundary.Append("--boundary", 10u);
   for (const size_t start : kStarts) {
     MockMultipartParserClient* client = new MockMultipartParserClient;
-    MultipartParser* parser = new MultipartParser(boundary, client);
+    MultipartParser* parser =
+        MakeGarbageCollected<MultipartParser>(boundary, client);
 
     EXPECT_TRUE(parser->AppendData(kBytes + start,
                                    strlen(kBytes + start)));  // Valid preamble.

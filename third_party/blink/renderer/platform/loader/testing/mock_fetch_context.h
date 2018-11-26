@@ -37,10 +37,24 @@ class MockFetchContext : public FetchContext {
       LoadPolicy load_policy,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner = nullptr,
       std::unique_ptr<WebURLLoaderFactory> url_loader_factory = nullptr) {
-    return new MockFetchContext(load_policy, std::move(loading_task_runner),
-                                std::move(url_loader_factory));
+    return MakeGarbageCollected<MockFetchContext>(
+        load_policy, std::move(loading_task_runner),
+        std::move(url_loader_factory));
   }
 
+  MockFetchContext(
+      LoadPolicy load_policy,
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+      std::unique_ptr<WebURLLoaderFactory> url_loader_factory)
+      : FetchContext(loading_task_runner
+                         ? std::move(loading_task_runner)
+                         : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
+        load_policy_(load_policy),
+        security_origin_(SecurityOrigin::CreateUniqueOpaque()),
+        frame_scheduler_(new MockFrameScheduler(GetLoadingTaskRunner())),
+        url_loader_factory_(std::move(url_loader_factory)),
+        complete_(false),
+        transfer_size_(-1) {}
   ~MockFetchContext() override = default;
 
   void SetLoadComplete(bool complete) { complete_ = complete; }
@@ -145,20 +159,6 @@ class MockFetchContext : public FetchContext {
    private:
     scoped_refptr<base::SingleThreadTaskRunner> runner_;
   };
-
-  MockFetchContext(
-      LoadPolicy load_policy,
-      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-      std::unique_ptr<WebURLLoaderFactory> url_loader_factory)
-      : FetchContext(loading_task_runner
-                         ? std::move(loading_task_runner)
-                         : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
-        load_policy_(load_policy),
-        security_origin_(SecurityOrigin::CreateUniqueOpaque()),
-        frame_scheduler_(new MockFrameScheduler(GetLoadingTaskRunner())),
-        url_loader_factory_(std::move(url_loader_factory)),
-        complete_(false),
-        transfer_size_(-1) {}
 
   enum LoadPolicy load_policy_;
   scoped_refptr<const SecurityOrigin> security_origin_;

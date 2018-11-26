@@ -52,12 +52,13 @@ int MediaStreamComponent::GenerateUniqueId() {
 }
 
 MediaStreamComponent* MediaStreamComponent::Create(MediaStreamSource* source) {
-  return new MediaStreamComponent(CreateCanonicalUUIDString(), source);
+  return MakeGarbageCollected<MediaStreamComponent>(CreateCanonicalUUIDString(),
+                                                    source);
 }
 
 MediaStreamComponent* MediaStreamComponent::Create(const String& id,
                                                    MediaStreamSource* source) {
-  return new MediaStreamComponent(id, source);
+  return MakeGarbageCollected<MediaStreamComponent>(id, source);
 }
 
 MediaStreamComponent::MediaStreamComponent(const String& id,
@@ -68,7 +69,8 @@ MediaStreamComponent::MediaStreamComponent(const String& id,
 
 MediaStreamComponent* MediaStreamComponent::Clone() const {
   MediaStreamComponent* cloned_component =
-      new MediaStreamComponent(CreateCanonicalUUIDString(), Source());
+      MakeGarbageCollected<MediaStreamComponent>(CreateCanonicalUUIDString(),
+                                                 Source());
   cloned_component->SetEnabled(enabled_);
   cloned_component->SetMuted(muted_);
   cloned_component->SetContentHint(content_hint_);

@@ -43,14 +43,18 @@ class MIDIConnectionEvent final : public Event {
 
  public:
   static MIDIConnectionEvent* Create(MIDIPort* port) {
-    return new MIDIConnectionEvent(port);
+    return MakeGarbageCollected<MIDIConnectionEvent>(port);
   }
 
   static MIDIConnectionEvent* Create(
       const AtomicString& type,
       const MIDIConnectionEventInit* initializer) {
-    return new MIDIConnectionEvent(type, initializer);
+    return MakeGarbageCollected<MIDIConnectionEvent>(type, initializer);
   }
+  MIDIConnectionEvent(MIDIPort* port)
+      : Event(event_type_names::kStatechange, Bubbles::kNo, Cancelable::kNo),
+        port_(port) {}
+  MIDIConnectionEvent(const AtomicString&, const MIDIConnectionEventInit*);
 
   MIDIPort* port() { return port_; }
 
@@ -61,12 +65,6 @@ class MIDIConnectionEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  MIDIConnectionEvent(MIDIPort* port)
-      : Event(event_type_names::kStatechange, Bubbles::kNo, Cancelable::kNo),
-        port_(port) {}
-
-  MIDIConnectionEvent(const AtomicString&, const MIDIConnectionEventInit*);
-
   Member<MIDIPort> port_;
 };
 

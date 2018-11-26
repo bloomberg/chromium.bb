@@ -124,9 +124,9 @@ ModuleScript* ModuleScript::CreateInternal(const ParkableString& source_text,
   // <spec step="5">Set script's fetch options to options.</spec>
   //
   // [nospec] |source_text| is saved for CSP checks.
-  ModuleScript* module_script =
-      new ModuleScript(modulator, result, source_url, base_url, options,
-                       source_text, start_position);
+  ModuleScript* module_script = MakeGarbageCollected<ModuleScript>(
+      modulator, result, source_url, base_url, options, source_text,
+      start_position);
 
   // Step 7, a part of ParseModule(): Passing script as the last parameter
   // here ensures result.[[HostDefined]] will be script.

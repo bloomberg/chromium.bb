@@ -55,13 +55,13 @@ class MultipleFieldsTemporalInputTypeView final
  public:
   static MultipleFieldsTemporalInputTypeView* Create(HTMLInputElement&,
                                                      BaseTemporalInputType&);
+
+  MultipleFieldsTemporalInputTypeView(HTMLInputElement&,
+                                      BaseTemporalInputType&);
   ~MultipleFieldsTemporalInputTypeView() override;
   void Trace(blink::Visitor*) override;
 
  private:
-  MultipleFieldsTemporalInputTypeView(HTMLInputElement&,
-                                      BaseTemporalInputType&);
-
   // DateTimeEditElement::EditControlOwner functions
   void DidBlurFromControl(WebFocusType) final;
   void DidFocusOnControl(WebFocusType) final;

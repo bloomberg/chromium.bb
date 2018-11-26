@@ -151,10 +151,11 @@ bool MediaControlPanelElement::EventListenerIsAttachedForTest() const {
 void MediaControlPanelElement::EnsureTransitionEventListener() {
   // Create the event listener if it doesn't exist.
   if (!event_listener_) {
-    event_listener_ = new MediaControlPanelElement::TransitionEventListener(
-        this,
-        WTF::BindRepeating(&MediaControlPanelElement::HandleTransitionEndEvent,
-                           WrapWeakPersistent(this)));
+    event_listener_ =
+        MakeGarbageCollected<MediaControlPanelElement::TransitionEventListener>(
+            this, WTF::BindRepeating(
+                      &MediaControlPanelElement::HandleTransitionEndEvent,
+                      WrapWeakPersistent(this)));
   }
 
   // Attach the event listener if we are not attached.

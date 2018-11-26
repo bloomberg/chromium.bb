@@ -41,7 +41,12 @@ class NamedNodeMap final : public ScriptWrappable {
 
  public:
   static NamedNodeMap* Create(Element* element) {
-    return new NamedNodeMap(element);
+    return MakeGarbageCollected<NamedNodeMap>(element);
+  }
+
+  explicit NamedNodeMap(Element* element) : element_(element) {
+    // Only supports NamedNodeMaps with Element associated.
+    DCHECK(element_);
   }
 
   // Public DOM interface.
@@ -67,11 +72,6 @@ class NamedNodeMap final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NamedNodeMap(Element* element) : element_(element) {
-    // Only supports NamedNodeMaps with Element associated.
-    DCHECK(element_);
-  }
-
   Member<Element> element_;
 };
 

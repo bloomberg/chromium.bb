@@ -51,12 +51,13 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
   static ScriptPromise Start(ScriptState* script_state,
                              const MIDIOptions* options) {
     MIDIAccessInitializer* resolver =
-        new MIDIAccessInitializer(script_state, options);
+        MakeGarbageCollected<MIDIAccessInitializer>(script_state, options);
     resolver->KeepAliveWhilePending();
     resolver->PauseIfNeeded();
     return resolver->Start();
   }
 
+  MIDIAccessInitializer(ScriptState*, const MIDIOptions*);
   ~MIDIAccessInitializer() override = default;
 
   // Eager finalization to allow dispose() operation access
@@ -87,8 +88,6 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
   void Trace(Visitor*) override;
 
  private:
-  MIDIAccessInitializer(ScriptState*, const MIDIOptions*);
-
   ExecutionContext* GetExecutionContext() const;
   ScriptPromise Start();
 

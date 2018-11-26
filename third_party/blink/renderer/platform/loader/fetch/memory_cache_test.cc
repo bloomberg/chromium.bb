@@ -93,10 +93,9 @@ class MemoryCacheTest : public testing::Test {
 
       ResourceLoaderOptions options;
 
-      return new FakeResource(request, type, options);
+      return MakeGarbageCollected<FakeResource>(request, type, options);
     }
 
-   private:
     FakeResource(const ResourceRequest& request,
                  ResourceType type,
                  const ResourceLoaderOptions& options)
@@ -142,7 +141,8 @@ TEST_F(MemoryCacheTest, MAYBE_VeryLargeResourceAccounting) {
   const size_t kResourceSize1 = kSizeMax / 16;
   const size_t kResourceSize2 = kSizeMax / 20;
   GetMemoryCache()->SetCapacity(kTotalCapacity);
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   FetchParameters params(ResourceRequest("data:text/html,"));
   FakeDecodedResource* cached_resource =
       FakeDecodedResource::Fetch(params, fetcher_, client);
@@ -211,7 +211,8 @@ static void TestResourcePruningLater(ResourceFetcher* fetcher,
   resource1->AppendData(kData, 3u);
   resource1->FinishForTest();
   FetchParameters params2(ResourceRequest("data:text/html,resource2"));
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   Resource* resource2 = FakeDecodedResource::Fetch(params2, fetcher, client);
   GetMemoryCache()->Remove(resource2);
   if (!identifier2.IsEmpty())
@@ -270,8 +271,10 @@ static void TestClientRemoval(ResourceFetcher* fetcher,
                               const String& identifier2) {
   GetMemoryCache()->SetCapacity(0);
   const char kData[6] = "abcde";
-  Persistent<MockResourceClient> client1 = new MockResourceClient;
-  Persistent<MockResourceClient> client2 = new MockResourceClient;
+  Persistent<MockResourceClient> client1 =
+      MakeGarbageCollected<MockResourceClient>();
+  Persistent<MockResourceClient> client2 =
+      MakeGarbageCollected<MockResourceClient>();
   FetchParameters params1(ResourceRequest("data:text/html,foo"));
   Resource* resource1 = FakeDecodedResource::Fetch(params1, fetcher, client1);
   FetchParameters params2(ResourceRequest("data:text/html,bar"));

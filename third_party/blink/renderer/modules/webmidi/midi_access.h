@@ -65,9 +65,14 @@ class MIDIAccess final : public EventTargetWithInlineData,
       bool sysex_enabled,
       const Vector<MIDIAccessInitializer::PortDescriptor>& ports,
       ExecutionContext* execution_context) {
-    return new MIDIAccess(std::move(accessor), sysex_enabled, ports,
-                          execution_context);
+    return MakeGarbageCollected<MIDIAccess>(std::move(accessor), sysex_enabled,
+                                            ports, execution_context);
   }
+
+  MIDIAccess(std::unique_ptr<MIDIAccessor>,
+             bool sysex_enabled,
+             const Vector<MIDIAccessInitializer::PortDescriptor>&,
+             ExecutionContext*);
   ~MIDIAccess() override;
 
   MIDIInputMap* inputs() const;
@@ -130,10 +135,6 @@ class MIDIAccess final : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  MIDIAccess(std::unique_ptr<MIDIAccessor>,
-             bool sysex_enabled,
-             const Vector<MIDIAccessInitializer::PortDescriptor>&,
-             ExecutionContext*);
   void Dispose();
 
   std::unique_ptr<MIDIAccessor> accessor_;

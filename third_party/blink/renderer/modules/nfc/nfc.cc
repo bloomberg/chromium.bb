@@ -655,7 +655,7 @@ NFC::NFC(LocalFrame* frame)
 }
 
 NFC* NFC::Create(LocalFrame* frame) {
-  NFC* nfc = new NFC(frame);
+  NFC* nfc = MakeGarbageCollected<NFC>(frame);
   return nfc;
 }
 

@@ -37,7 +37,8 @@ MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
     return nullptr;
   }
 
-  return new MojoInterfaceInterceptor(context, interface_name, process_scope);
+  return MakeGarbageCollected<MojoInterfaceInterceptor>(context, interface_name,
+                                                        process_scope);
 }
 
 MojoInterfaceInterceptor::~MojoInterfaceInterceptor() = default;

@@ -32,6 +32,8 @@ class MODULES_EXPORT MediaSession final
  public:
   static MediaSession* Create(ExecutionContext*);
 
+  explicit MediaSession(ExecutionContext*);
+
   void Dispose();
 
   void setPlaybackState(const String&);
@@ -56,8 +58,6 @@ class MODULES_EXPORT MediaSession final
     kActionEnabled,
     kActionDisabled,
   };
-
-  explicit MediaSession(ExecutionContext*);
 
   void NotifyActionChange(const String& action, ActionChangeType);
 

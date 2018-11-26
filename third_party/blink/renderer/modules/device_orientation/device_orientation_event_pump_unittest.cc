@@ -95,7 +95,8 @@ class DeviceOrientationEventPumpTest : public testing::Test {
                 sensor_provider_ptr_info.PassHandle(),
                 device::mojom::SensorProvider::Version_)));
 
-    controller_ = new MockDeviceOrientationController(orientation_pump);
+    controller_ =
+        MakeGarbageCollected<MockDeviceOrientationController>(orientation_pump);
 
     ExpectRelativeOrientationSensorStateToBe(
         DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
@@ -734,8 +735,8 @@ class DeviceAbsoluteOrientationEventPumpTest : public testing::Test {
             device::mojom::blink::SensorProviderPtrInfo(
                 sensor_provider_ptr_info.PassHandle(),
                 device::mojom::SensorProvider::Version_)));
-    controller_ =
-        new MockDeviceOrientationController(absolute_orientation_pump);
+    controller_ = MakeGarbageCollected<MockDeviceOrientationController>(
+        absolute_orientation_pump);
 
     ExpectAbsoluteOrientationSensorStateToBe(
         DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);

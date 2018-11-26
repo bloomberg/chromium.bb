@@ -24,14 +24,18 @@ class MojoInterfaceRequestEvent final : public Event {
   ~MojoInterfaceRequestEvent() override;
 
   static MojoInterfaceRequestEvent* Create(MojoHandle* handle) {
-    return new MojoInterfaceRequestEvent(handle);
+    return MakeGarbageCollected<MojoInterfaceRequestEvent>(handle);
   }
 
   static MojoInterfaceRequestEvent* Create(
       const AtomicString& type,
       const MojoInterfaceRequestEventInit* initializer) {
-    return new MojoInterfaceRequestEvent(type, initializer);
+    return MakeGarbageCollected<MojoInterfaceRequestEvent>(type, initializer);
   }
+
+  explicit MojoInterfaceRequestEvent(MojoHandle*);
+  MojoInterfaceRequestEvent(const AtomicString& type,
+                            const MojoInterfaceRequestEventInit*);
 
   MojoHandle* handle() const { return handle_; }
 
@@ -42,10 +46,6 @@ class MojoInterfaceRequestEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit MojoInterfaceRequestEvent(MojoHandle*);
-  MojoInterfaceRequestEvent(const AtomicString& type,
-                            const MojoInterfaceRequestEventInit*);
-
   Member<MojoHandle> handle_;
 };
 

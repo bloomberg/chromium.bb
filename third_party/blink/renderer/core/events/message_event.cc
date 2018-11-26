@@ -170,7 +170,7 @@ MessageEvent* MessageEvent::Create(const AtomicString& type,
         "The optional 'source' property is neither a Window nor MessagePort.");
     return nullptr;
   }
-  return new MessageEvent(type, initializer);
+  return MakeGarbageCollected<MessageEvent>(type, initializer);
 }
 
 void MessageEvent::initMessageEvent(const AtomicString& type,

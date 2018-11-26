@@ -50,22 +50,23 @@ int MediaStreamDescriptor::GenerateUniqueId() {
 MediaStreamDescriptor* MediaStreamDescriptor::Create(
     const MediaStreamSourceVector& audio_sources,
     const MediaStreamSourceVector& video_sources) {
-  return new MediaStreamDescriptor(CreateCanonicalUUIDString(), audio_sources,
-                                   video_sources);
+  return MakeGarbageCollected<MediaStreamDescriptor>(
+      CreateCanonicalUUIDString(), audio_sources, video_sources);
 }
 
 MediaStreamDescriptor* MediaStreamDescriptor::Create(
     const MediaStreamComponentVector& audio_components,
     const MediaStreamComponentVector& video_components) {
-  return new MediaStreamDescriptor(CreateCanonicalUUIDString(),
-                                   audio_components, video_components);
+  return MakeGarbageCollected<MediaStreamDescriptor>(
+      CreateCanonicalUUIDString(), audio_components, video_components);
 }
 
 MediaStreamDescriptor* MediaStreamDescriptor::Create(
     const String& id,
     const MediaStreamComponentVector& audio_components,
     const MediaStreamComponentVector& video_components) {
-  return new MediaStreamDescriptor(id, audio_components, video_components);
+  return MakeGarbageCollected<MediaStreamDescriptor>(id, audio_components,
+                                                     video_components);
 }
 
 void MediaStreamDescriptor::AddComponent(MediaStreamComponent* component) {

@@ -55,8 +55,12 @@ class MutationObserver::V8DelegateImpl final
  public:
   static V8DelegateImpl* Create(V8MutationCallback* callback,
                                 ExecutionContext* execution_context) {
-    return new V8DelegateImpl(callback, execution_context);
+    return MakeGarbageCollected<V8DelegateImpl>(callback, execution_context);
   }
+
+  V8DelegateImpl(V8MutationCallback* callback,
+                 ExecutionContext* execution_context)
+      : ContextClient(execution_context), callback_(callback) {}
 
   ExecutionContext* GetExecutionContext() const override {
     return ContextClient::GetExecutionContext();
@@ -76,10 +80,6 @@ class MutationObserver::V8DelegateImpl final
   }
 
  private:
-  V8DelegateImpl(V8MutationCallback* callback,
-                 ExecutionContext* execution_context)
-      : ContextClient(execution_context), callback_(callback) {}
-
   TraceWrapperMember<V8MutationCallback> callback_;
 };
 
@@ -94,14 +94,15 @@ struct MutationObserver::ObserverLessThan {
 
 MutationObserver* MutationObserver::Create(Delegate* delegate) {
   DCHECK(IsMainThread());
-  return new MutationObserver(delegate->GetExecutionContext(), delegate);
+  return MakeGarbageCollected<MutationObserver>(delegate->GetExecutionContext(),
+                                                delegate);
 }
 
 MutationObserver* MutationObserver::Create(ScriptState* script_state,
                                            V8MutationCallback* callback) {
   DCHECK(IsMainThread());
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  return new MutationObserver(
+  return MakeGarbageCollected<MutationObserver>(
       execution_context, V8DelegateImpl::Create(callback, execution_context));
 }
 

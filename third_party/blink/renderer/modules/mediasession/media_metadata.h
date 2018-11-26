@@ -33,6 +33,8 @@ class MODULES_EXPORT MediaMetadata final : public ScriptWrappable {
                                const MediaMetadataInit*,
                                ExceptionState&);
 
+  MediaMetadata(ScriptState*, const MediaMetadataInit*, ExceptionState&);
+
   String title() const;
   String artist() const;
   String album() const;
@@ -55,8 +57,6 @@ class MODULES_EXPORT MediaMetadata final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  MediaMetadata(ScriptState*, const MediaMetadataInit*, ExceptionState&);
-
   // Called when one of the metadata fields is updated from script. It will
   // notify the session asynchronously in order to bundle multiple call in one
   // notification.

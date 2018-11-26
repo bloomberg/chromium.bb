@@ -56,7 +56,7 @@ constexpr base::TimeDelta kYieldThreshold =
     base::TimeDelta::FromMilliseconds(50);
 
 MessagePort* MessagePort::Create(ExecutionContext& execution_context) {
-  return new MessagePort(execution_context);
+  return MakeGarbageCollected<MessagePort>(execution_context);
 }
 
 MessagePort::MessagePort(ExecutionContext& execution_context)

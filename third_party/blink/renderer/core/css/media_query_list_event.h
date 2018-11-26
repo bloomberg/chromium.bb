@@ -17,36 +17,19 @@ class MediaQueryListEvent final : public Event {
 
  public:
   static MediaQueryListEvent* Create(MediaQueryList* list) {
-    return new MediaQueryListEvent(list);
+    return MakeGarbageCollected<MediaQueryListEvent>(list);
   }
 
   static MediaQueryListEvent* Create(const String& media, bool matches) {
-    return new MediaQueryListEvent(media, matches);
+    return MakeGarbageCollected<MediaQueryListEvent>(media, matches);
   }
 
   static MediaQueryListEvent* Create(
       const AtomicString& event_type,
       const MediaQueryListEventInit* initializer) {
-    return new MediaQueryListEvent(event_type, initializer);
+    return MakeGarbageCollected<MediaQueryListEvent>(event_type, initializer);
   }
 
-  String media() const {
-    return media_query_list_ ? media_query_list_->media() : media_;
-  }
-  bool matches() const {
-    return media_query_list_ ? media_query_list_->matches() : matches_;
-  }
-
-  const AtomicString& InterfaceName() const override {
-    return event_interface_names::kMediaQueryListEvent;
-  }
-
-  void Trace(blink::Visitor* visitor) override {
-    Event::Trace(visitor);
-    visitor->Trace(media_query_list_);
-  }
-
- private:
   MediaQueryListEvent(const String& media, bool matches)
       : Event(event_type_names::kChange, Bubbles::kNo, Cancelable::kNo),
         media_(media),
@@ -66,6 +49,23 @@ class MediaQueryListEvent final : public Event {
       matches_ = initializer->matches();
   }
 
+  String media() const {
+    return media_query_list_ ? media_query_list_->media() : media_;
+  }
+  bool matches() const {
+    return media_query_list_ ? media_query_list_->matches() : matches_;
+  }
+
+  const AtomicString& InterfaceName() const override {
+    return event_interface_names::kMediaQueryListEvent;
+  }
+
+  void Trace(blink::Visitor* visitor) override {
+    Event::Trace(visitor);
+    visitor->Trace(media_query_list_);
+  }
+
+ private:
   // We have media_/matches_ for JS-created events; we use media_query_list_
   // for events that blink generates.
   Member<MediaQueryList> media_query_list_;

@@ -30,7 +30,7 @@ static const size_t kHandleVectorInlineCapacity = 4;
 namespace blink {
 
 MojoHandle* MojoHandle::Create(mojo::ScopedHandle handle) {
-  return new MojoHandle(std::move(handle));
+  return MakeGarbageCollected<MojoHandle>(std::move(handle));
 }
 
 mojo::ScopedHandle MojoHandle::TakeHandle() {

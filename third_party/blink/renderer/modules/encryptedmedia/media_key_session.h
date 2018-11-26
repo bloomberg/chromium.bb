@@ -75,6 +75,7 @@ class MediaKeySession final
                                  MediaKeys*,
                                  WebEncryptedMediaSessionType);
 
+  MediaKeySession(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
   ~MediaKeySession() override;
 
   String sessionId() const;
@@ -109,7 +110,6 @@ class MediaKeySession final
   friend class NewSessionResultPromise;
   friend class LoadSessionResultPromise;
 
-  MediaKeySession(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
   void Dispose();
 
   void ActionTimerFired(TimerBase*);

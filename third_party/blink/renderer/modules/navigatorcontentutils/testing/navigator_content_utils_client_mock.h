@@ -18,9 +18,12 @@ class NavigatorContentUtilsClientMock final
     : public NavigatorContentUtilsClient {
  public:
   static NavigatorContentUtilsClientMock* Create() {
-    return new NavigatorContentUtilsClientMock;
+    return MakeGarbageCollected<NavigatorContentUtilsClientMock>();
   }
 
+  // TODO(sashab): Make NavigatorContentUtilsClientMock non-virtual and test it
+  // using a WebLocalFrameClient mock.
+  NavigatorContentUtilsClientMock() : NavigatorContentUtilsClient(nullptr) {}
   ~NavigatorContentUtilsClientMock() override = default;
 
   void RegisterProtocolHandler(const String& scheme,
@@ -30,10 +33,6 @@ class NavigatorContentUtilsClientMock final
   void UnregisterProtocolHandler(const String& scheme, const KURL&) override;
 
  private:
-  // TODO(sashab): Make NavigatorContentUtilsClientMock non-virtual and test it
-  // using a WebLocalFrameClient mock.
-  NavigatorContentUtilsClientMock() : NavigatorContentUtilsClient(nullptr) {}
-
   typedef struct {
     String scheme;
     KURL url;

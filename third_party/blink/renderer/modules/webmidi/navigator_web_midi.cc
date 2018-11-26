@@ -68,7 +68,7 @@ NavigatorWebMIDI& NavigatorWebMIDI::From(Navigator& navigator) {
   NavigatorWebMIDI* supplement =
       Supplement<Navigator>::From<NavigatorWebMIDI>(navigator);
   if (!supplement) {
-    supplement = new NavigatorWebMIDI(navigator);
+    supplement = MakeGarbageCollected<NavigatorWebMIDI>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

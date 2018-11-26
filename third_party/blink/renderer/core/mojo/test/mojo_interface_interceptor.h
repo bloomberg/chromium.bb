@@ -40,6 +40,10 @@ class MojoInterfaceInterceptor final
                                           const String& interface_name,
                                           const String& scope,
                                           ExceptionState&);
+
+  MojoInterfaceInterceptor(ExecutionContext*,
+                           const String& interface_name,
+                           bool process_scope);
   ~MojoInterfaceInterceptor() override;
 
   void start(ExceptionState&);
@@ -60,10 +64,6 @@ class MojoInterfaceInterceptor final
   void ContextDestroyed(ExecutionContext*) final;
 
  private:
-  MojoInterfaceInterceptor(ExecutionContext*,
-                           const String& interface_name,
-                           bool process_scope);
-
   service_manager::InterfaceProvider* GetInterfaceProvider() const;
   void OnInterfaceRequest(mojo::ScopedMessagePipeHandle);
   void DispatchInterfaceRequestEvent(mojo::ScopedMessagePipeHandle);

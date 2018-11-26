@@ -28,12 +28,11 @@ class MODULES_EXPORT MediaKeysController final
     return Supplement<Page>::From<MediaKeysController>(page);
   }
 
+  MediaKeysController();
+
   void Trace(blink::Visitor* visitor) override {
     Supplement<Page>::Trace(visitor);
   }
-
- private:
-  MediaKeysController();
 };
 
 }  // namespace blink

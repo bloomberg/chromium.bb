@@ -33,6 +33,11 @@ class MockPendingScript : public PendingScript {
     return Create(document, ScriptSchedulingType::kAsync);
   }
 
+  MockPendingScript(ScriptElementBase* element,
+                    ScriptSchedulingType scheduling_type)
+      : PendingScript(element, TextPosition()) {
+    SetSchedulingType(scheduling_type);
+  }
   ~MockPendingScript() override {}
 
   MOCK_CONST_METHOD0(GetScriptType, mojom::ScriptType());
@@ -85,19 +90,13 @@ class MockPendingScript : public PendingScript {
   MOCK_CONST_METHOD0(CheckState, void());
 
  private:
-  MockPendingScript(ScriptElementBase* element,
-                    ScriptSchedulingType scheduling_type)
-      : PendingScript(element, TextPosition()) {
-    SetSchedulingType(scheduling_type);
-  }
-
   static MockPendingScript* Create(Document* document,
                                    ScriptSchedulingType scheduling_type) {
     MockScriptElementBase* element = MockScriptElementBase::Create();
     EXPECT_CALL(*element, GetDocument())
         .WillRepeatedly(testing::ReturnRef(*document));
     MockPendingScript* pending_script =
-        new MockPendingScript(element, scheduling_type);
+        MakeGarbageCollected<MockPendingScript>(element, scheduling_type);
     EXPECT_CALL(*pending_script, IsExternal()).WillRepeatedly(Return(true));
     return pending_script;
   }

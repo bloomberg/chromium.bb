@@ -74,9 +74,9 @@ class OriginTrialContextTest : public testing::Test,
  protected:
   OriginTrialContextTest()
       : ScopedOriginTrialsForTest(true),
-        execution_context_(new NullExecutionContext()),
+        execution_context_(MakeGarbageCollected<NullExecutionContext>()),
         token_validator_(new MockTokenValidator),
-        origin_trial_context_(new OriginTrialContext(
+        origin_trial_context_(MakeGarbageCollected<OriginTrialContext>(
             *execution_context_,
             std::unique_ptr<MockTokenValidator>(token_validator_))),
         histogram_tester_(new HistogramTester()) {}

@@ -39,7 +39,7 @@ WebGLExtensionName OESElementIndexUint::GetName() const {
 
 OESElementIndexUint* OESElementIndexUint::Create(
     WebGLRenderingContextBase* context) {
-  return new OESElementIndexUint(context);
+  return MakeGarbageCollected<OESElementIndexUint>(context);
 }
 
 bool OESElementIndexUint::Supported(WebGLRenderingContextBase* context) {

@@ -72,7 +72,7 @@ class PublicURLManagerTest : public testing::Test {
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kMojoBlobURLs);
 
-    execution_context_ = new NullExecutionContext;
+    execution_context_ = MakeGarbageCollected<NullExecutionContext>();
     // By default this creates a unique origin, which is exactly what this test
     // wants.
     execution_context_->SetUpSecurityContext();

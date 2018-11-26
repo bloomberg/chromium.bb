@@ -86,7 +86,7 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
 
   if (RuntimeEnabledFeatures::VideoFullscreenDetectionEnabled()) {
     custom_controls_fullscreen_detector_ =
-        new MediaCustomControlsFullscreenDetector(*this);
+        MakeGarbageCollected<MediaCustomControlsFullscreenDetector>(*this);
   }
 
   if (media_element_parser_helpers::IsMediaElement(this) &&
@@ -623,7 +623,8 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
 void HTMLVideoElement::MediaRemotingStarted(
     const WebString& remote_device_friendly_name) {
   if (!remoting_interstitial_) {
-    remoting_interstitial_ = new MediaRemotingInterstitial(*this);
+    remoting_interstitial_ =
+        MakeGarbageCollected<MediaRemotingInterstitial>(*this);
     ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
     shadow_root.InsertBefore(remoting_interstitial_, shadow_root.firstChild());
     HTMLMediaElement::AssertShadowRootChildren(shadow_root);

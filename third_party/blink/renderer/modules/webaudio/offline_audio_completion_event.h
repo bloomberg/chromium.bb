@@ -46,6 +46,10 @@ class OfflineAudioCompletionEvent final : public Event {
       const AtomicString& type,
       const OfflineAudioCompletionEventInit*);
 
+  OfflineAudioCompletionEvent();
+  explicit OfflineAudioCompletionEvent(AudioBuffer* rendered_buffer);
+  explicit OfflineAudioCompletionEvent(const AtomicString& type,
+                                       const OfflineAudioCompletionEventInit*);
   ~OfflineAudioCompletionEvent() override;
 
   AudioBuffer* renderedBuffer() { return rendered_buffer_.Get(); }
@@ -55,11 +59,6 @@ class OfflineAudioCompletionEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  OfflineAudioCompletionEvent();
-  explicit OfflineAudioCompletionEvent(AudioBuffer* rendered_buffer);
-  explicit OfflineAudioCompletionEvent(const AtomicString& type,
-                                       const OfflineAudioCompletionEventInit*);
-
   Member<AudioBuffer> rendered_buffer_;
 };
 

@@ -13,7 +13,7 @@ NavigatorBluetooth& NavigatorBluetooth::From(Navigator& navigator) {
   NavigatorBluetooth* supplement =
       Supplement<Navigator>::From<NavigatorBluetooth>(navigator);
   if (!supplement) {
-    supplement = new NavigatorBluetooth(navigator);
+    supplement = MakeGarbageCollected<NavigatorBluetooth>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

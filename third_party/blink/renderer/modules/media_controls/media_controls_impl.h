@@ -78,6 +78,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
  public:
   static MediaControlsImpl* Create(HTMLMediaElement&, ShadowRoot&);
+
+  explicit MediaControlsImpl(HTMLMediaElement&);
   ~MediaControlsImpl() override = default;
 
   // Returns whether the ModernMediaControlsEnabled runtime flag is on.
@@ -242,8 +244,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Get the HTMLVideoElement that the controls are attached to. The caller must
   // check that the element is a video element first.
   HTMLVideoElement& VideoElement();
-
-  explicit MediaControlsImpl(HTMLMediaElement&);
 
   void InitializeControls();
   void PopulatePanel();

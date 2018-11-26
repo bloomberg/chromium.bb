@@ -385,7 +385,7 @@ TEST_F(RemotePlaybackTest, IsListening) {
 
   LocalFrame& frame = page_holder->GetFrame();
   MockPresentationController* mock_controller =
-      new MockPresentationController(frame);
+      MakeGarbageCollected<MockPresentationController>(frame);
   Supplement<LocalFrame>::ProvideTo(
       frame, static_cast<PresentationController*>(mock_controller));
 

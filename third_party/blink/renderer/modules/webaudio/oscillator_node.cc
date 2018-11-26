@@ -529,7 +529,8 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new OscillatorNode(context, oscillator_type, wave_table);
+  return MakeGarbageCollected<OscillatorNode>(context, oscillator_type,
+                                              wave_table);
 }
 
 OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,

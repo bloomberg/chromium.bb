@@ -35,12 +35,14 @@ class MediaEncryptedEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  MediaEncryptedEvent(const AtomicString& type,
+                      const MediaEncryptedEventInit* initializer);
   ~MediaEncryptedEvent() override;
 
   static MediaEncryptedEvent* Create(
       const AtomicString& type,
       const MediaEncryptedEventInit* initializer) {
-    return new MediaEncryptedEvent(type, initializer);
+    return MakeGarbageCollected<MediaEncryptedEvent>(type, initializer);
   }
 
   const AtomicString& InterfaceName() const override;
@@ -51,9 +53,6 @@ class MediaEncryptedEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  MediaEncryptedEvent(const AtomicString& type,
-                      const MediaEncryptedEventInit* initializer);
-
   String init_data_type_;
   Member<DOMArrayBuffer> init_data_;
 };

@@ -28,6 +28,7 @@ class NavigatorShare final : public GarbageCollectedFinalized<NavigatorShare>,
  public:
   static const char kSupplementName[];
 
+  NavigatorShare();
   ~NavigatorShare();
 
   // Gets, or creates, NavigatorShare supplement on Navigator.
@@ -42,8 +43,6 @@ class NavigatorShare final : public GarbageCollectedFinalized<NavigatorShare>,
 
  private:
   class ShareClientImpl;
-
-  NavigatorShare();
 
   void OnConnectionError();
 

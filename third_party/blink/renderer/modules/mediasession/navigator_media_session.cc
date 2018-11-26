@@ -25,7 +25,7 @@ NavigatorMediaSession& NavigatorMediaSession::From(Navigator& navigator) {
   NavigatorMediaSession* supplement =
       Supplement<Navigator>::From<NavigatorMediaSession>(navigator);
   if (!supplement) {
-    supplement = new NavigatorMediaSession(navigator);
+    supplement = MakeGarbageCollected<NavigatorMediaSession>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

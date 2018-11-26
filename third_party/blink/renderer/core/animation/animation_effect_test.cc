@@ -828,7 +828,8 @@ TEST(AnimationAnimationEffectTest, UpdateTimingInformsOwnerOnChange) {
   Timing timing;
   TestAnimationEffect* effect = TestAnimationEffect::Create(timing);
 
-  MockAnimationEffectOwner* owner = new MockAnimationEffectOwner();
+  MockAnimationEffectOwner* owner =
+      MakeGarbageCollected<MockAnimationEffectOwner>();
   effect->Attach(owner);
 
   EXPECT_CALL(*owner, EffectInvalidated()).Times(1);
@@ -850,7 +851,8 @@ TEST(AnimationAnimationEffectTest, UpdateTimingNoChange) {
   timing.timing_function = CubicBezierTimingFunction::Create(1, 1, 0.3, 0.3);
   TestAnimationEffect* effect = TestAnimationEffect::Create(timing);
 
-  MockAnimationEffectOwner* owner = new MockAnimationEffectOwner();
+  MockAnimationEffectOwner* owner =
+      MakeGarbageCollected<MockAnimationEffectOwner>();
   effect->Attach(owner);
 
   // None of the below calls to updateTime should cause the AnimationEffect to

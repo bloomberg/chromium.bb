@@ -42,6 +42,10 @@ class MODULES_EXPORT MediaRecorder final
                                const MediaRecorderOptions* options,
                                ExceptionState& exception_state);
 
+  MediaRecorder(ExecutionContext* context,
+                MediaStream* stream,
+                const MediaRecorderOptions* options,
+                ExceptionState& exception_state);
   ~MediaRecorder() override;
 
   MediaStream* stream() const { return stream_.Get(); }
@@ -88,11 +92,6 @@ class MODULES_EXPORT MediaRecorder final
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  MediaRecorder(ExecutionContext* context,
-                MediaStream* stream,
-                const MediaRecorderOptions* options,
-                ExceptionState& exception_state);
-
   void CreateBlobEvent(Blob* blob, double timecode);
 
   void StopRecording();

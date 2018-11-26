@@ -160,7 +160,8 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     return nullptr;
   }
 
-  return new MediaStreamAudioDestinationNode(context, number_of_channels);
+  return MakeGarbageCollected<MediaStreamAudioDestinationNode>(
+      context, number_of_channels);
 }
 
 MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
@@ -171,7 +172,7 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
 
   // Default to stereo; |options| will update it approriately if needed.
   MediaStreamAudioDestinationNode* node =
-      new MediaStreamAudioDestinationNode(*context, 2);
+      MakeGarbageCollected<MediaStreamAudioDestinationNode>(*context, 2);
 
   // Need to handle channelCount here ourselves because the upper
   // limit is different from the normal AudioNode::setChannelCount

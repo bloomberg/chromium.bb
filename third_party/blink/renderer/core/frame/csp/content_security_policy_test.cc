@@ -34,7 +34,8 @@ class ContentSecurityPolicyTest : public testing::Test {
   void SetUp() override { execution_context = CreateExecutionContext(); }
 
   NullExecutionContext* CreateExecutionContext() {
-    NullExecutionContext* context = new NullExecutionContext();
+    NullExecutionContext* context =
+        MakeGarbageCollected<NullExecutionContext>();
     context->SetUpSecurityContext();
     context->SetSecurityOrigin(secure_origin);
     return context;

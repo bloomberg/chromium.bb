@@ -19,7 +19,7 @@ class MockResourceFactory final : public NonTextResourceFactory {
 
   Resource* Create(const ResourceRequest& request,
                    const ResourceLoaderOptions& options) const override {
-    return new MockResource(request, options);
+    return MakeGarbageCollected<MockResource>(request, options);
   }
 };
 
@@ -37,7 +37,7 @@ MockResource* MockResource::Fetch(FetchParameters& params,
 // static
 MockResource* MockResource::Create(const ResourceRequest& request) {
   ResourceLoaderOptions options;
-  return new MockResource(request, options);
+  return MakeGarbageCollected<MockResource>(request, options);
 }
 
 MockResource* MockResource::Create(const KURL& url) {
@@ -51,7 +51,7 @@ MockResource::MockResource(const ResourceRequest& request,
 
 CachedMetadataHandler* MockResource::CreateCachedMetadataHandler(
     std::unique_ptr<CachedMetadataSender> send_callback) {
-  return new MockCacheHandler(std::move(send_callback));
+  return MakeGarbageCollected<MockCacheHandler>(std::move(send_callback));
 }
 
 void MockResource::SetSerializedCachedMetadata(const char* data, size_t size) {

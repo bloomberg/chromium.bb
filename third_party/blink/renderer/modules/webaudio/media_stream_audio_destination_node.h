@@ -85,10 +85,9 @@ class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
                                                  const AudioNodeOptions*,
                                                  ExceptionState&);
 
-  MediaStream* stream() const;
-
- private:
   MediaStreamAudioDestinationNode(AudioContext&, size_t number_of_channels);
+
+  MediaStream* stream() const;
 };
 
 }  // namespace blink

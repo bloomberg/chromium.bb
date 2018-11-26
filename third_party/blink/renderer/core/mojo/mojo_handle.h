@@ -33,6 +33,8 @@ class CORE_EXPORT MojoHandle final : public ScriptWrappable {
  public:
   static MojoHandle* Create(mojo::ScopedHandle);
 
+  explicit MojoHandle(mojo::ScopedHandle);
+
   mojo::ScopedHandle TakeHandle();
 
   void close();
@@ -60,8 +62,6 @@ class CORE_EXPORT MojoHandle final : public ScriptWrappable {
       const MojoDuplicateBufferHandleOptions*);
 
  private:
-  explicit MojoHandle(mojo::ScopedHandle);
-
   mojo::ScopedHandle handle_;
 };
 

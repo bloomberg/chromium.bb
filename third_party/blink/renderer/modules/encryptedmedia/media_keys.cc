@@ -77,17 +77,23 @@ class MediaKeys::PendingAction final
       DOMArrayBuffer* server_certificate) {
     DCHECK(result);
     DCHECK(server_certificate);
-    return new PendingAction(Type::kSetServerCertificate, result,
-                             server_certificate, String());
+    return MakeGarbageCollected<PendingAction>(
+        Type::kSetServerCertificate, result, server_certificate, String());
   }
 
   static PendingAction* CreatePendingGetStatusForPolicy(
       ContentDecryptionModuleResult* result,
       const String& min_hdcp_version) {
     DCHECK(result);
-    return new PendingAction(Type::kGetStatusForPolicy, result, nullptr,
-                             min_hdcp_version);
+    return MakeGarbageCollected<PendingAction>(
+        Type::kGetStatusForPolicy, result, nullptr, min_hdcp_version);
   }
+
+  PendingAction(Type type,
+                ContentDecryptionModuleResult* result,
+                DOMArrayBuffer* data,
+                const String& string_data)
+      : type_(type), result_(result), data_(data), string_data_(string_data) {}
 
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(result_);
@@ -95,12 +101,6 @@ class MediaKeys::PendingAction final
   }
 
  private:
-  PendingAction(Type type,
-                ContentDecryptionModuleResult* result,
-                DOMArrayBuffer* data,
-                const String& string_data)
-      : type_(type), result_(result), data_(data), string_data_(string_data) {}
-
   const Type type_;
   const Member<ContentDecryptionModuleResult> result_;
   const Member<DOMArrayBuffer> data_;
@@ -204,7 +204,8 @@ MediaKeys* MediaKeys::Create(
     ExecutionContext* context,
     const WebVector<WebEncryptedMediaSessionType>& supported_session_types,
     std::unique_ptr<WebContentDecryptionModule> cdm) {
-  return new MediaKeys(context, supported_session_types, std::move(cdm));
+  return MakeGarbageCollected<MediaKeys>(context, supported_session_types,
+                                         std::move(cdm));
 }
 
 MediaKeys::MediaKeys(

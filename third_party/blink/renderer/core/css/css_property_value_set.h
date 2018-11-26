@@ -178,7 +178,11 @@ class CSSLazyPropertyParser
 
 class CORE_EXPORT ImmutableCSSPropertyValueSet : public CSSPropertyValueSet {
  public:
+  ImmutableCSSPropertyValueSet(const CSSPropertyValue*,
+                               unsigned count,
+                               CSSParserMode);
   ~ImmutableCSSPropertyValueSet();
+
   static ImmutableCSSPropertyValueSet*
   Create(const CSSPropertyValue* properties, unsigned count, CSSParserMode);
 
@@ -195,11 +199,6 @@ class CORE_EXPORT ImmutableCSSPropertyValueSet : public CSSPropertyValueSet {
   void* operator new(std::size_t, void* location) { return location; }
 
   void* storage_;
-
- private:
-  ImmutableCSSPropertyValueSet(const CSSPropertyValue*,
-                               unsigned count,
-                               CSSParserMode);
 };
 
 inline const Member<const CSSValue>* ImmutableCSSPropertyValueSet::ValueArray()
@@ -223,7 +222,12 @@ DEFINE_TYPE_CASTS(ImmutableCSSPropertyValueSet,
 
 class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
  public:
+  explicit MutableCSSPropertyValueSet(CSSParserMode);
+  explicit MutableCSSPropertyValueSet(const CSSPropertyValueSet&);
+  MutableCSSPropertyValueSet(const CSSPropertyValue* properties,
+                             unsigned count);
   ~MutableCSSPropertyValueSet() = default;
+
   static MutableCSSPropertyValueSet* Create(CSSParserMode);
   static MutableCSSPropertyValueSet* Create(const CSSPropertyValue* properties,
                                             unsigned count);
@@ -280,11 +284,6 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  explicit MutableCSSPropertyValueSet(CSSParserMode);
-  explicit MutableCSSPropertyValueSet(const CSSPropertyValueSet&);
-  MutableCSSPropertyValueSet(const CSSPropertyValue* properties,
-                             unsigned count);
-
   bool RemovePropertyAtIndex(int, String* return_text);
 
   bool RemoveShorthandProperty(CSSPropertyID);

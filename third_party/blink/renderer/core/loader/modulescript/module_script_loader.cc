@@ -84,7 +84,7 @@ void ModuleScriptLoader::Fetch(
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleScriptLoaderRegistry* registry,
     ModuleScriptLoaderClient* client) {
-  ModuleScriptLoader* loader = new ModuleScriptLoader(
+  ModuleScriptLoader* loader = MakeGarbageCollected<ModuleScriptLoader>(
       module_map_settings_object, module_request.Options(), registry, client);
   registry->AddLoader(loader);
   loader->FetchInternal(module_request, fetch_client_settings_object, level,

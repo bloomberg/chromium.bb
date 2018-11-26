@@ -89,6 +89,11 @@ class MediaStreamAudioSourceNode final : public AudioNode,
   static MediaStreamAudioSourceNode*
   Create(AudioContext*, const MediaStreamAudioSourceOptions*, ExceptionState&);
 
+  MediaStreamAudioSourceNode(AudioContext&,
+                             MediaStream&,
+                             MediaStreamTrack*,
+                             std::unique_ptr<AudioSourceProvider>);
+
   void Trace(blink::Visitor*) override;
 
   MediaStream* getMediaStream() const;
@@ -97,11 +102,6 @@ class MediaStreamAudioSourceNode final : public AudioNode,
   void SetFormat(size_t number_of_channels, float sample_rate) override;
 
  private:
-  MediaStreamAudioSourceNode(AudioContext&,
-                             MediaStream&,
-                             MediaStreamTrack*,
-                             std::unique_ptr<AudioSourceProvider>);
-
   MediaStreamAudioSourceHandler& GetMediaStreamAudioSourceHandler() const;
 
   Member<MediaStreamTrack> audio_track_;

@@ -56,7 +56,7 @@ class PerformanceTest : public PageTestBase {
 
   void SetUp() override {
     PageTestBase::SetUp();
-    execution_context_ = new NullExecutionContext();
+    execution_context_ = MakeGarbageCollected<NullExecutionContext>();
   }
 
   ExecutionContext* GetExecutionContext() { return execution_context_.Get(); }

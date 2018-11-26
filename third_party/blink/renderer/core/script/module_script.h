@@ -42,6 +42,13 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
       const KURL& base_url,
       const ScriptFetchOptions& = ScriptFetchOptions());
 
+  ModuleScript(Modulator* settings_object,
+               ScriptModule record,
+               const KURL& source_url,
+               const KURL& base_url,
+               const ScriptFetchOptions&,
+               const ParkableString& source_text,
+               const TextPosition& start_position);
   ~ModuleScript() override = default;
 
   ScriptModule Record() const;
@@ -65,14 +72,6 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   const char* NameInHeapSnapshot() const override { return "ModuleScript"; }
 
  private:
-  ModuleScript(Modulator* settings_object,
-               ScriptModule record,
-               const KURL& source_url,
-               const KURL& base_url,
-               const ScriptFetchOptions&,
-               const ParkableString& source_text,
-               const TextPosition& start_position);
-
   static ModuleScript* CreateInternal(const ParkableString& source_text,
                                       Modulator*,
                                       ScriptModule,

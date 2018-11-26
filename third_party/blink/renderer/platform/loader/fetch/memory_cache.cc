@@ -93,7 +93,7 @@ inline MemoryCache::MemoryCache(
 
 MemoryCache* MemoryCache::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return new MemoryCache(std::move(task_runner));
+  return MakeGarbageCollected<MemoryCache>(std::move(task_runner));
 }
 
 MemoryCache::~MemoryCache() = default;

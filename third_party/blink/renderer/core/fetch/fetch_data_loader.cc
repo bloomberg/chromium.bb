@@ -264,8 +264,8 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
 
     client_ = client;
     form_data_ = FormData::Create();
-    multipart_parser_ =
-        new MultipartParser(std::move(multipart_boundary_vector), this);
+    multipart_parser_ = MakeGarbageCollected<MultipartParser>(
+        std::move(multipart_boundary_vector), this);
     consumer_ = consumer;
     consumer_->SetClient(this);
     OnStateChange();

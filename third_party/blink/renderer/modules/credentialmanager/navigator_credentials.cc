@@ -19,7 +19,7 @@ NavigatorCredentials& NavigatorCredentials::From(Navigator& navigator) {
   NavigatorCredentials* supplement =
       Supplement<Navigator>::From<NavigatorCredentials>(navigator);
   if (!supplement) {
-    supplement = new NavigatorCredentials(navigator);
+    supplement = MakeGarbageCollected<NavigatorCredentials>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

@@ -121,6 +121,8 @@ class MediaElementAudioSourceNode final : public AudioNode,
   static MediaElementAudioSourceNode*
   Create(AudioContext*, const MediaElementAudioSourceOptions*, ExceptionState&);
 
+  MediaElementAudioSourceNode(AudioContext&, HTMLMediaElement&);
+
   void Trace(blink::Visitor*) override;
   MediaElementAudioSourceHandler& GetMediaElementAudioSourceHandler() const;
 
@@ -132,9 +134,6 @@ class MediaElementAudioSourceNode final : public AudioNode,
       GetMediaElementAudioSourceHandler().GetProcessLock());
   void unlock() override
       UNLOCK_FUNCTION(GetMediaElementAudioSourceHandler().GetProcessLock());
-
- private:
-  MediaElementAudioSourceNode(AudioContext&, HTMLMediaElement&);
 };
 
 }  // namespace blink

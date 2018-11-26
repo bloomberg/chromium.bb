@@ -19,7 +19,7 @@ NavigatorPlugins::NavigatorPlugins(Navigator& navigator)
 NavigatorPlugins& NavigatorPlugins::From(Navigator& navigator) {
   NavigatorPlugins* supplement = ToNavigatorPlugins(navigator);
   if (!supplement) {
-    supplement = new NavigatorPlugins(navigator);
+    supplement = MakeGarbageCollected<NavigatorPlugins>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

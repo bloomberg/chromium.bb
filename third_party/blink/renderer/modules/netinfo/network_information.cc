@@ -74,7 +74,7 @@ String GetConsoleLogStringForWebHoldback() {
 }  // namespace
 
 NetworkInformation* NetworkInformation::Create(ExecutionContext* context) {
-  return new NetworkInformation(context);
+  return MakeGarbageCollected<NetworkInformation>(context);
 }
 
 NetworkInformation::~NetworkInformation() {

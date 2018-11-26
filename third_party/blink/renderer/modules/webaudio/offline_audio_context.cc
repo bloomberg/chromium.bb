@@ -90,8 +90,9 @@ OfflineAudioContext* OfflineAudioContext::Create(
   }
 
   OfflineAudioContext* audio_context =
-      new OfflineAudioContext(document, number_of_channels, number_of_frames,
-                              sample_rate, exception_state);
+      MakeGarbageCollected<OfflineAudioContext>(document, number_of_channels,
+                                                number_of_frames, sample_rate,
+                                                exception_state);
   audio_context->PauseIfNeeded();
 
 #if DEBUG_AUDIONODE_REFERENCES

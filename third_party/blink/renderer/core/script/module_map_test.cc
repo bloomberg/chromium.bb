@@ -112,7 +112,7 @@ class ModuleMapTestModulator final : public DummyModulator {
     void Fetch(FetchParameters& request,
                ModuleGraphLevel,
                ModuleScriptFetcher::Client* client) override {
-      TestRequest* test_request = new TestRequest(
+      TestRequest* test_request = MakeGarbageCollected<TestRequest>(
           ModuleScriptCreationParams(
               request.Url(), ParkableString(String("").ReleaseImpl()),
               request.GetResourceRequest().GetFetchCredentialsMode()),
@@ -131,7 +131,7 @@ class ModuleMapTestModulator final : public DummyModulator {
 
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType) override {
-    return new TestModuleScriptFetcher(this);
+    return MakeGarbageCollected<TestModuleScriptFetcher>(this);
   }
 
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override {
@@ -197,8 +197,8 @@ void ModuleMapTest::SetUp() {
   PageTestBase::SetUp(IntSize(500, 500));
   GetDocument().SetURL(KURL("https://example.com"));
   GetDocument().SetSecurityOrigin(SecurityOrigin::Create(GetDocument().Url()));
-  modulator_ =
-      new ModuleMapTestModulator(ToScriptStateForMainWorld(&GetFrame()));
+  modulator_ = MakeGarbageCollected<ModuleMapTestModulator>(
+      ToScriptStateForMainWorld(&GetFrame()));
   map_ = ModuleMap::Create(modulator_);
 }
 

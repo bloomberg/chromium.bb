@@ -57,9 +57,10 @@ class CORE_EXPORT NavigationScheduler final
     : public GarbageCollectedFinalized<NavigationScheduler> {
  public:
   static NavigationScheduler* Create(LocalFrame* frame) {
-    return new NavigationScheduler(frame);
+    return MakeGarbageCollected<NavigationScheduler>(frame);
   }
 
+  explicit NavigationScheduler(LocalFrame*);
   ~NavigationScheduler();
 
   bool LocationChangePending();
@@ -77,8 +78,6 @@ class CORE_EXPORT NavigationScheduler final
   void Trace(blink::Visitor*);
 
  private:
-  explicit NavigationScheduler(LocalFrame*);
-
   bool ShouldScheduleReload() const;
   bool ShouldScheduleNavigation(const KURL&) const;
 

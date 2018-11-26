@@ -1455,9 +1455,9 @@ const MediaQueryEvaluator& StyleEngine::EnsureMediaQueryEvaluator() {
   if (!media_query_evaluator_) {
     if (GetDocument().GetFrame()) {
       media_query_evaluator_ =
-          new MediaQueryEvaluator(GetDocument().GetFrame());
+          MakeGarbageCollected<MediaQueryEvaluator>(GetDocument().GetFrame());
     } else {
-      media_query_evaluator_ = new MediaQueryEvaluator("all");
+      media_query_evaluator_ = MakeGarbageCollected<MediaQueryEvaluator>("all");
     }
   }
   return *media_query_evaluator_;

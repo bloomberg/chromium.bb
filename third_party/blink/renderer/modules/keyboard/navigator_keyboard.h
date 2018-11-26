@@ -24,11 +24,11 @@ class NavigatorKeyboard final : public GarbageCollected<NavigatorKeyboard>,
   static const char kSupplementName[];
   static Keyboard* keyboard(Navigator&);
 
+  explicit NavigatorKeyboard(Navigator&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorKeyboard(Navigator&);
-
   Member<Keyboard> keyboard_;
 };
 

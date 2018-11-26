@@ -1658,7 +1658,8 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
     if (Document* document = parent_style_sheet->OwnerDocument())
       frame = document->GetFrame();
   }
-  MediaQueryEvaluator* media_evaluator = new MediaQueryEvaluator(frame);
+  MediaQueryEvaluator* media_evaluator =
+      MakeGarbageCollected<MediaQueryEvaluator>(frame);
 
   InspectorStyleSheet* inspector_style_sheet =
       parent_style_sheet

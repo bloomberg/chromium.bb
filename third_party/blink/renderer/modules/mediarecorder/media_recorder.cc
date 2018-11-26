@@ -139,7 +139,7 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
 MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
                                      MediaStream* stream,
                                      ExceptionState& exception_state) {
-  MediaRecorder* recorder = new MediaRecorder(
+  MediaRecorder* recorder = MakeGarbageCollected<MediaRecorder>(
       context, stream, MediaRecorderOptions::Create(), exception_state);
   recorder->PauseIfNeeded();
 
@@ -150,8 +150,8 @@ MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
                                      MediaStream* stream,
                                      const MediaRecorderOptions* options,
                                      ExceptionState& exception_state) {
-  MediaRecorder* recorder =
-      new MediaRecorder(context, stream, options, exception_state);
+  MediaRecorder* recorder = MakeGarbageCollected<MediaRecorder>(
+      context, stream, options, exception_state);
   recorder->PauseIfNeeded();
 
   return recorder;

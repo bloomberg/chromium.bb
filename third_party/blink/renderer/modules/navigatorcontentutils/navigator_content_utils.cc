@@ -192,7 +192,8 @@ const char NavigatorContentUtils::kSupplementName[] = "NavigatorContentUtils";
 void NavigatorContentUtils::ProvideTo(Navigator& navigator,
                                       NavigatorContentUtilsClient* client) {
   Supplement<Navigator>::ProvideTo(
-      navigator, new NavigatorContentUtils(navigator, client));
+      navigator,
+      MakeGarbageCollected<NavigatorContentUtils>(navigator, client));
 }
 
 }  // namespace blink

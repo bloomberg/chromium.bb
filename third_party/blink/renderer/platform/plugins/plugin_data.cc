@@ -106,8 +106,8 @@ void PluginData::UpdatePluginList(const SecurityOrigin* main_frame_origin) {
                        plugin->description, plugin->background_color);
     plugins_.push_back(plugin_info);
     for (const auto& mime : plugin->mime_types) {
-      auto* mime_info =
-          new MimeClassInfo(mime->mime_type, mime->description, *plugin_info);
+      auto* mime_info = MakeGarbageCollected<MimeClassInfo>(
+          mime->mime_type, mime->description, *plugin_info);
       mime_info->extensions_ = mime->file_extensions;
       plugin_info->AddMimeType(mime_info);
       mimes_.push_back(mime_info);

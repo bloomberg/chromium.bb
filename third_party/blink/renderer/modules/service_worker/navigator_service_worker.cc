@@ -45,7 +45,7 @@ NavigatorServiceWorker* NavigatorServiceWorker::From(Document& document) {
 NavigatorServiceWorker& NavigatorServiceWorker::From(Navigator& navigator) {
   NavigatorServiceWorker* supplement = ToNavigatorServiceWorker(navigator);
   if (!supplement) {
-    supplement = new NavigatorServiceWorker(navigator);
+    supplement = MakeGarbageCollected<NavigatorServiceWorker>(navigator);
     ProvideTo(navigator, supplement);
   }
   if (navigator.GetFrame() && navigator.GetFrame()

@@ -41,7 +41,7 @@ WebGLExtensionName OESTextureHalfFloat::GetName() const {
 
 OESTextureHalfFloat* OESTextureHalfFloat::Create(
     WebGLRenderingContextBase* context) {
-  return new OESTextureHalfFloat(context);
+  return MakeGarbageCollected<OESTextureHalfFloat>(context);
 }
 
 bool OESTextureHalfFloat::Supported(WebGLRenderingContextBase* context) {

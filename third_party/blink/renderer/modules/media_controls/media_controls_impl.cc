@@ -382,7 +382,8 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       fullscreen_button_(nullptr),
       display_cutout_fullscreen_button_(nullptr),
       download_button_(nullptr),
-      media_event_listener_(new MediaControlsMediaEventListener(this)),
+      media_event_listener_(
+          MakeGarbageCollected<MediaControlsMediaEventListener>(this)),
       orientation_lock_delegate_(nullptr),
       rotate_to_fullscreen_delegate_(nullptr),
       display_cutout_delegate_(nullptr),
@@ -395,7 +396,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       is_paused_for_scrubbing_(false),
       resize_observer_(ResizeObserver::Create(
           media_element.GetDocument(),
-          new MediaControlsResizeObserverDelegate(this))),
+          MakeGarbageCollected<MediaControlsResizeObserverDelegate>(this))),
       element_size_changed_timer_(
           media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
@@ -419,7 +420,8 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
 
 MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
                                              ShadowRoot& shadow_root) {
-  MediaControlsImpl* controls = new MediaControlsImpl(media_element);
+  MediaControlsImpl* controls =
+      MakeGarbageCollected<MediaControlsImpl>(media_element);
   controls->SetShadowPseudoId(AtomicString("-webkit-media-controls"));
   controls->InitializeControls();
   controls->Reset();
@@ -428,22 +430,23 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
       media_element.IsHTMLVideoElement()) {
     // Initialize the orientation lock when going fullscreen feature.
     controls->orientation_lock_delegate_ =
-        new MediaControlsOrientationLockDelegate(
+        MakeGarbageCollected<MediaControlsOrientationLockDelegate>(
             ToHTMLVideoElement(media_element));
   }
 
   if (MediaControlsDisplayCutoutDelegate::IsEnabled() &&
       media_element.IsHTMLVideoElement()) {
     // Initialize the pinch gesture to expand into the display cutout feature.
-    controls->display_cutout_delegate_ = new MediaControlsDisplayCutoutDelegate(
-        ToHTMLVideoElement(media_element));
+    controls->display_cutout_delegate_ =
+        MakeGarbageCollected<MediaControlsDisplayCutoutDelegate>(
+            ToHTMLVideoElement(media_element));
   }
 
   if (RuntimeEnabledFeatures::VideoRotateToFullscreenEnabled() &&
       media_element.IsHTMLVideoElement()) {
     // Initialize the rotate-to-fullscreen feature.
     controls->rotate_to_fullscreen_delegate_ =
-        new MediaControlsRotateToFullscreenDelegate(
+        MakeGarbageCollected<MediaControlsRotateToFullscreenDelegate>(
             ToHTMLVideoElement(media_element));
   }
 
@@ -454,7 +457,7 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
           ->GetMediaDownloadInProductHelpEnabled() &&
       media_element.IsHTMLVideoElement()) {
     controls->download_iph_manager_ =
-        new MediaDownloadInProductHelpManager(*controls);
+        MakeGarbageCollected<MediaDownloadInProductHelpManager>(*controls);
   }
 
   MediaControlsResourceLoader::InjectMediaControlsUAStyleSheet();
@@ -537,47 +540,55 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //       (-internal-media-controls-display-cutout-fullscreen-button)
 void MediaControlsImpl::InitializeControls() {
   if (IsModern() && ShouldShowVideoControls()) {
-    loading_panel_ = new MediaControlLoadingPanelElement(*this);
+    loading_panel_ =
+        MakeGarbageCollected<MediaControlLoadingPanelElement>(*this);
     ParserAppendChild(loading_panel_);
   }
 
-  overlay_enclosure_ = new MediaControlOverlayEnclosureElement(*this);
+  overlay_enclosure_ =
+      MakeGarbageCollected<MediaControlOverlayEnclosureElement>(*this);
 
   if (RuntimeEnabledFeatures::MediaControlsOverlayPlayButtonEnabled()) {
-    overlay_play_button_ = new MediaControlOverlayPlayButtonElement(*this);
+    overlay_play_button_ =
+        MakeGarbageCollected<MediaControlOverlayPlayButtonElement>(*this);
 
     if (!IsModern())
       overlay_enclosure_->ParserAppendChild(overlay_play_button_);
   }
 
-  overlay_cast_button_ = new MediaControlCastButtonElement(*this, true);
+  overlay_cast_button_ =
+      MakeGarbageCollected<MediaControlCastButtonElement>(*this, true);
   overlay_enclosure_->ParserAppendChild(overlay_cast_button_);
 
   ParserAppendChild(overlay_enclosure_);
 
   // Create an enclosing element for the panel so we can visually offset the
   // controls correctly.
-  enclosure_ = new MediaControlPanelEnclosureElement(*this);
+  enclosure_ = MakeGarbageCollected<MediaControlPanelEnclosureElement>(*this);
 
-  panel_ = new MediaControlPanelElement(*this);
+  panel_ = MakeGarbageCollected<MediaControlPanelElement>(*this);
 
   // If using the modern media controls, the buttons should belong to a
   // seperate button panel. This is because they are displayed in two lines.
   if (IsModern() && ShouldShowVideoControls()) {
-    media_button_panel_ = new MediaControlButtonPanelElement(*this);
-    scrubbing_message_ = new MediaControlScrubbingMessageElement(*this);
+    media_button_panel_ =
+        MakeGarbageCollected<MediaControlButtonPanelElement>(*this);
+    scrubbing_message_ =
+        MakeGarbageCollected<MediaControlScrubbingMessageElement>(*this);
   }
 
-  play_button_ = new MediaControlPlayButtonElement(*this);
+  play_button_ = MakeGarbageCollected<MediaControlPlayButtonElement>(*this);
 
-  current_time_display_ = new MediaControlCurrentTimeDisplayElement(*this);
+  current_time_display_ =
+      MakeGarbageCollected<MediaControlCurrentTimeDisplayElement>(*this);
   current_time_display_->SetIsWanted(true);
 
-  duration_display_ = new MediaControlRemainingTimeDisplayElement(*this);
-  timeline_ = new MediaControlTimelineElement(*this);
-  mute_button_ = new MediaControlMuteButtonElement(*this);
+  duration_display_ =
+      MakeGarbageCollected<MediaControlRemainingTimeDisplayElement>(*this);
+  timeline_ = MakeGarbageCollected<MediaControlTimelineElement>(*this);
+  mute_button_ = MakeGarbageCollected<MediaControlMuteButtonElement>(*this);
 
-  volume_slider_ = new MediaControlVolumeSliderElement(*this);
+  volume_slider_ = MakeGarbageCollected<MediaControlVolumeSliderElement>(*this);
   if (PreferHiddenVolumeControls(GetDocument()))
     volume_slider_->SetIsWanted(false);
 
@@ -586,7 +597,7 @@ void MediaControlsImpl::InitializeControls() {
       GetDocument().GetSettings()->GetPictureInPictureEnabled() &&
       MediaElement().IsHTMLVideoElement()) {
     picture_in_picture_button_ =
-        new MediaControlPictureInPictureButtonElement(*this);
+        MakeGarbageCollected<MediaControlPictureInPictureButtonElement>(*this);
     picture_in_picture_button_->SetIsWanted(
         ShouldShowPictureInPictureButton(MediaElement()));
   }
@@ -594,25 +605,33 @@ void MediaControlsImpl::InitializeControls() {
   if (RuntimeEnabledFeatures::DisplayCutoutAPIEnabled() &&
       MediaElement().IsHTMLVideoElement()) {
     display_cutout_fullscreen_button_ =
-        new MediaControlDisplayCutoutFullscreenButtonElement(*this);
+        MakeGarbageCollected<MediaControlDisplayCutoutFullscreenButtonElement>(
+            *this);
   }
 
-  fullscreen_button_ = new MediaControlFullscreenButtonElement(*this);
-  download_button_ = new MediaControlDownloadButtonElement(*this);
-  cast_button_ = new MediaControlCastButtonElement(*this, false);
+  fullscreen_button_ =
+      MakeGarbageCollected<MediaControlFullscreenButtonElement>(*this);
+  download_button_ =
+      MakeGarbageCollected<MediaControlDownloadButtonElement>(*this);
+  cast_button_ =
+      MakeGarbageCollected<MediaControlCastButtonElement>(*this, false);
   toggle_closed_captions_button_ =
-      new MediaControlToggleClosedCaptionsButtonElement(*this);
-  overflow_menu_ = new MediaControlOverflowMenuButtonElement(*this);
+      MakeGarbageCollected<MediaControlToggleClosedCaptionsButtonElement>(
+          *this);
+  overflow_menu_ =
+      MakeGarbageCollected<MediaControlOverflowMenuButtonElement>(*this);
 
   PopulatePanel();
   enclosure_->ParserAppendChild(panel_);
 
   ParserAppendChild(enclosure_);
 
-  text_track_list_ = new MediaControlTextTrackListElement(*this);
+  text_track_list_ =
+      MakeGarbageCollected<MediaControlTextTrackListElement>(*this);
   ParserAppendChild(text_track_list_);
 
-  overflow_list_ = new MediaControlOverflowMenuListElement(*this);
+  overflow_list_ =
+      MakeGarbageCollected<MediaControlOverflowMenuListElement>(*this);
   ParserAppendChild(overflow_list_);
 
   // The order in which we append elements to the overflow list is significant
@@ -620,22 +639,24 @@ void MediaControlsImpl::InitializeControls() {
   // relative to each other.  The first item appended appears at the top of the
   // overflow menu.
   overflow_list_->ParserAppendChild(play_button_->CreateOverflowElement(
-      new MediaControlPlayButtonElement(*this)));
+      MakeGarbageCollected<MediaControlPlayButtonElement>(*this)));
   overflow_list_->ParserAppendChild(fullscreen_button_->CreateOverflowElement(
-      new MediaControlFullscreenButtonElement(*this)));
+      MakeGarbageCollected<MediaControlFullscreenButtonElement>(*this)));
   overflow_list_->ParserAppendChild(download_button_->CreateOverflowElement(
-      new MediaControlDownloadButtonElement(*this)));
+      MakeGarbageCollected<MediaControlDownloadButtonElement>(*this)));
   overflow_list_->ParserAppendChild(mute_button_->CreateOverflowElement(
-      new MediaControlMuteButtonElement(*this)));
+      MakeGarbageCollected<MediaControlMuteButtonElement>(*this)));
   overflow_list_->ParserAppendChild(cast_button_->CreateOverflowElement(
-      new MediaControlCastButtonElement(*this, false)));
+      MakeGarbageCollected<MediaControlCastButtonElement>(*this, false)));
   overflow_list_->ParserAppendChild(
       toggle_closed_captions_button_->CreateOverflowElement(
-          new MediaControlToggleClosedCaptionsButtonElement(*this)));
+          MakeGarbageCollected<MediaControlToggleClosedCaptionsButtonElement>(
+              *this)));
   if (picture_in_picture_button_) {
     overflow_list_->ParserAppendChild(
         picture_in_picture_button_->CreateOverflowElement(
-            new MediaControlPictureInPictureButtonElement(*this)));
+            MakeGarbageCollected<MediaControlPictureInPictureButtonElement>(
+                *this)));
   }
 
   // Set the default CSS classes.
@@ -713,15 +734,17 @@ Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
     display_cutout_delegate_->Attach();
 
   if (!resize_observer_) {
-    resize_observer_ =
-        ResizeObserver::Create(MediaElement().GetDocument(),
-                               new MediaControlsResizeObserverDelegate(this));
+    resize_observer_ = ResizeObserver::Create(
+        MediaElement().GetDocument(),
+        MakeGarbageCollected<MediaControlsResizeObserverDelegate>(this));
     HTMLMediaElement& html_media_element = MediaElement();
     resize_observer_->observe(&html_media_element);
   }
 
-  if (!element_mutation_callback_)
-    element_mutation_callback_ = new MediaElementMutationCallback(this);
+  if (!element_mutation_callback_) {
+    element_mutation_callback_ =
+        MakeGarbageCollected<MediaElementMutationCallback>(this);
+  }
 
   return HTMLDivElement::InsertedInto(root);
 }

@@ -35,7 +35,7 @@ NotificationManager* NotificationManager::From(ExecutionContext* context) {
   NotificationManager* manager =
       Supplement<ExecutionContext>::From<NotificationManager>(context);
   if (!manager) {
-    manager = new NotificationManager(*context);
+    manager = MakeGarbageCollected<NotificationManager>(*context);
     Supplement<ExecutionContext>::ProvideTo(*context, manager);
   }
 

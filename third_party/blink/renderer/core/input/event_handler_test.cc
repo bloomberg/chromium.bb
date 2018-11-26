@@ -985,7 +985,7 @@ class EventHandlerNavigationTest : public EventHandlerTest {
   EventHandlerNavigationTest() = default;
 
   void SetUp() override {
-    frame_client_ = new NavigationCapturingFrameClient();
+    frame_client_ = MakeGarbageCollected<NavigationCapturingFrameClient>();
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     SetupPageWithClients(&clients, frame_client_);

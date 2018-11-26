@@ -79,6 +79,15 @@ class MODULES_EXPORT MediaStream final
                              MediaStreamDescriptor*,
                              const MediaStreamTrackVector& audio_tracks,
                              const MediaStreamTrackVector& video_tracks);
+
+  MediaStream(ExecutionContext*, MediaStreamDescriptor*);
+  MediaStream(ExecutionContext*,
+              MediaStreamDescriptor*,
+              const MediaStreamTrackVector& audio_tracks,
+              const MediaStreamTrackVector& video_tracks);
+  MediaStream(ExecutionContext*,
+              const MediaStreamTrackVector& audio_tracks,
+              const MediaStreamTrackVector& video_tracks);
   ~MediaStream() override;
 
   String id() const { return descriptor_->Id(); }
@@ -140,15 +149,6 @@ class MODULES_EXPORT MediaStream final
       const AddEventListenerOptionsResolved*) override;
 
  private:
-  MediaStream(ExecutionContext*, MediaStreamDescriptor*);
-  MediaStream(ExecutionContext*,
-              MediaStreamDescriptor*,
-              const MediaStreamTrackVector& audio_tracks,
-              const MediaStreamTrackVector& video_tracks);
-  MediaStream(ExecutionContext*,
-              const MediaStreamTrackVector& audio_tracks,
-              const MediaStreamTrackVector& video_tracks);
-
   bool EmptyOrOnlyEndedTracks();
   bool TracksMatchDescriptor();
 

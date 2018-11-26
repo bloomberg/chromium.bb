@@ -202,8 +202,8 @@ void NetworkResourcesData::ResourceCreated(
     const KURL& requested_url,
     scoped_refptr<EncodedFormData> post_data) {
   EnsureNoDataForRequestId(request_id);
-  ResourceData* data =
-      new ResourceData(this, context, request_id, loader_id, requested_url);
+  ResourceData* data = MakeGarbageCollected<ResourceData>(
+      this, context, request_id, loader_id, requested_url);
   request_id_to_resource_data_map_.Set(request_id, data);
   if (post_data &&
       PrepareToAddResourceData(request_id, post_data->SizeInBytes())) {

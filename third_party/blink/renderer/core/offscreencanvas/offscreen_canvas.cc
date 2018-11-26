@@ -41,7 +41,7 @@ OffscreenCanvas::OffscreenCanvas(const IntSize& size) : size_(size) {
 
 OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {
   UMA_HISTOGRAM_BOOLEAN("Blink.OffscreenCanvas.NewOffscreenCanvas", true);
-  return new OffscreenCanvas(
+  return MakeGarbageCollected<OffscreenCanvas>(
       IntSize(clampTo<int>(width), clampTo<int>(height)));
 }
 

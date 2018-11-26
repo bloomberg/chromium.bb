@@ -21,10 +21,12 @@ class NavigatorUserMedia final : public GarbageCollected<NavigatorUserMedia>,
   static const char kSupplementName[];
 
   static MediaDevices* mediaDevices(Navigator&);
+
+  explicit NavigatorUserMedia(Navigator&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorUserMedia(Navigator&);
   MediaDevices* GetMediaDevices();
   static NavigatorUserMedia& From(Navigator&);
 

@@ -25,11 +25,11 @@ class NavigatorClipboard final : public GarbageCollected<NavigatorClipboard>,
   static const char kSupplementName[];
   static Clipboard* clipboard(ScriptState*, Navigator&);
 
+  explicit NavigatorClipboard(Navigator&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorClipboard(Navigator&);
-
   Member<Clipboard> clipboard_;
 };
 
