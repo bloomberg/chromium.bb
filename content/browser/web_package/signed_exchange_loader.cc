@@ -347,6 +347,8 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
     inner_response_head_shown_to_client.ssl_info = base::nullopt;
   }
+  inner_response_head_shown_to_client.was_fetched_via_cache =
+      outer_response_.was_fetched_via_cache;
   client_->OnReceiveResponse(inner_response_head_shown_to_client);
 
   // Currently we always assume that we have body.
