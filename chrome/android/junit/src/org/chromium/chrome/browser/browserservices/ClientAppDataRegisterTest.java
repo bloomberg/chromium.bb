@@ -23,6 +23,7 @@ import java.util.Set;
 public class ClientAppDataRegisterTest {
     private static final int UID = 23;
     private static final String APP_NAME = "Example App";
+    private static final String APP_PACKAGE = "com.example.app";
     private static final String DOMAIN = "example.com";
     private static final String OTHER_DOMAIN = "otherexample.com";
 
@@ -36,7 +37,7 @@ public class ClientAppDataRegisterTest {
     @Test
     @Feature("TrustedWebActivities")
     public void registration() {
-        mRegister.registerPackageForDomain(UID, APP_NAME, DOMAIN);
+        register(DOMAIN);
 
         Assert.assertTrue(mRegister.chromeHoldsDataForPackage(UID));
         Assert.assertEquals(APP_NAME, mRegister.getAppNameForRegisteredUid(UID));
@@ -45,7 +46,7 @@ public class ClientAppDataRegisterTest {
     @Test
     @Feature("TrustedWebActivities")
     public void deregistration() {
-        mRegister.registerPackageForDomain(UID, APP_NAME, DOMAIN);
+        register(DOMAIN);
         mRegister.removePackage(UID);
 
         Assert.assertFalse(mRegister.chromeHoldsDataForPackage(UID));
@@ -55,8 +56,8 @@ public class ClientAppDataRegisterTest {
     @Test
     @Feature("TrustedWebActivities")
     public void getOrigins() {
-        mRegister.registerPackageForDomain(UID, APP_NAME, DOMAIN);
-        mRegister.registerPackageForDomain(UID, APP_NAME, OTHER_DOMAIN);
+        register(DOMAIN);
+        register(OTHER_DOMAIN);
 
         Set<String> origins = mRegister.getDomainsForRegisteredUid(UID);
         Assert.assertEquals(2, origins.size());
@@ -67,8 +68,8 @@ public class ClientAppDataRegisterTest {
     @Test
     @Feature("TrustedWebActivities")
     public void clearOrigins() {
-        mRegister.registerPackageForDomain(UID, APP_NAME, DOMAIN);
-        mRegister.registerPackageForDomain(UID, APP_NAME, OTHER_DOMAIN);
+        register(DOMAIN);
+        register(OTHER_DOMAIN);
         mRegister.removePackage(UID);
 
         Set<String> origins = mRegister.getDomainsForRegisteredUid(UID);
@@ -78,7 +79,19 @@ public class ClientAppDataRegisterTest {
     @Test
     @Feature("TrustedWebActivities")
     public void getAppName() {
-        mRegister.registerPackageForDomain(UID, APP_NAME, DOMAIN);
+        register(DOMAIN);
         Assert.assertEquals(APP_NAME, mRegister.getAppNameForRegisteredUid(UID));
+    }
+
+    @Test
+    @Feature("TrustedWebActivities")
+    public void getPackageName() {
+        register(DOMAIN);
+        Assert.assertEquals(APP_PACKAGE, mRegister.getPackageNameForRegisteredUid(UID));
+    }
+
+    private void register(String domain) {
+        mRegister.registerPackageForOrigin(UID, APP_NAME, APP_PACKAGE, domain,
+                new Origin("https://www." + domain));
     }
 }

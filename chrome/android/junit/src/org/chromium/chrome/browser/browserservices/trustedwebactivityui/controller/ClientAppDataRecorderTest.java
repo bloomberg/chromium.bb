@@ -11,7 +11,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -95,7 +95,7 @@ public class ClientAppDataRecorderTest {
     @Feature("TrustedWebActivities")
     public void testRegister() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
-        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN.toString()));
+        verifyRegistration(ORIGIN);
     }
 
     @Test
@@ -103,7 +103,7 @@ public class ClientAppDataRecorderTest {
     public void testDeduplicate() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
         mRecorder.register(APP_PACKAGE, ORIGIN);
-        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN.toString()));
+        verifyRegistration(ORIGIN);
     }
 
     @Test
@@ -111,9 +111,8 @@ public class ClientAppDataRecorderTest {
     public void testDifferentOrigins() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
         mRecorder.register(APP_PACKAGE, OTHER_ORIGIN);
-        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN.toString()));
-        verify(mRegister).registerPackageForDomain(
-                APP_UID, APP_NAME, transform(OTHER_ORIGIN.toString()));
+        verifyRegistration(ORIGIN);
+        verifyRegistration(OTHER_ORIGIN);
     }
 
     @Test
@@ -121,7 +120,12 @@ public class ClientAppDataRecorderTest {
     public void testMisingPackage() {
         mRecorder.register(MISSING_PACKAGE, ORIGIN);
         // Implicitly checking we don't throw.
-        verify(mRegister, times(0))
-                .registerPackageForDomain(anyInt(), anyString(), any());
+        verify(mRegister, never()).registerPackageForOrigin(anyInt(), anyString(), anyString(),
+                any(), any());
+    }
+
+    private void verifyRegistration(Origin origin) {
+        verify(mRegister).registerPackageForOrigin(APP_UID, APP_NAME, APP_PACKAGE,
+                transform(origin.toString()), origin);
     }
 }

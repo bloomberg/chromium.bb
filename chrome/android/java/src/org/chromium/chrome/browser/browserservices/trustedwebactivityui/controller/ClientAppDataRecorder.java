@@ -45,7 +45,7 @@ public class ClientAppDataRecorder {
 
     /**
      * Cache so we don't send the same request multiple times. {@link #register} is called on each
-     * navigation and each call to {@link ClientAppDataRegister#registerPackageForDomain}
+     * navigation and each call to {@link ClientAppDataRegister#registerPackageForOrigin}
      * modifies SharedPreferences, so we need to cut down on the number of calls.
      */
     private final Set<String> mCache = new HashSet<>();
@@ -58,7 +58,7 @@ public class ClientAppDataRecorder {
     }
 
     /**
-     * Calls {@link ClientAppDataRegister#registerPackageForDomain}, looking up the uid
+     * Calls {@link ClientAppDataRegister#registerPackageForOrigin}, looking up the uid
      * and app name for the |packageName|, extracting the domain from the origin and deduplicating
      * multiple requests with the same parameters.
      * Requires native to be loaded.
@@ -80,8 +80,9 @@ public class ClientAppDataRecorder {
             String domain = UrlUtilities.getDomainAndRegistry(
                     origin.toString(), true /*includePrivateRegistries*/);
 
-            Log.d(TAG, "Registering %d (%s) for %s", ai.uid, appLabel, domain);
-            mClientAppDataRegister.registerPackageForDomain(ai.uid, appLabel, domain);
+            Log.d(TAG, "Registering %d (%s) for %s", ai.uid, appLabel, origin);
+            mClientAppDataRegister.registerPackageForOrigin(ai.uid, appLabel, packageName,
+                    domain, origin);
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Couldn't find name for client package %s", packageName);
         }

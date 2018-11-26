@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.browserservices;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -25,6 +26,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -39,6 +41,7 @@ public class ClientAppBroadcastReceiverTest {
     @Mock public Context mContext;
     @Mock public ClientAppDataRegister mDataRegister;
     @Mock public ClearDataNotificationPublisher mNotificationManager;
+    @Mock public ClientAppBroadcastReceiver.ClearDataStrategy mMockStrategy;
 
     private ClientAppBroadcastReceiver mReceiver;
 
@@ -46,7 +49,8 @@ public class ClientAppBroadcastReceiverTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mReceiver = new ClientAppBroadcastReceiver(mNotificationManager, mDataRegister);
+        mReceiver = new ClientAppBroadcastReceiver(mMockStrategy, mDataRegister,
+                mock(ChromePreferenceManager.class));
         mContext = RuntimeEnvironment.application;
     }
 
@@ -71,8 +75,7 @@ public class ClientAppBroadcastReceiverTest {
     public void chromeHoldsNoData() {
         mReceiver.onReceive(mContext, createMockIntent(12, Intent.ACTION_PACKAGE_FULLY_REMOVED));
 
-        verify(mNotificationManager, never())
-                .showClearDataNotification(any(), anyString(), anyString(), anyBoolean());
+        verify(mMockStrategy, never()).execute(any(), any(), anyInt(), anyBoolean());
     }
 
     /** Tests the basic flow. */
@@ -87,14 +90,18 @@ public class ClientAppBroadcastReceiverTest {
         addToRegister(id, appName, domains);
 
         mReceiver.onReceive(mContext, createMockIntent(id, Intent.ACTION_PACKAGE_FULLY_REMOVED));
-        verify(mNotificationManager)
-                .showClearDataNotification(any(), eq(appName), eq(domain), eq(true));
+
+        verify(mMockStrategy).execute(any(), any(), eq(id), eq(true));
     }
 
     /** Tests we deal with multiple domains well. */
     @Test
     @Feature("TrustedWebActivities")
-    public void multipleDomains() {
+    public void notificationStrategyShowsNotification_ForEachDomain() {
+        mReceiver = new ClientAppBroadcastReceiver(
+                new ClientAppBroadcastReceiver.NotificationClearDataStrategy(mNotificationManager),
+                mDataRegister, mock(ChromePreferenceManager.class));
+
         int id = 45;
         String appName = "App Name 2";
         String domain1 = "example.com";
@@ -123,7 +130,6 @@ public class ClientAppBroadcastReceiverTest {
         addToRegister(id, appName, domains);
 
         mReceiver.onReceive(mContext, createMockIntent(id, Intent.ACTION_PACKAGE_DATA_CLEARED));
-        verify(mNotificationManager)
-                .showClearDataNotification(any(), eq(appName), eq(domain), eq(false));
+        verify(mMockStrategy).execute(any(), any(), eq(id), eq(false));
     }
 }
