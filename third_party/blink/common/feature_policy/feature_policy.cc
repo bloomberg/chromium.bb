@@ -40,7 +40,7 @@ ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
       matches_all_origins(matches_all_origins),
       matches_opaque_src(matches_opaque_src),
       disposition(disposition),
-      origins(origins) {}
+      origins(std::move(origins)) {}
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
     const ParsedFeaturePolicyDeclaration& rhs) = default;
@@ -52,16 +52,13 @@ ParsedFeaturePolicyDeclaration::~ParsedFeaturePolicyDeclaration() = default;
 
 bool operator==(const ParsedFeaturePolicyDeclaration& lhs,
                 const ParsedFeaturePolicyDeclaration& rhs) {
-  // This method returns true only when the arguments are actually identical,
-  // including the order of elements in the origins vector.
-  // TODO(iclelland): Consider making this return true when comparing equal-
-  // but-not-identical allowlists, or eliminate those comparisons by maintaining
-  // the allowlists in a normalized form.
-  // https://crbug.com/710324
-  return std::tie(lhs.feature, lhs.matches_all_origins, lhs.origins,
-                  lhs.disposition) == std::tie(rhs.feature,
-                                               rhs.matches_all_origins,
-                                               rhs.origins, rhs.disposition);
+  if (lhs.feature != rhs.feature)
+    return false;
+  if (lhs.disposition != rhs.disposition)
+    return false;
+  if (lhs.matches_all_origins != rhs.matches_all_origins)
+    return false;
+  return lhs.matches_all_origins || (lhs.origins == rhs.origins);
 }
 
 std::unique_ptr<ParsedFeaturePolicy> DirectivesWithDisposition(
@@ -83,7 +80,7 @@ FeaturePolicy::Allowlist::Allowlist(const Allowlist& rhs) = default;
 FeaturePolicy::Allowlist::~Allowlist() = default;
 
 void FeaturePolicy::Allowlist::Add(const url::Origin& origin) {
-  origins_.push_back(origin);
+  origins_.insert(origin);
 }
 
 void FeaturePolicy::Allowlist::AddAll() {
@@ -97,20 +94,21 @@ bool FeaturePolicy::Allowlist::Contains(const url::Origin& origin) const {
   // TODO(iclelland): Fix that, possibly by having another flag for
   // 'matches_self', which will explicitly match the policy's origin.
   // https://crbug.com/690520
-  if (matches_all_origins_)
+  if (matches_all_origins_) {
+    DCHECK(origins_.empty());
     return true;
-  for (const auto& targetOrigin : origins_) {
-    if (!origin.opaque() && targetOrigin.IsSameOriginWith(origin))
-      return true;
   }
-  return false;
+
+  if (origin.opaque())
+    return false;
+  return base::ContainsKey(origins_, origin);
 }
 
 bool FeaturePolicy::Allowlist::MatchesAll() const {
   return matches_all_origins_;
 }
 
-const std::vector<url::Origin>& FeaturePolicy::Allowlist::Origins() const {
+const base::flat_set<url::Origin>& FeaturePolicy::Allowlist::Origins() const {
   return origins_;
 }
 

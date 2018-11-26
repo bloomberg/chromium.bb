@@ -156,6 +156,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
           continue;
         } else if (tokens[i] == "*") {
           allowlist.matches_all_origins = true;
+          origins.clear();
           break;
         } else {
           scoped_refptr<SecurityOrigin> target_origin =
@@ -166,7 +167,10 @@ ParsedFeaturePolicy ParseFeaturePolicy(
             messages->push_back("Unrecognized origin: '" + tokens[i] + "'.");
         }
       }
-      allowlist.origins = origins;
+      std::sort(origins.begin(), origins.end());
+      auto new_end = std::unique(origins.begin(), origins.end());
+      origins.erase(new_end, origins.end());
+      allowlist.origins = std::move(origins);
       allowlists.push_back(allowlist);
     }
   }
