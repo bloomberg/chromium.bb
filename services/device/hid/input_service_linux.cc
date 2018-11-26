@@ -12,7 +12,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "device/base/device_monitor_linux.h"
 #include "device/udev_linux/udev.h"
 
@@ -101,8 +101,6 @@ class InputServiceLinuxImpl : public InputServiceLinux,
 };
 
 InputServiceLinuxImpl::InputServiceLinuxImpl() : observer_(this) {
-  base::AssertBlockingAllowedDeprecated();
-
   DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
   observer_.Add(monitor);
   monitor->Enumerate(base::Bind(&InputServiceLinuxImpl::OnDeviceAdded,
@@ -116,6 +114,8 @@ InputServiceLinuxImpl::~InputServiceLinuxImpl() {
 
 void InputServiceLinuxImpl::OnDeviceAdded(udev_device* device) {
   DCHECK(CalledOnValidThread());
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+
   if (!device)
     return;
   const char* devnode = udev_device_get_devnode(device);
@@ -156,6 +156,8 @@ void InputServiceLinuxImpl::OnDeviceRemoved(udev_device* device) {
   DCHECK(CalledOnValidThread());
   if (!device)
     return;
+
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   const char* devnode = udev_device_get_devnode(device);
   if (devnode)
     RemoveDevice(devnode);

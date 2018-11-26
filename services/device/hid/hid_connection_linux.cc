@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/hid/hid_service.h"
@@ -52,7 +52,6 @@ class HidConnectionLinux::BlockingTaskHelper {
   // Must be called on a thread that has a base::MessageLoopForIO.
   void Start() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    base::AssertBlockingAllowedDeprecated();
 
     file_watcher_ = base::FileDescriptorWatcher::WatchReadable(
         fd_.get(), base::Bind(&BlockingTaskHelper::OnFileCanReadWithoutBlocking,
@@ -62,6 +61,9 @@ class HidConnectionLinux::BlockingTaskHelper {
   void Write(scoped_refptr<base::RefCountedBytes> buffer,
              WriteCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
+
     ssize_t result =
         HANDLE_EINTR(write(fd_.get(), buffer->front(), buffer->size()));
     if (result < 0) {
@@ -82,6 +84,9 @@ class HidConnectionLinux::BlockingTaskHelper {
                         scoped_refptr<base::RefCountedBytes> buffer,
                         ReadCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
+
     int result = HANDLE_EINTR(
         ioctl(fd_.get(), HIDIOCGFEATURE(buffer->size()), buffer->front()));
     if (result < 0) {
@@ -109,6 +114,9 @@ class HidConnectionLinux::BlockingTaskHelper {
   void SendFeatureReport(scoped_refptr<base::RefCountedBytes> buffer,
                          WriteCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
+
     int result = HANDLE_EINTR(
         ioctl(fd_.get(), HIDIOCSFEATURE(buffer->size()), buffer->front()));
     if (result < 0) {
