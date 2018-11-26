@@ -423,8 +423,10 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
       wallpaper_base::ToString(params->layout));
   wallpaper_api_util::RecordCustomWallpaperLayout(layout);
 
+  const std::string file_name =
+      base::FilePath(params->file_name).BaseName().value();
   WallpaperControllerClient::Get()->SetCustomWallpaper(
-      account_id_, wallpaper_files_id_, params->file_name, layout, image,
+      account_id_, wallpaper_files_id_, file_name, layout, image,
       params->preview_mode);
   unsafe_wallpaper_decoder_ = nullptr;
 
