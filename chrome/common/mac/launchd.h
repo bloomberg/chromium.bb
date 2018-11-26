@@ -40,7 +40,7 @@ class Launchd {
   virtual CFDictionaryRef CopyDictionaryByCheckingIn(CFErrorRef* error);
 
   // Remove a launchd process from launchd.
-  virtual bool RemoveJob(CFStringRef label, CFErrorRef* error);
+  virtual bool RemoveJob(const std::string& label);
 
   // Used by a process controlled by launchd to restart itself.
   // |session_type| can be "Aqua", "LoginWindow", "Background", "StandardIO" or

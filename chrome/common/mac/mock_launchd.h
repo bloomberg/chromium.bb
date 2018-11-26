@@ -39,7 +39,7 @@ class MockLaunchd : public Launchd {
 
   CFDictionaryRef CopyJobDictionary(CFStringRef label) override;
   CFDictionaryRef CopyDictionaryByCheckingIn(CFErrorRef* error) override;
-  bool RemoveJob(CFStringRef label, CFErrorRef* error) override;
+  bool RemoveJob(const std::string& label) override;
   bool RestartJob(Domain domain,
                   Type type,
                   CFStringRef name,

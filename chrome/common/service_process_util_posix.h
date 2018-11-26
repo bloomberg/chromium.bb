@@ -25,13 +25,15 @@ MultiProcessLock* TakeServiceRunningLock(bool waiting);
 #if defined(OS_MACOSX)
 #include "base/files/file_path_watcher.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "chrome/common/mac/service_management.h"
 
 namespace base {
 class CommandLine;
 }
 
-CFDictionaryRef CreateServiceProcessLaunchdPlist(base::CommandLine* cmd_line,
-                                                 bool for_auto_launch);
+mac::services::JobOptions GetServiceProcessJobOptions(
+    base::CommandLine* cmd_line,
+    bool for_auto_launch);
 #endif  // OS_MACOSX
 
 namespace base {
