@@ -19,6 +19,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/views/widget/widget.h"
@@ -71,7 +72,8 @@ class PipWindowResizerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    SetTouchKeyboardEnabled(true);
+    keyboard::SetTouchKeyboardEnabled(true);
+    Shell::Get()->EnableKeyboard();
 
     widget_ = CreateWidgetForTest(gfx::Rect(200, 200, 100, 100));
     window_ = widget_->GetNativeWindow();
@@ -82,7 +84,7 @@ class PipWindowResizerTest : public AshTestBase {
   }
 
   void TearDown() override {
-    SetTouchKeyboardEnabled(false);
+    keyboard::SetTouchKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 

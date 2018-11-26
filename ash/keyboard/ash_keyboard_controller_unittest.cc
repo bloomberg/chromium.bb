@@ -7,11 +7,9 @@
 #include <memory>
 #include <vector>
 
-#include "ash/public/cpp/test/test_keyboard_controller_observer.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -30,10 +28,55 @@ namespace ash {
 
 namespace {
 
+class TestObserver : public mojom::KeyboardControllerObserver {
+ public:
+  explicit TestObserver(mojom::KeyboardController* controller) {
+    mojom::KeyboardControllerObserverAssociatedPtrInfo ptr_info;
+    keyboard_controller_observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
+    controller->AddObserver(std::move(ptr_info));
+  }
+  ~TestObserver() override = default;
+
+  // mojom::KeyboardControllerObserver:
+  void OnKeyboardEnableFlagsChanged(
+      const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags) override {
+    enable_flags_ = flags;
+  }
+  void OnKeyboardEnabledChanged(bool enabled) override {
+    if (!enabled)
+      ++destroyed_count_;
+  }
+  void OnKeyboardVisibilityChanged(bool visible) override {}
+  void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override {}
+  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& bounds) override {}
+  void OnKeyboardConfigChanged(KeyboardConfigPtr config) override {
+    config_ = *config;
+  }
+
+  const KeyboardConfig& config() const { return config_; }
+  void set_config(const KeyboardConfig& config) { config_ = config; }
+  const std::vector<keyboard::mojom::KeyboardEnableFlag>& enable_flags() const {
+    return enable_flags_;
+  }
+  int destroyed_count() const { return destroyed_count_; }
+
+ private:
+  std::vector<keyboard::mojom::KeyboardEnableFlag> enable_flags_;
+  KeyboardConfig config_;
+  int destroyed_count_ = 0;
+  mojo::AssociatedBinding<mojom::KeyboardControllerObserver>
+      keyboard_controller_observer_binding_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
+
 class TestClient {
  public:
   explicit TestClient(service_manager::Connector* connector) {
     connector->BindInterface("test", &keyboard_controller_ptr_);
+
+    test_observer_ =
+        std::make_unique<TestObserver>(keyboard_controller_ptr_.get());
   }
 
   ~TestClient() = default;
@@ -139,6 +182,7 @@ class TestClient {
     keyboard_controller_ptr_.FlushForTesting();
   }
 
+  TestObserver* test_observer() const { return test_observer_.get(); }
   int got_keyboard_config_count() const { return got_keyboard_config_count_; }
   const KeyboardConfig& keyboard_config() const { return keyboard_config_; }
 
@@ -156,6 +200,7 @@ class TestClient {
   int got_keyboard_config_count_ = 0;
   KeyboardConfig keyboard_config_;
   mojom::KeyboardControllerPtr keyboard_controller_ptr_;
+  std::unique_ptr<TestObserver> test_observer_;
 };
 
 class TestContainerBehavior : public keyboard::ContainerBehavior {
@@ -252,7 +297,7 @@ class AshKeyboardControllerTest : public AshTestBase {
     test_client_ = std::make_unique<TestClient>(connector_.get());
 
     // Set the initial observer config to the client (default) config.
-    test_observer()->set_config(test_client()->keyboard_config());
+    test_client_->test_observer()->set_config(test_client()->keyboard_config());
   }
 
   void TearDown() override {
@@ -269,9 +314,6 @@ class AshKeyboardControllerTest : public AshTestBase {
     return Shell::Get()->ash_keyboard_controller()->keyboard_controller();
   }
   TestClient* test_client() { return test_client_.get(); }
-  TestKeyboardControllerObserver* test_observer() {
-    return ash_test_helper()->test_keyboard_controller_observer();
-  }
 
  private:
   std::unique_ptr<service_manager::Connector> connector_;
@@ -296,7 +338,7 @@ TEST_F(AshKeyboardControllerTest, SetKeyboardConfig) {
   KeyboardConfigPtr config =
       KeyboardConfig::New(test_client()->keyboard_config());
   // Set the observer config to the client (default) config.
-  test_observer()->set_config(*config);
+  test_client()->test_observer()->set_config(*config);
 
   // Change the keyboard config.
   bool old_auto_complete = config->auto_complete;
@@ -308,7 +350,8 @@ TEST_F(AshKeyboardControllerTest, SetKeyboardConfig) {
   EXPECT_NE(old_auto_complete, test_client()->keyboard_config().auto_complete);
 
   // Test that the test observer received the change.
-  EXPECT_NE(old_auto_complete, test_observer()->config().auto_complete);
+  EXPECT_NE(old_auto_complete,
+            test_client()->test_observer()->config().auto_complete);
 }
 
 TEST_F(AshKeyboardControllerTest, EnableFlags) {
@@ -319,7 +362,7 @@ TEST_F(AshKeyboardControllerTest, EnableFlags) {
       test_client()->GetEnableFlags();
   EXPECT_TRUE(
       base::ContainsValue(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
-  EXPECT_EQ(enable_flags, test_observer()->enable_flags());
+  EXPECT_EQ(enable_flags, test_client()->test_observer()->enable_flags());
   EXPECT_TRUE(test_client()->IsKeyboardEnabled());
 
   // Set the enable override to disable the keyboard.
@@ -329,7 +372,7 @@ TEST_F(AshKeyboardControllerTest, EnableFlags) {
       base::ContainsValue(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
   EXPECT_TRUE(
       base::ContainsValue(enable_flags, KeyboardEnableFlag::kPolicyDisabled));
-  EXPECT_EQ(enable_flags, test_observer()->enable_flags());
+  EXPECT_EQ(enable_flags, test_client()->test_observer()->enable_flags());
   EXPECT_FALSE(test_client()->IsKeyboardEnabled());
 
   // Clear the enable override; should enable the keyboard.
@@ -339,28 +382,28 @@ TEST_F(AshKeyboardControllerTest, EnableFlags) {
       base::ContainsValue(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
   EXPECT_FALSE(
       base::ContainsValue(enable_flags, KeyboardEnableFlag::kPolicyDisabled));
-  EXPECT_EQ(enable_flags, test_observer()->enable_flags());
+  EXPECT_EQ(enable_flags, test_client()->test_observer()->enable_flags());
   EXPECT_TRUE(test_client()->IsKeyboardEnabled());
 }
 
 TEST_F(AshKeyboardControllerTest, RebuildKeyboardIfEnabled) {
-  EXPECT_EQ(0, test_observer()->destroyed_count());
+  EXPECT_EQ(0, test_client()->test_observer()->destroyed_count());
 
   // Enable the keyboard.
   test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
-  EXPECT_EQ(0, test_observer()->destroyed_count());
+  EXPECT_EQ(0, test_client()->test_observer()->destroyed_count());
 
   // Enable the keyboard again; this should not reload the keyboard.
   test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
-  EXPECT_EQ(0, test_observer()->destroyed_count());
+  EXPECT_EQ(0, test_client()->test_observer()->destroyed_count());
 
   // Rebuild the keyboard. This should destroy the previous keyboard window.
   test_client()->RebuildKeyboardIfEnabled();
-  EXPECT_EQ(1, test_observer()->destroyed_count());
+  EXPECT_EQ(1, test_client()->test_observer()->destroyed_count());
 
   // Disable the keyboard. The keyboard window should be destroyed.
   test_client()->ClearEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
-  EXPECT_EQ(2, test_observer()->destroyed_count());
+  EXPECT_EQ(2, test_client()->test_observer()->destroyed_count());
 }
 
 TEST_F(AshKeyboardControllerTest, ShowAndHideKeyboard) {
@@ -375,8 +418,8 @@ TEST_F(AshKeyboardControllerTest, ShowAndHideKeyboard) {
   test_client()->HideKeyboard();
   EXPECT_FALSE(keyboard_controller()->GetKeyboardWindow()->IsVisible());
 
-  // TODO(stevenjb): Also use TestKeyboardControllerObserver and
-  // IsKeyboardVisible to test visibility changes. https://crbug.com/849995.
+  // TODO(stevenjb): Also use TestObserver and IsKeyboardVisible to test
+  // visibility changes. https://crbug.com/849995.
 }
 
 TEST_F(AshKeyboardControllerTest, SetContainerType) {

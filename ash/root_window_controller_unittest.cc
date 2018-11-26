@@ -687,11 +687,12 @@ class VirtualKeyboardRootWindowControllerTest
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    SetTouchKeyboardEnabled(true);
+    keyboard::SetTouchKeyboardEnabled(true);
+    Shell::Get()->EnableKeyboard();
   }
 
   void TearDown() override {
-    SetTouchKeyboardEnabled(false);
+    keyboard::SetTouchKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 
