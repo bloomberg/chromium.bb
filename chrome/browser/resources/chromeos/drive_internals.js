@@ -32,6 +32,8 @@ function updateDriveRelatedPreferences(preferences) {
  */
 function updateConnectionStatus(connStatus) {
   $('connection-status').textContent = connStatus['status'];
+  $('push-notification-enabled').textContent =
+      connStatus['push-notification-enabled'];
   $('has-refresh-token').textContent = connStatus['has-refresh-token'];
   $('has-access-token').textContent = connStatus['has-access-token'];
 }
@@ -169,9 +171,6 @@ function updateAboutResource(aboutResource) {
  * @param {Object} deltaUpdateStatus Dictionary describing delta update status.
  */
 function updateDeltaUpdateStatus(deltaUpdateStatus) {
-  $('push-notification-enabled').textContent =
-      deltaUpdateStatus['push-notification-enabled'];
-
   var itemContainer = $('delta-update-status');
   for (var i = 0; i < deltaUpdateStatus['items'].length; i++) {
     var update = deltaUpdateStatus['items'][i];
