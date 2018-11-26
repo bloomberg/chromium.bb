@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -129,8 +128,7 @@ bool ContentSettingImageView::ShowBubble(const ui::Event& event) {
     views::View* const anchor = parent();
     bubble_view_ = new ContentSettingBubbleContents(
         content_setting_image_model_->CreateBubbleModel(
-            delegate_->GetContentSettingBubbleModelDelegate(), web_contents,
-            Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+            delegate_->GetContentSettingBubbleModelDelegate(), web_contents),
         web_contents, anchor, views::BubbleBorder::TOP_RIGHT);
     bubble_view_->SetHighlightedButton(this);
     views::Widget* bubble_widget =

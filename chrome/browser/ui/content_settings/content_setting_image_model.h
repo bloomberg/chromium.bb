@@ -72,8 +72,7 @@ class ContentSettingImageModel {
   // Creates the model for the bubble that will be attached to this image.
   std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModel(
       ContentSettingBubbleModel::Delegate* delegate,
-      content::WebContents* web_contents,
-      Profile* profile);
+      content::WebContents* web_contents);
 
   // Whether the animation should be run for the given |web_contents|.
   bool ShouldRunAnimation(content::WebContents* web_contents);
@@ -106,8 +105,7 @@ class ContentSettingImageModel {
   // Internal implementation by subclasses of bubble model creation.
   virtual std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
-      content::WebContents* web_contents,
-      Profile* profile) = 0;
+      content::WebContents* web_contents) = 0;
 
   void set_icon(const gfx::VectorIcon& icon, const gfx::VectorIcon& badge) {
     icon_ = &icon;
@@ -140,8 +138,7 @@ class ContentSettingSimpleImageModel : public ContentSettingImageModel {
   // ContentSettingImageModel implementation.
   std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
-      content::WebContents* web_contents,
-      Profile* profile) override;
+      content::WebContents* web_contents) override;
 
   ContentSettingsType content_type() { return content_type_; }
 
@@ -159,8 +156,7 @@ class ContentSettingFramebustBlockImageModel : public ContentSettingImageModel {
 
   std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
-      content::WebContents* web_contents,
-      Profile* profile) override;
+      content::WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingFramebustBlockImageModel);

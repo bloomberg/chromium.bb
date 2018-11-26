@@ -23,8 +23,6 @@
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/media_stream_request.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -67,7 +65,7 @@ class ContentSettingFramebustBlockBubbleModel;
 
 // This model provides data for ContentSettingBubble, and also controls
 // the action triggered when the allow / block radio buttons are triggered.
-class ContentSettingBubbleModel : public content::NotificationObserver {
+class ContentSettingBubbleModel {
  public:
   typedef ContentSettingBubbleModelDelegate Delegate;
 
@@ -167,19 +165,13 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   static std::unique_ptr<ContentSettingBubbleModel>
   CreateContentSettingBubbleModel(Delegate* delegate,
                                   content::WebContents* web_contents,
-                                  Profile* profile,
                                   ContentSettingsType content_type);
 
-  ~ContentSettingBubbleModel() override;
+  virtual ~ContentSettingBubbleModel();
 
   const BubbleContent& bubble_content() const { return bubble_content_; }
 
   void set_owner(Owner* owner) { owner_ = owner; }
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   virtual void OnListItemClicked(int index, int event_flags) {}
   virtual void OnCustomLinkClicked() {}
@@ -221,13 +213,13 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   }
 
  protected:
-  ContentSettingBubbleModel(
-      Delegate* delegate,
-      content::WebContents* web_contents,
-      Profile* profile);
+  // |web_contents| must outlive this.
+  ContentSettingBubbleModel(Delegate* delegate,
+                            content::WebContents* web_contents);
 
+  // Should always be non-nullptr.
   content::WebContents* web_contents() const { return web_contents_; }
-  Profile* profile() const { return profile_; }
+  Profile* GetProfile() const;
   Delegate* delegate() const { return delegate_; }
   int selected_item() const { return owner_->GetSelectedRadioOption(); }
 
@@ -274,12 +266,9 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
 
  private:
   content::WebContents* web_contents_;
-  Profile* profile_;
   Owner* owner_;
   Delegate* delegate_;
   BubbleContent bubble_content_;
-  // A registrar for listening for WEB_CONTENTS_DESTROYED notifications.
-  content::NotificationRegistrar registrar_;
   // The service used to record Rappor metrics. Can be set for testing.
   rappor::RapporServiceImpl* rappor_service_;
 
@@ -291,7 +280,6 @@ class ContentSettingSimpleBubbleModel : public ContentSettingBubbleModel {
  public:
   ContentSettingSimpleBubbleModel(Delegate* delegate,
                                   content::WebContents* web_contents,
-                                  Profile* profile,
                                   ContentSettingsType content_type);
 
   ContentSettingsType content_type() { return content_type_; }
@@ -320,7 +308,6 @@ class ContentSettingRPHBubbleModel : public ContentSettingSimpleBubbleModel {
  public:
   ContentSettingRPHBubbleModel(Delegate* delegate,
                                content::WebContents* web_contents,
-                               Profile* profile,
                                ProtocolHandlerRegistry* registry);
   ~ContentSettingRPHBubbleModel() override;
 
@@ -345,8 +332,7 @@ class ContentSettingRPHBubbleModel : public ContentSettingSimpleBubbleModel {
 class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
  public:
   ContentSettingMediaStreamBubbleModel(Delegate* delegate,
-                                       content::WebContents* web_contents,
-                                       Profile* profile);
+                                       content::WebContents* web_contents);
 
   ~ContentSettingMediaStreamBubbleModel() override;
 
@@ -402,9 +388,9 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
 class ContentSettingSubresourceFilterBubbleModel
     : public ContentSettingBubbleModel {
  public:
-  ContentSettingSubresourceFilterBubbleModel(Delegate* delegate,
-                                             content::WebContents* web_contents,
-                                             Profile* profile);
+  ContentSettingSubresourceFilterBubbleModel(
+      Delegate* delegate,
+      content::WebContents* web_contents);
 
   ~ContentSettingSubresourceFilterBubbleModel() override;
 
@@ -429,8 +415,7 @@ class ContentSettingSubresourceFilterBubbleModel
 class ContentSettingDownloadsBubbleModel : public ContentSettingBubbleModel {
  public:
   ContentSettingDownloadsBubbleModel(Delegate* delegate,
-                                     content::WebContents* web_contents,
-                                     Profile* profile);
+                                     content::WebContents* web_contents);
   ~ContentSettingDownloadsBubbleModel() override;
 
   // ContentSettingBubbleModel overrides:
@@ -452,7 +437,6 @@ class ContentSettingSingleRadioGroup : public ContentSettingSimpleBubbleModel {
  public:
   ContentSettingSingleRadioGroup(Delegate* delegate,
                                  content::WebContents* web_contents,
-                                 Profile* profile,
                                  ContentSettingsType content_type);
   ~ContentSettingSingleRadioGroup() override;
 
@@ -482,15 +466,9 @@ class ContentSettingFramebustBlockBubbleModel
       public UrlListManager::Observer {
  public:
   ContentSettingFramebustBlockBubbleModel(Delegate* delegate,
-                                          content::WebContents* web_contents,
-                                          Profile* profile);
+                                          content::WebContents* web_contents);
 
   ~ContentSettingFramebustBlockBubbleModel() override;
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // ContentSettingBubbleModel:
   void OnListItemClicked(int index, int event_flags) override;
