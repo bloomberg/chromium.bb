@@ -48,8 +48,8 @@ enum PasswordFormScheme {
   SCHEME_USERNAME_ONLY
 };
 
-// autofill::PasswordForm::SubmissionIndicatorEvent
-enum PasswordFormSubmissionIndicatorEvent {
+// autofill::SubmissionIndicatorEvent
+enum SubmissionIndicatorEvent {
     NONE,
     HTML_FORM_SUBMISSION,
     SAME_DOCUMENT_NAVIGATION,
@@ -247,7 +247,7 @@ struct PasswordForm {
   bool was_parsed_using_autofill_predictions;
   bool is_public_suffix_match;
   bool is_affiliation_based_match;
-  PasswordFormSubmissionIndicatorEvent submission_event;
+  SubmissionIndicatorEvent submission_event;
   bool only_for_fallback_saving;
   bool is_gaia_with_skip_save_password_form;
 };

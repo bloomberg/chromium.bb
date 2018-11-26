@@ -356,8 +356,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                   RendererSavePasswordProgressLogger* logger);
 
   // Helper function called when form submission is successful.
-  void FireSubmissionIfFormDisappear(
-      PasswordForm::SubmissionIndicatorEvent event);
+  void FireSubmissionIfFormDisappear(SubmissionIndicatorEvent event);
 
   void OnFrameDetached();
   void OnWillSubmitForm(const blink::WebFormElement& form);

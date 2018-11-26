@@ -2948,7 +2948,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
       std::make_pair(PasswordAttribute::kHasNumeric, true));
   form_structure->set_password_length_vote(10u);
   form_structure->set_submission_event(
-      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
+      SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -3033,7 +3033,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
       std::make_pair(PasswordAttribute::kHasNumeric, true));
   form_structure->set_password_length_vote(10u);
   form_structure->set_submission_event(
-      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
+      SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
             possible_field_types_validities.size());

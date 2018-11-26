@@ -79,6 +79,7 @@ FormData::FormData(const FormData& data)
       is_form_tag(data.is_form_tag),
       is_formless_checkout(data.is_formless_checkout),
       unique_renderer_id(data.unique_renderer_id),
+      submission_event(SubmissionIndicatorEvent::NONE),
       fields(data.fields),
       username_predictions(data.username_predictions) {}
 

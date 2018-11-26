@@ -10,6 +10,7 @@
 
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/submission_indicator_event.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -74,6 +75,10 @@ struct FormData {
   //  WebFormElement::UniqueRendererFormId(). It is not persistant between page
   //  loads, so it is not saved and not used in comparison in SameFormAs().
   uint32_t unique_renderer_id = kNotSetFormRendererId;
+  // The type of the event that was taken as an indication that this form is
+  // being or has already been submitted. This field is filled only in Password
+  // Manager for submitted password forms.
+  SubmissionIndicatorEvent submission_event;
   // A vector of all the input fields in the form.
   std::vector<FormFieldData> fields;
   // Contains unique renderer IDs of text elements which are predicted to be

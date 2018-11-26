@@ -346,7 +346,7 @@ message AutofillUploadContents {
 
   // Event observed by the password manager which indicated that the form was
   // successfully submitted. Corresponds to
-  // |PasswordForm::SubmissionIndicatorEvent|.
+  // |SubmissionIndicatorEvent|.
   enum SubmissionIndicatorEvent {
     NONE = 0;
     HTML_FORM_SUBMISSION = 1;

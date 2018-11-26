@@ -439,7 +439,7 @@ FormStructure::FormStructure(const FormData& form)
       name_attribute_(form.name_attribute),
       form_name_(form.name),
       button_title_(form.button_title),
-      submission_event_(PasswordForm::SubmissionIndicatorEvent::NONE),
+      submission_event_(SubmissionIndicatorEvent::NONE),
       source_url_(form.origin),
       target_url_(form.action),
       main_frame_origin_(form.main_frame_origin),
@@ -549,14 +549,12 @@ bool FormStructure::EncodeUploadRequest(
   upload->set_data_present(EncodeFieldTypes(available_field_types));
   upload->set_passwords_revealed(passwords_were_revealed_);
 
-  auto triggering_event =
-      (submission_event_ != PasswordForm::SubmissionIndicatorEvent::NONE)
-          ? submission_event_
-          : ToSubmissionIndicatorEvent(submission_source_);
+  auto triggering_event = (submission_event_ != SubmissionIndicatorEvent::NONE)
+                              ? submission_event_
+                              : ToSubmissionIndicatorEvent(submission_source_);
 
-  DCHECK_LT(
-      submission_event_,
-      PasswordForm::SubmissionIndicatorEvent::SUBMISSION_INDICATOR_EVENT_COUNT);
+  DCHECK_LT(submission_event_,
+            SubmissionIndicatorEvent::SUBMISSION_INDICATOR_EVENT_COUNT);
   upload->set_submission_event(
       static_cast<AutofillUploadContents_SubmissionIndicatorEvent>(
           triggering_event));

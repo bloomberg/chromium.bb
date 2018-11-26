@@ -606,7 +606,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     EXPECT_EQ(ASCIIToUTF16(username_value), form.username_value);
     EXPECT_EQ(ASCIIToUTF16(password_value), form.password_value);
     EXPECT_EQ(ASCIIToUTF16(new_password_value), form.new_password_value);
-    EXPECT_EQ(PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION,
+    EXPECT_EQ(SubmissionIndicatorEvent::HTML_FORM_SUBMISSION,
               form.submission_event);
   }
 
@@ -645,7 +645,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
       const std::string& username_value,
       const std::string& password_value,
       const std::string& new_password_value,
-      PasswordForm::SubmissionIndicatorEvent event) {
+      SubmissionIndicatorEvent event) {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(fake_driver_.called_same_document_navigation());
     ASSERT_TRUE(static_cast<bool>(
@@ -2719,8 +2719,7 @@ TEST_F(PasswordAutofillAgentTest, NoForm_PromptForAJAXSubmitWithoutNavigation) {
   FireAjaxSucceeded();
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
-      "Bob", "mypassword", "",
-      PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED);
+      "Bob", "mypassword", "", SubmissionIndicatorEvent::XHR_SUCCEEDED);
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -2744,7 +2743,7 @@ TEST_F(PasswordAutofillAgentTest,
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
       "Bob", "mypassword", "",
-      PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
+      SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
 
 // In this test, a <div> wrapping a form is hidden via display:none after an
@@ -2768,7 +2767,7 @@ TEST_F(PasswordAutofillAgentTest, PromptForAJAXSubmitAfterHidingParentElement) {
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
       "Bob", "mypassword", "",
-      PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
+      SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
 
 // In this test, a <div> wrapping a form is removed from the DOM after an Ajax
@@ -2794,7 +2793,7 @@ TEST_F(PasswordAutofillAgentTest,
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
       "Bob", "mypassword", "",
-      PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
+      SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -3173,8 +3172,7 @@ TEST_F(PasswordAutofillAgentTest,
     FireAjaxSucceeded();
 
     ExpectSameDocumentNavigationWithUsernameAndPasswords(
-        "Alice", "mypassword", "",
-        PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED);
+        "Alice", "mypassword", "", SubmissionIndicatorEvent::XHR_SUCCEEDED);
   }
 }
 
@@ -3200,7 +3198,7 @@ TEST_F(PasswordAutofillAgentTest,
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
       "Alice", "mypassword", "",
-      PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
+      SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
 
 // Tests that password manager sees both autofill assisted and user entered
@@ -3356,7 +3354,7 @@ TEST_F(PasswordAutofillAgentTest,
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
       std::string(), "random", std::string(),
-      PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION);
+      SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION);
 }
 
 #if defined(SAFE_BROWSING_DB_LOCAL)

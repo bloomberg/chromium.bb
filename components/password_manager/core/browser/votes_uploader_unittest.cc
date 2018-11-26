@@ -32,6 +32,7 @@ using autofill::NEW_PASSWORD;
 using autofill::PASSWORD;
 using autofill::PasswordForm;
 using autofill::ServerFieldTypeSet;
+using autofill::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 using testing::_;
 using testing::AllOf;
@@ -152,13 +153,13 @@ TEST_F(VotesUploaderTest, UploadPasswordVoteUpdate) {
   form_to_upload_.confirmation_password_element = confirmation_element;
   submitted_form_.confirmation_password_element = confirmation_element;
   submitted_form_.submission_event =
-      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+      SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
   ServerFieldTypeSet expected_field_types = {NEW_PASSWORD,
                                              CONFIRMATION_PASSWORD};
   FieldTypeMap expected_types = {{new_password_element, NEW_PASSWORD},
                                  {confirmation_element, CONFIRMATION_PASSWORD}};
-  PasswordForm::SubmissionIndicatorEvent expected_submission_event =
-      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+  SubmissionIndicatorEvent expected_submission_event =
+      SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
   EXPECT_CALL(
       *mock_autofill_download_manager_,
@@ -181,10 +182,10 @@ TEST_F(VotesUploaderTest, UploadPasswordVoteSave) {
   form_to_upload_.confirmation_password_element = confirmation_element;
   submitted_form_.confirmation_password_element = confirmation_element;
   submitted_form_.submission_event =
-      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+      SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
   ServerFieldTypeSet expected_field_types = {PASSWORD, CONFIRMATION_PASSWORD};
-  PasswordForm::SubmissionIndicatorEvent expected_submission_event =
-      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+  SubmissionIndicatorEvent expected_submission_event =
+      SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
   EXPECT_CALL(*mock_autofill_download_manager_,
               StartUploadRequest(

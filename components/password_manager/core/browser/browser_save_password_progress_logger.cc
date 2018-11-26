@@ -202,7 +202,7 @@ void BrowserSavePasswordProgressLogger::LogString(StringID label,
 }
 
 void BrowserSavePasswordProgressLogger::LogSuccessfulSubmissionIndicatorEvent(
-    autofill::PasswordForm::SubmissionIndicatorEvent event) {
+    autofill::SubmissionIndicatorEvent event) {
   std::ostringstream submission_event_string_stream;
   submission_event_string_stream << event;
   std::string message =

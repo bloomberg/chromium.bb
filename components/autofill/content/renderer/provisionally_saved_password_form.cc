@@ -37,7 +37,7 @@ bool ProvisionallySavedPasswordForm::IsPasswordValid() const {
 }
 
 void ProvisionallySavedPasswordForm::SetSubmissionIndicatorEvent(
-    PasswordForm::SubmissionIndicatorEvent event) {
+    SubmissionIndicatorEvent event) {
   if (password_form_)
     password_form_->submission_event = event;
 }
