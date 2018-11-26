@@ -15,9 +15,9 @@
     shouldBeFalse("internals.isPreloaded('resources/base-image3.png');");
     shouldBeTrue("internals.isPreloaded('resources/image2.png');");
 </script>
-<div>This test passes if the fallback image (defined in the href attribute) is not preloaded, but the 1x version (defined in srcset) is.</div>
+<div>This test passes if the fallback image (defined in the href attribute) is not preloaded, but the 1x version (defined in imagesrcset) is.</div>
 <div>The second link rel=preload is here to make sure isPreloaded is working properly</div>
-<link rel="preload" as="image" href="resources/preload-test.jpg" srcset="resources/base-image1.png 1x, resources/base-image3.png 3x, resources/base-image2.png 2x">
+<link rel="preload" as="image" href="resources/preload-test.jpg" imagesrcset="resources/base-image1.png 1x, resources/base-image3.png 3x, resources/base-image2.png 2x">
 <link rel="preload" as="image" href="resources/image2.png">
 </body>
 </html>
