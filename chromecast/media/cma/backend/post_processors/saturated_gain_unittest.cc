@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "chromecast/media/cma/backend/post_processors/post_processor_benchmark.h"
 #include "chromecast/media/cma/backend/post_processors/post_processor_unittest.h"
 #include "chromecast/media/cma/backend/post_processors/saturated_gain.h"
 
@@ -49,9 +48,8 @@ TEST_P(PostProcessorTest, Gain) {
   const int kNumFrames = 256;
   std::string config = MakeConfigString(20.0);  // Exactly 10x multiplier.
   auto pp = std::make_unique<SaturatedGain>(config, kNumChannels);
-  std::vector<float> data =
-      LinearChirp(kNumFrames, std::vector<double>(kNumChannels, 0.0),
-                  std::vector<double>(kNumChannels, 1.0));
+  auto data = LinearChirp(kNumFrames, std::vector<double>(kNumChannels, 0.0),
+                          std::vector<double>(kNumChannels, 1.0));
 
   for (size_t i = 0; i < data.size(); ++i) {
     data[i] /= 100.0;

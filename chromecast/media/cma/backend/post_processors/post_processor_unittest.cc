@@ -5,8 +5,11 @@
 #include "chromecast/media/cma/backend/post_processors/post_processor_unittest.h"
 #include "chromecast/media/cma/backend/post_processors/post_processor_wrapper.h"
 
+#include <time.h>
+
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <limits>
 
@@ -19,15 +22,19 @@ namespace {
 
 const float kEpsilon = std::numeric_limits<float>::epsilon();
 
+// Benchmark parameters.
+const float kTestDurationSec = 1.0;
+const int kBlockSizeFrames = 256;
+
 }  // namespace
 
 namespace post_processor_test {
 
-std::vector<float> LinearChirp(int frames,
-                               const std::vector<double>& start_frequencies,
-                               const std::vector<double>& end_frequencies) {
+AlignedBuffer<float> LinearChirp(int frames,
+                                 const std::vector<double>& start_frequencies,
+                                 const std::vector<double>& end_frequencies) {
   DCHECK_EQ(start_frequencies.size(), end_frequencies.size());
-  std::vector<float> chirp(frames * start_frequencies.size());
+  AlignedBuffer<float> chirp(frames * start_frequencies.size());
   for (size_t ch = 0; ch < start_frequencies.size(); ++ch) {
     double angle = 0.0;
     for (int f = 0; f < frames; ++f) {
@@ -40,11 +47,11 @@ std::vector<float> LinearChirp(int frames,
   return chirp;
 }
 
-std::vector<float> GetStereoChirp(int frames,
-                                  float start_frequency_left,
-                                  float end_frequency_left,
-                                  float start_frequency_right,
-                                  float end_frequency_right) {
+AlignedBuffer<float> GetStereoChirp(int frames,
+                                    float start_frequency_left,
+                                    float end_frequency_left,
+                                    float start_frequency_right,
+                                    float end_frequency_right) {
   std::vector<double> start_frequencies(2);
   std::vector<double> end_frequencies(2);
   start_frequencies[0] = start_frequency_left;
@@ -62,18 +69,18 @@ void TestDelay(AudioPostProcessor2* pp,
 
   const int num_output_channels = pp->NumOutputChannels();
   const int test_size_frames = kBufSizeFrames * 100;
-  std::vector<float> data_in = LinearChirp(
+  AlignedBuffer<float> data_in = LinearChirp(
       test_size_frames, std::vector<double>(num_input_channels, 0.0),
       std::vector<double>(num_input_channels, 1.0));
 
-  const std::vector<float> data_copy = data_in;
-  std::vector<float> data_out(data_in.size());
+  AlignedBuffer<float> data_copy = data_in;
+  AlignedBuffer<float> data_out(data_in.size());
   int expected_delay;
   for (int i = 0; i < test_size_frames; i += kBufSizeFrames) {
     expected_delay = pp->ProcessFrames(&data_in[i * num_input_channels],
                                        kBufSizeFrames, 1.0, 0.0);
     std::memcpy(&data_out[i * num_output_channels], pp->GetOutputBuffer(),
-                kBufSizeFrames * sizeof(data_out[0]));
+                kBufSizeFrames * num_output_channels * sizeof(data_out[0]));
   }
 
   double max_sum = 0;
@@ -109,13 +116,17 @@ void TestRingingTime(AudioPostProcessor2* pp,
   const int kNumFrames = GetMaximumFrames(sample_rate);
   const int kSinFreq = 2000;
   int ringing_time_frames = pp->GetRingingTimeInFrames();
-  std::vector<float> data;
 
   // Send a second of data to excite the filter.
   for (int i = 0; i < sample_rate; i += kNumFrames) {
-    data = GetSineData(kNumFrames, kSinFreq, sample_rate, num_input_channels);
+    AlignedBuffer<float> data =
+        GetSineData(kNumFrames, kSinFreq, sample_rate, num_input_channels);
     pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
   }
+  AlignedBuffer<float> data =
+      GetSineData(kNumFrames, kSinFreq, sample_rate, num_input_channels);
+  pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
+
   // Compute the amplitude of the last buffer
   float original_amplitude =
       SineAmplitude(pp->GetOutputBuffer(), num_input_channels * kNumFrames);
@@ -159,9 +170,9 @@ void TestPassthrough(AudioPostProcessor2* pp,
   const int kNumFrames = GetMaximumFrames(sample_rate);
   const int kSinFreq = 2000;
 
-  std::vector<float> data =
+  AlignedBuffer<float> data =
       GetSineData(kNumFrames, kSinFreq, sample_rate, num_input_channels);
-  std::vector<float> expected = data;
+  AlignedBuffer<float> expected(data);
 
   int delay_frames = pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
   int delayed_frames = 0;
@@ -186,6 +197,34 @@ void TestPassthrough(AudioPostProcessor2* pp,
 
   CheckArraysEqual(expected.data(), output_data + delay_samples,
                    data.size() - delay_samples);
+}
+
+void AudioProcessorBenchmark(AudioPostProcessor2* pp,
+                             int sample_rate,
+                             int num_input_channels) {
+  int test_size_frames = kTestDurationSec * sample_rate;
+  // Make test_size multiple of kBlockSizeFrames and calculate effective
+  // duration.
+  test_size_frames -= test_size_frames % kBlockSizeFrames;
+  float effective_duration = static_cast<float>(test_size_frames) / sample_rate;
+  AlignedBuffer<float> data_in = LinearChirp(
+      test_size_frames, std::vector<double>(num_input_channels, 0.0),
+      std::vector<double>(num_input_channels, 1.0));
+  clock_t start_clock = clock();
+  for (int i = 0; i < test_size_frames; i += kBlockSizeFrames * kNumChannels) {
+    pp->ProcessFrames(&data_in[i], kBlockSizeFrames, 1.0, 0.0);
+  }
+  clock_t stop_clock = clock();
+  LOG(INFO) << "At " << sample_rate
+            << " frames per second CPU usage: " << std::defaultfloat
+            << 100.0 * (stop_clock - start_clock) /
+                   (CLOCKS_PER_SEC * effective_duration)
+            << "%";
+}
+
+void AudioProcessorBenchmark(AudioPostProcessor* pp, int sample_rate) {
+  AudioPostProcessorWrapper wrapper(pp, kNumChannels);
+  AudioProcessorBenchmark(&wrapper, sample_rate, kNumChannels);
 }
 
 int GetMaximumFrames(int sample_rate) {
@@ -236,15 +275,15 @@ float SineAmplitude(const float* data, int num_frames) {
   return std::sqrt(power / num_frames) * sqrt(2);
 }
 
-std::vector<float> GetSineData(int frames,
-                               float frequency,
-                               int sample_rate,
-                               int num_channels) {
-  std::vector<float> sine(frames * num_channels);
+AlignedBuffer<float> GetSineData(int frames,
+                                 float frequency,
+                                 int sample_rate,
+                                 int num_channels) {
+  AlignedBuffer<float> sine(frames * num_channels);
   for (int f = 0; f < frames; ++f) {
     for (int ch = 0; ch < num_channels; ++ch) {
       // Offset by a little so that first value is non-zero
-      sine[f + ch * num_channels] =
+      sine[f * num_channels + ch] =
           sin(static_cast<double>(f + ch) * frequency * 2 * M_PI / sample_rate);
     }
   }
