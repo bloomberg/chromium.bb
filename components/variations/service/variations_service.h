@@ -128,6 +128,12 @@ class VariationsService
   // empty if it is not available.
   std::string GetLatestCountry() const;
 
+  // Ensures the locale that was used for evaluating variations matches the
+  // passed |locale|. This is used to ensure that the locale determined after
+  // loading the resource bundle (which is passed here) corresponds to what
+  // was used for variations during an earlier stage of start up.
+  void EnsureLocaleEquals(const std::string& locale);
+
   // Exposed for testing.
   static std::string GetDefaultVariationsServerURLForTesting();
 

@@ -100,6 +100,9 @@ class VariationsFieldTrialCreator {
   // Returns whether the map of the cached UI strings to override is empty.
   bool IsOverrideResourceMapEmpty();
 
+  // Returns the locale that was used for evaluating trials.
+  const std::string& application_locale() const { return application_locale_; }
+
   // Returns the short hardware class value used to evaluate variations hardware
   // class filters. Only implemented on CrOS - returns empty string on other
   // platforms.

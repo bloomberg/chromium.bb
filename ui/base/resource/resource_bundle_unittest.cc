@@ -176,27 +176,31 @@ TEST_F(ResourceBundleTest, DelegateGetPathForResourcePack) {
 }
 
 TEST_F(ResourceBundleTest, DelegateGetPathForLocalePack) {
+  ResourceBundle::CleanupSharedInstance();
+
   MockResourceBundleDelegate delegate;
-  ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
+  ResourceBundle::InitSharedInstance(&delegate);
 
   std::string locale = "en-US";
 
   // Cancel the load.
-  EXPECT_CALL(delegate, GetPathForLocalePack(_, locale))
-      .Times(2)
+  EXPECT_CALL(delegate, GetPathForLocalePack(_, _))
       .WillRepeatedly(Return(base::FilePath()))
       .RetiresOnSaturation();
 
-  EXPECT_FALSE(resource_bundle->LocaleDataPakExists(locale));
-  EXPECT_EQ("", resource_bundle->LoadLocaleResources(locale));
+  EXPECT_FALSE(ResourceBundle::LocaleDataPakExists(locale));
+  EXPECT_EQ("",
+            ResourceBundle::GetSharedInstance().LoadLocaleResources(locale));
 
   // Allow the load to proceed.
-  EXPECT_CALL(delegate, GetPathForLocalePack(_, locale))
-      .Times(2)
+  EXPECT_CALL(delegate, GetPathForLocalePack(_, _))
       .WillRepeatedly(ReturnArg<0>());
 
-  EXPECT_TRUE(resource_bundle->LocaleDataPakExists(locale));
-  EXPECT_EQ(locale, resource_bundle->LoadLocaleResources(locale));
+  EXPECT_TRUE(ResourceBundle::LocaleDataPakExists(locale));
+  EXPECT_EQ(locale,
+            ResourceBundle::GetSharedInstance().LoadLocaleResources(locale));
+
+  ResourceBundle::CleanupSharedInstance();
 }
 
 TEST_F(ResourceBundleTest, DelegateGetImageNamed) {
@@ -336,11 +340,9 @@ TEST_F(ResourceBundleTest, DelegateGetLocalizedStringWithOverride) {
 }
 
 TEST_F(ResourceBundleTest, LocaleDataPakExists) {
-  ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
-
   // Check that ResourceBundle::LocaleDataPakExists returns the correct results.
-  EXPECT_TRUE(resource_bundle->LocaleDataPakExists("en-US"));
-  EXPECT_FALSE(resource_bundle->LocaleDataPakExists("not_a_real_locale"));
+  EXPECT_TRUE(ResourceBundle::LocaleDataPakExists("en-US"));
+  EXPECT_FALSE(ResourceBundle::LocaleDataPakExists("not_a_real_locale"));
 }
 
 class ResourceBundleImageTest : public ResourceBundleTest {
