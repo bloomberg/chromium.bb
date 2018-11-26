@@ -571,7 +571,6 @@ void WindowSelectorItem::Shutdown() {
 void WindowSelectorItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
   RestackItemWidget();
-  UpdateHeaderLayout(HeaderFadeInMode::kEnter, OVERVIEW_ANIMATION_NONE);
 }
 
 void WindowSelectorItem::SlideWindowIn() {
@@ -660,9 +659,7 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   // If |target_bounds_| is empty, this is the first update. Let
   // UpdateHeaderLayout know, as we do not want |item_widget_| to be animated
   // with the window.
-  HeaderFadeInMode mode = target_bounds_.IsEmpty()
-                              ? HeaderFadeInMode::kFirstUpdate
-                              : HeaderFadeInMode::kUpdate;
+  const bool is_first_update = target_bounds_.IsEmpty();
   target_bounds_ = target_bounds;
 
   gfx::Rect inset_bounds(target_bounds);
@@ -671,16 +668,14 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   // Do not animate if entering when the window is minimized, as it will be
   // faded in. We still want to animate if the position is changed after
   // entering.
-  if (wm::GetWindowState(GetWindow())->IsMinimized() &&
-      mode == HeaderFadeInMode::kFirstUpdate) {
+  if (wm::GetWindowState(GetWindow())->IsMinimized() && is_first_update)
     new_animation_type = OVERVIEW_ANIMATION_NONE;
-  }
-
-  SetItemBounds(inset_bounds, new_animation_type);
 
   // SetItemBounds is called before UpdateHeaderLayout so the header can
   // properly use the updated windows bounds.
-  UpdateHeaderLayout(mode, new_animation_type);
+  SetItemBounds(inset_bounds, new_animation_type);
+  UpdateHeaderLayout(is_first_update ? OVERVIEW_ANIMATION_NONE
+                                     : new_animation_type);
 
   // Shadow is normally set after an animation is finished. In the case of no
   // animations, manually set the shadow. Shadow relies on both the window
@@ -1184,7 +1179,6 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
 }
 
 void WindowSelectorItem::UpdateHeaderLayout(
-    HeaderFadeInMode mode,
     OverviewAnimationType animation_type) {
   gfx::Rect transformed_window_bounds =
       transform_window_.window_selector_bounds().value_or(
@@ -1195,17 +1189,11 @@ void WindowSelectorItem::UpdateHeaderLayout(
   label_rect.set_width(transformed_window_bounds.width());
   // For tabbed windows the initial bounds of the caption are set such that it
   // appears to be "growing" up from the window content area.
-  label_rect.set_y(
-      (mode != HeaderFadeInMode::kEnter || transform_window_.GetTopInset())
-          ? -label_rect.height()
-          : 0);
+  label_rect.set_y(-label_rect.height());
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();
-  // For the first update, place the widget at its destination.
-  ScopedOverviewAnimationSettings animation_settings(
-      mode == HeaderFadeInMode::kFirstUpdate ? OVERVIEW_ANIMATION_NONE
-                                             : animation_type,
-      widget_window);
+  ScopedOverviewAnimationSettings animation_settings(animation_type,
+                                                     widget_window);
 
   // Create a start animation observer if this is an enter overview layout
   // animation.
@@ -1219,10 +1207,8 @@ void WindowSelectorItem::UpdateHeaderLayout(
   // |widget_window| covers both the transformed window and the header
   // as well as the gap between the windows to prevent events from reaching
   // the window including its sizing borders.
-  if (mode != HeaderFadeInMode::kEnter) {
     label_rect.set_height(close_button_->GetPreferredSize().height() +
                           transformed_window_bounds.height());
-  }
   label_rect.Inset(-kWindowSelectorMargin, -kWindowSelectorMargin);
   widget_window->SetBounds(label_rect);
   gfx::Transform label_transform;

@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/window_selector.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
@@ -31,8 +32,6 @@ gfx::Point CalculateDragPoint(const WindowResizer& resizer,
   return location;
 }
 
-// TODO(sammiequan): consolidate this and TestOverviewObserver
-// in window_selector_unittest.
 class TestShellObserver : public ShellObserver {
  public:
   enum AnimationState {
@@ -41,15 +40,26 @@ class TestShellObserver : public ShellObserver {
     CANCELED,
   };
 
-  TestShellObserver() { Shell::Get()->AddShellObserver(this); }
+  explicit TestShellObserver(bool should_monitor_animation_state)
+      : should_monitor_animation_state_(should_monitor_animation_state) {
+    Shell::Get()->AddShellObserver(this);
+  }
   ~TestShellObserver() override { Shell::Get()->RemoveShellObserver(this); }
 
   // ShellObserver:
+  void OnOverviewModeStarting() override { UpdateLastAnimationWasSlide(); }
+  void OnOverviewModeEnding() override { UpdateLastAnimationWasSlide(); }
   void OnOverviewModeStartingAnimationComplete(bool canceled) override {
+    if (!should_monitor_animation_state_)
+      return;
+
     EXPECT_EQ(UNKNOWN, starting_animation_state_);
     starting_animation_state_ = canceled ? CANCELED : COMPLETED;
   }
   void OnOverviewModeEndingAnimationComplete(bool canceled) override {
+    if (!should_monitor_animation_state_)
+      return;
+
     EXPECT_EQ(UNKNOWN, ending_animation_state_);
     ending_animation_state_ = canceled ? CANCELED : COMPLETED;
   }
@@ -67,10 +77,25 @@ class TestShellObserver : public ShellObserver {
   AnimationState ending_animation_state() const {
     return ending_animation_state_;
   }
+  bool last_animation_was_slide() const { return last_animation_was_slide_; }
 
  private:
+  void UpdateLastAnimationWasSlide() {
+    WindowSelector* selector =
+        Shell::Get()->window_selector_controller()->window_selector();
+    DCHECK(selector);
+    last_animation_was_slide_ =
+        selector->enter_exit_overview_type() ==
+        WindowSelector::EnterExitOverviewType::kWindowsMinimized;
+  }
+
   AnimationState starting_animation_state_ = UNKNOWN;
   AnimationState ending_animation_state_ = UNKNOWN;
+  bool last_animation_was_slide_ = false;
+  // If false, skips the checks in OnOverviewMode Starting/Ending
+  // AnimationComplete.
+  bool should_monitor_animation_state_;
+
   DISALLOW_COPY_AND_ASSIGN(TestShellObserver);
 };
 
@@ -97,7 +122,7 @@ TEST_F(WindowSelectorControllerTest,
 TEST_F(WindowSelectorControllerTest, AnimationCallbacks) {
   ui::ScopedAnimationDurationScaleMode non_zero(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-  TestShellObserver observer;
+  TestShellObserver observer(/*should_monitor_animation_state = */ true);
   // Enter without windows.
   Shell::Get()->window_selector_controller()->ToggleOverview();
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
@@ -145,6 +170,58 @@ TEST_F(WindowSelectorControllerTest, AnimationCallbacks) {
   wm::ActivateWindow(window1.get());
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::CANCELED, observer.starting_animation_state());
+}
+
+// Tests the slide animation for overview is never used in clamshell.
+TEST_F(WindowSelectorControllerTest, OverviewEnterExitAnimationClamshell) {
+  TestShellObserver observer(/*should_monitor_animation_state = */ false);
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(bounds));
+
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(observer.last_animation_was_slide());
+
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(observer.last_animation_was_slide());
+
+  // Even with all window minimized, there should not be a slide animation.
+  ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  wm::GetWindowState(window.get())->Minimize();
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(observer.last_animation_was_slide());
+}
+
+// Tests the slide animation for overview is used in tablet if all windows
+// are minimized, and that if overview is exited from the home launcher all
+// windows are minimized.
+TEST_F(WindowSelectorControllerTest, OverviewEnterExitAnimationTablet) {
+  TestShellObserver observer(/*should_monitor_animation_state = */ false);
+
+  // Ensure calls to EnableTabletModeWindowManager complete.
+  base::RunLoop().RunUntilIdle();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  base::RunLoop().RunUntilIdle();
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(bounds));
+
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(observer.last_animation_was_slide());
+
+  // Exit to home launcher. Slide animation should be used, and all windows
+  // should be minimized.
+  Shell::Get()->window_selector_controller()->ToggleOverview(
+      WindowSelector::EnterExitOverviewType::kWindowsMinimized);
+  EXPECT_TRUE(observer.last_animation_was_slide());
+  ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMinimized());
+
+  // All windows are minimized, so we should use the slide animation.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_TRUE(observer.last_animation_was_slide());
 }
 
 class OverviewVirtualKeyboardTest : public WindowSelectorControllerTest {
