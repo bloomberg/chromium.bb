@@ -267,7 +267,7 @@
   DCHECK(self.consumer);
   [self updateConsumerForWebState:self.webState];
 
-  [self.consumer setIsNTP:IsVisibleUrlNewTabPage(self.webState)];
+  [self.consumer setIsNTP:IsVisibleURLNewTabPage(self.webState)];
   [self.consumer setLoadingState:self.webState->IsLoading()];
   [self updateBookmarksForWebState:self.webState];
   [self updateShareMenuForWebState:self.webState];

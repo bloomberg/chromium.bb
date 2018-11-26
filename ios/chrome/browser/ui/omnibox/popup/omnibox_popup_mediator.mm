@@ -61,7 +61,7 @@
 
   BOOL shortcutsEnabled = base::FeatureList::IsEnabled(
       omnibox::kOmniboxPopupShortcutIconsInZeroState);
-  BOOL isNTP = IsVisibleUrlNewTabPage(self.webStateList->GetActiveWebState());
+  BOOL isNTP = IsVisibleURLNewTabPage(self.webStateList->GetActiveWebState());
 
   if (!self.hasResults && (!shortcutsEnabled || isNTP)) {
     [self.presenter animateCollapse];

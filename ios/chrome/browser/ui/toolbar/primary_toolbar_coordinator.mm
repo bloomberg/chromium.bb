@@ -174,7 +174,7 @@
 - (void)onFakeboxBlur {
   // Hide the toolbar if the NTP is currently displayed.
   web::WebState* webState = self.webStateList->GetActiveWebState();
-  if (webState && IsVisibleUrlNewTabPage(webState)) {
+  if (webState && IsVisibleURLNewTabPage(webState)) {
     self.viewController.view.hidden = IsSplitToolbarMode();
   }
 }
@@ -201,7 +201,7 @@
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
   [super updateToolbarForSideSwipeSnapshot:webState];
 
-  BOOL isNTP = IsVisibleUrlNewTabPage(webState);
+  BOOL isNTP = IsVisibleURLNewTabPage(webState);
 
   // Don't do anything for a live non-ntp tab.
   if (webState == self.webStateList->GetActiveWebState() && !isNTP) {

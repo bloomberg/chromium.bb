@@ -124,7 +124,7 @@
 }
 
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
-  BOOL isNTP = IsVisibleUrlNewTabPage(webState);
+  BOOL isNTP = IsVisibleURLNewTabPage(webState);
 
   [self.mediator updateConsumerForWebState:webState];
   [self.viewController updateForSideSwipeSnapshotOnNTP:isNTP];

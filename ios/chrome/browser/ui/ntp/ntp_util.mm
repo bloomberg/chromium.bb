@@ -12,8 +12,12 @@
 #error "This file requires ARC support."
 #endif
 
-bool IsVisibleUrlNewTabPage(web::WebState* web_state) {
+bool IsURLNewTabPage(const GURL& url) {
+  return url.GetOrigin() == kChromeUINewTabURL;
+}
+
+bool IsVisibleURLNewTabPage(web::WebState* web_state) {
   if (!web_state)
     return false;
-  return web_state->GetVisibleURL().GetOrigin() == kChromeUINewTabURL;
+  return IsURLNewTabPage(web_state->GetVisibleURL());
 }

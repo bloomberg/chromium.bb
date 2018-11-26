@@ -2570,7 +2570,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     // Hide the toolbar when displaying content suggestions without the tab
     // strip, without the focused omnibox, and for UI Refresh, only when in
     // split toolbar mode.
-    hideToolbar = IsVisibleUrlNewTabPage(tab.webState) && !_isOffTheRecord &&
+    hideToolbar = IsVisibleURLNewTabPage(tab.webState) && !_isOffTheRecord &&
                   ![self.primaryToolbarCoordinator isOmniboxFirstResponder] &&
                   ![self.primaryToolbarCoordinator showingOmniboxPopup] &&
                   ![self canShowTabStrip] && IsSplitToolbarMode(self);
@@ -3744,7 +3744,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (CGFloat)nativeContentHeaderHeightForWebState:(web::WebState*)webState {
-  if (IsVisibleUrlNewTabPage(webState) && ![self canShowTabStrip]) {
+  if (IsVisibleURLNewTabPage(webState) && ![self canShowTabStrip]) {
     if (self.usesFullscreenContainer)
       return 0;
     // Also subtract the top safe area so the view will appear as full screen.
@@ -3770,7 +3770,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (CGFloat)collapsedTopToolbarHeight {
   if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
-      IsVisibleUrlNewTabPage(self.currentWebState)) {
+      IsVisibleURLNewTabPage(self.currentWebState)) {
     return 0;
   }
   CGFloat collapsedToolbarHeight =
@@ -3786,7 +3786,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (CGFloat)expandedTopToolbarHeight {
   if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
-      IsVisibleUrlNewTabPage(self.currentWebState)) {
+      IsVisibleURLNewTabPage(self.currentWebState)) {
     return 0;
   }
   return [self primaryToolbarHeightWithInset] +
@@ -3796,7 +3796,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (CGFloat)bottomToolbarHeight {
   if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
-      IsVisibleUrlNewTabPage(self.currentWebState)) {
+      IsVisibleURLNewTabPage(self.currentWebState)) {
     return 0;
   }
   return [self secondaryToolbarHeightWithInset];
@@ -4301,7 +4301,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   [self.sideSwipeController setEnabled:NO];
 
   web::WebState* webState = self.tabModel.currentTab.webState;
-  if (!IsVisibleUrlNewTabPage(webState)) {
+  if (!IsVisibleURLNewTabPage(webState)) {
     // Tapping on web content area should dismiss the keyboard. Tapping on NTP
     // gesture should propagate to NTP view.
     [self.view insertSubview:self.typingShield aboveSubview:self.contentArea];
