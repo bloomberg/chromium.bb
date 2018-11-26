@@ -2375,8 +2375,8 @@
   },
   {
     "name": "mash",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "mustash-team@google.com" ],
+    "expiry_milestone": 79
   },
   {
     "name": "material-design-ink-drop-animation-speed",
@@ -2930,13 +2930,13 @@
   },
   {
     "name": "show-taps",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//ash/OWNERS" ],
+    "expiry_milestone": -1
   },
   {
     "name": "show-touch-hud",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//ash/OWNERS" ],
+    "expiry_milestone": -1
   },
   {
     "name": "silent-debugger-extension-api",
@@ -2960,7 +2960,7 @@
   },
   {
     "name": "single-process-mash",
-    // "owners": [ "your-team" ],
+    "owners": [ "mustash-team@google.com" ],
     "expiry_milestone": 76
   },
   {
