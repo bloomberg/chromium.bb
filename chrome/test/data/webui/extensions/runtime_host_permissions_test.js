@@ -167,12 +167,15 @@ suite('RuntimeHostPermissions', function() {
 
       // Simulate the new host being added.
       const updatedPermissions = {
+        simplePermissions: ['permission 1', 'permission 2'],
         hostAccess: HostAccess.ON_SPECIFIC_SITES,
-        hasAllHosts: true,
-        hosts: [
-          {host: 'https://example.com/*', granted: true},
-          {host: 'https://*/*', granted: false},
-        ],
+        specificSiteControls: {
+          hasAllHosts: true,
+          hosts: [
+            {host: 'https://example.com/*', granted: true},
+            {host: 'https://*/*', granted: false},
+          ],
+        },
       };
       element.permissions = updatedPermissions;
       Polymer.dom.flush();
