@@ -57,13 +57,20 @@ public class FeedOfflineBridge
 
     @Override
     public Long getOfflineIdIfPageIsOfflined(String url) {
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge == 0) return 0L;
+
         return (Long) nativeGetOfflineId(mNativeBridge, url);
     }
 
     @Override
     public void getOfflineStatus(
             List<String> urlsToRetrieve, Consumer<List<String>> urlListConsumer) {
-        assert mNativeBridge != 0;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge == 0) return;
+
         String[] urlsArray = urlsToRetrieve.toArray(new String[urlsToRetrieve.size()]);
         nativeGetOfflineStatus(mNativeBridge, urlsArray,
                 (String[] urlsAsArray) -> urlListConsumer.accept(Arrays.asList(urlsAsArray)));
@@ -71,13 +78,19 @@ public class FeedOfflineBridge
 
     @Override
     public void addOfflineStatusListener(OfflineStatusListener offlineStatusListener) {
-        assert mNativeBridge != 0;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge == 0) return;
+
         mListeners.add(offlineStatusListener);
     }
 
     @Override
     public void removeOfflineStatusListener(OfflineStatusListener offlineStatusListener) {
-        assert mNativeBridge != 0;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge == 0) return;
+
         mListeners.remove(offlineStatusListener);
         if (mListeners.isEmpty()) {
             nativeOnNoListeners(mNativeBridge);
@@ -86,6 +99,10 @@ public class FeedOfflineBridge
 
     @Override
     public void onContentRemoved(List<ContentRemoval> contentRemoved) {
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge == 0) return;
+
         List<String> userDrivenRemovals = takeUserDriveRemovalsOnly(contentRemoved);
         if (!userDrivenRemovals.isEmpty()) {
             nativeOnContentRemoved(mNativeBridge,
@@ -95,6 +112,10 @@ public class FeedOfflineBridge
 
     @Override
     public void onNewContentReceived(boolean isNewRefresh, long contentCreationDateTimeMs) {
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge == 0) return;
+
         nativeOnNewContentReceived(mNativeBridge);
     }
 
@@ -124,6 +145,10 @@ public class FeedOfflineBridge
     @CalledByNative
     private void getKnownContent() {
         mKnownContentApi.getKnownContent((List<ContentMetadata> metadataList) -> {
+            // Bridge could have been destroyed for policy when this is called.
+            // See https://crbug.com/901414.
+            if (mNativeBridge == 0) return;
+
             for (ContentMetadata metadata : metadataList) {
                 long time_published_ms = TimeUnit.SECONDS.toMillis(metadata.getTimePublished());
                 nativeAppendContentMetadata(mNativeBridge, metadata.getUrl(), metadata.getTitle(),

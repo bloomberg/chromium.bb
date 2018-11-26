@@ -42,14 +42,20 @@ public class FeedNetworkBridge implements NetworkClient {
 
     @Override
     public void send(HttpRequest request, Consumer<HttpResponse> responseConsumer) {
-        assert mNativeBridge != 0;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge == 0) return;
+
         nativeSendNetworkRequest(mNativeBridge, request.getUri().toString(), request.getMethod(),
                 request.getBody(), result -> responseConsumer.accept(result));
     }
 
     @Override
     public void close() {
-        assert mNativeBridge != 0;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge == 0) return;
+
         nativeCancelRequests(mNativeBridge);
     }
 

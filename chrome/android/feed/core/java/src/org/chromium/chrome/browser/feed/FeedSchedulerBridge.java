@@ -95,13 +95,19 @@ public class FeedSchedulerBridge implements FeedScheduler {
 
     @Override
     public void onReceiveNewContent(long contentCreationDateTimeMs) {
-        assert mNativeBridge != 0;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge != 0) return;
+
         nativeOnReceiveNewContent(mNativeBridge, contentCreationDateTimeMs);
     }
 
     @Override
     public void onRequestError(int networkResponseCode) {
-        assert mNativeBridge != 0;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge != 0) return;
+
         nativeOnRequestError(mNativeBridge, networkResponseCode);
     }
 
