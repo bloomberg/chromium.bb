@@ -84,7 +84,7 @@ public class BrowsingModeBottomToolbarViewBinder
                     .setBackgroundColor(model.get(BrowsingModeBottomToolbarModel.PRIMARY_COLOR));
         } else if (BrowsingModeBottomToolbarModel.IS_VISIBLE == propertyKey) {
             final boolean isVisible = model.get(BrowsingModeBottomToolbarModel.IS_VISIBLE);
-            view.toolbarRoot.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+            view.toolbarRoot.setVisibility(isVisible ? View.VISIBLE : View.GONE);
         } else {
             assert false : "Unhandled property detected in BrowsingModeBottomToolbarViewBinder!";
         }
