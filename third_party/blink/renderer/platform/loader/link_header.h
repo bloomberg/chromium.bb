@@ -23,8 +23,8 @@ class LinkHeader {
   const String& CrossOrigin() const { return cross_origin_; }
   const String& Nonce() const { return nonce_; }
   const String& Integrity() const { return integrity_; }
-  const String& Srcset() const { return srcset_; }
-  const String& Imgsizes() const { return imgsizes_; }
+  const String& ImageSrcset() const { return image_srcset_; }
+  const String& ImageSizes() const { return image_sizes_; }
   bool Valid() const { return is_valid_; }
 
   enum LinkParameterName {
@@ -41,8 +41,8 @@ class LinkHeader {
     kLinkParameterAs,
     kLinkParameterNonce,
     kLinkParameterIntegrity,
-    kLinkParameterSrcset,
-    kLinkParameterImgsizes,
+    kLinkParameterImageSrcset,
+    kLinkParameterImageSizes,
   };
 
  private:
@@ -60,8 +60,8 @@ class LinkHeader {
   String cross_origin_;
   String nonce_;
   String integrity_;
-  String srcset_;
-  String imgsizes_;
+  String image_srcset_;
+  String image_sizes_;
   bool is_valid_;
 };
 

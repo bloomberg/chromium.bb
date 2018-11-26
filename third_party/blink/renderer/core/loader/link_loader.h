@@ -65,8 +65,8 @@ struct LinkLoadParameters {
                      const String& importance,
                      const ReferrerPolicy& referrer_policy,
                      const KURL& href,
-                     const String& srcset,
-                     const String& sizes)
+                     const String& image_srcset,
+                     const String& image_sizes)
       : rel(rel),
         cross_origin(cross_origin),
         type(type),
@@ -77,8 +77,8 @@ struct LinkLoadParameters {
         importance(importance),
         referrer_policy(referrer_policy),
         href(href),
-        srcset(srcset),
-        sizes(sizes) {}
+        image_srcset(image_srcset),
+        image_sizes(image_sizes) {}
   LinkLoadParameters(const LinkHeader&, const KURL& base_url);
 
   LinkRelAttribute rel;
@@ -91,8 +91,8 @@ struct LinkLoadParameters {
   String importance;
   ReferrerPolicy referrer_policy;
   KURL href;
-  String srcset;
-  String sizes;
+  String image_srcset;
+  String image_sizes;
 };
 
 // The LinkLoader can load link rel types icon, dns-prefetch, prefetch, and

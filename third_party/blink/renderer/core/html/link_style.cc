@@ -327,8 +327,8 @@ void LinkStyle::Process() {
       owner_->nonce(), owner_->IntegrityValue(),
       owner_->ImportanceValue().LowerASCII(), owner_->GetReferrerPolicy(),
       owner_->GetNonEmptyURLAttribute(kHrefAttr),
-      owner_->FastGetAttribute(kSrcsetAttr),
-      owner_->FastGetAttribute(kImgsizesAttr));
+      owner_->FastGetAttribute(kImagesrcsetAttr),
+      owner_->FastGetAttribute(kImagesizesAttr));
 
   WTF::TextEncoding charset = GetCharset();
 

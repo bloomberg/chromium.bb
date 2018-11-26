@@ -379,15 +379,15 @@ INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadNonceTest,
                         LinkLoaderPreloadNonceTest,
                         testing::ValuesIn(kPreloadNonceTestParams));
 
-struct PreloadSrcsetTestParams {
+struct PreloadImageSrcsetTestParams {
   const char* href;
-  const char* srcset;
-  const char* sizes;
+  const char* image_srcset;
+  const char* image_sizes;
   float scale_factor;
   const char* expected_url;
 };
 
-constexpr PreloadSrcsetTestParams kPreloadSrcsetTestParams[] = {
+constexpr PreloadImageSrcsetTestParams kPreloadImageSrcsetTestParams[] = {
     {"http://example.test/cat.gif",
      "http://example.test/cat1x.gif 1x, http://example.test/cat2x.gif 2x",
      nullptr, 1.0, "http://example.test/cat1x.gif"},
@@ -405,11 +405,11 @@ constexpr PreloadSrcsetTestParams kPreloadSrcsetTestParams[] = {
      "http://example.test/cat200.gif"},
 };
 
-class LinkLoaderPreloadSrcsetTest
+class LinkLoaderPreloadImageSrcsetTest
     : public LinkLoaderPreloadTestBase,
-      public testing::WithParamInterface<PreloadSrcsetTestParams> {};
+      public testing::WithParamInterface<PreloadImageSrcsetTestParams> {};
 
-TEST_P(LinkLoaderPreloadSrcsetTest, Preload) {
+TEST_P(LinkLoaderPreloadImageSrcsetTest, Preload) {
   const auto& test_case = GetParam();
   dummy_page_holder_->GetDocument().SetBaseURLOverride(
       KURL("http://example.test/"));
@@ -418,16 +418,17 @@ TEST_P(LinkLoaderPreloadSrcsetTest, Preload) {
   LinkLoadParameters params(
       LinkRelAttribute("preload"), kCrossOriginAttributeNotSet, "image/gif",
       "image", String(), String(), String(), String(), kReferrerPolicyDefault,
-      KURL(NullURL(), test_case.href), test_case.srcset, test_case.sizes);
+      KURL(NullURL(), test_case.href), test_case.image_srcset,
+      test_case.image_sizes);
   Expectations expectations = {
       ResourceLoadPriority::kLow, mojom::RequestContextType::IMAGE, true,
       KURL(NullURL(), test_case.expected_url), kReferrerPolicyDefault};
   TestPreload(params, expectations);
 }
 
-INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadSrcsetTest,
-                        LinkLoaderPreloadSrcsetTest,
-                        testing::ValuesIn(kPreloadSrcsetTestParams));
+INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadImageSrcsetTest,
+                        LinkLoaderPreloadImageSrcsetTest,
+                        testing::ValuesIn(kPreloadImageSrcsetTestParams));
 
 struct ModulePreloadTestParams {
   const char* href;
@@ -507,7 +508,7 @@ TEST_P(LinkLoaderModulePreloadTest, ModulePreload) {
       LinkRelAttribute("modulepreload"), test_case.cross_origin,
       String() /* type */, String() /* as */, String() /* media */,
       test_case.nonce, test_case.integrity, String(), test_case.referrer_policy,
-      href_url, String() /* srcset */, String() /* sizes */);
+      href_url, String() /* image_srcset */, String() /* image_sizes */);
   loader->LoadLink(params, dummy_page_holder->GetDocument(),
                    NetworkHintsMock());
   ASSERT_EQ(test_case.expecting_load, modulator->fetched());
@@ -548,11 +549,11 @@ TEST(LinkLoaderTest, Prefetch) {
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     KURL href_url = KURL(NullURL(), test_case.href);
     url_test_helpers::RegisterMockedErrorURLLoad(href_url);
-    LinkLoadParameters params(LinkRelAttribute("prefetch"),
-                              kCrossOriginAttributeNotSet, test_case.type, "",
-                              test_case.media, "", "", String(),
-                              test_case.referrer_policy, href_url,
-                              String() /* srcset */, String() /* sizes */);
+    LinkLoadParameters params(
+        LinkRelAttribute("prefetch"), kCrossOriginAttributeNotSet,
+        test_case.type, "", test_case.media, "", "", String(),
+        test_case.referrer_policy, href_url, String() /* image_srcset */,
+        String() /* image_sizes */);
     loader->LoadLink(params, dummy_page_holder->GetDocument(),
                      NetworkHintsMock());
     ASSERT_TRUE(dummy_page_holder->GetDocument().Fetcher());
@@ -596,11 +597,11 @@ TEST(LinkLoaderTest, DNSPrefetch) {
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     KURL href_url = KURL(KURL(String("http://example.com")), test_case.href);
     NetworkHintsMock network_hints;
-    LinkLoadParameters params(LinkRelAttribute("dns-prefetch"),
-                              kCrossOriginAttributeNotSet, String(), String(),
-                              String(), String(), String(), String(),
-                              kReferrerPolicyDefault, href_url,
-                              String() /* srcset */, String() /* sizes */);
+    LinkLoadParameters params(
+        LinkRelAttribute("dns-prefetch"), kCrossOriginAttributeNotSet, String(),
+        String(), String(), String(), String(), String(),
+        kReferrerPolicyDefault, href_url, String() /* image_srcset */,
+        String() /* image_sizes */);
     loader->LoadLink(params, dummy_page_holder->GetDocument(), network_hints);
     EXPECT_FALSE(network_hints.DidPreconnect());
     EXPECT_EQ(test_case.should_load, network_hints.DidDnsPrefetch());
@@ -632,11 +633,11 @@ TEST(LinkLoaderTest, Preconnect) {
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     KURL href_url = KURL(KURL(String("http://example.com")), test_case.href);
     NetworkHintsMock network_hints;
-    LinkLoadParameters params(LinkRelAttribute("preconnect"),
-                              test_case.cross_origin, String(), String(),
-                              String(), String(), String(), String(),
-                              kReferrerPolicyDefault, href_url,
-                              String() /* srcset */, String() /* sizes */);
+    LinkLoadParameters params(
+        LinkRelAttribute("preconnect"), test_case.cross_origin, String(),
+        String(), String(), String(), String(), String(),
+        kReferrerPolicyDefault, href_url, String() /* image_srcset */,
+        String() /* image_sizes */);
     loader->LoadLink(params, dummy_page_holder->GetDocument(), network_hints);
     EXPECT_EQ(test_case.should_load, network_hints.DidPreconnect());
     EXPECT_EQ(test_case.is_https, network_hints.IsHTTPS());
@@ -655,11 +656,11 @@ TEST(LinkLoaderTest, PreloadAndPrefetch) {
   LinkLoader* loader = LinkLoader::Create(loader_client.Get());
   KURL href_url = KURL(KURL(), "https://www.example.com/");
   url_test_helpers::RegisterMockedErrorURLLoad(href_url);
-  LinkLoadParameters params(LinkRelAttribute("preload prefetch"),
-                            kCrossOriginAttributeNotSet,
-                            "application/javascript", "script", "", "", "",
-                            String(), kReferrerPolicyDefault, href_url,
-                            String() /* srcset */, String() /* sizes */);
+  LinkLoadParameters params(
+      LinkRelAttribute("preload prefetch"), kCrossOriginAttributeNotSet,
+      "application/javascript", "script", "", "", "", String(),
+      kReferrerPolicyDefault, href_url, String() /* image_srcset */,
+      String() /* image_sizes */);
   loader->LoadLink(params, dummy_page_holder->GetDocument(),
                    NetworkHintsMock());
   ASSERT_EQ(1, fetcher->CountPreloads());

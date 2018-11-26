@@ -101,8 +101,8 @@ LinkLoadParameters::LinkLoadParameters(const LinkHeader& header,
       integrity(header.Integrity()),
       referrer_policy(kReferrerPolicyDefault),
       href(KURL(base_url, header.Url())),
-      srcset(header.Srcset()),
-      sizes(header.Imgsizes()) {}
+      image_srcset(header.ImageSrcset()),
+      image_sizes(header.ImageSizes()) {}
 
 class LinkLoader::FinishObserver final
     : public GarbageCollectedFinalized<ResourceFinishObserver>,
@@ -362,14 +362,14 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
 
   MediaValues* media_values = nullptr;
   KURL url;
-  if (resource_type == ResourceType::kImage && !params.srcset.IsEmpty() &&
+  if (resource_type == ResourceType::kImage && !params.image_srcset.IsEmpty() &&
       RuntimeEnabledFeatures::PreloadImageSrcSetEnabled()) {
     media_values = CreateMediaValues(document, viewport_description);
     float source_size =
-        SizesAttributeParser(media_values, params.sizes).length();
+        SizesAttributeParser(media_values, params.image_sizes).length();
     ImageCandidate candidate = BestFitSourceForImageAttributes(
         media_values->DevicePixelRatio(), source_size, params.href,
-        params.srcset);
+        params.image_srcset);
     url = base_url.IsNull() ? document.CompleteURL(candidate.ToString())
                             : KURL(base_url, candidate.ToString());
   } else {

@@ -425,10 +425,10 @@ class TokenPreloadScanner::StartTagScanner {
       integrity_attr_set_ = true;
       SubresourceIntegrity::ParseIntegrityAttribute(
           attribute_value, integrity_features_, integrity_metadata_);
-    } else if (Match(attribute_name, kSrcsetAttr) &&
+    } else if (Match(attribute_name, kImagesrcsetAttr) &&
                srcset_attribute_value_.IsNull()) {
       srcset_attribute_value_ = attribute_value;
-    } else if (Match(attribute_name, kImgsizesAttr) && !source_size_set_) {
+    } else if (Match(attribute_name, kImagesizesAttr) && !source_size_set_) {
       ParseSourceSize(attribute_value);
     } else if (!importance_mode_set_ &&
                Match(attribute_name, kImportanceAttr) &&
