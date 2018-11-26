@@ -3243,13 +3243,11 @@
                         "UIVerticalMargin": "10"
                     },
                     "enable_features": [
-                        "OmniboxBreakWordsAtUnderscores",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxNewAnswerLayout",
                         "OmniboxRichEntitySuggestions",
                         "OmniboxTailSuggestions",
-                        "OmniboxUIExperimentHideSteadyStateUrlScheme",
-                        "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains",
+                        "OmniboxUIExperimentMaxAutocompleteMatches",
                         "ZeroSuggestRedirectToChrome",
                         "ZeroSuggestSwapTitleAndUrl"
                     ]
