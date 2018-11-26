@@ -512,7 +512,7 @@ TEST(ContiguousContainerTest, CapacityInBytesAfterClear) {
 }
 
 TEST(ContiguousContainerTest, Alignment) {
-  const size_t kMaxAlign = WTF_ALIGN_OF(long double);
+  const size_t kMaxAlign = alignof(long double);
   ContiguousContainer<Point2D, kMaxAlign> list(kMaxPointSize);
 
   list.AllocateAndConstruct<Point2D>();

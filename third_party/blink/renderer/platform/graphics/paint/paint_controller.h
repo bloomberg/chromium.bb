@@ -114,7 +114,7 @@ class PLATFORM_EXPORT PaintController {
     static_assert(
         sizeof(DisplayItemClass) <= kMaximumDisplayItemSize,
         "DisplayItem subclass is larger than kMaximumDisplayItemSize.");
-    static_assert(kDisplayItemAlignment % WTF_ALIGN_OF(DisplayItemClass) == 0,
+    static_assert(kDisplayItemAlignment % alignof(DisplayItemClass) == 0,
                   "DisplayItem subclass alignment is not a factor of "
                   "kDisplayItemAlignment.");
 
