@@ -2290,7 +2290,7 @@
   },
   {
     "name": "infinite-session-restore",
-    // "owners": [ "your-team" ],
+    "owners": [ "catan-team@chromium.org" ],
     "expiry_milestone": 76
   },
   {
