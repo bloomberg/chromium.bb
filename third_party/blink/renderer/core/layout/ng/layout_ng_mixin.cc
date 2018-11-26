@@ -186,6 +186,9 @@ void LayoutNGMixin<Base>::AddOutlineRects(
 template <typename Base>
 base::Optional<LayoutUnit> LayoutNGMixin<Base>::FragmentBaseline(
     NGBaselineAlgorithmType type) const {
+  if (Base::ShouldApplyLayoutContainment())
+    return base::nullopt;
+
   if (const NGPhysicalFragment* physical_fragment = CurrentFragment()) {
     FontBaseline baseline_type = Base::StyleRef().GetFontBaseline();
     return ToNGPhysicalBoxFragment(physical_fragment)
