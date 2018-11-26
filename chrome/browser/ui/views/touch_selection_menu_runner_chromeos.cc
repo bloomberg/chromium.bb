@@ -57,32 +57,39 @@ void TouchSelectionMenuRunnerChromeOS::OpenMenu(
     return;
 
   if (base::FeatureList::IsEnabled(arc::kSmartTextSelectionFeature)) {
-    auto* arc_service_manager = arc::ArcServiceManager::Get();
-    if (arc_service_manager) {
-      arc::mojom::IntentHelperInstance* instance = ARC_GET_INSTANCE_FOR_METHOD(
-          arc_service_manager->arc_bridge_service()->intent_helper(),
-          RequestTextSelectionActions);
+    const std::string converted_text =
+        base::UTF16ToUTF8(client->GetSelectedText());
 
-      if (instance) {
-        // aura::WindowTracker is used since the newly created menu may need to
-        // know about the parent window.
-        std::unique_ptr<aura::WindowTracker> tracker =
-            std::make_unique<aura::WindowTracker>();
-        tracker->Add(context);
+    if (!converted_text.empty()) {
+      auto* arc_service_manager = arc::ArcServiceManager::Get();
+      if (arc_service_manager) {
+        arc::mojom::IntentHelperInstance* instance =
+            ARC_GET_INSTANCE_FOR_METHOD(
+                arc_service_manager->arc_bridge_service()->intent_helper(),
+                RequestTextSelectionActions);
 
-        const display::Screen* screen = display::Screen::GetScreen();
-        DCHECK(screen);
+        if (instance) {
+          // aura::WindowTracker is used since the newly created menu may need
+          // to know about the parent window.
+          std::unique_ptr<aura::WindowTracker> tracker =
+              std::make_unique<aura::WindowTracker>();
+          tracker->Add(context);
 
-        // Fetch actions for selected text and then show quick menu.
-        instance->RequestTextSelectionActions(
-            base::UTF16ToUTF8(client->GetSelectedText()),
-            arc::mojom::ScaleFactor(
-                screen->GetDisplayNearestWindow(context).device_scale_factor()),
-            base::BindOnce(&TouchSelectionMenuRunnerChromeOS::
-                               OpenMenuWithTextSelectionAction,
-                           weak_ptr_factory_.GetWeakPtr(), client, anchor_rect,
-                           handle_image_size, std::move(tracker)));
-        return;
+          const display::Screen* screen = display::Screen::GetScreen();
+          DCHECK(screen);
+
+          // Fetch actions for selected text and then show quick menu.
+          instance->RequestTextSelectionActions(
+              converted_text,
+              arc::mojom::ScaleFactor(screen->GetDisplayNearestWindow(context)
+                                          .device_scale_factor()),
+              base::BindOnce(&TouchSelectionMenuRunnerChromeOS::
+                                 OpenMenuWithTextSelectionAction,
+                             weak_ptr_factory_.GetWeakPtr(), client,
+                             anchor_rect, handle_image_size,
+                             std::move(tracker)));
+          return;
+        }
       }
     }
   }

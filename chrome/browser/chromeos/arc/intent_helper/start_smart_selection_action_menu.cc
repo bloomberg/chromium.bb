@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/intent_helper/start_smart_selection_action_menu.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -44,7 +45,8 @@ void StartSmartSelectionActionMenu::InitMenu(
   if (!base::FeatureList::IsEnabled(kSmartTextSelectionFeature))
     return;
 
-  if (params.selection_text.empty())
+  const std::string converted_text = base::UTF16ToUTF8(params.selection_text);
+  if (converted_text.empty())
     return;
 
   auto* arc_service_manager = ArcServiceManager::Get();
@@ -58,8 +60,7 @@ void StartSmartSelectionActionMenu::InitMenu(
 
   base::RecordAction(base::UserMetricsAction("Arc.SmartTextSelection.Request"));
   instance->RequestTextSelectionActions(
-      base::UTF16ToUTF8(params.selection_text),
-      mojom::ScaleFactor(ui::GetSupportedScaleFactors().back()),
+      converted_text, mojom::ScaleFactor(ui::GetSupportedScaleFactors().back()),
       base::BindOnce(&StartSmartSelectionActionMenu::HandleTextSelectionActions,
                      weak_ptr_factory_.GetWeakPtr()));
 
