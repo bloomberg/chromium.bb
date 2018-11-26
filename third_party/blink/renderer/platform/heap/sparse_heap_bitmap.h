@@ -64,7 +64,7 @@ class PLATFORM_EXPORT SparseHeapBitmap {
   // The assumed minimum alignment of the pointers being added. Cannot
   // exceed |log2(allocationGranularity)|; having it be equal to
   // the platform pointer alignment is what's wanted.
-  static const int kPointerAlignmentInBits = WTF_ALIGN_OF(void*) == 8 ? 3 : 2;
+  static const int kPointerAlignmentInBits = alignof(void*) == 8 ? 3 : 2;
   static const size_t kPointerAlignmentMask =
       (0x1u << kPointerAlignmentInBits) - 1;
 
@@ -87,7 +87,7 @@ class PLATFORM_EXPORT SparseHeapBitmap {
     static_assert(kPointerAlignmentMask <= kAllocationMask,
                   "address shift exceeds heap pointer alignment");
     // For now, only recognize 8 and 4.
-    static_assert(WTF_ALIGN_OF(void*) == 8 || WTF_ALIGN_OF(void*) == 4,
+    static_assert(alignof(void*) == 8 || alignof(void*) == 4,
                   "unsupported pointer alignment");
   }
 

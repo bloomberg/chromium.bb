@@ -201,7 +201,7 @@ class ContiguousContainer : public ContiguousContainerBase {
   DerivedElementType& AllocateAndConstruct(Args&&... args) {
     static_assert(WTF::IsSubclass<DerivedElementType, BaseElementType>::value,
                   "Must use subclass of BaseElementType.");
-    static_assert(alignment % WTF_ALIGN_OF(DerivedElementType) == 0,
+    static_assert(alignment % alignof(DerivedElementType) == 0,
                   "Derived type requires stronger alignment.");
     return *new (AlignedAllocate(sizeof(DerivedElementType)))
         DerivedElementType(std::forward<Args>(args)...);

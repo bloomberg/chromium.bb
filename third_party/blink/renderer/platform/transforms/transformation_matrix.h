@@ -531,7 +531,7 @@ class PLATFORM_EXPORT TransformationMatrix {
     // m_matrix can cause this class to require higher than usual alignment.
     // Make sure the allocator handles this.
     DCHECK_EQ((reinterpret_cast<uintptr_t>(this) &
-               (WTF_ALIGN_OF(TransformationMatrix) - 1)),
+               (alignof(TransformationMatrix) - 1)),
               0UL);
 #endif
   }

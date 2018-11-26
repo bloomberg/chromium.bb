@@ -20,8 +20,7 @@ struct PaintChunk;
 // each derived display item; the ideal value is the least common multiple.
 // The validity of kDisplayItemAlignment and kMaximumDisplayItemSize are checked
 // in PaintController::CreateAndAppend().
-static const size_t kDisplayItemAlignment =
-    WTF_ALIGN_OF(ForeignLayerDisplayItem);
+static const size_t kDisplayItemAlignment = alignof(ForeignLayerDisplayItem);
 static const size_t kMaximumDisplayItemSize = sizeof(ForeignLayerDisplayItem);
 
 // A container for a list of display items.
