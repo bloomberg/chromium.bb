@@ -629,6 +629,7 @@ _VALID_OS_MACROS = (
     'OS_BSD',
     'OS_CAT',       # For testing.
     'OS_CHROMEOS',
+    'OS_CYGWIN',    # third_party code.
     'OS_FREEBSD',
     'OS_FUCHSIA',
     'OS_IOS',
