@@ -11,9 +11,11 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/speech/speech_recognizer_delegate.h"
 #include "content/public/browser/speech_recognition_session_preamble.h"
+#include "ui/base/ime/input_method_observer.h"
 
 namespace ui {
 struct CompositionText;
+class TextInputClient;
 }  // namespace ui
 
 class Profile;
@@ -22,7 +24,8 @@ class SpeechRecognizer;
 namespace chromeos {
 
 // Provides global dictation (type what you speak) on Chrome OS.
-class DictationChromeos : public SpeechRecognizerDelegate {
+class DictationChromeos : public SpeechRecognizerDelegate,
+                          public ui::InputMethodObserver {
  public:
   explicit DictationChromeos(Profile* profile);
   ~DictationChromeos() override;
@@ -40,6 +43,14 @@ class DictationChromeos : public SpeechRecognizerDelegate {
       SpeechRecognizerStatus new_state) override;
   void GetSpeechAuthParameters(std::string* auth_scope,
                                std::string* auth_token) override;
+
+  // ui::InputMethodObserver:
+  void OnTextInputStateChanged(const ui::TextInputClient* client) override;
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+  void OnShowVirtualKeyboardIfEnabled() override {}
+  void OnFocus() override {}
+  void OnBlur() override {}
 
   // Saves current dictation result and stops listening.
   void DictationOff();
