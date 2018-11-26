@@ -101,6 +101,8 @@ void SetUserOptedInWalletSyncTransport(PrefService* prefs,
 bool IsUserOptedInWalletSyncTransport(const PrefService* prefs,
                                       const std::string& account_id);
 
+void ClearSyncTransportOptIns(PrefService* prefs);
+
 }  // namespace prefs
 }  // namespace autofill
 

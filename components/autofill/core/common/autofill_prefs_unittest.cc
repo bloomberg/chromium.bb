@@ -75,7 +75,7 @@ TEST_F(AutofillPrefsTest, MigrateDeprecatedAutofillPrefs) {
 
 // Tests that setting and getting the AutofillSyncTransportOptIn works as
 // expected.
-TEST_F(AutofillPrefsTest, WalletSyncTransportPref) {
+TEST_F(AutofillPrefsTest, WalletSyncTransportPref_GetAndSet) {
   const std::string account1 = "account1";
   const std::string account2 = "account2";
 
@@ -125,6 +125,35 @@ TEST_F(AutofillPrefsTest, WalletSyncTransportPref) {
             upload_events->FindKeyOfType(account1, base::Value::Type::INTEGER));
   EXPECT_NE(nullptr,
             upload_events->FindKeyOfType(account2, base::Value::Type::INTEGER));
+}
+
+// Tests that clearing the AutofillSyncTransportOptIn works as expected.
+TEST_F(AutofillPrefsTest, WalletSyncTransportPref_Clear) {
+  const std::string account1 = "account1";
+  const std::string account2 = "account2";
+
+  // There should be no opt-in recorded at first.
+  EXPECT_TRUE(pref_service()
+                  ->GetDictionary(prefs::kAutofillSyncTransportOptIn)
+                  ->DictEmpty());
+
+  // Set the opt-in for the first account.
+  SetUserOptedInWalletSyncTransport(pref_service(), account1, true);
+  EXPECT_FALSE(pref_service()
+                   ->GetDictionary(prefs::kAutofillSyncTransportOptIn)
+                   ->DictEmpty());
+
+  // Set the opt-in for the second account.
+  SetUserOptedInWalletSyncTransport(pref_service(), account2, true);
+  EXPECT_FALSE(pref_service()
+                   ->GetDictionary(prefs::kAutofillSyncTransportOptIn)
+                   ->DictEmpty());
+
+  // Clear all opt-ins. The dictionary should be empty.
+  ClearSyncTransportOptIns(pref_service());
+  EXPECT_TRUE(pref_service()
+                  ->GetDictionary(prefs::kAutofillSyncTransportOptIn)
+                  ->DictEmpty());
 }
 
 }  // namespace prefs

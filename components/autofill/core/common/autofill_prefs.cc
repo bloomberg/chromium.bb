@@ -292,5 +292,10 @@ bool IsUserOptedInWalletSyncTransport(const PrefService* prefs,
          sync_transport_opt_in::kWallet;
 }
 
+void ClearSyncTransportOptIns(PrefService* prefs) {
+  DictionaryPrefUpdate update(prefs, prefs::kAutofillSyncTransportOptIn);
+  update->Clear();
+}
+
 }  // namespace prefs
 }  // namespace autofill
