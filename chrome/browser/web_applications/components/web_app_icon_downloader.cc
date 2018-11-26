@@ -109,7 +109,8 @@ void WebAppIconDownloader::DidDownloadFavicon(
   if (in_progress_requests_.erase(id) == 0)
     return;
 
-  if (!https_status_code_class_histogram_name_.empty()) {
+  if (!https_status_code_class_histogram_name_.empty() &&
+      http_status_code != 0) {
     DCHECK_LE(100, http_status_code);
     DCHECK_GT(600, http_status_code);
     base::UmaHistogramExactLinear(https_status_code_class_histogram_name_,
