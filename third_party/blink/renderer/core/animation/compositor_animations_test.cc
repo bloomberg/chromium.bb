@@ -1271,7 +1271,7 @@ TEST_F(AnimationCompositorAnimationsTest, CreateSimpleOpacityAnimation) {
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       ConvertToCompositorAnimation(*effect);
-  EXPECT_EQ(CompositorTargetProperty::OPACITY,
+  EXPECT_EQ(compositor_target_property::OPACITY,
             keyframe_model->TargetProperty());
   EXPECT_EQ(1.0, keyframe_model->Iterations());
   EXPECT_EQ(0, keyframe_model->TimeOffset());
@@ -1333,7 +1333,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       ConvertToCompositorAnimation(*effect, 2.0);
-  EXPECT_EQ(CompositorTargetProperty::OPACITY,
+  EXPECT_EQ(compositor_target_property::OPACITY,
             keyframe_model->TargetProperty());
   EXPECT_EQ(5.0, keyframe_model->Iterations());
   EXPECT_EQ(0, keyframe_model->TimeOffset());
@@ -1385,7 +1385,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       ConvertToCompositorAnimation(*effect);
 
-  EXPECT_EQ(CompositorTargetProperty::OPACITY,
+  EXPECT_EQ(compositor_target_property::OPACITY,
             keyframe_model->TargetProperty());
   EXPECT_EQ(5.0, keyframe_model->Iterations());
   EXPECT_EQ(-kStartDelay, keyframe_model->TimeOffset());
@@ -1422,7 +1422,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       ConvertToCompositorAnimation(*effect);
-  EXPECT_EQ(CompositorTargetProperty::OPACITY,
+  EXPECT_EQ(compositor_target_property::OPACITY,
             keyframe_model->TargetProperty());
   EXPECT_EQ(10.0, keyframe_model->Iterations());
   EXPECT_EQ(0, keyframe_model->TimeOffset());
@@ -1483,7 +1483,7 @@ TEST_F(AnimationCompositorAnimationsTest, CreateReversedOpacityAnimation) {
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       ConvertToCompositorAnimation(*effect);
-  EXPECT_EQ(CompositorTargetProperty::OPACITY,
+  EXPECT_EQ(compositor_target_property::OPACITY,
             keyframe_model->TargetProperty());
   EXPECT_EQ(10.0, keyframe_model->Iterations());
   EXPECT_EQ(0, keyframe_model->TimeOffset());
@@ -1538,7 +1538,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       ConvertToCompositorAnimation(*effect);
-  EXPECT_EQ(CompositorTargetProperty::OPACITY,
+  EXPECT_EQ(compositor_target_property::OPACITY,
             keyframe_model->TargetProperty());
   EXPECT_EQ(5.0, keyframe_model->Iterations());
   EXPECT_EQ(-kNegativeStartDelay, keyframe_model->TimeOffset());
@@ -1580,7 +1580,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       ConvertToCompositorAnimation(*effect);
-  EXPECT_EQ(CompositorTargetProperty::OPACITY,
+  EXPECT_EQ(compositor_target_property::OPACITY,
             keyframe_model->TargetProperty());
   EXPECT_EQ(1.0, keyframe_model->Iterations());
   EXPECT_EQ(0, keyframe_model->TimeOffset());
@@ -1647,7 +1647,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       ConvertToCompositorAnimation(*effect);
-  EXPECT_EQ(CompositorTargetProperty::CSS_CUSTOM_PROPERTY,
+  EXPECT_EQ(compositor_target_property::CSS_CUSTOM_PROPERTY,
             keyframe_model->TargetProperty());
 
   std::unique_ptr<CompositorFloatAnimationCurve> keyframed_float_curve =

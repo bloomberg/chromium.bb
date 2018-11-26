@@ -654,12 +654,12 @@ void CompositorAnimations::GetAnimationOnCompositor(
     const PropertySpecificKeyframeVector& values =
         effect.GetPropertySpecificKeyframes(property);
 
-    CompositorTargetProperty::Type target_property;
+    compositor_target_property::Type target_property;
     std::unique_ptr<CompositorAnimationCurve> curve;
     DCHECK(timing.timing_function);
     switch (property.GetCSSProperty().PropertyID()) {
       case CSSPropertyOpacity: {
-        target_property = CompositorTargetProperty::OPACITY;
+        target_property = compositor_target_property::OPACITY;
         std::unique_ptr<CompositorFloatAnimationCurve> float_curve =
             CompositorFloatAnimationCurve::Create();
         AddKeyframesToCurve(*float_curve, values);
@@ -670,7 +670,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
       }
       case CSSPropertyFilter:
       case CSSPropertyBackdropFilter: {
-        target_property = CompositorTargetProperty::FILTER;
+        target_property = compositor_target_property::FILTER;
         std::unique_ptr<CompositorFilterAnimationCurve> filter_curve =
             CompositorFilterAnimationCurve::Create();
         AddKeyframesToCurve(*filter_curve, values);
@@ -683,7 +683,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
       case CSSPropertyScale:
       case CSSPropertyTranslate:
       case CSSPropertyTransform: {
-        target_property = CompositorTargetProperty::TRANSFORM;
+        target_property = compositor_target_property::TRANSFORM;
         std::unique_ptr<CompositorTransformAnimationCurve> transform_curve =
             CompositorTransformAnimationCurve::Create();
         AddKeyframesToCurve(*transform_curve, values);
@@ -694,7 +694,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
       }
       case CSSPropertyVariable: {
         DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
-        target_property = CompositorTargetProperty::CSS_CUSTOM_PROPERTY;
+        target_property = compositor_target_property::CSS_CUSTOM_PROPERTY;
         // TODO(kevers): Extend support to non-float types.
         std::unique_ptr<CompositorFloatAnimationCurve> float_curve =
             CompositorFloatAnimationCurve::Create();

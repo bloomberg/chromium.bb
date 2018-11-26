@@ -9,7 +9,7 @@
 
 namespace blink {
 
-namespace CompositorTargetProperty = cc::TargetProperty;
+namespace compositor_target_property = cc::TargetProperty;
 
 }  // namespace blink
 
