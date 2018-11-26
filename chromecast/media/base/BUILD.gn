@@ -26,6 +26,7 @@ cast_source_set("key_systems") {
 
 cast_source_set("base") {
   sources = [
+    "aligned_buffer.h",
     "audio_device_ids.cc",
     "audio_device_ids.h",
     "decrypt_context_impl.cc",

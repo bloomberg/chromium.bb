@@ -83,14 +83,13 @@ cast_source_set("saturated_gain") {
 cast_source_set("test_support") {
   testonly = true
   sources = [
-    "post_processor_benchmark.cc",
-    "post_processor_benchmark.h",
     "post_processor_unittest.cc",
     "post_processor_unittest.h",
   ]
   deps = [
     ":post_processor_wrapper",
     "//base",
+    "//chromecast/media/base",
     "//chromecast/public/media",
     "//testing/gtest",
   ]
@@ -108,6 +107,7 @@ cast_source_set("unittests") {
     ":saturated_gain",
     ":test_support",
     "//base",
+    "//chromecast/media/base",
     "//chromecast/public",
     "//chromecast/public/media",
     "//testing/gtest:gtest",
