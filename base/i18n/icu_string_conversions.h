@@ -10,6 +10,7 @@
 #include "base/i18n/base_i18n_export.h"
 #include "base/i18n/i18n_constants.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 
@@ -37,18 +38,18 @@ class OnStringConversionError {
 // Converts between UTF-16 strings and the encoding specified.  If the
 // encoding doesn't exist or the encoding fails (when on_error is FAIL),
 // returns false.
-BASE_I18N_EXPORT bool UTF16ToCodepage(const string16& utf16,
+BASE_I18N_EXPORT bool UTF16ToCodepage(base::StringPiece16 utf16,
                                       const char* codepage_name,
                                       OnStringConversionError::Type on_error,
                                       std::string* encoded);
-BASE_I18N_EXPORT bool CodepageToUTF16(const std::string& encoded,
+BASE_I18N_EXPORT bool CodepageToUTF16(base::StringPiece encoded,
                                       const char* codepage_name,
                                       OnStringConversionError::Type on_error,
                                       string16* utf16);
 
 // Converts from any codepage to UTF-8 and ensures the resulting UTF-8 is
 // normalized.
-BASE_I18N_EXPORT bool ConvertToUtf8AndNormalize(const std::string& text,
+BASE_I18N_EXPORT bool ConvertToUtf8AndNormalize(base::StringPiece text,
                                                 const std::string& charset,
                                                 std::string* result);
 
