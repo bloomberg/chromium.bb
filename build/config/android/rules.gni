@@ -3806,10 +3806,27 @@ if (enable_java_templates) {
   #   }
   #
   template("android_app_bundle") {
+    _bundle_base_path = "$root_build_dir/apks"
+    if (defined(invoker.bundle_base_path)) {
+      _bundle_base_path = invoker.bundle_base_path
+    }
+
+    _bundle_name = target_name
+    if (defined(invoker.bundle_name)) {
+      _bundle_name = invoker.bundle_name
+    }
+    _bundle_path = "$_bundle_base_path/${_bundle_name}.aab"
+    _rebased_bundle_path = rebase_path(_bundle_path, root_build_dir)
+
+    _base_target_name = get_label_info(invoker.base_module_target, "name")
+    _base_target_gen_dir =
+        get_label_info(invoker.base_module_target, "target_gen_dir")
     _all_modules = [
       {
         name = "base"
         module_target = invoker.base_module_target
+        build_config = "$_base_target_gen_dir/${_base_target_name}.build_config"
+        build_config_target = "${module_target}__build_config"
       },
     ]
 
@@ -3824,8 +3841,15 @@ if (enable_java_templates) {
         assert(
             defined(_module.module_target),
             "Missing 'module_target' field for extra module ${_module.name}.")
+        _module_target = _module.module_target
+        _module_target_name = get_label_info(_module_target, "name")
+        _module_target_gen_dir =
+            get_label_info(_module_target, "target_gen_dir")
+        _module.build_config =
+            "$_module_target_gen_dir/${_module_target_name}.build_config"
+        _module.build_config_target = "${_module_target}__build_config"
+        _all_modules += [ _module ]
       }
-      _all_modules += invoker.extra_modules
     }
 
     _proguard_enabled =
@@ -3838,8 +3862,10 @@ if (enable_java_templates) {
 
     # Make build config, which is required for synchronized proguarding.
     _module_targets = []
+    _module_build_config_targets = []
     foreach(_module, _all_modules) {
       _module_targets += [ _module.module_target ]
+      _module_build_config_targets += [ _module.build_config_target ]
     }
     _build_config = "$target_gen_dir/${target_name}.build_config"
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
@@ -3856,20 +3882,29 @@ if (enable_java_templates) {
     }
 
     if (_proguard_enabled) {
-      # Proguard all modules together to keep binary size small while still
-      # maintaining compatibility between modules.
-      _proguard_output_jar_path =
-          "${target_gen_dir}/${target_name}/${target_name}.proguard.jar"
-      _sync_proguard_target = "${target_name}__sync_proguard"
-      proguard(_sync_proguard_target) {
+      _proguard_mapping_path = "${_bundle_path}.mapping"
+      _unsplit_dex_zip =
+          "${target_gen_dir}/${target_name}/${target_name}__unsplit_dex.zip"
+      _unsplit_dex_target = "${target_name}__unsplit_dex"
+      dex(_unsplit_dex_target) {
+        enable_multidex = _enable_multidex
+        proguard_enabled = true
+        proguard_mapping_path = _proguard_mapping_path
         forward_variables_from(invoker, [ "proguard_jar_path" ])
         build_config = _build_config
-        deps = _module_targets + [ ":$_build_config_target" ]
 
-        output_path = _proguard_output_jar_path
-        args = [
-          "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
-          "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
+        deps = _module_targets + _module_build_config_targets +
+               [ ":$_build_config_target" ]
+        output = _unsplit_dex_zip
+      }
+
+      _dexsplitter_target = "${_unsplit_dex_target}__dexspliter"
+      dexsplitter(_dexsplitter_target) {
+        input_dex_zip = _unsplit_dex_zip
+        proguard_mapping = _proguard_mapping_path
+        all_modules = _all_modules
+        deps = [
+          ":${_unsplit_dex_target}",
         ]
       }
     }
@@ -3879,65 +3914,13 @@ if (enable_java_templates) {
     _all_module_build_configs = []
     foreach(_module, _all_modules) {
       _module_target = _module.module_target
-      _module_target_name = get_label_info(_module_target, "name")
-      _module_target_gen_dir = get_label_info(_module_target, "target_gen_dir")
-      _module_build_config_target = "${_module_target}__build_config"
-      _module_build_config =
-          "$_module_target_gen_dir/${_module_target_name}.build_config"
+      _module_build_config = _module.build_config
+      _module_build_config_target = _module.build_config_target
 
       if (_proguard_enabled) {
-        # Extract optimized classes for each module and dex them.
-
-        _module_final_dex_target = "${target_name}__${_module.name}__dex"
-        _module_final_dex_target_dep = ":$_module_final_dex_target"
-        if (_enable_multidex) {
-          _module_final_dex_path =
-              "$target_gen_dir/$target_name/${_module.name}/classes.dex.zip"
-        } else {
-          _module_final_dex_path =
-              "$target_gen_dir/$target_name/${_module.name}/classes.dex"
-        }
-        _module_final_dex_path_file_arg =
-            rebase_path(_module_final_dex_path, root_build_dir)
-
-        _module_jar_path =
-            "${target_gen_dir}/${target_name}/${_module.name}.optimized.jar"
-        _generate_proguarded_module_jar_target =
-            "${target_name}__${_module.name}__module_jar"
-        generate_proguarded_module_jar(_generate_proguarded_module_jar_target) {
-          proguarded_jar = _proguard_output_jar_path
-          build_config = _module_build_config
-          proguard_mapping = "${_proguard_output_jar_path}.mapping"
-          output_jar = _module_jar_path
-          is_base_module = _module.name == "base"
-          deps = [
-            ":${_sync_proguard_target}",
-            "$_module_build_config_target",
-            "${_module.module_target}",
-          ]
-        }
-
-        dex(_module_final_dex_target) {
-          deps = [
-            ":${_generate_proguarded_module_jar_target}",
-          ]
-          input_jars = [ _module_jar_path ]
-          output = _module_final_dex_path
-
-          if (_enable_multidex && _module.name == "base") {
-            enable_multidex = _enable_multidex
-            extra_main_dex_proguard_config =
-                "$_module_target_gen_dir/$_module_target_name/" +
-                "$_module_target_name.resources.main-dex-proguard.txt"
-            deps += [ "${_module_target}__compile_resources" ]
-          }
-        }
+        _dex_target_for_module = ":$_dexsplitter_target"
       } else {
-        _module_final_dex_target_dep = "${_module_target}__final_dex"
-        _rebased_module_build_config =
-            rebase_path(_module_build_config, root_build_dir)
-        _module_final_dex_path_file_arg =
-            "@FileArg($_rebased_module_build_config:final_dex:path)"
+        _dex_target_for_module = "${_module_target}__final_dex"
       }
 
       # Generate one module .zip file per bundle module.
@@ -3951,11 +3934,11 @@ if (enable_java_templates) {
       create_android_app_bundle_module(_create_module_target) {
         build_config = _module_build_config
         module_zip_path = _module_zip_path
-        dex_path_file_arg = _module_final_dex_path_file_arg
+
         deps = [
-          "$_module_build_config_target",
-          "$_module_final_dex_target_dep",
-          "$_module_target",
+          _dex_target_for_module,
+          _module_build_config_target,
+          _module_target,
         ]
       }
 
@@ -3970,19 +3953,6 @@ if (enable_java_templates) {
 
     _all_rebased_module_zip_paths =
         rebase_path(_all_module_zip_paths, root_build_dir)
-
-    _bundle_name = target_name
-    if (defined(invoker.bundle_name)) {
-      _bundle_name = invoker.bundle_name
-    }
-
-    _bundle_base_path = "$root_build_dir/apks"
-    if (defined(invoker.bundle_base_path)) {
-      _bundle_base_path = invoker.bundle_base_path
-    }
-
-    _bundle_path = "$_bundle_base_path/$_bundle_name.aab"
-    _rebased_bundle_path = rebase_path(_bundle_path, root_build_dir)
 
     _sign_bundle = defined(invoker.sign_bundle) && invoker.sign_bundle
 

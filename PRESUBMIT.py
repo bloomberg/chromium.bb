@@ -667,13 +667,13 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/create_test_runner_script.pydeps',
     'build/android/gyp/create_tool_wrapper.pydeps',
     'build/android/gyp/desugar.pydeps',
+    'build/android/gyp/dexsplitter.pydeps',
     'build/android/gyp/dex.pydeps',
     'build/android/gyp/dist_aar.pydeps',
     'build/android/gyp/emma_instr.pydeps',
     'build/android/gyp/filter_zip.pydeps',
     'build/android/gyp/gcc_preprocess.pydeps',
     'build/android/gyp/generate_linker_version_script.pydeps',
-    'build/android/gyp/generate_proguarded_module_jar.pydeps',
     'build/android/gyp/ijar.pydeps',
     'build/android/gyp/java_cpp_enum.pydeps',
     'build/android/gyp/javac.pydeps',
@@ -692,8 +692,8 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/test_runner.pydeps',
     'build/android/test_wrapper/logdog_wrapper.pydeps',
     'build/protoc_java.pydeps',
-    'build/secondary/third_party/android_platform/'
-        'development/scripts/stack.pydeps',
+    ('build/secondary/third_party/android_platform/'
+     'development/scripts/stack.pydeps'),
     'net/tools/testserver/testserver.pydeps',
 ]
 
