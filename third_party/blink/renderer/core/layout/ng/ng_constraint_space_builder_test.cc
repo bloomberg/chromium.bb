@@ -18,7 +18,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromHorizontalICB) {
 
   NGConstraintSpaceBuilder horizontal_builder(WritingMode::kHorizontalTb,
                                               WritingMode::kHorizontalTb,
-                                              icb_size, /* is_new_fc */ true);
+                                              /* is_new_fc */ true);
   NGLogicalSize fixed_size{LayoutUnit(100), LayoutUnit(200)};
   NGLogicalSize indefinite_size{NGSizeIndefinite, NGSizeIndefinite};
 
@@ -47,7 +47,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromVerticalICB) {
 
   NGConstraintSpaceBuilder horizontal_builder(WritingMode::kVerticalLr,
                                               WritingMode::kVerticalLr,
-                                              icb_size, /* is_new_fc */ true);
+                                              /* is_new_fc */ true);
   NGLogicalSize fixed_size{LayoutUnit(100), LayoutUnit(200)};
   NGLogicalSize indefinite_size{NGSizeIndefinite, NGSizeIndefinite};
 

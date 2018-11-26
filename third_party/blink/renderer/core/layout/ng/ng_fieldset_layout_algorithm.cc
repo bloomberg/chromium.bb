@@ -173,9 +173,8 @@ NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForLegend(
     NGLogicalSize available_size) {
   NGConstraintSpaceBuilder builder(
       ConstraintSpace(), legend.Style().GetWritingMode(), /* is_new_fc */ true);
-  LayoutUnit fallback_size = CalculateOrthogonalFallbackInlineSize(
-      Style(), ConstraintSpace().InitialContainingBlockSize());
-  builder.SetOrthogonalFallbackInlineSize(fallback_size);
+  SetOrthogonalFallbackInlineSizeIfNeeded(Style(), legend, &builder);
+
   builder.SetAvailableSize(available_size);
   NGLogicalSize percentage_size =
       CalculateChildPercentageSize(ConstraintSpace(), Node(), available_size);

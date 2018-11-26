@@ -101,7 +101,6 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   NGBoxFragmentBuilder* container_builder_;
   bool contains_absolute_;
   bool contains_fixed_;
-  NGPhysicalSize icb_size_;
   ContainingBlockInfo default_containing_block_;
   HashMap<const LayoutObject*, ContainingBlockInfo> containing_blocks_map_;
 };

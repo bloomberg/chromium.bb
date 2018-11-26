@@ -360,16 +360,6 @@ NGLogicalSize CalculateReplacedChildPercentageSize(
     const NGBoxStrut& border_scrollbar_padding,
     const NGBoxStrut& border_padding);
 
-// Calculate the available inline fallback size for orthogonal flow children.
-// This size will be used if it's not resolvable via other means; see
-// https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
-//
-// |orthogonal_children_containing_block_size| should be the size of the initial
-// containing block, or the nearest scrollport, whichever is smaller.
-LayoutUnit CalculateOrthogonalFallbackInlineSize(
-    const ComputedStyle& parent_style,
-    NGPhysicalSize orthogonal_children_containing_block_size);
-
 }  // namespace blink
 
 #endif  // NGLengthUtils_h

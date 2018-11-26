@@ -86,10 +86,8 @@ NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
           ? NGFragmentationType::kFragmentColumn
           : NGFragmentationType::kFragmentNone;
 
-  return NGConstraintSpaceBuilder(
-             writing_mode, writing_mode,
-             /* icb_size */ NGPhysicalSize(LayoutUnit(800), LayoutUnit(600)),
-             is_new_formatting_context)
+  return NGConstraintSpaceBuilder(writing_mode, writing_mode,
+                                  is_new_formatting_context)
       .SetAvailableSize(size)
       .SetPercentageResolutionSize(size)
       .SetTextDirection(direction)

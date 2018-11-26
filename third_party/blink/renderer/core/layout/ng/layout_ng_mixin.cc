@@ -241,12 +241,11 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   if (!new_space.MaySkipLayout(old_space))
     return nullptr;
 
-  // We won't attempt to guess how initial containing block changes might affect
-  // orthogonal flow root descendants. In that case, just bail if the size has
-  // changed.
-  if (cached_result_->HasOrthogonalFlowRoots() &&
-      new_space.InitialContainingBlockSize() !=
-          old_space.InitialContainingBlockSize())
+  // If we have an orthogonal flow root descendant, we don't attempt to cache
+  // our layout result. This is because the initial containing block size may
+  // have changed, having a high likelihood of changing the size of the
+  // orthogonal flow root.
+  if (cached_result_->HasOrthogonalFlowRoots())
     return nullptr;
 
   if (!new_space.AreSizesEqual(old_space)) {

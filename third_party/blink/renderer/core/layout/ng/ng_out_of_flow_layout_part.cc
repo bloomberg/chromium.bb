@@ -34,8 +34,6 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
   NGPhysicalBoxStrut physical_borders = borders_and_scrollers.ConvertToPhysical(
       container_style.GetWritingMode(), container_style.Direction());
 
-  icb_size_ = container_space.InitialContainingBlockSize();
-
   default_containing_block_.style = &container_style;
   default_containing_block_.content_size = container_builder_->Size();
   default_containing_block_.content_size.inline_size =
@@ -134,7 +132,7 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
       inline_cb_style = &block_info.value.start_fragment->Style();
       NGConstraintSpace dummy_constraint_space =
           NGConstraintSpaceBuilder(inline_cb_style->GetWritingMode(),
-                                   inline_cb_style->GetWritingMode(), icb_size_,
+                                   inline_cb_style->GetWritingMode(),
                                    /* is_new_fc */ false)
               .ToConstraintSpace();
 
@@ -319,7 +317,7 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   // The block estimate is in the descendant's writing mode.
   NGConstraintSpace descendant_constraint_space =
       NGConstraintSpaceBuilder(container_writing_mode, descendant_writing_mode,
-                               icb_size_, /* is_new_fc */ true)
+                               /* is_new_fc */ true)
           .SetTextDirection(container_info.style->Direction())
           .SetAvailableSize(container_info.content_size)
           .SetPercentageResolutionSize(container_info.content_size)
@@ -455,7 +453,7 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   NGLogicalSize available_size{inline_size, block_size};
 
   // TODO(atotic) will need to be adjusted for scrollbars.
-  NGConstraintSpaceBuilder builder(writing_mode, writing_mode, icb_size_,
+  NGConstraintSpaceBuilder builder(writing_mode, writing_mode,
                                    /* is_new_fc */ true);
   builder.SetAvailableSize(available_size)
       .SetTextDirection(descendant.Style().Direction())

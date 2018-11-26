@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_page_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -133,10 +134,9 @@ void UpdateLegacyMultiColumnFlowThread(
 }
 
 NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
-    NGBlockNode node,
-    NGPhysicalSize icb_size) {
+    NGBlockNode node) {
   return NGConstraintSpaceBuilder(node.Style().GetWritingMode(),
-                                  node.Style().GetWritingMode(), icb_size,
+                                  node.Style().GetWritingMode(),
                                   node.CreatesNewFormattingContext())
       .SetTextDirection(node.Style().Direction())
       .SetIsIntermediateLayout(true)
@@ -346,12 +346,8 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     return ComputeMinMaxSizeFromLegacy(input.size_type);
   }
 
-  NGPhysicalSize icb_size = constraint_space
-                                ? constraint_space->InitialContainingBlockSize()
-                                : InitialContainingBlockSize();
   NGConstraintSpace zero_constraint_space =
-      CreateConstraintSpaceBuilderForMinMax(*this, icb_size)
-          .ToConstraintSpace();
+      CreateConstraintSpaceBuilderForMinMax(*this).ToConstraintSpace();
 
   if (!constraint_space) {
     // Using the zero-sized constraint space when measuring for an orthogonal
@@ -404,7 +400,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
 
   // Now, redo with infinite space for max_content
   NGConstraintSpace infinite_constraint_space =
-      CreateConstraintSpaceBuilderForMinMax(*this, icb_size)
+      CreateConstraintSpaceBuilderForMinMax(*this)
           .SetAvailableSize({LayoutUnit::Max(), LayoutUnit()})
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .ToConstraintSpace();
@@ -792,27 +788,22 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
     const ComputedStyle& parent_style,
     FontBaseline baseline_type,
     bool use_first_line_style) {
-  NGConstraintSpaceBuilder space_builder(
+  NGConstraintSpaceBuilder builder(
       parent_constraint_space, Style().GetWritingMode(), /* is_new_fc */ true);
-  space_builder.SetUseFirstLineStyle(use_first_line_style);
+  SetOrthogonalFallbackInlineSizeIfNeeded(parent_style, *this, &builder);
 
-  if (!IsParallelWritingMode(parent_constraint_space.GetWritingMode(),
-                             Style().GetWritingMode())) {
-    LayoutUnit fallback_inline_size = CalculateOrthogonalFallbackInlineSize(
-        parent_style, parent_constraint_space.InitialContainingBlockSize());
-    space_builder.SetOrthogonalFallbackInlineSize(fallback_inline_size);
-  }
+  builder.SetUseFirstLineStyle(use_first_line_style);
 
   // Request to compute baseline during the layout, except when we know the box
   // would synthesize box-baseline.
   LayoutBox* layout_box = GetLayoutBox();
   if (NGBaseline::ShouldPropagateBaselines(layout_box)) {
-    space_builder.AddBaselineRequest(
+    builder.AddBaselineRequest(
         {NGBaselineAlgorithmType::kAtomicInline, baseline_type});
   }
 
   NGConstraintSpace constraint_space =
-      space_builder.SetIsShrinkToFit(Style().LogicalWidth().IsAuto())
+      builder.SetIsShrinkToFit(Style().LogicalWidth().IsAuto())
           .SetAvailableSize(parent_constraint_space.AvailableSize())
           .SetPercentageResolutionSize(
               parent_constraint_space.PercentageResolutionSize())

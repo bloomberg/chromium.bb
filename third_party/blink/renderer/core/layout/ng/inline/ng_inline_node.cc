@@ -863,17 +863,9 @@ static LayoutUnit ComputeContentSize(
   LayoutUnit available_inline_size =
       mode == NGLineBreakerMode::kMaxContent ? LayoutUnit::Max() : LayoutUnit();
 
-  NGPhysicalSize icb_size = constraint_space
-                                ? constraint_space->InitialContainingBlockSize()
-                                : node.InitialContainingBlockSize();
-  DCHECK(!constraint_space || constraint_space->InitialContainingBlockSize() ==
-                                  node.InitialContainingBlockSize())
-      << constraint_space->InitialContainingBlockSize() << " vs "
-      << node.InitialContainingBlockSize();
-
   NGConstraintSpace space =
       NGConstraintSpaceBuilder(/* parent_writing_mode */ writing_mode,
-                               /* out_writing_mode */ writing_mode, icb_size,
+                               /* out_writing_mode */ writing_mode,
                                /* is_new_fc */ false)
           .SetTextDirection(style.Direction())
           .SetAvailableSize({available_inline_size, NGSizeIndefinite})

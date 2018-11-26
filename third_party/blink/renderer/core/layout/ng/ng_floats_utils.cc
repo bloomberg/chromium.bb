@@ -71,6 +71,8 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
   const ComputedStyle& style = unpositioned_float.node.Style();
   NGConstraintSpaceBuilder builder(parent_space, style.GetWritingMode(),
                                    /* is_new_fc */ true);
+  SetOrthogonalFallbackInlineSizeIfNeeded(parent_style, unpositioned_float.node,
+                                          &builder);
 
   if (origin_block_offset) {
     DCHECK(parent_space.HasBlockFragmentation());
@@ -84,13 +86,6 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
     builder.SetFragmentationType(parent_space.BlockFragmentationType());
   } else {
     builder.SetFragmentationType(NGFragmentationType::kFragmentNone);
-  }
-
-  if (!IsParallelWritingMode(parent_space.GetWritingMode(),
-                             style.GetWritingMode())) {
-    LayoutUnit fallback_size = CalculateOrthogonalFallbackInlineSize(
-        parent_style, parent_space.InitialContainingBlockSize());
-    builder.SetOrthogonalFallbackInlineSize(fallback_size);
   }
 
   return builder.SetAvailableSize(float_available_size)

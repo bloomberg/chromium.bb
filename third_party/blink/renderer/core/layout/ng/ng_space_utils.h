@@ -29,6 +29,19 @@ NGConstraintSpace CreateIndefiniteConstraintSpaceForChild(
     const ComputedStyle& container_style,
     NGLayoutInputNode child);
 
+// Calculate and set the available inline fallback size for orthogonal flow
+// children. This size will be used if it's not resolvable via other means [1].
+//
+// TODO(mstensho): The spec [1] says to use the size of the nearest scrollport
+// as constraint, if that's smaller than the initial containing block, but we
+// haven't implemented that yet; we always just use the initial containing
+// block size.
+//
+// [1] https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
+void SetOrthogonalFallbackInlineSizeIfNeeded(const ComputedStyle& parent_style,
+                                             const NGLayoutInputNode child,
+                                             NGConstraintSpaceBuilder* builder);
+
 }  // namespace blink
 
 #endif  // NGSpaceUtils_h
