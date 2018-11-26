@@ -14,6 +14,7 @@ import("//third_party/protobuf/proto_library.gni")
 import("//url/features.gni")
 
 _jni_registration_header = "$target_gen_dir/cronet_jni_registration.h"
+_templates_dir = "$target_gen_dir/templates"
 
 declare_args() {
   # In integrated mode, CronetEngine will use the shared network task runner by
@@ -109,13 +110,10 @@ java_cpp_template("integrated_mode_state") {
   }
 }
 
-_generated_api_version_java_dir =
-    "$target_gen_dir/templates/cronet_api_version_java"
-_generated_api_version_java =
-    "$_generated_api_version_java_dir/org/chromium/net/ApiVersion.java"
+_generated_api_version_java = "$_templates_dir/org/chromium/net/ApiVersion.java"
+_api_level = read_file("api_version.txt", "value")
 
-process_version("cronet_api_version_java") {
-  _api_level = read_file("api_version.txt", "value")
+process_version("api_version") {
   template_file = "api/src/org/chromium/net/ApiVersion.template"
   sources = [
     "//chrome/VERSION",
@@ -128,24 +126,10 @@ process_version("cronet_api_version_java") {
   output = _generated_api_version_java
 }
 
-zip("cronet_api_version_srcjar") {
-  inputs = [
-    _generated_api_version_java,
-  ]
-  output = "$target_gen_dir/$target_name.srcjar"
-  base_dir = _generated_api_version_java_dir
-  deps = [
-    ":cronet_api_version_java",
-  ]
-}
-
-_generated_impl_version_java_dir =
-    "$target_gen_dir/templates/cronet_impl_version_java"
 _generated_impl_version_java =
-    "$_generated_impl_version_java_dir/org/chromium/net/impl/ImplVersion.java"
+    "$_templates_dir/org/chromium/net/impl/ImplVersion.java"
 
-process_version("cronet_impl_version_java") {
-  _api_level = read_file("api_version.txt", "value")
+process_version("impl_version") {
   template_file = "java/src/org/chromium/net/impl/ImplVersion.template"
   sources = [
     "//chrome/VERSION",
@@ -156,17 +140,6 @@ process_version("cronet_impl_version_java") {
     "API_LEVEL=$_api_level",
   ]
   output = _generated_impl_version_java
-}
-
-zip("cronet_impl_version_srcjar") {
-  inputs = [
-    _generated_impl_version_java,
-  ]
-  output = "$target_gen_dir/$target_name.srcjar"
-  base_dir = _generated_impl_version_java_dir
-  deps = [
-    ":cronet_impl_version_java",
-  ]
 }
 
 _cronet_version_header_include_dir = "$target_gen_dir/cronet_version_header"
@@ -254,8 +227,6 @@ shared_library("cronet") {
   configs += [ ":hide_all_but_jni_onload_and_cronet" ]
 }
 
-cronet_api_srcjar_deps = [ ":cronet_api_version_srcjar" ]
-
 # cronet_api_java.jar defines Cronet API.
 android_library("cronet_api_java") {
   java_files = [
@@ -279,17 +250,16 @@ android_library("cronet_api_java") {
     "api/src/org/chromium/net/UploadDataSink.java",
     "api/src/org/chromium/net/UrlRequest.java",
     "api/src/org/chromium/net/UrlResponseInfo.java",
+    _generated_api_version_java,
   ]
 
   deps = [
+    ":api_version",
     "//third_party/android_deps:android_support_annotations_java",
   ]
-
-  srcjar_deps = cronet_api_srcjar_deps
 }
 
 cronet_impl_common_java_srcjar_deps = [
-  ":cronet_impl_version_srcjar",
   ":effective_connection_type_java",
   ":http_cache_type_java",
   ":integrated_mode_state",
@@ -317,12 +287,14 @@ android_library("cronet_impl_common_base_java") {
     "java/src/org/chromium/net/impl/UrlResponseInfoImpl.java",
     "java/src/org/chromium/net/impl/UserAgent.java",
     "java/src/org/chromium/net/impl/VersionSafeCallbacks.java",
+    _generated_impl_version_java,
   ]
 
   # Adding deps here won't include those deps in the cronet_impl_common_java.jar.
   # Please add to cronet_impl_common_java_deps_to_package instead.
   deps = [
     ":cronet_api_java",
+    ":impl_version",
     "//third_party/android_deps:android_support_annotations_java",
   ]
   deps += cronet_impl_common_java_deps_to_package
@@ -588,14 +560,19 @@ template("jar_src") {
 }
 
 jar_src("jar_cronet_api_source") {
-  src_search_dirs = [ "api/src" ]
+  src_search_dirs = [
+    "api/src",
+    _templates_dir,
+  ]
   source_deps = [ ":cronet_api_java" ]
-  srcjar_deps = cronet_api_srcjar_deps
   jar_path = "$_package_dir/cronet_api-src.jar"
 }
 
 jar_src("jar_cronet_impl_common_java_source") {
-  src_search_dirs = [ "java/src" ]
+  src_search_dirs = [
+    "java/src",
+    _templates_dir,
+  ]
   source_deps = [ ":cronet_impl_common_base_java" ]
   srcjar_deps = cronet_impl_common_java_srcjar_deps
   jar_path = "$_package_dir/cronet_impl_common_java-src.jar"
