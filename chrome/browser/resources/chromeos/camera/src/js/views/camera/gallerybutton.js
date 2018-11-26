@@ -95,10 +95,10 @@ cca.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
     const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
     chrome.fileManagerPrivate.executeTask(
         id, [picture.pictureEntry], (result) => {
-      if (result != 'opened' && result != 'message_sent') {
-        console.warn('Unable to open picture: ' + result);
-      }
-    });
+          if (result != 'opened' && result != 'message_sent') {
+            console.warn('Unable to open picture: ' + result);
+          }
+        });
   } else {
     cca.nav.open('browser', picture);
   }

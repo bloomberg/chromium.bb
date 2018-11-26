@@ -102,12 +102,12 @@ cca.views.GalleryBase.prototype.exportSelection = function() {
       dirEntry.getFile(
           cca.models.FileSystem.regulatePictureName(picture.pictureEntry),
           {create: true, exclusive: false}, (entry) => {
-        this.model_.exportPicture(picture, entry).catch((error) => {
-          console.error(error);
-          cca.toast.show(chrome.i18n.getMessage(
-              'errorMsgGalleryExportFailed', entry.name));
-        });
-      });
+            this.model_.exportPicture(picture, entry).catch((error) => {
+              console.error(error);
+              cca.toast.show(chrome.i18n.getMessage(
+                  'errorMsgGalleryExportFailed', entry.name));
+            });
+          });
     });
   });
 };

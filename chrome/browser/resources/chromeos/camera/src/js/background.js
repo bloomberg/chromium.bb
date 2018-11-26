@@ -40,10 +40,10 @@ cca.bg.TOPBAR_COLOR = '#000000';
  */
 cca.bg.create = function() {
   new Promise((resolve) => {
-    chrome.storage.local.get({maximized: false, fullscreen: false},
-        (values) => {
-      resolve(values.maximized || values.fullscreen);
-    });
+    chrome.storage.local.get(
+        {maximized: false, fullscreen: false}, (values) => {
+          resolve(values.maximized || values.fullscreen);
+        });
   }).then((maximized) => {
     // The height will be later calculated to match video aspect ratio once the
     // stream is available.
