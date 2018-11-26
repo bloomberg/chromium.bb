@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/proxy_resolution/proxy_config.h"
@@ -1852,16 +1853,9 @@ void WriteFile(const base::FilePath& path, base::StringPiece data) {
   EXPECT_TRUE(base::WriteFile(path, data.data(), data.size()));
 }
 
-// TODO(https://crbug.com/907673): Undiagnosed flakiness on ASAN and TSAN bots.
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define MAYBE_KDEFileChanged DISABLED_KDEFileChanged
-#else
-#define MAYBE_KDEFileChanged KDEFileChanged
-#endif
-
 // Tests that the KDE proxy config service watches for file and directory
 // changes.
-TEST_F(ProxyConfigServiceLinuxTest, MAYBE_KDEFileChanged) {
+TEST_F(ProxyConfigServiceLinuxTest, KDEFileChanged) {
   // Set up the initial .kde kioslaverc file.
   WriteFile(kioslaverc_,
             "[Proxy Settings]\nProxyType=2\n"
@@ -1885,6 +1879,11 @@ TEST_F(ProxyConfigServiceLinuxTest, MAYBE_KDEFileChanged) {
   // Change the kioslaverc file by overwriting it. Verify that the change was
   // observed.
   sync_config_getter.SetExpectedPacUrl("http://version2/wpad.dat");
+
+  // Initialization posts a task to start watching kioslaverc file. Ensure that
+  // registration has happened before modifying it or the file change won't be
+  // observed.
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 
   WriteFile(kioslaverc_,
             "[Proxy Settings]\nProxyType=2\n"
