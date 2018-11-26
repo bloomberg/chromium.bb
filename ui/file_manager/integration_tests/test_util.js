@@ -247,7 +247,6 @@ var SharedOption = Object.freeze({
  */
 var RootPath = Object.seal({
   DOWNLOADS: '/must-be-filled-in-test-setup',
-  DOWNLOADS_PATH: '/must-be-filled-in-test-setup',
   DRIVE: '/must-be-filled-in-test-setup',
   ANDROID_FILES: '/must-be-filled-in-test-setup',
 });
