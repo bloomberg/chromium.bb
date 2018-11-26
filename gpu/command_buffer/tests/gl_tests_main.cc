@@ -21,12 +21,12 @@
 namespace {
 
 int RunHelper(base::TestSuite* testSuite) {
+  base::FeatureList::InitializeInstance(std::string(), std::string());
 #if defined(USE_OZONE)
   base::MessageLoopForUI main_loop;
 #else
   base::MessageLoopForIO message_loop;
 #endif
-  base::FeatureList::InitializeInstance(std::string(), std::string());
   gpu::GLTestHelper::InitializeGLDefault();
 
   ::gles2::Initialize();

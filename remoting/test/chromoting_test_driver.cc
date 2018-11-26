@@ -150,8 +150,8 @@ void PrintJsonFileInfo() {
 
 int main(int argc, char* argv[]) {
   base::TestSuite test_suite(argc, argv);
-  base::MessageLoopForIO message_loop;
   base::FeatureList::InitializeInstance(std::string(), std::string());
+  base::MessageLoopForIO message_loop;
 
   if (!base::CommandLine::InitializedForCurrentProcess()) {
     if (!base::CommandLine::Init(argc, argv)) {

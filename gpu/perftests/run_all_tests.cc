@@ -12,13 +12,12 @@
 #include "ui/gl/init/gl_factory.h"
 
 static int RunHelper(base::TestSuite* test_suite) {
+  base::FeatureList::InitializeInstance(std::string(), std::string());
 #if defined(USE_OZONE)
   base::MessageLoopForUI main_loop;
 #else
   base::MessageLoopForIO message_loop;
 #endif
-  base::FeatureList::InitializeInstance(std::string(), std::string());
-
   CHECK(gl::init::InitializeGLOneOff());
   return test_suite->Run();
 }
