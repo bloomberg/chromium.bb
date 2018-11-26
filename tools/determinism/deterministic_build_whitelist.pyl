@@ -38,7 +38,6 @@
 
   'linux_component': [
     # https://crbug.com/900696
-    'browser_tests.isolated',
     'remoting-webapp.v2.zip',
 
     # https://crbug.com/908474
@@ -225,17 +224,6 @@
     'viz_benchmark',
     'webkit_unit_tests',
     'wtf_unittests',
-
-    # TODO(thakis): Given we list most executables above, we should probably
-    # also list most isolated files here.
-    'angle_unittests.isolated',
-    'angle_white_box_tests.isolated',
-    'browser_tests.isolated',
-    'chrome_app_unittests.isolated',
-    'content_unittests.isolated',
-    'headless_browsertests',
-    'headless_browsertests.isolated',
-    'interactive_ui_tests.isolated',
   ],
 
   # https://crbug.com/330260
@@ -244,7 +232,6 @@
     'mini_installer.exe',
     'mini_installer.exe.pdb',
     'previous_version_mini_installer.exe',
-    'mini_installer_tests.isolated',
 
     # These probably have mtimes in the zip headers and the scripts creating
     # them probably should use build_utils.ZipDir() instead.
