@@ -4358,9 +4358,10 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kUseAngleChoices)},
 #endif
 #if defined(OS_ANDROID)
-    {"android-site-settings-ui", flag_descriptions::kAndroidSiteSettingsUIName,
-     flag_descriptions::kAndroidSiteSettingsUIDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidSiteSettingsUI)},
+    {"android-site-settings-ui-refresh",
+     flag_descriptions::kAndroidSiteSettingsUIRefreshName,
+     flag_descriptions::kAndroidSiteSettingsUIRefreshDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidSiteSettingsUIRefresh)},
     {"translate-android-manual-trigger",
      flag_descriptions::kTranslateAndroidManualTriggerName,
      flag_descriptions::kTranslateAndroidManualTriggerDescription, kOsAndroid,

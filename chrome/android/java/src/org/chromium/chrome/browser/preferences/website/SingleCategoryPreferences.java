@@ -556,17 +556,17 @@ public class SingleCategoryPreferences extends PreferenceFragment
                            ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)
-                && (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI)
-                           || !PrefServiceBridge.getInstance().isCategoryEnabled(
-                                      ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT))) {
+                && (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)
+                        || !PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT))) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
                 && !PrefServiceBridge.getInstance().isCategoryEnabled(
-                           ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC)) {
+                        ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)
                 && !PrefServiceBridge.getInstance().isCategoryEnabled(
-                           ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS)) {
+                        ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS)) {
             exception = true;
         }
         if (exception) {
@@ -729,8 +729,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
         boolean hideMainToggles = mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
                 || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)
                 || (permissionBlockedByOs
-                           && !ChromeFeatureList.isEnabled(
-                                      ChromeFeatureList.ANDROID_SITE_SETTINGS_UI));
+                        && !ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH));
         boolean hideSecondaryToggles = hideMainToggles || permissionBlockedByOs;
 
         if (hideMainToggles) {
@@ -793,7 +793,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
     }
 
     private void maybeShowOsWarning(PreferenceScreen screen) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI)
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)
                 && isBlocked()) {
             return;
         }
