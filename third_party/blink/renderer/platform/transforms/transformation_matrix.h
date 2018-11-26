@@ -53,6 +53,9 @@ class JSONArray;
 struct Rotation;
 #if defined(ARCH_CPU_X86_64)
 #define TRANSFORMATION_MATRIX_USE_X86_64_SSE2
+#define ALIGNAS_TRANSFORMATION_MATRIX alignas(16)
+#else
+#define ALIGNAS_TRANSFORMATION_MATRIX
 #endif
 
 class PLATFORM_EXPORT TransformationMatrix {
@@ -62,24 +65,25 @@ class PLATFORM_EXPORT TransformationMatrix {
   USING_FAST_MALLOC(TransformationMatrix);
 
  public:
-// Throughout this class, we will be speaking in column vector convention.
-// i.e. Applying a transform T to point P is T * P.
-// The elements of the matrix and the vector looks like:
-// | scale_x  skew_y_x skew_z_x translate_x |   | x |
-// | skew_x_y scale_y  skew_z_y translate_y | * | y |
-// | skew_x_z skew_y_z scale_z  translate_z |   | z |
-// | persp_x  persp_y  persp_z  persp_w     |   | w |
-// Internally the matrix is stored as a 2-dimensional array in col-major order.
-// In other words, this is the layout of the matrix:
-// | matrix_[0][0] matrix_[1][0] matrix_[2][0] matrix_[3][0] |
-// | matrix_[0][1] matrix_[1][1] matrix_[2][1] matrix_[3][1] |
-// | matrix_[0][2] matrix_[1][2] matrix_[2][2] matrix_[3][2] |
-// | matrix_[0][3] matrix_[1][3] matrix_[2][3] matrix_[3][3] |
-#if defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
-  typedef WTF_ALIGNED(double, Matrix4[4][4], 16);
-#else
-  typedef double Matrix4[4][4];
-#endif
+  // Throughout this class, we will be speaking in column vector convention.
+  // i.e. Applying a transform T to point P is T * P.
+  // The elements of the matrix and the vector looks like:
+  // | scale_x  skew_y_x skew_z_x translate_x |   | x |
+  // | skew_x_y scale_y  skew_z_y translate_y | * | y |
+  // | skew_x_z skew_y_z scale_z  translate_z |   | z |
+  // | persp_x  persp_y  persp_z  persp_w     |   | w |
+  // Internally the matrix is stored as a 2-dimensional array in col-major
+  // order. In other words, this is the layout of the matrix:
+  // | matrix_[0][0] matrix_[1][0] matrix_[2][0] matrix_[3][0] |
+  // | matrix_[0][1] matrix_[1][1] matrix_[2][1] matrix_[3][1] |
+  // | matrix_[0][2] matrix_[1][2] matrix_[2][2] matrix_[3][2] |
+  // | matrix_[0][3] matrix_[1][3] matrix_[2][3] matrix_[3][3] |
+  struct ALIGNAS_TRANSFORMATION_MATRIX Matrix4 {
+    using Column = double[4];
+    Column& operator[](size_t i) { return columns[i]; }
+    const Column& operator[](size_t i) const { return columns[i]; }
+    Column columns[4];
+  };
 
   static std::unique_ptr<TransformationMatrix> Create() {
     return std::make_unique<TransformationMatrix>();
@@ -521,10 +525,7 @@ class PLATFORM_EXPORT TransformationMatrix {
                         static_cast<float>(result_z));
   }
 
-  void SetMatrix(const Matrix4 m) {
-    if (m && m != matrix_)
-      memcpy(matrix_, m, sizeof(Matrix4));
-  }
+  void SetMatrix(const Matrix4& m) { memcpy(&matrix_, &m, sizeof(Matrix4)); }
 
   void CheckAlignment() {
 #if defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
