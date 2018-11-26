@@ -227,8 +227,13 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
     // size at |visible_size_| and requiring the output buffers to be of at
     // least |input_allocated_size_|. Unretained is safe because |this| owns
     // image processor and there will be no callbacks after processor destroys.
+    // |input_storage_type| can be STORAGE_SHMEM and STORAGE_MOJO_SHARED_BUFFER.
+    // However, it doesn't matter VideoFrame::STORAGE_OWNED_MEMORY is specified
+    // for |input_storage_type| here, as long as VideoFrame on Process()'s data
+    // can be accessed by VideoFrame::data().
     image_processor_ = V4L2ImageProcessor::Create(
-        V4L2Device::Create(), V4L2_MEMORY_USERPTR, V4L2_MEMORY_MMAP,
+        V4L2Device::Create(), VideoFrame::STORAGE_OWNED_MEMORY,
+        VideoFrame::STORAGE_DMABUFS, ImageProcessor::OutputMode::ALLOCATE,
         *input_layout, *output_layout, visible_size_, visible_size_,
         kImageProcBufferCount,
         base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,

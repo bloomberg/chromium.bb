@@ -10,11 +10,10 @@
 #include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/ref_counted.h"
+#include "media/base/video_frame.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
-
-class VideoFrame;
 
 // An image processor is used to convert from one image format to another (e.g.
 // I420 to NV12) while optionally scaling. It is useful in situations where
@@ -24,12 +23,29 @@ class VideoFrame;
 // This class exposes the interface that an image processor should implement.
 class ImageProcessor {
  public:
+  // OutputMode is used as intermediate stage. The ultimate goal is to make
+  // ImageProcessor's clients all use IMPORT output mode.
+  // TODO(907767): Remove this once ImageProcessor always works as IMPORT mode
+  // for output.
+  enum class OutputMode {
+    ALLOCATE,
+    IMPORT
+  };
 
   // Returns input allocated size required by the processor to be fed with.
   virtual gfx::Size input_allocated_size() const = 0;
 
   // Returns output allocated size required by the processor.
   virtual gfx::Size output_allocated_size() const = 0;
+
+  // Returns input storage type.
+  virtual VideoFrame::StorageType input_storage_type() const = 0;
+
+  // Returns output storage type.
+  virtual VideoFrame::StorageType output_storage_type() const = 0;
+
+  // Returns output mode.
+  virtual OutputMode output_mode() const = 0;
 
   // Callback to be used to return the index of a processed image to the
   // client. After the client is done with the frame, call Process with the
