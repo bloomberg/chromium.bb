@@ -238,6 +238,11 @@
     'ppapi_nacl_tests_glibc_x86_64.nexe',
     'ppapi_nacl_tests_libs\\lib32\\glibc_x86\\libppapi_cpp_lib.dll',
     'ppapi_nacl_tests_libs\\lib64\\glibc_x64\\libppapi_cpp_lib.dll',
-    'resources\\inspector\\browser_console\\browser_console_module.js',
+
+    # These two started being non-deterministic days 2 out of 3 builds days
+    # after we switched to using two distinct build dirs, for no apparent
+    # reason.
+    'nacl_irt_x86_32.nexe',
+    'nacl_irt_x86_32.nexe.debug',
   ],
 }
