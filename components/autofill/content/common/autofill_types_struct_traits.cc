@@ -220,100 +220,82 @@ bool EnumTraits<autofill::mojom::PasswordFormScheme,
 }
 
 // static
-autofill::mojom::PasswordFormSubmissionIndicatorEvent
-EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
-           autofill::PasswordForm::SubmissionIndicatorEvent>::
-    ToMojom(autofill::PasswordForm::SubmissionIndicatorEvent input) {
+autofill::mojom::SubmissionIndicatorEvent
+EnumTraits<autofill::mojom::SubmissionIndicatorEvent,
+           autofill::SubmissionIndicatorEvent>::
+    ToMojom(autofill::SubmissionIndicatorEvent input) {
   switch (input) {
-    case autofill::PasswordForm::SubmissionIndicatorEvent::NONE:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::NONE;
-    case autofill::PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-          HTML_FORM_SUBMISSION;
-    case autofill::PasswordForm::SubmissionIndicatorEvent::
-        SAME_DOCUMENT_NAVIGATION:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+    case autofill::SubmissionIndicatorEvent::NONE:
+      return autofill::mojom::SubmissionIndicatorEvent::NONE;
+    case autofill::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION:
+      return autofill::mojom::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+    case autofill::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION:
+      return autofill::mojom::SubmissionIndicatorEvent::
           SAME_DOCUMENT_NAVIGATION;
-    case autofill::PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-          XHR_SUCCEEDED;
-    case autofill::PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-          FRAME_DETACHED;
-    case autofill::PasswordForm::SubmissionIndicatorEvent::
-        DOM_MUTATION_AFTER_XHR:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-          DOM_MUTATION_AFTER_XHR;
-    case autofill::PasswordForm::SubmissionIndicatorEvent::
+    case autofill::SubmissionIndicatorEvent::XHR_SUCCEEDED:
+      return autofill::mojom::SubmissionIndicatorEvent::XHR_SUCCEEDED;
+    case autofill::SubmissionIndicatorEvent::FRAME_DETACHED:
+      return autofill::mojom::SubmissionIndicatorEvent::FRAME_DETACHED;
+    case autofill::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR:
+      return autofill::mojom::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR;
+    case autofill::SubmissionIndicatorEvent::
         PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+      return autofill::mojom::SubmissionIndicatorEvent::
           PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD;
-    case autofill::PasswordForm::SubmissionIndicatorEvent::
-        DEPRECATED_MANUAL_SAVE:
-    case autofill::PasswordForm::SubmissionIndicatorEvent::
+    case autofill::SubmissionIndicatorEvent::DEPRECATED_MANUAL_SAVE:
+    case autofill::SubmissionIndicatorEvent::
         DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD:
-    case autofill::PasswordForm::SubmissionIndicatorEvent::
+    case autofill::SubmissionIndicatorEvent::
         DEPRECATED_FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD:
       break;
-    case autofill::PasswordForm::SubmissionIndicatorEvent::
-        SUBMISSION_INDICATOR_EVENT_COUNT:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+    case autofill::SubmissionIndicatorEvent::SUBMISSION_INDICATOR_EVENT_COUNT:
+      return autofill::mojom::SubmissionIndicatorEvent::
           SUBMISSION_INDICATOR_EVENT_COUNT;
-    case autofill::PasswordForm::SubmissionIndicatorEvent::
-        PROBABLE_FORM_SUBMISSION:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+    case autofill::SubmissionIndicatorEvent::PROBABLE_FORM_SUBMISSION:
+      return autofill::mojom::SubmissionIndicatorEvent::
           PROBABLE_FORM_SUBMISSION;
   }
 
   NOTREACHED();
-  return autofill::mojom::PasswordFormSubmissionIndicatorEvent::NONE;
+  return autofill::mojom::SubmissionIndicatorEvent::NONE;
 }
 
 // static
-bool EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
-                autofill::PasswordForm::SubmissionIndicatorEvent>::
-    FromMojom(autofill::mojom::PasswordFormSubmissionIndicatorEvent input,
-              autofill::PasswordForm::SubmissionIndicatorEvent* output) {
+bool EnumTraits<autofill::mojom::SubmissionIndicatorEvent,
+                autofill::SubmissionIndicatorEvent>::
+    FromMojom(autofill::mojom::SubmissionIndicatorEvent input,
+              autofill::SubmissionIndicatorEvent* output) {
   switch (input) {
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::NONE:
-      *output = autofill::PasswordForm::SubmissionIndicatorEvent::NONE;
+    case autofill::mojom::SubmissionIndicatorEvent::NONE:
+      *output = autofill::SubmissionIndicatorEvent::NONE;
       return true;
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-        HTML_FORM_SUBMISSION:
-      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
-          HTML_FORM_SUBMISSION;
+    case autofill::mojom::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION:
+      *output = autofill::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
       return true;
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-        SAME_DOCUMENT_NAVIGATION:
-      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
-          SAME_DOCUMENT_NAVIGATION;
+    case autofill::mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION:
+      *output = autofill::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
       return true;
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::XHR_SUCCEEDED:
-      *output = autofill::PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED;
+    case autofill::mojom::SubmissionIndicatorEvent::XHR_SUCCEEDED:
+      *output = autofill::SubmissionIndicatorEvent::XHR_SUCCEEDED;
       return true;
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::FRAME_DETACHED:
-      *output =
-          autofill::PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED;
+    case autofill::mojom::SubmissionIndicatorEvent::FRAME_DETACHED:
+      *output = autofill::SubmissionIndicatorEvent::FRAME_DETACHED;
       return true;
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-        DOM_MUTATION_AFTER_XHR:
-      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
-          DOM_MUTATION_AFTER_XHR;
+    case autofill::mojom::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR:
+      *output = autofill::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR;
       return true;
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+    case autofill::mojom::SubmissionIndicatorEvent::
         PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD:
-      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
+      *output = autofill::SubmissionIndicatorEvent::
           PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD;
       return true;
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-        PROBABLE_FORM_SUBMISSION:
-      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
-          PROBABLE_FORM_SUBMISSION;
+    case autofill::mojom::SubmissionIndicatorEvent::PROBABLE_FORM_SUBMISSION:
+      *output = autofill::SubmissionIndicatorEvent::PROBABLE_FORM_SUBMISSION;
       return true;
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+    case autofill::mojom::SubmissionIndicatorEvent::
         SUBMISSION_INDICATOR_EVENT_COUNT:
-      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
-          SUBMISSION_INDICATOR_EVENT_COUNT;
+      *output =
+          autofill::SubmissionIndicatorEvent::SUBMISSION_INDICATOR_EVENT_COUNT;
       return true;
   }
 

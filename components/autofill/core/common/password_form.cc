@@ -201,28 +201,6 @@ base::string16 ValueElementVectorToString(
   return base::JoinString(pairs, base::ASCIIToUTF16(", "));
 }
 
-PasswordForm::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
-    SubmissionSource source) {
-  switch (source) {
-    case SubmissionSource::NONE:
-      return PasswordForm::SubmissionIndicatorEvent::NONE;
-    case SubmissionSource::SAME_DOCUMENT_NAVIGATION:
-      return PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
-    case SubmissionSource::XHR_SUCCEEDED:
-      return PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED;
-    case SubmissionSource::FRAME_DETACHED:
-      return PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED;
-    case SubmissionSource::DOM_MUTATION_AFTER_XHR:
-      return PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR;
-    case SubmissionSource::PROBABLY_FORM_SUBMITTED:
-      return PasswordForm::SubmissionIndicatorEvent::PROBABLE_FORM_SUBMISSION;
-    case SubmissionSource::FORM_SUBMISSION:
-      return PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
-  }
-  // Unittests exercise this path, so do not put NOTREACHED() here.
-  return PasswordForm::SubmissionIndicatorEvent::NONE;
-}
-
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
   base::DictionaryValue form_json;
   PasswordFormToJSON(form, &form_json);
@@ -249,36 +227,6 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
 
 std::ostream& operator<<(std::ostream& os, PasswordForm* form) {
   return os << "&" << *form;
-}
-
-std::ostream& operator<<(
-    std::ostream& os,
-    PasswordForm::SubmissionIndicatorEvent submission_event) {
-  switch (submission_event) {
-    case PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION:
-      os << "HTML_FORM_SUBMISSION";
-      break;
-    case PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION:
-      os << "SAME_DOCUMENT_NAVIGATION";
-      break;
-    case PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED:
-      os << "XHR_SUCCEEDED";
-      break;
-    case PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED:
-      os << "FRAME_DETACHED";
-      break;
-    case PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR:
-      os << "DOM_MUTATION_AFTER_XHR";
-      break;
-    case PasswordForm::SubmissionIndicatorEvent::
-        PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD:
-      os << "PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD";
-      break;
-    default:
-      os << "NO_SUBMISSION";
-      break;
-  }
-  return os;
 }
 
 }  // namespace autofill

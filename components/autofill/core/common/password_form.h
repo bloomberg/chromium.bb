@@ -13,6 +13,7 @@
 
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/submission_indicator_event.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -71,25 +72,6 @@ struct PasswordForm {
 
     SCHEME_LAST = SCHEME_USERNAME_ONLY
   } scheme;
-
-  // Events observed by the Password Manager that indicate either that a form is
-  // potentially being submitted, or that a form has already been successfully
-  // submitted. Recorded into a UMA histogram, so order of enumerators should
-  // not be changed.
-  enum class SubmissionIndicatorEvent {
-    NONE,
-    HTML_FORM_SUBMISSION,
-    SAME_DOCUMENT_NAVIGATION,
-    XHR_SUCCEEDED,
-    FRAME_DETACHED,
-    DEPRECATED_MANUAL_SAVE,  // obsolete
-    DOM_MUTATION_AFTER_XHR,
-    PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD,
-    DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD,            // unused
-    DEPRECATED_FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD,  // unused
-    PROBABLE_FORM_SUBMISSION,
-    SUBMISSION_INDICATOR_EVENT_COUNT
-  };
 
   // The "Realm" for the sign-on. This is scheme, host, port for SCHEME_HTML.
   // Dialog based forms also contain the HTTP realm. Android based forms will
@@ -364,15 +346,9 @@ struct LessThanUniqueKey {
 base::string16 ValueElementVectorToString(
     const ValueElementVector& value_element_pairs);
 
-PasswordForm::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
-    SubmissionSource source);
-
 // For testing.
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form);
 std::ostream& operator<<(std::ostream& os, PasswordForm* form);
-std::ostream& operator<<(
-    std::ostream& os,
-    PasswordForm::SubmissionIndicatorEvent submission_event);
 
 }  // namespace autofill
 

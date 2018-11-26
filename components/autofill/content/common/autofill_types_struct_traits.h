@@ -85,13 +85,12 @@ struct EnumTraits<autofill::mojom::PasswordFormFieldPredictionType,
 };
 
 template <>
-struct EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
-                  autofill::PasswordForm::SubmissionIndicatorEvent> {
-  static autofill::mojom::PasswordFormSubmissionIndicatorEvent ToMojom(
-      autofill::PasswordForm::SubmissionIndicatorEvent input);
-  static bool FromMojom(
-      autofill::mojom::PasswordFormSubmissionIndicatorEvent input,
-      autofill::PasswordForm::SubmissionIndicatorEvent* output);
+struct EnumTraits<autofill::mojom::SubmissionIndicatorEvent,
+                  autofill::SubmissionIndicatorEvent> {
+  static autofill::mojom::SubmissionIndicatorEvent ToMojom(
+      autofill::SubmissionIndicatorEvent input);
+  static bool FromMojom(autofill::mojom::SubmissionIndicatorEvent input,
+                        autofill::SubmissionIndicatorEvent* output);
 };
 
 template <>
@@ -619,7 +618,7 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
     return r.is_affiliation_based_match;
   }
 
-  static autofill::PasswordForm::SubmissionIndicatorEvent submission_event(
+  static autofill::SubmissionIndicatorEvent submission_event(
       const autofill::PasswordForm& r) {
     return r.submission_event;
   }

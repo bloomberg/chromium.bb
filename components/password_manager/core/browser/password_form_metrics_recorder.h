@@ -266,8 +266,7 @@ class PasswordFormMetricsRecorder
 
   // Call this when a password is saved to indicate which path led to
   // submission.
-  void SetSubmissionIndicatorEvent(
-      autofill::PasswordForm::SubmissionIndicatorEvent event);
+  void SetSubmissionIndicatorEvent(autofill::SubmissionIndicatorEvent event);
 
   // Records all histograms in the PasswordManager.SuppressedAccount.* family.
   // Takes the FormFetcher intance which owns the login data from PasswordStore.

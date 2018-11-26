@@ -241,8 +241,7 @@ class FormStructure {
 
   bool has_password_field() const { return has_password_field_; }
 
-  void set_submission_event(
-      PasswordForm::SubmissionIndicatorEvent submission_event) {
+  void set_submission_event(SubmissionIndicatorEvent submission_event) {
     submission_event_ = submission_event;
   }
 
@@ -295,8 +294,7 @@ class FormStructure {
     return password_length_vote_;
   }
 
-  PasswordForm::SubmissionIndicatorEvent get_submission_event_for_testing()
-      const {
+  SubmissionIndicatorEvent get_submission_event_for_testing() const {
     return submission_event_;
   }
 #endif
@@ -479,7 +477,7 @@ class FormStructure {
 
   // The type of the event that was taken as an indication that the form has
   // been successfully submitted.
-  PasswordForm::SubmissionIndicatorEvent submission_event_;
+  SubmissionIndicatorEvent submission_event_;
 
   // The source URL.
   GURL source_url_;

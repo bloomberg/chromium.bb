@@ -396,12 +396,12 @@ void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type);
 
 // Log a password successful submission event.
 void LogPasswordSuccessfulSubmissionIndicatorEvent(
-    autofill::PasswordForm::SubmissionIndicatorEvent event);
+    autofill::SubmissionIndicatorEvent event);
 
 // Log a password successful submission event for accepted by user password save
 // or update.
 void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
-    autofill::PasswordForm::SubmissionIndicatorEvent event);
+    autofill::SubmissionIndicatorEvent event);
 
 // Log a frame of a submitted password form.
 void LogSubmittedFormFrame(SubmittedFormFrame frame);

@@ -1086,7 +1086,7 @@ void PasswordAutofillAgent::OnDynamicFormsSeen() {
 }
 
 void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
-    PasswordForm::SubmissionIndicatorEvent event) {
+    SubmissionIndicatorEvent event) {
   if (!provisionally_saved_form_.IsPasswordValid())
     return;
 
@@ -1098,7 +1098,7 @@ void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
   const auto& password_form = provisionally_saved_form_.password_form();
   // TODO(crbug.com/720347): This method could be called often and checking form
   // visibility could be expesive. Add performance metrics for this.
-  if (event != PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR) {
+  if (event != SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR) {
     if (form_util::IsFormVisible(frame,
                                  provisionally_saved_form_.form_element(),
                                  password_form.action, password_form.origin,
@@ -1279,7 +1279,7 @@ void PasswordAutofillAgent::OnFrameDetached() {
       provisionally_saved_form_.IsPasswordValid()) {
     DCHECK(FrameCanAccessPasswordManager());
     provisionally_saved_form_.SetSubmissionIndicatorEvent(
-        PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED);
+        SubmissionIndicatorEvent::FRAME_DETACHED);
     GetPasswordManagerDriver()->SameDocumentNavigation(
         provisionally_saved_form_.password_form());
   }
@@ -1321,7 +1321,7 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
                               *submitted_form);
     }
     submitted_form->submission_event =
-        PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+        SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
     if (FrameCanAccessPasswordManager()) {
       // Some observers depend on sending this information now instead of when
@@ -1395,7 +1395,7 @@ void PasswordAutofillAgent::OnProbablyFormSubmitted() {
                               provisionally_saved_form_.password_form());
     }
     provisionally_saved_form_.SetSubmissionIndicatorEvent(
-        PasswordForm::SubmissionIndicatorEvent::
+        SubmissionIndicatorEvent::
             PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD);
     GetPasswordManagerDriver()->PasswordFormSubmitted(
         provisionally_saved_form_.password_form());
@@ -1899,9 +1899,8 @@ void PasswordAutofillAgent::OnInferredFormSubmission(SubmissionSource source) {
   if (source == SubmissionSource::FRAME_DETACHED) {
     OnFrameDetached();
   } else {
-    PasswordForm::SubmissionIndicatorEvent event =
-        ToSubmissionIndicatorEvent(source);
-    if (event == PasswordForm::SubmissionIndicatorEvent::NONE)
+    SubmissionIndicatorEvent event = ToSubmissionIndicatorEvent(source);
+    if (event == SubmissionIndicatorEvent::NONE)
       return;
     FireSubmissionIfFormDisappear(event);
   }
