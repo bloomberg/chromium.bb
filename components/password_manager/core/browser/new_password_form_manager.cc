@@ -477,6 +477,10 @@ std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
     result->parser_.set_predictions(*parser_.predictions());
 
   result->pending_credentials_ = pending_credentials_;
+  if (parsed_submitted_form_) {
+    result->parsed_submitted_form_.reset(
+        new PasswordForm(*parsed_submitted_form_));
+  }
   result->is_new_login_ = is_new_login_;
   result->password_overridden_ = password_overridden_;
   result->retry_password_form_password_update_ =
