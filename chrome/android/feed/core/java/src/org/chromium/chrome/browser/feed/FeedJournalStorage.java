@@ -50,7 +50,10 @@ public class FeedJournalStorage implements JournalStorage {
 
     @Override
     public void read(String journalName, Consumer < Result < List<byte[]>>> consumer) {
-        assert mFeedJournalBridge != null;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mFeedJournalBridge == null) return;
+
         mFeedJournalBridge.loadJournal(journalName, (byte[][] entries) -> {
             List<byte[]> journal = Arrays.asList(entries);
             consumer.accept(Result.success(journal));
@@ -59,7 +62,10 @@ public class FeedJournalStorage implements JournalStorage {
 
     @Override
     public void commit(JournalMutation mutation, Consumer<CommitResult> consumer) {
-        assert mFeedJournalBridge != null;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mFeedJournalBridge == null) return;
+
         mFeedJournalBridge.commitJournalMutation(mutation,
                 (Boolean result)
                         -> consumer.accept(result ? CommitResult.SUCCESS : CommitResult.FAILURE));
@@ -67,7 +73,10 @@ public class FeedJournalStorage implements JournalStorage {
 
     @Override
     public void exists(String journalName, Consumer<Result<Boolean>> consumer) {
-        assert mFeedJournalBridge != null;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mFeedJournalBridge == null) return;
+
         mFeedJournalBridge.doesJournalExist(journalName,
                 (Boolean exist)
                         -> consumer.accept(Result.success(exist)),
@@ -76,7 +85,10 @@ public class FeedJournalStorage implements JournalStorage {
 
     @Override
     public void getAllJournals(Consumer < Result < List<String>>> consumer) {
-        assert mFeedJournalBridge != null;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mFeedJournalBridge == null) return;
+
         mFeedJournalBridge.loadAllJournalKeys(
                 (String[] data)
                         -> consumer.accept(Result.success(Arrays.asList(data))),
@@ -85,7 +97,10 @@ public class FeedJournalStorage implements JournalStorage {
 
     @Override
     public void deleteAll(Consumer<CommitResult> consumer) {
-        assert mFeedJournalBridge != null;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mFeedJournalBridge == null) return;
+
         mFeedJournalBridge.deleteAllJournals(
                 (Boolean result)
                         -> consumer.accept(result ? CommitResult.SUCCESS : CommitResult.FAILURE));

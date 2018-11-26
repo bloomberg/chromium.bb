@@ -51,7 +51,10 @@ public class FeedContentStorage implements ContentStorage {
 
     @Override
     public void get(List<String> keys, Consumer < Result < Map<String, byte[]>>> consumer) {
-        assert mFeedContentBridge != null;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mFeedContentBridge == null) return;
+
         mFeedContentBridge.loadContent(keys,
                 (Map<String, byte[]> data)
                         -> consumer.accept(Result.success(data)),
@@ -60,7 +63,10 @@ public class FeedContentStorage implements ContentStorage {
 
     @Override
     public void getAll(String prefix, Consumer < Result < Map<String, byte[]>>> consumer) {
-        assert mFeedContentBridge != null;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mFeedContentBridge == null) return;
+
         mFeedContentBridge.loadContentByPrefix(prefix,
                 (Map<String, byte[]> data)
                         -> consumer.accept(Result.success(data)),
@@ -69,7 +75,10 @@ public class FeedContentStorage implements ContentStorage {
 
     @Override
     public void commit(ContentMutation mutation, Consumer<CommitResult> consumer) {
-        assert mFeedContentBridge != null;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mFeedContentBridge == null) return;
+
         mFeedContentBridge.commitContentMutation(mutation,
                 (Boolean result)
                         -> consumer.accept(result ? CommitResult.SUCCESS : CommitResult.FAILURE));
@@ -77,7 +86,10 @@ public class FeedContentStorage implements ContentStorage {
 
     @Override
     public void getAllKeys(Consumer < Result < List<String>>> consumer) {
-        assert mFeedContentBridge != null;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mFeedContentBridge == null) return;
+
         mFeedContentBridge.loadAllContentKeys(
                 (String[] keys)
                         -> consumer.accept(Result.success(Arrays.asList(keys))),
