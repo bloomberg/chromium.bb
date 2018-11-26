@@ -26,14 +26,6 @@ MockFolderShortcutsModel.prototype.remove = function(entry) {
   this.has = false;
 };
 
-MockDriveSyncHandler = function() {
-  this.syncSuppressed = false;
-};
-
-MockDriveSyncHandler.prototype.isSyncSuppressed = function() {
-  return this.syncSuppressed;
-};
-
 function MockUI() {
   this.listContainer = {
     currentView: {

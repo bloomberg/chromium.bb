@@ -3,28 +3,36 @@
 // found in the LICENSE file.
 
 /**
- * Handler of the background page for the drive sync events.
- * @constructor
- * @extends {cr.EventTarget}
- * @struct
+ * Handler of the background page for the Drive sync events. Implementations
+ * of this interface must @extends {cr.EventTarget}.
+ *
+ * @interface
+ * @extends {EventTarget}
  */
 function DriveSyncHandler() {}
 
 DriveSyncHandler.prototype = /** @struct */ {
+  __proto__: EventTarget.prototype,
+
   /**
-   * @return {boolean} Whether the handler is having syncing items or not.
+   * @return {boolean} Whether the handler is syncing items or not.
    */
   get syncing() {}
 };
 
 /**
- * Returns whether the drive sync is currently suppressed or not.
+ * Returns the completed event name.
+ * @return {string}
+ */
+DriveSyncHandler.prototype.getCompletedEventName = function() {};
+
+/**
+ * Returns whether the Drive sync is currently suppressed or not.
  * @return {boolean}
  */
 DriveSyncHandler.prototype.isSyncSuppressed = function() {};
 
 /**
- * Shows the notification saying that the drive sync is disabled on cellular
- * network.
+ * Shows a notification that Drive sync is disabled on cellular networks.
  */
 DriveSyncHandler.prototype.showDisabledMobileSyncNotification = function() {};
