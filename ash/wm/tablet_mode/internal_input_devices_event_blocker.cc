@@ -75,6 +75,7 @@ void InternalInputDevicesEventBlocker::UpdateInternalTouchpad(
     Shell::Get()->touch_devices_controller()->SetTouchpadEnabled(
         !should_be_blocked, TouchDeviceEnabledSource::GLOBAL);
     is_touchpad_blocked_ = should_be_blocked;
+    VLOG(1) << "Internal touchpad is blocked: " << is_touchpad_blocked_;
   }
 }
 
@@ -97,6 +98,7 @@ void InternalInputDevicesEventBlocker::UpdateInternalKeyboard(
     GetInputDeviceControllerClient()->SetInternalKeyboardFilter(
         should_be_blocked, allowed_keys);
     is_keyboard_blocked_ = should_be_blocked;
+    VLOG(1) << "Internal keyboard is blocked: " << is_keyboard_blocked_;
   }
 }
 

@@ -190,6 +190,7 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
 
     if (client_)  // Null at startup and in tests.
       client_->OnTabletModeToggled(true);
+    VLOG(1) << "Enter tablet mode.";
   } else {
     tablet_mode_window_manager_->SetIgnoreWmEventsForExit();
     for (auto& observer : tablet_mode_observers_)
@@ -202,6 +203,7 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
 
     if (client_)  // Null at startup and in tests.
       client_->OnTabletModeToggled(false);
+    VLOG(1) << "Exit tablet mode.";
   }
 
   UpdateInternalInputDevicesEventBlocker();
@@ -342,6 +344,7 @@ void TabletModeController::LidEventReceived(
   if (!AllowUiModeChange())
     return;
 
+  VLOG(1) << "Lid event received: " << static_cast<int>(state);
   const bool open = state == chromeos::PowerManagerClient::LidState::OPEN;
   lid_is_closed_ = !open;
 
@@ -355,6 +358,7 @@ void TabletModeController::TabletModeEventReceived(
   if (!AllowUiModeChange())
     return;
 
+  VLOG(1) << "Tablet mode event received: " << static_cast<int>(mode);
   const bool on = mode == chromeos::PowerManagerClient::TabletMode::ON;
   tablet_mode_switch_is_on_ = on;
   // Do not change if docked.
@@ -392,10 +396,12 @@ void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 
 void TabletModeController::OnMouseDeviceConfigurationChanged() {
+  VLOG(1) << "Mouse device configuration changed.";
   HandlePointingDeviceAddedOrRemoved();
 }
 
 void TabletModeController::OnTouchpadDeviceConfigurationChanged() {
+  VLOG(1) << "Touchpad device configuration changed.";
   HandlePointingDeviceAddedOrRemoved();
 }
 
@@ -625,6 +631,7 @@ void TabletModeController::OnBluetoothAdapterOrDeviceChanged(
           device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO ||
       device->GetDeviceType() == device::BluetoothDeviceType::KEYBOARD ||
       device->GetDeviceType() == device::BluetoothDeviceType::TABLET) {
+    VLOG(1) << "Bluetooth device configuration changed.";
     HandlePointingDeviceAddedOrRemoved();
   }
 }
