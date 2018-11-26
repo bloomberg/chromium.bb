@@ -127,16 +127,6 @@ void UpdateRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
 
   run_loop.Run();
 }
-
-std::string GetTestGaiaIdForEmail(const std::string& email) {
-  std::string gaia_id =
-      std::string("gaia_id_for_") + gaia::CanonicalizeEmail(email);
-  // Avoid character '@' in the gaia ID string as there is code in the codebase
-  // that asserts that a gaia ID does not contain a "@" character.
-  std::replace(gaia_id.begin(), gaia_id.end(), '@', '_');
-  return gaia_id;
-}
-
 }  // namespace
 
 AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
@@ -343,6 +333,15 @@ void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
               .account_id.empty());
 
   account_tracker_service->SeedAccountInfo(account_info);
+}
+
+std::string GetTestGaiaIdForEmail(const std::string& email) {
+  std::string gaia_id =
+      std::string("gaia_id_for_") + gaia::CanonicalizeEmail(email);
+  // Avoid character '@' in the gaia ID string as there is code in the codebase
+  // that asserts that a gaia ID does not contain a "@" character.
+  std::replace(gaia_id.begin(), gaia_id.end(), '@', '_');
+  return gaia_id;
 }
 
 }  // namespace identity

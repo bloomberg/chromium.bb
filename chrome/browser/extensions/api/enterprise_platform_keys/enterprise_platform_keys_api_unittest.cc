@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -33,9 +33,9 @@
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "extensions/common/extension_builder.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -174,8 +174,9 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
   // Derived classes can override this method to set the required authenticated
   // user in the SigninManager class.
   virtual void SetAuthenticatedUser() {
-    SigninManagerFactory::GetForProfile(browser()->profile())
-        ->SetAuthenticatedAccountInfo("12345", kUserEmail);
+    identity::MakePrimaryAccountAvailable(
+        IdentityManagerFactory::GetForProfile(browser()->profile()),
+        kUserEmail);
   }
 
   // Like extension_function_test_utils::RunFunctionAndReturnError but with an
@@ -587,9 +588,9 @@ class EPKChallengeMachineKeyUnmanagedUserTest
     : public EPKChallengeMachineKeyTest {
  protected:
   void SetAuthenticatedUser() override {
-    SigninManagerFactory::GetForProfile(browser()->profile())
-        ->SetAuthenticatedAccountInfo(account_id_.GetGaiaId(),
-                                      account_id_.GetUserEmail());
+    identity::MakePrimaryAccountAvailable(
+        IdentityManagerFactory::GetForProfile(browser()->profile()),
+        account_id_.GetUserEmail());
   }
 
   TestingProfile* CreateProfile() override {
@@ -597,8 +598,10 @@ class EPKChallengeMachineKeyUnmanagedUserTest
     return profile_manager()->CreateTestingProfile(account_id_.GetUserEmail());
   }
 
+  const std::string email = "test@chromium.com";
   const AccountId account_id_ =
-      AccountId::FromUserEmailGaiaId("test@chromium.com", "12345");
+      AccountId::FromUserEmailGaiaId(email,
+                                     identity::GetTestGaiaIdForEmail(email));
 };
 
 TEST_F(EPKChallengeMachineKeyUnmanagedUserTest, UserNotManaged) {
@@ -609,9 +612,9 @@ TEST_F(EPKChallengeMachineKeyUnmanagedUserTest, UserNotManaged) {
 class EPKChallengeUserKeyUnmanagedUserTest : public EPKChallengeUserKeyTest {
  protected:
   void SetAuthenticatedUser() override {
-    SigninManagerFactory::GetForProfile(browser()->profile())
-        ->SetAuthenticatedAccountInfo(account_id_.GetGaiaId(),
-                                      account_id_.GetUserEmail());
+    identity::MakePrimaryAccountAvailable(
+        IdentityManagerFactory::GetForProfile(browser()->profile()),
+        account_id_.GetUserEmail());
   }
 
   TestingProfile* CreateProfile() override {
@@ -619,8 +622,10 @@ class EPKChallengeUserKeyUnmanagedUserTest : public EPKChallengeUserKeyTest {
     return profile_manager()->CreateTestingProfile(account_id_.GetUserEmail());
   }
 
+  const std::string email = "test@chromium.com";
   const AccountId account_id_ =
-      AccountId::FromUserEmailGaiaId("test@chromium.com", "12345");
+      AccountId::FromUserEmailGaiaId(email,
+                                     identity::GetTestGaiaIdForEmail(email));
 };
 
 TEST_F(EPKChallengeUserKeyUnmanagedUserTest, UserNotManaged) {
