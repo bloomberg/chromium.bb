@@ -520,7 +520,8 @@ TEST_F(WindowSelectorTest, ActivateMinimized) {
   const gfx::Point point =
       GetTransformedBoundsInRootWindow(window_for_minimized_window)
           .CenterPoint();
-  ui::test::EventGenerator event_generator(window->GetRootWindow(), point);
+  ui::test::EventGenerator event_generator(
+      window_for_minimized_window->GetRootWindow(), point);
   event_generator.ClickLeftButton();
 
   EXPECT_FALSE(IsSelecting());
@@ -727,7 +728,7 @@ TEST_F(WindowSelectorTest, ActiveWindowChangedUserActionWindowClose) {
 
   aura::Window* window = widget->GetNativeWindow();
   gfx::Rect bounds = GetTransformedBoundsInRootWindow(window);
-  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() + 5);
+  gfx::Point point(bounds.top_right().x() - 5, bounds.top_right().y() + 5);
   ui::test::EventGenerator event_generator(window->GetRootWindow(), point);
 
   ASSERT_FALSE(widget->IsClosed());
@@ -841,7 +842,7 @@ TEST_F(WindowSelectorTest, CloseButton) {
 
   aura::Window* window = widget->GetNativeWindow();
   gfx::Rect bounds = GetTransformedBoundsInRootWindow(window);
-  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() + 5);
+  gfx::Point point(bounds.top_right().x() - 5, bounds.top_right().y() + 5);
   ui::test::EventGenerator event_generator(window->GetRootWindow(), point);
 
   EXPECT_FALSE(widget->IsClosed());
@@ -920,7 +921,7 @@ TEST_F(WindowSelectorTest, CloseButtonOnMultipleDisplay) {
 
   aura::Window* window2 = widget->GetNativeWindow();
   gfx::Rect bounds = GetTransformedBoundsInRootWindow(window2);
-  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() + 5);
+  gfx::Point point(bounds.top_right().x() - 5, bounds.top_right().y() + 5);
   ui::test::EventGenerator event_generator(window2->GetRootWindow(), point);
 
   EXPECT_FALSE(widget->IsClosed());

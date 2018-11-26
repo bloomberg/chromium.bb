@@ -1716,7 +1716,8 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   UpdateDisplay("800x600,800x600");
   ASSERT_EQ(2U, Shell::GetAllRootWindows().size());
 
-  Shelf* secondary_shelf = Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
+  aura::Window* root_window = Shell::GetAllRootWindows()[1];
+  Shelf* secondary_shelf = Shelf::ForWindow(root_window);
 
   secondary_shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   ASSERT_EQ(SHELF_ALIGNMENT_LEFT, secondary_shelf->alignment());
@@ -1729,9 +1730,8 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
   // Fetch the start point of dragging.
   gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
-  ::wm::ConvertPointFromScreen(secondary_shelf->GetWindow(), &start_point);
-  ui::test::EventGenerator generator(Shell::GetAllRootWindows()[1],
-                                     start_point);
+  ::wm::ConvertPointFromScreen(root_window, &start_point);
+  ui::test::EventGenerator generator(root_window, start_point);
 
   // Rip off the browser item.
   generator.PressLeftButton();
