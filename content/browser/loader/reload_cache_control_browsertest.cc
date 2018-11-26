@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -169,6 +171,48 @@ IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, NavigateToSame) {
   shell()->CloseDevTools();
   EXPECT_TRUE(NavigateToURL(shell(), url));
   CheckCacheControl(kExpectedCacheControlForReload);
+}
+
+// Reloading with ReloadType::NORMAL should respect service workers.
+IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest,
+                       NormalReload_ControlledByServiceWorker) {
+  // Prepare for a service worker.
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('fetch_event_blob.js');"));
+
+  // Open a page served by the service worker.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/service_worker/empty.html")));
+  EXPECT_EQ(base::UTF8ToUTF16("Title"), shell()->web_contents()->GetTitle());
+
+  // Reload from the browser. The page is still controlled by the service
+  // worker.
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(base::UTF8ToUTF16("Title"), shell()->web_contents()->GetTitle());
+}
+
+// Reloading with ReloadType::BYPASSING_CACHE should bypass service workers.
+IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest,
+                       BypassingReload_ControlledByServiceWorker) {
+  // Prepare for a service worker.
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('fetch_event_blob.js');"));
+
+  // Open a page served by the service worker.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/service_worker/empty.html")));
+  EXPECT_EQ(base::UTF8ToUTF16("Title"), shell()->web_contents()->GetTitle());
+
+  // Reload from the browser with pressing shift key. It bypasses the service
+  // worker.
+  ReloadBypassingCacheBlockUntilNavigationsComplete(shell(), 1);
+  EXPECT_EQ(base::UTF8ToUTF16("ServiceWorker test - empty page"),
+            shell()->web_contents()->GetTitle());
 }
 
 }  // namespace
