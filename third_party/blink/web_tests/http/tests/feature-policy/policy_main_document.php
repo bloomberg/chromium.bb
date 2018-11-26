@@ -70,8 +70,10 @@ assert_array_equals(
   policy_main.getAllowlistForFeature("payment"), ["http://127.0.0.1:8000"],
   "payment is allowed for self");
 assert_array_equals(
-  policy_main.getAllowlistForFeature("camera"),
-  ["http://127.0.0.1:8000", "https://www.example.com", "https://www.example.net"],
+  policy_main.getAllowlistForFeature("camera").sort(),
+  ["http://127.0.0.1:8000",
+   "https://www.example.com",
+   "https://www.example.net"].sort(),
   "camera is allowed for multiple origins");
 assert_array_equals(
   policy_main.getAllowlistForFeature("midi"), [], "midi is disallowed for all");

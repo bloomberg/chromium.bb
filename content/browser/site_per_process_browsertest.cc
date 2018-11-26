@@ -483,6 +483,9 @@ blink::ParsedFeaturePolicy CreateFPHeader(
   DCHECK(!origins.empty());
   for (const GURL& origin : origins)
     result[0].origins.push_back(url::Origin::Create(origin));
+  // We expect the parsed features to be sorted so that they can reliably be
+  // compared.
+  std::sort(result[0].origins.begin(), result[0].origins.end());
   return result;
 }
 

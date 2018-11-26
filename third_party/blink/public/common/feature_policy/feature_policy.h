@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "third_party/blink/public/common/common_export.h"
@@ -108,6 +109,7 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   // flag is set instead.
   bool matches_opaque_src;
   mojom::FeaturePolicyDisposition disposition;
+  // An alphabetically sorted list of all the origins allowed.
   std::vector<url::Origin> origins;
 };
 
@@ -147,12 +149,12 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
     // Returns true if the allowlist matches all origins.
     bool MatchesAll() const;
 
-    // Returns list of origins in the allowlist.
-    const std::vector<url::Origin>& Origins() const;
+    // Returns set of origins in the allowlist.
+    const base::flat_set<url::Origin>& Origins() const;
 
    private:
     bool matches_all_origins_;
-    std::vector<url::Origin> origins_;
+    base::flat_set<url::Origin> origins_;
   };
 
   // The FeaturePolicy::FeatureDefault enum defines the default enable state for
