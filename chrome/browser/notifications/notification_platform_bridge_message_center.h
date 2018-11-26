@@ -32,6 +32,7 @@ class NotificationPlatformBridgeMessageCenter
   void GetDisplayed(Profile* profile,
                     GetDisplayedNotificationsCallback callback) const override;
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
+  void DisplayServiceShutDown(Profile* profile) override;
 
  private:
   Profile* profile_;

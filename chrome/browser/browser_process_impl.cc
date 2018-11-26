@@ -62,6 +62,7 @@
 #include "chrome/browser/net/chrome_net_log_helper.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -285,6 +286,8 @@ void BrowserProcessImpl::Init() {
   message_center::MessageCenter::Initialize();
 #endif
 
+  system_notification_helper_ = std::make_unique<SystemNotificationHelper>();
+
   update_client::UpdateQueryParams::SetDelegate(
       ChromeUpdateQueryParamsDelegate::GetInstance());
 
@@ -374,6 +377,8 @@ void BrowserProcessImpl::StartTearDown() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   plugins_resource_service_.reset();
 #endif
+
+  system_notification_helper_.reset();
 
 #if !defined(OS_CHROMEOS)
   // Need to clear the desktop notification balloons before the io_thread_ and
