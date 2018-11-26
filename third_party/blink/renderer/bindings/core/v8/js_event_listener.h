@@ -63,13 +63,8 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
   ScriptState* GetScriptState() const override {
     return event_listener_->CallbackRelevantScriptState();
   }
-  ScriptState* GetScriptStateOrReportError(
-      const char* operation) const override {
-    return event_listener_->CallbackRelevantScriptStateOrReportError(
-        "EventListener", operation);
-  }
   DOMWrapperWorld& GetWorld() const override {
-    return event_listener_->GetWorld();
+    return event_listener_->CallbackRelevantScriptState()->World();
   }
 
  private:

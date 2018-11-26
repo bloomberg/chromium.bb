@@ -36,34 +36,12 @@ class PLATFORM_EXPORT CallbackFunctionBase
   }
 
   v8::Isolate* GetIsolate() const {
-    return incumbent_script_state_->GetIsolate();
+    return callback_relevant_script_state_->GetIsolate();
   }
 
-  // Returns the ScriptState of the relevant realm of the callback object.
-  //
-  // NOTE: This function must be used only when it's pretty sure that the
-  // callcack object is the same origin-domain. Otherwise,
-  // |CallbackRelevantScriptStateOrReportError| or
-  // |CallbackRelevantScriptStateOrThrowException| must be used instead.
   ScriptState* CallbackRelevantScriptState() {
-    DCHECK(callback_relevant_script_state_);
     return callback_relevant_script_state_;
   }
-
-  // Returns the ScriptState of the relevant realm of the callback object iff
-  // the callback is the same origin-domain. Otherwise, reports an error and
-  // returns nullptr.
-  ScriptState* CallbackRelevantScriptStateOrReportError(const char* interface,
-                                                        const char* operation);
-
-  // Returns the ScriptState of the relevant realm of the callback object iff
-  // the callback is the same origin-domain. Otherwise, throws an exception and
-  // returns nullptr.
-  ScriptState* CallbackRelevantScriptStateOrThrowException(
-      const char* interface,
-      const char* operation);
-
-  DOMWrapperWorld& GetWorld() const { return incumbent_script_state_->World(); }
 
   // Returns true if the ES function has a [[Construct]] internal method.
   bool IsConstructor() const { return CallbackFunction()->IsConstructor(); }
@@ -74,7 +52,6 @@ class PLATFORM_EXPORT CallbackFunctionBase
   v8::Local<v8::Function> CallbackFunction() const {
     return callback_function_.NewLocal(GetIsolate()).As<v8::Function>();
   }
-
   ScriptState* IncumbentScriptState() { return incumbent_script_state_; }
 
  private:
@@ -82,8 +59,7 @@ class PLATFORM_EXPORT CallbackFunctionBase
   // Use v8::Object instead of v8::Function in order to handle
   // [TreatNonObjectAsNull].
   TraceWrapperV8Reference<v8::Object> callback_function_;
-  // The associated Realm of the callback function type value iff it's the same
-  // origin-domain. Otherwise, nullptr.
+  // The associated Realm of the callback function type value.
   Member<ScriptState> callback_relevant_script_state_;
   // The callback context, i.e. the incumbent Realm when an ECMAScript value is
   // converted to an IDL value.
