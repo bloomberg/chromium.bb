@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_proxy.h"
@@ -54,11 +55,11 @@ RTCIceCandidate* ConvertToRtcIceCandidate(const cricket::Candidate& candidate) {
 class DefaultIceTransportAdapterCrossThreadFactory
     : public IceTransportAdapterCrossThreadFactory {
  public:
-  void InitializeOnMainThread() override {
+  void InitializeOnMainThread(LocalFrame& frame) override {
     DCHECK(!port_allocator_);
     DCHECK(!worker_thread_rtc_thread_);
     port_allocator_ = Platform::Current()->CreateWebRtcPortAllocator(
-        WebLocalFrame::FrameForCurrentContext());
+        frame.Client()->GetWebFrame());
     worker_thread_rtc_thread_ =
         Platform::Current()->GetWebRtcWorkerThreadRtcThread();
   }
@@ -113,9 +114,9 @@ RTCIceTransport::RTCIceTransport(
 
   LocalFrame* frame = To<Document>(context)->GetFrame();
   DCHECK(frame);
-  proxy_.reset(new IceTransportProxy(
-      frame->GetFrameScheduler(), std::move(proxy_thread),
-      std::move(host_thread), this, std::move(adapter_factory)));
+  proxy_ = std::make_unique<IceTransportProxy>(*frame, std::move(proxy_thread),
+                                               std::move(host_thread), this,
+                                               std::move(adapter_factory));
 
   GenerateLocalParameters();
 }
