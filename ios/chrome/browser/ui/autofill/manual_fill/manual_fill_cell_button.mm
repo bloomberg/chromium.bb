@@ -14,15 +14,8 @@
 
 - (void)setHighlighted:(BOOL)highlighted {
   [super setHighlighted:highlighted];
-  auto animations = ^{
-    CGFloat alpha = highlighted ? 0.07 : 0;
-    self.backgroundColor = [UIColor colorWithWhite:0 alpha:alpha];
-  };
-  [UIView animateWithDuration:0.1
-                        delay:0
-                      options:UIViewAnimationOptionBeginFromCurrentState
-                   animations:animations
-                   completion:nil];
+  CGFloat alpha = highlighted ? 0.07 : 0;
+  self.backgroundColor = [UIColor colorWithWhite:0 alpha:alpha];
 }
 
 @end
