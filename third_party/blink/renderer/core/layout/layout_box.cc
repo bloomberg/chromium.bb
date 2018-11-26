@@ -3465,6 +3465,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
     LayoutBlock** out_cb,
     bool* out_skipped_auto_height_containing_block) const {
   LayoutBlock* cb = ContainingBlock();
+  const LayoutBlock* const real_cb = cb;
   const LayoutBox* containing_block_child = this;
   bool skipped_auto_height_containing_block = false;
   LayoutUnit root_margin_border_padding_height;
@@ -3498,11 +3499,15 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
       cb->HasOverrideContainingBlockPercentageResolutionLogicalHeight()) {
     available_height =
         cb->OverrideContainingBlockPercentageResolutionLogicalHeight();
+  } else if (HasOverrideContainingBlockContentLogicalWidth() &&
+             IsHorizontalWritingMode() != real_cb->IsHorizontalWritingMode()) {
+    available_height = OverrideContainingBlockContentLogicalWidth();
+  } else if (HasOverrideContainingBlockContentLogicalHeight() &&
+             IsHorizontalWritingMode() == real_cb->IsHorizontalWritingMode()) {
+    available_height = OverrideContainingBlockContentLogicalHeight();
   } else if (IsHorizontalWritingMode() != cb->IsHorizontalWritingMode()) {
     available_height =
         containing_block_child->ContainingBlockLogicalWidthForContent();
-  } else if (HasOverrideContainingBlockContentLogicalHeight()) {
-    available_height = OverrideContainingBlockContentLogicalHeight();
   } else if (cb->IsTableCell()) {
     if (!skipped_auto_height_containing_block) {
       // Table cells violate what the CSS spec says to do with heights.
