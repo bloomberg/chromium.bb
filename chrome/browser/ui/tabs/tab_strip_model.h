@@ -481,10 +481,6 @@ class TabStripModel {
   std::vector<content::WebContents*> GetWebContentsesByIndices(
       const std::vector<int>& indices);
 
-  // Intalls RenderWidgetVisibilityTracker when the active tab has changed.
-  void InstallRenderWigetVisibilityTracker(
-      const TabStripSelectionChange& selection);
-
   // Sets the selection to |new_model| and notifies any observers.
   // Note: This function might end up sending 0 to 3 notifications in the
   // following order: TabDeactivated, ActiveTabChanged, TabSelectionChanged.

@@ -48,6 +48,8 @@ using content::WebContents;
 
 namespace {
 
+class RenderWidgetHostVisibilityTracker;
+
 // Returns true if the specified transition is one of the types that cause the
 // opener relationships for the tab in which the transition occurred to be
 // forgotten. This is generally any navigation that isn't a link click (i.e.
@@ -63,6 +65,21 @@ bool ShouldForgetOpenersForTransition(ui::PageTransition transition) {
                                       ui::PAGE_TRANSITION_KEYWORD) ||
          ui::PageTransitionCoreTypeIs(transition,
                                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+}
+
+// Intalls RenderWidgetVisibilityTracker when the active tab has changed.
+std::unique_ptr<RenderWidgetHostVisibilityTracker>
+InstallRenderWigetVisibilityTracker(const TabStripSelectionChange& selection) {
+  if (!selection.active_tab_changed())
+    return nullptr;
+
+  content::RenderWidgetHost* track_host = nullptr;
+  if (selection.new_contents &&
+      selection.new_contents->GetRenderWidgetHostView()) {
+    track_host = selection.new_contents->GetRenderWidgetHostView()
+                     ->GetRenderWidgetHost();
+  }
+  return std::make_unique<RenderWidgetHostVisibilityTracker>(track_host);
 }
 
 // This tracks (and reports via UMA and tracing) how long it takes before a
@@ -486,17 +503,14 @@ void TabStripModel::SendDetachWebContentsNotifications(
       });
 
   TabStripModelChange change(TabStripModelChange::kRemoved, deltas);
-  for (auto& observer : observers_)
-    observer.OnTabStripModelChanged(this, change, selection);
+  {
+    auto visibility_tracker =
+        empty() ? nullptr : InstallRenderWigetVisibilityTracker(selection);
+    for (auto& observer : observers_)
+      observer.OnTabStripModelChanged(this, change, selection);
+  }
 
   for (auto& dwc : notifications->detached_web_contents) {
-    if (notifications->initially_active_web_contents &&
-        dwc->contents.get() == notifications->initially_active_web_contents) {
-      if (!empty())
-        InstallRenderWigetVisibilityTracker(selection);
-      notifications->initially_active_web_contents = nullptr;
-    }
-
     if (notifications->will_delete) {
       // This destroys the WebContents, which will also send
       // WebContentsDestroyed notifications.
@@ -1359,19 +1373,6 @@ WebContents* TabStripModel::GetWebContentsAtImpl(int index) const {
   return contents_data_[index]->web_contents();
 }
 
-void TabStripModel::InstallRenderWigetVisibilityTracker(
-    const TabStripSelectionChange& selection) {
-  if (!selection.active_tab_changed())
-    return;
-
-  content::RenderWidgetHost* track_host = nullptr;
-  if (selection.new_contents &&
-      selection.new_contents->GetRenderWidgetHostView()) {
-    track_host = selection.new_contents->GetRenderWidgetHostView()
-                     ->GetRenderWidgetHost();
-  }
-  RenderWidgetHostVisibilityTracker tracker(track_host);
-}
 
 TabStripSelectionChange TabStripModel::SetSelection(
     ui::ListSelectionModel new_model,
@@ -1389,11 +1390,10 @@ TabStripSelectionChange TabStripModel::SetSelection(
   selection_model_ = new_model;
   selection.new_contents = GetActiveWebContents();
 
-  InstallRenderWigetVisibilityTracker(selection);
-
   if (!triggered_by_other_operation &&
       (selection.active_tab_changed() || selection.selection_changed())) {
     TabStripModelChange change;
+    auto visibility_tracker = InstallRenderWigetVisibilityTracker(selection);
     for (auto& observer : observers_)
       observer.OnTabStripModelChanged(this, change, selection);
   }
