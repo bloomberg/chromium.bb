@@ -2889,6 +2889,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       ('firmware-nami-10775.B', ['nami']),
       ('firmware-nocturne-10984.B', ['nocturne']),
       ('firmware-grunt-11031.B', ['grunt']),
+      ('firmware-octopus-11297.B', ['octopus']),
   ]
 
   for branch, boards in firmware_branch_builders:
@@ -3363,10 +3364,6 @@ def ApplyCustomOverrides(site_config):
 
       'nautilus-release': {
           'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
-      },
-
-      'nami-release': {
-          'sign_types': ['recovery', 'factory'],
       },
 
       'octopus-release': {
