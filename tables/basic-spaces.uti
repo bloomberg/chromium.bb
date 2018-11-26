@@ -22,7 +22,9 @@
 # included by other tables. They are necesary for the proper operation
 # of liblouis or liblouisutdml.
 
-space \s 0		     SPACE
+space \s 0		SPACE
 noback sign \x0000 0
-space \x00a0 a		     NO-BREAK SPACE
-replace \xFEFF
+space \x00a0 a		NO-BREAK SPACE
+replace \xFEFF		ZERO WIDTH NO-BREAK SPACE
+replace \x200B		ZERO WIDTH SPACE
+replace \x2060		WORD JOINER
