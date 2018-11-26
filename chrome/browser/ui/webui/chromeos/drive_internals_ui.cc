@@ -404,6 +404,14 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
     base::DictionaryValue connection_status;
     connection_status.SetString("status", status);
+    drive::DriveNotificationManager* drive_notification_manager =
+        drive::DriveNotificationManagerFactory::FindForBrowserContext(
+            profile());
+    connection_status.SetBoolean(
+        "push-notification-enabled",
+        drive_notification_manager
+            ? drive_notification_manager->push_notification_enabled()
+            : false);
     auto* drive_service = GetDriveService();
     if (drive_service) {
       connection_status.SetBoolean("has-refresh-token",
@@ -477,17 +485,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
           team_drive_metadata) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    drive::DriveNotificationManager* drive_notification_manager =
-        drive::DriveNotificationManagerFactory::FindForBrowserContext(
-            profile());
-    if (!drive_notification_manager)
-      return;
-
-    base::DictionaryValue delta_update_status;
-    delta_update_status.SetBoolean(
-        "push-notification-enabled",
-        drive_notification_manager->push_notification_enabled());
-
     auto items = std::make_unique<base::ListValue>();
     // Users default corpus first.
     auto app_data = std::make_unique<base::DictionaryValue>();
@@ -521,6 +518,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
       items->Append(std::move(app_data));
     }
 
+    base::DictionaryValue delta_update_status;
     delta_update_status.Set("items", std::move(items));
 
     MaybeCallJavascript("updateDeltaUpdateStatus",
