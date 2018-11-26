@@ -601,3 +601,27 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
         "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
   }
 }
+
+// Tests that the browser only receives anchor elements that are in the
+// viewport, and from anchor elements whose target differ from document URL
+// by one digit.
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+                       ViewportOnlyAndUrlIncrementByOne) {
+  base::HistogramTester histogram_tester;
+
+  const GURL& url = GetTestURL("/long_page_with_anchors-1.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kRecordAnchorMetricsVisible)) {
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
+    // Same document anchor element should be removed after merge.
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
+  }
+}
