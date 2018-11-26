@@ -461,7 +461,7 @@ void AppListItemView::OnContextMenuModelReceived(
     apps_grid_view_->ClearAnySelectedView();
   int run_types = views::MenuRunner::HAS_MNEMONICS;
 
-  if (source_type == ui::MENU_SOURCE_TOUCH)
+  if (source_type == ui::MENU_SOURCE_TOUCH && touch_dragging_)
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
 
   views::MenuAnchorPosition anchor_position = views::MENU_ANCHOR_TOPLEFT;
