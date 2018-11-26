@@ -9524,7 +9524,10 @@ static int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       masked_type_cost += x->comp_group_idx_cost[comp_group_idx_ctx][1];
       masked_type_cost += x->compound_type_cost[bsize][cur_type - 1];
       rs2 = masked_type_cost;
-      if (enable_wedge_search(x, cpi) && *rd / 3 < ref_best_rd) {
+
+      if (enable_wedge_search(x, cpi) &&
+          ((*rd / cpi->max_comp_type_rd_threshold_div) *
+           cpi->max_comp_type_rd_threshold_mul) < ref_best_rd) {
         best_rd_cur = build_and_cost_compound_type(
             cpi, x, cur_mv, bsize, this_mode, &rs2, *rate_mv, orig_dst,
             &tmp_rate_mv, preds0, preds1, buffers->residual1, buffers->diff10,

@@ -49,6 +49,10 @@ static MESH_PATTERN intrabc_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
 };
 static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
                                                             25,  25,  10 };
+// scaling values to be used for gating wedge/compound segment based on best
+// approximate rd
+static int comp_type_rd_threshold_mul[3] = { 1, 10, 11 };
+static int comp_type_rd_threshold_div[3] = { 3, 16, 16 };
 
 // Intra only frames, golden frames (except alt ref overlays) and
 // alt ref frames tend to be coded at a higher than ambient quality
@@ -241,6 +245,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->full_pixel_motion_search_based_split = 1;
     sf->disable_wedge_search_var_thresh = 0;
     sf->disable_wedge_search_edge_thresh = 0;
+    sf->prune_comp_type_by_comp_avg = 1;
   }
 
   if (speed >= 2) {
@@ -265,6 +270,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->fast_wedge_sign_estimate = 1;
     sf->disable_dual_filter = 1;
     sf->use_jnt_comp_flag = JNT_COMP_DISABLED;
+    sf->prune_comp_type_by_comp_avg = 2;
   }
 
   if (speed >= 3) {
@@ -517,6 +523,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->inter_mode_rd_model_estimation = 0;
   sf->obmc_full_pixel_search_level = 0;
   sf->skip_sharp_interp_filter_search = 0;
+  sf->prune_comp_type_by_comp_avg = 0;
 
   if (oxcf->mode == GOOD)
     set_good_speed_features_framesize_independent(cpi, sf, oxcf->speed);
@@ -592,6 +599,10 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
     cpi->find_fractional_mv_step = av1_return_max_sub_pixel_mv;
   else if (cpi->oxcf.motion_vector_unit_test == 2)
     cpi->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
+  cpi->max_comp_type_rd_threshold_mul =
+      comp_type_rd_threshold_mul[sf->prune_comp_type_by_comp_avg];
+  cpi->max_comp_type_rd_threshold_div =
+      comp_type_rd_threshold_div[sf->prune_comp_type_by_comp_avg];
 
 #if CONFIG_DIST_8X8
   if (sf->use_transform_domain_distortion > 0) cpi->oxcf.using_dist_8x8 = 0;

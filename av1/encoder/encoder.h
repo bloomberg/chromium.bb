@@ -847,6 +847,11 @@ typedef struct AV1_COMP {
   //   decoder side value obtained following the short signaling procedure.
   int ref_conv[REF_FRAMES];
 
+  // Factors to control gating of compound type selection based on best
+  // approximate rd so far
+  int max_comp_type_rd_threshold_mul;
+  int max_comp_type_rd_threshold_div;
+
   AV1LfSync lf_row_sync;
   AV1LrSync lr_row_sync;
   AV1LrStruct lr_ctxt;

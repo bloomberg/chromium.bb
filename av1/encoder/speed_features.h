@@ -593,6 +593,10 @@ typedef struct SPEED_FEATURES {
   // skip sharp_filter evaluation based on regular and smooth filter rd for
   // dual_filter=0 case
   int skip_sharp_interp_filter_search;
+
+  // prune wedge and compound segment approximate rd evaluation based on
+  // compound average rd/ref_best_rd
+  int prune_comp_type_by_comp_avg;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
