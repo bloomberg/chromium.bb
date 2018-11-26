@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/current_module.h"
+#include "base/win/i18n.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
@@ -503,6 +504,16 @@ HRESULT CGaiaCredentialBase::GetGlsCommandline(
     command_line->AppendSwitchNative(kEmailDomainSwitch, email_pattern);
 
   command_line->AppendSwitchNative(kGcpwSigninSwitch, email);
+
+  // Get the current UI language for the logon screen and pass it onto Chrome
+  // The UI language depends on whether we are using a SYSTEM logon (initial
+  // logon) or a lock screen logon (from a user). If the user who locked the
+  // screen has a specific language, that will be the one used for the UI
+  // language.
+  std::vector<base::string16> languages;
+  if (base::win::i18n::GetThreadPreferredUILanguageList(&languages)) {
+    command_line->AppendSwitchNative("lang", languages[0]);
+  }
 
   // The gpu process will be running on an alternative desktop since it does not
   // have access to the winlogon desktop. This mitigation is required merely to
