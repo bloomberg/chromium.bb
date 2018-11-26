@@ -64,11 +64,12 @@ void CreateDiceTurnSyncOnHelper(
 
 namespace signin_ui_util {
 
-base::string16 GetAuthenticatedUsername(const SigninManagerBase* signin) {
+base::string16 GetAuthenticatedUsername(
+    const identity::IdentityManager* identity_manager) {
   std::string user_display_name;
 
-  if (signin->IsAuthenticated()) {
-    user_display_name = signin->GetAuthenticatedAccountInfo().email;
+  if (identity_manager->HasPrimaryAccount()) {
+    user_display_name = identity_manager->GetPrimaryAccountInfo().email;
 
 #if defined(OS_CHROMEOS)
     if (user_manager::UserManager::IsInitialized()) {

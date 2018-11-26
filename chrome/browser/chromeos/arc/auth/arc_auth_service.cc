@@ -23,7 +23,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_data_removal_dialog.h"
 #include "chromeos/account_manager/account_manager_factory.h"
@@ -37,11 +37,11 @@
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace arc {
@@ -436,10 +436,10 @@ void ArcAuthService::FetchPrimaryAccountInfo(
     }
   } else {
     // Optionally retrieve auth code in silent mode.
-    const SigninManagerBase* const signin_manager =
-        SigninManagerFactory::GetForProfile(profile_);
+    const auto* const identity_manager =
+        IdentityManagerFactory::GetForProfile(profile_);
     auth_code_fetcher = CreateArcBackgroundAuthCodeFetcher(
-        signin_manager->GetAuthenticatedAccountId(), initial_signin);
+        identity_manager->GetPrimaryAccountId(), initial_signin);
   }
 
   // Add the request to |pending_token_requests_| first, before starting a token
@@ -554,10 +554,10 @@ void ArcAuthService::OnPrimaryAccountAuthCodeFetched(
   DeletePendingTokenRequest(fetcher);
 
   if (success) {
-    const SigninManagerBase* const signin_manager =
-        SigninManagerFactory::GetForProfile(profile_);
+    const auto* const identity_manager =
+        IdentityManagerFactory::GetForProfile(profile_);
     const std::string& full_account_id = base::UTF16ToUTF8(
-        signin_ui_util::GetAuthenticatedUsername(signin_manager));
+        signin_ui_util::GetAuthenticatedUsername(identity_manager));
     std::move(callback).Run(
         mojom::ArcSignInStatus::SUCCESS,
         CreateAccountInfo(!IsArcOptInVerificationDisabled(), auth_code,
