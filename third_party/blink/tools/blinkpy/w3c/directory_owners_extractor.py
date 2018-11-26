@@ -4,7 +4,7 @@
 
 """A limited finder & parser for Chromium OWNERS files.
 
-This module is intended to be used within LayoutTests/external and is
+This module is intended to be used within web_tests/external and is
 informative only. For authoritative uses, please rely on `git cl owners`.
 For example, it does not support directives other than email addresses.
 """
@@ -59,7 +59,7 @@ class DirectoryOwnersExtractor(object):
                 # Found an empty OWNERS file. Try again from the parent directory.
                 absolute_path = self.filesystem.dirname(self.filesystem.dirname(owners_file))
                 owners_file = self.find_owners_file(absolute_path)
-            # Skip LayoutTests/external/OWNERS.
+            # Skip web_tests/external/OWNERS.
             if not owners or owners_file == external_root_owners:
                 continue
 
@@ -72,7 +72,7 @@ class DirectoryOwnersExtractor(object):
         """Finds the first enclosing OWNERS file for a given path.
 
         Starting from the given path, walks up the directory tree until the
-        first OWNERS file is found or LayoutTests/external is reached.
+        first OWNERS file is found or web_tests/external is reached.
 
         Args:
             start_path: A relative path from the root of the repository, or an
@@ -80,7 +80,7 @@ class DirectoryOwnersExtractor(object):
 
         Returns:
             The absolute path to the first OWNERS file found; None if not found
-            or if start_path is outside of LayoutTests/external.
+            or if start_path is outside of web_tests/external.
         """
         abs_start_path = (start_path if self.filesystem.isabs(start_path)
                           else self.finder.path_from_chromium_base(start_path))
@@ -89,7 +89,7 @@ class DirectoryOwnersExtractor(object):
         external_root = self.finder.path_from_layout_tests('external')
         if not directory.startswith(external_root):
             return None
-        # Stop at LayoutTests, which is the parent of external_root.
+        # Stop at web_tests, which is the parent of external_root.
         while directory != self.finder.layout_tests_dir():
             owners_file = self.filesystem.join(directory, 'OWNERS')
             if self.filesystem.isfile(self.finder.path_from_chromium_base(owners_file)):

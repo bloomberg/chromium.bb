@@ -331,7 +331,7 @@ to an animated element's [ComputedStyle][].
 Test new animation features using end to end web-platform-tests to ensure
 cross-browser interoperability. Use unit testing when access to chrome internals
 is required. Test chrome specific features such as compositing of animation
-using LayoutTests or unit tests.
+using web tests or unit tests.
 
 ### End to end testing
 
@@ -342,14 +342,14 @@ spec, add a corresponding -expected.txt file with your test listing the expected
 failure in Chrome.
 
 [Layout tests](../../../../../docs/testing/writing_layout_tests.md) are located
-in [third_party/WebKit/LayoutTests][]. These should be written when needing end
+in [third_party/blink/web_tests][]. These should be written when needing end
 to end testing but either when testing chrome specific features (i.e.
 non-standardized) such as compositing or when the test requires access to chrome
 internal features not easily tested by web-platform-tests.
 
-[web-animations-tests]: https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/external/wpt/web-animations/
+[web-animations-tests]: https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/web-animations/
 [Writing web platform tests]: ../../../../../docs/testing/web_platform_tests.md#Writing-tests
-[third_party/WebKit/LayoutTests]: https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/animations/
+[third_party/blink/web_tests]: https://cs.chromium.org/chromium/src/third_party/blink/web_tests/animations/
 
 ### Unit testing
 

@@ -1126,7 +1126,7 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
   if (drag_target_ != new_target) {
     // FIXME: this ordering was explicitly chosen to match WinIE. However,
     // it is sometimes incorrect when dragging within subframes, as seen with
-    // LayoutTests/fast/events/drag-in-frames.html.
+    // web_tests/fast/events/drag-in-frames.html.
     //
     // Moreover, this ordering conforms to section 7.9.4 of the HTML 5 spec.
     // <http://dev.w3.org/html5/spec/Overview.html#drag-and-drop-processing-model>.

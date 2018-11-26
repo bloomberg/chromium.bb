@@ -5,7 +5,7 @@
 """Check the basic functionalities of WPT tools.
 
 After rolling a new version of WPT tools, we should do some sanity checks. For
-now, we only test `wpt lint` via LayoutTests/external/PRESUBMIT_test.py.
+now, we only test `wpt lint` via web_tests/external/PRESUBMIT_test.py.
 """
 
 def _TestWPTLint(input_api, output_api):

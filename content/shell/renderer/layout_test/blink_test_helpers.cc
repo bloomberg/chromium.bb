@@ -32,14 +32,7 @@ base::FilePath GetWebTestsFilePath() {
     base::FilePath root_path;
     bool success = base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path);
     CHECK(success);
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kTestsInBlink)) {
-      path =
-          root_path.Append(FILE_PATH_LITERAL("third_party/blink/web_tests/"));
-    } else {
-      path = root_path.Append(
-          FILE_PATH_LITERAL("third_party/WebKit/LayoutTests/"));
-    }
+    path = root_path.Append(FILE_PATH_LITERAL("third_party/blink/web_tests/"));
   }
   return path;
 }
@@ -48,7 +41,7 @@ base::FilePath GetWebTestsFilePath() {
 //   <script src="/resources/testharness.js">.
 // Because we load the tests as local files, such links don't work.
 // This function fixes this issue by rewriting file: URLs which were produced
-// from such links so that they point actual files in LayoutTests/resources/.
+// from such links so that they point actual files in web_tests/resources/.
 //
 // Note that this isn't applied to external/wpt because tests in external/wpt
 // are accessed via http.
@@ -56,8 +49,7 @@ WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
   static constexpr base::StringPiece kFileScheme = "file:///";
   if (!base::StartsWith(utf8_url, kFileScheme, base::CompareCase::SENSITIVE))
     return WebURL();
-  if (utf8_url.find("/LayoutTests/") != std::string::npos ||
-      utf8_url.find("/web_tests/") != std::string::npos)
+  if (utf8_url.find("/web_tests/") != std::string::npos)
     return WebURL();
 #if defined(OS_WIN)
   // +3 for a drive letter, :, and /.

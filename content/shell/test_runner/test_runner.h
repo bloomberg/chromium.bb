@@ -587,7 +587,7 @@ class TestRunner : public WebTestRunner {
   // is ok, because this is taken care of in WebTestDelegate::SetFocus).
   blink::WebView* previously_focused_view_;
 
-  // True when running a test in LayoutTests/external/wpt/.
+  // True when running a test in web_tests/external/wpt/.
   bool is_web_platform_tests_mode_;
 
   // True if rasterization should be performed during tests that examine

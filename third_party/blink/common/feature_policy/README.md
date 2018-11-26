@@ -119,7 +119,7 @@ i.e,
 
 ##### Write web-platform-tests
 To test the new feature with feature policy, refer to
-`third_party/WebKit/LayoutTests/external/wpt/feature-policy/README.md` for
+`third_party/blink/web_tests/external/wpt/feature-policy/README.md` for
 instructions on how to use the feature policy test framework.
 
 #### Contacts

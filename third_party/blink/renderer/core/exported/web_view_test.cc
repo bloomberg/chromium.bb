@@ -3735,7 +3735,7 @@ class TouchEventHandlerWebWidgetClient
 // This test verifies that WebWidgetClient::hasTouchEventHandlers is called
 // accordingly for various calls to EventHandlerRegistry::did{Add|Remove|
 // RemoveAll}EventHandler(..., TouchEvent). Verifying that those calls are made
-// correctly is the job of LayoutTests/fast/events/event-handler-count.html.
+// correctly is the job of web_tests/fast/events/event-handler-count.html.
 TEST_F(WebViewTest, HasTouchEventHandlers) {
   TouchEventHandlerWebWidgetClient client;
   std::string url = RegisterMockedHttpURLLoad("has_touch_event_handlers.html");

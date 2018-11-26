@@ -159,9 +159,9 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase : private WebWidgetTestProxyBase {
   DISALLOW_COPY_AND_ASSIGN(WebViewTestProxyBase);
 };
 
-// WebViewTestProxy is used during LayoutTests. The intent of that class is to
-// wrap RenderViewImpl for tests purposes in order to reduce the amount of test
-// specific code in the production code.
+// WebViewTestProxy is used during running web tests. The intent of that class
+// is to wrap RenderViewImpl for tests purposes in order to reduce the amount of
+// test specific code in the production code.
 //
 // WebViewTestProxy is only doing the glue between RenderViewImpl and
 // WebViewTestProxyBase, that means that there is no logic living in this class
@@ -171,7 +171,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase : private WebWidgetTestProxyBase {
 //  * when a fooClient has a mock implementation, WebViewTestProxy can override
 //    the fooClient() call and have WebViewTestProxyBase return the mock
 //    implementation.
-//  * when a value needs to be overridden by LayoutTests, WebViewTestProxy can
+//  * when a value needs to be overridden by web tests, WebViewTestProxy can
 //    override RenderViewImpl's getter and call a getter from
 //    WebViewTestProxyBase instead. In addition, WebViewTestProxyBase will have
 //    a public setter that could be called from the TestRunner.

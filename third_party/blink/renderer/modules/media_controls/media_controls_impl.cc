@@ -219,7 +219,7 @@ bool PreferHiddenVolumeControls(const Document& document) {
 }
 
 // If you change this value, then also update the corresponding value in
-// LayoutTests/media/media-controls.js.
+// web_tests/media/media-controls.js.
 constexpr TimeDelta kTimeWithoutMouseMovementBeforeHidingMediaControls =
     TimeDelta::FromSeconds(3);
 constexpr TimeDelta kModernTimeWithoutMouseMovementBeforeHidingMediaControls =

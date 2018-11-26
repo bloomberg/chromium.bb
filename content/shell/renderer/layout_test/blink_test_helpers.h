@@ -32,7 +32,7 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs);
 base::FilePath GetBuildDirectory();
 
 // Replaces file:///tmp/LayoutTests/ with the actual path to the
-// LayoutTests directory, or rewrite URLs generated from absolute
+// web_tests directory, or rewrite URLs generated from absolute
 // path links in web-platform-tests.
 blink::WebURL RewriteLayoutTestsURL(const std::string& utf8_url,
                                     bool is_wpt_mode);

@@ -16,7 +16,7 @@ REL_WPT_BASE = RELATIVE_WEB_TESTS + 'external/wpt'
 class DirectoryOwnersExtractorTest(unittest.TestCase):
 
     def setUp(self):
-        # We always have an OWNERS file at LayoutTests/external.
+        # We always have an OWNERS file at web_tests/external.
         self.filesystem = MockFileSystem(files={
             MOCK_WEB_TESTS + 'external/OWNERS': 'ecosystem-infra@chromium.org'
         })
@@ -75,7 +75,7 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
 
     def test_list_owners_not_found(self):
         self._write_files({
-            # Although LayoutTests/external/OWNERS exists, it should not be listed.
+            # Although web_tests/external/OWNERS exists, it should not be listed.
             ABS_WPT_BASE + '/foo/bar.html': '',
             # Files out of external.
             '/mock-checkout/' + RELATIVE_WEB_TESTS + 'TestExpectations': '',

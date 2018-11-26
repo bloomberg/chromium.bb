@@ -96,14 +96,9 @@ void TestInterfaces::SetTestIsRunning(bool running) {
 void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
                                              bool protocol_mode) {
   std::string spec = GURL(test_url).spec();
-  size_t path_start = spec.rfind("LayoutTests/");
-  if (path_start != std::string::npos) {
+  size_t path_start = spec.rfind("web_tests/");
+  if (path_start != std::string::npos)
     spec = spec.substr(path_start);
-  } else {
-    path_start = spec.rfind("web_tests/");
-    if (path_start != std::string::npos)
-      spec = spec.substr(path_start);
-  }
 
   bool is_devtools_test = spec.find("/devtools/") != std::string::npos;
   if (is_devtools_test) {

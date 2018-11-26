@@ -61,7 +61,7 @@ class ImportNotifier(object):
                 service account for accessing Monorail. If None, try to get an
                 access token from luci-auth.
 
-        Note: "test names" are paths of the tests relative to LayoutTests.
+        Note: "test names" are paths of the tests relative to web_tests.
         """
         gerrit_url = SHORT_GERRIT_PREFIX + issue
         gerrit_url_with_ps = gerrit_url + '/' + patchset + '/'
@@ -228,10 +228,10 @@ class ImportNotifier(object):
         """Finds the lowest directory that contains the test and has OWNERS.
 
         Args:
-            The name of the test (a path relative to LayoutTests).
+            The name of the test (a path relative to web_tests).
 
         Returns:
-            The path of the found directory relative to LayoutTests.
+            The path of the found directory relative to web_tests.
         """
         # Always use non-virtual test names when looking up OWNERS.
         if self.default_port.lookup_virtual_test_base(test_name):

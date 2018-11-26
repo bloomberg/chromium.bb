@@ -280,7 +280,7 @@ class CONTENT_EXPORT RenderFrameImpl
   using RenderWidgetForChildLocalRootInitializedCallback =
       void (*)(RenderWidget*);
 
-  // LayoutTests override the creation of RenderFrames and RenderWidgets in
+  // Web tests override the creation of RenderFrames and RenderWidgets in
   // order to inject their own (subclass) type and change behaviour inside the
   // tests.
   static void InstallCreateHook(

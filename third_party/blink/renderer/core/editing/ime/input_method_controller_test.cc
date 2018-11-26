@@ -3076,7 +3076,7 @@ TEST_F(
 
 TEST_F(InputMethodControllerTest, AutocapitalizeTextInputFlags) {
   // This test assumes that the behavior tested in
-  // LayoutTests/fast/forms/autocapitalize.html works properly and tests the
+  // web_tests/fast/forms/autocapitalize.html works properly and tests the
   // following:
   // - The autocapitalize IDL states map properly to WebTextInputFlags for
   //   <input> elements, <textarea> elements, and editable regions

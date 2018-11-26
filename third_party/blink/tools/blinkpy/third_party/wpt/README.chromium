@@ -63,7 +63,7 @@ re-generate them:
   expiration date.
 4. Update certs/127.0.0.1.sxg.*.
   Please refer to
-  third_party/WebKit/LayoutTests/http/tests/loading/sxg/resources/README.md
+  third_party/blink/web_tests/http/tests/loading/sxg/resources/README.md
 5. git commit
 6. git cl upload, etc.
 
@@ -105,13 +105,13 @@ content_shell is invoked with flags to map all *.test domains to 127.0.0.1.
 Running web-platform-tests with enabled WPTServe on a local machine
 
 WPTServe is now enabled by default in run_web_tests.py for tests that live in
-LayoutTests/external/wpt.
+web_tests/external/wpt.
 
 WPTServe starts HTTP/S and WS/S servers as separate processes.
 
 The content_shell used to run the tests will receive the URL of each test
 (instead of a filename). The document root http://web-platform.test/ maps to
-LayoutTests/external/wpt. HTTPS tests are enabled by default.
+web_test/external/wpt. HTTPS tests are enabled by default.
 
 Example run:
 

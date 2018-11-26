@@ -31,7 +31,7 @@ void TestPreferences::Reset() {
   caret_browsing_enabled = false;
 
   // Allow those layout tests running as local files, i.e. under
-  // LayoutTests/http/tests/local, to access http server.
+  // web_tests/http/tests/local, to access http server.
   allow_universal_access_from_file_urls = true;
 
 #if defined(OS_MACOSX)

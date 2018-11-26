@@ -25,7 +25,7 @@ arguments, `--no_of_files`, `--input_dir`, and `--output_dir`.
 
 ## Setup
 This fuzzer depends on files in:
-* `//src/third_party/WebKit/LayoutTests/resources`
+* `//src/third_party/blink/web_tests/resources`
 * `//src/testing/clusterfuzz/common`
 
 To ease development a setup.py script is included to copy over the necessary

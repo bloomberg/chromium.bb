@@ -995,7 +995,7 @@ TEST(V8ScriptValueSerializerTest, UntransferredMojoHandleThrowsDataCloneError) {
 // Decode tests for backward compatibility are not required for message ports
 // and Mojo handles because they cannot be persisted to disk.
 
-// A more exhaustive set of ImageBitmap cases are covered by LayoutTests.
+// A more exhaustive set of ImageBitmap cases are covered by web tests.
 TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap) {
   V8TestingScope scope;
 
@@ -1258,7 +1258,7 @@ TEST(V8ScriptValueSerializerTest, InvalidImageBitmapDecodeV18) {
 }
 
 TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
-  // More thorough tests exist in LayoutTests/.
+  // More thorough tests exist in web_tests/.
   V8TestingScope scope;
 
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 7);
@@ -1294,7 +1294,7 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
 }
 
 TEST(V8ScriptValueSerializerTest, TransferOffscreenCanvas) {
-  // More exhaustive tests in LayoutTests/. This is a sanity check.
+  // More exhaustive tests in web_tests/. This is a sanity check.
   V8TestingScope scope;
   OffscreenCanvas* canvas = OffscreenCanvas::Create(10, 7);
   canvas->SetPlaceholderCanvasId(519);

@@ -103,9 +103,8 @@ def _does_blink_web_tests_exist():
 TESTS_IN_BLINK = _does_blink_web_tests_exist()
 # LayoutTests / web_tests path relative to the repository root.
 # Path separators are always '/', and this contains the trailing '/'.
-RELATIVE_WEB_TESTS = ('third_party/blink/web_tests/' if TESTS_IN_BLINK
-                      else 'third_party/WebKit/LayoutTests/')
-WEB_TESTS_LAST_COMPONENT = 'web_tests' if TESTS_IN_BLINK else 'LayoutTests'
+RELATIVE_WEB_TESTS = 'third_party/blink/web_tests/'
+WEB_TESTS_LAST_COMPONENT = 'web_tests'
 
 class PathFinder(object):
 
@@ -121,9 +120,7 @@ class PathFinder(object):
 
     # TODO(tkent): Rename this to web_tests_dir().
     def layout_tests_dir(self):
-        if TESTS_IN_BLINK:
-            return self.path_from_chromium_base('third_party', 'blink', 'web_tests')
-        return self.path_from_chromium_base('third_party', 'WebKit', 'LayoutTests')
+        return self.path_from_chromium_base('third_party', 'blink', 'web_tests')
 
     def perf_tests_dir(self):
         return self.path_from_chromium_base('third_party', 'blink', 'perf_tests')

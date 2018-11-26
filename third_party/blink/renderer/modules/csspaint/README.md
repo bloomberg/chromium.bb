@@ -58,5 +58,5 @@ paint.
 
 ## Testing
 
-Tests live [here](../../../LayoutTests/csspaint/).
+Tests live [here](../../../web_tests/csspaint/).
 

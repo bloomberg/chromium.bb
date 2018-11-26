@@ -278,7 +278,7 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestMode::kOutOfBlinkCorsWithoutServicification));
 
 // TODO(toyoshim): Instantiates tests for the case kOutOfBlinkCors is disabled
-// and remove relevant LayoutTests if it's possible.
+// and remove relevant web tests if it's possible.
 
 }  // namespace
 

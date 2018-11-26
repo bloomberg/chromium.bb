@@ -1548,7 +1548,7 @@ static void ReconcileTextDecorationProperties(
       style->GetPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect);
   const CSSValue* text_decoration =
       style->GetPropertyCSSValue(CSSPropertyTextDecorationLine);
-  // "LayoutTests/editing/execCommand/insert-list-and-strikethrough.html" makes
+  // "web_tests/editing/execCommand/insert-list-and-strikethrough.html" makes
   // both |textDecorationsInEffect| and |textDecoration| non-null.
   if (text_decorations_in_effect) {
     style->SetProperty(CSSPropertyTextDecorationLine,

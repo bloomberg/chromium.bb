@@ -267,7 +267,7 @@ class CheckerDispatcherSkipTest(unittest.TestCase):
         # Check files with non-NONE file type.  These examples must be
         # drawn from the _SKIPPED_FILES_WITHOUT_WARNING configuration
         # variable.
-        path = os.path.join('LayoutTests', 'foo.txt')
+        path = os.path.join('web_tests', 'foo.txt')
         self._assert_should_skip_without_warning(path,
                                                  is_checker_none=False,
                                                  expected=True)
@@ -275,7 +275,7 @@ class CheckerDispatcherSkipTest(unittest.TestCase):
     def test_should_skip_without_warning__false(self):
         """Test should_skip_without_warning() for False return values."""
         paths = ['foo.txt',
-                 os.path.join('LayoutTests', 'TestExpectations'),
+                 os.path.join('web_tests', 'TestExpectations'),
                  ]
 
         for path in paths:

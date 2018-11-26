@@ -78,9 +78,9 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxyBase {
   DISALLOW_COPY_AND_ASSIGN(WebWidgetTestProxyBase);
 };
 
-// WebWidgetTestProxy is used during LayoutTests. The intent of the class is to
-// wrap RenderWidget for tests purposes in order to reduce the amount of test
-// specific code in the production code.
+// WebWidgetTestProxy is used during running web tests. The intent of the class
+// is to wrap RenderWidget for tests purposes in order to reduce the amount of
+// test specific code in the production code.
 //
 // WebWidgetTestProxy is only doing the glue between RenderWidget and
 // WebWidgetTestProxyBase, that means that there is no logic living in this
