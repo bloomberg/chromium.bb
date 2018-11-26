@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_proxy.h"
 
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -12,7 +13,7 @@
 namespace blink {
 
 IceTransportProxy::IceTransportProxy(
-    FrameScheduler* frame_scheduler,
+    LocalFrame& frame,
     scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
     scoped_refptr<base::SingleThreadTaskRunner> host_thread,
     Delegate* delegate,
@@ -22,13 +23,13 @@ IceTransportProxy::IceTransportProxy(
       host_(nullptr, base::OnTaskRunnerDeleter(host_thread_)),
       delegate_(delegate),
       connection_handle_for_scheduler_(
-          frame_scheduler->OnActiveConnectionCreated()),
+          frame.GetFrameScheduler()->OnActiveConnectionCreated()),
       weak_ptr_factory_(this) {
   DCHECK(host_thread_);
   DCHECK(delegate_);
   DCHECK(adapter_factory);
   DCHECK(proxy_thread_->BelongsToCurrentThread());
-  adapter_factory->InitializeOnMainThread();
+  adapter_factory->InitializeOnMainThread(frame);
   // Wait to initialize the host until the weak_ptr_factory_ is initialized.
   // The IceTransportHost is constructed on the proxy thread but should only be
   // interacted with via PostTask to the host thread. The OnTaskRunnerDeleter
