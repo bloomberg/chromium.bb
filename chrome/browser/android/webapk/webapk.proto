@@ -118,6 +118,13 @@ message Image {
   reserved 2, 3, 4, 7;
 }
 
+// A proto representing a ShareTargetParamsFile
+// https://pr-preview.s3.amazonaws.com/ewilligers/web-share-target/pull/53.html#sharetargetfiles-and-its-members
+message ShareTargetParamsFile {
+  optional string name = 1;
+  repeated string accept = 2;
+}
+
 // A proto representing ShareTargetParams
 // https://wicg.github.io/web-share-target/#dom-sharetargetparams
 // Each field corresponds to key in ShareData. These are the query parameter
@@ -127,6 +134,7 @@ message ShareTargetParams {
   optional string title = 1;
   optional string text = 2;
   optional string url = 3;
+  repeated ShareTargetParamsFile files = 4;
 }
 
 // A proto representing a ShareTarget.
@@ -135,8 +143,7 @@ message ShareTarget {
   // The URL to be resolved when sharing.
   optional string action = 2;
   optional ShareTargetParams params = 3;
-  // TODO(ckitagawa):
-  // Add method and enctype for POST (GET by default).
-
+  optional string method = 4;
+  optional string enctype = 5;
   reserved 1;
 }
