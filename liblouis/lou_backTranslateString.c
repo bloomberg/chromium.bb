@@ -176,6 +176,10 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 		return 0;
 	const TranslationTableHeader *table = lou_getTable(tableList);
 	if (table == NULL) return 0;
+
+	if (!_lou_isValidMode(mode))
+		_lou_logMessage(LOG_ERROR, "Invalid mode parameter: %d", mode);
+
 	if (!stringBufferPool) initStringBufferPool();
 	for (idx = 0; idx < stringBufferPool->size; idx++) releaseStringBuffer(idx);
 	{
@@ -225,10 +229,6 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 	} else {
 		appliedRules = NULL;
 		maxAppliedRules = 0;
-	}
-
-	if (mode & pass1Only) {
-		_lou_logMessage(LOG_WARN, "warning: pass1Only mode is no longer supported.");
 	}
 
 	posMapping = posMapping1;

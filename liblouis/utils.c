@@ -238,3 +238,17 @@ _lou_debugHook(void) {
 	printf("%s\n", hook);
 }
 #endif
+
+const int validTranslationModes[] = { noContractions, compbrlAtCursor, dotsIO,
+	compbrlLeftCursor, ucBrl, noUndefinedDots, partialTrans };
+
+int EXPORT_CALL
+_lou_isValidMode(int mode) {
+	for (int i = 0; i < (sizeof(validTranslationModes) / sizeof(*validTranslationModes));
+			i++) {
+		if (validTranslationModes[i] == mode) {
+			return 1;
+		}
+	}
+	return 0;
+}

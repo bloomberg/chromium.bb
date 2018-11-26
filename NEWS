@@ -23,11 +23,13 @@ issues]].
 ** Other changes
 - Updated the ~lou_allround~ and ~lou_trace~ test tools to include all
   the mode flags described in the documentation of the
-  ~lou_translateString()~ function. Thanks to Bue Vester-Andersen
+  ~lou_translateString()~ function, thanks to Bue Vester-Andersen
 
 ** Deprecation notice
 
 ** Backwards incompatible changes
+- The ~pass1Only~ flag has been deprecated for a while and is now
+  removed from the code, thanks to Bue Vester-Andersen.
 
 ** New, renamed or removed tables
 *** New
