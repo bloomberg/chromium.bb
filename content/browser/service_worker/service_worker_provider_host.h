@@ -290,10 +290,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // The URL representing the first-party site for this context. See
   // |network::ResourceRequest::site_for_cookies| for details.
-  // SetSiteForCookies() can only be called if |this| is for a service worker
-  // client. For service worker execution contexts, site_for_cookies() always
+  // For service worker execution contexts, site_for_cookies() always
   // returns the service worker script URL.
-  void SetSiteForCookies(const GURL& url);
   const GURL& site_for_cookies() const;
 
   blink::mojom::ServiceWorkerProviderType provider_type() const {

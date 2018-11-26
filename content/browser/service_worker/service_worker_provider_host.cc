@@ -89,8 +89,7 @@ class ServiceWorkerURLTrackingRequestHandler
     if (!provider_host_)
       return nullptr;
     const GURL stripped_url = net::SimplifyUrlForRequest(request->url());
-    provider_host_->SetDocumentUrl(stripped_url);
-    provider_host_->SetSiteForCookies(request->site_for_cookies());
+    provider_host_->UpdateURLs(stripped_url, request->site_for_cookies());
     return nullptr;
   }
 
@@ -104,9 +103,8 @@ class ServiceWorkerURLTrackingRequestHandler
       return;
     const GURL stripped_url =
         net::SimplifyUrlForRequest(tentative_resource_request.url);
-    provider_host_->SetDocumentUrl(stripped_url);
-    provider_host_->SetSiteForCookies(
-        tentative_resource_request.site_for_cookies);
+    provider_host_->UpdateURLs(stripped_url,
+                               tentative_resource_request.site_for_cookies);
     // Fall back to network.
     std::move(callback).Run({});
   }
@@ -460,9 +458,10 @@ ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
 
 void ServiceWorkerProviderHost::UpdateURLs(const GURL& document_url,
                                            const GURL& site_for_cookies) {
+  DCHECK(IsProviderForClient());
   GURL previous_url = document_url_;
   SetDocumentUrl(document_url);
-  SetSiteForCookies(site_for_cookies);
+  site_for_cookies_ = site_for_cookies;
   auto current_origin = url::Origin::Create(previous_url);
   auto new_origin = url::Origin::Create(document_url_);
   // Update client id on cross origin redirects. This corresponds to the HTML
@@ -505,11 +504,6 @@ void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
 
   if (IsProviderForClient())
     SyncMatchingRegistrations();
-}
-
-void ServiceWorkerProviderHost::SetSiteForCookies(const GURL& url) {
-  DCHECK(IsProviderForClient());
-  site_for_cookies_ = url;
 }
 
 const GURL& ServiceWorkerProviderHost::site_for_cookies() const {
