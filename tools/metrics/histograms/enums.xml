@@ -7065,6 +7065,12 @@ histogram as enum -->
   <int value="2" label="Read Text"/>
 </enum>
 
+<enum name="ClockdriftLevel">
+  <int value="0" label="None"/>
+  <int value="1" label="Probable"/>
+  <int value="2" label="Verified"/>
+</enum>
+
 <enum name="ClockStates">
   <int value="0"
       label="CLOCK_STATE_UNKNOWN: accuracy of system clock is unknown"/>
