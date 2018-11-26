@@ -40,7 +40,7 @@ TEST_F(ConfirmQuitPanelControllerTest, ShowAndDismiss) {
   EXPECT_EQ(controller, [ConfirmQuitPanelController sharedController]);
 }
 
-TEST_F(ConfirmQuitPanelControllerTest, KeyCombinationForAccelerator) {
+TEST_F(ConfirmQuitPanelControllerTest, KeyCombinationForMenuItem) {
   Class controller = [ConfirmQuitPanelController class];
 
   NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:@""
@@ -49,39 +49,39 @@ TEST_F(ConfirmQuitPanelControllerTest, KeyCombinationForAccelerator) {
   item.keyEquivalent = @"q";
   item.keyEquivalentModifierMask = NSCommandKeyMask;
   EXPECT_NSEQ(TestString(@"{Cmd}Q"),
-              [controller keyCombinationForAccelerator:item]);
+              [controller keyCombinationForMenuItem:item]);
 
   item.keyEquivalent = @"c";
   item.keyEquivalentModifierMask = NSCommandKeyMask | NSShiftKeyMask;
   EXPECT_NSEQ(TestString(@"{Cmd}{Shift}C"),
-              [controller keyCombinationForAccelerator:item]);
+              [controller keyCombinationForMenuItem:item]);
 
   item.keyEquivalent = @"h";
   item.keyEquivalentModifierMask =
       NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask;
   EXPECT_NSEQ(TestString(@"{Cmd}{Opt}{Shift}H"),
-              [controller keyCombinationForAccelerator:item]);
+              [controller keyCombinationForMenuItem:item]);
 
   item.keyEquivalent = @"r";
   item.keyEquivalentModifierMask =
       NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask | NSControlKeyMask;
   EXPECT_NSEQ(TestString(@"{Cmd}{Ctrl}{Opt}{Shift}R"),
-              [controller keyCombinationForAccelerator:item]);
+              [controller keyCombinationForMenuItem:item]);
 
   item.keyEquivalent = @"o";
   item.keyEquivalentModifierMask = NSControlKeyMask;
   EXPECT_NSEQ(TestString(@"{Ctrl}O"),
-              [controller keyCombinationForAccelerator:item]);
+              [controller keyCombinationForMenuItem:item]);
 
   item.keyEquivalent = @"m";
   item.keyEquivalentModifierMask = NSShiftKeyMask | NSControlKeyMask;
   EXPECT_NSEQ(TestString(@"{Ctrl}{Shift}M"),
-              [controller keyCombinationForAccelerator:item]);
+              [controller keyCombinationForMenuItem:item]);
 
   item.keyEquivalent = @"e";
   item.keyEquivalentModifierMask = NSCommandKeyMask | NSAlternateKeyMask;
   EXPECT_NSEQ(TestString(@"{Cmd}{Opt}E"),
-              [controller keyCombinationForAccelerator:item]);
+              [controller keyCombinationForMenuItem:item]);
 }
 
 }  // namespace
