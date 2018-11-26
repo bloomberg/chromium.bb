@@ -241,7 +241,7 @@ bool TabletModeController::ShouldAutoHideTitlebars(views::Widget* widget) {
 }
 
 bool TabletModeController::AreInternalInputDeviceEventsBlocked() const {
-  return event_blocker_->is_blocked();
+  return event_blocker_->should_be_blocked();
 }
 
 void TabletModeController::FlushForTesting() {

@@ -28,42 +28,24 @@ InternalInputDevicesEventBlocker::InternalInputDevicesEventBlocker() {
 
 InternalInputDevicesEventBlocker::~InternalInputDevicesEventBlocker() {
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
-  if (is_blocked_)
+  if (should_be_blocked_)
     UpdateInternalInputDevices(/*should_block=*/false);
 }
 
 void InternalInputDevicesEventBlocker::OnKeyboardDeviceConfigurationChanged() {
-  UpdateInternalInputDevices(is_blocked_);
+  UpdateInternalKeyboard(should_be_blocked_);
 }
 
 void InternalInputDevicesEventBlocker::OnTouchpadDeviceConfigurationChanged() {
-  UpdateInternalInputDevices(is_blocked_);
+  UpdateInternalTouchpad(should_be_blocked_);
 }
 
 void InternalInputDevicesEventBlocker::UpdateInternalInputDevices(
-    bool should_block) {
-  is_blocked_ = should_block;
+    bool should_be_blocked) {
+  should_be_blocked_ = should_be_blocked;
 
-  // Block or unblock the internal touchpad.
-  if (HasInternalTouchpad()) {
-    Shell::Get()->touch_devices_controller()->SetTouchpadEnabled(
-        !should_block, TouchDeviceEnabledSource::GLOBAL);
-  }
-
-  // Block or unblock the internal keyboard. Note InputDeviceControllerClient
-  // may be null in tests.
-  if (HasInternalKeyboard() && GetInputDeviceControllerClient()) {
-    std::vector<ui::DomCode> allowed_keys;
-    if (should_block) {
-      // Only allow the acccessible keys present on the side of some devices to
-      // continue working if the internal keyboard events should be blocked.
-      allowed_keys.push_back(ui::DomCode::VOLUME_DOWN);
-      allowed_keys.push_back(ui::DomCode::VOLUME_UP);
-      allowed_keys.push_back(ui::DomCode::POWER);
-    }
-    GetInputDeviceControllerClient()->SetInternalKeyboardFilter(should_block,
-                                                                allowed_keys);
-  }
+  UpdateInternalTouchpad(should_be_blocked);
+  UpdateInternalKeyboard(should_be_blocked);
 }
 
 bool InternalInputDevicesEventBlocker::HasInternalTouchpad() {
@@ -82,6 +64,40 @@ bool InternalInputDevicesEventBlocker::HasInternalKeyboard() {
       return true;
   }
   return false;
+}
+
+void InternalInputDevicesEventBlocker::UpdateInternalTouchpad(
+    bool should_be_blocked) {
+  if (should_be_blocked == is_touchpad_blocked_)
+    return;
+
+  if (HasInternalTouchpad()) {
+    Shell::Get()->touch_devices_controller()->SetTouchpadEnabled(
+        !should_be_blocked, TouchDeviceEnabledSource::GLOBAL);
+    is_touchpad_blocked_ = should_be_blocked;
+  }
+}
+
+void InternalInputDevicesEventBlocker::UpdateInternalKeyboard(
+    bool should_be_blocked) {
+  if (should_be_blocked == is_keyboard_blocked_)
+    return;
+
+  // Block or unblock the internal keyboard. Note InputDeviceControllerClient
+  // may be null in tests.
+  if (HasInternalKeyboard() && GetInputDeviceControllerClient()) {
+    std::vector<ui::DomCode> allowed_keys;
+    if (should_be_blocked) {
+      // Only allow the acccessible keys present on the side of some devices to
+      // continue working if the internal keyboard events should be blocked.
+      allowed_keys.push_back(ui::DomCode::VOLUME_DOWN);
+      allowed_keys.push_back(ui::DomCode::VOLUME_UP);
+      allowed_keys.push_back(ui::DomCode::POWER);
+    }
+    GetInputDeviceControllerClient()->SetInternalKeyboardFilter(
+        should_be_blocked, allowed_keys);
+    is_keyboard_blocked_ = should_be_blocked;
+  }
 }
 
 }  // namespace ash

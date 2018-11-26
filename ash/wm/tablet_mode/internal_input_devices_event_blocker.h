@@ -24,13 +24,26 @@ class ASH_EXPORT InternalInputDevicesEventBlocker
 
   void UpdateInternalInputDevices(bool should_block);
 
-  bool is_blocked() const { return is_blocked_; }
+  bool should_be_blocked() const { return should_be_blocked_; }
 
  private:
   bool HasInternalTouchpad();
   bool HasInternalKeyboard();
 
-  bool is_blocked_ = false;
+  void UpdateInternalTouchpad(bool should_block);
+  void UpdateInternalKeyboard(bool should_block);
+
+  // |should_be_blocked_| might not be equal to (|is_touchpad_blocked_| &&
+  // |is_keyboard_blocked_|) as when UpdateInternalInputDevices() is called,
+  // |should_be_blocked_| is guranteed to be updated, but |is_touchpad_blocked_|
+  // or |is_keyboard_blocked_| might not be updated because there might not be
+  // an internal touchpad or keyboard at that moment (currently it can only be
+  // the case for Whiskers keyboard, which is a detachable keyboard but is
+  // regarded as the internal keyboard for Moewth).
+  bool should_be_blocked_ = false;
+
+  bool is_touchpad_blocked_ = false;
+  bool is_keyboard_blocked_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(InternalInputDevicesEventBlocker);
 };
