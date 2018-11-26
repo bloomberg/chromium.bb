@@ -4755,7 +4755,8 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   generate_next_ref_frame_map(pbi);
 
   // Reload the adapted CDFs from when we originally coded this keyframe
-  *cm->fc = frame_bufs[cm->ref_frame_map[existing_frame_idx]].frame_context;
+  *cm->fc =
+      frame_bufs[cm->next_ref_frame_map[existing_frame_idx]].frame_context;
 }
 
 static INLINE void reset_frame_buffers(AV1_COMMON *cm) {
