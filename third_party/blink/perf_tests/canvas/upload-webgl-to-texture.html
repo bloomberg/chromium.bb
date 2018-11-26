@@ -12,9 +12,7 @@ var destCtx = destCanvas3D.getContext('webgl');
 if (!sourceCtx || !destCtx)
     CanvasRunner.logFatalError("WebGL is not supported or enabled on this platform!");
 var tex = null;
-const width = 1024;
-const height = 1024;
-
+ 
 function setSize(width, height) {
     sourceCanvas3D.width = width;
     sourceCanvas3D.height = height;
@@ -30,7 +28,7 @@ function renderWebGL(gl) {
     gl.disable(gl.SCISSOR_TEST);
     gl.clear(gl.COLOR_BUFER_BIT);
     gl.enable(gl.SCISSOR_TEST);
-    gl.scissor(rand(width), rand(height), rand(width), rand(height));
+    gl.scissor(rand(1024), rand(1024), rand(1024), rand(1024));
     gl.clearColor(Math.random(), Math.random(), Math.random(), 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 }
@@ -53,7 +51,7 @@ function postRun() {
 }
 
 window.onload = function () {
-    setSize(width, height);
+    setSize(1024, 1024);
     renderWebGL(sourceCtx);
     CanvasRunner.start({
         description: "This benchmark checks the speed on uploading WebGL(1024x1024) to WebGL Texture(1024x1024).",

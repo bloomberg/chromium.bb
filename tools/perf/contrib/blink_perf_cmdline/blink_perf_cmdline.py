@@ -19,8 +19,8 @@ class BlinkPerfAll(blink_perf._BlinkPerfBenchmark):
                       default=blink_perf.BLINK_PERF_BASE_DIR,
                       help=('Path to blink perf tests. Could be an absolute '
                             'path, a relative path with respect to your '
-                            'current directory or a relative path with '
-                            'respect to third_party/blink/perf_tests)'))
+                            'current directory, or a relative path with '
+                            'respect to third_party/WebKit/PerformanceTest/)'))
 
   def CreateStorySet(self, options):
     if os.path.exists(options.test_path):

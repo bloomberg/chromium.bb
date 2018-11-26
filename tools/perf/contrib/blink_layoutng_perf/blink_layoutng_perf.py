@@ -8,7 +8,7 @@ from telemetry import benchmark
 @benchmark.Info(emails=['cbiesinger@chromium.org'],
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfLayoutNg(blink_perf._BlinkPerfBenchmark):
-  SUBDIR = 'layout'
+  subdir = 'layout'
 
   def SetExtraBrowserOptions(self, options):
     super(BlinkPerfLayoutNg, self).SetExtraBrowserOptions(options)
@@ -22,7 +22,7 @@ class BlinkPerfLayoutNg(blink_perf._BlinkPerfBenchmark):
 @benchmark.Info(emails=['cbiesinger@chromium.org'],
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfParserLayoutNg(blink_perf._BlinkPerfBenchmark):
-  SUBDIR = 'parser'
+  subdir = 'parser'
 
   def SetExtraBrowserOptions(self, options):
     super(BlinkPerfParserLayoutNg, self).SetExtraBrowserOptions(options)
@@ -36,7 +36,7 @@ class BlinkPerfParserLayoutNg(blink_perf._BlinkPerfBenchmark):
 @benchmark.Info(emails=['cbiesinger@chromium.org'],
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfPaintLayoutNg(blink_perf._BlinkPerfBenchmark):
-  SUBDIR = 'paint'
+  subdir = 'paint'
 
   def SetExtraBrowserOptions(self, options):
     super(BlinkPerfPaintLayoutNg, self).SetExtraBrowserOptions(options)

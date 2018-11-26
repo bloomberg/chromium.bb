@@ -6,4 +6,5 @@ from benchmarks import blink_perf
 
 # pylint: disable=protected-access
 class BlinkPerfXMLHttpRequest(blink_perf._BlinkPerfBenchmark):
-  SUBDIR = 'xml_http_request'
+  tag = 'xml_http_request'
+  subdir = 'xml_http_request'
