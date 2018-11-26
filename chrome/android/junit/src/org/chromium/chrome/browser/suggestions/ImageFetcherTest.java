@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.createDummySuggestion;
@@ -23,11 +24,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.favicon.FaviconHelper;
-import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
-import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
@@ -38,8 +36,8 @@ import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 
-import java.net.URI;
 import java.util.HashMap;
+
 /**
  * Unit tests for {@link ImageFetcher}.
  */
@@ -57,8 +55,6 @@ public class ImageFetcherTest {
     private DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
 
     @Mock
-    private FaviconHelper mFaviconHelper;
-    @Mock
     private ThumbnailProvider mThumbnailProvider;
     @Mock
     private SuggestionsSource mSuggestionsSource;
@@ -72,30 +68,46 @@ public class ImageFetcherTest {
 
         mSuggestionsDeps.getFactory().largeIconBridge = mLargeIconBridge;
         mSuggestionsDeps.getFactory().thumbnailProvider = mThumbnailProvider;
-        mSuggestionsDeps.getFactory().faviconHelper = mFaviconHelper;
         mSuggestionsDeps.getFactory().suggestionsSource = mSuggestionsSource;
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testFaviconFetch() {
-        ImageFetcher imageFetcher = new ImageFetcher(mSuggestionsSource, mock(Profile.class),
-                mReferencePool, mock(NativePageHost.class));
+        ImageFetcher imageFetcher =
+                new ImageFetcher(mSuggestionsSource, mock(Profile.class), mReferencePool);
 
-        SnippetArticle suggestion = createDummySuggestion(KnownCategories.BOOKMARKS);
-        imageFetcher.makeFaviconRequest(suggestion, IMAGE_SIZE_PX, mock(Callback.class));
+        Callback mockCallback = mock(Callback.class);
+        @KnownCategories
+        int[] categoriesWithIcon = new int[] {KnownCategories.ARTICLES, KnownCategories.CONTEXTUAL};
+        for (@KnownCategories int category : categoriesWithIcon) {
+            SnippetArticle suggestion = createDummySuggestion(category);
+            imageFetcher.makeFaviconRequest(suggestion, mockCallback);
 
-        String expectedFaviconDomain =
-                ImageFetcher.getSnippetDomain(URI.create(suggestion.getUrl()));
-        verify(mFaviconHelper)
-                .getLocalFaviconImageForURL(any(Profile.class), eq(expectedFaviconDomain),
-                        eq(IMAGE_SIZE_PX), any(FaviconImageCallback.class));
+            verify(mSuggestionsSource)
+                    .fetchSuggestionFavicon(eq(suggestion),
+                            eq(ImageFetcher.PUBLISHER_FAVICON_MINIMUM_SIZE_PX),
+                            eq(ImageFetcher.PUBLISHER_FAVICON_DESIRED_SIZE_PX),
+                            any(Callback.class));
+        }
+
+        @KnownCategories
+        int[] categoriesThatDontFetch = new int[] {
+                KnownCategories.DOWNLOADS, KnownCategories.BOOKMARKS, KnownCategories.READING_LIST};
+        for (@KnownCategories int category : categoriesThatDontFetch) {
+            SnippetArticle suggestion = createDummySuggestion(category);
+            imageFetcher.makeFaviconRequest(suggestion, mockCallback);
+
+            verify(mSuggestionsSource, never())
+                    .fetchSuggestionFavicon(
+                            eq(suggestion), anyInt(), anyInt(), any(Callback.class));
+        }
     }
 
     @Test
     public void testDownloadThumbnailFetch() {
-        ImageFetcher imageFetcher = new ImageFetcher(mSuggestionsSource, mock(Profile.class),
-                mReferencePool, mock(NativePageHost.class));
+        ImageFetcher imageFetcher =
+                new ImageFetcher(mSuggestionsSource, mock(Profile.class), mReferencePool);
 
         SnippetArticle suggestion = createDummySuggestion(KnownCategories.DOWNLOADS);
 
@@ -110,8 +122,8 @@ public class ImageFetcherTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testArticleThumbnailFetch() {
-        ImageFetcher imageFetcher = new ImageFetcher(mSuggestionsSource, mock(Profile.class),
-                mReferencePool, mock(NativePageHost.class));
+        ImageFetcher imageFetcher =
+                new ImageFetcher(mSuggestionsSource, mock(Profile.class), mReferencePool);
 
         SnippetArticle suggestion = createDummySuggestion(KnownCategories.ARTICLES);
         imageFetcher.makeArticleThumbnailRequest(suggestion, mock(Callback.class));
@@ -121,24 +133,13 @@ public class ImageFetcherTest {
 
     @Test
     public void testLargeIconFetch() {
-        ImageFetcher imageFetcher = new ImageFetcher(mSuggestionsSource, mock(Profile.class),
-                mReferencePool, mock(NativePageHost.class));
+        ImageFetcher imageFetcher =
+                new ImageFetcher(mSuggestionsSource, mock(Profile.class), mReferencePool);
 
         imageFetcher.makeLargeIconRequest(URL_STRING, IMAGE_SIZE_PX, mock(LargeIconCallback.class));
 
-        String expectedIconDomain = ImageFetcher.getSnippetDomain(URI.create(URL_STRING));
         verify(mLargeIconBridge)
                 .getLargeIconForUrl(
-                        eq(expectedIconDomain), eq(IMAGE_SIZE_PX), any(LargeIconCallback.class));
-    }
-
-    @Test
-    public void testSnippetDomainExtraction() {
-        URI uri = URI.create(URL_STRING + "/test");
-
-        String expected = URL_STRING;
-        String actual = ImageFetcher.getSnippetDomain(uri);
-
-        assertEquals(expected, actual);
+                        eq(URL_STRING), eq(IMAGE_SIZE_PX), any(LargeIconCallback.class));
     }
 }
