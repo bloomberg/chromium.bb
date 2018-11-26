@@ -110,7 +110,7 @@
 - (void)openPopup {
   // Show shortcuts when the feature is enabled. Don't show them on NTP as they
   // are already part of the NTP.
-  if (!IsVisibleUrlNewTabPage(self.webStateList->GetActiveWebState()) &&
+  if (!IsVisibleURLNewTabPage(self.webStateList->GetActiveWebState()) &&
       base::FeatureList::IsEnabled(
           omnibox::kOmniboxPopupShortcutIconsInZeroState) &&
       !self.browserState->IsOffTheRecord()) {

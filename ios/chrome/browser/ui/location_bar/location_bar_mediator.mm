@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
+#import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -184,7 +185,7 @@
 - (void)notifyConsumerOfChangedLocation {
   [self.consumer updateLocationText:[self currentLocationString]];
   GURL URL = self.webState->GetVisibleURL();
-  BOOL isNTP = URL.GetOrigin() == kChromeUINewTabURL;
+  BOOL isNTP = IsURLNewTabPage(URL);
   if (isNTP) {
     [self.consumer updateAfterNavigatingToNTP];
   }
