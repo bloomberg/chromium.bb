@@ -84,10 +84,11 @@ void JSBasedEventListener::Invoke(
       return;
   }
 
-  ScriptState* script_state_of_listener = GetScriptState();
-  DCHECK(script_state_of_listener);
+  ScriptState* script_state_of_listener = GetScriptStateOrReportError("invoke");
+  if (!script_state_of_listener)
+    return;  // The error is already reported.
   if (!script_state_of_listener->ContextIsValid())
-    return;
+    return;  // Silently fail.
 
   ScriptState::Scope listener_script_state_scope(script_state_of_listener);
 
