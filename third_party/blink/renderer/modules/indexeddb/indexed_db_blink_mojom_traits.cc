@@ -13,6 +13,7 @@
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/platform/mojo/string16_mojom_traits.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 using blink::mojom::IDBCursorDirection;
@@ -149,7 +150,7 @@ UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::key_array(
   const auto& array_view = key.View().ArrayView();
   const size_t array_size = array_view.size();
   Vector<blink::WebIDBKey> result;
-  result.ReserveInitialCapacity(array_view.size());
+  result.ReserveInitialCapacity(SafeCast<wtf_size_t>(array_view.size()));
   // |array_view| is of type WebIDBKeyArrayView which only implements size()
   // and operator[].  Since it doesn't have other typical array functions, we
   // must use an iterator-style for loop.
@@ -164,7 +165,7 @@ UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::binary(
     const blink::WebIDBKey& key) {
   const auto& data = key.View().Binary();
   Vector<uint8_t> result;
-  result.ReserveInitialCapacity(data.size());
+  result.ReserveInitialCapacity(SafeCast<wtf_size_t>(data.size()));
   data.ForEachSegment([&result](const char* segment, size_t segment_size,
                                 size_t segment_offset) {
     const auto& segment_span = base::make_span(segment, segment + segment_size);
@@ -207,7 +208,7 @@ StructTraits<blink::mojom::IDBKeyPathDataView, blink::WebIDBKeyPath>::data(
     case blink::kWebIDBKeyPathTypeArray: {
       const auto& array = key_path.Array();
       Vector<String> result;
-      result.ReserveInitialCapacity(array.size());
+      result.ReserveInitialCapacity(SafeCast<wtf_size_t>(array.size()));
       for (const auto& item : array)
         result.push_back(item);
       data->set_string_array(result);
