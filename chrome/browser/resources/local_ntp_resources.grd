@@ -16,6 +16,9 @@
       <include name="IDR_LOCAL_NTP_VOICE_JS" file="local_ntp\voice.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_CSS" file="local_ntp\custom_backgrounds.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_JS" file="local_ntp\custom_backgrounds.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_ANIMATIONS_CSS" file="local_ntp\animations.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_ANIMATIONS_JS" file="local_ntp\animations.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_UTILS_JS" file="local_ntp\utils.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MOST_VISITED_IFRAME_CSS" file="local_ntp\most_visited_iframe.css" type="BINDATA" />
       <include name="IDR_MOST_VISITED_TITLE_HTML" file="local_ntp\most_visited_title.html" type="BINDATA" />
       <include name="IDR_MOST_VISITED_TITLE_CSS" file="local_ntp\most_visited_title.css" type="BINDATA" />

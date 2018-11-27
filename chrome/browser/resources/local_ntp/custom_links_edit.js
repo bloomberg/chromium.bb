@@ -4,17 +4,6 @@
 
 
 /**
- * Alias for document.getElementById.
- * @param {string} id The ID of the element to find.
- * @return {HTMLElement} The found element or null if not found.
- */
-function $(id) {
-  // eslint-disable-next-line no-restricted-properties
-  return document.getElementById(id);
-}
-
-
-/**
  * Enum for ids.
  * @enum {string}
  * @const
@@ -245,22 +234,6 @@ function handlePostMessage(event) {
 
 
 /**
- * Disables the focus outline for |element| on mousedown.
- * @param {Element} element The element to remove the focus outline from.
- */
-function disableOutlineOnMouseClick(element) {
-  element.addEventListener('mousedown', (event) => {
-    element.classList.add('mouse-navigation');
-    let resetOutline = (event) => {
-      element.classList.remove('mouse-navigation');
-      element.removeEventListener('blur', resetOutline);
-    };
-    element.addEventListener('blur', resetOutline);
-  });
-}
-
-
-/**
  * Does some initialization and shows the dialog window.
  */
 function init() {
@@ -323,9 +296,11 @@ function init() {
   };
   $(IDS.TITLE_FIELD).onkeydown = finishEditOrClose;
   $(IDS.URL_FIELD).onkeydown = finishEditOrClose;
-  disableOutlineOnMouseClick($(IDS.DELETE));
-  disableOutlineOnMouseClick($(IDS.CANCEL));
-  disableOutlineOnMouseClick($(IDS.DONE));
+  utils.disableOutlineOnMouseClick($(IDS.DELETE));
+  utils.disableOutlineOnMouseClick($(IDS.CANCEL));
+  utils.disableOutlineOnMouseClick($(IDS.DONE));
+
+  animations.addRippleAnimations();
 
   // Change input field name to blue on input field focus.
   let changeColor = (fieldTitle) => {

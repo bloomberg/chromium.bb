@@ -6,7 +6,10 @@
 <head>
   <base target="_top">
   <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="animations.css">
   <link rel="stylesheet" type="text/css" href="edit.css">
+  <script src="utils.js"></script>
+  <script src="animations.js"></script>
   <script src="edit.js"></script>
 </head>
 <body>
@@ -32,11 +35,11 @@
       </div>
       <div class="buttons-container">
         <span>
-          <button id="delete" class="secondary" type="button" tabindex="0"></button>
+          <button id="delete" class="secondary ripple" type="button" tabindex="0"></button>
         </span>
         <span>
-          <button id="cancel" class="secondary" type="button" tabindex="0"></button>
-          <button type="submit" id="done" class="primary" tabindex="0"></button>
+          <button id="cancel" class="secondary ripple" type="button" tabindex="0"></button>
+          <button type="submit" id="done" class="primary ripple" tabindex="0"></button>
         </span>
       </div>
     </form>

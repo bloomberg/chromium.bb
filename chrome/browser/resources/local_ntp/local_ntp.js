@@ -50,17 +50,6 @@ function disableIframesAndVoiceSearchForTesting() {
 
 
 /**
- * Alias for document.getElementById.
- * @param {string} id The ID of the element to find.
- * @return {HTMLElement} The found element or null if not found.
- */
-function $(id) {
-  // eslint-disable-next-line no-restricted-properties
-  return document.getElementById(id);
-}
-
-
-/**
  * Specifications for an NTP design (not comprehensive).
  *
  * numTitleLines: Number of lines to display in titles.
@@ -98,11 +87,6 @@ var CLASSES = {
                                      // link dialog is open.
   // Applies float animations to the Most Visited notification
   FLOAT_UP: 'float-up',
-  // Applies ripple animation to the element on click
-  RIPPLE: 'ripple',
-  RIPPLE_CONTAINER: 'ripple-container',
-  RIPPLE_EFFECT_MASK: 'ripple-effect-mask',
-  RIPPLE_EFFECT: 'ripple-effect',
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
   // Applies a different style to the error notification if a link is present.
@@ -245,20 +229,6 @@ var KEYCODE = {ENTER: 13, SPACE: 32};
  * @type {number}
  */
 const NOTIFICATION_TIMEOUT = 10000;
-
-
-/**
- * The duration of the ripple animation.
- * @type {number}
- */
-const RIPPLE_DURATION_MS = 800;
-
-
-/**
- * The max size of the ripple animation.
- * @type {number}
- */
-const RIPPLE_MAX_RADIUS_PX = 300;
 
 
 /**
@@ -948,7 +918,7 @@ function enableMDIcons() {
   $(IDS.MOST_VISITED).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
   $(IDS.TILES).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
   enableMD();
-  addRippleAnimations();
+  animations.addRippleAnimations();
 }
 
 
@@ -957,91 +927,6 @@ function enableMDIcons() {
  */
 function enableMD() {
   document.body.classList.add(CLASSES.MATERIAL_DESIGN);
-}
-
-
-/**
- * Enables ripple animations for elements with CLASSES.RIPPLE. The target
- * element must have position relative or absolute.
- * TODO(kristipark): Remove after migrating to WebUI.
- */
-function addRippleAnimations() {
-  let ripple = (event) => {
-    let target = event.target;
-    const rect = target.getBoundingClientRect();
-    const x = Math.round(event.clientX - rect.left);
-    const y = Math.round(event.clientY - rect.top);
-
-    // Calculate radius
-    const corners = [
-      {x: 0, y: 0},
-      {x: rect.width, y: 0},
-      {x: 0, y: rect.height},
-      {x: rect.width, y: rect.height},
-    ];
-    let distance = (x1, y1, x2, y2) => {
-      var xDelta = x1 - x2;
-      var yDelta = y1 - y2;
-      return Math.sqrt(xDelta * xDelta + yDelta * yDelta);
-    };
-    let cornerDistances = corners.map(function(corner) {
-      return Math.round(distance(x, y, corner.x, corner.y));
-    });
-    const radius =
-        Math.min(RIPPLE_MAX_RADIUS_PX, Math.max.apply(Math, cornerDistances));
-
-    let ripple = document.createElement('div');
-    let rippleMask = document.createElement('div');
-    let rippleContainer = document.createElement('div');
-    ripple.classList.add(CLASSES.RIPPLE_EFFECT);
-    rippleMask.classList.add(CLASSES.RIPPLE_EFFECT_MASK);
-    rippleContainer.classList.add(CLASSES.RIPPLE_CONTAINER);
-    rippleMask.appendChild(ripple);
-    rippleContainer.appendChild(rippleMask);
-    target.appendChild(rippleContainer);
-    // Ripple start location
-    ripple.style.marginLeft = x + 'px';
-    ripple.style.marginTop = y + 'px';
-
-    rippleMask.style.width = target.offsetWidth + 'px';
-    rippleMask.style.height = target.offsetHeight + 'px';
-    rippleMask.style.borderRadius =
-        window.getComputedStyle(target).borderRadius;
-
-    // Start transition/ripple
-    ripple.style.width = radius * 2 + 'px';
-    ripple.style.height = radius * 2 + 'px';
-    ripple.style.marginLeft = x - radius + 'px';
-    ripple.style.marginTop = y - radius + 'px';
-    ripple.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-
-    window.setTimeout(function() {
-      ripple.remove();
-      rippleMask.remove();
-      rippleContainer.remove();
-    }, RIPPLE_DURATION_MS);
-  };
-
-  let rippleElements = document.querySelectorAll('.' + CLASSES.RIPPLE);
-  for (let i = 0; i < rippleElements.length; i++) {
-    rippleElements[i].addEventListener('mousedown', ripple);
-  }
-}
-
-
-/**
- * Disables the focus outline for |element| on mousedown.
- * @param {Element} element The element to remove the focus outline from.
- */
-function disableOutlineOnMouseClick(element) {
-  element.addEventListener('mousedown', (event) => {
-    element.classList.add('mouse-navigation');
-    let resetOutline = (event) => {
-      element.classList.remove('mouse-navigation');
-      element.removeEventListener('blur', resetOutline);
-    };
-    element.addEventListener('blur', resetOutline);
-  });
 }
 
 
@@ -1164,7 +1049,7 @@ function init() {
     inputbox.ondragleave = function() {
       setFakeboxDragFocus(false);
     };
-    disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
+    utils.disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
 
     // Update the fakebox style to match the current key capturing state.
     setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
