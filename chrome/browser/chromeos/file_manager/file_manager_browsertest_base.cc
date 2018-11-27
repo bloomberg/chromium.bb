@@ -54,6 +54,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -1605,6 +1606,15 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "enableTabletMode") {
     ::test::SetAndWaitForTabletMode(true);
     *output = "tabletModeEnabled";
+    return;
+  }
+
+  if (name == "runSelectFileDialog") {
+    browser()->OpenFile();
+    content::TestNavigationObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents(), 1);
+    observer.Wait();
+    *output = observer.last_navigation_url().spec();
     return;
   }
 

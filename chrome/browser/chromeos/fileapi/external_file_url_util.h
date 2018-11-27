@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_URL_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_URL_UTIL_H_
 
+#include "base/callback_forward.h"
 #include "storage/common/fileapi/file_system_types.h"
 
 class GURL;
@@ -40,6 +41,15 @@ GURL VirtualPathToExternalFileURL(const base::FilePath& virtual_path);
 // external location (drive, MTP, or FSP). Otherwise, it returns empty URL.
 GURL CreateExternalFileURLFromPath(Profile* profile,
                                    const base::FilePath& path);
+
+// Obtains, from a file path (e.g. /special/drive-xxx/root/sample.txt), an
+// external file URL (e.g. external:drive/root/sample.txt), if the |path| points
+// an external location (drive, MTP, or FSP), or its hosted file URL if |path|
+// refers to a hosted doc (e.g. gdoc) in DriveFS. If neither condition applies,
+// |callback| is invoked with an empty GURL.
+void ResolveExternalFileUrlFromPath(Profile* profile,
+                                    const base::FilePath& path,
+                                    base::OnceCallback<void(GURL)> callback);
 
 }  // namespace chromeos
 
