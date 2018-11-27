@@ -35,8 +35,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProgressCenterItemGroupTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DeviceHandlerTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("background/js/device_handler_unittest.html")));
+  RunGeneratedTest("/background/js/device_handler_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileOperationManagerTest) {
