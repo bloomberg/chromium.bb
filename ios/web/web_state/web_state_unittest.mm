@@ -418,6 +418,42 @@ TEST_P(WebStateTest, RestoredFromHistory) {
                                                  kTestSessionStoragePageText));
 }
 
+// Verifies that each page title is restored.
+TEST_P(WebStateTest, RestorePageTitles) {
+  // Create session storage.
+  const int kItemCount = 3;
+  NSMutableArray<CRWNavigationItemStorage*>* item_storages =
+      [NSMutableArray arrayWithCapacity:kItemCount];
+  for (unsigned int i = 0; i < kItemCount; i++) {
+    CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
+    item.virtualURL = GURL(base::StringPrintf("http://www.%u.com", i));
+    item.title = base::ASCIIToUTF16(base::StringPrintf("Test%u", i));
+    [item_storages addObject:item];
+  }
+
+  // Restore the session.
+  WebState::CreateParams params(GetBrowserState());
+  CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+  session_storage.itemStorages = item_storages;
+  auto web_state = WebState::CreateWithStorageSession(params, session_storage);
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  // TODO(crbug.com/873729): The session will not be restored until
+  // LoadIfNecessary call. Fix the bug and remove extra call.
+  navigation_manager->LoadIfNecessary();
+
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return navigation_manager->GetItemCount() == kItemCount;
+  }));
+
+  for (unsigned int i = 0; i < kItemCount; i++) {
+    NavigationItem* item = navigation_manager->GetItemAtIndex(i);
+    EXPECT_EQ(GURL(base::StringPrintf("http://www.%u.com", i)),
+              item->GetVirtualURL());
+    EXPECT_EQ(base::ASCIIToUTF16(base::StringPrintf("Test%u", i)),
+              item->GetTitle());
+  }
+}
+
 // Tests that NavigationManager::LoadIfNecessary() restores the page after
 // disabling and re-enabling web usage.
 TEST_P(WebStateTest, DisableAndReenableWebUsage) {

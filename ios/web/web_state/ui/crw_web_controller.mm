@@ -4947,7 +4947,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // for placeholder page because the actual navigation item will not be
   // committed until the native content or WebUI is shown.
   if (context && !context->IsPlaceholderNavigation() &&
-      !context->GetUrl().SchemeIs(url::kAboutScheme)) {
+      !context->GetUrl().SchemeIs(url::kAboutScheme) &&
+      !IsRestoreSessionUrl(context->GetUrl())) {
     [self updateSSLStatusForCurrentNavigationItem];
     [self updateHTML5HistoryState];
     if (!context->IsLoadingErrorPage() && !IsRestoreSessionUrl(webViewURL)) {
@@ -5560,10 +5561,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
                                               hasUserGesture:NO
                                        placeholderNavigation:NO];
 
-      // Use the current title for items created by same document navigations.
-      auto* pendingItem = self.navigationManagerImpl->GetPendingItem();
-      if (pendingItem)
-        pendingItem->SetTitle(_webStateImpl->GetTitle());
+      // With slim nav, the web page title is stored in WKBackForwardListItem
+      // and synced to Navigationitem when the web view title changes.
+      // Otherwise, sync the current title for items created by same document
+      // navigations.
+      if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+        auto* pendingItem = self.navigationManagerImpl->GetPendingItem();
+        if (pendingItem)
+          pendingItem->SetTitle(_webStateImpl->GetTitle());
+      }
     }
   }
 
