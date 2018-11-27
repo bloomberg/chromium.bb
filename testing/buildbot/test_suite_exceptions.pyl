@@ -271,6 +271,22 @@
       'ToTAndroidCFI',
     ],
   },
+  'chrome_public_test_vr_apk-vega': {
+    'modifications': {
+      # chromium.android
+      'Oreo Phone Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'OVR1.180808.003',
+              'device_type': 'vega',
+              'os': 'Android',
+            },
+          ],
+        },
+      }
+    }
+  },
   'components_unittests': {
     'modifications': {
       # chromium.memory
