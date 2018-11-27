@@ -167,6 +167,10 @@ const guardid_t kSocketFdGuard = 0xD712BC0BC9A4EAD4;
 
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
+int GetSocketFDHash(int fd) {
+  return fd ^ 1595649551;
+}
+
 }  // namespace
 
 UDPSocketPosix::UDPSocketPosix(DatagramSocket::BindType bind_type,
@@ -175,6 +179,7 @@ UDPSocketPosix::UDPSocketPosix(DatagramSocket::BindType bind_type,
     : write_async_watcher_(std::make_unique<WriteAsyncWatcher>(this)),
       sender_(new UDPSocketPosixSender()),
       socket_(kInvalidSocket),
+      socket_hash_(0),
       addr_family_(0),
       is_connected_(false),
       socket_options_(SOCKET_OPTION_MULTICAST_LOOP),
@@ -218,6 +223,7 @@ int UDPSocketPosix::Open(AddressFamily address_family) {
   PCHECK(change_fdguard_np(socket_, NULL, 0, &kSocketFdGuard,
                            GUARD_CLOSE | GUARD_DUP, NULL) == 0);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+  socket_hash_ = GetSocketFDHash(socket_);
   if (!base::SetNonBlocking(socket_)) {
     const int err = MapSystemError(errno);
     Close();
@@ -304,6 +310,9 @@ void UDPSocketPosix::Close() {
   ok = write_socket_watcher_.StopWatchingFileDescriptor();
   DCHECK(ok);
 
+  // Verify that |socket_| hasn't been corrupted. Needed to debug
+  // crbug.com/906005.
+  CHECK_EQ(socket_hash_, GetSocketFDHash(socket_));
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   PCHECK(IGNORE_EINTR(guarded_close_np(socket_, &kSocketFdGuard)) == 0);
 #else
