@@ -36,12 +36,8 @@ class PostProcessingPipeline;
 // MixAndFilter() is called (they must be added each time data is queried).
 class FilterGroup {
  public:
-  enum class GroupType { kStream, kFinalMix, kLinearize };
   // |num_channels| indicates number of input audio channels.
   // |type| indicates where in the pipeline this FilterGroup sits.
-  //    some features are specific to certain locations:
-  //     - mono mixer takes place at the end of kFinalMix.
-  //     - channel selection occurs before post-processing in kLinearize.
   // |name| is used for debug printing
   // |pipeline| - processing pipeline.
   // |device_ids| is a set of strings that is used as a filter to determine
@@ -53,7 +49,6 @@ class FilterGroup {
   //   but there is no technical limitation preventing mixing input classes.
 
   FilterGroup(int num_channels,
-              GroupType type,
               const std::string& name,
               std::unique_ptr<PostProcessingPipeline> pipeline,
               const base::flat_set<std::string>& device_ids,
@@ -107,10 +102,7 @@ class FilterGroup {
   void SetPostProcessorConfig(const std::string& name,
                               const std::string& config);
 
-  // Toggles the mono mixer.
-  void SetMixToMono(bool mix_to_mono);
-
-  // Sets the active channel.
+  // Sets the active channel for post processors.
   void UpdatePlayoutChannel(int playout_channel);
 
   // Get content type
@@ -123,9 +115,6 @@ class FilterGroup {
   void AddTempBuffer(int num_channels, int num_frames);
 
   const int num_channels_;
-  const GroupType type_;
-  bool mix_to_mono_;
-  int playout_channel_;
   const std::string name_;
   const base::flat_set<std::string> device_ids_;
   std::vector<FilterGroup*> mixed_inputs_;
