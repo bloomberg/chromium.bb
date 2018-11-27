@@ -51,6 +51,9 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   };
   void GetResponseInfo(HttpResponseInfo* info) override;
 
+  // base::PowerObserver:
+  void OnSuspend() override;
+
   // An interface for subclasses who wish to monitor read operations.
   //
   // |result| is the net::Error code resulting from attempting to open the file.
