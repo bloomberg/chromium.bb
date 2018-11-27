@@ -41,7 +41,6 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
@@ -972,8 +971,10 @@ views::View* AppListView::GetInitiallyFocusedView() {
 }
 
 void AppListView::OnScrollEvent(ui::ScrollEvent* event) {
-  if (!HandleScroll(event->y_offset(), event->type()))
+  if (!HandleScroll(gfx::Vector2d(event->x_offset(), event->y_offset()),
+                    event->type())) {
     return;
+  }
 
   event->SetHandled();
   event->StopPropagation();
@@ -986,8 +987,7 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
       HandleClickOrTap(event);
       break;
     case ui::ET_MOUSEWHEEL:
-      if (HandleScroll(event->AsMouseWheelEvent()->offset().y(),
-                       ui::ET_MOUSEWHEEL))
+      if (HandleScroll(event->AsMouseWheelEvent()->offset(), ui::ET_MOUSEWHEEL))
         event->SetHandled();
       break;
     default:
@@ -1071,8 +1071,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     }
     case ui::ET_MOUSEWHEEL: {
-      if (HandleScroll(event->AsMouseWheelEvent()->offset().y(),
-                       ui::ET_MOUSEWHEEL))
+      if (HandleScroll(event->AsMouseWheelEvent()->offset(), ui::ET_MOUSEWHEEL))
         event->SetHandled();
       break;
     }
@@ -1130,16 +1129,20 @@ void AppListView::OnWallpaperColorsChanged() {
   search_box_view_->OnWallpaperColorsChanged();
 }
 
-bool AppListView::HandleScroll(int offset, ui::EventType type) {
+bool AppListView::HandleScroll(const gfx::Vector2d& offset,
+                               ui::EventType type) {
   // Ignore 0-offset events to prevent spurious dismissal, see crbug.com/806338
   // The system generates 0-offset ET_SCROLL_FLING_CANCEL events during simple
   // touchpad mouse moves. Those may be passed via mojo APIs and handled here.
-  if (offset == 0 || is_in_drag() || ShouldIgnoreScrollEvents())
+  if ((offset.y() == 0 && offset.x() == 0) || is_in_drag() ||
+      ShouldIgnoreScrollEvents()) {
     return false;
+  }
 
   if (app_list_state_ != AppListViewState::PEEKING &&
-      app_list_state_ != AppListViewState::FULLSCREEN_ALL_APPS)
+      app_list_state_ != AppListViewState::FULLSCREEN_ALL_APPS) {
     return false;
+  }
 
   // Let the Apps grid view handle the event first in FULLSCREEN_ALL_APPS.
   if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS) {
@@ -1153,8 +1156,8 @@ bool AppListView::HandleScroll(int offset, ui::EventType type) {
   // If the event is a mousewheel event, the offset is always large enough,
   // otherwise the offset must be larger than the scroll threshold.
   if (type == ui::ET_MOUSEWHEEL ||
-      abs(offset) > kAppListMinScrollToSwitchStates) {
-    if (offset > 0 && !is_tablet_mode()) {
+      abs(offset.y()) > kAppListMinScrollToSwitchStates) {
+    if (offset.y() > 0 && !is_tablet_mode()) {
       Dismiss();
     } else {
       if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS)

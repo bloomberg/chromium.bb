@@ -25,6 +25,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/widget/widget.h"
@@ -221,9 +222,10 @@ void AppListPresenterImpl::EndDragFromShelf(AppListViewState app_list_state) {
   }
 }
 
-void AppListPresenterImpl::ProcessMouseWheelOffset(int y_scroll_offset) {
+void AppListPresenterImpl::ProcessMouseWheelOffset(
+    const gfx::Vector2d& scroll_offset_vector) {
   if (view_)
-    view_->HandleScroll(y_scroll_offset, ui::ET_MOUSEWHEEL);
+    view_->HandleScroll(scroll_offset_vector, ui::ET_MOUSEWHEEL);
 }
 
 void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
