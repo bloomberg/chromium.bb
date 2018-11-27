@@ -23,7 +23,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "net/third_party/http2/hpack/hpack_string.h"
-//#include "net/third_party/http2/http2_constants.h"
+#include "net/third_party/http2/http2_constants.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 
 namespace http2 {
@@ -134,7 +134,7 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderDynamicTable {
 
   // The last received DynamicTableSizeUpdate value, initialized to
   // SETTINGS_HEADER_TABLE_SIZE.
-  size_t size_limit_ = 4096;  // Http2SettingsInfo::DefaultHeaderTableSize();
+  size_t size_limit_ = Http2SettingsInfo::DefaultHeaderTableSize();
 
   size_t current_size_ = 0;
 

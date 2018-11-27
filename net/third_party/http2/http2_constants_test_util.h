@@ -5,6 +5,7 @@
 #ifndef NET_THIRD_PARTY_HTTP2_HTTP2_CONSTANTS_TEST_UTIL_H_
 #define NET_THIRD_PARTY_HTTP2_HTTP2_CONSTANTS_TEST_UTIL_H_
 
+#include <cstdint>
 #include <vector>
 
 #include "net/third_party/http2/http2_constants.h"

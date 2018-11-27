@@ -30,15 +30,16 @@ namespace test {
 
 class HpackBlockCollector : public HpackEntryDecoderListener {
  public:
+  HpackBlockCollector();
+  HpackBlockCollector(const HpackBlockCollector& other);
+  ~HpackBlockCollector() override;
+
   // Implementations of HpackEntryDecoderListener, forwarding to pending_entry_,
   // an HpackEntryCollector for the "in-progress" HPACK entry. OnIndexedHeader
   // and OnDynamicTableSizeUpdate are pending only for that one call, while
   // OnStartLiteralHeader is followed by many calls, ending with OnValueEnd.
   // Once all the calls for one HPACK entry have been received, PushPendingEntry
   // is used to append the pending_entry_ entry to the collected entries_.
-  HpackBlockCollector();
-  HpackBlockCollector(const HpackBlockCollector& other);
-  ~HpackBlockCollector() override;
   void OnIndexedHeader(size_t index) override;
   void OnDynamicTableSizeUpdate(size_t size) override;
   void OnStartLiteralHeader(HpackEntryType header_type,

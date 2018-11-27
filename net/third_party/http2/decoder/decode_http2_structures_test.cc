@@ -44,9 +44,7 @@ class StructureDecoderTest : public ::testing::Test {
  protected:
   typedef S Structure;
 
-  StructureDecoderTest() : random_decode_count_(100) {
-    CHECK_LE(random_decode_count_, 1000u * 1000u) << "That should be plenty!";
-  }
+  StructureDecoderTest() : random_(), random_decode_count_(100) {}
 
   // Set the fields of |*p| to random values.
   void Randomize(S* p) { ::http2::test::Randomize(p, &random_); }
@@ -79,7 +77,6 @@ class StructureDecoderTest : public ::testing::Test {
 
   // Generate
   void TestDecodingRandomizedStructures(size_t count) {
-    EXPECT_LT(count, 1000u * 1000u) << "That should be plenty!";
     for (size_t i = 0; i < count && !HasFailure(); ++i) {
       Structure input;
       Randomize(&input);

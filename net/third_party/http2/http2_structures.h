@@ -26,8 +26,8 @@
 // Http2PriorityFields.
 
 #include <stddef.h>
-#include <stdint.h>
 
+#include <cstdint>
 #include <ostream>
 
 #include "base/logging.h"

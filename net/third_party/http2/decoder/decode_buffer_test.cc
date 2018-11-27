@@ -44,9 +44,6 @@ struct TestStruct {
 };
 
 class DecodeBufferTest : public ::testing::Test {
- public:
-  DecodeBufferTest() = default;
-
  protected:
   Http2Random random_;
   uint32_t decode_offset_;

@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/decoder/decode_status.h"
 #include "net/third_party/http2/http2_constants.h"

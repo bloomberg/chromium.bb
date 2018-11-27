@@ -51,7 +51,6 @@ class HpackStringDecoderTest : public RandomDecoderTest {
   // expected_str is a Http2String rather than a const Http2String& or
   // Http2StringPiece so that the lambda makes a copy of the string, and thus
   // the string to be passed to Collected outlives the call to MakeValidator.
-
   Validator MakeValidator(const Http2String& expected_str,
                           bool expected_huffman) {
     return
