@@ -1,3 +1,6 @@
+// Clicks on the element with the given ID. It adds an event handler to the element
+// which ensures that the events have a long duration and reported by EventTiming
+// where appropriate.
 function clickOnElement(id, callback) {
   const element = document.getElementById(id);
   const rect = element.getBoundingClientRect();
@@ -12,6 +15,7 @@ function clickOnElement(id, callback) {
     ]
   }];
   var clickHandler = () => {
+    mainThreadBusy(60);
     if (callback)
       callback();
     element.removeEventListener("click", clickHandler);
@@ -29,7 +33,7 @@ function mainThreadBusy(duration) {
   while (performance.now() < now + duration);
 }
 
-// This method should receive an entry of type 'event'. |is_false| is true only
+// This method should receive an entry of type 'event'. |is_first| is true only
 // when the event also happens to correspond to the first event. In this case,
 // the timings of the 'firstInput' entry should be equal to those of this entry.
 function verifyClickEvent(entry, is_first=false) {
@@ -69,6 +73,5 @@ function wait() {
 function clickAndBlockMain(id) {
   return new Promise((resolve, reject) => {
     clickOnElement(id, resolve);
-    mainThreadBusy(300);
   });
 }

@@ -3,9 +3,9 @@
 <meta charset=utf-8 />
 <title>Event Timing: only observe the first input</title>
 <button id='button' onclick='1'>Generate a 'click' event</button>
-<script src=../../resources/testharness.js></script>
-<script src=../../resources/testharnessreport.js></script>
-<script src=./resources/event-timing-support.js></script>
+<script src=/resources/testharness.js></script>
+<script src=/resources/testharnessreport.js></script>
+<script src=resources/event-timing-support.js></script>
 
 <script>
   /* Test:
@@ -27,15 +27,16 @@
         assert_equals(observedEntries[0].name, 'click');
     })).observe({ entryTypes: ['firstInput'] });
     on_event(window, 'load', () => {
-      clickAndBlockMain('button').then(wait).then(() => {
-        clickAndBlockMain('button').then(wait);
-        // After some wait, the PerformanceObserver should have processed both clicks.
-        // One and only one firstInput entry should have been dispatched, so
-        // |hasObservedFirstInput| should be true.
-        t.step_timeout( () => {
-          assert_true(hasObservedFirstInput);
-          t.done();
-        }, 100);
+      clickAndBlockMain('button').then(() => {
+        clickAndBlockMain('button').then(wait).then( () => {
+          // After some wait, the PerformanceObserver should have processed both clicks.
+          // One and only one firstInput entry should have been dispatched, so
+          // |hasObservedFirstInput| should be true.
+          t.step_timeout( () => {
+            assert_true(hasObservedFirstInput);
+            t.done();
+          }, 10);
+        });
       });
     });
   },
