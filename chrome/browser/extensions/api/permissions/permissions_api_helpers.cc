@@ -90,14 +90,15 @@ std::unique_ptr<const PermissionSet> UnpackPermissionSet(
           return NULL;
         }
 
-        APIPermission* permission = NULL;
+        std::unique_ptr<APIPermission> permission;
 
         // Explicitly check the permissions that accept arguments until the bug
         // referenced above is fixed.
         const APIPermissionInfo* usb_device_permission_info =
             info->GetByID(APIPermission::kUsbDevice);
         if (permission_name == usb_device_permission_info->name()) {
-          permission = new UsbDevicePermission(usb_device_permission_info);
+          permission =
+              std::make_unique<UsbDevicePermission>(usb_device_permission_info);
         } else {
           *error = kUnsupportedPermissionId;
           return NULL;
@@ -108,7 +109,7 @@ std::unique_ptr<const PermissionSet> UnpackPermissionSet(
           *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, *it);
           return NULL;
         }
-        apis.insert(permission);
+        apis.insert(std::move(permission));
       } else {
         const APIPermissionInfo* permission_info = info->GetByName(*it);
         if (!permission_info) {

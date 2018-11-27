@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -110,7 +111,8 @@ bool ContentCapabilitiesHandler::Parse(Extension* extension,
           keys::kContentCapabilities,
           permission_name));
     } else {
-      info->permissions.insert(permission_info->CreateAPIPermission());
+      info->permissions.insert(
+          base::WrapUnique(permission_info->CreateAPIPermission()));
     }
   }
 

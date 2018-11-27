@@ -11,6 +11,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -323,8 +324,6 @@ TEST(PermissionsTest, ExplicitAccessToOrigin) {
 }
 
 TEST(PermissionsTest, CreateUnion) {
-  APIPermission* permission = nullptr;
-
   ManifestPermissionSet manifest_permissions;
   APIPermissionSet apis1;
   APIPermissionSet apis2;
@@ -346,7 +345,8 @@ TEST(PermissionsTest, CreateUnion) {
 
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
-  permission = permission_info->CreateAPIPermission();
+  std::unique_ptr<APIPermission> permission(
+      permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -358,10 +358,10 @@ TEST(PermissionsTest, CreateUnion) {
   // Union with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  apis1.insert(permission->Clone());
+  apis1.insert(base::WrapUnique(permission->Clone()));
   expected_apis.insert(APIPermission::kTab);
   expected_apis.insert(APIPermission::kBackground);
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&expected_explicit_hosts, "http://*.google.com/*");
@@ -389,20 +389,20 @@ TEST(PermissionsTest, CreateUnion) {
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
 
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
     value->AppendString("udp-send-to::8899");
     ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  apis2.insert(permission);
+  apis2.insert(std::move(permission));
 
   expected_apis.insert(APIPermission::kTab);
   expected_apis.insert(APIPermission::kProxy);
   expected_apis.insert(APIPermission::kClipboardWrite);
 
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -412,7 +412,7 @@ TEST(PermissionsTest, CreateUnion) {
     ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
   // Insert a new permission socket permisssion which will replace the old one.
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   AddPattern(&explicit_hosts2, "http://*.example.com/*");
   AddPattern(&scriptable_hosts2, "http://*.google.com/*");
@@ -441,8 +441,6 @@ TEST(PermissionsTest, CreateUnion) {
 }
 
 TEST(PermissionsTest, CreateIntersection) {
-  APIPermission* permission = nullptr;
-
   ManifestPermissionSet manifest_permissions;
   APIPermissionSet apis1;
   APIPermissionSet apis2;
@@ -468,7 +466,8 @@ TEST(PermissionsTest, CreateIntersection) {
   // Intersection with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  permission = permission_info->CreateAPIPermission();
+  std::unique_ptr<APIPermission> permission(
+      permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -476,7 +475,7 @@ TEST(PermissionsTest, CreateIntersection) {
     value->AppendString("udp-send-to::8888");
     ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  apis1.insert(permission);
+  apis1.insert(std::move(permission));
 
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&scriptable_hosts1, "http://www.reddit.com/*");
@@ -503,7 +502,7 @@ TEST(PermissionsTest, CreateIntersection) {
   apis2.insert(APIPermission::kTab);
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("udp-bind::8080");
@@ -511,17 +510,17 @@ TEST(PermissionsTest, CreateIntersection) {
     value->AppendString("udp-send-to::8899");
     ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  apis2.insert(permission);
+  apis2.insert(std::move(permission));
 
   expected_apis.insert(APIPermission::kTab);
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
     ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   AddPattern(&explicit_hosts2, "http://*.example.com/*");
   AddPattern(&explicit_hosts2, "http://*.google.com/*");
@@ -550,8 +549,6 @@ TEST(PermissionsTest, CreateIntersection) {
 }
 
 TEST(PermissionsTest, CreateDifference) {
-  APIPermission* permission = nullptr;
-
   ManifestPermissionSet manifest_permissions;
   APIPermissionSet apis1;
   APIPermissionSet apis2;
@@ -577,7 +574,8 @@ TEST(PermissionsTest, CreateDifference) {
   // Difference with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  permission = permission_info->CreateAPIPermission();
+  std::unique_ptr<APIPermission> permission(
+      permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -585,7 +583,7 @@ TEST(PermissionsTest, CreateDifference) {
     value->AppendString("udp-send-to::8888");
     ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  apis1.insert(permission);
+  apis1.insert(std::move(permission));
 
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&scriptable_hosts1, "http://www.reddit.com/*");
@@ -601,24 +599,24 @@ TEST(PermissionsTest, CreateDifference) {
   apis2.insert(APIPermission::kTab);
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
     value->AppendString("udp-send-to::8899");
     ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  apis2.insert(permission);
+  apis2.insert(std::move(permission));
 
   expected_apis.insert(APIPermission::kBackground);
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
     ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   AddPattern(&explicit_hosts2, "http://*.example.com/*");
   AddPattern(&explicit_hosts2, "http://*.google.com/*");

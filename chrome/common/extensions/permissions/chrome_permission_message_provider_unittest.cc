@@ -125,7 +125,7 @@ TEST_F(ChromePermissionMessageProviderUnittest,
   devices_list->Append(
       UsbDevicePermissionData(0x02ad, 0x138d, -1, -1).ToValue());
   ASSERT_TRUE(usb->FromValue(devices_list.get(), nullptr, nullptr));
-  permissions.insert(usb.release());
+  permissions.insert(std::move(usb));
 
   PermissionMessages messages =
       GetMessages(permissions, Manifest::TYPE_EXTENSION);
