@@ -99,8 +99,8 @@ void OmniboxPopupViewIOS::OnMatchHighlighted(size_t row) {
 
 void OmniboxPopupViewIOS::OnMatchSelected(
     const AutocompleteMatch& selectedMatch,
-    size_t row) {
-  WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB;
+    size_t row,
+    WindowOpenDisposition disposition) {
   base::RecordAction(UserMetricsAction("MobileOmniboxUse"));
 
   // OpenMatch() may close the popup, which will clear the result set and, by

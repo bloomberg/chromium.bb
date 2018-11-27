@@ -422,10 +422,10 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
           [self.URLLoader loadURLWithParams:chromeParams];
           [self cancelOmniboxEdit];
         };
-    load_GURL_from_location_bar_swizzler_.reset(
-        new ScopedBlockSwizzler([LocationBarCoordinator class],
-                                @selector(loadGURLFromLocationBar:transition:),
-                                loadGURLFromLocationBarBlock));
+    load_GURL_from_location_bar_swizzler_.reset(new ScopedBlockSwizzler(
+        [LocationBarCoordinator class],
+        @selector(loadGURLFromLocationBar:transition:disposition:),
+        loadGURLFromLocationBarBlock));
 }
 
 // Creates a new CameraController mock with camera permission granted if

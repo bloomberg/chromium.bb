@@ -4074,6 +4074,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
   web::NavigationManager::WebLoadParams params = chromeParams.web_params;
+  if (chromeParams.disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
+    [self switchToTabWithURL:params.url];
+    return;
+  }
+
   [[OmniboxGeolocationController sharedInstance]
       locationBarDidSubmitURL:params.url
                    transition:params.transition_type
@@ -4603,7 +4608,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   [nativeController focusFakebox];
 }
 
-- (void)unfocusOmniboxAndSwitchToTabWithURL:(const GURL&)URL {
+- (void)switchToTabWithURL:(const GURL&)URL {
   NSInteger newWebStateIndex = 0;
   WebStateList* webStateList = self.tabModel.webStateList;
   web::WebState* currentWebState = webStateList->GetActiveWebState();
@@ -4660,8 +4665,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   [animationView animateFromCurrentView:snapshotView
                               toNewView:swipeView
                              inPosition:position];
-
-  [self.dispatcher cancelOmniboxEdit];
 
   webStateList->ActivateWebStateAt(newWebStateIndex);
 }

@@ -44,7 +44,9 @@ void WebOmniboxEditControllerImpl::OnAutocompleteAccept(
   if (destination_url.is_valid()) {
     transition = ui::PageTransitionFromInt(
         transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    [URLLoader_ loadGURLFromLocationBar:destination_url transition:transition];
+    [URLLoader_ loadGURLFromLocationBar:destination_url
+                             transition:transition
+                            disposition:disposition];
   }
 }
 

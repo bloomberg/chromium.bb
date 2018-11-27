@@ -104,9 +104,6 @@ class GURL;
 // omnibox.
 - (void)focusFakebox;
 
-// Unfocus omnibox then switch to the first tab displaying |URL|.
-- (void)unfocusOmniboxAndSwitchToTabWithURL:(const GURL&)URL;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_

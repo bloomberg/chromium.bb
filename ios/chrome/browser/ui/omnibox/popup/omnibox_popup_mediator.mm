@@ -122,7 +122,7 @@
   const AutocompleteMatch& match =
       ((const AutocompleteResult&)_currentResult).match_at(row);
 
-  _delegate->OnMatchSelected(match, row);
+  _delegate->OnMatchSelected(match, row, WindowOpenDisposition::CURRENT_TAB);
 }
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
@@ -131,7 +131,8 @@
       ((const AutocompleteResult&)_currentResult).match_at(row);
 
   if (match.has_tab_match) {
-    [self.dispatcher unfocusOmniboxAndSwitchToTabWithURL:match.destination_url];
+    _delegate->OnMatchSelected(match, row,
+                               WindowOpenDisposition::SWITCH_TO_TAB);
   } else {
     if (AutocompleteMatch::IsSearchType(match.type)) {
       base::RecordAction(
