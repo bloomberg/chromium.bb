@@ -65,18 +65,7 @@ void GetRGBA(UIColor* color, CGFloat* r, CGFloat* g, CGFloat* b, CGFloat* a) {
   }
 }
 
-// Store a reference to the current first responder.
-UIResponder* gFirstResponder = nil;
-
 }  // namespace
-
-@implementation UIResponder (FirstResponder)
-
-- (void)cr_markSelfCurrentFirstResponder {
-  gFirstResponder = self;
-}
-
-@end
 
 void SetA11yLabelAndUiAutomationName(UIView* element,
                                      int idsAccessibilityLabel,
@@ -642,19 +631,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
 
 UIResponder* GetFirstResponder() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  UIApplication* application = [UIApplication sharedApplication];
-  if (base::FeatureList::IsEnabled(kFirstResponderKeyWindow)) {
-    return GetFirstResponderSubview(application.keyWindow);
-  }
-
-  DCHECK(!gFirstResponder);
-  [application sendAction:@selector(cr_markSelfCurrentFirstResponder)
-                       to:nil
-                     from:nil
-                 forEvent:nil];
-  UIResponder* firstResponder = gFirstResponder;
-  gFirstResponder = nil;
-  return firstResponder;
+  return GetFirstResponderSubview([UIApplication sharedApplication].keyWindow);
 }
 
 // Trigger a haptic vibration for the user selecting an action. This is a no-op

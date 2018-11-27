@@ -7,11 +7,6 @@
 
 #include "base/feature_list.h"
 
-// Avoid the crash in https://crbug.com/816427 by getting the first responder by
-// navigating the key window, rather than using -sendAction to find the first
-// responder.
-extern const base::Feature kFirstResponderKeyWindow;
-
 // Feature to automatically switch to the regular tabs panel in tab grid after
 // closing the last incognito tab.
 extern const base::Feature kClosingLastIncognitoTab;
