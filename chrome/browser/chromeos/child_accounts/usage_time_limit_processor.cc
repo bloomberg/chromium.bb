@@ -991,7 +991,9 @@ TimeLimitOverride::TimeLimitOverride(const base::Value& override_list) {
     return;
   }
 
+  // The most recent override created.
   const base::Value* last_override = nullptr;
+  int64_t last_override_created_at_millis;
   for (const base::Value& override_value : override_list.GetList()) {
     if (!override_value.is_dict()) {
       LOG(ERROR) << "Override entry is not a dictionary";
@@ -1005,11 +1007,28 @@ TimeLimitOverride::TimeLimitOverride(const base::Value& override_list) {
       LOG(ERROR) << "Override entry is missing created_at_millis field.";
       continue;
     }
-    if (!last_override ||
-        created_at_value->GetString().compare(
-            last_override->FindKey(kOverrideActionCreatedAt)->GetString()) >
-            0) {
+
+    if (!last_override) {
+      // Check if the creation time is a valid number.
+      if (!base::StringToInt64(created_at_value->GetString(),
+                               &last_override_created_at_millis)) {
+        LOG(ERROR) << "Invalid override created_at_millis.";
+        continue;
+      }
       last_override = &override_value;
+      continue;
+    }
+
+    int64_t current_override_created_at_millis;
+    if (!base::StringToInt64(created_at_value->GetString(),
+                             &current_override_created_at_millis)) {
+      LOG(ERROR) << "Invalid override created_at_millis.";
+      continue;
+    }
+
+    if (current_override_created_at_millis > last_override_created_at_millis) {
+      last_override = &override_value;
+      last_override_created_at_millis = current_override_created_at_millis;
     }
   }
 
@@ -1021,20 +1040,10 @@ TimeLimitOverride::TimeLimitOverride(const base::Value& override_list) {
   if (!action_value)
     return;
 
-  const base::Value* created_at_value =
-      last_override->FindKey(kOverrideActionCreatedAt);
-
-  int64_t created_at_millis;
-  if (!base::StringToInt64(created_at_value->GetString(), &created_at_millis)) {
-    LOG(ERROR) << "Invalid override created_at_millis.";
-    // Cannot process entry without a valid creation time.
-    return;
-  }
-
   action = action_value->GetString() == kOverrideActionLock ? Action::kLock
                                                             : Action::kUnlock;
-  created_at = base::Time::UnixEpoch() +
-               base::TimeDelta::FromMilliseconds(created_at_millis);
+  created_at = base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(
+                                             last_override_created_at_millis);
 
   const base::Value* duration_value = last_override->FindPath(
       {kOverrideActionSpecificData, kOverrideActionDurationMins});
