@@ -6,5 +6,6 @@ TEST COMPLETE
 
 
 ============== Back Forward List ==============
+        http://127.0.0.1:8000/media/autoplay/document-user-activation-navigation-keypress.html
 curr->  http://127.0.0.1:8000/media/autoplay/resources/test-autoplay.html
 ===============================================

@@ -1,3 +1,11 @@
-CONSOLE MESSAGE: line 37: This test requires User Activation V2.
+EVENT(gamepadconnected)
+EVENT(fullscreenchange)
+EXPECTED (document.fullscreenElement == '[object HTMLHtmlElement]') OK
+EVENT(fullscreenchange)
+EXPECTED (document.fullscreenElement == '[object HTMLSpanElement]') OK
+EVENT(fullscreenchange)
+EXPECTED (document.fullscreenElement == '[object HTMLHtmlElement]') OK
+EVENT(fullscreenchange)
+EXPECTED (document.fullscreenElement == 'undefined') OK
 END OF TEST
 
