@@ -235,21 +235,6 @@
           </div>
 
           <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.autofillRegistered]]">
-            <div id="autofillCheckboxLabel" class="flex">
-              $i18n{autofillCheckboxLabel}
-            </div>
-            <!-- Autofill has a special on-change handler to deal with
-                 Payments integration. -->
-            <cr-toggle checked="{{syncPrefs.autofillSynced}}"
-                on-change="onAutofillDataTypeChanged_"
-                disabled="[[shouldSyncCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes, syncPrefs.autofillEnforced)]]"
-                aria-labelledby="autofillCheckboxLabel">
-            </cr-toggle>
-          </div>
-
-          <div class="layout horizontal list-item"
               hidden="[[!syncPrefs.bookmarksRegistered]]">
             <div id="bookmarksCheckboxLabel" class="flex">
               $i18n{bookmarksCheckboxLabel}
@@ -292,19 +277,6 @@
           </div>
 
           <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.passwordsRegistered]]">
-            <div id="passwordsCheckboxLabel" class="flex">
-              $i18n{passwordsCheckboxLabel}
-            </div>
-            <cr-toggle checked="{{syncPrefs.passwordsSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
-                disabled="[[shouldSyncCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes, syncPrefs.passwordsEnforced)]]"
-                aria-labelledby="passwordsCheckboxLabel">
-            </cr-toggle>
-          </div>
-
-          <div class="layout horizontal list-item"
               hidden="[[!syncPrefs.preferencesRegistered]]">
             <div id="settingsCheckboxLabel" class="flex">
               $i18n{settingsCheckboxLabel}
@@ -341,6 +313,34 @@
                 disabled="[[shouldSyncCheckboxBeDisabled_(
                     syncPrefs.syncAllDataTypes, syncPrefs.tabsEnforced)]]"
                 aria-labelledby="openTabsCheckboxLabel">
+            </cr-toggle>
+          </div>
+
+          <div class="layout horizontal list-item"
+              hidden="[[!syncPrefs.passwordsRegistered]]">
+            <div id="passwordsCheckboxLabel" class="flex">
+              $i18n{passwordsCheckboxLabel}
+            </div>
+            <cr-toggle checked="{{syncPrefs.passwordsSynced}}"
+                on-change="onSingleSyncDataTypeChanged_"
+                disabled="[[shouldSyncCheckboxBeDisabled_(
+                    syncPrefs.syncAllDataTypes, syncPrefs.passwordsEnforced)]]"
+                aria-labelledby="passwordsCheckboxLabel">
+            </cr-toggle>
+          </div>
+
+          <div class="layout horizontal list-item"
+              hidden="[[!syncPrefs.autofillRegistered]]">
+            <div id="autofillCheckboxLabel" class="flex">
+              $i18n{autofillCheckboxLabel}
+            </div>
+            <!-- Autofill has a special on-change handler to deal with
+                 Payments integration. -->
+            <cr-toggle checked="{{syncPrefs.autofillSynced}}"
+                on-change="onAutofillDataTypeChanged_"
+                disabled="[[shouldSyncCheckboxBeDisabled_(
+                    syncPrefs.syncAllDataTypes, syncPrefs.autofillEnforced)]]"
+                aria-labelledby="autofillCheckboxLabel">
             </cr-toggle>
           </div>
 

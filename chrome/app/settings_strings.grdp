@@ -3646,7 +3646,7 @@
     Settings
   </message>
   <message name="IDS_SETTINGS_AUTOFILL_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing autofill settings between multiple browser instances.">
-    Autofill
+    Addresses, phone numbers, and more
   </message>
   <message name="IDS_SETTINGS_HISTORY_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing history between multiple browser instances.">
     History
