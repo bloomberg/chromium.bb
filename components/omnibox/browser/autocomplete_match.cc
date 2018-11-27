@@ -133,8 +133,6 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       description(match.description),
       description_class(match.description_class),
       swap_contents_and_description(match.swap_contents_and_description),
-      answer_contents(match.answer_contents),
-      answer_type(match.answer_type),
       answer(match.answer),
       transition(match.transition),
       type(match.type),
@@ -179,8 +177,6 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   description = match.description;
   description_class = match.description_class;
   swap_contents_and_description = match.swap_contents_and_description;
-  answer_contents = match.answer_contents;
-  answer_type = match.answer_type;
   answer = match.answer;
   transition = match.transition;
   type = match.type;
@@ -751,8 +747,6 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(contents_class);
   res += base::trace_event::EstimateMemoryUsage(description);
   res += base::trace_event::EstimateMemoryUsage(description_class);
-  res += base::trace_event::EstimateMemoryUsage(answer_contents);
-  res += base::trace_event::EstimateMemoryUsage(answer_type);
   res += sizeof(int);
   if (answer)
     res += base::trace_event::EstimateMemoryUsage(answer.value());

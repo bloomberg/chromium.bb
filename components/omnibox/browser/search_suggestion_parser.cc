@@ -187,11 +187,7 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
 }
 
 void SearchSuggestionParser::SuggestResult::SetAnswer(
-    const base::string16& answer_contents,
-    const base::string16& answer_type,
     const SuggestionAnswer& answer) {
-  answer_contents_ = answer_contents;
-  answer_type_ = answer_type;
   answer_ = answer;
 }
 
@@ -517,8 +513,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
       }
 
       base::string16 match_contents_prefix;
-      base::string16 answer_contents;
-      base::string16 answer_type;
       SuggestionAnswer answer;
       bool answer_parsed_successfully = false;
       std::string image_dominant_color;
@@ -540,6 +534,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
 
           // Extract the Answer, if provided.
           const base::DictionaryValue* answer_json = nullptr;
+          base::string16 answer_type;
           if (suggestion_detail->GetDictionary("ansa", &answer_json) &&
               suggestion_detail->GetString("ansb", &answer_type)) {
             if (SuggestionAnswer::ParseAnswer(answer_json, answer_type,
@@ -547,11 +542,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
               base::UmaHistogramSparse("Omnibox.AnswerParseType",
                                        answer.type());
               answer_parsed_successfully = true;
-              std::string contents;
-              base::JSONWriter::Write(*answer_json, &contents);
-              answer_contents = base::UTF8ToUTF16(contents);
-            } else {
-              answer_type = base::string16();
             }
             UMA_HISTOGRAM_BOOLEAN("Omnibox.AnswerParseSuccess",
                                   answer_parsed_successfully);
@@ -576,10 +566,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
           relevances != nullptr,
           should_prefetch,
           trimmed_input));
-      if (answer_parsed_successfully) {
-        results->suggest_results.back().SetAnswer(answer_contents, answer_type,
-                                                  answer);
-      }
+      if (answer_parsed_successfully)
+        results->suggest_results.back().SetAnswer(answer);
     }
   }
   results->relevances_from_server = relevances != nullptr;
