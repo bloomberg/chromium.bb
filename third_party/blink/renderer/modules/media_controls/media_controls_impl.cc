@@ -1607,6 +1607,15 @@ void MediaControlsImpl::HandleTouchEvent(Event* event) {
         !ContainsRelatedTarget(event)) {
       event->SetDefaultHandled();
 
+      // In immersive mode we don't use double-tap features, so instead of
+      // waiting 300 ms for a potential second tap, we just immediately toggle
+      // controls visiblity.
+      if (GetDocument().GetSettings() &&
+          GetDocument().GetSettings()->GetImmersiveModeEnabled()) {
+        MaybeToggleControlsFromTap();
+        return;
+      }
+
       if (tap_timer_.IsActive()) {
         // Cancel the visibility toggle event.
         tap_timer_.Stop();
