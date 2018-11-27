@@ -376,7 +376,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   // Fire any events related to changes to the tree.
   for (auto targeted_event : *this) {
     BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);
-    if (!event_target || event_target->PlatformIsChildOfLeaf())
+    if (!event_target || !event_target->CanFireEvents())
       continue;
 
     FireGeneratedEvent(targeted_event.event_params.event, event_target);
@@ -389,7 +389,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
 
     // Fire the native event.
     BrowserAccessibility* event_target = GetFromID(event.id);
-    if (!event_target || event_target->PlatformIsChildOfLeaf())
+    if (!event_target || !event_target->CanFireEvents())
       return;
 
     if (event.event_type == ax::mojom::Event::kHover)

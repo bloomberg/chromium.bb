@@ -114,6 +114,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // that might send notifications.
   virtual bool PlatformIsLeaf() const;
 
+  // Returns true if this object can fire events.
+  virtual bool CanFireEvents() const;
+
   // Returns the number of children of this object, or 0 if PlatformIsLeaf()
   // returns true.
   virtual uint32_t PlatformChildCount() const;
