@@ -41,19 +41,6 @@ class ModellerImpl : public Modeller,
                      public BrightnessMonitor::Observer,
                      public ui::UserActivityObserver {
  public:
-  // Once user remains idle for |kTrainingDelay|, we start training the model.
-  static constexpr base::TimeDelta kTrainingDelay =
-      base::TimeDelta::FromSeconds(60);
-
-  // If number of recorded training data has reached |kMaxTrainingDataPoints| we
-  // start training immediately, without waiting for user to become idle for
-  // |kTrainingDelay|.
-  static constexpr size_t kMaxTrainingDataPoints = 100;
-
-  // Only train when there are at least |kMinTrainingDataPoints| training data
-  // points.
-  static constexpr size_t kMinTrainingDataPoints = 10;
-
   // TODO(jiameng): we currently use past 10 seconds of ambient values to
   // calculate average. May revise.
   static constexpr int kAmbientLightHorizonSeconds = 10;
@@ -109,7 +96,13 @@ class ModellerImpl : public Modeller,
   // training.
   size_t NumberTrainingDataPointsForTesting() const;
 
+  // Returns |global_curve_| for unit tests.
   MonotoneCubicSpline GetGlobalCurveForTesting() const;
+
+  // Returns |max_training_data_points_| for unit tests.
+  size_t GetMaxTrainingDataPointsForTesting() const;
+
+  base::TimeDelta GetTrainingDelayForTesting() const;
 
   // Returns the path that will be used to store curves. It also creates
   // intermediate directories if they do not exist. Returns an empty path on
@@ -164,7 +157,13 @@ class ModellerImpl : public Modeller,
       const base::Optional<MonotoneCubicSpline>& loaded_curve,
       bool is_personal_curve_valid);
 
-  // Starts |model_timer_| to start training after certain inactivity period.
+  // Either starts training immediately or delays it for |training_delay_|.
+  // Training starts immediately if |training_delay_| is 0 or number of training
+  // points reached |max_training_data_points_|.
+  // This function is called after a user brightness change signal is received
+  // (that will be used as an example), and when a user activity is detected.
+  // It's also called after initial curves are set.
+  // Nothing will happen if model is not enabled.
   void ScheduleTrainerStart();
 
   // Starts model training and runs it in non UI thread. Also clears
@@ -177,6 +176,17 @@ class ModellerImpl : public Modeller,
   // If |is_testing_| is false, we check curve saving/loading and training jobs
   // are running on non-UI thread.
   const bool is_testing_ = false;
+
+  // If number of recorded training data has reached |max_training_data_points_|
+  // we start training immediately, without waiting for user to become idle for
+  // |training_delay_|. This can be overridden by experiment flag
+  // "max_training_data_points".
+  size_t max_training_data_points_ = 100;
+
+  // Once user remains idle for |training_delay_|, we start training the model.
+  // If this value is 0, we will not need to wait for user to remain inactive.
+  // This can be overridden by experiment flag "training_delay_in_seconds".
+  base::TimeDelta training_delay_ = base::TimeDelta::FromSeconds(60);
 
   ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_;
 
