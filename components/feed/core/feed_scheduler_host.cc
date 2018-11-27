@@ -36,11 +36,6 @@ struct ParamPair {
   double default_value;
 };
 
-const base::FeatureParam<int> kSuppressRefreshDurationMinutes{
-    &kInterestFeedContentSuggestions, "suppress_refresh_duration_minutes", 30};
-const base::FeatureParam<std::string> kDisableTriggerTypes{
-    &kInterestFeedContentSuggestions, "disable_trigger_types", ""};
-
 // The Cartesian product of TriggerType and UserClass each need a different
 // param name in case we decide to change it via a config change. This nested
 // switch lookup ensures that all combinations are defined, along with a

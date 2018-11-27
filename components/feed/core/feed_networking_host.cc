@@ -6,10 +6,14 @@
 
 #include <utility>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/load_flags.h"
@@ -54,7 +58,8 @@ class NetworkFetch {
                std::vector<uint8_t> request_body,
                IdentityManager* identity_manager,
                network::SharedURLLoaderFactory* loader_factory,
-               const std::string& api_key);
+               const std::string& api_key,
+               const base::TickClock* tick_clock);
 
   void Start(FeedNetworkingHost::ResponseCallback done_callback);
 
@@ -78,6 +83,8 @@ class NetworkFetch {
   FeedNetworkingHost::ResponseCallback done_callback_;
   network::SharedURLLoaderFactory* loader_factory_;
   const std::string api_key_;
+  const base::TickClock* tick_clock_;
+  base::TimeTicks start_ticks_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkFetch);
 };
@@ -87,13 +94,16 @@ NetworkFetch::NetworkFetch(const GURL& url,
                            std::vector<uint8_t> request_body,
                            IdentityManager* identity_manager,
                            network::SharedURLLoaderFactory* loader_factory,
-                           const std::string& api_key)
+                           const std::string& api_key,
+                           const base::TickClock* tick_clock)
     : url_(url),
       request_type_(request_type),
       request_body_(std::move(request_body)),
       identity_manager_(identity_manager),
       loader_factory_(loader_factory),
-      api_key_(api_key) {}
+      api_key_(api_key),
+      tick_clock_(tick_clock),
+      start_ticks_(tick_clock_->NowTicks()) {}
 
 void NetworkFetch::Start(FeedNetworkingHost::ResponseCallback done_callback) {
   done_callback_ = std::move(done_callback);
@@ -182,6 +192,8 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
   auto simple_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_loader->SetAllowHttpErrorResults(true);
+  simple_loader->SetTimeoutDuration(
+      base::TimeDelta::FromSeconds(kTimeoutDurationSeconds.Get()));
   PopulateRequestBody(simple_loader.get());
   return simple_loader;
 }
@@ -242,6 +254,10 @@ void NetworkFetch::OnSimpleLoaderComplete(
     response_body.assign(begin, end);
   }
 
+  base::TimeDelta duration = tick_clock_->NowTicks() - start_ticks_;
+  UMA_HISTOGRAM_MEDIUM_TIMES("ContentSuggestions.Feed.Network.Duration",
+                             duration);
+
   base::UmaHistogramSparse("ContentSuggestions.Feed.Network.RequestStatusCode",
                            status_code);
 
@@ -258,10 +274,12 @@ void NetworkFetch::OnSimpleLoaderComplete(
 FeedNetworkingHost::FeedNetworkingHost(
     identity::IdentityManager* identity_manager,
     const std::string& api_key,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+    const base::TickClock* tick_clock)
     : identity_manager_(identity_manager),
       api_key_(api_key),
-      loader_factory_(std::move(loader_factory)) {}
+      loader_factory_(std::move(loader_factory)),
+      tick_clock_(tick_clock) {}
 
 FeedNetworkingHost::~FeedNetworkingHost() = default;
 
@@ -276,7 +294,7 @@ void FeedNetworkingHost::Send(
     ResponseCallback callback) {
   auto fetch = std::make_unique<NetworkFetch>(
       url, request_type, std::move(request_body), identity_manager_,
-      loader_factory_.get(), api_key_);
+      loader_factory_.get(), api_key_, tick_clock_);
   NetworkFetch* fetch_unowned = fetch.get();
   pending_requests_.emplace(std::move(fetch));
 

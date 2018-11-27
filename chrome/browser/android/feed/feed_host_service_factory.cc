@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "chrome/browser/android/feed/history/feed_history_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -88,7 +89,8 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
   }
   auto networking_host = std::make_unique<FeedNetworkingHost>(
       identity_manager, api_key,
-      storage_partition->GetURLLoaderFactoryForBrowserProcess());
+      storage_partition->GetURLLoaderFactoryForBrowserProcess(),
+      base::DefaultTickClock::GetInstance());
 
   auto image_fetcher = std::make_unique<image_fetcher::ImageFetcherImpl>(
       std::make_unique<suggestions::ImageDecoderImpl>(),

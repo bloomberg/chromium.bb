@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/debug/alias.h"
@@ -23,6 +24,8 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -45,6 +48,9 @@ const size_t SimpleURLLoader::kMaxBoundedStringDownloadSize = 1024 * 1024;
 const size_t SimpleURLLoader::kMaxUploadStringSizeToCopy = 256 * 1024;
 
 namespace {
+
+// Used by tests to override the tick clock for the timeout timer.
+const base::TickClock* timeout_tick_clock_ = nullptr;
 
 // This file contains SimpleURLLoaderImpl, several BodyHandler implementations,
 // BodyReader, and StringUploadDataPipeGetter.
@@ -220,6 +226,8 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
       uint64_t offset = 0,
       uint64_t length = std::numeric_limits<uint64_t>::max()) override;
   void SetRetryOptions(int max_retries, int retry_mode) override;
+  void SetTimeoutDuration(base::TimeDelta timeout_duration) override;
+
   int NetError() const override;
   const ResourceResponseHead* ResponseInfo() const override;
   const GURL& GetFinalURL() const override;
@@ -354,6 +362,12 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   std::unique_ptr<RequestState> request_state_;
 
   GURL final_url_;
+
+  // The timer that triggers a timeout when a request takes too long.
+  base::OneShotTimer timeout_timer_;
+  // How long |timeout_timer_| should wait before timing out a request. A value
+  // of zero means do not set a timeout.
+  base::TimeDelta timeout_duration_ = base::TimeDelta();
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -1139,6 +1153,7 @@ SimpleURLLoaderImpl::SimpleURLLoaderImpl(
       client_binding_(this),
       request_state_(std::make_unique<RequestState>()),
       final_url_(resource_request_->url),
+      timeout_timer_(timeout_tick_clock_),
       weak_ptr_factory_(this) {
   // Allow creation and use on different threads.
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -1347,6 +1362,12 @@ void SimpleURLLoaderImpl::SetRetryOptions(int max_retries, int retry_mode) {
 #endif  // DCHECK_IS_ON()
 }
 
+void SimpleURLLoaderImpl::SetTimeoutDuration(base::TimeDelta timeout_duration) {
+  DCHECK(!request_state_->body_started);
+  DCHECK(timeout_duration >= base::TimeDelta());
+  timeout_duration_ = timeout_duration;
+}
+
 int SimpleURLLoaderImpl::NetError() const {
   // Should only be called once the request is compelete.
   DCHECK(request_state_->finished);
@@ -1433,6 +1454,7 @@ void SimpleURLLoaderImpl::FinishWithResult(int net_error) {
 
   client_binding_.Close();
   url_loader_.reset();
+  timeout_timer_.Stop();
 
   request_state_->finished = true;
   request_state_->net_error = net_error;
@@ -1497,6 +1519,14 @@ void SimpleURLLoaderImpl::StartRequest(
       mojo::MakeRequest(&url_loader_), 0 /* routing_id */, 0 /* request_id */,
       0 /* options */, *resource_request_, std::move(client_ptr),
       net::MutableNetworkTrafficAnnotationTag(annotation_tag_));
+
+  // Note that this ends up restarting the timer on each retry.
+  if (!timeout_duration_.is_zero()) {
+    timeout_timer_.Start(
+        FROM_HERE, timeout_duration_,
+        base::BindOnce(&SimpleURLLoaderImpl::FinishWithResult,
+                       weak_ptr_factory_.GetWeakPtr(), net::ERR_TIMED_OUT));
+  }
 
   // If no more retries left, can clean up a little.
   if (remaining_retries_ == 0) {
@@ -1716,6 +1746,11 @@ std::unique_ptr<SimpleURLLoader> SimpleURLLoader::Create(
   DCHECK(resource_request);
   return std::make_unique<SimpleURLLoaderImpl>(std::move(resource_request),
                                                annotation_tag);
+}
+
+void SimpleURLLoader::SetTimeoutTickClockForTest(
+    const base::TickClock* timeout_tick_clock) {
+  timeout_tick_clock_ = timeout_tick_clock;
 }
 
 SimpleURLLoader::~SimpleURLLoader() {}
