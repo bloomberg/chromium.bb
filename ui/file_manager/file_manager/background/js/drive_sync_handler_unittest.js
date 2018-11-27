@@ -14,45 +14,47 @@ var progressCenter;
 var driveSyncHandler;
 
 /**
- * Mock of chrome.fileManagerPrivate.
+ * Mock chrome APIs.
  * @type {Object}
- * @const
  */
-chrome.fileManagerPrivate = {
+var mockChrome = {};
+
+mockChrome.fileManagerPrivate = {
   onFileTransfersUpdated: {
     addListener: function(callback) {
-      chrome.fileManagerPrivate.onFileTransfersUpdated.listener_ = callback;
+      mockChrome.fileManagerPrivate.onFileTransfersUpdated.listener_ = callback;
     },
     removeListener: function() {
-      chrome.fileManagerPrivate.onFileTransfersUpdated.listener_ = null;
+      mockChrome.fileManagerPrivate.onFileTransfersUpdated.listener_ = null;
     },
     listener_: null
   },
   onDriveSyncError: {
     addListener: function(callback) {
-      chrome.fileManagerPrivate.onDriveSyncError.listener_ = callback;
+      mockChrome.fileManagerPrivate.onDriveSyncError.listener_ = callback;
     },
     removeListener: function() {
-      chrome.fileManagerPrivate.onDriveSyncError.listener_ = null;
+      mockChrome.fileManagerPrivate.onDriveSyncError.listener_ = null;
     },
     listener_: null
   },
   onPreferencesChanged: {
     addListener: function(callback) {
-      chrome.fileManagerPrivate.onPreferencesChanged.listener_ = callback;
+      mockChrome.fileManagerPrivate.onPreferencesChanged.listener_ = callback;
     },
     removeListener: function() {
-      chrome.fileManagerPrivate.onPreferencesChanged.listener_ = null;
+      mockChrome.fileManagerPrivate.onPreferencesChanged.listener_ = null;
     },
     listener_: null
   },
   onDriveConnectionStatusChanged: {
     addListener: function(callback) {
-      chrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_ =
+      mockChrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_ =
           callback;
     },
     removeListener: function() {
-      chrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_ = null;
+      mockChrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_ =
+          null;
     },
     listener_: null
   },
@@ -64,29 +66,31 @@ chrome.fileManagerPrivate = {
   },
 };
 
-/**
- * Mock of chrome.notifications.
- * @type {Object}
- * @const
- */
-chrome.notifications = {
+mockChrome.notifications = {
   onButtonClicked: {
     addListener: function(callback) {
-      chrome.notifications.onButtonClicked.listener_ = callback;
+      mockChrome.notifications.onButtonClicked.listener_ = callback;
     },
     removeListener: function() {
-      chrome.notifications.onButtonClicked.listener_ = null;
+      mockChrome.notifications.onButtonClicked.listener_ = null;
     },
     listener_: null
   },
 };
 
-/** Stub out file URLs handling. */
-window.webkitResolveLocalFileSystemURL = (url, callback) => {
-  callback({name: url});
-};
+/**
+ * Stub out file URLs handling.
+ *
+ * @param {string} url
+ * @param {function(!Entry)} successCallback
+ * @param {function(!FileError)=} opt_errorCallback
+ */
+window.webkitResolveLocalFileSystemURL =
+    (url, successCallback, opt_errorCallback) => {
+      successCallback(/** @type {!Entry} */ ({name: url}));
+    };
 
-/** As we don't have the strings just make up something instead. */
+// Mock window.str|strf string calls from drive sync handler.
 window.str = (...args) => {
   return args.join(' ');
 };
@@ -94,17 +98,23 @@ window.strf = window.str;
 
 // Set up the test components.
 function setUp() {
+  // Install mock chrome APIs.
+  installMockChrome(mockChrome);
+
   // Create a mock ProgressCenter.
   progressCenter = new MockProgressCenter();
 
   // Create DriveSyncHandlerImpl.
   driveSyncHandler = new DriveSyncHandlerImpl(progressCenter);
+
+  // Check: Drive sync is enabled at creation time.
+  assertFalse(driveSyncHandler.isSyncSuppressed());
 }
 
 // Test that in general case item IDs produced for errors are unique.
 function testUniqueErrorIds() {
   // Dispatch an event.
-  chrome.fileManagerPrivate.onDriveSyncError.listener_({
+  mockChrome.fileManagerPrivate.onDriveSyncError.listener_({
     type: 'service_unavailable',
     fileUrl: '',
   });
@@ -113,7 +123,7 @@ function testUniqueErrorIds() {
   assertEquals(1, progressCenter.getItemCount());
 
   // Dispatch another event.
-  chrome.fileManagerPrivate.onDriveSyncError.listener_({
+  mockChrome.fileManagerPrivate.onDriveSyncError.listener_({
     type: 'service_unavailable',
     fileUrl: '',
   });
@@ -125,7 +135,7 @@ function testUniqueErrorIds() {
 // Test that item IDs produced for quota errors are same.
 function testErrorDedupe() {
   // Dispatch an event.
-  chrome.fileManagerPrivate.onDriveSyncError.listener_({
+  mockChrome.fileManagerPrivate.onDriveSyncError.listener_({
     type: 'no_server_space',
     fileUrl: '',
   });
@@ -134,7 +144,7 @@ function testErrorDedupe() {
   assertEquals(1, progressCenter.getItemCount());
 
   // Dispatch another event.
-  chrome.fileManagerPrivate.onDriveSyncError.listener_({
+  mockChrome.fileManagerPrivate.onDriveSyncError.listener_({
     type: 'no_server_space',
     fileUrl: '',
   });
@@ -146,7 +156,7 @@ function testErrorDedupe() {
 // Test offline.
 function testOffline() {
   // Start a transfer.
-  chrome.fileManagerPrivate.onFileTransfersUpdated.listener_({
+  mockChrome.fileManagerPrivate.onFileTransfersUpdated.listener_({
     fileUrl: 'name',
     transferState: 'in_progress',
     processed: 50.0,
@@ -162,7 +172,7 @@ function testOffline() {
   assertTrue(driveSyncHandler.syncing);
 
   // Go offline.
-  chrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_();
+  mockChrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_();
 
   // Check that this item was cancelled.
   assertEquals(1, progressCenter.getItemCount());
