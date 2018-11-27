@@ -51,8 +51,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(ChromeIOSTranslateClient);
-
 // static
 void ChromeIOSTranslateClient::CreateForWebState(
     web::WebState* web_state,
