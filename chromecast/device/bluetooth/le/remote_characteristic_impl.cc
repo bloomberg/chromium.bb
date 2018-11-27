@@ -33,12 +33,26 @@ namespace chromecast {
 namespace bluetooth {
 
 namespace {
-std::vector<uint8_t> GetDescriptorNotificationValue(bool enable) {
-  if (enable) {
+
+std::vector<uint8_t> GetDescriptorNotificationValue(bool notification_enable) {
+  if (notification_enable) {
     return std::vector<uint8_t>(
         std::begin(bluetooth::RemoteDescriptor::kEnableNotificationValue),
         std::end(bluetooth::RemoteDescriptor::kEnableNotificationValue));
   }
+
+  return std::vector<uint8_t>(
+      std::begin(bluetooth::RemoteDescriptor::kDisableNotificationValue),
+      std::end(bluetooth::RemoteDescriptor::kDisableNotificationValue));
+}
+
+std::vector<uint8_t> GetDescriptorIndicationValue(bool indication_enable) {
+  if (indication_enable) {
+    return std::vector<uint8_t>(
+        std::begin(bluetooth::RemoteDescriptor::kEnableIndicationValue),
+        std::end(bluetooth::RemoteDescriptor::kEnableIndicationValue));
+  }
+
   return std::vector<uint8_t>(
       std::begin(bluetooth::RemoteDescriptor::kDisableNotificationValue),
       std::end(bluetooth::RemoteDescriptor::kDisableNotificationValue));
@@ -46,15 +60,19 @@ std::vector<uint8_t> GetDescriptorNotificationValue(bool enable) {
 
 bool CharacteristicHasNotify(
     const bluetooth_v2_shlib::Gatt::Characteristic* characteristic) {
+  return characteristic->properties & bluetooth_v2_shlib::Gatt::PROPERTY_NOTIFY;
+}
+
+bool CharacteristicHasIndication(
+    const bluetooth_v2_shlib::Gatt::Characteristic* characteristic) {
   return characteristic->properties &
-             bluetooth_v2_shlib::Gatt::PROPERTY_NOTIFY ||
-         characteristic->properties &
-             bluetooth_v2_shlib::Gatt::PROPERTY_INDICATE;
+         bluetooth_v2_shlib::Gatt::PROPERTY_INDICATE;
 }
 
 std::unique_ptr<bluetooth_v2_shlib::Gatt::Descriptor> MaybeCreateFakeCccd(
     const bluetooth_v2_shlib::Gatt::Characteristic* characteristic) {
-  if (!CharacteristicHasNotify(characteristic)) {
+  if (!CharacteristicHasNotify(characteristic) &&
+      !CharacteristicHasIndication(characteristic)) {
     return nullptr;
   }
 
@@ -134,15 +152,68 @@ void RemoteCharacteristicImpl::SetRegisterNotification(bool enable,
                                                        StatusCallback cb) {
   MAKE_SURE_IO_THREAD(SetRegisterNotification, enable,
                       BindToCurrentSequence(std::move(cb)));
+
+  SetRegisterNotificationOrIndicationInternal(false, enable, std::move(cb));
+}
+
+void RemoteCharacteristicImpl::SetNotification(bool enable, StatusCallback cb) {
+  MAKE_SURE_IO_THREAD(SetNotification, enable,
+                      BindToCurrentSequence(std::move(cb)));
+  if (!gatt_client_manager_) {
+    LOG(ERROR) << __func__ << " failed: Destroyed";
+    EXEC_CB_AND_RET(cb, false);
+  }
+  if (!gatt_client_manager_->gatt_client()->SetCharacteristicNotification(
+          device_->addr(), *characteristic_, enable)) {
+    LOG(ERROR) << "Set characteristic notification failed";
+    EXEC_CB_AND_RET(cb, false);
+  }
+
+  notification_enabled_ = enable;
+  EXEC_CB_AND_RET(cb, true);
+}
+
+void RemoteCharacteristicImpl::SetRegisterNotificationOrIndication(
+    bool enable,
+    RemoteCharacteristic::StatusCallback cb) {
+  MAKE_SURE_IO_THREAD(SetRegisterNotificationOrIndication, enable,
+                      BindToCurrentSequence(std::move(cb)));
+
+  if (CharacteristicHasNotify(characteristic_)) {
+    SetRegisterNotificationOrIndicationInternal(false, enable, std::move(cb));
+  } else if (CharacteristicHasIndication(characteristic_)) {
+    SetRegisterNotificationOrIndicationInternal(true, enable, std::move(cb));
+  } else {
+    LOG(ERROR) << __func__
+               << " failed: Characteristic doesn't support notification or "
+                  "indication";
+    EXEC_CB_AND_RET(cb, false);
+  }
+}
+
+void RemoteCharacteristicImpl::SetRegisterNotificationOrIndicationInternal(
+    bool indication,
+    bool enable,
+    RemoteCharacteristic::StatusCallback cb) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(cb, false);
   }
 
-  if (!CharacteristicHasNotify(characteristic_)) {
-    LOG(ERROR) << __func__
-               << " failed: Characteristic doesn't support notifications";
-    EXEC_CB_AND_RET(cb, false);
+  if (indication) {
+    if (!CharacteristicHasIndication(characteristic_)) {
+      LOG(ERROR) << __func__
+                 << " failed: Characteristic doesn't support indication";
+      EXEC_CB_AND_RET(cb, false);
+    }
+  } else {
+    if (!CharacteristicHasNotify(characteristic_)) {
+      LOG(ERROR) << __func__
+                 << " failed: Characteristic doesn't support notifications";
+      EXEC_CB_AND_RET(cb, false);
+    }
   }
 
   if (notification_enabled_ == enable) {
@@ -164,28 +235,14 @@ void RemoteCharacteristicImpl::SetRegisterNotification(bool enable,
   }
 
   auto it = uuid_to_descriptor_.find(RemoteDescriptor::kCccdUuid);
+  DCHECK(it != uuid_to_descriptor_.end());
 
   // CCCD must exist. |fake_cccd_| should have been created if it doesn't exist.
-  DCHECK(it != uuid_to_descriptor_.end());
+  std::vector<uint8_t> write_val = indication
+                                       ? GetDescriptorIndicationValue(enable)
+                                       : GetDescriptorNotificationValue(enable);
   it->second->WriteAuth(bluetooth_v2_shlib::Gatt::Client::AUTH_REQ_NONE,
-                        GetDescriptorNotificationValue(enable), std::move(cb));
-}
-
-void RemoteCharacteristicImpl::SetNotification(bool enable, StatusCallback cb) {
-  MAKE_SURE_IO_THREAD(SetNotification, enable,
-                      BindToCurrentSequence(std::move(cb)));
-  if (!gatt_client_manager_) {
-    LOG(ERROR) << __func__ << " failed: Destroyed";
-    EXEC_CB_AND_RET(cb, false);
-  }
-  if (!gatt_client_manager_->gatt_client()->SetCharacteristicNotification(
-          device_->addr(), *characteristic_, enable)) {
-    LOG(ERROR) << "Set characteristic notification failed";
-    EXEC_CB_AND_RET(cb, false);
-  }
-
-  notification_enabled_ = enable;
-  EXEC_CB_AND_RET(cb, true);
+                        write_val, std::move(cb));
 }
 
 void RemoteCharacteristicImpl::ReadAuth(

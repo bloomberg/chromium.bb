@@ -29,6 +29,12 @@ class MockRemoteCharacteristic : public RemoteCharacteristic {
     std::move(cb).Run(SetRegisterNotification(enable));
   }
 
+  MOCK_METHOD1(SetRegisterNotificationOrIndication, bool(bool));
+  void SetRegisterNotificationOrIndication(bool enable,
+                                           StatusCallback cb) override {
+    std::move(cb).Run(SetRegisterNotificationOrIndication(enable));
+  }
+
   void SetNotification(bool enable, StatusCallback cb) override {}
   void ReadAuth(bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
                 ReadCallback callback) override {}
