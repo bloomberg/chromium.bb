@@ -3149,13 +3149,19 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
     EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
         .WillRepeatedly(Return(test_case.saving ==
                                MissingFormManagerTestCase::Saving::Enabled));
-    for (bool new_parsing_for_saving : {true, false}) {
+    for (bool new_parsing_for_saving : {false, true}) {
       SCOPED_TRACE(testing::Message()
                    << "test case = " << test_case.description
                    << ", new_parsing_for_saving = " << new_parsing_for_saving);
       base::test::ScopedFeatureList scoped_feature_list;
-      if (new_parsing_for_saving)
+      if (new_parsing_for_saving) {
+        // This also resets the password manager.
         TurnOnNewParsingForSaving(&scoped_feature_list);
+      } else {
+        // Reset the password manager to discard state from the previous
+        // test_case.
+        manager_.reset(new PasswordManager(&client_));
+      }
 
       manager()->OnPasswordFormsParsed(nullptr, test_case.parsed_forms);
 
