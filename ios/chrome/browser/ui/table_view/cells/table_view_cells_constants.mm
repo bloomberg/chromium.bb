@@ -11,11 +11,13 @@
 const CGFloat kTableViewHeaderFooterViewHeight = 44.0;
 const CGFloat kTableViewHorizontalSpacing = 16.0;
 const CGFloat kTableViewVerticalSpacing = 8.0;
+const CGFloat kTableViewLargeVerticalSpacing = 16.0;
 const CGFloat kTableViewSubViewHorizontalSpacing = 12.0;
 const CGFloat kTableViewCellSelectionAnimationDuration = 0.15;
 const CGFloat kUseDefaultFontSize = 0.0;
 const CGFloat kTableViewLabelVerticalTopSpacing = 13.0;
 
+const int kTableViewTextLabelColorBlue = 0x1A73E8;
 const int kTableViewTextLabelColorLightGrey = 0x6D6D72;
 const int kTableViewSecondaryLabelLightGrayTextColor = 0x8E8E93;
 const int kTableViewSwitchTintColor = 0x1A73E8;

@@ -16,6 +16,9 @@ extern const CGFloat kTableViewHorizontalSpacing;
 // The vertical spacing between views and the container view of a cell.
 extern const CGFloat kTableViewVerticalSpacing;
 
+// The large vertical spacing between views and the container view of a cell.
+extern const CGFloat kTableViewLargeVerticalSpacing;
+
 // The horizontal spacing between subviews within the container view.
 extern const CGFloat kTableViewSubViewHorizontalSpacing;
 
@@ -28,6 +31,9 @@ extern const CGFloat kUseDefaultFontSize;
 
 // Spacing between text label and cell contentView.
 extern const CGFloat kTableViewLabelVerticalTopSpacing;
+
+// Hex Value for blue label text color.
+extern const int kTableViewTextLabelColorBlue;
 
 // Hex Value for light gray label text color.
 extern const int kTableViewTextLabelColorLightGrey;

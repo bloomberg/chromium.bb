@@ -4,6 +4,8 @@
 
 source_set("cells") {
   sources = [
+    "autofill_edit_item.h",
+    "autofill_edit_item.mm",
     "cvc_item.h",
     "cvc_item.mm",
     "legacy_autofill_edit_item.h",
@@ -22,6 +24,7 @@ source_set("cells") {
     "//ios/chrome/browser/ui/autofill:autofill_ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/common/ui_util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",
@@ -36,6 +39,7 @@ source_set("cells") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "autofill_edit_item_unittest.mm",
     "cvc_item_unittest.mm",
     "legacy_autofill_edit_item_unittest.mm",
     "status_item_unittest.mm",
@@ -46,6 +50,7 @@ source_set("unit_tests") {
     "//base",
     "//components/resources",
     "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/table_view:styler",
     "//ios/third_party/material_components_ios",
     "//testing/gtest",
   ]
