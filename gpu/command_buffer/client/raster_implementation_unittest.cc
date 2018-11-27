@@ -124,7 +124,7 @@ class RasterImplementationTest : public testing::Test {
         gl_.reset(new RasterImplementation(
             helper_.get(), transfer_buffer_.get(),
             bind_generates_resource_client, lose_context_when_out_of_memory,
-            gpu_control_.get()));
+            gpu_control_.get(), nullptr /* image_decode_accelerator */));
       }
 
       // The client should be set to something non-null.

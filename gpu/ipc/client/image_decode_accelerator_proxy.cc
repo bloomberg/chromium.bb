@@ -4,6 +4,8 @@
 
 #include "gpu/ipc/client/image_decode_accelerator_proxy.h"
 
+#include <vector>
+
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/command_buffer_id.h"
@@ -20,18 +22,24 @@ ImageDecodeAcceleratorProxy::ImageDecodeAcceleratorProxy(GpuChannelHost* host,
 ImageDecodeAcceleratorProxy::~ImageDecodeAcceleratorProxy() {}
 
 SyncToken ImageDecodeAcceleratorProxy::ScheduleImageDecode(
-    const std::vector<uint8_t>& encoded_data,
+    base::span<const uint8_t> encoded_data,
     const gfx::Size& output_size,
-    int32_t raster_decoder_route_id,
+    CommandBufferId raster_decoder_command_buffer_id,
     uint32_t transfer_cache_entry_id,
     int32_t discardable_handle_shm_id,
     uint32_t discardable_handle_shm_offset,
     const gfx::ColorSpace& target_color_space,
     bool needs_mips) {
+  DCHECK(host_);
+  DCHECK_EQ(host_->channel_id(),
+            ChannelIdFromCommandBufferId(raster_decoder_command_buffer_id));
+
   GpuChannelMsg_ScheduleImageDecode_Params params;
-  params.encoded_data = encoded_data;
+  params.encoded_data =
+      std::vector<uint8_t>(encoded_data.cbegin(), encoded_data.cend());
   params.output_size = output_size;
-  params.raster_decoder_route_id = raster_decoder_route_id;
+  params.raster_decoder_route_id =
+      RouteIdFromCommandBufferId(raster_decoder_command_buffer_id);
   params.transfer_cache_entry_id = transfer_cache_entry_id;
   params.discardable_handle_shm_id = discardable_handle_shm_id;
   params.discardable_handle_shm_offset = discardable_handle_shm_offset;
@@ -42,8 +50,8 @@ SyncToken ImageDecodeAcceleratorProxy::ScheduleImageDecode(
   uint64_t release_count = ++next_release_count_;
   // Note: we send the message under the lock to guarantee monotonicity of the
   // release counts as seen by the service.
-  host_->Send(
-      new GpuChannelMsg_ScheduleImageDecode(route_id_, params, release_count));
+  host_->Send(new GpuChannelMsg_ScheduleImageDecode(
+      route_id_, std::move(params), release_count));
   return SyncToken(
       CommandBufferNamespace::GPU_IO,
       CommandBufferIdFromChannelAndRoute(host_->channel_id(), route_id_),

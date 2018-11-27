@@ -89,7 +89,8 @@ class GLES2_IMPL_EXPORT ClientTransferCache {
   // message. This external mechanism should guarantee that it is safe for
   // command buffer commands to reference the cache entry after
   // |create_entry_cb| returns. Note that this function calls |create_entry_cb|
-  // before returning.
+  // before returning. |create_entry_cb| is not called if the
+  // ClientDiscardableHandle could not be created.
   void StartTransferCacheEntry(
       uint32_t type,
       uint32_t id,

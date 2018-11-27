@@ -90,6 +90,13 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                       bool requires_clear) override;
   void EndRasterCHROMIUM() override;
 
+  // Image decode acceleration.
+  SyncToken ScheduleImageDecode(base::span<const uint8_t> encoded_data,
+                                const gfx::Size& output_size,
+                                uint32_t transfer_cache_entry_id,
+                                const gfx::ColorSpace& target_color_space,
+                                bool needs_mips) override;
+
   // Raster via GrContext.
   void BeginGpuRaster() override;
   void EndGpuRaster() override;

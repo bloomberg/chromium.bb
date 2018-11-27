@@ -5,17 +5,10 @@
 #ifndef GPU_IPC_CLIENT_IMAGE_DECODE_ACCELERATOR_PROXY_H_
 #define GPU_IPC_CLIENT_IMAGE_DECODE_ACCELERATOR_PROXY_H_
 
-#include <vector>
-
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "gpu/command_buffer/common/sync_token.h"
-
-namespace gfx {
-class ColorSpace;
-class Size;
-}  // namespace gfx
+#include "gpu/command_buffer/client/image_decode_accelerator_interface.h"
 
 namespace gpu {
 class GpuChannelHost;
@@ -47,27 +40,28 @@ class GpuChannelHost;
 // Objects of this class are thread-safe.
 //
 // TODO(andrescj): actually put the decoder's capabilities in GpuInfo.
-class ImageDecodeAcceleratorProxy {
+class ImageDecodeAcceleratorProxy : public ImageDecodeAcceleratorInterface {
  public:
   ImageDecodeAcceleratorProxy(GpuChannelHost* host, int32_t route_id);
-  ~ImageDecodeAcceleratorProxy();
+  ~ImageDecodeAcceleratorProxy() override;
 
   // Schedules a hardware-accelerated image decode on the GPU process. The image
   // in |encoded_data| is decoded and scaled to |output_size|. Upon completion,
   // a service-side transfer cache entry will be created with the decoded data
   // using |transfer_cache_entry_id|, |discardable_handle_shm_id|, and
-  // |discardable_handle_shm_offset|. The |raster_decoder_route_id| is used to
-  // look up the appropriate command buffer and create the transfer cache entry
-  // correctly. Returns a sync token that will be released after the decode is
-  // done and the service-side transfer cache entry is created.
-  SyncToken ScheduleImageDecode(const std::vector<uint8_t>& encoded_data,
-                                const gfx::Size& output_size,
-                                int32_t raster_decoder_route_id,
-                                uint32_t transfer_cache_entry_id,
-                                int32_t discardable_handle_shm_id,
-                                uint32_t discardable_handle_shm_offset,
-                                const gfx::ColorSpace& target_color_space,
-                                bool needs_mips);
+  // |discardable_handle_shm_offset|. The |raster_decoder_command_buffer_id| is
+  // used to look up the appropriate command buffer and create the transfer
+  // cache entry correctly. Returns a sync token that will be released after the
+  // decode is done and the service-side transfer cache entry is created.
+  SyncToken ScheduleImageDecode(
+      base::span<const uint8_t> encoded_data,
+      const gfx::Size& output_size,
+      CommandBufferId raster_decoder_command_buffer_id,
+      uint32_t transfer_cache_entry_id,
+      int32_t discardable_handle_shm_id,
+      uint32_t discardable_handle_shm_offset,
+      const gfx::ColorSpace& target_color_space,
+      bool needs_mips) override;
 
  private:
   GpuChannelHost* const host_;

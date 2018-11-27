@@ -133,7 +133,7 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
   // This command buffer is a client-side proxy to the command buffer in the
   // GPU process.
   command_buffer_ = std::make_unique<gpu::CommandBufferProxyImpl>(
-      std::move(channel_), gpu_memory_buffer_manager_, stream_id_, task_runner);
+      channel_, gpu_memory_buffer_manager_, stream_id_, task_runner);
   bind_result_ = command_buffer_->Initialize(
       surface_handle_, /*shared_command_buffer=*/nullptr, stream_priority_,
       attributes_, active_url_);
@@ -191,10 +191,12 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
 
     // The RasterImplementation exposes the RasterInterface, as well as the
     // gpu::ContextSupport interface.
+    DCHECK(channel_);
     auto raster_impl = std::make_unique<gpu::raster::RasterImplementation>(
         raster_helper.get(), transfer_buffer_.get(),
         attributes_.bind_generates_resource,
-        attributes_.lose_context_when_out_of_memory, command_buffer_.get());
+        attributes_.lose_context_when_out_of_memory, command_buffer_.get(),
+        channel_->image_decode_accelerator_proxy());
     bind_result_ = raster_impl->Initialize(memory_limits_);
     if (bind_result_ != gpu::ContextResult::kSuccess) {
       DLOG(ERROR) << "Failed to initialize RasterImplementation.";
