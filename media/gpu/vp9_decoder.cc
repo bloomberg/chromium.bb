@@ -34,15 +34,14 @@ void VP9Decoder::SetStream(int32_t id,
                            const DecryptConfig* decrypt_config) {
   DCHECK(ptr);
   DCHECK(size);
-  if (decrypt_config) {
-    NOTIMPLEMENTED();
-    state_ = kError;
-    return;
-  }
   DVLOG(4) << "New input stream id: " << id << " at: " << (void*)ptr
            << " size: " << size;
   stream_id_ = id;
-  parser_.SetStream(ptr, size);
+  if (decrypt_config) {
+    parser_.SetStream(ptr, size, decrypt_config->Clone());
+  } else {
+    parser_.SetStream(ptr, size, nullptr);
+  }
 }
 
 bool VP9Decoder::Flush() {
@@ -65,9 +64,11 @@ void VP9Decoder::Reset() {
 VP9Decoder::DecodeResult VP9Decoder::Decode() {
   while (1) {
     // Read a new frame header if one is not awaiting decoding already.
+    std::unique_ptr<DecryptConfig> decrypt_config;
     if (!curr_frame_hdr_) {
       std::unique_ptr<Vp9FrameHeader> hdr(new Vp9FrameHeader());
-      Vp9Parser::Result res = parser_.ParseNextFrame(hdr.get());
+      Vp9Parser::Result res =
+          parser_.ParseNextFrame(hdr.get(), &decrypt_config);
       switch (res) {
         case Vp9Parser::kOk:
           curr_frame_hdr_ = std::move(hdr);
@@ -178,6 +179,8 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
 
     pic->set_visible_rect(new_render_rect);
     pic->set_bitstream_id(stream_id_);
+
+    pic->set_decrypt_config(std::move(decrypt_config));
 
     // For VP9, container color spaces override video stream color spaces.
     if (container_color_space_.IsSpecified()) {
