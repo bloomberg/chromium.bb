@@ -29,6 +29,9 @@ class AutofillField;
 class CreditCard;
 enum class SubmissionSource;
 
+// A given maximum is enforced to minimize the number of buckets generated.
+extern const int kMaxBucketsCount;
+
 class AutofillMetrics {
  public:
   enum AutofillProfileAction {
@@ -134,6 +137,19 @@ class AutofillMetrics {
                                               // because the provided legal
                                               // message was invalid.
     NUM_INFO_BAR_METRICS,
+  };
+
+  // Autocomplete Events.
+  // These events are not based on forms nor submissions, but depend on the
+  // the usage of the Autocomplete feature.
+  enum AutocompleteEvent {
+    // A dropdown with Autocomplete suggestions was shown.
+    AUTOCOMPLETE_SUGGESTIONS_SHOWN = 0,
+
+    // An Autocomplete suggestion was selected.
+    AUTOCOMPLETE_SUGGESTION_SELECTED,
+
+    NUM_AUTOCOMPLETE_EVENTS
   };
 
   // Represents card submitted state.
@@ -1124,6 +1140,9 @@ class AutofillMetrics {
   // Log the index of the selected Autocomplete suggestion in the popup.
   static void LogAutocompleteSuggestionAcceptedIndex(int index);
 
+  // Log the fact that a autocomplete popup was shown.
+  static void OnAutocompleteSuggestionsShown();
+
   // Log how many autofilled fields in a given form were edited before the
   // submission or when the user unfocused the form (depending on
   // |observed_submission|).
@@ -1304,6 +1323,8 @@ class AutofillMetrics {
   };
 
  private:
+  static void Log(AutocompleteEvent event);
+
   static const int kNumCardUploadDecisionMetrics = 15;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);

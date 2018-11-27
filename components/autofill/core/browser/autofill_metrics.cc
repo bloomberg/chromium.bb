@@ -618,6 +618,8 @@ AutofillMetrics::FormEvent GetCardNumberStatusFormEvent(
 
 }  // namespace
 
+const int kMaxBucketsCount = 50;
+
 // static
 void AutofillMetrics::LogSubmittedCardStateMetric(
     SubmittedCardStateMetric metric) {
@@ -1425,18 +1427,10 @@ void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
 
 // static
 void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index) {
-  // A maximum of 50 is enforced to minimize the number of buckets generated.
   base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex",
-                           std::min(index, 50));
+                           std::min(index, kMaxBucketsCount));
 
   base::RecordAction(base::UserMetricsAction("Autofill_SelectedSuggestion"));
-}
-
-// static
-void AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(int index) {
-  // A maximum of 50 is enforced to minimize the number of buckets generated.
-  base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex.Autocomplete",
-                           std::min(index, 50));
 }
 
 // static
@@ -1528,7 +1522,7 @@ void AutofillMetrics::LogNumberOfProfilesConsideredForDedupe(
     size_t num_considered) {
   // A maximum of 50 is enforced to reduce the number of generated buckets.
   UMA_HISTOGRAM_COUNTS_1000("Autofill.NumberOfProfilesConsideredForDedupe",
-                            std::min(int(num_considered), 50));
+                            std::min(int(num_considered), kMaxBucketsCount));
 }
 
 // static
@@ -1536,7 +1530,7 @@ void AutofillMetrics::LogNumberOfProfilesRemovedDuringDedupe(
     size_t num_removed) {
   // A maximum of 50 is enforced to reduce the number of generated buckets.
   UMA_HISTOGRAM_COUNTS_1000("Autofill.NumberOfProfilesRemovedDuringDedupe",
-                            std::min(int(num_removed), 50));
+                            std::min(int(num_removed), kMaxBucketsCount));
 }
 
 // static
@@ -1559,6 +1553,13 @@ void AutofillMetrics::LogShowedHttpNotSecureExplanation() {
 }
 
 // static
+void AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(int index) {
+  base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex.Autocomplete",
+                           std::min(index, kMaxBucketsCount));
+  AutofillMetrics::Log(AutocompleteEvent::AUTOCOMPLETE_SUGGESTION_SELECTED);
+}
+
+// static
 void AutofillMetrics::LogAutocompleteQuery(bool created) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteQuery", created);
 }
@@ -1566,6 +1567,19 @@ void AutofillMetrics::LogAutocompleteQuery(bool created) {
 // static
 void AutofillMetrics::LogAutocompleteSuggestions(bool has_suggestions) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteSuggestions", has_suggestions);
+}
+
+// static
+void AutofillMetrics::OnAutocompleteSuggestionsShown() {
+  AutofillMetrics::Log(AutocompleteEvent::AUTOCOMPLETE_SUGGESTIONS_SHOWN);
+}
+
+// static
+void AutofillMetrics::Log(AutocompleteEvent event) {
+  DCHECK_LT(event, AutocompleteEvent::NUM_AUTOCOMPLETE_EVENTS);
+  std::string name("Autocomplete.Events");
+
+  base::UmaHistogramEnumeration(name, event, NUM_AUTOCOMPLETE_EVENTS);
 }
 
 // static
