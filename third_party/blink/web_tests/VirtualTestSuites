@@ -691,6 +691,11 @@
   },
   {
     "prefix": "omt-worker-fetch",
+    "base": "external/wpt/referrer-policy",
+    "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
+  },
+  {
+    "prefix": "omt-worker-fetch",
     "base": "external/wpt/workers",
     "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
   },
