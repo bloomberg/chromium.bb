@@ -199,11 +199,6 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
           start_fragment_logical_offset.ConvertToPhysical(
               container_writing_mode, container_direction,
               start_linebox_fragment->Size(), NGPhysicalSize());
-      NGPhysicalOffset start_linebox_physical_offset =
-          block_info.value.start_linebox_offset.ConvertToPhysical(
-              container_writing_mode, container_direction,
-              container_builder_physical_size, start_linebox_fragment->Size());
-      start_fragment_physical_offset += start_linebox_physical_offset;
       // Step 2
       const NGPhysicalLineBoxFragment* end_linebox_fragment =
           block_info.value.end_linebox_fragment;
@@ -228,11 +223,6 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
           end_fragment_bottom_right.ConvertToPhysical(
               container_writing_mode, container_direction,
               end_linebox_fragment->Size(), NGPhysicalSize());
-      NGPhysicalOffset end_linebox_physical_offset =
-          block_info.value.end_linebox_offset.ConvertToPhysical(
-              container_writing_mode, container_direction,
-              container_builder_physical_size, end_linebox_fragment->Size());
-      end_fragment_physical_offset += end_linebox_physical_offset;
       // Step 3
       NGLogicalOffset start_fragment_logical_offset_wrt_box =
           start_fragment_physical_offset.ConvertToLogical(
