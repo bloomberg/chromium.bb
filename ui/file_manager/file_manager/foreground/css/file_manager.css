@@ -104,9 +104,8 @@ a:focus {
 
 .dialog-navigation-list-footer {
   display: flex;
-  flex: 0 1 auto;
+  flex: none;
   flex-direction: column;
-  overflow: auto;
 }
 
 /* A vertical splitter between the roots list and the file list. It is actually
@@ -2091,7 +2090,9 @@ list.autocomplete-suggestions > [lead] {
 }
 
 #progress-center-open-view {
+  max-height: 40vh;
   opacity: 1;
+  overflow-y: auto;
   padding-top: 10px;
   transition: opacity 300ms linear;
 }
@@ -2177,7 +2178,7 @@ list.autocomplete-suggestions > [lead] {
 }
 
 #progress-center .button-frame {
-  align-self: flex-end;
+  align-self: flex-start;
   flex: none;
 }
 
@@ -2251,7 +2252,7 @@ li#progress-center-close-view.error.single button.dismiss,
 
 #progress-center-close-view.quiet button.cancel,
 #progress-center li:not(.cancelable) button.cancel {
-  visibility: hidden;
+  display: none;
 }
 
 .text-measure {
