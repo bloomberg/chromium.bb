@@ -487,6 +487,10 @@ class VIEWS_EXPORT MenuController
   // Selects the next or previous (depending on |direction|) menu item.
   void IncrementSelection(SelectionIncrementDirectionType direction);
 
+  // Selects the first or last (depending on |direction|) menu item.
+  void MoveSelectionToFirstOrLastItem(
+      SelectionIncrementDirectionType direction);
+
   // Returns the first (|direction| == NAVIGATE_SELECTION_DOWN) or the last
   // (|direction| == INCREMENT_SELECTION_UP) selectable child menu item of
   // |parent|. If there are no selectable items returns NULL.
