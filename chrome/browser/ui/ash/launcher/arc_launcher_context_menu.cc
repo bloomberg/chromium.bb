@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/base/ui_base_features.h"
 
 ArcLauncherContextMenu::ArcLauncherContextMenu(
     ChromeLauncherController* controller,
@@ -63,8 +62,6 @@ void ArcLauncherContextMenu::BuildMenu(
     DCHECK(app_info->launchable);
     AddContextMenuOption(menu_model.get(), ash::MENU_OPEN_NEW,
                          IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
-    if (!features::IsTouchableAppContextMenuEnabled())
-      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
   if (!app_id.has_shelf_group_id() && app_info->launchable)
@@ -73,14 +70,6 @@ void ArcLauncherContextMenu::BuildMenu(
   if (app_is_open) {
     AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
                          IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
-  }
-  if (!features::IsTouchableAppContextMenuEnabled())
-    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-
-  // App shortcuts from Android are shown on touchable context menu only.
-  if (!features::IsTouchableAppContextMenuEnabled()) {
-    std::move(callback).Run(std::move(menu_model));
-    return;
   }
 
   DCHECK(!app_shortcuts_menu_builder_);

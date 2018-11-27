@@ -21,7 +21,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/extension_prefs.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -179,40 +178,8 @@ void ExtensionLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
       base::Bind(MenuItemHasLauncherContext)));
   if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
     // V1 apps can be started from the menu - but V2 apps should not.
-    if (!controller()->IsPlatformApp(item().id)) {
-      if (features::IsTouchableAppContextMenuEnabled()) {
-        CreateOpenNewSubmenu(menu_model);
-      } else {
-        AddContextMenuOption(menu_model, ash::MENU_OPEN_NEW,
-                             GetLaunchTypeStringId());
-        menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-
-        // Touchable app context menus do not include these check items, their
-        // functionality is achieved by an actionable submenu.
-        if (item().type == ash::TYPE_PINNED_APP) {
-          if (extensions::util::IsNewBookmarkAppsEnabled()) {
-            // With bookmark apps enabled, hosted apps launch in a window by
-            // default. This menu item is re-interpreted as a single,
-            // toggle-able option to launch the hosted app as a tab.
-            AddContextMenuOption(menu_model, ash::LAUNCH_TYPE_WINDOW,
-                                 IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-          } else {
-            AddContextMenuOption(menu_model, ash::LAUNCH_TYPE_REGULAR_TAB,
-                                 IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
-            AddContextMenuOption(menu_model, ash::LAUNCH_TYPE_PINNED_TAB,
-                                 IDS_APP_CONTEXT_MENU_OPEN_PINNED);
-            AddContextMenuOption(menu_model, ash::LAUNCH_TYPE_WINDOW,
-                                 IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-            // Even though the launch type is Full Screen it is more accurately
-            // described as Maximized in Ash.
-            AddContextMenuOption(menu_model, ash::LAUNCH_TYPE_FULLSCREEN,
-                                 IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
-          }
-          menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-        }
-      }
-    }
-
+    if (!controller()->IsPlatformApp(item().id))
+      CreateOpenNewSubmenu(menu_model);
     AddPinMenu(menu_model);
 
     if (controller()->IsOpen(item().id)) {
@@ -238,16 +205,12 @@ void ExtensionLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
     AddContextMenuOption(menu_model, ash::MENU_CLOSE,
                          IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   }
-  if (!features::IsTouchableAppContextMenuEnabled())
-    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
     const extensions::MenuItem::ExtensionKey app_key(item().id.app_id);
     if (!app_key.empty()) {
       int index = 0;
       extension_items_->AppendExtensionItems(app_key, base::string16(), &index,
                                              false);  // is_action_menu
-      if (!features::IsTouchableAppContextMenuEnabled())
-        menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
     }
   }
 }
