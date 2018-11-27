@@ -4,25 +4,28 @@
 <title>Event Timing: Performance observers can observe long-latency events
 </title>
 <button id='button' onclick='1'>Generate a 'click' event</button>
-<script src=../../../resources/testharness.js></script>
-<script src=../../../resources/testharnessreport.js></script>
-<script src=./resources/event-timing-support.js></script>
-<img src=./resources/slow-image.php>
+<script src=/resources/testharness.js></script>
+<script src=/resources/testharnessreport.js></script>
+<script src=resources/event-timing-support.js></script>
+<img src=resources/slow-image.php>
 
 <script>
+  let timeBeforeFirstClick;
   let timeAfterFirstClick;
+  let timeAfterSecondClick;
+  let onloadStart;
   let observedEntries = [];
 
   function verifyBuffer(bufferedEntries) {
-    const loadStart =
-        performance.timing.loadEventStart - performance.timeOrigin;
     assert_equals(bufferedEntries.length, 1,
         "Only events before onload should be buffered.");
     const entry = bufferedEntries[0];
-    assert_greater_than(loadStart, entry.startTime,
-        "onload should be later than entry's start time.");
-    assert_greater_than(entry.processingStart, timeAfterFirstClick,
-        "The entry's processing start should be later than timeAfterFirstClick.");
+    assert_greater_than(onloadStart, entry.startTime,
+        "Onload should be later than entry's start time.");
+    assert_greater_than(entry.processingStart, timeBeforeFirstClick,
+        "The entry's processing start should be after timeBeforeFirstClick");
+    assert_less_than(entry.processingStart, timeAfterFirstClick,
+        "The entry's processing start should be before timeAfterFirstClick.");
     verifyClickEvent(entry, true);
   }
 
@@ -34,9 +37,11 @@
     const entry1 = entriesAfterFirstClick[0];
     verifyClickEvent(entry1);
     assert_greater_than(entry1.processingStart, timeAfterFirstClick,
-        "entry1's processing start should be later than timeAfterFirstClick.");
-    assert_greater_than(entry1.startTime, timeAfterFirstClick,
-        "entry1's start time should be later than timeAfterFirstClick.");
+        "entry1's processing start should be after timeAfterFirstClick");
+    assert_less_than(entry1.processingStart, timeAfterSecondClick,
+        "entry1's processing start should be before timeAfterSecondClick.");
+    assert_greater_than(entry1.startTime, onloadStart,
+        "entry1's start time should be later than onloadStart.");
 
     const entriesBeforeFirstClick =
         observedEntries.filter(e => e.startTime < timeAfterFirstClick);
@@ -45,8 +50,10 @@
     );
     const entry2 = entriesBeforeFirstClick[0];
     verifyClickEvent(entry2);
-    assert_greater_than(entry2.processingStart, timeAfterFirstClick,
-        "entry2's processing start should be later than timeAfterFirstClick.");
+    assert_greater_than(entry2.processingStart, timeBeforeFirstClick,
+        "entry2's processing start should be after timeBeforeFirstClick");
+    assert_less_than(entry2.processingStart, timeAfterFirstClick,
+        "entry2's processing start should be berfore timeAfterFirstClick.");
     assert_greater_than(timeAfterFirstClick, entry2.startTime,
         "timeAfterFirstClick should be later than entry2's start time.");
   }
@@ -72,12 +79,16 @@
         resolve(observedEntries);
       }).observe({ entryTypes: ['event'] });
     });
-    clickAndBlockMain('button');
-    timeAfterFirstClick = performance.now();
+    timeBeforeFirstClick = performance.now();
+    clickAndBlockMain('button').then( () => {
+      timeAfterFirstClick = performance.now();
+    });
     on_event(window, 'load', function(e) {
+      onloadStart = performance.now();
       // After onload start and before registering observer.
       const bufferPromise = clickAndBlockMain('button').then(wait);
       Promise.all([observerPromise, bufferPromise]).then((results) => {
+        timeAfterSecondClick = performance.now();
         t.step(verifyObserverEntries.bind(null, results[0]));
         t.step(verifyBuffer.bind(null, performance.getEntriesByName('click', 'event')));
         t.done();

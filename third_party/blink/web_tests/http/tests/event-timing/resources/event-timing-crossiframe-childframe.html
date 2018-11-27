@@ -14,14 +14,14 @@
   });
   window.addEventListener('load', e => {
     observerPromise.then((observedEntries) => {
+      const onloadStart = performance.now();
       const bufferedEntries = performance.getEntriesByType('event');
-      const onloadTime = performance.timing.loadEventStart - performance.timeOrigin;
       top.postMessage({
         "bufferedEntries" : bufferedEntries,
         "observedEntries": observedEntries,
         "clickTimeMin": clickTimeMin,
         "processingStartMin" : processingStartMin,
-        "onloadTime" : onloadTime,
+        "onloadStart" : onloadStart,
       }, '*');
     });
   });
