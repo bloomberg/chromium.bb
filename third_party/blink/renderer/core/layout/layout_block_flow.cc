@@ -3125,13 +3125,12 @@ bool LayoutBlockFlow::NeedsAnonymousInlineWrapper() const {
   DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
   if (!GetDocument().GetStyleEngine().UsesFirstLineRules())
     return false;
+  // We need an anonymous inline wrapper only if ::first-line has different
+  // background, but excessive anonymous inline will not harm much. To simplify,
+  // create the wrapper whenever ::first-line is applied.
   const ComputedStyle& first_line_style = FirstLineStyleRef();
   const ComputedStyle& style = StyleRef();
-  if (&first_line_style == &style)
-    return false;
-  // We need an anonymous inline wrapper only if ::first-line has different
-  // background, but excessive anonymous inline will not harm.
-  return first_line_style.HasBackground();
+  return &first_line_style != &style;
 }
 
 void LayoutBlockFlow::AddChild(LayoutObject* new_child,

@@ -564,8 +564,13 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
 }
 
 LayoutInline* LayoutInline::Clone() const {
-  LayoutInline* clone_inline = new LayoutInline(GetNode());
-  DCHECK(!IsAnonymous());
+  LayoutInline* clone_inline = nullptr;
+  if (UNLIKELY(IsFirstLineAnonymous())) {
+    clone_inline = CreateAnonymousForFirstLine(&GetDocument());
+  } else {
+    DCHECK(!IsAnonymous());
+    clone_inline = new LayoutInline(GetNode());
+  }
   clone_inline->SetStyle(MutableStyle());
   clone_inline->SetIsInsideFlowThread(IsInsideFlowThread());
   return clone_inline;
@@ -574,8 +579,8 @@ LayoutInline* LayoutInline::Clone() const {
 void LayoutInline::MoveChildrenToIgnoringContinuation(
     LayoutInline* to,
     LayoutObject* start_child) {
-  DCHECK(!IsAnonymous());
-  DCHECK(!to->IsAnonymous());
+  DCHECK(!IsAnonymous() || IsFirstLineAnonymous());
+  DCHECK(!to->IsAnonymous() || to->IsFirstLineAnonymous());
   LayoutObject* child = start_child;
   while (child) {
     LayoutObject* current_child = child;
@@ -591,7 +596,7 @@ void LayoutInline::SplitInlines(LayoutBlockFlow* from_block,
                                 LayoutObject* before_child,
                                 LayoutBoxModelObject* old_cont) {
   DCHECK(IsDescendantOf(from_block));
-  DCHECK(!IsAnonymous());
+  DCHECK(!IsAnonymous() || IsFirstLineAnonymous());
 
   // FIXME: Because splitting is O(n^2) as tags nest pathologically, we cap the
   // depth at which we're willing to clone.
