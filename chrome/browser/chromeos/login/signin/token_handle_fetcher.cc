@@ -9,16 +9,16 @@
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
+#include "services/identity/public/cpp/scope_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 const int kMaxRetries = 3;
+const char kAccessTokenFetchId[] = "token_handle_fetcher";
 
 class TokenHandleFetcherShutdownNotifierFactory
     : public BrowserContextKeyedServiceShutdownNotifierFactory {
@@ -34,7 +34,7 @@ class TokenHandleFetcherShutdownNotifierFactory
   TokenHandleFetcherShutdownNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(
             "TokenHandleFetcher") {
-    DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+    DependsOn(IdentityManagerFactory::GetInstance());
   }
   ~TokenHandleFetcherShutdownNotifierFactory() override {}
 
@@ -45,13 +45,11 @@ class TokenHandleFetcherShutdownNotifierFactory
 
 TokenHandleFetcher::TokenHandleFetcher(TokenHandleUtil* util,
                                        const AccountId& account_id)
-    : OAuth2TokenService::Consumer("user_session_manager"),
-      token_handle_util_(util),
-      account_id_(account_id) {}
+    : token_handle_util_(util), account_id_(account_id) {}
 
 TokenHandleFetcher::~TokenHandleFetcher() {
   if (waiting_for_refresh_token_)
-    token_service_->RemoveObserver(this);
+    identity_manager_->RemoveObserver(this);
 }
 
 void TokenHandleFetcher::BackfillToken(Profile* profile,
@@ -59,11 +57,9 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
   profile_ = profile;
   callback_ = callback;
 
-  token_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  const std::string user_email = signin_manager->GetAuthenticatedAccountId();
-  if (!token_service_->RefreshTokenIsAvailable(user_email)) {
+  identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
+  const std::string user_email = identity_manager_->GetPrimaryAccountId();
+  if (!identity_manager_->HasAccountWithRefreshToken(user_email)) {
     account_without_token_ = user_email;
     profile_shutdown_notification_ =
         TokenHandleFetcherShutdownNotifierFactory::GetInstance()
@@ -71,43 +67,52 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
             ->Subscribe(base::Bind(&TokenHandleFetcher::OnProfileDestroyed,
                                    base::Unretained(this)));
 
-    token_service_->AddObserver(this);
+    identity_manager_->AddObserver(this);
     waiting_for_refresh_token_ = true;
     return;
   }
   RequestAccessToken(user_email);
 }
 
-void TokenHandleFetcher::OnRefreshTokenAvailable(
-    const std::string& user_email) {
-  if (account_without_token_ != user_email)
+void TokenHandleFetcher::OnRefreshTokenUpdatedForAccount(
+    const AccountInfo& account_info,
+    bool is_valid) {
+  if (account_without_token_ != account_info.email)
     return;
   waiting_for_refresh_token_ = false;
-  token_service_->RemoveObserver(this);
-  RequestAccessToken(user_email);
+  identity_manager_->RemoveObserver(this);
+  RequestAccessToken(account_info.email);
 }
 
 void TokenHandleFetcher::RequestAccessToken(const std::string& user_email) {
-  OAuth2TokenService::ScopeSet scopes;
+  identity::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
-  oauth2_access_token_request_ =
-      token_service_->StartRequest(user_email, scopes, this);
+
+  // We can use base::Unretained(this) below because |access_token_fetcher_| is
+  // owned by this object (thus destroyed when this object is destroyed) and
+  // PrimaryAccountAccessTokenFetcher guarantees that it doesn't invoke its
+  // callback after it is destroyed.
+  access_token_fetcher_ =
+      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+          kAccessTokenFetchId, identity_manager_, scopes,
+          base::BindOnce(&TokenHandleFetcher::OnAccessTokenFetchComplete,
+                         base::Unretained(this)),
+          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
-void TokenHandleFetcher::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
-  oauth2_access_token_request_.reset();
-  FillForAccessToken(token_response.access_token);
-}
+void TokenHandleFetcher::OnAccessTokenFetchComplete(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo token_info) {
+  access_token_fetcher_.reset();
 
-void TokenHandleFetcher::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  oauth2_access_token_request_.reset();
-  LOG(ERROR) << "Could not get access token to backfill token handler"
-             << error.ToString();
-  callback_.Run(account_id_, false);
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    LOG(ERROR) << "Could not get access token to backfill token handler"
+               << error.ToString();
+    callback_.Run(account_id_, false);
+    return;
+  }
+
+  FillForAccessToken(token_info.token);
 }
 
 void TokenHandleFetcher::FillForNewUser(const std::string& access_token,
