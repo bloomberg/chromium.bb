@@ -1345,30 +1345,31 @@ void GLScaler::ScalerStage::ScaleToMultipleOutputs(
   if (output_rect.IsEmpty())
     return;  // No work to do.
 
-  // Calculate the source region from the given |output_rect|, accounting for
-  // both the |src_offset| and whether the source's coordinate system is
-  // Y-flipped.
-  gfx::RectF src_rect = ToSourceRect(output_rect);
-  if (is_flipped_source_) {
-    src_rect.set_x(src_rect.x() + src_offset.x());
-    src_rect.set_y(src_texture_size.height() - src_rect.bottom() -
-                   src_offset.y());
-  } else {
-    src_rect += src_offset;
-  }
-
   // Make a recursive call to the "input" ScalerStage to produce an intermediate
   // texture for this stage to source from. Adjust src_* variables to use the
   // intermediate texture as input.
+  //
+  // If there is no input stage, simply modify |src_rect| to account for the
+  // overall |src_offset| and Y-flip.
+  gfx::RectF src_rect = ToSourceRect(output_rect);
   if (input_stage_) {
     const gfx::Rect input_rect = ToInputRect(src_rect);
     EnsureIntermediateTextureDefined(input_rect.size());
     input_stage_->ScaleToMultipleOutputs(src_texture, src_texture_size,
-                                         gfx::Vector2d(0, 0),
-                                         intermediate_texture_, 0, input_rect);
+                                         src_offset, intermediate_texture_, 0,
+                                         input_rect);
     src_texture = intermediate_texture_;
     src_texture_size = intermediate_texture_size_;
+    DCHECK(!is_flipped_source_);
     src_rect -= input_rect.OffsetFromOrigin();
+  } else {
+    if (is_flipped_source_) {
+      src_rect.set_x(src_rect.x() + src_offset.x());
+      src_rect.set_y(src_texture_size.height() - src_rect.bottom() -
+                     src_offset.y());
+    } else {
+      src_rect += src_offset;
+    }
   }
 
   // Attach the output texture(s) to the framebuffer.

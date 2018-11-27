@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/test/pixel_test.h"
 #include "cc/test/pixel_test_utils.h"
@@ -232,6 +233,15 @@ class GLRendererCopierPixelTest
   GLuint source_framebuffer_ = 0;
 };
 
+// On Android KitKat bots (but not newer ones), the left column of pixels in the
+// result is off-by-one in the red channel. Use the off-by-one camparator as a
+// workaround.
+#if defined(OS_ANDROID)
+#define PIXEL_COMPARATOR() cc::FuzzyPixelOffByOneComparator(false)
+#else
+#define PIXEL_COMPARATOR() cc::ExactPixelComparator(false)
+#endif
+
 TEST_P(GLRendererCopierPixelTest, ExecutesCopyRequest) {
   // Create and execute a CopyOutputRequest via the GLRendererCopier.
   std::unique_ptr<CopyOutputResult> result;
@@ -284,12 +294,13 @@ TEST_P(GLRendererCopierPixelTest, ExecutesCopyRequest) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kCCRebaselinePixeltests))
     EXPECT_TRUE(cc::WritePNGFile(actual, png_file_path, false));
-  if (!cc::MatchesPNGFile(actual, png_file_path,
-                          cc::ExactPixelComparator(false))) {
+  if (!cc::MatchesPNGFile(actual, png_file_path, PIXEL_COMPARATOR())) {
     LOG(ERROR) << "Entire source: " << cc::GetPNGDataUrl(source_bitmap_);
     ADD_FAILURE();
   }
 }
+
+#undef PIXEL_COMPARATOR
 
 // Instantiate parameter sets for all possible combinations of scenarios
 // GLRendererCopier will encounter, which will cause it to follow different

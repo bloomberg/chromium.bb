@@ -393,8 +393,10 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     }
     EXPECT_EQ(expected_bitmap.colorType(), bitmap.colorType());
     int fails = 0;
-    for (int i = 0; i < bitmap.width() && fails < 10; ++i) {
-      for (int j = 0; j < bitmap.height() && fails < 10; ++j) {
+    // Note: The outermost 2 pixels are ignored because the scaling tests pick
+    // up a little bleed-in from the surrounding content.
+    for (int i = 2; i < bitmap.width() - 4 && fails < 10; ++i) {
+      for (int j = 2; j < bitmap.height() - 4 && fails < 10; ++j) {
         if (!exclude_rect_.IsEmpty() && exclude_rect_.Contains(i, j))
           continue;
 
@@ -512,9 +514,9 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
       // Request readback.  The callbacks will examine the pixels in the
       // SkBitmap result if readback was successful.
       readback_result_ = READBACK_NO_RESPONSE;
-      // Skia rendering can cause color differences, particularly in the
-      // middle two columns.
       SetAllowableError(2);
+      // Scaling can cause blur/fuzz between color boundaries, particularly in
+      // the middle columns for these tests.
       SetExcludeRect(
           gfx::Rect(output_size.width() / 2 - 1, 0, 2, output_size.height()));
 

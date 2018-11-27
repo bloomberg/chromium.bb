@@ -15,24 +15,33 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/unguessable_token.h"
-#include "components/viz/common/gl_helper.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class ColorSpace;
 class Rect;
-class Size;
+class Vector2d;
 }  // namespace gfx
+
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}  // namespace gpu
 
 namespace viz {
 
 class ContextProvider;
 class CopyOutputRequest;
+class GLI420Converter;
+class GLScaler;
 class TextureDeleter;
 
-// Helper class for GLRenderer that executes CopyOutputRequests using GL, and
-// manages the caching of resources needed to ensure efficient video
-// performance.
+// Helper class for GLRenderer that executes CopyOutputRequests using GL, to
+// perform texture copies/transformations and read back bitmaps. Also manages
+// the caching of resources needed to ensure efficient video performance.
 //
 // GLRenderer calls CopyFromTextureOrFramebuffer() to execute a
 // CopyOutputRequest. GLRendererCopier will examine the request and determine
@@ -61,12 +70,13 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
 
   // Executes the |request|, copying from the currently-bound framebuffer of the
   // given |internal_format|. |output_rect| is the RenderPass's output Rect in
-  // draw space, and is used to translate and clip the result selection Rect.
-  // |framebuffer_texture| and |framebuffer_texture_size| are optional: When
-  // non-zero, the texture might be used as the source, to avoid making an extra
-  // copy of the framebuffer. |flipped_source| is true (common case) if the
-  // framebuffer content is vertically flipped. |color_space| specifies the
-  // color space of the pixels in the framebuffer.
+  // draw space, and is used to translate and clip the result selection Rect in
+  // the request. |framebuffer_texture| and |framebuffer_texture_size| are
+  // optional, but desired for performance: If provided, the texture might be
+  // used as the source, to avoid having to make a copy of the framebuffer.
+  // |flipped_source| is true (common case) if the framebuffer content is
+  // vertically flipped (bottom-up row order). |color_space| specifies the color
+  // space of the pixels in the framebuffer.
   //
   // This implementation may change a wide variety of GL state, such as texture
   // and framebuffer bindings, shader programs, and related attributes; and so
@@ -89,62 +99,100 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   friend class GLRendererCopierTest;
 
   // The collection of resources that might be cached over multiple copy
-  // requests from the same source.
-  //
-  // TODO(crbug.com/781986): Post-impl clean-up to make this mechanism simpler.
-  struct VIZ_SERVICE_EXPORT CacheEntry {
+  // requests from the same source. While executing a CopyOutputRequest, this
+  // struct is also used to pass around intermediate objects between operations.
+  struct VIZ_SERVICE_EXPORT ReusableThings {
+    // This is used to determine whether these things aren't being used anymore.
     uint32_t purge_count_at_last_use = 0;
-    std::array<GLuint, 8> object_names;
-    std::unique_ptr<GLHelper::ScalerInterface> scaler;
-    std::unique_ptr<I420Converter> i420_converter;
 
-    // Index in |object_names| of the various objects that might be cached.
-    static constexpr int kFramebufferCopyTexture = 0;
-    static constexpr int kResultTexture = 1;
-    static constexpr int kYPlaneTexture = 2;
-    static constexpr int kUPlaneTexture = 3;
-    static constexpr int kVPlaneTexture = 4;
-    static constexpr int kReadbackFramebuffer = 5;
-    static constexpr int kReadbackFramebufferU = 6;
-    static constexpr int kReadbackFramebufferV = 7;
+    // Texture containing a copy of the source framebuffer, if the source
+    // framebuffer cannot be used directly.
+    GLuint fb_copy_texture = 0;
+    GLenum fb_copy_texture_internal_format = static_cast<GLenum>(GL_NONE);
+    gfx::Size fb_copy_texture_size;
 
-    CacheEntry();
-    CacheEntry(CacheEntry&&);
-    CacheEntry& operator=(CacheEntry&&);
-    ~CacheEntry();
+    // RGBA requests: Scaling, and texture/framebuffer for readback.
+    std::unique_ptr<GLScaler> scaler;
+    GLuint result_texture = 0;
+    gfx::Size result_texture_size;
+    GLuint readback_framebuffer = 0;
+
+    // I420_PLANES requests: I420 scaling and format conversion, and
+    // textures+framebuffers for readback.
+    std::unique_ptr<GLI420Converter> i420_converter;
+    std::array<GLuint, 3> yuv_textures = {0, 0, 0};
+    gfx::Size y_texture_size;
+    std::array<GLuint, 3> yuv_readback_framebuffers = {0, 0, 0};
+
+    ReusableThings();
+    ~ReusableThings();
+
+    // Frees all the GL objects and scalers. This is in-lieu of a ReusableThings
+    // destructor because a valid GL context is required to free some of the
+    // objects.
+    void Free(gpu::gles2::GLES2Interface* gl);
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(CacheEntry);
+    DISALLOW_COPY_AND_ASSIGN(ReusableThings);
   };
 
-  // Creates a texture and renders a transformed copy of the currently-bound
-  // framebuffer, according to the |request| parameters. This includes scaling.
-  // The result texture's content is always Y-flipped. The caller owns the
-  // returned texture.
-  GLuint RenderResultTexture(const CopyOutputRequest& request,
-                             const gfx::Rect& framebuffer_copy_rect,
-                             GLenum internal_format,
-                             GLuint framebuffer_texture,
-                             const gfx::Size& framebuffer_texture_size,
-                             bool flipped_source,
-                             const gfx::Rect& result_rect);
+  // Renders a scaled/transformed copy of a source texture according to the
+  // |request| parameters and other source characteristics. The result texture
+  // is populated and its GL reference placed in |things|. For RGBA_BITMAP
+  // requests, the image content will be rendered in top-down row order and
+  // maybe red-blue swapped, to support efficient readback later on. For
+  // RGBA_TEXTURE requests, the image content is always rendered Y-flipped
+  // (bottom-up row order).
+  void RenderResultTexture(const CopyOutputRequest& request,
+                           bool flipped_source,
+                           const gfx::ColorSpace& source_color_space,
+                           GLuint source_texture,
+                           const gfx::Size& source_texture_size,
+                           const gfx::Rect& sampling_rect,
+                           const gfx::Rect& result_rect,
+                           ReusableThings* things);
 
-  // Processes the next phase of the copy request by starting readback of the
-  // |copy_rect| from the given |source_texture| into a pixel transfer buffer.
-  // The source texture is assumed to be Y-flipped. This method does NOT take
-  // ownership of the |source_texture|.
+  // Similar to RenderResultTexture(), except also transform the image into I420
+  // format (a popular video format). Three textures, representing each of the
+  // Y/U/V planes (as described in GLI420Converter), are populated and their GL
+  // references placed in |things|. The image content is always rendered in
+  // top-down row order and swizzled (if needed), to support efficient readback
+  // later on.
+  //
+  // For alignment reasons, sometimes a slightly larger result will be provided,
+  // and the return Rect will indicate the actual bounds that were rendered
+  // (|result_rect|'s coordinate system). See StartI420ReadbackFromTextures()
+  // for more details.
+  gfx::Rect RenderI420Textures(const CopyOutputRequest& request,
+                               bool flipped_source,
+                               const gfx::ColorSpace& source_color_space,
+                               GLuint source_texture,
+                               const gfx::Size& source_texture_size,
+                               const gfx::Rect& sampling_rect,
+                               const gfx::Rect& result_rect,
+                               ReusableThings* things);
+
+  // Binds the |things->result_texture| to a framebuffer and calls
+  // StartReadbackFromFramebuffer(). This is for RGBA_BITMAP requests only.
+  // Assumes the image content is in top-down row order (and is red-blue swapped
+  // iff RenderResultTexture() would have done that).
   void StartReadbackFromTexture(std::unique_ptr<CopyOutputRequest> request,
-                                GLuint source_texture,
-                                const gfx::Rect& copy_rect,
                                 const gfx::Rect& result_rect,
-                                const gfx::ColorSpace& color_space);
+                                const gfx::ColorSpace& color_space,
+                                ReusableThings* things);
 
-  // Processes the next phase of the copy request by starting readback of the
-  // |copy_rect| from the currently-bound framebuffer into a pixel transfer
-  // buffer. The framebuffer content is assumed to be Y-flipped. This method
-  // kicks-off an asynchronous glReadPixels() workflow.
+  // Processes the next phase of the copy request by starting readback from the
+  // currently-bound framebuffer into a pixel transfer buffer. |readback_offset|
+  // is the origin of the readback rect within the framebuffer, with
+  // |result_rect| providing the size of the readback rect. |flipped_source| is
+  // true if the framebuffer content is in bottom-up row order, and
+  // |swapped_red_and_blue| specifies whether the red and blue channels have
+  // been swapped. This method kicks-off an asynchronous glReadPixels()
+  // workflow.
   void StartReadbackFromFramebuffer(std::unique_ptr<CopyOutputRequest> request,
-                                    const gfx::Rect& copy_rect,
+                                    const gfx::Vector2d& readback_offset,
+                                    bool flipped_source,
+                                    bool swapped_red_and_blue,
                                     const gfx::Rect& result_rect,
                                     const gfx::ColorSpace& color_space);
 
@@ -156,56 +204,30 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
                          const gfx::Rect& result_rect,
                          const gfx::ColorSpace& color_space);
 
-  // Processes the next phase of an I420_PLANES copy request by using the
-  // I420Converter to planarize the given |source_texture| and then starting
-  // readback of the planes via a pixel transfer buffer. The source texture is
-  // assumed to be Y-flipped. This method does NOT take ownership of the
-  // |source_texture|.
-  void StartI420ReadbackFromTexture(std::unique_ptr<CopyOutputRequest> request,
-                                    GLuint source_texture,
-                                    const gfx::Size& source_texture_size,
-                                    const gfx::Rect& copy_rect,
-                                    const gfx::Rect& result_rect,
-                                    const gfx::ColorSpace& color_space);
+  // Like StartReadbackFromTexture(), except that this processes the three Y/U/V
+  // result textures in |things| by using three framebuffers and three
+  // asynchronous readback operations. A single pixel transfer buffer is used to
+  // hold the results of all three readbacks (i.e., each plane starts at a
+  // different offset in the transfer buffer).
+  //
+  // |aligned_rect| is the Rect returned from the RenderI420Textures() call, and
+  // is required so that the CopyOutputResult sent at the end of this workflow
+  // will access the correct region of pixels.
+  void StartI420ReadbackFromTextures(std::unique_ptr<CopyOutputRequest> request,
+                                     const gfx::Rect& aligned_rect,
+                                     const gfx::Rect& result_rect,
+                                     ReusableThings* things);
 
-  // Returns the GL object names found in the cache, or creates new ones
-  // on-demand. The caller takes ownership of the objects.
-  void TakeCachedObjectsOrCreate(const base::UnguessableToken& for_source,
-                                 int first,
-                                 int count,
-                                 GLuint* names);
+  // Retrieves a cached ReusableThings instance for the given CopyOutputRequest
+  // source, or creates a new instance.
+  std::unique_ptr<ReusableThings> TakeReusableThingsOrCreate(
+      const base::UnguessableToken& requester);
 
-  // Stashes GL object names into the cache, or deletes the objects if they
-  // should not be cached.
-  void CacheObjectsOrDelete(const base::UnguessableToken& for_source,
-                            int first,
-                            int count,
-                            const GLuint* names);
-
-  // Returns a cached scaler for the given request, or creates one on-demand.
-  // The scaler can be configured for source textures that may or may not be
-  // Y-flipped, but its results will always be Y-flipped.
-  std::unique_ptr<GLHelper::ScalerInterface> TakeCachedScalerOrCreate(
-      const CopyOutputRequest& for_request,
-      bool flipped_source);
-
-  // Stashes a scaler into the cache, or deletes it if it should not be cached.
-  void CacheScalerOrDelete(const base::UnguessableToken& for_source,
-                           std::unique_ptr<GLHelper::ScalerInterface> scaler);
-
-  // Returns a cached I420 converter for the given source, or creates one
-  // on-demand.
-  std::unique_ptr<I420Converter> TakeCachedI420ConverterOrCreate(
-      const base::UnguessableToken& for_source);
-
-  // Stashes an I420 converter into the cache, or deletes it if it should not be
-  // cached.
-  void CacheI420ConverterOrDelete(
-      const base::UnguessableToken& for_source,
-      std::unique_ptr<I420Converter> i420_converter);
-
-  // Frees any objects currently stashed in the given CacheEntry.
-  void FreeCachedResources(CacheEntry* entry);
+  // If |requester| is a valid UnguessableToken, this stashes the given
+  // ReusableThings instance in the cache for use in future CopyOutputRequests
+  // from the same requester. Otherwise, |things| is freed.
+  void StashReusableThingsOrDelete(const base::UnguessableToken& requester,
+                                   std::unique_ptr<ReusableThings> things);
 
   // Queries the GL implementation to determine which is the more performance-
   // optimal supported readback format: GL_RGBA or GL_BGRA_EXT, and memoizes the
@@ -215,13 +237,15 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // readback.
   GLenum GetOptimalReadbackFormat();
 
+  // Returns true if the red and blue channels should be swapped within the GPU,
+  // where such an operation has negligible cost, so that later the red-blue
+  // swap does not need to happen on the CPU (non-negligible cost).
+  bool ShouldSwapRedAndBlueForBitmapReadback();
+
   // Injected dependencies.
   const scoped_refptr<ContextProvider> context_provider_;
   TextureDeleter* const texture_deleter_;
   const ComputeWindowRectCallback window_rect_callback_;
-
-  // Provides comprehensive, quality and efficient scaling and other utilities.
-  GLHelper helper_;
 
   // This increments by one for every call to FreeUnusedCachedResources(). It
   // is meant to determine when cached resources should be freed because they
@@ -232,7 +256,8 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // requests from the same source. Since this reflects the number of active
   // video captures, it is expected to almost always be zero or one entry in
   // size.
-  base::flat_map<base::UnguessableToken, CacheEntry> cache_;
+  base::flat_map<base::UnguessableToken, std::unique_ptr<ReusableThings>>
+      cache_;
 
   // This specifies whether the GPU+driver combination executes readback more
   // efficiently using GL_RGBA or GL_BGRA_EXT format. This starts out as

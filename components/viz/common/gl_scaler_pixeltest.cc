@@ -297,6 +297,42 @@ TEST_F(GLScalerPixelTest, TranslatesVerticallyFlippedSourceWithSourceOffset) {
       << "\nActual (flipped-back): " << cc::GetPNGDataUrl(flipped_back_actual);
 }
 
+// Tests that the correct source selection is made when both translating the
+// source and then scaling. Scale "from" and "to" values are chosen such that a
+// multi-stage scaler will be configured (to test that offsets are correcty
+// calculated and passed between multiple stages).
+TEST_F(GLScalerPixelTest, ScalesWithTranslatedSourceOffset) {
+  GLScaler::Parameters params;
+  params.scale_from = gfx::Vector2d(640, 2160);
+  params.scale_to = gfx::Vector2d(256, 128);
+  params.quality = GLScaler::Parameters::Quality::GOOD;
+  params.is_flipped_source = false;
+  ASSERT_TRUE(scaler()->Configure(params));
+  EXPECT_EQ(
+      u8"Output "
+      u8"← {BILINEAR/lowp [256 256] to [256 128]} "
+      u8"← {BILINEAR4/lowp [512 2048] to [256 256]} "
+      u8"← {BILINEAR2X2/lowp [640 2160] to [512 2048]} "
+      u8"← Source",
+      GetScalerString());
+  constexpr gfx::Size kSourceSize = gfx::Size(640, 2160);
+  const SkBitmap source = CreateSMPTETestImage(kSourceSize);
+  const gfx::Vector2d offset(kSourceSize.width() / 2, kSourceSize.height() / 4);
+  const gfx::Rect output_rect(0, 0, 128, 64);
+  const SkBitmap actual = Scale(source, offset, output_rect);
+  const gfx::Rect expected_copy_rect(
+      offset.x(), offset.y(),
+      output_rect.width() * params.scale_from.x() / params.scale_to.x(),
+      output_rect.height() * params.scale_from.y() / params.scale_to.y());
+  int max_color_diff = GetBaselineColorDifference();
+  EXPECT_TRUE(LooksLikeSMPTETestImage(actual, kSourceSize, expected_copy_rect,
+                                      2, &max_color_diff))
+      << "max_color_diff measured was " << max_color_diff
+      << "\nExpected crop region of source: " << expected_copy_rect.ToString()
+      << "\nFull (uncropped) Source: " << cc::GetPNGDataUrl(source)
+      << "\nActual: " << cc::GetPNGDataUrl(actual);
+}
+
 // Tests that the output is vertically flipped, if requested in the parameters.
 TEST_F(GLScalerPixelTest, VerticallyFlipsOutput) {
   GLScaler::Parameters params;
