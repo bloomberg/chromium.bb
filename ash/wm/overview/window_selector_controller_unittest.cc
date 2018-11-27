@@ -69,6 +69,16 @@ class TestShellObserver : public ShellObserver {
     ending_animation_state_ = UNKNOWN;
   }
 
+  void WaitForStartingAnimationComplete() {
+    while (starting_animation_state_ != COMPLETED)
+      base::RunLoop().RunUntilIdle();
+  }
+
+  void WaitForEndingAnimationComplete() {
+    while (ending_animation_state_ != COMPLETED)
+      base::RunLoop().RunUntilIdle();
+  }
+
   bool is_ended() const { return ending_animation_state_ != UNKNOWN; }
   bool is_started() const { return starting_animation_state_ != UNKNOWN; }
   AnimationState starting_animation_state() const {
@@ -98,6 +108,12 @@ class TestShellObserver : public ShellObserver {
 
   DISALLOW_COPY_AND_ASSIGN(TestShellObserver);
 };
+
+void WaitForOcclusionStateChange(aura::Window* window) {
+  auto current_state = window->occlusion_state();
+  while (window->occlusion_state() == current_state)
+    base::RunLoop().RunUntilIdle();
+}
 
 }  // namespace
 
@@ -133,8 +149,7 @@ TEST_F(WindowSelectorControllerTest, AnimationCallbacks) {
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
 
-  while (!observer.is_ended())
-    base::RunLoop().RunUntilIdle();
+  observer.WaitForEndingAnimationComplete();
   EXPECT_EQ(TestShellObserver::COMPLETED, observer.ending_animation_state());
 
   gfx::Rect bounds(0, 0, 100, 100);
@@ -152,7 +167,7 @@ TEST_F(WindowSelectorControllerTest, AnimationCallbacks) {
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::UNKNOWN, observer.starting_animation_state());
 
-  // Exit with windows.
+  // Exit with windows before starting animation ends.
   Shell::Get()->window_selector_controller()->ToggleOverview();
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::CANCELED, observer.starting_animation_state());
@@ -160,7 +175,7 @@ TEST_F(WindowSelectorControllerTest, AnimationCallbacks) {
 
   observer.Reset();
 
-  // Enter again.
+  // Enter again before exit animation ends.
   Shell::Get()->window_selector_controller()->ToggleOverview();
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::CANCELED, observer.ending_animation_state());
@@ -222,6 +237,77 @@ TEST_F(WindowSelectorControllerTest, OverviewEnterExitAnimationTablet) {
   // All windows are minimized, so we should use the slide animation.
   Shell::Get()->window_selector_controller()->ToggleOverview();
   EXPECT_TRUE(observer.last_animation_was_slide());
+}
+
+TEST_F(WindowSelectorControllerTest, OcclusionTest) {
+  using OcclusionState = aura::Window::OcclusionState;
+
+  Shell::Get()
+      ->window_selector_controller()
+      ->set_occlusion_pause_duration_for_end_ms_for_test(50);
+  TestShellObserver observer(/*should_monitor_animation_state = */ true);
+  ui::ScopedAnimationDurationScaleMode non_zero(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<aura::Window> window1(
+      CreateTestWindowInShellWithBounds(bounds));
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithBounds(bounds));
+  window1->TrackOcclusionState();
+  window2->TrackOcclusionState();
+  EXPECT_EQ(OcclusionState::OCCLUDED, window1->occlusion_state());
+  EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
+
+  // Enter with windows.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_EQ(OcclusionState::OCCLUDED, window1->occlusion_state());
+  EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
+
+  observer.WaitForStartingAnimationComplete();
+  // Occlusion tracking is paused.
+  EXPECT_EQ(OcclusionState::OCCLUDED, window1->occlusion_state());
+  EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
+  WaitForOcclusionStateChange(window1.get());
+  EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
+
+  // Exit with windows.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
+  EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
+  observer.WaitForEndingAnimationComplete();
+  EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
+  EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
+  WaitForOcclusionStateChange(window1.get());
+  EXPECT_EQ(OcclusionState::OCCLUDED, window1->occlusion_state());
+
+  observer.Reset();
+
+  // Enter again.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_EQ(OcclusionState::OCCLUDED, window1->occlusion_state());
+  EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
+  auto* active = wm::GetActiveWindow();
+  EXPECT_EQ(window2.get(), active);
+
+  observer.WaitForStartingAnimationComplete();
+
+  // Window 1 is still occluded because tracker is paused.
+  EXPECT_EQ(OcclusionState::OCCLUDED, window1->occlusion_state());
+  EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
+
+  WaitForOcclusionStateChange(window1.get());
+  EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
+
+  wm::ActivateWindow(window1.get());
+  observer.WaitForEndingAnimationComplete();
+
+  // Windows are visible because tracker is paused.
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
+  EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
+  WaitForOcclusionStateChange(window2.get());
+  EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
+  EXPECT_EQ(OcclusionState::OCCLUDED, window2->occlusion_state());
 }
 
 class OverviewVirtualKeyboardTest : public WindowSelectorControllerTest {

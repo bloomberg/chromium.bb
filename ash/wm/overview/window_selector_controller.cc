@@ -252,7 +252,8 @@ class WindowSelectorController::OverviewBlurController
 };
 
 WindowSelectorController::WindowSelectorController()
-    : overview_blur_controller_(std::make_unique<OverviewBlurController>()),
+    : occlusion_pause_duration_for_end_ms_(kOcclusionPauseDurationForEndMs),
+      overview_blur_controller_(std::make_unique<OverviewBlurController>()),
       weak_ptr_factory_(this) {
   Shell::Get()->activation_client()->AddObserver(this);
 }
@@ -396,7 +397,7 @@ void WindowSelectorController::OnEndingAnimationComplete(bool canceled) {
       &WindowSelectorController::ResetPauser, weak_ptr_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, reset_pauser_task_.callback(),
-      base::TimeDelta::FromMilliseconds(kOcclusionPauseDurationForEndMs));
+      base::TimeDelta::FromMilliseconds(occlusion_pause_duration_for_end_ms_));
 }
 
 void WindowSelectorController::ResetPauser() {
@@ -539,6 +540,13 @@ WindowSelectorController::GetWindowsListInOverviewGridsForTesting() {
 void WindowSelectorController::OnSelectionEnded() {
   if (is_shutting_down_)
     return;
+
+  if (!occlusion_tracker_pauser_) {
+    reset_pauser_task_.Cancel();
+    occlusion_tracker_pauser_ =
+        std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
+            Shell::Get()->aura_env());
+  }
 
   if (!start_animations_.empty())
     OnStartingAnimationComplete(/*canceled=*/true);
