@@ -220,7 +220,7 @@ bool RunOpenFileDialog(HWND owner,
   if (FAILED(selected_items->GetCount(&result_count)))
     return false;
 
-  DCHECK(result_count == 1 || (dialog_options & FOS_ALLOWMULTISELECT) == 0);
+  DCHECK(result_count == 1 || (dialog_options & FOS_ALLOWMULTISELECT));
 
   std::vector<base::FilePath> result(result_count);
   for (DWORD i = 0; i < result_count; ++i) {
