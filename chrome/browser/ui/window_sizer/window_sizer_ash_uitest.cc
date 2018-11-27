@@ -28,14 +28,13 @@
 
 namespace {
 
-// Get the bounds of the browser shortcut item in the root window space.
-gfx::Rect GetChromeIconBoundsForRootWindow(aura::Window* root) {
+// Get the bounds of the browser shortcut item in screen space.
+gfx::Rect GetChromeIconBoundsInScreen(aura::Window* root) {
   ash::ShelfView* shelf_view =
       ash::Shelf::ForWindow(root)->GetShelfViewForTesting();
   const views::ViewModel* view_model = shelf_view->view_model_for_test();
   EXPECT_EQ(3, view_model->view_size());
   gfx::Rect bounds = view_model->view_at(2)->GetBoundsInScreen();
-  wm::ConvertRectFromScreen(root, &bounds);
   return bounds;
 }
 
@@ -45,13 +44,13 @@ void EnsureShelfInitialization() {
   ash::ShelfView* shelf_view =
       ash::Shelf::ForWindow(root)->GetShelfViewForTesting();
   ash::ShelfViewTestAPI(shelf_view).RunMessageLoopUntilAnimationsDone();
-  ASSERT_GT(GetChromeIconBoundsForRootWindow(root).height(), 0);
+  ASSERT_GT(GetChromeIconBoundsInScreen(root).height(), 0);
 }
 
 // Launch a new browser window by left-clicking the browser shortcut item.
 void OpenBrowserUsingShelfOnRootWindow(aura::Window* root) {
   ui::test::EventGenerator generator(root);
-  gfx::Point center = GetChromeIconBoundsForRootWindow(root).CenterPoint();
+  gfx::Point center = GetChromeIconBoundsInScreen(root).CenterPoint();
   generator.MoveMouseTo(center);
   generator.ClickLeftButton();
   // Ash notifies Chrome that the browser shortcut item was selected.
@@ -63,7 +62,7 @@ void OpenBrowserUsingShelfOnRootWindow(aura::Window* root) {
 // Launch a new browser window by clicking the "New window" context menu item.
 void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root) {
   ui::test::EventGenerator generator(root);
-  gfx::Point chrome_icon = GetChromeIconBoundsForRootWindow(root).CenterPoint();
+  gfx::Point chrome_icon = GetChromeIconBoundsInScreen(root).CenterPoint();
   generator.MoveMouseTo(chrome_icon);
   generator.PressRightButton();
 
