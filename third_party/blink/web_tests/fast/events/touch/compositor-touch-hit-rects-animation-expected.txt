@@ -1,10 +1,10 @@
 This test verifies the hit test regions are updated correctly when composited layer are created and destroyed without triggering layout update during fast path animation.
 
-[object HTMLDivElement]: #document scrolling (200, 200, 50, 50)
+[object HTMLDivElement]: layer(0,0 800x600) has hit test rect (200,200 50x50)
 
-[object HTMLDivElement]: DIV#box (0, 0, 50, 50)
+[object HTMLDivElement]: layer(200,200 50x50) has hit test rect (0,0 50x50)
 
-[object HTMLDivElement]: #document scrolling (175, 175, 100, 100)
+[object HTMLDivElement]: layer(0,0 800x600) has hit test rect (175,175 100x100)
 
 
 PASS successfullyParsed is true

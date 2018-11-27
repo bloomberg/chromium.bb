@@ -64,7 +64,7 @@ class HTMLSelectElement;
 class HTMLVideoElement;
 class InternalRuntimeFlags;
 class InternalSettings;
-class LayerRectList;
+class HitTestLayerRectList;
 class LocalDOMWindow;
 class LocalFrame;
 class Location;
@@ -285,7 +285,7 @@ class Internals final : public ScriptWrappable {
   unsigned touchEndOrCancelEventHandlerCount(Document*) const;
   unsigned pointerEventHandlerCount(Document*) const;
 
-  LayerRectList* touchEventTargetLayerRects(Document*, ExceptionState&);
+  HitTestLayerRectList* touchEventTargetLayerRects(Document*, ExceptionState&);
 
   bool executeCommand(Document*,
                       const String& name,

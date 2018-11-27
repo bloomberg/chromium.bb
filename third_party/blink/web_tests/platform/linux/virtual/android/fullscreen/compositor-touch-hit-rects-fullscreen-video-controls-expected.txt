@@ -4,8 +4,7 @@ Should have single rect on document before fullscreen
 handler: layer(0,0 800x600) has hit test rect (0,0 800x600)
 
 EVENT(webkitfullscreenchange)
-Should keep rect on document
-handler: layer(0,0 800x600) has hit test rect (0,0 800x600)
+Should report no rect or another rect which is not on the document
 handler: layer(0,0 800x600) has hit test rect (0,0 800x600)
 handler: layer(0,0 800x600) has hit test rect (0,0 800x600)
 

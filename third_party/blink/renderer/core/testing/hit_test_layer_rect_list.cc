@@ -28,16 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface LayerRect {
-    /* The node that most closely represents the layer in which the rect
-       occurs.  When a layer doesn't correspond directly to a node (eg.
-       for layer squashing) this will the node representing an ancestor
-       layer. */
-    readonly attribute Node layerAssociatedNode;
-    readonly attribute DOMString layerType;
-    /* Offset of the associated node from the GraphicsLayer */
-    readonly attribute long associatedNodeOffsetX;
-    readonly attribute long associatedNodeOffsetY;
-    /* Rectange in the GraphicsLayer co-ordinate space */
-    readonly attribute DOMRectReadOnly layerRelativeRect;
-};
+#include "third_party/blink/renderer/core/testing/hit_test_layer_rect_list.h"
+
+#include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
+#include "third_party/blink/renderer/core/testing/hit_test_layer_rect.h"
+
+namespace blink {
+
+HitTestLayerRectList::HitTestLayerRectList() = default;
+
+unsigned HitTestLayerRectList::length() const {
+  return list_.size();
+}
+
+HitTestLayerRect* HitTestLayerRectList::item(unsigned index) {
+  if (index >= list_.size())
+    return nullptr;
+
+  return list_[index].Get();
+}
+
+void HitTestLayerRectList::Append(DOMRectReadOnly* layer_rect,
+                                  DOMRectReadOnly* hit_test_rect) {
+  list_.push_back(HitTestLayerRect::Create(layer_rect, hit_test_rect));
+}
+
+void HitTestLayerRectList::Trace(blink::Visitor* visitor) {
+  visitor->Trace(list_);
+  ScriptWrappable::Trace(visitor);
+}
+
+}  // namespace blink

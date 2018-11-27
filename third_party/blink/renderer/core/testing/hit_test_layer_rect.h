@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_LAYER_RECT_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_LAYER_RECT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_HIT_TEST_LAYER_RECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_HIT_TEST_LAYER_RECT_H_
 
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
@@ -39,50 +39,34 @@
 
 namespace blink {
 
-class LayerRect final : public ScriptWrappable {
+// TODO(pdr): This is used for dumping touch_action_region for a given layer. It
+// would be useful to have the associated TouchAction for each HitTestLayerRect.
+class HitTestLayerRect final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static LayerRect* Create(Node* node,
-                           const String& layer_type,
-                           int node_offset_x,
-                           int node_offset_y,
-                           DOMRectReadOnly* rect) {
-    return MakeGarbageCollected<LayerRect>(node, layer_type, node_offset_x,
-                                           node_offset_y, rect);
+  static HitTestLayerRect* Create(DOMRectReadOnly* layer_rect,
+                                  DOMRectReadOnly* hit_test_rect) {
+    return MakeGarbageCollected<HitTestLayerRect>(layer_rect, hit_test_rect);
   }
 
-  LayerRect(Node* node,
-            const String& layer_name,
-            int node_offset_x,
-            int node_offset_y,
-            DOMRectReadOnly* rect)
-      : layer_associated_node_(node),
-        layer_type_(layer_name),
-        associated_node_offset_x_(node_offset_x),
-        associated_node_offset_y_(node_offset_y),
-        rect_(rect) {}
+  HitTestLayerRect(DOMRectReadOnly* layer_rect, DOMRectReadOnly* hit_test_rect)
+      : layer_rect_(layer_rect), hit_test_rect_(hit_test_rect) {}
 
-  Node* layerAssociatedNode() const { return layer_associated_node_.Get(); }
-  String layerType() const { return layer_type_; }
-  int associatedNodeOffsetX() const { return associated_node_offset_x_; }
-  int associatedNodeOffsetY() const { return associated_node_offset_y_; }
-  DOMRectReadOnly* layerRelativeRect() const { return rect_.Get(); }
+  DOMRectReadOnly* layerRect() const { return layer_rect_.Get(); }
+  DOMRectReadOnly* hitTestRect() const { return hit_test_rect_.Get(); }
 
   void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(layer_associated_node_);
-    visitor->Trace(rect_);
+    visitor->Trace(layer_rect_);
+    visitor->Trace(hit_test_rect_);
     ScriptWrappable::Trace(visitor);
   }
 
  private:
-  Member<Node> layer_associated_node_;
-  String layer_type_;
-  int associated_node_offset_x_;
-  int associated_node_offset_y_;
-  Member<DOMRectReadOnly> rect_;
+  Member<DOMRectReadOnly> layer_rect_;
+  Member<DOMRectReadOnly> hit_test_rect_;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_LAYER_RECT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_HIT_TEST_LAYER_RECT_H_

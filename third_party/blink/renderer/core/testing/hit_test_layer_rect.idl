@@ -28,39 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/testing/layer_rect_list.h"
-
-#include "third_party/blink/renderer/core/dom/node.h"
-#include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
-#include "third_party/blink/renderer/core/testing/layer_rect.h"
-
-namespace blink {
-
-LayerRectList::LayerRectList() = default;
-
-unsigned LayerRectList::length() const {
-  return list_.size();
-}
-
-LayerRect* LayerRectList::item(unsigned index) {
-  if (index >= list_.size())
-    return nullptr;
-
-  return list_[index].Get();
-}
-
-void LayerRectList::Append(Node* layer_root_node,
-                           const String& layer_type,
-                           int layer_offset_x,
-                           int layer_offset_y,
-                           DOMRectReadOnly* layer_relative_rect) {
-  list_.push_back(LayerRect::Create(layer_root_node, layer_type, layer_offset_x,
-                                    layer_offset_y, layer_relative_rect));
-}
-
-void LayerRectList::Trace(blink::Visitor* visitor) {
-  visitor->Trace(list_);
-  ScriptWrappable::Trace(visitor);
-}
-
-}  // namespace blink
+/* Stores information about a hit test rect relative to a layer. */
+/* TODO(pdr): This is used for dumping touch_action_region. It would be useful
+ * to have the associated touch action for each HitTestLayerRect. */
+interface HitTestLayerRect {
+    readonly attribute DOMRectReadOnly layerRect;
+    readonly attribute DOMRectReadOnly hitTestRect;
+};
