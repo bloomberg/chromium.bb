@@ -731,36 +731,6 @@ html[dir=rtl] #attribution,
   opacity: 0;
 }
 
-.ripple-container {
-  height: 100%;
-  left: 0;
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  z-index: 100;
-}
-
-.ripple-effect-mask {
-  height: 0;
-  left: 0;
-  overflow: hidden;
-  position: absolute;
-  top: 0;
-  width: 0;
-}
-
-.ripple-effect {
-  background-color: rgba(26, 115, 232, 0.1);
-  border-radius: 50%;
-  height: 1px;
-  pointer-events: none;
-  transition: width, height, margin, background-color 400ms 250ms;
-  transition-duration: 400ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  width: 1px;
-}
-
 /* The box containing the slider */
 .switch {
   background-color: #fff;

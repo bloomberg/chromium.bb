@@ -100,12 +100,15 @@ const struct Resource{
     {"voice.js", IDR_LOCAL_NTP_VOICE_JS, "application/javascript"},
     {"custom-backgrounds.js", IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_JS,
      "application/javascript"},
+    {"animations.js", IDR_LOCAL_NTP_ANIMATIONS_JS, "application/javascript"},
+    {"utils.js", IDR_LOCAL_NTP_UTILS_JS, "application/javascript"},
     {kConfigDataFilename, kLocalResource, "application/javascript"},
     {kThemeCSSFilename, kLocalResource, "text/css"},
     {"local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css"},
     {"voice.css", IDR_LOCAL_NTP_VOICE_CSS, "text/css"},
     {"custom-backgrounds.css", IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_CSS,
      "text/css"},
+    {"animations.css", IDR_LOCAL_NTP_ANIMATIONS_CSS, "text/css"},
     {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
     {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
     {kNtpBackgroundCollectionScriptFilename, kLocalResource, "text/javascript"},
@@ -855,6 +858,16 @@ void LocalNtpSource::StartDataRequest(
                                            "{{LOCAL_NTP_CUSTOM_BG_INTEGRITY}}",
                                            local_ntp_custom_bg_integrity);
 
+    std::string utils_integrity =
+        base::StringPrintf(kIntegrityFormat, UTILS_JS_INTEGRITY);
+    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{UTILS_INTEGRITY}}",
+                                           utils_integrity);
+
+    std::string animations_integrity =
+        base::StringPrintf(kIntegrityFormat, ANIMATIONS_JS_INTEGRITY);
+    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{ANIMATIONS_INTEGRITY}}",
+                                           animations_integrity);
+
     std::string config_data_integrity = base::StringPrintf(
         kIntegrityFormat,
         search_config_provider_->config_data_integrity().c_str());
@@ -952,9 +965,10 @@ std::string LocalNtpSource::GetContentSecurityPolicy() const {
   // 'strict-dynamic' allows those scripts to load dependencies not listed here.
   std::string script_src_csp = base::StringPrintf(
       "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s' 'sha256-%s' "
-      "'sha256-%s';",
+      "'sha256-%s' 'sha256-%s' 'sha256-%s';",
       LOCAL_NTP_JS_INTEGRITY, VOICE_JS_INTEGRITY,
-      CUSTOM_BACKGROUNDS_JS_INTEGRITY,
+      CUSTOM_BACKGROUNDS_JS_INTEGRITY, UTILS_JS_INTEGRITY,
+      ANIMATIONS_JS_INTEGRITY,
       search_config_provider_->config_data_integrity().c_str());
 
   return GetContentSecurityPolicyObjectSrc() +

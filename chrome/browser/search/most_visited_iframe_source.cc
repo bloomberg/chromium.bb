@@ -35,6 +35,11 @@ const char kEditJSPath[] = "/edit.js";
 const char kAddSvgPath[] = "/add_link.svg";
 const char kEditMenuSvgPath[] = "/edit_menu.svg";
 
+// Used in the single-iframe version and the edit custom links dialog iframe.
+const char kAnimationsCSSPath[] = "/animations.css";
+const char kAnimationsJSPath[] = "/animations.js";
+const char kLocalNTPUtilsJSPath[] = "/utils.js";
+
 }  // namespace
 
 MostVisitedIframeSource::MostVisitedIframeSource() = default;
@@ -96,6 +101,12 @@ void MostVisitedIframeSource::StartDataRequest(
     SendResource(IDR_CUSTOM_LINKS_ADD_SVG, callback);
   } else if (path == kEditMenuSvgPath) {
     SendResource(IDR_CUSTOM_LINKS_EDIT_MENU_SVG, callback);
+  } else if (path == kAnimationsCSSPath) {
+    SendResource(IDR_LOCAL_NTP_ANIMATIONS_CSS, callback);
+  } else if (path == kAnimationsJSPath) {
+    SendResource(IDR_LOCAL_NTP_ANIMATIONS_JS, callback);
+  } else if (path == kLocalNTPUtilsJSPath) {
+    SendResource(IDR_LOCAL_NTP_UTILS_JS, callback);
   } else {
     callback.Run(nullptr);
   }
@@ -107,5 +118,6 @@ bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
          path == kTitleCSSPath || path == kTitleJSPath || path == kUtilJSPath ||
          path == kCommonCSSPath || path == kEditHTMLPath ||
          path == kEditCSSPath || path == kEditJSPath || path == kAddSvgPath ||
-         path == kEditMenuSvgPath;
+         path == kEditMenuSvgPath || path == kAnimationsCSSPath ||
+         path == kAnimationsJSPath || path == kLocalNTPUtilsJSPath;
 }

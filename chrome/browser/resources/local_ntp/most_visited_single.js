@@ -8,17 +8,6 @@
 
 
 /**
- * Alias for document.getElementById.
- * @param {string} id The ID of the element to find.
- * @return {HTMLElement} The found element or null if not found.
- */
-function $(id) {
-  // eslint-disable-next-line no-restricted-properties
-  return document.getElementById(id);
-}
-
-
-/**
  * Enum for key codes.
  * @enum {int}
  * @const
@@ -670,22 +659,6 @@ var isSchemeAllowed = function(url) {
 
 
 /**
- * Disables the focus outline for |element| on mousedown.
- * @param {Element} element The element to remove the focus outline from.
- */
-function disableOutlineOnMouseClick(element) {
-  element.addEventListener('mousedown', (event) => {
-    element.classList.add('mouse-navigation');
-    let resetOutline = (event) => {
-      element.classList.remove('mouse-navigation');
-      element.removeEventListener('blur', resetOutline);
-    };
-    element.addEventListener('blur', resetOutline);
-  });
-}
-
-
-/**
  * Renders a MostVisited tile to the DOM.
  * @param {object} data Object containing rid, url, title, favicon, thumbnail,
  *     and optionally isAddButton. isAddButton is true if you want to construct
@@ -916,7 +889,7 @@ function renderMaterialDesignTile(data) {
           .focus();
     }
   });
-  disableOutlineOnMouseClick(mdTile);
+  utils.disableOutlineOnMouseClick(mdTile);
 
   let mdTileInner = document.createElement('div');
   mdTileInner.className = CLASSES.MD_TILE_INNER;
@@ -1031,7 +1004,7 @@ function renderMaterialDesignTile(data) {
     mdMenu.addEventListener('keydown', function(ev) {
       event.stopPropagation();
     });
-    disableOutlineOnMouseClick(mdMenu);
+    utils.disableOutlineOnMouseClick(mdMenu);
 
     mdTileContainer.appendChild(mdMenu);
   }

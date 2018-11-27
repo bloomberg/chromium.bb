@@ -194,16 +194,6 @@ customBackgrounds.showErrorNotification;
 customBackgrounds.hideCustomLinkNotification;
 
 /**
- * Alias for document.getElementById.
- * @param {string} id The ID of the element to find.
- * @return {HTMLElement} The found element or null if not found.
- */
-function $(id) {
-  // eslint-disable-next-line no-restricted-properties
-  return document.getElementById(id);
-}
-
-/**
  * Sets the visibility of the settings menu and individual options depending on
  * their respective features.
  */
