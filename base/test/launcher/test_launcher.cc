@@ -325,9 +325,15 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 #elif defined(OS_FUCHSIA)
   DCHECK(!new_options.job_handle);
 
-  // Set the clone policy.
-  new_options.spawn_flags = FDIO_SPAWN_CLONE_STDIO | FDIO_SPAWN_CLONE_JOB |
-                            FDIO_SPAWN_CLONE_NAMESPACE;
+  // Set the clone policy, deliberately omitting FDIO_SPAWN_CLONE_NAMESPACE so
+  // that we can install a different /data.
+  new_options.spawn_flags = FDIO_SPAWN_CLONE_STDIO | FDIO_SPAWN_CLONE_JOB;
+  new_options.paths_to_clone.push_back(base::FilePath("/config/ssl"));
+  new_options.paths_to_clone.push_back(base::FilePath("/dev/null"));
+  new_options.paths_to_clone.push_back(base::FilePath("/dev/zero"));
+  new_options.paths_to_clone.push_back(base::FilePath("/pkg"));
+  new_options.paths_to_clone.push_back(base::FilePath("/svc"));
+  new_options.paths_to_clone.push_back(base::FilePath("/tmp"));
 
   zx::job job_handle;
   zx_status_t result = zx::job::create(*GetDefaultJob(), 0, &job_handle);
