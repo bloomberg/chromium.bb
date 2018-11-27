@@ -44,17 +44,21 @@ class Orderfile(unittest.TestCase):
   def testTestingVariationStories(self):
     training = set([s.NAME for s in orderfile.OrderfileStorySet(
         orderfile.OrderfileStorySet.TRAINING, num_training=25,
-        num_variations=4, test_variation=0).RunSetStories()])
+        num_variations=orderfile.OrderfileStorySet.NUM_VARIATION_BENCHMARKS,
+        test_variation=0).RunSetStories()])
     testing = [set([s.NAME for s in orderfile.OrderfileStorySet(
         orderfile.OrderfileStorySet.TESTING, num_training=25,
-        num_variations=4, test_variation=i).RunSetStories()])
-               for i in xrange(4)]
+        num_variations=orderfile.OrderfileStorySet.NUM_VARIATION_BENCHMARKS,
+        test_variation=i).RunSetStories()])
+               for i in xrange(
+                   orderfile.OrderfileStorySet.NUM_VARIATION_BENCHMARKS)]
     self.assertEqual(25, len(training))
-    for i in xrange(4):
+    for i in xrange(orderfile.OrderfileStorySet.NUM_VARIATION_BENCHMARKS):
       self.assertEqual(orderfile.OrderfileStorySet.DEFAULT_TESTING,
                        len(testing[i]))
       self.assertEqual(0, len(testing[i] & training))
-      for j in xrange(i + 1, 4):
+      for j in xrange(i + 1,
+                      orderfile.OrderfileStorySet.NUM_VARIATION_BENCHMARKS):
         self.assertEqual(0, len(testing[i] & testing[j]))
 
 
