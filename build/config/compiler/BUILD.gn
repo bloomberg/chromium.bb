@@ -2257,7 +2257,16 @@ config("symbols") {
         # [1] crrev.com/a81d5ade0b043208e06ad71a38bcf9c348a1a52f
         cflags += [ "-gdwarf-3" ]
       }
-      cflags += [ "-g2" ]
+
+      # The gcc-based nacl compilers don't support -fdebug-compilation-dir (see
+      # elsewhere in this file), so they can't have build-dir-independent output.
+      # Disable symbols for nacl object files to get deterministic,
+      # build-directory-independent output. pnacl and nacl-clang do support that
+      # flag, so we can use use -g1 for pnacl and nacl-clang compiles.
+      # gcc nacl is is_nacl && !is_clang, pnacl and nacl-clang are && is_clang.
+      if (!is_nacl || is_clang) {
+        cflags += [ "-g2" ]
+      }
     }
     if (use_debug_fission && !is_nacl && !is_android) {
       # NOTE: Some Chrome OS builds globally set |use_debug_fission| to true,
@@ -2317,7 +2326,16 @@ config("minimal_symbols") {
       # TODO(thakis): Remove this again once dump_syms is fixed.
       cflags += [ "-gdwarf-3" ]
     }
-    cflags += [ "-g1" ]
+
+    # The gcc-based nacl compilers don't support -fdebug-compilation-dir (see
+    # elsewhere in this file), so they can't have build-dir-independent output.
+    # Disable symbols for nacl object files to get deterministic,
+    # build-directory-independent output. pnacl and nacl-clang do support that
+    # flag, so we can use use -g1 for pnacl and nacl-clang compiles.
+    # gcc nacl is is_nacl && !is_clang, pnacl and nacl-clang are && is_clang.
+    if (!is_nacl || is_clang) {
+      cflags += [ "-g1" ]
+    }
     ldflags = []
     if (is_android && is_clang) {
       # Android defaults to symbol_level=1 builds in production builds
