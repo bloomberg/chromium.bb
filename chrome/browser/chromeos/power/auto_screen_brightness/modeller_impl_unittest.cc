@@ -101,7 +101,14 @@ class FakeTrainer : public Trainer {
       const std::vector<TrainingDataPoint>& data) override {
     DCHECK(is_configured_);
     DCHECK(current_curve_);
-    current_curve_.emplace(CreateTestCurveFromTrainingData(data));
+    std::vector<TrainingDataPoint> used_data = data;
+
+    // We need at least 2 points to create a MonotoneCubicSpline. Hence we
+    // insert another one if |data| has only 1 point.
+    if (data.size() == 1) {
+      used_data.push_back(data[0]);
+    }
+    current_curve_.emplace(CreateTestCurveFromTrainingData(used_data));
     return *current_curve_;
   }
 
@@ -408,8 +415,8 @@ TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
 }
 
 // User brightness changes are received, training example cache reaches
-// |kMaxTrainingDataPoints| to trigger early training. This all happens within a
-// small window shorter than |kTrainingDelay|.
+// |max_training_data_points_| to trigger early training. This all happens
+// within a small window shorter than |training_delay_|.
 TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
 
@@ -418,7 +425,9 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
                               base::nullopt /* personal_curve */);
 
   std::vector<TrainingDataPoint> expected_data;
-  for (size_t i = 0; i < ModellerImpl::kMaxTrainingDataPoints - 1; ++i) {
+
+  for (size_t i = 0; i < modeller_->GetMaxTrainingDataPointsForTesting() - 1;
+       ++i) {
     EXPECT_EQ(i, modeller_->NumberTrainingDataPointsForTesting());
     scoped_task_environment_.FastForwardBy(
         base::TimeDelta::FromMilliseconds(1));
@@ -435,7 +444,7 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
   }
 
   // Training should not have started.
-  EXPECT_EQ(ModellerImpl::kMaxTrainingDataPoints - 1,
+  EXPECT_EQ(modeller_->GetMaxTrainingDataPointsForTesting() - 1,
             modeller_->NumberTrainingDataPointsForTesting());
 
   // Add one more data point to trigger the training early.
@@ -471,7 +480,7 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
 
   fake_als_reader_.ReportAmbientLightUpdate(30);
   std::vector<TrainingDataPoint> expected_data;
-  for (size_t i = 0; i < ModellerImpl::kMinTrainingDataPoints; ++i) {
+  for (size_t i = 0; i < 10; ++i) {
     EXPECT_EQ(i, modeller_->NumberTrainingDataPointsForTesting());
     scoped_task_environment_.FastForwardBy(
         base::TimeDelta::FromMilliseconds(1));
@@ -487,33 +496,31 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
          ConvertToLog(modeller_->AverageAmbientForTesting()), now});
   }
 
-  EXPECT_EQ(ModellerImpl::kMinTrainingDataPoints,
-            modeller_->NumberTrainingDataPointsForTesting());
+  EXPECT_EQ(modeller_->NumberTrainingDataPointsForTesting(), 10u);
 
-  scoped_task_environment_.FastForwardBy(ModellerImpl::kTrainingDelay -
-                                         base::TimeDelta::FromSeconds(10));
+  scoped_task_environment_.FastForwardBy(
+      modeller_->GetTrainingDelayForTesting() / 2);
   // A user activity is received, timer should be reset.
   const ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(0, 0),
                                    gfx::Point(0, 0), base::TimeTicks(), 0, 0);
   modeller_->OnUserActivity(&mouse_event);
 
-  scoped_task_environment_.FastForwardBy(ModellerImpl::kTrainingDelay -
-                                         base::TimeDelta::FromSeconds(2));
-  EXPECT_EQ(ModellerImpl::kMinTrainingDataPoints,
-            modeller_->NumberTrainingDataPointsForTesting());
+  scoped_task_environment_.FastForwardBy(
+      modeller_->GetTrainingDelayForTesting() / 3);
+  EXPECT_EQ(modeller_->NumberTrainingDataPointsForTesting(), 10u);
 
   // Another user event is received.
   modeller_->OnUserActivity(&mouse_event);
 
-  // After |kTrainingDelay| - 2 seconds, no training has started.
-  scoped_task_environment_.FastForwardBy(ModellerImpl::kTrainingDelay -
-                                         base::TimeDelta::FromSeconds(2));
+  // After |training_delay_|/2, no training has started.
+  scoped_task_environment_.FastForwardBy(
+      modeller_->GetTrainingDelayForTesting() / 2);
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(ModellerImpl::kMinTrainingDataPoints,
-            modeller_->NumberTrainingDataPointsForTesting());
+  EXPECT_EQ(modeller_->NumberTrainingDataPointsForTesting(), 10u);
 
-  // After another 2 seconds, training is scheduled.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
+  // After another |training_delay_|/2, training is scheduled.
+  scoped_task_environment_.FastForwardBy(
+      modeller_->GetTrainingDelayForTesting() / 2);
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(0u, modeller_->NumberTrainingDataPointsForTesting());
@@ -524,27 +531,6 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
   const MonotoneCubicSpline expected_curve =
       CreateTestCurveFromTrainingData(expected_data);
   EXPECT_EQ(expected_curve, *result_curve);
-}
-
-// No training is done because number of training data points is less than
-// |kMinTrainingDataPoints|.
-TEST_F(ModellerImplTest, MinTrainingDataPointsRequired) {
-  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
-
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              modeller_->GetGlobalCurveForTesting(),
-                              base::nullopt /* personal_curve */);
-
-  fake_als_reader_.ReportAmbientLightUpdate(30);
-  modeller_->OnUserBrightnessChanged(10, 20);
-
-  // No training is done because we have too few training data points.
-  scoped_task_environment_.FastForwardBy(ModellerImpl::kTrainingDelay +
-                                         base::TimeDelta::FromSeconds(10));
-  scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(1u, modeller_->NumberTrainingDataPointsForTesting());
-
-  EXPECT_FALSE(test_observer_->trained_curve_received());
 }
 
 // Global curve specified by valid experiment parameter.
@@ -583,6 +569,32 @@ TEST_F(ModellerImplTest, GlobaCurveFromInvalidExperimentParam) {
   test_observer_->CheckStatus(true /* is_model_initialized */,
                               expected_global_curve,
                               base::nullopt /* personal_curve */);
+}
+
+// Training delay is 0, hence we train as soon as we have 1 data point.
+TEST_F(ModellerImplTest, ZeroTrainingDelay) {
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kAutoScreenBrightness, {
+                                           {"training_delay_in_seconds", "0"},
+                                       });
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              modeller_->GetGlobalCurveForTesting(),
+                              base::nullopt /* personal_curve */);
+
+  fake_als_reader_.ReportAmbientLightUpdate(30);
+  const ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(0, 0),
+                                   gfx::Point(0, 0), base::TimeTicks(), 0, 0);
+  modeller_->OnUserActivity(&mouse_event);
+
+  modeller_->OnUserBrightnessChanged(10, 20);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(0u, modeller_->NumberTrainingDataPointsForTesting());
+  EXPECT_TRUE(test_observer_->trained_curve_received());
 }
 
 }  // namespace auto_screen_brightness

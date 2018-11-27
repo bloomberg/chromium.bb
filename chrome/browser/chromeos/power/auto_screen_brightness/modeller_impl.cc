@@ -116,9 +116,6 @@ bool SetInitialCurves(Trainer* trainer,
 
 }  // namespace
 
-constexpr base::TimeDelta ModellerImpl::kTrainingDelay;
-constexpr size_t ModellerImpl::kMaxTrainingDataPoints;
-constexpr size_t ModellerImpl::kMinTrainingDataPoints;
 constexpr int ModellerImpl::kAmbientLightHorizonSeconds;
 constexpr base::TimeDelta ModellerImpl::kAmbientLightHorizon;
 constexpr int ModellerImpl::kNumberAmbientValuesToTrack;
@@ -200,10 +197,7 @@ void ModellerImpl::OnUserBrightnessChanged(double old_brightness_percent,
                          ConvertToLog(average_ambient_lux),
                          tick_clock_->NowTicks()});
 
-  if (data_cache_.size() == kMaxTrainingDataPoints) {
-    model_timer_.Stop();
-    StartTraining();
-  }
+  ScheduleTrainerStart();
 }
 
 void ModellerImpl::OnUserBrightnessChangeRequested() {}
@@ -242,6 +236,14 @@ size_t ModellerImpl::NumberTrainingDataPointsForTesting() const {
 MonotoneCubicSpline ModellerImpl::GetGlobalCurveForTesting() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return global_curve_;
+}
+
+size_t ModellerImpl::GetMaxTrainingDataPointsForTesting() const {
+  return max_training_data_points_;
+}
+
+base::TimeDelta ModellerImpl::GetTrainingDelayForTesting() const {
+  return training_delay_;
 }
 
 base::FilePath ModellerImpl::GetCurvePathFromProfile(const Profile* profile) {
@@ -305,6 +307,19 @@ ModellerImpl::ModellerImpl(
   als_reader_observer_.Add(als_reader);
   brightness_monitor_observer_.Add(brightness_monitor);
   user_activity_observer_.Add(user_activity_detector);
+
+  const int max_training_data_points = GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "max_training_data_points", -1);
+  if (max_training_data_points > 0) {
+    max_training_data_points_ = max_training_data_points;
+  }
+
+  const int training_delay_in_seconds = GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "training_delay_in_seconds",
+      training_delay_.InSeconds());
+  if (training_delay_in_seconds >= 0) {
+    training_delay_ = base::TimeDelta::FromSeconds(training_delay_in_seconds);
+  }
 }
 
 
@@ -398,20 +413,31 @@ void ModellerImpl::OnSetInitialCurves(
   is_modeller_enabled_ = true;
   OnInitializationComplete();
 
+  // We may have received a brightness change as a training example before the
+  // model is set up. Call |ScheduleTrainerStart| to prepare training.
   ScheduleTrainerStart();
 }
 
 void ModellerImpl::ScheduleTrainerStart() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!is_modeller_enabled_.has_value() || !*is_modeller_enabled_)
+    return;
+
+  if (data_cache_.size() >= max_training_data_points_ ||
+      training_delay_.is_zero()) {
+    model_timer_.Stop();
+    StartTraining();
+    return;
+  }
+
   // Reset the timer if it's already running.
-  model_timer_.Start(FROM_HERE, kTrainingDelay, this,
+  model_timer_.Start(FROM_HERE, training_delay_, this,
                      &ModellerImpl::StartTraining);
 }
 
 void ModellerImpl::StartTraining() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (data_cache_.size() < kMinTrainingDataPoints) {
-    ScheduleTrainerStart();
+  if (data_cache_.empty()) {
     return;
   }
 
@@ -434,8 +460,6 @@ void ModellerImpl::OnTrainingFinished(const MonotoneCubicSpline& curve) {
       base::BindOnce(&SaveCurveToDisk, curve_path_, curve, is_testing_),
       base::BindOnce(&ModellerImpl::OnCurveSavedToDisk,
                      weak_ptr_factory_.GetWeakPtr()));
-
-  ScheduleTrainerStart();
 }
 
 }  // namespace auto_screen_brightness
