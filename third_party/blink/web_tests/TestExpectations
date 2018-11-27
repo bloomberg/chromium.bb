@@ -2874,7 +2874,6 @@ crbug.com/875622 external/wpt/css/css-animations/AnimationEffect-getComputedTimi
 crbug.com/875622 external/wpt/css/css-transitions/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
 crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Pass Failure Timeout ]
 
-crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
