@@ -37,7 +37,7 @@
 @interface FormInputAccessoryMediator () <FormActivityObserver,
                                           FormInputAccessoryViewDelegate,
                                           CRWWebStateObserver,
-                                          KeyboardObserverHelperDelegate,
+                                          KeyboardObserverHelperConsumer,
                                           WebStateListObserving>
 
 // The JS manager for interacting with the underlying form.
@@ -140,12 +140,8 @@
                       selector:@selector(handleTextInputDidEndEditing:)
                           name:UITextFieldTextDidEndEditingNotification
                         object:nil];
-    [defaultCenter addObserver:self
-                      selector:@selector(handleKeyboardWillShow:)
-                          name:UIKeyboardWillShowNotification
-                        object:nil];
     _keyboardObserver = [[KeyboardObserverHelper alloc] init];
-    _keyboardObserver.delegate = self;
+    _keyboardObserver.consumer = self;
   }
   return self;
 }
@@ -174,7 +170,15 @@
   }
 }
 
-#pragma mark - KeyboardObserverHelperDelegate
+#pragma mark - KeyboardObserverHelperConsumer
+
+- (void)keyboardWillShowWithHardwareKeyboardAttached:(BOOL)isHardwareKeyboard {
+  self.hardwareKeyboard = isHardwareKeyboard;
+  if (self.lastSuggestions) {
+    [self updateWithProvider:self.lastProvider
+                 suggestions:self.lastSuggestions];
+  }
+}
 
 - (void)keyboardDidStayOnScreen {
   [self.consumer removeAnimationsOnKeyboardView];
@@ -449,20 +453,6 @@ queryViewBlockForProvider:(id<FormInputSuggestionsProvider>)provider
 }
 
 #pragma mark - Keyboard Notifications
-
-// When the keyboard is shown, send the last suggestions to the consumer.
-- (void)handleKeyboardWillShow:(NSNotification*)notification {
-  NSDictionary* userInfo = [notification userInfo];
-  CGRect keyboardFrame =
-      [[userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-  self.hardwareKeyboard =
-      !CGRectContainsRect([UIScreen mainScreen].bounds, keyboardFrame);
-
-  if (self.lastSuggestions) {
-    [self updateWithProvider:self.lastProvider
-                 suggestions:self.lastSuggestions];
-  }
-}
 
 // When any text field or text view (e.g. omnibox, settings search bar)
 // begins editing, pause the consumer so it doesn't present the custom view over

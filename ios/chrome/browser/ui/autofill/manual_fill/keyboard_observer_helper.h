@@ -8,7 +8,13 @@
 #import <UIKit/UIKit.h>
 
 // Delegate informed about the visible/hidden state of the keyboard.
-@protocol KeyboardObserverHelperDelegate<NSObject>
+@protocol KeyboardObserverHelperConsumer <NSObject>
+
+// Indicates that |UIKeyboardWillShowNotification| was posted. And informs if a
+// physical keyboard is attached. On iPad also considers
+// |UIKeyboardDidChangeFrameNotification| since when the keyboard is not docked,
+// |UIKeyboardWillShowNotification| isn't posted.
+- (void)keyboardWillShowWithHardwareKeyboardAttached:(BOOL)isHardwareKeyboard;
 
 // Indicates that |UIKeyboardWillHideNotification| was posted but the keyboard
 // was not hidden. For example, this can happen when jumping between fields.
@@ -23,8 +29,8 @@
 // Helper to observe the keyboard and report updates.
 @interface KeyboardObserverHelper : NSObject
 
-// The delegate to inform of the keyboard state changes.
-@property(nonatomic, weak) id<KeyboardObserverHelperDelegate> delegate;
+// The consumer to inform of the keyboard state changes.
+@property(nonatomic, weak) id<KeyboardObserverHelperConsumer> consumer;
 
 @end
 

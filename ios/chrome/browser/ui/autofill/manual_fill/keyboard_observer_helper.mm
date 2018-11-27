@@ -44,6 +44,11 @@
              object:nil];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
+           selector:@selector(keyboardWillChangeFrame:)
+               name:UIKeyboardWillChangeFrameNotification
+             object:nil];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
            selector:@selector(orientationDidChange:)
                name:UIApplicationDidChangeStatusBarOrientationNotification
              object:nil];
@@ -51,15 +56,30 @@
   return self;
 }
 
+- (void)keyboardWillChangeFrame:(NSNotification*)notification {
+  // Work around UIKeyboardWillShowNotification notification not being sent in
+  // iPad on unmerged keyboards.
+  CGRect keyboardFrame = [[notification.userInfo
+      objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  if (CGRectGetMaxY(keyboardFrame) < [UIScreen mainScreen].bounds.size.height) {
+    [self.consumer keyboardWillShowWithHardwareKeyboardAttached:NO];
+  }
+}
+
 - (void)keyboardWillShow:(NSNotification*)notification {
   self.keyboardOnScreen = YES;
+  CGRect keyboardFrame = [[notification.userInfo
+      objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  BOOL hardwareKeyboard =
+      !CGRectContainsRect([UIScreen mainScreen].bounds, keyboardFrame);
+  [self.consumer keyboardWillShowWithHardwareKeyboardAttached:hardwareKeyboard];
 }
 
 - (void)keyboardWillHide:(NSNotification*)notification {
   self.keyboardOnScreen = NO;
   dispatch_async(dispatch_get_main_queue(), ^{
     if (self.keyboardOnScreen) {
-      [self.delegate keyboardDidStayOnScreen];
+      [self.consumer keyboardDidStayOnScreen];
     }
   });
 }
@@ -73,7 +93,7 @@
   }
   dispatch_async(dispatch_get_main_queue(), ^{
     if (!self.keyboardOnScreen) {
-      [self.delegate keyboardDidHide];
+      [self.consumer keyboardDidHide];
     }
   });
 }
