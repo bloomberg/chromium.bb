@@ -25,6 +25,10 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace network_session_configurator {
 
 class NetworkSessionConfiguratorTest : public testing::Test {
@@ -759,6 +763,12 @@ TEST_F(NetworkSessionConfiguratorTest, DefaultCacheBackend) {
 #if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE,
             ChooseCacheType(command_line));
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  EXPECT_EQ(
+      base::mac::IsAtLeastOS10_14()
+          ? net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE
+          : net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE,
+      ChooseCacheType(command_line));
 #else
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE,
             ChooseCacheType(command_line));

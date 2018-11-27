@@ -30,6 +30,10 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace {
 
 // Map from name to value for all parameters associate with a field trial.
@@ -655,12 +659,25 @@ net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType(
     if (opt_value.empty() || base::LowerCaseEqualsASCII(opt_value, "on"))
       return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
   }
+
   const std::string experiment_name =
       base::FieldTrialList::FindFullName("SimpleCacheTrial");
   if (base::StartsWith(experiment_name, "Disable",
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE;
   }
+
+  // Blockfile breaks on OSX 10.14 (see https://crbug.com/899874); so use
+  // SimpleCache even when we don't enable it via experiment, as long as we
+  // don't force it off (not used at this time). This unfortunately
+  // muddles the experiment data, but as this was written to be considered for
+  // backport, having it behave differently than in stable would be a bigger
+  // problem.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (base::mac::IsAtLeastOS10_14())
+    return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
   if (base::StartsWith(experiment_name, "ExperimentYes",
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
