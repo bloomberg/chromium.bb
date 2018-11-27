@@ -30,8 +30,11 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
+#include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/document_style_sheet_collector.h"
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
@@ -600,11 +603,37 @@ void StyleEngine::ClearFontCacheAndAddUserFonts() {
     resolver_->InvalidateMatchedPropertiesCache();
   }
 
+  default_font_display_map_.clear();
   // Rebuild the font cache with @font-face rules from user style sheets.
   for (unsigned i = 0; i < active_user_style_sheets_.size(); ++i) {
     DCHECK(active_user_style_sheets_[i].second);
-    AddFontFaceRules(*active_user_style_sheets_[i].second);
+    AddUserFontFaceRules(*active_user_style_sheets_[i].second);
+    for (const auto& rule :
+         active_user_style_sheets_[i].second->FontFeatureValuesRules()) {
+      AddDefaultFontDisplay(rule);
+    }
   }
+}
+
+void StyleEngine::AddDefaultFontDisplay(
+    const StyleRuleFontFeatureValues* rule) {
+  if (!rule->FontDisplay())
+    return;
+  for (const auto& family_value : rule->FontFamily()) {
+    if (family_value->IsFontFamilyValue()) {
+      default_font_display_map_.Set(
+          AtomicString(ToCSSFontFamilyValue(family_value)->Value()),
+          CSSValueToFontDisplay(rule->FontDisplay()));
+    }
+  }
+}
+
+FontDisplay StyleEngine::GetDefaultFontDisplay(
+    const AtomicString& family) const {
+  auto it = default_font_display_map_.find(family);
+  if (it == default_font_display_map_.end())
+    return kFontDisplayAuto;
+  return it->value;
 }
 
 void StyleEngine::UpdateGenericFontFamilySettings() {
@@ -1284,7 +1313,9 @@ namespace {
 enum RuleSetFlags {
   kFontFaceRules = 1 << 0,
   kKeyframesRules = 1 << 1,
-  kFullRecalcRules = 1 << 2
+  kFullRecalcRules = 1 << 2,
+  kFontFeatureValuesRules = 1 << 3,
+  kFontRules = kFontFaceRules | kFontFeatureValuesRules,
 };
 
 unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
@@ -1297,6 +1328,8 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
       flags |= kFontFaceRules;
     if (rule_set->NeedsFullRecalcForRuleSetInvalidation())
       flags |= kFullRecalcRules;
+    if (!rule_set->FontFeatureValuesRules().IsEmpty())
+      flags |= kFontFeatureValuesRules;
   }
   return flags;
 }
@@ -1363,7 +1396,7 @@ void StyleEngine::ApplyUserRuleSetChanges(
   global_rule_set_->MarkDirty();
 
   unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
-  if (changed_rule_flags & kFontFaceRules) {
+  if (changed_rule_flags & kFontRules) {
     if (ScopedStyleResolver* scoped_resolver =
             GetDocument().GetScopedStyleResolver()) {
       // User style and document scope author style shares the font cache. If
@@ -1384,7 +1417,7 @@ void StyleEngine::ApplyUserRuleSetChanges(
     for (auto* it = new_style_sheets.begin(); it != new_style_sheets.end();
          it++) {
       DCHECK(it->second);
-      AddKeyframeRules(*it->second);
+      AddUserKeyframeRules(*it->second);
     }
     ScopedStyleResolver::KeyframesRulesAdded(GetDocument());
   }
@@ -1407,7 +1440,7 @@ void StyleEngine::ApplyRuleSetChanges(
   unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
 
   bool rebuild_font_cache = change == kActiveSheetsChanged &&
-                            (changed_rule_flags & kFontFaceRules) &&
+                            (changed_rule_flags & kFontRules) &&
                             tree_scope.RootNode().IsDocumentNode();
   ScopedStyleResolver* scoped_resolver = tree_scope.GetScopedStyleResolver();
   if (scoped_resolver && scoped_resolver->NeedsAppendAllSheets()) {
@@ -1589,7 +1622,7 @@ void StyleEngine::CollectMatchingUserRules(
   }
 }
 
-void StyleEngine::AddFontFaceRules(const RuleSet& rule_set) {
+void StyleEngine::AddUserFontFaceRules(const RuleSet& rule_set) {
   if (!font_selector_)
     return;
 
@@ -1603,14 +1636,14 @@ void StyleEngine::AddFontFaceRules(const RuleSet& rule_set) {
     resolver_->InvalidateMatchedPropertiesCache();
 }
 
-void StyleEngine::AddKeyframeRules(const RuleSet& rule_set) {
+void StyleEngine::AddUserKeyframeRules(const RuleSet& rule_set) {
   const HeapVector<Member<StyleRuleKeyframes>> keyframes_rules =
       rule_set.KeyframesRules();
   for (unsigned i = 0; i < keyframes_rules.size(); ++i)
-    AddKeyframeStyle(keyframes_rules[i]);
+    AddUserKeyframeStyle(keyframes_rules[i]);
 }
 
-void StyleEngine::AddKeyframeStyle(StyleRuleKeyframes* rule) {
+void StyleEngine::AddUserKeyframeStyle(StyleRuleKeyframes* rule) {
   AtomicString animation_name(rule->GetName());
 
   if (rule->IsVendorPrefixed()) {

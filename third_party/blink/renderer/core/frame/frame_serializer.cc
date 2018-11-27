@@ -492,6 +492,7 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
     case CSSRule::kKeyframeRule:
     case CSSRule::kNamespaceRule:
     case CSSRule::kViewportRule:
+    case CSSRule::kFontFeatureValuesRule:
       break;
   }
 }

@@ -538,6 +538,7 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kFontFaceRule:
       case CSSRule::kViewportRule:
       case CSSRule::kKeyframeRule:
+      case CSSRule::kFontFeatureValuesRule:
         result->push_back(rule);
         break;
       case CSSRule::kMediaRule:

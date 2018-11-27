@@ -28,6 +28,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/font_display.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -39,15 +40,6 @@ namespace blink {
 
 class FontDescription;
 class SimpleFontData;
-
-enum FontDisplay {
-  kFontDisplayAuto,
-  kFontDisplayBlock,
-  kFontDisplaySwap,
-  kFontDisplayFallback,
-  kFontDisplayOptional,
-  kFontDisplayEnumMax
-};
 
 class CORE_EXPORT CSSFontFaceSource
     : public GarbageCollectedFinalized<CSSFontFaceSource> {

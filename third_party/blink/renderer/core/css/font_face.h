@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/font_display.h"
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptors.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -112,6 +113,9 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   FontSelectionCapabilities GetFontSelectionCapabilities() const;
   CSSFontFace* CssFontFace() { return css_font_face_.Get(); }
   size_t ApproximateBlankCharacterCount() const;
+  // Return FontDisplay using the default from @font-feature-values if not
+  // specified on this FontFace.
+  FontDisplay GetFontDisplayWithFallback() const;
 
   void Trace(blink::Visitor*) override;
 

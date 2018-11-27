@@ -81,26 +81,6 @@ const CSSValue* ParseCSSValue(const ExecutionContext* context,
                                                          *parser_context);
 }
 
-FontDisplay CSSValueToFontDisplay(const CSSValue* value) {
-  if (value && value->IsIdentifierValue()) {
-    switch (ToCSSIdentifierValue(value)->GetValueID()) {
-      case CSSValueAuto:
-        return kFontDisplayAuto;
-      case CSSValueBlock:
-        return kFontDisplayBlock;
-      case CSSValueSwap:
-        return kFontDisplaySwap;
-      case CSSValueFallback:
-        return kFontDisplayFallback;
-      case CSSValueOptional:
-        return kFontDisplayOptional;
-      default:
-        break;
-    }
-  }
-  return kFontDisplayAuto;
-}
-
 CSSFontFace* CreateCSSFontFace(FontFace* font_face,
                                const CSSValue* unicode_range) {
   Vector<UnicodeRange> ranges;
@@ -791,6 +771,15 @@ bool FontFace::HadBlankText() const {
 
 bool FontFace::HasPendingActivity() const {
   return status_ == kLoading && GetExecutionContext();
+}
+
+FontDisplay FontFace::GetFontDisplayWithFallback() const {
+  if (display_)
+    return CSSValueToFontDisplay(display_.Get());
+  ExecutionContext* context = GetExecutionContext();
+  if (!context || !context->IsDocument())
+    return kFontDisplayAuto;
+  return To<Document>(context)->GetStyleEngine().GetDefaultFontDisplay(family_);
 }
 
 }  // namespace blink

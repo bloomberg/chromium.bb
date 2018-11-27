@@ -26,6 +26,7 @@ class CSSParserTokenStream;
 class StyleRule;
 class StyleRuleBase;
 class StyleRuleCharset;
+class StyleRuleFontFeatureValues;
 class StyleRuleFontFace;
 class StyleRuleImport;
 class StyleRuleKeyframe;
@@ -60,7 +61,8 @@ class CSSParserImpl {
     kAllowNamespaceRules,
     kRegularRules,
     kKeyframeRules,
-    kNoRules,     // For parsing at-rules inside declaration lists
+    kFontFeatureRules,
+    kNoRules,  // For parsing at-rules inside declaration lists
   };
 
   // Represents the start and end offsets of a CSSParserTokenRange.
@@ -127,7 +129,12 @@ class CSSParserImpl {
       const CSSParserContext*);
 
  private:
-  enum RuleListType { kTopLevelRuleList, kRegularRuleList, kKeyframesRuleList };
+  enum RuleListType {
+    kTopLevelRuleList,
+    kRegularRuleList,
+    kKeyframesRuleList,
+    kFontFeatureRuleList,
+  };
 
   // Returns whether the first encountered rule was valid
   template <typename T>
@@ -154,6 +161,10 @@ class CSSParserImpl {
   StyleRuleFontFace* ConsumeFontFaceRule(CSSParserTokenRange prelude,
                                          const RangeOffset& prelude_offset,
                                          CSSParserTokenStream& block);
+  StyleRuleFontFeatureValues* ConsumeFontFeatureValuesRule(
+      CSSParserTokenRange prelude,
+      const RangeOffset& prelude_offset,
+      CSSParserTokenStream& block);
   StyleRuleKeyframes* ConsumeKeyframesRule(bool webkit_prefixed,
                                            CSSParserTokenRange prelude,
                                            const RangeOffset& prelude_offset,
