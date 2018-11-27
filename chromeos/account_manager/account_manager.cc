@@ -93,6 +93,12 @@ std::vector<AccountManager::AccountKey> GetAccountKeys(
 
 }  // namespace
 
+// static
+const char AccountManager::kActiveDirectoryDummyToken[] = "dummy_ad_token";
+
+// static
+const char AccountManager::kInvalidToken[] = "";
+
 class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
  public:
   GaiaTokenRevocationRequest(
@@ -289,6 +295,11 @@ void AccountManager::UpsertToken(const AccountKey& account_key,
                                  const std::string& token) {
   DCHECK_NE(init_state_, InitializationState::kNotStarted);
 
+  if (account_key.account_type ==
+      account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY) {
+    DCHECK_EQ(token, kActiveDirectoryDummyToken);
+  }
+
   base::OnceClosure closure =
       base::BindOnce(&AccountManager::UpsertTokenInternal,
                      weak_factory_.GetWeakPtr(), account_key, token);
@@ -370,7 +381,9 @@ bool AccountManager::IsTokenAvailable(const AccountKey& account_key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto it = tokens_.find(account_key);
-  return it != tokens_.end() && !it->second.empty();
+  return it != tokens_.end() && !it->second.empty() &&
+         it->second != kActiveDirectoryDummyToken &&
+         it->second != kInvalidToken;
 }
 
 void AccountManager::MaybeRevokeTokenOnServer(const AccountKey& account_key) {
