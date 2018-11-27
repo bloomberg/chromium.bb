@@ -27,23 +27,31 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     bool contains_fixed,
     const NGBoxStrut& borders_and_scrollers,
     const NGConstraintSpace& container_space,
-    const ComputedStyle& container_style)
+    const ComputedStyle& container_style,
+    base::Optional<NGLogicalSize> initial_containing_block_fixed_size)
     : container_builder_(container_builder),
       contains_absolute_(contains_absolute),
       contains_fixed_(contains_fixed) {
+  if (!container_builder->HasOutOfFlowDescendantCandidates())
+    return;
   NGPhysicalBoxStrut physical_borders = borders_and_scrollers.ConvertToPhysical(
       container_style.GetWritingMode(), container_style.Direction());
 
   default_containing_block_.style = &container_style;
-  default_containing_block_.content_size = container_builder_->Size();
-  default_containing_block_.content_size.inline_size =
-      std::max(default_containing_block_.content_size.inline_size -
+  default_containing_block_.content_size_for_absolute =
+      container_builder_->Size();
+  default_containing_block_.content_size_for_absolute.inline_size =
+      std::max(default_containing_block_.content_size_for_absolute.inline_size -
                    borders_and_scrollers.InlineSum(),
                LayoutUnit());
-  default_containing_block_.content_size.block_size =
-      std::max(default_containing_block_.content_size.block_size -
+  default_containing_block_.content_size_for_absolute.block_size =
+      std::max(default_containing_block_.content_size_for_absolute.block_size -
                    borders_and_scrollers.BlockSum(),
                LayoutUnit());
+  default_containing_block_.content_size_for_fixed =
+      initial_containing_block_fixed_size
+          ? initial_containing_block_fixed_size.value()
+          : default_containing_block_.content_size_for_absolute;
   default_containing_block_.content_offset = NGLogicalOffset{
       borders_and_scrollers.inline_start, borders_and_scrollers.block_start};
   default_containing_block_.content_physical_offset =
@@ -267,10 +275,11 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
       default_container_offset += inline_cb_borders.StartOffset();
     }
     containing_blocks_map_.insert(
-        block_info.key, ContainingBlockInfo{inline_cb_style, inline_cb_size,
-                                            inline_content_offset,
-                                            inline_content_physical_offset,
-                                            default_container_offset});
+        block_info.key,
+        ContainingBlockInfo{inline_cb_style, inline_cb_size, inline_cb_size,
+                            inline_content_offset,
+                            inline_content_physical_offset,
+                            default_container_offset});
   }
 }
 
@@ -291,7 +300,8 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   // and default_container border width.
   NGStaticPosition static_position(descendant.static_position);
   NGPhysicalSize default_containing_block_physical_size =
-      ToNGPhysicalSize(default_containing_block_.content_size,
+      ToNGPhysicalSize(default_containing_block_.ContentSize(
+                           descendant.node.Style().GetPosition()),
                        default_containing_block_.style->GetWritingMode());
   NGPhysicalOffset default_container_physical_offset =
       container_info.default_container_offset.ConvertToPhysical(
@@ -304,13 +314,15 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
                            default_containing_block_.content_physical_offset -
                            default_container_physical_offset;
 
+  NGLogicalSize container_content_size =
+      container_info.ContentSize(descendant.node.Style().GetPosition());
   // The block estimate is in the descendant's writing mode.
   NGConstraintSpace descendant_constraint_space =
       NGConstraintSpaceBuilder(container_writing_mode, descendant_writing_mode,
                                /* is_new_fc */ true)
           .SetTextDirection(container_info.style->Direction())
-          .SetAvailableSize(container_info.content_size)
-          .SetPercentageResolutionSize(container_info.content_size)
+          .SetAvailableSize(container_content_size)
+          .SetPercentageResolutionSize(container_content_size)
           .ToConstraintSpace();
   base::Optional<MinMaxSize> min_max_size;
   base::Optional<LayoutUnit> block_estimate;
@@ -431,8 +443,9 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   // the constraint space in the descendant's writing mode.
   WritingMode writing_mode(descendant.Style().GetWritingMode());
   NGLogicalSize container_size(
-      ToNGPhysicalSize(container_info.content_size,
-                       default_containing_block_.style->GetWritingMode())
+      ToNGPhysicalSize(
+          container_info.ContentSize(descendant.Style().GetPosition()),
+          default_containing_block_.style->GetWritingMode())
           .ConvertToLogical(writing_mode));
 
   LayoutUnit inline_size =

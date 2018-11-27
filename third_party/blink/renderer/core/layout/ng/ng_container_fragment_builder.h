@@ -132,6 +132,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates,
       const LayoutObject* container);
 
+  bool HasOutOfFlowDescendantCandidates() const {
+    return !oof_positioned_candidates_.IsEmpty();
+  }
+
   // Utility routine to move all OOF descendant candidates to descendants.
   // Use if fragment cannot position any OOF children.
   void MoveOutOfFlowDescendantCandidatesToDescendants(
