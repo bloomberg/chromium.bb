@@ -26,7 +26,7 @@ namespace content {
 template <typename TargetType>
 class CacheStorageRef {
  public:
-  CacheStorageRef() noexcept = default;
+  CacheStorageRef() = default;
 
   explicit CacheStorageRef(base::WeakPtr<TargetType> target)
       : target_(std::move(target)) {
