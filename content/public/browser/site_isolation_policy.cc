@@ -27,6 +27,20 @@
 
 namespace content {
 
+namespace {
+
+bool IsSiteIsolationDisabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSiteIsolation)) {
+    return true;
+  }
+
+  return GetContentClient() &&
+         GetContentClient()->browser()->ShouldDisableSiteIsolation();
+}
+
+}  // namespace
+
 // static
 bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -34,10 +48,8 @@ bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
     return true;
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSiteIsolation)) {
+  if (IsSiteIsolationDisabled())
     return false;
-  }
 
   // The switches above needs to be checked first, because if the
   // ContentBrowserClient consults a base::Feature, then it will activate the
@@ -72,10 +84,8 @@ bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
     return true;
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSiteIsolation)) {
+  if (IsSiteIsolationDisabled())
     return false;
-  }
 
   // The feature needs to be checked last, because checking the feature
   // activates the field trial and assigns the client either to a control or an
@@ -114,10 +124,8 @@ SiteIsolationPolicy::GetIsolatedOriginsFromEnvironment() {
 
   // --isolate-origins (both command-line flag and enterprise policy) trumps
   // the opt-out flag.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSiteIsolation)) {
+  if (IsSiteIsolationDisabled())
     return origins;
-  }
 
   // The feature needs to be checked last, because checking the feature
   // activates the field trial and assigns the client either to a control or an

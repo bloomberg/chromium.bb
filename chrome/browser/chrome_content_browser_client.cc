@@ -1779,18 +1779,30 @@ ChromeContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
 }
 
 bool ChromeContentBrowserClient::ShouldEnableStrictSiteIsolation() {
+  return base::FeatureList::IsEnabled(features::kSitePerProcess);
+}
+
+bool ChromeContentBrowserClient::ShouldDisableSiteIsolation() {
+  constexpr int kDefaultMemoryThresholdMb = 1024;
+
+  // TODO(acolwell): Rename feature since it now affects more than just the
+  // site-per-process case.
   if (base::FeatureList::IsEnabled(
           features::kSitePerProcessOnlyForHighMemoryClients)) {
-    constexpr int kDefaultMemoryThresholdMb = 1024;
     int memory_threshold_mb = base::GetFieldTrialParamByFeatureAsInt(
         features::kSitePerProcessOnlyForHighMemoryClients,
         features::kSitePerProcessOnlyForHighMemoryClientsParamName,
         kDefaultMemoryThresholdMb);
-    if (base::SysInfo::AmountOfPhysicalMemoryMB() <= memory_threshold_mb)
-      return false;
+    return base::SysInfo::AmountOfPhysicalMemoryMB() <= memory_threshold_mb;
   }
 
-  return base::FeatureList::IsEnabled(features::kSitePerProcess);
+#if defined(OS_ANDROID)
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() <= kDefaultMemoryThresholdMb) {
+    return true;
+  }
+#endif
+
+  return false;
 }
 
 bool ChromeContentBrowserClient::IsFileAccessAllowed(

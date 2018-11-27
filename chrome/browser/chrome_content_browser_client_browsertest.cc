@@ -4,10 +4,14 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
+#include <vector>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/system/sys_info.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
@@ -30,15 +34,19 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -188,6 +196,27 @@ class SitePerProcessMemoryThresholdBrowserTest : public InProcessBrowserTest {
     return false;
   }
 
+ protected:
+  // These are the origins we expect to be returned by
+  // content::SiteIsolationPolicy::GetIsolatedOrigins() even if
+  // ContentBrowserClient::ShouldDisableSiteIsolation() returns true.
+  const std::vector<url::Origin> kExpectedEmbedderOrigins = {
+#if !defined(OS_ANDROID)
+    url::Origin::Create(GaiaUrls::GetInstance()->gaia_url())
+#endif
+  };
+
+#if defined(OS_ANDROID)
+  // On Android we don't expect any trial origins because the 512MB
+  // physical memory used for testing is below the Android specific
+  // hardcoded 1024MB memory limit that disables site isolation.
+  const std::size_t kExpectedTrialOrigins = 0;
+#else
+  // All other platforms expect the single trial origin to be returned because
+  // they don't have the memory limit that disables site isolation.
+  const std::size_t kExpectedTrialOrigins = 1;
+#endif
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SitePerProcessMemoryThresholdBrowserTest);
 };
@@ -241,7 +270,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
   base::test::ScopedFeatureList site_per_process;
   site_per_process.InitAndEnableFeature(features::kSitePerProcess);
 
+#if defined(OS_ANDROID)
+  // Expect false on Android because 512MB physical memory triggered by
+  // kEnableLowEndDeviceMode in SetUpCommandLine() is below the 1024MB Android
+  // specific memory limit which disbles site isolation for all sites.
+  EXPECT_FALSE(
+      content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
+#else
   EXPECT_TRUE(content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
@@ -298,6 +335,93 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
   // (i.e. the memory threshold should be ignored).
   EXPECT_FALSE(
       content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
+                       TrialIsolatedOrigins_HighThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // 512MB of physical memory that the test simulates is below the 768MB
+  // threshold.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
+
+  const url::Origin trial_origin = url::Origin::Create(GURL("http://foo.com/"));
+  base::test::ScopedFeatureList isolated_origins_feature;
+  isolated_origins_feature.InitAndEnableFeatureWithParameters(
+      features::kIsolateOrigins, {{features::kIsolateOriginsFieldTrialParamName,
+                                   trial_origin.Serialize()}});
+
+  std::vector<url::Origin> isolated_origins =
+      content::SiteIsolationPolicy::GetIsolatedOrigins();
+  EXPECT_EQ(kExpectedTrialOrigins, isolated_origins.size());
+
+  // Verify that the expected embedder origins are present even though site
+  // isolation has been disabled and the trial origins should not be present.
+  EXPECT_THAT(kExpectedEmbedderOrigins,
+              ::testing::IsSubsetOf(isolated_origins));
+
+  // Verify that the trial origin is not present.
+  EXPECT_THAT(isolated_origins,
+              ::testing::Not(::testing::Contains(trial_origin)));
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
+                       TrialIsolatedOrigins_LowThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // 512MB of physical memory that the test simulates is above the 128MB
+  // threshold.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
+
+  const url::Origin trial_origin = url::Origin::Create(GURL("http://foo.com/"));
+  base::test::ScopedFeatureList isolated_origins_feature;
+  isolated_origins_feature.InitAndEnableFeatureWithParameters(
+      features::kIsolateOrigins, {{features::kIsolateOriginsFieldTrialParamName,
+                                   trial_origin.Serialize()}});
+
+  std::vector<url::Origin> isolated_origins =
+      content::SiteIsolationPolicy::GetIsolatedOrigins();
+  EXPECT_EQ(1u + kExpectedEmbedderOrigins.size(), isolated_origins.size());
+  EXPECT_THAT(kExpectedEmbedderOrigins,
+              ::testing::IsSubsetOf(isolated_origins));
+
+  // Verify that the trial origin is present.
+  EXPECT_THAT(isolated_origins, ::testing::Contains(trial_origin));
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
+                       TrialIsolatedOrigins_NoThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  const url::Origin trial_origin = url::Origin::Create(GURL("http://foo.com/"));
+  base::test::ScopedFeatureList isolated_origins_feature;
+  isolated_origins_feature.InitAndEnableFeatureWithParameters(
+      features::kIsolateOrigins, {{features::kIsolateOriginsFieldTrialParamName,
+                                   trial_origin.Serialize()}});
+
+  std::vector<url::Origin> isolated_origins =
+      content::SiteIsolationPolicy::GetIsolatedOrigins();
+  EXPECT_EQ(kExpectedTrialOrigins + kExpectedEmbedderOrigins.size(),
+            isolated_origins.size());
+  EXPECT_THAT(kExpectedEmbedderOrigins,
+              ::testing::IsSubsetOf(isolated_origins));
+
+  if (kExpectedTrialOrigins > 0) {
+    // Verify that the trial origin is present.
+    EXPECT_THAT(isolated_origins, ::testing::Contains(trial_origin));
+  } else {
+    EXPECT_THAT(isolated_origins,
+                ::testing::Not(::testing::Contains(trial_origin)));
+  }
 }
 
 class PolicyHeaderServiceBrowserTest : public InProcessBrowserTest {

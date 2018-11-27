@@ -464,6 +464,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // See also https://crbug.com/825369
   virtual bool ShouldEnableStrictSiteIsolation();
 
+  // Allows the embedder to programmatically control whether Site Isolation
+  // should be disabled.
+  //
+  // Note that for correctness, the same value should be consistently returned.
+  virtual bool ShouldDisableSiteIsolation();
+
   // Indicates whether a file path should be accessible via file URL given a
   // request from a browser context which lives within |profile_path|.
   virtual bool IsFileAccessAllowed(const base::FilePath& path,
