@@ -12,6 +12,7 @@
 #include "cc/base/container_util.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -398,12 +399,14 @@ void StagingBufferPool::ReleaseBuffersNotUsedSince(base::TimeTicks time) {
         worker_context_provider_->SharedImageInterface();
     DCHECK(sii);
 
+    bool destroyed_buffers = false;
     // Note: Front buffer is guaranteed to be LRU so we can stop releasing
     // buffers as soon as we find a buffer that has been used since |time|.
     while (!free_buffers_.empty()) {
       if (free_buffers_.front()->last_usage > time)
         return;
 
+      destroyed_buffers = true;
       free_buffers_.front()->DestroyGLResources(ri, sii);
       MarkStagingBufferAsBusy(free_buffers_.front().get());
       RemoveStagingBuffer(free_buffers_.front().get());
@@ -414,9 +417,15 @@ void StagingBufferPool::ReleaseBuffersNotUsedSince(base::TimeTicks time) {
       if (busy_buffers_.front()->last_usage > time)
         return;
 
+      destroyed_buffers = true;
       busy_buffers_.front()->DestroyGLResources(ri, sii);
       RemoveStagingBuffer(busy_buffers_.front().get());
       busy_buffers_.pop_front();
+    }
+
+    if (destroyed_buffers) {
+      ri->OrderingBarrierCHROMIUM();
+      worker_context_provider_->ContextSupport()->FlushPendingWork();
     }
   }
 }
