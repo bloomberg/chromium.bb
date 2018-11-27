@@ -31,7 +31,7 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs);
 // The build directory of the Blink checkout.
 base::FilePath GetBuildDirectory();
 
-// Replaces file:///tmp/LayoutTests/ with the actual path to the
+// Replaces file:///tmp/web_tests/ with the actual path to the
 // web_tests directory, or rewrite URLs generated from absolute
 // path links in web-platform-tests.
 blink::WebURL RewriteLayoutTestsURL(const std::string& utf8_url,

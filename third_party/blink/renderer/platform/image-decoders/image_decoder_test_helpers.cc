@@ -22,10 +22,10 @@ scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
 
 scoped_refptr<SharedBuffer> ReadFile(const char* dir, const char* file_name) {
   StringBuilder file_path;
-  if (strncmp(dir, "LayoutTests/", 12) == 0) {
+  if (strncmp(dir, "web_tests/", 10) == 0) {
     file_path.Append(test::BlinkLayoutTestsDir());
     file_path.Append('/');
-    file_path.Append(dir + 12);
+    file_path.Append(dir + 10);
   } else {
     file_path.Append(test::BlinkRootDir());
     file_path.Append('/');

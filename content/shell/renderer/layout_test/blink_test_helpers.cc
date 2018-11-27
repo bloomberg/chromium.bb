@@ -195,8 +195,7 @@ WebURL RewriteLayoutTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
     return WebURL(GURL(new_url));
   }
 
-  // TODO(tkent): Replace "tmp/LayoutTests" in tests with "tmp/web_tests".
-  static constexpr base::StringPiece kPrefix = "file:///tmp/LayoutTests/";
+  static constexpr base::StringPiece kPrefix = "file:///tmp/web_tests/";
 
   if (!base::StartsWith(utf8_url, kPrefix, base::CompareCase::SENSITIVE))
     return WebURL(GURL(utf8_url));
