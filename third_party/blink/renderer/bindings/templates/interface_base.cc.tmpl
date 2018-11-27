@@ -792,7 +792,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesImpl(
 #error "We don't expect a runtime enabled interface {{v8_class_or_partial}} to have InstallRuntimeEnabledFeatures()."
   {% endif %}
 
-  v8::Local<v8::FunctionTemplate> interface_template = {{v8_class}}::wrapperTypeInfo.domTemplate(isolate, world);
+  v8::Local<v8::FunctionTemplate> interface_template = {{v8_class}}::wrapperTypeInfo.DomTemplate(isolate, world);
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
 
@@ -859,7 +859,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesImpl(
 {% for feature in optional_features %}
 void {{v8_class_or_partial}}::Install{{feature.name}}(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
   {% if feature.attributes or feature.methods %}
-  v8::Local<v8::FunctionTemplate> interfaceTemplate = {{v8_class}}::wrapperTypeInfo.domTemplate(isolate, world);
+  v8::Local<v8::FunctionTemplate> interfaceTemplate = {{v8_class}}::wrapperTypeInfo.DomTemplate(isolate, world);
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
   {% endif %}

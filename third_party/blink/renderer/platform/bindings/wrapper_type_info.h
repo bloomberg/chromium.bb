@@ -122,7 +122,7 @@ struct WrapperTypeInfo {
     wrapper->SetWrapperClassId(wrapper_class_id);
   }
 
-  v8::Local<v8::FunctionTemplate> domTemplate(
+  v8::Local<v8::FunctionTemplate> DomTemplate(
       v8::Isolate* isolate,
       const DOMWrapperWorld& world) const {
     return dom_template_function(isolate, world);

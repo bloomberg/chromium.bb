@@ -74,10 +74,10 @@ v8::Local<v8::Function> V8ObjectConstructor::CreateInterfaceObject(
     v8::Local<v8::Function> parent_interface,
     CreationMode creation_mode) {
   // We shouldn't reach this point for the types that are implemented in v8 such
-  // as typed arrays and hence don't have domTemplateFunction.
+  // as typed arrays and hence don't have DomTemplateFunction.
   DCHECK(type->dom_template_function);
   v8::Local<v8::FunctionTemplate> interface_template =
-      type->domTemplate(isolate, world);
+      type->DomTemplate(isolate, world);
   // Getting the function might fail if we're running out of stack or memory.
   v8::Local<v8::Function> interface_object;
   bool get_interface_object =

@@ -86,7 +86,7 @@ void V8Window::LocationAttributeGetterCustom(
     DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
     const auto* wrapper_type_info = location->GetWrapperTypeInfo();
     v8::Local<v8::Object> new_wrapper =
-        wrapper_type_info->domTemplate(isolate, world)
+        wrapper_type_info->DomTemplate(isolate, world)
             ->NewRemoteInstance()
             .ToLocalChecked();
 

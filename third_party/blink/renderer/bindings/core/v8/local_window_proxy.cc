@@ -268,7 +268,7 @@ void LocalWindowProxy::InstallConditionalFeatures() {
   wrapper_type_info->InstallConditionalFeatures(
       context, World(), global_proxy, unused_prototype_object,
       unused_interface_object,
-      wrapper_type_info->domTemplate(GetIsolate(), World()));
+      wrapper_type_info->DomTemplate(GetIsolate(), World()));
 
   if (World().IsMainWorld()) {
     // For the main world, install any remaining conditional bindings (i.e.
