@@ -11,21 +11,22 @@
 #include "base/task/task_scheduler/scheduler_task_runner_delegate.h"
 #include "base/task/task_scheduler/sequence.h"
 #include "base/task/task_traits.h"
-#include "base/task_runner.h"
 #include "base/time/time.h"
+#include "base/updateable_sequenced_task_runner.h"
 
 namespace base {
 namespace internal {
 
 // A task runner that runs tasks in sequence.
-class BASE_EXPORT SchedulerSequencedTaskRunner : public SequencedTaskRunner {
+class BASE_EXPORT SchedulerSequencedTaskRunner
+    : public UpdateableSequencedTaskRunner {
  public:
   // Constructs a SchedulerSequencedTaskRunner which can be used to post tasks.
   SchedulerSequencedTaskRunner(
       const TaskTraits& traits,
       SchedulerTaskRunnerDelegate* scheduler_task_runner_delegate);
 
-  // SequencedTaskRunner:
+  // UpdateableSequencedTaskRunner:
   bool PostDelayedTask(const Location& from_here,
                        OnceClosure closure,
                        TimeDelta delay) override;
@@ -36,12 +37,10 @@ class BASE_EXPORT SchedulerSequencedTaskRunner : public SequencedTaskRunner {
 
   bool RunsTasksInCurrentSequence() const override;
 
+  void UpdatePriority(TaskPriority priority) override;
+
  private:
   ~SchedulerSequencedTaskRunner() override;
-
-  // Updates the priority for tasks posted through this TaskRunner to
-  // |priority|.
-  void UpdatePriority(TaskPriority priority);
 
   SchedulerTaskRunnerDelegate* const scheduler_task_runner_delegate_;
 

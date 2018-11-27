@@ -984,6 +984,7 @@ jumbo_component("base") {
     "tuple.h",
     "unguessable_token.cc",
     "unguessable_token.h",
+    "updateable_sequenced_task_runner.h",
     "value_conversions.cc",
     "value_conversions.h",
     "value_iterators.cc",
