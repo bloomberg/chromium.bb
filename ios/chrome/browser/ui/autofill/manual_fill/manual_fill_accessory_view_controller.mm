@@ -109,75 +109,79 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 
 #pragma mark - Private
 
+// Helper to create a system button with the passed data and |self| as the
+// target. Such button has been configured to have some preset properties
+- (UIButton*)manualFillButtonWithAction:(SEL)selector
+                             ImageNamed:(NSString*)imageName
+                accessibilityIdentifier:(NSString*)accessibilityIdentifier
+                     accessibilityLabel:(NSString*)accessibilityLabel {
+  UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
+  UIImage* image = [UIImage imageNamed:imageName];
+  [button setImage:image forState:UIControlStateNormal];
+  button.tintColor = [self activeTintColor];
+  button.translatesAutoresizingMaskIntoConstraints = NO;
+  [button addTarget:self
+                action:selector
+      forControlEvents:UIControlEventTouchUpInside];
+  button.accessibilityIdentifier = accessibilityIdentifier;
+  button.accessibilityLabel = accessibilityLabel;
+  button.tintAdjustmentMode = UIViewTintAdjustmentModeNormal;
+  return button;
+}
+
 - (void)loadView {
   self.view = [[UIView alloc] init];
   self.view.accessibilityViewIsModal = YES;
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
 
-  UIColor* tintColor = [self activeTintColor];
   NSMutableArray<UIView*>* icons = [[NSMutableArray alloc] init];
 
   if (!IsIPadIdiom()) {
-    self.keyboardButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    UIImage* keyboardImage = [UIImage imageNamed:@"mf_keyboard"];
-    [self.keyboardButton setImage:keyboardImage forState:UIControlStateNormal];
-    self.keyboardButton.tintColor = tintColor;
-    self.keyboardButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.keyboardButton addTarget:self
-                            action:@selector(keyboardButtonPressed)
-                  forControlEvents:UIControlEventTouchUpInside];
-    self.keyboardButton.accessibilityIdentifier =
-        manual_fill::AccessoryKeyboardAccessibilityIdentifier;
-    self.keyboardButton.accessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_SHOW_KEYBOARD);
+    self.keyboardButton = [self
+        manualFillButtonWithAction:@selector(keyboardButtonPressed)
+                        ImageNamed:@"mf_keyboard"
+           accessibilityIdentifier:manual_fill::
+                                       AccessoryKeyboardAccessibilityIdentifier
+                accessibilityLabel:l10n_util::GetNSString(
+                                       IDS_IOS_MANUAL_FALLBACK_SHOW_KEYBOARD)];
     [icons addObject:self.keyboardButton];
+    self.keyboardButton.hidden = YES;
+    self.keyboardButton.alpha = 0.0;
   }
 
-  self.passwordButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  UIImage* keyImage = [UIImage imageNamed:@"ic_vpn_key"];
-  [self.passwordButton setImage:keyImage forState:UIControlStateNormal];
-  self.passwordButton.tintColor = tintColor;
-  self.passwordButton.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.passwordButton addTarget:self
-                          action:@selector(passwordButtonPressed:)
-                forControlEvents:UIControlEventTouchUpInside];
-  self.passwordButton.accessibilityIdentifier =
-      manual_fill::AccessoryPasswordAccessibilityIdentifier;
+  self.passwordButton = [self
+      manualFillButtonWithAction:@selector(passwordButtonPressed:)
+                      ImageNamed:@"ic_vpn_key"
+         accessibilityIdentifier:manual_fill::
+                                     AccessoryPasswordAccessibilityIdentifier
+              accessibilityLabel:l10n_util::GetNSString(
+                                     IDS_IOS_MANUAL_FALLBACK_SHOW_PASSWORDS)];
+
   self.passwordButton.hidden = self.isPasswordButtonHidden;
   self.passwordButton.contentEdgeInsets = UIEdgeInsetsMake(0, 2, 0, 2);
-  self.passwordButton.accessibilityLabel =
-      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_SHOW_PASSWORDS);
   [icons addObject:self.passwordButton];
 
   if (autofill::features::IsAutofillManualFallbackEnabled()) {
-    self.cardsButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    UIImage* cardImage = [UIImage imageNamed:@"ic_credit_card"];
-    [self.cardsButton setImage:cardImage forState:UIControlStateNormal];
-    self.cardsButton.tintColor = tintColor;
-    self.cardsButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.cardsButton addTarget:self
-                         action:@selector(cardButtonPressed:)
-               forControlEvents:UIControlEventTouchUpInside];
-    self.cardsButton.accessibilityIdentifier =
-        manual_fill::AccessoryCreditCardAccessibilityIdentifier;
+    self.cardsButton =
+        [self manualFillButtonWithAction:@selector(cardButtonPressed:)
+                              ImageNamed:@"ic_credit_card"
+                 accessibilityIdentifier:
+                     manual_fill::AccessoryCreditCardAccessibilityIdentifier
+                      accessibilityLabel:
+                          l10n_util::GetNSString(
+                              IDS_IOS_MANUAL_FALLBACK_SHOW_CREDIT_CARDS)];
     self.cardsButton.hidden = self.isCreditCardButtonHidden;
-    self.cardsButton.accessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_SHOW_CREDIT_CARDS);
     [icons addObject:self.cardsButton];
 
-    self.accountButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    UIImage* accountImage = [UIImage imageNamed:@"ic_place"];
-    [self.accountButton setImage:accountImage forState:UIControlStateNormal];
-    self.accountButton.tintColor = tintColor;
-    self.accountButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.accountButton addTarget:self
-                           action:@selector(accountButtonPressed:)
-                 forControlEvents:UIControlEventTouchUpInside];
-    self.accountButton.accessibilityIdentifier =
-        manual_fill::AccessoryAddressAccessibilityIdentifier;
+    self.accountButton = [self
+        manualFillButtonWithAction:@selector(accountButtonPressed:)
+                        ImageNamed:@"ic_place"
+           accessibilityIdentifier:manual_fill::
+                                       AccessoryAddressAccessibilityIdentifier
+                accessibilityLabel:l10n_util::GetNSString(
+                                       IDS_IOS_MANUAL_FALLBACK_SHOW_ADDRESSES)];
+
     self.accountButton.hidden = self.isAddressButtonHidden;
-    self.accountButton.accessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_SHOW_ADDRESSES);
     [icons addObject:self.accountButton];
   }
   UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:icons];
@@ -200,8 +204,6 @@ static NSTimeInterval MFAnimationDuration = 0.2;
         constraintEqualToAnchor:stackView.trailingAnchor
                        constant:ManualFillIconsRightInset],
   ]];
-  self.keyboardButton.hidden = YES;
-  self.keyboardButton.alpha = 0.0;
 }
 
 // Resets the colors of all the icons to the active color.
