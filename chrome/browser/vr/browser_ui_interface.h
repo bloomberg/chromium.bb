@@ -9,6 +9,7 @@
 
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
+#include "chrome/browser/vr/model/web_vr_model.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "chrome/browser/vr/vr_export.h"
 #include "components/security_state/core/security_state.h"
@@ -70,6 +71,12 @@ class VR_EXPORT BrowserUiInterface {
   virtual void OnContentBoundsChanged(int width, int height) = 0;
   virtual void PerformKeyboardInputForTesting(
       KeyboardTestInput keyboard_input) = 0;
+
+  // Shows (or hides) a notification in-headset that the user should respond to
+  // a prompt on a separate display. Only one such notification is displayed at
+  // a time. Only displayed on desktop.
+  virtual void SetVisibleExternalPromptNotification(
+      ExternalPromptNotificationType prompt) = 0;
 };
 
 }  // namespace vr

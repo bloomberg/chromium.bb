@@ -662,6 +662,11 @@ void Ui::PerformKeyboardInputForTesting(KeyboardTestInput keyboard_input) {
   }
 }
 
+void Ui::SetVisibleExternalPromptNotification(
+    ExternalPromptNotificationType prompt) {
+  model_->web_vr.external_prompt_notification = prompt;
+}
+
 ContentElement* Ui::GetContentElement() {
   if (!content_element_) {
     content_element_ =

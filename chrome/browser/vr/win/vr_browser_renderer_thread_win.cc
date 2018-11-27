@@ -8,6 +8,7 @@
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
+#include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
@@ -36,11 +37,55 @@ void VRBrowserRendererThreadWin::SetVRDisplayInfo(
                      base::Unretained(this), std::move(display_info)));
 }
 
+void VRBrowserRendererThreadWin::SetLocationInfo(GURL gurl) {
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&VRBrowserRendererThreadWin::SetLocationInfo,
+                                base::Unretained(this), std::move(gurl)));
+}
+
+void VRBrowserRendererThreadWin::SetVisibleExternalPromptNotification(
+    ExternalPromptNotificationType prompt) {
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VRBrowserRendererThreadWin::
+                         SetVisibleExternalPromptNotificationOnRenderThread,
+                     base::Unretained(this), prompt));
+}
+
 void VRBrowserRendererThreadWin::SetDisplayInfoOnRenderThread(
     device::mojom::VRDisplayInfoPtr display_info) {
   display_info_ = std::move(display_info);
   if (graphics_)
     graphics_->SetVRDisplayInfo(display_info_.Clone());
+}
+
+void VRBrowserRendererThreadWin::SetLocationInfoOnRenderThread(GURL gurl) {
+  // TODO(https://crbug.com/905375): Set more of this state.  Only the GURL is
+  // currently used, so its the only thing we are setting correctly.
+  LocationBarState state(gurl, security_state::SecurityLevel::SECURE,
+                         nullptr /* vector icon */, true /* display url */,
+                         false /* offline */);
+
+  ui_->SetLocationBarState(state);
+}
+
+void VRBrowserRendererThreadWin::
+    SetVisibleExternalPromptNotificationOnRenderThread(
+        ExternalPromptNotificationType prompt) {
+  bool currently_showing_ui = ShouldPauseWebXrAndDrawUI();
+  current_external_prompt_notification_type_ = prompt;
+  ui_->SetVisibleExternalPromptNotification(prompt);
+  bool show_ui = ShouldPauseWebXrAndDrawUI();
+
+  if (!show_ui && currently_showing_ui) {
+    // Draw WebXR instead of UI.
+    overlay_->SetOverlayAndWebXRVisibility(false, true);
+  } else if (!currently_showing_ui && show_ui) {
+    // Draw UI instead of WebXr.
+    overlay_->SetOverlayAndWebXRVisibility(true, false);
+    overlay_->RequestNextOverlayPose(base::BindOnce(
+        &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
+  }
 }
 
 void VRBrowserRendererThreadWin::StartOverlay(
@@ -128,7 +173,8 @@ void VRBrowserRendererThreadWin::StartOverlayOnRenderThread(
       0 /* content_texture_id - we don't support content */,
       0 /* content_overlay_texture_id - we don't support content overlays */,
       0 /* platform_ui_texture_id - we don't support platform UI */);
-  static_cast<BrowserUiInterface*>(ui.get())->SetWebVrMode(true);
+  ui_ = static_cast<BrowserUiInterface*>(ui.get());
+  ui_->SetWebVrMode(true);
 
   // Create the delegates, and keep raw pointers to them.  They are owned by
   // browser_renderer_.
@@ -147,13 +193,23 @@ void VRBrowserRendererThreadWin::StartOverlayOnRenderThread(
       std::move(initializing_graphics_), std::move(input_delegate),
       browser_renderer_interface, kSlidingAverageSize);
 
-  overlay_->SetOverlayAndWebXRVisibility(true, true);
-  overlay_->RequestNextOverlayPose(base::BindOnce(
-      &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
+  bool draw_ui = ShouldPauseWebXrAndDrawUI();
+  overlay_->SetOverlayAndWebXRVisibility(draw_ui, !draw_ui);
+  if (draw_ui) {
+    overlay_->RequestNextOverlayPose(base::BindOnce(
+        &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
+  }
   graphics_->ClearContext();
 }
 
 void VRBrowserRendererThreadWin::OnPose(device::mojom::XRFrameDataPtr data) {
+  if (!ShouldPauseWebXrAndDrawUI()) {
+    // We shouldn't be showing UI.
+    overlay_->SetOverlayAndWebXRVisibility(false, true);
+    graphics_->ResetMemoryBuffer();
+    return;
+  }
+
   // Deliver pose to input and scheduler.
   const std::vector<float>& quat = *data->pose->orientation;
   const std::vector<float>& pos = *data->pose->position;
@@ -181,7 +237,7 @@ void VRBrowserRendererThreadWin::OnPose(device::mojom::XRFrameDataPtr data) {
   // calling the callback if we are destroyed.
   scheduler_->OnPose(base::BindOnce(&VRBrowserRendererThreadWin::SubmitFrame,
                                     base::Unretained(this), std::move(data)),
-                     head_from_world);
+                     head_from_world, ShouldPauseWebXrAndDrawUI());
 }
 
 void VRBrowserRendererThreadWin::SubmitFrame(
@@ -201,6 +257,11 @@ void VRBrowserRendererThreadWin::SubmitResult(bool success) {
   }
   overlay_->RequestNextOverlayPose(base::BindOnce(
       &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
+}
+
+bool VRBrowserRendererThreadWin::ShouldPauseWebXrAndDrawUI() {
+  return current_external_prompt_notification_type_ !=
+         ExternalPromptNotificationType::kPromptNone;
 }
 
 }  // namespace vr

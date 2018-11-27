@@ -186,6 +186,7 @@ component("vr_ui") {
     "//base",
     "//cc/animation",
     "//chrome/app:generated_resources",
+    "//chrome/app/vector_icons",
     "//chrome/browser/vr/vector_icons",
     "//chrome/common:constants",
     "//components/omnibox/browser:vector_icons",

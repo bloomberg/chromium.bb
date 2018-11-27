@@ -533,6 +533,12 @@ void VrGLThread::PerformKeyboardInputForTesting(
                      weak_browser_ui_, keyboard_input));
 }
 
+void VrGLThread::SetVisibleExternalPromptNotification(
+    ExternalPromptNotificationType prompt) {
+  // Not reached on Android.
+  NOTREACHED();
+}
+
 void VrGLThread::ReportUiOperationResultForTesting(
     const UiTestOperationType& action_type,
     const UiTestOperationResult& result) {
