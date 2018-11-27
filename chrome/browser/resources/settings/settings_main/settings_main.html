@@ -54,7 +54,8 @@
       </settings-basic-page>
     </template>
     <template is="dom-if" if="[[showPages_.about]]">
-      <settings-about-page in-search-mode="[[inSearchMode_]]"
+      <settings-about-page role="main"
+          in-search-mode="[[inSearchMode_]]"
           prefs="{{prefs}}"
           show-crostini="[[showCrostini]]">
       </settings-about-page>
