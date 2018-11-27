@@ -219,14 +219,14 @@ TEST(FakeMdnsResponderAdapterTest, RegisterServices) {
   auto result = mdns_responder.RegisterService(
       "instance", "name", "proto",
       mdns::DomainName{{1, 'a', 5, 'l', 'o', 'c', 'a', 'l', 0}}, 12345,
-      {"asdf", "jkl"});
+      {{"k1", "asdf"}, {"k2", "jkl"}});
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
   EXPECT_EQ(1u, mdns_responder.registered_services().size());
 
   result = mdns_responder.RegisterService(
       "instance2", "name", "proto",
       mdns::DomainName{{1, 'b', 5, 'l', 'o', 'c', 'a', 'l', 0}}, 12346,
-      {"asdf", "jkl"});
+      {{"k1", "asdf"}, {"k2", "jkl"}});
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
   EXPECT_EQ(2u, mdns_responder.registered_services().size());
 
@@ -243,7 +243,7 @@ TEST(FakeMdnsResponderAdapterTest, RegisterServices) {
   result = mdns_responder.RegisterService(
       "instance2", "name", "proto",
       mdns::DomainName{{1, 'b', 5, 'l', 'o', 'c', 'a', 'l', 0}}, 12346,
-      {"asdf", "jkl"});
+      {{"k1", "asdf"}, {"k2", "jkl"}});
   EXPECT_NE(mdns::MdnsResponderErrorCode::kNoError, result);
   EXPECT_EQ(0u, mdns_responder.registered_services().size());
 }
@@ -287,6 +287,30 @@ TEST(FakeMdnsResponderAdapterTest, RegisterInterfaces) {
                                             platform::IPSubnet{}, socket1);
   EXPECT_FALSE(result);
   EXPECT_EQ(0u, mdns_responder.registered_interfaces().size());
+}
+
+TEST(FakeMdnsResponderAdapterTest, UpdateTxtData) {
+  FakeMdnsResponderAdapter mdns_responder;
+
+  mdns_responder.Init();
+  ASSERT_TRUE(mdns_responder.running());
+
+  const std::map<std::string, std::string> txt_data1{{"k1", "asdf"},
+                                                     {"k2", "jkl"}};
+  auto result = mdns_responder.RegisterService(
+      "instance", "name", "proto",
+      mdns::DomainName{{1, 'a', 5, 'l', 'o', 'c', 'a', 'l', 0}}, 12345,
+      txt_data1);
+  EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
+  ASSERT_EQ(1u, mdns_responder.registered_services().size());
+  EXPECT_EQ(txt_data1, mdns_responder.registered_services()[0].txt_data);
+
+  const std::map<std::string, std::string> txt_data2{
+      {"k1", "monkey"}, {"k2", "panda"}, {"k3", "turtle"}, {"k4", "rhino"}};
+  result = mdns_responder.UpdateTxtData("instance", "name", "proto", txt_data2);
+  EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
+  ASSERT_EQ(1u, mdns_responder.registered_services().size());
+  EXPECT_EQ(txt_data2, mdns_responder.registered_services()[0].txt_data);
 }
 
 }  // namespace openscreen

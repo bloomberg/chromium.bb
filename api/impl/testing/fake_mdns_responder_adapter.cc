@@ -438,7 +438,7 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::RegisterService(
     const std::string& service_protocol,
     const mdns::DomainName& target_host,
     uint16_t target_port,
-    const std::vector<std::string>& lines) {
+    const std::map<std::string, std::string>& txt_data) {
   if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
 
@@ -453,7 +453,7 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::RegisterService(
   }
   registered_services_.push_back({service_instance, service_name,
                                   service_protocol, target_host, target_port,
-                                  lines});
+                                  txt_data});
   return mdns::MdnsResponderErrorCode::kNoError;
 }
 
@@ -472,10 +472,33 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::DeregisterService(
                             service.service_name == service_name &&
                             service.service_protocol == service_protocol;
                    });
-  if (it == registered_services_.end()) {
+  if (it == registered_services_.end())
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   registered_services_.erase(it);
+  return mdns::MdnsResponderErrorCode::kNoError;
+}
+
+mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::UpdateTxtData(
+    const std::string& service_instance,
+    const std::string& service_name,
+    const std::string& service_protocol,
+    const std::map<std::string, std::string>& txt_data) {
+  if (!running_)
+    return mdns::MdnsResponderErrorCode::kUnknownError;
+
+  auto it =
+      std::find_if(registered_services_.begin(), registered_services_.end(),
+                   [&service_instance, &service_name,
+                    &service_protocol](const RegisteredService& service) {
+                     return service.service_instance == service_instance &&
+                            service.service_name == service_name &&
+                            service.service_protocol == service_protocol;
+                   });
+  if (it == registered_services_.end())
+    return mdns::MdnsResponderErrorCode::kUnknownError;
+
+  it->txt_data = txt_data;
   return mdns::MdnsResponderErrorCode::kNoError;
 }
 

@@ -86,6 +86,16 @@ class ScreenPublisher {
     // The human readable friendly name of the screen being published in UTF-8.
     std::string friendly_name;
 
+    // The DNS hostname (as a single label) that should be used to advertise the
+    // host's interface addresses.
+    std::string hostname;
+
+    // The DNS domain name label that should be used to identify this service
+    // within the openscreen service type.
+    // TODO(btolsch): This could be derived from |friendly_name| but we will
+    // leave it as an arbitrary name until the spec is finalized.
+    std::string service_instance_name;
+
     // The port where openscreen connections are accepted.
     // Normally this should not be set, and must be identical to the port
     // configured in the ScreenConnectionServer.
@@ -122,10 +132,6 @@ class ScreenPublisher {
 
   // Resumes publishing.  Returns true if state() == kSuspended.
   virtual bool Resume() = 0;
-
-  // Sets the friendly name that is published.  This may also trigger a receiver
-  // status message to be sent with the new friendly name.
-  virtual void UpdateFriendlyName(const std::string& friendly_name) = 0;
 
   // Returns the current state of the publisher.
   State state() const { return state_; }

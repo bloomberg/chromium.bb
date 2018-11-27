@@ -113,6 +113,8 @@ void PublisherDemo(const std::string& friendly_name) {
   // TODO(btolsch): aggregate initialization probably better?
   ScreenPublisher::Config publisher_config;
   publisher_config.friendly_name = friendly_name;
+  publisher_config.hostname = "turtle-deadbeef";
+  publisher_config.service_instance_name = "deadbeef";
   publisher_config.connection_server_port = 6667;
   auto mdns_publisher =
       MdnsScreenPublisherFactory::Create(publisher_config, &publisher_observer);

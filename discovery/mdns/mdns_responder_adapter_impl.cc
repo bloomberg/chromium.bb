@@ -20,6 +20,14 @@ namespace {
 // octet.
 constexpr size_t kMaxDnsStringLength = 255;
 
+// RFC 6763 recommends a maximum key length of 9 characters.
+constexpr size_t kMaxTxtKeyLength = 9;
+
+constexpr size_t kMaxStaticTxtDataSize = 256;
+
+static_assert(sizeof(std::declval<RData>().u.txt) == kMaxStaticTxtDataSize,
+              "mDNSResponder static TXT data size expected to be 256 bytes");
+
 static_assert(sizeof(mDNSAddr::ip.v4.b) == 4u,
               "mDNSResponder IPv4 address must be 4 bytes");
 static_assert(sizeof(mDNSAddr::ip.v6.b) == 16u,
@@ -67,6 +75,25 @@ bool IsValidServiceProtocol(const std::string& protocol) {
 }
 #endif  // if OSP_DCHECK_IS_ON()
 
+void MakeLocalServiceNameParts(const std::string& service_instance,
+                               const std::string& service_name,
+                               const std::string& service_protocol,
+                               domainlabel* instance,
+                               domainlabel* name,
+                               domainlabel* protocol,
+                               domainname* type,
+                               domainname* domain) {
+  MakeDomainLabelFromLiteralString(instance, service_instance.c_str());
+  MakeDomainLabelFromLiteralString(name, service_name.c_str());
+  MakeDomainLabelFromLiteralString(protocol, service_protocol.c_str());
+  type->c[0] = 0;
+  AppendDomainLabel(type, name);
+  AppendDomainLabel(type, protocol);
+  const DomainName local_domain = DomainName::GetLocalDomain();
+  std::copy(local_domain.domain_name().begin(),
+            local_domain.domain_name().end(), domain->c);
+}
+
 void MakeSubnetMaskFromPrefixLengthV4(uint8_t mask[4], uint8_t prefix_length) {
   for (int i = 0; i < 4; prefix_length -= 8, ++i) {
     if (prefix_length >= 8) {
@@ -91,17 +118,32 @@ void MakeSubnetMaskFromPrefixLengthV6(uint8_t mask[16], uint8_t prefix_length) {
   }
 }
 
-std::string MakeTxtData(const std::vector<std::string>& lines) {
+bool IsValidTxtDataKey(const std::string& s) {
+  if (s.size() > kMaxTxtKeyLength)
+    return false;
+  for (unsigned char c : s)
+    if (c < 0x20 || c > 0x7e || c == '=')
+      return false;
+  return true;
+}
+
+std::string MakeTxtData(const std::map<std::string, std::string>& txt_data) {
   std::string txt;
-  txt.reserve(256);
-  for (const auto& line : lines) {
-    const auto line_size = line.size();
-    if (line_size > kMaxDnsStringLength ||
-        (txt.size() + line_size + 1) > kMaxDnsStringLength) {
+  txt.reserve(kMaxStaticTxtDataSize);
+  for (const auto& line : txt_data) {
+    const auto key_size = line.first.size();
+    const auto value_size = line.second.size();
+    const auto line_size = value_size ? (key_size + 1 + value_size) : key_size;
+    if (IsValidTxtDataKey(line.first) || line_size > kMaxDnsStringLength ||
+        (txt.size() + 1 + line_size) > kMaxStaticTxtDataSize) {
       return {};
     }
     txt.push_back(line_size);
-    txt += line;
+    txt += line.first;
+    if (value_size) {
+      txt.push_back('=');
+      txt += line.second;
+    }
   }
   return txt;
 }
@@ -121,9 +163,10 @@ MdnsResponderErrorCode MapMdnsError(int err) {
   return MdnsResponderErrorCode::kUnknownError;
 }
 
-std::vector<std::string> ParseTxtResponse(const uint8_t data[256],
-                                          uint16_t length) {
-  OSP_DCHECK(length <= 256);
+std::vector<std::string> ParseTxtResponse(
+    const uint8_t data[kMaxStaticTxtDataSize],
+    uint16_t length) {
+  OSP_DCHECK(length <= kMaxStaticTxtDataSize);
   if (length == 0)
     return {};
 
@@ -560,7 +603,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::RegisterService(
     const std::string& service_protocol,
     const DomainName& target_host,
     uint16_t target_port,
-    const std::vector<std::string>& lines) {
+    const std::map<std::string, std::string>& txt_data) {
   OSP_DCHECK(IsValidServiceName(service_name));
   OSP_DCHECK(IsValidServiceProtocol(service_protocol));
   service_records_.push_back(MakeUnique<ServiceRecordSet>());
@@ -573,20 +616,13 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::RegisterService(
   domainname host;
   mDNSIPPort port;
 
-  MakeDomainLabelFromLiteralString(&instance, service_instance.c_str());
-  MakeDomainLabelFromLiteralString(&name, service_name.c_str());
-  MakeDomainLabelFromLiteralString(&protocol, service_protocol.c_str());
-  type.c[0] = 0;
-  AppendDomainLabel(&type, &name);
-  AppendDomainLabel(&type, &protocol);
-  const DomainName local_domain = DomainName::GetLocalDomain();
-  std::copy(local_domain.domain_name().begin(),
-            local_domain.domain_name().end(), domain.c);
+  MakeLocalServiceNameParts(service_instance, service_name, service_protocol,
+                            &instance, &name, &protocol, &type, &domain);
   std::copy(target_host.domain_name().begin(), target_host.domain_name().end(),
             host.c);
   AssignMdnsPort(&port, target_port);
-  auto txt = MakeTxtData(lines);
-  if (txt.size() > 256) {
+  auto txt = MakeTxtData(txt_data);
+  if (txt.size() > kMaxStaticTxtDataSize) {
     // Not handling oversized TXT records.
     return MdnsResponderErrorCode::kUnsupportedError;
   }
@@ -618,16 +654,9 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::DeregisterService(
   domainname domain;
   domainname full_instance_name;
 
-  MakeDomainLabelFromLiteralString(&instance, service_instance.c_str());
-  MakeDomainLabelFromLiteralString(&name, service_name.c_str());
-  MakeDomainLabelFromLiteralString(&protocol, service_protocol.c_str());
-  type.c[0] = 0;
-  AppendDomainLabel(&type, &name);
-  AppendDomainLabel(&type, &protocol);
-  const DomainName local_domain = DomainName::GetLocalDomain();
-  std::copy(local_domain.domain_name().begin(),
-            local_domain.domain_name().end(), domain.c);
-  if (ConstructServiceName(&full_instance_name, &instance, &type, &domain))
+  MakeLocalServiceNameParts(service_instance, service_name, service_protocol,
+                            &instance, &name, &protocol, &type, &domain);
+  if (!ConstructServiceName(&full_instance_name, &instance, &type, &domain))
     return MdnsResponderErrorCode::kInvalidParameters;
 
   for (auto it = service_records_.begin(); it != service_records_.end(); ++it) {
@@ -635,6 +664,39 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::DeregisterService(
       // |it| will be removed from |service_records_| in ServiceCallback, when
       // mDNSResponder is done with the memory.
       mDNS_DeregisterService(&mdns_, it->get());
+      return MdnsResponderErrorCode::kNoError;
+    }
+  }
+  return MdnsResponderErrorCode::kNoError;
+}
+
+MdnsResponderErrorCode MdnsResponderAdapterImpl::UpdateTxtData(
+    const std::string& service_instance,
+    const std::string& service_name,
+    const std::string& service_protocol,
+    const std::map<std::string, std::string>& txt_data) {
+  domainlabel instance;
+  domainlabel name;
+  domainlabel protocol;
+  domainname type;
+  domainname domain;
+  domainname full_instance_name;
+
+  MakeLocalServiceNameParts(service_instance, service_name, service_protocol,
+                            &instance, &name, &protocol, &type, &domain);
+  if (!ConstructServiceName(&full_instance_name, &instance, &type, &domain))
+    return MdnsResponderErrorCode::kInvalidParameters;
+  std::string txt = MakeTxtData(txt_data);
+  if (txt.size() > kMaxStaticTxtDataSize) {
+    // Not handling oversized TXT records.
+    return MdnsResponderErrorCode::kUnsupportedError;
+  }
+
+  for (std::unique_ptr<ServiceRecordSet>& record : service_records_) {
+    if (SameDomainName(&full_instance_name, &record->RR_SRV.namestorage)) {
+      std::copy(txt.begin(), txt.end(), record->RR_TXT.rdatastorage.u.txt.c);
+      mDNS_Update(&mdns_, &record->RR_TXT, 0, txt.size(),
+                  &record->RR_TXT.rdatastorage, nullptr);
       return MdnsResponderErrorCode::kNoError;
     }
   }
@@ -798,6 +860,7 @@ void MdnsResponderAdapterImpl::TxtQueryCallback(mDNS* m,
 void MdnsResponderAdapterImpl::ServiceCallback(mDNS* m,
                                                ServiceRecordSet* service_record,
                                                mStatus result) {
+  // TODO(btolsch): Handle mStatus_NameConflict.
   if (result == mStatus_MemFree) {
     OSP_DLOG_INFO << "free service record";
     auto* adapter = reinterpret_cast<MdnsResponderAdapterImpl*>(

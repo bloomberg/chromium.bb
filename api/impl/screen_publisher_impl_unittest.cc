@@ -39,7 +39,6 @@ class MockMdnsDelegate final : public ScreenPublisherImpl::Delegate {
   MOCK_METHOD0(StopPublisher, void());
   MOCK_METHOD0(SuspendPublisher, void());
   MOCK_METHOD0(ResumePublisher, void());
-  MOCK_METHOD1(UpdateFriendlyName, void(const std::string&));
 };
 
 class ScreenPublisherImplTest : public ::testing::Test {
@@ -151,12 +150,6 @@ TEST_F(ScreenPublisherImplTest, ObserverTransitions) {
   screen_publisher_->Stop();
   EXPECT_CALL(observer, OnStopped()).After(resume_from_suspended);
   mock_delegate.SetState(State::kStopped);
-}
-
-TEST_F(ScreenPublisherImplTest, FriendlyNamePassThrough) {
-  const std::string friendly_name("alpha");
-  EXPECT_CALL(mock_delegate_, UpdateFriendlyName(friendly_name));
-  screen_publisher_->UpdateFriendlyName(friendly_name);
 }
 
 }  // namespace openscreen

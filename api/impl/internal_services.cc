@@ -101,11 +101,10 @@ std::unique_ptr<ScreenPublisher> InternalServices::CreatePublisher(
     const ScreenPublisher::Config& config,
     ScreenPublisher::Observer* observer) {
   auto* services = ReferenceSingleton();
-  // TODO(btolsch): Hostname and instance should either come from config or
-  // platform+generated.
   services->mdns_service_.SetServiceConfig(
-      "turtle-deadbeef", "deadbeef", config.connection_server_port,
-      config.network_interface_indices, {"fn=" + config.friendly_name});
+      config.hostname, config.service_instance_name,
+      config.connection_server_port, config.network_interface_indices,
+      {{"fn", config.friendly_name}});
   auto publisher =
       std::make_unique<ScreenPublisherImpl>(observer, &services->mdns_service_);
   publisher->SetDestructionCallback(&InternalServices::DereferenceSingleton,

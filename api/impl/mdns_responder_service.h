@@ -38,11 +38,12 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
       std::unique_ptr<MdnsPlatformService> platform);
   ~MdnsResponderService() override;
 
-  void SetServiceConfig(const std::string& hostname,
-                        const std::string& instance,
-                        uint16_t port,
-                        const std::vector<platform::InterfaceIndex> whitelist,
-                        const std::vector<std::string>& txt_lines);
+  void SetServiceConfig(
+      const std::string& hostname,
+      const std::string& instance,
+      uint16_t port,
+      const std::vector<platform::InterfaceIndex> whitelist,
+      const std::map<std::string, std::string>& txt_data);
 
   void HandleNewEvents(const std::vector<platform::ReceivedData>& data);
 
@@ -60,7 +61,6 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
   void StopPublisher() override;
   void SuspendPublisher() override;
   void ResumePublisher() override;
-  void UpdateFriendlyName(const std::string& friendly_name) override;
 
  private:
   // NOTE: service_instance implicit in map key.
@@ -111,7 +111,7 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
   std::string service_instance_name_;
   uint16_t service_port_;
   std::vector<platform::InterfaceIndex> interface_index_whitelist_;
-  std::vector<std::string> service_txt_lines_;
+  std::map<std::string, std::string> service_txt_data_;
 
   std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory_;
   std::unique_ptr<mdns::MdnsResponderAdapter> mdns_responder_;

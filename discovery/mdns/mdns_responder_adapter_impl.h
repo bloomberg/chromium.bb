@@ -68,11 +68,16 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
       const std::string& service_protocol,
       const DomainName& target_host,
       uint16_t target_port,
-      const std::vector<std::string>& txt_lines) override;
+      const std::map<std::string, std::string>& txt_data) override;
   MdnsResponderErrorCode DeregisterService(
       const std::string& service_instance,
       const std::string& service_name,
       const std::string& service_protocol) override;
+  MdnsResponderErrorCode UpdateTxtData(
+      const std::string& service_instance,
+      const std::string& service_name,
+      const std::string& service_protocol,
+      const std::map<std::string, std::string>& txt_data) override;
 
  private:
   static void AQueryCallback(mDNS* m,

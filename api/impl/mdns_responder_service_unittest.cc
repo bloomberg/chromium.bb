@@ -104,9 +104,8 @@ class MdnsResponderServiceTest : public ::testing::Test {
     screen_listener_ =
         MakeUnique<ScreenListenerImpl>(&observer_, mdns_service_.get());
 
-    mdns_service_->SetServiceConfig(
-        kTestHostname, kTestServiceInstance, kTestPort, {},
-        {std::string("fn=") + std::string(kTestFriendlyName)});
+    mdns_service_->SetServiceConfig(kTestHostname, kTestServiceInstance,
+                                    kTestPort, {}, {{"fn", kTestFriendlyName}});
     screen_publisher_ = MakeUnique<ScreenPublisherImpl>(&publisher_observer_,
                                                         mdns_service_.get());
   }
@@ -371,9 +370,9 @@ TEST_F(MdnsResponderServiceTest, PublisherStateTransitions) {
 
 TEST_F(MdnsResponderServiceTest, PublisherObeysInterfaceWhitelist) {
   {
-    mdns_service_->SetServiceConfig(
-        kTestHostname, kTestServiceInstance, kTestPort, {},
-        {std::string("fn=") + std::string(kTestFriendlyName)});
+    mdns_service_->SetServiceConfig(kTestHostname, kTestServiceInstance,
+                                    kTestPort, {},
+                                    {{"fn=", kTestFriendlyName}});
 
     EXPECT_CALL(publisher_observer_, OnStarted());
     screen_publisher_->Start();
@@ -390,9 +389,9 @@ TEST_F(MdnsResponderServiceTest, PublisherObeysInterfaceWhitelist) {
     screen_publisher_->Stop();
   }
   {
-    mdns_service_->SetServiceConfig(
-        kTestHostname, kTestServiceInstance, kTestPort, {1, 2},
-        {std::string("fn=") + std::string(kTestFriendlyName)});
+    mdns_service_->SetServiceConfig(kTestHostname, kTestServiceInstance,
+                                    kTestPort, {1, 2},
+                                    {{"fn", kTestFriendlyName}});
 
     EXPECT_CALL(publisher_observer_, OnStarted());
     screen_publisher_->Start();
@@ -409,9 +408,9 @@ TEST_F(MdnsResponderServiceTest, PublisherObeysInterfaceWhitelist) {
     screen_publisher_->Stop();
   }
   {
-    mdns_service_->SetServiceConfig(
-        kTestHostname, kTestServiceInstance, kTestPort, {2},
-        {std::string("fn=") + std::string(kTestFriendlyName)});
+    mdns_service_->SetServiceConfig(kTestHostname, kTestServiceInstance,
+                                    kTestPort, {2},
+                                    {{"fn", kTestFriendlyName}});
 
     EXPECT_CALL(publisher_observer_, OnStarted());
     screen_publisher_->Start();
@@ -443,9 +442,8 @@ TEST_F(MdnsResponderServiceTest, ListenAndPublish) {
     EXPECT_EQ(second_socket_, interfaces[1].socket);
   }
 
-  mdns_service_->SetServiceConfig(
-      kTestHostname, kTestServiceInstance, kTestPort, {2},
-      {std::string("fn=") + std::string(kTestFriendlyName)});
+  mdns_service_->SetServiceConfig(kTestHostname, kTestServiceInstance,
+                                  kTestPort, {2}, {{"fn", kTestFriendlyName}});
 
   auto instances = mdns_responder_factory_->instances();
   EXPECT_CALL(publisher_observer_, OnStarted());
@@ -471,9 +469,8 @@ TEST_F(MdnsResponderServiceTest, ListenAndPublish) {
 }
 
 TEST_F(MdnsResponderServiceTest, PublishAndListen) {
-  mdns_service_->SetServiceConfig(
-      kTestHostname, kTestServiceInstance, kTestPort, {2},
-      {std::string("fn=") + std::string(kTestFriendlyName)});
+  mdns_service_->SetServiceConfig(kTestHostname, kTestServiceInstance,
+                                  kTestPort, {2}, {{"fn", kTestFriendlyName}});
 
   EXPECT_CALL(publisher_observer_, OnStarted());
   screen_publisher_->Start();

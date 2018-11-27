@@ -26,7 +26,6 @@ class ScreenPublisherImpl final : public ScreenPublisher,
     virtual void StopPublisher() = 0;
     virtual void SuspendPublisher() = 0;
     virtual void ResumePublisher() = 0;
-    virtual void UpdateFriendlyName(const std::string& friendly_name) = 0;
 
    protected:
     void SetState(State state) { publisher_->SetState(state); }
@@ -46,7 +45,6 @@ class ScreenPublisherImpl final : public ScreenPublisher,
   bool Stop() override;
   bool Suspend() override;
   bool Resume() override;
-  void UpdateFriendlyName(const std::string& friendly_name) override;
 
  private:
   // Called by |delegate_| to transition the state machine (except kStarting and

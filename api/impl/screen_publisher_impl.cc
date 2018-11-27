@@ -86,9 +86,6 @@ bool ScreenPublisherImpl::Resume() {
   delegate_->ResumePublisher();
   return true;
 }
-void ScreenPublisherImpl::UpdateFriendlyName(const std::string& friendly_name) {
-  delegate_->UpdateFriendlyName(friendly_name);
-}
 
 void ScreenPublisherImpl::SetState(State state) {
   OSP_DCHECK(IsTransitionValid(state_, state));

@@ -6,6 +6,7 @@
 #define DISCOVERY_MDNS_MDNS_RESPONDER_ADAPTER_H_
 
 #include <cstdint>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -237,11 +238,16 @@ class MdnsResponderAdapter {
       const std::string& service_protocol,
       const DomainName& target_host,
       uint16_t target_port,
-      const std::vector<std::string>& txt_lines) = 0;
+      const std::map<std::string, std::string>& txt_data) = 0;
   virtual MdnsResponderErrorCode DeregisterService(
       const std::string& service_instance,
       const std::string& service_name,
       const std::string& service_protocol) = 0;
+  virtual MdnsResponderErrorCode UpdateTxtData(
+      const std::string& service_instance,
+      const std::string& service_name,
+      const std::string& service_protocol,
+      const std::map<std::string, std::string>& txt_data) = 0;
 };
 
 }  // namespace mdns

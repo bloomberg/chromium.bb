@@ -64,7 +64,7 @@ class FakeMdnsResponderAdapter final : public mdns::MdnsResponderAdapter {
     std::string service_protocol;
     mdns::DomainName target_host;
     uint16_t target_port;
-    std::vector<std::string> lines;
+    std::map<std::string, std::string> txt_data;
   };
 
   class LifetimeObserver {
@@ -167,11 +167,16 @@ class FakeMdnsResponderAdapter final : public mdns::MdnsResponderAdapter {
       const std::string& service_protocol,
       const mdns::DomainName& target_host,
       uint16_t target_port,
-      const std::vector<std::string>& lines) override;
+      const std::map<std::string, std::string>& txt_data) override;
   mdns::MdnsResponderErrorCode DeregisterService(
       const std::string& service_instance,
       const std::string& service_name,
       const std::string& service_protocol) override;
+  mdns::MdnsResponderErrorCode UpdateTxtData(
+      const std::string& service_instance,
+      const std::string& service_name,
+      const std::string& service_protocol,
+      const std::map<std::string, std::string>& txt_data) override;
 
  private:
   bool running_ = false;

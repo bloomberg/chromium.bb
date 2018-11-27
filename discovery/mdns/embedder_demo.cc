@@ -267,7 +267,7 @@ void BrowseDemo(const std::string& service_name,
   if (!service_instance.empty()) {
     mdns_adapter->RegisterService(service_instance, service_name,
                                   service_protocol, mdns::DomainName(), 12345,
-                                  {"yurtle", "turtle"});
+                                  {{"k1", "yurtle"}, {"k2", "turtle"}});
   }
 
   for (auto* socket : sockets) {
@@ -281,6 +281,11 @@ void BrowseDemo(const std::string& service_name,
       OSP_LOG_INFO << "num services: " << g_services->size();
       for (const auto& s : *g_services) {
         LogService(s.second);
+      }
+      if (!service_instance.empty()) {
+        mdns_adapter->UpdateTxtData(
+            service_instance, service_name, service_protocol,
+            {{"k1", "oogley"}, {"k2", "moogley"}, {"k3", "googley"}});
       }
       g_dump_services = false;
     }

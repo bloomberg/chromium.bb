@@ -40,7 +40,7 @@ void MdnsResponderService::SetServiceConfig(
     const std::string& instance,
     uint16_t port,
     const std::vector<platform::InterfaceIndex> whitelist,
-    const std::vector<std::string>& txt_lines) {
+    const std::map<std::string, std::string>& txt_data) {
   OSP_DCHECK(!hostname.empty());
   OSP_DCHECK(!instance.empty());
   OSP_DCHECK_NE(0, port);
@@ -48,7 +48,7 @@ void MdnsResponderService::SetServiceConfig(
   service_instance_name_ = instance;
   service_port_ = port;
   interface_index_whitelist_ = whitelist;
-  service_txt_lines_ = txt_lines;
+  service_txt_data_ = txt_data;
 }
 
 void MdnsResponderService::HandleNewEvents(
@@ -135,12 +135,6 @@ void MdnsResponderService::SuspendPublisher() {
 void MdnsResponderService::ResumePublisher() {
   StartService();
   ScreenPublisherImpl::Delegate::SetState(ScreenPublisher::State::kRunning);
-}
-
-void MdnsResponderService::UpdateFriendlyName(
-    const std::string& friendly_name) {
-  // TODO(btolsch): Need an MdnsResponderAdapter method to update the TXT
-  // record.
 }
 
 void MdnsResponderService::HandleMdnsEvents() {
@@ -238,7 +232,7 @@ void MdnsResponderService::StartService() {
   OSP_CHECK(domain_name.Append(mdns::DomainName::GetLocalDomain()));
   mdns_responder_->RegisterService(service_instance_name_, service_type_[0],
                                    service_type_[1], domain_name, service_port_,
-                                   service_txt_lines_);
+                                   service_txt_data_);
 }
 
 void MdnsResponderService::StopService() {
