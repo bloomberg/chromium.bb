@@ -15,13 +15,15 @@
 
 namespace content {
 
-// Wrapper around a webrtc::RTCStatsReport that also filters out any stats
-// objects that aren't whitelisted, and any members that aren't standardized
-// (using RTCStatsMemberInterface::is_standardized).
+// Wrapper around a webrtc::RTCStatsReport. Filters out any stats objects that
+// aren't whitelisted. |filter| controls whether to include only standard
+// members (RTCStatsMemberInterface::is_standardized return true) or not
+// (RTCStatsMemberInterface::is_standardized return false).
 class CONTENT_EXPORT RTCStatsReport : public blink::WebRTCStatsReport {
  public:
   RTCStatsReport(
-      const scoped_refptr<const webrtc::RTCStatsReport>& stats_report);
+      const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
+      blink::RTCStatsFilter filter);
   ~RTCStatsReport() override;
   std::unique_ptr<blink::WebRTCStatsReport> CopyHandle() const override;
 
@@ -34,12 +36,14 @@ class CONTENT_EXPORT RTCStatsReport : public blink::WebRTCStatsReport {
   const scoped_refptr<const webrtc::RTCStatsReport> stats_report_;
   webrtc::RTCStatsReport::ConstIterator it_;
   const webrtc::RTCStatsReport::ConstIterator end_;
+  blink::RTCStatsFilter filter_;
 };
 
 class CONTENT_EXPORT RTCStats : public blink::WebRTCStats {
  public:
   RTCStats(const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
-           const webrtc::RTCStats* stats);
+           const webrtc::RTCStats* stats,
+           blink::RTCStatsFilter filter);
   ~RTCStats() override;
 
   blink::WebString Id() const override;
@@ -98,7 +102,8 @@ class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
  public:
   static rtc::scoped_refptr<RTCStatsCollectorCallbackImpl> Create(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-      std::unique_ptr<blink::WebRTCStatsReportCallback> callback);
+      std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+      blink::RTCStatsFilter);
 
   void OnStatsDelivered(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override;
@@ -106,7 +111,8 @@ class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
  protected:
   RTCStatsCollectorCallbackImpl(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-      blink::WebRTCStatsReportCallback* callback);
+      blink::WebRTCStatsReportCallback* callback,
+      blink::RTCStatsFilter);
   ~RTCStatsCollectorCallbackImpl() override;
 
   void OnStatsDeliveredOnMainThread(
@@ -114,6 +120,7 @@ class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   std::unique_ptr<blink::WebRTCStatsReportCallback> callback_;
+  blink::RTCStatsFilter filter_;
 };
 
 CONTENT_EXPORT void WhitelistStatsForTesting(const char* type);

@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_contributing_source.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_capabilities.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_stats_report.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -39,7 +40,8 @@ RTCRtpReceiver::getContributingSources() {
 ScriptPromise RTCRtpReceiver::getStats(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  receiver_->GetStats(WebRTCStatsReportCallbackResolver::Create(resolver));
+  receiver_->GetStats(WebRTCStatsReportCallbackResolver::Create(resolver),
+                      GetRTCStatsFilter(script_state));
   return promise;
 }
 

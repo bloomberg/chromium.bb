@@ -32,7 +32,8 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
   virtual WebVector<WebString> StreamIds() const = 0;
   virtual WebVector<std::unique_ptr<WebRTCRtpContributingSource>>
   GetSources() = 0;
-  virtual void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) = 0;
+  virtual void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
+                        RTCStatsFilter) = 0;
 };
 
 }  // namespace blink

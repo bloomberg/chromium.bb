@@ -1914,8 +1914,8 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
     ScriptPromiseResolver* resolver =
         ScriptPromiseResolver::Create(script_state);
     ScriptPromise promise = resolver->Promise();
-    peer_handler_->GetStats(
-        WebRTCStatsReportCallbackResolver::Create(resolver));
+    peer_handler_->GetStats(WebRTCStatsReportCallbackResolver::Create(resolver),
+                            GetRTCStatsFilter(script_state));
 
     return promise;
   }
