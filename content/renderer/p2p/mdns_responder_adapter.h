@@ -32,7 +32,7 @@ class MdnsResponderAdapter : public webrtc::MdnsResponderInterface {
                             NameRemovedCallback callback) override;
 
  private:
-  network::mojom::MdnsResponderPtr client_;
+  scoped_refptr<network::mojom::ThreadSafeMdnsResponderPtr> thread_safe_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MdnsResponderAdapter);
 };
