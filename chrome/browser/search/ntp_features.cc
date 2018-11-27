@@ -17,17 +17,17 @@ const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
 // If enabled, the user will see a configuration UI, and be able to select
 // background images to set on the New Tab Page. Implicitly enables |kNtpIcons|.
 const base::Feature kNtpBackgrounds{"NewTabPageBackgrounds",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the user will see the Most Visited tiles updated with Material
 // Design elements. Implicitly enables |kNtpUIMd|.
 const base::Feature kNtpIcons{"NewTabPageIcons",
-                              base::FEATURE_DISABLED_BY_DEFAULT};
+                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the user will see the New Tab Page updated with Material Design
 // elements.
 const base::Feature kNtpUIMd{"NewTabPageUIMd",
-                             base::FEATURE_DISABLED_BY_DEFAULT};
+                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the user will sometimes see promos on the NTP.
 const base::Feature kPromosOnLocalNtp{"PromosOnLocalNtp",
