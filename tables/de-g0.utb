@@ -40,8 +40,6 @@
 #
 #-------------------------------------------------------------------------------
 
-
-include de-eurobrl6.dis
 include de-chardefs6.cti
 # for a detailed representation of french and italian accents un-comment the next line
 #include de-accents-detailed.cti
