@@ -57,6 +57,44 @@ TEST_F(CullRectTest, IntersectsTransformed) {
   EXPECT_FALSE(cull_rect.Intersects(IntRect(52, 52, 1, 1)));
 }
 
+TEST_F(CullRectTest, Infinite) {
+  EXPECT_TRUE(CullRect::Infinite().IsInfinite());
+  EXPECT_TRUE(CullRect(LayoutRect::InfiniteIntRect()).IsInfinite());
+  EXPECT_FALSE(CullRect(IntRect(0, 0, 100, 100)).IsInfinite());
+}
+
+TEST_F(CullRectTest, Move) {
+  CullRect cull_rect(IntRect(0, 0, 50, 50));
+  cull_rect.Move(IntSize());
+  EXPECT_EQ(IntRect(0, 0, 50, 50), cull_rect.Rect());
+  cull_rect.Move(IntSize(10, 20));
+  EXPECT_EQ(IntRect(10, 20, 50, 50), cull_rect.Rect());
+}
+
+TEST_F(CullRectTest, MoveInfinite) {
+  CullRect cull_rect = CullRect::Infinite();
+  cull_rect.Move(IntSize());
+  EXPECT_TRUE(cull_rect.IsInfinite());
+  cull_rect.Move(IntSize(10, 20));
+  EXPECT_TRUE(cull_rect.IsInfinite());
+}
+
+TEST_F(CullRectTest, MoveBy) {
+  CullRect cull_rect(IntRect(0, 0, 50, 50));
+  cull_rect.MoveBy(IntPoint());
+  EXPECT_EQ(IntRect(0, 0, 50, 50), cull_rect.Rect());
+  cull_rect.MoveBy(IntPoint(10, 20));
+  EXPECT_EQ(IntRect(10, 20, 50, 50), cull_rect.Rect());
+}
+
+TEST_F(CullRectTest, MoveByInfinite) {
+  CullRect cull_rect = CullRect::Infinite();
+  cull_rect.MoveBy(IntPoint());
+  EXPECT_TRUE(cull_rect.IsInfinite());
+  cull_rect.MoveBy(IntPoint(10, 20));
+  EXPECT_TRUE(cull_rect.IsInfinite());
+}
+
 TEST_F(CullRectTest, ApplyTransform) {
   CullRect cull_rect(IntRect(1, 1, 50, 50));
   auto transform =
@@ -64,6 +102,15 @@ TEST_F(CullRectTest, ApplyTransform) {
   EXPECT_EQ(kNotExpanded, ApplyTransform(cull_rect, transform.get()));
 
   EXPECT_EQ(IntRect(0, 0, 50, 50), cull_rect.Rect());
+}
+
+TEST_F(CullRectTest, ApplyTransformInfinite) {
+  CullRect cull_rect = CullRect::Infinite();
+  auto transform =
+      CreateTransform(t0(), TransformationMatrix().Translate(1, 1));
+  EXPECT_EQ(kNotExpanded, ApplyTransform(cull_rect, transform.get()));
+
+  EXPECT_TRUE(cull_rect.IsInfinite());
 }
 
 TEST_F(CullRectTest, ApplyScrollTranslationPartialScrollingContents) {
@@ -85,6 +132,13 @@ TEST_F(CullRectTest, ApplyScrollTranslationPartialScrollingContents) {
   // Inverse transformed: (3020, 5010, 30, 50)
   // Expanded: (-980, 1010, 8030, 8050)
   EXPECT_EQ(IntRect(-980, 1010, 8030, 8050), cull_rect.Rect());
+
+  cull_rect = CullRect::Infinite();
+  EXPECT_EQ(kExpandedForPartialScrollingContents,
+            ApplyTransform(cull_rect, scroll_translation.get()));
+  // This result differs from the above result in height (8040 vs 8030)
+  // because it's not clipped by the infinite input cull rect.
+  EXPECT_EQ(IntRect(-980, 1010, 8040, 8050), cull_rect.Rect());
 }
 
 TEST_F(CullRectTest, ApplyScrollTranslationNoIntersectionWithContainerRect) {
@@ -120,6 +174,13 @@ TEST_F(CullRectTest, ApplyScrollTranslationWholeScrollingContents) {
   // Inverse transformed: (30, 25, 30, 50)
   // Expanded: (-3970, -3975, 8030, 8050)
   EXPECT_EQ(IntRect(-3970, -3975, 8030, 8050), cull_rect.Rect());
+
+  cull_rect = CullRect::Infinite();
+  EXPECT_EQ(kExpandedForWholeScrollingContents,
+            ApplyTransform(cull_rect, scroll_translation.get()));
+  // This result differs from the above result in height (8040 vs 8030)
+  // because it's not clipped by the infinite input cull rect.
+  EXPECT_EQ(IntRect(-3970, -3975, 8040, 8050), cull_rect.Rect());
 }
 
 TEST_F(CullRectTest, ChangedEnoughEmpty) {
@@ -167,6 +228,10 @@ TEST_F(CullRectTest, ApplyTransformsSameTransform) {
   // Should ignore old_cull_rect.
   cull_rect2.ApplyTransforms(transform.get(), transform.get(), old_cull_rect);
   EXPECT_EQ(cull_rect1, cull_rect2);
+
+  CullRect infinite = CullRect::Infinite();
+  infinite.ApplyTransforms(transform.get(), transform.get(), base::nullopt);
+  EXPECT_TRUE(infinite.IsInfinite());
 }
 
 TEST_F(CullRectTest, ApplyTransformsWithoutScroll) {
@@ -188,6 +253,10 @@ TEST_F(CullRectTest, ApplyTransformsWithoutScroll) {
   // Should ignore old_cull_rect.
   cull_rect3.ApplyTransforms(&t0(), t2.get(), old_cull_rect);
   EXPECT_EQ(cull_rect2, cull_rect3);
+
+  CullRect infinite = CullRect::Infinite();
+  infinite.ApplyTransforms(&t0(), t2.get(), base::nullopt);
+  EXPECT_TRUE(infinite.IsInfinite());
 }
 
 TEST_F(CullRectTest, ApplyTransformsSingleScrollWholeScrollingContents) {
@@ -212,6 +281,12 @@ TEST_F(CullRectTest, ApplyTransformsSingleScrollWholeScrollingContents) {
   // Should ignore old_cull_rect.
   cull_rect2.ApplyTransforms(t1.get(), scroll_translation.get(), old_cull_rect);
   EXPECT_EQ(cull_rect1, cull_rect2);
+
+  CullRect cull_rect3 = CullRect::Infinite();
+  cull_rect3.ApplyTransforms(t1.get(), scroll_translation.get(), base::nullopt);
+  // This result differs from the first result in height (8040 vs 8030)
+  // because it's not clipped by the infinite input cull rect.
+  EXPECT_EQ(IntRect(-3970, -3975, 8040, 8050), cull_rect3.Rect());
 }
 
 TEST_F(CullRectTest, ApplyTransformsSingleScrollPartialScrollingContents) {
@@ -242,6 +317,12 @@ TEST_F(CullRectTest, ApplyTransformsSingleScrollPartialScrollingContents) {
   // Use the new cull rect if it changed enough.
   cull_rect3.ApplyTransforms(t1.get(), scroll_translation.get(), old_cull_rect);
   EXPECT_EQ(cull_rect1, cull_rect3);
+
+  CullRect cull_rect4 = CullRect::Infinite();
+  cull_rect4.ApplyTransforms(t1.get(), scroll_translation.get(), base::nullopt);
+  // This result differs from the first result in height (8040 vs 8030)
+  // because it's not clipped by the infinite input cull rect.
+  EXPECT_EQ(IntRect(-980, 1010, 8040, 8050), cull_rect4.Rect());
 }
 
 TEST_F(CullRectTest, ApplyTransformsEscapingScroll) {
