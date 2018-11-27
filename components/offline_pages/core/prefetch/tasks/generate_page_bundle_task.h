@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/time/clock.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -37,15 +36,11 @@ class GeneratePageBundleTask : public Task {
   // Task implementation.
   void Run() override;
 
-  void SetClockForTesting(base::Clock* clock);
-
  private:
   void StartGeneratePageBundle(std::unique_ptr<UrlAndIds> url_and_ids);
   void GotRegistrationId(std::unique_ptr<UrlAndIds> url_and_ids,
                          const std::string& id,
                          instance_id::InstanceID::Result result);
-
-  base::Clock* clock_;
 
   PrefetchDispatcher* prefetch_dispatcher_;
   PrefetchStore* prefetch_store_;

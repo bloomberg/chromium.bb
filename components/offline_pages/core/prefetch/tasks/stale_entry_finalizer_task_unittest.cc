@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -50,16 +52,15 @@ class StaleEntryFinalizerTaskTest : public PrefetchTaskTestBase {
  protected:
   TestPrefetchDispatcher dispatcher_;
   std::unique_ptr<StaleEntryFinalizerTask> stale_finalizer_task_;
-  base::Time fake_now_;
+  base::SimpleTestClock simple_test_clock_;
 };
 
 void StaleEntryFinalizerTaskTest::SetUp() {
   PrefetchTaskTestBase::SetUp();
   stale_finalizer_task_ =
       std::make_unique<StaleEntryFinalizerTask>(dispatcher(), store());
-  fake_now_ = base::Time() + base::TimeDelta::FromDays(100);
-  stale_finalizer_task_->SetNowGetterForTesting(base::BindRepeating(
-      [](base::Time t) -> base::Time { return t; }, fake_now_));
+  simple_test_clock_.SetNow(base::Time() + base::TimeDelta::FromDays(100));
+  SetOfflineClockForTesting(&simple_test_clock_);
 }
 
 void StaleEntryFinalizerTaskTest::TearDown() {
@@ -71,8 +72,8 @@ PrefetchItem StaleEntryFinalizerTaskTest::CreateAndInsertItem(
     PrefetchItemState state,
     int time_delta_in_hours) {
   PrefetchItem item(item_generator()->CreateItem(state));
-  item.freshness_time =
-      fake_now_ + base::TimeDelta::FromHours(time_delta_in_hours);
+  item.freshness_time = simple_test_clock_.Now() +
+                        base::TimeDelta::FromHours(time_delta_in_hours);
   item.creation_time = item.freshness_time;
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item))
       << "Failed inserting item with state " << static_cast<int>(state);

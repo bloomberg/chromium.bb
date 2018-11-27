@@ -13,7 +13,9 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -90,7 +92,7 @@ Result AddUrlsAndCleanupZombiesSync(
       FindExistingPrefetchItemsInNamespaceSync(db, name_space);
 
   int added_row_count = 0;
-  base::Time now = base::Time::Now();
+  base::Time now = OfflineClock()->Now();
   // Insert rows in reverse order to ensure that the beginning of the list has
   // the newest timestamp.  This will cause it to be prefetched first.
   for (auto candidate_iter = candidate_prefetch_urls.rbegin();

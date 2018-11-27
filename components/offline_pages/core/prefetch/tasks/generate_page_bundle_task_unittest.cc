@@ -10,6 +10,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -106,7 +107,7 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
   GeneratePageBundleTask task(dispatcher(), store(), gcm_handler(),
                               prefetch_request_factory(),
                               request_callback.Get());
-  task.SetClockForTesting(&clock);
+  SetOfflineClockForTesting(&clock);
   RunTask(&task);
 
   // Note: even though the requested URLs checked further below are in undefined

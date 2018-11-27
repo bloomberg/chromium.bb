@@ -13,6 +13,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/time/clock.h"
+#include "base/time/time.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -160,7 +163,7 @@ bool ReportMetricsAndFinalizeSync(sql::Database* db) {
 
   const std::vector<PrefetchItemStats> urls = FetchUrlsSync(db);
 
-  base::Time now = base::Time::Now();
+  base::Time now = OfflineClock()->Now();
   for (const auto& url : urls) {
     MarkUrlAsZombie(db, now, url.offline_id);
   }
