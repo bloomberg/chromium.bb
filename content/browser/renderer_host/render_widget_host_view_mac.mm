@@ -48,6 +48,7 @@
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/secure_password_input.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
 #include "ui/base/ui_base_features.h"
@@ -252,6 +253,10 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 void RenderWidgetHostViewMac::MigrateNSViewBridge(
     NSViewBridgeFactoryHost* bridge_factory_host,
     uint64_t parent_ns_view_id) {
+  // Destroy previous remote accessibility elements.
+  remote_window_accessible_.reset();
+  remote_view_accessible_.reset();
+
   // Disconnect from the previous bridge (this will have the effect of
   // destroying the associated bridge), and close the binding (to allow it
   // to be re-bound). Note that |ns_view_bridge_local_| remains valid.
@@ -492,6 +497,8 @@ gfx::NativeView RenderWidgetHostViewMac::GetNativeView() const {
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
+  if (remote_view_accessible_)
+    return remote_view_accessible_.get();
   return cocoa_view();
 }
 
@@ -1399,6 +1406,8 @@ gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
 
 gfx::NativeViewAccessible
 RenderWidgetHostViewMac::AccessibilityGetNativeViewAccessible() {
+  if (remote_view_accessible_)
+    return remote_view_accessible_.get();
   return cocoa_view();
 }
 
@@ -1430,6 +1439,14 @@ MouseWheelPhaseHandler* RenderWidgetHostViewMac::GetMouseWheelPhaseHandler() {
 id RenderWidgetHostViewMac::GetRootBrowserAccessibilityElement() {
   if (auto* manager = host()->GetRootBrowserAccessibilityManager())
     return ToBrowserAccessibilityCocoa(manager->GetRoot());
+  return nil;
+}
+
+id RenderWidgetHostViewMac::GetFocusedBrowserAccessibilityElement() {
+  // This function should never be called because
+  // |accessibility_focus_overrider_| override the application focus query.
+  DLOG(ERROR) << "GetFocusedBrowserAccessibilityElement should not be reached "
+                 "in-process.";
   return nil;
 }
 
@@ -1905,6 +1922,23 @@ void RenderWidgetHostViewMac::StartSpeaking() {
 
 void RenderWidgetHostViewMac::StopSpeaking() {
   ui::TextServicesContextMenu::StopSpeaking();
+}
+
+void RenderWidgetHostViewMac::SyncConnectAccessibilityElements(
+    const std::vector<uint8_t>& window_token,
+    const std::vector<uint8_t>& view_token,
+    SyncConnectAccessibilityElementsCallback callback) {
+  remote_window_accessible_ =
+      ui::RemoteAccessibility::GetRemoteElementFromToken(window_token);
+  remote_view_accessible_ =
+      ui::RemoteAccessibility::GetRemoteElementFromToken(view_token);
+  [remote_view_accessible_ setWindowUIElement:remote_window_accessible_.get()];
+  [remote_view_accessible_
+      setTopLevelUIElement:remote_window_accessible_.get()];
+
+  id element_id = GetRootBrowserAccessibilityElement();
+  std::move(callback).Run(
+      getpid(), ui::RemoteAccessibility::GetTokenForLocalElement(element_id));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

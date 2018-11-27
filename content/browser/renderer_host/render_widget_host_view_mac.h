@@ -37,6 +37,7 @@ class ScopedPasswordInputEnabler;
 
 @protocol RenderWidgetHostViewMacDelegate;
 
+@class NSAccessibilityRemoteUIElement;
 @class RenderWidgetHostViewCocoa;
 
 namespace content {
@@ -300,6 +301,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // RenderWidgetHostNSViewClientHelper implementation.
   id GetRootBrowserAccessibilityElement() override;
+  id GetFocusedBrowserAccessibilityElement() override;
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
                             const ui::LatencyInfo& latency_info) override;
   void ForwardKeyboardEventWithCommands(
@@ -388,6 +390,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void StopSpeaking() override;
   bool SyncIsSpeaking(bool* is_speaking) override;
   void SyncIsSpeaking(SyncIsSpeakingCallback callback) override;
+  void SyncConnectAccessibilityElements(
+      const std::vector<uint8_t>& window_token,
+      const std::vector<uint8_t>& view_token,
+      SyncConnectAccessibilityElementsCallback callback) override;
 
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;
@@ -626,6 +632,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // requests surfaces be synchronized via
   // EnsureSurfaceSynchronizedForLayoutTest().
   uint32_t latest_capture_sequence_number_ = 0u;
+
+  // Remote accessibility objects corresponding to the NSWindow and its root
+  // NSView.
+  base::scoped_nsobject<NSAccessibilityRemoteUIElement>
+      remote_window_accessible_;
+  base::scoped_nsobject<NSAccessibilityRemoteUIElement> remote_view_accessible_;
 
   // Used to force the NSApplication's focused accessibility element to be the
   // content::BrowserAccessibilityCocoa accessibility tree when the NSView for

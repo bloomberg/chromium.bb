@@ -30,6 +30,7 @@
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/base/cocoa/remote_accessibility_api.h"
 
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 
@@ -2284,7 +2285,23 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!manager || !manager->GetParentView())
     return nil;
 
-  return [manager->GetParentView() window];
+  id parent = manager->GetParentView();
+
+  // If |parent| is an NSView in this process, then return the corresponding
+  // NSWindow.
+  if (auto* view = base::mac::ObjCCast<NSView>(parent))
+    return [view window];
+
+  // If |parent| is a NSAccessibilityRemoteUIElement for an NSView in another
+  // process then return the NSAccessibilityRemoteUIElement for its NSWindow in
+  // that other process.
+  if (auto* element =
+          base::mac::ObjCCast<NSAccessibilityRemoteUIElement>(parent)) {
+    return [element windowUIElement];
+  }
+
+  DLOG(ERROR) << "Failed to find window accessibility element.";
+  return nil;
 }
 
 - (NSString*)methodNameForAttribute:(NSString*)attribute {

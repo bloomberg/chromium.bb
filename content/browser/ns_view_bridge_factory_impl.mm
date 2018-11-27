@@ -5,6 +5,7 @@
 #include "content/public/browser/ns_view_bridge_factory_impl.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/no_destructor.h"
@@ -15,6 +16,7 @@
 #include "content/common/render_widget_host_ns_view.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
+#include "ui/base/cocoa/remote_accessibility_api.h"
 
 namespace content {
 
@@ -44,7 +46,29 @@ class RenderWidgetHostNSViewBridgeOwner
   }
 
   // RenderWidgetHostNSViewClientHelper implementation.
-  id GetRootBrowserAccessibilityElement() override { return nil; }
+  id GetRootBrowserAccessibilityElement() override {
+    NSView* view = bridge_->GetRenderWidgetHostViewCocoa();
+    NSWindow* window = [view window];
+    // Send accessibility tokens only once the view has been attached to a
+    // window.
+    if (window && !remote_accessibility_element_) {
+      int64_t browser_pid = 0;
+      std::vector<uint8_t> element_token;
+      client_->SyncConnectAccessibilityElements(
+          ui::RemoteAccessibility::GetTokenForLocalElement(window),
+          ui::RemoteAccessibility::GetTokenForLocalElement(view), &browser_pid,
+          &element_token);
+      [NSAccessibilityRemoteUIElement
+          registerRemoteUIProcessIdentifier:browser_pid];
+      remote_accessibility_element_ =
+          ui::RemoteAccessibility::GetRemoteElementFromToken(element_token);
+    }
+    return remote_accessibility_element_.get();
+  }
+  id GetFocusedBrowserAccessibilityElement() override {
+    return GetRootBrowserAccessibilityElement();
+  }
+
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
                             const ui::LatencyInfo& latency_info) override {
     const blink::WebKeyboardEvent* web_event =
@@ -103,6 +127,8 @@ class RenderWidgetHostNSViewBridgeOwner
 
   mojom::RenderWidgetHostNSViewClientAssociatedPtr client_;
   std::unique_ptr<RenderWidgetHostNSViewBridgeLocal> bridge_;
+  base::scoped_nsobject<NSAccessibilityRemoteUIElement>
+      remote_accessibility_element_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridgeOwner);
 };

@@ -61,6 +61,7 @@ class DummyClientHelper : public RenderWidgetHostNSViewClientHelper {
  private:
   // RenderWidgetHostNSViewClientHelper implementation.
   id GetRootBrowserAccessibilityElement() override { return nil; }
+  id GetFocusedBrowserAccessibilityElement() override { return nil; }
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
                             const ui::LatencyInfo& latency_info) override {}
   void ForwardKeyboardEventWithCommands(
@@ -1448,10 +1449,7 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (id)accessibilityFocusedUIElement {
-  // This function should almost-never be called because when |self| is the
-  // first responder for the key NSWindow, RenderWidgetHostViewMac's
-  // AccessibilityFocusOverrider will override the accessibility focus query.
-  return [super accessibilityFocusedUIElement];
+  return clientHelper_->GetFocusedBrowserAccessibilityElement();
 }
 
 // Below is our NSTextInputClient implementation.
