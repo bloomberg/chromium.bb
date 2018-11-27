@@ -255,20 +255,16 @@ void FakeAppInstance::SetTaskInfo(int32_t task_id,
 }
 
 void FakeAppInstance::SendRefreshPackageList(
-    const std::vector<mojom::ArcPackageInfo>& packages) {
-  std::vector<mojom::ArcPackageInfoPtr> v;
-  for (const auto& package : packages)
-    v.emplace_back(package.Clone());
-  app_host_->OnPackageListRefreshed(std::move(v));
+    std::vector<mojom::ArcPackageInfoPtr> packages) {
+  app_host_->OnPackageListRefreshed(std::move(packages));
 }
 
-void FakeAppInstance::SendPackageAdded(const mojom::ArcPackageInfo& package) {
-  app_host_->OnPackageAdded(mojom::ArcPackageInfoPtr(package.Clone()));
+void FakeAppInstance::SendPackageAdded(mojom::ArcPackageInfoPtr package) {
+  app_host_->OnPackageAdded(std::move(package));
 }
 
-void FakeAppInstance::SendPackageModified(
-    const mojom::ArcPackageInfo& package) {
-  app_host_->OnPackageModified(mojom::ArcPackageInfoPtr(package.Clone()));
+void FakeAppInstance::SendPackageModified(mojom::ArcPackageInfoPtr package) {
+  app_host_->OnPackageModified(std::move(package));
 }
 
 void FakeAppInstance::SendPackageUninstalled(const std::string& package_name) {

@@ -134,8 +134,7 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile) {
   // OnPackageListRefreshed will be called when AppInstance is ready.
   // For fakeAppInstance we use SendRefreshPackageList to make sure that
   // OnPackageListRefreshed will be called.
-  instance_map_[profile]->SendRefreshPackageList(
-      std::vector<arc::mojom::ArcPackageInfo>());
+  instance_map_[profile]->SendRefreshPackageList({});
 }
 
 void SyncArcPackageHelper::InstallPackage(

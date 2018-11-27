@@ -355,21 +355,21 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
   // Validate that prefs have right packages.
   void ValidateHavePackages(
-      const std::vector<arc::mojom::ArcPackageInfo> packages) {
+      const std::vector<arc::mojom::ArcPackageInfoPtr>& packages) {
     ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
     ASSERT_NE(nullptr, prefs);
     const std::vector<std::string> pref_packages =
         prefs->GetPackagesFromPrefs();
     ASSERT_EQ(packages.size(), pref_packages.size());
     for (const auto& package : packages) {
-      const std::string package_name = package.package_name;
+      const std::string& package_name = package->package_name;
       std::unique_ptr<ArcAppListPrefs::PackageInfo> package_info =
           prefs->GetPackage(package_name);
       ASSERT_NE(nullptr, package_info.get());
-      EXPECT_EQ(package.last_backup_android_id,
+      EXPECT_EQ(package->last_backup_android_id,
                 package_info->last_backup_android_id);
-      EXPECT_EQ(package.last_backup_time, package_info->last_backup_time);
-      EXPECT_EQ(package.sync, package_info->should_sync);
+      EXPECT_EQ(package->last_backup_time, package_info->last_backup_time);
+      EXPECT_EQ(package->sync, package_info->should_sync);
     }
   }
 
@@ -457,14 +457,20 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     prefs->MaybeRemoveIconRequestRecord(app_id);
   }
 
-  void AddPackage(const arc::mojom::ArcPackageInfo& package) {
-    arc_test_.AddPackage(package);
-    app_instance()->SendPackageAdded(package);
+  arc::mojom::ArcPackageInfoPtr CreatePackage(const std::string& package_name) {
+    return arc::mojom::ArcPackageInfo::New(
+        package_name, 1 /* package_version */, 1 /* last_backup_android_id */,
+        1 /* last_backup_time */, true /* sync */);
   }
 
-  void RemovePackage(const arc::mojom::ArcPackageInfo& package) {
-    arc_test_.RemovePackage(package);
-    app_instance()->SendPackageUninstalled(package.package_name);
+  void AddPackage(const arc::mojom::ArcPackageInfoPtr& package) {
+    arc_test_.AddPackage(package->Clone());
+    app_instance()->SendPackageAdded(package->Clone());
+  }
+
+  void RemovePackage(const std::string& package_name) {
+    arc_test_.RemovePackage(package_name);
+    app_instance()->SendPackageUninstalled(package_name);
   }
 
   AppListControllerDelegate* controller() { return controller_.get(); }
@@ -481,7 +487,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     return arc_test_.fake_default_apps();
   }
 
-  const std::vector<arc::mojom::ArcPackageInfo>& fake_packages() const {
+  const std::vector<arc::mojom::ArcPackageInfoPtr>& fake_packages() const {
     return arc_test_.fake_packages();
   }
 
@@ -711,20 +717,18 @@ class ArcVoiceInteractionTest : public ArcPlayStoreAppTest {
 };
 
 TEST_P(ArcAppModelBuilderTest, ArcPackagePref) {
-  ValidateHavePackages(std::vector<arc::mojom::ArcPackageInfo>());
-  app_instance()->SendRefreshPackageList(fake_packages());
+  ValidateHavePackages({});
+  app_instance()->SendRefreshPackageList(
+      ArcAppTest::ClonePackages(fake_packages()));
   ValidateHavePackages(fake_packages());
 
-  arc::mojom::ArcPackageInfo package;
-  package.package_name = kTestPackageName;
-  package.package_version = 2;
-  package.last_backup_android_id = 2;
-  package.last_backup_time = 2;
-  package.sync = true;
-
-  RemovePackage(package);
+  RemovePackage(kTestPackageName);
   ValidateHavePackages(fake_packages());
 
+  auto package = CreatePackage(kTestPackageName);
+  package->package_version = 2;
+  package->last_backup_android_id = 2;
+  package->last_backup_time = 2;
   AddPackage(package);
   ValidateHavePackages(fake_packages());
 }
@@ -738,24 +742,20 @@ TEST_P(ArcAppModelBuilderTest, RefreshAllOnReady) {
 }
 
 TEST_P(ArcAppModelBuilderTest, RefreshAllFillsContent) {
-  ValidateHaveApps(std::vector<arc::mojom::AppInfo>());
+  ValidateHaveApps({});
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(fake_apps());
   ValidateHaveApps(fake_apps());
 }
 
 TEST_P(ArcAppModelBuilderTest, InstallUninstallShortcut) {
-  ValidateHaveApps(std::vector<arc::mojom::AppInfo>());
+  ValidateHaveApps({});
 
   std::vector<arc::mojom::ShortcutInfo> shortcuts = fake_shortcuts();
   ASSERT_GE(shortcuts.size(), 2U);
 
   // Adding package is required to safely call SendPackageUninstalled.
-  arc::mojom::ArcPackageInfo package;
-  package.package_name = shortcuts[1].package_name;
-  package.package_version = 1;
-  package.sync = true;
-  AddPackage(package);
+  AddPackage(CreatePackage(shortcuts[1].package_name));
 
   app_instance()->SendInstallShortcuts(shortcuts);
   ValidateHaveShortcuts(shortcuts);
@@ -1849,13 +1849,6 @@ TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
   ui::test::ScopedSetSupportedScaleFactors scoped_supported_scale_factors(
       supported_scale_factors);
 
-  arc::mojom::ArcPackageInfo package;
-  package.package_name = fake_apps()[0].package_name;
-  package.package_version = 1;
-  package.last_backup_android_id = 1;
-  package.last_backup_time = 1;
-  package.sync = true;
-
   ASSERT_FALSE(fake_apps().empty());
   std::vector<arc::mojom::AppInfo> apps = std::vector<arc::mojom::AppInfo>(
       fake_apps().begin(), fake_apps().begin() + 1);
@@ -1868,6 +1861,7 @@ TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
 
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(apps);
+  auto package = CreatePackage(fake_apps()[0].package_name);
   AddPackage(package);
 
   prefs->MaybeRequestIcon(app_id,
@@ -1882,15 +1876,15 @@ TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
   ASSERT_NE(nullptr, prefs);
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(apps);
-  app_instance()->SendPackageModified(package);
+  app_instance()->SendPackageModified(package->Clone());
 
   // No icon update requests on restart. Icons were not invalidated.
   EXPECT_TRUE(app_instance()->icon_requests().empty());
 
   // Send new apps for the package. This should invalidate package icons.
-  package.package_version = 2;
+  package->package_version = 2;
   app_instance()->SendPackageAppListRefreshed(apps[0].package_name, apps);
-  app_instance()->SendPackageModified(package);
+  app_instance()->SendPackageModified(package->Clone());
   base::RunLoop().RunUntilIdle();
 
   // Requests to reload icons are issued for all supported scales.
@@ -1913,7 +1907,7 @@ TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
   ASSERT_NE(nullptr, prefs);
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(apps);
-  app_instance()->SendPackageModified(package);
+  app_instance()->SendPackageModified(package->Clone());
 
   // No new icon update requests on restart. Icons were invalidated and updated.
   EXPECT_TRUE(app_instance()->icon_requests().empty());
@@ -2101,23 +2095,20 @@ TEST_P(ArcAppModelBuilderTest, ArcAppsAndShortcutsOnPackageChange) {
 
   std::vector<arc::mojom::AppInfo> apps = fake_apps();
   ASSERT_GE(apps.size(), 3U);
-  apps[0].package_name = apps[2].package_name;
-  apps[1].package_name = apps[2].package_name;
+  const std::string& test_package_name = apps[2].package_name;
+  apps[0].package_name = test_package_name;
+  apps[1].package_name = test_package_name;
 
   std::vector<arc::mojom::ShortcutInfo> shortcuts = fake_shortcuts();
   for (auto& shortcut : shortcuts)
-    shortcut.package_name = apps[0].package_name;
+    shortcut.package_name = test_package_name;
 
   // Second app should be preserved after update.
   std::vector<arc::mojom::AppInfo> apps1(apps.begin(), apps.begin() + 2);
   std::vector<arc::mojom::AppInfo> apps2(apps.begin() + 1, apps.begin() + 3);
 
   // Adding package is required to safely call SendPackageUninstalled.
-  arc::mojom::ArcPackageInfo package;
-  package.package_name = apps[0].package_name;
-  package.package_version = 1;
-  package.sync = true;
-  AddPackage(package);
+  AddPackage(CreatePackage(test_package_name));
 
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(apps1);
@@ -2133,7 +2124,7 @@ TEST_P(ArcAppModelBuilderTest, ArcAppsAndShortcutsOnPackageChange) {
   ASSERT_TRUE(app_info_before);
   EXPECT_GE(base::Time::Now(), time_before);
 
-  app_instance()->SendPackageAppListRefreshed(apps[0].package_name, apps2);
+  app_instance()->SendPackageAppListRefreshed(test_package_name, apps2);
   ValidateHaveAppsAndShortcuts(apps2, shortcuts);
 
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info_after =
@@ -2142,7 +2133,7 @@ TEST_P(ArcAppModelBuilderTest, ArcAppsAndShortcutsOnPackageChange) {
   EXPECT_EQ(app_info_before->last_launch_time,
             app_info_after->last_launch_time);
 
-  RemovePackage(package);
+  RemovePackage(test_package_name);
   ValidateHaveAppsAndShortcuts(std::vector<arc::mojom::AppInfo>(),
                                std::vector<arc::mojom::ShortcutInfo>());
 }
