@@ -71,9 +71,6 @@ def _ExceptionForLegacyResponse(response):
     11: ElementNotVisible,
     12: InvalidElementState,
     13: UnknownError,
-    14: InvalidArgument,
-    15: ElementNotInteractable,
-    16: UnsupportedOperation,
     17: JavaScriptError,
     19: XPathLookupError,
     21: Timeout,
@@ -84,7 +81,10 @@ def _ExceptionForLegacyResponse(response):
     28: ScriptTimeout,
     32: InvalidSelector,
     33: SessionNotCreated,
-    105: NoSuchCookie
+    60: ElementNotInteractable,
+    61: InvalidArgument,
+    62: NoSuchCookie,
+    405: UnsupportedOperation
   }
   status = response['status']
   msg = response['value']['message']
