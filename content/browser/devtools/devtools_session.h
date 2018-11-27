@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "content/browser/devtools/protocol/forward.h"
+#include "content/public/browser/devtools_external_agent_proxy.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/web/devtools_agent.mojom.h"
 
@@ -19,13 +20,15 @@ namespace content {
 
 class DevToolsAgentHostClient;
 class DevToolsAgentHostImpl;
+class DevToolsExternalAgentProxyDelegate;
 
 namespace protocol {
 class DevToolsDomainHandler;
 }
 
 class DevToolsSession : public protocol::FrontendChannel,
-                        public blink::mojom::DevToolsSessionHost {
+                        public blink::mojom::DevToolsSessionHost,
+                        public DevToolsExternalAgentProxy {
  public:
   explicit DevToolsSession(DevToolsAgentHostClient* client);
   ~DevToolsSession() override;
@@ -41,6 +44,7 @@ class DevToolsSession : public protocol::FrontendChannel,
   // handle all protocol messages locally in the browser process.
   void SetBrowserOnly(bool browser_only);
   void AddHandler(std::unique_ptr<protocol::DevToolsDomainHandler> handler);
+  void TurnIntoExternalProxy(DevToolsExternalAgentProxyDelegate* delegate);
 
   void AttachToAgent(blink::mojom::DevToolsAgent* agent);
   bool DispatchProtocolMessage(const std::string& message);
@@ -91,6 +95,10 @@ class DevToolsSession : public protocol::FrontendChannel,
       const std::string& message,
       blink::mojom::DevToolsSessionStatePtr updates) override;
 
+  // DevToolsExternalAgentProxy implementation.
+  void DispatchOnClientHost(const std::string& message) override;
+  void ConnectionClosed() override;
+
   // Merges the |updates| received from the renderer into session_state_cookie_.
   void ApplySessionStateUpdates(blink::mojom::DevToolsSessionStatePtr updates);
 
@@ -128,6 +136,7 @@ class DevToolsSession : public protocol::FrontendChannel,
   DevToolsSession* root_session_ = nullptr;
   base::flat_map<std::string, DevToolsSession*> child_sessions_;
   base::OnceClosure runtime_resume_;
+  DevToolsExternalAgentProxyDelegate* proxy_delegate_ = nullptr;
 
   base::WeakPtrFactory<DevToolsSession> weak_factory_;
 };

@@ -11,6 +11,7 @@
 #include "content/browser/devtools/protocol/protocol.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
 namespace content {
@@ -52,6 +53,8 @@ DevToolsSession::DevToolsSession(DevToolsAgentHostClient* client)
       weak_factory_(this) {}
 
 DevToolsSession::~DevToolsSession() {
+  if (proxy_delegate_)
+    proxy_delegate_->Detach(this);
   // It is Ok for session to be deleted without the dispose -
   // it can be kicked out by an extension connect / disconnect.
   if (dispatcher_)
@@ -88,6 +91,12 @@ void DevToolsSession::AddHandler(
 
 void DevToolsSession::SetBrowserOnly(bool browser_only) {
   browser_only_ = browser_only;
+}
+
+void DevToolsSession::TurnIntoExternalProxy(
+    DevToolsExternalAgentProxyDelegate* proxy_delegate) {
+  proxy_delegate_ = proxy_delegate;
+  proxy_delegate_->Attach(this);
 }
 
 void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
@@ -155,6 +164,11 @@ bool DevToolsSession::DispatchProtocolMessageInternal(
   if (!runtime_resume_.is_null() &&
       IsRuntimeResumeCommand(parsed_message.get())) {
     std::move(runtime_resume_).Run();
+  }
+
+  if (proxy_delegate_) {
+    proxy_delegate_->SendMessageToBackend(this, message);
+    return true;
   }
 
   DevToolsManagerDelegate* delegate =
@@ -265,6 +279,19 @@ void DevToolsSession::DispatchProtocolNotification(
   ApplySessionStateUpdates(std::move(updates));
   client_->DispatchProtocolMessage(agent_host_, message);
   // |this| may be deleted at this point.
+}
+
+void DevToolsSession::DispatchOnClientHost(const std::string& message) {
+  client_->DispatchProtocolMessage(agent_host_, message);
+  // |this| may be deleted at this point.
+}
+
+void DevToolsSession::ConnectionClosed() {
+  DevToolsAgentHostClient* client = client_;
+  DevToolsAgentHostImpl* agent_host = agent_host_;
+  agent_host->DetachInternal(this);
+  // |this| is delete here, do not use any fields below.
+  client->AgentHostClosed(agent_host);
 }
 
 void DevToolsSession::ApplySessionStateUpdates(
