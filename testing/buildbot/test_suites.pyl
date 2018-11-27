@@ -527,11 +527,6 @@
           '--tool=asan',
         ],
       },
-      'components_browsertests': {
-        'args': [
-          '--tool=asan',
-        ],
-      },
     },
 
     'chromium_android_asan_junit_tests': {
