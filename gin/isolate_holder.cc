@@ -71,7 +71,6 @@ IsolateHolder::IsolateHolder(
     DCHECK_EQ(isolate_, snapshot_creator_->GetIsolate());
   } else {
     v8::Isolate::CreateParams params;
-    params.entry_hook = DebugImpl::GetFunctionEntryHook();
     params.code_event_handler = DebugImpl::GetJitCodeEventHandler();
     params.constraints.ConfigureDefaults(
         base::SysInfo::AmountOfPhysicalMemory(),

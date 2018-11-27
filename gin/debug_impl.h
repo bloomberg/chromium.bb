@@ -12,7 +12,6 @@ namespace gin {
 
 class DebugImpl {
  public:
-  static v8::FunctionEntryHook GetFunctionEntryHook();
   static v8::JitCodeEventHandler GetJitCodeEventHandler();
 #if defined(OS_WIN)
   static Debug::CodeRangeCreatedCallback GetCodeRangeCreatedCallback();

@@ -98,10 +98,6 @@ ReturnAddressLocationResolver GetProfilerReturnAddrResolutionFunc() {
   return nullptr;
 }
 
-DynamicFunctionEntryHook GetProfilerDynamicFunctionEntryHookFunc() {
-  return nullptr;
-}
-
 AddDynamicSymbol GetProfilerAddDynamicSymbolFunc() {
   return nullptr;
 }
@@ -172,11 +168,6 @@ FunctionType FindFunctionInImports(const char* function_name) {
 ReturnAddressLocationResolver GetProfilerReturnAddrResolutionFunc() {
   return FindFunctionInImports<ReturnAddressLocationResolver>(
       "ResolveReturnAddressLocation");
-}
-
-DynamicFunctionEntryHook GetProfilerDynamicFunctionEntryHookFunc() {
-  return FindFunctionInImports<DynamicFunctionEntryHook>(
-      "OnDynamicFunctionEntry");
 }
 
 AddDynamicSymbol GetProfilerAddDynamicSymbolFunc() {
