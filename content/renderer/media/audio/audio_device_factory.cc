@@ -56,13 +56,10 @@ scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
 }
 
 // This is where we decide which audio will go to mixers and which one to
-// AudioOutpuDevice directly.
+// AudioOutputDevice directly.
 bool IsMixable(AudioDeviceFactory::SourceType source_type) {
-  if (source_type == AudioDeviceFactory::kSourceMediaElement)
-    return true;  // Must ALWAYS go through mixer.
-
-  // Mix everything if experiment is enabled; otherwise mix nothing else.
-  return base::FeatureList::IsEnabled(media::kNewAudioRenderingMixingStrategy);
+  // Media element must ALWAYS go through mixer.
+  return source_type == AudioDeviceFactory::kSourceMediaElement;
 }
 
 scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
