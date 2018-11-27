@@ -519,12 +519,7 @@ struct NativeValueTraits<IDLSequence<T>>
         exception_state.RethrowV8Exception(block.Exception());
         return;
       }
-      bool done_boolean;
-      if (!done->BooleanValue(context).To(&done_boolean)) {
-        exception_state.RethrowV8Exception(block.Exception());
-        return;
-      }
-      if (done_boolean)
+      if (done->BooleanValue(isolate))
         break;
       result.emplace_back(
           NativeValueTraits<T>::NativeValue(isolate, element, exception_state));
@@ -619,7 +614,7 @@ struct NativeValueTraits<IDLRecord<K, V>>
           v8::Local<v8::Object>::Cast(desc)
               ->Get(context, V8String(isolate, "enumerable"))
               .ToLocalChecked();
-      if (!enumerable->BooleanValue(context).ToChecked())
+      if (!enumerable->BooleanValue(isolate))
         continue;
 
       // "4.2.1. Let typedKey be key converted to an IDL value of type K."

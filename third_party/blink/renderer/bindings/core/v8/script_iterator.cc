@@ -72,16 +72,14 @@ bool ScriptIterator::Next(ExecutionContext* execution_context,
   }
 
   v8::Local<v8::Value> done;
-  v8::Local<v8::Boolean> done_boolean;
-  if (!result_object->Get(context, done_key_).ToLocal(&done) ||
-      !done->ToBoolean(context).ToLocal(&done_boolean)) {
+  if (!result_object->Get(context, done_key_).ToLocal(&done)) {
     CHECK(!try_catch.Exception().IsEmpty());
     exception_state.RethrowV8Exception(try_catch.Exception());
     done_ = true;
     return false;
   }
 
-  done_ = done_boolean->Value();
+  done_ = done->BooleanValue(isolate_);
   return !done_;
 }
 
