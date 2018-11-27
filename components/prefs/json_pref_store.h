@@ -28,19 +28,13 @@
 class PrefFilter;
 
 namespace base {
-class Clock;
 class DictionaryValue;
 class FilePath;
-class HistogramBase;
 class JsonPrefStoreCallbackTest;
 class JsonPrefStoreLossyWriteTest;
 class SequencedTaskRunner;
 class WriteCallbacksObserver;
 class Value;
-FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestBasic);
-FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestSinglePeriod);
-FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestMultiplePeriods);
-FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestPeriodWithGaps);
 }
 
 // A writable PrefStore implementation that is used for user preferences.
@@ -125,62 +119,6 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   void OnStoreDeletionFromDisk() override;
 
  private:
-  // Represents a histogram for recording the number of writes to the pref file
-  // that occur every kHistogramWriteReportIntervalInMins minutes.
-  class COMPONENTS_PREFS_EXPORT WriteCountHistogram {
-   public:
-    static const int32_t kHistogramWriteReportIntervalMins;
-
-    WriteCountHistogram(const base::TimeDelta& commit_interval,
-                        const base::FilePath& path);
-    // Constructor for testing. |clock| is a test Clock that is used to retrieve
-    // the time.
-    WriteCountHistogram(const base::TimeDelta& commit_interval,
-                        const base::FilePath& path,
-                        std::unique_ptr<base::Clock> clock);
-    ~WriteCountHistogram();
-
-    // Record that a write has occured.
-    void RecordWriteOccured();
-
-    // Reports writes (that have not yet been reported) in all of the recorded
-    // intervals that have elapsed up until current time.
-    void ReportOutstandingWrites();
-
-    base::HistogramBase* GetHistogram();
-
-   private:
-    // The minimum interval at which writes can occur.
-    const base::TimeDelta commit_interval_;
-
-    // The path to the file.
-    const base::FilePath path_;
-
-    // Clock which is used to retrieve the current time.
-    std::unique_ptr<base::Clock> clock_;
-
-    // The interval at which to report write counts.
-    const base::TimeDelta report_interval_;
-
-    // The time at which the last histogram value was reported for the number
-    // of write counts.
-    base::Time last_report_time_;
-
-    // The number of writes that have occured since the last write count was
-    // reported.
-    uint32_t writes_since_last_report_;
-
-    DISALLOW_COPY_AND_ASSIGN(WriteCountHistogram);
-  };
-
-  FRIEND_TEST_ALL_PREFIXES(base::JsonPrefStoreTest,
-                           WriteCountHistogramTestBasic);
-  FRIEND_TEST_ALL_PREFIXES(base::JsonPrefStoreTest,
-                           WriteCountHistogramTestSinglePeriod);
-  FRIEND_TEST_ALL_PREFIXES(base::JsonPrefStoreTest,
-                           WriteCountHistogramTestMultiplePeriods);
-  FRIEND_TEST_ALL_PREFIXES(base::JsonPrefStoreTest,
-                           WriteCountHistogramTestPeriodWithGaps);
   friend class base::JsonPrefStoreCallbackTest;
   friend class base::JsonPrefStoreLossyWriteTest;
   friend class base::WriteCallbacksObserver;
@@ -255,8 +193,6 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
 
   bool has_pending_write_reply_ = true;
   base::Closure on_next_successful_write_reply_;
-
-  WriteCountHistogram write_count_histogram_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
