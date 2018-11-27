@@ -8,7 +8,7 @@
     android:layout_height="wrap_content"
     android:paddingStart="24dp"
     android:paddingEnd="24dp"
-    android:gravity="center_vertical"
+    android:gravity="center_vertical|center_horizontal"
     android:minHeight="36dp"
     android:singleLine="true"
     style="@style/TextButton" />
