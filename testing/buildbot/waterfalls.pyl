@@ -743,11 +743,6 @@
           ],
         },
       },
-      'SafeStack Linux ToT': {
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-        },
-      },
       'ToTAndroid': {
         'additional_compile_targets': [
           'all',
