@@ -5,8 +5,8 @@
 #include "components/ukm/observers/sync_disable_observer.h"
 
 #include "base/observer_list.h"
-#include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_token_status.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync/engine/connection_status.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
@@ -21,18 +21,18 @@ namespace ukm {
 
 namespace {
 
-class MockSyncService : public syncer::FakeSyncService {
+class MockSyncService : public syncer::TestSyncService {
  public:
-  MockSyncService() {}
+  MockSyncService() { SetTransportState(TransportState::INITIALIZING); }
   ~MockSyncService() override { Shutdown(); }
 
   void SetStatus(bool has_passphrase, bool history_enabled) {
-    initialized_ = true;
-    has_passphrase_ = has_passphrase;
-    preferred_data_types_ =
+    SetTransportState(TransportState::ACTIVE);
+    SetCustomPassphraseEnabled(has_passphrase);
+    SetPreferredDataTypes(
         history_enabled
             ? syncer::ModelTypeSet(syncer::HISTORY_DELETE_DIRECTIVES)
-            : syncer::ModelTypeSet();
+            : syncer::ModelTypeSet());
     NotifyObserversOfStateChanged();
   }
 
@@ -54,19 +54,12 @@ class MockSyncService : public syncer::FakeSyncService {
   }
 
  private:
-  // syncer::FakeSyncService:
+  // syncer::TestSyncService:
   void AddObserver(syncer::SyncServiceObserver* observer) override {
     observers_.AddObserver(observer);
   }
   void RemoveObserver(syncer::SyncServiceObserver* observer) override {
     observers_.RemoveObserver(observer);
-  }
-  TransportState GetTransportState() const override {
-    return initialized_ ? TransportState::ACTIVE : TransportState::INITIALIZING;
-  }
-  bool IsUsingSecondaryPassphrase() const override { return has_passphrase_; }
-  syncer::ModelTypeSet GetPreferredDataTypes() const override {
-    return preferred_data_types_;
   }
   syncer::SyncTokenStatus GetSyncTokenStatus() const override {
     syncer::SyncTokenStatus status;
@@ -74,10 +67,7 @@ class MockSyncService : public syncer::FakeSyncService {
     return status;
   }
 
-  bool initialized_ = false;
-  bool has_passphrase_ = false;
   syncer::ConnectionStatus connection_status_ = syncer::CONNECTION_OK;
-  syncer::ModelTypeSet preferred_data_types_;
 
   // The list of observers of the SyncService state.
   base::ObserverList<syncer::SyncServiceObserver>::Unchecked observers_;
