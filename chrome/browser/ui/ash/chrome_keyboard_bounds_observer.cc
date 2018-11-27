@@ -15,6 +15,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/view.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 ChromeKeyboardBoundsObserver::ChromeKeyboardBoundsObserver(
     aura::Window* keyboard_window)
@@ -32,7 +33,9 @@ ChromeKeyboardBoundsObserver::~ChromeKeyboardBoundsObserver() {
 }
 
 void ChromeKeyboardBoundsObserver::OnKeyboardOccludedBoundsChanged(
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& screen_bounds) {
+  gfx::Rect new_bounds(screen_bounds);
+  wm::ConvertRectFromScreen(keyboard_window_, &new_bounds);
   UpdateOccludedBounds(
       ChromeKeyboardControllerClient::Get()->IsKeyboardOverscrollEnabled()
           ? new_bounds

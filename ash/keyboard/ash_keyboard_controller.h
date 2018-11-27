@@ -116,6 +116,8 @@ class ASH_EXPORT AshKeyboardController
       override;
   void OnKeyboardEnabledChanged(bool is_enabled) override;
 
+  gfx::Rect BoundsToScreen(const gfx::Rect& bounds);
+
   SessionController* session_controller_;  // unowned
   std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;

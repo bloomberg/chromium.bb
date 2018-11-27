@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_ui.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 using keyboard::mojom::KeyboardConfig;
 using keyboard::mojom::KeyboardConfigPtr;
@@ -264,16 +265,22 @@ void AshKeyboardController::OnKeyboardVisibilityStateChanged(bool is_visible) {
 
 void AshKeyboardController::OnKeyboardVisibleBoundsChanged(
     const gfx::Rect& bounds) {
-  observers_.ForAllPtrs([&bounds](mojom::KeyboardControllerObserver* observer) {
-    observer->OnKeyboardVisibleBoundsChanged(bounds);
-  });
+  // Pass the bounds in screen coordinates over mojo.
+  gfx::Rect screen_bounds = BoundsToScreen(bounds);
+  observers_.ForAllPtrs(
+      [&screen_bounds](mojom::KeyboardControllerObserver* observer) {
+        observer->OnKeyboardVisibleBoundsChanged(screen_bounds);
+      });
 }
 
 void AshKeyboardController::OnKeyboardWorkspaceOccludedBoundsChanged(
     const gfx::Rect& bounds) {
-  observers_.ForAllPtrs([&bounds](mojom::KeyboardControllerObserver* observer) {
-    observer->OnKeyboardOccludedBoundsChanged(bounds);
-  });
+  // Pass the bounds in screen coordinates over mojo.
+  gfx::Rect screen_bounds = BoundsToScreen(bounds);
+  observers_.ForAllPtrs(
+      [&screen_bounds](mojom::KeyboardControllerObserver* observer) {
+        observer->OnKeyboardOccludedBoundsChanged(screen_bounds);
+      });
 }
 
 void AshKeyboardController::OnKeyboardEnableFlagsChanged(
@@ -290,6 +297,14 @@ void AshKeyboardController::OnKeyboardEnabledChanged(bool is_enabled) {
       [is_enabled](mojom::KeyboardControllerObserver* observer) {
         observer->OnKeyboardEnabledChanged(is_enabled);
       });
+}
+
+gfx::Rect AshKeyboardController::BoundsToScreen(const gfx::Rect& bounds) {
+  DCHECK(keyboard_controller_->GetKeyboardWindow());
+  gfx::Rect screen_bounds(bounds);
+  ::wm::ConvertRectToScreen(keyboard_controller_->GetKeyboardWindow(),
+                            &screen_bounds);
+  return screen_bounds;
 }
 
 }  // namespace ash

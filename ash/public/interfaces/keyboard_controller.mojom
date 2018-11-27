@@ -34,11 +34,13 @@ interface KeyboardControllerObserver {
   // field is focused or blurred, or the user hides the keyboard.
   OnKeyboardVisibilityChanged(bool visible);
 
-  // Called when the keyboard bounds change.
-  OnKeyboardVisibleBoundsChanged(gfx.mojom.Rect new_bounds);
+  // Called when the keyboard bounds change. |screen_bounds| is in screen
+  // coordinates.
+  OnKeyboardVisibleBoundsChanged(gfx.mojom.Rect screen_bounds);
 
-  // Called when the keyboard occluded bounds change.
-  OnKeyboardOccludedBoundsChanged(gfx.mojom.Rect new_bounds);
+  // Called when the keyboard occluded bounds change. |screen_bounds| is in
+  // screen coordinates.
+  OnKeyboardOccludedBoundsChanged(gfx.mojom.Rect screen_bounds);
 };
 
 interface KeyboardController {

@@ -31,7 +31,7 @@ class ChromeKeyboardBoundsObserver
 
   // keyboard::ChromeKeyboardControllerClient::Observer:
   void OnKeyboardVisibilityChanged(bool visible) override {}
-  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& new_bounds) override;
+  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& screen_bounds) override;
 
  private:
   void AddObservedWindow(aura::Window* window);
