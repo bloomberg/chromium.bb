@@ -1234,11 +1234,30 @@ FileManager.prototype = /** @struct */ {
         return;
 
       // Load any existing shared paths.
-      chrome.fileManagerPrivate.getCrostiniSharedPaths((entries) => {
-        for (let i = 0; i < entries.length; i++) {
-          this.crostini_.registerSharedPath(entries[i]);
-        }
-      });
+      chrome.fileManagerPrivate.getCrostiniSharedPaths(
+          (entries, firstForSession) => {
+            for (let i = 0; i < entries.length; i++) {
+              this.crostini_.registerSharedPath(entries[i]);
+            }
+            // Show 'Manage sharing' toast the first time FilesApp is opened.
+            if (firstForSession && entries.length >= 1) {
+              this.ui_.toast.show(
+                  entries.length == 1 ?
+                      str('FOLDER_SHARED_WITH_CROSTINI') :
+                      strf(
+                          'FOLDER_SHARED_WITH_CROSTINI_PLURAL', entries.length),
+                  {
+                    text: str('MANAGE_LINUX_SHARING_BUTTON_LABEL'),
+                    callback: () => {
+                      chrome.fileManagerPrivate.openSettingsSubpage(
+                          'crostini/sharedPaths');
+                      CommandHandler.recordMenuItemSelected(
+                          CommandHandler.MenuCommandsForUMA
+                              .MANAGE_LINUX_SHARING_TOAST_STARTUP);
+                    }
+                  });
+            }
+          });
     });
   };
 

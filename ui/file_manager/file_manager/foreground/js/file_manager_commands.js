@@ -397,6 +397,7 @@ CommandHandler.MenuCommandsForUMA = {
   SHARE_WITH_LINUX: 'share-with-linux',
   MANAGE_LINUX_SHARING: 'manage-linux-sharing',
   MANAGE_LINUX_SHARING_TOAST: 'manage-linux-sharing-toast',
+  MANAGE_LINUX_SHARING_TOAST_STARTUP: 'manage-linux-sharing-toast-startup',
 };
 
 /**
@@ -424,6 +425,7 @@ CommandHandler.ValidMenuCommandsForUMA = [
   CommandHandler.MenuCommandsForUMA.SHARE_WITH_LINUX,
   CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING,
   CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING_TOAST,
+  CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING_TOAST_STARTUP,
 ];
 console.assert(
     Object.keys(CommandHandler.MenuCommandsForUMA).length ===
@@ -435,7 +437,7 @@ console.assert(
  * Records the menu item as selected in UMA.
  * @param {CommandHandler.MenuCommandsForUMA} menuItem The selected menu item.
  */
-CommandHandler.recordMenuItemSelected_ = function(menuItem) {
+CommandHandler.recordMenuItemSelected = function(menuItem) {
   metrics.recordEnum(
       'MenuItemSelected', menuItem, CommandHandler.ValidMenuCommandsForUMA);
 };
@@ -820,7 +822,7 @@ CommandHandler.COMMANDS_['toggle-hidden-files'] = /** @type {Command} */ ({
     var visible = !fileManager.fileFilter.isHiddenFilesVisible();
     fileManager.fileFilter.setHiddenFilesVisible(visible);
     event.command.checked = visible;  // Checkmark for "Show hidden files".
-    CommandHandler.recordMenuItemSelected_(
+    CommandHandler.recordMenuItemSelected(
         visible ? CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_SHOW :
                   CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_HIDE);
   },
@@ -846,7 +848,7 @@ CommandHandler.COMMANDS_['toggle-hidden-android-folders'] =
         var visible = !fileManager.fileFilter.isAllAndroidFoldersVisible();
         fileManager.fileFilter.setAllAndroidFoldersVisible(visible);
         event.command.checked = visible;
-        CommandHandler.recordMenuItemSelected_(
+        CommandHandler.recordMenuItemSelected(
             visible ?
                 CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_SHOW :
                 CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_HIDE);
@@ -887,7 +889,7 @@ CommandHandler.COMMANDS_['drive-sync-settings'] = /** @type {Command} */ ({
         fileManager.ui.gearMenu.syncButton.hasAttribute('checked');
     var changeInfo = {cellularDisabled: !nowCellularDisabled};
     chrome.fileManagerPrivate.setPreferences(changeInfo);
-    CommandHandler.recordMenuItemSelected_(
+    CommandHandler.recordMenuItemSelected(
         nowCellularDisabled ?
             CommandHandler.MenuCommandsForUMA.MOBILE_DATA_OFF :
             CommandHandler.MenuCommandsForUMA.MOBILE_DATA_ON);
@@ -1224,11 +1226,11 @@ CommandHandler.COMMANDS_['volume-help'] = /** @type {Command} */ ({
   execute: function(event, fileManager) {
     if (fileManager.directoryModel.isOnDrive()) {
       util.visitURL(str('GOOGLE_DRIVE_HELP_URL'));
-      CommandHandler.recordMenuItemSelected_(
+      CommandHandler.recordMenuItemSelected(
           CommandHandler.MenuCommandsForUMA.DRIVE_HELP);
     } else {
       util.visitURL(str('FILES_APP_HELP_URL'));
-      CommandHandler.recordMenuItemSelected_(
+      CommandHandler.recordMenuItemSelected(
           CommandHandler.MenuCommandsForUMA.HELP);
     }
   },
@@ -1260,7 +1262,7 @@ CommandHandler.COMMANDS_['drive-buy-more-space'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     util.visitURL(str('GOOGLE_DRIVE_BUY_STORAGE_URL'));
-    CommandHandler.recordMenuItemSelected_(
+    CommandHandler.recordMenuItemSelected(
         CommandHandler.MenuCommandsForUMA.DRIVE_BUY_MORE_SPACE);
   },
   canExecute: CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly
@@ -1277,7 +1279,7 @@ CommandHandler.COMMANDS_['drive-go-to-drive'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     util.visitURL(str('GOOGLE_DRIVE_ROOT_URL'));
-    CommandHandler.recordMenuItemSelected_(
+    CommandHandler.recordMenuItemSelected(
         CommandHandler.MenuCommandsForUMA.DRIVE_GO_TO_DRIVE);
   },
   canExecute: CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly
@@ -1651,7 +1653,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
                 callback: () => {
                   chrome.fileManagerPrivate.openSettingsSubpage(
                       'crostini/sharedPaths');
-                  CommandHandler.recordMenuItemSelected_(
+                  CommandHandler.recordMenuItemSelected(
                       CommandHandler.MenuCommandsForUMA
                           .MANAGE_LINUX_SHARING_TOAST);
                 }
@@ -1682,7 +1684,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
       // This is not a root, share it without confirmation dialog.
       share();
     }
-    CommandHandler.recordMenuItemSelected_(
+    CommandHandler.recordMenuItemSelected(
         CommandHandler.MenuCommandsForUMA.SHARE_WITH_LINUX);
   },
   /**
@@ -1711,7 +1713,7 @@ CommandHandler.COMMANDS_['manage-linux-sharing'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     chrome.fileManagerPrivate.openSettingsSubpage('crostini/sharedPaths');
-    CommandHandler.recordMenuItemSelected_(
+    CommandHandler.recordMenuItemSelected(
         CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING);
   },
   /**

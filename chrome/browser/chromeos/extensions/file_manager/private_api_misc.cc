@@ -68,6 +68,7 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/fileapi/file_system_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
@@ -704,39 +705,38 @@ void FileManagerPrivateInternalSharePathsWithCrostiniFunction::
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  file_manager::util::FileDefinitionList file_definition_list;
-  auto shared_paths = crostini::CrostiniSharePath::GetForProfile(profile)
-                          ->GetPersistedSharedPaths();
+
+  auto* crostini_share_path =
+      crostini::CrostiniSharePath::GetForProfile(profile);
+  bool first_for_session = crostini_share_path->GetAndSetFirstForSession();
+  auto shared_paths = crostini_share_path->GetPersistedSharedPaths();
+  auto entries = std::make_unique<base::ListValue>();
   for (const base::FilePath& path : shared_paths) {
-    file_manager::util::FileDefinition file_definition;
-    // All shared paths should be directories.  Even if this is not true, it
-    // is fine for foreground/js/crostini.js class to think so.
-    // We verify that the paths are in fact valid directories before calling
-    // seneschal/9p in CrostiniSharePath::CallSeneschalSharePath().
-    file_definition.is_directory = true;
-    if (file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-            profile, extension_id(), path, &file_definition.virtual_path)) {
-      file_definition_list.emplace_back(std::move(file_definition));
+    std::string mount_name;
+    std::string full_path;
+    if (!file_manager::util::ExtractMountNameAndFullPath(path, &mount_name,
+                                                         &full_path)) {
+      LOG(ERROR) << "Error extracting mount name and path from "
+                 << path.value();
+      continue;
     }
+    auto entry = std::make_unique<base::DictionaryValue>();
+    entry->SetString(
+        "fileSystemRoot",
+        storage::GetExternalFileSystemRootURIString(
+            extensions::Extension::GetBaseURLFromExtensionId(extension_id()),
+            mount_name));
+    entry->SetString("fileSystemName", mount_name);
+    entry->SetString("fileFullPath", full_path);
+    // All shared paths should be directories.  Even if this is not true,
+    // it is fine for foreground/js/crostini.js class to think so. We
+    // verify that the paths are in fact valid directories before calling
+    // seneschal/9p in CrostiniSharePath::CallSeneschalSharePath().
+    entry->SetBoolean("fileIsDirectory", true);
+    entries->Append(std::move(entry));
   }
-
-  file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
-      profile, extension_id(),
-      file_definition_list,  // Safe, since copied internally.
-      base::Bind(&FileManagerPrivateInternalGetCrostiniSharedPathsFunction::
-                     OnConvertFileDefinitionListToEntryDefinitionList,
-                 this));
-  return RespondLater();
-}
-
-void FileManagerPrivateInternalGetCrostiniSharedPathsFunction::
-    OnConvertFileDefinitionListToEntryDefinitionList(
-        std::unique_ptr<file_manager::util::EntryDefinitionList>
-            entry_definition_list) {
-  DCHECK(entry_definition_list);
-
-  Respond(OneArgument(file_manager::util::ConvertEntryDefinitionListToListValue(
-      *entry_definition_list)));
+  return RespondNow(TwoArguments(
+      std::move(entries), std::make_unique<base::Value>(first_for_session)));
 }
 
 ExtensionFunction::ResponseAction

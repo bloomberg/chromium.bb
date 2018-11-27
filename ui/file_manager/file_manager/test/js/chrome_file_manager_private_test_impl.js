@@ -89,8 +89,8 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, results);
   },
   getCrostiniSharedPaths: (callback) => {
-    // Returns Entry[].
-    setTimeout(callback, 0, []);
+    // Returns Entry[], firstForSession.
+    setTimeout(callback, 0, true, []);
   },
   getLinuxPackageInfo: (entry, callback) => {
     // Returns chrome.fileManagerPrivate.LinuxPackageInfo.

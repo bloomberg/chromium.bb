@@ -240,10 +240,10 @@ binding.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest(
       'getCrostiniSharedPaths', function(callback) {
         fileManagerPrivateInternal.getCrostiniSharedPaths(
-            function(entryDescriptions) {
+            function(entryDescriptions, firstForSession) {
               callback(entryDescriptions.map(function(description) {
                 return GetExternalFileEntry(description);
-              }));
+              }), firstForSession);
             });
       });
 
