@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/sync/driver/sync_auth_util.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/connection_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -36,14 +37,6 @@ namespace browser_sync {
 // IdentityManager::GetPrimaryAccountInfo() etc).
 class SyncAuthManager : public identity::IdentityManager::Observer {
  public:
-  struct SyncAccountInfo {
-    SyncAccountInfo();
-    SyncAccountInfo(const AccountInfo& account_info, bool is_primary);
-
-    AccountInfo account_info;
-    bool is_primary = false;
-  };
-
   // Called when the existence of an authenticated account changes. It's
   // guaranteed that this is only called for going from "no account" to "have
   // account" or vice versa, i.e. SyncAuthManager will never directly switch
@@ -72,7 +65,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // Returns the account which should be used when communicating with the Sync
   // server. Note that this account may not be blessed for Sync-the-feature.
-  SyncAccountInfo GetActiveAccountInfo() const;
+  syncer::SyncAccountInfo GetActiveAccountInfo() const;
 
   const GoogleServiceAuthError& GetLastAuthError() const {
     return last_auth_error_;
@@ -109,15 +102,8 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   bool IsRetryingAccessTokenFetchForTest() const;
   void ResetRequestAccessTokenBackoffForTest();
 
-  // Determines which account should be used for Sync and returns the
-  // corresponding SyncAccountInfo. This is exposed so that autofill metrics
-  // code can use it.
-  static SyncAccountInfo DetermineAccountToUse(
-      identity::IdentityManager* identity_manager,
-      bool allow_secondary_accounts);
-
  private:
-  SyncAccountInfo DetermineAccountToUse() const;
+  syncer::SyncAccountInfo DetermineAccountToUse() const;
 
   // Updates |sync_account_| to the appropriate account (i.e.
   // DetermineAccountToUse) if necessary, and notifies observers of any changes
@@ -158,7 +144,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // The account which we are using to sync. If this is non-empty, that does
   // *not* necessarily imply that Sync is actually running, e.g. because of
   // delayed startup.
-  SyncAccountInfo sync_account_;
+  syncer::SyncAccountInfo sync_account_;
 
   // This is a cache of the last authentication response we received either
   // from the sync server or from Chrome's identity/token management system.
