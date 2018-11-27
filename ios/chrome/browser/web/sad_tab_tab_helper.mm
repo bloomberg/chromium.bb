@@ -26,8 +26,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(SadTabTabHelper);
-
 const double SadTabTabHelper::kDefaultRepeatFailureInterval = 60.0f;
 
 namespace {

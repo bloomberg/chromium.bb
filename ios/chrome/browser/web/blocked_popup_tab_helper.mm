@@ -30,8 +30,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(BlockedPopupTabHelper);
-
 namespace {
 // The infobar to display when a popup is blocked.
 class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
