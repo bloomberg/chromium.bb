@@ -854,7 +854,8 @@ public class CustomTabsConnection {
         if (mWarmupTasks != null) mWarmupTasks.cancel();
 
         maybePreconnectToRedirectEndpoint(session, url, intent);
-        handleParallelRequest(session, intent);
+        ChromeBrowserInitializer.getInstance().runNowOrAfterNativeInitialization(
+                () -> handleParallelRequest(session, intent));
         maybePrefetchResources(session, intent);
     }
 
