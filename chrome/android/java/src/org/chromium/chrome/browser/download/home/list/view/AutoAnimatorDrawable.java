@@ -14,6 +14,7 @@ import android.graphics.drawable.RotateDrawable;
 import android.graphics.drawable.ScaleDrawable;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.graphics.drawable.Animatable2Compat;
 import android.support.v7.graphics.drawable.DrawableWrapper;
@@ -150,7 +151,7 @@ public class AutoAnimatorDrawable extends DrawableWrapper {
     }
 
     private static final class AutoRestarterCompat extends Animatable2Compat.AnimationCallback {
-        private final Handler mHandler = new Handler();
+        private final Handler mHandler = new Handler(Looper.getMainLooper());
 
         // Animatable2Compat.AnimationCallback implementation.
         @Override
