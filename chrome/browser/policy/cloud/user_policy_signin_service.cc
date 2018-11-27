@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_internal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_util.h"
@@ -25,6 +26,9 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {
+namespace internal {
+bool g_force_prohibit_signout_for_tests = false;
+}
 
 UserPolicySigninService::UserPolicySigninService(
     Profile* profile,
@@ -224,7 +228,8 @@ void UserPolicySigninService::OnRegistrationComplete() {
 }
 
 void UserPolicySigninService::ProhibitSignoutIfNeeded() {
-  if (policy_manager()->IsClientRegistered()) {
+  if (policy_manager()->IsClientRegistered() ||
+      internal::g_force_prohibit_signout_for_tests) {
     DVLOG(1) << "User is registered for policy - prohibiting signout";
     signin_util::SetUserSignoutAllowedForProfile(profile_, false);
   }
