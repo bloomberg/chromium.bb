@@ -51,8 +51,8 @@ bool AutofillAssistant::CanShowCreditCardAssist() {
 void AutofillAssistant::ShowAssistForCreditCard(const CreditCard& card) {
   DCHECK(credit_card_form_data_);
   autofill_manager_->client()->ConfirmCreditCardFillAssist(
-      card, base::Bind(&AutofillAssistant::OnUserDidAcceptCreditCardFill,
-                       weak_ptr_factory_.GetWeakPtr(), card));
+      card, base::BindOnce(&AutofillAssistant::OnUserDidAcceptCreditCardFill,
+                           weak_ptr_factory_.GetWeakPtr(), card));
 }
 
 void AutofillAssistant::OnUserDidAcceptCreditCardFill(const CreditCard& card) {
