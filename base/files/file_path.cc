@@ -445,6 +445,15 @@ FilePath FilePath::AddExtension(StringPieceType extension) const {
   return FilePath(str);
 }
 
+FilePath FilePath::AddExtensionASCII(StringPiece extension) const {
+  DCHECK(IsStringASCII(extension));
+#if defined(OS_WIN)
+  return AddExtension(ASCIIToUTF16(extension));
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  return AddExtension(extension);
+#endif
+}
+
 FilePath FilePath::ReplaceExtension(StringPieceType extension) const {
   if (IsEmptyOrSpecialCase(BaseName().value()))
     return FilePath();
