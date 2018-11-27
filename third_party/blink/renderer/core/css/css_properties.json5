@@ -1605,7 +1605,7 @@
       interpolable: true,
       inherited: true,
       svg: true,
-      converter: "ConvertNumberOrPercentage",
+      converter: "ConvertAlpha",
       typedom_types: ["Number"],
     },
     {
@@ -1706,7 +1706,7 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
-      converter: "ConvertNumberOrPercentage",
+      converter: "ConvertAlpha",
       typedom_types: ["Number"]
     },
     {
@@ -2893,7 +2893,7 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
-      converter: "ConvertNumberOrPercentage",
+      converter: "ConvertAlpha",
       typedom_types: ["Number"]
     },
     {
@@ -2967,7 +2967,7 @@
       interpolable: true,
       inherited: true,
       svg: true,
-      converter: "ConvertNumberOrPercentage",
+      converter: "ConvertAlpha",
       typedom_types: ["Number"]
     },
     {
