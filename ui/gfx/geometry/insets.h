@@ -50,6 +50,11 @@ class GEOMETRY_EXPORT Insets {
   // Returns true if the insets are empty.
   bool IsEmpty() const { return width() == 0 && height() == 0; }
 
+  void set_top(int top) { top_ = top; }
+  void set_left(int left) { left_ = left; }
+  void set_bottom(int bottom) { bottom_ = bottom; }
+  void set_right(int right) { right_ = right; }
+
   void Set(int top, int left, int bottom, int right) {
     top_ = top;
     left_ = left;
