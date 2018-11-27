@@ -105,8 +105,6 @@ class JpegEncodeAcceleratorTestEnvironment : public ::testing::Environment {
   // Parsed data from command line.
   std::vector<std::unique_ptr<TestImage>> image_data_user_;
 
-  // Generated 4160x3120 white I420 image.
-  std::unique_ptr<TestImage> image_data_4160x3120_white_;
   // Generated 2560x1920 white I420 image.
   std::unique_ptr<TestImage> image_data_2560x1920_white_;
   // Scarlet doesn't support 1080 width, it only suports 1088 width.
@@ -139,8 +137,6 @@ void JpegEncodeAcceleratorTestEnvironment::SetUp() {
     LOG_ASSERT(log_file_->IsValid());
   }
 
-  image_data_4160x3120_white_ =
-      CreateTestYuvImage(gfx::Size(4160, 3120), false);
   image_data_2560x1920_white_ =
       CreateTestYuvImage(gfx::Size(2560, 1920), false);
   image_data_1280x720_white_ = CreateTestYuvImage(gfx::Size(1280, 720), false);
@@ -680,7 +676,6 @@ TEST_F(JpegEncodeAcceleratorTest, ResolutionChange) {
 }
 
 TEST_F(JpegEncodeAcceleratorTest, AlignedSizes) {
-  test_aligned_images_.push_back(g_env->image_data_4160x3120_white_.get());
   test_aligned_images_.push_back(g_env->image_data_2560x1920_white_.get());
   test_aligned_images_.push_back(g_env->image_data_1280x720_white_.get());
   test_aligned_images_.push_back(g_env->image_data_640x480_black_.get());
