@@ -99,10 +99,18 @@ class WebContentsVideoCaptureDeviceBrowserTest
             << average_mainframe_rgb << ", letterbox region has average color "
             << average_letterbox_rgb;
 
+        // TODO(crbug/810131): The software compositor ignores color space and
+        // always uses the REC609 conversion factors. Once that's fixed and
+        // color space info is fully plumbed-through, remove this.
+        const int max_color_diff =
+            IsSoftwareCompositingTest()
+                ? FrameTestUtil::kMaxInaccurateColorDifference
+                : FrameTestUtil::kMaxColorDifference;
+
         // The letterboxed region should always be black.
         if (IsFixedAspectRatioTest()) {
           EXPECT_TRUE(FrameTestUtil::IsApproximatelySameColor(
-              SK_ColorBLACK, average_letterbox_rgb));
+              SK_ColorBLACK, average_letterbox_rgb, max_color_diff));
         }
 
         if (testing::Test::HasFailure()) {
@@ -113,17 +121,17 @@ class WebContentsVideoCaptureDeviceBrowserTest
 
         // Return if the content region(s) now has/have the expected color(s).
         if (IsCrossSiteCaptureTest() &&
-            FrameTestUtil::IsApproximatelySameColor(color,
-                                                    average_iframe_rgb) &&
-            FrameTestUtil::IsApproximatelySameColor(SK_ColorWHITE,
-                                                    average_mainframe_rgb)) {
+            FrameTestUtil::IsApproximatelySameColor(color, average_iframe_rgb,
+                                                    max_color_diff) &&
+            FrameTestUtil::IsApproximatelySameColor(
+                SK_ColorWHITE, average_mainframe_rgb, max_color_diff)) {
           VLOG(1) << "Observed desired frame.";
           return;
         } else if (!IsCrossSiteCaptureTest() &&
                    FrameTestUtil::IsApproximatelySameColor(
-                       color, average_iframe_rgb) &&
+                       color, average_iframe_rgb, max_color_diff) &&
                    FrameTestUtil::IsApproximatelySameColor(
-                       color, average_mainframe_rgb)) {
+                       color, average_mainframe_rgb, max_color_diff)) {
           VLOG(1) << "Observed desired frame.";
           return;
         } else {

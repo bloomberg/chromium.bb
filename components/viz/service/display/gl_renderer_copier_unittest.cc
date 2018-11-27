@@ -8,6 +8,7 @@
 
 #include <iterator>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -58,6 +59,8 @@ class CopierTestGLES2Interface : public TestGLES2Interface {
 
 class GLRendererCopierTest : public testing::Test {
  public:
+  using ReusableThings = GLRendererCopier::ReusableThings;
+
   void SetUp() override {
     auto context_provider = TestContextProvider::Create(
         std::make_unique<CopierTestGLES2Interface>());
@@ -77,46 +80,24 @@ class GLRendererCopierTest : public testing::Test {
   }
 
   // These simply forward method calls to GLRendererCopier.
-  GLuint TakeCachedObjectOrCreate(const base::UnguessableToken& source,
-                                  int which) {
-    GLuint result = 0;
-    copier_->TakeCachedObjectsOrCreate(source, which, 1, &result);
-    return result;
+  std::unique_ptr<ReusableThings> TakeReusableThingsOrCreate(
+      const base::UnguessableToken& requester) {
+    return copier_->TakeReusableThingsOrCreate(requester);
   }
-  void CacheObjectOrDelete(const base::UnguessableToken& source,
-                           int which,
-                           GLuint name) {
-    copier_->CacheObjectsOrDelete(source, which, 1, &name);
+  void StashReusableThingsOrDelete(const base::UnguessableToken& requester,
+                                   std::unique_ptr<ReusableThings> things) {
+    return copier_->StashReusableThingsOrDelete(requester, std::move(things));
   }
-  std::unique_ptr<GLHelper::ScalerInterface> TakeCachedScalerOrCreate(
-      const CopyOutputRequest& request) {
-    return copier_->TakeCachedScalerOrCreate(request, true);
+  ReusableThings* PeekReusableThings(const base::UnguessableToken& requester) {
+    const auto it = copier_->cache_.find(requester);
+    if (it == copier_->cache_.end())
+      return nullptr;
+    return it->second.get();
   }
-  void CacheScalerOrDelete(const base::UnguessableToken& source,
-                           std::unique_ptr<GLHelper::ScalerInterface> scaler) {
-    copier_->CacheScalerOrDelete(source, std::move(scaler));
-  }
+  size_t GetCopierCacheSize() { return copier_->cache_.size(); }
   void FreeUnusedCachedResources() { copier_->FreeUnusedCachedResources(); }
   GLenum GetOptimalReadbackFormat() const {
     return copier_->GetOptimalReadbackFormat();
-  }
-
-  // These inspect the internal state of the GLRendererCopier's cache.
-  size_t GetCopierCacheSize() { return copier_->cache_.size(); }
-  bool CacheContainsObject(const base::UnguessableToken& source,
-                           int which,
-                           GLuint name) {
-    return !copier_->cache_.empty() && copier_->cache_.count(source) != 0 &&
-           copier_->cache_[source].object_names[which] == name;
-  }
-  bool CacheContainsScaler(const base::UnguessableToken& source,
-                           int scale_from,
-                           int scale_to) {
-    return !copier_->cache_.empty() && copier_->cache_.count(source) != 0 &&
-           copier_->cache_[source].scaler &&
-           copier_->cache_[source].scaler->IsSameScaleRatio(
-               gfx::Vector2d(scale_from, scale_from),
-               gfx::Vector2d(scale_to, scale_to));
   }
 
   static constexpr int kKeepalivePeriod = GLRendererCopier::kKeepalivePeriod;
@@ -127,92 +108,52 @@ class GLRendererCopierTest : public testing::Test {
 
 // Tests that named objects, such as textures or framebuffers, are only cached
 // when the CopyOutputRequest has specified a "source" of requests.
-TEST_F(GLRendererCopierTest, ReusesNamedObjects) {
+TEST_F(GLRendererCopierTest, ReusesThingsFromSameSource) {
   // With no source set in a copy request, expect to never re-use any textures
   // or framebuffers.
-  base::UnguessableToken source;
-  for (int which = 0; which < 3; ++which) {
-    const GLuint a = TakeCachedObjectOrCreate(source, which);
-    EXPECT_NE(0u, a);
-    CacheObjectOrDelete(base::UnguessableToken(), which, a);
-    const GLuint b = TakeCachedObjectOrCreate(source, which);
-    EXPECT_NE(0u, b);
-    CacheObjectOrDelete(base::UnguessableToken(), which, b);
-    EXPECT_EQ(0u, GetCopierCacheSize());
-  }
+  const base::UnguessableToken no_source;
+  EXPECT_EQ(0u, GetCopierCacheSize());
+  auto things = TakeReusableThingsOrCreate(no_source);
+  EXPECT_TRUE(!!things);
+  StashReusableThingsOrDelete(no_source, std::move(things));
+  EXPECT_EQ(nullptr, PeekReusableThings(no_source));
+  EXPECT_EQ(0u, GetCopierCacheSize());
 
   // With a source set in the request, objects should now be cached and re-used.
-  source = base::UnguessableToken::Create();
-  for (int which = 0; which < 3; ++which) {
-    const GLuint a = TakeCachedObjectOrCreate(source, which);
-    EXPECT_NE(0u, a);
-    CacheObjectOrDelete(source, which, a);
-    const GLuint b = TakeCachedObjectOrCreate(source, which);
-    EXPECT_NE(0u, b);
-    EXPECT_EQ(a, b);
-    CacheObjectOrDelete(source, which, b);
-    EXPECT_EQ(1u, GetCopierCacheSize());
-    EXPECT_TRUE(CacheContainsObject(source, which, a));
-  }
-}
+  const auto source = base::UnguessableToken::Create();
+  things = TakeReusableThingsOrCreate(source);
+  ReusableThings* things_raw_ptr = things.get();
+  EXPECT_TRUE(!!things_raw_ptr);
+  StashReusableThingsOrDelete(source, std::move(things));
+  EXPECT_EQ(things_raw_ptr, PeekReusableThings(source));
+  EXPECT_EQ(1u, GetCopierCacheSize());
 
-// Tests that scalers are only cached when the CopyOutputRequest has specified a
-// "source" of requests, and that different scalers are created if the scale
-// ratio changes.
-TEST_F(GLRendererCopierTest, ReusesScalers) {
-  // With no source set in the request, expect to not cache a scaler.
-  const auto request = CopyOutputRequest::CreateStubForTesting();
-  ASSERT_FALSE(request->has_source());
-  request->SetUniformScaleRatio(2, 1);
-  std::unique_ptr<GLHelper::ScalerInterface> scaler =
-      TakeCachedScalerOrCreate(*request);
-  EXPECT_TRUE(scaler.get());
-  CacheScalerOrDelete(base::UnguessableToken(), std::move(scaler));
-  EXPECT_FALSE(CacheContainsScaler(base::UnguessableToken(), 2, 1));
-
-  // With a source set in the request, a scaler can now be cached and re-used.
-  request->set_source(base::UnguessableToken::Create());
-  scaler = TakeCachedScalerOrCreate(*request);
-  const auto* a = scaler.get();
-  EXPECT_TRUE(a);
-  CacheScalerOrDelete(request->source(), std::move(scaler));
-  EXPECT_TRUE(CacheContainsScaler(request->source(), 2, 1));
-  scaler = TakeCachedScalerOrCreate(*request);
-  const auto* b = scaler.get();
-  EXPECT_TRUE(b);
-  EXPECT_EQ(a, b);
-  EXPECT_TRUE(b->IsSameScaleRatio(gfx::Vector2d(2, 2), gfx::Vector2d(1, 1)));
-  CacheScalerOrDelete(request->source(), std::move(scaler));
-  EXPECT_TRUE(CacheContainsScaler(request->source(), 2, 1));
-
-  // With a source set in the request, but a different scaling ratio needed, the
-  // cached scaler should go away and a new one created, and only the new one
-  // should ever appear in the cache.
-  request->SetUniformScaleRatio(3, 2);
-  scaler = TakeCachedScalerOrCreate(*request);
-  const auto* c = scaler.get();
-  EXPECT_TRUE(c);
-  EXPECT_TRUE(c->IsSameScaleRatio(gfx::Vector2d(3, 3), gfx::Vector2d(2, 2)));
-  EXPECT_FALSE(CacheContainsScaler(request->source(), 2, 1));
-  CacheScalerOrDelete(request->source(), std::move(scaler));
-  EXPECT_TRUE(CacheContainsScaler(request->source(), 3, 2));
+  // A second, separate source gets its own cache entry.
+  const auto source2 = base::UnguessableToken::Create();
+  things = TakeReusableThingsOrCreate(source2);
+  things_raw_ptr = things.get();
+  EXPECT_TRUE(!!things_raw_ptr);
+  EXPECT_EQ(1u, GetCopierCacheSize());
+  StashReusableThingsOrDelete(source2, std::move(things));
+  EXPECT_EQ(things_raw_ptr, PeekReusableThings(source2));
+  EXPECT_EQ(2u, GetCopierCacheSize());
 }
 
 // Tests that cached resources are freed if unused for a while.
 TEST_F(GLRendererCopierTest, FreesUnusedResources) {
-  // Request a texture, then cache it again.
+  // Take and then stash a ReusableThings instance for a valid source.
   const base::UnguessableToken source = base::UnguessableToken::Create();
-  const int which = 0;
-  const GLuint a = TakeCachedObjectOrCreate(source, which);
-  EXPECT_NE(0u, a);
-  CacheObjectOrDelete(source, which, a);
-  EXPECT_TRUE(CacheContainsObject(source, which, a));
+  EXPECT_EQ(0u, GetCopierCacheSize());
+  StashReusableThingsOrDelete(source, TakeReusableThingsOrCreate(source));
+  EXPECT_TRUE(!!PeekReusableThings(source));
+  EXPECT_EQ(1u, GetCopierCacheSize());
 
   // Call FreesUnusedCachedResources() the maximum number of times before the
   // cache entry would be considered for freeing.
   for (int i = 0; i < kKeepalivePeriod - 1; ++i) {
     FreeUnusedCachedResources();
-    EXPECT_TRUE(CacheContainsObject(source, which, a));
+    EXPECT_TRUE(!!PeekReusableThings(source));
+    EXPECT_EQ(1u, GetCopierCacheSize());
     if (HasFailure())
       break;
   }
@@ -220,7 +161,7 @@ TEST_F(GLRendererCopierTest, FreesUnusedResources) {
   // Calling FreeUnusedCachedResources() just one more time should cause the
   // cache entry to be freed.
   FreeUnusedCachedResources();
-  EXPECT_FALSE(CacheContainsObject(source, which, a));
+  EXPECT_FALSE(!!PeekReusableThings(source));
   EXPECT_EQ(0u, GetCopierCacheSize());
 }
 
