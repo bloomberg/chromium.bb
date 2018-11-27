@@ -250,21 +250,6 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
       init.lose_context_when_out_of_memory;
   attribs.context_type = context_type;
 
-  bool use_default_textures = bind_generates_resource;
-  for (GLint tt = 0; tt < gles2::TestHelper::kNumTextureUnits; ++tt) {
-    EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0 + tt))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_,
-                BindTexture(GL_TEXTURE_2D,
-                            use_default_textures
-                                ? gles2::TestHelper::kServiceDefaultTexture2dId
-                                : 0))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0)).Times(1).RetiresOnSaturation();
-
   SetupInitCapabilitiesExpectations(group_->feature_info()->IsES3Capable());
   SetupInitStateExpectations(group_->feature_info()->IsES3Capable());
 
@@ -449,9 +434,6 @@ void RasterDecoderTestBase::SetupClearTextureExpectations(
   }
   EXPECT_CALL(*gl_, TexSubImage2D(target, level, xoffset, yoffset, width,
                                   height, format, type, _))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BindTexture(bind_target, old_service_id))
       .Times(1)
       .RetiresOnSaturation();
 #if DCHECK_IS_ON()
