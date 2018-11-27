@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/base_paths.h"
@@ -1343,7 +1344,8 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
                                                 bool is_incognito_profile,
                                                 const AccountId& account_id) {
   // http://crbug/866790: After Supervised Users are deprecated, remove this.
-  if (user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser())
+  if (ash::features::IsSupervisedUserDeprecationNoticeEnabled() &&
+      user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser())
     ShowSupervisedUserDeprecationNotification(profile);
 
   // Demo user signed in.
