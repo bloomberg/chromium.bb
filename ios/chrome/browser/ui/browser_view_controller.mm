@@ -4611,6 +4611,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 - (void)switchToTabWithURL:(const GURL&)URL {
   NSInteger newWebStateIndex = 0;
   WebStateList* webStateList = self.tabModel.webStateList;
+  NSInteger currentWebStateIndex = webStateList->active_index();
   web::WebState* currentWebState = webStateList->GetActiveWebState();
 
   // TODO(crbug.com/893121): This should probably live in the WebStateList.
@@ -4667,6 +4668,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
                              inPosition:position];
 
   webStateList->ActivateWebStateAt(newWebStateIndex);
+
+  // Close the tab if it is NTP with no back/forward history to avoid having
+  // empty tabs.
+  if (IsVisibleURLNewTabPage(currentWebState) &&
+      currentWebState->GetNavigationManager() &&
+      !currentWebState->GetNavigationManager()->CanGoBack() &&
+      !currentWebState->GetNavigationManager()->CanGoForward()) {
+    webStateList->CloseWebStateAt(currentWebStateIndex,
+                                  WebStateList::CLOSE_USER_ACTION);
+  }
 }
 
 #pragma mark - TabModelObserver methods

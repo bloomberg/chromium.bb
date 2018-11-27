@@ -8,6 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -240,6 +241,59 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                      grey_accessibilityID(
                          kOmniboxPopupRowSwitchTabAccessibilityIdentifier),
                      nil)] assertWithMatcher:grey_nil()];
+}
+
+- (void)testCloseNTPWhenSwitching {
+  // Open the first page.
+  GURL URL1 = self.testServer->GetURL(kPage1URL);
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+
+  // Open a new tab and switch to the first tab.
+  [ChromeEarlGrey openNewTab];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   ntp_home::FakeOmniboxAccessibilityID())]
+      performAction:grey_typeText(base::SysUTF8ToNSString(URL1.host()))];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(grey_ancestor(PopupRowWithUrl(URL1)),
+                     grey_accessibilityID(
+                         kOmniboxPopupRowSwitchTabAccessibilityIdentifier),
+                     nil)] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+
+  // Check that the other tab is closed.
+  [ChromeEarlGrey waitForMainTabCount:1];
+}
+
+- (void)testDontCloseNTPWhenSwitchingWithForwardHistory {
+  // Open the first page.
+  GURL URL1 = self.testServer->GetURL(kPage1URL);
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+
+  // Open a new tab, navigate to a page and go back to have forward history.
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+  [ChromeEarlGrey goBack];
+
+  // Navigate to the other tab.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   ntp_home::FakeOmniboxAccessibilityID())]
+      performAction:grey_typeText(base::SysUTF8ToNSString(URL1.host()))];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(grey_ancestor(PopupRowWithUrl(URL1)),
+                     grey_accessibilityID(
+                         kOmniboxPopupRowSwitchTabAccessibilityIdentifier),
+                     nil)] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+
+  // Check that the other tab is not closed.
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 @end
