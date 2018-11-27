@@ -48,24 +48,26 @@
         android:layout_weight="1"
         android:visibility="gone" />
 
-    <android.support.v7.widget.ButtonBarLayout
+    <org.chromium.chrome.browser.widget.DualControlLayout
         android:id="@+id/button_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="?attr/buttonBarStyle">
+        android:padding="@dimen/modal_dialog_control_padding"
+        app:stackedMargin="@dimen/button_bar_stacked_margin"
+        app:buttonAlignment="end">
 
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/negative_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="?attr/buttonBarNegativeButtonStyle" />
-
-        <android.support.v7.widget.AppCompatButton
+        <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/positive_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="?attr/buttonBarPositiveButtonStyle" />
 
-    </android.support.v7.widget.ButtonBarLayout>
+        <org.chromium.ui.widget.ButtonCompat
+            android:id="@+id/negative_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?attr/buttonBarNegativeButtonStyle" />
+
+    </org.chromium.chrome.browser.widget.DualControlLayout>
 
 </org.chromium.chrome.browser.widget.BoundedLinearLayout>

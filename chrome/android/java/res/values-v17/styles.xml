@@ -123,22 +123,8 @@
         <item name="android:windowFrame">@null</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:backgroundDimAmount">0.5</item>
-        <item name="buttonBarStyle">@style/ModalDialogButtonBarStyle</item>
-        <item name="buttonBarButtonStyle">@style/ModalDialogButtonStyle</item>
+        <item name="buttonBarButtonStyle">@style/TextButton</item>
         <item name="android:windowSoftInputMode">adjustResize|stateHidden</item>
-    </style>
-
-    <style name="ModalDialogButtonBarStyle" parent="Widget.AppCompat.ButtonBar.AlertDialog">
-        <item name="android:orientation">horizontal</item>
-        <item name="android:gravity">bottom|end</item>
-        <item name="android:paddingStart">@dimen/modal_dialog_control_padding_horizontal</item>
-        <item name="android:paddingEnd">@dimen/modal_dialog_control_padding_horizontal</item>
-        <item name="android:paddingTop">@dimen/modal_dialog_control_padding_vertical</item>
-        <item name="android:paddingBottom">@dimen/modal_dialog_control_padding_vertical</item>
-    </style>
-
-    <style name="ModalDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
-        <item name="android:textAppearance">@style/BlueButtonText2</item>
     </style>
 
     <style name="SimpleDialog" parent="AlertDialogTheme">
