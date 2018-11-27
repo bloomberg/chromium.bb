@@ -24,11 +24,9 @@
 * ../../tables/da-dk-g26l.ctb                   Danish 6-dot partially contracted braille
 * ../../tables/da-dk-g28.ctb                    Danish 8-dot fully contracted braille
 * ../../tables/da-dk-g28l.ctb                   Danish 8-dot partially contracted braille
-* ../../tables/de-de-g0.utb                     German uncontracted braille
-* ../../tables/de-de-g1.ctb                     German partially contracted braille
-* ../../tables/de_CH.tbl                        Swiss High German fully contracted braille
-* ../../tables/de-ch-g0.utb                     Swiss High German uncontracted braille
-* ../../tables/de-ch-g1.ctb                     Swiss High German partially contracted braille
+* ../../tables/de-g0.utb                     	German uncontracted braille
+* ../../tables/de-g1.ctb                     	German partially contracted braille
+* ../../tables/de-g2.ctb                     	German fully contracted braille
 * ../../tables/dra.tbl                          Dravidian computer braille
 * ../../tables/el.tbl                           Greek braille
 * ../../tables/gr-bb.ctb                        Ancient Greek braille
