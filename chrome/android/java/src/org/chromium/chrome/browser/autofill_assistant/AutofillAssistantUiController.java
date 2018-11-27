@@ -38,6 +38,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /** OAuth2 scope that RPCs require. */
     private static final String AUTH_TOKEN_TYPE =
             "oauth2:https://www.googleapis.com/auth/userinfo.profile";
+    private static final String PARAMETER_USER_EMAIL = "USER_EMAIL";
 
     private final WebContents mWebContents;
     private final String mInitialUrl;
@@ -57,9 +58,12 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private boolean mAccountInitialized;
 
     /**
-     * Account to authenticate as when sending RPCs. Not relevant until the accounts have been
-     * fetched, and mAccountInitialized set to true. Can still be null after the accounts are
-     * fetched, in which case authentication is disabled.
+     * Account that was used to initiate AutofillAssistant.
+     *
+     * <p>This account is used to  authenticate when sending RPCs and as default account for Payment
+     * Request. Not relevant until the accounts have been fetched, and mAccountInitialized set to
+     * true. Can still be null after the accounts are fetched, in which case authentication is
+     * disabled.
      */
     @Nullable
     private Account mAccount;
@@ -81,7 +85,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                         parameters.values().toArray(new String[parameters.size()]),
                         LocaleUtils.getDefaultLocaleString(), getCountryIso());
 
-        chooseAccountAsync(activity.getInitialIntent().getExtras());
+        chooseAccountAsync(
+                parameters.get(PARAMETER_USER_EMAIL), activity.getInitialIntent().getExtras());
     }
 
     void setUiDelegateHolder(UiDelegateHolder uiDelegateHolder) {
@@ -283,9 +288,11 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         paymentOptions.requestPayerEmail = requestPayerEmail;
         paymentOptions.shippingType = shippingType;
 
+        String defaultEmail = mAccount != null ? mAccount.name : "";
+
         mUiDelegateHolder.performUiOperation(uiDelegate -> {
             uiDelegate.showPaymentRequest(mWebContents, paymentOptions, title,
-                    supportedBasicCardNetworks, (selectedPaymentInformation -> {
+                    supportedBasicCardNetworks, defaultEmail, (selectedPaymentInformation -> {
                         uiDelegate.closePaymentRequest();
                         if (selectedPaymentInformation.succeed) {
                             nativeOnGetPaymentInformation(mUiControllerAndroid,
@@ -406,7 +413,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     /** Choose an account to authenticate as for making RPCs to the backend. */
-    private void chooseAccountAsync(Bundle extras) {
+    private void chooseAccountAsync(@Nullable String accountFromParameter, Bundle extras) {
         AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
             if (accounts.size() == 1) {
                 // If there's only one account, there aren't any doubts.
@@ -421,7 +428,17 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                 onAccountChosen(signedIn);
                 return;
             }
+
+            if (accountFromParameter != null) {
+                Account account = findAccountByName(accounts, accountFromParameter);
+                if (account != null) {
+                    onAccountChosen(account);
+                    return;
+                }
+            }
+
             for (String extra : extras.keySet()) {
+                // TODO(crbug.com/806868): Deprecate ACCOUNT_NAME.
                 if (extra.endsWith("ACCOUNT_NAME")) {
                     Account account = findAccountByName(accounts, extras.getString(extra));
                     if (account != null) {

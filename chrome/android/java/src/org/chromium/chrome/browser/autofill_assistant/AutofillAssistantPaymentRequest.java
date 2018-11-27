@@ -6,10 +6,12 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -63,6 +65,7 @@ public class AutofillAssistantPaymentRequest {
     private final AddressEditor mAddressEditor;
     private final Map<String, PaymentMethodData> mMethodData;
     private final Handler mHandler = new Handler();
+    private final String mDefaultEmail;
 
     private PaymentRequestUI mUI;
     private ContactEditor mContactEditor;
@@ -104,12 +107,15 @@ public class AutofillAssistantPaymentRequest {
      * @supportedBasicCardNetworks Optional array of supported basic card networks (see {@link
      *                             BasicCardUtils}). If non-empty, only the specified card networks
      *                             will be available for the basic-card payment method.
+     * @defaultEmail               Optional email. When provided Profiles with this email will be
+     *                             shown on top.
      */
     public AutofillAssistantPaymentRequest(WebContents webContents, PaymentOptions paymentOptions,
-            String title, String[] supportedBasicCardNetworks) {
+            String title, String[] supportedBasicCardNetworks, @Nullable String defaultEmail) {
         mWebContents = webContents;
         mPaymentOptions = paymentOptions;
         mTitle = title;
+        mDefaultEmail = defaultEmail;
 
         // This feature should only works in non-incognito mode.
         mAddressEditor = new AddressEditor(/* emailFieldIncluded= */ true, /* saveToDisk= */ true);
@@ -175,6 +181,18 @@ public class AutofillAssistantPaymentRequest {
                 || mPaymentOptions.requestPayerPhone || mPaymentOptions.requestPayerEmail) {
             profiles = PersonalDataManager.getInstance().getProfilesToSuggest(
                     /* includeNameInLabel= */ false);
+
+            if (mDefaultEmail != null && profiles != null) {
+                // The profile with default email should be shown as first. Following profiles are
+                // sorted in an alphabetic order.
+                Collections.sort(profiles, (a, b) -> {
+                    int compareResult = ApiCompatibilityUtils.compareBoolean(
+                            mDefaultEmail.equals(b.getEmailAddress()),
+                            mDefaultEmail.equals(a.getEmailAddress()));
+                    if (compareResult != 0) return compareResult;
+                    return b.getEmailAddress().compareTo(a.getEmailAddress());
+                });
+            }
         }
 
         if (mPaymentOptions.requestShipping) {

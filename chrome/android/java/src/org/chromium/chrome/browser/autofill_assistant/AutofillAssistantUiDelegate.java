@@ -801,16 +801,18 @@ class AutofillAssistantUiDelegate {
      *
      * @param webContents The webContents.
      * @param paymentOptions Options to request payment information.
-     * @param title Unused title.
+     * @param unusedTitle Unused title.
      * @param supportedBasicCardNetworks Optional array of supported basic card networks.
+     * @param defaultEmail Optional email. If present Profiles containing this email will be shown
+     *         on top.
      * @param callback Callback to return selected info.
      */
     public void showPaymentRequest(WebContents webContents, PaymentOptions paymentOptions,
-            String unusedTitle, String[] supportedBasicCardNetworks,
+            String unusedTitle, String[] supportedBasicCardNetworks, @Nullable String defaultEmail,
             Callback<AutofillAssistantPaymentRequest.SelectedPaymentInformation> callback) {
         assert mPaymentRequest == null;
         mPaymentRequest = new AutofillAssistantPaymentRequest(
-                webContents, paymentOptions, unusedTitle, supportedBasicCardNetworks);
+                webContents, paymentOptions, unusedTitle, supportedBasicCardNetworks, defaultEmail);
         // Make sure we wrap content in the container.
         mBottomBarAnimations.setBottomBarHeightToWrapContent();
         // Note: We show and hide (below) the carousel so that the margins are adjusted correctly.
