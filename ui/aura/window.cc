@@ -1335,7 +1335,7 @@ std::unique_ptr<ui::Layer> Window::RecreateLayer() {
 }
 
 void Window::UpdateLayerName() {
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
   DCHECK(layer());
 
   std::string layer_name(GetName());
