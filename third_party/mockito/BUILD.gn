@@ -7,9 +7,12 @@ import("//build/config/android/rules.gni")
 java_library("mockito_java") {
   chromium_code = false
   supports_android = true
+  requires_android = true
   testonly = true
+  proguard_configs = [ "//third_party/mockito/proguard.flags" ]
   deps = [
     "//third_party/byte_buddy:byte_buddy_agent_java",
+    "//third_party/byte_buddy:byte_buddy_android_java",
     "//third_party/byte_buddy:byte_buddy_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
@@ -454,19 +457,6 @@ java_library("mockito_java") {
     "src/src/main/java/org/mockito/internal/creation/package-info.java",
     "src/src/main/java/org/mockito/creation/instance/InstantiationException.java",
     "src/src/main/java/org/mockito/creation/instance/Instantiator.java",
-  ]
-}
-
-android_library("mockito_android_java") {
-  chromium_code = false
-  testonly = true
-  proguard_configs = [ "//third_party/mockito/proguard.flags" ]
-  deps = [
-    ":mockito_java",
-    "//third_party/byte_buddy:byte_buddy_android_java",
-  ]
-
-  java_files = [
     "src/subprojects/android/src/main/java/org/mockito/android/internal/creation/AndroidTempFileLocator.java",
     "src/subprojects/android/src/main/java/org/mockito/android/internal/creation/AndroidLoadingStrategy.java",
     "src/subprojects/android/src/main/java/org/mockito/android/internal/creation/AndroidByteBuddyMockMaker.java",

@@ -325,6 +325,7 @@ java_library("robolectric_sandbox_java") {
 }
 
 java_library("robolectric_junit_java") {
+  bypass_platform_checks = true
   testonly = true
   deps = [
     ":robolectric_annotations_java",
