@@ -132,25 +132,6 @@ TEST_F(BubbleDialogDelegateViewTest, CreateDelegate) {
   EXPECT_TRUE(bubble_observer.widget_closed());
 }
 
-TEST_F(BubbleDialogDelegateViewTest, MirrorArrowInRtl) {
-  std::string default_locale = base::i18n::GetConfiguredLocale();
-  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
-  for (bool rtl : {false, true}) {
-    base::i18n::SetICUDefaultLocale(rtl ? "he" : "en");
-    EXPECT_EQ(rtl, base::i18n::IsRTL());
-    for (bool mirror : {false, true}) {
-      TestBubbleDialogDelegateView* bubble =
-          new TestBubbleDialogDelegateView(anchor_widget->GetContentsView());
-      bubble->set_mirror_arrow_in_rtl(mirror);
-      BubbleDialogDelegateView::CreateBubble(bubble);
-      EXPECT_EQ(rtl && mirror ? BubbleBorder::horizontal_mirror(bubble->arrow())
-                              : bubble->arrow(),
-                bubble->GetBubbleFrameView()->bubble_border()->arrow());
-    }
-  }
-  base::i18n::SetICUDefaultLocale(default_locale);
-}
-
 TEST_F(BubbleDialogDelegateViewTest, CloseAnchorWidget) {
   std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
   BubbleDialogDelegateView* bubble_delegate =

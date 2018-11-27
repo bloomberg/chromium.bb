@@ -196,10 +196,6 @@ class VIEWS_EXPORT ViewsDelegate {
                                      const base::Closure& callback);
 #endif
 
-  // Whether to mirror the arrow of bubble dialogs in RTL, such that the bubble
-  // opens in the opposite direction.
-  virtual bool ShouldMirrorArrowsInRTL() const;
-
  protected:
   ViewsDelegate();
 

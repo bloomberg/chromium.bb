@@ -16,7 +16,6 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_properties.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -134,7 +133,6 @@ bool BubbleDialogDelegateView::ShouldShowCloseButton() const {
 
 ClientView* BubbleDialogDelegateView::CreateClientView(Widget* widget) {
   DialogClientView* client = new DialogClientView(widget, GetContentsView());
-  widget->non_client_view()->set_mirror_client_in_rtl(mirror_arrow_in_rtl_);
   return client;
 }
 
@@ -148,7 +146,7 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
   frame->SetFootnoteView(CreateFootnoteView());
 
   BubbleBorder::Arrow adjusted_arrow = arrow();
-  if (base::i18n::IsRTL() && mirror_arrow_in_rtl_)
+  if (base::i18n::IsRTL())
     adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
   std::unique_ptr<BubbleBorder> border =
       std::make_unique<BubbleBorder>(adjusted_arrow, GetShadow(), color());
@@ -275,8 +273,6 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
       anchor_view_tracker_(std::make_unique<ViewTracker>()),
       anchor_widget_(nullptr),
       arrow_(arrow),
-      mirror_arrow_in_rtl_(
-          ViewsDelegate::GetInstance()->ShouldMirrorArrowsInRTL()),
       shadow_(shadow),
       color_explicitly_set_(false),
       accept_events_(true),

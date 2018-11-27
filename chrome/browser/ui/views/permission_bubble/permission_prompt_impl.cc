@@ -121,14 +121,6 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
 
   set_close_on_deactivate(false);
 
-#if defined(OS_MACOSX)
-  // On Mac, the browser UI flips depending on a runtime feature. TODO(tapted):
-  // Change the default in views::PlatformStyle when features::kMacRTL launches,
-  // and remove the following.
-  if (base::FeatureList::IsEnabled(features::kMacRTL))
-    set_mirror_arrow_in_rtl(true);
-#endif
-
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
