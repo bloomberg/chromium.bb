@@ -38,10 +38,10 @@ class UrlKeyedDataCollectionConsentHelper {
   //    |prefs::kUrlKeyedAnonymizedDataCollectionEnabled| is set to true.
   //
   // 2. If |is_unified_consent_enabled| is false, then the instance is backed by
-  //    the sync service. Url-keyed data collection is enabled if sync is active
-  //    and if sync history is enabled.
+  //    the sync service. Url-keyed data collection is enabled if history sync
+  //    has an active upload state.
   //
-  // Note: |pref_service| must outlive the retuned instance.
+  // Note: |pref_service| must outlive the returned instance.
   static std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
   NewAnonymizedDataCollectionConsentHelper(PrefService* pref_service,
                                            syncer::SyncService* sync_service);
@@ -51,11 +51,8 @@ class UrlKeyedDataCollectionConsentHelper {
   // the client needs to check whether the user has granted consent for
   // URL-keyed data collection keyed by their Google account.
   //
-  // Implementation-wise we distinguish the following cases:
-  // 1. If |is_unified_consent_enabled| is true then URL-keyed data collection
-  //    is enabled if sync is active and if sync event logger is enabled.
-  // 2. If |is_unified_consent_enabled| is false then URL-keyed data collection
-  //    is enabled if sync is active and if sync history is enabled.
+  // Implementation-wise URL-keyed data collection is enabled if history sync
+  // has an active upload state.
   static std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
   NewPersonalizedDataCollectionConsentHelper(syncer::SyncService* sync_service);
 
