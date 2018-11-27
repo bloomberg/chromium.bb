@@ -415,6 +415,8 @@ HeadlessRequestContextManager::CreateNetworkContextParams() {
         user_data_path_.Append(FILE_PATH_LITERAL("Cookies"));
     context_params->channel_id_path =
         user_data_path_.Append(FILE_PATH_LITERAL("Origin Bound Certs"));
+    context_params->http_cache_path =
+        user_data_path_.Append(FILE_PATH_LITERAL("Cache"));
   }
   if (proxy_config_) {
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
