@@ -229,8 +229,8 @@ void MediaKeySystemAccessInitializer::RequestSucceeded(
   if (!IsExecutionContextValid())
     return;
 
-  resolver_->Resolve(MakeGarbageCollected<MediaKeySystemAccess>(
-      key_system_, base::WrapUnique(access)));
+  resolver_->Resolve(
+      MakeGarbageCollected<MediaKeySystemAccess>(base::WrapUnique(access)));
   resolver_.Clear();
 }
 
