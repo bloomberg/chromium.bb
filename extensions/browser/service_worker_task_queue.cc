@@ -201,7 +201,7 @@ bool ServiceWorkerTaskQueue::ShouldEnqueueTask(BrowserContext* context,
 }
 
 void ServiceWorkerTaskQueue::AddPendingTaskToDispatchEvent(
-    LazyContextId* context_id,
+    const LazyContextId* context_id,
     LazyContextTaskQueue::PendingTask task) {
   DCHECK(context_id->is_for_service_worker());
 
@@ -267,7 +267,7 @@ void ServiceWorkerTaskQueue::DeactivateExtension(const Extension* extension) {
 }
 
 void ServiceWorkerTaskQueue::RunTaskAfterStartWorker(
-    LazyContextId* context_id,
+    const LazyContextId* context_id,
     LazyContextTaskQueue::PendingTask task) {
   DCHECK(context_id->is_for_service_worker());
 
