@@ -4,6 +4,7 @@
 
 #include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
 
+#include "net/third_party/http2/platform/api/http2_flag_utils.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
 namespace http2 {
@@ -43,6 +44,7 @@ DecodeStatus HpackVarintDecoder::StartExtended(uint8_t prefix_length,
 
 DecodeStatus HpackVarintDecoder::Resume(DecodeBuffer* db) {
   if (decode_64_bits_) {
+    HTTP2_FLAG_COUNT(chromium_flag_http2_varint_decode_64_bits);
     // There can be at most 10 continuation bytes.  Offset is zero for the
     // first one and increases by 7 for each subsequent one.
     const uint8_t kMaxOffset = 63;
