@@ -208,7 +208,7 @@ testcase.createFolderNestedDownloads = function() {
     return expandRoot(appId, TREEITEM_DOWNLOADS);
   }).then(function() {
     return remoteCall.navigateWithDirectoryTree(
-        appId, '/photos', 'My files/Downloads');
+        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
   }).then(function() {
     return remoteCall.waitForFiles(appId, [], {ignoreLastModifiedTime: true});
   }).then(function() {
