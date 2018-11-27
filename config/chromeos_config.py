@@ -2868,6 +2868,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
           'sentry', 'cave', 'asuka', 'caroline']),
       ('firmware-terra-7287.154.B', ['terra']),
       ('firmware-edgar-7287.167.B', ['edgar']),
+      ('firmware-smaug-7900.B', ['smaug']),
       ('firmware-gale-8281.B', ['gale']),
       ('firmware-oak-8438.B', ['oak', 'elm', 'hana']),
       ('firmware-gru-8785.B', ['gru', 'kevin', 'bob']),

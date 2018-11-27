@@ -981,9 +981,14 @@ class CBuildBotTest(ChromeosConfigTestBase):
     """Verifies that all config boards are in _all_boards."""
     boards_dict = self._GetBoardTypeToBoardsDict()
     for build_name, config in self.site_config.iteritems():
-      self.assertIsNotNone(config['boards'],
+      self.assertIsNotNone(config.boards,
                            'Config %s has boards = None' % build_name)
-      for board in config['boards']:
+      for board in config.boards:
+        if config.workspace_branch:
+          # Builds on workspace branches may reference boards which no
+          # longer exist.
+          continue
+
         self.assertIn(board, boards_dict['all_boards'],
                       'Config %s has unknown board %s.' %
                       (build_name, board))
