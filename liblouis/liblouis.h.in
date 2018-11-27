@@ -99,8 +99,7 @@ typedef enum {
 	noContractions = 1,
 	compbrlAtCursor = 2,
 	dotsIO = 4,
-	// for historic reasons 8 is free
-	pass1Only = 16,  // defunct
+	// for historic reasons 8 and 16 are free
 	compbrlLeftCursor = 32,
 	ucBrl = 64,
 	noUndefinedDots = 128,
@@ -193,7 +192,7 @@ void EXPORT_CALL
 lou_logFile(const char *filename);
 
 /**
- * Read a character from a file, whether big-encian, little-endian or ASCII8
+ * Read a character from a file, whether big-endian, little-endian or ASCII8
  *
  * and return it as an integer. EOF at end of file. Mode = 1 on first
  * call, any other value thereafter
