@@ -116,6 +116,8 @@ static const CGFloat NoMultiplier = 1.0;
   [self.usernameButton setTitleColor:UIColor.cr_manualFillTintColor
                             forState:UIControlStateNormal];
   [self.passwordButton setTitle:@"" forState:UIControlStateNormal];
+  self.passwordButton.accessibilityLabel = nil;
+  self.passwordButton.hidden = NO;
   self.manualFillCredential = nil;
 }
 
@@ -176,6 +178,8 @@ static const CGFloat NoMultiplier = 1.0;
 
   if (credential.password.length) {
     [self.passwordButton setTitle:@"••••••••" forState:UIControlStateNormal];
+    self.passwordButton.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL);
     [verticalLeadViews addObject:self.passwordButton];
     self.passwordButton.hidden = NO;
   } else {
