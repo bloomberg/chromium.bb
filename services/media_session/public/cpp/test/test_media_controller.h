@@ -22,8 +22,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   mojom::MediaControllerPtr CreateMediaControllerPtr();
 
   // mojom::MediaController:
-  void Suspend() override {}
-  void Resume() override {}
+  void Suspend() override;
+  void Resume() override;
   void ToggleSuspendResume() override;
   void AddObserver(mojom::MediaSessionObserverPtr) override;
   void PreviousTrack() override;
@@ -34,6 +34,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
     return toggle_suspend_resume_count_;
   }
 
+  int suspend_count() const { return suspend_count_; }
+  int resume_count() const { return resume_count_; }
   int add_observer_count() const { return add_observer_count_; }
   int previous_track_count() const { return previous_track_count_; }
   int next_track_count() const { return next_track_count_; }
@@ -42,6 +44,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
 
  private:
   int toggle_suspend_resume_count_ = 0;
+  int suspend_count_ = 0;
+  int resume_count_ = 0;
   int add_observer_count_ = 0;
   int previous_track_count_ = 0;
   int next_track_count_ = 0;

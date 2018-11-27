@@ -8,6 +8,7 @@
 #include "ash/media/media_notification_controller.h"
 #include "ash/shell.h"
 #include "components/vector_icons/vector_icons.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
@@ -17,6 +18,8 @@
 #include "ui/views/style/typography.h"
 
 namespace ash {
+
+using media_session::mojom::MediaSessionAction;
 
 namespace {
 
@@ -61,11 +64,14 @@ MediaNotificationView::MediaNotificationView(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   AddChildView(button_row_);
 
-  CreateMediaButton(vector_icons::kMediaPreviousTrackIcon);
-  CreateMediaButton(vector_icons::kMediaSeekBackwardIcon);
+  CreateMediaButton(vector_icons::kMediaPreviousTrackIcon,
+                    MediaSessionAction::kPreviousTrack);
+  CreateMediaButton(vector_icons::kMediaSeekBackwardIcon,
+                    MediaSessionAction::kSeekBackward);
 
   // |play_pause_button_| toggles playback.
   play_pause_button_ = views::CreateVectorToggleImageButton(this);
+  play_pause_button_->set_tag(static_cast<int>(MediaSessionAction::kPlay));
   SkColor play_button_color = GetMediaNotificationColor(*play_pause_button_);
   views::SetImageFromVectorIcon(play_pause_button_,
                                 vector_icons::kPlayArrowIcon,
@@ -75,8 +81,10 @@ MediaNotificationView::MediaNotificationView(
                                        kMediaButtonIconSize, play_button_color);
   button_row_->AddChildView(play_pause_button_);
 
-  CreateMediaButton(vector_icons::kMediaSeekForwardIcon);
-  CreateMediaButton(vector_icons::kMediaNextTrackIcon);
+  CreateMediaButton(vector_icons::kMediaSeekForwardIcon,
+                    MediaSessionAction::kSeekForward);
+  CreateMediaButton(vector_icons::kMediaNextTrackIcon,
+                    MediaSessionAction::kNextTrack);
 
   // TODO(beccahughes): Add remaining UI for notification.
 
@@ -131,15 +139,18 @@ void MediaNotificationView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   if (sender->parent() == button_row_) {
     message_center::MessageCenter::Get()->ClickOnNotificationButton(
-        notification_id(), sender->parent()->GetIndexOf(sender));
+        notification_id(), sender->tag());
   }
 }
 
 void MediaNotificationView::UpdateWithMediaSessionInfo(
     const media_session::mojom::MediaSessionInfoPtr& session_info) {
-  play_pause_button_->SetToggled(
-      session_info->playback_state ==
-      media_session::mojom::MediaPlaybackState::kPlaying);
+  bool playing = session_info->playback_state ==
+                 media_session::mojom::MediaPlaybackState::kPlaying;
+  play_pause_button_->SetToggled(playing);
+  play_pause_button_->set_tag(
+      playing ? static_cast<int>(MediaSessionAction::kPause)
+              : static_cast<int>(MediaSessionAction::kPlay));
 }
 
 void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(
@@ -152,8 +163,10 @@ void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(
   UpdateControlButtonsVisibility();
 }
 
-void MediaNotificationView::CreateMediaButton(const gfx::VectorIcon& icon) {
+void MediaNotificationView::CreateMediaButton(const gfx::VectorIcon& icon,
+                                              MediaSessionAction action) {
   views::ImageButton* button = views::CreateVectorImageButton(this);
+  button->set_tag(static_cast<int>(action));
   views::SetImageFromVectorIcon(button, icon, kMediaButtonIconSize,
                                 GetMediaNotificationColor(*button));
   button_row_->AddChildView(button);
