@@ -15,6 +15,7 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -93,8 +94,10 @@ views::Label* CreateLabel(const base::string16& message, SkColor color) {
 
 class LoginErrorBubbleView : public LoginBaseBubbleView {
  public:
-  LoginErrorBubbleView(views::View* content, views::View* anchor_view)
-      : LoginBaseBubbleView(anchor_view) {
+  LoginErrorBubbleView(views::View* content,
+                       views::View* anchor_view,
+                       aura::Window* container)
+      : LoginBaseBubbleView(anchor_view, container) {
     set_anchor_view_insets(
         gfx::Insets(kAnchorViewErrorBubbleVerticalSpacingDp, 0));
 
@@ -449,7 +452,9 @@ void LoginBubble::ShowErrorBubble(views::View* content,
     CloseImmediately();
 
   flags_ = flags;
-  bubble_view_ = new LoginErrorBubbleView(content, anchor_view);
+  aura::Window* menu_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(), kShellWindowId_MenuContainer);
+  bubble_view_ = new LoginErrorBubbleView(content, anchor_view, menu_container);
 
   Show();
 }
