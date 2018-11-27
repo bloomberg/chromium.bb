@@ -4,9 +4,11 @@
 'use strict';
 
 /**
- * Mock of Progress Center.
+ * Mock implementation of {ProgressCenter} for tests.
+ *
  * @constructor
  * @struct
+ * @implements {ProgressCenter}
  */
 function MockProgressCenter() {
   /**
@@ -31,3 +33,9 @@ MockProgressCenter.prototype.updateItem = function(item) {
 MockProgressCenter.prototype.getItemById = function(id) {
   return this.items[id];
 };
+
+MockProgressCenter.prototype.requestCancel = function() {};
+
+MockProgressCenter.prototype.addPanel = function() {};
+
+MockProgressCenter.prototype.removePanel = function() {};
