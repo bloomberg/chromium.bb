@@ -12,6 +12,8 @@ namespace configuration {
 // Configuration keys that are used to automate OOBE screens go here.
 // Please keep keys grouped by screens and ordered according to OOBE flow.
 
+extern const char kLanguage[];
+extern const char kInputMethod[];
 extern const char kWelcomeNext[];
 extern const char kEnableDemoMode[];
 

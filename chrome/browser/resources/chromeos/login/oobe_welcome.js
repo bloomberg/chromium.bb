@@ -120,14 +120,24 @@ Polymer({
 
     this.$.welcomeScreen.i18nUpdateLocale();
     this.i18nUpdateLocale();
+
+    var currentLanguage = loadTimeData.getString('language');
+
+    // We might have changed language via configuration. In this case
+    // we need to proceed with rest of configuration after language change
+    // was fully resolved.
+    var configuration = Oobe.getInstance().getOobeConfiguration();
+    if (configuration && configuration.language &&
+        configuration.language == currentLanguage) {
+      window.setTimeout(this.applyOobeConfiguration_.bind(this), 0);
+    }
   },
 
-  /** Called when OOBE configuration is loaded.
+  /**
+   * Called when OOBE configuration is loaded.
    * @param {!OobeTypes.OobeConfiguration} configuration
    */
   updateOobeConfiguration: function(configuration) {
-    if (!this.is_shown_)
-      return;
     if (!this.configuration_applied_)
       window.setTimeout(this.applyOobeConfiguration_.bind(this), 0);
   },
@@ -137,12 +147,24 @@ Polymer({
    * @private
    */
   applyOobeConfiguration_: function() {
-    // TODO(antrim): apply a11y options, language selection
     if (this.configuration_applied_)
       return;
     var configuration = Oobe.getInstance().getOobeConfiguration();
     if (!configuration)
       return;
+
+    if (configuration.language) {
+      var currentLanguage = loadTimeData.getString('language');
+      if (currentLanguage != configuration.language) {
+        this.screen.onLanguageSelected_(configuration.language);
+        // Trigger language change without marking it as applied.
+        // applyOobeConfiguration will be called again once language change
+        // was applied.
+        return;
+      }
+    }
+    if (configuration.inputMethod)
+      this.screen.onKeyboardSelected_(configuration.inputMethod);
 
     if (configuration.welcomeNext)
       this.onWelcomeNextButtonClicked_();
