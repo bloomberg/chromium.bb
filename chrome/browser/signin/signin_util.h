@@ -19,9 +19,6 @@ void SetForceSigninForTesting(bool enable);
 // Reset force sign in to uninitialized state for testing.
 void ResetForceSigninForTesting();
 
-// Returns true if clearing the primary profile is allowed.
-bool IsUserSignoutAllowedForProfile(Profile* profile);
-
 // Sign-out is allowed by default, but some Chrome profiles (e.g. for cloud-
 // managed enterprise accounts) may wish to disallow user-initiated sign-out.
 // Note that this exempts sign-outs that are not user-initiated (e.g. sign-out
@@ -29,18 +26,7 @@ bool IsUserSignoutAllowedForProfile(Profile* profile);
 // ChromeSigninClient::PreSignOut().
 void SetUserSignoutAllowedForProfile(Profile* profile, bool is_allowed);
 
-// Updates the user sign-out state to |true| if is was never initialized.
-// This should be called at the end of the flow to initialize a profile to
-// ensure that the signout allowed flag is updated.
-void EnsureUserSignoutAllowedIsInitializedForProfile(Profile* profile);
-
-// Ensures that the primary account for |profile| is allowed:
-// * If profile does not have any primary account, then this is a no-op.
-// * If |IsUserSignoutAllowedForProfile| is allowed and the primary account
-//   is no longer allowed, then this clears the primary account.
-// * If |IsUserSignoutAllowedForProfile| is not allowed and the primary account
-//   is not longer allowed, then this removes the profile.
-void EnsurePrimaryAccountAllowedForProfile(Profile* profile);
+bool IsUserSignoutAllowedForProfile(Profile* profile);
 
 }  // namespace signin_util
 

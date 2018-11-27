@@ -29,7 +29,7 @@ enum DifferentPrimaryAccounts {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.signin
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SignoutReason
 enum ProfileSignout {
-  // The value used within unit tests.
+  // The value used within unit tests
   SIGNOUT_TEST = 0,
   // The preference or policy controlling if signin is valid has changed.
   SIGNOUT_PREF_CHANGED = 0,
@@ -55,10 +55,6 @@ enum ProfileSignout {
   // Android specific. Signout forced because the account was removed from the
   // device.
   ACCOUNT_REMOVED_FROM_DEVICE,
-  // Signin is no longer allowed when the profile is initialized.
-  SIGNIN_NOT_ALLOWED_ON_PROFILE_INIT,
-  // Sign out is forced allowed. Only used for tests.
-  FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
   // Keep this as the last enum.
   NUM_PROFILE_SIGNOUT_METRICS,
 };

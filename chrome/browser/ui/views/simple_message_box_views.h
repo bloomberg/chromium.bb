@@ -25,7 +25,6 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
       const base::string16& yes_text,
       const base::string16& no_text,
       const base::string16& checkbox_text,
-      bool can_close,
       MessageBoxResultCallback callback = MessageBoxResultCallback());
 
   // views::DialogDelegate:
@@ -33,14 +32,12 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Cancel() override;
   bool Accept() override;
-  bool Close() override;
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
   views::View* GetContentsView() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
-  bool ShouldShowCloseButton() const override;
 
   // views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
@@ -52,8 +49,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
                         const base::string16& yes_text,
                         const base::string16& no_text,
                         const base::string16& checkbox_text,
-                        bool is_system_modal,
-                        bool can_close);
+                        bool is_system_modal);
   ~SimpleMessageBoxViews() override;
 
   void Run(MessageBoxResultCallback result_callback);
@@ -67,7 +63,6 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   views::MessageBoxView* message_box_view_;
   MessageBoxResultCallback result_callback_;
   bool is_system_modal_;
-  bool can_close_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMessageBoxViews);
 };

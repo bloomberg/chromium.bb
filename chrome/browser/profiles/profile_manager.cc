@@ -1276,12 +1276,6 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
       chrome::NOTIFICATION_PROFILE_ADDED,
       content::Source<Profile>(profile),
       content::NotificationService::NoDetails());
-
-  // At this point, the user policy service and the child account service
-  // had enough time to initialize and should have updated the user signout
-  // flag attached to the profile.
-  signin_util::EnsureUserSignoutAllowedIsInitializedForProfile(profile);
-  signin_util::EnsurePrimaryAccountAllowedForProfile(profile);
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
