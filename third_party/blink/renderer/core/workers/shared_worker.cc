@@ -58,7 +58,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
 
   UseCounter::Count(context, WebFeature::kSharedWorkerStart);
 
-  SharedWorker* worker = new SharedWorker(context);
+  SharedWorker* worker = MakeGarbageCollected<SharedWorker>(context);
 
   MessageChannel* channel = MessageChannel::Create(context);
   worker->port_ = channel->port1();

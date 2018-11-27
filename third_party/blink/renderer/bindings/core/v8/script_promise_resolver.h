@@ -43,10 +43,15 @@ class CORE_EXPORT ScriptPromiseResolver
 
  public:
   static ScriptPromiseResolver* Create(ScriptState* script_state) {
-    ScriptPromiseResolver* resolver = new ScriptPromiseResolver(script_state);
+    ScriptPromiseResolver* resolver =
+        MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     resolver->PauseIfNeeded();
     return resolver;
   }
+
+  // You need to call suspendIfNeeded after the construction because
+  // this is an PausableObject.
+  explicit ScriptPromiseResolver(ScriptState*);
 
 #if DCHECK_IS_ON()
   // Eagerly finalized so as to ensure valid access to getExecutionContext()
@@ -101,11 +106,6 @@ class CORE_EXPORT ScriptPromiseResolver
   void KeepAliveWhilePending();
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  // You need to call suspendIfNeeded after the construction because
-  // this is an PausableObject.
-  explicit ScriptPromiseResolver(ScriptState*);
 
  private:
   typedef ScriptPromise::InternalResolver Resolver;

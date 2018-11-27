@@ -61,7 +61,7 @@
 
 namespace blink {
 SelectionController* SelectionController::Create(LocalFrame& frame) {
-  return new SelectionController(frame);
+  return MakeGarbageCollected<SelectionController>(frame);
 }
 
 SelectionController::SelectionController(LocalFrame& frame)

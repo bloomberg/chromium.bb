@@ -51,7 +51,11 @@ class CSSRuleList : public ScriptWrappable {
 
 class StaticCSSRuleList final : public CSSRuleList {
  public:
-  static StaticCSSRuleList* Create() { return new StaticCSSRuleList(); }
+  static StaticCSSRuleList* Create() {
+    return MakeGarbageCollected<StaticCSSRuleList>();
+  }
+
+  StaticCSSRuleList();
 
   HeapVector<Member<CSSRule>>& Rules() { return rules_; }
 
@@ -60,8 +64,6 @@ class StaticCSSRuleList final : public CSSRuleList {
   void Trace(blink::Visitor*) override;
 
  private:
-  StaticCSSRuleList();
-
   unsigned length() const override { return rules_.size(); }
   CSSRule* item(unsigned index) const override {
     return index < rules_.size() ? rules_[index].Get() : nullptr;

@@ -27,7 +27,8 @@ ServiceWorkerRegistrationBackgroundFetch::From(
           ServiceWorkerRegistrationBackgroundFetch>(registration);
 
   if (!supplement) {
-    supplement = new ServiceWorkerRegistrationBackgroundFetch(&registration);
+    supplement = MakeGarbageCollected<ServiceWorkerRegistrationBackgroundFetch>(
+        &registration);
     ProvideTo(registration, supplement);
   }
 

@@ -106,9 +106,9 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
     return nullptr;
   }
 
-  return new ScrollTimeline(scroll_source, orientation, start_scroll_offset,
-                            end_scroll_offset,
-                            options->timeRange().GetAsDouble());
+  return MakeGarbageCollected<ScrollTimeline>(
+      scroll_source, orientation, start_scroll_offset, end_scroll_offset,
+      options->timeRange().GetAsDouble());
 }
 
 ScrollTimeline::ScrollTimeline(Element* scroll_source,

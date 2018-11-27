@@ -54,6 +54,8 @@ class CORE_EXPORT SharedWorker final
                               const String& url,
                               const String& name,
                               ExceptionState&);
+
+  explicit SharedWorker(ExecutionContext*);
   ~SharedWorker() override;
 
   MessagePort* port() const { return port_.Get(); }
@@ -68,8 +70,6 @@ class CORE_EXPORT SharedWorker final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SharedWorker(ExecutionContext*);
-
   Member<MessagePort> port_;
   bool is_being_connected_;
 };

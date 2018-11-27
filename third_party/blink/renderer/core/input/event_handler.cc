@@ -155,7 +155,7 @@ EventHandler::EventHandler(LocalFrame& frame)
           frame_->IsLocalRoot()
               ? MakeGarbageCollected<EventHandlerRegistry>(*frame_)
               : &frame_->LocalFrameRoot().GetEventHandlerRegistry()),
-      scroll_manager_(new ScrollManager(frame)),
+      scroll_manager_(MakeGarbageCollected<ScrollManager>(frame)),
       mouse_event_manager_(
           MakeGarbageCollected<MouseEventManager>(frame, *scroll_manager_)),
       mouse_wheel_event_manager_(

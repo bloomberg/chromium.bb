@@ -238,13 +238,13 @@ CachedMetadataHandler* RawResource::CreateCachedMetadataHandler(
   if (GetType() == ResourceType::kMainResource) {
     // This is a document resource; create a cache handler that can handle
     // multiple inline scripts.
-    return new SourceKeyedCachedMetadataHandler(Encoding(),
-                                                std::move(send_callback));
+    return MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
+        Encoding(), std::move(send_callback));
   } else if (GetType() == ResourceType::kRaw) {
     // This is a resource of indeterminate type, e.g. a fetched WebAssembly
     // module; create a cache handler that can store a single metadata entry.
-    return new ScriptCachedMetadataHandler(Encoding(),
-                                           std::move(send_callback));
+    return MakeGarbageCollected<ScriptCachedMetadataHandler>(
+        Encoding(), std::move(send_callback));
   }
   return Resource::CreateCachedMetadataHandler(std::move(send_callback));
 }

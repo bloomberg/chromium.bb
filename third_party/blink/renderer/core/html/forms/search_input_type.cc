@@ -54,7 +54,7 @@ inline SearchInputType::SearchInputType(HTMLInputElement& element)
           &SearchInputType::SearchEventTimerFired) {}
 
 InputType* SearchInputType::Create(HTMLInputElement& element) {
-  return new SearchInputType(element);
+  return MakeGarbageCollected<SearchInputType>(element);
 }
 
 void SearchInputType::CountUsage() {

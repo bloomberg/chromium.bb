@@ -44,6 +44,7 @@ class SpeechSynthesisUtterance final
  public:
   static SpeechSynthesisUtterance* Create(ExecutionContext*, const String&);
 
+  SpeechSynthesisUtterance(ExecutionContext*, const String&);
   ~SpeechSynthesisUtterance() override;
 
   const String& text() const { return platform_utterance_->GetText(); }
@@ -88,8 +89,6 @@ class SpeechSynthesisUtterance final
   void Trace(blink::Visitor*) override;
 
  private:
-  SpeechSynthesisUtterance(ExecutionContext*, const String&);
-
   // EventTarget
   const AtomicString& InterfaceName() const override;
 

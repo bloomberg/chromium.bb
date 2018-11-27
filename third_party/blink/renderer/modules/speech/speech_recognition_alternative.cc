@@ -30,7 +30,8 @@ namespace blink {
 SpeechRecognitionAlternative* SpeechRecognitionAlternative::Create(
     const String& transcript,
     double confidence) {
-  return new SpeechRecognitionAlternative(transcript, confidence);
+  return MakeGarbageCollected<SpeechRecognitionAlternative>(transcript,
+                                                            confidence);
 }
 
 SpeechRecognitionAlternative::SpeechRecognitionAlternative(

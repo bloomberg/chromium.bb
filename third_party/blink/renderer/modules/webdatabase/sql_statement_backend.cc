@@ -87,7 +87,8 @@ SQLStatementBackend* SQLStatementBackend::Create(
     const String& statement,
     const Vector<SQLValue>& arguments,
     int permissions) {
-  return new SQLStatementBackend(frontend, statement, arguments, permissions);
+  return MakeGarbageCollected<SQLStatementBackend>(frontend, statement,
+                                                   arguments, permissions);
 }
 
 SQLStatementBackend::SQLStatementBackend(SQLStatement* frontend,

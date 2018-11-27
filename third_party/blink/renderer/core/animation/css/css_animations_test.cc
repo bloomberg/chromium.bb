@@ -15,7 +15,8 @@ namespace blink {
 
 class CSSAnimationsTest : public RenderingTest {
  public:
-  CSSAnimationsTest() : chrome_client_(new StubChromeClientForSPv2()) {
+  CSSAnimationsTest()
+      : chrome_client_(MakeGarbageCollected<StubChromeClientForSPv2>()) {
     EnablePlatform();
     platform()->SetThreadedAnimationEnabled(true);
   }

@@ -58,6 +58,8 @@ class MODULES_EXPORT SpeechRecognition final
 
  public:
   static SpeechRecognition* Create(ExecutionContext*);
+
+  SpeechRecognition(LocalFrame*, ExecutionContext*);
   ~SpeechRecognition() override;
 
   // SpeechRecognition.idl implemementation.
@@ -121,8 +123,6 @@ class MODULES_EXPORT SpeechRecognition final
   void Trace(blink::Visitor*) override;
 
  private:
-  SpeechRecognition(LocalFrame*, ExecutionContext*);
-
   void OnConnectionError();
 
   Member<SpeechGrammarList> grammars_;

@@ -32,12 +32,13 @@ class SetMediaKeysHandler : public ScriptPromiseResolver {
 
  public:
   static ScriptPromise Create(ScriptState*, HTMLMediaElement&, MediaKeys*);
+
+  SetMediaKeysHandler(ScriptState*, HTMLMediaElement&, MediaKeys*);
   ~SetMediaKeysHandler() override;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  SetMediaKeysHandler(ScriptState*, HTMLMediaElement&, MediaKeys*);
   void TimerFired(TimerBase*);
 
   void ClearExistingMediaKeys();
@@ -129,8 +130,8 @@ class SetContentDecryptionModuleResult final
 ScriptPromise SetMediaKeysHandler::Create(ScriptState* script_state,
                                           HTMLMediaElement& element,
                                           MediaKeys* media_keys) {
-  SetMediaKeysHandler* handler =
-      new SetMediaKeysHandler(script_state, element, media_keys);
+  SetMediaKeysHandler* handler = MakeGarbageCollected<SetMediaKeysHandler>(
+      script_state, element, media_keys);
   handler->PauseIfNeeded();
   handler->KeepAliveWhilePending();
   return handler->Promise();
@@ -200,8 +201,8 @@ void SetMediaKeysHandler::ClearExistingMediaKeys() {
       FailureCallback failure_callback =
           WTF::Bind(&SetMediaKeysHandler::ClearFailed, WrapPersistent(this));
       ContentDecryptionModuleResult* result =
-          new SetContentDecryptionModuleResult(std::move(success_callback),
-                                               std::move(failure_callback));
+          MakeGarbageCollected<SetContentDecryptionModuleResult>(
+              std::move(success_callback), std::move(failure_callback));
       media_player->SetContentDecryptionModule(nullptr, result->Result());
 
       // Don't do anything more until |result| is resolved (or rejected).
@@ -231,8 +232,8 @@ void SetMediaKeysHandler::SetNewMediaKeys() {
       FailureCallback failure_callback =
           WTF::Bind(&SetMediaKeysHandler::SetFailed, WrapPersistent(this));
       ContentDecryptionModuleResult* result =
-          new SetContentDecryptionModuleResult(std::move(success_callback),
-                                               std::move(failure_callback));
+          MakeGarbageCollected<SetContentDecryptionModuleResult>(
+              std::move(success_callback), std::move(failure_callback));
       element_->GetWebMediaPlayer()->SetContentDecryptionModule(
           new_media_keys_->ContentDecryptionModule(), result->Result());
 

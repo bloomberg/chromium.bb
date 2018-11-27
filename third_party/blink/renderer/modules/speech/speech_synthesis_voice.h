@@ -40,6 +40,8 @@ class SpeechSynthesisVoice final : public ScriptWrappable {
  public:
   static SpeechSynthesisVoice* Create(
       scoped_refptr<PlatformSpeechSynthesisVoice>);
+
+  explicit SpeechSynthesisVoice(scoped_refptr<PlatformSpeechSynthesisVoice>);
   ~SpeechSynthesisVoice() override;
 
   const String& voiceURI() const { return platform_voice_->VoiceURI(); }
@@ -53,8 +55,6 @@ class SpeechSynthesisVoice final : public ScriptWrappable {
   }
 
  private:
-  explicit SpeechSynthesisVoice(scoped_refptr<PlatformSpeechSynthesisVoice>);
-
   scoped_refptr<PlatformSpeechSynthesisVoice> platform_voice_;
 };
 

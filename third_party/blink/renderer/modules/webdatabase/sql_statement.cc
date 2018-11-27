@@ -86,7 +86,7 @@ bool SQLStatement::OnErrorV8Impl::OnError(SQLTransaction* transaction,
 SQLStatement* SQLStatement::Create(Database* database,
                                    OnSuccessCallback* callback,
                                    OnErrorCallback* error_callback) {
-  return new SQLStatement(database, callback, error_callback);
+  return MakeGarbageCollected<SQLStatement>(database, callback, error_callback);
 }
 
 SQLStatement::SQLStatement(Database* database,

@@ -43,7 +43,11 @@ class SQLResultSetRowList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SQLResultSetRowList* Create() { return new SQLResultSetRowList; }
+  static SQLResultSetRowList* Create() {
+    return MakeGarbageCollected<SQLResultSetRowList>();
+  }
+
+  SQLResultSetRowList() = default;
 
   const Vector<String>& ColumnNames() const { return columns_; }
   const Vector<SQLValue>& Values() const { return result_; }
@@ -55,8 +59,6 @@ class SQLResultSetRowList final : public ScriptWrappable {
   ScriptValue item(ScriptState*, unsigned index, ExceptionState&);
 
  private:
-  SQLResultSetRowList() = default;
-
   Vector<String> columns_;
   Vector<SQLValue> result_;
 };

@@ -27,7 +27,7 @@ SnapCoordinator::SnapCoordinator() : snap_container_map_() {}
 SnapCoordinator::~SnapCoordinator() = default;
 
 SnapCoordinator* SnapCoordinator::Create() {
-  return new SnapCoordinator();
+  return MakeGarbageCollected<SnapCoordinator>();
 }
 
 // Returns the scroll container that can be affected by this snap area.

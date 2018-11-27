@@ -49,16 +49,24 @@ class ShapeValue final : public GarbageCollectedFinalized<ShapeValue> {
 
   static ShapeValue* CreateShapeValue(scoped_refptr<BasicShape> shape,
                                       CSSBoxType css_box) {
-    return new ShapeValue(std::move(shape), css_box);
+    return MakeGarbageCollected<ShapeValue>(std::move(shape), css_box);
   }
 
   static ShapeValue* CreateBoxShapeValue(CSSBoxType css_box) {
-    return new ShapeValue(css_box);
+    return MakeGarbageCollected<ShapeValue>(css_box);
   }
 
   static ShapeValue* CreateImageValue(StyleImage* image) {
-    return new ShapeValue(image);
+    return MakeGarbageCollected<ShapeValue>(image);
   }
+
+  ShapeValue(scoped_refptr<BasicShape> shape, CSSBoxType css_box)
+      : type_(kShape), shape_(std::move(shape)), css_box_(css_box) {}
+  ShapeValue(ShapeValueType type)
+      : type_(type), css_box_(CSSBoxType::kMissing) {}
+  ShapeValue(StyleImage* image)
+      : type_(kImage), image_(image), css_box_(CSSBoxType::kContent) {}
+  ShapeValue(CSSBoxType css_box) : type_(kBox), css_box_(css_box) {}
 
   ShapeValueType GetType() const { return type_; }
   BasicShape* Shape() const { return shape_.get(); }
@@ -76,14 +84,6 @@ class ShapeValue final : public GarbageCollectedFinalized<ShapeValue> {
   virtual void Trace(blink::Visitor* visitor) { visitor->Trace(image_); }
 
  private:
-  ShapeValue(scoped_refptr<BasicShape> shape, CSSBoxType css_box)
-      : type_(kShape), shape_(std::move(shape)), css_box_(css_box) {}
-  ShapeValue(ShapeValueType type)
-      : type_(type), css_box_(CSSBoxType::kMissing) {}
-  ShapeValue(StyleImage* image)
-      : type_(kImage), image_(image), css_box_(CSSBoxType::kContent) {}
-  ShapeValue(CSSBoxType css_box) : type_(kBox), css_box_(css_box) {}
-
   ShapeValueType type_;
   scoped_refptr<BasicShape> shape_;
   Member<StyleImage> image_;

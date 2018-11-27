@@ -49,6 +49,12 @@ class SQLStatementBackend final
                                      const String& sql_statement,
                                      const Vector<SQLValue>& arguments,
                                      int permissions);
+
+  SQLStatementBackend(SQLStatement*,
+                      const String& statement,
+                      const Vector<SQLValue>& arguments,
+                      int permissions);
+
   void Trace(blink::Visitor*);
 
   bool Execute(Database*);
@@ -64,11 +70,6 @@ class SQLStatementBackend final
   SQLResultSet* SqlResultSet() const;
 
  private:
-  SQLStatementBackend(SQLStatement*,
-                      const String& statement,
-                      const Vector<SQLValue>& arguments,
-                      int permissions);
-
   void SetFailureDueToQuota(Database*);
   void ClearFailureDueToQuota();
 

@@ -22,8 +22,10 @@ class SyncManager final : public ScriptWrappable {
 
  public:
   static SyncManager* Create(ServiceWorkerRegistration* registration) {
-    return new SyncManager(registration);
+    return MakeGarbageCollected<SyncManager>(registration);
   }
+
+  explicit SyncManager(ServiceWorkerRegistration*);
 
   ScriptPromise registerFunction(ScriptState*, const String& tag);
   ScriptPromise getTags(ScriptState*);
@@ -33,8 +35,6 @@ class SyncManager final : public ScriptWrappable {
   enum { kUnregisteredSyncID = -1 };
 
  private:
-  explicit SyncManager(ServiceWorkerRegistration*);
-
   // Returns an initialized BackgroundSyncServicePtr. A connection with the
   // the browser's BackgroundSyncService is created the first time this method
   // is called.

@@ -77,8 +77,10 @@ class SQLError final : public ScriptWrappable {
 
  public:
   static SQLError* Create(const SQLErrorData& data) {
-    return new SQLError(data);
+    return MakeGarbageCollected<SQLError>(data);
   }
+
+  explicit SQLError(const SQLErrorData& data) : data_(data) {}
 
   unsigned code() const { return data_.Code(); }
   String message() const { return data_.Message(); }
@@ -99,8 +101,6 @@ class SQLError final : public ScriptWrappable {
   static const char kVersionErrorMessage[];
 
  private:
-  explicit SQLError(const SQLErrorData& data) : data_(data) {}
-
   const SQLErrorData data_;
 };
 

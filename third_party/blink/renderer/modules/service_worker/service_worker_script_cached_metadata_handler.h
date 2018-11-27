@@ -23,9 +23,13 @@ class ServiceWorkerScriptCachedMetadataHandler
       WorkerGlobalScope* worker_global_scope,
       const KURL& script_url,
       const Vector<char>* meta_data) {
-    return new ServiceWorkerScriptCachedMetadataHandler(worker_global_scope,
-                                                        script_url, meta_data);
+    return MakeGarbageCollected<ServiceWorkerScriptCachedMetadataHandler>(
+        worker_global_scope, script_url, meta_data);
   }
+
+  ServiceWorkerScriptCachedMetadataHandler(WorkerGlobalScope*,
+                                           const KURL& script_url,
+                                           const Vector<char>* meta_data);
   ~ServiceWorkerScriptCachedMetadataHandler() override;
   void Trace(blink::Visitor*) override;
   void SetCachedMetadata(uint32_t data_type_id,
@@ -39,10 +43,6 @@ class ServiceWorkerScriptCachedMetadataHandler
   bool IsServedFromCacheStorage() const override;
 
  private:
-  ServiceWorkerScriptCachedMetadataHandler(WorkerGlobalScope*,
-                                           const KURL& script_url,
-                                           const Vector<char>* meta_data);
-
   Member<WorkerGlobalScope> worker_global_scope_;
   KURL script_url_;
   scoped_refptr<CachedMetadata> cached_metadata_;

@@ -71,6 +71,8 @@ class MODULES_EXPORT ServiceWorkerContainer final
   static ServiceWorkerContainer* CreateForTesting(
       Document*,
       std::unique_ptr<WebServiceWorkerProvider>);
+
+  explicit ServiceWorkerContainer(Document*);
   ~ServiceWorkerContainer() override;
 
   void Trace(blink::Visitor*) override;
@@ -110,8 +112,6 @@ class MODULES_EXPORT ServiceWorkerContainer final
   ServiceWorker* GetOrCreateServiceWorker(WebServiceWorkerObjectInfo);
 
  private:
-  explicit ServiceWorkerContainer(Document*);
-
   class GetRegistrationForReadyCallback;
   using ReadyProperty =
       ScriptPromiseProperty<Member<ServiceWorkerContainer>,

@@ -37,12 +37,14 @@ ScrollState* ScrollState::Create(ScrollStateInit* init) {
   scroll_state_data->from_user_input = init->fromUserInput();
   scroll_state_data->is_direct_manipulation = init->isDirectManipulation();
   scroll_state_data->delta_granularity = init->deltaGranularity();
-  ScrollState* scroll_state = new ScrollState(std::move(scroll_state_data));
+  ScrollState* scroll_state =
+      MakeGarbageCollected<ScrollState>(std::move(scroll_state_data));
   return scroll_state;
 }
 
 ScrollState* ScrollState::Create(std::unique_ptr<ScrollStateData> data) {
-  ScrollState* scroll_state = new ScrollState(std::move(data));
+  ScrollState* scroll_state =
+      MakeGarbageCollected<ScrollState>(std::move(data));
   return scroll_state;
 }
 

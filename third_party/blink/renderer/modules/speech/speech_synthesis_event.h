@@ -39,6 +39,12 @@ class SpeechSynthesisEvent : public Event {
   static SpeechSynthesisEvent* Create(const AtomicString& type,
                                       const SpeechSynthesisEventInit* init);
 
+  SpeechSynthesisEvent(const AtomicString& type,
+                       SpeechSynthesisUtterance*,
+                       unsigned char_index,
+                       float elapsed_time,
+                       const String& name);
+
   SpeechSynthesisUtterance* utterance() const { return utterance_; }
   unsigned charIndex() const { return char_index_; }
   float elapsedTime() const { return elapsed_time_; }
@@ -49,13 +55,6 @@ class SpeechSynthesisEvent : public Event {
   }
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  SpeechSynthesisEvent(const AtomicString& type,
-                       SpeechSynthesisUtterance*,
-                       unsigned char_index,
-                       float elapsed_time,
-                       const String& name);
 
  private:
   Member<SpeechSynthesisUtterance> utterance_;

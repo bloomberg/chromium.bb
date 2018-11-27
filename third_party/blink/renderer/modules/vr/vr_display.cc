@@ -568,7 +568,7 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
 
     if (immersive_client_binding_)
       immersive_client_binding_->Close();
-    immersive_client_binding_ = new SessionClientBinding(
+    immersive_client_binding_ = MakeGarbageCollected<SessionClientBinding>(
         this, SessionClientBinding::SessionBindingType::kImmersive,
         std::move(session->client_request));
 
@@ -594,7 +594,7 @@ void VRDisplay::OnNonImmersiveSessionRequestReturned(
     return;
   }
   non_immersive_provider_.Bind(std::move(session->data_provider));
-  non_immersive_client_binding_ = new SessionClientBinding(
+  non_immersive_client_binding_ = MakeGarbageCollected<SessionClientBinding>(
       this, SessionClientBinding::SessionBindingType::kNonImmersive,
       std::move(session->client_request));
   RequestVSync();

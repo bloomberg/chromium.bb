@@ -15,7 +15,7 @@ ScreenScreenOrientation& ScreenScreenOrientation::From(Screen& screen) {
   ScreenScreenOrientation* supplement =
       Supplement<Screen>::From<ScreenScreenOrientation>(screen);
   if (!supplement) {
-    supplement = new ScreenScreenOrientation();
+    supplement = MakeGarbageCollected<ScreenScreenOrientation>();
     ProvideTo(screen, supplement);
   }
   return *supplement;

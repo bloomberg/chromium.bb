@@ -151,7 +151,8 @@ SingleCachedMetadataHandler* ScriptResource::CacheHandler() {
 
 CachedMetadataHandler* ScriptResource::CreateCachedMetadataHandler(
     std::unique_ptr<CachedMetadataSender> send_callback) {
-  return new ScriptCachedMetadataHandler(Encoding(), std::move(send_callback));
+  return MakeGarbageCollected<ScriptCachedMetadataHandler>(
+      Encoding(), std::move(send_callback));
 }
 
 void ScriptResource::SetSerializedCachedMetadata(const char* data,

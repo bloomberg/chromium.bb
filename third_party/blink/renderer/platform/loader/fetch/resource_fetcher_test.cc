@@ -446,7 +446,7 @@ TEST_F(ResourceFetcherTest, ResponseOnCancel) {
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
   FetchParameters fetch_params(resource_request);
   Persistent<ServeRequestsOnCompleteClient> client =
-      new ServeRequestsOnCompleteClient();
+      MakeGarbageCollected<ServeRequestsOnCompleteClient>();
   Resource* resource = RawResource::Fetch(fetch_params, fetcher, client);
   resource->Loader()->Cancel();
 }

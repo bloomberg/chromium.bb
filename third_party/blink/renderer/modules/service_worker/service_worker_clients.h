@@ -21,14 +21,13 @@ class ServiceWorkerClients final : public ScriptWrappable {
  public:
   static ServiceWorkerClients* Create();
 
+  ServiceWorkerClients();
+
   // Clients.idl
   ScriptPromise get(ScriptState*, const String& id);
   ScriptPromise matchAll(ScriptState*, const ClientQueryOptions*);
   ScriptPromise openWindow(ScriptState*, const String& url);
   ScriptPromise claim(ScriptState*);
-
- private:
-  ServiceWorkerClients();
 };
 
 }  // namespace blink

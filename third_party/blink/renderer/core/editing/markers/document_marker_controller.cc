@@ -91,11 +91,11 @@ DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
     case DocumentMarker::kComposition:
       return new CompositionMarkerListImpl();
     case DocumentMarker::kSpelling:
-      return new SpellingMarkerListImpl();
+      return MakeGarbageCollected<SpellingMarkerListImpl>();
     case DocumentMarker::kGrammar:
       return MakeGarbageCollected<GrammarMarkerListImpl>();
     case DocumentMarker::kSuggestion:
-      return new SuggestionMarkerListImpl();
+      return MakeGarbageCollected<SuggestionMarkerListImpl>();
     case DocumentMarker::kTextMatch:
       return new TextMatchMarkerListImpl();
   }
@@ -154,7 +154,8 @@ void DocumentMarkerController::Clear() {
 void DocumentMarkerController::AddSpellingMarker(const EphemeralRange& range,
                                                  const String& description) {
   AddMarkerInternal(range, [&description](int start_offset, int end_offset) {
-    return new SpellingMarker(start_offset, end_offset, description);
+    return MakeGarbageCollected<SpellingMarker>(start_offset, end_offset,
+                                                description);
   });
 }
 
@@ -208,7 +209,8 @@ void DocumentMarkerController::AddSuggestionMarker(
     const SuggestionMarkerProperties& properties) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
   AddMarkerInternal(range, [&properties](int start_offset, int end_offset) {
-    return new SuggestionMarker(start_offset, end_offset, properties);
+    return MakeGarbageCollected<SuggestionMarker>(start_offset, end_offset,
+                                                  properties);
   });
 }
 

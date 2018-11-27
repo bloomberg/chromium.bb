@@ -88,7 +88,7 @@ SingleCachedMetadataHandler* SourceKeyedCachedMetadataHandler::HandlerForSource(
   DCHECK_EQ(digest_value.size(), kKeySize);
   memcpy(key.data(), digest_value.data(), kKeySize);
 
-  return new SingleKeyHandler(this, key);
+  return MakeGarbageCollected<SingleKeyHandler>(this, key);
 }
 
 void SourceKeyedCachedMetadataHandler::ClearCachedMetadata(

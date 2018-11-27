@@ -24,7 +24,8 @@ ServiceWorkerRegistrationSync& ServiceWorkerRegistrationSync::From(
       Supplement<ServiceWorkerRegistration>::From<
           ServiceWorkerRegistrationSync>(registration);
   if (!supplement) {
-    supplement = new ServiceWorkerRegistrationSync(&registration);
+    supplement =
+        MakeGarbageCollected<ServiceWorkerRegistrationSync>(&registration);
     ProvideTo(registration, supplement);
   }
   return *supplement;

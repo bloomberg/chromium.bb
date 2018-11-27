@@ -23,6 +23,8 @@ class ServiceWorkerRegistrationPush final
  public:
   static const char kSupplementName[];
 
+  explicit ServiceWorkerRegistrationPush(
+      ServiceWorkerRegistration* registration);
   virtual ~ServiceWorkerRegistrationPush();
   static ServiceWorkerRegistrationPush& From(
       ServiceWorkerRegistration& registration);
@@ -33,9 +35,6 @@ class ServiceWorkerRegistrationPush final
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  explicit ServiceWorkerRegistrationPush(
-      ServiceWorkerRegistration* registration);
-
   Member<ServiceWorkerRegistration> registration_;
   Member<PushManager> push_manager_;
 };

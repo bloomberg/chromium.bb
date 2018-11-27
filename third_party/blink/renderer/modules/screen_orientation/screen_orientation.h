@@ -29,6 +29,7 @@ class ScreenOrientation final : public EventTargetWithInlineData,
  public:
   static ScreenOrientation* Create(LocalFrame*);
 
+  explicit ScreenOrientation(LocalFrame*);
   ~ScreenOrientation() override;
 
   // EventTarget implementation.
@@ -52,8 +53,6 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit ScreenOrientation(LocalFrame*);
-
   ScreenOrientationControllerImpl* Controller();
 
   WebScreenOrientationType type_;

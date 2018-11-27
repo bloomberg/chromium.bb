@@ -29,6 +29,9 @@ class CORE_EXPORT SubresourceFilter final
   static SubresourceFilter* Create(
       ExecutionContext&,
       std::unique_ptr<WebDocumentSubresourceFilter>);
+
+  SubresourceFilter(ExecutionContext*,
+                    std::unique_ptr<WebDocumentSubresourceFilter>);
   ~SubresourceFilter();
 
   bool AllowLoad(const KURL& resource_url,
@@ -44,9 +47,6 @@ class CORE_EXPORT SubresourceFilter final
   virtual void Trace(blink::Visitor*);
 
  private:
-  SubresourceFilter(ExecutionContext*,
-                    std::unique_ptr<WebDocumentSubresourceFilter>);
-
   void ReportLoad(const KURL& resource_url,
                   WebDocumentSubresourceFilter::LoadPolicy);
 

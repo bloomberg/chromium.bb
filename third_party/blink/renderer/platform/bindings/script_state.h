@@ -99,6 +99,8 @@ class PLATFORM_EXPORT ScriptState final
 
   static ScriptState* Create(v8::Local<v8::Context>,
                              scoped_refptr<DOMWrapperWorld>);
+
+  ScriptState(v8::Local<v8::Context>, scoped_refptr<DOMWrapperWorld>);
   ~ScriptState();
 
   void Trace(blink::Visitor*) {}
@@ -169,9 +171,6 @@ class PLATFORM_EXPORT ScriptState final
   // termination.
   void DissociateContext();
 
- protected:
-  ScriptState(v8::Local<v8::Context>, scoped_refptr<DOMWrapperWorld>);
-
  private:
   static void OnV8ContextCollectedCallback(
       const v8::WeakCallbackInfo<ScriptState>&);
@@ -213,7 +212,16 @@ class ScriptStateProtectingContext
 
  public:
   static ScriptStateProtectingContext* Create(ScriptState* script_state) {
-    return new ScriptStateProtectingContext(script_state);
+    return MakeGarbageCollected<ScriptStateProtectingContext>(script_state);
+  }
+
+  explicit ScriptStateProtectingContext(ScriptState* script_state)
+      : script_state_(script_state) {
+    if (script_state_) {
+      context_.Set(script_state_->GetIsolate(), script_state_->GetContext());
+      context_.Get().AnnotateStrongRetainer(
+          "blink::ScriptStateProtectingContext::context_");
+    }
   }
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(script_state_); }
@@ -232,15 +240,6 @@ class ScriptStateProtectingContext
   }
 
  private:
-  explicit ScriptStateProtectingContext(ScriptState* script_state)
-      : script_state_(script_state) {
-    if (script_state_) {
-      context_.Set(script_state_->GetIsolate(), script_state_->GetContext());
-      context_.Get().AnnotateStrongRetainer(
-          "blink::ScriptStateProtectingContext::context_");
-    }
-  }
-
   Member<ScriptState> script_state_;
   ScopedPersistent<v8::Context> context_;
 };

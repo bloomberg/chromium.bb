@@ -79,7 +79,7 @@ bool IsAmbiguousBoundaryCharacter(UChar character) {
 }  // namespace
 
 SpellChecker* SpellChecker::Create(LocalFrame& frame) {
-  return new SpellChecker(frame);
+  return MakeGarbageCollected<SpellChecker>(frame);
 }
 
 static WebSpellCheckPanelHostClient& GetEmptySpellCheckPanelHostClient() {

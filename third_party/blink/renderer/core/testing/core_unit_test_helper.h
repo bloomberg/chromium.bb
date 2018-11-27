@@ -28,8 +28,10 @@ class PaintLayer;
 class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
  public:
   static SingleChildLocalFrameClient* Create() {
-    return new SingleChildLocalFrameClient();
+    return MakeGarbageCollected<SingleChildLocalFrameClient>();
   }
+
+  explicit SingleChildLocalFrameClient() = default;
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(child_);
@@ -44,8 +46,6 @@ class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
   void DidDetachChild() { child_ = nullptr; }
 
  private:
-  explicit SingleChildLocalFrameClient() = default;
-
   Member<LocalFrame> child_;
 };
 

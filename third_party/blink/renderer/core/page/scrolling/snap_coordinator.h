@@ -31,6 +31,8 @@ class CORE_EXPORT SnapCoordinator final
     : public GarbageCollectedFinalized<SnapCoordinator> {
  public:
   static SnapCoordinator* Create();
+
+  explicit SnapCoordinator();
   ~SnapCoordinator();
   void Trace(blink::Visitor* visitor) {}
 
@@ -71,7 +73,6 @@ class CORE_EXPORT SnapCoordinator final
 
  private:
   friend class SnapCoordinatorTest;
-  explicit SnapCoordinator();
   bool PerformSnapping(const LayoutBox& snap_container,
                        const SnapSelectionStrategy& strategy) const;
 

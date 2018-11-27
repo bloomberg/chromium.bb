@@ -162,7 +162,7 @@ StereoPannerNode* StereoPannerNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new StereoPannerNode(context);
+  return MakeGarbageCollected<StereoPannerNode>(context);
 }
 
 StereoPannerNode* StereoPannerNode::Create(BaseAudioContext* context,

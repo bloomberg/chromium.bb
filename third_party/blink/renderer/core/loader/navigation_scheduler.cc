@@ -131,8 +131,25 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
                                    Document::HttpRefreshType http_refresh_type,
                                    WebFrameLoadType frame_load_type,
                                    base::TimeTicks input_timestamp) {
-    return new ScheduledRedirect(delay, origin_document, url, http_refresh_type,
-                                 frame_load_type, input_timestamp);
+    return MakeGarbageCollected<ScheduledRedirect>(
+        delay, origin_document, url, http_refresh_type, frame_load_type,
+        input_timestamp);
+  }
+
+  ScheduledRedirect(double delay,
+                    Document* origin_document,
+                    const KURL& url,
+                    Document::HttpRefreshType http_refresh_type,
+                    WebFrameLoadType frame_load_type,
+                    base::TimeTicks input_timestamp)
+      : ScheduledURLNavigation(ToReason(http_refresh_type),
+                               delay,
+                               origin_document,
+                               url,
+                               frame_load_type,
+                               false,
+                               input_timestamp) {
+    ClearUserGesture();
   }
 
   bool ShouldStartTimer(LocalFrame* frame) override {
@@ -168,22 +185,6 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
     NOTREACHED();
     return Reason::kMetaTagRefresh;
   }
-
-  ScheduledRedirect(double delay,
-                    Document* origin_document,
-                    const KURL& url,
-                    Document::HttpRefreshType http_refresh_type,
-                    WebFrameLoadType frame_load_type,
-                    base::TimeTicks input_timestamp)
-      : ScheduledURLNavigation(ToReason(http_refresh_type),
-                               delay,
-                               origin_document,
-                               url,
-                               frame_load_type,
-                               false,
-                               input_timestamp) {
-    ClearUserGesture();
-  }
 };
 
 class ScheduledFrameNavigation final : public ScheduledURLNavigation {
@@ -192,11 +193,10 @@ class ScheduledFrameNavigation final : public ScheduledURLNavigation {
                                           const KURL& url,
                                           WebFrameLoadType frame_load_type,
                                           base::TimeTicks input_timestamp) {
-    return new ScheduledFrameNavigation(origin_document, url, frame_load_type,
-                                        input_timestamp);
+    return MakeGarbageCollected<ScheduledFrameNavigation>(
+        origin_document, url, frame_load_type, input_timestamp);
   }
 
- private:
   ScheduledFrameNavigation(Document* origin_document,
                            const KURL& url,
                            WebFrameLoadType frame_load_type,
@@ -214,7 +214,17 @@ class ScheduledReload final : public ScheduledNavigation {
  public:
   static ScheduledReload* Create(LocalFrame* frame,
                                  base::TimeTicks input_timestamp) {
-    return new ScheduledReload(frame, input_timestamp);
+    return MakeGarbageCollected<ScheduledReload>(frame, input_timestamp);
+  }
+
+  explicit ScheduledReload(LocalFrame* frame, base::TimeTicks input_timestamp)
+      : ScheduledNavigation(Reason::kReload,
+                            0.0,
+                            nullptr /*origin_document */,
+                            true,
+                            input_timestamp),
+        frame_(frame) {
+    DCHECK(frame->GetDocument());
   }
 
   void Fire(LocalFrame* frame) override {
@@ -238,32 +248,15 @@ class ScheduledReload final : public ScheduledNavigation {
   }
 
  private:
-  explicit ScheduledReload(LocalFrame* frame, base::TimeTicks input_timestamp)
-      : ScheduledNavigation(Reason::kReload,
-                            0.0,
-                            nullptr /*origin_document */,
-                            true,
-                            input_timestamp),
-        frame_(frame) {
-    DCHECK(frame->GetDocument());
-  }
-
   Member<LocalFrame> frame_;
 };
 
 class ScheduledPageBlock final : public ScheduledNavigation {
  public:
   static ScheduledPageBlock* Create(Document* origin_document, int reason) {
-    return new ScheduledPageBlock(origin_document, reason);
+    return MakeGarbageCollected<ScheduledPageBlock>(origin_document, reason);
   }
 
-  void Fire(LocalFrame* frame) override {
-    frame->Client()->LoadErrorPage(reason_);
-  }
-
-  KURL Url() const override { return KURL(); }
-
- private:
   ScheduledPageBlock(Document* origin_document, int reason)
       : ScheduledNavigation(Reason::kPageBlock,
                             0.0,
@@ -272,6 +265,13 @@ class ScheduledPageBlock final : public ScheduledNavigation {
                             base::TimeTicks() /* input_timestamp */),
         reason_(reason) {}
 
+  void Fire(LocalFrame* frame) override {
+    frame->Client()->LoadErrorPage(reason_);
+  }
+
+  KURL Url() const override { return KURL(); }
+
+ private:
   int reason_;
 };
 
@@ -281,8 +281,25 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
                                          FormSubmission* submission,
                                          WebFrameLoadType frame_load_type,
                                          base::TimeTicks input_timestamp) {
-    return new ScheduledFormSubmission(document, submission, frame_load_type,
-                                       input_timestamp);
+    return MakeGarbageCollected<ScheduledFormSubmission>(
+        document, submission, frame_load_type, input_timestamp);
+  }
+
+  ScheduledFormSubmission(Document* document,
+                          FormSubmission* submission,
+                          WebFrameLoadType frame_load_type,
+                          base::TimeTicks input_timestamp)
+      : ScheduledNavigation(submission->Method() == FormSubmission::kGetMethod
+                                ? Reason::kFormSubmissionGet
+                                : Reason::kFormSubmissionPost,
+                            0,
+                            document,
+                            true,
+                            input_timestamp),
+        submission_(submission),
+        frame_load_type_(frame_load_type) {
+    DCHECK_NE(submission->Method(), FormSubmission::kDialogMethod);
+    DCHECK(submission_->Form());
   }
 
   void Fire(LocalFrame* frame) override {
@@ -303,23 +320,6 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
   }
 
  private:
-  ScheduledFormSubmission(Document* document,
-                          FormSubmission* submission,
-                          WebFrameLoadType frame_load_type,
-                          base::TimeTicks input_timestamp)
-      : ScheduledNavigation(submission->Method() == FormSubmission::kGetMethod
-                                ? Reason::kFormSubmissionGet
-                                : Reason::kFormSubmissionPost,
-                            0,
-                            document,
-                            true,
-                            input_timestamp),
-        submission_(submission),
-        frame_load_type_(frame_load_type) {
-    DCHECK_NE(submission->Method(), FormSubmission::kDialogMethod);
-    DCHECK(submission_->Form());
-  }
-
   Member<FormSubmission> submission_;
   WebFrameLoadType frame_load_type_;
 };

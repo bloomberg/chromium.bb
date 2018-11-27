@@ -34,14 +34,15 @@ class SplitTextNodeContainingElementCommand final
     : public CompositeEditCommand {
  public:
   static SplitTextNodeContainingElementCommand* Create(Text* node, int offset) {
-    return new SplitTextNodeContainingElementCommand(node, offset);
+    return MakeGarbageCollected<SplitTextNodeContainingElementCommand>(node,
+                                                                       offset);
   }
+
+  SplitTextNodeContainingElementCommand(Text*, int offset);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  SplitTextNodeContainingElementCommand(Text*, int offset);
-
   void DoApply(EditingState*) override;
 
   Member<Text> text_;

@@ -45,6 +45,8 @@ class SliderThumbElement final : public HTMLDivElement {
  public:
   static SliderThumbElement* Create(Document&);
 
+  SliderThumbElement(Document&);
+
   void SetPositionFromValue();
 
   void DragFrom(const LayoutPoint&);
@@ -58,7 +60,6 @@ class SliderThumbElement final : public HTMLDivElement {
   void StopDragging();
 
  private:
-  SliderThumbElement(Document&);
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() final;
   Element* CloneWithoutAttributesAndChildren(Document&) const override;

@@ -38,14 +38,20 @@ class SecurityPolicyViolationEvent final : public Event {
 
  public:
   static SecurityPolicyViolationEvent* Create(const AtomicString& type) {
-    return new SecurityPolicyViolationEvent(type);
+    return MakeGarbageCollected<SecurityPolicyViolationEvent>(type);
   }
 
   static SecurityPolicyViolationEvent* Create(
       const AtomicString& type,
       const SecurityPolicyViolationEventInit* initializer) {
-    return new SecurityPolicyViolationEvent(type, initializer);
+    return MakeGarbageCollected<SecurityPolicyViolationEvent>(type,
+                                                              initializer);
   }
+
+  explicit SecurityPolicyViolationEvent(const AtomicString& type);
+  SecurityPolicyViolationEvent(
+      const AtomicString& type,
+      const SecurityPolicyViolationEventInit* initializer);
 
   const String& documentURI() const { return document_uri_; }
   const String& referrer() const { return referrer_; }
@@ -67,11 +73,6 @@ class SecurityPolicyViolationEvent final : public Event {
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
-  explicit SecurityPolicyViolationEvent(const AtomicString& type);
-  SecurityPolicyViolationEvent(
-      const AtomicString& type,
-      const SecurityPolicyViolationEventInit* initializer);
-
   String document_uri_;
   String referrer_;
   String blocked_uri_;

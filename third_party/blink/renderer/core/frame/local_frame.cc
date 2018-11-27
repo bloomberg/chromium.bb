@@ -1499,7 +1499,7 @@ SmoothScrollSequencer& LocalFrame::GetSmoothScrollSequencer() {
   if (!IsLocalRoot())
     return LocalFrameRoot().GetSmoothScrollSequencer();
   if (!smooth_scroll_sequencer_)
-    smooth_scroll_sequencer_ = new SmoothScrollSequencer();
+    smooth_scroll_sequencer_ = MakeGarbageCollected<SmoothScrollSequencer>();
   return *smooth_scroll_sequencer_;
 }
 

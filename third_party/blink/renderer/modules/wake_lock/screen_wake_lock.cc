@@ -39,7 +39,7 @@ ScreenWakeLock* ScreenWakeLock::From(LocalFrame* frame) {
   ScreenWakeLock* supplement =
       Supplement<LocalFrame>::From<ScreenWakeLock>(frame);
   if (!supplement) {
-    supplement = new ScreenWakeLock(*frame);
+    supplement = MakeGarbageCollected<ScreenWakeLock>(*frame);
     ProvideTo(*frame, supplement);
   }
   return supplement;

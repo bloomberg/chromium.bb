@@ -12,7 +12,7 @@ namespace blink {
 
 ScriptState* ScriptState::Create(v8::Local<v8::Context> context,
                                  scoped_refptr<DOMWrapperWorld> world) {
-  return new ScriptState(context, std::move(world));
+  return MakeGarbageCollected<ScriptState>(context, std::move(world));
 }
 
 ScriptState::ScriptState(v8::Local<v8::Context> context,

@@ -369,7 +369,8 @@ SQLTransactionBackend* SQLTransactionBackend::Create(
     SQLTransaction* frontend,
     SQLTransactionWrapper* wrapper,
     bool read_only) {
-  return new SQLTransactionBackend(db, frontend, wrapper, read_only);
+  return MakeGarbageCollected<SQLTransactionBackend>(db, frontend, wrapper,
+                                                     read_only);
 }
 
 SQLTransactionBackend::SQLTransactionBackend(Database* db,

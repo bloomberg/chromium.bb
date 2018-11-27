@@ -28,17 +28,18 @@ class CORE_EXPORT ScriptModuleResolverImpl final
  public:
   static ScriptModuleResolverImpl* Create(Modulator* modulator,
                                           ExecutionContext* execution_context) {
-    return new ScriptModuleResolverImpl(modulator, execution_context);
+    return MakeGarbageCollected<ScriptModuleResolverImpl>(modulator,
+                                                          execution_context);
   }
+
+  explicit ScriptModuleResolverImpl(Modulator* modulator,
+                                    ExecutionContext* execution_context)
+      : ContextLifecycleObserver(execution_context), modulator_(modulator) {}
 
   void Trace(blink::Visitor*) override;
   USING_GARBAGE_COLLECTED_MIXIN(ScriptModuleResolverImpl);
 
  private:
-  explicit ScriptModuleResolverImpl(Modulator* modulator,
-                                    ExecutionContext* execution_context)
-      : ContextLifecycleObserver(execution_context), modulator_(modulator) {}
-
   // Implements ScriptModuleResolver:
 
   void RegisterModuleScript(ModuleScript*) final;

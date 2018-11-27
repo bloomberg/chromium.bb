@@ -340,7 +340,7 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
           std::move(pending_interface_provider_));
   String source_code = main_script_loader_->SourceText();
 
-  reporting_proxy_ = new SharedWorkerReportingProxy(
+  reporting_proxy_ = MakeGarbageCollected<SharedWorkerReportingProxy>(
       this, parent_execution_context_task_runners_);
   worker_thread_ =
       std::make_unique<SharedWorkerThread>(name_, *reporting_proxy_);

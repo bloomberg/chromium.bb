@@ -22,13 +22,15 @@ class MODULES_EXPORT SyncEvent final : public ExtendableEvent {
                            const String& tag,
                            bool last_chance,
                            WaitUntilObserver* observer) {
-    return new SyncEvent(type, tag, last_chance, observer);
+    return MakeGarbageCollected<SyncEvent>(type, tag, last_chance, observer);
   }
   static SyncEvent* Create(const AtomicString& type,
                            const SyncEventInit* init) {
-    return new SyncEvent(type, init);
+    return MakeGarbageCollected<SyncEvent>(type, init);
   }
 
+  SyncEvent(const AtomicString& type, const String&, bool, WaitUntilObserver*);
+  SyncEvent(const AtomicString& type, const SyncEventInit*);
   ~SyncEvent() override;
 
   const AtomicString& InterfaceName() const override;
@@ -39,9 +41,6 @@ class MODULES_EXPORT SyncEvent final : public ExtendableEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  SyncEvent(const AtomicString& type, const String&, bool, WaitUntilObserver*);
-  SyncEvent(const AtomicString& type, const SyncEventInit*);
-
   String tag_;
   bool last_chance_;
 };

@@ -31,8 +31,17 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
  public:
   static ScrollableAreaStub* Create(const IntSize& viewport_size,
                                     const IntSize& contents_size) {
-    return new ScrollableAreaStub(viewport_size, contents_size);
+    return MakeGarbageCollected<ScrollableAreaStub>(viewport_size,
+                                                    contents_size);
   }
+
+  ScrollableAreaStub(const IntSize& viewport_size, const IntSize& contents_size)
+      : user_input_scrollable_x_(true),
+        user_input_scrollable_y_(true),
+        viewport_size_(viewport_size),
+        contents_size_(contents_size),
+        timer_task_runner_(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
 
   void SetViewportSize(const IntSize& viewport_size) {
     viewport_size_ = viewport_size;
@@ -87,14 +96,6 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
   }
 
  protected:
-  ScrollableAreaStub(const IntSize& viewport_size, const IntSize& contents_size)
-      : user_input_scrollable_x_(true),
-        user_input_scrollable_y_(true),
-        viewport_size_(viewport_size),
-        contents_size_(contents_size),
-        timer_task_runner_(
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
-
   CompositorElementId GetCompositorElementId() const override {
     return CompositorElementId();
   }

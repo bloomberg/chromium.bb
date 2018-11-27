@@ -16,8 +16,10 @@ void SequencedScroll::Trace(blink::Visitor* visitor) {
 void SmoothScrollSequencer::QueueAnimation(ScrollableArea* scrollable,
                                            ScrollOffset offset,
                                            ScrollBehavior behavior) {
-  if (scrollable->ClampScrollOffset(offset) != scrollable->GetScrollOffset())
-    queue_.push_back(new SequencedScroll(scrollable, offset, behavior));
+  if (scrollable->ClampScrollOffset(offset) != scrollable->GetScrollOffset()) {
+    queue_.push_back(
+        MakeGarbageCollected<SequencedScroll>(scrollable, offset, behavior));
+  }
 }
 
 void SmoothScrollSequencer::RunQueuedAnimations() {

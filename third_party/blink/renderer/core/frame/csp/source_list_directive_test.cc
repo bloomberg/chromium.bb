@@ -416,8 +416,8 @@ TEST_F(SourceListDirectiveTest, Subsumes) {
     HeapVector<Member<SourceListDirective>> returned;
 
     for (const auto& sources : test.sources_vector) {
-      SourceListDirective* member =
-          new SourceListDirective("script-src", sources, csp.Get());
+      SourceListDirective* member = MakeGarbageCollected<SourceListDirective>(
+          "script-src", sources, csp.Get());
       returned.push_back(member);
     }
 
@@ -533,8 +533,8 @@ TEST_F(SourceListDirectiveTest, SubsumesWithSelf) {
 
     HeapVector<Member<SourceListDirective>> vector_b;
     for (auto* const sources : test.sources_b) {
-      SourceListDirective* member =
-          new SourceListDirective("script-src", sources, csp_b);
+      SourceListDirective* member = MakeGarbageCollected<SourceListDirective>(
+          "script-src", sources, csp_b);
       vector_b.push_back(member);
     }
 
@@ -699,7 +699,7 @@ TEST_F(SourceListDirectiveTest, SubsumesAllowAllInline) {
 
     HeapVector<Member<SourceListDirective>> vector_b;
     for (const auto& sources : test.sources_b) {
-      SourceListDirective* member = new SourceListDirective(
+      SourceListDirective* member = MakeGarbageCollected<SourceListDirective>(
           test.is_script_src ? "script-src" : "style-src", sources, csp_b);
       vector_b.push_back(member);
     }
@@ -788,7 +788,7 @@ TEST_F(SourceListDirectiveTest, SubsumesUnsafeAttributes) {
 
     HeapVector<Member<SourceListDirective>> vector_b;
     for (const auto& sources : test.sources_b) {
-      SourceListDirective* member = new SourceListDirective(
+      SourceListDirective* member = MakeGarbageCollected<SourceListDirective>(
           test.is_script_src ? "script-src" : "style-src", sources, csp_b);
       vector_b.push_back(member);
     }
@@ -1051,7 +1051,7 @@ TEST_F(SourceListDirectiveTest, SubsumesNoncesAndHashes) {
 
     HeapVector<Member<SourceListDirective>> vector_b;
     for (const auto& sources : test.sources_b) {
-      SourceListDirective* member = new SourceListDirective(
+      SourceListDirective* member = MakeGarbageCollected<SourceListDirective>(
           test.is_script_src ? "script-src" : "style-src", sources, csp_b);
       vector_b.push_back(member);
     }
@@ -1227,7 +1227,7 @@ TEST_F(SourceListDirectiveTest, SubsumesStrictDynamic) {
 
     HeapVector<Member<SourceListDirective>> vector_b;
     for (const auto& sources : test.sources_b) {
-      SourceListDirective* member = new SourceListDirective(
+      SourceListDirective* member = MakeGarbageCollected<SourceListDirective>(
           test.is_script_src ? "script-src" : "style-src", sources, csp_b);
       vector_b.push_back(member);
     }
@@ -1298,8 +1298,8 @@ TEST_F(SourceListDirectiveTest, SubsumesListWildcard) {
 
     HeapVector<Member<SourceListDirective>> vector_b;
     for (auto* const sources : test.sources_b) {
-      SourceListDirective* member =
-          new SourceListDirective("script-src", sources, csp_b);
+      SourceListDirective* member = MakeGarbageCollected<SourceListDirective>(
+          "script-src", sources, csp_b);
       vector_b.push_back(member);
     }
 

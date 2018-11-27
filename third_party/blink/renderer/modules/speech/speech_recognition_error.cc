@@ -62,13 +62,14 @@ static String ErrorCodeToString(mojom::blink::SpeechRecognitionErrorCode code) {
 SpeechRecognitionError* SpeechRecognitionError::Create(
     mojom::blink::SpeechRecognitionErrorCode code,
     const String& message) {
-  return new SpeechRecognitionError(ErrorCodeToString(code), message);
+  return MakeGarbageCollected<SpeechRecognitionError>(ErrorCodeToString(code),
+                                                      message);
 }
 
 SpeechRecognitionError* SpeechRecognitionError::Create(
     const AtomicString& event_name,
     const SpeechRecognitionErrorInit* initializer) {
-  return new SpeechRecognitionError(event_name, initializer);
+  return MakeGarbageCollected<SpeechRecognitionError>(event_name, initializer);
 }
 
 SpeechRecognitionError::SpeechRecognitionError(const String& error,

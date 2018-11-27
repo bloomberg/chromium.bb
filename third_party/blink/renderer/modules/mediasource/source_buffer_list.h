@@ -48,8 +48,10 @@ class SourceBufferList final : public EventTargetWithInlineData,
  public:
   static SourceBufferList* Create(ExecutionContext* context,
                                   EventQueue* async_event_queue) {
-    return new SourceBufferList(context, async_event_queue);
+    return MakeGarbageCollected<SourceBufferList>(context, async_event_queue);
   }
+
+  SourceBufferList(ExecutionContext*, EventQueue*);
   ~SourceBufferList() override;
 
   unsigned length() const { return list_.size(); }
@@ -79,8 +81,6 @@ class SourceBufferList final : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  SourceBufferList(ExecutionContext*, EventQueue*);
-
   void ScheduleEvent(const AtomicString&);
 
   Member<EventQueue> async_event_queue_;

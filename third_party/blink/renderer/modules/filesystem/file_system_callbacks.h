@@ -108,13 +108,14 @@ class FileSystemCallbacksBase : public AsyncFileSystemCallbacks {
 class ScriptErrorCallback final : public ErrorCallbackBase {
  public:
   static ScriptErrorCallback* Wrap(V8ErrorCallback*);
+
+  explicit ScriptErrorCallback(V8ErrorCallback*);
   ~ScriptErrorCallback() override {}
   void Trace(blink::Visitor*) override;
 
   void Invoke(base::File::Error error) override;
 
  private:
-  explicit ScriptErrorCallback(V8ErrorCallback*);
   Member<V8PersistentCallbackInterface<V8ErrorCallback>> callback_;
 };
 
@@ -408,15 +409,18 @@ class SnapshotFileCallback final : public FileSystemCallbacksBase {
   class OnDidCreateSnapshotFileV8Impl : public OnDidCreateSnapshotFileCallback {
    public:
     static OnDidCreateSnapshotFileV8Impl* Create(V8FileCallback* callback) {
-      return callback ? new OnDidCreateSnapshotFileV8Impl(callback) : nullptr;
+      return callback
+                 ? MakeGarbageCollected<OnDidCreateSnapshotFileV8Impl>(callback)
+                 : nullptr;
     }
+
+    OnDidCreateSnapshotFileV8Impl(V8FileCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
+
     void Trace(blink::Visitor*) override;
     void OnSuccess(File*) override;
 
    private:
-    OnDidCreateSnapshotFileV8Impl(V8FileCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
     Member<V8PersistentCallbackInterface<V8FileCallback>> callback_;
   };
 

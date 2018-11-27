@@ -218,7 +218,7 @@ inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(
 SearchFieldCancelButtonElement* SearchFieldCancelButtonElement::Create(
     Document& document) {
   SearchFieldCancelButtonElement* element =
-      new SearchFieldCancelButtonElement(document);
+      MakeGarbageCollected<SearchFieldCancelButtonElement>(document);
   element->SetShadowPseudoId(AtomicString("-webkit-search-cancel-button"));
   element->setAttribute(kIdAttr, shadow_element_names::SearchClearButton());
   return element;

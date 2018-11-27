@@ -23,12 +23,12 @@ namespace blink {
 
 ServiceWorkerClient* ServiceWorkerClient::Create(
     const WebServiceWorkerClientInfo& info) {
-  return new ServiceWorkerClient(info);
+  return MakeGarbageCollected<ServiceWorkerClient>(info);
 }
 
 ServiceWorkerClient* ServiceWorkerClient::Create(
     const mojom::blink::ServiceWorkerClientInfo& info) {
-  return new ServiceWorkerClient(info);
+  return MakeGarbageCollected<ServiceWorkerClient>(info);
 }
 
 ServiceWorkerClient::ServiceWorkerClient(const WebServiceWorkerClientInfo& info)

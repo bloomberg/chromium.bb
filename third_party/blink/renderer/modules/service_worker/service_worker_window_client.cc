@@ -43,13 +43,13 @@ void DidFocus(ScriptPromiseResolver* resolver,
 ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
     const WebServiceWorkerClientInfo& info) {
   DCHECK_EQ(mojom::blink::ServiceWorkerClientType::kWindow, info.client_type);
-  return new ServiceWorkerWindowClient(info);
+  return MakeGarbageCollected<ServiceWorkerWindowClient>(info);
 }
 
 ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
     const mojom::blink::ServiceWorkerClientInfo& info) {
   DCHECK_EQ(mojom::blink::ServiceWorkerClientType::kWindow, info.client_type);
-  return new ServiceWorkerWindowClient(info);
+  return MakeGarbageCollected<ServiceWorkerWindowClient>(info);
 }
 
 ServiceWorkerWindowClient::ServiceWorkerWindowClient(

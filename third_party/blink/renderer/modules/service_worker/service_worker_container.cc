@@ -158,7 +158,7 @@ ServiceWorkerContainer* ServiceWorkerContainer::From(Document* document) {
   if (!container) {
     // TODO(leonhsl): Figure out whether it's really necessary to create an
     // instance when there's no frame or frame client for |document|.
-    container = new ServiceWorkerContainer(document);
+    container = MakeGarbageCollected<ServiceWorkerContainer>(document);
     Supplement<Document>::ProvideTo(*document, container);
     if (document->GetFrame() && document->GetFrame()->Client()) {
       std::unique_ptr<WebServiceWorkerProvider> provider =
@@ -175,7 +175,8 @@ ServiceWorkerContainer* ServiceWorkerContainer::From(Document* document) {
 ServiceWorkerContainer* ServiceWorkerContainer::CreateForTesting(
     Document* document,
     std::unique_ptr<WebServiceWorkerProvider> provider) {
-  ServiceWorkerContainer* container = new ServiceWorkerContainer(document);
+  ServiceWorkerContainer* container =
+      MakeGarbageCollected<ServiceWorkerContainer>(document);
   container->provider_ = std::move(provider);
   return container;
 }
@@ -526,8 +527,8 @@ ServiceWorkerContainer::GetOrCreateServiceWorkerRegistration(
     return registration;
   }
 
-  registration =
-      new ServiceWorkerRegistration(GetSupplementable(), std::move(info));
+  registration = MakeGarbageCollected<ServiceWorkerRegistration>(
+      GetSupplementable(), std::move(info));
   service_worker_registration_objects_.Set(info.registration_id, registration);
   return registration;
 }
@@ -538,7 +539,8 @@ ServiceWorker* ServiceWorkerContainer::GetOrCreateServiceWorker(
     return nullptr;
   ServiceWorker* worker = service_worker_objects_.at(info.version_id);
   if (!worker) {
-    worker = new ServiceWorker(GetSupplementable(), std::move(info));
+    worker = MakeGarbageCollected<ServiceWorker>(GetSupplementable(),
+                                                 std::move(info));
     service_worker_objects_.Set(info.version_id, worker);
   }
   return worker;

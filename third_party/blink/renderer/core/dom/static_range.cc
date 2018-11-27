@@ -33,11 +33,11 @@ StaticRange::StaticRange(Document& document,
 // static
 StaticRange* StaticRange::Create(const EphemeralRange& range) {
   DCHECK(!range.IsNull());
-  return new StaticRange(range.GetDocument(),
-                         range.StartPosition().ComputeContainerNode(),
-                         range.StartPosition().ComputeOffsetInContainerNode(),
-                         range.EndPosition().ComputeContainerNode(),
-                         range.EndPosition().ComputeOffsetInContainerNode());
+  return MakeGarbageCollected<StaticRange>(
+      range.GetDocument(), range.StartPosition().ComputeContainerNode(),
+      range.StartPosition().ComputeOffsetInContainerNode(),
+      range.EndPosition().ComputeContainerNode(),
+      range.EndPosition().ComputeOffsetInContainerNode());
 }
 
 void StaticRange::setStart(Node* container, unsigned offset) {

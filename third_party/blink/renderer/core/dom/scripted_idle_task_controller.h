@@ -31,8 +31,10 @@ class CORE_EXPORT ScriptedIdleTaskController
 
  public:
   static ScriptedIdleTaskController* Create(ExecutionContext* context) {
-    return new ScriptedIdleTaskController(context);
+    return MakeGarbageCollected<ScriptedIdleTaskController>(context);
   }
+
+  explicit ScriptedIdleTaskController(ExecutionContext*);
   ~ScriptedIdleTaskController() override;
 
   void Trace(blink::Visitor*) override;
@@ -58,14 +60,16 @@ class CORE_EXPORT ScriptedIdleTaskController
   class V8IdleTask : public IdleTask {
    public:
     static V8IdleTask* Create(V8IdleRequestCallback* callback) {
-      return new V8IdleTask(callback);
+      return MakeGarbageCollected<V8IdleTask>(callback);
     }
+
+    explicit V8IdleTask(V8IdleRequestCallback*);
     ~V8IdleTask() override = default;
+
     void invoke(IdleDeadline*) override;
     void Trace(blink::Visitor*) override;
 
    private:
-    explicit V8IdleTask(V8IdleRequestCallback*);
     TraceWrapperMember<V8IdleRequestCallback> callback_;
   };
 
@@ -83,7 +87,6 @@ class CORE_EXPORT ScriptedIdleTaskController
 
  private:
   friend class internal::IdleRequestCallbackWrapper;
-  explicit ScriptedIdleTaskController(ExecutionContext*);
 
   void ScheduleCallback(scoped_refptr<internal::IdleRequestCallbackWrapper>,
                         long long timeout_millis);

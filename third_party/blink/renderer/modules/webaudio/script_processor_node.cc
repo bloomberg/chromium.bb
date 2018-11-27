@@ -499,7 +499,7 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
       return nullptr;
   }
 
-  ScriptProcessorNode* node = new ScriptProcessorNode(
+  ScriptProcessorNode* node = MakeGarbageCollected<ScriptProcessorNode>(
       context, context.sampleRate(), buffer_size, number_of_input_channels,
       number_of_output_channels);
 

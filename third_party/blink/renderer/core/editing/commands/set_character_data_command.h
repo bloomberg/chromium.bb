@@ -15,17 +15,18 @@ class CORE_EXPORT SetCharacterDataCommand final : public SimpleEditCommand {
                                          unsigned offset,
                                          unsigned count,
                                          const String& text) {
-    return new SetCharacterDataCommand(node, offset, count, text);
+    return MakeGarbageCollected<SetCharacterDataCommand>(node, offset, count,
+                                                         text);
   }
 
-  void Trace(blink::Visitor*) override;
-
- private:
   SetCharacterDataCommand(Text* node,
                           unsigned offset,
                           unsigned count,
                           const String& text);
 
+  void Trace(blink::Visitor*) override;
+
+ private:
   // EditCommand implementation
   void DoApply(EditingState*) final;
   void DoUnapply() final;
