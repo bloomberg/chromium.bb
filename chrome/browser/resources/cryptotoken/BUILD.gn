@@ -8,6 +8,7 @@ js_type_check("closure_compile") {
   deps = [
     ":approvedorigins",
     ":b64",
+    ":cbor",
     ":closeable",
     ":countdown",
     ":errorcodes",
@@ -26,6 +27,9 @@ js_library("b64") {
 }
 
 js_library("approvedorigins") {
+}
+
+js_library("cbor") {
 }
 
 js_library("closeable") {

@@ -102,11 +102,15 @@ function transportType(der) {
  * makeCertAndKey creates a new ECDSA keypair and returns the private key
  * and a cert containing the public key.
  *
- * @param {!Uint8Array} original The certificate being replaced, as DER bytes.
+ * @param {!Uint8Array=} opt_original The certificate being replaced, as DER
+ *     bytes.
  * @return {Promise<{privateKey: !webCrypto.CryptoKey, certDER: !Uint8Array}>}
  */
-async function makeCertAndKey(original) {
-  var transport = transportType(original);
+async function makeCertAndKey(opt_original) {
+  var transport = null;
+  if (opt_original) {
+    transport = transportType(opt_original);
+  }
   if (transport !== null) {
     if (transport.length != 2) {
       throw Error('bad extension length');
@@ -805,22 +809,227 @@ Enroller.prototype.sendEnrollRequestToHelper_ = function() {
     return;
   }
   var self = this;
-  this.checkAppIds_(enrollAppIds, function(result) {
+  this.checkAppIds_(enrollAppIds, async (result) => {
     if (self.done_)
       return;
     if (result) {
-      self.handler_ = FACTORY_REGISTRY.getRequestHelper().getHandler(request);
-      if (self.handler_) {
-        var helperComplete =
-            /** @type {function(HelperReply)} */
-            (self.helperComplete_.bind(self));
-        self.handler_.run(helperComplete);
-      } else {
-        self.notifyError_({errorCode: ErrorCodes.OTHER_ERROR});
-      }
+      // AppID is valid, so the request should be sent.
+      await new Promise(resolve => {
+        if (!chrome.cryptotokenPrivate || !window.PublicKeyCredential) {
+          resolve(false);
+        } else {
+          chrome.cryptotokenPrivate.canProxyToWebAuthn(resolve);
+        }
+      }).then(shouldUseWebAuthn => {
+        let v2Challenge;
+        for (let index = 0; index < self.enrollChallenges_.length; index++) {
+          if (self.enrollChallenges_[index]['version'] === 'U2F_V2') {
+            v2Challenge = self.enrollChallenges_[index]['challenge'];
+          }
+        }
+
+        if (v2Challenge && shouldUseWebAuthn) {
+          // If we can proxy to WebAuthn, send the request via WebAuthn.
+          this.doRegisterWebAuthn_(enrollAppIds[0], v2Challenge, request);
+        } else {
+          self.handler_ =
+              FACTORY_REGISTRY.getRequestHelper().getHandler(request);
+          if (self.handler_) {
+            var helperComplete =
+                /** @type {function(HelperReply)} */
+                (self.helperComplete_.bind(self));
+            self.handler_.run(helperComplete);
+          } else {
+            self.notifyError_({errorCode: ErrorCodes.OTHER_ERROR});
+          }
+        }
+      });
     } else {
       self.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
     }
+  });
+};
+
+/**
+ * Proxies the registration request over the WebAuthn API.
+ * @private
+ */
+Enroller.prototype.doRegisterWebAuthn_ = function(appId, challenge, request) {
+  // Set a random ID.
+  const randomId = new Uint8Array(new ArrayBuffer(16));
+  crypto.getRandomValues(randomId);
+
+  const excludeList = [];
+  for (let index = 0; index < request['signData'].length; index++) {
+    const element = request['signData'][index];
+    excludeList.push({
+      type: 'public-key',
+      id: new Uint8Array(B64_decode(element['keyHandle'])).buffer,
+      transports: ['usb'],
+    });
+  }
+
+  const options = {
+    publicKey: {
+      rp: {
+        id: appId,
+        name: this.sender_.origin,
+      },
+      user: {
+        id: randomId.buffer,
+        displayName: this.sender_.origin,
+        name: this.sender_.origin,
+      },
+      challenge: new Uint8Array(B64_decode(challenge)).buffer,
+      pubKeyCredParams: [{
+        type: 'public-key',
+        alg: -7,  // ES-256
+      }],
+      timeout: this.timer_.millisecondsUntilExpired(),
+      excludeCredentials: excludeList,
+      authenticatorSelection: {
+        authenticatorAttachment: 'cross-platform',
+        requireResidentKey: false,
+        userVerification: 'discouraged',
+      },
+      attestation: 'direct',
+    },
+  };
+  navigator.credentials.create(options)
+      .then(response => {
+        this.onWebAuthnSuccess_(response, appId);
+      })
+      .catch(exception => {
+        this.onWebAuthnError_(exception);
+      });
+};
+
+/**
+ * Handles a successful credential response from WebAuthn's make credential
+ * request.
+ * @private
+ */
+Enroller.prototype.onWebAuthnSuccess_ =
+    async function(publicKeyCredential, appId) {
+  const clientData =
+      new Uint8Array(publicKeyCredential['response']['clientDataJSON']);
+  const browserData = B64_encode(Array.from(clientData));
+  const u2fResponseData = await this.parseU2fResponseFromAttestationObject_(
+      publicKeyCredential['response']['attestationObject'], appId, browserData);
+  this.notifySuccess_('U2F_V2', u2fResponseData, browserData);
+};
+
+/**
+ * Parses the attestation object received from a WebAuthn make credential call
+ * and converts it into a U2F response message formatted into Base64.
+ * @private
+ */
+Enroller.prototype.parseU2fResponseFromAttestationObject_ =
+    async function(attestationObject, appId, clientData) {
+  // The first byte of the registration response is always 0x5.
+  let u2fResponse = [0x5];
+
+  // Parse the attestation object from CBOR into a JavaScript object.
+  const attestationObjectCbor = new Cbor(attestationObject).getCBOR();
+  // Authenticator data must be at least 120 bytes in length.
+  // https://www.w3.org/TR/webauthn/#fig-attStructs
+  if (!attestationObjectCbor['authData'] ||
+      attestationObjectCbor['authData'].length < 120) {
+    console.warn('Received invalid authenticator response');
+    this.notifyError_({
+      errorCode: ErrorCodes.OTHER_ERROR,
+      errorMessage: 'Invalid response message',
+    });
+    return;
+  }
+
+  const authData = attestationObjectCbor['authData'];
+  // Attested credential data starts after a 32 byte RP ID hash, a 1 byte flag,
+  // and a 4 byte counter value.
+  // https://www.w3.org/TR/webauthn/#sctn-attestation
+  const attestedCredentialData = authData.slice(37, authData.length);
+  let index = 16;
+  let credentialIdLength = (attestedCredentialData[index++] & 0xFF) << 8;
+  credentialIdLength |= (attestedCredentialData[index++] & 0xFF);
+  const credentialId =
+      attestedCredentialData.slice(index, index + credentialIdLength);
+
+  index += credentialIdLength;
+  const encodedPublicKey =
+      attestedCredentialData.slice(index, attestedCredentialData.length);
+  // Parse public key and format it in X509 format [0x4, 32-byte X, 32-byte Y].
+  const coseKey = new Cbor(encodedPublicKey).getCBOR();
+  const publicKeyArray = ([0x4].concat(Array.from(coseKey['-2'])))
+                             .concat(Array.from(coseKey['-3']));
+
+  // Concatenate U2F registration response from the public key, key handle
+  // length, key handle, attestatation certificate, and signature.
+  u2fResponse = u2fResponse.concat(publicKeyArray);
+  u2fResponse.push(credentialIdLength);
+  u2fResponse = u2fResponse.concat(Array.from(credentialId));
+
+  const fmt = attestationObjectCbor['fmt'];
+  const attStatement = attestationObjectCbor['attStmt'];
+  let x5c;
+  let signature;
+  switch (new TextDecoder('utf-8').decode(fmt)) {
+    case 'fido-u2f':
+      x5c = attStatement['x5c'][0];
+      signature = attStatement['sig'];
+      break;
+    case 'none':
+      // Append empty x509 cert and signature to the registration message.
+      const emptySequence = new Uint8Array([0x30, 0]);  // empty ASN.1 SEQUENCE.
+      const registrationData =
+          B64_encode(u2fResponse.concat(Array.from(emptySequence))
+                         .concat(Array.from(emptySequence)));
+      const reg = new Registration(registrationData, appId, null, clientData);
+      const keypair = await makeCertAndKey();
+      signature = await reg.sign(keypair.privateKey);
+      x5c = keypair.certDER;
+      break;
+    default:
+      console.warn('Received unsupported non-U2F attestation');
+      this.notifyError_({
+        errorCode: ErrorCodes.OTHER_ERROR,
+        errorMessage: 'Invalid response message',
+      });
+      return;
+  }
+  u2fResponse = u2fResponse.concat(Array.from(x5c));
+  u2fResponse = u2fResponse.concat(Array.from(signature));
+
+  return B64_encode(u2fResponse);
+};
+
+/**
+ * Handles DOMExceptions returned as errors from the WebAuthn make credential
+ * call. Converts exceptions into U2F compatible exceptions.
+ * @param {*} exception Exception returned from the WebAuthn request.
+ * @private
+ */
+Enroller.prototype.onWebAuthnError_ = function(exception) {
+  const domError = /** @type {!DOMException} */ (exception);
+  let errorCode = ErrorCodes.OTHER_ERROR;
+  let errorDetails;
+
+  if (domError && domError.name) {
+    switch (domError.name) {
+      case 'NotAllowedError':
+        errorCode = ErrorCodes.TIMEOUT;
+        break;
+      case 'InvalidStateError':
+        errorCode = ErrorCodes.DEVICE_INELIGIBLE;
+        break;
+      default:
+        // Fall through
+        break;
+    }
+  }
+
+  this.notifyError_({
+    errorCode: errorCode,
+    errorMessage: domError.toString(),
   });
 };
 
