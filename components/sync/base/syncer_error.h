@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_BASE_SYNCER_ERROR_H_
 #define COMPONENTS_SYNC_BASE_SYNCER_ERROR_H_
 
+#include <string>
+
 namespace syncer {
 
 // This class describes all the possible results of a sync cycle. It should be
@@ -43,19 +45,30 @@ class SyncerError {
     SYNCER_OK
   };
 
-  constexpr SyncerError() : value_(UNSET) {}
-  explicit constexpr SyncerError(Value value) : value_(value) {}
-  ~SyncerError();
+  constexpr SyncerError() : value_(UNSET), net_error_code_(0) {}
+
+  explicit constexpr SyncerError(Value value)
+      : value_(value), net_error_code_(0) {}
+
+  static constexpr SyncerError NetworkConnectionUnavailable(
+      int net_error_code) {
+    return SyncerError(NETWORK_CONNECTION_UNAVAILABLE, net_error_code);
+  }
 
   Value value() const { return value_; }
-  const char* ToString() const;
+
+  std::string ToString() const;
 
   // Helper to check that |error| is set to something (not UNSET) and is not
   // SYNCER_OK or SERVER_MORE_TO_DOWNLOAD.
   bool IsActualError() const;
 
  private:
+  constexpr SyncerError(Value value, int net_error_code)
+      : value_(value), net_error_code_(net_error_code) {}
+
   Value value_;
+  int net_error_code_;
 };
 
 }  // namespace syncer
