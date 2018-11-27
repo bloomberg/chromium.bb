@@ -36,6 +36,7 @@ static_library("shared") {
   deps = [
     ":signin_buildflags",
     "//components/account_id",
+    "//components/prefs:prefs",
     "//third_party/icu:icui18n",
   ]
   public_deps = [

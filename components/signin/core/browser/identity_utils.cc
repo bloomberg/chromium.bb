@@ -8,6 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/prefs/pref_service.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
 namespace identity {
@@ -44,6 +45,20 @@ bool IsUsernameAllowedByPattern(base::StringPiece username,
   UBool match = matcher.matches(status);
   DCHECK(U_SUCCESS(status));
   return !!match;  // !! == convert from UBool to bool.
+}
+
+bool LegacyIsUsernameAllowedByPatternFromPrefs(
+    PrefService* prefs,
+    const std::string& username,
+    const std::string& pattern_pref_name) {
+  // TODO(crbug.com/908121): We need to deal for now with the fact that most
+  // unit tests don't register a local state with the browser process, in which
+  // case all usernames are considered 'allowed'.
+  if (!prefs)
+    return true;
+
+  return IsUsernameAllowedByPattern(username,
+                                    prefs->GetString(pattern_pref_name));
 }
 
 }  // namespace identity
