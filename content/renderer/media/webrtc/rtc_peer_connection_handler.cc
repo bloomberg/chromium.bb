@@ -51,6 +51,7 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_session_description_request.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/webrtc/api/rtceventlogoutput.h"
@@ -501,11 +502,12 @@ void GetStatsOnSignalingThread(
 void GetRTCStatsOnSignalingThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-    std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+    std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+    blink::RTCStatsFilter filter) {
   TRACE_EVENT0("webrtc", "GetRTCStatsOnSignalingThread");
 
-  native_peer_connection->GetStats(
-      RTCStatsCollectorCallbackImpl::Create(main_thread, std::move(callback)));
+  native_peer_connection->GetStats(RTCStatsCollectorCallbackImpl::Create(
+      main_thread, std::move(callback), filter));
 }
 
 void ConvertOfferOptionsToWebrtcOfferOptions(
@@ -1491,11 +1493,13 @@ void RTCPeerConnectionHandler::GetStats(
 }
 
 void RTCPeerConnectionHandler::GetStats(
-    std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+    std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+    blink::RTCStatsFilter filter) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   signaling_thread()->PostTask(
-      FROM_HERE, base::BindOnce(&GetRTCStatsOnSignalingThread, task_runner_,
-                                native_peer_connection_, std::move(callback)));
+      FROM_HERE,
+      base::BindOnce(&GetRTCStatsOnSignalingThread, task_runner_,
+                     native_peer_connection_, std::move(callback), filter));
 }
 
 webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>

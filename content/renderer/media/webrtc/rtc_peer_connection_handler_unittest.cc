@@ -52,6 +52,7 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_session_description_request.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -942,7 +943,8 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
   pc_handler_->native_peer_connection()->SetGetStatsReport(report);
   std::unique_ptr<blink::WebRTCStatsReport> result;
   pc_handler_->GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>(
-      new MockRTCStatsReportCallback(&result)));
+                            new MockRTCStatsReportCallback(&result)),
+                        blink::RTCStatsFilter::kIncludeNonStandardMembers);
   RunMessageLoopsUntilIdle();
   EXPECT_TRUE(result);
 

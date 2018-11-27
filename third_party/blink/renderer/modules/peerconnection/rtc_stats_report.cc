@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_stats_report.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -114,6 +116,16 @@ class RTCStatsReportIterationSource final
 };
 
 }  // namespace
+
+RTCStatsFilter GetRTCStatsFilter(const ScriptState* script_state) {
+  const ExecutionContext* context = ExecutionContext::From(script_state);
+  DCHECK(context->IsContextThread());
+  // If this original trial is enabled then it exposes jitterBufferFlushes
+  // metric
+  return origin_trials::RtcAudioJitterBufferMaxPacketsEnabled(context)
+             ? RTCStatsFilter::kIncludeNonStandardMembers
+             : RTCStatsFilter::kIncludeOnlyStandardMembers;
+}
 
 RTCStatsReport::RTCStatsReport(std::unique_ptr<WebRTCStatsReport> report)
     : report_(std::move(report)) {}
