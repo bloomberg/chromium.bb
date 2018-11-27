@@ -36,7 +36,6 @@ class UnifiedBluetoothDetailedViewController
   // BluetoothObserver:
   void OnBluetoothSystemStateChanged() override;
   void OnBluetoothScanStateChanged() override;
-  void OnBluetoothDeviceListChanged() override;
 
  private:
   void UpdateDeviceListAndUI();
@@ -50,6 +49,9 @@ class UnifiedBluetoothDetailedViewController
   BluetoothDeviceList connecting_devices_;
   BluetoothDeviceList paired_not_connected_devices_;
   BluetoothDeviceList discovered_not_paired_devices_;
+
+  // Timer used to limit the update frequency.
+  base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedBluetoothDetailedViewController);
 };
