@@ -368,7 +368,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
       StatisticsProviderImpl;                      // http://crbug.com/125385
   friend class content::TextInputClientMac;        // http://crbug.com/121917
   friend class blink::VideoFrameResourceProvider;  // http://crbug.com/878070
-  friend class dbus::Bus;                          // http://crbug.com/125222
 
   ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
@@ -410,6 +409,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class content::
       BrowserGpuChannelHostFactory;                 // http://crbug.com/125248
   friend class content::CategorizedWorkerPool;      // http://crbug.com/902823
+  friend class dbus::Bus;                           // http://crbug.com/125222
   friend class disk_cache::BackendImpl;             // http://crbug.com/74623
   friend class disk_cache::InFlightIO;              // http://crbug.com/74623
   friend class gpu::GpuChannelHost;                 // http://crbug.com/125264
