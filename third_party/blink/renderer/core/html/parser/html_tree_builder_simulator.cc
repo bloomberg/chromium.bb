@@ -237,6 +237,14 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
     if (ThreadSafeMatch(tag_name, kStyleTag))
       simulated_token = kStyleEnd;
   }
+  if (token.GetType() == HTMLToken::kStartTag &&
+      simulated_token == kOtherToken) {
+    const String& tag_name = token.Data();
+    // Use the presence of a dash in the tag name as a proxy for
+    // "is a custom element".
+    if (tag_name.find('-') != kNotFound)
+      simulated_token = kCustomElementBegin;
+  }
 
   // FIXME: Also setForceNullCharacterReplacement when in text mode.
   tokenizer->SetForceNullCharacterReplacement(InForeignContent());
