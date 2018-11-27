@@ -36,7 +36,7 @@ class OnLoadScriptInjector : public content::RenderFrameObserver,
   ~OnLoadScriptInjector() override;
 
   std::vector<base::string16> on_load_scripts_;
-  bool is_handling_clear_window_object_;
+  bool is_handling_clear_window_object_ = false;
   mojo::AssociatedBindingSet<mojom::OnLoadScriptInjector> bindings_;
   base::WeakPtrFactory<OnLoadScriptInjector> weak_ptr_factory_;
 
