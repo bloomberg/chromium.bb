@@ -119,7 +119,6 @@
       'CrWinAsanCov': 'asan_clang_edge_fuzzer_static_v8_heap_minimal_symbols_release_tot',
 
       'linux-win_cross-rel': 'clang_tot_win_release_cross',
-      'SafeStack Linux ToT': 'safestack_cfi_tot',
       'ToTAndroid': 'android_clang_tot_release_minimal_symbols',
       'ToTAndroid64': 'android_clang_tot_release_arm64',
       'ToTAndroidASan': 'android_clang_tot_asan',
@@ -1670,10 +1669,6 @@
       'release_bot', 'x86', 'minimal_symbols', 'no_clang', 'use_cxx11',
     ],
 
-    'safestack_cfi_tot': [
-      'safestack', 'cfi', 'cfi_diag', 'clang_tot', 'dcheck_always_on',
-    ],
-
     'tcmalloc_release_bot': [
       'tcmalloc', 'release_bot',
     ],
@@ -1815,10 +1810,6 @@
 
     'cfi_recover': {
       'gn_args': 'use_cfi_recover=true',
-    },
-
-    'safestack': {
-      'gn_args': 'is_safestack=true',
     },
 
     'chrome_with_codecs': {
