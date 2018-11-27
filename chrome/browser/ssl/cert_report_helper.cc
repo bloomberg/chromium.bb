@@ -182,7 +182,7 @@ void CertReportHelper::FinishCertCollection() {
   ssl_cert_reporter_->ReportInvalidCertificateChain(serialized_report);
 }
 
-bool CertReportHelper::IsShowingReportingCheckboxOrReportingAllowed() {
+bool CertReportHelper::ShouldShowCertificateReporterCheckbox() {
   // Only show the checkbox or send reports iff the user is part of the
   // respective Finch group and the window is not incognito and the feature is
   // not disabled by policy.
@@ -199,17 +199,8 @@ bool CertReportHelper::IsShowingReportingCheckboxOrReportingAllowed() {
          !in_incognito && can_show_checkbox;
 }
 
-bool CertReportHelper::ShouldShowCertificateReporterCheckbox() {
-  if (!IsShowingReportingCheckboxOrReportingAllowed())
-    return false;
-  Profile* profile = GetProfile(web_contents_);
-  unified_consent::UnifiedConsentService* consent_service =
-      UnifiedConsentServiceFactory::GetForProfile(profile);
-  return !(consent_service && consent_service->IsUnifiedConsentGiven());
-}
-
 bool CertReportHelper::ShouldReportCertificateError() {
-  if (!IsShowingReportingCheckboxOrReportingAllowed())
+  if (!ShouldShowCertificateReporterCheckbox())
     return false;
 
   bool is_official_build = g_is_fake_official_build_for_cert_report_testing;

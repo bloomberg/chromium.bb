@@ -58,7 +58,7 @@ class DocumentProvider : public AutocompleteProvider {
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            CheckFeaturePrerequisiteNoIncognito);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
-                           CheckFeaturePrerequisiteNoConsentBit);
+                           CheckFeaturePrerequisiteNoSync);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            CheckFeaturePrerequisiteClientSettingOff);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,

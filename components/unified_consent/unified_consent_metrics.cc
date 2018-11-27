@@ -33,10 +33,6 @@ void RecordConsentBumpEligibility(bool eligible) {
                         eligible);
 }
 
-void RecordUnifiedConsentRevoked(UnifiedConsentRevokeReason reason) {
-  UMA_HISTOGRAM_ENUMERATION("UnifiedConsent.RevokeReason", reason);
-}
-
 void RecordSettingsHistogramSample(SettingsHistogramValue value) {
   UMA_HISTOGRAM_ENUMERATION(kSyncAndGoogleServicesSettingsHistogram, value);
 }

@@ -300,7 +300,7 @@ enum AuthenticationState {
         UnifiedConsentServiceFactory::GetForBrowserState(_browserState);
     // |unifiedConsentService| may be null in unit tests.
     if (unifiedConsentService)
-      unifiedConsentService->SetUnifiedConsentGiven(true);
+      unifiedConsentService->EnableGoogleServices();
   }
   SyncSetupServiceFactory::GetForBrowserState(_browserState)->CommitChanges();
   [self acceptSignInAndShowAccountsSettings:_unifiedConsentCoordinator

@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -39,7 +38,6 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/prefs/pref_service.h"
-#include "components/unified_consent/unified_consent_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -297,12 +295,6 @@ bool ChromeAutocompleteProviderClient::IsAuthenticated() const {
   const auto* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   return identity_manager && identity_manager->HasPrimaryAccount();
-}
-
-bool ChromeAutocompleteProviderClient::IsUnifiedConsentGiven() const {
-  unified_consent::UnifiedConsentService* consent_service =
-      UnifiedConsentServiceFactory::GetForProfile(profile_);
-  return consent_service && consent_service->IsUnifiedConsentGiven();
 }
 
 bool ChromeAutocompleteProviderClient::IsSyncActive() const {

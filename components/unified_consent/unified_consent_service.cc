@@ -10,9 +10,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/contextual_search/core/browser/contextual_search_preference.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service.h"
@@ -42,31 +40,8 @@ UnifiedConsentService::UnifiedConsentService(
   // Check if this profile is still eligible for the consent bump.
   CheckConsentBumpEligibility();
 
-  service_client_->AddObserver(this);
   identity_manager_->AddObserver(this);
   sync_service_->AddObserver(this);
-
-  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-  pref_change_registrar_->Init(pref_service_);
-  pref_change_registrar_->Add(
-      prefs::kUnifiedConsentGiven,
-      base::BindRepeating(
-          &UnifiedConsentService::OnUnifiedConsentGivenPrefChanged,
-          base::Unretained(this)));
-
-  // If somebody disabled any of the non-personalized services while Chrome
-  // wasn't running, disable unified consent.
-  if (!AreAllNonPersonalizedServicesEnabled() && IsUnifiedConsentGiven()) {
-    SetUnifiedConsentGiven(false);
-    RecordUnifiedConsentRevoked(
-        metrics::UnifiedConsentRevokeReason::kServiceWasDisabled);
-  }
-
-  // Update pref for existing users.
-  // TODO(tangltom): Delete this when all users are migrated.
-  if (pref_service_->GetBoolean(prefs::kUnifiedConsentGiven))
-    pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled,
-                              true);
 
   RecordSettingsHistogram();
 }
@@ -78,7 +53,6 @@ void UnifiedConsentService::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                                 false);
-  registry->RegisterBooleanPref(prefs::kUnifiedConsentGiven, false);
   registry->RegisterIntegerPref(
       prefs::kUnifiedConsentMigrationState,
       static_cast<int>(MigrationState::kNotInitialized));
@@ -108,26 +82,41 @@ void UnifiedConsentService::RollbackIfNeeded(
     service_client->SetServiceEnabled(Service::kSafeBrowsingExtendedReporting,
                                       false);
     service_client->SetServiceEnabled(Service::kSpellCheck, false);
-    contextual_search::ContextualSearchPreference::GetInstance()->SetPref(
-        user_pref_service, false);
+    service_client->SetServiceEnabled(Service::kContextualSearch, false);
   }
 
   // Clear all unified consent prefs.
   user_pref_service->ClearPref(prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
-  user_pref_service->ClearPref(prefs::kUnifiedConsentGiven);
   user_pref_service->ClearPref(prefs::kUnifiedConsentMigrationState);
   user_pref_service->ClearPref(prefs::kShouldShowUnifiedConsentBump);
   user_pref_service->ClearPref(prefs::kAllUnifiedConsentServicesWereEnabled);
 }
 
-void UnifiedConsentService::SetUnifiedConsentGiven(bool unified_consent_given) {
-  // Unified consent cannot be enabled if the user is not signed in.
-  DCHECK(!unified_consent_given || identity_manager_->HasPrimaryAccount());
-  pref_service_->SetBoolean(prefs::kUnifiedConsentGiven, unified_consent_given);
-}
+void UnifiedConsentService::EnableGoogleServices() {
+  DCHECK(identity_manager_->HasPrimaryAccount());
+  DCHECK_LT(MigrationState::kNotInitialized, GetMigrationState());
 
-bool UnifiedConsentService::IsUnifiedConsentGiven() {
-  return pref_service_->GetBoolean(prefs::kUnifiedConsentGiven);
+  if (GetMigrationState() != MigrationState::kCompleted) {
+    // If the user opted into unified consent, the migration is completed.
+    SetMigrationState(MigrationState::kCompleted);
+  }
+
+  if (ShouldShowConsentBump())
+    RecordConsentBumpSuppressReason(
+        metrics::ConsentBumpSuppressReason::kSettingsOptIn);
+
+  // Enable all Google services except sync.
+  pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
+                            true);
+  for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
+    Service service = static_cast<Service>(i);
+    if (service_client_->GetServiceState(service) !=
+        ServiceState::kNotSupported) {
+      service_client_->SetServiceEnabled(service, true);
+    }
+  }
+
+  pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled, true);
 }
 
 bool UnifiedConsentService::ShouldShowConsentBump() {
@@ -169,30 +158,12 @@ void UnifiedConsentService::RecordConsentBumpSuppressReason(
 }
 
 void UnifiedConsentService::Shutdown() {
-  service_client_->RemoveObserver(this);
   identity_manager_->RemoveObserver(this);
   sync_service_->RemoveObserver(this);
 }
 
-void UnifiedConsentService::OnServiceStateChanged(Service service) {
-  // Unified consent is disabled when any of its dependent services gets
-  // disabled.
-  if (service_client_->GetServiceState(service) == ServiceState::kDisabled &&
-      IsUnifiedConsentGiven()) {
-    SetUnifiedConsentGiven(false);
-    RecordUnifiedConsentRevoked(
-        metrics::UnifiedConsentRevokeReason::kServiceWasDisabled);
-  }
-}
-
 void UnifiedConsentService::OnPrimaryAccountCleared(
     const AccountInfo& account_info) {
-  // When signing out, the unfied consent is revoked.
-  if (IsUnifiedConsentGiven()) {
-    SetUnifiedConsentGiven(false);
-    RecordUnifiedConsentRevoked(
-        metrics::UnifiedConsentRevokeReason::kUserSignedOut);
-  }
   pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled,
                             false);
 
@@ -203,8 +174,7 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
   service_client_->SetServiceEnabled(Service::kSafeBrowsingExtendedReporting,
                                      false);
   service_client_->SetServiceEnabled(Service::kSpellCheck, false);
-  contextual_search::ContextualSearchPreference::GetInstance()->SetPref(
-      pref_service_, false);
+  service_client_->SetServiceEnabled(Service::kContextualSearch, false);
 
   if (GetMigrationState() != MigrationState::kCompleted) {
     // When the user signs out, the migration is complete.
@@ -231,52 +201,7 @@ void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
       RecordConsentBumpSuppressReason(
           metrics::ConsentBumpSuppressReason::kCustomPassphrase);
     }
-    if (IsUnifiedConsentGiven()) {
-      // Force off unified consent given when the user sets a custom passphrase.
-      SetUnifiedConsentGiven(false);
-      RecordUnifiedConsentRevoked(
-          metrics::UnifiedConsentRevokeReason::kCustomPassphrase);
-    }
   }
-}
-
-void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
-  bool enabled = pref_service_->GetBoolean(prefs::kUnifiedConsentGiven);
-
-  if (!enabled)
-    return;
-
-  DCHECK(!sync_service_->HasDisableReason(
-      syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE));
-  DCHECK(!sync_service_->HasDisableReason(
-      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY));
-  DCHECK(identity_manager_->HasPrimaryAccount());
-  DCHECK_LT(MigrationState::kNotInitialized, GetMigrationState());
-
-  if (GetMigrationState() != MigrationState::kCompleted) {
-    // If the user opted into unified consent, the migration is completed.
-    SetMigrationState(MigrationState::kCompleted);
-  }
-
-  if (ShouldShowConsentBump())
-    RecordConsentBumpSuppressReason(
-        metrics::ConsentBumpSuppressReason::kSettingsOptIn);
-
-  // Enable all non-personalized services.
-  pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-                            true);
-  contextual_search::ContextualSearchPreference::GetInstance()
-      ->OnUnifiedConsentGiven(pref_service_);
-  // Inform client to enable non-personalized services.
-  for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
-    Service service = static_cast<Service>(i);
-    if (service_client_->GetServiceState(service) !=
-        ServiceState::kNotSupported) {
-      service_client_->SetServiceEnabled(service, true);
-    }
-  }
-
-  pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled, true);
 }
 
 MigrationState UnifiedConsentService::GetMigrationState() {
@@ -295,7 +220,6 @@ void UnifiedConsentService::SetMigrationState(MigrationState migration_state) {
 
 void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
   DCHECK_EQ(GetMigrationState(), MigrationState::kNotInitialized);
-  DCHECK(!IsUnifiedConsentGiven());
 
   if (!identity_manager_->HasPrimaryAccount()) {
     RecordConsentBumpSuppressReason(
@@ -327,14 +251,6 @@ void UnifiedConsentService::UpdateSettingsForMigration() {
     return;
   }
 
-  if (IsUnifiedConsentGiven()) {
-    // When the user opted into unified consent through the consent bump or the
-    // settings page while waiting for sync initialization, the migration is
-    // completed.
-    SetMigrationState(MigrationState::kCompleted);
-    return;
-  }
-
   // Set URL-keyed anonymized metrics to the state it had before unified
   // consent.
   bool url_keyed_metrics_enabled =
@@ -346,19 +262,6 @@ void UnifiedConsentService::UpdateSettingsForMigration() {
                             url_keyed_metrics_enabled);
 
   SetMigrationState(MigrationState::kCompleted);
-}
-
-bool UnifiedConsentService::AreAllNonPersonalizedServicesEnabled() {
-  for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
-    Service service = static_cast<Service>(i);
-    if (service_client_->GetServiceState(service) == ServiceState::kDisabled)
-      return false;
-  }
-  if (!pref_service_->GetBoolean(
-          prefs::kUrlKeyedAnonymizedDataCollectionEnabled))
-    return false;
-
-  return true;
 }
 
 bool UnifiedConsentService::AreAllOnByDefaultPrivacySettingsOn() {
@@ -374,11 +277,9 @@ bool UnifiedConsentService::AreAllOnByDefaultPrivacySettingsOn() {
 void UnifiedConsentService::RecordSettingsHistogram() {
   bool metric_recorded = false;
 
-  if (IsUnifiedConsentGiven()) {
-    RecordSettingsHistogramSample(
-        metrics::SettingsHistogramValue::kUnifiedConsentGiven);
-    metric_recorded = true;
-  }
+  metric_recorded |= RecordSettingsHistogramFromPref(
+      prefs::kAllUnifiedConsentServicesWereEnabled, pref_service_,
+      metrics::SettingsHistogramValue::kAllServicesWereEnabled);
   metric_recorded |= RecordSettingsHistogramFromPref(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled, pref_service_,
       metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection);

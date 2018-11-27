@@ -374,17 +374,21 @@ void DiceTurnSyncOnHelper::ShowSyncConfirmationUI() {
 
 void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
     LoginUIService::SyncConfirmationUIClosedResult result) {
+  unified_consent::UnifiedConsentService* consent_service =
+      UnifiedConsentServiceFactory::GetForProfile(profile_);
+
   switch (result) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
-      EnableUnifiedConsentIfNeeded();
+      if (consent_service)
+        consent_service->EnableGoogleServices();
       delegate_->ShowSyncSettings();
       break;
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
       browser_sync::ProfileSyncService* sync_service = GetProfileSyncService();
-      if (sync_service) {
+      if (sync_service)
         sync_service->GetUserSettings()->SetFirstSetupComplete();
-        EnableUnifiedConsentIfNeeded();
-      }
+      if (consent_service)
+        consent_service->EnableGoogleServices();
       break;
     }
     case LoginUIService::ABORT_SIGNIN:
@@ -407,11 +411,4 @@ void DiceTurnSyncOnHelper::AbortAndDelete() {
             kDiceTurnOnSyncHelper_Abort);
   }
   delete this;
-}
-
-void DiceTurnSyncOnHelper::EnableUnifiedConsentIfNeeded() {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    UnifiedConsentServiceFactory::GetForProfile(profile_)
-        ->SetUnifiedConsentGiven(true);
-  }
 }

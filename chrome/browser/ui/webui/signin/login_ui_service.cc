@@ -123,17 +123,16 @@ class ConsentBumpActivator : public BrowserListObserver,
     switch (result) {
       case LoginUIService::CONFIGURE_SYNC_FIRST:
         // Opt into Unity and open settings page to make configurations.
-        consent_service->SetUnifiedConsentGiven(true);
+        consent_service->EnableGoogleServices();
         chrome::ShowSettingsSubPage(selected_browser_,
                                     chrome::kSyncSetupSubPage);
         break;
       case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS:
         // Opt into Unity with default configuration.
-        consent_service->SetUnifiedConsentGiven(true);
+        consent_service->EnableGoogleServices();
         break;
       case LoginUIService::ABORT_SIGNIN:
         // "Make no changes" was selected.
-        DCHECK(!consent_service->IsUnifiedConsentGiven());
         break;
     }
   }

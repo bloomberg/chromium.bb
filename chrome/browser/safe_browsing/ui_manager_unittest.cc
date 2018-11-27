@@ -447,7 +447,6 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
                 BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
                 false,                   // is_extended_reporting_opt_in_allowed
                 false,                   // is_off_the_record
-                false,                   // is_unified_consent_enabled
                 false,                   // is_extended_reporting_enabled
                 false,                   // is_extended_reporting_policy_managed
                 false,                   // is_proceed_anyway_disabled

@@ -271,13 +271,16 @@ class UkmBrowserTestBase : public SyncTest {
     std::unique_ptr<ProfileSyncServiceHarness> harness =
         InitializeProfileForSync(profile);
     EXPECT_TRUE(harness->SetupSync());
-    // Opt into unified consent if possible, so url-keyed-anonymized data
-    // collection is enabled. Note: If the consent service is not available, UKM
-    // will fall back on the state of history sync.
+
+    // If unified consent is enabled, then enable url-keyed-anonymized data
+    // collection through the consent service.
+    // Note: If unfied consent is not enabled, then UKM will be enabled based on
+    // the history sync state.
     unified_consent::UnifiedConsentService* consent_service =
         UnifiedConsentServiceFactory::GetForProfile(profile);
     if (consent_service)
-      consent_service->SetUnifiedConsentGiven(true);
+      consent_service->EnableGoogleServices();
+
     return harness;
   }
 

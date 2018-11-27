@@ -20,7 +20,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class PrefChangeRegistrar;
 class PrefService;
 
 namespace syncer {
@@ -42,7 +41,6 @@ enum class MigrationState : int {
 // A browser-context keyed service that is used to manage the user consent
 // when UnifiedConsent feature is enabled.
 class UnifiedConsentService : public KeyedService,
-                              public UnifiedConsentServiceClient::Observer,
                               public identity::IdentityManager::Observer,
                               public syncer::SyncServiceObserver {
  public:
@@ -62,10 +60,10 @@ class UnifiedConsentService : public KeyedService,
                                syncer::SyncService* sync_service,
                                UnifiedConsentServiceClient* service_client);
 
-  // This updates the consent pref and if |unified_consent_given| is true, all
-  // unified consent services are enabled.
-  void SetUnifiedConsentGiven(bool unified_consent_given);
-  bool IsUnifiedConsentGiven();
+  // Enables all Google services tied to unified consent.
+  // Note: Sync has to be enabled through the SyncService. It is *not* enabled
+  // in this method.
+  void EnableGoogleServices();
 
   // Returns true if all criteria is met to show the consent bump.
   bool ShouldShowConsentBump();
@@ -81,9 +79,6 @@ class UnifiedConsentService : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
-  // UnifiedConsentServiceClient::Observer:
-  void OnServiceStateChanged(Service service) override;
-
   // IdentityManager::Observer:
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
@@ -93,11 +88,6 @@ class UnifiedConsentService : public KeyedService,
 
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
-
-  // Called when |prefs::kUnifiedConsentGiven| pref value changes.
-  // When set to true, it enables syncing of all data types and it enables all
-  // non-personalized services. Otherwise it does nothing.
-  void OnUnifiedConsentGivenPrefChanged();
 
   // Migration helpers.
   MigrationState GetMigrationState();
@@ -110,9 +100,6 @@ class UnifiedConsentService : public KeyedService,
   // initialized. When it is not, this function will be called again from
   // |OnStateChanged| when the sync engine is initialized.
   void UpdateSettingsForMigration();
-
-  // Returns true if all non-personalized services are enabled.
-  bool AreAllNonPersonalizedServicesEnabled();
 
   // Checks if all on-by-default non-personalized services are on.
   bool AreAllOnByDefaultPrivacySettingsOn();
@@ -131,8 +118,6 @@ class UnifiedConsentService : public KeyedService,
   PrefService* pref_service_;
   identity::IdentityManager* identity_manager_;
   syncer::SyncService* sync_service_;
-
-  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedConsentService);
 };

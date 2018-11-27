@@ -32,9 +32,11 @@ class UnifiedConsentServiceClient {
     kSearchSuggest,
     // Spell checking.
     kSpellCheck,
+    // Contextual search.
+    kContextualSearch,
 
     // Last element of the enum, used for iteration.
-    kLast = kSpellCheck,
+    kLast = kContextualSearch,
   };
 
   enum class ServiceState {

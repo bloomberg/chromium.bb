@@ -106,8 +106,7 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteNoIncognito) {
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsSyncActive()).WillRepeatedly(Return(true));
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
@@ -118,21 +117,20 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteNoIncognito) {
   EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
 }
 
-TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteNoConsentBit) {
+TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteNoSync) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsSyncActive()).WillRepeatedly(Return(true));
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
   EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get()));
 
-  // Feature should be disabled without a consent bit.
-  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven()).WillOnce(Return(false));
+  // Feature should be disabled without active sync.
+  EXPECT_CALL(*client_.get(), IsSyncActive()).WillOnce(Return(false));
   EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
 }
 
@@ -142,8 +140,7 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteClientSettingOff) {
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsSyncActive()).WillRepeatedly(Return(true));
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
@@ -162,8 +159,7 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteDefaultSearch) {
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsSyncActive()).WillRepeatedly(Return(true));
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
@@ -191,8 +187,7 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteServerBackoff) {
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsSyncActive()).WillRepeatedly(Return(true));
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.

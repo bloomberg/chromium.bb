@@ -11,7 +11,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/contextual_search/core/browser/contextual_search_preference.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -118,10 +117,6 @@ class UnifiedConsentServiceTest : public testing::Test {
     syncer::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
     pref_service_.registry()->RegisterBooleanPref(kSpellCheckDummyEnabled,
                                                   false);
-#if defined(OS_ANDROID)
-    pref_service_.registry()->RegisterStringPref(
-        contextual_search::GetPrefName(), "");
-#endif  // defined(OS_ANDROID)
 
     FakeUnifiedConsentServiceClient::ClearServiceStates();
     service_client_ =
@@ -168,8 +163,17 @@ class UnifiedConsentServiceTest : public testing::Test {
         new unified_consent::ScopedUnifiedConsent(feature_state));
   }
 
-  bool AreAllNonPersonalizedServicesEnabled() {
-    return consent_service_->AreAllNonPersonalizedServicesEnabled();
+  bool AreAllGoogleServicesEnabled() {
+    for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
+      Service service = static_cast<Service>(i);
+      if (service_client_->GetServiceState(service) == ServiceState::kDisabled)
+        return false;
+    }
+    if (!pref_service_.GetBoolean(
+            prefs::kUrlKeyedAnonymizedDataCollectionEnabled))
+      return false;
+
+    return true;
   }
 
   bool AreAllOnByDefaultPrivacySettingsOn() {
@@ -195,136 +199,35 @@ class UnifiedConsentServiceTest : public testing::Test {
 
 TEST_F(UnifiedConsentServiceTest, DefaultValuesWhenSignedOut) {
   CreateConsentService();
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 }
 
-TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent) {
+TEST_F(UnifiedConsentServiceTest, EnableServices) {
   CreateConsentService();
   identity_test_environment_.SetPrimaryAccount("testaccount");
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
-  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_FALSE(AreAllGoogleServicesEnabled());
 
-  // Enable Unified Consent enables all non-personaized features
-  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, true);
-  EXPECT_TRUE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
-#if defined(OS_ANDROID)
-  EXPECT_TRUE(contextual_search::IsEnabled(pref_service_));
-#endif  // defined(OS_ANDROID)
-
-  // Disable unified consent does not disable any of the non-personalized
-  // features.
-  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, false);
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  // Enable services and check expectations.
+  consent_service_->EnableGoogleServices();
+  EXPECT_TRUE(AreAllGoogleServicesEnabled());
 }
 
-TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_WithUnsupportedService) {
+TEST_F(UnifiedConsentServiceTest, EnableServices_WithUnsupportedService) {
   CreateConsentService();
   identity_test_environment_.SetPrimaryAccount("testaccount");
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
-  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
   service_client_->SetServiceNotSupported(Service::kSpellCheck);
   EXPECT_EQ(service_client_->GetServiceState(Service::kSpellCheck),
             ServiceState::kNotSupported);
-  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_FALSE(AreAllGoogleServicesEnabled());
 
-  // Enable Unified Consent enables all supported non-personalized features
-  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, true);
-  EXPECT_TRUE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
-
-  // Disable unified consent does not disable any of the supported
-  // non-personalized features.
-  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, false);
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
-}
-
-TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_WithCustomPassphrase) {
-  base::HistogramTester histogram_tester;
-
-  CreateConsentService();
-  identity_test_environment_.SetPrimaryAccount("testaccount");
-  EXPECT_FALSE(consent_service_->IsUnifiedConsentGiven());
-  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
-
-  // Enable Unified Consent.
-  consent_service_->SetUnifiedConsentGiven(true);
-  EXPECT_TRUE(consent_service_->IsUnifiedConsentGiven());
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
-
-  // Set custom passphrase.
-  sync_service_.SetIsUsingSecondaryPassphrase(true);
-  sync_service_.FireStateChanged();
-
-  // Setting a custom passphrase forces off unified consent given.
-  EXPECT_FALSE(consent_service_->IsUnifiedConsentGiven());
-  histogram_tester.ExpectUniqueSample(
-      "UnifiedConsent.RevokeReason",
-      metrics::UnifiedConsentRevokeReason::kCustomPassphrase, 1);
-}
-
-// Test whether unified consent is disabled when any of its dependent services
-// gets disabled.
-TEST_F(UnifiedConsentServiceTest, DisableUnfiedConsentWhenServiceIsDisabled) {
-  base::HistogramTester histogram_tester;
-
-  CreateConsentService();
-  identity_test_environment_.SetPrimaryAccount("testaccount");
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_FALSE(pref_service_.GetBoolean(
-      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
-  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
-
-  // Enable Unified Consent enables all supported non-personalized features
-  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, true);
-  EXPECT_TRUE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
-
-  // Disabling child service disables unified consent.
-  pref_service_.SetBoolean(kSpellCheckDummyEnabled, false);
-  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  histogram_tester.ExpectUniqueSample(
-      "UnifiedConsent.RevokeReason",
-      metrics::UnifiedConsentRevokeReason::kServiceWasDisabled, 1);
-}
-
-// Test whether unified consent is disabled when any of its dependent services
-// gets disabled before startup.
-TEST_F(UnifiedConsentServiceTest,
-       DisableUnfiedConsentWhenServiceIsDisabled_OnStartup) {
-  CreateConsentService();
-  identity_test_environment_.SetPrimaryAccount("testaccount");
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_FALSE(pref_service_.GetBoolean(
-      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
-  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
-
-  // Enable Unified Consent enables all supported non-personalized features
-  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, true);
-  EXPECT_TRUE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
-
-  // Simulate shutdown.
-  consent_service_->Shutdown();
-  consent_service_.reset();
-
-  // Disable child service.
-  pref_service_.SetBoolean(kSpellCheckDummyEnabled, false);
-
-  // Unified Consent is disabled during creation of the consent service because
-  // not all non-personalized services are enabled.
-  CreateConsentService();
-  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  // Enable services and check expectations.
+  consent_service_->EnableGoogleServices();
+  EXPECT_TRUE(AreAllGoogleServicesEnabled());
 }
 
 #if !defined(OS_CHROMEOS)
@@ -336,16 +239,14 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndAllServicesOn) {
   sync_service_.GetUserSettings()->SetChosenDataTypes(
       true, syncer::UserSelectableTypes());
   EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   sync_service_.SetTransportState(
       syncer::SyncService::TransportState::INITIALIZING);
   EXPECT_FALSE(sync_service_.IsSyncFeatureActive());
 
   CreateConsentService(true /* client_services_on_by_default */);
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_TRUE(AreAllGoogleServicesEnabled());
   // After the creation of the consent service, the profile started to migrate
   // (but waiting for sync init) and |ShouldShowConsentBump| should return true.
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_EQ(GetMigrationState(),
             unified_consent::MigrationState::kInProgressWaitForSyncInit);
   EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
@@ -380,14 +281,12 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndServicesOff) {
   sync_service_.GetUserSettings()->SetChosenDataTypes(
       true, syncer::UserSelectableTypes());
   EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_TRUE(sync_service_.IsSyncFeatureActive());
 
   CreateConsentService();
   EXPECT_FALSE(AreAllOnByDefaultPrivacySettingsOn());
   // After the creation of the consent service, the profile is migrated and
   // |ShouldShowConsentBump| should return false.
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_EQ(GetMigrationState(), unified_consent::MigrationState::kCompleted);
   EXPECT_FALSE(consent_service_->ShouldShowConsentBump());
 
@@ -405,8 +304,6 @@ TEST_F(UnifiedConsentServiceTest, Migration_NotSyncingEverything) {
   identity_test_environment_.SetPrimaryAccount("testaccount");
   sync_service_.GetUserSettings()->SetChosenDataTypes(
       false, syncer::UserSelectableTypes());
-  syncer::SyncPrefs sync_prefs(&pref_service_);
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   CreateConsentService();
@@ -444,17 +341,13 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
   identity_test_environment_.SetPrimaryAccount("testaccount");
 
   // Precondition: Enable unified consent.
-  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, true);
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  consent_service_->EnableGoogleServices();
+  EXPECT_TRUE(AreAllGoogleServicesEnabled());
 
   // Clearing primary account revokes unfied consent and a couple of other
   // non-personalized services.
   identity_test_environment_.ClearPrimaryAccount();
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  histogram_tester.ExpectUniqueSample(
-      "UnifiedConsent.RevokeReason",
-      metrics::UnifiedConsentRevokeReason::kUserSignedOut, 1);
-  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_FALSE(AreAllGoogleServicesEnabled());
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
   EXPECT_EQ(service_client_->GetServiceState(Service::kSpellCheck),
@@ -462,9 +355,8 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
   EXPECT_EQ(
       service_client_->GetServiceState(Service::kSafeBrowsingExtendedReporting),
       ServiceState::kDisabled);
-#if defined(OS_ANDROID)
-  EXPECT_FALSE(contextual_search::IsEnabled(pref_service_));
-#endif  // defined(OS_ANDROID)
+  EXPECT_EQ(service_client_->GetServiceState(Service::kContextualSearch),
+            ServiceState::kDisabled);
 
   // Consent is not revoked for the following services.
   EXPECT_EQ(service_client_->GetServiceState(Service::kAlternateErrorPages),
@@ -482,8 +374,6 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
 TEST_F(UnifiedConsentServiceTest, Migration_NotSignedIn) {
   base::HistogramTester histogram_tester;
 
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-
   CreateConsentService();
   // Since there were not inconsistencies, the migration is completed after the
   // creation of the consent service.
@@ -500,9 +390,9 @@ TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
 
   // Migrate and opt into unified consent.
   CreateConsentService();
-  consent_service_->SetUnifiedConsentGiven(true);
+  consent_service_->EnableGoogleServices();
   // Check expectations after opt-in.
-  EXPECT_TRUE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_TRUE(AreAllGoogleServicesEnabled());
   EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
   EXPECT_TRUE(
       pref_service_.GetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled));
@@ -514,10 +404,8 @@ TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
   // Rollback
   UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_,
                                           service_client_.get());
-  base::RunLoop().RunUntilIdle();
 
   // Unified consent prefs should be cleared.
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_EQ(unified_consent::MigrationState::kNotInitialized,
             GetMigrationState());
   // Off-by-default services should be turned off.
@@ -526,7 +414,8 @@ TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
                 Service::kSafeBrowsingExtendedReporting));
   EXPECT_NE(ServiceState::kEnabled,
             service_client_->GetServiceState(Service::kSpellCheck));
-  EXPECT_FALSE(contextual_search::IsEnabled(pref_service_));
+  EXPECT_NE(ServiceState::kEnabled,
+            service_client_->GetServiceState(Service::kContextualSearch));
 }
 
 TEST_F(UnifiedConsentServiceTest, SettingsHistogram_None) {
@@ -548,7 +437,7 @@ TEST_F(UnifiedConsentServiceTest, SettingsHistogram_UnifiedConsentGiven) {
   pref_service_.SetInteger(
       prefs::kUnifiedConsentMigrationState,
       static_cast<int>(unified_consent::MigrationState::kCompleted));
-  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, true);
+  pref_service_.SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled, true);
   CreateConsentService(true);
 
   histogram_tester.ExpectBucketCount(
@@ -556,7 +445,7 @@ TEST_F(UnifiedConsentServiceTest, SettingsHistogram_UnifiedConsentGiven) {
       metrics::SettingsHistogramValue::kNone, 0);
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kUnifiedConsentGiven, 1);
+      metrics::SettingsHistogramValue::kAllServicesWereEnabled, 1);
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
       metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection, 1);
@@ -595,7 +484,7 @@ TEST_F(UnifiedConsentServiceTest, ConsentBump_EligibleOnSecondStartup) {
   // First time creation of the service migrates the profile and initializes the
   // consent bump pref.
   CreateConsentService(true /* client_services_on_by_default */);
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_TRUE(AreAllGoogleServicesEnabled());
   EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
   histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
                                     0);
@@ -608,7 +497,7 @@ TEST_F(UnifiedConsentServiceTest, ConsentBump_EligibleOnSecondStartup) {
 
   // After the second startup, the user should still be eligible.
   CreateConsentService(true /* client_services_on_by_default */);
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_TRUE(AreAllGoogleServicesEnabled());
   EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
   histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
                                     0);
@@ -629,7 +518,7 @@ TEST_F(UnifiedConsentServiceTest,
   // First time creation of the service migrates the profile and initializes the
   // consent bump pref.
   CreateConsentService(true /* client_services_on_by_default */);
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_TRUE(AreAllGoogleServicesEnabled());
   EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
   histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
                                     0);
@@ -671,7 +560,7 @@ TEST_F(UnifiedConsentServiceTest,
   // First time creation of the service migrates the profile and initializes the
   // consent bump pref.
   CreateConsentService(true /* client_services_on_by_default */);
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_TRUE(AreAllGoogleServicesEnabled());
   EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
   histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
                                     0);
@@ -708,7 +597,7 @@ TEST_F(UnifiedConsentServiceTest, ConsentBump_SuppressedWithCustomPassphrase) {
   // Before sync is initialized, the user is eligible for seeing the consent
   // bump.
   CreateConsentService(true /* client_services_on_by_default */);
-  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_TRUE(AreAllGoogleServicesEnabled());
   EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
 
   // When sync is initialized, it fires the observer in the consent service.

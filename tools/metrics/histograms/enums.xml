@@ -50751,11 +50751,12 @@ Full version information for the fingerprint enum values:
 
 <enum name="UnifiedConsentSyncAndGoogleServicesSettings">
   <int value="0" label="None of the services are enabled"/>
-  <int value="1" label="'Sync and all Google services' is enabled"/>
+  <int value="1" label="(Obsolete)'Sync and all Google services' is enabled"/>
   <int value="2" label="'Activity and interactions' is enabled"/>
   <int value="3" label="'Make searches and browsing better' is enabled"/>
   <int value="4" label="'Safe browsing extended reporting' is enabled"/>
   <int value="5" label="'Enhanced spell check' is enabled"/>
+  <int value="6" label="All services were enabled during opt-in"/>
 </enum>
 
 <enum name="UniformityTrialGroupNotActive">
