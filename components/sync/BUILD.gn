@@ -141,6 +141,8 @@ jumbo_static_library("sync") {
     "driver/startup_controller.h",
     "driver/sync_api_component_factory.cc",
     "driver/sync_api_component_factory.h",
+    "driver/sync_auth_util.cc",
+    "driver/sync_auth_util.h",
     "driver/sync_client.cc",
     "driver/sync_client.h",
     "driver/sync_driver_switches.cc",

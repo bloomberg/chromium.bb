@@ -51,13 +51,6 @@ constexpr net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
 
 }  // namespace
 
-SyncAuthManager::SyncAccountInfo::SyncAccountInfo() = default;
-
-SyncAuthManager::SyncAccountInfo::SyncAccountInfo(
-    const AccountInfo& account_info,
-    bool is_primary)
-    : account_info(account_info), is_primary(is_primary) {}
-
 SyncAuthManager::SyncAuthManager(
     syncer::SyncPrefs* sync_prefs,
     identity::IdentityManager* identity_manager,
@@ -92,9 +85,9 @@ void SyncAuthManager::RegisterForAuthNotifications() {
   sync_account_ = DetermineAccountToUse();
 }
 
-SyncAuthManager::SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
+syncer::SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
   if (!registered_for_auth_notifications_) {
-    return SyncAccountInfo();
+    return syncer::SyncAccountInfo();
   }
 
 #if defined(OS_CHROMEOS)
@@ -351,43 +344,16 @@ void SyncAuthManager::ResetRequestAccessTokenBackoffForTest() {
   request_access_token_backoff_.Reset();
 }
 
-// static
-SyncAuthManager::SyncAccountInfo SyncAuthManager::DetermineAccountToUse(
-    identity::IdentityManager* identity_manager,
-    bool allow_secondary_accounts) {
-  // If there is a "primary account", i.e. the user explicitly chose to
-  // sign-in to Chrome, then always use that account.
-  if (identity_manager->HasPrimaryAccount()) {
-    return SyncAccountInfo(identity_manager->GetPrimaryAccountInfo(),
-                           /*is_primary=*/true);
-  }
-
-  // Otherwise, fall back to the default content area signed-in account.
-  if (allow_secondary_accounts) {
-    // Check if there is a content area signed-in account, and we have a refresh
-    // token for it.
-    std::vector<AccountInfo> cookie_accounts =
-        identity_manager->GetAccountsInCookieJar();
-    if (!cookie_accounts.empty() &&
-        identity_manager->HasAccountWithRefreshToken(
-            cookie_accounts[0].account_id)) {
-      return SyncAccountInfo(cookie_accounts[0], /*is_primary=*/false);
-    }
-  }
-  return SyncAccountInfo();
-}
-
-SyncAuthManager::SyncAccountInfo SyncAuthManager::DetermineAccountToUse()
-    const {
+syncer::SyncAccountInfo SyncAuthManager::DetermineAccountToUse() const {
   DCHECK(registered_for_auth_notifications_);
-  return DetermineAccountToUse(
+  return syncer::DetermineAccountToUse(
       identity_manager_,
       base::FeatureList::IsEnabled(switches::kSyncStandaloneTransport) &&
           base::FeatureList::IsEnabled(switches::kSyncSupportSecondaryAccount));
 }
 
 bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
-  SyncAccountInfo new_account = DetermineAccountToUse();
+  syncer::SyncAccountInfo new_account = DetermineAccountToUse();
   // If we're already using this account and its |is_primary| bit hasn't changed
   // (or there was and is no account to use), then there's nothing to do.
   if (new_account.account_info.account_id ==
@@ -401,7 +367,7 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
 
   // Sign out of the old account (if any).
   if (!sync_account_.account_info.account_id.empty()) {
-    sync_account_ = SyncAccountInfo();
+    sync_account_ = syncer::SyncAccountInfo();
     // Also clear any pending request or auth errors we might have, since they
     // aren't meaningful anymore.
     Clear();
