@@ -48,7 +48,13 @@ class GpuArcVideoEncodeAccelerator
   void Initialize(const media::VideoEncodeAccelerator::Config& config,
                   VideoEncodeClientPtr client,
                   InitializeCallback callback) override;
-  void Encode(mojo::ScopedHandle fd,
+  void EncodeDeprecated(mojo::ScopedHandle fd,
+                        std::vector<::arc::VideoFramePlane> planes,
+                        int64_t timestamp,
+                        bool force_keyframe,
+                        EncodeCallback callback) override;
+  void Encode(media::VideoPixelFormat format,
+              mojo::ScopedHandle fd,
               std::vector<::arc::VideoFramePlane> planes,
               int64_t timestamp,
               bool force_keyframe,
@@ -61,12 +67,26 @@ class GpuArcVideoEncodeAccelerator
                                        uint32_t framerate) override;
   void Flush(FlushCallback callback) override;
 
+  void EncodeDmabuf(base::ScopedFD fd,
+                    media::VideoPixelFormat format,
+                    const std::vector<::arc::VideoFramePlane>& planes,
+                    int64_t timestamp,
+                    bool force_keyframe,
+                    EncodeCallback callback);
+  void EncodeSharedMemory(base::ScopedFD fd,
+                          media::VideoPixelFormat format,
+                          const std::vector<::arc::VideoFramePlane>& planes,
+                          int64_t timestamp,
+                          bool force_keyframe,
+                          EncodeCallback callback);
+
   gpu::GpuPreferences gpu_preferences_;
   std::unique_ptr<media::VideoEncodeAccelerator> accelerator_;
   ::arc::mojom::VideoEncodeClientPtr client_;
   gfx::Size coded_size_;
   gfx::Size visible_size_;
   VideoPixelFormat input_pixel_format_;
+  media::VideoEncodeAccelerator::Config::StorageType input_storage_type_;
   int32_t bitstream_buffer_serial_;
   std::unordered_map<uint32_t, UseBitstreamBufferCallback> use_bitstream_cbs_;
 
