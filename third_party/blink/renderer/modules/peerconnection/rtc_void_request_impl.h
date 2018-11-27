@@ -31,9 +31,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_VOID_REQUEST_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_VOID_REQUEST_IMPL_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_peer_connection_error_callback.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_enums.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 
@@ -41,15 +43,20 @@ namespace blink {
 
 class RTCPeerConnection;
 
+// TODO(https://crbug.com/908468): Split up the operation-specific codepaths
+// into separate request implementations and find a way to consolidate the
+// shared code as to not repeat the majority of the implementations.
 class RTCVoidRequestImpl final : public RTCVoidRequest,
                                  public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(RTCVoidRequestImpl);
 
  public:
-  static RTCVoidRequestImpl* Create(ExecutionContext*,
-                                    RTCPeerConnection*,
-                                    V8VoidFunction*,
-                                    V8RTCPeerConnectionErrorCallback*);
+  static RTCVoidRequestImpl* Create(
+      ExecutionContext*,
+      base::Optional<RTCSetSessionDescriptionOperation>,
+      RTCPeerConnection*,
+      V8VoidFunction*,
+      V8RTCPeerConnectionErrorCallback*);
   ~RTCVoidRequestImpl() override;
 
   // RTCVoidRequest
@@ -63,12 +70,14 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
 
  private:
   RTCVoidRequestImpl(ExecutionContext*,
+                     base::Optional<RTCSetSessionDescriptionOperation>,
                      RTCPeerConnection*,
                      V8VoidFunction*,
                      V8RTCPeerConnectionErrorCallback*);
 
   void Clear();
 
+  base::Optional<RTCSetSessionDescriptionOperation> operation_;
   // This request object is held by WebRTCPeerConnectionHandler, which doesn't
   // support wrapper-tracing. Thus, this object holds the underlying callback
   // functions as persistent handles. This is acceptable because the request

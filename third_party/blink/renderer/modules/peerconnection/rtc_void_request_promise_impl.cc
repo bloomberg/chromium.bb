@@ -12,20 +12,23 @@
 namespace blink {
 
 RTCVoidRequestPromiseImpl* RTCVoidRequestPromiseImpl::Create(
+    base::Optional<RTCSetSessionDescriptionOperation> operation,
     RTCPeerConnection* requester,
     ScriptPromiseResolver* resolver,
     const char* interface_name,
     const char* property_name) {
-  return new RTCVoidRequestPromiseImpl(requester, resolver, interface_name,
-                                       property_name);
+  return new RTCVoidRequestPromiseImpl(std::move(operation), requester,
+                                       resolver, interface_name, property_name);
 }
 
 RTCVoidRequestPromiseImpl::RTCVoidRequestPromiseImpl(
+    base::Optional<RTCSetSessionDescriptionOperation> operation,
     RTCPeerConnection* requester,
     ScriptPromiseResolver* resolver,
     const char* interface_name,
     const char* property_name)
-    : requester_(requester),
+    : operation_(std::move(operation)),
+      requester_(requester),
       resolver_(resolver),
       interface_name_(interface_name),
       property_name_(property_name) {
@@ -37,6 +40,8 @@ RTCVoidRequestPromiseImpl::~RTCVoidRequestPromiseImpl() = default;
 
 void RTCVoidRequestPromiseImpl::RequestSucceeded() {
   if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
+    if (operation_)
+      requester_->NoteVoidRequestCompleted(*operation_, true);
     resolver_->Resolve();
   } else {
     // This is needed to have the resolver release its internal resources
@@ -49,6 +54,8 @@ void RTCVoidRequestPromiseImpl::RequestSucceeded() {
 
 void RTCVoidRequestPromiseImpl::RequestFailed(const webrtc::RTCError& error) {
   if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
+    if (operation_)
+      requester_->NoteVoidRequestCompleted(*operation_, false);
     ScriptState::Scope scope(resolver_->GetScriptState());
     ExceptionState exception_state(resolver_->GetScriptState()->GetIsolate(),
                                    ExceptionState::kExecutionContext,
