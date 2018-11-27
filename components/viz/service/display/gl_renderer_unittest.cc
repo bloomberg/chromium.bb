@@ -698,7 +698,8 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionHigh) {
                        gfx::Rect(1023, 1023), needs_blending, resource_id,
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
                        SK_ColorTRANSPARENT, vertex_opacity, flipped,
-                       nearest_neighbor, false);
+                       nearest_neighbor, /*secure_output_only=*/false,
+                       ui::ProtectedVideoType::kClear);
 
   DrawFrame(renderer_.get(), viewport_size);
 
@@ -759,7 +760,8 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
                        gfx::Rect(1025, 1025), needs_blending, resource_id,
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
                        SK_ColorTRANSPARENT, vertex_opacity, flipped,
-                       nearest_neighbor, false);
+                       nearest_neighbor, /*secure_output_only=*/false,
+                       ui::ProtectedVideoType::kClear);
 
   DrawFrame(renderer_.get(), viewport_size);
 
@@ -2268,7 +2270,8 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
       gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
-      SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor, false);
+      SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
+      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
 
   // DirectRenderer::DrawFrame calls into OverlayProcessor::ProcessForOverlays.
   // Attempt will be called for each strategy in OverlayProcessor. We have
@@ -2293,7 +2296,8 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
       gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
-      SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor, false);
+      SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
+      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(false));
@@ -2315,7 +2319,8 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
       gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
-      SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor, false);
+      SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
+      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(true));
@@ -2479,7 +2484,8 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
                        gfx::Rect(viewport_size), needs_blending,
                        parent_resource_id, premultiplied_alpha, uv_top_left,
                        uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
-                       flipped, nearest_neighbor, false);
+                       flipped, nearest_neighbor, /*secure_output_only=*/false,
+                       ui::ProtectedVideoType::kClear);
 
   // The verified flush flag will be set by
   // ClientResourceProvider::PrepareSendToParent. Before checking if the
@@ -4139,11 +4145,12 @@ TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithoutRootRenderPass) {
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
                        gfx::Rect(viewport_size), gfx::Rect(viewport_size),
                        false, false, 1, SkBlendMode::kSrcOver, 0);
-  overlay_quad->SetNew(shared_state, gfx::Rect(viewport_size),
-                       gfx::Rect(viewport_size), needs_blending,
-                       create_overlay_resource(), premultiplied_alpha,
-                       uv_top_left, uv_bottom_right, SK_ColorTRANSPARENT,
-                       vertex_opacity, flipped, nearest_neighbor, false);
+  overlay_quad->SetNew(
+      shared_state, gfx::Rect(viewport_size), gfx::Rect(viewport_size),
+      needs_blending, create_overlay_resource(), premultiplied_alpha,
+      uv_top_left, uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
+      flipped, nearest_neighbor,
+      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
 
   EXPECT_CALL(overlay_scheduler,
               Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, kSurfaceOverlayTextureId,

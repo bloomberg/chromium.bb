@@ -155,7 +155,8 @@ void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
                resource_id_, premultiplied_alpha_, uv_top_left_,
                uv_bottom_right_, bg_color, vertex_opacity_, flipped_,
-               nearest_neighbor_, false);
+               nearest_neighbor_, /*secure_output_only=*/false,
+               ui::ProtectedVideoType::kClear);
   quad->set_resource_size_in_pixels(transferable_resource_.size);
   ValidateQuadResources(quad);
 }

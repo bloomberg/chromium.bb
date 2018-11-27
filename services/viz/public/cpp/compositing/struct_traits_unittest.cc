@@ -948,13 +948,16 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const bool nearest_neighbor = true;
   const bool secure_output_only = true;
   const bool needs_blending = true;
+  const ui::ProtectedVideoType protected_video_type =
+      ui::ProtectedVideoType::kClear;
   const gfx::Size resource_size_in_pixels5(1234, 5678);
   TextureDrawQuad* texture_draw_quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  texture_draw_quad->SetAll(
-      sqs, rect5, rect5, needs_blending, resource_id5, resource_size_in_pixels5,
-      premultiplied_alpha, uv_top_left, uv_bottom_right, background_color,
-      vertex_opacity, y_flipped, nearest_neighbor, secure_output_only);
+  texture_draw_quad->SetAll(sqs, rect5, rect5, needs_blending, resource_id5,
+                            resource_size_in_pixels5, premultiplied_alpha,
+                            uv_top_left, uv_bottom_right, background_color,
+                            vertex_opacity, y_flipped, nearest_neighbor,
+                            secure_output_only, protected_video_type);
 
   const gfx::Rect rect6(321, 765, 11109, 151413);
   const bool needs_blending6 = false;

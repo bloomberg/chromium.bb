@@ -361,6 +361,13 @@ struct StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad> {
     return quad->secure_output_only;
   }
 
+  static ui::ProtectedVideoType protected_video_type(
+      const viz::DrawQuad& input) {
+    const viz::TextureDrawQuad* quad =
+        viz::TextureDrawQuad::MaterialCast(&input);
+    return quad->protected_video_type;
+  }
+
   static bool Read(viz::mojom::TextureQuadStateDataView data,
                    viz::DrawQuad* out);
 };

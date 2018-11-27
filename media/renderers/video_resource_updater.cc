@@ -507,13 +507,22 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       bool nearest_neighbor = false;
+      ui::ProtectedVideoType protected_video_type =
+          ui::ProtectedVideoType::kClear;
+      if (frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO)) {
+        if (frame->metadata()->IsTrue(VideoFrameMetadata::HW_PROTECTED))
+          protected_video_type = ui::ProtectedVideoType::kHardwareProtected;
+        else
+          protected_video_type = ui::ProtectedVideoType::kSoftwareProtected;
+      }
+
       auto* texture_quad =
           render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       texture_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                            needs_blending, frame_resources_[0].id,
                            premultiplied_alpha, uv_top_left, uv_bottom_right,
                            SK_ColorTRANSPARENT, opacity, flipped,
-                           nearest_neighbor, false);
+                           nearest_neighbor, false, protected_video_type);
       texture_quad->set_resource_size_in_pixels(coded_size);
       for (viz::ResourceId resource_id : texture_quad->resources) {
         resource_provider_->ValidateResource(resource_id);

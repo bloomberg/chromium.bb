@@ -15,9 +15,11 @@
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 
 namespace viz {
 
@@ -263,6 +265,20 @@ bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
     }
   }
   return false;
+}
+
+// static
+bool OverlayCandidate::RequiresOverlay(const DrawQuad* quad) {
+  switch (quad->material) {
+    case DrawQuad::TEXTURE_CONTENT:
+      return TextureDrawQuad::MaterialCast(quad)->protected_video_type ==
+             ui::ProtectedVideoType::kHardwareProtected;
+    case DrawQuad::YUV_VIDEO_CONTENT:
+      return YUVVideoDrawQuad::MaterialCast(quad)->protected_video_type ==
+             ui::ProtectedVideoType::kHardwareProtected;
+    default:
+      return false;
+  }
 }
 
 // static

@@ -501,14 +501,14 @@ void FastInkView::SubmitCompositorFrame() {
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   gfx::RectF uv_crop(quad_rect);
   uv_crop.Scale(1.f / buffer_size_.width(), 1.f / buffer_size_.height());
-  texture_quad->SetNew(quad_state, quad_rect, quad_rect,
-                       /*needs_blending=*/true, transferable_resource.id,
-                       /*premultiplied_alpha=*/true, uv_crop.origin(),
-                       uv_crop.bottom_right(),
-                       /*background_color=*/SK_ColorTRANSPARENT, vertex_opacity,
-                       /*y_flipped=*/false,
-                       /*nearest_neighbor=*/false,
-                       /*secure_output_only=*/false);
+  texture_quad->SetNew(
+      quad_state, quad_rect, quad_rect,
+      /*needs_blending=*/true, transferable_resource.id,
+      /*premultiplied_alpha=*/true, uv_crop.origin(), uv_crop.bottom_right(),
+      /*background_color=*/SK_ColorTRANSPARENT, vertex_opacity,
+      /*y_flipped=*/false,
+      /*nearest_neighbor=*/false,
+      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
   texture_quad->set_resource_size_in_pixels(transferable_resource.size);
   frame.resource_list.push_back(transferable_resource);
 

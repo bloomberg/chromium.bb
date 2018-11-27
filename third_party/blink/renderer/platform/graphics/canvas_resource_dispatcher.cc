@@ -269,7 +269,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
   quad->SetAll(sqs, bounds, bounds, needs_blending, resource.id,
                canvas_resource_size, kPremultipliedAlpha, uv_top_left,
                uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity, yflipped,
-               kNearestNeighbor, false);
+               kNearestNeighbor, /*secure_output_only=*/false,
+               ui::ProtectedVideoType::kClear);
 
   frame->render_pass_list.push_back(std::move(pass));
 

@@ -114,8 +114,8 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // This video frame comes from protected content.
     PROTECTED_VIDEO,
 
-    // Windows only: this video frame is protected by hardware. This option is
-    // valid if PROTECTED_VIDEO is also set to true.
+    // This video frame is protected by hardware. This option is valid only if
+    // PROTECTED_VIDEO is also set to true.
     HW_PROTECTED,
 
     // Whether this frame was decoded in a power efficient way.

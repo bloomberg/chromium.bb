@@ -10,6 +10,12 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/transform.mojom";
 
+enum ProtectedVideoState {
+  kClear,
+  kSoftwareProtected,
+  kHardwareProtected,
+};
+
 struct DebugBorderQuadState {
   // Debug border color.
   uint32 color;
@@ -72,6 +78,7 @@ struct TextureQuadState {
   bool y_flipped;
   bool nearest_neighbor;
   bool secure_output_only;
+  ProtectedVideoState protected_video_type;
 };
 
 struct TileQuadState {
@@ -82,12 +89,6 @@ struct TileQuadState {
   uint32 resource_id;
   bool nearest_neighbor;
   bool force_anti_aliasing_off;
-};
-
-enum ProtectedVideoState {
-  kClear,
-  kSoftwareProtected,
-  kHardwareProtected,
 };
 
 struct YUVVideoQuadState {

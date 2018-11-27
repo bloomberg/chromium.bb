@@ -315,12 +315,14 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   bool y_flipped = true;
   bool nearest_neighbor = true;
   bool secure_output_only = true;
+  ui::ProtectedVideoType protected_video_type =
+      ui::ProtectedVideoType::kSoftwareProtected;
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_NEW(TextureDrawQuad, visible_rect, needs_blending, resource_id,
                   premultiplied_alpha, uv_top_left, uv_bottom_right,
                   SK_ColorTRANSPARENT, vertex_opacity, y_flipped,
-                  nearest_neighbor, secure_output_only);
+                  nearest_neighbor, secure_output_only, protected_video_type);
   EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(needs_blending, copy_quad->needs_blending);
@@ -332,11 +334,12 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   EXPECT_EQ(y_flipped, copy_quad->y_flipped);
   EXPECT_EQ(nearest_neighbor, copy_quad->nearest_neighbor);
   EXPECT_EQ(secure_output_only, copy_quad->secure_output_only);
+  EXPECT_EQ(protected_video_type, copy_quad->protected_video_type);
 
   CREATE_QUAD_ALL(TextureDrawQuad, resource_id, resource_size_in_pixels,
                   premultiplied_alpha, uv_top_left, uv_bottom_right,
                   SK_ColorTRANSPARENT, vertex_opacity, y_flipped,
-                  nearest_neighbor, secure_output_only);
+                  nearest_neighbor, secure_output_only, protected_video_type);
   EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copy_quad->material);
   EXPECT_EQ(resource_id, copy_quad->resource_id());
   EXPECT_EQ(resource_size_in_pixels, copy_quad->resource_size_in_pixels());
@@ -347,6 +350,7 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   EXPECT_EQ(y_flipped, copy_quad->y_flipped);
   EXPECT_EQ(nearest_neighbor, copy_quad->nearest_neighbor);
   EXPECT_EQ(secure_output_only, copy_quad->secure_output_only);
+  EXPECT_EQ(protected_video_type, copy_quad->protected_video_type);
 }
 
 TEST(DrawQuadTest, CopyTileDrawQuad) {
@@ -593,12 +597,13 @@ TEST_F(DrawQuadIteratorTest, TextureDrawQuad) {
   bool y_flipped = true;
   bool nearest_neighbor = true;
   bool secure_output_only = true;
+  ui::ProtectedVideoType protected_video_type = ui::ProtectedVideoType::kClear;
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_NEW(TextureDrawQuad, visible_rect, needs_blending, resource_id,
                   premultiplied_alpha, uv_top_left, uv_bottom_right,
                   SK_ColorTRANSPARENT, vertex_opacity, y_flipped,
-                  nearest_neighbor, secure_output_only);
+                  nearest_neighbor, secure_output_only, protected_video_type);
   EXPECT_EQ(resource_id, quad_new->resource_id());
   EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(resource_id + 1, quad_new->resource_id());

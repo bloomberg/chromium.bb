@@ -133,7 +133,8 @@ bool StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad>::Read(
   quad->resources.count = 1;
   quad->premultiplied_alpha = data.premultiplied_alpha();
   if (!data.ReadUvTopLeft(&quad->uv_top_left) ||
-      !data.ReadUvBottomRight(&quad->uv_bottom_right)) {
+      !data.ReadUvBottomRight(&quad->uv_bottom_right) ||
+      !data.ReadProtectedVideoType(&quad->protected_video_type)) {
     return false;
   }
   quad->background_color = data.background_color();
