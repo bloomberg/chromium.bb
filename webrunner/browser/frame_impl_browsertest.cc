@@ -94,8 +94,7 @@ class WebContentsDeletionObserver : public content::WebContentsObserver {
 
 // Verifies that the browser will navigate and generate a navigation observer
 // event when LoadUrl() is called.
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_NavigateFrame) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateFrame) {
   chromium::web::FramePtr frame = CreateFrame();
 
   chromium::web::NavigationControllerPtr controller;
@@ -106,8 +105,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_NavigateFrame) {
   frame.Unbind();
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_NavigateDataFrame) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateDataFrame) {
   chromium::web::FramePtr frame = CreateFrame();
 
   chromium::web::NavigationControllerPtr controller;
@@ -118,8 +116,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_NavigateDataFrame) {
   frame.Unbind();
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_FrameDeletedBeforeContext) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, FrameDeletedBeforeContext) {
   chromium::web::FramePtr frame = CreateFrame();
 
   // Process the frame creation message.
@@ -143,8 +140,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_FrameDeletedBeforeContext) {
   EXPECT_TRUE(context());
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_ContextDeletedBeforeFrame) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ContextDeletedBeforeFrame) {
   chromium::web::FramePtr frame = CreateFrame();
   EXPECT_TRUE(frame);
 
@@ -155,8 +151,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_ContextDeletedBeforeFrame) {
   EXPECT_FALSE(frame);
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_GoBackAndForward) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, GoBackAndForward) {
   chromium::web::FramePtr frame = CreateFrame();
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
@@ -205,8 +200,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_GoBackAndForward) {
   base::RunLoop().RunUntilIdle();
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_ReloadFrame) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ReloadFrame) {
   chromium::web::FramePtr frame = CreateFrame();
   chromium::web::NavigationControllerPtr navigation_controller;
   frame->GetNavigationController(navigation_controller.NewRequest());
@@ -245,8 +239,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_ReloadFrame) {
   }
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_GetVisibleEntry) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, GetVisibleEntry) {
   chromium::web::FramePtr frame = CreateFrame();
 
   chromium::web::NavigationControllerPtr controller;
@@ -350,8 +343,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_GetVisibleEntry) {
   }
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_NoNavigationObserverAttached) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, NoNavigationObserverAttached) {
   chromium::web::FramePtr frame;
   context()->CreateFrame(frame.NewRequest());
   base::RunLoop().RunUntilIdle();
@@ -397,8 +389,7 @@ fuchsia::mem::Buffer CreateBuffer(base::StringPiece data) {
 }
 
 // Test JS injection by using Javascript to trigger document navigation.
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_ExecuteJavaScriptImmediate) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
   chromium::web::FramePtr frame = CreateFrame();
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -429,8 +420,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_ExecuteJavaScriptImmediate) {
   frame.Unbind();
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_ExecuteJavaScriptOnLoad) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoad) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
@@ -451,9 +441,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_ExecuteJavaScriptOnLoad) {
   frame.Unbind();
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest,
-                       DISABLED_ExecuteJavascriptOnLoadWrongOrigin) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavascriptOnLoadWrongOrigin) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
@@ -478,9 +466,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest,
   frame.Unbind();
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest,
-                       DISABLED_ExecuteJavaScriptOnLoadWildcardOrigin) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadWildcardOrigin) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
@@ -511,9 +497,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest,
 
 // Test that consecutive scripts are executed in order by computing a cumulative
 // result.
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest,
-                       DISABLED_ExecuteMultipleJavaScriptsOnLoad) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteMultipleJavaScriptsOnLoad) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
@@ -538,9 +522,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest,
 }
 
 // Test that we can inject scripts before and after RenderFrame creation.
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest,
-                       DISABLED_ExecuteOnLoadEarlyAndLateRegistrations) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
@@ -572,8 +554,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest,
   frame.Unbind();
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_ExecuteJavaScriptBadEncoding) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
   chromium::web::FramePtr frame = CreateFrame();
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -602,8 +583,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_ExecuteJavaScriptBadEncoding) {
 
 // Verifies that a Frame will handle navigation observer disconnection events
 // gracefully.
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_NavigationObserverDisconnected) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigationObserverDisconnected) {
   chromium::web::FramePtr frame = CreateFrame();
 
   chromium::web::NavigationControllerPtr controller;
@@ -642,8 +622,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_NavigationObserverDisconnected) {
   }
 }
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_DelayedNavigationEventAck) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, DelayedNavigationEventAck) {
   chromium::web::FramePtr frame = CreateFrame();
 
   chromium::web::NavigationControllerPtr controller;
@@ -713,8 +692,7 @@ struct WebContentsObserverForStop : public content::WebContentsObserver {
   MOCK_METHOD0(NavigationStopped, void());
 };
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_Stop) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, Stop) {
   chromium::web::FramePtr frame = CreateFrame();
 
   chromium::web::NavigationControllerPtr controller;
@@ -803,8 +781,7 @@ class AsyncValueReceiver {
   DISALLOW_COPY_AND_ASSIGN(AsyncValueReceiver<T>);
 };
 
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_PostMessage) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
   chromium::web::FramePtr frame = CreateFrame();
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -834,8 +811,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_PostMessage) {
 
 // Send a MessagePort to the content, then perform bidirectional messaging
 // through the port.
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_PostMessagePassMessagePort) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
   chromium::web::FramePtr frame = CreateFrame();
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -882,9 +858,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_PostMessagePassMessagePort) {
 
 // Send a MessagePort to the content, then perform bidirectional messaging
 // over its channel.
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest,
-                       DISABLED_PostMessageMessagePortDisconnected) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
   chromium::web::FramePtr frame = CreateFrame();
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -930,9 +904,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest,
 // Send a MessagePort to the content, and through that channel, receive a
 // different MessagePort that was created by the content. Verify the second
 // channel's liveness by sending a ping to it.
-// DISABLED flaky: https://crbug.com/907804
-IN_PROC_BROWSER_TEST_F(FrameImplTest,
-                       DISABLED_PostMessageUseContentProvidedPort) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
   chromium::web::FramePtr frame = CreateFrame();
 
   ASSERT_TRUE(embedded_test_server()->Start());
