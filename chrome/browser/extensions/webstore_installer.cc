@@ -25,7 +25,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -113,7 +112,6 @@ base::FilePath* g_download_directory_for_tests = NULL;
 
 base::FilePath GetDownloadFilePath(const base::FilePath& download_directory,
                                    const std::string& id) {
-  base::AssertBlockingAllowedDeprecated();
   // Ensure the download directory exists. TODO(asargent) - make this use
   // common code from the downloads system.
   if (!base::DirectoryExists(download_directory) &&

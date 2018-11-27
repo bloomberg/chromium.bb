@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -79,7 +78,6 @@ void ExternalRegistryLoader::StartLoading() {
 
 std::unique_ptr<base::DictionaryValue>
 ExternalRegistryLoader::LoadPrefsOnBlockingThread() {
-  base::AssertBlockingAllowedDeprecated();
   auto prefs = std::make_unique<base::DictionaryValue>();
 
   // A map of IDs, to weed out duplicates between HKCU and HKLM.

@@ -43,8 +43,6 @@ constexpr base::FilePath::CharType kExternalExtensionJson[] =
 
 std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
       const base::FilePath& external_extension_search_path) {
-  base::AssertBlockingAllowedDeprecated();
-
   std::set<base::FilePath> external_extension_paths;
 
   if (!base::PathExists(external_extension_search_path)) {
@@ -235,8 +233,6 @@ ExternalPrefLoader::ExtractExtensionPrefs(base::ValueDeserializer* deserializer,
 }
 
 void ExternalPrefLoader::LoadOnFileThread() {
-  base::AssertBlockingAllowedDeprecated();
-
   auto prefs = std::make_unique<base::DictionaryValue>();
 
   // TODO(skerner): Some values of base_path_id_ will cause
@@ -273,7 +269,6 @@ void ExternalPrefLoader::LoadOnFileThread() {
 
 void ExternalPrefLoader::ReadExternalExtensionPrefFile(
     base::DictionaryValue* prefs) {
-  base::AssertBlockingAllowedDeprecated();
   CHECK(NULL != prefs);
 
   base::FilePath json_file = base_path_.Append(kExternalExtensionJson);
@@ -311,7 +306,6 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(
 
 void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
     base::DictionaryValue* prefs) {
-  base::AssertBlockingAllowedDeprecated();
   CHECK(NULL != prefs);
 
   // First list the potential .json candidates.
