@@ -35,7 +35,7 @@ const char kServiceWorkerVersion[] = "version";
 
 ServiceWorkerTaskQueue::TestObserver* g_test_observer = nullptr;
 
-void RunTask(LazyContextTaskQueue::PendingTask task,
+void RunTask(ServiceWorkerTaskQueue::PendingTask task,
              const ExtensionId& extension_id,
              int64_t version_id,
              int process_id,
@@ -69,7 +69,7 @@ struct ServiceWorkerTaskQueue::TaskInfo {
 
 struct ServiceWorkerTaskQueue::WaitingDidStartWorkerTask {
  public:
-  WaitingDidStartWorkerTask(LazyContextTaskQueue::PendingTask task,
+  WaitingDidStartWorkerTask(PendingTask task,
                             const ExtensionId& extension_id,
                             int64_t version_id,
                             int process_id,
@@ -82,7 +82,7 @@ struct ServiceWorkerTaskQueue::WaitingDidStartWorkerTask {
 
   WaitingDidStartWorkerTask(WaitingDidStartWorkerTask&& other) = default;
 
-  LazyContextTaskQueue::PendingTask task;
+  PendingTask task;
   const ExtensionId extension_id;
   const int64_t service_worker_version_id;
   const int process_id;
@@ -104,7 +104,7 @@ ServiceWorkerTaskQueue* ServiceWorkerTaskQueue::Get(BrowserContext* context) {
 
 // static
 void ServiceWorkerTaskQueue::DidStartWorkerForScopeOnIO(
-    LazyContextTaskQueue::PendingTask task,
+    PendingTask task,
     const ExtensionId& extension_id,
     base::WeakPtr<ServiceWorkerTaskQueue> task_queue,
     int64_t version_id,
@@ -124,7 +124,7 @@ void ServiceWorkerTaskQueue::StartServiceWorkerOnIOToRunTask(
     const GURL& scope,
     const ExtensionId& extension_id,
     content::ServiceWorkerContext* service_worker_context,
-    LazyContextTaskQueue::PendingTask task) {
+    PendingTask task) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   service_worker_context->StartWorkerForScope(
       scope,
@@ -134,7 +134,7 @@ void ServiceWorkerTaskQueue::StartServiceWorkerOnIOToRunTask(
 }
 
 void ServiceWorkerTaskQueue::DidStartWorkerForScope(
-    LazyContextTaskQueue::PendingTask task,
+    PendingTask task,
     const ExtensionId& extension_id,
     int64_t version_id,
     int process_id,
@@ -202,7 +202,7 @@ bool ServiceWorkerTaskQueue::ShouldEnqueueTask(BrowserContext* context,
 
 void ServiceWorkerTaskQueue::AddPendingTaskToDispatchEvent(
     const LazyContextId* context_id,
-    LazyContextTaskQueue::PendingTask task) {
+    PendingTask task) {
   DCHECK(context_id->is_for_service_worker());
 
   // TODO(lazyboy): Do we need to handle incognito context?
@@ -268,7 +268,7 @@ void ServiceWorkerTaskQueue::DeactivateExtension(const Extension* extension) {
 
 void ServiceWorkerTaskQueue::RunTaskAfterStartWorker(
     const LazyContextId* context_id,
-    LazyContextTaskQueue::PendingTask task) {
+    PendingTask task) {
   DCHECK(context_id->is_for_service_worker());
 
   if (context_id->browser_context() != browser_context_)
