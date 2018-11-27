@@ -996,19 +996,7 @@ void WizardController::OnUpdateErrorUpdating(bool is_critical_update) {
     OnUpdateCompleted();
 }
 
-void WizardController::EnableUserImageScreenReturnToPreviousHack() {
-  user_image_screen_return_to_previous_hack_ = true;
-}
-
 void WizardController::OnUserImageSelected() {
-  if (user_image_screen_return_to_previous_hack_) {
-    user_image_screen_return_to_previous_hack_ = false;
-    DCHECK(previous_screen_);
-    if (previous_screen_) {
-      SetCurrentScreen(previous_screen_);
-      return;
-    }
-  }
   OnOobeFlowFinished();
 }
 
@@ -1168,7 +1156,7 @@ void WizardController::OnAssistantOptInFlowFinished() {
 }
 
 void WizardController::OnMultiDeviceSetupFinished() {
-  ShowUserImageScreen();
+  OnOobeFlowFinished();
 }
 
 void WizardController::OnControllerPairingFinished() {
