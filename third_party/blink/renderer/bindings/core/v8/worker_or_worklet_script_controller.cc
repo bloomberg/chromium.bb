@@ -153,7 +153,7 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
   const WrapperTypeInfo* wrapper_type_info =
       script_wrappable->GetWrapperTypeInfo();
   v8::Local<v8::FunctionTemplate> global_interface_template =
-      wrapper_type_info->domTemplate(isolate_, *world_);
+      wrapper_type_info->DomTemplate(isolate_, *world_);
   if (global_interface_template.IsEmpty())
     return false;
   v8::Local<v8::ObjectTemplate> global_template =

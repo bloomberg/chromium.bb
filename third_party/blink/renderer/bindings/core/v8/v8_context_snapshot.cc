@@ -183,7 +183,7 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
                                             prototype, interface);
     type->InstallConditionalFeatures(context, world, window_wrapper, prototype,
                                      interface,
-                                     type->domTemplate(isolate, world));
+                                     type->DomTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
   {
@@ -196,7 +196,7 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
     type->InstallConditionalFeatures(context, world, v8::Local<v8::Object>(),
                                      prototype, interface,
-                                     type->domTemplate(isolate, world));
+                                     type->DomTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
 
@@ -220,7 +220,7 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
         isolate, world, document_wrapper, prototype, interface);
     type->InstallConditionalFeatures(context, world, document_wrapper,
                                      prototype, interface,
-                                     type->domTemplate(isolate, world));
+                                     type->DomTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
   {
@@ -233,7 +233,7 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
     type->InstallConditionalFeatures(context, world, v8::Local<v8::Object>(),
                                      prototype, interface,
-                                     type->domTemplate(isolate, world));
+                                     type->DomTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
   {
@@ -246,7 +246,7 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
     type->InstallConditionalFeatures(context, world, v8::Local<v8::Object>(),
                                      prototype, interface,
-                                     type->domTemplate(isolate, world));
+                                     type->DomTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
 
@@ -463,7 +463,7 @@ void V8ContextSnapshot::TakeSnapshotForWorld(v8::SnapshotCreator* creator,
     const WrapperTypeInfo* wrapper_type_info =
         g_snapshot_interfaces[i].wrapper_type_info;
     v8::Local<v8::FunctionTemplate> interface_template =
-        wrapper_type_info->domTemplate(isolate, world);
+        wrapper_type_info->DomTemplate(isolate, world);
     CHECK(!interface_template.IsEmpty());
     interface_templates[i] = interface_template;
     if (V8Window::wrapperTypeInfo.Equals(wrapper_type_info)) {
