@@ -2124,10 +2124,9 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   // When the drag starts, the source window's bounds are the same with the
   // work area's bounds.
-  const gfx::Rect work_area_bounds =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(window1.get())
-          .work_area();
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window1.get());
+  const gfx::Rect work_area_bounds = display.work_area();
   EXPECT_EQ(window2->GetBoundsInScreen(), work_area_bounds);
   EXPECT_TRUE(window1->GetProperty(kCanAttachToAnotherWindowKey));
 
@@ -2199,6 +2198,30 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMaximized());
+
+  // 4. If the dragged window can't be snapped, then the source window should
+  // not be put to the snapped position during drag.
+  const gfx::Rect display_bounds = display.bounds();
+  window1 = std::unique_ptr<aura::Window>(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  aura::test::TestWindowDelegate* delegate =
+      static_cast<aura::test::TestWindowDelegate*>(window1->delegate());
+  delegate->set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  EXPECT_FALSE(split_view_controller()->CanSnap(window1.get()));
+  resizer = StartDrag(window1.get(), window2.get());
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  DragWindowTo(resizer.get(),
+               gfx::Point(0, GetIndicatorsThreshold(window1.get()) + 10));
+  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kCannotSnap);
+  // The souce window should has been scaled but not put to the right snapped
+  // window's position.
+  EXPECT_NE(window2->GetBoundsInScreen(), work_area_bounds);
+  EXPECT_NE(window2->GetBoundsInScreen(),
+            split_view_controller()->GetSnappedWindowBoundsInScreen(
+                window2.get(), SplitViewController::RIGHT));
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
 }
 
 // Test the functionalities that are related to dragging a snapped window in
