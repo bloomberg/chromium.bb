@@ -49,6 +49,7 @@ void DrmCursor::SetDrmCursorProxy(std::unique_ptr<DrmCursorProxy> proxy) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
   proxy_ = std::move(proxy);
+  SendCursorShowLocked();
 }
 
 void DrmCursor::ResetDrmCursorProxy() {
