@@ -417,6 +417,7 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     UnregisterEventHooks() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  window_is_moving_ = false;
   for (HWINEVENTHOOK event_hook : global_event_hooks_)
     UnhookWinEvent(event_hook);
   global_event_hooks_.clear();
@@ -426,7 +427,6 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   process_event_hooks_.clear();
 
   pids_for_location_change_hook_.clear();
-  window_is_moving_ = false;
 }
 
 bool NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
@@ -500,14 +500,18 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   // Don't continually calculate occlusion while a window is moving, but rather
   // once at the beginning and once at the end.
   if (event == EVENT_SYSTEM_MOVESIZESTART) {
-    // TODO(davidbienvenu): convert to DCHECK once we've confirmed in canary
-    // that this condition isn't met.
-    CHECK(!window_is_moving_);
     window_is_moving_ = true;
   } else if (event == EVENT_SYSTEM_MOVESIZEEND) {
     window_is_moving_ = false;
   } else if (window_is_moving_) {
-    return;
+    if (event == EVENT_OBJECT_LOCATIONCHANGE ||
+        event == EVENT_OBJECT_STATECHANGE) {
+      return;
+    }
+    // If we get an event that isn't a location/state change, then we probably
+    // missed the movesizeend notification, or got events out of order. In
+    // that case, we want to go back to calculating occlusion.
+    window_is_moving_ = false;
   }
   // ProcessEventHookCallback is called from the task_runner's PeekMessage
   // call, on the task runner's thread, but before the task_tracker thread sets
