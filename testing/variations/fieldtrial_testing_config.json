@@ -2530,6 +2530,25 @@
             ]
         }
     ],
+    "JankTracking": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "JankTracking"
+                    ]
+                }
+            ]
+        }
+    ],
     "LegacySymantecPKI": [
         {
             "platforms": [
