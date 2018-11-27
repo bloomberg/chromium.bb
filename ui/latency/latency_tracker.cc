@@ -4,6 +4,7 @@
 
 #include "ui/latency/latency_tracker.h"
 
+#include <algorithm>
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -64,16 +65,24 @@ LatencyTracker::LatencyInfoProcessor& GetLatencyInfoProcessor() {
   return *processor;
 }
 
+bool LatencyTraceIdCompare(const LatencyInfo& i, const LatencyInfo& j) {
+  return i.trace_id() < j.trace_id();
+}
+
 }  // namespace
 
 LatencyTracker::LatencyTracker() = default;
+LatencyTracker::~LatencyTracker() = default;
 
 void LatencyTracker::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info) {
   auto& callback = GetLatencyInfoProcessor();
   if (!callback.is_null())
     callback.Run(latency_info);
-  for (const auto& latency : latency_info)
+  // Sort latency_info as they can be in incorrect order.
+  std::vector<ui::LatencyInfo> latency_infos(latency_info);
+  std::sort(latency_infos.begin(), latency_infos.end(), LatencyTraceIdCompare);
+  for (const auto& latency : latency_infos)
     OnGpuSwapBuffersCompleted(latency);
 }
 
@@ -236,7 +245,6 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
       RecordUmaEventLatencyScrollWheelTimeToScrollUpdateSwapBegin2Histogram(
           original_timestamp, gpu_swap_begin_timestamp);
     }
-
   } else if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                  &original_timestamp)) {
     if (latency.source_event_type() == SourceEventType::KEY_PRESS) {
@@ -268,6 +276,10 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   // Record scroll latency metrics.
   DCHECK(scroll_name == "ScrollBegin" || scroll_name == "ScrollUpdate" ||
          (IsInertialScroll(latency) && scroll_name == "ScrollInertial"));
+
+  if (!IsInertialScroll(latency) && input_modality == "Touch")
+    CalculateAverageLag(latency, gpu_swap_begin_timestamp, scroll_name);
+
   base::TimeTicks rendering_scheduled_timestamp;
   bool rendering_scheduled_on_main = latency.FindLatency(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT,
@@ -347,6 +359,132 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   UMA_HISTOGRAM_SCROLL_LATENCY_SHORT_2(
       "Event.Latency." + scroll_name + "." + input_modality + ".GpuSwap2",
       gpu_swap_begin_timestamp, gpu_swap_end_timestamp);
+}
+
+void LatencyTracker::CalculateAverageLag(
+    const ui::LatencyInfo& latency,
+    base::TimeTicks gpu_swap_begin_timestamp,
+    const std::string& scroll_name) {
+  base::TimeTicks event_timestamp;
+  bool found_component = latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
+      &event_timestamp);
+  DCHECK_AND_RETURN_ON_FAIL(found_component);
+
+  if (scroll_name == "ScrollBegin") {
+    // Clear both lag_reports.
+    ReportAverageLagUma(std::move(pending_finished_lag_report_));
+    if (current_lag_report_)
+      current_lag_report_->report_time = last_frame_time_;
+    ReportAverageLagUma(std::move(current_lag_report_));
+
+    // Create ScrollBegin report, with report time equals to gpu swap time.
+    LagData new_report(scroll_name);
+    pending_finished_lag_report_ = std::make_unique<LagData>(scroll_name);
+    pending_finished_lag_report_->report_time = gpu_swap_begin_timestamp;
+    // For ScrollBegin, we don't have the previous time to calculate the
+    // interpolated area, so the lag is the area between the current event
+    // creation time and gpu swap begin time.
+    pending_finished_lag_report_->lag =
+        (gpu_swap_begin_timestamp - event_timestamp).InMillisecondsF() *
+        latency.scroll_update_delta();
+    // The next report time should be a least 1 second away from current report
+    // time.
+    next_report_time_ = pending_finished_lag_report_->report_time +
+                        base::TimeDelta::FromSeconds(1);
+    // Reset last_reported_time to event time.
+    last_reported_time_ = event_timestamp;
+  } else if (scroll_name == "ScrollUpdate" &&
+             !last_event_timestamp_.is_null()) {
+    DCHECK((event_timestamp - last_event_timestamp_).InMilliseconds() >= 0);
+
+    // |pending_finger_move_lag| is the interpolated area between last event to
+    // current event. We assume the finger moved at a constant velocity between
+    // the past two events, so the lag in this duration is calculated by the
+    // average delta(current delta/2).
+    float pending_finger_move_lag =
+        (event_timestamp - last_event_timestamp_).InMillisecondsF() *
+        latency.scroll_update_delta() / 2;
+
+    // |event_dispatch_lag| is the area between the current event creation time
+    // (i.e. last coalesced event of current event creation time) and gpu swap
+    // begin time of this event.
+    float event_dispatch_lag =
+        (gpu_swap_begin_timestamp - event_timestamp).InMillisecondsF() *
+        latency.scroll_update_delta();
+
+    if (pending_finished_lag_report_) {
+      if (event_timestamp >= pending_finished_lag_report_->report_time) {
+        DCHECK_GE(pending_finished_lag_report_->report_time,
+                  last_event_timestamp_);
+        // This event is created after this report's report time, so part of
+        // the |pending_finger_move_lag| should be counted in this report, the
+        // rest should be count in the following report. The area of first part
+        // is calculated by similar triangle area.
+        float ratio =
+            (pending_finished_lag_report_->report_time - last_event_timestamp_)
+                .InMillisecondsF() /
+            (event_timestamp - last_event_timestamp_).InMillisecondsF();
+        pending_finished_lag_report_->lag +=
+            pending_finger_move_lag * ratio * ratio;
+        pending_finger_move_lag *= 1 - ratio * ratio;
+        ReportAverageLagUma(std::move(pending_finished_lag_report_));
+      } else {  // event_timestamp < pending_finished_lag_report_->report_time
+        DCHECK_LE(pending_finished_lag_report_->report_time,
+                  gpu_swap_begin_timestamp);
+        // This event is created before this report's report_time, so
+        // |pending_finger_move_lag|, and also part of |event_dispatch_lag| that
+        // before |report_time| should be counted in this report.
+        float lag_after_report_time =
+            (gpu_swap_begin_timestamp -
+             pending_finished_lag_report_->report_time)
+                .InMillisecondsF() *
+            latency.scroll_update_delta();
+        pending_finished_lag_report_->lag += pending_finger_move_lag +
+                                             event_dispatch_lag -
+                                             lag_after_report_time;
+        pending_finger_move_lag = 0;
+        event_dispatch_lag = lag_after_report_time;
+      }
+    }
+
+    // Remaining pending lag should be counted in the |current_lag_report_|.
+    if (pending_finger_move_lag + event_dispatch_lag != 0) {
+      if (!current_lag_report_)
+        current_lag_report_ = std::make_unique<LagData>(scroll_name);
+
+      current_lag_report_->lag += pending_finger_move_lag + event_dispatch_lag;
+
+      // When current gpu_swap_time is larger than the |next_report_time_|,
+      // it means the we reach the 1 second gap, and we can filled in the
+      // timestamp and move it to |pending_finished_lag_report_|. We use
+      // the current|gpu_swap_begin_timestamp| as the report_time, so it can
+      // be align with gpu swaps.
+      if (gpu_swap_begin_timestamp >= next_report_time_) {
+        current_lag_report_->report_time = gpu_swap_begin_timestamp;
+        // The next report time is 1 second away from this report time.
+        next_report_time_ =
+            gpu_swap_begin_timestamp + base::TimeDelta::FromSeconds(1);
+        DCHECK(!pending_finished_lag_report_);
+        pending_finished_lag_report_ = std::move(current_lag_report_);
+        DCHECK(!current_lag_report_);
+      }
+    }
+  }
+  last_event_timestamp_ = event_timestamp;
+  last_frame_time_ = gpu_swap_begin_timestamp;
+}
+
+void LatencyTracker::ReportAverageLagUma(std::unique_ptr<LagData> report) {
+  if (report) {
+    DCHECK(!report->report_time.is_null());
+    base::UmaHistogramCounts1000(
+        "Event.Latency." + report->scroll_name + ".Touch.AverageLag",
+        std::abs(report->lag) /
+            (report->report_time - last_reported_time_).InMillisecondsF());
+
+    last_reported_time_ = report->report_time;
+  }
 }
 
 // static

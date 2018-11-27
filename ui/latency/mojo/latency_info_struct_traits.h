@@ -54,6 +54,7 @@ struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
   static bool terminated(const ui::LatencyInfo& info);
   static ui::mojom::SourceEventType source_event_type(
       const ui::LatencyInfo& info);
+  static float scroll_update_delta(const ui::LatencyInfo& info);
   static bool Read(ui::mojom::LatencyInfoDataView data, ui::LatencyInfo* out);
 };
 

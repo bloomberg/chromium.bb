@@ -75,6 +75,8 @@ enum LatencyComponentType {
   INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT,
   // Timestamp when a scroll update is forwarded to the main thread.
   INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
+  // Original timestamp of the last event that has been coalesced into this one.
+  INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
   // Timestamp when the event's ack is received by the RWH.
   INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
   // Timestamp when the frame is swapped in renderer.
@@ -168,6 +170,10 @@ class LatencyInfo {
 
   void Terminate();
 
+  // When GestureScrollUpdate events are coalesced, update the aggregated
+  // event's scroll_update_delta and the SCROLL_UPDATE_LAST_EVENT_COMPONENT.
+  void CoalesceScrollUpdateWith(const LatencyInfo& other);
+
   const LatencyMap& latency_components() const { return latency_components_; }
 
   const SourceEventType& source_event_type() const {
@@ -186,6 +192,8 @@ class LatencyInfo {
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
   void set_ukm_source_id(ukm::SourceId id) { ukm_source_id_ = id; }
   const std::string& trace_name() const { return trace_name_; }
+  void set_scroll_update_delta(float delta) { scroll_update_delta_ = delta; };
+  float scroll_update_delta() const { return scroll_update_delta_; }
 
  private:
   void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
@@ -216,6 +224,8 @@ class LatencyInfo {
   bool terminated_;
   // Stores the type of the first source event.
   SourceEventType source_event_type_;
+
+  float scroll_update_delta_;
 
 #if !defined(OS_IOS)
   friend struct IPC::ParamTraits<ui::LatencyInfo>;
