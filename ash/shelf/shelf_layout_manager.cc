@@ -999,8 +999,9 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_widget_->status_area_widget() &&
-      shelf_widget_->status_area_widget()->ShouldShowShelf())
+      shelf_widget_->status_area_widget()->ShouldShowShelf()) {
     return SHELF_AUTO_HIDE_SHOWN;
+  }
 
   if (shelf_widget_->IsShowingContextMenu())
     return SHELF_AUTO_HIDE_SHOWN;
@@ -1052,8 +1053,12 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
 
   gfx::Point cursor_position_in_screen =
       display::Screen::GetScreen()->GetCursorScreenPoint();
-  if (shelf_region.Contains(cursor_position_in_screen))
+  // Cursor is invisible in talbet mode and plug in an external mouse in tablet
+  // mode will switch to clamshell mode.
+  if (shelf_region.Contains(cursor_position_in_screen) &&
+      !IsTabletModeEnabled()) {
     return SHELF_AUTO_HIDE_SHOWN;
+  }
 
   // When the shelf is auto hidden and the shelf is on the boundary between two
   // displays, it is hard to trigger showing the shelf. For instance, if a

@@ -35,7 +35,7 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -978,6 +978,13 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   generator->MoveMouseTo(1, display_bottom - 1);
   UpdateAutoHideStateNow();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Switch to tablet mode should hide the AUTO_HIDE_SHOWN shelf even the mouse
+  // cursor is inside the shelf area.
+  EXPECT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
 
 // Test the behavior of the shelf when it is auto hidden and it is on the
@@ -2203,7 +2210,7 @@ TEST_F(ShelfLayoutManagerTest, TabletModeTransitionWithAppListVisible) {
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
 
   // Transition to tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  TabletModeControllerTestApi().EnterTabletMode();
 
   // |window| should be maximized, and the shelf background should match the
   // maximized state.
@@ -2214,7 +2221,7 @@ TEST_F(ShelfLayoutManagerTest, TabletModeTransitionWithAppListVisible) {
 // Test the background color for split view mode.
 TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorInSplitView) {
   // Split view is only enabled in tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   window1->SetProperty(aura::client::kResizeBehaviorKey,
@@ -2347,7 +2354,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
 // gesture handler to handle.
 TEST_F(ShelfLayoutManagerTest, HomeLauncherGestureHandler) {
   // Home launcher is only available in tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  TabletModeControllerTestApi().EnterTabletMode();
 
   // Home launcher gesture handler needs at least one window.
   std::unique_ptr<aura::Window> window =
