@@ -15,11 +15,6 @@
 {
   # https://crbug.com/383340
   'android': [
-    # https://crbug.com/897969
-    'apks/ChromePublicTest.apk',
-    'apks/VrNfcSimulator.apk',
-    'browser_tests_apk/browser_tests-debug.apk',
-    'unit_tests_apk/unit_tests-debug.apk',
   ],
 
   # https://crbug.com/330263
