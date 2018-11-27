@@ -44,6 +44,8 @@
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -57,25 +59,6 @@
 namespace cc {
 
 namespace {
-
-PaintFlags CreatePaintFlags() {
-  PaintFlags flags;
-#if (SK_R32_SHIFT || SK_B32_SHIFT != 16)
-  // The PaintCanvas is in RGBA but the shader is expecting BGRA, so we need to
-  // swizzle our colors when drawing to the PaintCanvas.
-  SkScalar color_matrix[20];
-  for (int i = 0; i < 20; ++i)
-    color_matrix[i] = 0;
-  color_matrix[0 + 5 * 2] = 1;
-  color_matrix[1 + 5 * 1] = 1;
-  color_matrix[2 + 5 * 0] = 1;
-  color_matrix[3 + 5 * 3] = 1;
-
-  flags.setColorFilter(
-      SkColorFilter::MakeMatrixFilterRowMajor255(color_matrix));
-#endif
-  return flags;
-}
 
 void DrawArc(PaintCanvas* canvas,
              const SkRect& oval,
@@ -439,10 +422,12 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
         gl->CreateAndConsumeTextureCHROMIUM(backing->mailbox.name);
     gl->BindTexture(backing->texture_target, mailbox_texture_id);
     DCHECK(GLSupportsFormat(pool_resource.format()));
+    // We should use gl compatible format for skia SW rasterization.
+    constexpr GLenum format = SK_B32_SHIFT ? GL_RGBA : GL_BGRA_EXT;
+    constexpr GLenum type = GL_UNSIGNED_BYTE;
     gl->TexSubImage2D(
         backing->texture_target, 0, 0, 0, pool_resource.size().width(),
-        pool_resource.size().height(), GLDataFormat(pool_resource.format()),
-        GLDataType(pool_resource.format()), pixmap.addr());
+        pool_resource.size().height(), format, type, pixmap.addr());
     gl->DeleteTextures(1, &mailbox_texture_id);
     backing->mailbox_sync_token =
         viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);
@@ -683,7 +668,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
   int left = bounds().width() - width - right;
   SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
-  PaintFlags flags = CreatePaintFlags();
+  PaintFlags flags;
   DrawGraphBackground(canvas, &flags, area);
 
   SkRect title_bounds = SkRect::MakeXYWH(
@@ -806,7 +791,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(PaintCanvas* canvas,
 
   const double kMegabyte = 1024.0 * 1024.0;
 
-  PaintFlags flags = CreatePaintFlags();
+  PaintFlags flags;
   DrawGraphBackground(canvas, &flags, area);
 
   SkPoint title_pos =
@@ -913,7 +898,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawGpuRasterizationStatus(PaintCanvas* canvas,
   const int left = bounds().width() - width - right;
   const SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
-  PaintFlags flags = CreatePaintFlags();
+  PaintFlags flags;
   DrawGraphBackground(canvas, &flags, area);
 
   SkPoint gpu_status_pos = SkPoint::Make(left + width - kPadding,
@@ -964,7 +949,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRect(
     canvas->clipRect(sk_clip_rect);
     canvas->translate(sk_clip_rect.x(), sk_clip_rect.y());
 
-    PaintFlags label_flags = CreatePaintFlags();
+    PaintFlags label_flags;
     label_flags.setTextSize(kFontHeight);
     label_flags.setTypeface(typeface_);
     label_flags.setColor(stroke_color);
@@ -986,7 +971,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRect(
 void HeadsUpDisplayLayerImpl::DrawDebugRects(
     PaintCanvas* canvas,
     DebugRectHistory* debug_rect_history) {
-  PaintFlags flags = CreatePaintFlags();
+  PaintFlags flags;
 
   const std::vector<DebugRect>& debug_rects = debug_rect_history->debug_rects();
   std::vector<DebugRect> new_paint_rects;
