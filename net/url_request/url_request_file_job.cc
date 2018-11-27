@@ -190,6 +190,11 @@ void URLRequestFileJob::GetResponseInfo(HttpResponseInfo* info) {
   info->headers = headers;
 }
 
+void URLRequestFileJob::OnSuspend() {
+  // Unlike URLRequestJob, don't suspend active requests here. Requests for
+  // file URLs need not be suspended when the system suspends.
+}
+
 void URLRequestFileJob::OnOpenComplete(int result) {}
 
 void URLRequestFileJob::OnSeekComplete(int64_t result) {}
