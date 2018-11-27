@@ -51,7 +51,6 @@ void BrowserFrameMash::OnWindowTargetVisibilityChanged(bool visible) {
 
 views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
   views::Widget::InitParams params;
-  params.name = "BrowserFrame";
   params.native_widget = this;
   chrome::GetSavedWindowBoundsAndShowState(browser_view_->browser(),
                                            &params.bounds, &params.show_state);

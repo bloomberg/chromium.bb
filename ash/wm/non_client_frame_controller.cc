@@ -111,6 +111,7 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
     views::View* header_view = custom_frame_view->GetHeaderView();
     if (header_view) {
       header_view->SetPaintToLayer(ui::LAYER_TEXTURED);
+      header_view->layer()->set_name("WindowService Frame Header");
       header_view->layer()->SetFillsBoundsOpaquely(false);
     }
 
