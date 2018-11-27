@@ -486,9 +486,18 @@ HRESULT OSProcessManager::CreateRunningProcess(
   base::string16 unquoted_cmdline;
   base::StringAppendF(&unquoted_cmdline, L"\"%ls\"",
                       command_line.GetProgram().value().c_str());
-  for (auto arg : command_line.GetArgs()) {
+  for (const auto& arg : command_line.GetArgs()) {
     unquoted_cmdline.append(FILE_PATH_LITERAL(" "));
     unquoted_cmdline.append(arg);
+  }
+
+  for (const auto& switch_value : command_line.GetSwitches()) {
+    unquoted_cmdline.append(L" --");
+    unquoted_cmdline.append(base::UTF8ToWide(switch_value.first));
+    if (switch_value.second.empty())
+      continue;
+    unquoted_cmdline.append(L"=");
+    unquoted_cmdline.append(switch_value.second);
   }
 
   base::LaunchOptions options;

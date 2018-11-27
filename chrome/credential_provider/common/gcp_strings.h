@@ -46,6 +46,9 @@ extern const char kEmailDomainSwitch[];
 
 extern const char kEmailDomainSigninPromoParameter[];
 
+// Crashpad related constants
+extern const wchar_t kRunAsCrashpadHandlerEntryPoint[];
+
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_COMMON_GCP_STRINGS_H_

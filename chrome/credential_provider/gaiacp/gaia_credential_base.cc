@@ -34,6 +34,7 @@
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
+#include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -1038,6 +1039,12 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(
     *status_text = AllocErrorString(IDS_INTERNAL_ERROR);
     return hr;
   }
+
+  // Mark this process as a child process so that it doesn't try to
+  // start a crashpad handler process. Only the main entry point
+  // into the dll should start the handler process.
+  command_line.AppendSwitchASCII(switches::kProcessType,
+                                 "gcpw-save-account-info");
 
   base::win::ScopedProcessInformation procinfo;
   hr = OSProcessManager::Get()->CreateRunningProcess(

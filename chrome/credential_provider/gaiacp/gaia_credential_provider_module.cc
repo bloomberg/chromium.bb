@@ -12,7 +12,10 @@
 #include "chrome/credential_provider/eventlog/gcp_eventlog_messages.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
+#include "chrome/credential_provider/gaiacp/gcp_crash_reporting.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "components/crash/content/app/crash_switches.h"
+#include "content/public/common/content_switches.h"
 
 namespace credential_provider {
 
@@ -83,6 +86,19 @@ BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
                            true,    // Enable timestamp.
                            false);  // Enable tickcount.
       logging::SetEventSource("GCP", GCP_CATEGORY, MSG_LOG_MESSAGE);
+
+      base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+      // Don't start the crash handler if the DLL is being loaded in unit
+      // tests. It is possible that the DLL will be loaded by other executables
+      // including gcp_setup.exe, LogonUI.exe, rundll32.exe.
+      if (!base::EndsWith(cmd_line->GetProgram().value(), L"gcp_unittests.exe",
+                          base::CompareCase::INSENSITIVE_ASCII) &&
+          cmd_line->GetSwitchValueASCII(switches::kProcessType) !=
+              crash_reporter::switches::kCrashpadHandler) {
+        credential_provider::ConfigureGcpCrashReporting(*cmd_line);
+      }
+
       LOGFN(INFO) << "DllMain(DLL_PROCESS_ATTACH)";
       break;
     }
