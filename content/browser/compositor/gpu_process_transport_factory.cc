@@ -105,8 +105,6 @@
 #include "content/browser/compositor/gpu_output_surface_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/ui_base_switches.h"
-#elif defined(OS_ANDROID)
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
 #endif
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
 #include "gpu/ipc/common/gpu_surface_tracker.h"
@@ -283,8 +281,6 @@ CreateOverlayCandidateValidator(
     validator.reset(
         new viz::CompositorOverlayCandidateValidatorMac(ca_layers_disabled));
   }
-#elif defined(OS_ANDROID)
-  validator.reset(new viz::CompositorOverlayCandidateValidatorAndroid());
 #elif defined(OS_WIN)
   validator = std::make_unique<viz::CompositorOverlayCandidateValidatorWin>();
 #endif
