@@ -16,25 +16,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// The multiplier for the base system spacing at the top margin.
-static const CGFloat TopSystemSpacingMultiplier = 1.58;
-
-// The multiplier for the base system spacing between elements (vertical).
-static const CGFloat MiddleSystemSpacingMultiplier = 1.83;
-
-// The multiplier for the base system spacing at the bottom margin.
-static const CGFloat BottomSystemSpacingMultiplier = 2.26;
-
-// Top and bottom margins for buttons.
-static const CGFloat ButtonVerticalMargin = 12;
-
-// Left and right margins of the cell content and buttons.
-static const CGFloat ButtonHorizontalMargin = 16;
-
-}  // namespace
-
 UIButton* CreateButtonWithSelectorAndTarget(SEL action, id target) {
   UIButton* button = [ManualFillCellButton buttonWithType:UIButtonTypeCustom];
   [button setTitleColor:UIColor.cr_manualFillTintColor
@@ -57,21 +38,33 @@ UIButton* CreateButtonWithSelectorAndTarget(SEL action, id target) {
 NSArray<NSLayoutConstraint*>* VerticalConstraintsSpacingForViewsInContainer(
     NSArray<UIView*>* views,
     UIView* container) {
+  return VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
+      views, container, TopSystemSpacingMultiplier,
+      MiddleSystemSpacingMultiplier, BottomSystemSpacingMultiplier);
+}
+
+NSArray<NSLayoutConstraint*>*
+VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
+    NSArray<UIView*>* views,
+    UIView* container,
+    CGFloat topSystemSpacingMultiplier,
+    CGFloat middleSystemSpacingMultiplier,
+    CGFloat bottomSystemSpacingMultiplier) {
   NSMutableArray* verticalConstraints = [[NSMutableArray alloc] init];
 
   // Multipliers of these constraints are calculated based on a 24 base
   // system spacing.
   NSLayoutYAxisAnchor* previousAnchor = container.topAnchor;
-  CGFloat multiplier = TopSystemSpacingMultiplier;
+  CGFloat multiplier = topSystemSpacingMultiplier;
   for (UIView* view in views) {
     [verticalConstraints
         addObject:[view.firstBaselineAnchor
                       constraintEqualToSystemSpacingBelowAnchor:previousAnchor
                                                      multiplier:multiplier]];
-    multiplier = MiddleSystemSpacingMultiplier;
+    multiplier = middleSystemSpacingMultiplier;
     previousAnchor = view.lastBaselineAnchor;
   }
-  multiplier = BottomSystemSpacingMultiplier;
+  multiplier = bottomSystemSpacingMultiplier;
   [verticalConstraints
       addObject:[container.bottomAnchor
                     constraintEqualToSystemSpacingBelowAnchor:previousAnchor

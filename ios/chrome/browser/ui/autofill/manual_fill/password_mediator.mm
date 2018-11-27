@@ -39,6 +39,19 @@ NSString* const OtherPasswordsAccessibilityIdentifier =
 
 }  // namespace manual_fill
 
+// Checks if two credential are connected. They are considered connected if they
+// have same host.
+BOOL AreCredentialsAtIndexesConnected(
+    NSArray<ManualFillCredential*>* credentials,
+    int firstIndex,
+    int secondIndex) {
+  if (firstIndex < 0 || firstIndex >= (int)credentials.count ||
+      secondIndex < 0 || secondIndex >= (int)credentials.count)
+    return NO;
+  return [credentials[firstIndex].host
+      isEqualToString:credentials[secondIndex].host];
+}
+
 @interface ManualFillPasswordMediator ()<ManualFillContentDelegate,
                                          PasswordFetcherDelegate>
 // The |WebStateList| containing the active web state. Used to filter the list
@@ -167,9 +180,17 @@ NSString* const OtherPasswordsAccessibilityIdentifier =
     (NSArray<ManualFillCredential*>*)credentials {
   NSMutableArray* items =
       [[NSMutableArray alloc] initWithCapacity:credentials.count];
-  for (ManualFillCredential* credential in credentials) {
-    auto item = [[ManualFillCredentialItem alloc] initWithCredential:credential
-                                                            delegate:self];
+  for (int i = 0; i < (int)credentials.count; i++) {
+    BOOL isConnectedToPreviousItem =
+        AreCredentialsAtIndexesConnected(credentials, i, i - 1);
+    BOOL isConnectedToNextItem =
+        AreCredentialsAtIndexesConnected(credentials, i, i + 1);
+    ManualFillCredential* credential = credentials[i];
+    auto item = [[ManualFillCredentialItem alloc]
+               initWithCredential:credential
+        isConnectedToPreviousItem:isConnectedToPreviousItem
+            isConnectedToNextItem:isConnectedToNextItem
+                         delegate:self];
     [items addObject:item];
   }
   return items;

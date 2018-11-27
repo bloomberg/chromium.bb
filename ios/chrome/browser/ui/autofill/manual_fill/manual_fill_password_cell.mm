@@ -19,10 +19,20 @@
 #endif
 
 @interface ManualFillCredentialItem ()
+
 // The credential for this item.
 @property(nonatomic, strong, readonly) ManualFillCredential* credential;
+
+// The cell won't show a title (site name) label if it is connected to the
+// previous password item.
+@property(nonatomic, assign) BOOL isConnectedToPreviousItem;
+
+// The separator line won't show if it is connected to the next password item.
+@property(nonatomic, assign) BOOL isConnectedToNextItem;
+
 // The delegate for this item.
 @property(nonatomic, weak, readonly) id<ManualFillContentDelegate> delegate;
+
 @end
 
 @implementation ManualFillCredentialItem
@@ -30,10 +40,14 @@
 @synthesize credential = _credential;
 
 - (instancetype)initWithCredential:(ManualFillCredential*)credential
+         isConnectedToPreviousItem:(BOOL)isConnectedToPreviousItem
+             isConnectedToNextItem:(BOOL)isConnectedToNextItem
                           delegate:(id<ManualFillContentDelegate>)delegate {
   self = [super initWithType:kItemTypeEnumZero];
   if (self) {
     _credential = credential;
+    _isConnectedToPreviousItem = isConnectedToPreviousItem;
+    _isConnectedToNextItem = isConnectedToNextItem;
     _delegate = delegate;
     self.cellClass = [ManualFillPasswordCell class];
   }
@@ -43,36 +57,54 @@
 - (void)configureCell:(ManualFillPasswordCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
-  [cell setUpWithCredential:self.credential delegate:self.delegate];
+  [cell setUpWithCredential:self.credential
+      isConnectedToPreviousCell:self.isConnectedToPreviousItem
+          isConnectedToNextCell:self.isConnectedToNextItem
+                       delegate:self.delegate];
 }
 
 @end
 
 namespace {
+
 // Left and right margins of the cell content.
 static const CGFloat SideMargins = 16;
+
+// The multiplier for the base system spacing at the top margin for connected
+// cells.
+static const CGFloat TopSystemSpacingMultiplierForConnectedCell = 1.28;
+
+// When no extra multiplier is required.
+static const CGFloat NoMultiplier = 1.0;
+
 }  // namespace
 
 @interface ManualFillPasswordCell ()
+
 // The credential this cell is showing.
 @property(nonatomic, strong) ManualFillCredential* manualFillCredential;
+
+// The vertical constraints for all the lines.
+@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* verticalConstraints;
+
 // The label with the site name and host.
 @property(nonatomic, strong) UILabel* siteNameLabel;
+
 // A button showing the username, or "No Username".
 @property(nonatomic, strong) UIButton* usernameButton;
+
 // A button showing "••••••••" to resemble a password.
 @property(nonatomic, strong) UIButton* passwordButton;
+
+// Separator line between cells, if needed.
+@property(nonatomic, strong) UIView* grayLine;
+
 // The delegate in charge of processing the user actions in this cell.
 @property(nonatomic, weak) id<ManualFillContentDelegate> delegate;
+
 @end
 
 @implementation ManualFillPasswordCell
-
-@synthesize manualFillCredential = _manualFillCredential;
-@synthesize siteNameLabel = _siteNameLabel;
-@synthesize usernameButton = _usernameButton;
-@synthesize passwordButton = _passwordButton;
-@synthesize delegate = _delegate;
 
 #pragma mark - Public
 
@@ -86,36 +118,47 @@ static const CGFloat SideMargins = 16;
 }
 
 - (void)setUpWithCredential:(ManualFillCredential*)credential
-                   delegate:(id<ManualFillContentDelegate>)delegate {
+    isConnectedToPreviousCell:(BOOL)isConnectedToPreviousCell
+        isConnectedToNextCell:(BOOL)isConnectedToNextCell
+                     delegate:(id<ManualFillContentDelegate>)delegate {
   if (self.contentView.subviews.count == 0) {
     [self createViewHierarchy];
   }
   self.delegate = delegate;
   self.manualFillCredential = credential;
-  NSMutableAttributedString* attributedString =
-      [[NSMutableAttributedString alloc]
-          initWithString:credential.siteName ? credential.siteName : @""
-              attributes:@{
-                NSForegroundColorAttributeName : UIColor.blackColor,
-                NSFontAttributeName :
-                    [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-              }];
-  if (credential.host && credential.host.length &&
-      ![credential.host isEqualToString:credential.siteName]) {
-    NSString* hostString =
-        [NSString stringWithFormat:@" –– %@", credential.host];
-    NSDictionary* attributes = @{
-      NSForegroundColorAttributeName : UIColor.lightGrayColor,
-      NSFontAttributeName :
-          [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
-    };
-    NSAttributedString* hostAttributedString =
-        [[NSAttributedString alloc] initWithString:hostString
-                                        attributes:attributes];
-    [attributedString appendAttributedString:hostAttributedString];
+
+  NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
+
+  if (isConnectedToPreviousCell) {
+    self.siteNameLabel.hidden = YES;
+  } else {
+    NSMutableAttributedString* attributedString =
+        [[NSMutableAttributedString alloc]
+            initWithString:credential.siteName ? credential.siteName : @""
+                attributes:@{
+                  NSForegroundColorAttributeName : UIColor.blackColor,
+                  NSFontAttributeName :
+                      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+                }];
+    if (credential.host && credential.host.length &&
+        ![credential.host isEqualToString:credential.siteName]) {
+      NSString* hostString =
+          [NSString stringWithFormat:@" –– %@", credential.host];
+      NSDictionary* attributes = @{
+        NSForegroundColorAttributeName : UIColor.lightGrayColor,
+        NSFontAttributeName :
+            [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+      };
+      NSAttributedString* hostAttributedString =
+          [[NSAttributedString alloc] initWithString:hostString
+                                          attributes:attributes];
+      [attributedString appendAttributedString:hostAttributedString];
+    }
+    self.siteNameLabel.attributedText = attributedString;
+    [verticalLeadViews addObject:self.siteNameLabel];
+    self.siteNameLabel.hidden = NO;
   }
 
-  self.siteNameLabel.attributedText = attributedString;
   if (credential.username.length) {
     [self.usernameButton setTitle:credential.username
                          forState:UIControlStateNormal];
@@ -123,12 +166,37 @@ static const CGFloat SideMargins = 16;
     NSString* titleString =
         l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NO_USERNAME);
     [self.usernameButton setTitle:titleString forState:UIControlStateNormal];
+    [self.usernameButton setTitleColor:UIColor.lightGrayColor
+                              forState:UIControlStateNormal];
     self.usernameButton.enabled = NO;
   }
+  [verticalLeadViews addObject:self.usernameButton];
 
   if (credential.password.length) {
     [self.passwordButton setTitle:@"••••••••" forState:UIControlStateNormal];
+    [verticalLeadViews addObject:self.passwordButton];
+    self.passwordButton.hidden = NO;
+  } else {
+    self.passwordButton.hidden = YES;
   }
+
+  if (!isConnectedToNextCell) {
+    [verticalLeadViews addObject:self.grayLine];
+    self.grayLine.hidden = NO;
+  } else {
+    self.grayLine.hidden = YES;
+  }
+
+  CGFloat topSystemSpacingMultiplier =
+      isConnectedToPreviousCell ? TopSystemSpacingMultiplierForConnectedCell
+                                : TopSystemSpacingMultiplier;
+  CGFloat bottomSystemSpacingMultiplier =
+      isConnectedToNextCell ? NoMultiplier : BottomSystemSpacingMultiplier;
+
+  self.verticalConstraints =
+      VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
+          verticalLeadViews, self.contentView, topSystemSpacingMultiplier,
+          MiddleSystemSpacingMultiplier, bottomSystemSpacingMultiplier);
 }
 
 #pragma mark - Private
@@ -137,10 +205,10 @@ static const CGFloat SideMargins = 16;
 - (void)createViewHierarchy {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  UIView* grayLine = [[UIView alloc] init];
-  grayLine.backgroundColor = UIColor.cr_manualFillGrayLineColor;
-  grayLine.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.contentView addSubview:grayLine];
+  self.grayLine = [[UIView alloc] init];
+  self.grayLine.backgroundColor = UIColor.cr_manualFillGrayLineColor;
+  self.grayLine.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.contentView addSubview:self.grayLine];
 
   UIView* guide = self.contentView;
 
@@ -163,23 +231,19 @@ static const CGFloat SideMargins = 16;
   HorizontalConstraintsForViewsOnGuideWithShift(@[ self.passwordButton ], guide,
                                                 0);
 
-  VerticalConstraintsSpacingForViewsInContainer(
-      @[ self.siteNameLabel, self.usernameButton, self.passwordButton ],
-      self.contentView);
-
   id<LayoutGuideProvider> safeArea = self.contentView.safeAreaLayoutGuide;
-
   [NSLayoutConstraint activateConstraints:@[
     // Common vertical constraints.
-    [grayLine.bottomAnchor
+    [self.grayLine.bottomAnchor
         constraintEqualToAnchor:self.contentView.bottomAnchor],
-    [grayLine.heightAnchor constraintEqualToConstant:1],
+    [self.grayLine.heightAnchor constraintEqualToConstant:1],
 
     // Horizontal constraints.
-    [grayLine.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor
-                                           constant:SideMargins],
-    [safeArea.trailingAnchor constraintEqualToAnchor:grayLine.trailingAnchor
-                                            constant:SideMargins],
+    [self.grayLine.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor
+                                                constant:SideMargins],
+    [safeArea.trailingAnchor
+        constraintEqualToAnchor:self.grayLine.trailingAnchor
+                       constant:SideMargins],
   ]];
 }
 
