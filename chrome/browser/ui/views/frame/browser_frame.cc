@@ -67,6 +67,7 @@ void BrowserFrame::InitBrowserFrame() {
   native_browser_frame_ =
       NativeBrowserFrameFactory::CreateNativeBrowserFrame(this, browser_view_);
   views::Widget::InitParams params = native_browser_frame_->GetWidgetParams();
+  params.name = "BrowserFrame";
   params.delegate = browser_view_;
   if (browser_view_->browser()->is_type_tabbed()) {
     // Typed panel/popup can only return a size once the widget has been

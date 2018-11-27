@@ -27,6 +27,7 @@ void Shadow::Init(int elevation) {
   DCHECK_GE(elevation, 0);
   desired_elevation_ = elevation;
   layer_.reset(new ui::Layer(ui::LAYER_NOT_DRAWN));
+  layer_->set_name("Shadow Parent Container");
   RecreateShadowLayer();
 }
 
