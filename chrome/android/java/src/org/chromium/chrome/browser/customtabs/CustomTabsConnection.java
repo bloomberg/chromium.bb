@@ -840,10 +840,13 @@ public class CustomTabsConnection {
      * Called when an intent is handled by either an existing or a new CustomTabActivity.
      *
      * @param session Session extracted from the intent.
-     * @param url URL extracted from the intent.
      * @param intent incoming intent.
      */
-    public void onHandledIntent(CustomTabsSessionToken session, String url, Intent intent) {
+    public void onHandledIntent(CustomTabsSessionToken session, Intent intent) {
+        String url = IntentHandler.getUrlFromIntent(intent);
+        if (TextUtils.isEmpty(url)) {
+            return;
+        }
         if (mLogRequests) {
             Log.w(TAG, "onHandledIntent, URL: %s, extras: %s", url,
                     bundleToJson(intent.getExtras()));

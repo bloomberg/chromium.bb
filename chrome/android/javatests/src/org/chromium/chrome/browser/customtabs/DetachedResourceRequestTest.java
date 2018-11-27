@@ -257,7 +257,7 @@ public class DetachedResourceRequestTest {
         CustomTabsSessionToken session = prepareSession(ORIGIN, customTabsCallback);
 
         ThreadUtils.runOnUiThread(
-                () -> mConnection.onHandledIntent(session, "", prepareIntent(url, ORIGIN)));
+                () -> mConnection.onHandledIntent(session, prepareIntent(url, ORIGIN)));
         CustomTabsTestUtils.warmUpAndWait();
         customTabsCallback.waitForRequest();
         cb.waitForCallback(0, 1);
@@ -417,7 +417,7 @@ public class DetachedResourceRequestTest {
 
         if (afterNative) CustomTabsTestUtils.warmUpAndWait();
         ThreadUtils.runOnUiThread(
-                () -> mConnection.onHandledIntent(session, "", prepareIntent(url, ORIGIN)));
+                () -> mConnection.onHandledIntent(session, prepareIntent(url, ORIGIN)));
         if (!afterNative) CustomTabsTestUtils.warmUpAndWait();
 
         customTabsCallback.waitForRequest();
@@ -436,7 +436,7 @@ public class DetachedResourceRequestTest {
         if (afterNative) CustomTabsTestUtils.warmUpAndWait();
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mConnection.onHandledIntent(session, "", prepareIntent(url, ORIGIN)));
+                () -> mConnection.onHandledIntent(session, prepareIntent(url, ORIGIN)));
 
         if (!afterNative) CustomTabsTestUtils.warmUpAndWait();
         customTabsCallback.waitForRequest();
@@ -556,7 +556,7 @@ public class DetachedResourceRequestTest {
         if (afterNative) CustomTabsTestUtils.warmUpAndWait();
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mConnection.onHandledIntent(session, "", prepareIntent(url, ORIGIN)));
+                () -> mConnection.onHandledIntent(session, prepareIntent(url, ORIGIN)));
         if (!afterNative) CustomTabsTestUtils.warmUpAndWait();
         readFromSocketCallback.waitForCallback(0);
         return readFromSocketCallback;
@@ -564,6 +564,7 @@ public class DetachedResourceRequestTest {
 
     private static Intent prepareIntent(Uri url, Uri referrer) {
         Intent intent = new Intent();
+        intent.setData(Uri.parse("http://www.example.com"));
         intent.putExtra(CustomTabsConnection.PARALLEL_REQUEST_URL_KEY, url);
         intent.putExtra(CustomTabsConnection.PARALLEL_REQUEST_REFERRER_KEY, referrer);
         return intent;
@@ -571,6 +572,7 @@ public class DetachedResourceRequestTest {
 
     private static Intent prepareIntentForResourcePrefetch(List<Uri> urls, Uri referrer) {
         Intent intent = new Intent();
+        intent.setData(Uri.parse("http://www.example.com"));
         intent.putExtra(CustomTabsConnection.RESOURCE_PREFETCH_URL_LIST_KEY, new ArrayList<>(urls));
         intent.putExtra(CustomTabsConnection.PARALLEL_REQUEST_REFERRER_KEY, referrer);
         return intent;

@@ -765,6 +765,26 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         super.finishNativeInitialization();
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        Intent originalIntent = getIntent();
+        super.onNewIntent(intent);
+        // Currently we can't handle arbitrary updates of intent parameters, so make sure
+        // getIntent() returns the same intent as before.
+        setIntent(originalIntent);
+    }
+
+    @Override
+    public void onNewIntentWithNative(Intent intent) {
+        super.onNewIntentWithNative(intent);
+        BrowserSessionContentUtils.setActiveContentHandler(mBrowserSessionContentHandler);
+        if (!BrowserSessionContentUtils.handleBrowserServicesIntent(intent)) {
+            int flagsToRemove = Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP;
+            intent.setFlags(intent.getFlags() & ~flagsToRemove);
+            startActivity(intent);
+        }
+    }
+
     /**
      * Encapsulates CustomTabsConnection#takeHiddenTab()
      * with additional initialization logic.
@@ -1044,7 +1064,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
-        BrowserSessionContentUtils.setActiveContentHandler(null);
+        BrowserSessionContentUtils.removeActiveContentHandler(mBrowserSessionContentHandler);
         if (mModuleActivityDelegate != null) mModuleActivityDelegate.onStop();
         mModuleOnStartPending = false;
         if (mIsClosing) {
