@@ -133,8 +133,6 @@ SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
       sender_(sender),
       memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue),
-      parent_local_surface_id_allocator_(
-          new viz::ParentLocalSurfaceIdAllocator),
       synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)) {
   DCHECK(registry_);
   DCHECK(sender_);
@@ -221,7 +219,6 @@ void SynchronousLayerTreeFrameSink::DetachFromClient() {
   child_support_.reset();
   software_output_surface_ = nullptr;
   display_ = nullptr;
-  parent_local_surface_id_allocator_ = nullptr;
   frame_sink_manager_ = nullptr;
   cc::LayerTreeFrameSink::DetachFromClient();
   CancelFallbackTick();
@@ -242,6 +239,18 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
   }
 
   viz::CompositorFrame submit_frame;
+  gfx::Size child_size = in_software_draw_
+                             ? sw_viewport_for_current_draw_.size()
+                             : frame.size_in_pixels();
+  if (!child_local_surface_id_allocation_.IsValid() ||
+      child_size_ != child_size ||
+      device_scale_factor_ != frame.metadata.device_scale_factor) {
+    child_local_surface_id_allocator_.GenerateId();
+    child_local_surface_id_allocation_ =
+        child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
+    child_size_ = child_size;
+    device_scale_factor_ = frame.metadata.device_scale_factor;
+  }
 
   if (in_software_draw_) {
     // The frame we send to the client is actually just the metadata. Preserve
@@ -250,7 +259,6 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
 
     // The layer compositor should be giving a frame that covers the
     // |sw_viewport_for_current_draw_| but at 0,0.
-    gfx::Size child_size = sw_viewport_for_current_draw_.size();
     DCHECK(gfx::Rect(child_size) == frame.render_pass_list.back()->output_rect);
 
     // Make a size that covers from 0,0 and includes the area coming from the
@@ -261,19 +269,10 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
 
     if (!root_local_surface_id_.is_valid() || display_size_ != display_size ||
         device_scale_factor_ != frame.metadata.device_scale_factor) {
-      parent_local_surface_id_allocator_->GenerateId();
+      root_local_surface_id_allocator_.GenerateId();
       root_local_surface_id_ =
-          parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
+          root_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
       display_size_ = display_size;
-      device_scale_factor_ = frame.metadata.device_scale_factor;
-    }
-
-    if (!child_local_surface_id_.is_valid() || child_size_ != child_size ||
-        device_scale_factor_ != frame.metadata.device_scale_factor) {
-      parent_local_surface_id_allocator_->GenerateId();
-      child_local_surface_id_ =
-          parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
-      child_size_ = child_size;
       device_scale_factor_ = frame.metadata.device_scale_factor;
     }
 
@@ -319,11 +318,14 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
         shared_quad_state, gfx::Rect(child_size), gfx::Rect(child_size),
         viz::SurfaceRange(
             base::nullopt,
-            viz::SurfaceId(kChildFrameSinkId, child_local_surface_id_)),
+            viz::SurfaceId(
+                kChildFrameSinkId,
+                child_local_surface_id_allocation_.local_surface_id())),
         SK_ColorWHITE, false);
 
-    child_support_->SubmitCompositorFrame(child_local_surface_id_,
-                                          std::move(frame));
+    child_support_->SubmitCompositorFrame(
+        child_local_surface_id_allocation_.local_surface_id(),
+        std::move(frame));
     root_support_->SubmitCompositorFrame(root_local_surface_id_,
                                          std::move(embed_frame));
     display_->DrawAndSwap();
@@ -332,6 +334,8 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
     // the content in it.
     submit_frame = std::move(frame);
   }
+  submit_frame.metadata.local_surface_id_allocation_time =
+      child_local_surface_id_allocation_.allocation_time();
 
   sync_client_->SubmitCompositorFrame(layer_tree_frame_sink_id_,
                                       std::move(submit_frame));

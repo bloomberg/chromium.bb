@@ -113,6 +113,7 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
 
   static base::TimeTicks local_surface_id_allocation_time(
       const viz::CompositorFrameMetadata& metadata) {
+    DCHECK(!metadata.local_surface_id_allocation_time.is_null());
     return metadata.local_surface_id_allocation_time;
   }
 

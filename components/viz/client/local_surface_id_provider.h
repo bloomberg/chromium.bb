@@ -18,8 +18,8 @@ class VIZ_CLIENT_EXPORT LocalSurfaceIdProvider {
   LocalSurfaceIdProvider();
   virtual ~LocalSurfaceIdProvider();
 
-  virtual const LocalSurfaceId& GetLocalSurfaceIdForFrame(
-      const CompositorFrame& frame) = 0;
+  virtual const LocalSurfaceIdAllocation&
+  GetLocalSurfaceIdAllocationForFrame(const CompositorFrame& frame) = 0;
 
   void ForceAllocateNewId();
 
@@ -35,8 +35,8 @@ class VIZ_CLIENT_EXPORT DefaultLocalSurfaceIdProvider
  public:
   DefaultLocalSurfaceIdProvider();
 
-  const LocalSurfaceId& GetLocalSurfaceIdForFrame(
-      const CompositorFrame& frame) override;
+  const LocalSurfaceIdAllocation&
+  GetLocalSurfaceIdAllocationForFrame(const CompositorFrame& frame) override;
 
  private:
   gfx::Size surface_size_;

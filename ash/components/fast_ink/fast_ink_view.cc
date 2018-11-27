@@ -154,6 +154,8 @@ class FastInkView::LayerTreeFrameSinkHolder
     frame.metadata.begin_frame_ack.has_damage = true;
     frame.metadata.device_scale_factor =
         holder->last_frame_device_scale_factor_;
+    frame.metadata.local_surface_id_allocation_time =
+        holder->last_local_surface_id_allocation_time_;
     std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
     pass->SetNew(1, gfx::Rect(holder->last_frame_size_in_pixels_),
                  gfx::Rect(holder->last_frame_size_in_pixels_),
@@ -189,6 +191,8 @@ class FastInkView::LayerTreeFrameSinkHolder
     exported_resources_[resource_id] = std::move(resource);
     last_frame_size_in_pixels_ = frame.size_in_pixels();
     last_frame_device_scale_factor_ = frame.metadata.device_scale_factor;
+    last_local_surface_id_allocation_time_ =
+        frame.metadata.local_surface_id_allocation_time;
     frame_sink_->SubmitCompositorFrame(std::move(frame),
                                        /*show_hit_test_borders=*/false);
   }
@@ -268,6 +272,7 @@ class FastInkView::LayerTreeFrameSinkHolder
       exported_resources_;
   gfx::Size last_frame_size_in_pixels_;
   float last_frame_device_scale_factor_ = 1.0f;
+  base::TimeTicks last_local_surface_id_allocation_time_;
   aura::Window* root_window_ = nullptr;
   bool delete_pending_ = false;
 
@@ -487,6 +492,8 @@ void FastInkView::SubmitCompositorFrame() {
   frame.metadata.begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.device_scale_factor = device_scale_factor;
+  frame.metadata.local_surface_id_allocation_time =
+      widget_->GetNativeView()->GetLocalSurfaceIdAllocation().allocation_time();
 
   if (!presentation_callback_.is_null()) {
     // If overflow happens, we increase it again.

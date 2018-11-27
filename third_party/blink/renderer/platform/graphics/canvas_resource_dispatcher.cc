@@ -283,6 +283,9 @@ bool CanvasResourceDispatcher::PrepareFrame(
     }
     change_size_for_next_commit_ = false;
   }
+  frame->metadata.local_surface_id_allocation_time =
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .allocation_time();
 
   return true;
 }
