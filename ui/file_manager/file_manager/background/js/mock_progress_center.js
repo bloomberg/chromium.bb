@@ -39,3 +39,13 @@ MockProgressCenter.prototype.requestCancel = function() {};
 MockProgressCenter.prototype.addPanel = function() {};
 
 MockProgressCenter.prototype.removePanel = function() {};
+
+/**
+ * Returns the number of unique keys in |this.items|.
+ * @return {number}
+ */
+MockProgressCenter.prototype.getItemCount = function() {
+  const array = Object.keys(
+      /** @type {!Object} */ (this.items));
+  return array.length;
+};

@@ -110,7 +110,7 @@ function testUniqueErrorIds() {
   });
 
   // Check that this created one item.
-  assertEquals(1, Object.keys(progressCenter.items).length);
+  assertEquals(1, progressCenter.getItemCount());
 
   // Dispatch another event.
   chrome.fileManagerPrivate.onDriveSyncError.listener_({
@@ -119,7 +119,7 @@ function testUniqueErrorIds() {
   });
 
   // Check that this created second item.
-  assertEquals(2, Object.keys(progressCenter.items).length);
+  assertEquals(2, progressCenter.getItemCount());
 }
 
 // Test that item IDs produced for quota errors are same.
@@ -131,7 +131,7 @@ function testErrorDedupe() {
   });
 
   // Check that this created one item.
-  assertEquals(1, Object.keys(progressCenter.items).length);
+  assertEquals(1, progressCenter.getItemCount());
 
   // Dispatch another event.
   chrome.fileManagerPrivate.onDriveSyncError.listener_({
@@ -140,7 +140,7 @@ function testErrorDedupe() {
   });
 
   // Check that this created second item.
-  assertEquals(1, Object.keys(progressCenter.items).length);
+  assertEquals(1, progressCenter.getItemCount());
 }
 
 // Test offline.
@@ -156,14 +156,14 @@ function testOffline() {
   });
 
   // Check that this created one item.
-  assertEquals(1, Object.keys(progressCenter.items).length);
+  assertEquals(1, progressCenter.getItemCount());
   assertEquals(
       ProgressItemState.PROGRESSING, progressCenter.items['drive-sync'].state);
   assertTrue(driveSyncHandler.syncing);
 
   chrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_();
 
-  assertEquals(1, Object.keys(progressCenter.items).length);
+  assertEquals(1, progressCenter.getItemCount());
   assertEquals(
       ProgressItemState.CANCELED, progressCenter.items['drive-sync'].state);
   assertFalse(driveSyncHandler.syncing);
