@@ -218,7 +218,8 @@ const int kLocationAuthorizationStatusCount = 4;
 #pragma mark - LocationBarURLLoader
 
 - (void)loadGURLFromLocationBar:(const GURL&)url
-                     transition:(ui::PageTransition)transition {
+                     transition:(ui::PageTransition)transition
+                    disposition:(WindowOpenDisposition)disposition {
   if (url.SchemeIs(url::kJavaScriptScheme)) {
     // Evaluate the URL as JavaScript if its scheme is JavaScript.
     NSString* jsToEval = [base::SysUTF8ToNSString(url.GetContent())
@@ -236,6 +237,7 @@ const int kLocationAuthorizationStatusCount = 4;
     params.transition_type = transition;
     params.extra_headers = [self variationHeadersForURL:url];
     ChromeLoadParams chromeParams(params);
+    chromeParams.disposition = disposition;
     [self.URLLoader loadURLWithParams:chromeParams];
 
     if (google_util::IsGoogleSearchUrl(url)) {

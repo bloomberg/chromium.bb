@@ -126,8 +126,11 @@ TEST_F(LocationBarCoordinatorTest, LoadGoogleUrl) {
 
   GURL url("https://www.google.com/");
   ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
+  WindowOpenDisposition disposition = WindowOpenDisposition::SWITCH_TO_TAB;
   [coordinator_ start];
-  [coordinator_ loadGURLFromLocationBar:url transition:transition];
+  [coordinator_ loadGURLFromLocationBar:url
+                             transition:transition
+                            disposition:disposition];
 
   EXPECT_EQ(url, url_loader_.url);
   EXPECT_TRUE(url_loader_.referrer.url.is_empty());
@@ -136,6 +139,7 @@ TEST_F(LocationBarCoordinatorTest, LoadGoogleUrl) {
   EXPECT_FALSE(url_loader_.rendererInitiated);
   ASSERT_EQ(1U, url_loader_.extraHeaders.count);
   EXPECT_GT([url_loader_.extraHeaders[@"X-Client-Data"] length], 0U);
+  EXPECT_EQ(disposition, url_loader_.disposition);
 }
 
 // Calls -loadGURLFromLocationBar:transition: with https://www.nongoogle.com/
@@ -148,8 +152,11 @@ TEST_F(LocationBarCoordinatorTest, LoadNonGoogleUrl) {
 
   GURL url("https://www.nongoogle.com/");
   ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
+  WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB;
   [coordinator_ start];
-  [coordinator_ loadGURLFromLocationBar:url transition:transition];
+  [coordinator_ loadGURLFromLocationBar:url
+                             transition:transition
+                            disposition:disposition];
 
   EXPECT_EQ(url, url_loader_.url);
   EXPECT_TRUE(url_loader_.referrer.url.is_empty());
@@ -157,6 +164,7 @@ TEST_F(LocationBarCoordinatorTest, LoadNonGoogleUrl) {
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(transition, url_loader_.transition));
   EXPECT_FALSE(url_loader_.rendererInitiated);
   ASSERT_EQ(0U, url_loader_.extraHeaders.count);
+  EXPECT_EQ(disposition, url_loader_.disposition);
 }
 
 }  // namespace

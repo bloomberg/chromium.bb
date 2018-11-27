@@ -10,6 +10,7 @@
 
 #import "ios/chrome/browser/ui/omnibox/autocomplete_result_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
+#include "ui/base/window_open_disposition.h"
 
 @protocol BrowserCommands;
 @class OmniboxPopupPresenter;
@@ -22,7 +23,9 @@ class IOSImageDataFetcherWrapper;
 class OmniboxPopupMediatorDelegate {
  public:
   virtual bool IsStarredMatch(const AutocompleteMatch& match) const = 0;
-  virtual void OnMatchSelected(const AutocompleteMatch& match, size_t row) = 0;
+  virtual void OnMatchSelected(const AutocompleteMatch& match,
+                               size_t row,
+                               WindowOpenDisposition disposition) = 0;
   virtual void OnMatchSelectedForAppending(const AutocompleteMatch& match) = 0;
   virtual void OnMatchSelectedForDeletion(const AutocompleteMatch& match) = 0;
   virtual void OnScroll() = 0;

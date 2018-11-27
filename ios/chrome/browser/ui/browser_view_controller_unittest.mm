@@ -296,7 +296,9 @@ TEST_F(BrowserViewControllerTest, TestSwitchToTab) {
 
   ASSERT_EQ(web_state_ptr, web_state_list->GetActiveWebState());
 
-  [bvc_.dispatcher unfocusOmniboxAndSwitchToTabWithURL:url];
+  ChromeLoadParams params(url);
+  params.disposition = WindowOpenDisposition::SWITCH_TO_TAB;
+  [bvc_ loadURLWithParams:params];
   EXPECT_EQ(web_state_ptr_2, web_state_list->GetActiveWebState());
 }
 

@@ -18,6 +18,7 @@
 @property(nonatomic, readonly) BOOL rendererInitiated;
 @property(nonatomic, readonly) BOOL inIncognito;
 @property(nonatomic, readonly, copy) NSDictionary* extraHeaders;
+@property(nonatomic, readonly) WindowOpenDisposition disposition;
 
 @end
 
