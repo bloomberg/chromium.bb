@@ -275,23 +275,24 @@ class BASE_EXPORT SequenceManagerImpl
     //   internal scheduling code does not expect queues to be pulled
     //   from underneath.
 
+    // Scratch space used to store the contents of
+    // any_thread().incoming_immediate_work_list for use by
+    // ReloadEmptyWorkQueues.  We keep hold of this vector to avoid unnecessary
+    // memory allocations. This should have the same size as |active_queues|.
+    // DO NOT RELY ON THE VALIDITY OF THE POINTERS WITHIN!
+    std::vector<internal::TaskQueueImpl*> queues_to_reload;
     std::set<internal::TaskQueueImpl*> active_queues;
+
     std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
         queues_to_gracefully_shutdown;
     std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
         queues_to_delete;
 
-    // Scratch space used to store the contents of
-    // any_thread().incoming_immediate_work_list for use by
-    // ReloadEmptyWorkQueues.  We keep hold of this vector to avoid unnecessary
-    // memory allocations.
-    std::vector<internal::TaskQueueImpl*> queues_to_reload;
-
     bool task_was_run_on_quiescence_monitored_queue = false;
     bool nesting_observer_registered_ = false;
 
     // Due to nested runloops more than one task can be executing concurrently.
-    std::list<ExecutingTask> task_execution_stack;
+    std::vector<ExecutingTask> task_execution_stack;
 
     Observer* observer = nullptr;  // NOT OWNED
 

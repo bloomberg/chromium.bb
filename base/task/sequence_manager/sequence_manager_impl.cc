@@ -29,6 +29,13 @@
 namespace base {
 namespace sequence_manager {
 
+// This controls how big the the initial for
+// |MainThreadOnly::task_execution_stack| should be. We don't expect to see
+// depths of more than 2 unless cooperative scheduling is used on Blink, where
+// we might get up to 6. Anyway 10 was chosen because it's a round number
+// greater than current anticipated usage.
+static constexpr const size_t kInitialTaskExecutionStackReserveCount = 10;
+
 std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThread() {
   return internal::SequenceManagerImpl::CreateOnCurrentThread();
 }
@@ -147,7 +154,9 @@ SequenceManagerImpl::MainThreadOnly::MainThreadOnly(
     : random_generator(RandUint64()),
       uniform_distribution(0.0, 1.0),
       selector(associated_thread),
-      real_time_domain(new internal::RealTimeDomain()) {}
+      real_time_domain(new internal::RealTimeDomain()) {
+  task_execution_stack.reserve(kInitialTaskExecutionStackReserveCount);
+}
 
 SequenceManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
@@ -234,6 +243,8 @@ SequenceManagerImpl::CreateTaskQueueImpl(const TaskQueue::Spec& spec) {
       std::make_unique<internal::TaskQueueImpl>(this, time_domain, spec);
   main_thread_only().active_queues.insert(task_queue.get());
   main_thread_only().selector.AddQueue(task_queue.get());
+  main_thread_only().queues_to_reload.resize(
+      main_thread_only().active_queues.size());
   return task_queue;
 }
 
@@ -313,18 +324,24 @@ void SequenceManagerImpl::UnregisterTaskQueueImpl(
   // it.
   main_thread_only().active_queues.erase(task_queue.get());
   main_thread_only().queues_to_delete[task_queue.get()] = std::move(task_queue);
+  main_thread_only().queues_to_reload.resize(
+      main_thread_only().active_queues.size());
 }
 
 void SequenceManagerImpl::ReloadEmptyWorkQueues() {
-  DCHECK(main_thread_only().queues_to_reload.empty());
+  size_t num_queues_to_reload = 0;
 
+  DCHECK_EQ(main_thread_only().active_queues.size(),
+            main_thread_only().queues_to_reload.size());
   {
     AutoLock lock(any_thread_lock_);
 
     for (internal::IncomingImmediateWorkList* iter =
              any_thread().incoming_immediate_work_list;
          iter; iter = iter->next) {
-      main_thread_only().queues_to_reload.push_back(iter->queue);
+      DCHECK_LT(num_queues_to_reload,
+                main_thread_only().queues_to_reload.size());
+      main_thread_only().queues_to_reload[num_queues_to_reload++] = iter->queue;
       iter->queue = nullptr;
     }
 
@@ -335,13 +352,13 @@ void SequenceManagerImpl::ReloadEmptyWorkQueues() {
   // completely empty and we've just posted a task (this method handles that
   // case). Secondly if the work queue becomes empty in when calling
   // WorkQueue::TakeTaskFromWorkQueue (handled there).
-  for (internal::TaskQueueImpl* queue : main_thread_only().queues_to_reload) {
+  for (size_t i = 0; i < num_queues_to_reload; i++) {
     // It's important we call ReloadImmediateWorkQueueIfEmpty out side of
     // |any_thread_lock_| avoid lock order inversion.
-    queue->ReloadImmediateWorkQueueIfEmpty();
+    main_thread_only().queues_to_reload[i]->ReloadImmediateWorkQueueIfEmpty();
+    main_thread_only().queues_to_reload[i] =
+        nullptr;  // Not strictly necessary.
   }
-
-  main_thread_only().queues_to_reload.clear();
 }
 
 void SequenceManagerImpl::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
@@ -780,6 +797,7 @@ void SequenceManagerImpl::CleanUpQueues() {
   for (auto it = main_thread_only().queues_to_gracefully_shutdown.begin();
        it != main_thread_only().queues_to_gracefully_shutdown.end();) {
     if (it->first->IsEmpty()) {
+      // Will resize |main_thread_only().queues_to_reload|.
       UnregisterTaskQueueImpl(std::move(it->second));
       main_thread_only().active_queues.erase(it->first);
       main_thread_only().queues_to_gracefully_shutdown.erase(it++);
