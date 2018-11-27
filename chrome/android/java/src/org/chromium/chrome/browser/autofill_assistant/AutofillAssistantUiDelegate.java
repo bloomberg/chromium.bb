@@ -776,6 +776,8 @@ class AutofillAssistantUiDelegate {
                                 .inflate(R.layout.init_screen, mCoordinatorView)
                                 .findViewById(R.id.init_screen);
 
+        // Set default state to checked.
+        ((CheckBox) initView.findViewById(R.id.checkbox_dont_show_init_again)).setChecked(true);
         initView.findViewById(R.id.button_init_ok)
                 .setOnClickListener(unusedView -> onInitClicked(true, initView));
         initView.findViewById(R.id.button_init_not_ok)
