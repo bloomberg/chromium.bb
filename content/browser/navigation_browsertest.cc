@@ -1361,8 +1361,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_GoToEntryAtOffset) {
       new ConsoleObserverDelegate(
           shell()->web_contents(),
           "Throttling navigation to prevent the browser from hanging. See "
-          "https://crbug.com/882238 and "
-          "chrome://flags/#disable-ipc-flooding-protection"));
+          "https://crbug.com/882238. Command line switch "
+          "--disable-ipc-flooding-protection can be used to bypass the "
+          "protection"));
   shell()->web_contents()->SetDelegate(console_delegate.get());
 
   EXPECT_TRUE(ExecuteScript(shell(), R"(
@@ -1389,8 +1390,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_Navigation) {
       new ConsoleObserverDelegate(
           shell()->web_contents(),
           "Throttling navigation to prevent the browser from hanging. See "
-          "https://crbug.com/882238 and "
-          "chrome://flags/#disable-ipc-flooding-protection"));
+          "https://crbug.com/882238. Command line switch "
+          "--disable-ipc-flooding-protection can be used to bypass the "
+          "protection"));
   shell()->web_contents()->SetDelegate(console_delegate.get());
 
   EXPECT_TRUE(ExecuteScript(shell(), R"(

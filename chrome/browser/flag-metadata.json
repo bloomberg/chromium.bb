@@ -552,8 +552,9 @@
     "expiry_milestone": 76
   },
   {
+    // See https://crbug.com/882238.
     "name": "disable-ipc-flooding-protection",
-    // "owners": [ "your-team" ],
+    "owners": [ "arthursonzogni@chromium.org", "palmer@chromium.org" ],
     "expiry_milestone": 76
   },
   {
@@ -597,8 +598,9 @@
     "expiry_milestone": 76
   },
   {
+    // See https://crbug.com/882238.
     "name": "disable-pushstate-throttle",
-    // "owners": [ "your-team" ],
+    "owners": [ "arthursonzogni@chromium.org", "palmer@chromium.org" ],
     "expiry_milestone": 76
   },
   {
