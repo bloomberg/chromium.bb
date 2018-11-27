@@ -7,9 +7,9 @@ module blink.mojom;
 import "services/network/public/mojom/url_loader.mojom";
 
 // NetworkService (PlzWorker):
-// Used for passing the shared worker main script pre-requested by the browser
+// Used for passing the web worker main script pre-requested by the browser
 // process and its redirect information.
-struct SharedWorkerMainScriptLoadParams {
+struct WorkerMainScriptLoadParams {
   // Used for loading the pre-requested main script in the renderer process.
   network.mojom.URLResponseHead response_head;
   network.mojom.URLLoaderClientEndpoints? url_loader_client_endpoints;

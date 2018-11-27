@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SCRIPT_LOADER_H_
-#define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SCRIPT_LOADER_H_
+#ifndef CONTENT_BROWSER_SHARED_WORKER_WORKER_SCRIPT_LOADER_H_
+#define CONTENT_BROWSER_SHARED_WORKER_WORKER_SCRIPT_LOADER_H_
 
 #include "base/macros.h"
 #include "content/common/navigation_subresource_loader_params.h"
@@ -36,15 +36,15 @@ class ServiceWorkerProviderHost;
 // starting a new loader and becoming the client of that.
 //
 // Lives on the IO thread.
-class SharedWorkerScriptLoader : public network::mojom::URLLoader,
-                                 public network::mojom::URLLoaderClient {
+class WorkerScriptLoader : public network::mojom::URLLoader,
+                           public network::mojom::URLLoaderClient {
  public:
   // |default_loader_factory| is used to load the script if the load is not
   // intercepted by a feature like service worker. Typically it will load the
   // script from the NetworkService. However, it may internally contain
   // non-NetworkService factories used for non-http(s) URLs, e.g., a
   // chrome-extension:// URL.
-  SharedWorkerScriptLoader(
+  WorkerScriptLoader(
       int process_id,
       int32_t routing_id,
       int32_t request_id,
@@ -56,7 +56,7 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
       ResourceContext* resource_context,
       scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
-  ~SharedWorkerScriptLoader() override;
+  ~WorkerScriptLoader() override;
 
   // network::mojom::URLLoader:
   void FollowRedirect(
@@ -98,7 +98,7 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
     return std::move(subresource_loader_params_);
   }
 
-  base::WeakPtr<SharedWorkerScriptLoader> GetWeakPtr();
+  base::WeakPtr<WorkerScriptLoader> GetWeakPtr();
 
   // Set to true if the default URLLoader (network service) was used for the
   // current request.
@@ -139,10 +139,10 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
   // elect to handle the request.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  base::WeakPtrFactory<SharedWorkerScriptLoader> weak_factory_;
+  base::WeakPtrFactory<WorkerScriptLoader> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedWorkerScriptLoader);
+  DISALLOW_COPY_AND_ASSIGN(WorkerScriptLoader);
 };
 
 }  // namespace content
-#endif  // CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SCRIPT_LOADER_H_
+#endif  // CONTENT_BROWSER_SHARED_WORKER_WORKER_SCRIPT_LOADER_H_

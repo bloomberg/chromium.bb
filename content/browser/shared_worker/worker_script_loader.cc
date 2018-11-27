@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/shared_worker/shared_worker_script_loader.h"
+#include "content/browser/shared_worker/worker_script_loader.h"
 
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
@@ -15,7 +15,7 @@
 
 namespace content {
 
-SharedWorkerScriptLoader::SharedWorkerScriptLoader(
+WorkerScriptLoader::WorkerScriptLoader(
     int process_id,
     int32_t routing_id,
     int32_t request_id,
@@ -60,20 +60,20 @@ SharedWorkerScriptLoader::SharedWorkerScriptLoader(
   Start();
 }
 
-SharedWorkerScriptLoader::~SharedWorkerScriptLoader() = default;
+WorkerScriptLoader::~WorkerScriptLoader() = default;
 
-base::WeakPtr<SharedWorkerScriptLoader> SharedWorkerScriptLoader::GetWeakPtr() {
+base::WeakPtr<WorkerScriptLoader> WorkerScriptLoader::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void SharedWorkerScriptLoader::Start() {
+void WorkerScriptLoader::Start() {
   if (interceptor_index_ < interceptors_.size()) {
     auto* interceptor = interceptors_[interceptor_index_++].get();
     interceptor->MaybeCreateLoader(
         resource_request_, resource_context_,
-        base::BindOnce(&SharedWorkerScriptLoader::MaybeStartLoader,
+        base::BindOnce(&WorkerScriptLoader::MaybeStartLoader,
                        weak_factory_.GetWeakPtr(), interceptor),
-        base::BindOnce(&SharedWorkerScriptLoader::LoadFromNetwork,
+        base::BindOnce(&WorkerScriptLoader::LoadFromNetwork,
                        weak_factory_.GetWeakPtr()));
     return;
   }
@@ -81,7 +81,7 @@ void SharedWorkerScriptLoader::Start() {
   LoadFromNetwork(false);
 }
 
-void SharedWorkerScriptLoader::MaybeStartLoader(
+void WorkerScriptLoader::MaybeStartLoader(
     NavigationLoaderInterceptor* interceptor,
     SingleRequestURLLoaderFactory::RequestHandler single_request_handler) {
   DCHECK(interceptor);
@@ -115,8 +115,7 @@ void SharedWorkerScriptLoader::MaybeStartLoader(
   Start();
 }
 
-void SharedWorkerScriptLoader::LoadFromNetwork(
-    bool reset_subresource_loader_params) {
+void WorkerScriptLoader::LoadFromNetwork(bool reset_subresource_loader_params) {
   default_loader_used_ = true;
   network::mojom::URLLoaderClientPtr client;
   if (url_loader_client_binding_)
@@ -133,7 +132,7 @@ void SharedWorkerScriptLoader::LoadFromNetwork(
 // When this class gets a FollowRedirect IPC from the renderer, it restarts with
 // the new URL.
 
-void SharedWorkerScriptLoader::FollowRedirect(
+void WorkerScriptLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
@@ -172,7 +171,7 @@ void SharedWorkerScriptLoader::FollowRedirect(
   Start();
 }
 
-void SharedWorkerScriptLoader::ProceedWithResponse() {
+void WorkerScriptLoader::ProceedWithResponse() {
   // Only for navigations.
   NOTREACHED();
 }
@@ -180,18 +179,18 @@ void SharedWorkerScriptLoader::ProceedWithResponse() {
 // Below we make a small effort to support the other URLLoader functions by
 // forwarding to the current |url_loader_| if any, but don't bother queuing
 // state or propagating state to a new URLLoader upon redirect.
-void SharedWorkerScriptLoader::SetPriority(net::RequestPriority priority,
-                                           int32_t intra_priority_value) {
+void WorkerScriptLoader::SetPriority(net::RequestPriority priority,
+                                     int32_t intra_priority_value) {
   if (url_loader_)
     url_loader_->SetPriority(priority, intra_priority_value);
 }
 
-void SharedWorkerScriptLoader::PauseReadingBodyFromNet() {
+void WorkerScriptLoader::PauseReadingBodyFromNet() {
   if (url_loader_)
     url_loader_->PauseReadingBodyFromNet();
 }
 
-void SharedWorkerScriptLoader::ResumeReadingBodyFromNet() {
+void WorkerScriptLoader::ResumeReadingBodyFromNet() {
   if (url_loader_)
     url_loader_->ResumeReadingBodyFromNet();
 }
@@ -201,12 +200,12 @@ void SharedWorkerScriptLoader::ResumeReadingBodyFromNet() {
 // Additionally, on redirects it saves the redirect info so if the renderer
 // calls FollowRedirect(), it can do so.
 
-void SharedWorkerScriptLoader::OnReceiveResponse(
+void WorkerScriptLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response_head) {
   client_->OnReceiveResponse(response_head);
 }
 
-void SharedWorkerScriptLoader::OnReceiveRedirect(
+void WorkerScriptLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head) {
   if (--redirect_limit_ == 0) {
@@ -219,7 +218,7 @@ void SharedWorkerScriptLoader::OnReceiveRedirect(
   client_->OnReceiveRedirect(redirect_info, response_head);
 }
 
-void SharedWorkerScriptLoader::OnUploadProgress(
+void WorkerScriptLoader::OnUploadProgress(
     int64_t current_position,
     int64_t total_size,
     OnUploadProgressCallback ack_callback) {
@@ -227,40 +226,38 @@ void SharedWorkerScriptLoader::OnUploadProgress(
                             std::move(ack_callback));
 }
 
-void SharedWorkerScriptLoader::OnReceiveCachedMetadata(
+void WorkerScriptLoader::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {
   client_->OnReceiveCachedMetadata(data);
 }
 
-void SharedWorkerScriptLoader::OnTransferSizeUpdated(
-    int32_t transfer_size_diff) {
+void WorkerScriptLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   client_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
-void SharedWorkerScriptLoader::OnStartLoadingResponseBody(
+void WorkerScriptLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle consumer) {
   client_->OnStartLoadingResponseBody(std::move(consumer));
 }
 
-void SharedWorkerScriptLoader::OnComplete(
+void WorkerScriptLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   if (status.error_code == net::OK)
     service_worker_provider_host_->CompleteSharedWorkerPreparation();
   client_->OnComplete(status);
 }
 
-bool SharedWorkerScriptLoader::MaybeCreateLoaderForResponse(
+bool WorkerScriptLoader::MaybeCreateLoaderForResponse(
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr* response_url_loader,
     network::mojom::URLLoaderClientRequest* response_client_request,
     ThrottlingURLLoader* url_loader) {
   // TODO(crbug/898755): This is odd that NavigationLoaderInterceptor::
-  // MaybeCreateLoader() is called directly from SharedWorkerScriptLoader. But
+  // MaybeCreateLoader() is called directly from WorkerScriptLoader. But
   // NavigationLoaderInterceptor::MaybeCreateLoaderForResponse() is called from
-  // SharedWorkerScriptFetcher::OnReceiveResponse(). This is due to the wired
-  // design of SharedWorkerScriptLoader and SharedWorkerScriptFetcher and the
-  // interceptors. The interceptors should be owned by
-  // SharedWorkerScriptFetcher.
+  // WorkerScriptFetcher::OnReceiveResponse(). This is due to the wired design
+  // of WorkerScriptLoader and WorkerScriptFetcher and the interceptors. The
+  // interceptors should be owned by WorkerScriptFetcher.
   DCHECK(default_loader_used_);
   for (auto& interceptor : interceptors_) {
     bool skip_other_interceptors = false;

@@ -145,7 +145,7 @@ void SharedWorkerHost::Start(
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
-    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+    blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

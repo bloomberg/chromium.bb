@@ -218,7 +218,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     int appcache_host_id,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
-    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+    blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle,
     mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojom::SharedWorkerHostPtr host,
