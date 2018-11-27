@@ -16,6 +16,7 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
@@ -378,9 +379,8 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
       use_virtualized_gl_contexts ? share_group->GetSharedContext(surface.get())
                                   : nullptr;
   if (!context) {
-    gl::GLContextAttribs attribs;
-    if (use_passthrough_decoder)
-      attribs.global_texture_share_group = true;
+    gl::GLContextAttribs attribs = gles2::GenerateGLContextAttribs(
+        ContextCreationAttribs(), use_passthrough_decoder);
     context =
         gl::init::CreateGLContext(share_group.get(), surface.get(), attribs);
     if (!context) {
