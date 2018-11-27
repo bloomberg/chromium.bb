@@ -428,7 +428,7 @@ cr.define('settings_people_page_sync_page', function() {
         browserProxy.resetResolver('setSyncDatatypes');
 
         // Test an arbitrarily-selected control (extensions synced control).
-        datatypeControls[3].click();
+        datatypeControls[2].click();
         return browserProxy.whenCalled('setSyncDatatypes')
             .then(function(prefs) {
               const expected = getSyncAllPrefs();
