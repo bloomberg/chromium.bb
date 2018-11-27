@@ -26,7 +26,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -40,7 +40,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "common_tests.json",
@@ -54,7 +54,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -68,7 +68,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -82,7 +82,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -96,7 +96,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "common_tests.json",
@@ -110,7 +110,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -124,7 +124,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_cq_tests.json",
@@ -138,7 +138,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_bookmarks_egtests",
@@ -154,7 +154,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_manual_fill_egtests",
@@ -169,7 +169,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_web_egtests",
@@ -184,7 +184,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_settings_egtests",
@@ -199,7 +199,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_reading_list_egtests",
@@ -214,7 +214,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_showcase_egtests",
@@ -229,7 +229,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_bookmarks_egtests",
@@ -245,7 +245,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_manual_fill_egtests",
@@ -261,7 +261,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_web_egtests",
@@ -276,7 +276,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_settings_egtests",
@@ -291,7 +291,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_reading_list_egtests",
@@ -306,7 +306,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_showcase_egtests",
@@ -321,7 +321,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_bookmarks_egtests",
@@ -337,7 +337,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_manual_fill_egtests",
@@ -352,7 +352,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_web_egtests",
@@ -367,7 +367,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_settings_egtests",
@@ -382,7 +382,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_reading_list_egtests",
@@ -397,7 +397,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_showcase_egtests",
@@ -412,7 +412,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_bookmarks_egtests",
@@ -428,7 +428,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_manual_fill_egtests",
@@ -443,7 +443,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_web_egtests",
@@ -458,7 +458,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_settings_egtests",
@@ -473,7 +473,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_chrome_reading_list_egtests",
@@ -488,7 +488,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "ios_showcase_egtests",
@@ -503,7 +503,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_cq_tests.json",
@@ -517,7 +517,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_cq_tests.json",
@@ -531,7 +531,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     }
   ]
 }
