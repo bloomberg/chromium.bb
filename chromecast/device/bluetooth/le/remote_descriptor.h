@@ -25,6 +25,7 @@ class RemoteDescriptor;
 class RemoteDescriptor : public base::RefCountedThreadSafe<RemoteDescriptor> {
  public:
   static constexpr uint8_t kEnableNotificationValue[] = {0x01, 0x00};
+  static constexpr uint8_t kEnableIndicationValue[] = {0x02, 0x00};
   static constexpr uint8_t kDisableNotificationValue[] = {0x00, 0x00};
   static const bluetooth_v2_shlib::Uuid kCccdUuid;
 

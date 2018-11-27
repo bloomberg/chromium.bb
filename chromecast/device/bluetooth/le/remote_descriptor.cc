@@ -10,6 +10,8 @@ namespace bluetooth {
 // static
 constexpr uint8_t RemoteDescriptor::kEnableNotificationValue[];
 // static
+constexpr uint8_t RemoteDescriptor::kEnableIndicationValue[];
+// static
 constexpr uint8_t RemoteDescriptor::kDisableNotificationValue[];
 // static
 const bluetooth_v2_shlib::Uuid RemoteDescriptor::kCccdUuid = {
