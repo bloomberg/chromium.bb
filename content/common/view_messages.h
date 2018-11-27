@@ -313,13 +313,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
 IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvents,
                      std::vector<media::MediaLogEvent> /* events */)
 
-// Sent once a paint happens after the first non empty layout. In other words,
-// after the frame widget has painted something.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstVisuallyNonEmptyPaint)
-
-// Sent once the RenderWidgetCompositor issues a draw command.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidCommitAndDrawCompositorFrame)
-
 // Adding a new message? Stick to the sort order above: first platform
 // independent ViewMsg, then ifdefs for platform specific ViewMsg, then platform
 // independent ViewHostMsg, then ifdefs for platform specific ViewHostMsg.
