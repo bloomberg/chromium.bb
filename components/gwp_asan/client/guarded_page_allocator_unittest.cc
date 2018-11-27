@@ -119,23 +119,6 @@ TEST_F(GuardedPageAllocatorTest, AllocationAlignment) {
   EXPECT_DEATH(GetRightAlignedAllocationOffset(5, 3), "");
 }
 
-TEST_F(GuardedPageAllocatorTest, GetNearestValidPageEdgeCases) {
-  EXPECT_EQ(gpa_.state_.GetPageAddr(
-                gpa_.state_.GetNearestValidPage(gpa_.state_.pages_base_addr)),
-            gpa_.state_.first_page_addr);
-  EXPECT_EQ(gpa_.state_.GetPageAddr(gpa_.state_.GetNearestValidPage(
-                gpa_.state_.pages_end_addr - 1)),
-            gpa_.state_.pages_end_addr - (2 * gpa_.state_.page_size));
-}
-
-TEST_F(GuardedPageAllocatorTest, GetErrorTypeEdgeCases) {
-  EXPECT_EQ(gpa_.state_.GetErrorType(gpa_.state_.pages_base_addr, true, false),
-            AllocatorState::ErrorType::kBufferUnderflow);
-  EXPECT_EQ(
-      gpa_.state_.GetErrorType(gpa_.state_.pages_end_addr - 1, true, false),
-      AllocatorState::ErrorType::kBufferOverflow);
-}
-
 class GuardedPageAllocatorParamTest
     : public GuardedPageAllocatorTest,
       public testing::WithParamInterface<size_t> {
