@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/transform.h"
@@ -34,12 +36,17 @@ void AXTreeSourceViews::HandleAccessibleAction(const ui::AXActionData& action) {
 }
 
 bool AXTreeSourceViews::GetTreeData(ui::AXTreeData* tree_data) const {
+  tree_data->tree_id = tree_id_;
   tree_data->loaded = true;
   tree_data->loading_progress = 1.0;
   AXAuraObjWrapper* focus = AXAuraObjCache::GetInstance()->GetFocus();
   if (focus)
     tree_data->focus_id = focus->GetUniqueId();
   return true;
+}
+
+AXAuraObjWrapper* AXTreeSourceViews::GetRoot() const {
+  return root_;
 }
 
 AXAuraObjWrapper* AXTreeSourceViews::GetFromId(int32_t id) const {
@@ -123,5 +130,13 @@ std::string AXTreeSourceViews::ToString(AXAuraObjWrapper* root,
 AXTreeSourceViews::AXTreeSourceViews() = default;
 
 AXTreeSourceViews::~AXTreeSourceViews() = default;
+
+void AXTreeSourceViews::Init(AXAuraObjWrapper* root,
+                             const ui::AXTreeID& tree_id) {
+  DCHECK(root);
+  DCHECK_NE(tree_id, ui::AXTreeIDUnknown());
+  root_ = root;
+  tree_id_ = tree_id;
+}
 
 }  // namespace views
