@@ -32,3 +32,13 @@ utils.disableOutlineOnMouseClick = function(element) {
     }, {once: true});
   });
 };
+
+
+/**
+ * Returns whether the given URL has a known, safe scheme.
+ * @param {string} url URL to check.
+ */
+utils.isSchemeAllowed = function(url) {
+  return url.startsWith('http://') || url.startsWith('https://') ||
+      url.startsWith('ftp://') || url.startsWith('chrome-extension://');
+};

@@ -134,9 +134,9 @@ function finishEditLink() {
   if (urlValue != prepopulatedLink.url) {
     newUrl = chrome.embeddedSearch.newTabPage.fixupAndValidateUrl(urlValue);
     // Show error message for invalid urls.
-    if (!newUrl) {
+    if (!newUrl || (newUrl && !utils.isSchemeAllowed(newUrl))) {
       showInvalidUrlUntilTextInput();
-      disableSubmitUntilTextInput();
+      $(IDS.DONE).disabled = true;  // Disable submit until text input.
       return;
     }
   }
