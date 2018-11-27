@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -130,6 +131,10 @@ class ChromeBrowserMainBrowserTest : public InProcessBrowserTest {
  public:
   ChromeBrowserMainBrowserTest() {
     net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
+    // Since the test currently performs an actual request to localhost (which
+    // is expected to fail since no variations server is running), retries are
+    // disabled to prevent race conditions from causing flakiness in tests.
+    scoped_feature_list_.InitAndDisableFeature(variations::kHttpRetryFeature);
   }
 
  protected:
@@ -159,12 +164,15 @@ class ChromeBrowserMainBrowserTest : public InProcessBrowserTest {
   ChromeBrowserMainExtraPartsNetFactoryInstaller* extra_parts_ = nullptr;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainBrowserTest);
 };
 
 // Verifies VariationsService does a request when network status changes from
 // none to connected. This is a regression test for https://crbug.com/826930.
+// TODO(crbug.com/905714): This test should use a mock variations server
+// instead of performing an actual request.
 IN_PROC_BROWSER_TEST_F(ChromeBrowserMainBrowserTest,
                        VariationsServiceStartsRequestOnNetworkChange) {
   const int initial_request_count =

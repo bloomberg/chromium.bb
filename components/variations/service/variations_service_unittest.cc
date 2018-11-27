@@ -140,12 +140,20 @@ class TestVariationsService : public VariationsService {
   void set_intercepts_fetch(bool value) {
     intercepts_fetch_ = value;
   }
+  void set_insecure_url(const GURL& url) {
+    set_insecure_variations_server_url(url);
+  }
+  void set_last_request_was_retry(bool was_retry) {
+    set_last_request_was_http_retry(was_retry);
+  }
   bool fetch_attempted() const { return fetch_attempted_; }
   bool seed_stored() const { return seed_stored_; }
   const std::string& stored_country() const { return stored_country_; }
   bool delta_compressed_seed() const { return delta_compressed_seed_; }
   bool gzip_compressed_seed() const { return gzip_compressed_seed_; }
   bool insecurely_fetched_seed() const { return insecurely_fetched_seed_; }
+
+  bool CallMaybeRetryOverHTTP() { return CallMaybeRetryOverHTTPForTesting(); }
 
   void DoActualFetch() override {
     if (intercepts_fetch_) {
@@ -155,6 +163,15 @@ class TestVariationsService : public VariationsService {
 
     VariationsService::DoActualFetch();
     base::RunLoop().RunUntilIdle();
+  }
+
+  bool DoFetchFromURL(const GURL& url, bool is_http_retry) override {
+    if (intercepts_fetch_) {
+      fetch_attempted_ = true;
+      return true;
+    }
+
+    return VariationsService::DoFetchFromURL(url, is_http_retry);
   }
 
   bool StoreSeed(const std::string& seed_data,
@@ -910,6 +927,42 @@ TEST_F(VariationsServiceTest, InsecurelyFetchedNotSetWhenHTTPS) {
       service.interception_url().spec(), serialized_seed);
   service.DoActualFetch();
   EXPECT_FALSE(service.insecurely_fetched_seed());
+}
+
+TEST_F(VariationsServiceTest, RetryOverHTTPIfURLisSet) {
+  TestVariationsService service(
+      std::make_unique<web_resource::TestRequestAllowedNotifier>(
+          &prefs_, network_tracker_),
+      &prefs_, GetMetricsStateManager(), true);
+  service.set_intercepts_fetch(true);
+  service.set_last_request_was_retry(false);
+  service.set_insecure_url(GURL("http://example.test"));
+  EXPECT_TRUE(service.CallMaybeRetryOverHTTP());
+  EXPECT_TRUE(service.fetch_attempted());
+}
+
+TEST_F(VariationsServiceTest, DoNotRetryAfterARetry) {
+  TestVariationsService service(
+      std::make_unique<web_resource::TestRequestAllowedNotifier>(
+          &prefs_, network_tracker_),
+      &prefs_, GetMetricsStateManager(), true);
+  service.set_intercepts_fetch(true);
+  service.set_last_request_was_retry(true);
+  service.set_insecure_url(GURL("http://example.test"));
+  EXPECT_FALSE(service.CallMaybeRetryOverHTTP());
+  EXPECT_FALSE(service.fetch_attempted());
+}
+
+TEST_F(VariationsServiceTest, DoNotRetryIfInsecureURLIsHTTPS) {
+  TestVariationsService service(
+      std::make_unique<web_resource::TestRequestAllowedNotifier>(
+          &prefs_, network_tracker_),
+      &prefs_, GetMetricsStateManager(), true);
+  service.set_intercepts_fetch(true);
+  service.set_last_request_was_retry(false);
+  service.set_insecure_url(GURL("https://example.test"));
+  EXPECT_FALSE(service.CallMaybeRetryOverHTTP());
+  EXPECT_FALSE(service.fetch_attempted());
 }
 
 // TODO(isherman): Add an integration test for saving and loading a safe seed,
