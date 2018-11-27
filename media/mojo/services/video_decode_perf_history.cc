@@ -8,14 +8,32 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace media {
+
+namespace {
+
+const double kMaxSmoothDroppedFramesPercentParamDefault = .10;
+
+}  // namespace
+
+const char VideoDecodePerfHistory::kMaxSmoothDroppedFramesPercentParamName[] =
+    "smooth_threshold";
+
+// static
+double VideoDecodePerfHistory::GetMaxSmoothDroppedFramesPercent() {
+  return base::GetFieldTrialParamByFeatureAsDouble(
+      kMediaCapabilitiesWithParameters, kMaxSmoothDroppedFramesPercentParamName,
+      kMaxSmoothDroppedFramesPercentParamDefault);
+}
 
 VideoDecodePerfHistory::VideoDecodePerfHistory(
     std::unique_ptr<VideoDecodeStatsDB> db)
@@ -129,7 +147,7 @@ void VideoDecodePerfHistory::AssessStats(
 
   *is_power_efficient =
       percent_power_efficient >= kMinPowerEfficientDecodedFramePercent;
-  *is_smooth = percent_dropped <= kMaxSmoothDroppedFramesPercent;
+  *is_smooth = percent_dropped <= GetMaxSmoothDroppedFramesPercent();
 }
 
 void VideoDecodePerfHistory::OnGotStatsForRequest(
