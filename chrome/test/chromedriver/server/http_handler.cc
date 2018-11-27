@@ -739,12 +739,6 @@ HttpHandler::HttpHandler(
       // Commands of unknown origins.
       //
 
-      // Similar to W3C POST /session/:sessionId/window/minimize.
-      CommandMapping(
-          kPost, "session/:sessionId/window/:windowHandle/minimize",
-          WrapToCommand("MinimizeWindow",
-                        base::BindRepeating(&ExecuteMinimizeWindow))),
-
       CommandMapping(kGet, "session/:sessionId/alert",
                      WrapToCommand("IsAlertOpen",
                                    base::BindRepeating(
