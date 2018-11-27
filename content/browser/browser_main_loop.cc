@@ -561,6 +561,7 @@ void BrowserMainLoop::Init() {
     // This is always invoked before |io_thread_| is initialized (i.e. never
     // resets it).
     io_thread_ = std::move(startup_data->thread);
+    service_manager_context_ = startup_data->service_manager_context;
   }
 
   parts_.reset(
@@ -1081,7 +1082,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     BrowserGpuChannelHostFactory::instance()->CloseChannel();
 
   // Shutdown the Service Manager and IPC.
-  service_manager_context_.reset();
+  if (service_manager_context_)
+    service_manager_context_->ShutDown();
+  owned_service_manager_context_.reset();
   mojo_ipc_support_.reset();
 
   if (save_file_manager_)
@@ -1535,9 +1538,13 @@ void BrowserMainLoop::InitializeMojo() {
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
 
-  service_manager_context_.reset(
-      new ServiceManagerContext(io_thread_->task_runner()));
+  if (!service_manager_context_) {
+    owned_service_manager_context_ =
+        std::make_unique<ServiceManagerContext>(io_thread_->task_runner());
+    service_manager_context_ = owned_service_manager_context_.get();
+  }
   ServiceManagerContext::StartBrowserConnection();
+
 #if defined(OS_MACOSX)
   mojo::core::SetMachPortProvider(MachBroker::GetInstance());
 #endif  // defined(OS_MACOSX)

@@ -51,6 +51,9 @@ class CONTENT_EXPORT ServiceManagerContext {
 
   static base::DeferredSequencedTaskRunner* GetAudioServiceRunner();
 
+  // Shutdowns the ServiceManager and the connections to the ServiceManager.
+  void ShutDown();
+
  private:
   class InProcessServiceManagerContext;
 

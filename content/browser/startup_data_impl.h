@@ -12,13 +12,15 @@
 
 namespace content {
 
+class ServiceManagerContext;
+
 // The browser implementation of StartupData.
 struct StartupDataImpl : public StartupData {
   StartupDataImpl();
   ~StartupDataImpl() override;
 
-  // TODO(hanxi): add ServiceManagerContext* here.
   std::unique_ptr<BrowserProcessSubThread> thread;
+  ServiceManagerContext* service_manager_context;
 };
 
 }  // namespace content
