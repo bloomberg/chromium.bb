@@ -6,8 +6,8 @@ continuations, which append the second and the third children.
 -->
 
 <style>
-#parent {
-  contain: paint;
+#container {
+  contain: content;
   width: 150px;
   height: 150px;
   background: lightblue;
@@ -30,7 +30,6 @@ continuations, which append the second and the third children.
 </style>
 
 <div id="log"></div>
-<div id="parent"></div>
 
 <script>
 if (window.testRunner)
@@ -43,15 +42,15 @@ function createChild(id) {
 }
 
 function addChild3(context) {
-  document.getElementById("parent").appendChild(createChild("child3"));
+  context.lockedElement.appendChild(createChild("child3"));
 }
 
 function addChild2(context) {
-  document.getElementById("parent").appendChild(createChild("child2"));
+  context.lockedElement.appendChild(createChild("child2"));
 }
 
 function addChild1(context) {
-  document.getElementById("parent").appendChild(createChild("child1"));
+  context.lockedElement.appendChild(createChild("child1"));
   context.schedule(addChild2);
   context.schedule(addChild3);
 }
@@ -64,13 +63,14 @@ function finishTest(status_string) {
 }
 
 function acquire() {
-  document.getElementById("parent").acquireDisplayLock(addChild1).then(
+  let container = document.createElement("div");
+  container.id = "container";
+  container.acquireDisplayLock(addChild1).then(
     () => { finishTest("PASS"); },
     () => { finishTest("FAIL"); });
+  document.body.appendChild(container);
 }
 
 window.onload = acquire;
-
 </script>
-
 

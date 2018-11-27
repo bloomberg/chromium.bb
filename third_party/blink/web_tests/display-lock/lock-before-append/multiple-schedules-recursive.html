@@ -7,8 +7,8 @@ as scheduling two more continuations each, for a total of 7 children.
 -->
 
 <style>
-#parent {
-  contain: paint;
+#container {
+  contain: content;
   width: 150px;
   height: 150px;
   background: lightblue;
@@ -21,7 +21,6 @@ as scheduling two more continuations each, for a total of 7 children.
 </style>
 
 <div id="log"></div>
-<div id="parent"></div>
 
 <script>
 if (window.testRunner)
@@ -35,7 +34,7 @@ function createChild(id) {
 }
 
 function addChild(id, context) {
-  document.getElementById("parent").appendChild(createChild(id));
+  context.lockedElement.appendChild(createChild(id));
   if (id > 3)
     return;
   context.schedule((context) => { addChild(id * 2, context); });
@@ -50,15 +49,15 @@ function finishTest(status_string) {
 }
 
 function acquire() {
-  document.getElementById("parent").acquireDisplayLock(
+  let container = document.createElement("div");
+  container.id = "container";
+  container.acquireDisplayLock(
     (context) => { addChild(1, context) }).then(
     () => { finishTest("PASS"); },
     () => { finishTest("FAIL"); });
+  document.body.appendChild(container);
 }
 
 window.onload = acquire;
-
 </script>
-
-
 

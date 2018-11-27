@@ -1,24 +1,27 @@
 <!doctype HTML>
 
 <!--
-Runs an acquireDisplayLock, which suspends the context.
-The associated promise should never resolve.
+Runs an acquireDisplayLock on an element that doesn't have containment.
+The callback adds containment.
 -->
 
 <style>
-#parent {
+.contained {
+  contain: content;
   width: 100px;
   height: 100px;
-  contain: content;
+  background: lightblue;
 }
 </style>
-
 <div id="log"></div>
-<div id="parent"></div>
 
 <script>
 if (window.testRunner)
   window.testRunner.waitUntilDone();
+
+function addContainment(context) {
+  context.lockedElement.classList = "contained";
+}
 
 function finishTest(status_string) {
   if (document.getElementById("log").innerHTML === "")
@@ -28,16 +31,13 @@ function finishTest(status_string) {
 }
 
 function acquire() {
-  document.getElementById("parent").acquireDisplayLock(
-    (context) => {
-      context.suspend();
-  }).then(
-    () => { finishTest("FAIL"); },
+  let container = document.createElement("div");
+  container.acquireDisplayLock(addContainment).then(
+    () => { finishTest("PASS"); },
     () => { finishTest("FAIL"); });
-  setTimeout(() => { finishTest("PASS"); }, 50);
+  document.body.appendChild(container);
 }
 
 window.onload = acquire;
 </script>
-
 

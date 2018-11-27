@@ -1,0 +1,63 @@
+<!doctype HTML>
+
+<!--
+Suspends a context with a continuation to append locked element. Before resuming,
+calls gc to ensure that we still retain the locked element.
+-->
+
+<style>
+#container {
+  contain: content;
+  width: 150px;
+  height: 150px;
+  background: lightblue;
+}
+#child {
+  width: 50px;
+  height: 50px;
+  background: lightgreen;
+}
+</style>
+
+<div id="log"></div>
+
+<script>
+if (window.testRunner)
+  window.testRunner.waitUntilDone();
+
+function appendLockedToBody(context) {
+  document.body.appendChild(context.lockedElement);
+}
+
+function scheduleAndSuspend(context) {
+  let child = document.createElement("div");
+  child.id = "child";
+  context.lockedElement.appendChild(child);
+  context.schedule(appendLockedToBody);
+  return context.suspend();
+}
+
+function finishTest(status_string) {
+  if (document.getElementById("log").innerHTML === "")
+    document.getElementById("log").innerHTML = status_string;
+  if (window.testRunner)
+    window.testRunner.notifyDone();
+}
+
+function acquire() {
+  let container = document.createElement("div");
+  container.id = "container";
+  let resume_handle;
+  container.acquireDisplayLock((context) => {
+    resume_handle = scheduleAndSuspend(context);
+  }).then(
+    () => { finishTest("PASS"); },
+    () => { finishTest("FAIL"); });
+  setTimeout(() => {
+    gc();
+    resume_handle.resume();
+  }, 100);
+}
+
+window.onload = acquire;
+</script>

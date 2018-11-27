@@ -351,11 +351,6 @@ crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional
 
 # Display locking, currently only available via a virtual test.
 crbug.com/882663 display-lock [ Skip ]
-# The following tests (and maybe the rest of them) need to be re-written to not rely on stale pixels.
-# In other words, the tests should only test the lock-before-append mode.
-crbug.com/882663 virtual/display-lock/display-lock/acquire-callback-throws.html [ Failure ]
-crbug.com/882663 virtual/display-lock/display-lock/context-suspend-no-schedules.html [ Failure ]
-crbug.com/882663 virtual/display-lock/display-lock/context-suspend.html [ Failure ]
 
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]

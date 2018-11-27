@@ -5,8 +5,8 @@ Runs an acquireDisplayLock, the callback throws.
 -->
 
 <style>
-#parent {
-  contain: paint;
+#container {
+  contain: content;
   width: 100px;
   height: 100px;
   background: lightblue;
@@ -14,27 +14,31 @@ Runs an acquireDisplayLock, the callback throws.
 </style>
 
 <div id="log"></div>
-<div id="parent"></div>
 
 <script>
 if (window.testRunner)
   window.testRunner.waitUntilDone();
 
 function throwingFunction(context) {
-  throw "Error";
+  throw "Expected Exception";
 }
 
-function finishTest(status_string) {
+function finishTest(status_string, to_remove) {
   if (document.getElementById("log").innerHTML === "")
     document.getElementById("log").innerHTML = status_string;
+  if (to_remove)
+    to_remove.remove();
   if (window.testRunner)
     window.testRunner.notifyDone();
 }
 
 function acquire() {
-  document.getElementById("parent").acquireDisplayLock(throwingFunction).then(
+  let container = document.createElement("div");
+  container.id = "container";
+  container.acquireDisplayLock(throwingFunction).then(
     () => { finishTest("FAIL"); },
-    () => { finishTest("PASS"); });
+    () => { finishTest("PASS", container); });
+  document.body.appendChild(container);
 }
 
 window.onload = acquire;

@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_suspended_handle.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -108,11 +109,12 @@ DisplayLockContext::~DisplayLockContext() {
 
 void DisplayLockContext::Trace(blink::Visitor* visitor) {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(callbacks_);
   visitor->Trace(resolver_);
   visitor->Trace(element_);
+  ScriptWrappable::Trace(visitor);
+  ActiveScriptWrappable::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 void DisplayLockContext::Dispose() {
@@ -201,10 +203,14 @@ void DisplayLockContext::ProcessQueue() {
       ALLOW_UNUSED_LOCAL(result);
       if (try_catch.HasCaught()) {
         RejectAndCleanUp();
+        // We should run the checkpoint here, since the rejection callback (for
+        // the promise rejected in RejectAndCleanUp()) may modify DOM which
+        // should happen here, as opposed to after a potential lifecycle update
+        // (or whenever the next microtask checkpoint is going to happen).
+        Microtask::PerformCheckpoint(callback->GetIsolate());
         return;
       }
     }
-    Microtask::PerformCheckpoint(callback->GetIsolate());
   }
 
   if (callbacks_.IsEmpty() && state_ != kSuspended) {
@@ -224,6 +230,14 @@ void DisplayLockContext::RejectAndCleanUp() {
     resolver_ = nullptr;
   }
   callbacks_.clear();
+
+  // We may have a dirty subtree and have not propagated the dirty bit up the
+  // ancestor tree. Since we're now rejecting the promise and unlocking the
+  // element, ensure that we can reach both style and layout subtrees if they
+  // are dirty by propagating the bit.
+  if (element_->NeedsStyleRecalc() || element_->ChildNeedsStyleRecalc())
+    element_->MarkAncestorsWithChildNeedsStyleRecalc();
+  InvalidateElementLayout();
 }
 
 void DisplayLockContext::Resume() {
@@ -296,6 +310,13 @@ void DisplayLockContext::DidStyle() {
   if (state_ != kCommitting)
     return;
 
+  // We must have contain: content for display locking.
+  auto* style = element_->GetComputedStyle();
+  if (!style || !style->ContainsContent()) {
+    RejectAndCleanUp();
+    return;
+  }
+
   if (lifecycle_update_state_ <= kNeedsStyle)
     lifecycle_update_state_ = kNeedsLayout;
 }
@@ -303,7 +324,7 @@ void DisplayLockContext::DidStyle() {
 bool DisplayLockContext::ShouldLayout() const {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
   return std::tie(state_, lifecycle_update_state_) >=
-         std::tuple<State, LifecycleUpdateState>(kCommitting, kNeedsLayout);
+         std::tuple<State, LifecycleUpdateState>{kCommitting, kNeedsLayout};
 }
 
 void DisplayLockContext::DidLayout() {
@@ -318,7 +339,7 @@ void DisplayLockContext::DidLayout() {
 bool DisplayLockContext::ShouldPrePaint() const {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
   return std::tie(state_, lifecycle_update_state_) >=
-         std::tuple<State, LifecycleUpdateState>(kCommitting, kNeedsPrePaint);
+         std::tuple<State, LifecycleUpdateState>{kCommitting, kNeedsPrePaint};
 }
 
 void DisplayLockContext::DidPrePaint() {
@@ -336,7 +357,7 @@ void DisplayLockContext::DidPrePaint() {
 bool DisplayLockContext::ShouldPaint() const {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
   return std::tie(state_, lifecycle_update_state_) >=
-         std::tuple<State, LifecycleUpdateState>(kCommitting, kNeedsPaint);
+         std::tuple<State, LifecycleUpdateState>{kCommitting, kNeedsPaint};
 }
 
 void DisplayLockContext::DidPaint() {
@@ -358,6 +379,18 @@ void DisplayLockContext::DidPaint() {
                                         WrapWeakPersistent(this)));
 }
 
+void DisplayLockContext::DidAttachLayoutTree() {
+  SCOPED_LOGGER(__PRETTY_FUNCTION__);
+
+  // Note that although we checked at style recalc time that the element has
+  // "contain: content", it might not actually apply the containment (e.g. see
+  // ShouldApplyContentContainment()). This confirms that containment should
+  // apply.
+  auto* layout_object = element_->GetLayoutObject();
+  if (!layout_object || !layout_object->ShouldApplyContentContainment())
+    RejectAndCleanUp();
+}
+
 void DisplayLockContext::FinishResolution() {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
   if (state_ == kResolving)
@@ -375,18 +408,27 @@ void DisplayLockContext::StartCommit() {
   else
     DidStyle();
 
+  if (state_ != kCommitting)
+    return;
+
   // Also ensure we reach it for layout.
   // TODO(vmpstr): This should just mark the ancestor chain if needed.
-  element_->GetLayoutObject()->SetNeedsLayout(
-      layout_invalidation_reason::kDisplayLockCommitting);
-  if (auto* parent = element_->GetLayoutObject()->Parent()) {
-    parent->SetNeedsLayout(layout_invalidation_reason::kDisplayLockCommitting);
-  }
+  InvalidateElementLayout();
 
   // Schedule an animation to perform the lifecycle phases.
   element_->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
       element_->GetDocument().GetFrame());
-  DCHECK(element_->GetLayoutObject());
+}
+
+void DisplayLockContext::InvalidateElementLayout() {
+  if (auto* layout_object = element_->GetLayoutObject()) {
+    layout_object->SetNeedsLayout(
+        layout_invalidation_reason::kDisplayLockCommitting);
+    if (auto* parent = layout_object->Parent()) {
+      parent->SetNeedsLayout(
+          layout_invalidation_reason::kDisplayLockCommitting);
+    }
+  }
 }
 
 }  // namespace blink
