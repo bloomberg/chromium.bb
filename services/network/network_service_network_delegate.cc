@@ -8,6 +8,7 @@
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/network_service_proxy_delegate.h"
+#include "services/network/pending_callback_chain.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/url_loader.h"
 
@@ -33,6 +34,9 @@ int NetworkServiceNetworkDelegate::OnBeforeStartTransaction(
     network_context_->proxy_delegate()->OnBeforeStartTransaction(request,
                                                                  headers);
   }
+  URLLoader* url_loader = URLLoader::ForRequest(*request);
+  if (url_loader)
+    return url_loader->OnBeforeStartTransaction(std::move(callback), headers);
   return net::OK;
 }
 
@@ -53,12 +57,21 @@ int NetworkServiceNetworkDelegate::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  // Clear-Site-Data header will be handled by |ResourceDispatcherHost|.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return net::OK;
+  auto chain = base::MakeRefCounted<PendingCallbackChain>(std::move(callback));
+  URLLoader* url_loader = URLLoader::ForRequest(*request);
+  if (url_loader) {
+    chain->AddResult(url_loader->OnHeadersReceived(
+        chain->CreateCallback(), original_response_headers,
+        override_response_headers, allowed_unsafe_redirect_url));
+  }
 
-  return HandleClearSiteDataHeader(request, std::move(callback),
-                                   original_response_headers);
+  // Clear-Site-Data header will be handled by |ResourceDispatcherHost| if
+  // network service is disabled.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    chain->AddResult(HandleClearSiteDataHeader(request, chain->CreateCallback(),
+                                               original_response_headers));
+  }
+  return chain->GetResult();
 }
 
 bool NetworkServiceNetworkDelegate::OnCanGetCookies(

@@ -94,6 +94,22 @@ struct AdditionalCertificates {
   array<X509Certificate> trust_anchors;
 };
 
+// Interface to allow modifying the full request and response headers. This
+// interface exposes sensitive headers such as set-cookie, so should only be
+// sent to trusted processes.
+interface TrustedURLLoaderHeaderClient {
+  // Allows modifying request headers before the request is sent.
+  OnBeforeSendHeaders(int32 request_id, HttpRequestHeaders headers) =>
+      (int32 result, HttpRequestHeaders? headers);
+
+  // Allows modifying response headers, including sensitive headers such as
+  // set-cookie. This should only be used from a trusted process.
+  OnHeadersReceived(int32 request_id, string headers) =>
+      (int32 result,
+       string? headers,
+       url.mojom.Url allowed_unsafe_redirect_url);
+};
+
 // Parameters for constructing a network context.
 struct NetworkContextParams {
   // Name used by memory tools to identify the context.
@@ -373,6 +389,12 @@ struct URLLoaderFactoryParams {
   // True if web related security (e.g., CORS) should be disabled. This is
   // mainly used by people testing their sites, via a command line switch.
   bool disable_web_security = false;
+
+  // If this is set, requests with the kURLLoadOptionUseHeaderClient option will
+  // callback to the |header_client|, allowing the Cookie/Referrer request
+  // headers and Cookie response headers to be modified. This has a performance
+  // impact because of the extra process hops, so use should be minimized.
+  TrustedURLLoaderHeaderClient? header_client;
 };
 
 // Callback interface for NetworkContext when routing identifiers aren't

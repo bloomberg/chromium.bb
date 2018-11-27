@@ -94,7 +94,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
         false /* report_raw_headers */, std::move(client),
         TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0, /* request_id */
         resource_scheduler_client_, nullptr,
-        nullptr /* network_usage_accumulator */);
+        nullptr /* network_usage_accumulator */, nullptr /* header_client */);
   }
 
   bool MaybeCreateLoaderForResponse(

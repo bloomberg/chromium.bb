@@ -106,6 +106,7 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
   auto factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
   network::mojom::URLLoaderFactoryRequest default_factory_request =
       mojo::MakeRequest(&factory_bundle->default_factory_info());
+  network::mojom::TrustedURLLoaderHeaderClientPtrInfo default_header_client;
   bool bypass_redirect_checks = false;
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
@@ -115,17 +116,19 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     // for more details.
     network::mojom::URLLoaderFactoryRequest default_network_factory_request =
         mojo::MakeRequest(&factory_bundle->default_network_factory_info());
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
         false /* is_navigation */, origin, &default_network_factory_request,
-        &bypass_redirect_checks);
+        &header_client, &bypass_redirect_checks);
 
     if (!GetNetworkFactoryCallbackForTest()) {
-      rph->CreateURLLoaderFactory(origin,
+      rph->CreateURLLoaderFactory(origin, std::move(header_client),
                                   std::move(default_network_factory_request));
     } else {
       network::mojom::URLLoaderFactoryPtr original_factory;
-      rph->CreateURLLoaderFactory(origin, mojo::MakeRequest(&original_factory));
+      rph->CreateURLLoaderFactory(origin, std::move(header_client),
+                                  mojo::MakeRequest(&original_factory));
       GetNetworkFactoryCallbackForTest()->Run(
           std::move(default_network_factory_request), rph->GetID(),
           original_factory.PassInterface());
@@ -137,7 +140,7 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
         false /* is_navigation */, origin, &default_factory_request,
-        &bypass_redirect_checks_for_default_factory);
+        &default_header_client, &bypass_redirect_checks_for_default_factory);
     DCHECK_EQ(bypass_redirect_checks,
               bypass_redirect_checks_for_default_factory)
         << "CreateFactoryBundle doesn't support multiple "
@@ -145,10 +148,12 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
   }
 
   if (!GetNetworkFactoryCallbackForTest()) {
-    rph->CreateURLLoaderFactory(origin, std::move(default_factory_request));
+    rph->CreateURLLoaderFactory(origin, std::move(default_header_client),
+                                std::move(default_factory_request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
-    rph->CreateURLLoaderFactory(origin, mojo::MakeRequest(&original_factory));
+    rph->CreateURLLoaderFactory(origin, std::move(default_header_client),
+                                mojo::MakeRequest(&original_factory));
     GetNetworkFactoryCallbackForTest()->Run(std::move(default_factory_request),
                                             rph->GetID(),
                                             original_factory.PassInterface());

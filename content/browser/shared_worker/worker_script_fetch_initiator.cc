@@ -157,7 +157,7 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
 
     network::mojom::URLLoaderFactoryPtr default_factory;
     RenderProcessHost::FromID(process_id)
-        ->CreateURLLoaderFactory(kSafeOrigin,
+        ->CreateURLLoaderFactory(kSafeOrigin, nullptr /* header_client */,
                                  mojo::MakeRequest(&default_factory));
     factory_bundle->default_factory_info() = default_factory.PassInterface();
   }

@@ -13,7 +13,7 @@
       {
         "id": "AddEventListenerOptions",
         "type": "string",
-        "enum": ["requestHeaders", "responseHeaders", "blocking", "asyncBlocking", "requestBody"]
+        "enum": ["requestHeaders", "responseHeaders", "blocking", "asyncBlocking", "requestBody", "extraHeaders"]
       }
     ],
     "functions": [

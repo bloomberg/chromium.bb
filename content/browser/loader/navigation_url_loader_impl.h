@@ -79,6 +79,14 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   static void SetBeginNavigationInterceptorForTesting(
       const BeginNavigationInterceptor& interceptor);
 
+  // Intercepts loading of frame requests when network service is enabled and a
+  // network::mojom::TrustedURLLoaderHeaderClient is being used. This must be
+  // called on the UI thread or before threads start.
+  using URLLoaderFactoryInterceptor = base::RepeatingCallback<void(
+      network::mojom::URLLoaderFactoryRequest* request)>;
+  static void SetURLLoaderFactoryInterceptorForTesting(
+      const URLLoaderFactoryInterceptor& interceptor);
+
  private:
   class URLLoaderRequestController;
   void OnRequestStarted(base::TimeTicks timestamp);

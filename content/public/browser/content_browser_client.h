@@ -345,6 +345,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   CreateURLLoaderFactoryForNetworkRequests(
       RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       const url::Origin& request_initiator);
 
   // Returns a list additional WebUI schemes, if any.  These additional schemes
@@ -1194,6 +1195,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // requests for the URLLoaderFactory. Otherwise |*factory_request| is left
   // unmodified and this must return |false|.
   //
+  // |header_client| may be bound within this call. This can be used in
+  // URLLoaderFactoryParams when creating the factory.
+  //
   // |bypass_redirect_checks| will be set to true when the embedder will be
   // handling redirect security checks.
   //
@@ -1206,6 +1210,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool is_navigation,
       const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks);
 
   // Allows the embedder to intercept a WebSocket connection. |*request|

@@ -292,13 +292,14 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
     bool is_navigation,
     const url::Origin& request_initiator,
     network::mojom::URLLoaderFactoryRequest* factory_request,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     bool* bypass_redirect_checks) {
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
           browser_context);
   bool use_proxy = web_request_api->MaybeProxyURLLoaderFactory(
-      browser_context, frame, render_process_id, is_navigation,
-      factory_request);
+      browser_context, frame, render_process_id, is_navigation, factory_request,
+      header_client);
   if (bypass_redirect_checks)
     *bypass_redirect_checks = use_proxy;
   return use_proxy;
@@ -321,9 +322,10 @@ network::mojom::URLLoaderFactoryPtrInfo
 ShellContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     const url::Origin& request_initiator) {
-  return URLLoaderFactoryManager::CreateFactory(process, network_context,
-                                                request_initiator);
+  return URLLoaderFactoryManager::CreateFactory(
+      process, network_context, header_client, request_initiator);
 }
 
 ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(

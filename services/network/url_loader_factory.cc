@@ -35,6 +35,7 @@ URLLoaderFactory::URLLoaderFactory(
     : context_(context),
       params_(std::move(params)),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
+      header_client_(std::move(params_->header_client)),
       cors_url_loader_factory_(cors_url_loader_factory) {
   DCHECK(context);
   DCHECK_NE(mojom::kInvalidProcessId, params_->process_id);
@@ -147,7 +148,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       params_.get(), request_id, resource_scheduler_client_,
       std::move(keepalive_statistics_recorder),
-      std::move(network_usage_accumulator));
+      std::move(network_usage_accumulator), header_client_.get());
   cors_url_loader_factory_->OnLoaderCreated(std::move(loader));
 }
 

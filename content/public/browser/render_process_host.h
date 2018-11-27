@@ -23,6 +23,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "ui/gfx/native_widget_types.h"
@@ -411,8 +412,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // auto-reconnect after a crash of Network Service.
   // When NetworkService is not enabled, |request| will be bound with a
   // URLLoaderFactory which routes requests to ResourceDispatcherHost.
+  //
+  // |header_client| will be used in URLLoaderFactoryParams when creating the
+  // factory.
   virtual void CreateURLLoaderFactory(
       const url::Origin& origin,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
       network::mojom::URLLoaderFactoryRequest request) = 0;
 
   // Whether this process is locked out from ever being reused for sites other

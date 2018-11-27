@@ -71,10 +71,13 @@ bool IsSpecialURLLoaderFactoryRequired(const Extension& extension,
 network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     const Extension& extension) {
   // Compute relaxed CORB config to be used by |extension|.
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
+  if (header_client)
+    params->header_client = std::move(*header_client);
   params->process_id = process->GetID();
   // TODO(lukasza): https://crbug.com/846346: Use more granular CORB enforcement
   // based on the specific |extension|'s permissions.
@@ -273,6 +276,7 @@ void URLLoaderFactoryManager::WillExecuteCode(content::RenderFrameHost* frame,
 network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     const url::Origin& initiator_origin) {
   content::BrowserContext* browser_context = process->GetBrowserContext();
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
@@ -309,7 +313,8 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
   // Create the factory (but only if really needed).
   if (!IsSpecialURLLoaderFactoryRequired(*extension, factory_user))
     return network::mojom::URLLoaderFactoryPtrInfo();
-  return CreateURLLoaderFactory(process, network_context, *extension);
+  return CreateURLLoaderFactory(process, network_context, header_client,
+                                *extension);
 }
 
 }  // namespace extensions

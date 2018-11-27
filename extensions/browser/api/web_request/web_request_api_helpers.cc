@@ -147,6 +147,8 @@ bool ExtraInfoSpec::InitFromValue(const base::ListValue& value,
       *extra_info_spec |= ASYNC_BLOCKING;
     else if (str == "requestBody")
       *extra_info_spec |= REQUEST_BODY;
+    else if (str == "extraHeaders")
+      *extra_info_spec |= EXTRA_HEADERS;
     else
       return false;
   }
@@ -307,7 +309,8 @@ EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
     const base::Time& extension_install_time,
     bool cancel,
     net::HttpRequestHeaders* old_headers,
-    net::HttpRequestHeaders* new_headers) {
+    net::HttpRequestHeaders* new_headers,
+    int extra_info_spec) {
   EventResponseDelta* result =
       new EventResponseDelta(extension_id, extension_install_time);
   result->cancel = cancel;
@@ -319,6 +322,8 @@ EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
     {
       net::HttpRequestHeaders::Iterator i(*old_headers);
       while (i.GetNext()) {
+        if (ShouldHideRequestHeader(extra_info_spec, i.name()))
+          continue;
         if (!new_headers->HasHeader(i.name())) {
           result->deleted_request_headers.push_back(i.name());
         }
@@ -329,6 +334,8 @@ EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
     {
       net::HttpRequestHeaders::Iterator i(*new_headers);
       while (i.GetNext()) {
+        if (ShouldHideRequestHeader(extra_info_spec, i.name()))
+          continue;
         std::string value;
         if (!old_headers->GetHeader(i.name(), &value) || i.value() != value) {
           result->modified_request_headers.SetHeader(i.name(), i.value());
@@ -346,7 +353,8 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     const GURL& old_url,
     const GURL& new_url,
     const net::HttpResponseHeaders* old_response_headers,
-    ResponseHeaders* new_response_headers) {
+    ResponseHeaders* new_response_headers,
+    int extra_info_spec) {
   EventResponseDelta* result =
       new EventResponseDelta(extension_id, extension_install_time);
   result->cancel = cancel;
@@ -366,6 +374,8 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     while (old_response_headers->EnumerateHeaderLines(&iter, &name, &value)) {
       if (api_client->ShouldHideResponseHeader(old_url, name))
         continue;
+      if (ShouldHideResponseHeader(extra_info_spec, name))
+        continue;
       std::string name_lowercase = base::ToLowerASCII(name);
       bool header_found = false;
       for (const auto& i : *new_response_headers) {
@@ -384,6 +394,8 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
   {
     for (const auto& i : *new_response_headers) {
       if (api_client->ShouldHideResponseHeader(old_url, i.first))
+        continue;
+      if (ShouldHideResponseHeader(extra_info_spec, i.first))
         continue;
       std::string name_lowercase = base::ToLowerASCII(i.first);
       size_t iter = 0;
@@ -1335,6 +1347,23 @@ std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
                 StringToCharList(value));
   }
   return header;
+}
+
+bool ShouldHideRequestHeader(int extra_info_spec, const std::string& name) {
+  static const std::set<std::string> kRequestHeaders{
+      "accept-encoding",
+      "accept-language",
+      "cookie",
+      "referer",
+  };
+  return !(extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) &&
+         kRequestHeaders.find(base::ToLowerASCII(name)) !=
+             kRequestHeaders.end();
+}
+
+bool ShouldHideResponseHeader(int extra_info_spec, const std::string& name) {
+  return !(extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) &&
+         base::LowerCaseEqualsASCII(name, "set-cookie");
 }
 
 }  // namespace extension_web_request_api_helpers

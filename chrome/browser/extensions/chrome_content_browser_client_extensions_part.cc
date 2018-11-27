@@ -885,9 +885,10 @@ ChromeContentBrowserClientExtensionsPart::
     CreateURLLoaderFactoryForNetworkRequests(
         content::RenderProcessHost* process,
         network::mojom::NetworkContext* network_context,
+        network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
         const url::Origin& request_initiator) {
-  return URLLoaderFactoryManager::CreateFactory(process, network_context,
-                                                request_initiator);
+  return URLLoaderFactoryManager::CreateFactory(
+      process, network_context, header_client, request_initiator);
 }
 
 // static

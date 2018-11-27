@@ -67,7 +67,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       uint32_t request_id,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
       base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
-      base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator);
+      base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
+      mojom::TrustedURLLoaderHeaderClient* header_client);
   ~URLLoader() override;
 
   // mojom::URLLoader implementation:
@@ -95,6 +96,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
                              bool fatal) override;
   void OnResponseStarted(net::URLRequest* url_request, int net_error) override;
   void OnReadCompleted(net::URLRequest* url_request, int bytes_read) override;
+
+  // These methods are called by the network delegate to forward these events to
+  // the |header_client_|.
+  int OnBeforeStartTransaction(net::CompletionOnceCallback callback,
+                               net::HttpRequestHeaders* headers);
+  int OnHeadersReceived(
+      net::CompletionOnceCallback callback,
+      const net::HttpResponseHeaders* original_response_headers,
+      scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url);
 
   // mojom::AuthChallengeResponder:
   void OnAuthCredentials(
@@ -175,6 +186,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   bool HasDataPipe() const;
   void RecordBodyReadFromNetBeforePausedIfNeeded();
   void ResumeStart();
+  void OnBeforeSendHeadersComplete(
+      net::CompletionOnceCallback callback,
+      net::HttpRequestHeaders* out_headers,
+      int result,
+      const base::Optional<net::HttpRequestHeaders>& headers);
+  void OnHeadersReceivedComplete(
+      net::CompletionOnceCallback callback,
+      scoped_refptr<net::HttpResponseHeaders>* out_headers,
+      GURL* out_allowed_unsafe_redirect_url,
+      int result,
+      const base::Optional<std::string>& headers,
+      const GURL& allowed_unsafe_redirect_url);
 
   enum BlockResponseForCorbResult {
     // Returned when caller of BlockResponseForCorb doesn't need to continue,
@@ -286,6 +309,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // Indicates the originating frame of the request, see
   // network::ResourceRequest::fetch_window_id for details.
   base::Optional<base::UnguessableToken> fetch_window_id_;
+
+  mojom::TrustedURLLoaderHeaderClient* header_client_ = nullptr;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
 

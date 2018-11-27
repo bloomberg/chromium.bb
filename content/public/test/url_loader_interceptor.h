@@ -121,6 +121,7 @@ class URLLoaderInterceptor {
   class Interceptor;
   class SubresourceWrapper;
   class URLLoaderFactoryGetterWrapper;
+  class URLLoaderFactoryNavigationWrapper;
 
   // Used to create a factory for subresources in the network service case.
   void CreateURLLoaderFactoryForSubresources(
@@ -138,6 +139,11 @@ class URLLoaderInterceptor {
   // is called on an object that doesn't have a test factory set up.
   void GetNetworkFactoryCallback(
       URLLoaderFactoryGetter* url_loader_factory_getter);
+
+  // Callback on UI thread whenever NavigationURLLoaderImpl needs a
+  // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient.
+  void InterceptNavigationRequestCallback(
+      network::mojom::URLLoaderFactoryRequest* request);
 
   // Callback on IO thread whenever a NavigationURLLoaderImpl is loading a frame
   // request through ResourceDispatcherHost (i.e. when the network service is
@@ -177,6 +183,8 @@ class URLLoaderInterceptor {
   // For intercepting subresources with network service. There is one per active
   // render frame commit. Only accessed on IO thread.
   std::set<std::unique_ptr<SubresourceWrapper>> subresource_wrappers_;
+  std::set<std::unique_ptr<URLLoaderFactoryNavigationWrapper>>
+      navigation_wrappers_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderInterceptor);
 };

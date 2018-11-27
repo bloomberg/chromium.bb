@@ -150,6 +150,26 @@ class URLLoaderInterceptor::URLLoaderFactoryGetterWrapper {
   URLLoaderFactoryGetter* url_loader_factory_getter_;
 };
 
+class URLLoaderInterceptor::URLLoaderFactoryNavigationWrapper {
+ public:
+  URLLoaderFactoryNavigationWrapper(
+      network::mojom::URLLoaderFactoryRequest request,
+      network::mojom::URLLoaderFactoryPtr target_factory,
+      URLLoaderInterceptor* parent)
+      : target_factory_(std::move(target_factory)) {
+    interceptor_ = std::make_unique<Interceptor>(
+        parent, base::BindRepeating([]() { return 0; }),
+        base::BindLambdaForTesting([=]() -> network::mojom::URLLoaderFactory* {
+          return this->target_factory_.get();
+        }));
+    interceptor_->BindRequest(std::move(request));
+  }
+
+ private:
+  std::unique_ptr<Interceptor> interceptor_;
+  network::mojom::URLLoaderFactoryPtr target_factory_;
+};
+
 // This class intercepts calls to
 // StoragePartition::GetURLLoaderFactoryForBrowserProcess.
 class URLLoaderInterceptor::BrowserProcessWrapper {
@@ -245,6 +265,13 @@ URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback)
               &URLLoaderInterceptor::GetURLLoaderFactoryForBrowserProcess,
               base::Unretained(this)));
 
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
+        base::BindRepeating(
+            &URLLoaderInterceptor::InterceptNavigationRequestCallback,
+            base::Unretained(this)));
+  }
+
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     base::RunLoop run_loop;
     base::PostTaskWithTraits(
@@ -272,6 +299,11 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
   StoragePartitionImpl::
       SetGetURLLoaderFactoryForBrowserProcessCallbackForTesting(
           StoragePartitionImpl::CreateNetworkFactoryCallback());
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
+        NavigationURLLoaderImpl::URLLoaderFactoryInterceptor());
+  }
 
   base::RunLoop run_loop;
   base::PostTaskWithTraits(
@@ -381,6 +413,19 @@ void URLLoaderInterceptor::GetNetworkFactoryCallback(
   url_loader_factory_getter_wrappers_.emplace(
       std::make_unique<URLLoaderFactoryGetterWrapper>(url_loader_factory_getter,
                                                       this));
+}
+
+void URLLoaderInterceptor::InterceptNavigationRequestCallback(
+    network::mojom::URLLoaderFactoryRequest* request) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  auto proxied_request = std::move(*request);
+  network::mojom::URLLoaderFactoryPtr target_factory;
+  *request = mojo::MakeRequest(&target_factory);
+
+  navigation_wrappers_.emplace(
+      std::make_unique<URLLoaderFactoryNavigationWrapper>(
+          std::move(proxied_request), std::move(target_factory), this));
 }
 
 bool URLLoaderInterceptor::BeginNavigationCallback(
