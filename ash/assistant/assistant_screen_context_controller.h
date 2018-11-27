@@ -13,6 +13,7 @@
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
@@ -25,12 +26,15 @@ class AssistantController;
 class AssistantScreenContextModelObserver;
 
 class ASH_EXPORT AssistantScreenContextController
-    : public AssistantControllerObserver,
+    : public ash::mojom::AssistantScreenContextController,
+      public AssistantControllerObserver,
       public AssistantUiModelObserver {
  public:
   explicit AssistantScreenContextController(
       AssistantController* assistant_controller);
   ~AssistantScreenContextController() override;
+
+  void BindRequest(mojom::AssistantScreenContextControllerRequest request);
 
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
@@ -42,12 +46,11 @@ class ASH_EXPORT AssistantScreenContextController
   void AddModelObserver(AssistantScreenContextModelObserver* observer);
   void RemoveModelObserver(AssistantScreenContextModelObserver* observer);
 
-  // Requests a screenshot for the region defined by |rect| (given in DP). If
-  // an empty rect is supplied, the entire screen is captured. Upon screenshot
-  // completion, the specified |callback| is run.
+  // ash::mojom::AssistantScreenContextController:
   void RequestScreenshot(
       const gfx::Rect& rect,
-      mojom::AssistantController::RequestScreenshotCallback callback);
+      mojom::AssistantScreenContextController::RequestScreenshotCallback
+          callback) override;
 
   // AssistantControllerObserver:
   void OnAssistantControllerConstructed() override;
@@ -65,6 +68,8 @@ class ASH_EXPORT AssistantScreenContextController
 
  private:
   AssistantController* const assistant_controller_;  // Owned by Shell.
+
+  mojo::Binding<mojom::AssistantScreenContextController> binding_;
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;

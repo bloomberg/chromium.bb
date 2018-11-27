@@ -22,14 +22,26 @@ interface AssistantController {
   SetAssistantImageDownloader(
     AssistantImageDownloader assistant_image_downloader);
 
-  // Provides an interface to the |assistant_setup| owned by AssistantClient.
-  SetAssistantSetup(AssistantSetup assistant_setup);
-
-  // Requests screenshot of specified |rect| region and returns the screenshot
-  // encoded in JPEG format. If |rect| is empty, it returns fullscreen
-  // screenshot.
-  RequestScreenshot(gfx.mojom.Rect rect) => (array<uint8> screenshot);
-
   // Opens Google Assistant settings.
   OpenAssistantSettings();
+};
+
+// Interface to the AssistantScreenContextController which is owned by the
+// AssistantController. Currently used by the Assistant service to request
+// screenshots.
+interface AssistantScreenContextController {
+  // Requests a screenshot of the region enclosed by |rect| and returns the
+  // screenshot encoded in JPEG format. If |rect| is empty, it returns a
+  // fullscreen screenshot.
+  RequestScreenshot(gfx.mojom.Rect rect) => (array<uint8> screenshot);
+};
+
+// Interface to the AssistantSetupController which is owned by the
+// AssistantController. Currently used by AssistantSetup in chrome/browser
+// to provide an interface to itself. This is used for triggering a runtime
+// onboarding flow.
+interface AssistantSetupController {
+  // Provides an interface to the |assistant_setup| owned by AssistantClient
+  // in chrome/browser.
+  SetAssistantSetup(AssistantSetup assistant_setup);
 };

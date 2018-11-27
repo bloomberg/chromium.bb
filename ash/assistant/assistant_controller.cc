@@ -99,23 +99,6 @@ void AssistantController::SetAssistantImageDownloader(
   assistant_image_downloader_ = std::move(assistant_image_downloader);
 }
 
-// TODO(dmblack): Call SetAssistantSetup directly on AssistantSetupController
-// instead of going through AssistantController.
-void AssistantController::SetAssistantSetup(
-    mojom::AssistantSetupPtr assistant_setup) {
-  assistant_setup_ = std::move(assistant_setup);
-  assistant_setup_controller_->SetAssistantSetup(assistant_setup_.get());
-}
-
-// TODO(dmblack): Expose AssistantScreenContextController over mojo rather
-// than implementing RequestScreenshot here in AssistantController.
-void AssistantController::RequestScreenshot(
-    const gfx::Rect& rect,
-    RequestScreenshotCallback callback) {
-  assistant_screen_context_controller_->RequestScreenshot(rect,
-                                                          std::move(callback));
-}
-
 void AssistantController::OpenAssistantSettings() {
   // Launch Assistant settings via deeplink.
   OpenUrl(assistant::util::CreateAssistantSettingsDeepLink());

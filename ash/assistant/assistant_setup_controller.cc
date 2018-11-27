@@ -12,7 +12,7 @@ namespace ash {
 
 AssistantSetupController::AssistantSetupController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {
+    : assistant_controller_(assistant_controller), binding_(this) {
   assistant_controller_->AddObserver(this);
 }
 
@@ -20,9 +20,14 @@ AssistantSetupController::~AssistantSetupController() {
   assistant_controller_->RemoveObserver(this);
 }
 
+void AssistantSetupController::BindRequest(
+    mojom::AssistantSetupControllerRequest request) {
+  binding_.Bind(std::move(request));
+}
+
 void AssistantSetupController::SetAssistantSetup(
-    mojom::AssistantSetup* assistant_setup) {
-  assistant_setup_ = assistant_setup;
+    mojom::AssistantSetupPtr assistant_setup) {
+  assistant_setup_ = std::move(assistant_setup);
 }
 
 void AssistantSetupController::OnDeepLinkReceived(
