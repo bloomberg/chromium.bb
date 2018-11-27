@@ -223,6 +223,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkDestroyShaderModuleFn)
     return false;
 
+  vkDeviceWaitIdleFn = reinterpret_cast<PFN_vkDeviceWaitIdle>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDeviceWaitIdle"));
+  if (!vkDeviceWaitIdleFn)
+    return false;
+
   vkFreeCommandBuffersFn = reinterpret_cast<PFN_vkFreeCommandBuffers>(
       vkGetDeviceProcAddrFn(vk_device, "vkFreeCommandBuffers"));
   if (!vkFreeCommandBuffersFn)

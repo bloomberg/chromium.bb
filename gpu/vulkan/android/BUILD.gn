@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
+import("//testing/test.gni")
 
 assert(enable_vulkan)
 assert(is_android)
@@ -22,12 +23,28 @@ component("android") {
 
   defines = [ "IS_VULKAN_ANDROID_IMPL" ]
 
-  deps = [ "//ui/gfx" ]
+  deps = [
+    "//ui/gfx",
+  ]
 
   public_configs = [ ":vulkan_android" ]
 
   public_deps = [
     "//base",
     "//gpu/vulkan",
+  ]
+}
+
+test("vk_tests") {
+  deps = [
+    ":android",
+    "//base:base",
+    "//base/test:test_support",
+    "//components/viz/common:vulkan_context_provider",
+    "//testing/gtest",
+  ]
+  sources = [
+    "run_all_unittests.cc",
+    "vulkan_android_unittests.cc",
   ]
 }

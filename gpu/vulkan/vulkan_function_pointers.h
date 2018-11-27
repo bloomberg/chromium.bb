@@ -91,6 +91,7 @@ struct VulkanFunctionPointers {
   PFN_vkDestroySampler vkDestroySamplerFn = nullptr;
   PFN_vkDestroySemaphore vkDestroySemaphoreFn = nullptr;
   PFN_vkDestroyShaderModule vkDestroyShaderModuleFn = nullptr;
+  PFN_vkDeviceWaitIdle vkDeviceWaitIdleFn = nullptr;
   PFN_vkFreeCommandBuffers vkFreeCommandBuffersFn = nullptr;
   PFN_vkFreeDescriptorSets vkFreeDescriptorSetsFn = nullptr;
   PFN_vkFreeMemory vkFreeMemoryFn = nullptr;
@@ -202,6 +203,7 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkDestroySemaphoreFn
 #define vkDestroyShaderModule \
   gpu::GetVulkanFunctionPointers()->vkDestroyShaderModuleFn
+#define vkDeviceWaitIdle gpu::GetVulkanFunctionPointers()->vkDeviceWaitIdleFn
 #define vkFreeCommandBuffers \
   gpu::GetVulkanFunctionPointers()->vkFreeCommandBuffersFn
 #define vkFreeDescriptorSets \
