@@ -282,7 +282,7 @@ void SigninManager::Initialize(PrefService* local_state) {
       client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
   std::string user = account_id.empty() ? std::string() :
       account_tracker_service()->GetAccountInfo(account_id).email;
-  if ((!account_id.empty() && !IsAllowedUsername(user)) || !IsSigninAllowed()) {
+  if (!account_id.empty() && (!IsAllowedUsername(user) || !IsSigninAllowed())) {
     // User is signed in, but the username is invalid or signin is no longer
     // allowed, so the user must be sign out.
     //
