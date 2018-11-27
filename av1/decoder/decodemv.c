@@ -1354,12 +1354,10 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   if (mbmi->skip_mode) assert(mbmi->mode == NEAREST_NEARESTMV);
 
-  {
-    int mv_corrupted_flag =
-        !assign_mv(cm, xd, mbmi->mode, mbmi->ref_frame, mbmi->mv, ref_mv,
-                   nearestmv, nearmv, mi_row, mi_col, is_compound, allow_hp, r);
-    aom_merge_corrupted_flag(&xd->corrupted, mv_corrupted_flag);
-  }
+  int mv_corrupted_flag =
+      !assign_mv(cm, xd, mbmi->mode, mbmi->ref_frame, mbmi->mv, ref_mv,
+                 nearestmv, nearmv, mi_row, mi_col, is_compound, allow_hp, r);
+  aom_merge_corrupted_flag(&xd->corrupted, mv_corrupted_flag);
 
   mbmi->use_wedge_interintra = 0;
   if (cm->seq_params.enable_interintra_compound && !mbmi->skip_mode &&
