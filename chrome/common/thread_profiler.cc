@@ -24,7 +24,6 @@
 
 using CallStackProfileBuilder = metrics::CallStackProfileBuilder;
 using CallStackProfileParams = metrics::CallStackProfileParams;
-using LegacyCallStackProfileBuilder = metrics::LegacyCallStackProfileBuilder;
 using StackSamplingProfiler = base::StackSamplingProfiler;
 
 namespace {
@@ -70,13 +69,7 @@ std::unique_ptr<base::StackSamplingProfiler::ProfileBuilder>
 CreateProfileBuilder(
     const CallStackProfileParams& params,
     base::OnceClosure completed_callback = base::OnceClosure()) {
-  // Enable the new profile builder half the time.
-  if (base::RandInt(0, 99) < 50) {
-    return std::make_unique<CallStackProfileBuilder>(
-        params, std::move(completed_callback));
-  }
-
-  return std::make_unique<LegacyCallStackProfileBuilder>(
+  return std::make_unique<CallStackProfileBuilder>(
       params, std::move(completed_callback));
 }
 
@@ -167,7 +160,6 @@ void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
 void ThreadProfiler::SetBrowserProcessReceiverCallback(
     const base::RepeatingCallback<void(base::TimeTicks,
                                        metrics::SampledProfile)>& callback) {
-  LegacyCallStackProfileBuilder::SetBrowserProcessReceiverCallback(callback);
   CallStackProfileBuilder::SetBrowserProcessReceiverCallback(callback);
 }
 
@@ -182,7 +174,7 @@ void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
   metrics::mojom::CallStackProfileCollectorPtr browser_interface;
   connector->BindInterface(content::mojom::kBrowserServiceName,
                            &browser_interface);
-  LegacyCallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
+  CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
       std::move(browser_interface));
 }
 
