@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/base/ui_base_features.h"
 
 ArcAppContextMenu::ArcAppContextMenu(app_list::AppContextMenuDelegate* delegate,
                                      Profile* profile,
@@ -30,10 +29,6 @@ ArcAppContextMenu::~ArcAppContextMenu() = default;
 void ArcAppContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
   BuildMenu(menu_model.get());
-  if (!features::IsTouchableAppContextMenuEnabled()) {
-    std::move(callback).Run(std::move(menu_model));
-    return;
-  }
   BuildAppShortcutsMenu(std::move(menu_model), std::move(callback));
 }
 
@@ -50,14 +45,10 @@ void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   if (!controller()->IsAppOpen(app_id()) && !app_info->suspended) {
     AddContextMenuOption(menu_model, ash::LAUNCH_NEW,
                          IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
-    if (!features::IsTouchableAppContextMenuEnabled())
-      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   }
   // Create default items.
   app_list::AppContextMenu::BuildMenu(menu_model);
 
-  if (!features::IsTouchableAppContextMenuEnabled())
-    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   if (arc_prefs->IsShortcut(app_id())) {
     AddContextMenuOption(menu_model, ash::UNINSTALL,
                          IDS_APP_LIST_REMOVE_SHORTCUT);

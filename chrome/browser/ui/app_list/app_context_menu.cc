@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -37,9 +36,6 @@ void AppContextMenu::GetMenuModel(GetMenuModelCallback callback) {
 void AppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   // Show Pin/Unpin option if shelf is available.
   if (controller_->GetPinnable(app_id()) != AppListControllerDelegate::NO_PIN) {
-    if (!features::IsTouchableAppContextMenuEnabled())
-      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-
     AddContextMenuOption(menu_model, ash::TOGGLE_PIN,
                          controller_->IsAppPinned(app_id_)
                              ? IDS_APP_LIST_CONTEXT_MENU_UNPIN
@@ -93,14 +89,12 @@ void AppContextMenu::TogglePin(const std::string& shelf_app_id) {
 void AppContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
                                           ash::CommandId command_id,
                                           int string_id) {
-  // Do not include disabled items in touchable menus.
-  if (features::IsTouchableAppContextMenuEnabled() &&
-      !IsCommandIdEnabled(command_id)) {
+  // Do not include disabled items.
+  if (!IsCommandIdEnabled(command_id))
     return;
-  }
 
   const gfx::VectorIcon& icon = GetMenuItemVectorIcon(command_id, string_id);
-  if (features::IsTouchableAppContextMenuEnabled() && !icon.is_empty()) {
+  if (!icon.is_empty()) {
     const views::MenuConfig& menu_config = views::MenuConfig::instance();
     menu_model->AddItemWithStringIdAndIcon(
         command_id, string_id,
@@ -178,9 +172,6 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
 
 bool AppContextMenu::GetIconForCommandId(int command_id,
                                          gfx::Image* icon) const {
-  if (!features::IsTouchableAppContextMenuEnabled())
-    return false;
-
   if (command_id == ash::TOGGLE_PIN) {
     const views::MenuConfig& menu_config = views::MenuConfig::instance();
     *icon = gfx::Image(gfx::CreateVectorIcon(

@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/views/crostini/crostini_app_restart_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/strings/grit/ui_strings.h"
 
 CrostiniShelfContextMenu::CrostiniShelfContextMenu(
@@ -72,9 +71,6 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
                                            IDS_CROSTINI_USE_LOW_DENSITY);
     }
   }
-
-  if (!features::IsTouchableAppContextMenuEnabled())
-    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
 }
 
 void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
