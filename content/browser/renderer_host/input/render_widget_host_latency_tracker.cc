@@ -160,9 +160,14 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
               ? ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT
               : ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
           original_event_timestamp, 1);
+      latency->AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
+          original_event_timestamp, 1);
     }
 
     has_seen_first_gesture_scroll_update_ = true;
+    latency->set_scroll_update_delta(
+        static_cast<const WebGestureEvent&>(event).data.scroll_update.delta_y);
   }
 }
 

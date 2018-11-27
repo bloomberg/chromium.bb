@@ -115,6 +115,13 @@ StructTraits<ui::mojom::LatencyInfoDataView,
 }
 
 // static
+float StructTraits<ui::mojom::LatencyInfoDataView,
+                   ui::LatencyInfo>::scroll_update_delta(const ui::LatencyInfo&
+                                                             info) {
+  return info.scroll_update_delta();
+}
+
+// static
 bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
     ui::mojom::LatencyInfoDataView data,
     ui::LatencyInfo* out) {
@@ -128,6 +135,7 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
   out->began_ = data.began();
   out->terminated_ = data.terminated();
   out->source_event_type_ = MojoSourceEventTypeToUI(data.source_event_type());
+  out->scroll_update_delta_ = data.scroll_update_delta();
 
   return true;
 }
@@ -184,6 +192,9 @@ EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::ToMojom(
     case ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT;
     case ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;
@@ -288,6 +299,10 @@ bool EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::
     case ui::mojom::LatencyComponentType::
         INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT:
       *output = ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT;
       return true;
   }
   return false;
