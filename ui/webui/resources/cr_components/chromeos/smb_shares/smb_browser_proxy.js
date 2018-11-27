@@ -20,6 +20,12 @@ const SmbMountResult = {
   UNSUPPORTED_DEVICE: 4,
   MOUNT_EXISTS: 5,
   INVALID_URL: 6,
+  INVALID_OPERATION: 7,
+  DBUS_PARSE_FAILED: 8,
+  OUT_OF_MEMORY: 9,
+  ABORTED: 10,
+  IO_ERROR: 11,
+  TOO_MANY_OPENED: 12,
 };
 
 /** @enum {string} */

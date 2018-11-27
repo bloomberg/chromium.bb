@@ -34531,6 +34531,13 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Not found"/>
   <int value="4" label="Unsupported device"/>
   <int value="5" label="Mount exists"/>
+  <int value="6" label="Invalid URL format"/>
+  <int value="7" label="Invalid operation"/>
+  <int value="8" label="D-Bus failure"/>
+  <int value="9" label="Out of memory"/>
+  <int value="10" label="Operation aborted"/>
+  <int value="11" label="I/O error"/>
+  <int value="12" label="Too many opened"/>
 </enum>
 
 <enum name="NatTypeCounters">
