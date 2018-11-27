@@ -37,16 +37,15 @@ namespace {
 const char kDmTokenBaseDir[] =
     FILE_PATH_LITERAL("Google/Chrome Cloud Enrollment/");
 const CFStringRef kEnrollmentTokenPolicyName =
+    CFSTR("CloudManagementEnrollmentToken");
+// TODO(crbug.com/907589) : Remove once no longer in use.
+const CFStringRef kEnrollmentTokenOldPolicyName =
     CFSTR("MachineLevelUserCloudPolicyEnrollmentToken");
 const char kEnrollmentTokenFilePath[] =
-#if defined(GOOGLE_CHROME_BUILD)
-    FILE_PATH_LITERAL(
-        "/Library/Google/Chrome/MachineLevelUserCloudPolicyEnrollmentToken");
-#else
-    FILE_PATH_LITERAL(
-        "/Library/Application "
-        "Support/Chromium/MachineLevelUserCloudPolicyEnrollmentToken");
-#endif
+    FILE_PATH_LITERAL("/Library/Google/Chrome/CloudManagementEnrollmentToken");
+// TODO(crbug.com/907589) : Remove once no longer in use.
+const char kEnrollmentTokenOldFilePath[] = FILE_PATH_LITERAL(
+    "/Library/Google/Chrome/MachineLevelUserCloudPolicyEnrollmentToken");
 
 bool GetDmTokenFilePath(base::FilePath* token_file_path,
                         const std::string& client_id,
@@ -96,9 +95,18 @@ bool GetEnrollmentTokenFromPolicy(std::string* enrollment_token) {
   base::ScopedCFTypeRef<CFPropertyListRef> value(
       CFPreferencesCopyAppValue(kEnrollmentTokenPolicyName, bundle_id));
 
+  // Read the enrollment token from the new location. If that fails, try the old
+  // location (which will be deprecated soon). If that also fails, bail as there
+  // is no token set.
   if (!value ||
       !CFPreferencesAppValueIsForced(kEnrollmentTokenPolicyName, bundle_id)) {
-    return false;
+    // TODO(crbug.com/907589) : Remove once no longer in use.
+    value.reset(
+        CFPreferencesCopyAppValue(kEnrollmentTokenOldPolicyName, bundle_id));
+    if (!value || !CFPreferencesAppValueIsForced(kEnrollmentTokenOldPolicyName,
+                                                 bundle_id)) {
+      return false;
+    }
   }
   CFStringRef value_string = base::mac::CFCast<CFStringRef>(value);
   if (!value_string)
@@ -109,9 +117,16 @@ bool GetEnrollmentTokenFromPolicy(std::string* enrollment_token) {
 }
 
 bool GetEnrollmentTokenFromFile(std::string* enrollment_token) {
+  // Read the enrollment token from the new location. If that fails, try the old
+  // location (which will be deprecated soon). If that also fails, bail as there
+  // is no token set.
   if (!base::ReadFileToString(base::FilePath(kEnrollmentTokenFilePath),
                               enrollment_token)) {
-    return false;
+    // TODO(crbug.com/907589) : Remove once no longer in use.
+    if (!base::ReadFileToString(base::FilePath(kEnrollmentTokenOldFilePath),
+                                enrollment_token)) {
+      return false;
+    }
   }
   *enrollment_token =
       base::TrimWhitespaceASCII(*enrollment_token, base::TRIM_ALL).as_string();
