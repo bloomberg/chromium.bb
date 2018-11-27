@@ -2249,6 +2249,9 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   if (!in_bounds_changed_)
     window_->SetBounds(rect);
 
+  // Even if not showing yet, we need to synchronize on size. As the renderer
+  // needs to begin layout. Waiting until we show to start layout leads to
+  // significant delays in embedding the first shown surface (500+ ms.)
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                               window_->GetLocalSurfaceIdAllocation());
 
@@ -2557,14 +2560,21 @@ RenderWidgetHostViewAura::DidUpdateVisualProperties(
 }
 
 void RenderWidgetHostViewAura::DidNavigate() {
-  // The first navigation does not need a new LocalSurfaceID. The renderer can
-  // use the ID that was already provided.
-  if (is_first_navigation_) {
-    SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
-                                window_->GetLocalSurfaceIdAllocation());
+  if (!IsShowing()) {
+    // Navigating while hidden should not allocate a new LocalSurfaceID. Once
+    // sizes are ready, or we begin to Show, we can then allocate the new
+    // LocalSurfaceId.
+    window_->InvalidateLocalSurfaceId();
   } else {
-    SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
-                                base::nullopt);
+    if (is_first_navigation_) {
+      // The first navigation does not need a new LocalSurfaceID. The renderer
+      // can use the ID that was already provided.
+      SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
+                                  window_->GetLocalSurfaceIdAllocation());
+    } else {
+      SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
+                                  base::nullopt);
+    }
   }
   if (delegated_frame_host_)
     delegated_frame_host_->DidNavigate();

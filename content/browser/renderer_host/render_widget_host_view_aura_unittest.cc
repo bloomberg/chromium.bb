@@ -5781,6 +5781,9 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
       view_->GetLocalSurfaceIdAllocation().local_surface_id();
   EXPECT_TRUE(id0.is_valid());
 
+  // No LocalSurfaceId will be allocated if the view is hidden during
+  // naviagtion.
+  view_->Show();
   // No new LocalSurfaceId should be allocated for the first navigation and the
   // timer should not fire.
   widget_host_->DidNavigate(1);
