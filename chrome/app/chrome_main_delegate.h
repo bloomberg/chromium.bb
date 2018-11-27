@@ -67,6 +67,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   void PostEarlyInitialization(bool is_running_tests) override;
   bool ShouldCreateFeatureList() override;
 #endif
+  void PostFieldTrialInitialization() override;
 
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentGpuClient* CreateContentGpuClient() override;

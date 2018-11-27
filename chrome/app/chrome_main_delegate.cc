@@ -46,6 +46,7 @@
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/crash/core/common/crash_keys.h"
+#include "components/gwp_asan/client/gwp_asan.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/services/heap_profiling/public/cpp/allocator_shim.h"
 #include "components/services/heap_profiling/public/cpp/stream.h"
@@ -515,6 +516,7 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
 
   DCHECK(chrome_feature_list_creator_);
   chrome_feature_list_creator_->CreateFeatureList();
+  PostFieldTrialInitialization();
 
   // Initializes the resouce bundle and determines the locale.
   std::string actual_locale =
@@ -529,6 +531,12 @@ bool ChromeMainDelegate::ShouldCreateFeatureList() {
   return false;
 }
 #endif
+
+void ChromeMainDelegate::PostFieldTrialInitialization() {
+#if defined(OS_WIN)
+  gwp_asan::EnableForMalloc();
+#endif
+}
 
 bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 #if defined(OS_CHROMEOS)
