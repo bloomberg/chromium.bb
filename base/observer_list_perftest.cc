@@ -64,11 +64,10 @@ TYPED_TEST_CASE(ObserverListPerfTest, ObserverTypes);
 // Performance test for base::ObserverList and Checked Observers.
 // Times out on Android (crbug.com/906686).
 #if defined(OS_ANDROID)
-#define MAYBE_NotifyPerformance DISABLED_NotifyPerformance
+TYPED_TEST(ObserverListPerfTest, DISABLED_NotifyPerformance) {
 #else
-#define MAYBE_NotifyPerformance NotifyPerformance
+TYPED_TEST(ObserverListPerfTest, NotifyPerformance) {
 #endif
-TYPED_TEST(ObserverListPerfTest, MAYBE_NotifyPerformance) {
   constexpr int kMaxObservers = 128;
 #if DCHECK_IS_ON()
   // The test takes about 100x longer in debug builds, mostly due to sequence
