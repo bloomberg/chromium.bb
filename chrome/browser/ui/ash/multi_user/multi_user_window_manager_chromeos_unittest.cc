@@ -302,6 +302,10 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
     return ash::UserSwitchAnimator::CoversScreen(window);
   }
 
+  void FlushWindowClientBinding() {
+    multi_user_window_manager_->client_binding_.FlushForTesting();
+  }
+
  private:
   chromeos::ScopedStubInstallAttributes test_install_attributes_;
 
@@ -1737,7 +1741,10 @@ TEST_F(MultiUserWindowManagerChromeOSMashTest, SetWindowOwner) {
   multi_user_window_manager()->ShowWindowForUser(widget->GetNativeWindow(),
                                                  account2);
   aura::test::WaitForAllChangesToComplete();
+  FlushWindowClientBinding();
   EXPECT_TRUE(widget->IsVisible());
+  EXPECT_EQ(account2, multi_user_window_manager()->GetUserPresentingWindow(
+                          widget->GetNativeWindow()));
 }
 
 }  // namespace ash

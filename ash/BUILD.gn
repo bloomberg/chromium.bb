@@ -526,6 +526,7 @@ component("ash") {
     "multi_profile_uma.cc",
     "multi_profile_uma.h",
     "multi_user/multi_user_window_manager.cc",
+    "multi_user/multi_user_window_manager_window_delegate.h",
     "multi_user/user_switch_animator.cc",
     "multi_user/user_switch_animator.h",
     "network_connect_delegate_mus.cc",

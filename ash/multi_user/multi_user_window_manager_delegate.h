@@ -20,6 +20,9 @@ class ASH_EXPORT MultiUserWindowManagerDelegate {
   // Called when the owner of the window tracked by the manager is changed.
   // |was_minimized| is true if the window was minimized. |teleported| is true
   // if the window was not on the desktop of the current user.
+  // NOTE: when running this is not called for windows that are created through
+  // the WindowService. Windows created by the WindowService supply a
+  // MultiUserWindowManagerWindowDelegate.
   virtual void OnOwnerEntryChanged(aura::Window* window,
                                    const AccountId& account_id,
                                    bool was_minimized,

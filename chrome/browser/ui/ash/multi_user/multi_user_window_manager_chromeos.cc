@@ -142,6 +142,9 @@ MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
         views::MusClient::Get()
             ->window_tree_client()
             ->BindWindowManagerInterface<ash::mojom::MultiUserWindowManager>();
+    ash::mojom::MultiUserWindowManagerClientAssociatedPtrInfo ptr_info;
+    client_binding_.Bind(mojo::MakeRequest(&ptr_info));
+    multi_user_window_manager_mojom_->SetClient(std::move(ptr_info));
   }
 }
 
@@ -408,4 +411,25 @@ void MultiUserWindowManagerChromeOS::AddBrowserWindow(Browser* browser) {
     return;
   SetWindowOwner(browser->window()->GetNativeWindow(),
                  multi_user_util::GetAccountIdFromProfile(browser->profile()));
+}
+
+void MultiUserWindowManagerChromeOS::OnWindowOwnerEntryChanged(
+    ws::Id window_id,
+    const AccountId& account_id,
+    bool was_minimized,
+    bool teleported) {
+  // This undoes the logic in GetWindowMus(). See it for details.
+  aura::WindowMus* window_mus =
+      views::MusClient::Get()->window_tree_client()->GetWindowByServerId(
+          window_id);
+  if (!window_mus)
+    return;
+
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(window_mus->GetWindow());
+  if (!widget)
+    return;
+
+  OnOwnerEntryChanged(widget->GetNativeWindow(), account_id, was_minimized,
+                      teleported);
 }

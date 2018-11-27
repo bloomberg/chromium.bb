@@ -127,17 +127,6 @@ bool WindowService::IsTopLevelWindow(const aura::Window* window) {
   return server_window && server_window->IsTopLevel();
 }
 
-ws::Id WindowService::GetTopLevelWindowId(aura::Window* window) {
-  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  if (!server_window || !server_window->IsTopLevel())
-    return kInvalidTransportId;
-
-  const ws::WindowTree* owning_tree = server_window->owning_window_tree();
-  return BuildTransportId(
-      owning_tree->client_id(),
-      owning_tree->ClientWindowIdForWindow(window).sink_id());
-}
-
 aura::Window* WindowService::GetWindowByClientId(Id transport_id) {
   const ClientSpecificId client_id = ClientIdFromTransportId(transport_id);
   WindowTree* window_tree = GetTreeById(client_id);

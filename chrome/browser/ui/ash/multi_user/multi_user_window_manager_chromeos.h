@@ -16,6 +16,8 @@
 #include "components/account_id/account_id.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "services/ws/common/types.h"
 #include "ui/aura/window_observer.h"
 
 class AppObserver;
@@ -45,6 +47,7 @@ class Window;
 class MultiUserWindowManagerChromeOS
     : public MultiUserWindowManager,
       public ash::MultiUserWindowManagerDelegate,
+      public ash::mojom::MultiUserWindowManagerClient,
       public aura::WindowObserver,
       public content::NotificationObserver {
  public:
@@ -122,6 +125,12 @@ class MultiUserWindowManagerChromeOS
     DISALLOW_COPY_AND_ASSIGN(WindowEntry);
   };
 
+  // ash::mojom::MultiUserWindowManagerClient:
+  void OnWindowOwnerEntryChanged(ws::Id window_id,
+                                 const AccountId& account_id,
+                                 bool was_minimized,
+                                 bool teleported) override;
+
   using AccountIdToAppWindowObserver = std::map<AccountId, AppObserver*>;
 
   using WindowToEntryMap =
@@ -158,6 +167,9 @@ class MultiUserWindowManagerChromeOS
   // Browser windows when running in mash.
   ash::mojom::MultiUserWindowManagerAssociatedPtr
       multi_user_window_manager_mojom_;
+
+  mojo::AssociatedBinding<ash::mojom::MultiUserWindowManagerClient>
+      client_binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOS);
 };

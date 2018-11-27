@@ -9,6 +9,8 @@ import "components/account_id/interfaces/account_id.mojom";
 // Used to assign windows to user accounts so that ash shows the appropriate set
 // of windows based on the active user.
 interface MultiUserWindowManager {
+  SetClient(associated MultiUserWindowManagerClient client);
+
   // Associates a window with an account. If |show_for_current_user| is true,
   // the window is associated with |account_id|, but is shown for the currently
   // active user.
@@ -19,4 +21,14 @@ interface MultiUserWindowManager {
   // Shows a previously registered window for the specified account.
   ShowWindowForUser(uint64 window_id,
                     signin.mojom.AccountId account_id);
+};
+
+interface MultiUserWindowManagerClient {
+  // Called when the owner of a window supplied to SetWindowOwner() changes.
+  // |was_minimized| is true if the window was minimized. |teleported| is true
+  // if the window was not on the desktop of the current user.
+  OnWindowOwnerEntryChanged(uint64 window_id,
+                            signin.mojom.AccountId account_id,
+                            bool was_minimized,
+                            bool teleported);
 };
