@@ -20,12 +20,6 @@ COMPONENT_EXPORT(MEDIA_WEBRTC) extern const char kAgcStartupMinVolume[];
 namespace features {
 
 COMPONENT_EXPORT(MEDIA_WEBRTC)
-extern const base::Feature kWebRtcAecBoundedErlSetup;
-COMPONENT_EXPORT(MEDIA_WEBRTC)
-extern const base::Feature kWebRtcAecClockDriftSetup;
-COMPONENT_EXPORT(MEDIA_WEBRTC)
-extern const base::Feature kWebRtcAecNoiseTransparency;
-COMPONENT_EXPORT(MEDIA_WEBRTC)
 extern const base::Feature kWebRtcApmInAudioService;
 COMPONENT_EXPORT(MEDIA_WEBRTC)
 extern const base::Feature kWebRtcHybridAgc;

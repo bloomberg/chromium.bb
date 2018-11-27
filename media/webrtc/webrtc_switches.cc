@@ -25,21 +25,6 @@ const char kAgcStartupMinVolume[] = "agc-startup-min-volume";
 
 namespace features {
 
-// Informs the WebRTC Acoustic Echo Canceler (AEC) that echo path loss is
-// bounded.
-const base::Feature kWebRtcAecBoundedErlSetup{
-    "WebRtcAecBoundedErlSetup", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Informs the WebRTC Acoustic Echo Canceler (AEC) that the playout and
-// capture is done using different clocks.
-const base::Feature kWebRtcAecClockDriftSetup{
-    "WebRtcAecClockDriftSetup", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Informs the WebRTC Acoustic Echo Canceler (AEC) that the feature providing
-// echo canceller transparency to render noise should be used.
-const base::Feature kWebRtcAecNoiseTransparency{
-    "WebRtcAecNoiseTransparency", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables running WebRTC Audio Processing in the audio service, rather than
 // in the renderer process. Should be combined with running the audio service
 // out of the browser process, except for when testing locally.

@@ -222,16 +222,8 @@ void AudioProcessor::InitializeAPM() {
   // Echo cancellation is configured both before and after AudioProcessing
   // construction, but before Initialize.
   if (settings_.echo_cancellation == EchoCancellationType::kAec3) {
-    webrtc::EchoCanceller3Config aec3_config;
-    aec3_config.ep_strength.bounded_erl =
-        base::FeatureList::IsEnabled(features::kWebRtcAecBoundedErlSetup);
-    aec3_config.echo_removal_control.has_clock_drift =
-        base::FeatureList::IsEnabled(features::kWebRtcAecClockDriftSetup);
-    aec3_config.echo_audibility.use_stationary_properties =
-        base::FeatureList::IsEnabled(features::kWebRtcAecNoiseTransparency);
-
     ap_builder.SetEchoControlFactory(
-        std::make_unique<webrtc::EchoCanceller3Factory>(aec3_config));
+        std::make_unique<webrtc::EchoCanceller3Factory>());
   }
 
   // AGC setup part 1.
