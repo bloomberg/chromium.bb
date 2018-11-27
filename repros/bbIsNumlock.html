@@ -1,0 +1,23 @@
+<html>
+<body>
+    <div>bbIsNumLock test</div>
+    <div id="edit" contenteditable=true style="width:500px;height:300px"></div>
+    <div id="output">Type any key</div>
+</body>
+<script>
+var edit = document.getElementById('edit');
+var output = document.getElementById('output');
+
+function addLog(text) {
+    output.innerText += "\n" + text;
+}
+
+function keydownHandler(event) {
+    console.log("keydown - ", event);
+    addLog("bbIsNumLock " + (event.bbIsNumLock));
+} 
+
+edit.focus();
+edit.addEventListener('keydown', keydownHandler);
+</script>
+</html>
