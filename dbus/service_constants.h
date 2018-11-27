@@ -82,6 +82,8 @@ const char kLoadDlcImage[] = "LoadDlcImage";
 // Constants
 const char kBadResult[] = "";
 const char kTerminaComponentName[] = "cros-termina";
+const char kSlotNameA[] = "Dlc-A";
+const char kSlotNameB[] = "Dlc-B";
 }  // namespace imageloader
 
 namespace dlcservice {
