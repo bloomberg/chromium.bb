@@ -7,9 +7,9 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/tts_controller.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -118,7 +118,7 @@ void AccessibilityControllerClient::ToggleDictation(
 }
 
 void AccessibilityControllerClient::SilenceSpokenFeedback() {
-  TtsController::GetInstance()->Stop();
+  content::TtsController::GetInstance()->Stop();
 }
 
 void AccessibilityControllerClient::OnTwoFingerTouchStart() {

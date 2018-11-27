@@ -46,7 +46,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_paths.h"
@@ -71,6 +70,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/tts_controller.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -1345,7 +1345,7 @@ void AccessibilityManager::PostUnloadChromeVox() {
   SetDarkenScreen(false);
 
   // Stop speech.
-  TtsController::GetInstance()->Stop();
+  content::TtsController::GetInstance()->Stop();
 }
 
 void AccessibilityManager::PostSwitchChromeVoxProfile() {
@@ -1374,7 +1374,7 @@ void AccessibilityManager::PostUnloadSelectToSpeak() {
   HideHighlights();
 
   // Stop speech.
-  TtsController::GetInstance()->Stop();
+  content::TtsController::GetInstance()->Stop();
 }
 
 void AccessibilityManager::PostLoadSwitchAccess() {

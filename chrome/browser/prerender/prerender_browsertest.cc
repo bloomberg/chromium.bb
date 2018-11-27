@@ -57,7 +57,7 @@
 #include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/speech/tts_controller.h"
+#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
@@ -100,6 +100,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/tts_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
@@ -3468,11 +3469,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 class TtsPlatformMock : public TtsPlatformImpl {
  public:
   TtsPlatformMock() : speaking_requested_(false) {
-    TtsController::GetInstance()->SetPlatformImpl(this);
+    TtsControllerDelegateImpl::GetInstance()->SetPlatformImpl(this);
   }
 
   ~TtsPlatformMock() override {
-    TtsController::GetInstance()->SetPlatformImpl(
+    TtsControllerDelegateImpl::GetInstance()->SetPlatformImpl(
         TtsPlatformImpl::GetInstance());
   }
 
@@ -3485,13 +3486,13 @@ class TtsPlatformMock : public TtsPlatformImpl {
   bool Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
-             const VoiceData& voice,
-             const UtteranceContinuousParameters& params) override {
+             const content::VoiceData& voice,
+             const content::UtteranceContinuousParameters& params) override {
     speaking_requested_ = true;
     // Dispatch the end of speaking back to the page.
-    TtsController::GetInstance()->OnTtsEvent(utterance_id, TTS_EVENT_END,
-                                             static_cast<int>(utterance.size()),
-                                             std::string());
+    content::TtsController::GetInstance()->OnTtsEvent(
+        utterance_id, content::TTS_EVENT_END,
+        static_cast<int>(utterance.size()), std::string());
     return true;
   }
 
@@ -3499,12 +3500,12 @@ class TtsPlatformMock : public TtsPlatformImpl {
 
   bool IsSpeaking() override { return false; }
 
-  void GetVoices(std::vector<VoiceData>* out_voices) override {
-    out_voices->push_back(VoiceData());
-    VoiceData& voice = out_voices->back();
+  void GetVoices(std::vector<content::VoiceData>* out_voices) override {
+    out_voices->push_back(content::VoiceData());
+    content::VoiceData& voice = out_voices->back();
     voice.native = true;
     voice.name = "TtsPlatformMock";
-    voice.events.insert(TTS_EVENT_END);
+    voice.events.insert(content::TTS_EVENT_END);
   }
 
   void Pause() override {}

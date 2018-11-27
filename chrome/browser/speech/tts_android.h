@@ -16,13 +16,13 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
   bool Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
-             const VoiceData& voice,
-             const UtteranceContinuousParameters& params) override;
+             const content::VoiceData& voice,
+             const content::UtteranceContinuousParameters& params) override;
   bool StopSpeaking() override;
   void Pause() override;
   void Resume() override;
   bool IsSpeaking() override;
-  void GetVoices(std::vector<VoiceData>* out_voices) override;
+  void GetVoices(std::vector<content::VoiceData>* out_voices) override;
 
   // Methods called from Java via JNI.
   void VoicesChanged(JNIEnv* env,
@@ -46,8 +46,9 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
   TtsPlatformImplAndroid();
   ~TtsPlatformImplAndroid() override;
 
-  void SendFinalTtsEvent(
-      int utterance_id, TtsEventType event_type, int char_index);
+  void SendFinalTtsEvent(int utterance_id,
+                         content::TtsEventType event_type,
+                         int char_index);
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   int utterance_id_;

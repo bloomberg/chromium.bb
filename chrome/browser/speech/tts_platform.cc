@@ -23,6 +23,6 @@ void TtsPlatformImpl::set_error(const std::string& error) {
   error_ = error;
 }
 
-void TtsPlatformImpl::WillSpeakUtteranceWithVoice(const Utterance* utterance,
-                                                  const VoiceData& voice_data) {
-}
+void TtsPlatformImpl::WillSpeakUtteranceWithVoice(
+    const content::Utterance* utterance,
+    const content::VoiceData& voice_data) {}
