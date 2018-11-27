@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_global_rule_set.h"
 #include "third_party/blink/renderer/core/css/document_style_sheet_collection.h"
+#include "third_party/blink/renderer/core/css/font_display.h"
 #include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
 #include "third_party/blink/renderer/core/css/layout_tree_rebuild_root.h"
@@ -349,6 +350,8 @@ class CORE_EXPORT StyleEngine final
       const AtomicString& animation_name);
 
   DocumentStyleEnvironmentVariables& EnsureEnvironmentVariables();
+  void AddDefaultFontDisplay(const StyleRuleFontFeatureValues*);
+  FontDisplay GetDefaultFontDisplay(const AtomicString& family) const;
 
   scoped_refptr<StyleInitialData> MaybeCreateAndGetInitialData();
 
@@ -444,9 +447,9 @@ class CORE_EXPORT StyleEngine final
   void ClearFontCacheAndAddUserFonts();
   void ClearKeyframeRules() { keyframes_rule_map_.clear(); }
 
-  void AddFontFaceRules(const RuleSet&);
-  void AddKeyframeRules(const RuleSet&);
-  void AddKeyframeStyle(StyleRuleKeyframes*);
+  void AddUserFontFaceRules(const RuleSet&);
+  void AddUserKeyframeRules(const RuleSet&);
+  void AddUserKeyframeStyle(StyleRuleKeyframes*);
 
   Member<Document> document_;
   bool is_master_;
@@ -528,6 +531,10 @@ class CORE_EXPORT StyleEngine final
   scoped_refptr<DocumentStyleEnvironmentVariables> environment_variables_;
 
   scoped_refptr<StyleInitialData> initial_data_;
+
+  // Default font-display collected from @font-feature-values rules. The key is
+  // font-family.
+  HashMap<AtomicString, FontDisplay> default_font_display_map_;
 
   friend class StyleEngineTest;
 };

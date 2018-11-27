@@ -31,8 +31,10 @@
 
 namespace blink {
 
+class CSSIdentifierValue;
 class CSSRule;
 class CSSStyleSheet;
+class CSSValueList;
 
 class CORE_EXPORT StyleRuleBase
     : public GarbageCollectedFinalized<StyleRuleBase> {
@@ -49,6 +51,7 @@ class CORE_EXPORT StyleRuleBase
     kNamespace,
     kSupports,
     kViewport,
+    kFontFeatureValues,
   };
 
   RuleType GetType() const { return static_cast<RuleType>(type_); }
@@ -64,6 +67,9 @@ class CORE_EXPORT StyleRuleBase
   bool IsSupportsRule() const { return GetType() == kSupports; }
   bool IsViewportRule() const { return GetType() == kViewport; }
   bool IsImportRule() const { return GetType() == kImport; }
+  bool IsFontFeatureValuesRule() const {
+    return GetType() == kFontFeatureValues;
+  }
 
   StyleRuleBase* Copy() const;
 
@@ -334,6 +340,35 @@ class StyleRuleCharset : public StyleRuleBase {
  private:
 };
 
+class CORE_EXPORT StyleRuleFontFeatureValues : public StyleRuleBase {
+ public:
+  static StyleRuleFontFeatureValues* Create(
+      const CSSValueList* font_family,
+      const CSSIdentifierValue* font_display) {
+    return new StyleRuleFontFeatureValues(font_family, font_display);
+  }
+
+  StyleRuleFontFeatureValues* Copy() const {
+    return new StyleRuleFontFeatureValues(*this);
+  }
+
+  const CSSValueList& FontFamily() const {
+    DCHECK(font_family_);
+    return *font_family_;
+  }
+  const CSSIdentifierValue* FontDisplay() const { return font_display_; }
+
+  void TraceAfterDispatch(blink::Visitor*);
+
+ private:
+  StyleRuleFontFeatureValues(const CSSValueList* font_family,
+                             const CSSIdentifierValue* font_display);
+  StyleRuleFontFeatureValues(const StyleRuleFontFeatureValues&) = default;
+
+  Member<const CSSValueList> font_family_;
+  Member<const CSSIdentifierValue> font_display_;
+};
+
 #define DEFINE_STYLE_RULE_TYPE_CASTS(Type)                \
   DEFINE_TYPE_CASTS(StyleRule##Type, StyleRuleBase, rule, \
                     rule->Is##Type##Rule(), rule.Is##Type##Rule())
@@ -349,6 +384,7 @@ DEFINE_STYLE_RULE_TYPE_CASTS(Media);
 DEFINE_STYLE_RULE_TYPE_CASTS(Supports);
 DEFINE_STYLE_RULE_TYPE_CASTS(Viewport);
 DEFINE_STYLE_RULE_TYPE_CASTS(Charset);
+DEFINE_STYLE_RULE_TYPE_CASTS(FontFeatureValues);
 
 }  // namespace blink
 

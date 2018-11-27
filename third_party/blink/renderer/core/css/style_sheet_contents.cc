@@ -536,6 +536,7 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(
       case StyleRuleBase::kKeyframe:
       case StyleRuleBase::kSupports:
       case StyleRuleBase::kViewport:
+      case StyleRuleBase::kFontFeatureValues:
         break;
     }
   }
