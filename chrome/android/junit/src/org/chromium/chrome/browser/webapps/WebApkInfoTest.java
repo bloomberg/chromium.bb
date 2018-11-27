@@ -137,7 +137,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(1L, info.themeColor());
         Assert.assertTrue(info.hasValidBackgroundColor());
         Assert.assertEquals(2L, info.backgroundColor());
-        Assert.assertEquals(WEBAPK_PACKAGE_NAME, info.apkPackageName());
+        Assert.assertEquals(WEBAPK_PACKAGE_NAME, info.webApkPackageName());
         Assert.assertEquals(SHELL_APK_VERSION, info.shellApkVersion());
         Assert.assertEquals(MANIFEST_URL, info.manifestUrl());
         Assert.assertEquals(START_URL, info.manifestStartUrl());

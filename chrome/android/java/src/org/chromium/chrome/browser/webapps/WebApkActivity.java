@@ -87,7 +87,7 @@ public class WebApkActivity extends WebappActivity {
 
     @Override
     public String getNativeClientPackageName() {
-        return getWebappInfo().apkPackageName();
+        return getWebappInfo().webApkPackageName();
     }
 
     @Override
