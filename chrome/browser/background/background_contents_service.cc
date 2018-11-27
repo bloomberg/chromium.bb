@@ -90,13 +90,11 @@ void CloseBalloon(const std::string& extension_id, Profile* profile) {
 // app/extension when the balloon is clicked.
 class CrashNotificationDelegate : public message_center::NotificationDelegate {
  public:
-  CrashNotificationDelegate(Profile* profile,
-                            const Extension* extension)
+  CrashNotificationDelegate(Profile* profile, const Extension* extension)
       : profile_(profile),
         is_hosted_app_(extension->is_hosted_app()),
         is_platform_app_(extension->is_platform_app()),
-        extension_id_(extension->id()) {
-  }
+        extension_id_(extension->id()) {}
 
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override {
@@ -117,11 +115,12 @@ class CrashNotificationDelegate : public message_center::NotificationDelegate {
                                                     copied_extension_id);
       }
     } else if (is_platform_app_) {
-      apps::AppLoadService::Get(profile_)->
-          RestartApplication(copied_extension_id);
+      apps::AppLoadService::Get(profile_)->RestartApplication(
+          copied_extension_id);
     } else {
-      extensions::ExtensionSystem::Get(profile_)->extension_service()->
-          ReloadExtension(copied_extension_id);
+      extensions::ExtensionSystem::Get(profile_)
+          ->extension_service()
+          ->ReloadExtension(copied_extension_id);
     }
 
     CloseBalloon(copied_extension_id, profile_);
@@ -172,13 +171,13 @@ void NotificationImageReady(const std::string extension_name,
 // extension.
 void ShowBalloon(const Extension* extension, Profile* profile) {
   const base::string16 message = l10n_util::GetStringFUTF16(
-      extension->is_app() ? IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
-                            IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
+      extension->is_app() ? IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE
+                          : IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
       base::UTF8ToUTF16(extension->name()));
   extension_misc::ExtensionIcons size(extension_misc::EXTENSION_ICON_LARGE);
   extensions::ExtensionResource resource =
-      extensions::IconsInfo::GetIconResource(
-          extension, size, ExtensionIconSet::MATCH_SMALLER);
+      extensions::IconsInfo::GetIconResource(extension, size,
+                                             ExtensionIconSet::MATCH_SMALLER);
   // We can't just load the image in the Observe method below because, despite
   // what this method is called, it may call the callback synchronously.
   // However, it's possible that the extension went away during the interim,
@@ -194,7 +193,7 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
 void ReloadExtension(const std::string& extension_id, Profile* profile) {
   if (g_browser_process->IsShuttingDown() ||
       !g_browser_process->profile_manager()->IsValidProfile(profile)) {
-      return;
+    return;
   }
 
   extensions::ExtensionSystem* extension_system =
@@ -234,14 +233,14 @@ const char kFrameNameKey[] = "name";
 
 // Defines the backoff policy used for attempting to reload extensions.
 const net::BackoffEntry::Policy kExtensionReloadBackoffPolicy = {
-  0,                // Initial errors to ignore before applying backoff.
-  3000,             // Initial delay: 3 seconds.
-  2,                // Multiply factor.
-  0.1,              // Fuzzing percentage.
-  -1,               // Maximum backoff time: -1 for no maximum.
-  -1,               // Entry lifetime: -1 to never discard.
-  false,            // Whether to always use initial delay. No-op as there are
-                    // no initial errors to ignore.
+    0,      // Initial errors to ignore before applying backoff.
+    3000,   // Initial delay: 3 seconds.
+    2,      // Multiply factor.
+    0.1,    // Fuzzing percentage.
+    -1,     // Maximum backoff time: -1 for no maximum.
+    -1,     // Entry lifetime: -1 to never discard.
+    false,  // Whether to always use initial delay. No-op as there are
+            // no initial errors to ignore.
 };
 
 int BackgroundContentsService::restart_delay_in_ms_ = 3000;  // 3 seconds.
@@ -290,13 +289,12 @@ void BackgroundContentsService::ShowBalloonForTesting(
 
 // static
 void BackgroundContentsService::DisableCloseBalloonForTesting(
-      bool disable_close_balloon_for_testing) {
+    bool disable_close_balloon_for_testing) {
   g_disable_close_balloon_for_testing = disable_close_balloon_for_testing;
 }
 
 std::vector<BackgroundContents*>
-BackgroundContentsService::GetBackgroundContents() const
-{
+BackgroundContentsService::GetBackgroundContents() const {
   std::vector<BackgroundContents*> contents;
   for (auto it = contents_map_.begin(); it != contents_map_.end(); ++it)
     contents.push_back(it->second.contents);
@@ -328,8 +326,7 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
 
   // Track when the extensions crash so that the user can be notified
   // about it, and the crashed contents can be restarted.
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+  registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
                  content::Source<Profile>(profile));
@@ -394,9 +391,9 @@ void BackgroundContentsService::Observe(
         std::string extension_id =
             BackgroundContentsServiceFactory::GetForProfile(profile)
                 ->GetParentApplicationId(bg);
-        extension =
-          extensions::ExtensionSystem::Get(profile)->extension_service()->
-              GetExtensionById(extension_id, false);
+        extension = extensions::ExtensionSystem::Get(profile)
+                        ->extension_service()
+                        ->GetExtensionById(extension_id, false);
       } else {
         extensions::ExtensionHost* extension_host =
             content::Details<extensions::ExtensionHost>(details).ptr();
@@ -564,11 +561,11 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
   extensions::ExtensionService* extensions_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(extensions_service);
-  for (base::DictionaryValue::Iterator it(*contents);
-       !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*contents); !it.IsAtEnd();
+       it.Advance()) {
     // Check to make sure that the parent extension is still enabled.
-    const Extension* extension = extensions_service->
-        GetExtensionById(it.key(), false);
+    const Extension* extension =
+        extensions_service->GetExtensionById(it.key(), false);
     if (!extension) {
       // We should never reach here - it should not be possible for an app
       // to become uninstalled without the associated BackgroundContents being
@@ -612,9 +609,9 @@ void BackgroundContentsService::LoadBackgroundContentsForExtension(
     Profile* profile,
     const std::string& extension_id) {
   // First look if the manifest specifies a background page.
-  const Extension* extension =
-      extensions::ExtensionSystem::Get(profile)->extension_service()->
-          GetExtensionById(extension_id, false);
+  const Extension* extension = extensions::ExtensionSystem::Get(profile)
+                                   ->extension_service()
+                                   ->GetExtensionById(extension_id, false);
   DCHECK(!extension || extension->is_hosted_app());
   if (extension && BackgroundInfo::HasBackgroundPage(extension)) {
     LoadBackgroundContents(profile, BackgroundInfo::GetBackgroundURL(extension),
@@ -704,8 +701,7 @@ BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
 
   // Register the BackgroundContents internally, then send out a notification
   // to external listeners.
-  BackgroundContentsOpenedDetails details = {contents,
-                                             frame_name,
+  BackgroundContentsOpenedDetails details = {contents, frame_name,
                                              application_id};
   BackgroundContentsOpened(&details, profile);
   content::NotificationService::current()->Notify(
