@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
@@ -241,8 +240,6 @@ int UnpackedInstaller::GetFlags() {
 bool UnpackedInstaller::LoadExtension(Manifest::Location location,
                                       int flags,
                                       std::string* error) {
-  base::AssertBlockingAllowedDeprecated();
-
   // Clean up the kMetadataFolder if necessary. This prevents spurious
   // warnings/errors and ensures we don't treat a user provided file as one by
   // the Extension system.
@@ -267,7 +264,6 @@ bool UnpackedInstaller::LoadExtension(Manifest::Location location,
 
 bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   DCHECK(extension());
-  base::AssertBlockingAllowedDeprecated();
 
   const ExtensionResource* resource =
       declarative_net_request::DNRManifestData::GetRulesetResource(extension());
@@ -301,8 +297,6 @@ bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
 }
 
 void UnpackedInstaller::GetAbsolutePath() {
-  base::AssertBlockingAllowedDeprecated();
-
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
   base::PostTaskWithTraits(
@@ -326,8 +320,6 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
 }
 
 void UnpackedInstaller::LoadWithFileAccess(int flags) {
-  base::AssertBlockingAllowedDeprecated();
-
   std::string error;
   if (!LoadExtension(Manifest::UNPACKED, flags, &error)) {
     base::PostTaskWithTraits(
