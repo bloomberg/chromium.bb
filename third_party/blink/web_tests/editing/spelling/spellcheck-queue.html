@@ -6,7 +6,7 @@
 
 <script>
 function runIdleTimeSpellCheckerIfNeeded(document) {
-  if (!window.internals || !internals.runtimeFlags.idleSpellCheckCallbackEnabled)
+  if (!window.internals)
     return;
   internals.runIdleTimeSpellChecker(document);
 }
