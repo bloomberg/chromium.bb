@@ -16,6 +16,6 @@
 # the implemented braille code. Preferably submit the documents
 # to https://github.com/liblouis/braille-specs.
 
-include de-de-g2.ctb
+include de-g2.ctb
 include hyph_de_DE.dic
 include braille-patterns.cti
