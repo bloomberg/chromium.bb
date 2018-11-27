@@ -501,6 +501,10 @@ SpeechRecognitionManagerDelegate*
   return nullptr;
 }
 
+TtsControllerDelegate* ContentBrowserClient::GetTtsControllerDelegate() {
+  return nullptr;
+}
+
 net::NetLog* ContentBrowserClient::GetNetLog() {
   return nullptr;
 }

@@ -11,6 +11,8 @@
 #include "chrome/browser/speech/tts_platform.h"
 #include "content/public/test/test_utils.h"
 
+// TODO(katie): This may need to move into Content as part of the TTS refactor.
+
 namespace chromeos {
 
 // For testing purpose installs itself as the platform speech synthesis engine,
@@ -41,18 +43,19 @@ class SpeechMonitor : public TtsPlatformImpl {
   bool Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
-             const VoiceData& voice,
-             const UtteranceContinuousParameters& params) override;
+             const content::VoiceData& voice,
+             const content::UtteranceContinuousParameters& params) override;
   bool StopSpeaking() override;
   bool IsSpeaking() override;
-  void GetVoices(std::vector<VoiceData>* out_voices) override;
+  void GetVoices(std::vector<content::VoiceData>* out_voices) override;
   void Pause() override {}
   void Resume() override {}
   std::string error() override;
   void clear_error() override {}
   void set_error(const std::string& error) override {}
-  void WillSpeakUtteranceWithVoice(const Utterance* utterance,
-                                   const VoiceData& voice_data) override;
+  void WillSpeakUtteranceWithVoice(
+      const content::Utterance* utterance,
+      const content::VoiceData& voice_data) override;
 
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
   base::circular_deque<std::string> utterance_queue_;

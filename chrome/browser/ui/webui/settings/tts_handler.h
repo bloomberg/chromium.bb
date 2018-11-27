@@ -6,15 +6,16 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_TTS_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "content/public/browser/tts_controller.h"
 
 class Profile;
 
 namespace settings {
 
 // Chrome "/manageAccessibility/tts/*" settings page UI handler.
-class TtsHandler : public SettingsPageUIHandler, public VoicesChangedDelegate {
+class TtsHandler : public SettingsPageUIHandler,
+                   public content::VoicesChangedDelegate {
  public:
   TtsHandler();
   ~TtsHandler() override;
@@ -34,7 +35,7 @@ class TtsHandler : public SettingsPageUIHandler, public VoicesChangedDelegate {
  private:
   void WakeTtsEngine(const base::ListValue* args);
   void OnTtsEngineAwake(bool success);
-  int GetVoiceLangMatchScore(const VoiceData* voice,
+  int GetVoiceLangMatchScore(const content::VoiceData* voice,
                              const std::string& app_locale);
 
   base::WeakPtrFactory<TtsHandler> weak_factory_;

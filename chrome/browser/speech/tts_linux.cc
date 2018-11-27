@@ -40,13 +40,13 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
   bool Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
-             const VoiceData& voice,
-             const UtteranceContinuousParameters& params) override;
+             const content::VoiceData& voice,
+             const content::UtteranceContinuousParameters& params) override;
   bool StopSpeaking() override;
   void Pause() override;
   void Resume() override;
   bool IsSpeaking() override;
-  void GetVoices(std::vector<VoiceData>* out_voices) override;
+  void GetVoices(std::vector<content::VoiceData>* out_voices) override;
 
   void OnSpeechEvent(SPDNotificationType type);
 
@@ -168,8 +168,8 @@ bool TtsPlatformImplLinux::Speak(
     int utterance_id,
     const std::string& utterance,
     const std::string& lang,
-    const VoiceData& voice,
-    const UtteranceContinuousParameters& params) {
+    const content::VoiceData& voice,
+    const content::UtteranceContinuousParameters& params) {
   if (!PlatformImplAvailable()) {
     error_ = kNotSupportedError;
     return false;
@@ -234,7 +234,7 @@ bool TtsPlatformImplLinux::IsSpeaking() {
 }
 
 void TtsPlatformImplLinux::GetVoices(
-    std::vector<VoiceData>* out_voices) {
+    std::vector<content::VoiceData>* out_voices) {
   if (!all_native_voices_.get()) {
     all_native_voices_.reset(new std::map<std::string, SPDChromeVoice>());
     char** modules = libspeechd_loader_.spd_list_modules(conn_);
@@ -268,42 +268,46 @@ void TtsPlatformImplLinux::GetVoices(
 
   for (auto it = all_native_voices_->begin(); it != all_native_voices_->end();
        ++it) {
-    out_voices->push_back(VoiceData());
-    VoiceData& voice = out_voices->back();
+    out_voices->push_back(content::VoiceData());
+    content::VoiceData& voice = out_voices->back();
     voice.native = true;
     voice.name = it->first;
-    voice.events.insert(TTS_EVENT_START);
-    voice.events.insert(TTS_EVENT_END);
-    voice.events.insert(TTS_EVENT_CANCELLED);
-    voice.events.insert(TTS_EVENT_MARKER);
-    voice.events.insert(TTS_EVENT_PAUSE);
-    voice.events.insert(TTS_EVENT_RESUME);
+    voice.events.insert(content::TTS_EVENT_START);
+    voice.events.insert(content::TTS_EVENT_END);
+    voice.events.insert(content::TTS_EVENT_CANCELLED);
+    voice.events.insert(content::TTS_EVENT_MARKER);
+    voice.events.insert(content::TTS_EVENT_PAUSE);
+    voice.events.insert(content::TTS_EVENT_RESUME);
   }
 }
 
 void TtsPlatformImplLinux::OnSpeechEvent(SPDNotificationType type) {
-  TtsController* controller = TtsController::GetInstance();
+  // hummmmmm
+  content::TtsController* controller = content::TtsController::GetInstance();
   switch (type) {
   case SPD_EVENT_BEGIN:
-    controller->OnTtsEvent(utterance_id_, TTS_EVENT_START, 0, std::string());
+    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_START, 0,
+                           std::string());
     break;
   case SPD_EVENT_RESUME:
-    controller->OnTtsEvent(utterance_id_, TTS_EVENT_RESUME, 0, std::string());
+    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_RESUME, 0,
+                           std::string());
     break;
   case SPD_EVENT_END:
-    controller->OnTtsEvent(
-        utterance_id_, TTS_EVENT_END, utterance_.size(), std::string());
+    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_END,
+                           utterance_.size(), std::string());
     break;
   case SPD_EVENT_PAUSE:
-    controller->OnTtsEvent(
-        utterance_id_, TTS_EVENT_PAUSE, utterance_.size(), std::string());
+    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_PAUSE,
+                           utterance_.size(), std::string());
     break;
   case SPD_EVENT_CANCEL:
-    controller->OnTtsEvent(
-        utterance_id_, TTS_EVENT_CANCELLED, 0, std::string());
+    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_CANCELLED, 0,
+                           std::string());
     break;
   case SPD_EVENT_INDEX_MARK:
-    controller->OnTtsEvent(utterance_id_, TTS_EVENT_MARKER, 0, std::string());
+    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_MARKER, 0,
+                           std::string());
     break;
   }
 }

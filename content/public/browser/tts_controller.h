@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPEECH_TTS_CONTROLLER_H_
-#define CHROME_BROWSER_SPEECH_TTS_CONTROLLER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_TTS_CONTROLLER_H_
+#define CONTENT_PUBLIC_BROWSER_TTS_CONTROLLER_H_
 
 #include <memory>
 #include <queue>
@@ -14,18 +14,16 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
+#include "content/common/content_export.h"
 #include "url/gurl.h"
-
-class Utterance;
-class TtsPlatformImpl;
 
 namespace base {
 class Value;
 }
 
 namespace content {
+class Utterance;
 class BrowserContext;
-}
 
 // Events sent back from the TTS engine indicating the progress.
 enum TtsEventType {
@@ -41,12 +39,8 @@ enum TtsEventType {
   TTS_EVENT_RESUME
 };
 
-// Returns true if this event type is one that indicates an utterance
-// is finished and can be destroyed.
-bool IsFinalTtsEventType(TtsEventType event_type);
-
 // The continuous parameters that apply to a given utterance.
-struct UtteranceContinuousParameters {
+struct CONTENT_EXPORT UtteranceContinuousParameters {
   UtteranceContinuousParameters();
 
   double rate;
@@ -55,7 +49,7 @@ struct UtteranceContinuousParameters {
 };
 
 // Information about one voice.
-struct VoiceData {
+struct CONTENT_EXPORT VoiceData {
   VoiceData();
   VoiceData(const VoiceData& other);
   ~VoiceData();
@@ -76,7 +70,7 @@ struct VoiceData {
 };
 
 // Interface that delegates TTS requests to user-installed extensions.
-class TtsEngineDelegate {
+class CONTENT_EXPORT TtsEngineDelegate {
  public:
   virtual ~TtsEngineDelegate() {}
 
@@ -103,7 +97,7 @@ class TtsEngineDelegate {
 };
 
 // Class that wants to receive events on utterances.
-class UtteranceEventDelegate {
+class CONTENT_EXPORT UtteranceEventDelegate {
  public:
   virtual ~UtteranceEventDelegate() {}
   virtual void OnTtsEvent(Utterance* utterance,
@@ -114,13 +108,16 @@ class UtteranceEventDelegate {
 
 // Class that wants to be notified when the set of
 // voices has changed.
-class VoicesChangedDelegate : public base::CheckedObserver {
+class CONTENT_EXPORT VoicesChangedDelegate : public base::CheckedObserver {
  public:
   virtual void OnVoicesChanged() = 0;
 };
 
 // One speech utterance.
-class Utterance {
+// TODO(katie): Can Utterance be changed into a struct with business logic
+// fully in the callers? If not, consider splitting it out into its own file,
+// and updating it to meet requirements for content/public interfaces.
+class CONTENT_EXPORT Utterance {
  public:
   // Construct an utterance given a profile and a completion task to call
   // when the utterance is done speaking. Before speaking this utterance,
@@ -156,9 +153,7 @@ class Utterance {
   }
   const std::string& voice_name() const { return voice_name_; }
 
-  void set_lang(const std::string& lang) {
-    lang_ = lang;
-  }
+  void set_lang(const std::string& lang) { lang_ = lang; }
   const std::string& lang() const { return lang_; }
 
   void set_continuous_parameters(const double rate,
@@ -194,9 +189,7 @@ class Utterance {
     extension_id_ = extension_id;
   }
 
-  UtteranceEventDelegate* event_delegate() const {
-    return event_delegate_;
-  }
+  UtteranceEventDelegate* event_delegate() const { return event_delegate_; }
   void set_event_delegate(UtteranceEventDelegate* event_delegate) {
     event_delegate_ = event_delegate;
   }
@@ -257,7 +250,7 @@ class Utterance {
 // Singleton class that manages text-to-speech for the TTS and TTS engine
 // extension APIs, maintaining a queue of pending utterances and keeping
 // track of all state.
-class TtsController {
+class CONTENT_EXPORT TtsController {
  public:
   // Get the single instance of this class.
   static TtsController* GetInstance();
@@ -309,8 +302,8 @@ class TtsController {
   // Remove delegate that wants to be notified when an utterance fires an event.
   // Note: this cancels speech from any utterance with this delegate, and
   // removes any utterances with this delegate from the queue.
-  virtual void RemoveUtteranceEventDelegate(UtteranceEventDelegate* delegate)
-      = 0;
+  virtual void RemoveUtteranceEventDelegate(
+      UtteranceEventDelegate* delegate) = 0;
 
   // Set the delegate that processes TTS requests with user-installed
   // extensions.
@@ -320,12 +313,10 @@ class TtsController {
   // extensions.
   virtual TtsEngineDelegate* GetTtsEngineDelegate() = 0;
 
-  // For unit testing.
-  virtual void SetPlatformImpl(TtsPlatformImpl* platform_impl) = 0;
-  virtual int QueueSize() = 0;
-
  protected:
   virtual ~TtsController() {}
 };
 
-#endif  // CHROME_BROWSER_SPEECH_TTS_CONTROLLER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_TTS_CONTROLLER_H_

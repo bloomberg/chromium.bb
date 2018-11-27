@@ -8,10 +8,13 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/speech/tts_controller.h"
+#include "content/public/browser/tts_controller.h"
 
 // Abstract class that defines the native platform TTS interface,
 // subclassed by specific implementations on Win, Mac, etc.
+// TODO(katie): Move to content/public/browser and most implementations into
+// content/browser/speech. The tts_chromeos.cc implementation may need to remain
+// in chrome/ due to ARC++ dependencies.
 class TtsPlatformImpl {
  public:
   static TtsPlatformImpl* GetInstance();
@@ -34,12 +37,11 @@ class TtsPlatformImpl {
   // The TtsController will only try to speak one utterance at
   // a time. If it wants to interrupt speech, it will always call Stop
   // before speaking again.
-  virtual bool Speak(
-      int utterance_id,
-      const std::string& utterance,
-      const std::string& lang,
-      const VoiceData& voice,
-      const UtteranceContinuousParameters& params) = 0;
+  virtual bool Speak(int utterance_id,
+                     const std::string& utterance,
+                     const std::string& lang,
+                     const content::VoiceData& voice,
+                     const content::UtteranceContinuousParameters& params) = 0;
 
   // Stop speaking immediately and return true on success.
   virtual bool StopSpeaking() = 0;
@@ -49,7 +51,7 @@ class TtsPlatformImpl {
 
   // Append information about voices provided by this platform implementation
   // to |out_voices|.
-  virtual void GetVoices(std::vector<VoiceData>* out_voices) = 0;
+  virtual void GetVoices(std::vector<content::VoiceData>* out_voices) = 0;
 
   // Pause the current utterance, if any, until a call to Resume,
   // Speak, or StopSpeaking.
@@ -60,8 +62,9 @@ class TtsPlatformImpl {
 
   // Allows the platform to monitor speech commands and the voices used
   // for each one.
-  virtual void WillSpeakUtteranceWithVoice(const Utterance* utterance,
-                                           const VoiceData& voice_data);
+  virtual void WillSpeakUtteranceWithVoice(
+      const content::Utterance* utterance,
+      const content::VoiceData& voice_data);
 
   virtual std::string error();
   virtual void clear_error();

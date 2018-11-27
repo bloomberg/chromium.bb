@@ -175,6 +175,7 @@ class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class StoragePartition;
 class TracingDelegate;
+class TtsControllerDelegate;
 class URLLoaderRequestInterceptor;
 class URLLoaderThrottle;
 class VpnServiceProxy;
@@ -785,6 +786,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // The delegate will be owned by the manager. It's valid to return nullptr.
   virtual SpeechRecognitionManagerDelegate*
       CreateSpeechRecognitionManagerDelegate();
+
+  // Allows the embedder to return a delegate for the TtsController.
+  virtual TtsControllerDelegate* GetTtsControllerDelegate();
 
   // Getter for the net logging object. This can be called on any thread.
   virtual net::NetLog* GetNetLog();
