@@ -8,9 +8,9 @@ import("//build/config/android/linker_version_script.gni")
 import("//build/config/android/rules.gni")
 import("//build/util/process_version.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
+import("//chrome/android/feed/feed_java_sources.gni")
 import("//chrome/android/monochrome_android_manifest_jinja_variables.gni")
 import("//chrome/chrome_paks.gni")
-import("//chrome/android/feed/feed_java_sources.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
 import("//device/vr/buildflags/buildflags.gni")
@@ -1486,7 +1486,7 @@ template("chrome_public_apk_or_module_tmpl") {
     load_library_from_apk = _is_modern && chromium_linker_supported
 
     version_name = chrome_version_name
-    if (experimental_r8_path == "") {
+    if (!experimental_use_r8) {
       enable_multidex = true
     }
   }
@@ -1582,7 +1582,7 @@ template("monochrome_public_apk_or_module_tmpl") {
         (!defined(use_trichrome_library) || !use_trichrome_library)
 
     version_name = chrome_version_name
-    if (experimental_r8_path == "") {
+    if (!experimental_use_r8) {
       enable_multidex = true
     }
   }
@@ -1886,7 +1886,7 @@ android_app_bundle("chrome_modern_public_bundle") {
   base_module_target = ":chrome_modern_public_base_module"
   if (!is_java_debug) {
     proguard_enabled = true
-    if (experimental_r8_path == "") {
+    if (!experimental_use_r8) {
       enable_multidex = true
     }
   }
@@ -1906,7 +1906,7 @@ android_app_bundle("monochrome_public_bundle") {
   base_module_target = ":monochrome_public_base_module"
   if (!is_java_debug) {
     proguard_enabled = true
-    if (experimental_r8_path == "") {
+    if (!experimental_use_r8) {
       enable_multidex = true
     }
     proguard_android_sdk_dep = webview_framework_dep

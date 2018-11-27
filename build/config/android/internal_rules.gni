@@ -980,10 +980,10 @@ if (enable_java_templates) {
         "--classpath",
         "@FileArg($_rebased_build_config:android:sdk_jars)",
       ]
-      if (experimental_r8_path != "") {
+      if (experimental_use_r8) {
         args += [
           "--r8-path",
-          rebase_path(experimental_r8_path, root_build_dir),
+          rebase_path(_r8_path, root_build_dir),
         ]
       }
       if (defined(invoker.args)) {
@@ -1067,7 +1067,7 @@ if (enable_java_templates) {
 
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
-    _proguarding_with_r8 = _proguard_enabled && experimental_r8_path != ""
+    _proguarding_with_r8 = _proguard_enabled && experimental_use_r8
 
     assert(!(defined(invoker.input_jars) && _proguard_enabled),
            "input_jars can't be specified when proguarding a dex.")
