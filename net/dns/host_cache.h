@@ -276,19 +276,6 @@ class NET_EXPORT HostCache {
 
   Entry* LookupInternal(const Key& key);
 
-  void LogRecordSet(SetOutcome outcome,
-                    base::TimeTicks now,
-                    const Entry* old_entry,
-                    const Entry& new_entry,
-                    AddressListDeltaType delta);
-  void LogRecordUpdateStale(AddressListDeltaType delta,
-                            const EntryStaleness& stale);
-  void RecordLookup(LookupOutcome outcome,
-                    base::TimeTicks now,
-                    const Entry* entry);
-  void RecordErase(EraseReason reason, base::TimeTicks now, const Entry& entry);
-  void RecordEraseAll(EraseReason reason, base::TimeTicks now);
-
   // Returns true if this HostCache can contain no entries.
   bool caching_is_disabled() const { return max_entries_ == 0; }
 
