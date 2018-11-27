@@ -207,7 +207,8 @@ public class AccessorySheetViewTest {
         mModel.set(TOP_SHADOW_VISIBLE, false);
         ThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true)); // Render view.
         onView(isRoot()).check((r, e) -> {
-            waitForView((ViewGroup) r, withId(R.id.accessory_sheet_shadow), ViewUtils.VIEW_GONE);
+            waitForView(
+                    (ViewGroup) r, withId(R.id.accessory_sheet_shadow), ViewUtils.VIEW_INVISIBLE);
         });
 
         ThreadUtils.runOnUiThreadBlocking(() -> mModel.set(TOP_SHADOW_VISIBLE, true));
@@ -215,7 +216,8 @@ public class AccessorySheetViewTest {
 
         ThreadUtils.runOnUiThreadBlocking(() -> mModel.set(TOP_SHADOW_VISIBLE, false));
         onView(isRoot()).check((r, e) -> {
-            waitForView((ViewGroup) r, withId(R.id.accessory_sheet_shadow), ViewUtils.VIEW_GONE);
+            waitForView(
+                    (ViewGroup) r, withId(R.id.accessory_sheet_shadow), ViewUtils.VIEW_INVISIBLE);
         });
     }
 

@@ -25,6 +25,6 @@
         android:layout_height="@dimen/keyboard_accessory_shadow"
         android:src="@drawable/modern_toolbar_shadow"
         android:scaleType="fitXY"
-        android:visibility="gone"
+        android:visibility="invisible"
         android:importantForAccessibility="no" />
 </org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetView>

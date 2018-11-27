@@ -50,6 +50,6 @@ class AccessorySheetView extends FrameLayout {
     }
 
     void setTopShadowVisible(boolean isShadowVisible) {
-        mTopShadow.setVisibility(isShadowVisible ? View.VISIBLE : View.GONE);
+        mTopShadow.setVisibility(isShadowVisible ? View.VISIBLE : View.INVISIBLE);
     }
 }

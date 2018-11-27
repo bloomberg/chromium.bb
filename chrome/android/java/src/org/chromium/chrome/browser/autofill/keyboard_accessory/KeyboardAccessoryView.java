@@ -61,7 +61,9 @@ class KeyboardAccessoryView extends LinearLayout {
 
         mTabLayout = findViewById(R.id.tabs);
 
-        // Apply RTL layout changes to the views children:
+        // Apply RTL layout changes to the view's children:
+        ApiCompatibilityUtils.setLayoutDirection(findViewById(R.id.accessory_bar_contents),
+                isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         ApiCompatibilityUtils.setLayoutDirection(mActionsView,
                 isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
 

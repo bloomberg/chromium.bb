@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.TEST_CREDENTIALS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 
@@ -83,7 +84,6 @@ public class ManualFillingIntegrationTest {
     @SmallTest
     public void testAccessoryIsAvailable() throws InterruptedException {
         mHelper.loadTestPage(false);
-        mHelper.createTestTab();
 
         assertNotNull("Controller for Manual filling should be available.",
                 mActivityTestRule.getActivity().getManualFillingController());
@@ -103,11 +103,11 @@ public class ManualFillingIntegrationTest {
     public void testKeyboardAccessoryHiddenUntilKeyboardShows()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        mHelper.createTestTab();
 
         // Focus the field to bring up the accessory.
         onView(withId(R.id.keyboard_accessory)).check(doesNotExist());
         mHelper.clickPasswordField();
+        mHelper.sendCredentials(TEST_CREDENTIALS);
         mHelper.waitForKeyboard();
 
         // Check that ONLY the accessory is there but the sheet is still hidden.
@@ -120,10 +120,10 @@ public class ManualFillingIntegrationTest {
     public void testKeyboardAccessoryDisappearsWithKeyboard()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        mHelper.createTestTab();
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
+        mHelper.sendCredentials(TEST_CREDENTIALS);
         mHelper.waitForKeyboard();
         whenDisplayed(withId(R.id.keyboard_accessory));
 
@@ -137,7 +137,6 @@ public class ManualFillingIntegrationTest {
     public void testAccessorySheetHiddenUntilManuallyTriggered()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        mHelper.createTestTab();
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
@@ -160,7 +159,6 @@ public class ManualFillingIntegrationTest {
         AtomicReference<ViewGroup.MarginLayoutParams> accessoryMargins = new AtomicReference<>();
         AtomicReference<View> accessorySheetView = new AtomicReference<>();
         mHelper.loadTestPage(false);
-        mHelper.createTestTab();
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
@@ -194,7 +192,6 @@ public class ManualFillingIntegrationTest {
     @SmallTest
     public void testHidingSheetBringsBackKeyboard() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        mHelper.createTestTab();
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
@@ -221,7 +218,6 @@ public class ManualFillingIntegrationTest {
         new AutofillTestHelper().setProfile(new PersonalDataManager.AutofillProfile("",
                 "https://www.example.com/", "Alan Turing", "", "Street Ave 4", "", "Capitaltown",
                 "", "80666", "", "Disneyland", "1", "a.turing@enigma.com", "DE"));
-        mHelper.createTestTab();
 
         // Focus the field to bring up the autofill popup. We force a accessory here because the
         // autofill popup doesn't trigger on password fields.
@@ -246,7 +242,6 @@ public class ManualFillingIntegrationTest {
     public void testSelectingNonPasswordInputDismissesAccessory()
             throws InterruptedException, TimeoutException, ExecutionException {
         mHelper.loadTestPage(false);
-        mHelper.createTestTab();
 
         // Focus the password field to bring up the accessory.
         mHelper.clickPasswordField();
@@ -264,7 +259,6 @@ public class ManualFillingIntegrationTest {
     public void testInvokingTabSwitcherHidesAccessory()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        mHelper.createTestTab();
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
@@ -288,7 +282,6 @@ public class ManualFillingIntegrationTest {
     public void testResumingTheAppDismissesAllInputMethods()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        mHelper.createTestTab();
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
@@ -327,7 +320,6 @@ public class ManualFillingIntegrationTest {
     public void testPressingBackButtonHidesAccessorySheet()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        mHelper.createTestTab();
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
@@ -360,7 +352,7 @@ public class ManualFillingIntegrationTest {
         });
         listener.addInfoBarAnimationFinished("InfoBar not added.");
 
-        mHelper.createTestTab();
+        mHelper.sendCredentials(TEST_CREDENTIALS);
         whenDisplayed(withText(kInfoBarText));
 
         // Focus the field to bring up the accessory.
@@ -401,7 +393,7 @@ public class ManualFillingIntegrationTest {
         });
         listener.addInfoBarAnimationFinished("InfoBar not added.");
 
-        mHelper.createTestTab();
+        mHelper.sendCredentials(TEST_CREDENTIALS);
         whenDisplayed(withText(kInfoBarText));
 
         // Focus the field to bring up the accessory.
@@ -436,7 +428,6 @@ public class ManualFillingIntegrationTest {
         final String kSnackbarText = "snackbar";
 
         mHelper.loadTestPage(false);
-        mHelper.createTestTab();
 
         // Create a simple, persistent snackbar and verify it's displayed.
         SnackbarManager manager = mActivityTestRule.getActivity().getSnackbarManager();
@@ -468,8 +459,7 @@ public class ManualFillingIntegrationTest {
 
     @Test
     @SmallTest
-    public void testInfobarReopensOnPressingBack()
-            throws InterruptedException, TimeoutException, ExecutionException {
+    public void testInfobarReopensOnPressingBack() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
 
         InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
@@ -482,7 +472,7 @@ public class ManualFillingIntegrationTest {
         });
         listener.addInfoBarAnimationFinished("InfoBar not added.");
 
-        mHelper.createTestTab();
+        mHelper.sendCredentials(TEST_CREDENTIALS);
         assertThat(mActivityTestRule.getInfoBarContainer().getVisibility(), is(View.VISIBLE));
 
         // Focus the field to bring up the accessory.
