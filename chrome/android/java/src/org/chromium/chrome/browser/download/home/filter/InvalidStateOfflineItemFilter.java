@@ -20,7 +20,7 @@ public class InvalidStateOfflineItemFilter extends OfflineItemFilter {
     // OfflineItemFilter implementation.
     @Override
     protected boolean isFilteredOut(OfflineItem item) {
-        if (item.externallyRemoved) return true;
+        if (item.externallyRemoved || item.isTransient) return true;
 
         switch (item.state) {
             case OfflineItemState.CANCELLED:
