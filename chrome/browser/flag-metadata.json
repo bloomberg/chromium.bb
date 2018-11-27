@@ -800,37 +800,37 @@
   },
   {
     "name": "enable-autofill-credit-card-ablation-experiment",
-    // "owners": [ "your-team" ],
+    "owners": [ "dlkumar@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-autofill-credit-card-local-card-migration",
-    // "owners": [ "your-team" ],
+    "owners": [ "jiahuiguo@google.com", "siyua@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-autofill-credit-card-upload",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "jsaul@google.com" ],
+    "expiry_milestone": -1
   },
   {
     "name": "enable-autofill-credit-card-upload-editable-cardholder-name",
-    // "owners": [ "your-team" ],
+    "owners": [ "jsaul@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-autofill-credit-card-upload-editable-expiration-date",
-    // "owners": [ "your-team" ],
+    "owners": [ "hozhng@google.com", "jsaul@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-autofill-credit-card-upload-google-pay-on-android-branding",
-    // "owners": [ "your-team" ],
+    "owners": [ "dlkumar@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-autofill-local-card-migration-show-feedback",
-    // "owners": [ "your-team" ],
+    "owners": [ "jiahuiguo@google.com", "siyua@google.com" ],
     "expiry_milestone": 76
   },
   {
@@ -860,17 +860,17 @@
   },
   {
     "name": "enable-autofill-save-card-sign-in-after-local-save",
-    // "owners": [ "your-team" ],
+    "owners": [ "manasverma@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-autofill-save-credit-card-uses-strike-system",
-    // "owners": [ "your-team" ],
+    "owners": [ "annelim@google.com", "jsaul@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-autofill-send-experiment-ids-in-payments-rpcs",
-    // "owners": [ "your-team" ],
+    "owners": [ "dlkumar@google.com" ],
     "expiry_milestone": 76
   },
   {
