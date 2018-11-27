@@ -98,6 +98,10 @@ class ASH_EXPORT WindowSelectorController
 
   WindowSelector* window_selector() { return window_selector_.get(); }
 
+  void set_occlusion_pause_duration_for_end_ms_for_test(int duration) {
+    occlusion_pause_duration_for_end_ms_ = duration;
+  }
+
  private:
   class OverviewBlurController;
   friend class WindowSelectorTest;
@@ -132,6 +136,8 @@ class ASH_EXPORT WindowSelectorController
 
   // If we are in middle of ending overview mode.
   bool is_shutting_down_ = false;
+
+  int occlusion_pause_duration_for_end_ms_;
 
   // Handles blurring of the wallpaper when entering or exiting overview mode.
   // Animates the blurring if necessary.
