@@ -22,6 +22,7 @@ import android.view.View;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
@@ -238,6 +239,17 @@ public class TouchEventFilter
     }
 
     private void updateVisibility() {
+        if (AccessibilityUtil.isAccessibilityEnabled()) {
+            // Touch exploration is fully disabled if there's an overlay in front. In this case, the
+            // overlay must be fully gone and filtering elements for touch exploration must happen
+            // at another level.
+            //
+            // TODO(crbug.com/806868): filter elements available to touch exploration, when it
+            // is enabled.
+            setVisibility(
+                    (mPartialOverlayEnabled || !mFullOverlayEnabled) ? View.GONE : View.VISIBLE);
+        }
+
         setAlpha(isOverlayShown() ? 1.0f : 0.0f);
     }
 
