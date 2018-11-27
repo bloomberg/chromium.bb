@@ -743,13 +743,10 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
 
   if (shown_pairing_changed_notification_) {
     shown_pairing_changed_notification_ = false;
-    std::vector<cryptauth::ExternalDeviceInfo> unlock_keys =
-        GetCryptAuthDeviceManager()->GetUnlockKeys();
-    if (!unlock_keys.empty()) {
-      // TODO(tengs): Right now, we assume that there is only one possible
-      // unlock key. We need to update this notification be more generic.
+
+    if (!GetUnlockKeys().empty()) {
       notification_controller_->ShowPairingChangeAppliedNotification(
-          unlock_keys[0].friendly_device_name());
+          GetUnlockKeys()[0].name());
     }
   }
 
