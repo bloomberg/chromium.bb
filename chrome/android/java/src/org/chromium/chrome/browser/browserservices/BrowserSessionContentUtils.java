@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
@@ -22,7 +23,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
@@ -45,8 +45,18 @@ public class BrowserSessionContentUtils {
      * Sets the currently active {@link BrowserSessionContentHandler} in focus.
      * @param contentHandler {@link BrowserSessionContentHandler} to set.
      */
-    public static void setActiveContentHandler(BrowserSessionContentHandler contentHandler) {
+    public static void setActiveContentHandler(
+            @NonNull BrowserSessionContentHandler contentHandler) {
         sActiveContentHandler = contentHandler;
+    }
+
+    /**
+     * Notifies that given {@link BrowserSessionContentHandler} no longer has focus.
+     */
+    public static void removeActiveContentHandler(BrowserSessionContentHandler contentHandler) {
+        if (sActiveContentHandler == contentHandler) {
+            sActiveContentHandler = null;
+        } // else this contentHandler has already been replaced.
     }
 
     /**
@@ -62,14 +72,8 @@ public class BrowserSessionContentUtils {
         if (TextUtils.isEmpty(url)) return false;
 
         CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        return handleInternalIntent(intent, session) || handleExternalIntent(intent, url, session);
 
-        if (handleInternalIntent(intent, session)) return true;
-
-        // Must be called regardless of whether or not an external intent can be handled in active
-        // content.
-        CustomTabsConnection.getInstance().onHandledIntent(session, url, intent);
-
-        return handleExternalIntent(intent, url, session);
     }
 
     private static boolean handleInternalIntent(Intent intent,
@@ -195,9 +199,7 @@ public class BrowserSessionContentUtils {
      */
     public static Intent createShareIntent(Context context, Intent originalIntent) {
         Intent intent = new Intent(originalIntent)
-                .putExtra(EXTRA_INTERNAL_ACTION, INTERNAL_ACTION_SHARE)
-                // Make the new intent follow the same route as the original one
-                .setClass(context, ChromeLauncherActivity.class);
+                .putExtra(EXTRA_INTERNAL_ACTION, INTERNAL_ACTION_SHARE);
         IntentHandler.addTrustedIntentExtras(intent);
         return intent;
     }
