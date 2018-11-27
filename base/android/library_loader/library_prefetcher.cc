@@ -155,6 +155,7 @@ bool CollectResidency(size_t start,
 void DumpResidency(size_t start,
                    size_t end,
                    std::unique_ptr<std::vector<TimestampAndResidency>> data) {
+  LOG(WARNING) << "Dumping native library residency";
   auto path = base::FilePath(
       base::StringPrintf("/data/local/tmp/chrome/residency-%d.txt", getpid()));
   auto file =
@@ -167,8 +168,8 @@ void DumpResidency(size_t start,
 
   // First line: start-end of text range.
   CHECK(IsOrderingSane());
-  CHECK_LT(start, kStartOfText);
-  CHECK_LT(kEndOfText, end);
+  CHECK_LE(start, kStartOfText);
+  CHECK_LE(kEndOfText, end);
   auto start_end = base::StringPrintf("%" PRIuS " %" PRIuS "\n",
                                       kStartOfText - start, kEndOfText - start);
   file.WriteAtCurrentPos(start_end.c_str(), start_end.size());
@@ -308,12 +309,15 @@ int NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode() {
 void NativeLibraryPrefetcher::PeriodicallyCollectResidency() {
   CHECK_EQ(static_cast<long>(kPageSize), sysconf(_SC_PAGESIZE));
 
+  LOG(WARNING) << "Spawning thread to periodically collect residency";
   const auto& range = GetTextRange();
   auto data = std::make_unique<std::vector<TimestampAndResidency>>();
-  for (int i = 0; i < 60; ++i) {
+  // Collect residency for about minute (the actual time spent collecting
+  // residency can vary, so this is only approximate).
+  for (int i = 0; i < 120; ++i) {
     if (!CollectResidency(range.first, range.second, data.get()))
       return;
-    usleep(2e5);
+    usleep(5e5);
   }
   DumpResidency(range.first, range.second, std::move(data));
 }
@@ -329,6 +333,16 @@ void NativeLibraryPrefetcher::MadviseForOrderfile() {
   // normal. The ordered range may be placed anywhere within .text.
   MadviseOnRange(GetTextRange(), MADV_RANDOM);
   MadviseOnRange(GetOrderedTextRange(), MADV_NORMAL);
+}
+
+// static
+void NativeLibraryPrefetcher::MadviseForResidencyCollection() {
+  if (!IsOrderingSane()) {
+    LOG(WARNING) << "Code not ordered, cannot madvise";
+    return;
+  }
+  LOG(WARNING) << "Performing madvise for residency collection";
+  MadviseOnRange(GetTextRange(), MADV_RANDOM);
 }
 
 }  // namespace android
