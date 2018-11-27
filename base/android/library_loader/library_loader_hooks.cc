@@ -186,7 +186,10 @@ static jboolean JNI_LibraryLoader_LibraryLoaded(
 #endif
 
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
-  if (ShouldDoOrderfileMemoryOptimization()) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          "log-native-library-residency")) {
+    NativeLibraryPrefetcher::MadviseForResidencyCollection();
+  } else if (ShouldDoOrderfileMemoryOptimization()) {
     NativeLibraryPrefetcher::MadviseForOrderfile();
   }
 #endif
