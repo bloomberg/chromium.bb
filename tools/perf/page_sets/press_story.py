@@ -35,6 +35,7 @@ class PressStory(page_module.Page):
         name=self.NAME if self.NAME else self.URL)
     self._values = []
     self._summary_values = []
+    self._histogram_values = []
 
   def GetJavascriptMetricValues(self):
     return self._values
@@ -47,6 +48,12 @@ class PressStory(page_module.Page):
 
   def AddJavascriptMetricSummaryValue(self, value):
     self._summary_values.append(value)
+
+  def GetJavascriptMetricHistograms(self):
+    return self._histogram_values
+
+  def AddJavascriptMetricHistogram(self, value):
+    self._histogram_values.append(value)
 
   def ExecuteTest(self, action_runner):
     pass
