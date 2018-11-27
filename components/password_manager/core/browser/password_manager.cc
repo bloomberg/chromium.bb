@@ -493,6 +493,13 @@ void PasswordManager::ProvisionallySavePassword(
   // If we didn't find a manager, this means a form was submitted without
   // first loading the page containing the form. Don't offer to save
   // passwords in this case.
+  auto availability =
+      matched_manager
+          ? PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess
+          : PasswordManagerMetricsRecorder::FormManagerAvailable::
+                kMissingProvisionallySave;
+  if (client_ && client_->GetMetricsRecorder())
+    client_->GetMetricsRecorder()->RecordFormManagerAvailable(availability);
   if (!matched_manager) {
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::NO_MATCHING_FORM, form.origin,
@@ -673,6 +680,12 @@ void PasswordManager::ShowManualFallbackForSaving(
     manager = FindAndCloneMatchedPasswordFormManager(
         password_form, pending_login_managers_, driver);
   }
+  auto availability =
+      manager ? PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess
+              : PasswordManagerMetricsRecorder::FormManagerAvailable::
+                    kMissingManual;
+  if (client_ && client_->GetMetricsRecorder())
+    client_->GetMetricsRecorder()->RecordFormManagerAvailable(availability);
   if (!manager)
     return;
 
@@ -890,6 +903,13 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
       break;
     }
   }
+  auto availability =
+      matching_form_manager
+          ? PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess
+          : PasswordManagerMetricsRecorder::FormManagerAvailable::
+                kMissingProvisionallySave;
+  if (client_ && client_->GetMetricsRecorder())
+    client_->GetMetricsRecorder()->RecordFormManagerAvailable(availability);
   if (!matching_form_manager) {
     // TODO(https://crbug.com/831123): Implement more robust handling when
     // |matching_form_manager| is not found.

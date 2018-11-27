@@ -57,6 +57,20 @@ class PasswordManagerMetricsRecorder {
     MAX_FAILURE_VALUE
   };
 
+  // Represents potential outcomes of finding the form manager corresponding to
+  // a form during steps towards saving that form.
+  enum class FormManagerAvailable {
+    // This value is never reported but reserved to mean "not set".
+    kNotSet = -1,
+    // The corresponding form manager was always available.
+    kSuccess = 0,
+    // There was no corresponding form manager when Chrome attempted to...
+    // ...provisionally save the form
+    kMissingProvisionallySave = 1,
+    // ...show a saving fallback UI for the form
+    kMissingManual = 2,
+  };
+
   // This enum represents user actions on a page with a password form that
   // cannot (reliably) be attributed to a specific form manager.
   enum class PageLevelUserAction {
@@ -89,6 +103,9 @@ class PasswordManagerMetricsRecorder {
                                     const GURL& form_origin,
                                     BrowserSavePasswordProgressLogger* logger);
 
+  // Records form manager availability.
+  void RecordFormManagerAvailable(FormManagerAvailable availability);
+
   // Records a user action.
   void RecordPageLevelUserAction(PageLevelUserAction action);
 
@@ -100,6 +117,10 @@ class PasswordManagerMetricsRecorder {
   std::unique_ptr<ukm::builders::PageWithPassword> ukm_entry_builder_;
 
   bool user_modified_password_field_ = false;
+
+  // Stores the value most recently reported via RecordFormManagerAvailable.
+  FormManagerAvailable form_manager_availability_ =
+      FormManagerAvailable::kNotSet;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerMetricsRecorder);
 };
