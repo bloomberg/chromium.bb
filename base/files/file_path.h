@@ -301,6 +301,10 @@ class BASE_EXPORT FilePath {
   // |extension| is empty. Returns "" if BaseName() == "." or "..".
   FilePath AddExtension(StringPieceType extension) const WARN_UNUSED_RESULT;
 
+  // Like above, but takes the extension as an ASCII string. See AppendASCII for
+  // details on how this is handled.
+  FilePath AddExtensionASCII(StringPiece extension) const WARN_UNUSED_RESULT;
+
   // Replaces the extension of |file_name| with |extension|.  If |file_name|
   // does not have an extension, then |extension| is added.  If |extension| is
   // empty, then the extension is removed from |file_name|.
