@@ -39,6 +39,24 @@ namespace chromeos {
 
 class CHROMEOS_EXPORT AccountManager {
  public:
+  // A dummy token stored against Active Directory accounts in Account Manager.
+  // Accounts stored in Account Manager must have a token associated with them.
+  // Active Directory accounts use Kerberos tickets for authentication, which is
+  // handled by a different infrastructure. Hence, we need a dummy token to
+  // store Active Directory accounts in Account Manager.
+  // See |AccountManager::UpsertToken|.
+  static const char kActiveDirectoryDummyToken[];
+
+  // A special token that marks an account in Account Manager as invalid, but
+  // does not remove the account. This is useful in scenarios where account
+  // names are imported from elsewhere (Chrome content area or ARC++) and their
+  // tokens are not yet known, but at the same time, these accounts need to be
+  // surfaced on the UI.
+  // Do not use this token for Active Directory accounts,
+  // |kActiveDirectoryDummyToken| is meant for that.
+  // See |AccountManager::UpsertToken|.
+  static const char kInvalidToken[];
+
   struct AccountKey {
     // |id| is obfuscated GAIA id for |AccountType::ACCOUNT_TYPE_GAIA|.
     // |id| is object GUID (|AccountId::GetObjGuid|) for
@@ -121,8 +139,11 @@ class CHROMEOS_EXPORT AccountManager {
   void RemoveAccount(const AccountKey& account_key);
 
   // Updates or inserts a token, for the account corresponding to the given
-  // |account_key|. |account_key| must be valid (|AccountKey::IsValid|).
-  // This API is idempotent.
+  // |account_key|. Use |AccountManager::kActiveDirectoryDummyToken| as the
+  // |token| for Active Directory accounts, and |AccountManager::kInvalidToken|
+  // for accounts with unkown tokens.
+  // Note: |account_key| must be valid (|AccountKey::IsValid|).
+  // Note: This API is idempotent.
   void UpsertToken(const AccountKey& account_key, const std::string& token);
 
   // Add a non owning pointer to an |AccountManager::Observer|.
@@ -144,8 +165,7 @@ class CHROMEOS_EXPORT AccountManager {
       OAuth2AccessTokenConsumer* consumer) const;
 
   // Returns |true| if an LST is available for |account_key|.
-  // Note: An LST will not be available for |account_key| if it is an Active
-  // Directory account.
+  // Note: Always returns false for Active Directory accounts.
   // Note: This method will return |false| if |AccountManager| has not been
   // initialized yet.
   bool IsTokenAvailable(const AccountKey& account_key) const;
