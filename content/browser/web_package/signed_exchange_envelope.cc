@@ -95,8 +95,9 @@ bool ParseRequestMap(const cbor::Value& value,
   // - headers[0][`:method`] is not `GET`. [spec text]
   if (method_str != "GET") {
     signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy, base::StringPrintf("Request method must be GET, but %s",
-                                           method_str.as_string().c_str()));
+        devtools_proxy,
+        base::StringPrintf("Request method must be GET, but is %s",
+                           method_str.as_string().c_str()));
     return false;
   }
   out->set_request_method(method_str);
