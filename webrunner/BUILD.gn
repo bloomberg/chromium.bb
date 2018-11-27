@@ -88,6 +88,20 @@ executable("webrunner_exe") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test/fake_context.cc",
+    "test/fake_context.h",
+  ]
+  deps = [
+    "//base",
+  ]
+  public_deps = [
+    ":web_fidl",
+  ]
+}
+
 fuchsia_package("service_pkg") {
   binary = ":service_exe"
   package_name_override = "chromium"
@@ -270,6 +284,7 @@ test("webrunner_unittests") {
   ]
   deps = [
     ":service_lib",
+    ":test_support",
     ":web_fidl",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
