@@ -26,6 +26,11 @@ inline int ChannelIdFromCommandBufferId(
   return static_cast<int>(command_buffer_id.GetUnsafeValue() >> 32);
 }
 
+inline int32_t RouteIdFromCommandBufferId(
+    gpu::CommandBufferId command_buffer_id) {
+  return 0xffffffff & command_buffer_id.GetUnsafeValue();
+}
+
 }  // namespace gpu
 
 #endif  // GPU_IPC_COMMON_COMMAND_BUFFER_ID_H_

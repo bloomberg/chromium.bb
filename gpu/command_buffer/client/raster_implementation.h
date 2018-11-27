@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
+#include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/raster_export.h"
@@ -39,6 +40,7 @@ class TransferCacheSerializeHelper;
 namespace gpu {
 
 class GpuControl;
+class ImageDecodeAcceleratorInterface;
 struct SharedMemoryLimits;
 
 namespace raster {
@@ -54,11 +56,13 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                                            public gles2::QueryTrackerClient,
                                            public ClientFontManager::Client {
  public:
-  RasterImplementation(RasterCmdHelper* helper,
-                       TransferBufferInterface* transfer_buffer,
-                       bool bind_generates_resource,
-                       bool lose_context_when_out_of_memory,
-                       GpuControl* gpu_control);
+  RasterImplementation(
+      RasterCmdHelper* helper,
+      TransferBufferInterface* transfer_buffer,
+      bool bind_generates_resource,
+      bool lose_context_when_out_of_memory,
+      GpuControl* gpu_control,
+      ImageDecodeAcceleratorInterface* image_decode_accelerator);
 
   ~RasterImplementation() override;
 
@@ -121,6 +125,11 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                       const gfx::Vector2dF& post_translate,
                       GLfloat post_scale,
                       bool requires_clear) override;
+  SyncToken ScheduleImageDecode(base::span<const uint8_t> encoded_data,
+                                const gfx::Size& output_size,
+                                uint32_t transfer_cache_entry_id,
+                                const gfx::ColorSpace& target_color_space,
+                                bool needs_mips) override;
   void BeginGpuRaster() override;
   void EndGpuRaster() override;
 
@@ -253,6 +262,15 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 
   const std::string& GetLogPrefix() const;
 
+  void IssueImageDecodeCacheEntryCreation(
+      base::span<const uint8_t> encoded_data,
+      const gfx::Size& output_size,
+      uint32_t transfer_cache_entry_id,
+      const gfx::ColorSpace& target_color_space,
+      bool needs_mips,
+      SyncToken* decode_sync_token,
+      ClientDiscardableHandle handle);
+
 // Set to 1 to have the client fail when a GL error is generated.
 // This helps find bugs in the renderer since the debugger stops on the error.
 #if DCHECK_IS_ON()
@@ -331,6 +349,8 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 
   cc::ClientPaintCache::PurgedData temp_paint_cache_purged_data_;
   std::unique_ptr<cc::ClientPaintCache> paint_cache_;
+
+  ImageDecodeAcceleratorInterface* image_decode_accelerator_;
 
   // Tracing helpers.
   int raster_chromium_id_ = 0;

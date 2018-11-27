@@ -18,6 +18,7 @@
 #include <string>
 
 #include "base/atomic_sequence_num.h"
+#include "base/bind.h"
 #include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/no_destructor.h"
@@ -36,11 +37,11 @@
 #include "cc/paint/transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
 #include "gpu/command_buffer/client/gpu_control.h"
+#include "gpu/command_buffer/client/image_decode_accelerator_interface.h"
 #include "gpu/command_buffer/client/query_tracker.h"
 #include "gpu/command_buffer/client/raster_cmd_helper.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
-#include "gpu/command_buffer/common/sync_token.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -281,7 +282,8 @@ RasterImplementation::RasterImplementation(
     TransferBufferInterface* transfer_buffer,
     bool bind_generates_resource,
     bool lose_context_when_out_of_memory,
-    GpuControl* gpu_control)
+    GpuControl* gpu_control,
+    ImageDecodeAcceleratorInterface* image_decode_accelerator)
     : ImplementationBase(helper, transfer_buffer, gpu_control),
       helper_(helper),
       active_texture_unit_(0),
@@ -293,7 +295,8 @@ RasterImplementation::RasterImplementation(
       font_manager_(this, helper->command_buffer()),
       lost_(false),
       max_inlined_entry_size_(kMaxTransferCacheEntrySizeForTransferBuffer),
-      transfer_cache_(this) {
+      transfer_cache_(this),
+      image_decode_accelerator_(image_decode_accelerator) {
   DCHECK(helper);
   DCHECK(transfer_buffer);
   DCHECK(gpu_control);
@@ -1181,6 +1184,44 @@ void RasterImplementation::EndRasterCHROMIUM() {
     ClearPaintCache();
   else
     FlushPaintCachePurgedEntries();
+}
+
+SyncToken RasterImplementation::ScheduleImageDecode(
+    base::span<const uint8_t> encoded_data,
+    const gfx::Size& output_size,
+    uint32_t transfer_cache_entry_id,
+    const gfx::ColorSpace& target_color_space,
+    bool needs_mips) {
+  // It's safe to use base::Unretained(this) here because
+  // StartTransferCacheEntry() will call the callback before returning.
+  SyncToken decode_sync_token;
+  transfer_cache_.StartTransferCacheEntry(
+      static_cast<uint32_t>(cc::TransferCacheEntryType::kImage),
+      transfer_cache_entry_id,
+      base::BindOnce(&RasterImplementation::IssueImageDecodeCacheEntryCreation,
+                     base::Unretained(this), encoded_data, output_size,
+                     transfer_cache_entry_id, target_color_space, needs_mips,
+                     &decode_sync_token));
+  return decode_sync_token;
+}
+
+void RasterImplementation::IssueImageDecodeCacheEntryCreation(
+    base::span<const uint8_t> encoded_data,
+    const gfx::Size& output_size,
+    uint32_t transfer_cache_entry_id,
+    const gfx::ColorSpace& target_color_space,
+    bool needs_mips,
+    SyncToken* decode_sync_token,
+    ClientDiscardableHandle handle) {
+  DCHECK(gpu_control_);
+  DCHECK(image_decode_accelerator_);
+  DCHECK(handle.IsValid());
+
+  // Send the decode request to the service.
+  *decode_sync_token = image_decode_accelerator_->ScheduleImageDecode(
+      encoded_data, output_size, gpu_control_->GetCommandBufferID(),
+      transfer_cache_entry_id, handle.shm_id(), handle.byte_offset(),
+      target_color_space, needs_mips);
 }
 
 void RasterImplementation::BeginGpuRaster() {

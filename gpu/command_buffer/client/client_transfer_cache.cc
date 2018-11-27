@@ -86,11 +86,14 @@ void ClientTransferCache::StartTransferCacheEntry(
   EntryKey key(type, id);
 
   base::AutoLock hold(lock_);
+  auto handle = CreateDiscardableHandle(key);
+  if (!handle.IsValid())
+    return;
 
   // Call |create_entry_cb| while |lock_| is held so that in case another thread
   // tries to lock the cache entry later, it can assume that the creation of the
   // service-side cache entry has been triggered.
-  std::move(create_entry_cb).Run(CreateDiscardableHandle(key));
+  std::move(create_entry_cb).Run(handle);
 }
 
 ClientDiscardableHandle ClientTransferCache::CreateDiscardableHandle(
