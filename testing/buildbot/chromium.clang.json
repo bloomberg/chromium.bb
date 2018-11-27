@@ -6726,15 +6726,6 @@
           "can_use_on_swarming_builders": false
         },
         "test": "base_unittests"
-      },
-      {
-        "args": [
-          "--tool=asan"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "components_browsertests"
       }
     ],
     "junit_tests": [
