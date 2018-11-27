@@ -110,7 +110,7 @@ void MediaStreamAudioDestinationHandler::Process(size_t number_of_frames) {
 }
 
 void MediaStreamAudioDestinationHandler::SetChannelCount(
-    unsigned long channel_count,
+    unsigned channel_count,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 

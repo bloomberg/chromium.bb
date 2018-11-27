@@ -103,7 +103,7 @@ OfflineAudioContext* OfflineAudioDestinationHandler::Context() const {
   return static_cast<OfflineAudioContext*>(AudioDestinationHandler::Context());
 }
 
-unsigned long OfflineAudioDestinationHandler::MaxChannelCount() const {
+uint32_t OfflineAudioDestinationHandler::MaxChannelCount() const {
   return channel_count_;
 }
 

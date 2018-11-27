@@ -59,7 +59,7 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
 
   void Trace(blink::Visitor*) override;
 
-  size_t length() const { return total_render_frames_; }
+  uint32_t length() const { return total_render_frames_; }
 
   ScriptPromise startOfflineRendering(ScriptState*);
 
@@ -129,7 +129,7 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   bool is_rendering_started_;
 
   // Total render sample length.
-  size_t total_render_frames_;
+  uint32_t total_render_frames_;
 };
 
 }  // namespace blink

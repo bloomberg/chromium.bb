@@ -58,7 +58,7 @@ class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
 
   bool Normalize() const { return normalize_; }
   void SetNormalize(bool normalize) { normalize_ = normalize; }
-  void SetChannelCount(unsigned long, ExceptionState&) final;
+  void SetChannelCount(unsigned, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;
 
  private:

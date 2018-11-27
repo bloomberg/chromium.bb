@@ -62,7 +62,7 @@ class AudioDestinationHandler : public AudioHandler {
   }
 
   virtual double SampleRate() const = 0;
-  virtual unsigned long MaxChannelCount() const = 0;
+  virtual uint32_t MaxChannelCount() const = 0;
 
   void ContextDestroyed() { is_execution_context_destroyed_ = true; }
   bool IsExecutionContextDestroyed() const {
@@ -92,7 +92,7 @@ class AudioDestinationNode : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  unsigned long maxChannelCount() const;
+  uint32_t maxChannelCount() const;
 
   // Returns its own handler object instead of a generic one from
   // AudioNode::Handler().

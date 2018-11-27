@@ -26,7 +26,7 @@ class AudioParamMap final : public ScriptWrappable,
       const HeapHashMap<String, Member<AudioParam>>& parameter_map);
 
   // IDL attributes / methods
-  size_t size() const { return parameter_map_.size(); }
+  uint32_t size() const { return parameter_map_.size(); }
 
   AudioParam* At(String name) { return parameter_map_.at(name); }
   bool Contains(String name) { return parameter_map_.Contains(name); }

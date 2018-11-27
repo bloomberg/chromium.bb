@@ -47,7 +47,7 @@ class MediaStreamAudioDestinationHandler final
 
   // AudioHandler.
   void Process(size_t frames_to_process) override;
-  void SetChannelCount(unsigned long, ExceptionState&) override;
+  void SetChannelCount(unsigned, ExceptionState&) override;
 
   unsigned long MaxChannelCount() const;
 

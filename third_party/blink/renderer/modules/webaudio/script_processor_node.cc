@@ -334,7 +334,7 @@ double ScriptProcessorHandler::LatencyTime() const {
   return std::numeric_limits<double>::infinity();
 }
 
-void ScriptProcessorHandler::SetChannelCount(unsigned long channel_count,
+void ScriptProcessorHandler::SetChannelCount(unsigned channel_count,
                                              ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());
@@ -512,7 +512,7 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
   return node;
 }
 
-size_t ScriptProcessorNode::bufferSize() const {
+uint32_t ScriptProcessorNode::bufferSize() const {
   return static_cast<ScriptProcessorHandler&>(Handler()).BufferSize();
 }
 

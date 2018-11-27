@@ -577,7 +577,7 @@ void PannerHandler::MarkPannerAsDirty(unsigned dirty) {
     is_distance_cone_gain_dirty_ = true;
 }
 
-void PannerHandler::SetChannelCount(unsigned long channel_count,
+void PannerHandler::SetChannelCount(unsigned channel_count,
                                     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());

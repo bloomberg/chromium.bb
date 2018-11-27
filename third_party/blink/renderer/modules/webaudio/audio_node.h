@@ -222,8 +222,8 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   void DisableOutputsIfNecessary();
   void DisableOutputs();
 
-  unsigned long ChannelCount();
-  virtual void SetChannelCount(unsigned long, ExceptionState&);
+  unsigned ChannelCount();
+  virtual void SetChannelCount(unsigned, ExceptionState&);
 
   String GetChannelCountMode();
   virtual void SetChannelCountMode(const String&, ExceptionState&);
@@ -339,8 +339,8 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
   BaseAudioContext* context() const;
   unsigned numberOfInputs() const;
   unsigned numberOfOutputs() const;
-  unsigned long channelCount() const;
-  void setChannelCount(unsigned long, ExceptionState&);
+  unsigned channelCount() const;
+  void setChannelCount(unsigned, ExceptionState&);
   String channelCountMode() const;
   void setChannelCountMode(const String&, ExceptionState&);
   String channelInterpretation() const;

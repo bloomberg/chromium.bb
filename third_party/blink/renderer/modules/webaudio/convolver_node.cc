@@ -202,7 +202,7 @@ unsigned ConvolverHandler::ComputeNumberOfOutputChannels(
   return clampTo(std::max(input_channels, response_channels), 1, 2);
 }
 
-void ConvolverHandler::SetChannelCount(unsigned long channel_count,
+void ConvolverHandler::SetChannelCount(unsigned channel_count,
                                        ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());
