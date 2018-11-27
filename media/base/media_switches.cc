@@ -195,10 +195,6 @@ const char kUserGestureRequiredForCrossOriginPolicy[] =
 
 namespace media {
 
-// Use new audio rendering mixer.
-const base::Feature kNewAudioRenderingMixingStrategy{
-    "NewAudioRenderingMixingStrategy", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Only used for disabling overlay fullscreen (aka SurfaceView) in Clank.
 const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
