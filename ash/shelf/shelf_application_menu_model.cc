@@ -11,7 +11,6 @@
 
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "base/metrics/histogram_macros.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/image/image.h"
 
@@ -28,11 +27,7 @@ ShelfApplicationMenuModel::ShelfApplicationMenuModel(
     std::vector<mojom::MenuItemPtr> items,
     ShelfItemDelegate* delegate)
     : ui::SimpleMenuModel(this), items_(std::move(items)), delegate_(delegate) {
-  if (!features::IsTouchableAppContextMenuEnabled())
-    AddSeparator(ui::SPACING_SEPARATOR);
   AddItem(kInvalidCommandId, title);
-  if (!features::IsTouchableAppContextMenuEnabled())
-    AddSeparator(ui::SPACING_SEPARATOR);
 
   for (size_t i = 0; i < items_.size(); i++) {
     mojom::MenuItem* item = items_[i].get();
