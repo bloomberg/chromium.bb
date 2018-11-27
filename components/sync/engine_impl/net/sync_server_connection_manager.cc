@@ -70,6 +70,7 @@ bool SyncBridgedConnection::Init(const char* path,
     DCHECK_NE(net_error_code, net::OK);
     DVLOG(1) << "Http POST failed, error returns: " << net_error_code;
     response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
+    response->net_error_code = net_error_code;
     return false;
   }
 

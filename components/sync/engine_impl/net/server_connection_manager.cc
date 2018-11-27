@@ -201,6 +201,7 @@ bool ServerConnectionManager::PostBufferWithCachedAuth(
       MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
   bool result = PostBufferToPath(params, path, auth_token());
   SetServerStatus(params->response.server_status);
+  net_error_code_ = params->response.net_error_code;
   return result;
 }
 

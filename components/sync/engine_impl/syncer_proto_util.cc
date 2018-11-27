@@ -83,10 +83,11 @@ void LogResponseProfilingData(const ClientToServerResponse& response) {
 }
 
 SyncerError ServerConnectionErrorAsSyncerError(
-    const HttpResponse::ServerConnectionCode server_status) {
+    const HttpResponse::ServerConnectionCode server_status,
+    int net_error_code) {
   switch (server_status) {
     case HttpResponse::CONNECTION_UNAVAILABLE:
-      return SyncerError(SyncerError::NETWORK_CONNECTION_UNAVAILABLE);
+      return SyncerError::NetworkConnectionUnavailable(net_error_code);
     case HttpResponse::IO_ERROR:
       return SyncerError(SyncerError::NETWORK_IO_ERROR);
     case HttpResponse::SYNC_SERVER_ERROR:
@@ -390,7 +391,9 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     DCHECK_NE(server_status, HttpResponse::NONE);
     DCHECK_NE(server_status, HttpResponse::SERVER_CONNECTION_OK);
 
-    return ServerConnectionErrorAsSyncerError(server_status);
+    return ServerConnectionErrorAsSyncerError(
+        server_status,
+        cycle->context()->connection_manager()->net_error_code());
   }
   LogClientToServerResponse(*response);
 

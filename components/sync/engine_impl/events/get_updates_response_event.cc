@@ -34,7 +34,7 @@ std::string GetUpdatesResponseEvent::GetDetails() const {
       return base::StringPrintf("Received %d update(s).  Some updates remain.",
                                 response_.get_updates().entries_size());
     default:
-      return base::StringPrintf("Received error: %s", error_.ToString());
+      return "Received error: " + error_.ToString();
   }
 }
 

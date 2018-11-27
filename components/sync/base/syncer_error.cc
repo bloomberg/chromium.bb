@@ -5,6 +5,7 @@
 #include "components/sync/base/syncer_error.h"
 
 #include "base/logging.h"
+#include "net/base/net_errors.h"
 
 namespace syncer {
 
@@ -14,7 +15,7 @@ namespace {
   case SyncerError::x: \
     return #x;         \
     break;
-const char* GetSyncerErrorString(SyncerError::Value value) {
+std::string GetSyncerErrorString(SyncerError::Value value) {
   switch (value) {
     ENUM_CASE(UNSET);
     ENUM_CASE(CANNOT_DO_WORK);
@@ -46,10 +47,12 @@ const char* GetSyncerErrorString(SyncerError::Value value) {
 
 }  // namespace
 
-SyncerError::~SyncerError() = default;
-
-const char* SyncerError::ToString() const {
-  return GetSyncerErrorString(value_);
+std::string SyncerError::ToString() const {
+  if (value_ != NETWORK_CONNECTION_UNAVAILABLE) {
+    return GetSyncerErrorString(value_);
+  }
+  return GetSyncerErrorString(value_) + " (" +
+         net::ErrorToShortString(net_error_code_) + ")";
 }
 
 bool SyncerError::IsActualError() const {
