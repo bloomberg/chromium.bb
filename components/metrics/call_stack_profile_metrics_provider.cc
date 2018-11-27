@@ -217,7 +217,7 @@ PendingProfiles::PendingProfiles() : collection_enabled_(true) {}
 // CallStackProfileMetricsProvider --------------------------------------------
 
 const base::Feature CallStackProfileMetricsProvider::kEnableReporting = {
-    "SamplingProfilerReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SamplingProfilerReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 CallStackProfileMetricsProvider::CallStackProfileMetricsProvider() {}
 
