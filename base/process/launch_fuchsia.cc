@@ -159,10 +159,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   // Add actions to clone handles for any specified paths into the new process'
   // namespace.
   if (!options.paths_to_clone.empty() || !options.paths_to_transfer.empty()) {
-    // |paths_to_clone| doesn't make sense with FDIO_SPAWN_CLONE_NAMESPACE.
-    DCHECK((options.spawn_flags & FDIO_SPAWN_CLONE_NAMESPACE) == 0 ||
-           options.paths_to_clone.empty());
-
+    DCHECK((options.spawn_flags & FDIO_SPAWN_CLONE_NAMESPACE) == 0);
     transferred_handles.reserve(transferred_handles.size() +
                                 options.paths_to_clone.size() +
                                 options.paths_to_transfer.size());
