@@ -657,7 +657,7 @@ bool WriteEncoders(int fd, const CppSymbolTable& table) {
           } break;
           case CppType::Which::kString: {
             dprintf(fd, "  case Which::kString:\n");
-            dprintf(fd, "    str.std::string::~string();\n");
+            dprintf(fd, "    str.std::string::~basic_string();\n");
             dprintf(fd, "    break;\n");
           } break;
           case CppType::Which::kBytes: {
