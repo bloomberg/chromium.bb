@@ -43,6 +43,13 @@ const base::Feature kEnableVirtualKeyboardUkm = {
 const base::Feature kExperimentalUi{"ExperimentalUi",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_CHROMEOS)
+// Integrate input method specific settings to Chrome OS settings page.
+// https://crbug.com/895886.
+const base::Feature kSettingsShowsPerKeyboardSettings = {
+    "InputMethodIntegratedSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
+
 // Update of the virtual keyboard settings UI as described in
 // https://crbug.com/876901.
 const base::Feature kInputMethodSettingsUiUpdate = {
