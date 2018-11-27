@@ -32,6 +32,7 @@
 <translation id="2008474315282236005">Bu işlem 1 öğeyi bu cihazdan silecektir. Verilerinizi daha sonra geri almak için Chromium'da <ph name="USER_EMAIL" /> hesabıyla oturum açın.</translation>
 <translation id="2117378023188580026">Yöneticiniz bu güncellemeyi uygulamak için Chromium'u yeniden başlatmanızı istiyor</translation>
 <translation id="2119636228670142020">&amp;Chromium OS hakkında</translation>
+<translation id="2178765360243863853">Chromium'u şimdi yeniden başlatmalısınız.</translation>
 <translation id="2241627712206172106">Bir bilgisayarı paylaşıyorsanız arkadaşlarınız ve aileniz ayrı olarak göz atabilir ve Chromium'u tam olarak istedikleri şekilde ayarlayabilir.</translation>
 <translation id="2265088490657775772">iPhone'unuzda Chromium'u edinin</translation>
 <translation id="2347108572062610441">Bu uzantı, Chromium'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
@@ -106,6 +107,7 @@
 <translation id="4708774505295300557">Birisi daha önce bu bilgisayarda <ph name="ACCOUNT_EMAIL_LAST" /> olarak Chromium oturumu açmış. Bilgilerinizi ayrı tutmak için yeni bir Chromium kullanıcısı oluşturun.</translation>
 <translation id="4714956846925717402">Chromium'a daha hızlı ulaşın</translation>
 <translation id="4746050847053251315">Yine de Chromium'dan çıkılsın mı?</translation>
+<translation id="4748217263233248895">Chromium için özel bir güvenlik güncellemesi uygulandı. Şimdi uygulamayı yeniden başlatın ve sekmeleriniz geri yüklenecektir.</translation>
 <translation id="4888717733111232871">Chromium'un mDNS trafiğine izin vermeyi sağlayan gelen trafik kuralı.</translation>
 <translation id="4943838377383847465">Chromium arka plan modunda.</translation>
 <translation id="4987820182225656817">Misafirler Chromium'u geride hiçbir şey bırakmadan kullanabilir.</translation>

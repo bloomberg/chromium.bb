@@ -145,7 +145,6 @@
 <translation id="1826516787628120939">حساب شيكات</translation>
 <translation id="1834321415901700177">يحتوي هذا الموقع على برامج ضارة</translation>
 <translation id="1839551713262164453">لقد تعذّر التحقق من قيم السياسة مع ظهور أخطاء.</translation>
-<translation id="1840414022444569775">رقم البطاقة هذا مستخدم من قبل</translation>
 <translation id="1842969606798536927">الدفع</translation>
 <translation id="1866450167992311397">استخدام البطاقات في المزيد من الأماكن</translation>
 <translation id="1871208020102129563">‏تم تعيين الخادم الوكيل لاستخدام الخوادم الوكيلة الثابتة وليس عنوان URL لنص برمجي pac.</translation>
@@ -184,6 +183,7 @@
 <translation id="2108755909498034140">إعادة تشغيل جهاز الكمبيوتر</translation>
 <translation id="2113977810652731515">البطاقة</translation>
 <translation id="2114841414352855701">تم تجاهلها نظرًا لتجاوزها بواسطة <ph name="POLICY_NAME" />.</translation>
+<translation id="2129308444951592399">الأحكام والشروط</translation>
 <translation id="213826338245044447">الإشارات المرجعية على الجوال</translation>
 <translation id="214556005048008348">إلغاء الدفع</translation>
 <translation id="2147827593068025794">مزامنة الخلفية</translation>
@@ -384,6 +384,7 @@
 <translation id="3427092606871434483">السماح (تلقائي)</translation>
 <translation id="3427342743765426898">إعادة الت&amp;حرير</translation>
 <translation id="342781501876943858">‏يُوصي Chromium بإعادة تحديد كلمة المرور في حال إعادة استخدامها في مواقع ويب أخرى.</translation>
+<translation id="3430691998045392297">تُعد مشاهدة الفيلم أمرًا مختلفًا، هل تريد المتابعة؟</translation>
 <translation id="3431636764301398940">حفظ هذه البطاقة إلى هذا الجهاز</translation>
 <translation id="3447661539832366887">أوقف مالك هذا الجهاز تشغيل لعبة الديناصور.</translation>
 <translation id="3447884698081792621">عرض الشهادة (من إصدار <ph name="ISSUER" />)</translation>
@@ -401,6 +402,7 @@
 <translation id="3566021033012934673">اتصالك ليس خاصًا</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">تعرض صفحة مُضمنة في موقع <ph name="SITE" /></translation>
+<translation id="3581089476000296252">‏سيخبرك Chrome عندما تكون هذه الصفحة جاهزة. &lt;a&gt;إلغاء&lt;/a&gt;</translation>
 <translation id="358285529439630156">يتم قبول بطاقات الائتمان وبطاقات الدفع المسبق.</translation>
 <translation id="3582930987043644930">إضافة اسم</translation>
 <translation id="3583757800736429874">إ&amp;عادة النقل</translation>
@@ -432,6 +434,7 @@
 <translation id="3736520371357197498">إذا كنت على دراية بالمخاطر على أمنك، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" /> قبل أن تتم إزالة البرامج الخطيرة.</translation>
 <translation id="3739623965217189342">الرابط الذي نسخته</translation>
 <translation id="3744899669254331632">‏لا يمكنك زيارة <ph name="SITE" /> في الوقت الحالي لأن الموقع أرسل اعتمادات مختلطة حيث لا يستطيع Chromium المعالجة. أخطاء الشبكة وهجماتها عادةً ما تكون مؤقتة، لذلك من المحتمل أن تعمل هذه الصفحة في وقت لاحق.</translation>
+<translation id="3745099705178523657">‏بعد التأكيد، ستتم مشاركة تفاصيل البطاقة من حسابك على Google مع هذا الموقع الإلكتروني.</translation>
 <translation id="3748148204939282805">قد يخدعك المهاجمون على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> لتنفيذ أمور خطيرة، مثل تثبيت البرامج أو نشر معلوماتك الشخصية (على سبيل المثال، كلمات المرور، أو أرقام الهاتف، أو بطاقات الائتمان). <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">تعذّرت الترجمة بسبب حدوث خطأ في الخادم.</translation>
 <translation id="3759461132968374835">ليس لديك أي أعطال تم الإبلاغ عنها مؤخرًا. الأعطال التي حدثت عندما تم إيقاف الإبلاغ عن الأعطال لن تظهر هنا.</translation>
@@ -453,6 +456,7 @@
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">تحميل مُعرّف تقارير الأعطال <ph name="CRASH_ID" /> (مُعرّف الأعطال المحلية: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">السؤال دائمًا على موقع الويب هذا</translation>
+<translation id="3947577358805392297">حفظ الصفحة لاحقًا</translation>
 <translation id="3949571496842715403">لم يتمكن هذا الخادم من إثبات أنه <ph name="DOMAIN" />؛ بل إن شهادة الأمان التابعة له لا تُحدّد الأسماء البديلة للمضيفات. وربما يكون السبب في ذلك وجود خطأ في التهيئة أو اعتراض أحد المهاجمين للاتصال.</translation>
 <translation id="3949601375789751990">يظهر سجلّ التصفّح هنا</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
@@ -571,6 +575,7 @@
 <translation id="4771973620359291008">حدث خطأ غير محدّد.</translation>
 <translation id="4785689107224900852">التبديل إلى علامة التبويب هذه</translation>
 <translation id="4792143361752574037">حدثت مشكلة أثناء الوصول إلى ملفات الجلسة. ويتم حاليًا إيقاف الحفظ إلى القرص. يُرجى إعادة تحميل الصفحة للمحاولة مرة أخرى.</translation>
+<translation id="4798078619018708837">‏يمكنك إدخال تاريخ انتهاء الصلاحية ورمز التحقُّق من البطاقة (CVC) لبطاقة <ph name="CREDIT_CARD" /> لتحديث تفاصيل بطاقتك. وبعد التأكيد، ستتم مشاركة تفاصيل البطاقة من حسابك على Google مع هذا الموقع الإلكتروني.</translation>
 <translation id="4800132727771399293">‏تحقق من تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) وأعد المحاولة مرة أخرى.</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">‏لا يمكنك زيارة <ph name="SITE" /> الآن نظرًا لأن موقع الويب أرسل بيانات اعتماد مختلطة يتعذر على Google Chrome معالجتها. وعادةً ما تكون أخطاء الشبكة والهجمات عليها مؤقتة؛ لذا ستعمل هذه الصفحة لاحقًا على الأرجح.</translation>
@@ -622,6 +627,7 @@
 <translation id="5141240743006678641">‏تشفير كلمات المرور المتزامنة باستخدام بيانات اعتماد Google</translation>
 <translation id="5145883236150621069">يوجد رمز خطأ في استجابة السياسة</translation>
 <translation id="5159010409087891077">‏يمكنك فتح الصفحة في نافذة جديدة للتصفح المتخفي (⇧⌘N)</translation>
+<translation id="516920405563544094">‏يمكنك إدخال رمز التحقُّق من البطاقة (CVC) لبطاقة <ph name="CREDIT_CARD" />. وبعد التأكيد، ستتم مشاركة تفاصيل البطاقة من حسابك على Google مع هذا الموقع الإلكتروني.</translation>
 <translation id="5169827969064885044">‏قد تفقد إمكانية الوصول إلى حساب مؤسستك أو تتعرَّض لسرقة هويتك. لذا، يوصي Chrome بتغيير كلمة مرورك الآن.</translation>
 <translation id="5171045022955879922">‏البحث أو إدخال عنوان URL</translation>
 <translation id="5172758083709347301">الجهاز</translation>
@@ -720,6 +726,7 @@
 <translation id="5810442152076338065">يتم ترميز اتصالك بالنطاق <ph name="DOMAIN" /> باستخدام مجموعة تشفير قديمة.</translation>
 <translation id="5813119285467412249">إعا&amp;دة الإضافة</translation>
 <translation id="5838278095973806738">يجب عدم إدخال معلومات حسّاسة على هذا الموقع (على سبيل المثال، كلمات المرور أو بطاقات الائتمان)، نظرًا لأنه قد تتم سرقتها من قِبل المهاجمين.</translation>
+<translation id="5844286946362376359">أعلم الأحكام والشروط وسياسة الخصوصة والحق القانوني في التراجع عن <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (متروكة بدون تحديد للقراءة).</translation>
 <translation id="5863847714970149516">قد تُحاول الصفحة التالية تحصيل رسوم منك</translation>
 <translation id="5866257070973731571">إضافة رقم الهاتف</translation>
 <translation id="5869405914158311789">لا يمكن الوصول إلى موقع الويب هذا</translation>
@@ -728,6 +735,7 @@
 <translation id="5893752035575986141">يتم قبول بطاقات الائتمان.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (تمت المزامنة)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 قيد الاستخدام}zero{# قيد الاستخدام}two{# قيد الاستخدام}few{# قيد الاستخدام}many{# قيد الاستخدام}other{# قيد الاستخدام}}</translation>
+<translation id="5921639886840618607">‏هل تريد حفظ البطاقة في حساب Google؟</translation>
 <translation id="5922853866070715753">أوشكْت على الانتهاء.</translation>
 <translation id="5932224571077948991">يعرض موقع الويب إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="5939518447894949180">إعادة</translation>

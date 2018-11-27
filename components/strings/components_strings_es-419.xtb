@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">Inscripción de dominio:</translation>
 <translation id="1340482604681802745">Dirección de retiro</translation>
 <translation id="1348198688976932919">El siguiente sitio incluye apps peligrosas</translation>
+<translation id="1348779747280417563">Confirmar el nombre</translation>
 <translation id="1374468813861204354">sugerencias</translation>
 <translation id="1375198122581997741">Acerca de la versión</translation>
 <translation id="1376836354785490390">Mostrar menos</translation>
@@ -144,7 +145,6 @@
 <translation id="1826516787628120939">Comprobando</translation>
 <translation id="1834321415901700177">Este sitio contiene programas dañinos</translation>
 <translation id="1839551713262164453">Se produjeron errores en la validación de los valores de la política</translation>
-<translation id="1840414022444569775">Este número de tarjeta ya está en uso</translation>
 <translation id="1842969606798536927">Pagar</translation>
 <translation id="1866450167992311397">Usa tus tarjetas en más lugares</translation>
 <translation id="1871208020102129563">El proxy está configurado para usar servidores proxy fijos, no una URL de script .pac.</translation>
@@ -457,6 +457,7 @@
 <translation id="3949601375789751990">Tu historial de navegación aparece aquí</translation>
 <translation id="3950820424414687140">Acceder</translation>
 <translation id="3963721102035795474">Modo de lectura</translation>
+<translation id="3963837677003247395">¿Quieres continuar de forma manual?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ninguno}=1{De 1 sitio }other{De # sitios }}</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3973234410852337861">Se bloqueó <ph name="HOST_NAME" /></translation>
@@ -813,6 +814,7 @@
 <translation id="6569060085658103619">Estás viendo la página de una extensión</translation>
 <translation id="6596325263575161958">Opciones de encriptación</translation>
 <translation id="6604181099783169992">Sensores de luz o movimiento</translation>
+<translation id="6607617806003952240">No puedo ayudarte más. Continúa de forma manual.</translation>
 <translation id="6624427990725312378">Información de contacto</translation>
 <translation id="6626291197371920147">Agregar un número de tarjeta válido</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Búsqueda</translation>
@@ -856,6 +858,7 @@
 <translation id="6950684638814147129">Error al analizar el valor JSON: <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">Abre la página en una nueva pestaña del modo privado</translation>
 <translation id="6957887021205513506">El certificado del servidor parece falso.</translation>
+<translation id="6964255747740675745">No se pudo analizar la configuración de red (JSON no válido).</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6970216967273061347">Distrito</translation>
@@ -1150,11 +1153,13 @@ Detalles adicionales:
 <translation id="893332455753468063">Agregar nombre</translation>
 <translation id="8938939909778640821">Tarjetas de crédito y prepago aceptadas</translation>
 <translation id="8957210676456822347">Autorización de portal cautivo</translation>
+<translation id="8968766641738584599">Guardar la tarjeta</translation>
 <translation id="8971063699422889582">El certificado del servidor ha caducado.</translation>
 <translation id="8975012916872825179">Incluye información, como números de teléfono, direcciones de correo electrónico y direcciones de envío</translation>
 <translation id="8978053250194585037">Recientemente, la navegación segura de Google <ph name="BEGIN_LINK" />detectó un intento de suplantación de identidad (phishing)<ph name="END_LINK" /> en <ph name="SITE" />. Los sitios de suplantación de identidad imitan a otros sitios web para engañarte.</translation>
 <translation id="8983003182662520383">Formas de pago y direcciones con Google Pay</translation>
 <translation id="8987927404178983737">Mes</translation>
+<translation id="8988408250700415532">Se produjo un error. Puedes finalizar el pedido en el sitio web.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">El siguiente sitio contiene programas peligrosos</translation>
 <translation id="8997023839087525404">El servidor presentó un certificado que no se divulgó de forma pública con la política Certificado de transparencia. Este es un requisito para algunos certificados que permite garantizar su confiabilidad y protegerte de atacantes.</translation>

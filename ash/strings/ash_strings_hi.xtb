@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">मेन्यू छोटा करें</translation>
 <translation id="1383876407941801731">खोज</translation>
 <translation id="1419738280318246476">सूचना से जुड़ी कार्रवाई करने के लिए डिवाइस को अनलॉक करें</translation>
+<translation id="1455242230282523554">भाषा सेटिंग दिखाएं</translation>
 <translation id="1467432559032391204">बाएं</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{सूचना सेटिंग दिखाएं. किसी एक ऐप्लिकेशन के लिए सूचनाएं बंद हैं}one{सूचना सेटिंग दिखाएं. # ऐप्लिकेशन के लिए सूचनाएं बंद हैं}other{सूचना सेटिंग दिखाएं. # ऐप्लिकेशन के लिए सूचनाएं बंद हैं}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">अभी देखने के लिए कुछ भी नहीं है</translation>
 <translation id="3445925074670675829">USB-C डिवाइस</translation>
 <translation id="3454224730401036106">आपका कनेक्शन ज़्यादा सुरक्षित नेटवर्क पर स्विच कर दिया गया है</translation>
+<translation id="3465223694362104965">आपके अंतिम बार साइन इन किए जाने के समय से इस डिवाइस से कोई और कीबोर्ड कनेक्ट किया गया है. इस कीबोर्ड का इस्तेमाल करने से पहले पक्का करें कि यह भरोसेमंद है.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">माउस कर्सर को हाइलाइट करें</translation>
 <translation id="3510503721818156981">Chromebook एक नए फ़ोन से जुड़ गया है</translation>
@@ -261,6 +263,7 @@
 <translation id="5571066253365925590">ब्लूटूथ सक्षम किया गया</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">बोलकर दिया गया फ़ीडबैक बंद करने के लिए Ctrl + Alt + Z दबाएं.</translation>
+<translation id="5626283214046138476">आपका 'निगरानी में रखा गया उपयोगकर्ता' खाता जल्द ही खत्म होने वाला है.</translation>
 <translation id="5648021990716966815">माइक जैक</translation>
 <translation id="5669267381087807207">सक्रिय कर रहा है</translation>
 <translation id="5673434351075758678">अपनी सेटिंग सिंक करने के बाद "<ph name="FROM_LOCALE" />" से "<ph name="TO_LOCALE" />".</translation>

@@ -145,7 +145,6 @@
 <translation id="1826516787628120939">Probíhá kontrola</translation>
 <translation id="1834321415901700177">Tento web obsahuje škodlivé programy</translation>
 <translation id="1839551713262164453">Ověření hodnot zásad selhalo s chybami</translation>
-<translation id="1840414022444569775">Toto číslo karty již existuje</translation>
 <translation id="1842969606798536927">Zaplatit</translation>
 <translation id="1866450167992311397">Používejte své karty na různých místech</translation>
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
@@ -184,6 +183,7 @@
 <translation id="2108755909498034140">Restartujte počítač</translation>
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Zásada ignorována, protože bylo přepsána zásadou <ph name="POLICY_NAME" />.</translation>
+<translation id="2129308444951592399">Smluvní podmínky</translation>
 <translation id="213826338245044447">Mobilní záložky</translation>
 <translation id="214556005048008348">Zrušit platbu</translation>
 <translation id="2147827593068025794">Synchronizace na pozadí</translation>
@@ -381,6 +381,7 @@
 <translation id="3427092606871434483">Povolit (výchozí)</translation>
 <translation id="3427342743765426898">&amp;Opakovat úpravy</translation>
 <translation id="342781501876943858">Pokud jste heslo použili na jiném webu, doporučujeme vám ho resetovat.</translation>
+<translation id="3430691998045392297">Přehrávaný film se liší, chcete pokračovat?</translation>
 <translation id="3431636764301398940">Uložit tuto kartu do zařízení</translation>
 <translation id="3447661539832366887">Vlastník tohoto zařízení hru s dinosaurem vypnul.</translation>
 <translation id="3447884698081792621">Zobrazit certifikát (vydavatel: <ph name="ISSUER" />)</translation>
@@ -398,6 +399,7 @@
 <translation id="3566021033012934673">Vaše připojení není soukromé</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Vložená stránka na webu <ph name="SITE" /> říká</translation>
+<translation id="3581089476000296252">Až tato stránka bude připravená, bude vás Chrome informovat. &lt;a&gt;Zrušit&lt;/a&gt;</translation>
 <translation id="358285529439630156">Obchodník přijímá kreditní a předplacené karty.</translation>
 <translation id="3582930987043644930">Přidejte jméno</translation>
 <translation id="3583757800736429874">&amp;Opakovat přesunutí</translation>
@@ -428,6 +430,7 @@
 <translation id="3736520371357197498">Pokud bezpečnostní rizika chápete, můžete <ph name="BEGIN_LINK" />tento nespolehlivý web navštívit<ph name="END_LINK" /> ještě před tím, než budou nebezpečné programy odstraněny.</translation>
 <translation id="3739623965217189342">Zkopírovaný odkaz</translation>
 <translation id="3744899669254331632">Web <ph name="SITE" /> teď nelze navštívit, protože tento web odeslal nesprávné identifikační údaje, které prohlížeč Chromium nedokáže zpracovat. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
+<translation id="3745099705178523657">Po potvrzení budou údaje o kartě z vašeho účtu Google poskytnuty tomuto webu.</translation>
 <translation id="3748148204939282805">Útočníci na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> vás mohou podvodem přimět k nebezpečnému chování, jako je instalace softwaru nebo vyzrazení osobních údajů (například hesel, telefonních čísel nebo platebních karet). <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Z důvodu chyby serveru se překlad nezdařil.</translation>
 <translation id="3759461132968374835">Nemáte žádná nedávno hlášená selhání. Selhání, ke kterým došlo, když byla služba hlášení o selháních vypnutá, se zde nezobrazují.</translation>
@@ -449,6 +452,7 @@
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">ID nahrané zprávy o selhání <ph name="CRASH_ID" /> (místní ID selhání: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Na tomto webu se vždy zeptat</translation>
+<translation id="3947577358805392297">Uložit stránku na později</translation>
 <translation id="3949571496842715403">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. V jeho bezpečnostním certifikátu nejsou uvedeny alternativní názvy subjektu. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="3949601375789751990">Zde se zobrazuje vaše historie prohlížení</translation>
 <translation id="3950820424414687140">Přihlaste se</translation>
@@ -567,6 +571,7 @@
 <translation id="4771973620359291008">Došlo k neznámé chybě.</translation>
 <translation id="4785689107224900852">Přejít na tuto kartu</translation>
 <translation id="4792143361752574037">Při pokusu o přístup k souborům došlo k chybě. Ukládání na disk je v současné době zakázáno. Chcete-li to zkusit znovu, obnovte stránku.</translation>
+<translation id="4798078619018708837">Chcete-li aktualizovat údaje o kartě, zadejte datum vypršení platnosti a kód CVC karty <ph name="CREDIT_CARD" />. Po potvrzení budou údaje o kartě z vašeho účtu Google poskytnuty tomuto webu.</translation>
 <translation id="4800132727771399293">Zkontrolujte datum vypršení platnosti a kód CVC a zkuste to znovu.</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4807049035289105102">Web <ph name="SITE" /> teď nemůžete navštívit, protože webové stránky odeslaly zakódované identifikační údaje, které Chrome nedokáže zpracovat. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
@@ -618,6 +623,7 @@
 <translation id="5141240743006678641">Šifrovat synchronizovaná hesla pomocí hesla k účtu Google</translation>
 <translation id="5145883236150621069">Odpověď zásady obsahuje kód chyby</translation>
 <translation id="5159010409087891077">Otevřete stránku v novém anonymním okně (⇧⌘N)</translation>
+<translation id="516920405563544094">Zadejte kód CVC karty <ph name="CREDIT_CARD" />. Po potvrzení budou údaje o kartě z vašeho účtu Google poskytnuty tomuto webu.</translation>
 <translation id="5169827969064885044">Mohli byste ztratit přístup k účtu organizace nebo by mohlo dojít k odcizení vaší identity. Chrome doporučuje okamžitě změnit heslo.</translation>
 <translation id="5171045022955879922">Vyhledávejte či zadejte URL</translation>
 <translation id="5172758083709347301">Počítač</translation>
@@ -716,6 +722,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5810442152076338065">Vaše připojení k doméně <ph name="DOMAIN" /> je šifrováno za použití zastaralé šifrovací sady.</translation>
 <translation id="5813119285467412249">&amp;Opakovat přidání</translation>
 <translation id="5838278095973806738">Na tento web byste neměli zadávat citlivé údaje (například hesla nebo čísla platebních karet), protože by je mohli odcizit útočníci.</translation>
+<translation id="5844286946362376359">Znám smluvní podmínky, zásady ochrany soukromí a právo na odstoupení od smlouvy služby <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (chcete-li si je přečíst, ponechte toto políčko nezaškrtnuté).</translation>
 <translation id="5863847714970149516">Následující stránka se vám může pokusit naúčtovat poplatky</translation>
 <translation id="5866257070973731571">Přidání telefonního čísla</translation>
 <translation id="5869405914158311789">Tento web není dostupný</translation>
@@ -724,6 +731,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5893752035575986141">Obchodník přijímá kreditní karty.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronizováno)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Používá se 1}few{Používají se #}many{Používá se #}other{Používá se #}}</translation>
+<translation id="5921639886840618607">Uložit kartu do účtu Google?</translation>
 <translation id="5922853866070715753">Téměř dokončeno</translation>
 <translation id="5932224571077948991">Web zobrazuje rušivé nebo zavádějící reklamy</translation>
 <translation id="5939518447894949180">Resetovat</translation>

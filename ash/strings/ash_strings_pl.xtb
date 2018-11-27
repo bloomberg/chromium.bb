@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">Zwiń menu</translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1419738280318246476">Odblokuj urządzenie, by zareagować na powiadomienie</translation>
+<translation id="1455242230282523554">Pokaż ustawienia języka</translation>
 <translation id="1467432559032391204">W lewo</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Pokaż ustawienia powiadomień. Jedna aplikacja ma wyłączone powiadomienia.}few{Pokaż ustawienia powiadomień. # aplikacje mają wyłączone powiadomienia.}many{Pokaż ustawienia powiadomień. # aplikacji ma wyłączone powiadomienia.}other{Pokaż ustawienia powiadomień. # aplikacji ma wyłączone powiadomienia.}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">Na razie nie ma nic do pokazania</translation>
 <translation id="3445925074670675829">Urządzenie USB-C</translation>
 <translation id="3454224730401036106">Połączenie zostało przełączone na bezpieczniejszą sieć</translation>
+<translation id="3465223694362104965">Od czasu Twojego ostatniego logowania do tego urządzenia podłączono inną klawiaturę. Zanim jej użyjesz, upewnij się, że masz do niej zaufanie.</translation>
 <translation id="3477079411857374384">Control+Shift+spacja</translation>
 <translation id="3510164367642747937">Podświetlaj wskaźnik myszy</translation>
 <translation id="3510503721818156981">Chromebook został połączony z nowym telefonem</translation>

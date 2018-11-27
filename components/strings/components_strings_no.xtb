@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">Registreringsdomene:</translation>
 <translation id="1340482604681802745">Henteadresse</translation>
 <translation id="1348198688976932919">Nettstedet du er på vei til, inneholder farlige apper</translation>
+<translation id="1348779747280417563">Bekreft navnet</translation>
 <translation id="1374468813861204354">forslagene</translation>
 <translation id="1375198122581997741">Om versjon</translation>
 <translation id="1376836354785490390">Vis mindre</translation>
@@ -144,7 +145,6 @@
 <translation id="1826516787628120939">Kontrollerer</translation>
 <translation id="1834321415901700177">Dette nettstedet inneholder skadelige programmer</translation>
 <translation id="1839551713262164453">Validering av regelverdier mislyktes med feil</translation>
-<translation id="1840414022444569775">Dette kortnummeret er brukt allerede</translation>
 <translation id="1842969606798536927">Betal</translation>
 <translation id="1866450167992311397">Bruk kortene dine flere steder</translation>
 <translation id="1871208020102129563">Mellomtjeneren er angitt til å bruke statiske proxytjenere, ikke en nettadresse med .pac-skript.</translation>
@@ -456,6 +456,7 @@
 <translation id="3949601375789751990">Nettleserloggen din vises her</translation>
 <translation id="3950820424414687140">Logg på</translation>
 <translation id="3963721102035795474">Lesermodus</translation>
+<translation id="3963837677003247395">Vil du fortsette manuelt?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ingen}=1{Fra 1 nettsted }other{Fra # nettsteder }}</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokkert</translation>
@@ -812,6 +813,7 @@
 <translation id="6569060085658103619">Du ser på en utvidelsesside</translation>
 <translation id="6596325263575161958">Krypteringsalternativer</translation>
 <translation id="6604181099783169992">Bevegelses- eller lyssensorer</translation>
+<translation id="6607617806003952240">Jeg kan ikke hjelpe deg lenger. Fortsett manuelt.</translation>
 <translation id="6624427990725312378">Kontaktinformasjon</translation>
 <translation id="6626291197371920147">Legg til et gyldig kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Søk</translation>
@@ -855,6 +857,7 @@
 <translation id="6950684638814147129">Feil under parsering av JSON-verdi: <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">Åpne siden i en ny privat fane</translation>
 <translation id="6957887021205513506">Tjenersertifikatet ser ut til å være forfalsket.</translation>
+<translation id="6964255747740675745">Nettverkskonfigurasjonen kunne ikke parses (ugyldig JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Enhet</translation>
 <translation id="6970216967273061347">Område</translation>
@@ -1147,11 +1150,13 @@ Mer informasjon:
 <translation id="893332455753468063">Legg til navn</translation>
 <translation id="8938939909778640821">Godkjente kredittkort og forhåndsbetalte kort</translation>
 <translation id="8957210676456822347">Captive Portal-autorisasjon</translation>
+<translation id="8968766641738584599">Lagre kortet</translation>
 <translation id="8971063699422889582">Tjenerens sertifikat er utløpt.</translation>
 <translation id="8975012916872825179">Inkluderer informasjon som telefonnumre, e-postadresser og leveringsadresser</translation>
 <translation id="8978053250194585037">Google Safe Browsing <ph name="BEGIN_LINK" />oppdaget nylig nettfisking<ph name="END_LINK" /> på <ph name="SITE" />. Nettsteder for nettfisking er laget for å ligne på andre nettsteder, for å prøve å lure deg.</translation>
 <translation id="8983003182662520383">Betalingsmåter og adresser som bruker Google Pay</translation>
 <translation id="8987927404178983737">Måned</translation>
+<translation id="8988408250700415532">Noe gikk galt. Du kan fullføre bestillingen din på nettstedet.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Nettstedet du er i ferd med å åpne, inneholder skadelige programmer</translation>
 <translation id="8997023839087525404">Tjeneren har presentert et sertifikat som ikke er offentlig vist i henhold til regelen om sertifikatåpenhet. Dette er et krav for enkelte sertifikater for å sikre at de er pålitelige, og bidrar til å beskytte mot angrep.</translation>

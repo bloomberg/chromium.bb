@@ -214,6 +214,14 @@
 <translation id="1523774894176285446">Zamjenski preglednik koji se pokreće za konfigurirane web-lokacije.</translation>
 <translation id="152657506688053119">Popis zamjenskih URL-ova za zadanog davatelja usluge pretraživanja</translation>
 <translation id="1530812829012954197">Uvijek prikaži sljedeće URL obrasce u pregledniku hosta</translation>
+<translation id="1532965933165453786">Dopušta omogućivanje ili onemogućivanje Brzog prijelaza.
+      Primjenjuje se na sve korisnike i sva sučelja na uređaju.
+      Da bi se koristio Brzi prijelaz, ova postavka i ONC svojstvo po mreži moraju biti omogućeni.
+      Kada se postavi, Brzi prijelaz traje dok se ne isključi tim pravilom.
+
+      Ako se pravilo ne postavi, neće se upotrebljavati Brzi prijelaz.
+      Ako se postavi na False, neće se upotrebljavati Brzi prijelaz.
+      Ako se postavi na True, Brzi prijelaz upotrebljava se kada ga podržava točka bežičnog pristupa.</translation>
 <translation id="1541170838458414064">Ograniči veličinu stranice ispisa</translation>
 <translation id="1553684822621013552">Kada je to pravilo postavljeno na "True", ARC će biti omogućen za korisnika
       (ovisno o dodatnim postavkama pravila – ARC i dalje neće biti
@@ -909,6 +917,13 @@
       To se pravilo može postaviti samo kao preporučeno. Tim pravilom možete premjestiti skup preporučenih jezika na vrh popisa, ali korisnici za svoju sesiju uvijek mogu sami odabrati bilo koji jezik koji <ph name="PRODUCT_OS_NAME" /> podržava.
       </translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
+<translation id="3388153794103186066">Omogućuje postavljanje popisa URL-ova koji navode koje će web-lokacije automatski dobiti dopuštenje za pristup USB uređaju s navedenim ID-jem dobavljača i ID-jem proizvoda. Svaka stavka na popisu mora sadržavati uređaje i URL-ove da bi pravilo bilo važeće. Svaka stavka na uređaju može sadržavati polje ID-ja dobavljača i ID-ja proizvoda. Svaki izostavljeni ID smatra se zamjenskim znakom s jednom iznimkom, a ta je iznimka da se ID proizvoda ne može navesti, a da se ne navede i ID dobavljača. U suprotnom pravilo neće biti važeće i zanemarit će se.
+
+        Model dopuštenja za USB upotrebljava URL web-lokacije koja šalje zahtjev ("URL koji šalje zahtjev") i URL vršnih web-lokacija u okviru ("URL koji se ugrađuje") kako bi se URL-u koji šalje zahtjev dopustio pristup USB uređaju. URL koji šalje zahtjev može se razlikovati od URL-a koji se ugrađuje ako se web-lokacija koja šalje zahtjev učitava u iframeu. Stoga, da bi se odredio URL koji šalje zahtjev i URL koji se ugrađuje, polje za "URL-ove" može sadržavati najviše dva niza URL-a razdvojena zarezom. Ako se odredi samo jedan URL, pristup će biti dopušten odgovarajućim USB uređajima kada se URL web-lokacije koja šalje zahtjev podudara s ovim URL-om, bez obzira na status ugrađivanja. URL-ovi u polju "URL-ovi" moraju biti važeći. U protivnom će se pravilo zanemariti.
+
+        Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultWebUsbGuardSetting" ako je to pravilo postavljeno, a ako nije, upotrebljavat će se korisnikova osobna konfiguracija.
+
+        Uzorci URL-a u ovom pravilu ne bi trebali biti u sukobu s onima koji su konfigurirani pravilom WebUsbBlockedForUrls. Ako se pojavi sukob, ovo će pravilo imati prednost pred pravilima WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Ako se to pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu minimalnu verziju, a to je TLS 1.0.
 
       U suprotnom se može postaviti na jednu od sljedećih vrijednosti: "tls1", "tls1.1" ili "tls1.2". Kad se to pravilo postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a manje od navedene verzije. Vrijednost koja se ne prepozna ignorirat će se.</translation>
@@ -1155,6 +1170,7 @@
 <translation id="3925020515212192040">Određuje popis unaprijed konfiguriranih mrežnih dijeljenja datoteka.
 
       Svaka stavka na popisu pravila objekt je s dva člana: "share_url" i "mode", pri čemu "share_url" treba biti URL dijeljenja, a "mode" treba biti "drop_down" koji naznačuje da će se "share_url" dodati na padajući izbornik otkrivenih dijeljenja.</translation>
+<translation id="3925377537407648234">Postavljanje razlučivosti zaslona i faktora skaliranja</translation>
 <translation id="3939893074578116847">Slanje mrežnih paketa poslužitelju za upravljanje radi praćenja online statusa kako bi
       poslužitelj mogao otkriti je li uređaj offline.
 
@@ -1955,6 +1971,29 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       To je pravilo učinkovito samo kad je računalo prijavljeno pomoću pravila <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       To pravilo prisilno instalira <ph name="CHROME_REPORTING_EXTENSION_NAME" /> radi izvješćivanja i nadjačava sva pravila proširenja povezana s tim proširenjem.</translation>
+<translation id="6155247658847899816">Ako se to pravilo postavi, za razlučivost i faktor skaliranja svakog
+      zaslona postavljaju se određene vrijednosti. Postavke vanjskog zaslona
+      postavljaju se za sve povezane vanjske zaslone.
+
+      Vrijednosti za "external_width" i "external_height" trebaju biti izražene u
+      pikselima. Vrijednosti za "external_scale_percentage" i
+      "internal_scale_percentage" trebaju biti izražene u postotcima.
+
+      Ako se "external_use_native" postavi na True, pravilo će zanemariti vrijednosti za
+      "external_height" i "external_width" te postaviti razlučivost vanjskih
+      zaslona na njihovu prirodnu razlučivost.
+
+      Ako se "external_use_native" postavi na False ili nije ponuđeno, a
+      nije ponuđeno ni "external_height" ili "external_width", pravilo ne
+      utječe na postavke vanjskih zaslona. Ako neki zaslon ne podržava
+      određenu razlučivost ili faktor skaliranja, pravilo se neće primijeniti na taj
+      zaslon.
+
+      Ako je oznaka "recommended" postavljena na True, korisnici mogu promijeniti
+      razlučivost i faktor skaliranja bilo kojeg zaslona na stranici postavki nakon prijave, 
+      no vrijednost pravila nadjačat će njihove postavke prilikom sljedećeg ponovnog pokretanja.
+      Ako je oznaka "recommended" postavljena na False ili nije postavljena, korisnici
+      ne mogu promijeniti postavke zaslona.</translation>
 <translation id="6155936611791017817">Postavljanje zadanog stanja velikog pokazivača na zaslonu za prijavu</translation>
 <translation id="6157537876488211233">Popis pravila zaobilaženja proxyja odvojenih zarezima</translation>
 <translation id="6158324314836466367">Naziv web-trgovine tvrtke (obustavljeno)</translation>
@@ -2062,6 +2101,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6553143066970470539">Postotak svjetline zaslona</translation>
 <translation id="6559057113164934677">Ne dopuštaj nijednoj web-lokaciji pristupanje kameri i mikrofonu</translation>
 <translation id="6561396069801924653">Prikaži opcije pristupačnosti u izborniku palete sustava</translation>
+<translation id="6563458316362153786">Omogućivanje Brzog prijelaza 802.11r</translation>
 <translation id="6565312346072273043">Na zaslonu za prijavu postavite zadano stanje značajke pristupačnosti tipkovnice na zaslonu.
 
           Ako je ovo pravilo postavljeno na istinito, tipkovnica na zaslonu bit će omogućena kad se prikaže zaslon za prijavu.
@@ -2703,6 +2743,11 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Kada to pravilo nije postavljeno na upravljanom uređaju, uređaju nije dopušteno pokretanje virtualnih računala.
       Neupravljanim je uređajima dopušteno pokretanje virtualnih računala.</translation>
 <translation id="8001701200415781021">Ograniči Google račune kojima je dopušteno da se postave kao primarni računi u pregledniku <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Ako omogućite tu postavku, postavke pohranjene u <ph name="PRODUCT_NAME" /> profilima kao što su oznake, podaci za automatsko popunjavanje, zaporke itd. također će se bilježiti u datoteku pohranjenu u mapu korisničkog profila na Roamingu ili na lokaciju koju je odredio administrator pomoću pravila <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Omogućivanjem tog pravila onemogućuje se sinkronizacija u oblaku.
+
+      Ako se to pravilo onemogući ili ne postavi, upotrebljavat će se samo uobičajeni lokalni profili.
+
+      Pravilo <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogućuje svu sinkronizaciju podataka nadjačavajući <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Zakreni zaslon 0 stupnjeva</translation>
 <translation id="8033913082323846868">Ovo pravilo obustavljeno je u M70 te umjesto njega upotrebljavajte AutofillAddressEnabled i AutofillCreditCardEnabled.
 
@@ -2831,6 +2876,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="8274603902181597201">Briše početni direktorij korisnika za ecryptfs i započinje novi ext4-šifrirani početni direktorij.</translation>
 <translation id="8285435910062771358">Omogućeno je povećalo cijelog zaslona</translation>
 <translation id="8288199156259560552">Omogući Googleovu uslugu lokacije na Androidu</translation>
+<translation id="8290453559005611000">Slika PluginVm</translation>
 <translation id="8294750666104911727">Stranice čija je vrijednost X-UA-Compatible postavljena na chrome=1 uobičajeno će se generirati u okviru <ph name="PRODUCT_FRAME_NAME" /> bez obzira na pravilo "ChromeFrameRendererSettings".
 
           Ako omogućite tu postavku, na stranicama se neće tražiti metaoznake.
@@ -2910,6 +2956,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
           Ako se to pravilo ne postavi, zadani će se ispunjivač upotrebljavati za sve web-lokacije određene pravilom "ChromeFrameRendererSettings".
 
           Primjere uzoraka pogledajte na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Onemogući pohranjivanje povijesti preglednika</translation>
 <translation id="8498293625012059298">Konfigurira URL za promjenu zaporke (samo sheme HTTP i HTTPS). To je URL na koji će usluga za zaštitu zaporke slati korisnike da promijene zaporku nakon što se u pregledniku prikaže upozorenje.
       Da bi <ph name="PRODUCT_NAME" /> pravilno snimio otisak prsta nove zaporke na toj stranici za promjenu zaporke, stranica za promjenu zaporke mora slijediti smjernice na stranici https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

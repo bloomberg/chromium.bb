@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome 隐私权声明</translation>
 <translation id="1863312987075920112">使用此应用即表示您同意遵守 Chrome 的<ph name="BEGIN_LINK_TOS" />服务条款<ph name="END_LINK_TOS" />和<ph name="BEGIN_LINK_PRIVACY" />隐私权声明<ph name="END_LINK_PRIVACY" />。</translation>
-<translation id="1878302395768190018">您可以随时在 Chrome 设置中自定义此设置</translation>
 <translation id="2147651015520127414">Chrome 已证实此网站的证书是由 <ph name="ISSUER" /> 签发的。</translation>
 <translation id="2334084861041072223">版权所有<ph name="YEAR" /> Google Inc. 保留所有权利。</translation>
 <translation id="2342981853652716282">登录 Chrome 即可将您的书签、密码等同步到您的所有设备上。</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">帮助我们改进 Chrome 的功能和性能</translation>
 <translation id="4523886039239821078">部分插件导致 Chrome 崩溃，请卸载这些插件：</translation>
 <translation id="4615174829807303908">您正要退出由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理的帐号。退出后，您的 Chrome 数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
-<translation id="5240817131241497236">Chrome 中控制同步、个性化和其他 Google 服务的设置已发生更改。这可能会影响您的当前设置。</translation>
 <translation id="5389212809648216794">由于另一个应用正在使用您的相机，因此 Google Chrome 无法使用</translation>
 <translation id="5489543008378040943">您随时可以自定义<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />。Google 可能会根据您访问的网站上的内容、在浏览器中的互动行为和活动，为您提供个性化的 Chrome 体验和其他 Google 服务体验（例如翻译、搜索和广告）。</translation>
 <translation id="5639704535586432836">打开“设置”&gt;“隐私”&gt;“相机”&gt;“Google Chrome”，然后开启相机。</translation>

@@ -63,6 +63,7 @@
 <translation id="2314101195544969792">የእርስዎ የ<ph name="APPLICATION_NAME" /> ክፍለ-ጊዜ ለተወሰነ ጊዜ ቦዝኗል፣ እና በቅርብ ይቋረጣል።</translation>
 <translation id="2317666076142640974">በአዲሱ <ph name="LINK_BEGIN" />የChrome የርቀት ዴስክቶፕ የድር መተግበሪያ<ph name="LINK_END" /> ላይ የጨረፍታ ዕይታን ያግኙ። የእርስዎን ግብረመልስ መስማት ደስ ይለናል።</translation>
 <translation id="2320166752086256636">የቁልፍ ሰሌዳን ደብቅ</translation>
+<translation id="2332192922827071008">ምርጫዎችን ክፈት</translation>
 <translation id="2353140552984634198">Chromotingን ተጠቅመው ይህንን ኮምፒውተር ደህንነቱ በተጠበቀ መልኩ ሊደርሱበት ይችላሉ።</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
 <translation id="2366718077645204424">አስተናጋጁን መድረስ አልተቻለም። ይሄ በሚጠቀሙት አውታረ መረብ ላይ ባለ ውቅር ምክንያት ሳይሆን አይቀርም።</translation>
@@ -190,6 +191,9 @@
 <translation id="4973800994433240357">የChromoting ዴስክቶፕ አስተናጋጅ ጫኚውን በማውረድ በGoogle <ph name="LINK_BEGIN" />የአገልግሎት ውል<ph name="LINK_END" />ይስማማሉ።</translation>
 <translation id="4974476491460646149">የ<ph name="HOSTNAME" /> ግንኙነት ተዘግቷል</translation>
 <translation id="4985296110227979402">በመጀመሪያ ኮምፒውተርዎን ለርቀት መዳረሻ ማዋቀር አለብዎት</translation>
+<translation id="5059773780693835145">ይህንን ማሽን <ph name="PRODUCT_NAME" />ን ከርቀት በመጠቀም መቆጣጠር ከመቻልዎት በፊት ተጨማሪ የውቅረት እርምጃ ያስፈልጋል።
+
+ይህን ትግበራ ለማንቃት፣ ደህንነትን እና የግላዊንት ምርጫዎችን መቃን ለማሳየት '<ph name="BUTTON_NAME" />'ን ይምረጡ እና በመቀጠል ከ'<ph name="SERVICE_SCRIPT_NAME" />' ቀጥሎ ያለውን ሳጥን ምልክት ያድርጉበት።</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ከመስመር ውጪ)</translation>
 <translation id="5070121137485264635">የርቀት አስተናጋጁ ለሶስተኛ ወገን ድር ጣቢያ እንዲያረጋግጡ ይፈልጋል። ለመቀጠል Chrome የርቀት ዴስክቶፕ ይህን አድራሻ እንዲደርስበት ተጨማሪ ፍቃዶችን መስጠት አለብዎት፦</translation>
 <translation id="507204348399810022">ከ<ph name="HOSTNAME" /> ጋር ያሉ የርቀት ግንኙነቶችን ማሰናከል ይፈልጋሉ?</translation>
@@ -314,6 +318,7 @@
 <translation id="809687642899217504">የእኔ ኮምፒውተሮች</translation>
 <translation id="811307782653349804">የእራስዎን ኮምፒውተር ከማንኛውም ቦታ ይድረሱበት።</translation>
 <translation id="8116630183974937060">አንድ የአውታረ መረብ ስህተት ተከስቷል። እባክዎ የእርስዎ መሣሪያ መስመር ላይ መሆኑን ያረጋግጡና እንደገና ይሞክሩ።</translation>
+<translation id="8123581458650016326">ይህንን ማሽን በርቀት ያሉ ተጠቃሚዎች እንዲቆጣጠሩ ፍቀድ</translation>
 <translation id="8178433417677596899">የተጠቃሚ-ለተጠቃሚ ማያ ገጽ ማጋራት፣ ለርቀት ቴክኒካዊ ድጋፍ ምርጥ የሆነ።</translation>
 <translation id="8187079423890319756">የቅጂ መብት 2013 የChromium አዘጋጆች። ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
 <translation id="8196755618196986400">ለተጨማሪ መረጃ እርስዎን እንድናነጋግር ለማስቻል የኢሜይል አድራሻዎ በሚያቀርቡት ማንኛውም ግብረመልስ ውስጥ ይካተታል።</translation>

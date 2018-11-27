@@ -229,6 +229,14 @@
 <translation id="1523774894176285446">Alternatieve browser die wordt gestart voor geconfigureerde websites.</translation>
 <translation id="152657506688053119">Lijst met alternatieve URL's voor de standaardzoekprovider</translation>
 <translation id="1530812829012954197">De volgende URL-patronen altijd verwerken in de hostbrowser</translation>
+<translation id="1532965933165453786">Hiermee kan Fast Transition worden in- of uitgeschakeld.
+      Dit is van toepassing op alle gebruikers en op alle interfaces op het apparaat.
+      Als je Fast Transition wilt gebruiken, moeten deze instelling en de eigenschap voor ONC per netwerk zijn ingeschakeld.
+      Zodra Fast Transition is ingesteld, wordt deze instelling gehandhaafd totdat het beleid wordt gewijzigd en de instelling wordt uitgeschakeld.
+
+      Als er geen beleid is ingesteld, wordt Fast Transition niet gebruikt.
+      Als het beleid is ingesteld op 'false', wordt Fast Transition niet gebruikt.
+      Als het beleid is ingesteld op 'true', wordt Fast Transition gebruikt wanneer dit wordt ondersteund door het draadloze toegangspunt.</translation>
 <translation id="1541170838458414064">Grootte van afdrukpagina beperken</translation>
 <translation id="1553684822621013552">Als dit beleid is ingesteld op 'True', wordt ARC ingeschakeld voor de gebruiker (onderhevig aan extra controles van de beleidsinstellingen; ARC is nog steeds niet beschikbaar als de kortstondige modus of toegang tot meerdere accounts is ingeschakeld in de huidige gebruikerssessie).
 
@@ -955,6 +963,13 @@
       Dit beleid kan alleen worden ingesteld als aanbevolen. Je kunt dit beleid gebruiken om een aantal aanbevolen landinstellingen naar boven te verplaatsen, maar gebruikers kunnen altijd de gewenste landinstelling die wordt ondersteund door <ph name="PRODUCT_OS_NAME" /> kiezen voor hun sessie.
       </translation>
 <translation id="3381968327636295719"> gebruiken</translation>
+<translation id="3388153794103186066">Hiermee kun je een lijst met URL's instellen die aangeven welke sites automatisch toegang krijgen tot een USB-apparaat met de opgegeven leverancier- en product-ID. Het beleid is alleen geldig als elk item in de lijst zowel apparaten als URL's bevat. Elk item in apparaten kan een veld voor leverancier-ID en een veld voor product-ID bevatten. Een ID die is weggelaten, wordt als wildcard behandeld, met één uitzondering: er mag geen product-ID worden opgegeven zonder dat er ook een leverancier-ID is opgegeven. Anders is het beleid niet geldig. Ongeldige beleidswaarden worden genegeerd.
+
+        Het USB-toestemmingsmodel gebruikt de URL van de site die de aanvraag indient ('aanvragende URL') en de URL van de framesite op hoofdniveau ('insluitings-URL') om de aanvragende URL toegang te geven tot het USB-apparaat. Wanneer de aanvragende site in een iframe wordt geladen, is het mogelijk dat de aanvragende URL en de insluitings-URL niet hetzelfde zijn. Daarom kan het veld voor URL's maximaal twee, door een komma gescheiden URL-tekenreeksen bevatten om respectievelijk de aanvragende URL en insluitings-URL op te geven. Als er slechts één URL wordt opgegeven, wordt toegang tot de bijbehorende USB-apparaten gegeven wanneer de URL van de aanvragende site overeenkomt met deze URL, ongeacht de insluitingsstatus. De URL's in het veld voor URL's moeten geldige URL's zijn. Als dit niet het geval is, wordt het beleid genegeerd.
+
+        Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Deze vind je in het beleid DefaultWebUsbGuardSetting (als dit is ingesteld) of in de persoonlijke configuratie van de gebruiker.
+
+        De URL-patronen in dit beleid mogen niet conflicteren met de patronen die zijn ingesteld via WebUsbBlockedForUrls. Als er een conflict is, krijgt dit beleid voorrang op WebUsbBlockedForUrls en WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Als dit beleid niet is geconfigureerd, gebruikt <ph name="PRODUCT_NAME" /> een standaard minimum versie, oftewel TLS 1.0.
 
       In andere gevallen kan een van de volgende waarden worden ingesteld: 'tls1', 'tls1.1' of 'tls1.2'. Wanneer dit beleid is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> geen lagere SSL-/TLS-versies dan de gespecificeerde versie. Als er een waarde wordt ingesteld die niet wordt herkend, wordt deze genegeerd.</translation>
@@ -1202,6 +1217,7 @@
 <translation id="3925020515212192040">Hiermee wordt een lijst gespecificeerd met vooraf geconfigureerde netwerkfileshares.
 
       Elk lijstitem van het beleid is een tweeledig object: 'share_url' en 'mode'. 'share_url' moet de URL van de share zijn en 'mode' moet 'drop_down' zijn, wat aangeeft dat 'share_url' wordt toegevoegd aan het dropdownmenu met detectiemethoden voor fileshares.</translation>
+<translation id="3925377537407648234">Schermresolutie en schaalfactor instellen</translation>
 <translation id="3939893074578116847">Netwerkpakketten verzenden naar de beheerserver om de online status bij te houden, zodat de server kan detecteren of het apparaat offline is.
 
       Als dit beleid is ingesteld op 'True', worden netwerkpakketten voor bijhouden (zogenaamde <ph name="HEARTBEATS_TERM" />) verzonden.
@@ -2040,6 +2056,15 @@
       Dit beleid werkt alleen wanneer het apparaat is ingeschreven voor <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Dit beleid zorgt ervoor dat <ph name="CHROME_REPORTING_EXTENSION_NAME" /> gedwongen wordt geïnstalleerd voor de rapportage en overschrijft eventueel ander extensiebeleid voor die extensie.</translation>
+<translation id="6155247658847899816">Wanneer dit beleid is ingesteld, worden de resolutie en schaalfactor voor elk scherm ingesteld op de opgegeven waarden. De instellingen voor externe schermen worden toegepast op alle aangesloten externe schermen.
+
+      De waarden voor 'external_width' en 'external_height' moeten worden opgegeven in pixels. De waarden voor 'external_scale_percentage' en 'internal_scale_percentage' moeten worden opgegeven in procenten.
+
+      Als 'external_use_native' is ingesteld op 'true', negeert het beleid de waarden voor 'external_height' en 'external_width' en wordt voor de externe schermen de systeemeigen resolutie ingesteld.
+
+      Als 'external_use_native' is ingesteld op 'false' of niet is opgegeven en 'external_height' of 'external_width' niet is opgegeven, is het beleid niet van invloed op de instellingen van de externe schermen. Als de opgegeven resolutie of schaalfactor niet wordt ondersteund door een scherm, wordt het beleid niet toegepast op het betreffende scherm.
+
+      Als de markering 'recommended' is ingesteld op 'true', kunnen gebruikers de resolutie en schaalfactor van een scherm wijzigen via de instellingenpagina nadat ze zijn ingelogd. Hun instellingen worden echter overschreven door de beleidswaarde zodra ze opnieuw opstarten. Als de markering 'recommended' is ingesteld op 'false' of niet is ingesteld, kunnen gebruikers de scherminstellingen niet wijzigen.</translation>
 <translation id="6155936611791017817">De standaardstatus van de grote muisaanwijzer op het inlogscherm instellen</translation>
 <translation id="6157537876488211233">Door komma's gescheiden lijst van regels voor proxyomzeiling</translation>
 <translation id="6158324314836466367">Naam van zakelijke webwinkel (verouderd)</translation>
@@ -2151,6 +2176,7 @@
 <translation id="6553143066970470539">Percentage voor helderheid van scherm</translation>
 <translation id="6559057113164934677">Niet toestaan dat sites toegang krijgen tot de camera en microfoon</translation>
 <translation id="6561396069801924653">Toegankelijkheidsopties weergeven in het systeemvakmenu</translation>
+<translation id="6563458316362153786">802.11r Fast Transition inschakelen</translation>
 <translation id="6565312346072273043">De standaardstatus van de toegankelijkheidsfunctie voor het schermtoetsenbord op het inlogscherm instellen.
 
           Als dit beleid is ingesteld op 'True', wordt het schermtoetsenbord ingeschakeld wanneer het inlogscherm wordt weergegeven.
@@ -2812,6 +2838,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Wanneer dit beleid niet is ingesteld op een beheerd apparaat, mogen er geen virtuele machines worden uitgevoerd op het apparaat.
       Virtuele machines mogen worden uitgevoerd op onbeheerde apparaten.</translation>
 <translation id="8001701200415781021">Beperken welke Google-accounts mogen worden ingesteld als primaire browseraccounts in <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Als je deze instelling inschakelt, worden de instellingen die zijn opgeslagen in <ph name="PRODUCT_NAME" />-profielen, zoals bladwijzers, gegevens voor automatisch aanvullen, wachtwoorden, enzovoort, ook geschreven naar een bestand dat is opgeslagen in de map voor roaming-gebruikersprofielen of op een locatie die de beheerder heeft opgegeven via het beleid <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Als je dit beleid inschakelt, wordt cloudsynchronisatie uitgeschakeld.
+
+      Als dit beleid is uitgeschakeld of niet wordt ingesteld, worden alleen de gewone lokale profielen gebruikt.
+
+      Met het beleid <ph name="SYNC_DISABLED_POLICY_NAME" /> wordt alle gegevenssynchronisatie uitgeschakeld en wordt <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> overschreven.</translation>
 <translation id="802147957407376460">Scherm 0 graden draaien</translation>
 <translation id="8033913082323846868">Dit beleid is beëindigd in M70. Gebruik in plaats hiervan AutofillAddressEnabled en AutofillCreditCardEnabled.
 
@@ -2932,6 +2963,7 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="8274603902181597201">De eCryptfs-hoofdmap van de gebruiker wissen en beginnen met een nieuwe hoofdmap die is versleuteld met ext4</translation>
 <translation id="8285435910062771358">Vergrootglas van volledig scherm ingeschakeld</translation>
 <translation id="8288199156259560552">Google-locatieservice voor Android inschakelen</translation>
+<translation id="8290453559005611000">PluginVm-image</translation>
 <translation id="8294750666104911727">Normaal worden pagina's waarvoor X-UA-Compatible is ingesteld op chrome=1, weergegeven in <ph name="PRODUCT_FRAME_NAME" /> ongeacht het beleid 'ChromeFrameRendererSettings'.
 
           Als je deze instelling inschakelt, worden pagina's niet gescand op metatags.
@@ -3003,6 +3035,7 @@ Dit beleid wordt verwijderd in M75.</translation>
          Als dit beleid niet is ingesteld, wordt het standaard weergaveprogramma gebruikt voor alle sites die door het beleid 'ChromeFrameRendererSettings' zijn gespecificeerd.
 
           Ga voor voorbeeldpatronen naar https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Opslaan van browsegeschiedenis uitschakelen</translation>
 <translation id="8498293625012059298">Hiermee stel je de URL voor het wijzigen van het wachtwoord in (alleen http- en https-schema's). De wachtwoordbeveiligingsservice stuurt gebruikers naar deze URL, waar ze hun wachtwoord kunnen wijzigen nadat ze een waarschuwing in de browser hebben gezien.
       Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> de nieuwe vingerafdruk van het wachtwoord correct vastlegt op deze pagina voor wachtwoordwijziging, moet je ervoor zorgen dat je pagina voor wachtwoordwijziging voldoet aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

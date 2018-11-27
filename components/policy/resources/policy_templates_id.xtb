@@ -214,6 +214,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 <translation id="1523774894176285446">Browser alternatif untuk membuka situs yang dikonfigurasi.</translation>
 <translation id="152657506688053119">Daftar URL pengganti untuk penyedia penelusuran default</translation>
 <translation id="1530812829012954197">Selalu urai pola URL berikut di browser host</translation>
+<translation id="1532965933165453786">Mengizinkan pengaktifan atau penonaktifan Fast Transition. Kebijakan ini berlaku untuk semua pengguna dan untuk semua antarmuka di perangkat. Agar Fast Transition dapat digunakan, setelan ini dan properti ONC per jaringan perlu diaktifkan. Setelah disetel, Fast Transition akan terus berlanjut hingga kebijakan ini dinonaktifkan. Jika kebijakan tidak disetel, Fast Transition tidak akan digunakan. Jika disetel ke false, Fast Transition tidak akan digunakan. Jika disetel ke true, Fast Transition akan digunakan saat titik akses nirkabel mendukungnya.</translation>
 <translation id="1541170838458414064">Batasi ukuran halaman pencetakan</translation>
 <translation id="1553684822621013552">Jika kebijakan ini disetel ke True, ARC akan diaktifkan untuk pengguna
       (tunduk pada pemeriksaan setelan kebijakan tambahan - ARC akan tetap
@@ -913,6 +914,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Kebijakan ini hanya dapat ditetapkan seperti yang direkomendasikan. Anda tidak dapat menggunakan kebijakan ini untuk memindahkan sekumpulan lokal yang direkomendasikan ke bagian atas daftar, namun pengguna selalu diizinkan untuk memilih lokal apa pun yang didukung oleh <ph name="PRODUCT_OS_NAME" /> untuk sesi mereka.
       </translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
+<translation id="3388153794103186066">Memungkinkan Anda menyetel daftar URL yang menentukan situs mana yang otomatis diberi izin untuk mengakses perangkat USB dengan ID vendor dan produk yang ditentukan. Setiap item dalam daftar harus memuat perangkat dan URL agar kebijakan tersebut valid. Setiap item di perangkat dapat berisi kolom ID vendor dan ID produk. ID apa pun yang dihilangkan akan diperlakukan sebagai karakter pengganti, dengan satu pengecualian, yaitu ID produk tidak dapat ditentukan tanpa menentukan ID vendor. Jika tidak, kebijakan tidak akan valid dan akan diabaikan. Model izin USB menggunakan URL situs yang meminta ("URL yang meminta") dan URL situs bingkai level teratas ("URL sematan") untuk memberikan izin kepada URL yang meminta untuk mengakses perangkat USB. URL yang meminta mungkin berbeda dengan URL sematan saat situs yang meminta dimuat dalam iframe. Oleh karena itu, kolom "URL" dapat berisi hingga dua string URL yang dipisahkan dengan koma, untuk menentukan masing-masing URL yang meminta dan URL sematan. Jika hanya ada satu URL yang ditentukan, maka akses ke perangkat USB yang sesuai akan diberikan saat URL situs yang meminta cocok dengan URL ini, terlepas dari status sematannya. URL dalam "URL" harus berupa URL yang valid. Jika tidak, kebijakan akan diabaikan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk seluruh situs, yaitu dari kebijakan 'DefaultWebUsbGuardSetting' jika disetel, atau dari konfigurasi pribadi pengguna. Pola URL di kebijakan ini tidak boleh bertentangan dengan pola URL yang dikonfigurasi melalui WebUsbBlockedForUrls dan WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Jika kebijakan ini tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan menggunakan versi minimum default yaitu TLS 1.0.
 
       Jika kebijakan dikonfigurasi, kebijakan dapat disetel ke salah satu nilai berikut: "tls1", "tls1.1", atau "tls1.2". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih rendah daripada versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.</translation>
@@ -1159,6 +1161,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="3925020515212192040">Menentukan daftar berbagi file jaringan yang dikonfigurasi sebelumnya.
 
 Setiap item daftar kebijakan adalah objek yang terdiri dari dua anggota: "share_url" dan "mode". "share_url" harus berupa URL berbagi dan "mode" harus berupa "drop_down" yang menunjukkan bahwa "share_url" akan ditambahkan ke drop-down penemuan berbagi.</translation>
+<translation id="3925377537407648234">Setel faktor skala dan resolusi tampilan</translation>
 <translation id="3939893074578116847">Kirimkan paket jaringan ke server pengelolaan untuk memantau status online,
       untuk memungkinkan server mendeteksi jika perangkat sedang offline.
 
@@ -1957,6 +1960,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Kebijakan ini hanya berlaku jika perangkat didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Kebijakan ini menginstal otomatis <ph name="CHROME_REPORTING_EXTENSION_NAME" /> untuk pelaporan dan mengganti kebijakan ekstensi apa pun yang terkait dengan ekstensi tersebut.</translation>
+<translation id="6155247658847899816">Saat kebijakan ini disetel, resolusi dan faktor skala setiap tampilan disetel ke nilai yang ditentukan. Setelan tampilan eksternal diterapkan ke semua tampilan eksternal yang terhubung. Nilai "external_width" dan "external_height" harus ditentukan dalam piksel. Nilai "external_scale_percentage" dan "internal_scale_percentage" harus ditentukan dalam persen. Jika "external_use_native" disetel ke true, kebijakan akan mengabaikan nilai "external_height" dan "external_width", serta menyetel resolusi tampilan eksternal ke resolusi nativenya. Jika "external_use_native" adalah false atau tidak diberikan dan "external_height" atau "external_width" tidak diberikan, kebijakan tidak akan memengaruhi setelan tampilan eksternal. Jika resolusi atau faktor skala yang ditentukan tidak didukung oleh beberapa tampilan, kebijakan tidak akan diterapkan ke tampilan tersebut. Jika tanda "rekomendasi" disetel ke true, pengguna dapat mengubah resolusi dan faktor skala tampilan apa pun melalui halaman setelan setelah login, namun setelan mereka akan digantikan oleh nilai kebijakan pada reboot selanjutnya. Jika tanda "rekomendasi" distel ke false atau tidak disetel, pengguna tidak dapat mengubah setelan tampilan.</translation>
 <translation id="6155936611791017817">Setel status default kursor besar di layar masuk</translation>
 <translation id="6157537876488211233">Peraturan mengabaikan proxy yang dipisahkan koma</translation>
 <translation id="6158324314836466367">Nama toko web perusahaan (tidak digunakan)</translation>
@@ -2064,6 +2068,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6553143066970470539">Persentase kecerahan layar</translation>
 <translation id="6559057113164934677">Jangan izinkan situs apa pun mengakses kamera dan mikrofon</translation>
 <translation id="6561396069801924653">Tampilkan opsi aksesibilitas di menu baki sistem</translation>
+<translation id="6563458316362153786">Aktifkan 802.11r Fast Transition</translation>
 <translation id="6565312346072273043">Menyetel status default fitur aksesibilitas keyboard di layar pada layar masuk.
 
           Jika kebijakan ini disetel ke true, keyboard di layar akan diaktifkan saat layar masuk ditampilkan.
@@ -2707,6 +2712,7 @@ Nilai kebijakan harus ditentukan dalam persen di rentang 0-100.</translation>
       Jika kebijakan ini tidak ditetapkan pada perangkat terkelola, perangkat tidak diizinkan untuk menjalankan mesin virtual.
       Perangkat tidak terkelola diizinkan untuk menjalankan mesin virtual.</translation>
 <translation id="8001701200415781021">Batasi akun Google mana yang diizinkan untuk disetel sebagai akun utama browser di <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Jika Anda mengaktifkan setelan ini, setelan yang disimpan di profil <ph name="PRODUCT_NAME" /> seperti bookmark, data IsiOtomatis, sandi, dan informasi lainnya juga akan ditulis ke file yang disimpan di folder profil pengguna Roaming atau lokasi yang ditentukan oleh Administrator melalui kebijakan <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Mengaktifkan kebijakan ini akan menonaktifkan sinkronisasi cloud. Jika kebijakan ini dinonaktifkan atau tidak disetel, hanya profil lokal reguler yang akan digunakan. Kebijakan <ph name="SYNC_DISABLED_POLICY_NAME" /> menonaktifkan semua sinkronisasi data, menggantikan <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Putar layar sebesar 0 derajat</translation>
 <translation id="8033913082323846868">Kebijakan ini tidak digunakan lagi di M70. Sebagai gantinya, gunakan AutofillAddressEnabled dan AutofillCreditCardEnabled.
 
@@ -2827,6 +2833,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="8274603902181597201">Me-wipe direktori beranda ecryptfs pengguna dan memulai direktori beranda yang dienkripsi ext4.</translation>
 <translation id="8285435910062771358">Lup layar penuh diaktifkan</translation>
 <translation id="8288199156259560552">Mengaktifkan Layanan Lokasi Google Android</translation>
+<translation id="8290453559005611000">Gambar PluginVm</translation>
 <translation id="8294750666104911727">Umumnya halaman dengan X-UA-Compatible yang disetel ke chrome=1 akan dirender di <ph name="PRODUCT_FRAME_NAME" /> terlepas dari kebijakan 'ChromeFrameRendererSettings'.
 
           Jika Anda mengaktifkan setelan ini, meta tag halaman tidak akan dipindai.
@@ -2896,6 +2903,7 @@ Kebijakan akan dihapus pada M75.</translation>
           Jika kebijakan ini tidak disetel, perender default akan digunakan untuk semua situs yang telah ditetapkan oleh kebijakan 'ChromeFrameRendererSettings'.
 
           Untuk melihat contoh pola, buka https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Menonaktifkan penyimpanan histori browser</translation>
 <translation id="8498293625012059298">Mengonfigurasi URL ubah sandi (khusus skema HTTP dan HTTPS). Layanan perlindungan sandi akan mengarahkan pengguna ke URL ini untuk mengubah sandinya setelah melihat peringatan di browser.
       Agar <ph name="PRODUCT_NAME" /> dapat mengambil sidik jari sandi baru di halaman ubah sandi ini dengan benar, harap pastikan bahwa halaman ubah sandi Anda mengikuti pedoman di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

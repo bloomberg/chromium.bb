@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">Domaine d'enregistrement :</translation>
 <translation id="1340482604681802745">Adresse d'enlèvement</translation>
 <translation id="1348198688976932919">Ce site contient des applications dangereuses</translation>
+<translation id="1348779747280417563">Confirmer le nom</translation>
 <translation id="1374468813861204354">suggestions</translation>
 <translation id="1375198122581997741">À propos de la version</translation>
 <translation id="1376836354785490390">Afficher moins</translation>
@@ -144,7 +145,6 @@
 <translation id="1826516787628120939">Vérification en cours…</translation>
 <translation id="1834321415901700177">Ce site contient des programmes dangereux</translation>
 <translation id="1839551713262164453">Échec de la validation des valeurs de règle avec des erreurs</translation>
-<translation id="1840414022444569775">Ce numéro de carte est déjà utilisé</translation>
 <translation id="1842969606798536927">Paiement</translation>
 <translation id="1866450167992311397">Utiliser vos cartes dans plus d'endroits</translation>
 <translation id="1871208020102129563">Le proxy est configuré pour utiliser des serveurs proxy déterminés, pas une URL de script .pac.</translation>
@@ -183,6 +183,7 @@
 <translation id="2108755909498034140">Redémarrez l'ordinateur</translation>
 <translation id="2113977810652731515">Carte</translation>
 <translation id="2114841414352855701">Ignorée parce que remplacée par <ph name="POLICY_NAME" />.</translation>
+<translation id="2129308444951592399">Conditions d'utilisation</translation>
 <translation id="213826338245044447">Favoris sur mobile</translation>
 <translation id="214556005048008348">Annuler le paiement</translation>
 <translation id="2147827593068025794">Synchronisation en arrière-plan</translation>
@@ -383,6 +384,7 @@
 <translation id="3427092606871434483">Autoriser (par défaut)</translation>
 <translation id="3427342743765426898">&amp;Rétablir la modification</translation>
 <translation id="342781501876943858">L'équipe Chromium vous recommande de réinitialiser votre mot de passe si vous l'avez réutilisé sur d'autres sites.</translation>
+<translation id="3430691998045392297">Le film projeté est différent. Voulez-vous continuer ?</translation>
 <translation id="3431636764301398940">Enregistrer cette carte sur cet appareil</translation>
 <translation id="3447661539832366887">Le propriétaire de cet appareil a désactivé le jeu avec le dinosaure.</translation>
 <translation id="3447884698081792621">Afficher le certificat (émis par <ph name="ISSUER" />)</translation>
@@ -400,6 +402,7 @@
 <translation id="3566021033012934673">Votre connexion n'est pas privée</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Une page intégrée à l'adresse <ph name="SITE" /> indique</translation>
+<translation id="3581089476000296252">Vous serez averti lorsque cette page sera prête. &lt;a&gt;Annuler&lt;/a&gt;</translation>
 <translation id="358285529439630156">Les cartes de crédit et les cartes prépayées sont acceptées.</translation>
 <translation id="3582930987043644930">Ajouter un nom</translation>
 <translation id="3583757800736429874">&amp;Rétablir le déplacement</translation>
@@ -431,6 +434,7 @@
 <translation id="3736520371357197498">Si vous avez compris les risques auxquels vous vous exposez, vous pouvez <ph name="BEGIN_LINK" />consulter ce site dangereux<ph name="END_LINK" /> avant que les programmes malveillants n'aient été supprimés.</translation>
 <translation id="3739623965217189342">Lien copié</translation>
 <translation id="3744899669254331632"><ph name="SITE" /> est actuellement inaccessible. Le site Web a envoyé des identifiants brouillés inutilisables par Chromium. Les erreurs de réseau et les attaques étant généralement temporaires, cette page devrait à nouveau fonctionner ultérieurement.</translation>
+<translation id="3745099705178523657">Une fois la validation effectuée, les informations relatives à la carte de votre compte Google seront partagées avec ce site.</translation>
 <translation id="3748148204939282805">Des individus malveillants à l'œuvre sur le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pourraient vous inciter à effectuer des opérations dangereuses, telles que l'installation d'un logiciel ou la divulgation d'informations personnelles (mots de passe, numéros de téléphone ou numéros de carte de crédit, par exemple). <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Échec de la traduction en raison d'une erreur de serveur</translation>
 <translation id="3759461132968374835">Aucune erreur n'a été signalée récemment. Les erreurs n'apparaissent ici que lorsque l'envoi de rapports d'erreur est activé.</translation>
@@ -452,10 +456,12 @@
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">ID du rapport d'erreur importé : <ph name="CRASH_ID" /> (ID de plantage local : <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Toujours demander sur ce site</translation>
+<translation id="3947577358805392297">Enregistrer la page pour la consulter plus tard</translation>
 <translation id="3949571496842715403">Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité ne contient pas l'extension "Subject Alternative Names" (Autres noms de l'objet). Cela peut être dû à une mauvaise configuration ou à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="3949601375789751990">Votre historique de navigation s'affiche ici</translation>
 <translation id="3950820424414687140">Ouvrir une session</translation>
 <translation id="3963721102035795474">Mode lecture</translation>
+<translation id="3963837677003247395">Continuer manuellement ?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Aucun}=1{De 1 site }one{De # site }other{De # sites }}</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> est bloqué</translation>
@@ -569,6 +575,7 @@
 <translation id="4771973620359291008">Une erreur inconnue s'est produite.</translation>
 <translation id="4785689107224900852">Passer à cet onglet</translation>
 <translation id="4792143361752574037">Un problème est survenu lors de l'accès aux fichiers de session. L'enregistrement sur disque est actuellement désactivé. Veuillez actualiser la page pour réessayer.</translation>
+<translation id="4798078619018708837">Saisissez la date d'expiration et le code CVC de la carte <ph name="CREDIT_CARD" /> pour mettre à jour les informations relatives à celle-ci. Une fois la validation effectuée, les informations relatives à la carte de votre compte Google seront partagées avec ce site.</translation>
 <translation id="4800132727771399293">Veuillez vérifier la date d'expiration et le code CVC, puis réessayez.</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4807049035289105102"><ph name="SITE" /> est actuellement inaccessible. Le site Web a envoyé des identifiants brouillés inutilisables par Google Chrome. Les erreurs de réseau et les attaques étant généralement temporaires, cette page devrait à nouveau fonctionner ultérieurement.</translation>
@@ -620,6 +627,7 @@
 <translation id="5141240743006678641">Chiffrer les mots de passe synchronisés avec vos informations de connexion Google</translation>
 <translation id="5145883236150621069">Code d'erreur présent dans la réponse de la règle.</translation>
 <translation id="5159010409087891077">Ouvrir la page dans une nouvelle fenêtre de navigation privée (⇧⌘N)</translation>
+<translation id="516920405563544094">Saisissez le code CVC de la carte <ph name="CREDIT_CARD" />. Une fois la validation effectuée, les informations relatives à la carte de votre compte Google seront partagées avec ce site.</translation>
 <translation id="5169827969064885044">Vous risquez de perdre l'accès au compte de votre organisation ou d'être victime d'usurpation d'identité. L'équipe Chrome vous recommande de modifier votre mot de passe maintenant.</translation>
 <translation id="5171045022955879922">Rechercher ou saisir une URL</translation>
 <translation id="5172758083709347301">Ordinateur</translation>
@@ -718,6 +726,7 @@
 <translation id="5810442152076338065">Votre connexion à <ph name="DOMAIN" /> est chiffrée à l'aide d'une méthode de chiffrement obsolète.</translation>
 <translation id="5813119285467412249">&amp;Rétablir l'ajout</translation>
 <translation id="5838278095973806738">Vous ne devriez pas saisir d'informations sensibles sur ce site (par exemple, vos mots de passe ou les informations de votre carte de paiement), car elles risquent d'être dérobées par des pirates informatiques.</translation>
+<translation id="5844286946362376359">Je connais les conditions d'utilisation et les règles de confidentialité de <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" />, et j'ai connaissance de mon droit de rétractation (décochez la case pour les consulter).</translation>
 <translation id="5863847714970149516">Il se peut que l'accès à la page suivante engendre des frais</translation>
 <translation id="5866257070973731571">Ajouter un numéro de téléphone</translation>
 <translation id="5869405914158311789">Ce site est inaccessible</translation>
@@ -726,6 +735,7 @@
 <translation id="5893752035575986141">Les cartes de crédit sont acceptées.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronisés)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 en cours d'utilisation}one{# en cours d'utilisation}other{# en cours d'utilisation}}</translation>
+<translation id="5921639886840618607">Enregistrer la carte dans votre compte Google ?</translation>
 <translation id="5922853866070715753">Vous avez presque terminé !</translation>
 <translation id="5932224571077948991">Le site affiche des annonces intrusives ou trompeuses</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
@@ -812,6 +822,7 @@
 <translation id="6569060085658103619">Vous consultez actuellement une page d'extension</translation>
 <translation id="6596325263575161958">Options de chiffrement</translation>
 <translation id="6604181099783169992">Capteurs de mouvement ou de lumière</translation>
+<translation id="6607617806003952240">Je ne peux pas vous aider davantage. Veuillez continuer manuellement.</translation>
 <translation id="6624427990725312378">Coordonnées</translation>
 <translation id="6626291197371920147">Ajouter un numéro de carte valide</translation>
 <translation id="6628463337424475685">Recherche <ph name="ENGINE" /></translation>
@@ -855,6 +866,7 @@
 <translation id="6950684638814147129">Erreur lors de l'analyse de la valeur JSON : <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">Ouvrir la page dans un nouvel onglet privé</translation>
 <translation id="6957887021205513506">Le certificat du serveur semble être contrefait.</translation>
+<translation id="6964255747740675745">Échec de l'analyse de la configuration réseau (JSON non valide).</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Périphérique</translation>
 <translation id="6970216967273061347">District</translation>
@@ -1148,11 +1160,13 @@ Informations supplémentaires :
 <translation id="893332455753468063">Ajouter un nom</translation>
 <translation id="8938939909778640821">Cartes de crédit et cartes prépayées acceptées</translation>
 <translation id="8957210676456822347">Autorisation du portail captif</translation>
+<translation id="8968766641738584599">Enregistrer la carte</translation>
 <translation id="8971063699422889582">Le certificat du serveur a expiré.</translation>
 <translation id="8975012916872825179">Y compris les numéros de téléphone, les adresses e-mail et les adresses de livraison</translation>
 <translation id="8978053250194585037">La fonctionnalité de navigation sécurisée Google a récemment permis de <ph name="BEGIN_LINK" />détecter une tentative d'hameçonnage<ph name="END_LINK" /> sur le site <ph name="SITE" />. Un site d'hameçonnage se présente comme un site légitime dans le but de vous tromper.</translation>
 <translation id="8983003182662520383">Modes de paiement et adresses utilisés dans Google Pay</translation>
 <translation id="8987927404178983737">Mois</translation>
+<translation id="8988408250700415532">Un problème est survenu. Vous pouvez finaliser votre commande sur le site Web.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Le site Web que vous allez ouvrir contient des programmes dangereux</translation>
 <translation id="8997023839087525404">Le certificat présenté par le serveur n'a pas été communiqué au public. Selon les règles de transparence des certificats, certains certificats doivent obligatoirement être communiqués publiquement pour garantir qu'ils sont dignes de confiance et qu'ils protègent contre les individus malveillants.</translation>

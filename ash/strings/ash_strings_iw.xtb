@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">כיווץ התפריט</translation>
 <translation id="1383876407941801731">חפש</translation>
 <translation id="1419738280318246476">כדי לבצע את פעולת ההודעה יש לבטל את נעילת המכשיר</translation>
+<translation id="1455242230282523554">הצגת הגדרות השפה</translation>
 <translation id="1467432559032391204">שמאלה</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{צפייה בהגדרות של הודעות. ההודעות מושבתות באפליקציה אחת}two{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}many{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}other{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">עדיין אין מה לראות</translation>
 <translation id="3445925074670675829">‏מכשיר עם יציאת USB-C</translation>
 <translation id="3454224730401036106">החיבור שלך הועבר לרשת מאובטחת יותר</translation>
+<translation id="3465223694362104965">מקלדת אחרת חוברה למכשיר מאז הכניסה האחרונה שלך. חשוב לוודא שזו מקלדת מהימנה לפני שמשתמשים בה.</translation>
 <translation id="3477079411857374384">‏Control+‏Shift+מקש הרווח</translation>
 <translation id="3510164367642747937">הדגשה של סמן העכבר</translation>
 <translation id="3510503721818156981">‏Chromebook מחובר לטלפון חדש</translation>

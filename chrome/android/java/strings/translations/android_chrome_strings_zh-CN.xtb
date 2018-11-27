@@ -220,6 +220,7 @@
 <translation id="2586657967955657006">剪贴板</translation>
 <translation id="2587052924345400782">新版本已推出</translation>
 <translation id="2593272815202181319">等宽</translation>
+<translation id="2610239185026711824">建议一个密码</translation>
 <translation id="2612676031748830579">卡号</translation>
 <translation id="2621115761605608342">允许特定网站运行 JavaScript。</translation>
 <translation id="2625189173221582860">已复制密码</translation>
@@ -236,6 +237,7 @@
 <translation id="271033894570825754">新建</translation>
 <translation id="2728754400939377704">按网站排序</translation>
 <translation id="2744248271121720757">点按某个字词可立即开始搜索或查看相关操作</translation>
+<translation id="2760323196215778921">您还需为 Chrome 启用这项权限。请参阅 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />了解详情。</translation>
 <translation id="2762000892062317888">刚刚</translation>
 <translation id="2777555524387840389">还剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2779651927720337254">失败</translation>
@@ -707,6 +709,7 @@
 <translation id="6378173571450987352">详细信息：按已使用的数据流量排序</translation>
 <translation id="6383961787135158834">清除网站存储数据…</translation>
 <translation id="6388207532828177975">清除并重置</translation>
+<translation id="6393156038355142111">建议一个安全系数高的密码</translation>
 <translation id="6393863479814692971">Chrome 需要获得相应权限，才能允许此网站使用您的摄像头和麦克风。</translation>
 <translation id="6395288395575013217">链接</translation>
 <translation id="6404511346730675251">修改书签</translation>
@@ -887,6 +890,7 @@
 <translation id="773466115871691567">一律翻译<ph name="SOURCE_LANGUAGE" />网页</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" />（<ph name="SPACE_OTHER" />）</translation>
 <translation id="773905249182896430">保护您和您的设备不受危险网站的侵害</translation>
+<translation id="7759822418208302953">自动填充助理即将停止工作</translation>
 <translation id="7762668264895820836">SD 卡 <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="7765158879357617694">移动</translation>
@@ -931,6 +935,7 @@
 <translation id="8037750541064988519">还剩 <ph name="DAYS" /> 天</translation>
 <translation id="804335162455518893">找不到 SD 卡</translation>
 <translation id="805047784848435650">根据您的浏览记录</translation>
+<translation id="8051303708327298699">您还需为 Chrome 启用这些权限。请参阅 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />了解详情。</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用</translation>
 <translation id="8058746566562539958">在新的 Chrome 标签页中打开</translation>
 <translation id="8063895661287329888">无法添加书签。</translation>
@@ -1002,6 +1007,7 @@
 <translation id="857509777403223202">我们很快将会为您奉上更多文章，伴您度过美好的夜晚时光！</translation>
 <translation id="857943718398505171">已允许（推荐）</translation>
 <translation id="8583805026567836021">清除帐号数据</translation>
+<translation id="860043288473659153">持卡人姓名</translation>
 <translation id="8609465669617005112">上移</translation>
 <translation id="8616006591992756292">您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="8617240290563765734">要打开下载的内容中指定的建议网址吗？</translation>

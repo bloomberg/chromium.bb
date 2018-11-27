@@ -45,6 +45,7 @@
 <translation id="1275718070701477396">चयनित</translation>
 <translation id="1286609444451033486">टॉगल करने के लिए Search+Space दबाएं.</translation>
 <translation id="1291286136605998134">टॉगल बटन</translation>
+<translation id="1303806948938513162">ChromeVox मेन्यू में जाने के लिए चार उंगलियों से टैप करें</translation>
 <translation id="1319608975892113573">कोई पिछला ब्‍लॉककोट नहीं.</translation>
 <translation id="1321576897702511272">ChromeVox सहायता छिपाएं</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> में से <ph name="INDEX" /></translation>
@@ -239,6 +240,7 @@
 <translation id="3046838483509668188">ChromeVox विकल्प</translation>
 <translation id="3047143736589213134">प्रयोगात्‍मक कीमैप</translation>
 <translation id="3060756054951570867"><ph name="TITLE" />, मेनू खुल गया</translation>
+<translation id="3060880924447482063">आइटम एक-एक करके खिसकाने के लिए बाएं या दाएं स्वाइप करें</translation>
 <translation id="3070245424257836917">तीन उंगलियों से ऊपर स्वाइप करें</translation>
 <translation id="3078345202707391975">अगले स्तर 2 का शीर्षक</translation>
 <translation id="3078740164268491126">तालिका</translation>
@@ -332,6 +334,7 @@
 <translation id="3389259863310851658">पिछला फ़ॉर्म फ़ील्‍ड</translation>
 <translation id="3390225400784126843">अगला भिन्न तत्व.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, मेनू आइटम</translation>
+<translation id="3393605254399152980">जिसे आपने छुआ है उससे जुड़ी जानकारी सुनने के लिए एक उंगली से खींचें और छोड़ें</translation>
 <translation id="3406283310380167331">फ़ॉर्म सूची दिखाएं</translation>
 <translation id="3423495725743882470">पंक्ति $1 स्तंभ $2</translation>
 <translation id="3457000393508828486">आंशिक रूप से दबाया गया</translation>
@@ -347,6 +350,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{प्रश्न चिह्न}one{# प्रश्न चिह्न}other{# प्रश्न चिह्न}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{कैरेट}one{# कैरेट}other{# कैरेट}}</translation>
 <translation id="352577523970648069">संपादन-योग्य लेख फ़ील्ड</translation>
+<translation id="3549680091535286226">कुछ समय तक बोला जाना रोकने के लिए दो उंगलियों से टैप करें</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, चेकबॉक्‍स चेक न‍हीं किया गया</translation>
 <translation id="3589661172894441357">शब्दावली</translation>
 <translation id="3599054940393788245">गणना में नहीं</translation>
@@ -411,6 +415,7 @@
 <translation id="4166192625054637755">सबस्क्रिप्ट का आखिरी हिस्सा</translation>
 <translation id="4173994908659439270">कोई अगला संपादन-योग्य लेख फ़ील्ड नहीं.</translation>
 <translation id="4176463684765177261">अक्षम</translation>
+<translation id="4187322598335821254">लाइन एक-एक करके खिसकाने के लिए ऊपर या नीचे स्वाइप करें</translation>
 <translation id="4188530942454211480">पिछला वाक्य</translation>
 <translation id="4191918948604314587">बटन</translation>
 <translation id="419265409837491189">पिछले स्तंभ पर जाएं</translation>
@@ -709,6 +714,7 @@
 <translation id="6583174818554398774">अगले विवरण ले जाएं</translation>
 <translation id="6587021927234520429">कोई अगला स्तर 4 शीर्षक नहीं.</translation>
 <translation id="6601344353291556895">शब्‍दाडंबरपूर्ण वर्णन सक्षम करें.</translation>
+<translation id="6609828810966525877">'जानें मोड' और Chromebook सहायता केंद्र में हाथ के जेस्चर (स्पर्श) के बारे में ज़्यादा बेहतर जानें</translation>
 <translation id="6615602925644411249">पेज में ढूंढें.</translation>
 <translation id="6628427060004938651">भाग</translation>
 <translation id="6633350132811819843">कोई अगली तालिका नहीं.</translation>
@@ -760,6 +766,7 @@
 अगले खुले हुए टैब में जाने के लिए, Control+Tab का इस्तेमाल करें.
 'Chrome ब्राउज़र मेन्यू' खोलने के लिए, Alt+F दबाएं.</translation>
 <translation id="7086377898680121060">स्क्रीन की रोशनी बढ़ाएं</translation>
+<translation id="7088743565397416204">फ़ोकस की गई चीज़ को चालू करने के लिए दो बार टैप करें</translation>
 <translation id="7095834689119144465">केवल संख्यात्मक लेख संपादित करें</translation>
 <translation id="7096001299300236431">पिछला मीडिया</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -815,6 +822,7 @@
 <translation id="7491962110804786152">टैब</translation>
 <translation id="7492049978501397201">डाला गया डॉयलॉग</translation>
 <translation id="7518543783849163354">ChromeVox को अस्थायी रूप से बोलने से रोकने के लिए, Control कुंजी दबाएं.</translation>
+<translation id="7521682724501952239">आप टचस्क्रीन के ज़रिए ChromeVox का इस्तेमाल कर सकते हैं.</translation>
 <translation id="7532613204005497612">जून</translation>
 <translation id="7552432549459840808">उपयोगी Chrome शॉर्टकट</translation>
 <translation id="7579911500627256166">बिंदु <ph name="DOT" /></translation>

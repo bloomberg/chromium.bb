@@ -32,6 +32,7 @@
 <translation id="2008474315282236005">С устройства будет удален 1 объект. Чтобы восстановить данные позже, войдите в Chromium как <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Администратор просит перезапустить Chromium для установки обновления</translation>
 <translation id="2119636228670142020">О &amp;Chromium OS</translation>
+<translation id="2178765360243863853">Перезапустите Chromium</translation>
 <translation id="2241627712206172106">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chromium на свой вкус.</translation>
 <translation id="2265088490657775772">скачайте Chromium для iOS</translation>
 <translation id="2347108572062610441">Расширение изменило стартовую страницу Chromium.</translation>
@@ -106,6 +107,7 @@
 <translation id="4708774505295300557">Ранее вход в Chromium на этом компьютере выполнялся из аккаунта <ph name="ACCOUNT_EMAIL_LAST" />. Чтобы ваши данные хранились отдельно, создайте новый профиль Chromium.</translation>
 <translation id="4714956846925717402">Открывайте Chromium ещё быстрее</translation>
 <translation id="4746050847053251315">Завершить работу Chromium?</translation>
+<translation id="4748217263233248895">Установлено специальное обновление системы безопасности. Перезапустите Chromium (все вкладки будут восстановлены).</translation>
 <translation id="4888717733111232871">Разрешить в Chromium передачу входящего трафика по протоколу mDNS</translation>
 <translation id="4943838377383847465">Chromium работает в фоновом режиме</translation>
 <translation id="4987820182225656817">Используйте Chromium в гостевом режиме, если не хотите сохранять данные о посещенных сайтах.</translation>

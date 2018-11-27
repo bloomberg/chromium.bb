@@ -216,6 +216,14 @@
 <translation id="1523774894176285446">Papildu pārlūkprogramma, kurā jāatver konfigurētās vietnes.</translation>
 <translation id="152657506688053119">Noklusējuma meklētājprogrammas alternatīvo vietrāžu URL saraksts</translation>
 <translation id="1530812829012954197">Norādītās URL struktūras vienmēr tiek renderētas ar saimniekdatora pārlūku</translation>
+<translation id="1532965933165453786">Ātrās pārejas iespējošana vai atspējošana.
+      Tā attiecas uz visiem ierīces lietotājiem un visām saskarnēm.
+      Lai varētu izmantot ātro pāreju, ir jāiespējo gan šis iestatījums, gan tīkla ONC īpašums.
+      Ja šī politika ir iestatīta, ātrā pāreja darbojas, līdz politika tiek atspējota.
+
+      Ja politika nav iestatīta, ātrā pāreja netiek lietota.
+      Ja ir iestatīta vērtība “True”, ātrā pāreja netiek lietota.
+      Ja ir iestatīta vērtība “False”, ātrā pāreja tiek lietota, kad bezvadu piekļuves punkts to atbalsta.</translation>
 <translation id="1541170838458414064">Ierobežot drukājamās lapas izmēru</translation>
 <translation id="1553684822621013552">Ja šai politikai ir iestatīta vērtība “Patiesa”, lietotājam tiks iespējots ARC
       (var tikt veiktas papildu politikas iestatījumu pārbaudes — ARC joprojām nebūs
@@ -943,6 +951,13 @@
       Šo politiku var iestatīt tikai kā ieteikumu. Varat izmantot šo politiku, lai virzītu ieteikto lokalizāciju kopu uz augšpusi, bet lietotājiem vienmēr ir atļauts izvēlēties jebkuru lokalizāciju, ko viņu sesijai atbalsta <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
+<translation id="3388153794103186066">Ļauj jums iestatīt to vietrāžu URL sarakstu, kas norāda, kurām vietnēm tiks automātiski piešķirta atļauja piekļūt USB ierīcei, izmantojot norādīto pakalpojumu sniedzēja un produkta ID. Lai politika būtu derīga, katrā saraksta vienumā jānorāda gan ierīces, gan vietrāži URL. Katrs vienums ierīcēs var ietvert pakalpojumus sniedzēja ID un produkta ID lauku. Katrs izlaistais ID tiek uzskatīts par aizstājējzīmi, izņemot vienu gadījumu — produkta ID nevar norādīt, ja nav norādīts arī pakalpojumu sniedzēja ID. Pretējā gadījumā politika nebūs derīga un tiks ignorēta.
+
+        USB atļauju modelis izmanto pieprasošās vietnes URL (“pieprasošais URL”) un augstākā līmeņa ietvara vietnes URL (“iegultais URL”), lai piešķirtu piekļuvi pieprasošajam URL piekļūt USB ierīcei. Pieprasošais URL var atšķirties no iegultā URL, kad pieprasošā vietne tiek ielādēta ietvarā iframe. Tāpēc laukā “urls” nedrīkst ietvert vairāk par divām URL virknēm, kas atdalītas ar komatu un norāda attiecīgi pieprasošo un iegulto URL. Ja ir norādīts tikai viens URL, piekļuve atbilstošajām USB ierīcēm tiks piešķirta, kad pieprasošās vietnes URL atbildīs šim URL neatkarīgi no iegulšanas statusa. Laukā “urls” ievadītajiem vietrāžiem URL ir jābūt derīgiem vietrāžiem URL, pretējā gadījumā politika tiks ignorēta.
+
+        Ja politika netiks iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultWebUsbGuardSetting” (ja tā ir iestatīta); pretējā gadījumā tiks izmantota lietotāja personīgā konfigurācija.
+
+        Šajā politikā norādītie URL modeļi nedrīkst būt pretrunā ar modeļiem, kas konfigurēti politikā “WebUsbBlockedForUrls”. Ja rodas pretrunas, šai politikai ir lielāka prioritāte nekā politikām “WebUsbBlockedForUrls” un “WebUsbAskForUrls”.</translation>
 <translation id="3414260318408232239">Ja šī politika nav konfigurēta, pārlūkā <ph name="PRODUCT_NAME" /> tiek izmantota noklusējuma minimālā versija TLS 1.0.
 
       Pretējā gadījumā var būt iestatīta kāda no šīm vērtībām: “tls1”, “tls1.1” vai “tls1.2”. Ja politikai ir iestatīta vērtība, pārlūkā <ph name="PRODUCT_NAME" /> netiek izmantotas standarta SSL/TLS versijas, kas vecākas par norādīto versiju. Neatpazītas versijas tiek ignorētas.</translation>
@@ -1185,6 +1200,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="3925020515212192040">Norāda iepriekš konfigurētu tīkla failu kopīgošanas sarakstu.
 
       Katrs politikas saraksta vienums ir objekts ar diviem elementiem: “share_url” un “mode”. Elementam “share_url” ir jābūt kopīgošanas vietrādim URL, un elementam “mode” ir jābūt “drop_down” (nolaižamam), norādot, ka elements “share_url” tiks pievienots kopīgoto failu meklēšanas nolaižamajai izvēlnei.</translation>
+<translation id="3925377537407648234">Iestatīt displeja izšķirtspējas un mērogošanas koeficientu</translation>
 <translation id="3939893074578116847">Pārvaldības serverim tiek nosūtītas tīkla paketes tiešsaistes statusa pārraudzībai, lai
       serverī varētu noteikt, vai ierīce ir bezsaistē.
 
@@ -2026,6 +2042,16 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Šī politika ir spēkā tikai tad, ja ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Izmantojot šo politiku, ir jāinstalē <ph name="CHROME_REPORTING_EXTENSION_NAME" />, lai varētu veidot pārskatus, un tiek ignorētas jebkādas paplašinājumu politikas, kas saistītas ar attiecīgo paplašinājumu.</translation>
+<translation id="6155247658847899816">Kad šī politika ir iestatīta, katra displeja izšķirtspējas un mērogošanas koeficientam tiek iestatīta norādītā vērtība. Ārējo displeju iestatījumi tiek lietoti visiem pievienotajiem ārējiem displejiem.
+
+      Parametru “external_width” un “external_height” vērtībām ir jābūt norādītām pikseļos. Parametru “external_scale_percentage” un “internal_scale_percentage” vērtībām ir jābūt norādītam procentos.
+
+      Ja politikai “external_use_native” ir iestatīta vērtība “True”, politika ignorēs parametru “external_height” un “external_width” vērtības un ārējo displeju izšķirtspējai iestatīs standarta vērtību.
+
+      Ja politikai “external_use_native” ir iestatīta vērtība “False” vai politika nav norādīta un nav norādīts parametrs “external_height” vai “external_width”, politika neietekmēs ārējo displeju iestatījumus. Displejos, kuri neatbalsta norādīto izšķirtspējas vai mērogošanas koeficientu, politika netiks lietota.
+
+      Ja atzīmei “ieteicams” ir iestatīta vērtība “True”, lietotāji var mainīt jebkura displeja izšķirtspējas un mērogošanas koeficientu, izmantojot iestatījumu lapu pēc pieteikšanās, taču nākamajā atkārtotas palaišanas reizē viņu iestatījumus ignorēs politikas vērtība.
+      Ja atzīmei “ieteicams” ir iestatīta vērtība “False” vai atzīme nav iestatīta, lietotāji nevar mainīt displeja iestatījumus.</translation>
 <translation id="6155936611791017817">Lielā kursora noklusējuma stāvokļa iestatīšana pieteikšanās ekrānā</translation>
 <translation id="6157537876488211233">Ar komatu atdalītu starpniekserveru apiešanas kārtulu saraksts</translation>
 <translation id="6158324314836466367">Uzņēmuma interneta veikala nosaukums (darbība ir pārtraukta)</translation>
@@ -2133,6 +2159,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6553143066970470539">Ekrāna spilgtuma procenti</translation>
 <translation id="6559057113164934677">Neļaut nevienai vietnei piekļūt kamerai un mikrofonam</translation>
 <translation id="6561396069801924653">Rādīt pieejamības opcijas sistēmas teknes izvēlnē</translation>
+<translation id="6563458316362153786">Iespējot 802.11r ātro pāreju</translation>
 <translation id="6565312346072273043">Iestatīt ekrāna tastatūras pieejamības funkcijas noklusējuma stāvokli pieteikšanās ekrānā.
 
           Ja šai politikai ir iestatīta vērtība Patiesa, pieteikšanās ekrānā būs iespējota ekrāna tastatūra.
@@ -2804,6 +2831,11 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šī politika nav iestatīta pārvaldītā ierīcē, ierīcei nav atļauts palaist virtuālās mašīnas.
       Nepārvaldītām ierīcēm ir atļauts palaist virtuālās mašīnas.</translation>
 <translation id="8001701200415781021">Ierobežojiet, kuri Google konti var tikt iestatīti kā pārlūka primārie konti produktam <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Ja iespējosiet šo iestatījumu, <ph name="PRODUCT_NAME" /> profilos saglabātie iestatījumi, piemēram, grāmatzīmes, automātiskās aizpildes dati, paroles, tiks saglabāti arī failā, kas tiks glabāts viesabonēšanas lietotāju profilu mapē vai vietā, ko norādījis administrators, izmantojot politiku “<ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />”. Iespējojot šo politiku, tiek atspējota sinhronizācija mākonī.
+
+      Ja šī politika ir atspējota vai nav iestatīta, tiks izmantoti tikai parastie lokālie profili.
+
+      Politika “<ph name="SYNC_DISABLED_POLICY_NAME" />” atspējo visu datu sinhronizāciju, ignorējot politiku “<ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />”.</translation>
 <translation id="802147957407376460">Pagriezt ekrānu par 0 grādiem</translation>
 <translation id="8033913082323846868">Šī politika laidienā M70 vairs netiek izmantota, lūdzu, tās vietā izmantojiet “AutofillAddressEnabled” un “AutofillCreditCardEnabled”.
 
@@ -2929,6 +2961,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8274603902181597201">Notīra lietotāja ecryptfs sākumdirektoriju un sāk ar jaunu ext4-encrypted sākumdirektoriju.</translation>
 <translation id="8285435910062771358">Pilnekrāna režīma lupa ir iespējota</translation>
 <translation id="8288199156259560552">Google atrašanās vietas pakalpojuma iespējošana operētājsistēmai Android</translation>
+<translation id="8290453559005611000">PluginVm attēls</translation>
 <translation id="8294750666104911727">Lapas, kurās X-UA-Compatible iestatījums ir chrome=1, parasti tiek renderētas spraudnī <ph name="PRODUCT_FRAME_NAME" /> neatkarīgi no politikas ChromeFrameRendererSettings iestatījuma.
 
           Ja iespējosiet šo iestatījumu, lapās netiks meklēti metatagi.
@@ -3008,6 +3041,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantots politikā ChromeFrameRendererSettings norādītais noklusējuma renderētājs.
 
           Šablonu piemērus skatiet šeit: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Atspējo pārlūkošanas vēstures saglabāšanu</translation>
 <translation id="8498293625012059298">Konfigurējiet paroles maiņas URL (tikai HTTP un HTTPS shēmas). Paroles aizsardzības pakalpojums novirzīs lietotājus uz šo URL, kurā varēs nomainīt paroli, kad pārlūkā būs parādīts brīdinājums.
       Lai paroles maiņas lapā <ph name="PRODUCT_NAME" /> pareizi tvertu jaunās paroles ciparnospiedumu, lūdzu, gādājiet, lai jūsu paroles maiņas lapa atbilstu vadlīnijām, kas publicētas vietnē https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

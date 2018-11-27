@@ -220,6 +220,7 @@
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
 <translation id="2587052924345400782">अधिक नवीन आवृत्ती उपलब्ध आहे</translation>
 <translation id="2593272815202181319">मोनोस्पेस</translation>
+<translation id="2610239185026711824">पासवर्ड सुचवा</translation>
 <translation id="2612676031748830579">कार्ड नंबर</translation>
 <translation id="2621115761605608342">विशिष्ट साइटसाठी JavaScript ला अनुमती द्या.</translation>
 <translation id="2625189173221582860">पासवर्ड कॉपी केला</translation>
@@ -236,6 +237,7 @@
 <translation id="271033894570825754">नवीन</translation>
 <translation id="2728754400939377704">साइटनुसार क्रमाने लावा</translation>
 <translation id="2744248271121720757">झटपट शोधण्यासाठी किंवा संबंधित अॅक्‍शन पाहण्यासाठी एखाद्या शब्दावर टॅप करा</translation>
+<translation id="2760323196215778921">तुम्हाला Chrome करता ही परवानगी सुरू करणे देखील आवश्यक आहे. तपशीलासाठी <ph name="BEGIN_LINK" />Androआयडी सेटिंग्ज<ph name="END_LINK" /> पहा.</translation>
 <translation id="2762000892062317888">आत्ताच</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> सेकंद शिल्लक</translation>
 <translation id="2779651927720337254">अयशस्वी झाले</translation>
@@ -707,6 +709,7 @@
 <translation id="6378173571450987352">तपशील: वापरलेल्या डेटाच्या प्रमाणानुसार क्रमाने लावलेला</translation>
 <translation id="6383961787135158834">साइट स्टोरेज साफ करा...</translation>
 <translation id="6388207532828177975">साफ आणि रीसेट करा</translation>
+<translation id="6393156038355142111">क्लिष्ट पासवर्ड सुचवा</translation>
 <translation id="6393863479814692971">या साइटसाठी Chromeला तुमचा कॅमेरा आणि मायक्रोफोन अॅक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
 <translation id="6395288395575013217">दुवा</translation>
 <translation id="6404511346730675251">बुकमार्क संपादित करा</translation>
@@ -887,6 +890,7 @@
 <translation id="773466115871691567">नेहमी पेज <ph name="SOURCE_LANGUAGE" />मध्ये भाषांतरित करा</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">धोकादायक साइटपासून तुमचे आणि तुमच्या डिव्हाइसचे संरक्षण करते</translation>
+<translation id="7759822418208302953">ऑटोफिल असिस्टंट थांबवत आहे</translation>
 <translation id="7762668264895820836">SD कार्ड <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">पत्ता जोडा</translation>
 <translation id="7765158879357617694">हलवा</translation>
@@ -931,6 +935,7 @@
 <translation id="8037750541064988519"><ph name="DAYS" /> दिवस शिल्लक</translation>
 <translation id="804335162455518893">SD कार्ड आढळले नाही</translation>
 <translation id="805047784848435650">तुमच्या ब्राउझ करण्याच्या इतिहासावर आधारित</translation>
+<translation id="8051303708327298699">तुम्हाला Chrome करता या परवानग्या सुरू करणे देखील आवश्यक आहे. तपशीलासाठी <ph name="BEGIN_LINK" />Androआयडी सेटिंग्ज<ph name="END_LINK" /> पहा.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB उपलब्ध</translation>
 <translation id="8058746566562539958">नवीन Chrome टॅबमध्‍ये उघडा</translation>
 <translation id="8063895661287329888">बुकमार्क जोडण्यात अयशस्वी झाले.</translation>
@@ -1002,6 +1007,7 @@
 <translation id="857509777403223202">आणखी लेख लवकरच दिसतील. आपल्या संध्याकाळचा आनंद घ्या!</translation>
 <translation id="857943718398505171">अनुमती दिली (शिफारस केलेले)</translation>
 <translation id="8583805026567836021">खाते डेटा साफ करत आहे</translation>
+<translation id="860043288473659153">कार्डधारकाचे नाव</translation>
 <translation id="8609465669617005112">वर हलवा</translation>
 <translation id="8616006591992756292">तुमच्या Google खात्यात <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> वर ब्राउझिंग इतिहासाची अन्य स्वरूपे असू शकतात.</translation>
 <translation id="8617240290563765734">डाउनलोड केलेल्या सामग्रीमध्ये नमूद केलेली सुचविलेली URL उघडायची?</translation>

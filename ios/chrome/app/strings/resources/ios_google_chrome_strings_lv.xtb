@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome konfidencialitātes paziņojums</translation>
 <translation id="1863312987075920112">Izmantojot šo lietojumprogrammu, jūs piekrītat Chrome <ph name="BEGIN_LINK_TOS" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK_TOS" /> un <ph name="BEGIN_LINK_PRIVACY" />konfidencialitātes paziņojumam<ph name="END_LINK_PRIVACY" />.</translation>
-<translation id="1878302395768190018">Varat to jebkurā laikā pielāgot Chrome iestatījumos</translation>
 <translation id="2147651015520127414">Chrome apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>
 <translation id="2334084861041072223">Autortiesības <ph name="YEAR" /> Google Inc. Visas tiesības paturētas.</translation>
 <translation id="2342981853652716282">Pierakstieties pārlūkā Chrome, lai iegūtu savas grāmatzīmes, paroles un citu saturu visās savās ierīcēs.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Palīdzēt uzlabot Chrome funkcijas un veiktspēju</translation>
 <translation id="4523886039239821078">Daži papildinājumi var izraisīt pārlūka Chrome avarēšanu. Lūdzu, atinstalējiet šos papildinājumus:</translation>
 <translation id="4615174829807303908">Jūs izrakstāties no konta, kas tiek pārvaldīts domēnā <ph name="SIGNOUT_MANAGED_DOMAIN" />. Izrakstoties Chrome dati tiks dzēsti no šīs ierīces, taču tie paliks jūsu Google kontā.</translation>
-<translation id="5240817131241497236">Ir mainīti sinhronizācijas, personalizācijas un citu Google pakalpojumu pārvaldības iestatījumi pārlūkā Chrome. Tas var ietekmēt jūsu pašreizējos iestatījumus.</translation>
 <translation id="5389212809648216794">Google Chrome pašlaik nevar izmantot kameru, jo to izmanto cita lietojumprogramma.</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />Iestatījumus<ph name="END_LINK" /> var pielāgot jebkurā laikā. Google var izmantot jūsu apmeklēto vietņu saturu, pārlūkā veiktās mijiedarbības un darbības, lai personalizētu pārlūku Chrome un tādus Google pakalpojumus kā Tulkotājs, Meklēšana un reklāmas.</translation>
 <translation id="5639704535586432836">Atveriet sadaļu Iestatījumi &gt; Konfidencialitāte &gt; Kamera &gt; Google Chrome un ieslēdziet kameru.</translation>

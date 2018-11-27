@@ -219,6 +219,14 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="1523774894176285446">Für konfigurierte Websites soll ein alternativer Browser geöffnet werden.</translation>
 <translation id="152657506688053119">Liste alternativer URLs für den Standardsuchanbieter</translation>
 <translation id="1530812829012954197">Immer die folgenden URL-Muster im Host-Browser darstellen</translation>
+<translation id="1532965933165453786">Ermöglicht die Aktivierung oder Deaktivierung von "Fast Transition".
+      Diese Richtlinie gilt für alle Nutzer und alle Oberflächen auf diesem Gerät.
+      Damit "Fast Transition" verwendet werden kann, müssen sowohl diese Einstellungen als auch die netzwerkeigene ONC-Eigenschaft aktiviert sein.
+      Nach dem Festlegen bleibt "Fast Transition" so lange bestehen, bis die Richtlinie wieder deaktiviert wird.
+
+      Ist die Richtlinie nicht festgelegt, wird "Fast Transition" nicht verwendet.
+      Ist die Richtlinie auf "false" gesetzt, wird "Fast Transition" nicht verwendet.
+      Ist die Richtlinie auf "true" gesetzt, wird "Fast Transition" verwendet, wenn dies vom WLAN-Zugangspunkt unterstützt wird.</translation>
 <translation id="1541170838458414064">Druckseitengröße einschränken</translation>
 <translation id="1553684822621013552">Wenn diese Richtlinie auf "true" gesetzt ist, wird ARC für den Nutzer aktiviert.
       Dies unterliegt jedoch zusätzlichen Überprüfungen der Richtlinieneinstellungen
@@ -918,6 +926,13 @@ Für vorausgewählte Sprachen wird immer das beliebteste Tastaturlayout für die
 Diese Richtlinie kann nur als Empfehlung festgelegt werden. Mithilfe dieser Richtlinie können Sie eine Gruppe empfohlener Sprachen an den Anfang der Liste verschieben, Nutzer haben jedoch immer die Möglichkeit, eine beliebige Sprache für ihre Sitzung auszuwählen, die von <ph name="PRODUCT_OS_NAME" /> unterstützt wird.
       </translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
+<translation id="3388153794103186066">Ermöglicht das Erstellen einer Liste mit URLs, deren Websites automatisch auf ein USB-Gerät mit einem bestimmten Anbieter und einer bestimmten Produkt-ID zugreifen dürfen. Damit die Richtlinie gültig ist, muss jeder Eintrag in der Liste sowohl Geräte als auch URLs enthalten. Jeder Geräteeintrag kann ein Feld für eine Anbieter-ID und eine Produkt-ID enthalten. Fehlende IDs werden wie Platzhalter gehandhabt. Dabei gibt es jedoch eine Ausnahme: Produkt-IDs können nur spezifiziert werden, wenn auch die entsprechende Anbieter-ID angegeben ist. Andernfalls ist die Richtlinie ungültig und wird ignoriert.
+
+        Im USB-Berechtigungsmodell wird die URL der anfragenden Website ("anfragende URL") verwendet und die URL der Frame-Website der obersten Ebene ("einbettende URL"). Dabei wird der anfragenden URL die Berechtigung erteilt, auf das USB-Gerät zuzugreifen. Wenn die anfragende Website in einen iFrame geladen wird, kann die anfragende von der einbettenden URL abweichen. Deshalb kann das Feld "urls" bis zu zwei durch ein Komma voneinander getrennte URL-Strings enthalten: die anfragende URL und die einbettende URL. Wenn nur eine einzige URL angegeben ist, wird der Zugriff auf die entsprechenden USB-Geräte gewährt, wenn unabhängig vom Einbettungsstatus die URL der anfragenden Website mit dieser URL übereinstimmt. Die URLs im Feld "urls" müssen gültig sein, da ansonsten die Richtlinie ignoriert wird.
+
+        Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultWebUsbGuardSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
+
+        URL-Muster in dieser Richtlinie dürfen nicht im Widerspruch zu den über "WebUsbBlockedForUrls" konfigurierten URLs stehen. Im Falle einer Diskrepanz hat diese Richtlinie Vorrang vor "WebUsbBlockedForUrls" und "WebUsbAskForUrls".</translation>
 <translation id="3414260318408232239">Wenn diese Richtlinie nicht konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> standardmäßig eine Mindestversion: die Version TLS 1.0.
 
       Ansonsten kann sie auf einen der folgenden Werte festgelegt werden: "tls1", "tls1.1" oder "tls1.2". Wenn die Richtlinie konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> keine SSL- oder TLS-Versionen, die niedriger als die vorgegebene Version sind. Ein unbekannter Wert wird ignoriert.</translation>
@@ -1156,6 +1171,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer selbst entscheiden
 <translation id="3925020515212192040">Gibt eine Liste vorkonfigurierter Netzwerkfreigaben an.
 
 Jedes Listenelement der Richtlinie ist ein Objekt mit zwei Teilen: "share_url" und "mode". Bei "share_url" handelt es sich um die URL der Freigabe. "mode" sollte "drop_down" sein, um festzulegen, dass "share_url" dem Drop-Down der Freigabeerkennung hinzugefügt wird.</translation>
+<translation id="3925377537407648234">Bildschirmauflösung und Skalierungsfaktor festlegen</translation>
 <translation id="3939893074578116847">Es werden Netzwerkpakete zur Überwachung des Onlinestatus an den 
       Verwaltungsserver gesendet, damit er erkennt, wenn das Gerät offline ist.
 
@@ -1956,6 +1972,16 @@ Wenn die Richtlinie auf "true" gesetzt ist, werden die Daten erhoben und in die 
 Die Richtlinie wird nur angewendet, wenn das Gerät mit <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.
 
 Für diese Richtlinie wird die Installation von <ph name="CHROME_REPORTING_EXTENSION_NAME" /> zur Berichterstellung erzwungen. Alle Richtlinien für diese Erweiterung werden überschrieben.</translation>
+<translation id="6155247658847899816">Wird diese Richtlinie festgelegt, werden die Auflösung und der Skalierungsfaktor von jedem Bildschirm auf die spezifizierten Werte eingestellt. Auf alle verbundenen externen Bildschirme werden externe Bildschirmeinstellungen angewendet.
+
+      Die Werte für "external_width" und "external_height" sollten in Pixel angegeben werden. Die Werte für "external_scale_percentage" und "internal_scale_percentage" sind in Prozent anzugeben.
+
+      Ist für "external_use_native" die Option "true" festgelegt, ignoriert die Richtlinie die Werte von "external_height" und "external_width". Stattdessen werden für die Auflösung des externen Bildschirms seine nativen Werte verwendet.
+
+      Ist für "external_use_native" die Option "false" oder gar kein Wert ausgewählt und ist auch der Wert für "external_height" oder "external_width" nicht festgelegt, hat die Richtlinie keine Auswirkung auf die Einstellungen des externen Bildschirms. Wird die spezifizierte Auflösung oder der spezifizierte Skalierungsfaktor von einem Bildschirm nicht unterstützt, wird die Richtlinien nicht auf diesen Bildschirm angewendet.
+
+      Wird das Flag "recommended" auf "true" gesetzt, können Nutzer nach ihrer Anmeldung die Auflösung und den Skalierungsfaktor eines Bildschirms über die Einstellungsseite ändern. Ihre Einstellungen werden aber beim nächsten Neustart wieder vom Richtlinienwert überschrieben.
+      Wenn das Flag "recommended" auf "false" gesetzt oder gar nicht spezifiziert wird, können Nutzer die Bildschirmeinstellungen nicht ändern.</translation>
 <translation id="6155936611791017817">Standardstatus für den großen Cursor auf der Anmeldeseite festlegen</translation>
 <translation id="6157537876488211233">Kommagetrennte Liste der Proxy-Umgehungsregeln</translation>
 <translation id="6158324314836466367">Unternehmens-Web-Store-Name (veraltet)</translation>
@@ -2064,6 +2090,7 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
 <translation id="6553143066970470539">Displayhelligkeit in %</translation>
 <translation id="6559057113164934677">Keine Website darf auf meine Kamera oder mein Mikrofon zugreifen</translation>
 <translation id="6561396069801924653">Optionen für Bedienungshilfen im Taskleistenmenü anzeigen</translation>
+<translation id="6563458316362153786">802.11r Fast Transition aktivieren</translation>
 <translation id="6565312346072273043">Standardstatus für die Bildschirmtastatur auf der Anmeldeseite festlegen
 
           Wenn diese Richtlinie auf "true" gesetzt ist, ist die Bildschirmtastatur aktiviert, wenn die Anmeldeseite angezeigt wird.
@@ -2706,6 +2733,11 @@ Wird diese Richtlinie zu "false" geändert, wirkt sich dies nur auf den Start ne
 Ist diese Richtlinie auf einem verwalteten Gerät nicht festgelegt, dürfen keine virtuellen Maschinen auf dem Gerät ausgeführt werden.
 Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</translation>
 <translation id="8001701200415781021">Einschränken, welche Google-Konten als primäre Browserkonten in <ph name="PRODUCT_NAME" /> festgelegt werden können</translation>
+<translation id="8009554972280451023">Wenn Sie diese Einstellung aktivieren, werden die in <ph name="PRODUCT_NAME" />-Profilen gespeicherten Einstellungen, etwa Lesezeichen, AutoFill-Daten und Passwörter, zusätzlich in eine Datei geschrieben, die sich im Roaming-Nutzerprofilordner oder an einem vom Administrator über die Richtlinie <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> festgelegten Ort befindet. Durch die Aktivierung dieser Richtlinie wird die Cloudsynchronisierung deaktiviert.
+
+      Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, kommen nur die regulären lokalen Profile zum Einsatz.
+
+      Durch die Richtlinie <ph name="SYNC_DISABLED_POLICY_NAME" /> wird die gesamte Datensynchronisierung deaktiviert und somit <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> überschrieben.</translation>
 <translation id="802147957407376460">Bildschirm um 0 Grad drehen</translation>
 <translation id="8033913082323846868">Diese Richtlinie wurde in M70 eingestellt, bitte verwenden Sie stattdessen "AutofillAddressEnabled" und "AutofillCreditCardEnabled".
 
@@ -2826,6 +2858,7 @@ Diese Richtlinie gilt nicht für den Inkognitomodus.</translation>
 <translation id="8274603902181597201">ecryptfs-Basisverzeichnis des Nutzers löschen und durch ein neues ext4-verschlüsseltes Basisverzeichnis ersetzen.</translation>
 <translation id="8285435910062771358">Vollbildlupe aktiviert</translation>
 <translation id="8288199156259560552">Google-Standortdienst für Android-Geräte aktivieren</translation>
+<translation id="8290453559005611000">PluginVm-Bild</translation>
 <translation id="8294750666104911727">Normalerweise werden Seiten, bei denen das Metatag "X-UA-Compatible" auf "chrome=1" gesetzt ist, unabhängig von der Richtlinie "ChromeFrameRendererSettings" in <ph name="PRODUCT_FRAME_NAME" /> gerendert.
 
           Bei aktivierter Einstellung werden die Seiten nicht nach Metatags durchsucht.
@@ -2897,6 +2930,7 @@ Die Richtlinie wird in M75 entfernt.</translation>
           Wenn diese Richtlinie nicht konfiguriert ist, kommt der über die Richtlinie "ChromeFrameRendererSettings" festgelegte Standard-Renderer für alle Websites zum Einsatz.
 
           Beispielmuster finden Sie unter https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Speichern des Browserverlaufs deaktivieren</translation>
 <translation id="8498293625012059298">Mit dieser Richtlinie wird die URL zur Passwortänderung konfiguriert (nur HTTP- und HTTPS-Schemas). Nutzer, in deren Browser eine Warnung angezeigt wurde, werden vom Passwortschutzdienst an diese URL weitergeleitet, damit sie ihr Passwort ändern können.
       Ihre Anmeldeseiten müssen den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.

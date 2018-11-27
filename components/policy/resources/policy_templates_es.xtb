@@ -224,6 +224,14 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1523774894176285446">Navegador alternativo que se abre para los sitios web configurados.</translation>
 <translation id="152657506688053119">Lista de URL alternativas para el proveedor de búsquedas predeterminado</translation>
 <translation id="1530812829012954197">Mostrar siempre los patrones de URL que se indican a continuación en el navegador del host</translation>
+<translation id="1532965933165453786">Permite habilitar o inhabilitar la transición rápida.
+      Se aplica a todos los usuarios y todas las interfaces del dispositivo.
+      Para poder usar la transición rápida, es necesario haber habilitado este ajuste y la propiedad ONC en cada red.
+      Una vez configurada la transición rápida, esta se mantendrá hasta que se cambie la política para inhabilitarla.
+
+      Si no se define la política, la transición rápida no se usará.
+      Si se le asigna el valor "False", la transición rápida no se usará.
+      Si se le asigna el valor "True", la transición rápida se usará si el punto de acceso inalámbrico lo admite.</translation>
 <translation id="1541170838458414064">Restringir el tamaño de impresión de página</translation>
 <translation id="1553684822621013552">Si se asigna el valor true a esta política, se habilitará ARC para el usuario
       (la política está sujeta a comprobaciones adicionales de la configuración de la política: ARC no estará
@@ -952,6 +960,13 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Esta política solo se puede establecer según los ajustes recomendados. Puedes utilizarla para mover un conjunto de configuraciones regionales recomendadas al principio de la lista, pero los usuarios siempre pueden elegir cualquier configuración regional admitida por <ph name="PRODUCT_OS_NAME" /> para su sesión.
       </translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
+<translation id="3388153794103186066">Permite configurar una lista con las URL de los sitios web a los que se concederá permiso automáticamente para acceder a un dispositivo USB con los ID de proveedor y producto facilitados. Cada elemento de la lista debe contener tanto el dispositivo como la URL para que la política sea válida. Cada elemento de los dispositivos puede incluir un campo de ID de proveedor e ID de producto. Los ID que se omitan se considerarán comodines, con una excepción: no se puede especificar un ID de producto sin que se especifique también un ID de proveedor. De lo contrario, la política no será válida y se ignorará.
+
+        El modelo de permiso de USB usa la URL del sitio web solicitante ("URL solicitante") y la URL del sitio web marco de nivel superior ("URL de inserción") para otorgar permiso a la URL solicitante para acceder al dispositivo USB. La URL solicitante puede ser distinta a la de inserción si el sitio web solicitante se encuentra en un iframe. Por lo tanto, el campo "urls" puede contener un máximo de dos cadenas de URL delimitadas por una coma para especificar la URL solicitante y la de inserción, respectivamente. Si solo se especifica una URL, se otorgará acceso a los dispositivos USB correspondientes cuando la URL del sitio web solicitante coincida con esta URL, independientemente del estado de inserción. Las URL del campo "urls" deben ser URL válidas; de lo contrario, la política se ignorará.
+
+        Si no se le asigna ningún valor a esta política, se usará en todos los sitios web el valor general predeterminado que se indique en la política "DefaultWebUsbGuardSetting" (si se ha definido) o las preferencias personales del usuario (si no se ha definido).
+
+        Los patrones de URL de esta política no deben entrar en conflicto con los de la política WebUsbBlockedForUrls. Si hay un conflicto, esta política prevale sobre las políticas WebUsbBlockedForUrls y WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Si esta política no se configura, <ph name="PRODUCT_NAME" /> usa una versión mínima predeterminada (TLS 1.0).
 
       En caso contrario, se le asignará uno de estos valores: "tls1", "tls1.1" o "tls1.2". Si se habilita, <ph name="PRODUCT_NAME" /> no usará las versiones de SSL/TLS inferiores a la versión especificada y se ignorarán los valores no reconocidos.</translation>
@@ -1200,6 +1215,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3925020515212192040">Especifica una lista de sistemas de archivos compartidos preconfigurados.
 
      Cada elemento de la política incluido en la lista es un objeto con dos componentes: "share_url" y "mode". El elemento "share_url" debe ser la URL del sistema compartido y "mode" debe ser "drop_down", que indica que se añade "share_url" al desplegable de la búsqueda de elementos compartidos.</translation>
+<translation id="3925377537407648234">Definir la resolución de pantalla y el factor de escala</translation>
 <translation id="3939893074578116847">Envía paquetes de red al servidor de gestión para supervisar el estado online y permitir que el servidor detecte si el dispositivo está sin conexión.
 
       Si se asigna el valor true a esta política, se enviarán paquetes de red de supervisión (denominados <ph name="HEARTBEATS_TERM" />).
@@ -2039,6 +2055,29 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Esta política solo es efectiva si el equipo está registrado en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Esta política realiza la instalación forzada de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> para los informes y anula las políticas relacionadas con esa extensión.</translation>
+<translation id="6155247658847899816">Si se define esta política, se asignan los valores especificados
+      a la resolución y el factor de escala de cada pantalla, y se aplican los ajustes
+       de pantalla externa a todas las pantallas externas conectadas.
+
+      Los valores de ancho externo "external_width" y altura externa "external_height" deben especificarse en
+      píxeles. Los valores de porcentaje de escala externa "external_scale_percentage" y porcentaje de escala interna
+      "internal_scale_percentage" deben especificarse en porcentajes.
+
+      Si a la opción de uso externo nativo "external_use_native" se le asigna el valor "True", la política
+      ignorará los valores de "external_height" y "external_width" y asignará a las
+      pantallas externas sus valores de resolución nativa.
+
+      Si a la opción "external_use_native" se le asigna el valor "False" o no se le asigna ningún valor y tampoco 
+      se asigna ningún valor a "external_height" ni "external_width", la política no afectará a
+      los ajustes de la pantalla externa. Si la resolución o el
+      factor de escala especificados no son compatibles con alguna pantalla, la política no se aplicará a
+      esa pantalla.
+
+      Si al indicador "recommended" se le asigna el valor "True", los usuarios pueden cambiar la resolución y el
+      factor de escala de cualquier pantalla a través de la página de ajustes después de iniciar sesión, pero
+      los valores de la política anularán los ajustes definidos cuando se reinicie el equipo.
+      Si al indicador "recommended" se le asigna el valor "False" o no se le asigna ningún valor, los usuarios
+      no podrán cambiar los ajustes de pantalla.</translation>
 <translation id="6155936611791017817">Establecer el estado predeterminado del cursor grande en la pantalla de inicio de sesión</translation>
 <translation id="6157537876488211233">Lista de reglas de omisión de proxy separadas por comas</translation>
 <translation id="6158324314836466367">Nombre de la tienda online de la empresa (política obsoleta)</translation>
@@ -2150,6 +2189,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6553143066970470539">Porcentaje de brillo de la pantalla</translation>
 <translation id="6559057113164934677">No permitir que ningún sitio acceda a la cámara y al micrófono</translation>
 <translation id="6561396069801924653">Mostrar opciones de accesibilidad en el menú de la bandeja del sistema</translation>
+<translation id="6563458316362153786">Habilitar la transición rápida 802.11r</translation>
 <translation id="6565312346072273043">Establece el estado predeterminado de la función de accesibilidad del teclado en pantalla en la pantalla de inicio de sesión.
 
 Si esta política se establece en True, el teclado en pantalla se habilitará cuando se muestre la pantalla de inicio de sesión.
@@ -2817,6 +2857,11 @@ NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</tr
       Si no se asigna ningún valor a esta política en un dispositivo administrado, este no tendrá permiso para ejecutar máquinas virtuales.
       Los dispositivos no administrados tienen permiso para ejecutar máquinas virtuales.</translation>
 <translation id="8001701200415781021">Restringir las cuentas de Google que se pueden establecer como cuentas principales de navegador en <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Si se habilita este ajuste, la configuración almacenada en los perfiles de <ph name="PRODUCT_NAME" />, como los marcadores, los datos de la función Autocompletar y las contraseñas, también se escribirá en un archivo almacenado en la carpeta Itinerancia del perfil de usuario o en una ubicación especificada por el administrador en la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Al habilitar esta política, se inhabilitará la sincronización en la nube.
+
+      Si esta política se inhabilita o no se define, solo se utilizarán los perfiles locales habituales.
+
+      La política <ph name="SYNC_DISABLED_POLICY_NAME" /> inhabilita todas las sincronizaciones de datos y anula <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Girar la pantalla 0 grados</translation>
 <translation id="8033913082323846868">Esta política está obsoleta en M70. Utiliza en su lugar AutofillAddressEnabled y AutofillCreditCardEnabled.
 
@@ -2937,6 +2982,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8274603902181597201">Borrar los eCryptfs del directorio principal del usuario y empezar con un nuevo directorio principal cifrado con ext4.</translation>
 <translation id="8285435910062771358">Lupa de pantalla completa habilitada</translation>
 <translation id="8288199156259560552">Habilitar los servicios de ubicación de Google para aplicaciones Android</translation>
+<translation id="8290453559005611000">Imagen de PluginVm</translation>
 <translation id="8294750666104911727">Normalmente, las páginas con X-UA-Compatible establecido en chrome=1 se mostrarán en <ph name="PRODUCT_FRAME_NAME" />, independientemente de la política ChromeFrameRendererSettings.
 
           Si habilitas esta opción, las páginas no se escanearán para buscar metaetiquetas.
@@ -3012,6 +3058,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
           Si no se establece esta política, se utilizará el procesador predeterminado para todos los sitios web, como se especifica en la política "ChromeFrameRendererSettings".
 
           Puedes consultar ejemplos de patrones en la página https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Inhabilitar almacenamiento del historial de navegación</translation>
 <translation id="8498293625012059298">Configura la URL de cambio de contraseñas (solo esquemas HTTP y HTTPS). El servicio de protección de contraseña enviará a los usuarios a esta URL para cambiar sus contraseñas cuando hayan visto una advertencia en el navegador.
       Para que <ph name="PRODUCT_NAME" /> capture correctamente la nueva huella digital de la contraseña en esta página de cambio de contraseña, la página debe seguir las directrices incluidas en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

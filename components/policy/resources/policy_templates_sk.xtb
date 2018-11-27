@@ -215,6 +215,14 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
 <translation id="1523774894176285446">Spúšťanie alternatívneho prehliadača na nakonfigurovaných weboch</translation>
 <translation id="152657506688053119">Zoznam alternatívnych webových adries pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="1530812829012954197">Vždy vykresliť nasledujúce vzory webových adries v hostiteľskom prehliadači</translation>
+<translation id="1532965933165453786">Umožňuje povoliť alebo zakázať rýchly prechod.
+      Platí pre všetkých používateľov a rozhrania v zariadení.
+      Ak chcete používať rýchly prechod, musíte povoliť toto nastavenie aj vlastnosť ONC konkrétnej siete.
+      Rýchly prechod je po nastavení povolený dovtedy, kým pravidlo nezmeníte a nezakážete ho.
+
+      Ak pravidlo nenastavíte, rýchly prechod sa nebude používať.
+      Ak ho nastavíte na hodnotu false, rýchly prechod sa nebude používať.
+      Ak ho nastavíte na hodnotu true, rýchly prechod sa použije, keď ho bezdrôtový prístupový bod podporuje.</translation>
 <translation id="1541170838458414064">Obmedziť veľkosť tlačenej strany</translation>
 <translation id="1553684822621013552">Keď je toto pravidlo nastavené na hodnotu True, bude pre používateľa povolená funkcia ARC (táto možnosť podlieha ďalším kontrolám nastavení pravidiel – ak je v aktuálnej relácii používateľa povolený buď režim dočasných profilov, alebo viacnásobné prihlásenie, funkcia ARC nebude dostupná).
 
@@ -934,6 +942,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Toto pravidlo sa dá nastaviť iba ako odporúčané. Môžete pomocou neho presunúť skupinu odporúčaných miestnych nastavení do hornej časti, ale používatelia si môžu pre svoju reláciu kedykoľvek vybrať ľubovoľné miestne nastavenie podporované systémom <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="3381968327636295719">V predvolenom nastavení použiť hosťovský prehliadač</translation>
+<translation id="3388153794103186066">Umožňuje nastaviť zoznam webových adries určujúcich weby, ktorým je automaticky udelené povolenie na prístup k zariadeniu USB s príslušným dodávateľom alebo ID produktu. Pravidlo je platné, keď každá položka v zozname obsahuje zariadenia aj webové adresy. Každá položka v zariadeniach môže obsahovať polia pre identifikátor dodávateľa a ID produktu. Každý vynechaný identifikátor sa považuje za zástupný znak s jednou výnimkou, totiž že ID produktu sa nedá špecifikovať bez toho, aby ste zároveň neuviedli aj identifikátor dodávateľa. Ak to neurobíte, pravidlo bude neplatné a ignorované.
+
+Model povolení USB udeľuje pomocou adresy webu odosielajúceho žiadosť (žiadajúcej webovej adresy) a adresy rámcového webu najvyššej úrovne (webová adresa vkladania) povolenie žiadajúcej webovej adrese na prístup k zariadeniu USB. Žiadajúca webová adresa sa môže od webovej adresy vkladania líšiť, ak je načítaná v prvku iframe. Preto môže pole pre webové adresy obsahovať až dva reťazce webovej adresy oddelené čiarkou, ktoré špecifikujú žiadajúcu webovú adresu a webovú adresu vkladania. Ak určíte iba jednu webovú adresu, prístup k príslušným zariadeniam USB bude udelený iba vtedy, keď sa adresa webu odosielajúceho žiadosť zhoduje s touto webovou adresu bez ohľadu na stav vloženia. V poli pre webové adresy musíte zadať platné webové adresy, inak bude pravidlo ignorované.
+
+Ak toto pravidlo nenastavíte, globálna predvolená hodnota sa použije pre všetky weby buď z pravidla DefaultWebUsbGuardSetting (ak je nastavené), alebo osobnou konfiguráciou používateľa.
+
+Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, ktoré boli nakonfigurované prostredníctvom pravidla WebUsbBlockedForUrls. Ak sú v konflikte, toto pravidlo bude mať prednosť pred pravidlami WebUsbBlockedForUrls aj WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Ak toto pravidlo nenastavíte, <ph name="PRODUCT_NAME" /> použije predvolenú minimálnu verziu, teda TLS 1.0.
 
       V opačnom prípade ho môžete nastaviť na jednu z nasledujúcich hodnôt: „tls1“, „tls1.1“ alebo „tls1.2“. Ak túto hodnotu nastavíte, <ph name="PRODUCT_NAME" /> nepoužije protokol SSL alebo TLS v nižšej ako zadanej verzii. Nerozpoznaná hodnota sa bude ignorovať.</translation>
@@ -1184,6 +1199,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3925020515212192040">Určuje zoznam vopred nakonfigurovaných zdieľaných súborov v sieti.
 
       Jednotlivé položky zoznamu v rámci tohto pravidla sú objekty pozostávajúce z dvoch častí: „share_url“ a „mode“. „share_url“ by mala byť adresa webovej aplikácie a „mode“ by mala byť zoznam „drop_down“ označujúci, že „share_url“ sa pridá do rozbaľovacieho zoznamu na objavovanie zdieľaných súborov.</translation>
+<translation id="3925377537407648234">Nastavenie rozlíšenia a škálovacieho faktora obrazovky</translation>
 <translation id="3939893074578116847">Odosielanie sieťových paketov na správcovský server s cieľom sledovania online stavu, ktoré umožní
        serveru zistiť, či je zariadenie v režime offline.
 
@@ -2025,6 +2041,15 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
 
       Toto pravidlo presadzuje inštaláciu rozšírenia <ph name="CHROME_REPORTING_EXTENSION_NAME" /> na nahlasovanie údajov a prepíše všetky pravidlá pre rozšírenia súvisiace s týmto rozšírením.</translation>
+<translation id="6155247658847899816">Keď nastavíte toto pravidlo, rozšírenie a škálovateľný faktor jednotlivých obrazoviek budú nastavené na špecifikované hodnoty. Nastavenia externej obrazovky sa použijú na všetky pripojené externé obrazovky.
+
+Hodnoty external_width a external_height by mali byť určené v pixeloch. Hodnoty external_scale_percentage a internal_scale_percentage by mali byť určené v percentách.
+
+Ak hodnotu external_use_native nastavíte na možnosť true, pravidlo bude hodnoty external_height a external_width ignorovať a nastaví rozlíšenie externých obrazoviek na ich natívne rozlíšenie.
+
+Ak je hodnota external_use_native nastavená na možnosť false alebo ju neposkytnete a neuvediete ani hodnotu external_height alebo external_width, pravidlo nebude mať vplyv na nastavenia externých obrazoviek. Ak niektorá obrazovka špecifikované rozlíšenie alebo škálovateľný faktor nepodporuje, pravidlo sa na danú obrazovku nepoužije.
+
+Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť rozlíšenie a škálovateľný faktor ľubovoľnej obrazovky po prihlásení na stránke s nastaveniami, ale ich nastavenia budú prepísané hodnotou pravidla pri ďalšom reštartovaní. Ak značku recommended nastavíte na hodnotu false alebo ju nenastavíte, používatelia nemôžu meniť nastavenia obrazovky.</translation>
 <translation id="6155936611791017817">Nastaviť predvolený stav veľkého kurzora na prihlasovacej obrazovke</translation>
 <translation id="6157537876488211233">Zoznam pravidiel vynechania servera proxy oddelených čiarkami</translation>
 <translation id="6158324314836466367">Názov Internetového obchodu pre podniky (podpora je ukončená)</translation>
@@ -2136,6 +2161,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6553143066970470539">Percento jasu obrazovky</translation>
 <translation id="6559057113164934677">Nepovoliť žiadnym stránkam používať kameru a mikrofón</translation>
 <translation id="6561396069801924653">Zobraziť možnosti dostupnosti v oblasti oznámení</translation>
+<translation id="6563458316362153786">Povolenie rýchleho prechodu 802.11r</translation>
 <translation id="6565312346072273043">Nastavuje na prihlasovacej obrazovke predvolený stav funkcie zjednodušenia prístupu ku klávesnici na obrazovke.
 
           Ak je toto pravidlo nastavené na hodnotu true, bude pri zobrazení prihlasovacej obrazovky klávesnica na obrazovke aktívna.
@@ -2810,6 +2836,11 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak toto pravidlo nenastavíte v spravovanom zariadení, nebude môcť spúšťať virtuálne počítače.
       Nespravované zariadenia môžu spúšťať virtuálne počítače.</translation>
 <translation id="8001701200415781021">Obmedziť, ktoré účty Google môžu byť nastavené ako hlavné účty prehliadača <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Ak povolíte toto nastavenie, nastavenia uložené v profiloch <ph name="PRODUCT_NAME" /> (napr. záložky, údaje automatického dopĺňania, heslá atď.) sa zapíšu tiež do súboru uloženého v priečinku roamingového používateľského profilu alebo v umiestnení špecifikovanom správcom prostredníctvom pravidla <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Povolením tohto pravidla zakážete synchronizáciu cloudu.
+
+      Ak toto pravidlo zakážete alebo nenastavíte, použijú sa iba bežné miestne profily.
+
+      Pravidlo <ph name="SYNC_DISABLED_POLICY_NAME" /> zakáže synchronizáciu všetkých údajov, pretože prepíše pravidlo <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Otočiť obrazovku o 0 stupňov</translation>
 <translation id="8033913082323846868">Podpora tohto pravidla bola ukončená vo verzii M70, použite namiesto neho AutofillAddressEnabled a AutofillCreditCardEnabled.
 
@@ -2931,6 +2962,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="8274603902181597201">Vymazať domovský adresár pre ecryptfs používateľa a vytvoriť nový adresár šifrovaný pomocou ext4</translation>
 <translation id="8285435910062771358">Lupa v režime na celú obrazovku je povolená</translation>
 <translation id="8288199156259560552">Povoliť službu určovania polohy Google v aplikáciách pre Android</translation>
+<translation id="8290453559005611000">Obrázok doplnku PluginVm</translation>
 <translation id="8294750666104911727">Stránky s prvkom X-UA-Compatible nastaveným na hodnotu chrome=1 sa obvykle vykreslia v rámci služby <ph name="PRODUCT_FRAME_NAME" /> bez ohľadu na pravidlo ChromeFrameRendererSettings.
 
           Ak toto nastavenie povolíte, na stránkach sa nebudú hľadať metaznačky.
@@ -3005,6 +3037,7 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
           Ak toto pravidlo nenastavíte, pre všetky webové stránky sa použije predvolený vykresľovací modul (ako je určené pravidlom „ChromeFrameRendererSettings“).
 
           Príklady vzorov nájdete na adrese http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Zakázať ukladanie histórie prehliadača</translation>
 <translation id="8498293625012059298">Nastavuje webovú adresu na zmenu hesla (iba schémy HTTP a HTTPS). Služba ochrany heslom odkáže používateľov na túto webovú adresu, aby si tam po zobrazení upozornenia v prehliadači zmenili heslo.
       Na to, aby služba <ph name="PRODUCT_NAME" /> správne zaznamenala digitálny odtlačok nového hesla na tejto stránke na zmenu hesla, musí táto stránka dodržiavať pokyny uvedené na adrese https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

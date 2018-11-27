@@ -34,6 +34,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2008474315282236005">This will delete 1 item from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Your administrator asks that you relaunch Chromium to apply this update</translation>
 <translation id="2119636228670142020">About &amp;Chromium OS</translation>
+<translation id="2178765360243863853">You should restart Chromium now</translation>
 <translation id="2241627712206172106">If you share a computer, friends and family can browse separately and set up Chromium just the way they want.</translation>
 <translation id="2265088490657775772">get Chromium on your iPhone</translation>
 <translation id="2347108572062610441">This extension has changed the page that is shown when you start Chromium.</translation>
@@ -110,6 +111,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4708774505295300557">Someone previously signed in to Chromium on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. Please create a new Chromium user to keep your information separate.</translation>
 <translation id="4714956846925717402">Get to Chromium faster</translation>
 <translation id="4746050847053251315">Quit Chromium anyway?</translation>
+<translation id="4748217263233248895">A special security update for Chromium was just applied. Restart now and we'll restore your tabs.</translation>
 <translation id="4888717733111232871">Inbound rule for Chromium to allow mDNS traffic.</translation>
 <translation id="4943838377383847465">Chromium is in background mode.</translation>
 <translation id="4987820182225656817">Guests can use Chromium without leaving anything behind.</translation>

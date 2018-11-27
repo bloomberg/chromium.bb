@@ -63,6 +63,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="2314101195544969792">Sessionen med <ph name="APPLICATION_NAME" /> har varit inaktiv en stund och kommer snart att kopplas från.</translation>
 <translation id="2317666076142640974">Få en förhandstitt på den nya <ph name="LINK_BEGIN" />webbappen Chrome Remote Desktop<ph name="LINK_END" />. Vi vill gärna höra vad du tycker!</translation>
 <translation id="2320166752086256636">Dölj tangentbordet</translation>
+<translation id="2332192922827071008">Öppna inställningarna</translation>
 <translation id="2353140552984634198">Du kan få säker åtkomst till den här datorn med Chromoting.</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2366718077645204424">Det går inte att nå värden. Detta beror troligen på konfigurationen av nätverket som du använder.</translation>
@@ -192,6 +193,9 @@ dator</translation>
 <translation id="4973800994433240357">När du laddar ned installationsprogrammet för fjärranslutningsvärden Chromoting godkänner du Googles <ph name="LINK_BEGIN" />användarvillkor<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Anslutningen till <ph name="HOSTNAME" /> kopplades från</translation>
 <translation id="4985296110227979402">Du måste först konfigurera datorn för fjärråtkomst</translation>
+<translation id="5059773780693835145">Ett konfigureringssteg återstår innan du kan fjärrstyra den här datorn med <ph name="PRODUCT_NAME" />.
+
+Du aktiverar funktionen genom att öppna inställningspanelen Säkerhet och sekretess med <ph name="BUTTON_NAME" /> och markera kryssrutan <ph name="SERVICE_SCRIPT_NAME" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chrome Remote Desktop ytterligare behörigheter att komma åt den här adressen:</translation>
 <translation id="507204348399810022">Är du säker på att du vill inaktivera fjärranslutningar till <ph name="HOSTNAME" />?</translation>
@@ -316,6 +320,7 @@ dator</translation>
 <translation id="809687642899217504">Mina datorer</translation>
 <translation id="811307782653349804">Få åtkomst till din egen dator var du än är.</translation>
 <translation id="8116630183974937060">Ett nätverksfel inträffade. Kontrollera att enheten är online och försök igen.</translation>
+<translation id="8123581458650016326">Tillåt fjärranvändare att styra den här datorn</translation>
 <translation id="8178433417677596899">Skärmdelning mellan användare är perfekt för fjärrstyrd teknisk support.</translation>
 <translation id="8187079423890319756">Upphovsrätt 2013 The Chromium Authors. Med ensamrätt.</translation>
 <translation id="8196755618196986400">Din e-postadress skickas tillsammans med din feedback så att vi kan kontakta dig om vi behöver mer information.</translation>

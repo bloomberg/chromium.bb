@@ -221,6 +221,7 @@
 <translation id="2586657967955657006">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್</translation>
 <translation id="2587052924345400782">ಹೊಸ ಆವೃತ್ತಿಯು ಲಭ್ಯವಿದೆ</translation>
 <translation id="2593272815202181319">ಮೊನೋಸ್ಪೇಸ್</translation>
+<translation id="2610239185026711824">ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಸೂಚಿಸಿ</translation>
 <translation id="2612676031748830579">ಕಾರ್ಡ್ ಸಂಖ್ಯೆ</translation>
 <translation id="2621115761605608342">ನಿರ್ದಿಷ್ಟ ಸೈಟ್‌ಗೆ JavaScript ಅನ್ನು ಅನುಮತಿಸಿ.</translation>
 <translation id="2625189173221582860">ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನಕಲಿಸಲಾಗಿದೆ</translation>
@@ -237,6 +238,7 @@
 <translation id="271033894570825754">ಹೊಸತು</translation>
 <translation id="2728754400939377704">ಸೈಟ್ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ</translation>
 <translation id="2744248271121720757">ತತ್‌ಕ್ಷಣ ಹುಡುಕಲು ಅಥವಾ ಸಂಬಂಧಿತ ಕ್ರಿಯೆಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಪದವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
+<translation id="2760323196215778921">Chrome ಗಾಗಿ ನೀವು ಈ ಅನುಮತಿಯನ್ನು ಸಹ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ. ವಿವರಗಳಿಗಾಗಿ <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="END_LINK" /> ವೀಕ್ಷಿಸಿ.</translation>
 <translation id="2762000892062317888">ಈಗತಾನೇ</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> ಸೆಕೆಂಡುಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="2779651927720337254">ವಿಫಲವಾಗಿದೆ</translation>
@@ -707,6 +709,7 @@
 <translation id="6378173571450987352">ವಿವರಗಳು: ಡೇಟಾ ಬಳಕೆಯ ಪ್ರಮಾಣದ ಆಧಾರದಲ್ಲಿ ವಿಂಗಡಿಸಲಾಗಿದೆ</translation>
 <translation id="6383961787135158834">ಸೈಟ್ ಸಂಗ್ರಹಣೆ ತೆರವು...</translation>
 <translation id="6388207532828177975">ತೆರವುಗೊಳಿಸಿ &amp; ಮರುಹೊಂದಿಸಿ</translation>
+<translation id="6393156038355142111">ಸದೃಢವಾದ ಪಾಸ್‌ವರ್ಡ್ ಸೂಚಿಸಿ</translation>
 <translation id="6393863479814692971">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="6395288395575013217">ಲಿಂಕ್</translation>
 <translation id="6404511346730675251">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
@@ -888,6 +891,7 @@
 <translation id="773466115871691567">ಯಾವಾಗಲು <ph name="SOURCE_LANGUAGE" /> ನಲ್ಲಿನ ಪುಟಗಳನ್ನು ಅನುವಾದ ಮಾಡಿ</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">ಅಪಾಯಕಾರಿ ಸೈಟ್‌ಗಳಿಂದ ನಿಮ್ಮನ್ನು ಮತ್ತು ನಿಮ್ಮ ಸಾಧನವನ್ನು ರಕ್ಷಿಸುತ್ತದೆ</translation>
+<translation id="7759822418208302953">ಸ್ವಯಂ ಭರ್ತಿ ಮಾಡುವಿಕೆಯು ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ಸ್ಥಗಿತಗೊಳಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="7762668264895820836">ಎಸ್‌ಡಿ ಕಾರ್ಡ್ <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">ವಿಳಾಸ ಸೇರಿಸಿ</translation>
 <translation id="7765158879357617694">ಸರಿಸು</translation>
@@ -932,6 +936,7 @@
 <translation id="8037750541064988519"><ph name="DAYS" /> ದಿನಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="804335162455518893">SD ಕಾರ್ಡ್ ಕಂಡುಬಂದಿಲ್ಲ</translation>
 <translation id="805047784848435650">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸದ ಆಧಾರಿಸಿ</translation>
+<translation id="8051303708327298699">Chrome ಗಾಗಿ ನೀವು ಈ ಅನುಮತಿಗಳನ್ನು ಸಹ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ. ವಿವರಗಳಿಗಾಗಿ <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="END_LINK" /> ವೀಕ್ಷಿಸಿ.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB  ಲಭ್ಯವಿದೆ</translation>
 <translation id="8058746566562539958">ಹೊಸ Chrome ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="8063895661287329888">ಬುಕ್‌ಮಾರ್ಕ್‌ ಸೇರಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
@@ -1003,6 +1008,7 @@
 <translation id="857509777403223202">ಶೀಘ್ರವೇ ಇನ್ನಷ್ಟು ಲೇಖನಗಳು ಕಂಡುಬರುತ್ತವೆ. ನಿಮ್ಮ ಸಂಜೆಯ ಸಮಯವನ್ನು ಆನಂದಿಸಿ!</translation>
 <translation id="857943718398505171">ಅನುಮತಿಸಲಾಗಿದೆ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="8583805026567836021">ಖಾತೆಯ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="860043288473659153">ಕಾರ್ಡ್‌ಹೋಲ್ಡರ್ ಹೆಸರು</translation>
 <translation id="8609465669617005112">ಮೇಲೆ ಸರಿಸು</translation>
 <translation id="8616006591992756292">ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಇತರ ವಿಧಗಳ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೊಂದಿರಬಹುದು.</translation>
 <translation id="8617240290563765734">ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲಾದ ವಿಷಯದಲ್ಲಿ ಸೂಚಿಸಲಾದ ನಿರ್ದಿಷ್ಟ URL ತೆರೆಯುವುದೇ?</translation>

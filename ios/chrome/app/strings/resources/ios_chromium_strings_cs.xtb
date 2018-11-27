@@ -16,7 +16,6 @@
 <translation id="2647554856022461007">Chromium vám může usnadnit prohlížení pomocí webových služeb. Tyto služby můžete případně zakázat. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Získejte do prohlížeče Chromium chytré funkce Google</translation>
 <translation id="2730884209570016437">Chromium nemůže použít fotoaparát, protože jej právě používá jiná aplikace</translation>
-<translation id="2797210818057553964">Toto nastavení můžete kdykoliv upravit v nastavení prohlížeče Chromium</translation>
 <translation id="2915596697727466327">Chromium pomocí funkce Face ID ověřuje přístup k heslům.</translation>
 <translation id="3256316712990552818">Zkopírováno do prohlížeče Chromium</translation>
 <translation id="3413120535237193088">Chcete-li záložky synchronizovat do všech zařízení, přihlaste se do prohlížeče Chromium.</translation>
@@ -46,7 +45,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Vybraná data byla z prohlížeče Chromium a synchronizovaných zařízení odstraněna. Na stránce history.google.com mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google, například vyhledávací dotazy a aktivita z ostatních služeb Google.</translation>
 <translation id="7400689562045506105">Používejte Chromium všude</translation>
-<translation id="7499048969477415415">Nastavení, která v prohlížeči Chromium ovládají synchronizaci, personalizaci a další služby Google, se změnila. Může to mít dopad na vaše aktuální nastavení.</translation>
 <translation id="7674213385180944843">Otevřete Nastavení &gt; Soukromí &gt; Kamera &gt; Chromium a zapněte fotoaparát.</translation>
 <translation id="7746854981345936341">Tip pro Chromium. Některá tlačítka, například Zpět, Vpřed a Hledat, jsou teď v dolní části obrazovky.</translation>
 <translation id="786327964234957808">Přepínáte účet pro synchronizaci z <ph name="USER_EMAIL1" /> na <ph name="USER_EMAIL2" />. Vaše existující data prohlížeče Chromium jsou spravována doménou <ph name="DOMAIN" />. Touto akcí svá data smažete z tohoto zařízení, v účtu <ph name="USER_EMAIL1" /> však vaše data zůstanou.</translation>

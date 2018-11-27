@@ -220,6 +220,7 @@ Te ei ole siiski nähtamatu. Privaatse režiimi kasutamine ei varja teie sirvimi
 <translation id="2586657967955657006">Lõikelaud</translation>
 <translation id="2587052924345400782">Saadaval on uuem versioon</translation>
 <translation id="2593272815202181319">Püsisammkiri</translation>
+<translation id="2610239185026711824">Soovita parooli</translation>
 <translation id="2612676031748830579">Kaardi number</translation>
 <translation id="2621115761605608342">Lubage JavaScript konkreetse saidi jaoks.</translation>
 <translation id="2625189173221582860">Parool on kopeeritud</translation>
@@ -236,6 +237,7 @@ Te ei ole siiski nähtamatu. Privaatse režiimi kasutamine ei varja teie sirvimi
 <translation id="271033894570825754">Uus</translation>
 <translation id="2728754400939377704">Sordi saidi alusel</translation>
 <translation id="2744248271121720757">Puudutage sõna, et kohe otsida või seotud toiminguid näha</translation>
+<translation id="2760323196215778921">Samuti tuleb teil see luba Chrome'i jaoks sisse lülitada. Vaadake üksikasju <ph name="BEGIN_LINK" />Androidi seadetest<ph name="END_LINK" />.</translation>
 <translation id="2762000892062317888">just praegu</translation>
 <translation id="2777555524387840389">Jäänud on <ph name="SECONDS" /> sekundit</translation>
 <translation id="2779651927720337254">ebaõnnestus</translation>
@@ -707,6 +709,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6378173571450987352">Üksikasjad: sorditud kasutatud andmemahu alusel</translation>
 <translation id="6383961787135158834">Tühj. saidi salvestusr.</translation>
 <translation id="6388207532828177975">Kustuta ja lähtesta</translation>
+<translation id="6393156038355142111">Soovita tugevat parooli</translation>
 <translation id="6393863479814692971">Chrome vajab selle saidi puhul luba, et teie kaamerale ja mikrofonile juurde pääseda.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Muuda järjehoidjat</translation>
@@ -887,6 +890,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="773466115871691567">Tõlgi alati <ph name="SOURCE_LANGUAGE" /> keeles olevad lehed</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Kaitseb teid ja teie seadet ohtlike saitide eest</translation>
+<translation id="7759822418208302953">Automaattäite assistent peatatakse</translation>
 <translation id="7762668264895820836">SD-kaart <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Lisage aadress</translation>
 <translation id="7765158879357617694">Liiguta</translation>
@@ -931,6 +935,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8037750541064988519">Jäänud on <ph name="DAYS" /> päeva</translation>
 <translation id="804335162455518893">SD-kaarti ei leitud</translation>
 <translation id="805047784848435650">Teie sirvimisajaloo põhjal</translation>
+<translation id="8051303708327298699">Samuti tuleb teil need load Chrome'i jaoks sisse lülitada. Vaadake üksikasju jaotisest <ph name="BEGIN_LINK" />Androidi seaded<ph name="END_LINK" />.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB on saadaval</translation>
 <translation id="8058746566562539958">Ava uuel Chrome'i vahelehel</translation>
 <translation id="8063895661287329888">Järjehoidja lisamine ebaõnnestus.</translation>
@@ -1002,6 +1007,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="857509777403223202">Peagi kuvatakse rohkem artikleid. Head õhtut!</translation>
 <translation id="857943718398505171">Lubatud (soovitatav)</translation>
 <translation id="8583805026567836021">Kontoandmete kustutamine</translation>
+<translation id="860043288473659153">Kaardiomaniku nimi</translation>
 <translation id="8609465669617005112">Liiguta üles</translation>
 <translation id="8616006591992756292">Aadressil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu.</translation>
 <translation id="8617240290563765734">Kas avada allalaaditud sisus toodud soovitatud URL?</translation>

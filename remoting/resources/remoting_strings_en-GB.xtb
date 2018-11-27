@@ -63,6 +63,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="2314101195544969792">Your <ph name="APPLICATION_NAME" /> session has been inactive for a while and will be disconnected shortly.</translation>
 <translation id="2317666076142640974">Get a sneak peek at the new <ph name="LINK_BEGIN" />Chrome Remote Desktop web app<ph name="LINK_END" />. We'd love to hear your feedback.</translation>
 <translation id="2320166752086256636">Hide keyboard</translation>
+<translation id="2332192922827071008">Open preferences</translation>
 <translation id="2353140552984634198">You may securely access this computer using Chromoting.</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2366718077645204424">Unable to reach the host. This is probably due to the configuration of the network you are using.</translation>
@@ -190,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">By downloading the Chromoting Host Installer, you are agreeing to the Google <ph name="LINK_BEGIN" />Terms of Service<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Connection closed for <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">You need to first set up your computer for remote access</translation>
+<translation id="5059773780693835145">An additional configuration step is required before you can control this machine remotely using <ph name="PRODUCT_NAME" />.
+
+To enable this functionality, select '<ph name="BUTTON_NAME" />' to display the Security and Privacy preferences pane, then tick the box next to '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">The remote host requires you to authenticate to a third-party website. To continue, you must grant Chrome Remote Desktop additional permissions to access this address:</translation>
 <translation id="507204348399810022">Are you sure that you want to disable remote connections to <ph name="HOSTNAME" />?</translation>
@@ -314,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">My Computers</translation>
 <translation id="811307782653349804">Access your own computer from anywhere.</translation>
 <translation id="8116630183974937060">A network error occurred. Please check that your device is on-line and try again.</translation>
+<translation id="8123581458650016326">Allow remote users to control this machine</translation>
 <translation id="8178433417677596899">User-to-user screen sharing, perfect for remote technical support.</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. All Rights Reserved.</translation>
 <translation id="8196755618196986400">To allow us to contact you for further information, your email address will be included in any feedback that you submit.</translation>

@@ -237,6 +237,7 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="271033894570825754">Nové</translation>
 <translation id="2728754400939377704">Seřadit podle webu</translation>
 <translation id="2744248271121720757">Klepnutím na slovo můžete okamžitě vyhledávat nebo zobrazit související akce</translation>
+<translation id="2760323196215778921">Toto oprávnění je potřeba zapnout také pro Chrome. Podrobnosti najdete v <ph name="BEGIN_LINK" />nastavení zařízení Android<ph name="END_LINK" />.</translation>
 <translation id="2762000892062317888">právě teď</translation>
 <translation id="2777555524387840389">Zbývá: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">nezdařilo se</translation>
@@ -934,6 +935,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8037750541064988519">Zbývá: <ph name="DAYS" /> d</translation>
 <translation id="804335162455518893">SD karta nenalezena</translation>
 <translation id="805047784848435650">Na základě vaší historie prohlížení</translation>
+<translation id="8051303708327298699">Tato oprávnění je potřeba zapnout také pro Chrome. Podrobnosti najdete v <ph name="BEGIN_LINK" />nastavení zařízení Android<ph name="END_LINK" />.</translation>
 <translation id="8051695050440594747">K dispozici: <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058746566562539958">Otevřít na nové kartě v Chromu</translation>
 <translation id="8063895661287329888">Přidání záložky se nezdařilo.</translation>
@@ -1005,6 +1007,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="857509777403223202">Brzy se zobrazí další články. Užijte si večer.</translation>
 <translation id="857943718398505171">Povoleno (doporučeno)</translation>
 <translation id="8583805026567836021">Mazání dat účtu</translation>
+<translation id="860043288473659153">Jméno držitele karty</translation>
 <translation id="8609465669617005112">Posunout nahoru</translation>
 <translation id="8616006591992756292">Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="8617240290563765734">Otevřít navrhovanou adresu URL uvedenou ve staženém obsahu?</translation>

@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Avis de confidentialité Google Chrome</translation>
 <translation id="1863312987075920112">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK_TOS" />Conditions d'utilisation<ph name="END_LINK_TOS" /> et l'<ph name="BEGIN_LINK_PRIVACY" />Avis de confidentialité<ph name="END_LINK_PRIVACY" /> de Chrome.</translation>
-<translation id="1878302395768190018">Vous pouvez personnaliser cette option à tout moment dans les paramètres Chrome</translation>
 <translation id="2147651015520127414">Chrome a confirmé que le certificat de ce site Web a bien été émis par <ph name="ISSUER" />.</translation>
 <translation id="2334084861041072223">Copyright Google Inc. <ph name="YEAR" />. Tous droits réservés.</translation>
 <translation id="2342981853652716282">Connectez-vous à Chrome pour accéder à vos favoris, mots de passe et bien plus sur tous vos appareils.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome</translation>
 <translation id="4523886039239821078">Certains modules complémentaires entraînent le plantage de Chrome. Veuillez les désinstaller.</translation>
 <translation id="4615174829807303908">Vous vous déconnectez d'un compte géré par <ph name="SIGNOUT_MANAGED_DOMAIN" />. Cette opération entraînera la suppression de vos données Chrome de cet appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
-<translation id="5240817131241497236">Les paramètres relatifs à la synchronisation, à la personnalisation et à d'autres services Google dans Chrome ont été modifiés, ce qui peut avoir une incidence sur votre configuration actuelle.</translation>
 <translation id="5389212809648216794">Google Chrome ne peut pas utiliser l'appareil photo, car celui-ci est utilisé par une autre application</translation>
 <translation id="5489543008378040943">Nous pouvons nous appuyer sur le contenu des sites que vous consultez, ainsi que sur vos activités de navigation et vos interactions avec le navigateur pour personnaliser Chrome, les annonces qui vous sont proposées et d'autres de nos services comme Google Traduction et la recherche Google. Sachez toutefois que vous pouvez personnaliser ces <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" /> à tout moment.</translation>
 <translation id="5639704535586432836">Ouvrez Paramètres &gt; Confidentialité &gt; Appareil photo &gt; Google Chrome, puis activez l'appareil photo.</translation>

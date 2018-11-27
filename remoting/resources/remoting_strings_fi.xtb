@@ -63,6 +63,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" /> -istuntosi on ollut epäaktiivinen jonkin aikaa, ja se katkaistaan pian.</translation>
 <translation id="2317666076142640974">Tutustu uuteen <ph name="LINK_BEGIN" />Chrome-etäkäyttö-verkkosovellukseen<ph name="LINK_END" />. Kuulisimme mielellämme palautetta.</translation>
 <translation id="2320166752086256636">Piilota näppäimistö</translation>
+<translation id="2332192922827071008">Siirry valintoihin</translation>
 <translation id="2353140552984634198">Tähän tietokoneeseen voi muodostaa suojatun yhteyden Chromotingin avulla.</translation>
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2366718077645204424">Isäntään ei saatu yhteyttä. Tämä johtuu luultavasti käyttämäsi verkon määrityksistä.</translation>
@@ -190,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Lataamalla Chromoting-isännän asennusohjelman hyväksyt Googlen <ph name="LINK_BEGIN" />käyttöehdot<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Yhteys suljettu isäntään <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Määritä ensin tietokone, johon haluat muodostaa etäyhteyden.</translation>
+<translation id="5059773780693835145">Sinun on suoritettava lisämääritysvaihe ennen kuin tämän koneen <ph name="PRODUCT_NAME" /> ‑etäkäyttö on mahdollista.
+
+Ota ominaisuus käyttöön valitsemalla ensin <ph name="BUTTON_NAME" />, jolloin tietosuoja- ja yksityisyysvalinnat avataan, ja valitsemalla ruutu kohdasta <ph name="SERVICE_SCRIPT_NAME" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Etäisäntä edellyttää todennusta kolmannen osapuolen sivustossa. Jos haluat jatkaa, anna Chrome-etäkäytölle lisäkäyttölupia tämän osoitteen avaamiseksi:</translation>
 <translation id="507204348399810022">Haluatko varmasti poistaa käytöstä etäyhteydet kohteeseen <ph name="HOSTNAME" />?</translation>
@@ -314,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Omat tietokoneet</translation>
 <translation id="811307782653349804">Käytä tietokonettasi mistä haluat.</translation>
 <translation id="8116630183974937060">Tapahtui verkkovirhe. Tarkista, että laite on yhdistetty verkkoon, ja yritä uudelleen.</translation>
+<translation id="8123581458650016326">Anna käyttäjien etähallita tätä konetta</translation>
 <translation id="8178433417677596899">Ruudun jakaminen käyttäjien välillä sopii hyvin teknisen etätuen antamiseen.</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. Kaikki oikeudet pidätetään.</translation>
 <translation id="8196755618196986400">Jotta voimme kysyä sinulta lisätietoja, sähköpostiosoitteesi liitetään kaikkeen lähettämääsi palautteeseen.</translation>

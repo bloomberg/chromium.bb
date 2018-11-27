@@ -230,6 +230,14 @@
 <translation id="1523774894176285446">Seadistatud veebisaitide puhul käivitatav alternatiivne brauser.</translation>
 <translation id="152657506688053119">Asendus-URL-ide loend vaikeotsingupakkujale</translation>
 <translation id="1530812829012954197">Renderda hostbrauseris alati järgmiste URL-ide mustrid</translation>
+<translation id="1532965933165453786">Võimaldab lubada või keelata kiire ülemineku.
+      See kehtib seadme kõigi kasutajate ja liideste puhul.
+      Kiire ülemineku kasutamiseks peab nii see seade kui ka võrgupõhine ONC atribuut olema lubatud.
+      Pärast määramist jääb kiire ülemineku funktsioon lubatuks, kuni see reeglis keelatakse.
+
+      Kui reegel on määramata, ei kasutata kiiret üleminekut.
+      Kui reegel on seatud väärtusele Väär, ei kasutata kiiret üleminekut.
+      Kui reegel on seatud väärtusele Tõene, kasutatakse kiiret üleminekut juhul, kui juhtmeta pääsupunkt seda toetab.</translation>
 <translation id="1541170838458414064">Prinditava lehe suuruse piiramine</translation>
 <translation id="1553684822621013552">Kui see reegel on tõene, lubatakse ARC kasutaja jaoks
       (oleneb reegli seadete lisakontrollidest – ARC pole endiselt
@@ -953,6 +961,13 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Reegli saab määrata ainult soovitusena. Reegliga saab teisaldada soovitatud lokaadid loendi ülaossa, kuid kasutajad võivad alati seansi jaoks valida mis tahes muu lokaadi, mida operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> toetab.
       </translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
+<translation id="3388153794103186066">Võimaldab teil määrata URL-ide loendi, mis määravad, millistele saitidele antakse automaatselt luba määratud hankija ja toote ID-ga USB-seadmele juurdepääsemiseks. Iga loendiüksus peab sisaldama nii seadmeid kui ka URL-e, et reegel kehtiks. Iga seadmete loendi üksus võib sisaldada hankija ID ja toote ID välja. Välja jäetud ID-sid käsitletakse metamärkidena ühe erandiga: ilma hankija ID-d määramata ei saa toote ID-d määrata. Muidu on reegel kehtetu ja seda eiratakse.
+
+        USB loamudel kasutab taotluse esitanud saidi URL-i („taotleja URL”) ja ülataseme raamsaidi URL-i („manustamise URL”), et lubada taotluse esitanud URL-il USB-seadmele juurde pääseda. Taotleja URL võib manustamise URL-ist erineda juhul, kui taotluse esitanud sait laaditakse iframe'is. Seetõttu võib väli „URL-id” sisaldada kuni kaht komaga eraldatud URL-i, mis määravad vastavalt taotleja URL-i ja manustamise URL-i. Kui määratud on ainult üks URL, antakse juurdepääs vastavatele USB-seadmetel juhul, kui taotluse esitanud saidi URL kattub selle URL-iga olenemata manustamise olekust. Väljal „URL-id” olevad URL-id peavad olema kehtivad, muidu reeglit eiratakse.
+
+        Kui reegel jäetakse määramata, kasutatakse kõigi saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultWebUsbGuardSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.
+
+        Reeglis määratud URL-i mustrid ei tohi olla vastuolus reegli WebUsbBlockedForUrls kaudu seadistatud URL-idega. Vastuolu korral on sellel reeglil eesõigus reeglite WebUsbBlockedForUrls ja WebUsbAskForUrls ees.</translation>
 <translation id="3414260318408232239">Kui seda reeglit pole seadistatud, siis kasutab teenus <ph name="PRODUCT_NAME" /> vaikimisi miinimumversiooni, milleks on TLS 1.0.
 
       Muul juhul võidakse see määrata ühele järgmistest väärtustest: „tls1”, „tls1.1” või „tls1.2”. Kui see on määratud, ei kasuta teenus <ph name="PRODUCT_NAME" /> SSL-i/TLS-i versioone, mis on määratud versioonist vanemad. Tundmatut väärtust eiratakse.</translation>
@@ -1200,6 +1215,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="3925020515212192040">Määrab failide eelseadistatud võrgu-ühiskasutuse loendi.
 
       Reegli iga loendiüksus on objekt, mis koosneb, kahest liikmest: „share_url” ja „mode”. Parameeter „share_url” peab olema hoidla URL ja „mode” peab olema „drop_down”, mis näitab, et „share_url” lisatakse ühiskasutuse sirvimise rippmenüüsse.</translation>
+<translation id="3925377537407648234">Ekraani eraldusvõime ja skaleerimisteguri määramine</translation>
 <translation id="3939893074578116847">Võrgupaketid saadetakse veebioleku jälgimiseks haldusserverisse, et
       server saaks tuvastada, kui seade pole võrguga ühendatud.
 
@@ -2037,6 +2053,28 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       See reegel kehtib vaid siis, kui seade on registreeritud reeglis <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       See reegel sundinstallib aruandluseks laienduse <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ja alistab kõik selle laiendusega seotud laiendusereeglid.</translation>
+<translation id="6155247658847899816">Kui reegel on määratud, seatakse iga ekraani eraldusvõime ja skaleerimistegur
+      sisestatud väärtustele. Välise ekraani seaded
+      rakendatakse kõigile ühendatud välistele ekraanidele.
+
+      Väärtused „external_width” ja „external_height” tuleb määrata
+      pikslites. Väärtused „external_scale_percentage” ja
+      „internal_scale_percentage” tuleb määrata protsentides.
+
+      Kui „external_use_native” on seatud väärtusele Tõene, eirab reegel
+      atribuutide „external_height” ja „external_width” väärtusi ja määrab
+      väliste ekraanide eraldusvõimeks algse eraldusvõime.
+
+      Kui „external_use_native” on seatud väärtusele Väär või sisestamata
+      ja „external_height” ja „external_width” on sisestamata, ei mõjuta reegel
+      välise ekraani seadeid. Kui ekraan ei toeta määratud eraldusvõimet või
+      skaleerimistegurit, siis reeglit selle ekraani puhul ei rakendata.
+
+      Kui lipp „recommended” on seatud väärtusele Tõene, võivad kasutajad
+      pärast sisselogimist muuta seadete lehel kõigi ekraanide eraldusvõimet
+      ja skaleerimistegurit, ent nende seaded alistatakse järgmisel taaskäivitamisel
+      reegli väärtusega. Kui lipp „recommended” on seatud väärtusele Väär või
+      määramata, ei saa kasutajad kuvaseadeid muuta.</translation>
 <translation id="6155936611791017817">Sisselogimisekraanil suure kursori vaikeoleku määramine</translation>
 <translation id="6157537876488211233">Puhverserveri möödumisreeglite komadega eraldatud loend</translation>
 <translation id="6158324314836466367">Ettevõtte veebipoe nimi (tugi on katkestatud)</translation>
@@ -2148,6 +2186,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 <translation id="6553143066970470539">Ekraani ereduse protsent</translation>
 <translation id="6559057113164934677">Keela kõikidel saitidel juurdepääs kaamerale ja mikrofonile</translation>
 <translation id="6561396069801924653">Juurdepääsuvalikute kuvamine süsteemisalve menüüs</translation>
+<translation id="6563458316362153786">802.11r kiire ülemineku lubamine</translation>
 <translation id="6565312346072273043">Määrake sisselogimiskuval oleva ekraanil kuvatava klaviatuuri vaikeolek.
 
           Kui reegel seatakse väärtusele Tõene, lubatakse ekraanil kuvatav klaviatuur sisselogimiskuval.
@@ -2821,6 +2860,11 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Kui reegel jäetakse hallatavas seadmes määramata, on seadmes virtuaalsete masinate käitamine keelatud.
       Haldamata seadmetes on virtuaalsete masinate käitamine lubatud.</translation>
 <translation id="8001701200415781021">Võimaldab piirata, milliseid Google'i kontosid saab määrata teenuses <ph name="PRODUCT_NAME" /> brauseri peamisteks kontodeks</translation>
+<translation id="8009554972280451023">Kui lubate selle seade, kirjutatakse teenuse <ph name="PRODUCT_NAME" /> profiilide salvestatud seaded, näiteks järjehoidjad, automaatse täitmise andmed, paroolid jms, faili, mis talletatakse rändlust kasutava profiili kausta või asukohta, mille administraator määrab reegliga <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Reegli lubamine keelab pilveteenusega sünkroonimise.
+
+      Kui keelate selle reegli või jätate selle määramata, kasutatakse ainult tavalisi kohalikke profiile.
+
+      Reegel <ph name="SYNC_DISABLED_POLICY_NAME" /> keelab kogu andmete sünkroonimise, alistades reegli <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Ekraani pööramine 0 kraadi</translation>
 <translation id="8033913082323846868">See reegel on versioonist M70 eemaldatud, kasutage selle asemel reegleid AutofillAddressEnabled and AutofillCreditCardEnabled.
 
@@ -2947,6 +2991,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8274603902181597201">Kasutaja süsteemi eCryptfs juurkataloogi tühjendamine ja uue ext4-krüpteeringuga juurkataloogiga alustamine.</translation>
 <translation id="8285435910062771358">Täisekraani luup on lubatud</translation>
 <translation id="8288199156259560552">Androidi Google'i asukohateenuse lubamine</translation>
+<translation id="8290453559005611000">Üksuse PluginVm kujutis</translation>
 <translation id="8294750666104911727">Tavaliselt renderdatakse lehed, mille metasilt X-UA-Compatible on seatud väärtusele chrome=1 teenuses <ph name="PRODUCT_FRAME_NAME" />, olenemata reeglist „ChromeFrameRendererSettings”.
 
           Kui lubate selle seade, siis lehti metasiltide osas ei skannita.
@@ -3026,6 +3071,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
           Kui seda reeglit ei määrata, kasutatakse kõikide saitide puhul vaikerenderdajat, mis on määratud reegliga „ChromeFrameRendererSettings”.
 
           Vaadake näidismustreid aadressilt http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Keela brauseri ajaloo salvestamine</translation>
 <translation id="8498293625012059298">Seadistage parooli muutmise URL (ainult HTTP- ja HTTPS-skeemid). Kui kasutaja näeb brauseris hoiatust, saadab paroolikaitseteenus ta sellele URL-ile, et ta saaks oma parooli muuta.
       Selleks et <ph name="PRODUCT_NAME" /> talletaks parooli muutmise lehel uue parooli sõrmejälje õigesti, peab teie parooli muutmise leht järgima aadressil https://www.chromium.org/developers/design-documents/create-amazing-password-forms olevaid juhiseid.

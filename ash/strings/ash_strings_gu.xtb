@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">મેનૂ સંકુચિત કરો</translation>
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1419738280318246476">નોટિફિકેશન ક્રિયા કરવા માટે ઉપકરણને અનલૉક કરો</translation>
+<translation id="1455242230282523554">ભાષા સેટિંગ બતાવો</translation>
 <translation id="1467432559032391204">ડાબું</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{નોટિફિકેશનની સેટિંગ બતાવો. ઍપ માટે નોટિફિકેશન બંધ છે}one{નોટિફિકેશનની સેટિંગ બતાવો. # ઍપ માટે નોટિફિકેશન બંધ છે}other{નોટિફિકેશનની સેટિંગ બતાવો. # ઍપ માટે નોટિફિકેશન બંધ છે}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">હજુ સુધી જોવા માટે કંઈ નથી</translation>
 <translation id="3445925074670675829">USB-C ઉપકરણ</translation>
 <translation id="3454224730401036106">તમારું કનેક્શન એક વધુ સુરક્ષિત નેટવર્ક પર સ્વિચ કર્યુંં છે</translation>
+<translation id="3465223694362104965">તમે છેલ્લે સાઇન ઇન કર્યું તે પછી આ ડિવાઇસ સાથે બીજું કીબોર્ડ કનેક્ટ કરવામાં આવ્યું છે. તમે આ કીબોર્ડનો ઉપયોગ કરો તે પહેલાં ખાતરી કરો કે તમને તેના પર વિશ્વાસ છે.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">માઉસ કર્સરને હાઇલાઇટ કરો</translation>
 <translation id="3510503721818156981">નવા ફોન સાથે કનેક્ટ કરેલ Chromebook</translation>
@@ -260,6 +262,7 @@
 <translation id="5571066253365925590">Bluetooth સક્ષમ છે</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">બોલાયેલ પ્રતિસાદને બંધ કરવા માટે Ctrl + Alt + Z દબાવો.</translation>
+<translation id="5626283214046138476">તમારું નિરીક્ષિત વપરાશકર્તા એકાઉન્ટ ટૂંક સમયમાં સમાપ્ત થઈ રહ્યું છે.</translation>
 <translation id="5648021990716966815">માઇક જેક</translation>
 <translation id="5669267381087807207">સક્રિય કરી રહ્યું છે</translation>
 <translation id="5673434351075758678">તમારી સેટિંગને સિંક કર્યા પછી "<ph name="FROM_LOCALE" />" થી "<ph name="TO_LOCALE" />"માં ફેરવો.</translation>

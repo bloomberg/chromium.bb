@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">Згорнути меню</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1419738280318246476">Щоб виконати дію зі сповіщенням, розблокуйте пристрій</translation>
+<translation id="1455242230282523554">Показати налаштування мови</translation>
 <translation id="1467432559032391204">Ліворуч</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Показати налаштування сповіщень. Сповіщення вимкнено для додатка}one{Показати налаштування сповіщень. Сповіщення вимкнено для # додатка}few{Показати налаштування сповіщень. Сповіщення вимкнено для # додатків}many{Показати налаштування сповіщень. Сповіщення вимкнено для # додатків}other{Показати налаштування сповіщень. Сповіщення вимкнено для # додатка}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">Ще нічого немає</translation>
 <translation id="3445925074670675829">Пристрій із портом USB типу C</translation>
 <translation id="3454224730401036106">Вас під’єднано до більш захищеної мережі</translation>
+<translation id="3465223694362104965">Після вашого останнього входу до пристрою було підключено іншу клавіатуру. Переконайтеся, що вона безпечна, перш ніж користуватися нею.</translation>
 <translation id="3477079411857374384">Комбінація клавіш "Control-Shift-Space"</translation>
 <translation id="3510164367642747937">Підсвічувати курсор миші</translation>
 <translation id="3510503721818156981">Chromebook підключено до нового телефона</translation>
@@ -260,6 +262,7 @@
 <translation id="5571066253365925590">Bluetooth увімкнено</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Натисніть Ctrl + Alt + Z, щоб вимкнути голосові підказки.</translation>
+<translation id="5626283214046138476">Термін дії облікового запису контрольованого користувача незабаром закінчиться.</translation>
 <translation id="5648021990716966815">Гніздо для мікрофона</translation>
 <translation id="5669267381087807207">Активація</translation>
 <translation id="5673434351075758678">Після синхронізації налаштувань мову змінено. Попередня мова: <ph name="FROM_LOCALE" />, нова: <ph name="TO_LOCALE" />.</translation>

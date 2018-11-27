@@ -225,6 +225,14 @@
 <translation id="1523774894176285446">Alternatív böngésző indítása a meghatározott webhelyekhez.</translation>
 <translation id="152657506688053119">Az alapértelmezett keresési szolgáltató alternatív URL-jeinek listája.</translation>
 <translation id="1530812829012954197">Mindig jelenítse meg a következő URL-mintákat a gazdagép böngészőjében</translation>
+<translation id="1532965933165453786">Lehetővé teszi a Fast Transition (gyors váltás) funkció engedélyezését és letiltását.
+      Minden felhasználóra és az eszköz minden felületére vonatkozik.
+      A Fast Transition funkció használatához ezt és a hálózatonkénti ONC tulajdonságot is engedélyezni kell.
+      Beállítása után a Fast Transition funkció addig érvényben marad, amíg a házirend módosításával le nem tiltják.
+
+      Ha a házirend nincs beállítva, a rendszer nem használja a Fast Transition funkciót.
+      Ha a házirend beállítása hamis, a rendszer nem használja a Fast Transition funkciót.
+      Ha a házirend beállítása igaz, a rendszer használja a Fast Transition funkciót, amennyiben a vezeték nélküli hozzáférési pont is támogatja.</translation>
 <translation id="1541170838458414064">Nyomtatás oldalméretének korlátozása</translation>
 <translation id="1553684822621013552">Ha a házirend értéke igaz, akkor az ARC engedélyezve lesz a felhasználó
       számára (további házirend-ellenőrzések alapján – az ARC továbbra sem
@@ -924,6 +932,13 @@
       A házirend értéke csak ajánlott lehet. A házirend segítségével bizonyos területi beállításokat a lista elejére helyezhet, de a felhasználók mindig választhatnak a <ph name="PRODUCT_OS_NAME" /> által támogatott beállítások közül.
       </translation>
 <translation id="3381968327636295719">Alapértelmezés szerint használja a gazdagép böngészőjét</translation>
+<translation id="3388153794103186066">Lehetővé teszi olyan URL-lista megadását, amely meghatározza, hogy mely webhelyek kapnak automatikusan engedélyt arra, hogy hozzáférjenek adott szállító adott termékazonosítóival rendelkező USB-eszközökhöz. A listában lévő összes elemnek tartalmaznia kell eszközt és URL-t is, hogy a házirend érvényes legyen. Az eszközök összes eleme tartalmazhat szállító- és termékazonosítót. A nem megadott azonosítókat a rendszer – egy kivétellel – helyettesítő azonosítóként kezeli. A kivétel az, hogy termékazonosítót nem lehet szállítóazonosító nélkül megadni. Máskülönben a házirend érvénytelen lesz, és a rendszer figyelmen kívül hagyja.
+
+        Az USB-engedélyezési modell a kérelmező webhely URL-je („kérelmező URL”) és a keretet biztosító legfelső szintű weboldal URL-je („beágyazó URL”) alapján adja meg az engedélyt az URL számára az USB-eszköz eléréséhez. Az igénylő URL és a beágyazó URL eltérő is lehet, ha az igénylő webhely iframe keretben töltődik be. Az „urls” mező ezért legfeljebb két, egymástól vesszővel elválasztott URL-címet tartalmazhat (az igénylő és a beágyazó URL-t). Ha csak egy URL-címet adnak meg, akkor az adott USB-eszközhöz való hozzáférési engedélyt akkor kapja meg a webhely, ha a kérelmező webhely URL-je egyezik ezzel az URL-címmel (függetlenül a beágyazás állapotától). Az „urls” mezőben lévő URL-eknek érvényes URL-címeknek kell lenniük, különben a rendszer figyelmen kívül hagyja a házirendet.
+
+        Ha a házirend nincs beállítva, a rendszer az összes webhely esetében a globális alapértelmezett értéket fogja használni, amely származhat a „DefaultWebUsbGuardSetting” házirendből (ha beállították), illetve a felhasználó saját konfigurációs beállításaiból.
+
+        Az ebben a házirendben szereplő URL-mintáknak nem szabad ütközniük a WebUsbBlockedForUrls házirendben megadott URL-mintákkal. Ütközés esetén ez a házirend élvez elsőbbséget a WebUsbBlockedForUrls és a WebUsbAskForUrls házirendekkel szemben.</translation>
 <translation id="3414260318408232239">Ha a házirend nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> az alapértelmezés szerinti legkisebb verziót használja majd, amely a TLS 1.0.
 
       Ellenkező esetben a következő értékek egyikét lehet beállítani: „tls1”, „tls1.1” vagy „tls1.2”. Ha beállítja a házirendet, a <ph name="PRODUCT_NAME" /> nem használ majd a megadottnál alacsonyabb verziószámú SSL/TLS-verziót. Az ismeretlen értékeket a rendszer figyelmen kívül hagyja.</translation>
@@ -1164,6 +1179,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="3925020515212192040">Meghatározza az előre beállított hálózati fájlmegosztások listáját.
 
       A házirend listáján szereplő összes elem olyan objektum, melynek két tagja van: „share_url” és „mode”. A „share_url” a megosztott tartalom URL-címe, míg a „mode” az a „drop_down”, amely jelzi, hogy a „share_url” hozzá lesz adva a megosztásfelfedezési legördülő listához.</translation>
+<translation id="3925377537407648234">A képernyőfelbontás és a skálázási tényező beállítása</translation>
 <translation id="3939893074578116847">Hálózati csomagok küldése a kezelőszervernek az online állapot ellenőrzése céljából;
       ezáltal a szerver észleli, ha az eszköz offline állapotban van.
 
@@ -1963,6 +1979,29 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ez a házirend csak a(z) <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> nevű tokent felhasználva érvényesül.
 
       A házirend kényszeríti a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> telepítését a jelentéskészítéshez, és felülírja az említett bővítményhez kapcsolódó összes házirendet.</translation>
+<translation id="6155247658847899816">Ha ez a házirend be van állítva, minden kijelző felbontása és skálázási
+      tényezője a megadott értékekre lesz állítva. A külső kijelzőre vonatkozó
+      beállítások minden csatlakoztatott külső kijelzőre érvényesek.
+
+      Az „external_width” és „external_height” értékeket képpontban kell
+      megadni. Az „external_scale_percentage” és
+      „internal_scale_percentage” értékeket százalékban kell megadni.
+
+      Ha az „external_use_native” beállítása igaz, a házirend figyelmen kívül
+      hagyja az „external_height” és „external_width” értékeket, és a külső
+      kijelzők felbontását a natív felbontásukra állítja.
+
+      Ha az „external_use_native” hamis vagy nincs megadva, valamint az
+      „external_height” vagy az „external_width” nincs megadva, akkor a házirend
+      nincs hatással a külső kijelzők beállításaira. Ha a megadott felbontást vagy
+      skálázási tényezőt nem támogatja valamelyik kijelző, akkor a rendszer
+      nem alkalmazza a házirendet az adott kijelzőre.
+
+      Ha a „recommended” jelző értéke igaz, a felhasználók bejelentkezés után
+      módosíthatják a kijelzők felbontását és skálázási tényezőjét a beállítások
+      között, de beállításaikat a házirend értéke felülírja a következő újraindításkor.
+      Ha a „recommended” jelző értéke hamis, vagy ha nincs beállítva, akkor a
+      felhasználók nem módosíthatják a kijelzőbeállításokat.</translation>
 <translation id="6155936611791017817">A nagy egérmutató alapértelmezett állapotának beállítása a bejelentkezési képernyőn</translation>
 <translation id="6157537876488211233">Proxy figyelmen kívül hagyásával kapcsolatos szabályok vesszővel elválasztott listája</translation>
 <translation id="6158324314836466367">Vállalati internetes áruház neve (megszűnt)</translation>
@@ -2070,6 +2109,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6553143066970470539">Képernyő fényerejének százalékos értéke</translation>
 <translation id="6559057113164934677">Ne engedje webhelyek hozzáférését a kamerához és mikrofonhoz</translation>
 <translation id="6561396069801924653">Kisegítő beállítások megjelenítése az értesítési terület menüjében</translation>
+<translation id="6563458316362153786">A 802.11r Fast Transition engedélyezése</translation>
 <translation id="6565312346072273043">A képernyő-billentyűzet kisegítő lehetőség alapértelmezett állapotának beállítása a bejelentkezési képernyőre vonatkozóan.
 
           Ha a házirend értéke igaz, akkor a képernyő-billentyűzet engedélyezve lesz a bejelentkezési képernyőn.
@@ -2717,6 +2757,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend nincs beállítva felügyelt eszközön, akkor az eszközön nem futtathatók virtuális gépek.
       A nem felügyelt eszközökön engedélyezett a virtuális gépek futtatása.</translation>
 <translation id="8001701200415781021">Annak korlátozása, hogy mely Google-fiókok állíthatók be elsődleges fiókként a <ph name="PRODUCT_NAME" /> böngészőben</translation>
+<translation id="8009554972280451023">Ha engedélyezi ezt a beállítást, a rendszer a(z) <ph name="PRODUCT_NAME" />-profilokban tárolt beállításokat (például könyvjelzők, automatikus kitöltési adatok, jelszavak stb.) a Barangoló felhasználói profil mappájában, illetve a rendszergazda által, a(z) <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> házirendnek megfelelően megadott helyen tárolt fájlba is beírja. A házirend engedélyezésével letiltja a felhőalapú szinkronizálást.
+
+      Ha a házirend le van tiltva, vagy ha nincs beállítva, a rendszer kizárólag a normál helyi profilokat használja.
+
+      A(z) <ph name="SYNC_DISABLED_POLICY_NAME" /> házirend letilt minden adatszinkronizálást, felülbírálva a(z) <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> házirendet.</translation>
 <translation id="802147957407376460">Képernyő elforgatása 0 fokkal</translation>
 <translation id="8033913082323846868">Ez a házirend megszűnt az M70-es kiadásban. Használja helyette az AutofillAddressEnabled és az AutofillCreditCardEnabled házirendeket.
 
@@ -2845,6 +2890,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8274603902181597201">A felhasználó ecryptfs kezdőkönyvtárának törlése és tiszta lappal, ext4 titkosítású kezdőkönyvtárral való kezdés.</translation>
 <translation id="8285435910062771358">Teljes képernyős nagyító bekapcsolása</translation>
 <translation id="8288199156259560552">Engedélyezi az androidos Google Helyszolgáltatásokat</translation>
+<translation id="8290453559005611000">PluginVm-rendszerkép</translation>
 <translation id="8294750666104911727">Általában a chrome=1 értékre állított X-UA-Compatible metacímkével rendelkező oldalak a(z) <ph name="PRODUCT_FRAME_NAME" /> környezetben lesznek megjelenítve a „ChromeFrameRendererSettings” szabálytól függetlenül.
 
           Ha engedélyezi ezt a beállítást, a rendszer nem fog metacímkéket keresni az egyes oldalakon.
@@ -2925,6 +2971,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
           Ha nincs konfigurálva ez a házirend, akkor a rendszer a „ChromeFrameRendererSettings” házirend által meghatározott alapértelmezett megjelenítőt használja valamennyi webhely esetében.
 
           Példamintákat a következő helyen talál: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Böngészési előzmények mentésének tiltása</translation>
 <translation id="8498293625012059298">A jelszómódosítási URL (csak HTTP és HTTPS protokollokon keresztül) beállítása. A jelszóvédelmi szolgáltatás erre az URL-re küldi a felhasználókat jelszómódosítás céljából, miután figyelmeztetés jelenik meg számukra a böngészőben.
       A <ph name="PRODUCT_NAME" /> akkor tudja megfelelően rögzíteni az új jelszavak ujjlenyomatát ezen a jelszómódosító oldalon, ha Ön gondoskodik arról, hogy a jelszómódosító oldala betartja a https://www.chromium.org/developers/design-documents/create-amazing-password-forms oldalon található irányelveket.

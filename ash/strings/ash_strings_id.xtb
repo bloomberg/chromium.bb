@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">Ciutkan menu</translation>
 <translation id="1383876407941801731">Telusuri</translation>
 <translation id="1419738280318246476">Buka kunci perangkat untuk melakukan tindakan notifikasi</translation>
+<translation id="1455242230282523554">Tampilkan setelan bahasa</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Tampilkan setelan notifikasi. Notifikasi nonaktif untuk satu aplikasi}other{Tampilkan setelan notifikasi. Notifikasi nonaktif untuk # aplikasi}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">Belum ada notifikasi</translation>
 <translation id="3445925074670675829">Perangkat USB-C</translation>
 <translation id="3454224730401036106">Sambungan Anda dialihkan ke jaringan yang lebih aman</translation>
+<translation id="3465223694362104965">Keyboard lain telah tersambung ke perangkat ini sejak terakhir kali Anda login. Pastikan Anda memercayai keyboard ini sebelum menggunakannya.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Sorot kursor mouse</translation>
 <translation id="3510503721818156981">Chromebook terhubung ke ponsel baru</translation>
@@ -260,6 +262,7 @@
 <translation id="5571066253365925590">Bluetooth diaktifkan</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Tekan Ctrl + Alt + Z untuk menonaktifkan masukan lisan.</translation>
+<translation id="5626283214046138476">Akun pengguna Anda yang dilindungi akan segera berakhir masa berlakunya.</translation>
 <translation id="5648021990716966815">Colokan mikrofon</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5673434351075758678">Dari "<ph name="FROM_LOCALE" />" ke "<ph name="TO_LOCALE" />" setelah menyinkronkan setelan Anda.</translation>

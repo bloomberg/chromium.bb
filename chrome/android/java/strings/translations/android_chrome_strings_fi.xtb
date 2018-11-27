@@ -220,6 +220,7 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="2586657967955657006">Leikepöytä</translation>
 <translation id="2587052924345400782">Uudempi versio on saatavilla.</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2610239185026711824">Ehdota salasanaa</translation>
 <translation id="2612676031748830579">Kortin numero</translation>
 <translation id="2621115761605608342">Salli JavaScript tietyllä sivustolla.</translation>
 <translation id="2625189173221582860">Salasana kopioitu</translation>
@@ -236,6 +237,7 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="271033894570825754">Uusi</translation>
 <translation id="2728754400939377704">Lajittele sivuston mukaan</translation>
 <translation id="2744248271121720757">Napauta sanaa etsiäksesi välittömästi tai nähdäksesi asiaan liittyviä toimia.</translation>
+<translation id="2760323196215778921">Sinun on myös annettava Chromelle tämä käyttöoikeus. Katso tarkemmat tiedot <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
 <translation id="2762000892062317888">äsken</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekuntia jäljellä</translation>
 <translation id="2779651927720337254">epäonnistui</translation>
@@ -627,7 +629,7 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="5765780083710877561">Kuvaus:</translation>
 <translation id="5777170031995031090">Hallinnoi tapaa, jolla Google käyttää selaushistoriaasi haun, mainosten ja muiden Googlen palveluiden muokkaamiseen.</translation>
 <translation id="5793665092639000975">Käytössä <ph name="SPACE_USED" /> / <ph name="SPACE_AVAILABLE" /></translation>
-<translation id="5804241973901381774">Käyttöluvat</translation>
+<translation id="5804241973901381774">Käyttöoikeudet</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# tunti sitten}other{# tuntia sitten}}</translation>
 <translation id="5817918615728894473">Muodosta laitepari</translation>
 <translation id="583281660410589416">Tuntematon</translation>
@@ -707,6 +709,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6378173571450987352">Lisätiedot: Lajiteltu käytetyn datan mukaan</translation>
 <translation id="6383961787135158834">Poista sivustotiedot…</translation>
 <translation id="6388207532828177975">Tyhjennä ja nollaa</translation>
+<translation id="6393156038355142111">Ehdota vahvaa salasanaa</translation>
 <translation id="6393863479814692971">Chrome tarvitsee oikeuden käyttää kameraasi ja mikrofoniasi tällä sivustolla.</translation>
 <translation id="6395288395575013217">LINKITÄ</translation>
 <translation id="6404511346730675251">Muokkaa kirjanmerkkiä</translation>
@@ -887,6 +890,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="773466115871691567">Käännä aina kielellä <ph name="SOURCE_LANGUAGE" /> kirjoitut sivut</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Suojaa sinua ja laitettasi vaarallisilta sivustoilta</translation>
+<translation id="7759822418208302953">Automaattisen täytön apuri pysäytetään</translation>
 <translation id="7762668264895820836">SD-kortti <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Lisää osoite</translation>
 <translation id="7765158879357617694">Siirrä</translation>
@@ -931,6 +935,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8037750541064988519"><ph name="DAYS" /> päivää jäljellä</translation>
 <translation id="804335162455518893">SD-korttia ei löydy</translation>
 <translation id="805047784848435650">Selaushistoriasi perusteella</translation>
+<translation id="8051303708327298699">Sinun on myös annettava Chromelle nämä käyttöoikeudet. Katso tarkemmat tiedot <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> Mt käytettävissä</translation>
 <translation id="8058746566562539958">Avaa, uusi Chrome-välilehti</translation>
 <translation id="8063895661287329888">Kirjanmerkin lisääminen epäonnistui.</translation>
@@ -1002,6 +1007,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="857509777403223202">Muita artikkeleita ilmestyy pian. Nauti illastasi!</translation>
 <translation id="857943718398505171">Sallittu (suositus)</translation>
 <translation id="8583805026567836021">Poistetaan tilin tietoja</translation>
+<translation id="860043288473659153">Kortinhaltijan nimi</translation>
 <translation id="8609465669617005112">Siirrä ylös</translation>
 <translation id="8616006591992756292">Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Avataanko ladatussa sisällössä määritetty ehdotettu URL-osoite?</translation>

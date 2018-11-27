@@ -45,6 +45,7 @@
 <translation id="1275718070701477396">ಆಯ್ಕೆ ಮಾಡಿದ</translation>
 <translation id="1286609444451033486">ಟಾಗಲ್ ಮಾಡಲು ಹುಡುಕಾಟ+ಸ್ಪೇಸ್ ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="1291286136605998134">ಟಾಗಲ್ ಬಟನ್</translation>
+<translation id="1303806948938513162">ChromeVox ಮೆನುಗಳನ್ನು ಪ್ರವೇಶಿಸಲು 4 ಬೆರಳುಗಳಿಂದ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="1319608975892113573">ಹಿಂದಿನ ಬ್ಲಾಕ್‌ಕೋಟ್ ಇಲ್ಲ.</translation>
 <translation id="1321576897702511272">ChromeVox ಸಹಾಯವನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> / <ph name="INDEX" /></translation>
@@ -239,6 +240,7 @@
 <translation id="3046838483509668188">ChromeVox ಆಯ್ಕೆಗಳು</translation>
 <translation id="3047143736589213134">ಪ್ರಾಯೋಗಿಕ ಕೀಮ್ಯಾಪ್</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> ಮೆನು ತೆರೆಯಲಾಗಿದೆ</translation>
+<translation id="3060880924447482063">ಐಟಂ ಮೂಲಕ ಸರಿಸಲು ಎಡಕ್ಕೆ ಅಥವಾ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ</translation>
 <translation id="3070245424257836917">ಮೂರು ಬೆರಳುಗಳಿಂದ ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ</translation>
 <translation id="3078345202707391975">ಮುಂದಿನ ಹಂತದ 2 ಶಿರೋನಾಮೆ</translation>
 <translation id="3078740164268491126">ಕೋಷ್ಟಕ</translation>
@@ -332,6 +334,7 @@
 <translation id="3389259863310851658">ಹಿಂದಿನ ಫಾರ್ಮ್ ಕ್ಷೇತ್ರ</translation>
 <translation id="3390225400784126843">ಮುಂದಿನ ವಿಭಿನ್ನ ಅಂಶ.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, ಮೆನು ಐಟಂ</translation>
+<translation id="3393605254399152980">ನೀವು ಸ್ಪರ್ಶಿಸಿರುವುದನ್ನು ಆಲಿಸಲು ಒಂದು ಬೆರಳನ್ನು ಎಳೆಯಿರಿ</translation>
 <translation id="3406283310380167331">ಫಾರ್ಮ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3423495725743882470">ಸಾಲು $1 ಕಾಲಮ್ $2</translation>
 <translation id="3457000393508828486">ಭಾಗಶಃ ಒತ್ತಿದಾಗ</translation>
@@ -347,6 +350,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆ}one{# ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಗಳು}other{# ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{ಕ್ಯಾರೆಟ್}one{# ಕ್ಯಾರೆಟ್‌‌ಗಳು}other{# ಕ್ಯಾರೆಟ್‌‌ಗಳು}}</translation>
 <translation id="352577523970648069">ಎಡಿಟ್ ಮಾಡಬಹುದಾದ ಪಠ್ಯ ಕ್ಷೇತ್ರ</translation>
+<translation id="3549680091535286226">ತಾತ್ಕಾಲಿಕವಾಗಿ ಮಾತನ್ನು ನಿಲ್ಲಿಸಲು 2 ಬೆರಳುಗಳ ಮೂಲಕ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, ಚೆಕ್‌ಬಾಕ್ಸ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿಲ್ಲ</translation>
 <translation id="3589661172894441357">ಪದಕೋಶ</translation>
 <translation id="3599054940393788245">ಮ್ಯಾಥ್ ಒಳಗೆ ಇಲ್ಲ</translation>
@@ -411,6 +415,7 @@
 <translation id="4166192625054637755">ಸಬ್‌ಸ್ಕ್ರಿಪ್ಟ್ ಅಂತ್ಯ</translation>
 <translation id="4173994908659439270">ಮುಂದಿನ ಸಂಪಾದನೆಯ ಪಠ್ಯ ಕ್ಷೇತ್ರವಿಲ್ಲ.</translation>
 <translation id="4176463684765177261">ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
+<translation id="4187322598335821254">ಸಾಲಿನ ಮೂಲಕ ಸರಿಸಲು ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ ಸ್ವೈಪ್ ಮಾಡಿ</translation>
 <translation id="4188530942454211480">ಹಿಂದಿನ ವಾಕ್ಯ</translation>
 <translation id="4191918948604314587">ಒಂದು ಬಟನ್</translation>
 <translation id="419265409837491189">ಹಿಂದಿನ ಕಾಲಮ್‌ಗೆ ಹೋಗಿ</translation>
@@ -709,6 +714,7 @@
 <translation id="6583174818554398774">ಮುಂದಿನ ಗ್ರ್ಯಾನ್ಯುಲಾರಿಟಿಗೆ ಹೋಗಿ</translation>
 <translation id="6587021927234520429">ಯಾವುದೇ ಮುಂದಿನ ಮಟ್ಟದ 4 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="6601344353291556895">ಅತಿಮಾತಿನ ವಿವರಣೆಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
+<translation id="6609828810966525877">ಇನ್ನಷ್ಟು ಗೆಸ್ಚರ್‌ಗಳನ್ನು ಅನ್ವೇಷಿಸಲು, ಕಲಿಕೆಯ ಮೋಡ್ ಅನ್ನು ಆನ್ ಮಾಡಿ ಅಥವಾ Chromebook ಸಹಾಯ ಕೇಂದ್ರಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="6615602925644411249">ಪುಟದಲ್ಲಿ ಹುಡುಕಿ</translation>
 <translation id="6628427060004938651">ಭಾಗ</translation>
 <translation id="6633350132811819843">ಮುಂದಿನ ಕೋಷ್ಟಕವಿಲ್ಲ.</translation>
@@ -760,6 +766,7 @@
 ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳ ನಡುವೆ ಮುಂದಕ್ಕೆ ಸರಿಸಲು, Control+Tab ಬಳಸಿ. 
 Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್ತಿ.</translation>
 <translation id="7086377898680121060">ಪ್ರಖರತೆ ಹೆಚ್ಚು ಮಾಡಿ</translation>
+<translation id="7088743565397416204">ಫೋಕಸ್ ಮಾಡಿರುವುದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು ಎರಡು ಬಾರಿ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="7095834689119144465">ಪಠ್ಯ ಸಂಖ್ಯೆ ಮಾತ್ರ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="7096001299300236431">ಹಿಂದಿನ ಮಾಧ್ಯಮ</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -815,6 +822,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="7491962110804786152">ಟ್ಯಾಬ್</translation>
 <translation id="7492049978501397201">ಸಂವಾದವನ್ನು ನಮೂದಿಸಲಾಗಿದೆ</translation>
 <translation id="7518543783849163354">ಮಾತನಾಡದಂತೆ ತಾತ್ಕಾಲಿಕವಾಗಿ ChromeVox ಅನ್ನು ನಿಲ್ಲಿಸಲು, Control ಕೀ ಒತ್ತಿ.</translation>
+<translation id="7521682724501952239">ನೀವು ChromeVox ಅನ್ನು ಟಚ್‌ಸ್ಕ್ರೀನ್‌ನೊಂದಿಗೆ ಬಳಸಬಹುದು.</translation>
 <translation id="7532613204005497612">ಜೂನ್</translation>
 <translation id="7552432549459840808">ಉಪಯುಕ್ತ Chrome ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು</translation>
 <translation id="7579911500627256166">ಡಾಟ್‌ <ph name="DOT" /></translation>

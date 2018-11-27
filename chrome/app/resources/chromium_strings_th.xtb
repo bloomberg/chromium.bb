@@ -32,6 +32,7 @@
 <translation id="2008474315282236005">การดำเนินการนี้จะลบ 1 รายการออกจากอุปกรณ์นี้ หากต้องการดึงข้อมูลภายหลัง ให้ลงชื่อเข้าใช้ Chromium ด้วย <ph name="USER_EMAIL" /></translation>
 <translation id="2117378023188580026">ผู้ดูแลระบบขอให้คุณเปิด Chromium ขึ้นมาใหม่เพื่อใช้การอัปเดตนี้</translation>
 <translation id="2119636228670142020">เกี่ยวกับ &amp;Chromium OS</translation>
+<translation id="2178765360243863853">คุณควรรีสตาร์ท Chromium เลย</translation>
 <translation id="2241627712206172106">ถ้าคุณให้ผู้อื่นใช้คอมพิวเตอร์ร่วมด้วย เพื่อนๆ และครอบครัวของคุณสามารถท่องเว็บแยกกันได้และตั้งค่า Chromium ได้ตามที่พวกเขาต้องการ</translation>
 <translation id="2265088490657775772">รับ Chromium ใน iPhone ของคุณ</translation>
 <translation id="2347108572062610441">ส่วนขยายนี้ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณเริ่มต้น Chromium</translation>
@@ -108,6 +109,7 @@
 <translation id="4708774505295300557">ก่อนหน้านี้มีผู้ลงชื่อเข้าใช้ Chromium ในคอมพิวเตอร์นี้ด้วยชื่อ <ph name="ACCOUNT_EMAIL_LAST" /> โปรดสร้างผู้ใช้ Chromium ใหม่เพื่อเก็บข้อมูลแยก</translation>
 <translation id="4714956846925717402">ใช้ Chromium ได้เร็วขึ้น</translation>
 <translation id="4746050847053251315">ปิด Chromium ใช่ไหม</translation>
+<translation id="4748217263233248895">ระบบเพิ่งนำการอัปเดตความปลอดภัยพิเศษไปใช้กับ Chromium รีสตาร์ทเลย แล้วเราจะคืนค่าแท็บให้คุณ</translation>
 <translation id="4888717733111232871">กฎขาเข้าสำหรับ Chromium เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="4943838377383847465">Chromium กำลังอยู่ในโหมดทำงานในพื้นหลัง</translation>
 <translation id="4987820182225656817">ผู้เยี่ยมชมสามารถใช้ Chromium โดยไม่ทิ้งร่องรอยไว้</translation>

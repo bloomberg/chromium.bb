@@ -220,6 +220,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="2586657967955657006">Papan klip</translation>
 <translation id="2587052924345400782">Versi baru telah tersedia</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2610239185026711824">Sarankan sandi</translation>
 <translation id="2612676031748830579">Nomor kartu kredit</translation>
 <translation id="2621115761605608342">Izinkan JavaScript untuk situs tertentu.</translation>
 <translation id="2625189173221582860">Sandi disalin</translation>
@@ -236,6 +237,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="271033894570825754">Baru</translation>
 <translation id="2728754400939377704">Urutkan menurut situs</translation>
 <translation id="2744248271121720757">Tap sebuah kata untuk menelusuri secara instan atau melihat tindakan terkait</translation>
+<translation id="2760323196215778921">Anda juga perlu mengaktifkan izin ini untuk Chrome. Buka <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" /> untuk melihat detailnya.</translation>
 <translation id="2762000892062317888">baru saja</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> detik lagi</translation>
 <translation id="2779651927720337254">gagal</translation>
@@ -707,6 +709,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6378173571450987352">Detail: Diurutkan menurut jumlah kuota yang digunakan</translation>
 <translation id="6383961787135158834">Hapus Penyimpanan Situs…</translation>
 <translation id="6388207532828177975">Hapus &amp; setel ulang</translation>
+<translation id="6393156038355142111">Sarankan sandi yang kuat</translation>
 <translation id="6393863479814692971">Chrome memerlukan izin akses ke kamera dan mikrofon untuk situs ini.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
@@ -887,6 +890,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="773466115871691567">Selalu terjemahkan halaman dalam bahasa <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Melindungi Anda dan perangkat dari situs berbahaya</translation>
+<translation id="7759822418208302953">Menghentikan Asisten IsiOtomatis</translation>
 <translation id="7762668264895820836">Kartu SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Tambahkan alamat</translation>
 <translation id="7765158879357617694">Pindahkan</translation>
@@ -931,6 +935,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8037750541064988519"><ph name="DAYS" /> hari lagi</translation>
 <translation id="804335162455518893">Kartu SD tidak ditemukan</translation>
 <translation id="805047784848435650">Berdasarkan histori browsing Anda</translation>
+<translation id="8051303708327298699">Anda juga perlu mengaktifkan izin ini untuk Chrome. Buka <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" /> untuk melihat detailnya.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tersedia</translation>
 <translation id="8058746566562539958">Buka di tab Chrome baru</translation>
 <translation id="8063895661287329888">Gagal menambahkan bookmark.</translation>
@@ -1002,6 +1007,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="857509777403223202">Artikel lainnya akan segera muncul. Nikmati malam Anda!</translation>
 <translation id="857943718398505171">Diizinkan (disarankan)</translation>
 <translation id="8583805026567836021">Menghapus data akun</translation>
+<translation id="860043288473659153">Nama pemegang kartu</translation>
 <translation id="8609465669617005112">Berpindah ke atas</translation>
 <translation id="8616006591992756292">Akun Google Anda mungkin memiliki bentuk histori browsing lainnya di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Buka URL yang disarankan yang ditentukan di konten download?</translation>

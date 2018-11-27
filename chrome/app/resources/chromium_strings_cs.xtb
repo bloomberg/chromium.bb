@@ -34,6 +34,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2008474315282236005">Z tohoto zařízení bude smazána 1 položka. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Váš administrátor vás žádá, abyste kvůli použití této aktualizace Chromium restartovali</translation>
 <translation id="2119636228670142020">O systému &amp;Chromium OS</translation>
+<translation id="2178765360243863853">Teď byste Chromium měli restartovat</translation>
 <translation id="2241627712206172106">Pokud počítač sdílíte s kamarády a členy rodiny, každý může web procházet samostatně a nastavit si Chromium podle svých požadavků.</translation>
 <translation id="2265088490657775772">stáhněte si Chromium do iPhonu</translation>
 <translation id="2347108572062610441">Toto rozšíření změnilo stránku, která se zobrazí při spuštění prohlížeče Chromium.</translation>
@@ -110,6 +111,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4708774505295300557">Prohlížeč Chromium v tomto počítači je již přihlášen k účtu <ph name="ACCOUNT_EMAIL_LAST" />. Chcete-li své informace uchovat odděleně, vytvořte nového uživatele prohlížeče Chromium.</translation>
 <translation id="4714956846925717402">Mějte Chromium při ruce</translation>
 <translation id="4746050847053251315">Přesto Chromium ukončit?</translation>
+<translation id="4748217263233248895">Právě byla nainstalována mimořádná bezpečnostní aktualizace prohlížeče Chromium. Restartujte jej, vaše karty budou obnoveny.</translation>
 <translation id="4888717733111232871">Pravidlo příchozího provozu pro prohlížeč Chromium, které povolí provoz mDNS.</translation>
 <translation id="4943838377383847465">Chromium je v režimu na pozadí.</translation>
 <translation id="4987820182225656817">Hosté mohou Chromium používat, aniž by po nich zůstaly jakékoliv stopy.</translation>

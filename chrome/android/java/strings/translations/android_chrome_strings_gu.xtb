@@ -220,6 +220,7 @@
 <translation id="2586657967955657006">ક્લિપબોર્ડ</translation>
 <translation id="2587052924345400782">નવું વર્ઝન ઉપલબ્ધ છે</translation>
 <translation id="2593272815202181319">મોનોસ્પેસ</translation>
+<translation id="2610239185026711824">પાસવર્ડ સૂચવો</translation>
 <translation id="2612676031748830579">કાર્ડ નંબર</translation>
 <translation id="2621115761605608342">ચોક્કસ સાઇટ માટે JavaScript ની મંજૂરી આપો.</translation>
 <translation id="2625189173221582860">પાસવર્ડ કૉપિ કર્યો</translation>
@@ -236,6 +237,7 @@
 <translation id="271033894570825754">નવું</translation>
 <translation id="2728754400939377704">સાઇટ અનુસાર સૉર્ટ કરો</translation>
 <translation id="2744248271121720757">ઝટપટ શોધ કરવા માટે શબ્દ પર ટૅપ કરો અથવા સંબંધિત ક્રિયાઓ જુઓ</translation>
+<translation id="2760323196215778921">તમારે Chrome માટે આ પરવાનગી ચાલુ કરવી પણ જરૂરી છે. વિગતો માટે <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" /> જુઓ.</translation>
 <translation id="2762000892062317888">હમણાં જ</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> સેકંડ બાકી</translation>
 <translation id="2779651927720337254">નિષ્ફળ થયું</translation>
@@ -707,6 +709,7 @@
 <translation id="6378173571450987352">વિગતો: વપરાયેલ ડેટાની માત્રા દ્વારા સૉર્ટ કરાયેલ</translation>
 <translation id="6383961787135158834">સાઇટ સ્ટોરેજ સાફ કરો…</translation>
 <translation id="6388207532828177975">સાફ કરો અને ફરીથી સેટ કરો</translation>
+<translation id="6393156038355142111">સશક્ત પાસવર્ડ સૂચવો</translation>
 <translation id="6393863479814692971">Chromeને આ સાઇટ માટે તમારા કૅમેરા અને માઇક્રોફોનના ઍક્સેસની પરવાનગીની જરૂર પડે છે.</translation>
 <translation id="6395288395575013217">લિંક</translation>
 <translation id="6404511346730675251">બુકમાર્કમાં ફેરફાર કરો</translation>
@@ -887,6 +890,7 @@
 <translation id="773466115871691567">હંમેશાં પેજનો <ph name="SOURCE_LANGUAGE" />માં અનુવાદ કરો</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">તમને તથા તમારા ઉપકરણને જોખમી સાઇટથી સુરક્ષિત કરે છે</translation>
+<translation id="7759822418208302953">ઑટોમેટિક રીતે ભરવાનું આસિસ્ટંટ બંધ થઈ રહ્યું છે</translation>
 <translation id="7762668264895820836">SD કાર્ડ <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">સરનામું ઉમેરો</translation>
 <translation id="7765158879357617694">સ્થાન</translation>
@@ -931,6 +935,7 @@
 <translation id="8037750541064988519"><ph name="DAYS" /> દિવસ બાકી</translation>
 <translation id="804335162455518893">SD કાર્ડ મળ્યું નથી</translation>
 <translation id="805047784848435650">તમારા બ્રાઉઝિંગ ઇતિહાસના આધારે</translation>
+<translation id="8051303708327298699">તમારે Chrome માટે આ પરવાનગીઓ ચાલુ કરવી પણ જરૂરી છે. વિગતો માટે <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" /> જુઓ.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB ઉપલબ્ધ</translation>
 <translation id="8058746566562539958">નવા Chrome ટૅબમાં ખોલો</translation>
 <translation id="8063895661287329888">બુકમાર્ક ઉમેરવામાં નિષ્ફળ થયાં.</translation>
@@ -1002,6 +1007,7 @@
 <translation id="857509777403223202">ટૂંક સમયમાં વધુ લેખ દેખાશે. સાંજનો આનંદ માણો!</translation>
 <translation id="857943718398505171">મંજૂર (ભલામણ કરેલ)</translation>
 <translation id="8583805026567836021">એકાઉન્ટ ડેટા સાફ કરી રહ્યું છે</translation>
+<translation id="860043288473659153">કાર્ડધારકનું નામ</translation>
 <translation id="8609465669617005112">ઉપર ખસેડો</translation>
 <translation id="8616006591992756292">તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના બીજા સ્વરૂપો હોય શકે.</translation>
 <translation id="8617240290563765734">ડાઉનલોડ કરેલી કન્ટેન્ટમાં ઉલ્લેખિત, સૂચવેલ URL ખોલીએ?</translation>

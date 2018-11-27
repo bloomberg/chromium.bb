@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">註冊網域：</translation>
 <translation id="1340482604681802745">取件地址</translation>
 <translation id="1348198688976932919">你要造訪的網站含有不安全的應用程式</translation>
+<translation id="1348779747280417563">確認姓名</translation>
 <translation id="1374468813861204354">建議</translation>
 <translation id="1375198122581997741">關於版本</translation>
 <translation id="1376836354785490390">顯示較少</translation>
@@ -144,7 +145,6 @@
 <translation id="1826516787628120939">檢查中</translation>
 <translation id="1834321415901700177">這個網站含有有害程式</translation>
 <translation id="1839551713262164453">發生錯誤，政策值驗證失敗</translation>
-<translation id="1840414022444569775">這組信用卡號碼已經使用過了</translation>
 <translation id="1842969606798536927">支付</translation>
 <translation id="1866450167992311397">在更多地方使用卡片</translation>
 <translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
@@ -456,6 +456,7 @@
 <translation id="3949601375789751990">你的瀏覽記錄會顯示在這裡</translation>
 <translation id="3950820424414687140">登入</translation>
 <translation id="3963721102035795474">閱讀器模式</translation>
+<translation id="3963837677003247395">要以手動方式繼續嗎？</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{無}=1{來自 1 個網站 }other{來自 # 個網站 }}</translation>
 <translation id="397105322502079400">計算中…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 遭到封鎖</translation>
@@ -812,6 +813,7 @@
 <translation id="6569060085658103619">目前顯示的是擴充功能頁面</translation>
 <translation id="6596325263575161958">加密選項</translation>
 <translation id="6604181099783169992">動作或光源感應器</translation>
+<translation id="6607617806003952240">我無法提供協助了，請以手動方式繼續填寫。</translation>
 <translation id="6624427990725312378">聯絡資訊</translation>
 <translation id="6626291197371920147">新增有效的信用卡號碼</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜尋</translation>
@@ -855,6 +857,7 @@
 <translation id="6950684638814147129">剖析 JSON 值時發生錯誤：<ph name="ERROR" /></translation>
 <translation id="6957624206566198865">在新的私密分頁中開啟網頁</translation>
 <translation id="6957887021205513506">伺服器憑證疑似偽造。</translation>
+<translation id="6964255747740675745">無法剖析網路設定 (無效的 JSON)。</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6965978654500191972">裝置</translation>
 <translation id="6970216967273061347">區</translation>
@@ -1148,11 +1151,13 @@
 <translation id="893332455753468063">新增名稱</translation>
 <translation id="8938939909778640821">接受的信用卡和預付卡</translation>
 <translation id="8957210676456822347">監控式入口網站授權</translation>
+<translation id="8968766641738584599">儲存卡片</translation>
 <translation id="8971063699422889582">伺服器憑證已過期。</translation>
 <translation id="8975012916872825179">包括電話號碼、電子郵件地址和運送地址等資訊</translation>
 <translation id="8978053250194585037">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />偵測到網路詐騙行為<ph name="END_LINK" />。詐騙網站會偽裝成其他網站，藉此騙取你的資訊。</translation>
 <translation id="8983003182662520383">儲存在 Google Pay 的付款方式和地址資訊</translation>
 <translation id="8987927404178983737">月</translation>
+<translation id="8988408250700415532">發生錯誤。你可以前往相關網站完成訂單。</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">你要瀏覽的網站含有有害程式</translation>
 <translation id="8997023839087525404">該伺服器的憑證並未根據憑證透明化政策對外公開。部分憑證必須符合這項規定，以確保憑證值得信任，不會讓使用者遭到攻擊。</translation>

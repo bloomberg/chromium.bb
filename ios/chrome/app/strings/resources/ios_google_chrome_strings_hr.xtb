@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Obavijest o privatnosti za Google Chrome</translation>
 <translation id="1863312987075920112">Upotrebom ove aplikacije prihvaćate Chromeove <ph name="BEGIN_LINK_TOS" />uvjete pružanja usluge<ph name="END_LINK_TOS" /> i <ph name="BEGIN_LINK_PRIVACY" />obavijest o privatnosti<ph name="END_LINK_PRIVACY" />.</translation>
-<translation id="1878302395768190018">To možete prilagoditi u bilo kojem trenutku u postavkama Chromea</translation>
 <translation id="2147651015520127414">Chrome je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
 <translation id="2334084861041072223">Autorska prava <ph name="YEAR" />. Google Inc. Sva prava pridržana.</translation>
 <translation id="2342981853652716282">Prijavite se na Chrome kako biste mogli pristupati svojim oznakama, zaporkama i ostalom na svim svojim uređajima.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Pomozite poboljšati Chromeove značajke i izvedbu</translation>
 <translation id="4523886039239821078">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Deinstalirajte:</translation>
 <translation id="4615174829807303908">Odjavljujete se s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />. Vaši podaci na Chromeu izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
-<translation id="5240817131241497236">Promijenjene su postavke koje upravljaju sinkronizacijom, prilagodbom i drugim Googleovim uslugama u Chromeu. To može utjecati na vaše trenutačne postavke.</translation>
 <translation id="5389212809648216794">Google Chrome ne može upotrebljavati vaš fotoaparat jer ga upotrebljava neka druga aplikacija</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />Postavke<ph name="END_LINK" /> se mogu prilagoditi u bilo kojem trenutku. Google može upotrebljavati sadržaj na web-lokacijama koje posjećujete, vaše interakcije u pregledniku i aktivnost pregledavanja kako bi prilagodio Chrome i Googleove usluge kao što su Prevoditelj, Pretraživanje i oglasi.</translation>
 <translation id="5639704535586432836">Otvorite Postavke &gt; Privatnost &gt; Fotoaparat &gt; Google Chrome i uključite fotoaparat.</translation>

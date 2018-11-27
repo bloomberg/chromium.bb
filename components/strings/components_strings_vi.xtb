@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">Tên miền đăng ký:</translation>
 <translation id="1340482604681802745">Địa chỉ nhận hàng</translation>
 <translation id="1348198688976932919">Trang web bạn sắp truy cập chứa ứng dụng nguy hiểm</translation>
+<translation id="1348779747280417563">Xác nhận tên</translation>
 <translation id="1374468813861204354">đề xuất</translation>
 <translation id="1375198122581997741">Giới thiệu Phiên bản</translation>
 <translation id="1376836354785490390">Ẩn bớt</translation>
@@ -144,7 +145,6 @@
 <translation id="1826516787628120939">Đang kiểm tra</translation>
 <translation id="1834321415901700177">Trang web này có chứa các chương trình độc hại</translation>
 <translation id="1839551713262164453">Không xác thực được các giá trị của chính sách do xảy ra lỗi</translation>
-<translation id="1840414022444569775">Số thẻ này đã được sử dụng</translation>
 <translation id="1842969606798536927">Thanh toán</translation>
 <translation id="1866450167992311397">Sử dụng thẻ ở nhiều nơi hơn</translation>
 <translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
@@ -183,6 +183,7 @@
 <translation id="2108755909498034140">Khởi động lại máy tính của bạn</translation>
 <translation id="2113977810652731515">Thẻ</translation>
 <translation id="2114841414352855701">Bỏ qua vì đã bị <ph name="POLICY_NAME" /> ghi đè.</translation>
+<translation id="2129308444951592399">Điều khoản và Điều kiện</translation>
 <translation id="213826338245044447">Dấu trang di động</translation>
 <translation id="214556005048008348">Hủy thanh toán</translation>
 <translation id="2147827593068025794">Đồng bộ hóa dưới nền</translation>
@@ -383,6 +384,7 @@
 <translation id="3427092606871434483">Cho phép (mặc định)</translation>
 <translation id="3427342743765426898">&amp;Làm lại chỉnh sửa</translation>
 <translation id="342781501876943858">Chromium khuyên bạn nên đặt lại mật khẩu của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>
+<translation id="3430691998045392297">Thời gian chiếu phim khác nhau. Bạn có muốn tiếp tục không?</translation>
 <translation id="3431636764301398940">Lưu thẻ này vào thiết bị này</translation>
 <translation id="3447661539832366887">Chủ sở hữu của thiết bị này đã tắt trò chơi khủng long.</translation>
 <translation id="3447884698081792621">Hiển thị chứng chỉ (do <ph name="ISSUER" /> cấp)</translation>
@@ -400,6 +402,7 @@
 <translation id="3566021033012934673">Kết nối của bạn không phải là kết nối riêng tư</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Một trang được nhúng tại <ph name="SITE" /> cho biết</translation>
+<translation id="3581089476000296252">Chrome sẽ cho bạn biết thời điểm trang này sẵn sàng. &lt;a&gt;Hủy&lt;/a&gt;</translation>
 <translation id="358285529439630156">Thẻ tín dụng và thẻ trả trước được chấp nhận.</translation>
 <translation id="3582930987043644930">Thêm tên</translation>
 <translation id="3583757800736429874">&amp;Làm lại di chuyển</translation>
@@ -431,6 +434,7 @@
 <translation id="3736520371357197498">Nếu bạn hiểu các rủi ro bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" /> trước khi các chương trình nguy hiểm bị xóa.</translation>
 <translation id="3739623965217189342">Liên kết đã sao chép</translation>
 <translation id="3744899669254331632">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ vì trang web này đã gửi thông tin đăng nhập hỗn độn mà Chromium không thể xử lý. Lỗi mạng và các cuộc tấn công thường chỉ diễn ra tạm thời nên trang này có thể sẽ hoạt động sau.</translation>
+<translation id="3745099705178523657">Sau khi bạn xác nhận, chúng tôi sẽ chia sẻ thông tin chi tiết thẻ từ Tài khoản Google của bạn với trang web này.</translation>
 <translation id="3748148204939282805">Những kẻ tấn công trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể đánh lừa bạn làm việc gì đó nguy hiểm như cài đặt phần mềm hoặc tiết lộ thông tin cá nhân (ví dụ: mật khẩu, số điện thoại hoặc thẻ tín dụng). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Không thể dịch do lỗi máy chủ.</translation>
 <translation id="3759461132968374835">Bạn không nhận được báo cáo sự cố nào gần đây. Sự cố xảy ra khi báo cáo sự cố đã bị tắt sẽ không xuất hiện ở đây.</translation>
@@ -452,10 +456,12 @@
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">ID báo cáo sự cố đã tải lên <ph name="CRASH_ID" /> (ID sự cố cục bộ: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Luôn hỏi trên trang web này</translation>
+<translation id="3947577358805392297">Lưu trang để xem sau</translation>
 <translation id="3949571496842715403">Máy chủ này không thể chứng minh được đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ không chỉ định Tên thay thế đối tượng. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="3949601375789751990">Lịch sử duyệt web của bạn xuất hiện ở đây</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
 <translation id="3963721102035795474">Chế độ đọc</translation>
+<translation id="3963837677003247395">Bạn muốn tiếp tục theo cách thủ công?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Không có}=1{Từ 1 trang web }other{Từ # trang web }}</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> bị chặn</translation>
@@ -569,6 +575,7 @@
 <translation id="4771973620359291008">Xảy ra lỗi chưa biết.</translation>
 <translation id="4785689107224900852">Chuyển sang tab này</translation>
 <translation id="4792143361752574037">Đã xảy ra sự cố khi truy cập vào các tệp phiên. Tính năng lưu vào ổ đĩa hiện bị vô hiệu hóa. Vui lòng tải lại trang để thử lại.</translation>
+<translation id="4798078619018708837">Hãy nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /> để cập nhật thông tin chi tiết thẻ của bạn. Sau khi bạn xác nhận, chúng tôi sẽ chia sẻ thông tin chi tiết thẻ từ Tài khoản Google của bạn với trang web này.</translation>
 <translation id="4800132727771399293">Kiểm tra ngày hết hạn và CVC của bạn rồi thử lại</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ do trang web gửi thông tin đăng nhập đã mã hóa mà Google Chrome không thể xử lý. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời, do đó trang này có thể sẽ hoạt động lại sau.</translation>
@@ -620,6 +627,7 @@
 <translation id="5141240743006678641">Mã hóa mật khẩu đã đồng bộ hóa với thông tin đăng nhập Google của bạn</translation>
 <translation id="5145883236150621069">Mã lỗi có trong phản hồi chính sách</translation>
 <translation id="5159010409087891077">Mở trang trong cửa sổ Ẩn danh mới (⇧⌘N)</translation>
+<translation id="516920405563544094">Hãy nhập CVC cho <ph name="CREDIT_CARD" />. Sau khi bạn xác nhận, chúng tôi sẽ chia sẻ thông tin chi tiết thẻ từ Tài khoản Google của bạn với trang web này.</translation>
 <translation id="5169827969064885044">Bạn có thể mất quyền truy cập vào tài khoản của tổ chức mình hoặc bị đánh cắp danh tính. Chrome khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
 <translation id="5171045022955879922">Tìm kiếm hoặc nhập URL</translation>
 <translation id="5172758083709347301">Máy</translation>
@@ -718,6 +726,7 @@
 <translation id="5810442152076338065">Kết nối của bạn tới <ph name="DOMAIN" /> được mã hóa bằng bộ số 0 đã lỗi thời.</translation>
 <translation id="5813119285467412249">&amp;Làm lại thêm</translation>
 <translation id="5838278095973806738">Bạn không nên nhập bất kỳ thông tin nhạy cảm nào trên trang web này (ví dụ: mật khẩu hoặc thẻ tín dụng), vì những kẻ tấn công có thể đánh cắp thông tin đó.</translation>
+<translation id="5844286946362376359">Tôi biết các điều khoản và điều kiện, chính sách quyền riêng tư và quyền hủy <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (bỏ chọn để đọc).</translation>
 <translation id="5863847714970149516">Trang phía trước có thể tìm cách tính phí bạn</translation>
 <translation id="5866257070973731571">Thêm số điện thoại</translation>
 <translation id="5869405914158311789">Không thể truy cập trang web này</translation>
@@ -726,6 +735,7 @@
 <translation id="5893752035575986141">Thẻ tín dụng được chấp nhận.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (được đồng bộ hóa)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Đang sử dụng 1 cookie}other{Đang sử dụng # cookie}}</translation>
+<translation id="5921639886840618607">Bạn có muốn lưu thẻ vào Tài khoản Google không?</translation>
 <translation id="5922853866070715753">Sắp hoàn tất</translation>
 <translation id="5932224571077948991">Trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
@@ -812,6 +822,7 @@
 <translation id="6569060085658103619">Bạn đang xem trang tiện ích</translation>
 <translation id="6596325263575161958">Tùy chọn mã hóa</translation>
 <translation id="6604181099783169992">Cảm biến chuyển động hoặc ánh sáng</translation>
+<translation id="6607617806003952240">Tôi không thể trợ giúp được nữa, vui lòng tiếp tục theo cách thủ công.</translation>
 <translation id="6624427990725312378">Thông tin liên hệ</translation>
 <translation id="6626291197371920147">Thêm số thẻ hợp lệ</translation>
 <translation id="6628463337424475685">Tìm kiếm trên <ph name="ENGINE" /></translation>
@@ -855,6 +866,7 @@
 <translation id="6950684638814147129">Lỗi khi phân tích cú pháp giá trị JSON: <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">Mở trang trong tab Riêng tư mới</translation>
 <translation id="6957887021205513506">Chứng chỉ của máy chủ dường như giả mạo.</translation>
+<translation id="6964255747740675745">Không thể phân tích cú pháp cấu hình mạng (JSON không hợp lệ).</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Thiết bị</translation>
 <translation id="6970216967273061347">Quận</translation>
@@ -1149,11 +1161,13 @@ Thông tin chi tiết bổ sung:
 <translation id="893332455753468063">Thêm tên</translation>
 <translation id="8938939909778640821">Thẻ tín dụng và thẻ trả trước được chấp nhận</translation>
 <translation id="8957210676456822347">Ủy quyền cổng bị khóa</translation>
+<translation id="8968766641738584599">Lưu thẻ</translation>
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>
 <translation id="8975012916872825179">Bao gồm các thông tin như số điện thoại, địa chỉ email và địa chỉ giao hàng</translation>
 <translation id="8978053250194585037">Tính năng Duyệt web an toàn của Google gần đây đã <ph name="BEGIN_LINK" />phát hiện dấu hiệu lừa đảo<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web lừa đảo sẽ giả mạo các trang web khác để đánh lừa bạn.</translation>
 <translation id="8983003182662520383">Địa chỉ và phương thức thanh toán lưu trong Google Pay</translation>
 <translation id="8987927404178983737">Tháng</translation>
+<translation id="8988408250700415532">Đã xảy ra lỗi. Bạn có thể hoàn tất đơn đặt hàng trên trang web.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Trang web sắp truy cập chứa chương trình độc hại</translation>
 <translation id="8997023839087525404">Máy chủ đã đưa ra chứng chỉ không được tiết lộ công khai theo chính sách Tính minh bạch của chứng chỉ. Đây là yêu cầu đối với một số chứng chỉ, để đảm bảo chúng đáng tin cậy và giúp chống lại những kẻ tấn công.</translation>

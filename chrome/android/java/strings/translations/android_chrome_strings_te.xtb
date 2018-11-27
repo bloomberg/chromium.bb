@@ -220,6 +220,7 @@
 <translation id="2586657967955657006">క్లిప్‌బోర్డ్</translation>
 <translation id="2587052924345400782">సరికొత్త సంస్కరణ ఉంది</translation>
 <translation id="2593272815202181319">మోనోస్పేస్</translation>
+<translation id="2610239185026711824">పాస్‌వర్డ్‌ని సూచించు</translation>
 <translation id="2612676031748830579">కార్డ్ సంఖ్య</translation>
 <translation id="2621115761605608342">నిర్దిష్ట సైట్ కోసం జావా స్క్రిప్ట్‌ను అనుమతిస్తుంది.</translation>
 <translation id="2625189173221582860">పాస్‌వర్డ్ కాపీ చేయబడింది</translation>
@@ -236,6 +237,7 @@
 <translation id="271033894570825754">కొత్తది</translation>
 <translation id="2728754400939377704">సైట్ ద్వారా క్రమీకరించు</translation>
 <translation id="2744248271121720757">తక్షణమే శోధించడానికి లేదా సంబంధిత చర్యలను చూడటానికి ఒక పదాన్ని నొక్కండి</translation>
+<translation id="2760323196215778921">అలాగే మీరు Chrome కోసం ఈ అనుమతిని ఆన్ చేయాలి. వివరాల కోసం <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />ను చూడండి.</translation>
 <translation id="2762000892062317888">ఇప్పుడే</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> సెకన్లు మిగిలి ఉంది</translation>
 <translation id="2779651927720337254">విఫలమైంది</translation>
@@ -707,6 +709,7 @@
 <translation id="6378173571450987352">వివరాలు: ఉపయోగించిన డేటా మొత్తం ద్వారా క్రమీకరించబడ్డాయి</translation>
 <translation id="6383961787135158834">సైట్ నిల్వను తీసివేయి…</translation>
 <translation id="6388207532828177975">తీసివేయి &amp; రీసెట్ చేయి</translation>
+<translation id="6393156038355142111">శక్తివంతమైన పాస్‌వర్డ్‌ని సూచించు</translation>
 <translation id="6393863479814692971">ఈ సైట్ కోసం మీ కెమెరా మరియు మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromeకు అనుమతి అవసరం.</translation>
 <translation id="6395288395575013217">లింక్</translation>
 <translation id="6404511346730675251">బుక్‌మార్క్‌ను సవరించు</translation>
@@ -887,6 +890,7 @@
 <translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" />లో ఉన్న పేజీలను ఎల్లప్పుడూ అనువదించు</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">ప్రమాదకరమైన సైట్‌ల నుండి మిమ్మల్ని మరియు మీ పరికరాన్ని రక్షిస్తుంది</translation>
+<translation id="7759822418208302953">స్వీయ పూరింపు అసిస్టెంట్ ఆపివేయబడుతోంది</translation>
 <translation id="7762668264895820836">SD కార్డ్ <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">చిరునామాను జోడించు</translation>
 <translation id="7765158879357617694">తరలించు</translation>
@@ -931,6 +935,7 @@
 <translation id="8037750541064988519"><ph name="DAYS" /> రోజులు మిగిలి ఉంది</translation>
 <translation id="804335162455518893">SD కార్డ్ కనుగొనబడలేదు</translation>
 <translation id="805047784848435650">మీ బ్రౌజింగ్ చరిత్ర ఆధారంగా</translation>
+<translation id="8051303708327298699">అలాగే మీరు Chrome కోసం ఈ అనుమతులను ఆన్ చేయాలి. వివరాల కోసం <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />ను చూడండి.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB అందుబాటులో ఉంది</translation>
 <translation id="8058746566562539958">కొత్త Chrome ట్యాబ్‌లో తెరువు</translation>
 <translation id="8063895661287329888">బుక్‌మార్క్‌ను జోడించడంలో విఫలమైంది.</translation>
@@ -1002,6 +1007,7 @@
 <translation id="857509777403223202">కాసేపట్లో మరిన్ని కథనాలు కనిపిస్తాయి. సాయంత్రం పూట సరదాగా చదువుకోండి!</translation>
 <translation id="857943718398505171">అనుమతించబడింది (సిఫార్సు చేయబడింది)</translation>
 <translation id="8583805026567836021">ఖాతా డేటాను క్లియర్ చేస్తోంది</translation>
+<translation id="860043288473659153">కార్డుదారుని పేరు</translation>
 <translation id="8609465669617005112">పైకి తరలించు</translation>
 <translation id="8616006591992756292">మీ Google ఖాతా <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />లో ఇతర రూపాల్లో ఉన్న బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు.</translation>
 <translation id="8617240290563765734">డౌన్‌లోడ్ చేసిన కంటెంట్‌లో పేర్కొన్న సూచిత URLని తెరవాలా?</translation>

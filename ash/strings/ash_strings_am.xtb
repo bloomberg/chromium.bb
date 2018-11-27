@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">ምናሌ ሰብስብ</translation>
 <translation id="1383876407941801731">ፍለጋ </translation>
 <translation id="1419738280318246476">የማሳወቅ እርምጃውን ለማከናወን መሣሪያን ይክፈቱ</translation>
+<translation id="1455242230282523554">የቋንቋ ቅንብሮችን አሳይ</translation>
 <translation id="1467432559032391204">ግራ</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ለአንድ መተግበሪያ ጠፍተዋል}one{የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ለ# መተግበሪያዎች ጠፍተዋል}other{የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ለ# መተግበሪያዎች ጠፍተዋል}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">ገና ምንም የሚታይ ነገር የለም</translation>
 <translation id="3445925074670675829">USB-C መሣሪያ</translation>
 <translation id="3454224730401036106">የእርስዎ ግንኙነት ደህንነቱ ይበልጥ ወደተጠበቀ አውታረ መረብ ቀይሯል</translation>
+<translation id="3465223694362104965">ባለፈው በመለያ ከገቡ ወዲህ ወደዚህ መሣሪያ ሌላ የቁልፍ ሰሌዳ ተገናኝቷል። ከመጠቀምዎ በፊት ይህን የቁልፍ ሰሌዳ እንደሚያምኑት ያረጋግጡ።</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">የመዳፊት ጠቋሚን አድምቅ</translation>
 <translation id="3510503721818156981">Chromebook ከአዲስ ስልክ ጋር ተገናኝቷል</translation>

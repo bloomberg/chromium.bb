@@ -229,6 +229,14 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <translation id="1523774894176285446">Navigateur secondaire à lancer pour les sites Web configurés.</translation>
 <translation id="152657506688053119">Liste d'URL alternatives pour le moteur de recherche par défaut</translation>
 <translation id="1530812829012954197">Toujours rendre les formats d'URL suivants dans le navigateur hôte</translation>
+<translation id="1532965933165453786">Permet d'activer ou de désactiver la transition rapide.
+      Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de l'appareil.
+      Pour pouvoir utiliser la transition rapide, ce paramètre et la propriété ONC par réseau doivent être activés.
+      La transition rapide reste active jusqu'à ce que vous la désactiviez en modifiant la règle.
+
+      Si la règle n'est pas configurée, la transition rapide n'est pas utilisée.
+      Si la règle est définie sur "False", la transition rapide n'est pas utilisée.
+      Si la règle est définie sur "True", la transition rapide est utilisée, si toutefois le point d'accès sans fil est compatible avec cette fonctionnalité.</translation>
 <translation id="1541170838458414064">Limiter le format de la page d'impression</translation>
 <translation id="1553684822621013552">Lorsque cette règle est définie sur "True", ARC est activé pour l'utilisateur
       (sous réserve de contrôles supplémentaires des paramètres de la règle. ARC
@@ -963,6 +971,13 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Cette règle permet uniquement de définir des langues recommandées. Vous pouvez l'utiliser pour placer un ensemble de langues recommandées en haut de la liste, mais les utilisateurs auront toujours la possibilité de choisir n'importe quelle langue compatible avec <ph name="PRODUCT_OS_NAME" /> pour leur session.
       </translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
+<translation id="3388153794103186066">Vous permet de définir une liste d'URL indiquant les sites automatiquement autorisés à accéder à un appareil USB correspondant aux ID de fournisseur et de produit indiqués. Chaque élément de la liste doit contenir à la fois les appareils et les URL pour que la règle soit valide. Chaque élément des appareils peut contenir un champ d'ID de produit et d'ID de fournisseur. Les ID non renseignés sont traités comme des caractères génériques, à une exception près : un ID de produit ne peut pas être spécifié si un ID de fournisseur n'est pas aussi spécifié. Sinon, la règle n'est pas valide et est ignorée.
+
+        Le modèle d'autorisation USB utilise l'URL du site à l'origine de la demande ("URL demandeuse") et l'URL du site du cadre de premier niveau ("URL d'intégration") pour autoriser l'URL demandeuse à accéder à l'appareil USB. L'URL demandeuse peut être différente de l'URL d'intégration si le site demandeur est chargé dans un iFrame. Le champ "URL" peut de ce fait contenir jusqu'à deux chaînes d'URL séparées par une virgule, afin d'indiquer l'URL demandeuse et l'URL d'intégration, respectivement. Si une seule URL est spécifiée, l'accès aux appareils USB concernés est autorisé si l'URL du site demandeur correspond à cette URL, quel que soit l'état d'intégration. Si les URL indiquées dans le champ "URL" ne sont pas valides, la règle est ignorée.
+
+        Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle DefaultWebUsbGuardSetting si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
+
+        Les formats d'URL de cette règle ne doivent pas entrer en conflit avec ceux qui ont été configurés via WebUsbBlockedForUrls. En cas de conflit, cette règle est prioritaire sur les règles WebUsbBlockedForUrls et WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> utilise une version minimale par défaut qui est TLS 1.0.
 
       Sinon, l'une des valeurs suivantes peut être définie : "tls1", "tls1.1" ou "tls1.2". Si elle est configurée, <ph name="PRODUCT_NAME" /> n'utilisera pas de versions SSL/TLS antérieures à la version précisée. Toute valeur non reconnue sera ignorée.</translation>
@@ -1210,6 +1225,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="3925020515212192040">Spécifie une liste de partages de fichiers sur le réseau préconfigurés.
 
       Dans cette règle, chaque élément de la liste est un objet avec deux membres : "share_url" et "mode". "share_url" devrait correspondre à l'adresse URL du partage et "mode" devrait correspondre à "drop_down" pour indiquer que cette "share_url" partagée sera ajoutée à la liste déroulante de découverte des partages.</translation>
+<translation id="3925377537407648234">Régler la résolution d'affichage et le facteur d'adaptation</translation>
 <translation id="3939893074578116847">Envoyer des paquets réseau au serveur de gestion pour contrôler l'état en ligne, afin de lui permettre
       de détecter si l'appareil est hors connexion
 
@@ -2052,6 +2068,30 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Cette règle ne fonctionne que si l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Cette règle active l'installation d'office de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> pour la création de rapports et ignore toutes les autres règles relatives à cette extension.</translation>
+<translation id="6155247658847899816">Si cette règle est définie, la résolution et le facteur d'adaptation de chaque écran
+      sont réglés sur les valeurs spécifiées. Les paramètres d'écran externe sont
+      appliqués à tous les écrans externes connectés.
+
+      Les valeurs des paramètres "external_width" et "external_height" doivent être
+      indiquées en pixels. Les valeurs des paramètres "external_scale_percentage"
+      et "internal_scale_percentage" doivent être indiquées en pourcentage.
+
+      Si "external_use_native" est défini sur "True", la règle ignore les valeurs des
+      paramètres "external_height" et "external_width", et la résolution native des
+      écrans externes est appliquée.
+
+      Si "external_use_native" est défini sur "False", ou si ni ce paramètre, 
+      ni le paramètre "external_height" ou "external_width" ne sont définis,
+      la règle n'a aucune incidence sur les paramètres d'écran externe. Si un
+      écran n'est pas compatible avec la résolution ou le facteur d'adaptation
+      spécifiés, la règle n'est pas appliquée à cet écran.
+
+      Si l'indicateur "recommended" est défini sur "True", les 
+      utilisateurs peuvent, une fois connectés, modifier la résolution et le facteur
+      d'adaptation de n'importe quel écran depuis la page des paramètres.
+      Toutefois, la règle ignorera ces modifications au démarrage suivant.
+      Si l'indicateur "recommended" est défini sur "False", ou s'il n'est pas défini,
+      les utilisateurs ne peuvent pas modifier les paramètres d'écran.</translation>
 <translation id="6155936611791017817">Définir l'état par défaut du grand curseur sur l'écran de connexion</translation>
 <translation id="6157537876488211233">Liste de règles de contournement de proxy séparées par des virgules</translation>
 <translation id="6158324314836466367">Nom de boutique en ligne d'entreprise (abandonné)</translation>
@@ -2163,6 +2203,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6553143066970470539">Niveau de luminosité de l'écran (%)</translation>
 <translation id="6559057113164934677">Interdire à tous les sites d'accéder à la caméra et au microphone</translation>
 <translation id="6561396069801924653">Afficher les options d'accessibilité dans le menu de la barre système</translation>
+<translation id="6563458316362153786">Activer la transition rapide 802.11r</translation>
 <translation id="6565312346072273043">Définir l'état par défaut de la fonctionnalité d'accessibilité du clavier à l'écran sur l'écran de connexion
 
           Si cette règle est définie sur "True", le clavier à l'écran est activé à l'affichage de l'écran de connexion.
@@ -2831,6 +2872,11 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
       Si cette règle n'est pas définie sur un appareil géré, l'appareil n'est pas autorisé à exécuter de machines virtuelles.
       Les appareils non gérés sont autorisés à exécuter des machines virtuelles.</translation>
 <translation id="8001701200415781021">Restreindre les comptes Google autorisés à être définis comme comptes de navigation principaux dans <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Si vous activez cette option, les paramètres stockés dans les profils <ph name="PRODUCT_NAME" />, comme les favoris, les données de saisie automatique et les mots de passe, sont également enregistrés dans un fichier stocké dans le dossier des profils utilisateur itinérants ou à un emplacement défini par l'administrateur tel que spécifié dans la règle <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. L'activation de cette règle entraîne la désactivation de la synchronisation cloud.
+
+      Si cette règle est désactivée ou si elle n'est pas configurée, seuls les profils locaux standards sont utilisés.
+
+      La règle <ph name="SYNC_DISABLED_POLICY_NAME" /> entraîne la désactivation de la synchronisation de toutes les données, remplaçant ainsi <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Faire pivoter l'écran de 0 degré</translation>
 <translation id="8033913082323846868">Cette règle a été abandonnée dans la version M70. Veuillez utiliser les règles AutofillAddressEnabled et AutofillCreditCardEnabled à la place.
 
@@ -2960,6 +3006,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8274603902181597201">Nettoyer le répertoire d'accueil eCryptfs de l'utilisateur et employer un nouveau répertoire d'accueil chiffré avec ext4.</translation>
 <translation id="8285435910062771358">Loupe plein écran activée</translation>
 <translation id="8288199156259560552">Activer le service de localisation Google pour Android</translation>
+<translation id="8290453559005611000">Image de PluginVm</translation>
 <translation id="8294750666104911727">Généralement, les pages dont la balise "X-UA-Compatible" est définie sur "chrome=1" sont rendues dans <ph name="PRODUCT_FRAME_NAME" /> indépendamment de la règle "ChromeFrameRendererSettings".
 
           Si vous activez ce paramètre, les pages ne sont pas analysées pour détecter les balises Meta.
@@ -3031,6 +3078,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
           Si vous ne définissez pas cette règle, le moteur de rendu par défaut est utilisé pour tous les sites, tel que spécifié par la règle "ChromeFrameRendererSettings".
 
           Pour voir des exemples de formats, accédez à l'adresse https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Désactiver l'enregistrement de l'historique du navigateur</translation>
 <translation id="8498293625012059298">Permet de configurer l'URL de modification de mot de passe (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe dirigera les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
       Afin que <ph name="PRODUCT_NAME" /> enregistre correctement la nouvelle empreinte numérique du mot de passe sur la page de modification de ce dernier, vérifiez si cette page respecte bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

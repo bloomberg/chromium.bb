@@ -32,6 +32,7 @@
 <translation id="2008474315282236005">ఇది ఈ పరికరం నుండి 1 అంశాన్ని తొలగిస్తుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromiumకి <ph name="USER_EMAIL" /> వలె సైన్ ఇన్ చేయండి.</translation>
 <translation id="2117378023188580026">ఈ అప్‌డేట్‌ని వర్తింపజేయడం కోసం మీరు Chromiumని పునఃప్రారంభించాలని మీ నిర్వాహకుడు కోరుతున్నారు</translation>
 <translation id="2119636228670142020">&amp;Chromium OS గురించి</translation>
+<translation id="2178765360243863853">మీరు ఇప్పుడే Chromiumని పునఃప్రారంభించాలి</translation>
 <translation id="2241627712206172106">మీరు కంప్యూటర్‌ను షేర్ చేస్తే, స్నేహితులు మరియు కుటుంబ సభ్యులు విడివిడిగా బ్రౌజ్ చేయవచ్చు మరియు Chromiumను వారికి నచ్చిన రీతిలో సెటప్ చేసుకోవచ్చు.</translation>
 <translation id="2265088490657775772">మీ iPhoneలో Chromiumని పొందండి</translation>
 <translation id="2347108572062610441">ఈ పొడిగింపు మీరు Chromiumని ప్రారంభించినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
@@ -106,6 +107,7 @@
 <translation id="4708774505295300557">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" /> లాగా Chromiumకు సైన్ ఇన్ చేసారు. మీ సమాచారాన్ని విడిగా ఉంచేందుకు దయచేసి కొత్త Chromium వినియోగదారును సృష్టించండి.</translation>
 <translation id="4714956846925717402">Chromiumకి వేగవంతంగా వెళ్లండి</translation>
 <translation id="4746050847053251315">ఏదేమైనా Chromiumని మూసివేయాలా?</translation>
+<translation id="4748217263233248895">Chromiumకి సంబంధించిన ప్రత్యేక భద్రతా అప్‌డేట్ వర్తింపజేయబడింది. ఇప్పుడే పునఃప్రారంభించండి, మేము మీ ట్యాబ్‌లను పునరుద్ధరిస్తాము.</translation>
 <translation id="4888717733111232871">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Chromium ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="4943838377383847465">Chromium నేపథ్య మోడ్‌లో ఉంది.</translation>
 <translation id="4987820182225656817">అతిథులు ఎటువంటి చరిత్రను వదలకుండానే Chromiumను ఉపయోగించవచ్చు.</translation>

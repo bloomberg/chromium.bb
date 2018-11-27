@@ -63,6 +63,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="2314101195544969792">Sesja aplikacji <ph name="APPLICATION_NAME" /> jest od jakiegoś czasu nieaktywna i zostanie wkrótce zakończona.</translation>
 <translation id="2317666076142640974">Zobacz, jak wygląda nowa <ph name="LINK_BEGIN" />aplikacja internetowa Pulpit zdalny Chrome<ph name="LINK_END" /> i podziel się z nami opinią.</translation>
 <translation id="2320166752086256636">Ukryj klawiaturę</translation>
+<translation id="2332192922827071008">Otwórz Ustawienia</translation>
 <translation id="2353140552984634198">Możesz bezpiecznie korzystać z tego komputera przez Chromoting.</translation>
 <translation id="2359808026110333948">Dalej</translation>
 <translation id="2366718077645204424">Nie można połączyć się z hostem. Problem prawdopodobnie wynika z konfiguracji Twojej sieci.</translation>
@@ -190,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Pobierając instalatora hosta funkcji Chromoting, akceptujesz <ph name="LINK_BEGIN" />Warunki korzystania z usług<ph name="LINK_END" /> Google.</translation>
 <translation id="4974476491460646149">Połączenie z hostem <ph name="HOSTNAME" /> zostało zakończone</translation>
 <translation id="4985296110227979402">Najpierw musisz skonfigurować funkcję dostępu zdalnego na komputerze.</translation>
+<translation id="5059773780693835145">Aby móc sterować tym komputerem zdalnie za pomocą <ph name="PRODUCT_NAME" />, musisz wykonać jeszcze jedną czynność konfiguracyjną.
+
+Aby włączyć tę funkcję, kliknij „<ph name="BUTTON_NAME" />” w celu wyświetlenia panelu ustawień Bezpieczeństwo i prywatność, a następnie zaznacz „<ph name="SERVICE_SCRIPT_NAME" />”.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Host zdalny wymaga uwierzytelnienia w witrynie innej firmy. Aby kontynuować, musisz udzielić Pulpitowi zdalnemu Chrome dodatkowych uprawnień dostępu do tego adresu:</translation>
 <translation id="507204348399810022">Na pewno chcesz wyłączyć połączenia zdalne z: <ph name="HOSTNAME" />?</translation>
@@ -314,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Moje komputery</translation>
 <translation id="811307782653349804">Dostęp do własnego komputera z dowolnego miejsca.</translation>
 <translation id="8116630183974937060">Wystąpił błąd sieci. Sprawdź, czy urządzenie jest online, i spróbuj jeszcze raz.</translation>
+<translation id="8123581458650016326">Zezwól użytkownikom zdalnym na sterowanie tym komputerem</translation>
 <translation id="8178433417677596899">Dzielenie się ekranem z innym użytkownikiem – doskonałe do zdalnej pomocy technicznej.</translation>
 <translation id="8187079423890319756">Copyright 2013 Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="8196755618196986400">Aby umożliwić nam skontaktowanie się z Tobą w sprawie dodatkowych informacji, Twój adres e-mail zostanie dołączony do każdego zgłoszenia, które prześlesz.</translation>

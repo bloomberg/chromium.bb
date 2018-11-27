@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Obvestilo o zasebnosti za Google Chrome</translation>
 <translation id="1863312987075920112">Če uporabljate to aplikacijo, se strinjate s <ph name="BEGIN_LINK_TOS" />pogoji storitve<ph name="END_LINK_TOS" /> in <ph name="BEGIN_LINK_PRIVACY" />pravilnikom o zasebnosti<ph name="END_LINK_PRIVACY" /> za Chrome.</translation>
-<translation id="1878302395768190018">To je mogoče kadar koli prilagoditi v Chromovih nastavitvah</translation>
 <translation id="2147651015520127414">Chrome je preveril, da je izdajatelj <ph name="ISSUER" /> izdal potrdilo tega spletnega mesta.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Vse pravice pridržane.</translation>
 <translation id="2342981853652716282">Prijavite se v Chrome, če želite dostopati do svojih zaznamkov, gesel in drugega v vseh napravah.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Pomagajte izboljšati funkcije in delovanje Chroma</translation>
 <translation id="4523886039239821078">Nekateri dodatki povzročajo zrušitve Chroma. Odstranite jih:</translation>
 <translation id="4615174829807303908">Odjavili se boste iz računa, ki ga upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />. S tem boste iz te naprave izbrisali podatke v Chromu, vendar bodo vaši podatki še vedno na voljo v Google Računu.</translation>
-<translation id="5240817131241497236">Nastavitve, ki nadzirajo sinhronizacijo, prilagajanje in druge Googlove storitve v Chromu, so se spremenile. To lahko vpliva na vaše trenutne nastavitve.</translation>
 <translation id="5389212809648216794">Google Chrome ne more uporabljati fotoaparata, ker ga uporablja druga aplikacija</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />Nastavitve<ph name="END_LINK" /> je mogoče kadar koli prilagoditi. Google lahko vsebino na spletnih mestih, ki jih obiščete, interakcije z brskalnikom in dejavnost v brskalniku uporabi za prilagajanje Chroma in Googlovih storitev, kot so Prevajalnik, Iskanje Google in oglasi.</translation>
 <translation id="5639704535586432836">Odprite Settings &gt; Privacy &gt; Camera &gt; Google Chrome in vklopite fotoaparat.</translation>

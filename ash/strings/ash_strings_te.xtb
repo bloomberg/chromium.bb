@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">మెనూను కుదించు</translation>
 <translation id="1383876407941801731">శోధించు</translation>
 <translation id="1419738280318246476">నోటిఫికేషన్ చర్యను నిర్వహించడానికి పరికరాన్ని అన్‌లాక్ చేయండి</translation>
+<translation id="1455242230282523554">భాష సెట్టింగ్‌లను చూపుతుంది</translation>
 <translation id="1467432559032391204">ఎడమ</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{ నోటిఫికేషన్ సెట్టింగ్‌లను చూపుతుంది. యాప్ కోసం నోటిఫికేషన్‌లు ఆఫ్ చేయబడి ఉన్నాయి}other{ నోటిఫికేషన్ సెట్టింగ్‌లను చూపుతుంది. # యాప్‌ల కోసం నోటిఫికేషన్‌లు ఆఫ్ చేయబడి ఉన్నాయి}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">ఇప్పటికీ చూడటానికి ఏమీ లేవు</translation>
 <translation id="3445925074670675829">USB-C పరికరం</translation>
 <translation id="3454224730401036106">మీ కనెక్షన్ మరింత సురక్షితమైన నెట్‌వర్క్‌కు మార్చబడింది</translation>
+<translation id="3465223694362104965">మీరు చివరిగా సైన్ ఇన్ చేసిన తర్వాత ఈ పరికరానికి మరొక కీబోర్డ్ కనెక్ట్ చేయబడింది. మీరు ఈ కీబోర్డ్‌ను ఉపయోగించే ముందు దీనిని మీరు విశ్వసిస్తున్నట్లు నిర్ధారించుకోండి.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">మౌస్ కర్సర్‌ని హైలైట్ చేయి</translation>
 <translation id="3510503721818156981">Chromebook కొత్త ఫోన్‌కి కనెక్ట్ చేయబడింది</translation>
@@ -261,6 +263,7 @@
 <translation id="5571066253365925590">Bluetooth ప్రారంభించబడింది</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">ప్రసంగ రూప అభిప్రాయాన్ని నిలిపివేయడానికి Ctrl + Alt + Z నొక్కండి.</translation>
+<translation id="5626283214046138476">మీ పర్యవేక్షించబడిన వినియోగదారు ఖాతా గడువు త్వరలో ముగియబోతోంది.</translation>
 <translation id="5648021990716966815">మైక్ జాక్</translation>
 <translation id="5669267381087807207">సక్రియం చేస్తోంది</translation>
 <translation id="5673434351075758678">మీ సెట్టింగులను సమకాలీకరించిన తర్వాత "<ph name="FROM_LOCALE" />" నుండి "<ph name="TO_LOCALE" />"కి.</translation>

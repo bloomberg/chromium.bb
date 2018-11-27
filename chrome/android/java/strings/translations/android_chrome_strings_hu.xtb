@@ -220,6 +220,7 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="2586657967955657006">Vágólap</translation>
 <translation id="2587052924345400782">Rendelkezésre áll új verzió</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2610239185026711824">Jelszó ajánlása</translation>
 <translation id="2612676031748830579">Kártyaszám</translation>
 <translation id="2621115761605608342">A JavaScript engedélyezése egy adott webhelyen.</translation>
 <translation id="2625189173221582860">Jelszó vágólapra másolva</translation>
@@ -236,6 +237,7 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="271033894570825754">Új</translation>
 <translation id="2728754400939377704">Rendezés webhely szerint</translation>
 <translation id="2744248271121720757">Az azonnali kereséshez koppintson a kívánt szóra, vagy tekintse meg a kapcsolódó műveleteket</translation>
+<translation id="2760323196215778921">Ezt az engedélyt a Chrome-nál is be kell kapcsolnia. További részleteket az <ph name="BEGIN_LINK" />Android beállításaiban<ph name="END_LINK" /> talál.</translation>
 <translation id="2762000892062317888">éppen most</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> másodperc van hátra</translation>
 <translation id="2779651927720337254">sikertelen</translation>
@@ -707,6 +709,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6378173571450987352">Részletek: Felhasznált adatmennyiség szerinti rendezés</translation>
 <translation id="6383961787135158834">Webhelytárhely törlése…</translation>
 <translation id="6388207532828177975">Törlés és visszaállítás</translation>
+<translation id="6393156038355142111">Erős jelszó ajánlása</translation>
 <translation id="6393863479814692971">A Chrome számára engedély szükséges, hogy hozzáférjen a kamerához és a mikrofonhoz ennél a webhelynél.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Könyvjelző szerkesztése</translation>
@@ -887,6 +890,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="773466115871691567">Mindig fordítsa le a(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalakat</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Saját és eszköze védelme a veszélyes webhelyekkel szemben</translation>
+<translation id="7759822418208302953">Az automatikus kitöltési segéd leáll</translation>
 <translation id="7762668264895820836">SD-kártya (<ph name="SD_CARD_NUMBER" />)</translation>
 <translation id="7764225426217299476">Cím hozzáadása</translation>
 <translation id="7765158879357617694">Áthelyezés</translation>
@@ -931,6 +935,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8037750541064988519"><ph name="DAYS" /> nap van hátra</translation>
 <translation id="804335162455518893">Az SD-kártya nem található</translation>
 <translation id="805047784848435650">A böngészési előzményei alapján</translation>
+<translation id="8051303708327298699">Ezeket az engedélyeket a Chrome-nál is be kell kapcsolnia. További részleteket az <ph name="BEGIN_LINK" />Android beállításaiban<ph name="END_LINK" /> talál.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB áll rendelkezésre</translation>
 <translation id="8058746566562539958">Megnyitás új Chrome-lapon</translation>
 <translation id="8063895661287329888">A könyvjelző hozzáadása sikertelen volt.</translation>
@@ -1002,6 +1007,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="857509777403223202">Hamarosan további cikkek jelennek meg. Kellemes estét kívánunk!</translation>
 <translation id="857943718398505171">Engedélyezve (ajánlott)</translation>
 <translation id="8583805026567836021">Fiókadatok törlése</translation>
+<translation id="860043288473659153">Kártyatulajdonos neve</translation>
 <translation id="8609465669617005112">Mozgatás felfelé</translation>
 <translation id="8616006591992756292">Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen.</translation>
 <translation id="8617240290563765734">Megnyitja a letöltött tartalomban szereplő javasolt URL-t?</translation>

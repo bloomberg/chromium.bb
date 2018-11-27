@@ -63,6 +63,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="2314101195544969792">Votre session <ph name="APPLICATION_NAME" /> est inactive depuis un certain temps et risque de se fermer bientôt.</translation>
 <translation id="2317666076142640974">Découvrez en avant-première la nouvelle <ph name="LINK_BEGIN" />application Web Bureau à distance Chrome<ph name="LINK_END" />. Faites-nous part de vos remarques !</translation>
 <translation id="2320166752086256636">Masquer le clavier</translation>
+<translation id="2332192922827071008">Ouvrir les préférences</translation>
 <translation id="2353140552984634198">Vous pouvez accéder à cet ordinateur en toute sécurité via Google Chromoting.</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2366718077645204424">Impossible de joindre l'hôte, probablement en raison de la configuration du réseau que vous utilisez.</translation>
@@ -190,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">En téléchargeant le programme d'installation de l'hôte Chromoting, vous acceptez les <ph name="LINK_BEGIN" />Conditions d'utilisation<ph name="LINK_END" /> de Google.</translation>
 <translation id="4974476491460646149">Connexion coupée pour <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Vous devez tout d'abord configurer votre ordinateur pour l'accès à distance.</translation>
+<translation id="5059773780693835145">Une étape de configuration supplémentaire est requise pour que vous puissiez contrôler cet ordinateur distant avec <ph name="PRODUCT_NAME" />.
+
+Pour activer cette fonctionnalité, sélectionnez <ph name="BUTTON_NAME" /> afin d'afficher le volet des préférences, puis cochez la case à côté de <ph name="SERVICE_SCRIPT_NAME" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (hors connexion)</translation>
 <translation id="5070121137485264635">L'hôte distant nécessite votre authentification auprès d'un site Web tiers. Pour continuer, vous devez accorder au Bureau à distance Chrome des autorisations supplémentaires afin d'accéder à l'adresse suivante :</translation>
 <translation id="507204348399810022">Voulez-vous vraiment désactiver les connexions à distance à <ph name="HOSTNAME" /> ?</translation>
@@ -314,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Mes ordinateurs</translation>
 <translation id="811307782653349804">Accédez à votre ordinateur où que vous soyez.</translation>
 <translation id="8116630183974937060">Une erreur réseau s'est produite. Veuillez vérifier que votre appareil est en ligne, puis réessayer.</translation>
+<translation id="8123581458650016326">Autoriser les utilisateurs distants à contrôler cet ordinateur</translation>
 <translation id="8178433417677596899">Partagez des écrans avec d'autres utilisateurs : idéal pour l'assistance technique à distance.</translation>
 <translation id="8187079423890319756">Copyright des auteurs de Chromium 2013. Tous droits réservés.</translation>
 <translation id="8196755618196986400">Afin que nous puissions vous contacter pour vous demander de nous fournir plus d'informations, votre adresse e-mail est incluse dans tous les commentaires que vous soumettez.</translation>

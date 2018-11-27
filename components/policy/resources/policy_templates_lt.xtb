@@ -228,6 +228,14 @@
 <translation id="1523774894176285446">Alternatyvi naršyklė, kuri paleidžiama sukonfigūruotoms svetainėms.</translation>
 <translation id="152657506688053119">Alternatyvių numatytojo paieškos teikėjo URL sąrašas</translation>
 <translation id="1530812829012954197">Visada pateikti šiuos URL šablonus prieglobos naršyklėje</translation>
+<translation id="1532965933165453786">Leidžiama įgalinti arba išjungti spartųjį perėjimą.
+      Tai taikoma visiems naudotojams ir visoms sąsajoms įrenginyje.
+      Kad būtų naudojamas spartusis perėjimas, turi būti įgalintas ir šis nustatymas, ir tinklo ONC nuosavybė.
+      Nustatytas spartusis perėjimas lieka, kol politika pakeičiama, kad jis būtų išjungtas.
+
+      Jei politika nenustatyta, spartusis perėjimas nenaudojamas.
+      Jei nustatyta kaip „False“, spartusis perėjimas nenaudojamas.
+      Jei nustatyta kaip „True“, spartusis perėjimas naudojamas, kai yra palaikomas belaidžio ryšio prieigos taške.</translation>
 <translation id="1541170838458414064">Spausdinamo puslapio dydžio apribojimas</translation>
 <translation id="1553684822621013552">Kai ši politika yra galiojanti, ARC įgalinama naudotojui
       (taikomos papildomos politikos nustatymų patikros – ARC vis tiek bus
@@ -953,6 +961,13 @@
       Šią politiką galima nustatyti tik kaip rekomenduojamą. Galite naudoti šią politiką, kad perkeltumėte rekomenduojamų lokalių rinkinį į viršų, bet naudotojams visada leidžiama sesijai pasirinkti bet kurią „<ph name="PRODUCT_OS_NAME" />“ palaikomą lokalę.
       </translation>
 <translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
+<translation id="3388153794103186066">Galima nustatyti URL sąrašą, kuriame nurodoma, kurioms svetainėms automatiškai suteikiamas leidimas pasiekti USB įrenginį su duotais paslaugos teikėjo ir produkto ID. Kad politika galiotų, kiekviename sąraše esančiame elemente turi būti įrenginių ir URL. Kiekvienas įrenginiuose esantis elementas gali turėti paslaugos teikėjo ID ir produkto ID lauką. Kiekvienas nenurodytas ID laikomas pakaitos simboliu su viena išimtimi – produkto ID negali būti nurodytas, jei nenurodytas paslaugos teikėjo ID. Priešingu atveju politika negalios ir jos bus nepaisoma.
+
+        Siekiant suteikti užklausą pateikusiam URL leidimą pasiekti USB įrenginį, USB leidimo modeliui naudojamas užklausą pateikusios svetainės URL („užklausą pateikęs URL“) ir aukščiausiojo lygio „iframe“ svetainės URL („įterptasis URL“). Užklausą pateikęs URL gali skirtis nuo įterptojo URL, kai užklausa įkeliama „iframe“. Todėl URL lauke gali būti iki dviejų URL eilučių, atskirtų kableliu, taip atskirai nurodant užklausą pateikusį ir įterptąjį URL. Jei nurodomas tik vienas URL, prieiga prie atitinkamų USB įrenginių suteikiama, kai užklausą pateikusios svetainės URL atitinka šį URL, nepaisant įterpimo būsenos. URL atitinkamame lauke turi būti tinkami, kitu atveju politikos bus nepaisoma.
+
+        Jei ši politika palikta nenustatyta, visose svetainėse bus naudojama bendroji numatytoji vertė iš politikos „DefaultWebUsbGuardSetting“ (jei nustatyta) arba pagal naudotojo asmeninę konfigūraciją.
+
+        URL šablonai šioje politikoje negali neatitikti tų, kurie sukonfigūruoti pagal „WebUsbBlockedForUrls“. Jei yra neatitikimų, šiai politikai bus teikiama pirmenybė prieš „WebUsbBlockedForUrls“ ir „WebUsbAskForUrls“.</translation>
 <translation id="3414260318408232239">Jei ši politika nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ naudos numatytosios minimalios 1.0 versijos TLS.
 
       Kitaip gali būti nustatyta viena iš šių verčių: „tls1“, „tls1.1“ arba „tls1.2“. Nustačius šią politiką „<ph name="PRODUCT_NAME" />“ nenaudos senesnės nei nurodytos versijos SSL / TLS. Neatpažįstamos vertės bus nepaisoma.</translation>
@@ -1200,6 +1215,7 @@
 <translation id="3925020515212192040">Nurodomas iš anksto sukonfigūruotų tinklo failų bendrinimo įrenginių sąrašas.
 
       Kiekvienas politikos sąrašo elementas yra objektas iš dviejų narių: „share_url“ ir „mode“. „share_url“ turėtų būti bendrinimo įrenginio URL, o „mode“ turėtų būti „drop_down“, nurodantis, kad „share_url“ bus pridėtas prie bendrinamo įrenginio aptikimo išskleidžiamojo meniu.</translation>
+<translation id="3925377537407648234">Ekrano skyros ir mastelio koeficiento nustatymas</translation>
 <translation id="3939893074578116847">Siunčiami tinklo paketai į valdymo serverį, siekiant stebėti prisijungimo būseną, kad
       serveryje būtų aptikta, ar įrenginys prijungtas prie interneto.
 
@@ -2039,6 +2055,29 @@
       Ši politika efektyvi, tik kai įrenginys užregistruotas politikoje „<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />“.
 
       Ši politika priverstinai įdiegia „<ph name="CHROME_REPORTING_EXTENSION_NAME" />“ ataskaitoms teikti ir nepaiso plėtinių politikos, susijusios su tuo plėtiniu.</translation>
+<translation id="6155247658847899816">Nustačius šią politiką, nustatomos kiekvieno ekrano skyros ir
+      mastelio koeficiento nurodytosios vertės. Išorinio ekrano nustatymai
+      taikomi visiems susietiems išoriniams ekranams.
+
+      „external_width“ ir „external_height“ vertės turi būti nurodomos
+      taškais. „external_scale_percentage“ ir
+      „internal_scale_percentage“ vertės turi būti nurodomos procentais.
+
+      Jei „external_use_native“ nustatyta kaip „True“, politika nepaisys
+      „external_height“ ir „external_width“ verčių, o išorinių ekranų skyra
+      bus nustatyta kaip jų įprasta skyra.
+
+      Jei „external_use_native“ nustatyta kaip „False“ arba nepateikta, o
+      „external_height“ arba „external_width“ nepateikta, politika
+      nepaveiks išorinio ekrano nustatymų. Jei parinktis nepalaiko
+      nurodytos skyros arba įrenginio mastelio, politika jai
+      netaikoma.
+
+      Jei žyma „rekomenduojama“ nustatyta kaip „True“, naudotojai gali pakeisti 
+      bet kurio ekrano skyrą ir mastelio koeficientą prisijungę nustatymų puslapyje,
+      bet kitą kartą paleidžiant iš naujo jų nustatymų bus nepaisoma pagal politikos vertes.
+      Jei žyma „rekomenduojama“ nustatyta kaip „False“, naudotojai negali pakeisti
+      ekrano nustatymų.</translation>
 <translation id="6155936611791017817">Nustatyti numatytąją didelio žymeklio prisijungimo ekrane būklę</translation>
 <translation id="6157537876488211233">Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas</translation>
 <translation id="6158324314836466367">Įmonės internetinės parduotuvės pavadinimas (nebenaudojama)</translation>
@@ -2150,6 +2189,7 @@
 <translation id="6553143066970470539">Ekrano šviesumo procentas</translation>
 <translation id="6559057113164934677">Neleisti jokiai svetainei pasiekti kameros ir mikrofono</translation>
 <translation id="6561396069801924653">Rodyti pasiekiamumo parinktis sistemos dėklo meniu</translation>
+<translation id="6563458316362153786">802.11r sparčiojo perėjimo įgalinimas</translation>
 <translation id="6565312346072273043">Nustatyti numatytąją ekrano klaviatūros pasiekiamumo funkcijos būseną prisijungimo ekrane.
 
           Jei ši politika galioja, ekrano klaviatūra bus įgalinta, kai bus rodomas prisijungimo ekranas.
@@ -2821,6 +2861,11 @@
       Jei ši politika nenustatyta valdomame įrenginyje, įrenginiui neleidžiama paleisti virtualiųjų įrenginių.
       Nevaldomiems įrenginiams leidžiama paleisti virtualiuosius įrenginius.</translation>
 <translation id="8001701200415781021">„Google“ paskyrų, kurias leidžiama nustatyti kaip naršyklės pagrindines paskyras sistemoje „<ph name="PRODUCT_NAME" />“, ribojimas</translation>
+<translation id="8009554972280451023">Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ profiliuose išsaugoti nustatymai, pvz., žymės, automatinio pildymo duomenys, slaptažodžiai ir kt., taip pat bus įrašyti į failą, saugomą tarptinklinio ryšio naudotojo profilio aplanke arba administratoriaus nurodytoje vietoje pagal politiką „<ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />“. Sinchronizavimas debesyje išjungiamas, kai įgalinama ši politika.
+
+      Jei ši politika išjungta ar nenustatyta, bus naudojami tik įprasti vietiniai profiliai.
+
+      Politika „<ph name="SYNC_DISABLED_POLICY_NAME" />“ išjungia visų duomenų sinchronizavimą ir nepaiso „<ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />“.</translation>
 <translation id="802147957407376460">Pasukti ekraną 0 laipsnių kampu</translation>
 <translation id="8033913082323846868">Ši politika nebenaudojama naudojant M70. Naudokite „AutofillAddressEnabled“ ir „AutofillCreditCardEnabled“.
 
@@ -2949,6 +2994,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8274603902181597201">Panaikinamas naudotojo „eCryptfs“ pagrindinis katalogas ir pradedama naudoti naują „ext4“ šifruotą pagrindinį katalogą.</translation>
 <translation id="8285435910062771358">Viso ekrano didinimas įgalintas</translation>
 <translation id="8288199156259560552">„Android“ skirtos „Google“ vietovių paslaugos įgalinimas</translation>
+<translation id="8290453559005611000">„PluginVm“ vaizdas</translation>
 <translation id="8294750666104911727">Paprastai puslapiai, kuriuose „X-UA-Compatible“ nustatyta į „chrome=1“ bus pateikti „<ph name="PRODUCT_FRAME_NAME" />“, neatsižvelgiant į politiką „ChromeFrameRendererSettings“.
 
           Jei įgalinsite šį nustatymą, puslapiai nebus nuskaitomi ieškant metažymų.
@@ -3029,6 +3075,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
           Jei ši politika nenustatyta, numatytasis pateikėjas naudojamas visose svetainėse, kaip nurodyta politikoje „ChromeFrameRendererSettings“.
 
           Šablonų pavyzdžių galite rasti apsilankę adresu https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Neleisti išsaugoti naršyklės istorijos</translation>
 <translation id="8498293625012059298">Konfigūruojamas slaptažodžio keitimo URL (tik HTTP ir HTTPS schemos). Naudojant slaptažodžio apsaugos paslaugą naudotojai bus nukreipiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
       Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų naujo slaptažodžio piršto antspaudą šiame slaptažodžio keitimo puslapyje, įsitikinkite, kad slaptažodžio keitimo puslapyje laikomasi gairių, pasiekiamų adresu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

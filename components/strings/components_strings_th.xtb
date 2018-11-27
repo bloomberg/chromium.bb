@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">โดเมนการลงทะเบียน:</translation>
 <translation id="1340482604681802745">ที่อยู่ในการรับ</translation>
 <translation id="1348198688976932919">ไซต์ที่จะเปิดมีแอปอันตราย</translation>
+<translation id="1348779747280417563">ยืนยันชื่อ</translation>
 <translation id="1374468813861204354">คำแนะนำ</translation>
 <translation id="1375198122581997741">เกี่ยวกับรุ่น</translation>
 <translation id="1376836354785490390">แสดงน้อยลง</translation>
@@ -144,7 +145,6 @@
 <translation id="1826516787628120939">กำลังตรวจสอบ</translation>
 <translation id="1834321415901700177">เว็บไซต์นี้มีโปรแกรมอันตราย</translation>
 <translation id="1839551713262164453">การตรวจสอบความถูกต้องของค่านโยบายมีข้อผิดพลาดและล้มเหลว</translation>
-<translation id="1840414022444569775">มีการใช้หมายเลขบัตรนี้แล้ว</translation>
 <translation id="1842969606798536927">จ่าย</translation>
 <translation id="1866450167992311397">ใช้บัตรของคุณในสถานที่อื่นๆ</translation>
 <translation id="1871208020102129563">พร็อกซีถูกตั้งค่าให้ใช้พร็อกซีเซิร์ฟเวอร์แบบคงที่ ไม่ใช่ URL สคริปต์ .pac</translation>
@@ -183,6 +183,7 @@
 <translation id="2108755909498034140">รีสตาร์ทคอมพิวเตอร์</translation>
 <translation id="2113977810652731515">บัตร</translation>
 <translation id="2114841414352855701">ไม่สนใจเพราะถูกแทนที่โดย <ph name="POLICY_NAME" /></translation>
+<translation id="2129308444951592399">ข้อกำหนดและเงื่อนไข</translation>
 <translation id="213826338245044447">บุ๊กมาร์กบนมือถือ</translation>
 <translation id="214556005048008348">ยกเลิกการชำระเงิน</translation>
 <translation id="2147827593068025794">การซิงค์ในแบ็กกราวด์</translation>
@@ -383,6 +384,7 @@
 <translation id="3427092606871434483">อนุญาต (ค่าเริ่มต้น)</translation>
 <translation id="3427342743765426898">&amp;ทำซ้ำการแก้ไข</translation>
 <translation id="342781501876943858">Chromium ขอแนะนำให้รีเซ็ตรหัสผ่านหากคุณใช้รหัสผ่านนี้ซ้ำในเว็บไซต์อื่น</translation>
+<translation id="3430691998045392297">การฉายภาพยนตร์จะต่างออกไป ต้องการดำเนินการต่อไหม</translation>
 <translation id="3431636764301398940">บันทึกบัตรนี้ลงในอุปกรณ์นี้</translation>
 <translation id="3447661539832366887">เจ้าของอุปกรณ์นี้ปิดเกมไดโนเสาร์</translation>
 <translation id="3447884698081792621">แสดงใบรับรอง (ออกโดย <ph name="ISSUER" />)</translation>
@@ -400,6 +402,7 @@
 <translation id="3566021033012934673">การเชื่อมต่อของคุณไม่เป็นส่วนตัว</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">หน้าที่ฝังไว้ใน <ph name="SITE" /> บอกว่า</translation>
+<translation id="3581089476000296252">Chrome จะแจ้งให้คุณทราบเมื่อหน้านี้พร้อมใช้งาน &lt;a&gt;ยกเลิก&lt;/a&gt;</translation>
 <translation id="358285529439630156">รับบัตรเครดิตและบัตรเติมเงิน</translation>
 <translation id="3582930987043644930">เพิ่มชื่อ</translation>
 <translation id="3583757800736429874">&amp;ทำซ้ำการย้าย</translation>
@@ -431,6 +434,7 @@
 <translation id="3736520371357197498">หากคุณเข้าใจความเสี่ยงต่อความปลอดภัย คุณสามารถ<ph name="BEGIN_LINK" />ไปยังไซต์ที่ไม่ปลอดภัยนี้<ph name="END_LINK" /> ก่อนจะมีการนำโปรแกรมอันตรายออก</translation>
 <translation id="3739623965217189342">ลิงก์ที่คุณคัดลอกมา</translation>
 <translation id="3744899669254331632">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากเว็บไซต์ได้ส่งข้อมูลรับรองที่มีการแปลงข้อมูลซึ่ง Chromium ไม่สามารถดำเนินการได้ ข้อผิดพลาดของเครือข่ายและการโจมตีมักจะเกิดขึ้นชั่วคราว ดังนั้นหน้านี้อาจจะใช้งานได้ในภายหลัง</translation>
+<translation id="3745099705178523657">เมื่อยืนยันแล้ว ระบบจะแชร์รายละเอียดของบัตรจากบัญชี Google กับเว็บไซต์นี้</translation>
 <translation id="3748148204939282805">ผู้โจมตีที่อยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> อาจหลอกล่อให้คุณทำบางสิ่งที่อันตราย เช่น การติดตั้งซอฟต์แวร์หรือเปิดเผยข้อมูลส่วนบุคคล (ตัวอย่างเช่น รหัสผ่าน หมายเลขโทรศัพท์ หรือบัตรเครดิต) <ph name="BEGIN_LEARN_MORE_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">การแปลล้มเหลวเนื่องจากข้อผิดพลาดของเซิร์ฟเวอร์</translation>
 <translation id="3759461132968374835">คุณไม่ได้รายงานข้อขัดข้องเมื่อเร็วๆ นี้ ข้อขัดข้องที่เกิดขึ้นเมื่อปิดใช้งานการรายงานข้อขัดข้อง จะไม่ปรากฏที่นี่</translation>
@@ -452,10 +456,12 @@
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">อัปโหลดรหัสรายงานข้อขัดข้อง <ph name="CRASH_ID" /> แล้ว (รหัสข้อขัดข้องในเครื่อง: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">ถามทุกครั้งบนเว็บไซต์นี้</translation>
+<translation id="3947577358805392297">เก็บหน้านี้ไว้ดูทีหลัง</translation>
 <translation id="3949571496842715403">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยไม่ได้ระบุชื่อสำรองของหัวเรื่อง โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้โจมตีที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="3949601375789751990">ประวัติการท่องเว็บของคุณจะปรากฏที่นี่</translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
 <translation id="3963721102035795474">โหมดนักอ่าน</translation>
+<translation id="3963837677003247395">ดำเนินการต่อด้วยตนเองไหม</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{ไม่มี}=1{จากเว็บไซต์ 1 แห่ง }other{จากเว็บไซต์ #  แห่ง }}</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ถูกบล็อก</translation>
@@ -569,6 +575,7 @@
 <translation id="4771973620359291008">มีข้อผิดพลาดที่ไม่ทราบเกิดขึ้น</translation>
 <translation id="4785689107224900852">เปลี่ยนเป็นแท็บนี้</translation>
 <translation id="4792143361752574037">เกิดปัญหาในการเข้าถึงไฟล์เซสชัน ขณะนี้ระบบปิดใช้การบันทึกลงในดิสก์ โปรดโหลดหน้าใหม่เพื่อลองอีกครั้ง</translation>
+<translation id="4798078619018708837">ป้อนวันที่หมดอายุและ CVC ของ <ph name="CREDIT_CARD" /> เพื่ออัปเดตรายละเอียดของบัตร เมื่อยืนยันแล้ว ระบบจะแชร์รายละเอียดของบัตรจากบัญชี Google กับเว็บไซต์นี้</translation>
 <translation id="4800132727771399293">ตรวจสอบวันหมดอายุและ CVC แล้วลองอีกครั้ง</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้ เนื่องจากเว็บไซต์ดังกล่าวส่งข้อมูลรับรองที่เข้ารหัส ซึ่ง Google Chrome ไม่สามารถประมวลผลได้ โดยปกติข้อผิดพลาดของเครือข่ายและการบุกรุกจะเกิดขึ้นเพียงชั่วคราว หน้านี้จึงอาจใช้งานได้ในภายหลัง</translation>
@@ -620,6 +627,7 @@
 <translation id="5141240743006678641">เข้ารหัสผ่านที่ซิงค์ด้วยข้อมูลรับรอง Google ของคุณ</translation>
 <translation id="5145883236150621069">มีรหัสข้อผิดพลาดในการตอบกลับนโยบาย</translation>
 <translation id="5159010409087891077">เปิดหน้าเว็บในหน้าต่างที่ไม่ระบุตัวตนใหม่ (⇧⌘N)</translation>
+<translation id="516920405563544094">ป้อน CVC ของ <ph name="CREDIT_CARD" /> เมื่อยืนยันแล้ว ระบบจะแชร์รายละเอียดของบัตรจากบัญชี Google กับเว็บไซต์นี้</translation>
 <translation id="5169827969064885044">คุณอาจเข้าถึงบัญชีขององค์กรไม่ได้หรือถูกโจรกรรมข้อมูลประจำตัว Chrome ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
 <translation id="5171045022955879922">ค้นหาหรือพิมพ์ URL</translation>
 <translation id="5172758083709347301">ผู้ใช้คอมพิวเตอร์นี้</translation>
@@ -718,6 +726,7 @@
 <translation id="5810442152076338065">มีการเข้ารหัสการเชื่อมต่อของคุณกับ <ph name="DOMAIN" /> ด้วยชุดการเข้ารหัสที่ล้าสมัยแล้ว</translation>
 <translation id="5813119285467412249">&amp;ทำซ้ำการเพิ่ม</translation>
 <translation id="5838278095973806738">คุณไม่ควรป้อนข้อมูลที่ละเอียดอ่อนบนเว็บไซต์นี้ (ตัวอย่างเช่น รหัสผ่านหรือบัตรเครดิต) เนื่องจากผู้โจมตีอาจขโมยข้อมูลดังกล่าวไปได้</translation>
+<translation id="5844286946362376359">ฉันทราบข้อกำหนดและเงื่อนไข นโยบายความเป็นส่วนตัว และสิทธิ์การถอนของ <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (ไม่ต้องเลือกหากต้องการอ่าน)</translation>
 <translation id="5863847714970149516">ระบบอาจพยายามเรียกเก็บเงินจากคุณในหน้าถัดไป</translation>
 <translation id="5866257070973731571">เพิ่มหมายเลขโทรศัพท์</translation>
 <translation id="5869405914158311789">ไม่สามารถเข้าถึงเว็บไซต์นี้</translation>
@@ -726,6 +735,7 @@
 <translation id="5893752035575986141">รับบัตรเครดิต</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (ซิงค์แล้ว)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{ใช้งานอยู่ 1 รายการ}other{ใช้งานอยู่ # รายการ}}</translation>
+<translation id="5921639886840618607">บันทึกบัตรลงในบัญชี Google ไหม</translation>
 <translation id="5922853866070715753">เกือบเสร็จแล้ว</translation>
 <translation id="5932224571077948991">เว็บไซต์แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
@@ -812,6 +822,7 @@
 <translation id="6569060085658103619">คุณกำลังดูหน้าส่วนขยาย</translation>
 <translation id="6596325263575161958">ตัวเลือกการเข้ารหัส</translation>
 <translation id="6604181099783169992">เซ็นเซอร์จับความเคลื่อนไหวหรือเซ็นเซอร์แสง</translation>
+<translation id="6607617806003952240">ช่วยต่อไม่ได้แล้ว รบกวนดำเนินการต่อเองนะ</translation>
 <translation id="6624427990725312378">ข้อมูลติดต่อ</translation>
 <translation id="6626291197371920147">เพิ่มหมายเลขบัตรที่ถูกต้อง</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> ค้นหา</translation>
@@ -855,6 +866,7 @@
 <translation id="6950684638814147129">เกิดข้อผิดพลาดขณะแยกวิเคราะห์ค่า JSON: <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">เปิดหน้าเว็บในแท็บส่วนตัวใหม่</translation>
 <translation id="6957887021205513506">ใบรับรองของเซิร์ฟเวอร์น่าจะเป็นของปลอม</translation>
+<translation id="6964255747740675745">แยกวิเคราะห์การกำหนดค่าเครือข่ายไม่ได้ (JSON ไม่ถูกต้อง)</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="6965978654500191972">อุปกรณ์</translation>
 <translation id="6970216967273061347">เขต</translation>
@@ -1149,11 +1161,13 @@
 <translation id="893332455753468063">เพิ่มชื่อ</translation>
 <translation id="8938939909778640821">บัตรเครดิตและบัตรเติมเงินที่ยอมรับ</translation>
 <translation id="8957210676456822347">การให้สิทธิ์แคปทีฟพอร์ทัล</translation>
+<translation id="8968766641738584599">บันทึกบัตร</translation>
 <translation id="8971063699422889582">ใบรับรองของเซิร์ฟเวอร์หมดอายุแล้ว</translation>
 <translation id="8975012916872825179">รวมข้อมูล เช่น หมายเลขโทรศัพท์ ที่อยู่อีเมล และที่อยู่สำหรับจัดส่ง</translation>
 <translation id="8978053250194585037">เมื่อเร็วๆ นี้ Google Safe Browsing <ph name="BEGIN_LINK" />ตรวจพบฟิชชิง<ph name="END_LINK" />ใน <ph name="SITE" /> เว็บไซต์ฟิชชิงปลอมเป็นเว็บไซต์อื่นๆ เพื่อหลอกคุณ</translation>
 <translation id="8983003182662520383">วิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
 <translation id="8987927404178983737">เดือน</translation>
+<translation id="8988408250700415532">มีบางอย่างผิดพลาด คุณสั่งซื้อให้เสร็จในเว็บไซต์ได้นะ</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">ไซต์ที่จะเปิดมีโปรแกรมที่เป็นอันตราย</translation>
 <translation id="8997023839087525404">เซิร์ฟเวอร์แสดงใบรับรองที่ไม่มีการเปิดเผยต่อสาธารณะโดยใช้นโยบายความโปร่งใสของใบรับรอง ซึ่งเป็นข้อกำหนดสำหรับใบรับรองบางรายการ เพื่อยืนยันว่าเชื่อถือได้และป้องกันการจู่โจม</translation>

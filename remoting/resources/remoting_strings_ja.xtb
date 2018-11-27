@@ -63,6 +63,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" /> のセッションでしばらく操作がありませんでした。セッションを間もなく切断します。</translation>
 <translation id="2317666076142640974">今回の新しい <ph name="LINK_BEGIN" />Chrome リモート デスクトップ ウェブアプリ<ph name="LINK_END" />の使用感について、ご意見やご感想をお聞かせください。</translation>
 <translation id="2320166752086256636">キーボードを非表示</translation>
+<translation id="2332192922827071008">設定を開く</translation>
 <translation id="2353140552984634198">Chromoting を使用して、このパソコンに安全にアクセスできます。</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2366718077645204424">ホストにアクセスできません。お使いのネットワークの設定が原因であることが考えられます。</translation>
@@ -190,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Chromoting ホスト インストーラをダウンロードすると、Google の<ph name="LINK_BEGIN" />利用規約<ph name="LINK_END" />に同意したことになります。</translation>
 <translation id="4974476491460646149"><ph name="HOSTNAME" /> との接続が切断されました</translation>
 <translation id="4985296110227979402">リモート接続に使用するパソコンを最初に設定しておく必要があります</translation>
+<translation id="5059773780693835145"><ph name="PRODUCT_NAME" /> を使用してこのパソコンをリモートで管理するには、追加の設定手順を行う必要があります。
+
+この機能を有効にするには、[<ph name="BUTTON_NAME" />] を選択して [セキュリティとプライバシー] 設定パネルを開き、[<ph name="SERVICE_SCRIPT_NAME" />] の横にあるチェックボックスをオンにします。</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />（オフライン）</translation>
 <translation id="5070121137485264635">リモート ホストで、サードパーティ ウェブサイトへの認証が求められています。続行するには、次のアドレスにアクセスできるように Chrome リモート デスクトップに追加の権限を与える必要があります:</translation>
 <translation id="507204348399810022"><ph name="HOSTNAME" /> へのリモート接続を無効にしてもよろしいですか？</translation>
@@ -314,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">マイ コンピュータ</translation>
 <translation id="811307782653349804">どこからでも自分のパソコンにアクセスできます。</translation>
 <translation id="8116630183974937060">ネットワーク エラーが発生しました。デバイスがインターネットに接続されているか確認して、もう一度お試しください。</translation>
+<translation id="8123581458650016326">リモート ユーザーがこのパソコンを管理できるようにする</translation>
 <translation id="8178433417677596899">リモート テクニカル サポートに最適な、ユーザー同士の画面共有。</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
 <translation id="8196755618196986400">後で詳しい情報をお知らせするために、送信いただくフィードバックにはお客様のメールアドレスが記載されますのでご了承ください。</translation>

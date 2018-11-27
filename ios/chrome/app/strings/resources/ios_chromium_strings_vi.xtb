@@ -17,7 +17,6 @@
 <translation id="2647554856022461007">Chromium có thể sử dụng dịch vụ web để cải thiện trải nghiệm duyệt web của bạn. Bạn có thể tùy ý vô hiệu hóa các dịch vụ này. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Trải nghiệm các tính năng thông minh của Google trong Chromium</translation>
 <translation id="2730884209570016437">Chromium không thể sử dụng máy ảnh của bạn do một ứng dụng khác đang dùng máy ảnh.</translation>
-<translation id="2797210818057553964">Bạn có thể thay đổi tùy chọn này bất cứ lúc nào trong mục Cài đặt Chromium</translation>
 <translation id="2915596697727466327">Chromium sử dụng Face ID để đảm bảo rằng chỉ những người được ủy quyền mới có thể truy cập vào mật khẩu của bạn.</translation>
 <translation id="3256316712990552818">Đã sao chép vào Chromium</translation>
 <translation id="3413120535237193088">Để nhận dấu trang trên tất cả các thiết bị của bạn, hãy đăng nhập vào Chromium.</translation>
@@ -47,7 +46,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Dữ liệu được chọn đã bị xóa khỏi Chromium và các thiết bị được đồng bộ hóa. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác, chẳng hạn như tìm kiếm và hoạt động từ các dịch vụ khác của Google tại history.google.com.</translation>
 <translation id="7400689562045506105">Sử dụng Chromium mọi nơi</translation>
-<translation id="7499048969477415415">Các tùy chọn cài đặt kiểm soát tính năng đồng bộ hóa, cá nhân hóa và các dịch vụ khác của Google trong Chromium đã thay đổi. Điều này có thể ảnh hưởng đến các tùy chọn cài đặt hiện tại của bạn.</translation>
 <translation id="7674213385180944843">Mở Cài đặt &gt; Bảo mật &gt; Máy ảnh &gt; Chromium và bật máy ảnh.</translation>
 <translation id="7746854981345936341">Mẹo dành cho Chromium. Một số nút hiện nằm ở cuối màn hình, chẳng hạn như nút Quay lại, Tiến lên và Tìm kiếm.</translation>
 <translation id="786327964234957808">Bạn đang chuyển các tài khoản đồng bộ hóa từ <ph name="USER_EMAIL1" /> về <ph name="USER_EMAIL2" />. Dữ liệu Chromium hiện có của bạn do <ph name="DOMAIN" /> quản lý. Thao tác này sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu đó sẽ vẫn còn trong <ph name="USER_EMAIL1" />.</translation>

@@ -216,6 +216,14 @@
 <translation id="1523774894176285446">Yapılandırılan web siteleri için başlatılacak alternatif tarayıcı.</translation>
 <translation id="152657506688053119">Varsayılan arama sağlayıcısına ilişkin alternatif URL'lerin listesi</translation>
 <translation id="1530812829012954197">Aşağıdaki URL kalıplarını her zaman ana makine tarayıcısında oluştur</translation>
+<translation id="1532965933165453786">Fast Transition'ın etkinleştirilmesine veya devre dışı bırakılmasına olanak tanır.
+      Bu, tüm kullanıcılar ve cihazdaki tüm arayüzler için geçerlidir.
+      Fast Transition'ın kullanılabilmesi için hem bu ayarın hem de ağ başına ONC özelliğinin etkinleştirilmesi gerekir.
+      Ayarlandığında, politika bu özelliği devre dışı bırakacak şekilde değiştirilmedikçe Fast Transition devam eder.
+
+      Politika ayarlanmazsa Fast Transition kullanılmaz.
+      Yanlış (false) değerine ayarlanırsa Fast Transition kullanılmaz.
+      Doğru (true) değerine ayarlanırsa Fast Transition, kablosuz erişim noktasının desteklemesi durumunda kullanılır.</translation>
 <translation id="1541170838458414064">Yazdırma sayfası boyutunu kısıtla</translation>
 <translation id="1553684822621013552">Bu politika doğru değerine ayarlandığında, ARC kullanıcı için
       etkinleştirilir (ek politika ayarı kontrollerine tabidir; geçerli
@@ -941,6 +949,13 @@
       Bu politika yalnızca öneride bulunabilir. Önerilen yerel ayarları en üste taşımak için bu politikayı kullanabilirsiniz, ancak kullanıcıların oturumları için <ph name="PRODUCT_OS_NAME" /> tarafından desteklenen herhangi bir yerel ayarı seçmesine her zaman izin verilir.
       </translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
+<translation id="3388153794103186066">Hangi sitelerin sağlanan tedarikçi ve ürün kimlikleriyle USB cihazlarına erişmesine otomatik olarak izin verileceğini belirten bir URL listesi ayarlamanıza olanak tanır. Politikanın geçerli olabilmesi için listedeki her öğenin hem cihazları hem de URL'leri içermesi gerekir. Cihazlardaki her öğe tedarikçi kimliği ve ürün kimliği alanı içerebilir. Dahil edilmeyen her kimlik bir istisnayla joker olarak değerlendirilir. Bu istisnaya göre tedarikçi kimliği belirtilmeden ürün kimliği de belirtilemez. Aksi halde politika geçerli olmaz ve yoksayılır.
+
+        USB izin modeli, istekte bulunan sitenin URL'sini ("istekte bulunan URL") ve üst düzey çerçeve sitesinin URL'sini ("yerleştirme URL'si") kullanarak istekte bulunan URL'ye USB cihazına erişmesi için izin verir. İstekte bulunan site bir iframe içinde yüklendiğinde, istekte bulunan URL yerleştirme URL'sinden farklı olabilir. Bu nedenle, "URL'ler" alanı, sırasıyla istekte bulunan URL'yi ve yerleştirme URL'sini belirtmek için virgülle sınırlandırılmış en fazla iki URL dizesi içerebilir. Yalnızca bir URL belirtilirse yerleştirme durumundan bağımsız olarak bu URL ile eşleşen istekte bulunan sitenin URL'sine karşılık gelen USB cihazlarına erişim izni verilir. "URL'ler" alanındaki URL'lerin geçerli URL'ler olmaları gerekir; aksi halde, politika yoksayılır.
+
+        Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultWebUsbGuardSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
+
+        Bu politikadaki URL kalıpları, WebUsbBlockedForUrls politikasıyla yapılandırılan kalıplarla çakışmamalıdır. Çakışma olması halinde bu politikanın WebUsbBlockedForUrls ve WebUsbAskForUrls politikaları üzerinde önceliği olur.</translation>
 <translation id="3414260318408232239">Bu politika yapılandırılmazsa, <ph name="PRODUCT_NAME" /> varsayılan minimum sürüm olarak TLS 1.0'ı kullanır.
 
       Aksi halde, şu değerlerin birine ayarlanabilir: "tls1", "tls1.1" veya "tls1.2". Ayarlandığında, <ph name="PRODUCT_NAME" />, belirtilen sürümden düşük olan SSL/TLS sürümlerini kullanmaz. Tanınmayan bir değer yoksayılır.</translation>
@@ -1183,6 +1198,7 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
 <translation id="3925020515212192040">Önceden yapılandırılmış ağ dosyası paylaşımlarının bir listesini belirtir.
 
       Politikanın her liste öğesi, iki üyeli bir nesnedir: "share_url" ve "mode". "share_url", paylaşılacak web sayfasının URL'si olmalı, "mode" ise "share_url"nin paylaşım keşfi açılır menüsüne ekleneceğini gösteren "drop_down" olmalıdır.</translation>
+<translation id="3925377537407648234">Ekran çözünürlüğünü ve ölçek faktörünü ayarlama</translation>
 <translation id="3939893074578116847">Çevrimiçi durumu izlemek, yönetim sunucusunun cihazın çevrimdışı olup olmadığını
       belirlemesini sağlamak için ağ paketlerini yönetim sunucusuna gönderin.
 
@@ -2019,6 +2035,15 @@ politikayı geçersiz kılamaz.
       Bu politika ancak makine <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kaydolduğunda geçerli olur.
 
       Bu politika, raporlama için <ph name="CHROME_REPORTING_EXTENSION_NAME" /> uzantısını zorla yükler ve söz konusu uzantıyla ilgili uzantı politikalarını geçersiz kılar.</translation>
+<translation id="6155247658847899816">Bu politika ayarlandığında, her bir ekranın çözünürlüğü ve ölçek faktörü belirtilen değerlere ayarlanır. Harici görüntü ayarları, bağlı tüm harici ekranlara uygulanır.
+
+      "external_width" ve "external_height" değerleri piksel cinsinden belirtilmelidir. "external_scale_percentage" ve "internal_scale_percentage" değerleri yüzde olarak belirtilmelidir.
+
+      "external_use_native" için doğru (true) değeri belirlenirse politika, "external_height" ve "external_width" değerlerini yoksayar ve harici ekranların çözünürlüğünü yerel çözünürlüklerine ayarlar.
+
+      "external_use_native" için yanlış (false) değeri belirlenir veya herhangi bir değer sağlanmazsa ve ne "external_height" ne de "external_width" değeri sağlanmamışsa politika, harici ekran ayarlarını etkilemez. Bir ekran, belirtilen çözünürlüğü veya ölçek faktörünü desteklemiyorsa politika, söz konusu ekrana uygulanmaz.
+
+      "Önerilen" işareti doğru (true) değerine ayarlanırsa kullanıcılar bir ekranın çözünürlüğünü ve ölçek faktörünü, giriş yaptıktan sonra ayarlar sayfası aracılığıyla değiştirebilir ancak kullanıcıların ayarları, bir sonraki yeniden başlatmada politika değeri tarafından geçersiz kılınır. "Önerilen" işareti yanlış (false) değerine ayarlanır veya hiç ayarlanmazsa kullanıcılar ekran ayarlarını değiştiremez.</translation>
 <translation id="6155936611791017817">Giriş ekranında büyük imleç modunun varsayılan durumunu ayarla</translation>
 <translation id="6157537876488211233">Proxy atlama kurallarının noktalı virgül ile ayrılmış listesi</translation>
 <translation id="6158324314836466367">Kurumsal web mağazası adı (kullanımdan kaldırıldı)</translation>
@@ -2130,6 +2155,7 @@ politikayı geçersiz kılamaz.
 <translation id="6553143066970470539">Ekran parlaklığı yüzdesi</translation>
 <translation id="6559057113164934677">Hiçbir sitenin kamera ve mikrofona erişmesine izin verme</translation>
 <translation id="6561396069801924653">Erişilebilirlik seçeneklerini sistem tepsisi menüsünde göster</translation>
+<translation id="6563458316362153786">802.11r Fast Transition'ı Etkinleştirme</translation>
 <translation id="6565312346072273043">Giriş ekranında ekran klavyesi erişilebilirlik özelliğinin varsayılan durumunu ayarlayın.
 
           Bu politikayı doğru seçeneğine ayarlarsanız giriş ekranı gösterildiğinde ekran klavyesi etkinleştirilir.
@@ -2801,6 +2827,11 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu politika yönetilen bir cihazda ayarlanmadığında cihazın sanal makine çalıştırmasına izin verilmez.
       Yönetilmeyen cihazların sanal makine çalıştırmasına izin verilir.</translation>
 <translation id="8001701200415781021"><ph name="PRODUCT_NAME" /> dahilinde hangi Google hesaplarının tarayıcı birincil hesapları olarak ayarlanmasına izin verileceğini kısıtlama</translation>
+<translation id="8009554972280451023">Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" /> profillerinde depolanan yer işaretleri, otomatik doldurma verileri, şifreler gibi ayarlar Dolaşım kullanıcı profili klasöründe veya Yönetici tarafından <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> politikası aracılığıyla belirlenen bir konumda depolanan bir dosyaya daha yazılır. Bu politikanın etkinleştirilmesi halinde bulut senkronizasyonu devre dışı bırakılır.
+
+      Bu politika devre dışı bırakılırsa veya ayarlanmazsa yalnızca normal yerel profiller kullanılır.
+
+      <ph name="SYNC_DISABLED_POLICY_NAME" /> politikası, <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> politikasını geçersiz kılarak tüm veri senkronizasyonunu devre dışı bırakır.</translation>
 <translation id="802147957407376460">Ekranı 0 derece döndür</translation>
 <translation id="8033913082323846868">Bu politika M70 sürümünde kullanımdan kaldırılmıştır. Lütfen bunun yerine AutofillAddressEnabled ve AutofillCreditCardEnabled politikalarını kullanın.
 
@@ -2928,6 +2959,7 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="8274603902181597201">Kullanıcının ecryptfs ana dizinini sil ve yeni bir ext4-encrypted ana diziniyle başla.</translation>
 <translation id="8285435910062771358">Tam ekran büyüteci etkin</translation>
 <translation id="8288199156259560552">Android Google Konum Hizmetini Etkinleştir</translation>
+<translation id="8290453559005611000">PluginVm resmi</translation>
 <translation id="8294750666104911727">Normalde, "ChromeFrameRendererSettings" politikası ne olursa olsun, chrome=1 olarak ayarlanmış X-UA Uyumlu sayfalar <ph name="PRODUCT_FRAME_NAME" /> ile oluşturulur.
 
           Bu ayarı etkinleştirirseniz sayfalarda meta etiketler taranmaz.
@@ -2993,6 +3025,7 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
           Bu politika ayarlanmazsa, tüm siteler için "ChromeFrameRendererSettings" politikası tarafından belirtilen varsayılan oluşturucu kullanılır.
 
           Örnek kalıplar için https://www.chromium.org/developers/how-tos/chrome-frame-getting-started sayfasına bakın.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Tarayıcı geçmişini kaydetmeyi devre dışı bırak</translation>
 <translation id="8498293625012059298">Şifre değiştirme URL'sini yapılandırın (yalnızca HTTP ve HTTPS şemaları). Şifre koruma hizmeti, tarayıcıda bir uyarı gördükten sonra şifrelerini değiştirmeleri için kullanıcıları bu URL'ye gönderir.
       <ph name="PRODUCT_NAME" /> ürününün bu şifre değiştirme sayfasında yeni şifre parmak izini doğru bir şekilde yakalayabilmesi için lütfen şifre değiştirme sayfanızın https://www.chromium.org/developers/design-documents/create-amazing-password-forms adresinde belirtilen yönergelere uygun olduğundan emin olun.

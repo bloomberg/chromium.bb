@@ -237,6 +237,7 @@
 <translation id="271033894570825754">جديدة</translation>
 <translation id="2728754400939377704">الترتيب حسب الموقع</translation>
 <translation id="2744248271121720757">النقر على الكلمة للبحث عنها فورًا أو الاطلاع على الإجراءات ذات الصلة</translation>
+<translation id="2760323196215778921">‏عليك أيضًا تفعيل هذا الإذن في Chrome. ويمكنك الاطِّلاع على <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" /> للحصول على التفاصيل.</translation>
 <translation id="2762000892062317888">الآن</translation>
 <translation id="2777555524387840389">عدد الثواني المتبقية: <ph name="SECONDS" /></translation>
 <translation id="2779651927720337254">تعذَّر التنزيل</translation>
@@ -934,6 +935,7 @@
 <translation id="8037750541064988519">عدد الأيام المتبقية: <ph name="DAYS" /></translation>
 <translation id="804335162455518893">‏لم يتم العثور على بطاقة SD.</translation>
 <translation id="805047784848435650">استنادًا إلى سجلّ التصفُّح</translation>
+<translation id="8051303708327298699">‏عليك أيضًا تفعيل هذه الأذونات في Chrome. ويمكنك الاطِّلاع على <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" /> للحصول على التفاصيل.</translation>
 <translation id="8051695050440594747">هناك <ph name="MEGABYTES" /> ميغابايت متوفرة</translation>
 <translation id="8058746566562539958">‏فتح بعلامة تبويب Chrome جديدة</translation>
 <translation id="8063895661287329888">تعذّرت إضافة الإشارة المرجعية.</translation>
@@ -1005,6 +1007,7 @@
 <translation id="857509777403223202">ستظهر المزيد من المقالات قريبًا. استمتع بليلتك!</translation>
 <translation id="857943718398505171">مسموح به (موصى به)</translation>
 <translation id="8583805026567836021">محو بيانات الحساب</translation>
+<translation id="860043288473659153">اسم حامل البطاقة</translation>
 <translation id="8609465669617005112">التحريك إلى أعلى</translation>
 <translation id="8616006591992756292">‏قد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">‏هل تريد فتح عنوان URL المقترح والمحدد في المحتوى الذي تم تنزيله؟</translation>

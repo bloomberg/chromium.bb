@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Upozornění ve věci ochrany soukromí v prohlížeči Google Chrome</translation>
 <translation id="1863312987075920112">Používáním této aplikace vyjadřujete souhlas se <ph name="BEGIN_LINK_TOS" />smluvními podmínkami<ph name="END_LINK_TOS" /> a <ph name="BEGIN_LINK_PRIVACY" />zásadami ochrany soukromí<ph name="END_LINK_PRIVACY" /> prohlížeče Chrome.</translation>
-<translation id="1878302395768190018">Toto nastavení můžete kdykoliv upravit v nastavení Chromu</translation>
 <translation id="2147651015520127414">Chrome ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="2342981853652716282">Chcete-li mít své záložky, hesla a další obsah na všech zařízeních, přihlaste se do Chromu.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Pomoci s vylepšováním funkcí a výkonu prohlížeče Chrome</translation>
 <translation id="4523886039239821078">Některé doplňky způsobují selhání prohlížeče Chrome. Prosím odinstalujte:</translation>
 <translation id="4615174829807303908">Odhlašujete se z účtu, který je spravován doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />. Touto akcí smažete svá data prohlížeče Chrome z tohoto zařízení, ve vašem účtu Google však vaše data zůstanou.</translation>
-<translation id="5240817131241497236">Nastavení, která v Chromu ovládají synchronizaci, personalizaci a další služby Google, se změnila. Může to mít dopad na vaše aktuální nastavení.</translation>
 <translation id="5389212809648216794">Google Chrome nemůže použít fotoaparát, protože jej právě používá jiná aplikace</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" /> lze kdykoliv upravit. Google může používat obsah na webech, které navštěvujete, interakce s prohlížečem a aktivity k personalizaci prohlížeče Chrome a služeb Google, jako jsou Překladač, Vyhledávání a reklamy.</translation>
 <translation id="5639704535586432836">Otevřete Nastavení &gt; Soukromí &gt; Fotoaparát &gt; Google Chrome a zapněte fotoaparát.</translation>

@@ -230,6 +230,14 @@
 <translation id="1523774894176285446">Navegador alternativo a iniciar para os Websites configurados.</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o fornecedor de pesquisas predefinido</translation>
 <translation id="1530812829012954197">Processar sempre os seguintes padrões de URL no navegador anfitrião</translation>
+<translation id="1532965933165453786">Permite ativar ou desativar a Transição rápida.
+      Aplica-se a todos os utilizadores e a todas as interfaces no dispositivo.
+      Para poder utilizar a Transição rápida, esta definição e a propriedade ONC por rede têm de estar ativadas.
+      Depois de definida, a Transição rápida mantém-se até a política ser alterada de modo a desativá-la.
+
+      Se a política não estiver definida, a Transição rápida não é utilizada.
+      Se estiver definida como falsa, a Transição rápida não é utilizada.
+      Se estiver definida como verdadeira, a Transição rápida é utilizada quando o ponto de acesso sem fios for compatível.</translation>
 <translation id="1541170838458414064">Restringir tamanho da página de impressão</translation>
 <translation id="1553684822621013552">Quando esta política está definida como verdadeira, o ARC está ativado para o utilizador
       (sujeito a verificações adicionais das definições da política. O ARC continua
@@ -935,6 +943,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Apenas pode definir esta política conforme recomendado. Pode utilizá-la para mover um conjunto de locais recomendados para o topo, mas os utilizadores podem sempre escolher qualquer local suportado pelo <ph name="PRODUCT_OS_NAME" /> para a respetiva sessão.
       </translation>
 <translation id="3381968327636295719">Utilizar o navegador anfitrião por predefinição</translation>
+<translation id="3388153794103186066">Permite-lhe definir uma lista de URLs que especificam os sites aos quais será concedida automaticamente autorização para aceder a um dispositivo USB com os IDs de fornecedor e do produto indicados. Todos os itens na lista devem conter dispositivos e URLs para que a política seja válida. Todos os itens nos dispositivos podem conter um campo de ID de fornecedor e de ID do produto. Os IDs omitidos são tratados como carateres universais, com a exceção de que não é possível especificar um ID do produto sem que o ID de fornecedor também seja especificado. Caso contrário, a política não é válida e será ignorada.
+
+        O modelo de autorização de USB utiliza o URL do site requerente ("URL requerente") e o URL do site de nível superior ("URL incorporante") para autorizar o URL requerente a aceder ao dispositivo USB. O URL requerente pode ser diferente do URL incorporante se o site requerente for carregado num iFrame. Assim, o campo "URLs" pode conter até duas strings de URL separadas por vírgula para especificar o URL requerente e o URL incorporante, respetivamente. Se apenas for especificado um URL, é concedido acesso aos dispositivos USB correspondentes quando o URL do site requerente corresponder a este URL, independentemente do estado de incorporação. Os URLs no campo "URLs" têm de ser URLs válidos; caso contrário, a política será ignorada.
+
+        Se esta política não estiver definida, o valor predefinido global é utilizado para todos os sites a partir da política "DefaultWebUsbGuardSetting", se estiver definida, ou, caso contrário, a partir da configuração pessoal do utilizador.
+
+        Os padrões de URL nesta política não devem entrar em conflito com os configurados através de WebUsbBlockedForUrls. Se existir conflito, esta política prevalece em relação a WebUsbBlockedForUrls e WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Se esta política não estiver configurada, o <ph name="PRODUCT_NAME" /> utiliza a versão mínima predefinida, neste caso, TLS 1.0.
 
       Caso contrário, pode ser definida para um dos seguintes valores: "tls1", "tls1.1" ou "tls1.2". Quando estiver definida, o <ph name="PRODUCT_NAME" /> não utiliza as versões SSL/TLS inferiores à versão especificada. Um valor não reconhecido será ignorado.</translation>
@@ -1180,6 +1195,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3925020515212192040">Especifica uma lista de partilhas de ficheiros de rede pré-configuradas.
 
       Cada item de lista da política é um objeto com dois membros: "share_url" e "mode". "share_url" deve ser o URL da partilha e "mode" deve ser "drop_down", que indica que "share_url" é adicionado à lista pendente da deteção de partilhas.</translation>
+<translation id="3925377537407648234">Definir a resolução do ecrã e o fator de escala</translation>
 <translation id="3939893074578116847">Envie pacotes de rede para o servidor de gestão para monitorizar o estado online, de modo a permitir
       que o servidor detete se o dispositivo está offline.
 
@@ -1974,6 +1990,29 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Esta política apenas entra em vigor quando a máquina é inscrita com <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Esta política força a instalação da <ph name="CHROME_REPORTING_EXTENSION_NAME" /> para os relatórios e substitui quaisquer políticas de extensão relacionadas com essa extensão.</translation>
+<translation id="6155247658847899816">Se esta política estiver definida, a resolução e o fator de escala de cada
+      ecrã são definidos para os valores especificados. As definições de ecrãs externos são
+      aplicadas a todos os ecrãs externos ligados.
+
+      Os valores de "external_width" e "external_height" devem ser especificados em
+      píxeis. Os valores de "external_scale_percentage" e
+      "internal_scale_percentage" devem ser especificados em percentagens.
+
+      Se "external_use_native" for definido como verdadeiro, a política irá ignorar os valores de
+      "external_height" e "external_width" e definir a resolução dos ecrãs externos
+      para a respetiva resolução nativa.
+
+      Se "external_use_native" for definido como falso ou não for fornecido e se
+      "external_height" ou "external_width" não forem fornecidos, a política não
+      afeta as definições dos ecrãs externos. Se a resolução ou
+      o fator de escala especificados não forem suportados por algum ecrã, a política não é aplicada a
+      esse ecrã.
+
+      Se o sinalizador "recomendado" for definido como verdadeiro, os utilizadores podem alterar a resolução e
+      o fator de escala de qualquer ecrã através da página de definições depois de iniciarem sessão, mas
+      as respetivas definições serão substituídas pelo valor da política no reinício seguinte.
+      Se o sinalizador "recomendado" for definido como falso ou não for definido, os utilizadores não podem alterar as
+      definições de visualização.</translation>
 <translation id="6155936611791017817">Definir o estado predefinido do cursor grande no ecrã de início de sessão</translation>
 <translation id="6157537876488211233">Lista separada por vírgulas das regras para ignorar o proxy</translation>
 <translation id="6158324314836466367">Nome da Web store da empresa (descontinuado)</translation>
@@ -2081,6 +2120,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6553143066970470539">Percentagem de brilho do ecrã</translation>
 <translation id="6559057113164934677">Não permitir que nenhum site aceda à câmara e microfone</translation>
 <translation id="6561396069801924653">Mostrar opções de acessibilidade no menu do tabuleiro do sistema</translation>
+<translation id="6563458316362153786">Ativar a Transição rápida 802.11r</translation>
 <translation id="6565312346072273043">Definir o estado predefinido da funcionalidade de acessibilidade de teclado no ecrã no ecrã de início de sessão.
 
           Se esta política for definida como verdadeira, o teclado no ecrã será ativado quando o ecrã de início de sessão for apresentado.
@@ -2723,6 +2763,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Quando esta política não está definida num dispositivo gerido, o dispositivo não pode executar máquinas virtuais.
       Os dispositivos não geridos podem executar máquinas virtuais.</translation>
 <translation id="8001701200415781021">Restringir as Contas Google que podem ser definidas como contas principais do navegador no <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Se ativar esta definição, as definições armazenadas nos perfis do <ph name="PRODUCT_NAME" />, tais como marcadores, dados de preenchimento automático, palavras-passe, etc., também são gravadas num ficheiro armazenado na pasta do perfil de utilizador Roaming ou numa localização especificada pelo administrador através da política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se ativar esta política, desativa a sincronização na nuvem.
+
+      Se esta política estiver desativada ou não estiver definida, apenas são utilizados os perfis locais normais.
+
+      A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados e substitui a política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Rodar o ecrã 0 graus</translation>
 <translation id="8033913082323846868">Esta política foi descontinuada no M70. Em alternativa, utilize AutofillAddressEnabled e AutofillCreditCardEnabled.
 
@@ -2851,6 +2896,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8274603902181597201">Limpe o diretório principal de ecryptfs do utilizador e comece com um diretório principal novo com encriptação ext4.</translation>
 <translation id="8285435910062771358">Lupa em ecrã inteiro ativada</translation>
 <translation id="8288199156259560552">Ativar os serviços de localização da Google para aplicações para Android</translation>
+<translation id="8290453559005611000">Imagem do PluginVm</translation>
 <translation id="8294750666104911727">Normalmente, as páginas com X-UA-Compatible definido como chrome=1 serão processadas em <ph name="PRODUCT_FRAME_NAME" />, independentemente da política "ChromeFrameRendererSettings".
 
           Se ativar esta definição, não serão procuradas metatags nas páginas.
@@ -2929,6 +2975,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
           Se esta política não for definida, é utilizado o processador predefinido para todos os sites, conforme especificado pela política "ChromeFrameRendererSettings".
 
           Para obter exemplos de padrões, consulte https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Desativar armazenamento do histórico de navegação</translation>
 <translation id="8498293625012059298">Configure o URL de alteração da palavra-passe (apenas esquemas HTTP e HTTPS). O serviço de proteção por palavra-passe envia os utilizadores para este URL para alterarem as respetivas palavras-passe após ser apresentado um aviso no navegador.
       Para que o <ph name="PRODUCT_NAME" /> capture a nova impressão digital da palavra-passe corretamente nesta página de alteração da palavra-passe, certifique-se de que a sua página de início de sessão de alteração da palavra-passe segue as diretrizes apresentadas em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

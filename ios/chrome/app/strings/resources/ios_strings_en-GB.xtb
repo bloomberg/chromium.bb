@@ -46,7 +46,6 @@
 <translation id="1582732959743469162">This will stop all progress for your current download.</translation>
 <translation id="1605658421715042784">Copy image</translation>
 <translation id="1612730193129642006">Show Tab Grid</translation>
-<translation id="162035744160882748">Turn on sync, personalisation and other Google services</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1657011748321897393">Sharing failed because you are not connected to the network.</translation>
 <translation id="165877110639533037">No Open Tabs</translation>
@@ -118,6 +117,7 @@
 <translation id="2830972654601096923">Manage Addresses…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Reset Translate Settings</translation>
+<translation id="2858204748079866344">To protect your privacy, Chrome will not auto-fill your password in this field.</translation>
 <translation id="285960592395650245">Retry Download</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Hidden Password</translation>
@@ -129,6 +129,7 @@
 <translation id="2923448633003185837">Paste and Go</translation>
 <translation id="292639812446257861">Mark Unread</translation>
 <translation id="2933759065870693102">Torch</translation>
+<translation id="2958718410589002129">Passwords</translation>
 <translation id="2969979262385602596">Failed to sign in. Please try again later.</translation>
 <translation id="2989805286512600854">Open in New Tab</translation>
 <translation id="3024255823539804759">Past Day</translation>
@@ -163,13 +164,13 @@
 <translation id="3494788280727468875">Confirm Clear Browsing Data</translation>
 <translation id="3519193562722059437">Open a tab to browse the web.</translation>
 <translation id="3527085408025491307">Folder</translation>
+<translation id="3529024052484145543">Not secure</translation>
 <translation id="3533202363250687977">Close all incognito tabs</translation>
 <translation id="3533436815740441613">New Tab</translation>
 <translation id="3551320343578183772">Close Tab</translation>
 <translation id="3588820906588687999">Open Image in New Tab</translation>
 <translation id="3603009562372709545">Copy Link URL</translation>
 <translation id="3607167657931203000">Autofill Data</translation>
-<translation id="360930808415985584">Control Sync, Personalisation and More</translation>
 <translation id="3609785682760573515">Syncing...</translation>
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
@@ -181,6 +182,8 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Site Information</translation>
 <translation id="3928666092801078803">Combine my data</translation>
+<translation id="3929457972718048006">Addresses</translation>
+<translation id="3943492037546055397">Passwords</translation>
 <translation id="3950820424414687140">Sign in</translation>
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="3989635538409502728">Sign Out</translation>
@@ -198,7 +201,6 @@
 <translation id="4124987746317609294">Time Range</translation>
 <translation id="4172051516777682613">Always show</translation>
 <translation id="418156467088430727">View Offline Version in New Tab</translation>
-<translation id="4192273449750167573">Review your settings on the next screen</translation>
 <translation id="4237682350741091554">Manage Chrome Sync and personalisation in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Enter Passphrase</translation>
 <translation id="4272631900155121838">To scan a QR code, enable the camera from settings</translation>
@@ -217,8 +219,8 @@
 <translation id="4508750114462689118">Close sign-in promo</translation>
 <translation id="4526249700380860531">View and manage saved passwords at <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
-<translation id="4541241553780729349">The data sync to Google and the features you use will not change</translation>
 <translation id="457386861538956877">More...</translation>
+<translation id="4592368184551360546">Keyboard</translation>
 <translation id="461440297010471931">Searching with Google</translation>
 <translation id="4619615317237390068">Tabs from other devices</translation>
 <translation id="4620246317052452550">Pages That You've Read</translation>
@@ -251,6 +253,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5010803260590204777">Open an incognito tab to browse the web privately.</translation>
 <translation id="5011684439661633295">Hi <ph name="FULL_ACCOUNT_NAME" /></translation>
 <translation id="5039804452771397117">Allow</translation>
+<translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Install Google Drive</translation>
 <translation id="5083464117946352670">Cannot determine file size.</translation>
 <translation id="5094827893301452931">Tweet completed.</translation>
@@ -268,6 +271,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5409365236829784218">There are no applications installed that can open this file.</translation>
 <translation id="5433691172869980887">Username copied</translation>
 <translation id="54401264925851789">Page Security Info</translation>
+<translation id="5443952882982198570">Credit cards</translation>
 <translation id="5525269841082836315">Create a Pass phrase</translation>
 <translation id="5548760955356983418">Handoff lets you start browsing a website on this device and then easily continue on your Mac. The current open website will appear in the Dock of your Mac.
 
@@ -298,7 +302,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5938160824633642847">Your device is almost full. Free up space and try again.</translation>
 <translation id="5948291296578561264">This lets you save photos to your photo library.</translation>
 <translation id="5955891643922670672">Viewing Offline Version</translation>
-<translation id="5957613098218939406">More Options</translation>
 <translation id="5964480694698977962">Create new incognito tab.</translation>
 <translation id="5965679971710331625">You're signed in</translation>
 <translation id="5979837087407522202">Search passwords</translation>
@@ -360,7 +363,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6797885426782475225">Voice Search</translation>
 <translation id="6807889908376551050">Show All...</translation>
 <translation id="681368974849482173">Item created</translation>
-<translation id="685040365210406336">Make no changes</translation>
 <translation id="6851516051005285358">Request Desktop Site</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6903907808598579934">Turn on sync</translation>
@@ -393,7 +395,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7346909386216857016">OK, got it</translation>
 <translation id="7383797227493018512">Reading List</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="741204030948306876">Yes, I'm in</translation>
 <translation id="7425346204213733349">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google Account.</translation>
 <translation id="744343212394640790">Not <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">State / County</translation>
@@ -420,6 +421,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7840771868269352570">The items that you selected will be removed.</translation>
 <translation id="7856733331829174190">Couldn't download</translation>
 <translation id="7859704718976024901">Browsing history</translation>
+<translation id="7887198238286927132">To protect your privacy, Chrome will not auto-fill this field.</translation>
 <translation id="7918293828610777738">Your reading list is available offline. To add a page to your reading list, tap <ph name="SHARE_OPENING_ICON" />, then <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Export Passwords…</translation>

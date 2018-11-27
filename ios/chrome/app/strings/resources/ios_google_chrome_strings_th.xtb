@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวของ Google Chrome</translation>
 <translation id="1863312987075920112">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ<ph name="BEGIN_LINK_TOS" />ข้อกำหนดในการให้บริการ<ph name="END_LINK_TOS" />และ<ph name="BEGIN_LINK_PRIVACY" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK_PRIVACY" />ของ Chrome</translation>
-<translation id="1878302395768190018">ปรับแต่งการตั้งค่านี้ได้ทุกเมื่อในการตั้งค่า Chrome</translation>
 <translation id="2147651015520127414">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>
 <translation id="2334084861041072223">ลิขสิทธิ์ <ph name="YEAR" /> Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="2342981853652716282">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์ก รหัสผ่าน และข้อมูลอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">ช่วยปรับปรุงฟีเจอร์และประสิทธิภาพของ Chrome</translation>
 <translation id="4523886039239821078">ส่วนเสริมบางรายการทำให้ Chrome ขัดข้อง โปรดถอนการติดตั้ง</translation>
 <translation id="4615174829807303908">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> การออกจากระบบจะลบข้อมูล Chrome ของคุณออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
-<translation id="5240817131241497236">การตั้งค่าที่ควบคุมการซิงค์ การปรับเปลี่ยนในแบบของคุณ และบริการอื่นๆ ของ Google ใน Chrome มีการเปลี่ยนแปลง ซึ่งอาจส่งผลต่อการตั้งค่าปัจจุบันของคุณ</translation>
 <translation id="5389212809648216794">Google Chrome ไม่สามารถใช้กล้องถ่ายรูปเนื่องจากแอปพลิเคชันอื่นใช้งานอยู่</translation>
 <translation id="5489543008378040943">คุณปรับแต่ง<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" />ได้ทุกเมื่อ Google อาจใช้เนื้อหาในเว็บไซต์ที่คุณเข้าชม รวมถึงการโต้ตอบและกิจกรรมในเบราว์เซอร์เพื่อปรับ Chrome และบริการของ Google อย่างเช่น แปลภาษา, Search และโฆษณาให้เหมาะกับคุณ</translation>
 <translation id="5639704535586432836">เปิดการตั้งค่า &gt; ความเป็นส่วนตัว &gt; กล้อง &gt; Google Chrome เพื่อเปิดกล้องถ่ายรูป</translation>

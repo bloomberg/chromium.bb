@@ -45,6 +45,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="1275718070701477396">Seleccionado</translation>
 <translation id="1286609444451033486">Pulsa la tecla de búsqueda y la barra espaciadora para activar o desactivar esta opción.</translation>
 <translation id="1291286136605998134">Botón activar/desactivar</translation>
+<translation id="1303806948938513162">Toca con 4 dedos para acceder a los menús de ChromeVox</translation>
 <translation id="1319608975892113573">No hay ninguna etiqueta "blockquote" anterior.</translation>
 <translation id="1321576897702511272">Oculta la ayuda de ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> de <ph name="TOTAL" /></translation>
@@ -239,6 +240,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3046838483509668188">Opciones de ChromeVox</translation>
 <translation id="3047143736589213134">Mapa de teclado experimental</translation>
 <translation id="3060756054951570867"><ph name="TITLE" />, menú abierto</translation>
+<translation id="3060880924447482063">Desliza el dedo hacia la izquierda o hacia la derecha para desplazarte de un elemento a otro</translation>
 <translation id="3070245424257836917">Desliza tres dedos hacia arriba</translation>
 <translation id="3078345202707391975">Siguiente encabezado de nivel 2</translation>
 <translation id="3078740164268491126">tabla</translation>
@@ -332,6 +334,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3389259863310851658">Campo de formulario anterior</translation>
 <translation id="3390225400784126843">Siguiente elemento distinto.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, elemento de menú</translation>
+<translation id="3393605254399152980">Arrastra un dedo para escuchar lo que tocas</translation>
 <translation id="3406283310380167331">Muestra la lista de formularios</translation>
 <translation id="3423495725743882470">fila $1, columna $2</translation>
 <translation id="3457000393508828486">Pulsado parcialmente</translation>
@@ -347,6 +350,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3497063866483065785">{COUNT,plural, =1{signo de interrogación}other{# signos de interrogación}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{símbolo de intercalación}other{# símbolos de intercalación}}</translation>
 <translation id="352577523970648069">Un campo de texto editable</translation>
+<translation id="3549680091535286226">Toca con 2 dedos para detener la voz temporalmente</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, casilla de verificación no seleccionada</translation>
 <translation id="3589661172894441357">Glosario</translation>
 <translation id="3599054940393788245">No incluido en la expresión matemática</translation>
@@ -411,6 +415,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4166192625054637755">Fin de subíndice</translation>
 <translation id="4173994908659439270">No hay ningún campo de texto editable posterior.</translation>
 <translation id="4176463684765177261">Inhabilitado</translation>
+<translation id="4187322598335821254">Desliza el dedo hacia arriba o hacia abajo para desplazarte de una línea a otra</translation>
 <translation id="4188530942454211480">Frase anterior</translation>
 <translation id="4191918948604314587">Un botón</translation>
 <translation id="419265409837491189">Ir a la columna anterior</translation>
@@ -709,6 +714,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="6583174818554398774">Cambiar a granularidad siguiente</translation>
 <translation id="6587021927234520429">No hay ningún título de nivel 4 posterior.</translation>
 <translation id="6601344353291556895">Habilitar descripciones detalladas.</translation>
+<translation id="6609828810966525877">Descubre más gestos en el modo de aprendizaje y en el Centro de Ayuda de Chromebook</translation>
 <translation id="6615602925644411249">Buscar en la página</translation>
 <translation id="6628427060004938651">Parte</translation>
 <translation id="6633350132811819843">No hay ninguna tabla posterior.</translation>
@@ -760,6 +766,7 @@ Para cerrar una pestaña, pulsa Control + W.
 Para desplazarte hacia adelante por las pestañas abiertas, utiliza Control + Tabulador. 
 Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="7086377898680121060">Aumentar el brillo</translation>
+<translation id="7088743565397416204">Toca dos veces para activar el elemento seleccionado</translation>
 <translation id="7095834689119144465">Edita solo texto numérico</translation>
 <translation id="7096001299300236431">Anterior archivo multimedia</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -815,6 +822,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="7491962110804786152">tabulador</translation>
 <translation id="7492049978501397201">Diálogo introducido</translation>
 <translation id="7518543783849163354">Para que ChromeVox deje de hablar temporalmente, pulsa la tecla Control.</translation>
+<translation id="7521682724501952239">Puedes usar ChromeVox con la pantalla táctil.</translation>
 <translation id="7532613204005497612">Junio</translation>
 <translation id="7552432549459840808">Combinaciones de teclas útiles de Chrome</translation>
 <translation id="7579911500627256166">punto <ph name="DOT" /></translation>

@@ -45,6 +45,7 @@
 <translation id="1275718070701477396">തിരഞ്ഞെടുത്തു</translation>
 <translation id="1286609444451033486">മാറ്റാൻ തിരയൽ+സ്‌പെയ്‌സ് അമർത്തുക.</translation>
 <translation id="1291286136605998134">ടോഗിൾ ബട്ടൺ</translation>
+<translation id="1303806948938513162">ChromeVox മെനു നൽകാൻ 4 വിരലുകൾ ഉപയോഗിച്ച് ടാപ്പ് ചെയ്യുക</translation>
 <translation id="1319608975892113573">മുൻ ബ്ലോക്ക്ക്വോട്ട് ഒന്നുമില്ല.</translation>
 <translation id="1321576897702511272">ChromeVox സഹായം മറയ്ക്കുക</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
@@ -238,6 +239,7 @@
 <translation id="3046838483509668188">ChromeVox ഓപ്‌ഷനുകൾ</translation>
 <translation id="3047143736589213134">പരീക്ഷണാത്മക കീമാപ്പ്</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> മെനു തുറന്നു</translation>
+<translation id="3060880924447482063">ഇനം അനുസരിച്ച് നീക്കുന്നതിന് ഇടത്തോട്ടോ വലത്തോട്ടോ സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="3070245424257836917">മൂന്ന് വിരലുകൾ ഉപയോഗിച്ച് മുകളിലോട്ട് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="3078345202707391975">അടുത്ത നില 2 ശീർഷകം</translation>
 <translation id="3078740164268491126">പട്ടിക</translation>
@@ -331,6 +333,7 @@
 <translation id="3389259863310851658">മുൻ ഫോം ഫീൽഡ്</translation>
 <translation id="3390225400784126843">അടുത്ത മറ്റൊരു ഘടകം</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, മെനു ഇനം</translation>
+<translation id="3393605254399152980">നിങ്ങൾ സ്‌പർശിക്കുന്നത് എന്താണെന്ന് കേൾക്കാൻ വിരൽ ഉപയോഗിച്ച് വലിക്കുക</translation>
 <translation id="3406283310380167331">ഫോമുകളുടെ ലിസ്റ്റ് കാണിക്കുക</translation>
 <translation id="3423495725743882470">വരി $1 കോളം $2</translation>
 <translation id="3457000393508828486">ഭാഗികമായി അമർത്തിയത്</translation>
@@ -346,6 +349,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{ചോദ്യചിഹ്നം}other{# ചോദ്യചിഹ്നങ്ങൾ}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{കാരറ്റ്}other{# കാരറ്റുകൾ}}</translation>
 <translation id="352577523970648069">എഡിറ്റുചെയ്യാവുന്ന ഒരു ടെക്‌സ്‌റ്റ് ഫീൽഡ്</translation>
+<translation id="3549680091535286226">സംസാരിക്കുന്നത് താൽക്കാലികമായി നിർത്താൻ രണ്ട് വിരലുകൾ ഉപയോഗിച്ച് ടാപ്പ് ചെയ്യുക</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, ചെക്ക്‌ബോക്സ് ചെക്ക് ചെയ്‌തിട്ടില്ല</translation>
 <translation id="3589661172894441357">പദസഞ്ചയം</translation>
 <translation id="3599054940393788245">ആന്തരിക മാത്ത് അല്ല</translation>
@@ -410,6 +414,7 @@
 <translation id="4166192625054637755">സബ് സ്ക്രിപ്‌റ്റ് അവസാനിച്ചു</translation>
 <translation id="4173994908659439270">എഡിറ്റുചെയ്യാൻ കഴിയുന്ന അടുത്ത വാചക ഫീൽഡ് ഒന്നുമില്ല.</translation>
 <translation id="4176463684765177261">അപ്രാപ്‌തമാക്കി</translation>
+<translation id="4187322598335821254">ലൈൻ അനുസരിച്ച് നീക്കുന്നതിന് മുകളിലേക്കോ താഴേക്കോ സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="4188530942454211480">മുമ്പത്തെ വാക്യം</translation>
 <translation id="4191918948604314587">ഒരു ബട്ടൺ</translation>
 <translation id="419265409837491189">മുമ്പത്തെ കോളത്തിലേക്ക് പോവുക</translation>
@@ -708,6 +713,7 @@
 <translation id="6583174818554398774">അതിസൂക്ഷമമായ രീതിയിൽ അടുത്തതിലേക്ക് നീക്കുക</translation>
 <translation id="6587021927234520429">അടുത്ത നില 4 ശീർഷകം ഒന്നുമില്ല.</translation>
 <translation id="6601344353291556895">സംഭാഷണ വിവരണങ്ങൾ പ്രവർത്തനക്ഷമമാക്കുക.</translation>
+<translation id="6609828810966525877">'അറിയുക മോഡ്', Chromebook സഹായകേന്ദ്രം എന്നിവയിൽ കൂടുതൽ വിരൽചലനങ്ങൾ അടുത്തറിയുക</translation>
 <translation id="6615602925644411249">പേജിൽ കണ്ടെത്തുക.</translation>
 <translation id="6628427060004938651">ഭാഗം</translation>
 <translation id="6633350132811819843">അടുത്ത പട്ടിക ഒന്നുമില്ല.</translation>
@@ -759,6 +765,7 @@
 തുറന്ന ടാബുകളിലൂടെ മുന്നോട്ട് നീക്കാൻ, കൺട്രോൾ+ടാബ് ഉപയോഗിക്കുക.
 Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട്+F അമർത്തുക.</translation>
 <translation id="7086377898680121060">തെളിച്ചം കൂട്ടുക</translation>
+<translation id="7088743565397416204">ഫോക്കസ് ചെയ്‌തിരിക്കുന്ന ഇനം സജീവമാക്കാൻ ഇരട്ട ടാപ്പ് ചെയ്യുക</translation>
 <translation id="7095834689119144465">വാചക സംഖ്യ മാത്രം എഡിറ്റുചെയ്യുക</translation>
 <translation id="7096001299300236431">മുമ്പത്തെ മീഡിയ</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -814,6 +821,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="7491962110804786152">ടാബ്</translation>
 <translation id="7492049978501397201">ഡയലോഗ് നൽകി</translation>
 <translation id="7518543783849163354">സംസാരിക്കുന്നതിൽ നിന്ന് ChromeVox-നെ തൽക്കാലം നിർത്താൻ, കൺട്രോൾ കീ അമർത്തുക.</translation>
+<translation id="7521682724501952239">ടച്ച്‌സ്‌ക്രീനിനൊപ്പം നിങ്ങൾക്ക് ChromeVox ഉപയോഗിക്കാം.</translation>
 <translation id="7532613204005497612">ജൂൺ</translation>
 <translation id="7552432549459840808">സഹായകരമായ Chrome കുറുക്കുവഴികൾ</translation>
 <translation id="7579911500627256166"><ph name="DOT" /> ഡോട്ട്</translation>

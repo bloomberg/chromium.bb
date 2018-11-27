@@ -32,6 +32,7 @@
 <translation id="1039337018183941703">Ugyldig eller skadet fil.</translation>
 <translation id="1042174272890264476">Datamaskinen din har <ph name="SHORT_PRODUCT_NAME" />s RLZ-bibliotek innebygget. RLZ tildeler en ikke-unik, ikke-personlig tagg for å måle søk og <ph name="SHORT_PRODUCT_NAME" />-bruk drevet av en bestemt markedsføringskampanje. Disse etikettene vises noen ganger i Google-søk i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1046059554679513793">Dette navnet er allerede i bruk!</translation>
+<translation id="1046635659603195359">Det ser ut til at du allerede har konfigurert Voice Match med Google-assistenten din på en annen enhet. Disse tidligere opptakene kan brukes til å lage en stemmemodell på denne enheten. Dette burde ta mindre enn ett minutt.</translation>
 <translation id="1047431265488717055">Kopiér linkte&amp;kst</translation>
 <translation id="1047726139967079566">Legg til bokmerke for denne siden...</translation>
 <translation id="1047956942837015229">Sletter <ph name="COUNT" /> elementer ...</translation>
@@ -165,6 +166,8 @@
     Gå til neste skjermbilde, og send tilbakemelding for å hjelpe oss med å løse problemet.</translation>
 <translation id="1217668622537098248">Gå tilbake til venstreklikk etter handling</translation>
 <translation id="121783623783282548">Passordene stemmer ikke overens.</translation>
+<translation id="1218839827383191197"><ph name="BEGIN_PARAGRAPH1" />Googles posisjonstjeneste bruker kilder som Wi-Fi, mobilnettverk og sensorer til å beregne enhetens posisjon.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Du kan slå av Posisjon ved å slå av hovedinnstillingen for Posisjon på enheten. Du kan også slå av bruken av Wi-Fi, mobilnettverk og sensorer for posisjon fra posisjonsinnstillingene.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="122082903575839559">Signaturalgoritme for sertifikat</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 med RSA-kryptering</translation>
 <translation id="1221825588892235038">Bare utvalg</translation>
@@ -239,6 +242,7 @@
 <translation id="1340527397989195812">Sikkerhetskopiér medier fra enheten ved hjelp av Filer-appen.</translation>
 <translation id="1341988552785875222">Den gjeldende bakgrunnen er stilt inn av «<ph name="APP_NAME" />». Det kan hende du må avinstallere «<ph name="APP_NAME" />» før du kan velge en annen bakgrunn.</translation>
 <translation id="1346748346194534595">Høyre</translation>
+<translation id="1347256498747320987">Installer oppdateringer og apper. Hvis du fortsetter, godtar du at denne enheten også kan laste ned og installere oppdateringer automatisk fra Google, operatøren din og produsenten av enheten. Dette bruker muligens mobildata. Noen av disse appene kan inneholde kjøp i app-funksjonalitet. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Oppdateringen starter når batteriet når <ph name="BATTERY_LEVEL" /> %.</translation>
 <translation id="1351692861129622852">Importerer <ph name="FILE_COUNT" /> filer ...</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -367,6 +371,7 @@
 <translation id="1529899284660134226">Administrer delte filer og mapper</translation>
 <translation id="1530838837447122178">Åpne innstillingene for mus og styreflate</translation>
 <translation id="1531004739673299060">Programvindu</translation>
+<translation id="1536754031901697553">Kobler fra …</translation>
 <translation id="15373452373711364">Stor markør</translation>
 <translation id="1538729222189715449">Åpner Linux-filer …</translation>
 <translation id="1540605929960647700">Slå på demomodus</translation>
@@ -470,7 +475,7 @@
 <translation id="1680849702532889074">Det oppsto en feil under installasjon av Linux-programmet ditt.</translation>
 <translation id="16815041330799488">Ikke la nettsteder se tekst og bilder som er kopiert til utklippstavlen</translation>
 <translation id="1682548588986054654">Nytt inkognitovindu</translation>
-<translation id="1683850629661177840">Med lettmodus blir surfingen nå enda raskere på alle sider, inkludert HTTPS.</translation>
+<translation id="1683850629661177840">Med forenklet modus blir surfingen nå enda raskere på alle sider, inkludert HTTPS.</translation>
 <translation id="168715261339224929">For å få bokmerkene dine på alle enhetene dine, slå på synkronisering.</translation>
 <translation id="1688867105868176567">Vil du fjerne nettstedsdata?</translation>
 <translation id="1688935057616748272">Skriv inn en bokstav</translation>
@@ -1295,6 +1300,7 @@
 <translation id="2946119680249604491">Legg til forbindelse</translation>
 <translation id="2948300991547862301">Gå til <ph name="PAGE_TITLE" /></translation>
 <translation id="29488703364906173">En rask, enkel og sikker nettleser, utviklet for et moderne Internett.</translation>
+<translation id="2949289451367477459">Bruk posisjon. Tillat at apper og tjenester med posisjonstillatelse bruker posisjonen til enheten. Google kan samle inn posisjonsdata med jevne mellomrom og bruke disse dataene til å forbedre posisjonsnøyaktigheten og posisjonsbaserte tjenester på en anonym måte. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="2958721676848865875">Advarsel om pakkeutvidelse</translation>
 <translation id="296026337010986570">Ferdig! Skadelig programvare er fjernet. For å slå på utvidelser igjen, gå til &lt;a href="chrome://extensions"&gt;Utvidelser&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (fra utvidelse)</translation>
@@ -1756,6 +1762,7 @@
 <translation id="3677657024345889897">Stillest</translation>
 <translation id="3678156199662914018">Utvidelse: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Takk for tilbakemeldingen. Siden du er uten nett akkurat nå, sendes rapporten senere.</translation>
+<translation id="3682824389861648626">Bevegelsesterskel</translation>
 <translation id="3683023058278427253">Vi har oppdaget flere lisenstyper for domenet ditt. Velg én for å fortsette.</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" />-forespørsel om skjermdeling</translation>
 <translation id="3685122418104378273">Google Disk-synkronisering er deaktivert som standard ved bruk av mobile data.</translation>
@@ -1961,6 +1968,7 @@
 <translation id="3954953195017194676">Du har ingen nylig lagrede WebRTC-aktivitetslogger.</translation>
 <translation id="3955193568934677022">Gi nettsteder tillatelse til å spille av beskyttet innhold (anbefales)</translation>
 <translation id="3956702100721821638">Kunne ikke nå Google Play</translation>
+<translation id="3957844511978444971">Trykk på «Godta» for å bekrefte valget ditt av disse innstillingene for Google-tjenester.</translation>
 <translation id="3958088479270651626">Importér bokmerker og innstillinger</translation>
 <translation id="3960566196862329469">ONC</translation>
 <translation id="3965965397408324205">Gå ut av <ph name="PROFILE_NAME" /></translation>
@@ -2381,9 +2389,6 @@
 <translation id="4689235506267737042">Velg demoinnstillingene dine</translation>
 <translation id="4689421377817139245">Synkroniser dette bokmerket med iPhone</translation>
 <translation id="4690091457710545971">&lt;Fire filer genereres av Intel Wi-Fi-fastvaren: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. De tre første er binærfiler som inneholder registerdumper og kontrolleres av Intel for å sikre at de ikke inneholder personlig eller enhetsidentifiserende informasjon. Den siste filen er et kjøringsspor fra Intel-fastvaren. All personlig eller enhetsidentifiserende informasjon er fjernet fra filen, men den er for stor til å vises her. Disse filene ble generert som svar på nylige Wi-Fi-problemer med enheten din og deles med Intel for å bidra med feilsøking av disse problemene.&gt;</translation>
-<translation id="4692302215262324251"><ph name="DEVICE_TYPE" />-enheten din er registrert for bedriftsadministrering av <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    <ph name="LINE_BREAK_AND_EMPTY_LINE" />
-    Hvis dette er uventet, må du ta kontakt med brukerstøtten.</translation>
 <translation id="469230890969474295">OEM-mappe</translation>
 <translation id="4692623383562244444">Søkemotorer</translation>
 <translation id="4694024090038830733">Administratoren håndterer konfigureringen av skrivere.</translation>
@@ -2785,6 +2790,7 @@
 <translation id="5301954838959518834">Greit</translation>
 <translation id="5302048478445481009">Språk</translation>
 <translation id="5305688511332277257">Ingen installert</translation>
+<translation id="5307030433605830021">Kilden støttes ikke</translation>
 <translation id="5308380583665731573">Koble til</translation>
 <translation id="5311304534597152726">Logger inn som</translation>
 <translation id="5315873049536339193">Identitet</translation>
@@ -2922,6 +2928,7 @@
 <translation id="5507756662695126555">Ikke-avvisning</translation>
 <translation id="5509693895992845810">L&amp;agre som</translation>
 <translation id="5509914365760201064">Utsteder: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5511379779384092781">Ekstra liten</translation>
 <translation id="5511823366942919280">Er du sikker på at du ønsker å konfigurere denne enheten som en «hai» («shark»)?</translation>
 <translation id="5512653252560939721">Brukersertifikatet må være støttet av maskinvaren.</translation>
 <translation id="5516183516694518900">Logg på Chrome med Google-kontoen din for å hente bokmerkene, loggen, passordene og andre innstillinger på alle enhetene dine.</translation>
@@ -2981,6 +2988,10 @@
 <translation id="5582839680698949063">Hovedmeny</translation>
 <translation id="5583640892426849032">Tilbake-tasten</translation>
 <translation id="5584088138253955452">Vil du lagre brukernavnet?</translation>
+<translation id="5584915726528712820"><ph name="BEGIN_PARAGRAPH1" />Dette er generell informasjon om enheten din og hvordan du bruker den (for eksempel batterinivå, system- og appaktivitet samt feil). Dataene brukes for å forbedre Android, og enkelte innsamlede data hjelper også Google-apper og -partnere, for eksempel Android-utviklere, med å forbedre apper og produkter.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Selv om denne funksjonen slås av, kan enheten fortsatt sende informasjonen den trenger for å motta nødvendige tjenester, som systemoppdateringer og sikkerhet.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Eieren kan kontrollere funksjonen fra Innstillinger &gt; Avansert &gt; Send diagnostikk og bruksdata til Google automatisk.<ph name="END_PARAGRAPH3" />
+    <ph name="BEGIN_PARAGRAPH4" />Hvis du har slått på ytterligere nett- og appaktivitet, kan disse dataene bli lagret i Google-kontoen din. Du kan se disse dataene, slette dem eller endre kontoinnstillingene dine på account.google.com.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="5585118885427931890">Kan ikke opprette bokmerkemappe.</translation>
 <translation id="558563010977877295">Åpne en bestemt side eller et sett med sider</translation>
 <translation id="5585912436068747822">Formateringen mislyktes</translation>
@@ -3013,6 +3024,7 @@
 <translation id="5623842676595125836">Logg</translation>
 <translation id="5624120631404540903">Administrer passord</translation>
 <translation id="5626134646977739690">Navn:</translation>
+<translation id="5626283214046138476">Den administrerte brukerkontoen din utløper snart.</translation>
 <translation id="5627086634964711283">Den styrer også hvilken side som vises når du klikker på Startside-knappen.</translation>
 <translation id="5627676517703583263">Surf smart med Chrome</translation>
 <translation id="562935524653278697">Administratoren din har slått av synkronisering av bokmerker, logg, passord og andre innstillinger du har.</translation>
@@ -3267,7 +3279,6 @@
 <translation id="6016972670657536680">Velg språk- og tastaturknappen. Det valgte språket er for øyeblikket <ph name="LANGUAGE" /></translation>
 <translation id="6019169947004469866">Beskjær</translation>
 <translation id="6020431688553761150">Tjeneren autoriserte ikke tilgang til denne ressursen for deg.</translation>
-<translation id="602251597322198729">Dette nettstedet forsøker å laste ned flere filer. Vil du tillate dette?</translation>
 <translation id="6022526133015258832">Åpne i fullskjerm</translation>
 <translation id="6022659036123304283">Gi Chrome et personlig preg</translation>
 <translation id="6022705094403139349">Er du klar til å koble til sikkerhetsnøkkelen din?</translation>
@@ -3284,6 +3295,8 @@
 <translation id="604001903249547235">Skybasert sikkerhetskopiering</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="6040852767465482106">Anonym identitet</translation>
+<translation id="6041046205544295907"><ph name="BEGIN_PARAGRAPH1" />Googles posisjonstjeneste bruker kilder som Wi-Fi, mobilnettverk og sensorer til å beregne enhetens posisjon.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Du kan slå av Posisjon ved å slå av hovedinnstillingen for Posisjon på enheten. Du kan også slå av bruken av Wi-Fi, mobilnettverk og sensorer for posisjon fra posisjonsinnstillingene.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="6041155700700864984">Avslutt fullskjermmodus</translation>
 <translation id="604124094241169006">Automatisk</translation>
 <translation id="6042169520002885235">Velg en skriverprodusent og -modell</translation>
@@ -3312,6 +3325,7 @@
 <translation id="6074825444536523002">Google-skjema</translation>
 <translation id="6075731018162044558">Beklager. Systemet kunne ikke hente noe langvarig API-tilgangstoken for denne enheten.</translation>
 <translation id="6075907793831890935">utveksle data med enheten <ph name="HOSTNAME" />.</translation>
+<translation id="6076175485108489240">Bruk posisjon. Tillat at apper og tjenester med posisjonstillatelse bruker posisjonen til enheten din. Google kan samle inn posisjonsdata med jevne mellomrom og bruke disse dataene til å forbedre posisjonsnøyaktigheten og posisjonsbaserte tjenester på en anonym måte. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="6076448957780543068">Inkluder denne skjermdumpen</translation>
 <translation id="6077131872140550515">Fjern som foretrukket nettverk</translation>
 <translation id="6077189836672154517">Tips og oppdateringer for <ph name="DEVICE_TYPE" /></translation>
@@ -3962,6 +3976,7 @@
 <translation id="7088674813905715446">Administratoren har gitt denne enheten status som «ikke klargjort». For å aktivere den for registrering, må du be administratoren gi enheten status som «ventende».</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Utveksle data med enhetene <ph name="HOSTNAMES" /></translation>
+<translation id="7094583680070770403">Lagre de lokale filene dine, og konfigurer en ny konto.</translation>
 <translation id="7096857570999173890">Du kan bruke PIN-koden til å låse opp enheten din når du er logget av.</translation>
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
 <translation id="7098447629416471489">Andre lagrede søkemotorer vises her</translation>
@@ -4027,6 +4042,7 @@
 <translation id="7191454237977785534">Lagre filen som</translation>
 <translation id="7193374945610105795">Ingen passord er lagret for <ph name="ORIGIN" /></translation>
 <translation id="7196835305346730603">Søker etter Chromebox-enheter i nærheten …</translation>
+<translation id="7196913789568937443">Sikkerhetskopiér til Google Disk. Gjenopprett data eller bytt enhet når som helst – helt enkelt. Sikkerhetskopiene dine lastes opp til Google og krypteres ved bruk av passordet for Google-kontoen din. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Få Google Søk og smarte funksjoner fra Google hver gang du surfer på nettet</translation>
 <translation id="7197632491113152433">Vi fant <ph name="NUMBER_OF_APPS" /> apper i kontoen din som kan brukes på denne enheten.</translation>
 <translation id="7199158086730159431">Få hjelp</translation>
@@ -4113,6 +4129,7 @@
 <translation id="7324297612904500502">Forumet for betaversjoner</translation>
 <translation id="7325437708553334317">Høy kontrast-utvidelse</translation>
 <translation id="7328162502911382168">(<ph name="COUNT" />)</translation>
+<translation id="7328699668338161242">Assistenten kjenner allerede igjen stemmen din</translation>
 <translation id="7328867076235380839">Ugyldig kombinasjon</translation>
 <translation id="7329154610228416156">Påloggingen mislyktes fordi den var konfigurert til å bruke en usikret nettadresse (<ph name="BLOCKED_URL" />). Kontakt administratoren din.</translation>
 <translation id="7334190995941642545">Smart Lock er for øyeblikket utilgjengelig. Prøv igjen senere.</translation>
@@ -4161,6 +4178,7 @@
 <translation id="7400839060291901923">Konfigurerer tilkoblingen på <ph name="PHONE_NAME" />-enheten din</translation>
 <translation id="740624631517654988">Blokkerte forgrunnsvindu</translation>
 <translation id="7407430846095439694">Importér og bind</translation>
+<translation id="7409549334477097887">Ekstra stor</translation>
 <translation id="7409836189476010449">Kjør Flash</translation>
 <translation id="7410344089573941623">Spør om <ph name="HOST" /> ønsker å bruke kameraet og mikrofonen din</translation>
 <translation id="741204030948306876">Ja, jeg er med</translation>
@@ -4467,6 +4485,7 @@
 <translation id="7853747251428735">Flere verktø&amp;y</translation>
 <translation id="7857117644404132472">Legg til unntak</translation>
 <translation id="7857949311770343000">Er dette den nye fanen du ventet på?</translation>
+<translation id="7859183520363892678">Lær Google-assistenten å gjenkjenne stemmen din</translation>
 <translation id="786073089922909430">Tjeneste: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">Ne&amp;dlastinger</translation>
 <translation id="7864662577698025113">Legg til ny tjeneste</translation>
@@ -4619,6 +4638,9 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Skriv ut som bilde</translation>
 <translation id="8072988827236813198">Fest faner</translation>
+<translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Appdata kan være alle slags data apper har lagret (basert på utviklerinnstillingene), inkludert potensielt sensitive data, for eksempel kontakter, meldinger og bilder.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />De sikkerhetskopierte dataene telles ikke med i Disk-lagringskvoten din.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Du kan slå av denne tjenesten i Innstillinger.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="8074127646604999664">Tillat at nylig lukkede nettsteder fullfører sending og mottak av data</translation>
 <translation id="8076492880354921740">Faner</translation>
 <translation id="8076835018653442223">Administratoren din har deaktivert tilgang til lokale filer på enheten din</translation>
@@ -4629,6 +4651,11 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8086015605808120405">Konfigurerer <ph name="PRINTER_NAME" /> …</translation>
 <translation id="8090234456044969073">lese en liste over nettstedene du besøker mest</translation>
 <translation id="8093359998839330381"><ph name="PLUGIN_NAME" /> svarer ikke</translation>
+<translation id="8095105960962832018"><ph name="BEGIN_PARAGRAPH1" />Sikkerhetskopiér til Google Disk. Gjenopprett dataene dine eller bytt enhet når som helst – helt enkelt. Sikkerhetskopier inkluderer appdata.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Sikkerhetskopiene dine lastes opp til Google og krypteres ved bruk av passordet for Google-kontoen din.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Appdata kan være alle slags data apper har lagret (basert på utviklerinnstillingene), inkludert potensielt sensitive data, for eksempel kontakter, meldinger og bilder.<ph name="END_PARAGRAPH3" />
+    <ph name="BEGIN_PARAGRAPH4" />Sikkerhetskopierte data regnes ikke med i Disk-lagringskvoten din.<ph name="END_PARAGRAPH4" />
+    <ph name="BEGIN_PARAGRAPH5" />Du kan slå av denne tjenesten i Innstillinger.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN-kodene samsvarer ikke</translation>
 <translation id="8101987792947961127">Powerwash kreves ved neste omstart</translation>
 <translation id="8102159139658438129">Gå til <ph name="LINK_BEGIN" />Innstillinger<ph name="LINK_END" /> for å se alternativer for den tilkoblede telefonen</translation>
@@ -4672,6 +4699,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8162857629993139764">Opprett et nytt notat</translation>
 <translation id="8168435359814927499">Innhold</translation>
 <translation id="8174047975335711832">Enhetsinformasjon</translation>
+<translation id="8174876712881364124">Sikkerhetskopiér til Google Disk. Gjenopprett data eller bytt enhet når som helst – helt enkelt. Sikkerhetskopier lastes opp til Google og krypteres ved bruk av passordet for Google-kontoen til barnet ditt. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="8177196903785554304">Nettverksdetaljer</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">side</translation>
@@ -4737,6 +4765,10 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> har deaktivert markøren din.</translation>
 <translation id="8264718194193514834"><ph name="EXTENSION_NAME" /> utløste full skjerm.</translation>
+<translation id="8267961145111171918"><ph name="BEGIN_PARAGRAPH1" />Dette er generell informasjon om enheten din og hvordan du bruker den (for eksempel batterinivå, system- og appaktivitet samt feil). Dataene brukes for å forbedre Android, og enkelte innsamlede data hjelper også Google-apper og -partnere, for eksempel Android-utviklere, med å forbedre apper og produkter.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Selv om denne funksjonen slås av, kan enheten fortsatt sende informasjonen den trenger for å motta nødvendige tjenester, som systemoppdateringer og sikkerhet.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Eieren kan kontrollere funksjonen fra Innstillinger &gt; Avansert &gt; Send diagnostikk og bruksdata til Google automatisk.<ph name="END_PARAGRAPH3" />
+    <ph name="BEGIN_PARAGRAPH4" />Hvis ytterligere nett- og appaktivitet er slått på for barnet ditt, kan disse dataene bli lagret i barnets Google-konto. Finn ut mer om disse innstillingene og hvordan du justerer dem, på families.google.com.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="8270242299912238708">PDF-dokumenter</translation>
 <translation id="827097179112817503">Vis startsideknapp</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 bokmerke er slettet}other{# bokmerker er slettet}}</translation>
@@ -4813,7 +4845,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8418445294933751433">Vi&amp;s som fane</translation>
 <translation id="8419098111404128271">Søkeresultater for «<ph name="SEARCH_TEXT" />»</translation>
 <translation id="8419368276599091549">Velkommen til <ph name="DEVICE_TYPE" />!</translation>
-<translation id="8420060421540670057">Vis filer fra Google Dokumenter</translation>
 <translation id="8425213833346101688">Endre</translation>
 <translation id="8425492902634685834">Festet til oppgavelinjen</translation>
 <translation id="8425755597197517046">&amp;Lim inn og søk</translation>

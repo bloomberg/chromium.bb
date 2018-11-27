@@ -237,6 +237,7 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="271033894570825754">Nové</translation>
 <translation id="2728754400939377704">Zoradiť podľa webu</translation>
 <translation id="2744248271121720757">Klepnutím na slovo aktivujete dynamické vyhľadávanie alebo zobrazíte súvisiace akcie</translation>
+<translation id="2760323196215778921">Tiež musíte zapnúť toto povolenie pre Chrome. Podrobnosti nájdete v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="2762000892062317888">práve teraz</translation>
 <translation id="2777555524387840389">Zostáva: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">neúspešné</translation>
@@ -934,6 +935,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8037750541064988519">Zostáva: <ph name="DAYS" /> d</translation>
 <translation id="804335162455518893">SD karta sa nenašla</translation>
 <translation id="805047784848435650">Na základe vašej histórie prehliadania</translation>
+<translation id="8051303708327298699">Tiež musíte zapnúť tieto nastavenia pre Chrome. Podrobnosti nájdete v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB k dispozícii</translation>
 <translation id="8058746566562539958">Otvoriť v Chrome na novej karte</translation>
 <translation id="8063895661287329888">Záložku sa nepodarilo pridať.</translation>
@@ -1005,6 +1007,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="857509777403223202">Čoskoro sa zobrazia ďalšie články. Príjemný večer!</translation>
 <translation id="857943718398505171">Povolené (odporúčané)</translation>
 <translation id="8583805026567836021">Prebieha vymazávanie údajov účtu</translation>
+<translation id="860043288473659153">Meno držiteľa karty</translation>
 <translation id="8609465669617005112">Presunúť nahor</translation>
 <translation id="8616006591992756292">Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Otvoriť navrhovanú webovú adresu určenú v stiahnutom obsahu?</translation>

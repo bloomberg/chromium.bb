@@ -45,6 +45,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="1275718070701477396">Valgt</translation>
 <translation id="1286609444451033486">Trykk på Søk + mellomrom for å slå av/på.</translation>
 <translation id="1291286136605998134">Av/på-knapp</translation>
+<translation id="1303806948938513162">Trykk med fire fingre for å åpne ChromeVox-menyene</translation>
 <translation id="1319608975892113573">Det finnes ingen tidligere blokksitat-elementer.</translation>
 <translation id="1321576897702511272">Skjul hjelp for ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> av <ph name="TOTAL" /></translation>
@@ -239,6 +240,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3046838483509668188">Alternativer for ChromeVox</translation>
 <translation id="3047143736589213134">Eksperimentelt tastaturoppsett</translation>
 <translation id="3060756054951570867"><ph name="TITLE" />-menyen er åpen</translation>
+<translation id="3060880924447482063">Sveip til venstre eller høyre for å flytte etter element</translation>
 <translation id="3070245424257836917">Sveip tre fingre opp</translation>
 <translation id="3078345202707391975">Neste overskrift på nivå 2</translation>
 <translation id="3078740164268491126">tabell</translation>
@@ -332,6 +334,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3389259863310851658">Forrige skjemafelt</translation>
 <translation id="3390225400784126843">Neste ulike element.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, menyelement</translation>
+<translation id="3393605254399152980">Dra én finger for å høre hva du berører</translation>
 <translation id="3406283310380167331">Vis skjemalisten</translation>
 <translation id="3423495725743882470">rad $1 kolonne $2</translation>
 <translation id="3457000393508828486">Delvis trykket på</translation>
@@ -347,6 +350,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3497063866483065785">{COUNT,plural, =1{spørsmålstegn}other{# spørsmålstegn}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{circumflekstegn}other{# circumflekstegn}}</translation>
 <translation id="352577523970648069">Et tekstfelt som kan endres</translation>
+<translation id="3549680091535286226">Trykk med to fingre for å stoppe høytlesningen midlertidig</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, avmerkingsruten er ikke avmerket</translation>
 <translation id="3589661172894441357">Ordliste</translation>
 <translation id="3599054940393788245">Utenfor matematisk uttrykk</translation>
@@ -411,6 +415,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4166192625054637755">Slutt på senket skrift</translation>
 <translation id="4173994908659439270">Det finnes ingen flere redigerbare tekstområder.</translation>
 <translation id="4176463684765177261">Deaktivert</translation>
+<translation id="4187322598335821254">Sveip opp eller ned for å flytte etter linje</translation>
 <translation id="4188530942454211480">Forrige setning</translation>
 <translation id="4191918948604314587">En knapp</translation>
 <translation id="419265409837491189">Gå til den forrige kolonnen</translation>
@@ -709,6 +714,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6583174818554398774">Gå til neste detaljnivå</translation>
 <translation id="6587021927234520429">Det finnes ikke flere overskrifter på nivå 4.</translation>
 <translation id="6601344353291556895">Slå på omfattende beskrivelser.</translation>
+<translation id="6609828810966525877">Utforsk flere bevegelser i læremodus og Chromebook-brukerstøtten</translation>
 <translation id="6615602925644411249">Finn på siden.</translation>
 <translation id="6628427060004938651">Del</translation>
 <translation id="6633350132811819843">Det finnes ikke flere tabeller.</translation>
@@ -760,6 +766,7 @@ For å lukke en fane, trykk på Control+W.
 For å navigere mellom åpne faner, trykk på Control+Tab.
 For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7086377898680121060">Lysstyrke opp</translation>
+<translation id="7088743565397416204">Dobbeltklikk for å aktivere det fokuserte elementet</translation>
 <translation id="7095834689119144465">Rediger bare tallene i teksten</translation>
 <translation id="7096001299300236431">Forrige media</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -815,6 +822,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Åpnet dialogen</translation>
 <translation id="7518543783849163354">For å stoppe talemeldingene fra ChromeVox midlertidig, trykk på Control-tasten.</translation>
+<translation id="7521682724501952239">Du kan bruke ChromeVox med berøringsskjermen.</translation>
 <translation id="7532613204005497612">Juni</translation>
 <translation id="7552432549459840808">Nyttige hurtigtaster i Chrome</translation>
 <translation id="7579911500627256166">punkt <ph name="DOT" /></translation>

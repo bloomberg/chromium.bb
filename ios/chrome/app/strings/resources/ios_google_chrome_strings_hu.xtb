@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome – Adatvédelmi közlemény</translation>
 <translation id="1863312987075920112">Az alkalmazás használatával elfogadja a Chrome <ph name="BEGIN_LINK_TOS" />Általános Szerződési Feltételeit<ph name="END_LINK_TOS" /> és <ph name="BEGIN_LINK_PRIVACY" />Adatvédelmi közleményét<ph name="END_LINK_PRIVACY" />.</translation>
-<translation id="1878302395768190018">Ezt bármikor személyre szabhatja a Chrome beállításaiban</translation>
 <translation id="2147651015520127414">A Chrome ellenőrizte, hogy a(z) <ph name="ISSUER" /> adta ki ezt a webhelytanúsítványt.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Minden jog fenntartva.</translation>
 <translation id="2342981853652716282">Jelentkezzen be a Chrome-ba, hogy az összes eszközén hozzáférhessen könyvjelzőihez, jelszavaihoz és más beállításaihoz.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Segítség a Chrome funkcióinak és teljesítményének javítása érdekében</translation>
 <translation id="4523886039239821078">Bizonyos bővítmények a Chrome összeomlását eredményezik. Távolítsa el a következő(ke)t:</translation>
 <translation id="4615174829807303908">Kijelentkezik egy <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból. Ezzel törli az eszközön található Chrome-adatokat, amelyek azonban Google-fiókjában megmaradnak.</translation>
-<translation id="5240817131241497236">Megváltoztak a szinkronizálást, a személyre szabást és a Chrome más Google-szolgáltatásait vezérlő beállítások. Ez befolyásolhatja az aktuális beállításokat.</translation>
 <translation id="5389212809648216794">A Google Chrome nem tudja használni a kamerát, mivel egy másik alkalmazás használja</translation>
 <translation id="5489543008378040943">A <ph name="BEGIN_LINK" />Beállításokat<ph name="END_LINK" /> bármikor személyre szabhatja. A Google felhasználhatja az Ön által felkeresett webhelyeken lévő tartalmakat, a böngészési interakciókat és tevékenységeket a Chrome és az egyéb Google-szolgáltatások (például a Fordító, a Keresés és a megjelenő hirdetések) személyre szabásához.</translation>
 <translation id="5639704535586432836">Nyissa meg a Beállítások &gt; Adatvédelem &gt; Kamera &gt; Google Chrome elemet, és kapcsolja be a kamerát.</translation>

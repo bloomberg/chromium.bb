@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">Kikoa cha kujiandikisha:</translation>
 <translation id="1340482604681802745">Anwani ya eneo la kuchukulia</translation>
 <translation id="1348198688976932919">Kuna programu hasidi kwenye tovuti unayotaka kuifungua</translation>
+<translation id="1348779747280417563">Thibitisha jina</translation>
 <translation id="1374468813861204354">mapendekezo</translation>
 <translation id="1375198122581997741">Kuhusu Toleo</translation>
 <translation id="1376836354785490390">Onyesha Chache</translation>
@@ -144,7 +145,6 @@
 <translation id="1826516787628120939">Inakagua</translation>
 <translation id="1834321415901700177">Tovuti hii ina programu hatari</translation>
 <translation id="1839551713262164453">Imeshindwa kuthibitisha thamani za sera kutokana na hitilafu</translation>
-<translation id="1840414022444569775">Nambari hii ya kadi tayari imetumika</translation>
 <translation id="1842969606798536927">Lipa</translation>
 <translation id="1866450167992311397">Tumia kadi zako katika sehemu nyingi</translation>
 <translation id="1871208020102129563">Proksi imewekwa ili kutumia seva za proksi thabiti, siyo URL ya hati .pac.</translation>
@@ -183,6 +183,7 @@
 <translation id="2108755909498034140">Zima na uwashe kompyuta yako</translation>
 <translation id="2113977810652731515">Kadi</translation>
 <translation id="2114841414352855701">Imepuuzwa kwa sababu ilifutwa na <ph name="POLICY_NAME" />.</translation>
+<translation id="2129308444951592399">Sheria na Masharti</translation>
 <translation id="213826338245044447">Alamisho kwenye Simu</translation>
 <translation id="214556005048008348">Ghairi malipo</translation>
 <translation id="2147827593068025794">Usawazishaji wa Chini Chini</translation>
@@ -383,6 +384,7 @@
 <translation id="3427092606871434483">Ruhusu (chaguomsingi)</translation>
 <translation id="3427342743765426898">Rudia Kuhariri</translation>
 <translation id="342781501876943858">Chromium inapendekeza ubadilishe nenosiri lako ikiwa ulilitumia tena kwenye tovuti zingine.</translation>
+<translation id="3430691998045392297">Filamu inayoonyeshwa ni tofauti. Je, ungependa kuendelea?</translation>
 <translation id="3431636764301398940">Hifadhi kadi hii kwenye kifaa hiki</translation>
 <translation id="3447661539832366887">Mmiliki wa kifaa hiki amezima mchezo wa dinosau.</translation>
 <translation id="3447884698081792621">Onyesha cheti (kilitolewa na <ph name="ISSUER" />)</translation>
@@ -400,6 +402,7 @@
 <translation id="3566021033012934673">Muunganisho wako si wa faragha</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Ukurasa uliopachikwa kwenye <ph name="SITE" /> unasema</translation>
+<translation id="3581089476000296252">Chrome itakujulisha ukurasa huu utakapokuwa tayari. &lt;a&gt;Ghairi&lt;/a&gt;</translation>
 <translation id="358285529439630156">Kadi za mikopo na za kulipia awali zinazokubaliwa.</translation>
 <translation id="3582930987043644930">Ongeza jina</translation>
 <translation id="3583757800736429874">Rudia Hatua</translation>
@@ -431,6 +434,7 @@
 <translation id="3736520371357197498">Ikiwa unaelewa kiwango cha hatari kinachoweza kutokea, unaweza <ph name="BEGIN_LINK" />kutembelea tovuti hii isiyo salama<ph name="END_LINK" /> kabla programu hatari hazijaondolewa.</translation>
 <translation id="3739623965217189342">Kiungo ulichonakili</translation>
 <translation id="3744899669254331632">Huwezi kutembelea <ph name="SITE" /> sasa hivi kwa sababu tovuti ilituma kitambulisho kilichoharibika ambacho Chromium haiwezi kuchakata. Hitilafu na uvamizi wa mtandao kwa kawaida huwa vya muda, kwa hivyo ukurasa huu huenda utafanya kazi baadaye.</translation>
+<translation id="3745099705178523657">Baada ya kuthibitisha, maelezo ya kadi kutoka Akaunti yako ya Google yatashirikiwa na tovuti hii.</translation>
 <translation id="3748148204939282805">Wavamizi kwenye <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> huenda wakakuhadaa ufanye kitu hatari kama vile kusakinisha programu au kuonyesha maelezo yako ya binafsi (kwa mfano, manenosiri, nambari za simu au kadi za mikopo). <ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Utafsiri haukufanikiwa kwa sababu ya hitilafu ya seva.</translation>
 <translation id="3759461132968374835">Huna uharibifu ulioripotiwa hivi karibuni. Uharibifu uliotokea wakati kuripoti kwa uharibifu kulipolemazwa hakutaonekana hapa.</translation>
@@ -452,10 +456,12 @@
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">Kitambulisho cha Ripoti ya Kuacha Kufanya Kazi Kilichopakiwa <ph name="CRASH_ID" /> (Kitambulisho cha Kuacha Kufanya Kazi cha Ndani ya Kifaa: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Uliza kwenye tovuti hii kila wakati</translation>
+<translation id="3947577358805392297">Hifadhi ukurasa kwa matumizi ya baadaye</translation>
 <translation id="3949571496842715403">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakibainishi Majina Mbadala ya Mada. Hii inaweza kusababishwa na uwekaji mipangilio usiofaa au muunganisho wako kukatwa na mvamizi.</translation>
 <translation id="3949601375789751990">Historia yako ya kuvinjari itaonekana hapa</translation>
 <translation id="3950820424414687140">Ingia</translation>
 <translation id="3963721102035795474">Hali ya Usomaji</translation>
+<translation id="3963837677003247395">Ungependa kuendelea kujaza mwenyewe?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Hamna}=1{Kutoka kwenye tovuti 1 }other{Kutoka kwenye tovuti # }}</translation>
 <translation id="397105322502079400">Inakokotoa...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> imezuiwa.</translation>
@@ -569,6 +575,7 @@
 <translation id="4771973620359291008">Hitilafu isiyojulikana imetokea.</translation>
 <translation id="4785689107224900852">Badili utumie kichupo hiki</translation>
 <translation id="4792143361752574037">Hitilafu imetokea wakati wa kufikia faili za kipindi. Kuhifadhia kwenye diski kwa sasa kumezimwa. Tafadhali pakia ukurasa upya na ujaribu tena.</translation>
+<translation id="4798078619018708837">Ili usasishe maelezo ya kadi yako, weka tarehe ya mwisho wa matumizi na CVC ya <ph name="CREDIT_CARD" />. Baada ya kuthibitisha, maelezo ya kadi kutoka Akaunti yako ya Google yatashirikiwa na tovuti hii.</translation>
 <translation id="4800132727771399293">Angalia tarehe yako ya kuisha muda na CVC na ujaribu tena</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">Huwezi kutembelea <ph name="SITE" /> sasa hivi kwa sababu tovuti ilituma kitambulisho kilichoharibika ambacho Google Chrome haiwezi kushughulikia. Hitilafu na uvamizi wa mtandao kwa kawaida huwa vya muda, kwa hivyo ukurasa huu huenda ukafanya kazi baadaye.</translation>
@@ -620,6 +627,7 @@
 <translation id="5141240743006678641">Simba kwa njia fiche manenosiri yaliyosawazishwa ukitumia stakabadhi zako za Google</translation>
 <translation id="5145883236150621069">Msimbo wa hitilafu uko katika jibu la sera</translation>
 <translation id="5159010409087891077">Fungua ukurasa kwenye dirisha fiche jipya (⇧⌘N)</translation>
+<translation id="516920405563544094">Weka CVC ya <ph name="CREDIT_CARD" />. Baada ya kuthibitisha, maelezo ya kadi kutoka Akaunti yako ya Google yatashirikiwa na tovuti hii.</translation>
 <translation id="5169827969064885044">Unaweza kupoteza uwezo wa kufikia akaunti ya shirika lako au kuibiwa utambulisho. Chrome inapendekeza ubadilishe nenosiri lako sasa.</translation>
 <translation id="5171045022955879922">Tafuta au charaza URL</translation>
 <translation id="5172758083709347301">Mashine</translation>
@@ -718,6 +726,7 @@
 <translation id="5810442152076338065">Muunganisho wako kwenye <ph name="DOMAIN" /> umesimbwa kwa njia fiche kwa kutumia mipangilio ya kriptografia ya zamani.</translation>
 <translation id="5813119285467412249">Rudia Kuongeza</translation>
 <translation id="5838278095973806738">Hupaswi kuweka maelezo nyeti kwenye tovuti hii (kwa mfano, manenosiri au kadi za mikopo), kwa sababu wavamizi wanaweza kuyaiba.</translation>
+<translation id="5844286946362376359">Ninajua sheria na masharti, sera ya faragha na haki ya kuondolewa kwa <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (acha kama haijateuliwa ili kusoma).</translation>
 <translation id="5863847714970149516">Huenda ukurasa unaofuata ukajaribu kukutoza pesa</translation>
 <translation id="5866257070973731571">Ongeza Nambari ya Simu</translation>
 <translation id="5869405914158311789">Imeshindwa kufungua tovuti hii</translation>
@@ -726,6 +735,7 @@
 <translation id="5893752035575986141">Kadi za mikopo zinakubaliwa.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (imesawazishwa)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 kinatumika}other{ # vinatumika}}</translation>
+<translation id="5921639886840618607">Ungependa kuhifadhi kadi kwenye Akaunti ya Google?</translation>
 <translation id="5922853866070715753">Unakaribia kumaliza</translation>
 <translation id="5932224571077948991">Tovuti inaonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
 <translation id="5939518447894949180">Weka upya</translation>
@@ -812,6 +822,7 @@
 <translation id="6569060085658103619">Unaangalia ukurasa wa kiendelezi</translation>
 <translation id="6596325263575161958">Chaguo za usimbaji fiche</translation>
 <translation id="6604181099783169992">Vitambuzi vya Mwendo au Mwangaza</translation>
+<translation id="6607617806003952240">Nimeshindwa kukusaidia, tafadhali endelea kujaza mwenyewe.</translation>
 <translation id="6624427990725312378">Maelezo ya Mawasiliano</translation>
 <translation id="6626291197371920147">Ongeza nambari sahihi ya kadi</translation>
 <translation id="6628463337424475685">Utafutaji wa <ph name="ENGINE" /></translation>
@@ -855,6 +866,7 @@
 <translation id="6950684638814147129">Hitilafu fulani imetokea wakati wa kuchanganua thamani ya JSON: <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">Fungua ukurasa katika Kichupo kipya cha faragha</translation>
 <translation id="6957887021205513506">Cheti cha seva kinaonekana kuwa ghushi.</translation>
+<translation id="6964255747740675745">Imeshindwa kuchanganua mipangilio ya mtandao (JSON si sahihi).</translation>
 <translation id="6965382102122355670">Sawa</translation>
 <translation id="6965978654500191972">Kifaa</translation>
 <translation id="6970216967273061347">Wilaya</translation>
@@ -1145,11 +1157,13 @@
 <translation id="893332455753468063">Ongeza Jina</translation>
 <translation id="8938939909778640821">Kadi za mikopo na za kulipia awali zinazokubaliwa</translation>
 <translation id="8957210676456822347">Uidhinishaji wa Ukurasa wa Wavuti</translation>
+<translation id="8968766641738584599">Hifadhi kadi</translation>
 <translation id="8971063699422889582">Cheti cha seva kimechina.</translation>
 <translation id="8975012916872825179">Hujumuisha maelezo kama nambari za simu, anwani za barua pepe na anwani za mahali bidhaa zitakapopelekwa</translation>
 <translation id="8978053250194585037">Mfumo wa Kuvinjari Salama kwenye Google umegundua <ph name="BEGIN_LINK" />jaribio la kuiba data ya binafsi<ph name="END_LINK" /> kwenye <ph name="SITE" /> hivi majuzi. Tovuti zanazoiba data ya binafsi huiga tovuti nyingine ili kukuhadaa.</translation>
 <translation id="8983003182662520383">Njia za Kulipa na Anwani Zinazotumia Google Pay</translation>
 <translation id="8987927404178983737">Mwezi</translation>
+<translation id="8988408250700415532">Hitilafu fulani imetokea. Unaweza kumaliza agizo lako kwenye tovuti.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Tovuti unayoelekea kufungua ina programu zinazodhuru</translation>
 <translation id="8997023839087525404">Seva imewasilisha cheti ambacho hakikufichuliwa hadharani kwa kutumia sera ya Uwazi wa Cheti. Hili ni hitaji kwa baadhi ya vyeti, ili kuhakikisha kwamba ni cha kuaminika na kulinda dhidi ya wavamizi.</translation>

@@ -63,6 +63,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2314101195544969792">Sesi <ph name="APPLICATION_NAME" /> Anda tidak aktif untuk sementara waktu dan akan diputuskan sementara.</translation>
 <translation id="2317666076142640974">Coba <ph name="LINK_BEGIN" />aplikasi web Chrome Desktop Jarak Jauh<ph name="LINK_END" /> yang baru. Kami ingin mendengar masukan Anda.</translation>
 <translation id="2320166752086256636">Sembunyikan keyboard</translation>
+<translation id="2332192922827071008">Buka Preferensi</translation>
 <translation id="2353140552984634198">Anda dapat mengakses komputer ini dengan aman menggunakan Chromoting.</translation>
 <translation id="2359808026110333948">Lanjut</translation>
 <translation id="2366718077645204424">Tidak dapat menjangkau inang. Ini mungkin karena konfigurasi jaringan yang Anda gunakan.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="4973800994433240357">Dengan mendownload Pemasang Host Chrome Desktop Jarak Jauh, Anda menyetujui <ph name="LINK_BEGIN" />Persyaratan Layanan<ph name="LINK_END" /> Google.</translation>
 <translation id="4974476491460646149">Sambungan terputus untuk <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Pertama, Anda perlu menyiapkan komputer untuk akses jarak jauh</translation>
+<translation id="5059773780693835145">Diperlukan langkah konfigurasi tambahan sebelum Anda dapat mengontrol mesin ini dari jarak jauh menggunakan <ph name="PRODUCT_NAME" />. Untuk mengaktifkan fungsi ini, pilih '<ph name="BUTTON_NAME" />' untuk menampilkan panel Keamanan dan Privasi, lalu centang kotak di samping '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
 <translation id="507204348399810022">Yakin ingin menonaktifkan sambungan jarak jauh ke <ph name="HOSTNAME" />?</translation>
@@ -314,6 +316,7 @@ PC</translation>
 <translation id="809687642899217504">Komputer Saya</translation>
 <translation id="811307782653349804">Akses komputer Anda dari mana saja.</translation>
 <translation id="8116630183974937060">Terjadi kesalahan jaringan. Periksa bahwa perangkat Anda online dan coba lagi.</translation>
+<translation id="8123581458650016326">Izinkan pengguna jarak jauh untuk mengontrol mesin ini</translation>
 <translation id="8178433417677596899">Berbagi layar pengguna ke pengguna, cocok untuk dukungan teknis jarak jauh.</translation>
 <translation id="8187079423890319756">Hak Cipta 2013 Pengarang Chromium. Semua Hak Dilindungi Undang-Undang.</translation>
 <translation id="8196755618196986400">Guna mengizinkan kami menghubungi Anda untuk informasi lebih lanjut, alamat email Anda akan disertakan dalam masukan apa pun yang Anda kirimkan.</translation>

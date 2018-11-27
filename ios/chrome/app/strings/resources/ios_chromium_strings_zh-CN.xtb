@@ -17,7 +17,6 @@
 <translation id="2647554856022461007">Chromium 可能会使用网络服务来改善您的浏览体验。不过，您可以选择停用这些服务。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">在 Chromium 中畅享 Google 的智能技术</translation>
 <translation id="2730884209570016437">由于另一个应用正在使用您的相机，因此 Chromium 无法使用。</translation>
-<translation id="2797210818057553964">您可以随时在 Chromium 设置中自定义此设置</translation>
 <translation id="2915596697727466327">Chromium 会使用 Face ID 来确保对您密码的访问均已获授权。</translation>
 <translation id="3256316712990552818">已复制到 Chromium</translation>
 <translation id="3413120535237193088">要将您的书签同步到您所有的设备上，请登录 Chromium。</translation>
@@ -47,7 +46,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">所选数据已从 Chromium 和同步的设备中移除。不过，您的 Google 帐号在 history.google.com 上可能有其他形式的浏览记录（例如，在其他 Google 服务中的搜索记录和活动记录）。</translation>
 <translation id="7400689562045506105">随时随地使用 Chromium</translation>
-<translation id="7499048969477415415">Chromium 中控制同步、个性化功能和其他 Google 服务的设置已发生更改。这可能会影响您目前的设置。</translation>
 <translation id="7674213385180944843">打开“设置”&gt;“隐私”&gt;“相机”&gt;“Chromium”，然后开启相机。</translation>
 <translation id="7746854981345936341">Chromium 提示。现在屏幕底部会显示“后退”、“前进”和“搜索”等按钮。</translation>
 <translation id="786327964234957808">您正要将同步帐号从 <ph name="USER_EMAIL1" /> 切换到 <ph name="USER_EMAIL2" />。您现有的 Chromium 数据由 <ph name="DOMAIN" /> 管理。切换同步帐号后，您的数据将从这台设备上删除，但仍会保留在 <ph name="USER_EMAIL1" /> 中。</translation>

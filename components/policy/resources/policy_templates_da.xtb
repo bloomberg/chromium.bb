@@ -214,6 +214,14 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 <translation id="1523774894176285446">Alternative browsere, der skal åbnes for konfigurerede websites.</translation>
 <translation id="152657506688053119">Liste over alternative webadresser for standardsøgemaskinen</translation>
 <translation id="1530812829012954197">Gengiv altid følgende webadressemønstre i værtsbrowseren</translation>
+<translation id="1532965933165453786">Gør det muligt at aktivere eller deaktivere Fast Transition.
+      Dette gælder for alle brugere og for alle grænseflader på enheden.
+      Både denne indstilling og ONC-ejendommen pr. netværk skal aktiveres, før Fast Transition kan bruges.
+      Når indstillingen er angivet, beholdes Fast Transition, indtil politikken ændres for at deaktivere den.
+
+      Hvis politikken ikke konfigureres, anvendes Fast Transition ikke.
+      Hvis den angives som falsk, anvendes Fast Transition ikke.
+      Hvis den angives som sand, anvendes Fast Transition, når det trådløse adgangspunkt understøtter funktionen.</translation>
 <translation id="1541170838458414064">Begræns størrelsen på udskriftsiden</translation>
 <translation id="1553684822621013552">Når denne politik er angivet til sand, aktiveres ARC for brugeren
       (undelagt de øvrige indstillinger for politik. ARC er stadig
@@ -913,6 +921,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Denne politik kan kun angives som anbefalet. Du kan bruge denne politik til at flytte udvalgte landestandarder til toppen af listen, men brugerne har altid tilladelse til vælge en hvilken som helst landestandard, der understøttes af <ph name="PRODUCT_OS_NAME" />, til deres session.
       </translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
+<translation id="3388153794103186066">Gør det muligt at angive en liste over webadresser, der angiver, hvilke sider der automatisk får adgangstilladelse til en USB-enhed med de givne leverandør- og produkt-id'er. Hvert element på listen skal indeholde både enheder og webadresser, før politikken er gyldig. Hvert element på enheder kan indeholde felter til leverandør-id og produkt-id. Alle id'er, der udelades, behandles som et jokertegn – et produkt-id kan dog ikke angives, uden at der også angives et leverandør-id. Hvis ikke disse regler overholdes, regnes politikken som ugyldig og ignoreres.
+
+        USB-tilladelsesmodellen anvender webadressen til det anmodende website ("anmodende webadresse") og webadressen til indramningswebsitet på øverste niveau ("integrerende webadresse") til at anmode om tilladelse til den anmodende webadresse for at få adgang til USB-enheden. Den anmodende webadresse kan adskille sig fra den integrerende webadresse, når det anmodende website indlæses i en iframe. Feltet "webadresser" kan derfor indeholde op til to webadressestrenge, som er afgrænset af et komma, for at angive henholdsvis den anmodende og den integrerende webadresse. Hvis der kun angives én webadresse, gives der adgang til de tilsvarende USB-enheder, når webadressen til det anmodende website stemmer overens med denne webadresse, uanset hvilken integreringsstatus den har. Webadresserne i feltet "webadresser" skal være gyldige webadresser, ellers ignoreres politikken.
+
+        Hvis politikken ikke konfigureres, anvendes den globale standardværdi fra politikken "DefaultWebUsbGuardSetting" til alle websites, og hvis denne ikke er konfigureret, anvendes brugerens personlige konfiguration.
+
+        Webadressemønstre i denne politik må ikke være i strid med dem, der er konfigureret via WebUsbBlockedForUrls. Hvis de er i strid med hinanden, har denne politik forrang frem for WebUsbBlockedForUrls og WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Hvis denne politik ikke konfigureres, anvender <ph name="PRODUCT_NAME" /> en standardminimumversion, som er TLS 1.0.
 
       Den kan også angives til en af følgende værdier: "tls1", "tls1.1" eller "tls1.2". Når der er angivet en værdi, anvender <ph name="PRODUCT_NAME" /> ikke SSL/TLS-versioner, der er mindre end den angivne version. Ukendte værdier ignoreres.</translation>
@@ -1159,6 +1174,7 @@ Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved ops
 <translation id="3925020515212192040">Angiver en liste over forudkonfigureret fildeling via netværk.
 
       Hvert listepunkt i politikken er et objekt med to medlemmer: "share_url" og "mode". "share_url" skal være webadressen for delingen og "mode" skal være "drop_down", som angiver, at "share_url" bliver føjet til rullelisten for fildeling.</translation>
+<translation id="3925377537407648234">Angiv skærmopløsning og skaleringsfaktor</translation>
 <translation id="3939893074578116847">Send netværkspakker til administrationsserveren for at overvåge onlinestatus, så
       serveren kan registrere, om enheden er offline.
 
@@ -1956,6 +1972,29 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Politikken anvendes kun, når maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Politikken gennemtvinger installation af <ph name="CHROME_REPORTING_EXTENSION_NAME" /> til rapportering og tilsidesætter alle udvidelsespolitikker, der er relateret til den pågældende udvidelse.</translation>
+<translation id="6155247658847899816">Når politikken er konfigureret, indstilles opløsningen og skaleringsfaktoren for hver
+      skærm til de angivne værdier. Indstillingerne for eksterne skærme anvendes
+      for alle tilsluttede eksterne skærme.
+
+      Værdierne for "external_width" og "external_height" skal angives i
+      pixel. Værdierne for "external_scale_percentage" og
+      "internal_scale_percentage" skal angives i procenter.
+
+      Hvis "external_use_native" angives som sand, ignorerer politikken værdierne for
+      "external_height" og "external_width", og opløsningen for eksterne skærme
+      indstilles til deres indbyggede opløsning.
+
+      Hvis "external_use_native" angives som falsk eller ikke konfigureres, og enten
+      "external_height" eller "external_width" ikke er konfigureret, påvirker politikken
+      ikke indstillingerne for eksterne skærme. Hvis den angivne opløsning eller
+      skaleringsfaktor ikke understøttes af en skærm, anvendes politikken ikke
+      for den pågældende skærm.
+
+      Hvis demofunktionen "anbefalet" angives som sand, kan brugere ændre opløsning
+      og skaleringsfaktor for alle skærme via siden med indstillinger, efter de er logget ind, men
+      deres indstillinger tilsidesættes af politikværdien ved næste genstart.
+      Hvis demofunktionen "anbefalet" angives som falsk eller ikke konfigureres, kan brugere ikke
+      ændre skærmindstillingerne.</translation>
 <translation id="6155936611791017817">Indstil standardtilstand for den store markør på loginskærmen</translation>
 <translation id="6157537876488211233">Kommasepareret liste over regler for omgåelse af proxy</translation>
 <translation id="6158324314836466367">Navn på virksomhedens webshop (udfaset)</translation>
@@ -2063,6 +2102,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6553143066970470539">Skærmens lysstyrke i procent</translation>
 <translation id="6559057113164934677">Tillad ikke, at websites får adgang til kameraet og mikrofonen</translation>
 <translation id="6561396069801924653">Vis indstillinger for hjælpefunktioner i systembakkemenuen</translation>
+<translation id="6563458316362153786">Aktivér 802.11r Fast Transition</translation>
 <translation id="6565312346072273043">Angiv standardtilstanden for hjælpefunktionen Skærmtastatur på loginskærmen.
 
           Hvis denne politik er angivet som Sand, aktiveres skærmtastaturet, når loginskærmen vises.
@@ -2708,6 +2748,11 @@ BEMÆRK! Op til version 45 var denne funktion kun understøttet i terminaltilsta
       Når denne politik ikke er angivet på en administreret enhed, har enheden ikke tilladelse til at køre virtuelle maskiner.
       Enheder, der ikke administreres, har tilladelse til at køre virtuelle maskiner.</translation>
 <translation id="8001701200415781021">Begræns, hvilke Google-konti der må angives som primære konti i browseren i <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Hvis du aktiverer denne indstilling, skrives indstillingerne, der er gemt i <ph name="PRODUCT_NAME" />-profiler, f.eks. bogmærker, autofylddata og adgangskoder, også i en fil, der er gemt i roamingmappen for brugerprofilen eller et andet sted, som angivet af administratoren via <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />-politikken. Hvis du aktiverer denne politik, deaktiveres synkronisering i skyen.
+
+      Hvis politikken deaktiveres eller ikke konfigureres, er det kun de almindelige lokale profiler, der bruges.
+
+      Politikken <ph name="SYNC_DISABLED_POLICY_NAME" /> deaktiverer al datasynkronisering og tilsidesætter <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Roter skærmen 0 grader</translation>
 <translation id="8033913082323846868">Denne politik er udfaset i M70. Brug AutofillAddressEnabled og AutofillCreditCardEnabled i stedet for.
 
@@ -2836,6 +2881,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8274603902181597201">Slet brugerens eCryptfs-hovedmapper, og start med en frisk ext4-krypteret hovedmappe.</translation>
 <translation id="8285435910062771358">Lup i fuld skærm er aktiveret</translation>
 <translation id="8288199156259560552">Aktivér Googles placeringstjeneste til Android</translation>
+<translation id="8290453559005611000">PluginVm-billede</translation>
 <translation id="8294750666104911727">Normalt vil sider, der er angivet med X-UAchrome=1, blive gengivet i <ph name="PRODUCT_FRAME_NAME" />, uanset politikken for 'ChromeFrameRendererSettings'.
 
           Hvis du aktiverer denne indstilling, vil sider ikke blive scannet for metatags.
@@ -2915,6 +2961,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
           Hvis denne politik ikke er angivet, anvendes standardgengivelsen på alle websites, sådan som det er angivet i politikken "ChromeFrameRendererSettings".
 
           Se eksempler på mønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Deaktiver lagring af browserhistorik</translation>
 <translation id="8498293625012059298">Konfigurer den webadresse, hvor adgangskoden skal ændres (kun HTTP- og HTTPS-skemaer). Tjenesten til adgangskodebeskyttelse sender brugerne til denne webadresse, hvor de kan ændre deres adgangskode, efter at have set en advarsel i browseren.
       Før <ph name="PRODUCT_NAME" /> kan registrere fingeraftrykket for den nye adgangskode korrekt på denne side til ændring af adgangskoder, skal du sørge for, at din side til ændring af adgangskoder følger retningslinjerne på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

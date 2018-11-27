@@ -62,6 +62,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="2314101195544969792">Seja aplikacije <ph name="APPLICATION_NAME" /> je že nekaj časa nedejavna, zato bo povezava kmalu prekinjena.</translation>
 <translation id="2317666076142640974">Oglejte si novo <ph name="LINK_BEGIN" />spletno aplikacijo Oddaljeno namizje za Chrome<ph name="LINK_END" /> pred izdajo. Veseli bomo vaših povratnih informacij.</translation>
 <translation id="2320166752086256636">Skrij tipkovnico</translation>
+<translation id="2332192922827071008">Odpri nastavitve</translation>
 <translation id="2353140552984634198">Oddaljeno povezovanje s Chromom omogoča varen dostop do tega računalnika.</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
 <translation id="2366718077645204424">Ni mogoče vzpostaviti povezave z gostiteljem; verjetno zaradi konfiguracije omrežja, ki ga uporabljate.</translation>
@@ -184,6 +185,9 @@ PC</translation>
 <translation id="492843737083352574">Imam težave s tipkovnico ali miško.</translation>
 <translation id="4973800994433240357">Če prenesete namestitveni program za gostitelja za Oddaljeno povezovanje s Chromom, sprejemate Googlove <ph name="LINK_BEGIN" />pogoje storitve<ph name="LINK_END" />.</translation>
 <translation id="4985296110227979402">Računalnik morate najprej nastaviti za oddaljeni dostop.</translation>
+<translation id="5059773780693835145">Preden lahko ta računalnik na daljavo upravljate z uporabo izdelka <ph name="PRODUCT_NAME" />, je potreben dodaten konfiguracijski korak.
+
+Če želite omogočiti to funkcijo, izberite »<ph name="BUTTON_NAME" />«, da prikažete podokno z nastavitvami za varnost in zasebnost ter potrdite polje zraven možnosti »<ph name="SERVICE_SCRIPT_NAME" />«.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (brez povezave)</translation>
 <translation id="5070121137485264635">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu namizju za Chrome dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
 <translation id="507204348399810022">Ali ste prepričani, da želite onemogočiti oddaljene povezave z gostiteljem <ph name="HOSTNAME" />?</translation>
@@ -299,6 +303,7 @@ PC</translation>
 <translation id="809687642899217504">Moji računalniki</translation>
 <translation id="811307782653349804">Do računalnika lahko dostopate od kjer koli.</translation>
 <translation id="8116630183974937060">Omrežna napaka. Preverite, ali je naprava dosegljiva in poskusite znova.</translation>
+<translation id="8123581458650016326">Oddaljenim uporabnikom dovoli upravljanje tega računalnika</translation>
 <translation id="8178433417677596899">Skupna raba zaslona je odlična rešitev za oddaljeno tehnično pomoč.</translation>
 <translation id="8187079423890319756">Copyright 2013 Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="8196755618196986400">V povratnih informacijah, ki nam jih pošljete, bo vključen vaš e-poštni naslov, da se lahko obrnemo na vas glede dodatnih informacij.</translation>

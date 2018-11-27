@@ -63,6 +63,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="2314101195544969792">Kipindi chako cha <ph name="APPLICATION_NAME" /> hakijawa kikitumika kwa muda na kitaondolewa baada ya muda mfupi.</translation>
 <translation id="2317666076142640974">Ijaribu <ph name="LINK_BEGIN" />programu mpya ya wavuti ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali<ph name="LINK_END" />. Tungependa kupata maoni yako.</translation>
 <translation id="2320166752086256636">Ficha kibodi</translation>
+<translation id="2332192922827071008">Fungua Mapendeleo</translation>
 <translation id="2353140552984634198">Unaweza kufikia kwa usalama kompyuta hii kutumia Chromoting.</translation>
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2366718077645204424">Haiwezi kufikia seva pangishi. Labda hii ni kwa sababu ya usanidi wa mtandao unaotumia.</translation>
@@ -190,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Kwa kupakua Kisakinishaji cha Seva Pangishi ya Kuwasiliana na Mifumo Tofauti kutoka Mbali, unakubaliana na <ph name="LINK_BEGIN" />Sheria na Masharti ya Google<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Muunganisho wa <ph name="HOSTNAME" /> umefungwa</translation>
 <translation id="4985296110227979402">Kwanza unahitaji kuwekea kompyuta yako mipangilio kwa ajili ya ufikiaji wa mbali</translation>
+<translation id="5059773780693835145">Hatua ya ziada ya kuweka mipangilio inahitajika kabla uweze kudhibiti mashine hii kwa mbali ukitumia <ph name="PRODUCT_NAME" />.
+
+Ili uwashe kipengele hiki, chagua '<ph name="BUTTON_NAME" />' ili uonyeshe kidirisha cha mapendeleo ya Usalama na Faragha, kisha uchague kisanduku kilicho karibu na '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (nje ya mtandao)</translation>
 <translation id="5070121137485264635">Seva pangishi ya mbali inakuhitaji uhalalishe hadi kwenye tovuti nyingine. Ili kuendelea, sharti uipe Chrome Remote Desktop idhini za ziada ili ifikie anwani hii:</translation>
 <translation id="507204348399810022">Una uhakika ungependa kuzima miunganisho ya mbali kwenye <ph name="HOSTNAME" />?</translation>
@@ -314,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Kompyuta Zangu</translation>
 <translation id="811307782653349804">Fikia kompyuta yako mwenyewe kutoka mahali popote.</translation>
 <translation id="8116630183974937060">Hitilafu ya mtandao imetokea. Tafadhali hakikisha kwamba kifaa chako kipo mtandoani na ujaribu tena.</translation>
+<translation id="8123581458650016326">Ruhusu watumiaji wa mbali wadhibiti mashine hii</translation>
 <translation id="8178433417677596899">Kushiriki skrini kwa mtumiaji hadi mtumiaji, ni bora kwa msaada wa kiufundi wa mbali.</translation>
 <translation id="8187079423890319756">Hakimiliki 2013 Waandishi wa Chromium. Haki Zote zimehifadhiwa.</translation>
 <translation id="8196755618196986400">Ili kuturuhusu kuwasiliana nawe kwa maelezo zaidi, anwani yako ya barua pepe itajumuishwa katika maoni yoyote unayowasilisha.</translation>

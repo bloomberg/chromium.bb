@@ -225,6 +225,14 @@
 <translation id="1523774894176285446">Vaihtoehtoinen selain, jota käytetään määritettyjen sivustojen kanssa</translation>
 <translation id="152657506688053119">Oletushakupalvelun vaihtoehtoiset URL-osoitteet</translation>
 <translation id="1530812829012954197">Hahmonna aina seuraavat URL-mallit isäntäselaimessa</translation>
+<translation id="1532965933165453786">Sallii nopean siirtymisen käyttöönoton tai käytöstä poistamisen.
+      Tämä koskee kaikkia käyttäjiä ja kaikkia laitteen käyttöliittymiä.
+      Nopean siirtymisen käyttö edellyttää sekä tämän asetuksen että verkkokohtaisen ONC-arvon käyttöönottoa.
+      Kun tämä on määritetty, nopea siirtyminen on käytössä, kunnes käytännön muutos poistaa sen käytöstä.
+
+      Jos arvoa ei aseteta, nopeaa siirtymistä ei käytetä.
+      Jos arvo on Epätosi, nopeaa siirtymistä ei käytetä. 
+      Jos arvo on Tosi, nopeaa siirtymistä käytetään, kun langaton tukiasema sallii sen.</translation>
 <translation id="1541170838458414064">Tulostuksen sivukoon rajoittaminen</translation>
 <translation id="1553684822621013552">Kun tämän käytännön arvo on tosi, ARC on käytössä
       (tähän vaikuttavat muut käytäntöasetukset – ARC ei ole käytettävissä,
@@ -924,6 +932,13 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Tämä käytäntö voidaan asettaa vain suositukseksi. Käytännön avulla suositellut maa-asetukset voidaan näyttää listan alussa, mutta käyttäjä voi aina valita istuntoa varten minkä tahansa maa-asetuksen, jota <ph name="PRODUCT_OS_NAME" /> tukee.
       </translation>
 <translation id="3381968327636295719">Käytä oletuksena isäntäselainta</translation>
+<translation id="3388153794103186066">Voit määrittää luettelon URL-osoitemalleja, jonka sivustot saavat automaattisesti pyytää käyttäjältä USB-laitteen käyttöoikeutta, jos sillä on tietty myyjän ja tuotteen tunnus. Luettelon jokaisessa kohteessa on oltava laitteita ja URL-osoitemalleja, jotta käytäntö voi astua voimaan. Jokainen laitekohta voi sisältää kentät myyjän tunnukselle ja tuotteen tunnukselle. Jos tunnusta ei mainita, tätä pidetään jokerimerkkinä, paitsi jos tuotteen tunnus mainitaan ilman myyjän tunnuksen mainitsemista – tämä ei ole mahdollista. Muuten käytäntö ei voi astua voimaan. Virheelliset käytännön arvot ohitetaan.
+
+        USB-lupamallissa on pyytävän sivuston URL-osoite (pyytävä URL) ja ylimmän tason kehyssivuston URL-osoite (upottava URL), joiden avulla pyytävälle URL-osoitteelle annetaan lupa käyttää USB-laitetta. Pyytävä ja upottava URL-osoite voivat olla erilaiset, kun pyytävä sivusto ladataan iframella. Siksi "urls"-kentässä voi olla enintään kaksi URL-osoitekohtaa pilkulla erotettuna: pyytävä ja upottava URL-osoite. Jos vain yksi URL-osoite mainitaan, kyseisten USB-laitteiden käyttölupa annetaan, jos tämä osoite vastaa pyytävän sivun URL-osoitetta upotustilasta huolimatta. "urls"-kentän osoitteiden on oltava hyväksyttäviä URL-osoitteita, tai käytäntö ohitetaan.
+
+        Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultWebUsbGuardSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista arvoa.
+
+        Tämän käytännön URL-osoitemallien on sovittava yhteen WebUsbBlockedForUrls-mallien kanssa. Ristiriitatilanteissa tätä käytäntöä sovelletaan ennen WebUsbBlockedForUrls- ja WebUsbAskForUrls-käytäntöjä.</translation>
 <translation id="3414260318408232239">Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena vanhinta versiota, joka on TLS 1.0.
 
       Muussa tapauksessa käytännön arvoksi voidaan määrittää tls1, tls1.1 tai tls1.2. Jos arvo on jokin näistä, <ph name="PRODUCT_NAME" /> ei käytä kyseistä arvoa vanhempaa SSL/TLS-versiota. Tunnistamattomat arvot ohitetaan.</translation>
@@ -1170,6 +1185,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="3925020515212192040">Listaa ennalta määritetyt verkon tiedostojaot.
 
      Käytännön jokainen luettelokohde koostuu kahdesta osasta: "share_url" ja "mode". "share_url" on jaon URL-osoite ja "mode"-arvon tulee olla "drop_down", jotta "share_url" lisätään avattavaan jaon kohteiden hakuvalikkoon.</translation>
+<translation id="3925377537407648234">Aseta näytön resoluutio ja skaalaus</translation>
 <translation id="3939893074578116847">Lähetä hallintapalvelimelle verkkopaketteja verkkotilan valvontaa varten,
       jotta palvelin voi havaita laitteen siirtymisen offline-tilaan.
 
@@ -1966,6 +1982,28 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Tämä käytäntö toimii vain, jos <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> on otettu käyttöön koneella.
 
       Käytäntö asentaa pakollisena <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ‑laajennuksen raportointia varten ja ohittaa kaikki laajennukseen liittyvät käytännöt.</translation>
+<translation id="6155247658847899816">Kun tämä käytäntö on määritetty, kunkin näytön resoluutio
+      ja skaalaus asetetaan tiettyihin arvoihin. Ulkoisten näyttöjen asetuksia
+      sovelletaan kaikkiin tällaisiin näyttöihin.
+
+      "external_width" ja "external_height" annetaan pikseleinä.
+      "external_scale_percentage" ja
+      "internal_scale_percentage" annetaan prosentteina.
+
+      Jos "external_use_native"-arvo on Tosi, käytäntö ohittaa
+      "external_height"- ja "external_width"-arvot ja asettaa ulkoisten
+      näyttöjen resoluutiot näyttöjen oletusarvoiksi.
+
+      Jos "external_use_native"-arvo on Epätosi tai sitä ei ole ja
+      "external_height"- tai "external_width"-arvoa ei ole määritetty,
+      käytäntö ei vaikuta ulkoisten näyttöjen asetuksiin. Jos jokin näyttö
+      ei tue mainittua resoluutiota tai skaalausarvoa, käytäntöä
+      ei sovelleta siihen.
+
+      Jos "recommended"-ilmoituksen arvo on Tosi, käyttäjä voi muuttaa
+      minkä tahansa näytön resoluutiota tai skaalausta kirjauduttuaan sisään,
+      mutta valinnat korvataan käytännön arvolla seuraavan uudelleenkäynnistyksen yhteydessä.
+      Jos "recommended"-ilmoituksen arvo on Epätosi tai sitä ei aseteta, käyttäjät eivät voi muuttaa näyttöasetuksia.</translation>
 <translation id="6155936611791017817">Aseta suuren osoittimen oletustila kirjautumisnäytössä</translation>
 <translation id="6157537876488211233">Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo</translation>
 <translation id="6158324314836466367">Enterprise-verkkomyymälän nimi (ei enää käytössä)</translation>
@@ -2073,6 +2111,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6553143066970470539">Näytön kirkkausprosentti</translation>
 <translation id="6559057113164934677">Älä anna minkään sivuston käyttää kameraa ja mikrofonia</translation>
 <translation id="6561396069801924653">Näytä käytettävyysvalinnat ilmaisinalueen valikossa</translation>
+<translation id="6563458316362153786">Salli nopea siirtyminen (802.11r)</translation>
 <translation id="6565312346072273043">Määritä kirjautumisruudun ruutunäppäimistö-esteettömyysominaisuuden oletustila.
 
           Jos tämän käytännön arvoksi on asetettu tosi, ruutunäppäimistö on näkyvissä kirjautumisruudussa.
@@ -2716,6 +2755,11 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos tätä asetusta ei ole määritetty hallinnoidulla laitteella, laitteella ei voi suorittaa virtuaalikoneita.
       Ei-hallinnoiduilla laitteilla voidaan suorittaa virtuaalikoneita.</translation>
 <translation id="8001701200415781021">Rajoittaa Google-tilejä, jotka <ph name="PRODUCT_NAME" /> voi asettaa selaimen päätiliksi</translation>
+<translation id="8009554972280451023">Jos tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> ‑profiileihin tallennetut tiedot, esim. kirjanmerkit, automaattisen täytön tiedot ja salasanat, tallennetaan myös roaming-käyttäjän profiilitiedostoon tai järjestelmänvalvojan <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />-käytännössä määrittämään sijaintiin. Pilvisynkronointi poistetaan käytöstä, kun tämä käytäntö on käytössä.
+
+      Jos tämä käytäntö ei ole käytössä tai sitä ei ole määritetty, vain paikallisia profiileja käytetään.
+
+      <ph name="SYNC_DISABLED_POLICY_NAME" /> poistaa kaiken datan synkronoinnin käytöstä ja ohittaa <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />-käytännön.</translation>
 <translation id="802147957407376460">Kierrä näyttöä 0 astetta.</translation>
 <translation id="8033913082323846868">Tämä käytäntö on poistettu käytöstä M70:ssä, käytä sen sijaan AutofillAddressEnabled- ja AutofillCreditCardEnabled-käytäntöjä.
 
@@ -2844,6 +2888,7 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="8274603902181597201">Pyyhi käyttäjän ecryptfs-kotihakemisto ja aloita uudella ext4-salatulla kotihakemistolla</translation>
 <translation id="8285435910062771358">Koko näytön suurentaja käytössä</translation>
 <translation id="8288199156259560552">Salli Androidin Google-sijaintipalvelu.</translation>
+<translation id="8290453559005611000">PluginVm-kuva</translation>
 <translation id="8294750666104911727">Yleensä sivut, joiden X-UA-Compatible-kohdan arvoksi on asetettu chrome=1 hahmonnetaan kohteessa <ph name="PRODUCT_FRAME_NAME" /> riippumatta "ChromeFrameRendererSettings"-käytännöstä.
 
           Jos otat tämän asetuksen käyttöön, sivujen sisällönkuvauskenttiä ei skannata.
@@ -2923,6 +2968,7 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
           Jos käytäntöä ei ole määritetty, kaikki sivustot piirretään näytölle ChromeFrameRendererSettings-käytännön näytölle piirtämisen oletusmäärityksien mukaan.
  
           Esimerkkimalleja on osoitteessa http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Poista selainhistorian tallentaminen käytöstä</translation>
 <translation id="8498293625012059298">Määritä salasanan vaihtamisen URL-osoite (vain HTTP ja HTTPS). Salasanojen suojauspalvelu ohjaa käyttäjän vaihtamaan salasanansa tässä URL-osoitteessa, kun hän on nähnyt varoituksen selaimessa.
       Jotta <ph name="PRODUCT_NAME" /> tallentaa uusien salasanojen tunnistetiedostot oikein salasanan vaihtamissivulle, varmista, että salasanan vaihtamissivu noudattaa ohjeita (https://www.chromium.org/developers/design-documents/create-amazing-password-forms).

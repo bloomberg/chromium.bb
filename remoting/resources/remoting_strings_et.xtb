@@ -63,6 +63,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2314101195544969792">Teie rakenduse <ph name="APPLICATION_NAME" /> seanss on olnud mõnda aega passiivne ja ühendus katkestatakse peagi.</translation>
 <translation id="2317666076142640974">Vaadake uue <ph name="LINK_BEGIN" />veebirakenduse Chrome Remote Desktop<ph name="LINK_END" /> eelvaadet. Soovime kuulda teie tagasisidet.</translation>
 <translation id="2320166752086256636">Peida klaviatuur</translation>
+<translation id="2332192922827071008">Ava eelistused</translation>
 <translation id="2353140552984634198">Rakendus Chromoting võimaldab teil turvaliselt arvuti juurde pääseda.</translation>
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="2366718077645204424">Hostiga ei saa ühendust. Seda põhjustab ilmselt kasutatava võrgu konfiguratsioon.</translation>
@@ -190,6 +191,9 @@ Lauaarvuti</translation>
 <translation id="4973800994433240357">Chromootimise hosti installiprogrammi allalaadimisel nõustute Google’i <ph name="LINK_BEGIN" />teenusetingimustega<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Ühendus hostiga <ph name="HOSTNAME" /> on suletud</translation>
 <translation id="4985296110227979402">Esmalt tuleb arvutis seadistada kaugjuurdepääs</translation>
+<translation id="5059773780693835145">Enne kui saate seadet teenusega <ph name="PRODUCT_NAME" /> kaugjuhtida, on vaja teha veel üks seadistustoiming.
+
+Funktsiooni lubamiseks valige nupp „<ph name="BUTTON_NAME" />”, et kuvada turva- ja privaatsuseelistuste paan, seejärel märkige ruut „<ph name="SERVICE_SCRIPT_NAME" />”.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (võrguühenduseta)</translation>
 <translation id="5070121137485264635">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma Chrome Remote Desktopile täiendavad load juurdepääsuks sellele aadressile:</translation>
 <translation id="507204348399810022">Kas soovite kindlasti keelata kaugühendused hostiga <ph name="HOSTNAME" />?</translation>
@@ -314,6 +318,7 @@ Lauaarvuti</translation>
 <translation id="809687642899217504">Minu arvutid</translation>
 <translation id="811307782653349804">Kasutage oma arvutit ükskõik kus.</translation>
 <translation id="8116630183974937060">Ilmnes võrguviga. Kontrollige, kas seade on võrgus, ja proovige uuesti.</translation>
+<translation id="8123581458650016326">Kaugkasutajatel seadme juhtimise lubamine</translation>
 <translation id="8178433417677596899">Ekraani jagamine kasutajalt kasutajale, sobib täiuslikult kaugühenduse abil tehnilise toe pakkumiseks.</translation>
 <translation id="8187079423890319756">Autoriõigus 2013 The Chromium Authors. Kõik õigused kaitstud.</translation>
 <translation id="8196755618196986400">Selleks et saaksime teiega lisateabe saamiseks ühendust võtta, tuleb teie e-posti aadress alati lisada saadetud tagasisidele.</translation>
