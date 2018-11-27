@@ -1166,6 +1166,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to intercept URLLoaderFactory interfaces used for
   // navigation or being brokered on behalf of a renderer fetching subresources.
   //
+  // |frame| could be nullptr when the caller is creating URLLoaderFactory
+  // for a service worker.
+  //
+  // |render_process_id| is the id of a render process host in which the
+  // URLLoaderFactory will be used.
+  //
   // |is_navigation| is true when it's a request used for navigation.
   //
   // |request_initiator| indicates which origin will be the initiator of
@@ -1190,6 +1196,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool WillCreateURLLoaderFactory(
       BrowserContext* browser_context,
       RenderFrameHost* frame,
+      int render_process_id,
       bool is_navigation,
       const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,

@@ -848,6 +848,7 @@ bool AwContentBrowserClient::ShouldEnableStrictSiteIsolation() {
 bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
+    int render_process_id,
     bool is_navigation,
     const url::Origin& request_initiator,
     network::mojom::URLLoaderFactoryRequest* factory_request,
@@ -858,7 +859,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
   auto proxied_request = std::move(*factory_request);
   network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
   *factory_request = mojo::MakeRequest(&target_factory_info);
-  int process_id = is_navigation ? 0 : frame->GetProcess()->GetID();
+  int process_id = is_navigation ? 0 : render_process_id;
 
   // Android WebView has one non off-the-record browser context.
   base::PostTaskWithTraits(

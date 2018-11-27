@@ -4538,7 +4538,8 @@ void RenderFrameHostImpl::CommitNavigation(
       network::mojom::URLLoaderFactoryPtrInfo factory_proxy_info;
       auto factory_request = mojo::MakeRequest(&factory_proxy_info);
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
-          browser_context, this, false /* is_navigation */,
+          browser_context, this, GetProcess()->GetID(),
+          false /* is_navigation */,
           GetOriginForURLLoaderFactory(common_params.url, GetSiteInstance()),
           &factory_request, nullptr /* bypass_redirect_checks */);
       // Keep DevTools proxy last, i.e. closest to the network.
@@ -4702,6 +4703,7 @@ void RenderFrameHostImpl::FailedNavigation(
         origin, mojo::MakeRequest(&default_factory_info));
     subresource_loader_factories = std::make_unique<URLLoaderFactoryBundleInfo>(
         std::move(default_factory_info),
+        nullptr /* default_network_factory_info */,
         URLLoaderFactoryBundleInfo::SchemeMap(),
         URLLoaderFactoryBundleInfo::OriginMap(), bypass_redirect_checks);
   }
@@ -5214,6 +5216,7 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
       std::make_unique<URLLoaderFactoryBundleInfo>(
           std::move(default_factory_info),
+          nullptr /* default_network_factory_info */,
           URLLoaderFactoryBundleInfo::SchemeMap(),
           CreateInitiatorSpecificURLLoaderFactories(
               initiators_requiring_separate_url_loader_factory_),
@@ -5267,7 +5270,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
-        context, this, false /* is_navigation */, origin,
+        context, this, GetProcess()->GetID(), false /* is_navigation */, origin,
         &default_factory_request, &bypass_redirect_checks);
   }
 

@@ -76,6 +76,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   bool WillCreateURLLoaderFactory(
       content::BrowserContext* browser_context,
       content::RenderFrameHost* frame_host,
+      int render_process_id,
       bool is_navigation,
       const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,
