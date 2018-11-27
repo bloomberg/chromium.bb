@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/audio/denormal_disabler.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 namespace blink {
 
@@ -198,8 +197,7 @@ void DefaultAudioDestinationHandler::Render(
   Context()->HandlePostRenderTasks(destination_bus);
 
   // Advances the current sample-frame.
-  size_t new_sample_frame = current_sample_frame_ + number_of_frames;
-  ReleaseStore(&current_sample_frame_, new_sample_frame);
+  AdvanceCurrentSampleFrame(number_of_frames);
 
   Context()->UpdateWorkletGlobalScopeOnRenderingThread();
 }

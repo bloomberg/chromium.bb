@@ -26,8 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_DESTINATION_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_DESTINATION_NODE_H_
 
+#include <atomic>
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 namespace blink {
 
@@ -54,7 +54,7 @@ class AudioDestinationHandler : public AudioHandler {
   virtual void RestartRendering() = 0;
 
   size_t CurrentSampleFrame() const {
-    return AcquireLoad(&current_sample_frame_);
+    return current_sample_frame_.load(std::memory_order_acquire);
   }
 
   double CurrentTime() const {
@@ -70,10 +70,15 @@ class AudioDestinationHandler : public AudioHandler {
   }
 
  protected:
-  // The number of sample frames processed by the destination so far.
-  size_t current_sample_frame_;
+  void AdvanceCurrentSampleFrame(size_t number_of_frames) {
+    current_sample_frame_.fetch_add(number_of_frames,
+                                    std::memory_order_release);
+  }
 
  private:
+  // The number of sample frames processed by the destination so far.
+  std::atomic_size_t current_sample_frame_{0};
+
   // True if the execution context is being destroyed.  If this is true, the
   // destination ndoe must avoid checking for or accessing the execution
   // context.
