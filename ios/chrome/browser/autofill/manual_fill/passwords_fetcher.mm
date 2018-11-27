@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -92,10 +93,15 @@ class PasswordStoreObserverBridge
 
 - (void)onGetPasswordStoreResults:
     (std::vector<std::unique_ptr<autofill::PasswordForm>>&)result {
+  // For Manual Fallback we filter out the android and the blacklisted
+  // passwords.
   result.erase(
       std::remove_if(result.begin(), result.end(),
                      [](std::unique_ptr<autofill::PasswordForm>& form) {
-                       return form->blacklisted_by_user;
+                       const auto is_android_uri =
+                           password_manager::IsValidAndroidFacetURI(
+                               form->signon_realm);
+                       return form->blacklisted_by_user || is_android_uri;
                      }),
       result.end());
 
