@@ -47,8 +47,11 @@ if (enable_feed_in_chrome) {
   ]
 
   feed_test_java_sources = [
+    "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/ConsumerSyncWrapper.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedAppLifecycleTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedConfigurationTest.java",
+    "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedContentStorageConformanceTest.java",
+    "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedJournalStorageConformanceTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedNetworkBridgeConformanceTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedNewTabPageTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedSchedulerBridgeConformanceTest.java",
