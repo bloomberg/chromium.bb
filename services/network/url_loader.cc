@@ -314,7 +314,8 @@ URLLoader::URLLoader(
     uint32_t request_id,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
     base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
-    base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator)
+    base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
+    mojom::TrustedURLLoaderHeaderClient* header_client)
     : url_request_context_(url_request_context),
       network_service_client_(network_service_client),
       delete_callback_(std::move(delete_callback)),
@@ -345,6 +346,7 @@ URLLoader::URLLoader(
       custom_proxy_use_alternate_proxy_list_(
           request.custom_proxy_use_alternate_proxy_list),
       fetch_window_id_(request.fetch_window_id),
+      header_client_(header_client),
       weak_ptr_factory_(this) {
   DCHECK(delete_callback_);
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
@@ -728,11 +730,6 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
                  weak_ptr_factory_.GetWeakPtr(), ssl_info));
 }
 
-void URLLoader::ResumeStart() {
-  url_request_->LogUnblocked();
-  url_request_->Start();
-}
-
 void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   DCHECK(url_request == url_request_.get());
 
@@ -983,6 +980,35 @@ void URLLoader::OnReadCompleted(net::URLRequest* url_request, int bytes_read) {
   // |this| may have been deleted.
 }
 
+int URLLoader::OnBeforeStartTransaction(net::CompletionOnceCallback callback,
+                                        net::HttpRequestHeaders* headers) {
+  if (header_client_ && (options_ & mojom::kURLLoadOptionUseHeaderClient)) {
+    header_client_->OnBeforeSendHeaders(
+        request_id_, *headers,
+        base::BindOnce(&URLLoader::OnBeforeSendHeadersComplete,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       headers));
+    return net::ERR_IO_PENDING;
+  }
+  return net::OK;
+}
+
+int URLLoader::OnHeadersReceived(
+    net::CompletionOnceCallback callback,
+    const net::HttpResponseHeaders* original_response_headers,
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url) {
+  if (header_client_ && (options_ & mojom::kURLLoadOptionUseHeaderClient)) {
+    header_client_->OnHeadersReceived(
+        request_id_, original_response_headers->raw_headers(),
+        base::BindOnce(&URLLoader::OnHeadersReceivedComplete,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       override_response_headers, allowed_unsafe_redirect_url));
+    return net::ERR_IO_PENDING;
+  }
+  return net::OK;
+}
+
 net::LoadState URLLoader::GetLoadStateForTesting() const {
   if (!url_request_)
     return net::LOAD_STATE_IDLE;
@@ -1198,6 +1224,36 @@ void URLLoader::RecordBodyReadFromNetBeforePausedIfNeeded() {
                << "body_read_before_paused_: " << body_read_before_paused_;
     }
   }
+}
+
+void URLLoader::ResumeStart() {
+  url_request_->LogUnblocked();
+  url_request_->Start();
+}
+
+void URLLoader::OnBeforeSendHeadersComplete(
+    net::CompletionOnceCallback callback,
+    net::HttpRequestHeaders* out_headers,
+    int result,
+    const base::Optional<net::HttpRequestHeaders>& headers) {
+  if (headers)
+    *out_headers = headers.value();
+  std::move(callback).Run(result);
+}
+
+void URLLoader::OnHeadersReceivedComplete(
+    net::CompletionOnceCallback callback,
+    scoped_refptr<net::HttpResponseHeaders>* out_headers,
+    GURL* out_allowed_unsafe_redirect_url,
+    int result,
+    const base::Optional<std::string>& headers,
+    const GURL& allowed_unsafe_redirect_url) {
+  if (headers) {
+    *out_headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(headers.value());
+  }
+  *out_allowed_unsafe_redirect_url = allowed_unsafe_redirect_url;
+  std::move(callback).Run(result);
 }
 
 URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {

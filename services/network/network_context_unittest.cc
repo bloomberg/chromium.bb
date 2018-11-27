@@ -4337,6 +4337,152 @@ TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
   }
 }
 
+class TestHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
+ public:
+  // network::mojom::TrustedURLLoaderHeaderClient:
+  void OnBeforeSendHeaders(int32_t request_id,
+                           const net::HttpRequestHeaders& headers,
+                           OnBeforeSendHeadersCallback callback) override {
+    auto new_headers = headers;
+    new_headers.SetHeader("foo", "bar");
+    std::move(callback).Run(on_before_send_headers_result, new_headers);
+  }
+  void OnHeadersReceived(int32_t request_id,
+                         const std::string& headers,
+                         OnHeadersReceivedCallback callback) override {
+    auto new_headers = base::MakeRefCounted<net::HttpResponseHeaders>(headers);
+    new_headers->AddHeader("baz: qux");
+    std::move(callback).Run(on_headers_received_result,
+                            new_headers->raw_headers(), GURL());
+  }
+
+  int on_before_send_headers_result = net::OK;
+  int on_headers_received_result = net::OK;
+};
+
+TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
+  net::EmbeddedTestServer test_server;
+  net::test_server::RegisterDefaultHandlers(&test_server);
+  ASSERT_TRUE(test_server.Start());
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ResourceRequest request;
+  request.url = test_server.GetURL("/echoheader?foo");
+
+  mojom::URLLoaderFactoryPtr loader_factory;
+  mojom::URLLoaderFactoryParamsPtr params =
+      mojom::URLLoaderFactoryParams::New();
+  params->process_id = mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
+  mojo::MakeStrongBinding(std::make_unique<TestHeaderClient>(),
+                          mojo::MakeRequest(&params->header_client));
+  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                          std::move(params));
+
+  // First, do a request with kURLLoadOptionUseHeaderClient set.
+  {
+    mojom::URLLoaderPtr loader;
+    TestURLLoaderClient client;
+    loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+        mojom::kURLLoadOptionUseHeaderClient, request,
+        client.CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    client.RunUntilComplete();
+
+    // Make sure request header was modified. The value will be in the body
+    // since we used the /echoheader endpoint.
+    std::string response;
+    EXPECT_TRUE(
+        mojo::BlockingCopyToString(client.response_body_release(), &response));
+    EXPECT_EQ(response, "bar");
+
+    // Make sure response header was modified.
+    EXPECT_TRUE(client.response_head().headers->HasHeaderValue("baz", "qux"));
+  }
+
+  // Next, do a request without kURLLoadOptionUseHeaderClient set, headers
+  // should not be modified.
+  {
+    mojom::URLLoaderPtr loader;
+    TestURLLoaderClient client;
+    loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+        0 /* options */, request, client.CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    client.RunUntilComplete();
+
+    // Make sure request header was not set.
+    std::string response;
+    EXPECT_TRUE(
+        mojo::BlockingCopyToString(client.response_body_release(), &response));
+    EXPECT_EQ(response, "None");
+
+    // Make sure response header was not set.
+    EXPECT_FALSE(client.response_head().headers->HasHeaderValue("foo", "bar"));
+  }
+}
+
+TEST_F(NetworkContextTest, HeaderClientFailsRequest) {
+  net::EmbeddedTestServer test_server;
+  net::test_server::RegisterDefaultHandlers(&test_server);
+  ASSERT_TRUE(test_server.Start());
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ResourceRequest request;
+  request.url = test_server.GetURL("/echo");
+
+  auto header_client = std::make_unique<TestHeaderClient>();
+  auto* raw_header_client = header_client.get();
+
+  mojom::URLLoaderFactoryPtr loader_factory;
+  mojom::URLLoaderFactoryParamsPtr params =
+      mojom::URLLoaderFactoryParams::New();
+  params->process_id = mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
+  mojo::MakeStrongBinding(std::move(header_client),
+                          mojo::MakeRequest(&params->header_client));
+  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                          std::move(params));
+
+  // First, fail request on OnBeforeSendHeaders.
+  {
+    raw_header_client->on_before_send_headers_result = net::ERR_FAILED;
+    mojom::URLLoaderPtr loader;
+    TestURLLoaderClient client;
+    loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+        mojom::kURLLoadOptionUseHeaderClient, request,
+        client.CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    client.RunUntilComplete();
+    EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);
+  }
+
+  // Next, fail request on OnHeadersReceived.
+  {
+    raw_header_client->on_before_send_headers_result = net::OK;
+    raw_header_client->on_headers_received_result = net::ERR_FAILED;
+    mojom::URLLoaderPtr loader;
+    TestURLLoaderClient client;
+    loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+        mojom::kURLLoadOptionUseHeaderClient, request,
+        client.CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    client.RunUntilComplete();
+    EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);
+  }
+}
+
 // Custom proxy does not apply to localhost, so resolve kMockHost to localhost,
 // and use that instead.
 class NetworkContextMockHostTest : public NetworkContextTest {

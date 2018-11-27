@@ -220,6 +220,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   GetProcessResourceCoordinator() override;
   void CreateURLLoaderFactory(
       const url::Origin& origin,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
       network::mojom::URLLoaderFactoryRequest request) override;
 
   void SetIsNeverSuitableForReuse() override;

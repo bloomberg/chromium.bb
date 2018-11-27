@@ -437,7 +437,7 @@ class URLLoaderTest : public testing::Test {
         mojo::MakeRequest(&loader), options, request, false,
         client_.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
         0 /* request_id */, resource_scheduler_client(), nullptr,
-        nullptr /* network_usage_accumulator */);
+        nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
     ran_ = true;
 
@@ -965,7 +965,7 @@ TEST_F(URLLoaderTest, DestroyOnURLLoaderPipeClosed) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   // Run until the response body pipe arrives, to make sure that a live body
   // pipe does not result in keeping the loader alive when the URLLoader pipe is
@@ -1017,7 +1017,7 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   client()->RunUntilResponseBodyArrived();
   EXPECT_TRUE(client()->has_received_response());
@@ -1071,7 +1071,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeResponseHeaders) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   // Pausing reading response body from network stops future reads from the
   // underlying URLRequest. So no data should be sent using the response body
@@ -1147,7 +1147,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   response_controller.WaitForRequest();
   response_controller.Send(
@@ -1212,7 +1212,7 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   loader->PauseReadingBodyFromNet();
   loader.FlushForTesting();
@@ -1272,7 +1272,7 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   // It is okay to call ResumeReadingBodyFromNet() even if there is no prior
   // PauseReadingBodyFromNet().
@@ -1454,7 +1454,7 @@ TEST_F(URLLoaderTest, UploadFileCanceled) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   mojom::NetworkServiceClient::OnFileUploadRequestedCallback callback;
   network_service_client->RunUntilUploadRequested(&callback);
@@ -1639,7 +1639,7 @@ TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, nullptr /* resource_scheduler_client */,
       nullptr /* keepalive_statistics_reporter */,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   mojom::ChunkedDataPipeGetter::GetSizeCallback get_size_callback =
       data_pipe_getter.WaitForGetSize();
@@ -1706,7 +1706,7 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
       mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   client()->RunUntilRedirectReceived();
 
@@ -1751,7 +1751,7 @@ TEST_F(URLLoaderTest, RedirectRemoveHeader) {
       mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   client()->RunUntilRedirectReceived();
 
@@ -1793,7 +1793,7 @@ TEST_F(URLLoaderTest, RedirectRemoveHeaderAndAddItBack) {
       mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   client()->RunUntilRedirectReceived();
 
@@ -1911,7 +1911,7 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
         mojo::MakeRequest(&loaderInterfacePtr), 0, request, false,
         client.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
         0 /* request_id */, resource_scheduler_client(), nullptr,
-        nullptr /* network_usage_accumulator */);
+        nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
     loaders.emplace_back(
         std::make_pair(std::move(url_loader), std::move(loaderInterfacePtr)));
@@ -1932,7 +1932,7 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
       mojo::MakeRequest(&loader_interface_ptr), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
   base::RunLoop().RunUntilIdle();
 
   // Make sure that the ResourceScheduler throttles this request.
@@ -1967,7 +1967,7 @@ TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
       mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   client()->RunUntilResponseBodyArrived();
   client()->response_body_release();
@@ -2021,7 +2021,7 @@ TEST_F(URLLoaderTest, EnterSuspendModeWhileNoPendingRead) {
       mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   // This will spin the run loop until the Mojo read buffer is full. The
   // URLLoader will end up waiting for Mojo to give it more read buffer space.
@@ -2068,7 +2068,7 @@ TEST_F(URLLoaderTest, EnterSuspendModePaused) {
       mojo::MakeRequest(&loader), mojom::kURLLoadOptionSniffMimeType, request,
       false, client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
       &params, 0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   url_loader->PauseReadingBodyFromNet();
   base::RunLoop().RunUntilIdle();
@@ -2112,7 +2112,7 @@ TEST_F(URLLoaderTest, EnterSuspendDiskCacheWriteQueued) {
       mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   // Spin until the job has produced a (simulated) cache write.
   base::RunLoop().RunUntilIdle();
@@ -2381,7 +2381,7 @@ TEST_F(URLLoaderTest, SetAuth) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(url_loader);
@@ -2422,7 +2422,7 @@ TEST_F(URLLoaderTest, CancelAuth) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(url_loader);
@@ -2464,7 +2464,7 @@ TEST_F(URLLoaderTest, TwoChallenges) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(url_loader);
@@ -2507,7 +2507,7 @@ TEST_F(URLLoaderTest, NoAuthRequiredForFavicon) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(url_loader);
@@ -2549,7 +2549,7 @@ TEST_F(URLLoaderTest, HttpAuthResponseHeadersAvailable) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(url_loader);
@@ -2589,7 +2589,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   client()->RunUntilResponseBodyArrived();
   std::string body = ReadBody();
@@ -2627,7 +2627,7 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   client()->RunUntilResponseBodyArrived();
   std::string body = ReadBody();
@@ -2668,7 +2668,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   client()->RunUntilResponseBodyArrived();
   std::string body = ReadBody();
@@ -2701,7 +2701,7 @@ TEST_F(URLLoaderTest, FollowRedirectTwice) {
       mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   client()->RunUntilRedirectReceived();
 
@@ -2778,7 +2778,7 @@ TEST_F(URLLoaderTest, ClientAuthCancelConnection) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
   network_service_client.set_url_loader_ptr(&loader);
 
   RunUntilIdle();
@@ -2817,7 +2817,7 @@ TEST_F(URLLoaderTest, ClientAuthCancelCertificateSelection) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   RunUntilIdle();
   ASSERT_TRUE(url_loader);
@@ -2865,7 +2865,7 @@ TEST_F(URLLoaderTest, ClientAuthNoCertificate) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   RunUntilIdle();
   ASSERT_TRUE(url_loader);
@@ -2919,7 +2919,7 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithValidSignature) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   RunUntilIdle();
   ASSERT_TRUE(url_loader);
@@ -2975,7 +2975,7 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithInvalidSignature) {
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */);
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
   RunUntilIdle();
   ASSERT_TRUE(url_loader);

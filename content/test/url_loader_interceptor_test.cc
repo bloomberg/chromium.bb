@@ -17,6 +17,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
@@ -78,6 +79,57 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptFrame) {
         return true;
       }));
   EXPECT_FALSE(NavigateToURL(shell(), GetPageURL()));
+}
+
+class TestBrowserClientWithHeaderClient
+    : public ContentBrowserClient,
+      public network::mojom::TrustedURLLoaderHeaderClient {
+ private:
+  // ContentBrowserClient:
+  bool WillCreateURLLoaderFactory(
+      content::BrowserContext* browser_context,
+      content::RenderFrameHost* frame,
+      int render_process_id,
+      bool is_navigation,
+      const url::Origin& request_initiator,
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+      bool* bypass_redirect_checks) override {
+    if (header_client)
+      bindings_.AddBinding(this, mojo::MakeRequest(header_client));
+    return true;
+  }
+
+  // network::mojom::TrustedURLLoaderHeaderClient:
+  void OnBeforeSendHeaders(int32_t request_id,
+                           const net::HttpRequestHeaders& headers,
+                           OnBeforeSendHeadersCallback callback) override {}
+  void OnHeadersReceived(int32_t request_id,
+                         const std::string& headers,
+                         OnHeadersReceivedCallback callback) override {}
+
+  mojo::BindingSet<network::mojom::TrustedURLLoaderHeaderClient> bindings_;
+};
+
+IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest,
+                       InterceptFrameWithHeaderClient) {
+  TestBrowserClientWithHeaderClient browser_client;
+  content::ContentBrowserClient* old_browser_client =
+      content::SetBrowserClientForTesting(&browser_client);
+
+  GURL url = GetPageURL();
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        EXPECT_EQ(params->url_request.url, url);
+        EXPECT_EQ(params->process_id, 0);
+        network::URLLoaderCompletionStatus status;
+        status.error_code = net::ERR_FAILED;
+        params->client->OnComplete(status);
+        return true;
+      }));
+  EXPECT_FALSE(NavigateToURL(shell(), GetPageURL()));
+
+  SetBrowserClientForTesting(old_browser_client);
 }
 
 IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, MonitorSubresource) {

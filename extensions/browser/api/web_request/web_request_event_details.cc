@@ -33,6 +33,18 @@ namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
 
 namespace extensions {
+namespace {
+
+// Removes all headers for which predicate(header_name) returns true.
+void EraseHeadersIf(
+    base::Value* headers,
+    base::RepeatingCallback<bool(const std::string&)> predicate) {
+  base::EraseIf(headers->GetList(), [&predicate](const base::Value& v) {
+    return predicate.Run(v.FindKey(keys::kHeaderNameKey)->GetString());
+  });
+}
+
+}  // namespace
 
 WebRequestEventDetails::WebRequestEventDetails(const WebRequestInfo& request,
                                                int extra_info_spec)
@@ -154,11 +166,19 @@ std::unique_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(
     result->SetKey(keys::kRequestBodyKey, request_body_->Clone());
   }
   if ((extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS) && request_headers_) {
-    result->SetKey(keys::kRequestHeadersKey, request_headers_->Clone());
+    base::Value request_headers = request_headers_->Clone();
+    EraseHeadersIf(
+        &request_headers,
+        base::BindRepeating(helpers::ShouldHideRequestHeader, extra_info_spec));
+    result->SetKey(keys::kRequestHeadersKey, std::move(request_headers));
   }
   if ((extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) &&
       response_headers_) {
-    result->SetKey(keys::kResponseHeadersKey, response_headers_->Clone());
+    base::Value response_headers = response_headers_->Clone();
+    EraseHeadersIf(&response_headers,
+                   base::BindRepeating(helpers::ShouldHideResponseHeader,
+                                       extra_info_spec));
+    result->SetKey(keys::kResponseHeadersKey, std::move(response_headers));
   }
 
   // Only listeners with a permission for the initiator should recieve it.

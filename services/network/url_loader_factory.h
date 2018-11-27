@@ -68,6 +68,7 @@ class URLLoaderFactory : public mojom::URLLoaderFactory {
   NetworkContext* const context_;
   mojom::URLLoaderFactoryParamsPtr params_;
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
+  mojom::TrustedURLLoaderHeaderClientPtr header_client_;
 
   // |cors_url_loader_factory_| owns this.
   cors::CorsURLLoaderFactory* cors_url_loader_factory_;

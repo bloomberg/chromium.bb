@@ -852,6 +852,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     bool is_navigation,
     const url::Origin& request_initiator,
     network::mojom::URLLoaderFactoryRequest* factory_request,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     bool* bypass_redirect_checks) {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

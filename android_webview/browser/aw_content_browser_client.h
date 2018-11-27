@@ -213,6 +213,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool is_navigation,
       const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
 
   AwFeatureListCreator* aw_feature_list_creator() {

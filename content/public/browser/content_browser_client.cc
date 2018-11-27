@@ -134,6 +134,7 @@ network::mojom::URLLoaderFactoryPtrInfo
 ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     const url::Origin& request_initiator) {
   return network::mojom::URLLoaderFactoryPtrInfo();
 }
@@ -719,6 +720,7 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
     bool is_navigation,
     const url::Origin& request_initiator,
     network::mojom::URLLoaderFactoryRequest* factory_request,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     bool* bypass_redirect_checks) {
   DCHECK(browser_context);
   return false;

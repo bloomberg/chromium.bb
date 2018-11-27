@@ -62,6 +62,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -86,7 +87,6 @@ using helpers::CalculateOnHeadersReceivedDelta;
 using helpers::CharListToString;
 using helpers::EventResponseDelta;
 using helpers::EventResponseDeltas;
-using helpers::EventResponseDeltas;
 using helpers::ExtraInfoSpec;
 using helpers::InDecreasingExtensionInstallationTimeOrder;
 using helpers::MergeCancelOfResponses;
@@ -96,6 +96,7 @@ using helpers::ResponseCookieModification;
 using helpers::ResponseHeader;
 using helpers::ResponseHeaders;
 using helpers::StringToCharList;
+using testing::ElementsAre;
 
 namespace extensions {
 
@@ -1566,7 +1567,8 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
   new_headers_added.SetHeader("key2", "value2");
   std::unique_ptr<EventResponseDelta> delta_added(
       CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
-                                        &old_headers, &new_headers_added));
+                                        &old_headers, &new_headers_added,
+                                        0 /* extra_info_spec */));
   ASSERT_TRUE(delta_added.get());
   EXPECT_TRUE(delta_added->cancel);
   ASSERT_TRUE(delta_added->modified_request_headers.GetHeader("key3", &value));
@@ -1577,7 +1579,8 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
   new_headers_deleted.SetHeader("key1", "value1");
   std::unique_ptr<EventResponseDelta> delta_deleted(
       CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
-                                        &old_headers, &new_headers_deleted));
+                                        &old_headers, &new_headers_deleted,
+                                        0 /* extra_info_spec */));
   ASSERT_TRUE(delta_deleted.get());
   ASSERT_EQ(1u, delta_deleted->deleted_request_headers.size());
   ASSERT_EQ("key2", delta_deleted->deleted_request_headers.front());
@@ -1588,7 +1591,8 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
   new_headers_modified.SetHeader("key2", "value3");
   std::unique_ptr<EventResponseDelta> delta_modified(
       CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
-                                        &old_headers, &new_headers_modified));
+                                        &old_headers, &new_headers_modified,
+                                        0 /* extra_info_spec */));
   ASSERT_TRUE(delta_modified.get());
   EXPECT_TRUE(delta_modified->deleted_request_headers.empty());
   ASSERT_TRUE(
@@ -1604,7 +1608,8 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
   new_headers_modified2.SetHeader("key2", "value3");
   std::unique_ptr<EventResponseDelta> delta_modified2(
       CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
-                                        &old_headers, &new_headers_modified));
+                                        &old_headers, &new_headers_modified,
+                                        0 /* extra_info_spec */));
   ASSERT_TRUE(delta_modified2.get());
   EXPECT_TRUE(delta_modified2->deleted_request_headers.empty());
   ASSERT_TRUE(
@@ -1612,9 +1617,49 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
   EXPECT_EQ("value3", value);
 }
 
+TEST(ExtensionWebRequestHelpersTest,
+     TestCalculateOnBeforeSendHeadersDeltaWithExtraHeaders) {
+  for (const std::string& name :
+       {"accept-encoding", "accept-language", "cookie", "referer"}) {
+    net::HttpRequestHeaders old_headers;
+    old_headers.SetHeader("key1", "value1");
+
+    // Test adding a special header.
+    net::HttpRequestHeaders new_headers = old_headers;
+    new_headers.SetHeader(name, "value");
+    std::unique_ptr<EventResponseDelta> delta(CalculateOnBeforeSendHeadersDelta(
+        "extid", base::Time::Now(), false, &old_headers, &new_headers,
+        0 /* extra_info_spec */));
+    EXPECT_FALSE(delta->modified_request_headers.HasHeader(name));
+
+    // Test with extra headers in spec.
+    delta.reset(CalculateOnBeforeSendHeadersDelta(
+        "extid", base::Time::Now(), false, &old_headers, &new_headers,
+        ExtraInfoSpec::EXTRA_HEADERS));
+    std::string value;
+    EXPECT_TRUE(delta->modified_request_headers.GetHeader(name, &value));
+    EXPECT_EQ("value", value);
+
+    // Test removing a special header.
+    new_headers = old_headers;
+    // Add header to old headers, it will be treated as removed.
+    old_headers.SetHeader(name, "value");
+    delta.reset(CalculateOnBeforeSendHeadersDelta(
+        "extid", base::Time::Now(), false, &old_headers, &new_headers,
+        0 /* extra_info_spec */));
+    EXPECT_TRUE(delta->deleted_request_headers.empty());
+
+    // Test with extra headers in spec.
+    delta.reset(CalculateOnBeforeSendHeadersDelta(
+        "extid", base::Time::Now(), false, &old_headers, &new_headers,
+        ExtraInfoSpec::EXTRA_HEADERS));
+    EXPECT_THAT(delta->deleted_request_headers, ElementsAre(name));
+  }
+}
+
 TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
   const bool cancel = true;
-  char base_headers_string[] =
+  std::string base_headers_string =
       "HTTP/1.0 200 OK\r\n"
       "Key1: Value1\r\n"
       "Key2: Value2, Bar\r\n"
@@ -1622,62 +1667,99 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
       "Key5: Value5, end5\r\n"
       "X-Chrome-ID-Consistency-Response: Value6\r\n"
       "\r\n";
-  scoped_refptr<net::HttpResponseHeaders> base_headers(
-      new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(
-            base_headers_string, sizeof(base_headers_string))));
+  auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(base_headers_string.c_str(),
+                                        base_headers_string.size()));
 
-  ResponseHeaders new_headers;
-  new_headers.push_back(ResponseHeader("kEy1", "Value1"));  // Unchanged
-  new_headers.push_back(ResponseHeader("Key2", "Value1"));  // Modified
-  // Key3 is deleted
-  new_headers.push_back(ResponseHeader("Key4", "Value4"));  // Added
-  new_headers.push_back(ResponseHeader("Key5", "Value5, end5"));  // Unchanged
-  new_headers.push_back(ResponseHeader("X-Chrome-ID-Consistency-Response",
-                                       "Value1"));  // Modified
+  ResponseHeaders new_headers = {
+      {"kEy1", "Value1"},  // Unchanged
+      {"Key2", "Value1"},  // Modified
+      // Key3 is deleted
+      {"Key4", "Value4"},                             // Added
+      {"Key5", "Value5, end5"},                       // Unchanged
+      {"X-Chrome-ID-Consistency-Response", "Value1"}  // Modified
+  };
   GURL url;
 
   // The X-Chrome-ID-Consistency-Response is a protected header, but only for
   // Gaia URLs. It should be modifiable when sent from anywhere else.
   // Non-Gaia URL:
-  std::unique_ptr<EventResponseDelta> delta(
-      CalculateOnHeadersReceivedDelta("extid", base::Time::Now(), cancel, url,
-                                      url, base_headers.get(), &new_headers));
+  std::unique_ptr<EventResponseDelta> delta(CalculateOnHeadersReceivedDelta(
+      "extid", base::Time::Now(), cancel, url, url, base_headers.get(),
+      &new_headers, 0 /* extra_info_spec */));
   ASSERT_TRUE(delta.get());
   EXPECT_TRUE(delta->cancel);
-  EXPECT_EQ(3u, delta->added_response_headers.size());
-  EXPECT_TRUE(base::ContainsValue(delta->added_response_headers,
-                                  ResponseHeader("Key2", "Value1")));
-  EXPECT_TRUE(base::ContainsValue(delta->added_response_headers,
-                                  ResponseHeader("Key4", "Value4")));
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_THAT(
       delta->added_response_headers,
-      ResponseHeader("X-Chrome-ID-Consistency-Response", "Value1")));
-  EXPECT_EQ(3u, delta->deleted_response_headers.size());
-  EXPECT_TRUE(base::ContainsValue(delta->deleted_response_headers,
-                                  ResponseHeader("Key2", "Value2, Bar")));
-  EXPECT_TRUE(base::ContainsValue(delta->deleted_response_headers,
-                                  ResponseHeader("Key3", "Value3")));
-  EXPECT_TRUE(base::ContainsValue(
-      delta->deleted_response_headers,
-      ResponseHeader("X-Chrome-ID-Consistency-Response", "Value6")));
+      ElementsAre(
+          ResponseHeader("Key2", "Value1"), ResponseHeader("Key4", "Value4"),
+          ResponseHeader("X-Chrome-ID-Consistency-Response", "Value1")));
+  EXPECT_THAT(delta->deleted_response_headers,
+              ElementsAre(ResponseHeader("Key2", "Value2, Bar"),
+                          ResponseHeader("Key3", "Value3"),
+                          ResponseHeader("X-Chrome-ID-Consistency-Response",
+                                         "Value6")));
 
   // Gaia URL:
   delta.reset(CalculateOnHeadersReceivedDelta(
       "extid", base::Time::Now(), cancel, GaiaUrls::GetInstance()->gaia_url(),
-      url, base_headers.get(), &new_headers));
+      url, base_headers.get(), &new_headers, 0 /* extra_info_spec */));
   ASSERT_TRUE(delta.get());
   EXPECT_TRUE(delta->cancel);
-  EXPECT_EQ(2u, delta->added_response_headers.size());
-  EXPECT_TRUE(base::ContainsValue(delta->added_response_headers,
-                                  ResponseHeader("Key2", "Value1")));
-  EXPECT_TRUE(base::ContainsValue(delta->added_response_headers,
-                                  ResponseHeader("Key4", "Value4")));
-  EXPECT_EQ(2u, delta->deleted_response_headers.size());
-  EXPECT_TRUE(base::ContainsValue(delta->deleted_response_headers,
-                                  ResponseHeader("Key2", "Value2, Bar")));
-  EXPECT_TRUE(base::ContainsValue(delta->deleted_response_headers,
-                                  ResponseHeader("Key3", "Value3")));
+  EXPECT_THAT(delta->added_response_headers,
+              ElementsAre(ResponseHeader("Key2", "Value1"),
+                          ResponseHeader("Key4", "Value4")));
+  EXPECT_THAT(delta->deleted_response_headers,
+              ElementsAre(ResponseHeader("Key2", "Value2, Bar"),
+                          ResponseHeader("Key3", "Value3")));
+}
+
+TEST(ExtensionWebRequestHelpersTest,
+     TestCalculateOnHeadersReceivedDeltaWithExtraHeaders) {
+  std::string base_headers_string =
+      "HTTP/1.0 200 OK\r\n"
+      "Key1: Value1\r\n";
+  auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(base_headers_string.c_str(),
+                                        base_headers_string.size()));
+
+  ResponseHeaders new_headers = {
+      {"Key1", "Value1"},
+      {"Set-Cookie", "cookie"},
+  };
+
+  std::unique_ptr<EventResponseDelta> delta(CalculateOnHeadersReceivedDelta(
+      "extid", base::Time::Now(), false, GURL(), GURL(), base_headers.get(),
+      &new_headers, 0 /* extra_info_spec */));
+  EXPECT_TRUE(delta->added_response_headers.empty());
+  EXPECT_TRUE(delta->deleted_response_headers.empty());
+
+  // Set-Cookie can be added if extra headers is set in options.
+  delta.reset(CalculateOnHeadersReceivedDelta(
+      "extid", base::Time::Now(), false, GURL(), GURL(), base_headers.get(),
+      &new_headers, ExtraInfoSpec::EXTRA_HEADERS));
+  EXPECT_THAT(delta->added_response_headers,
+              ElementsAre(ResponseHeader("Set-Cookie", "cookie")));
+  EXPECT_TRUE(delta->deleted_response_headers.empty());
+
+  // Test deleting Set-Cookie header.
+  new_headers = {
+      {"Key1", "Value1"},
+  };
+  base_headers->AddCookie("cookie");
+
+  delta.reset(CalculateOnHeadersReceivedDelta(
+      "extid", base::Time::Now(), false, GURL(), GURL(), base_headers.get(),
+      &new_headers, 0 /* extra_info_spec */));
+  EXPECT_TRUE(delta->added_response_headers.empty());
+  EXPECT_TRUE(delta->deleted_response_headers.empty());
+
+  delta.reset(CalculateOnHeadersReceivedDelta(
+      "extid", base::Time::Now(), false, GURL(), GURL(), base_headers.get(),
+      &new_headers, ExtraInfoSpec::EXTRA_HEADERS));
+  EXPECT_TRUE(delta->added_response_headers.empty());
+  EXPECT_THAT(delta->deleted_response_headers,
+              ElementsAre(ResponseHeader("Set-Cookie", "cookie")));
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {

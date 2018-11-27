@@ -197,7 +197,8 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
       content::RenderFrameHost* frame,
       int render_process_id,
       bool is_navigation,
-      network::mojom::URLLoaderFactoryRequest* factory_request);
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client);
 
   // Any request which requires authentication to complete will be bounced
   // through this method iff Network Service is enabled.
@@ -473,6 +474,12 @@ class ExtensionWebRequestEventRouter {
   // The callback is then deleted.
   void AddCallbackForPageLoad(const base::Closure& callback);
 
+  // Whether there is a listener matching the request that has
+  // ExtraInfoSpec::EXTRA_HEADERS set.
+  bool HasExtraHeadersListener(void* browser_context,
+                               const extensions::InfoMap* extension_info_map,
+                               const WebRequestInfo* request);
+
  private:
   friend class WebRequestAPI;
   friend class base::NoDestructor<ExtensionWebRequestEventRouter>;
@@ -616,7 +623,8 @@ class ExtensionWebRequestEventRouter {
                            const std::string& extension_id,
                            const std::string& event_name,
                            uint64_t request_id,
-                           EventResponse* response);
+                           EventResponse* response,
+                           int extra_info_spec);
 
   // Processes the generated deltas from blocked_requests_ on the specified
   // request. If |call_back| is true, the callback registered in

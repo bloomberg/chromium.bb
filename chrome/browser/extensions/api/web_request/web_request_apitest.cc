@@ -540,6 +540,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestExtraHeaders) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_extra_headers.html"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestRedirects) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_redirects.html"))
@@ -1720,7 +1726,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   content::RenderFrameHost* frame = temp_web_contents->GetMainFrame();
   EXPECT_TRUE(api->MaybeProxyURLLoaderFactory(
       frame->GetProcess()->GetBrowserContext(), frame,
-      frame->GetProcess()->GetID(), false, &request));
+      frame->GetProcess()->GetID(), false, &request, nullptr));
   temp_web_contents.reset();
   auto params = network::mojom::URLLoaderFactoryParams::New();
   params->process_id = 0;
@@ -2314,7 +2320,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ChangeHeaderUMAs) {
             }
           }
           return {requestHeaders: headers};
-        }, {urls: ['*://*/set-cookie*']}, ['blocking', 'requestHeaders']);
+        }, {urls: ['*://*/set-cookie*']},
+        ['blocking', 'requestHeaders', 'extraHeaders']);
 
         chrome.webRequest.onHeadersReceived.addListener(function(details) {
           var headers = details.responseHeaders;
@@ -2325,7 +2332,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ChangeHeaderUMAs) {
             }
           }
           return {responseHeaders: headers};
-        }, {urls: ['*://*/set-cookie*']}, ['blocking', 'responseHeaders']);
+        }, {urls: ['*://*/set-cookie*']},
+        ['blocking', 'responseHeaders', 'extraHeaders']);
 
         chrome.test.sendMessage('ready');
       )");
@@ -2374,7 +2382,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, RemoveHeaderUMAs) {
             }
           }
           return {requestHeaders: headers};
-        }, {urls: ['*://*/set-cookie*']}, ['blocking', 'requestHeaders']);
+        }, {urls: ['*://*/set-cookie*']},
+        ['blocking', 'requestHeaders', 'extraHeaders']);
 
         chrome.webRequest.onHeadersReceived.addListener(function(details) {
           var headers = details.responseHeaders;
@@ -2385,7 +2394,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, RemoveHeaderUMAs) {
             }
           }
           return {responseHeaders: headers};
-        }, {urls: ['*://*/set-cookie*']}, ['blocking', 'responseHeaders']);
+        }, {urls: ['*://*/set-cookie*']},
+        ['blocking', 'responseHeaders', 'extraHeaders']);
 
         chrome.test.sendMessage('ready');
       )");

@@ -80,6 +80,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       bool is_navigation,
       const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
   bool HandleExternalProtocol(
       const GURL& url,
@@ -95,6 +96,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       const url::Origin& request_initiator) override;
 
  protected:

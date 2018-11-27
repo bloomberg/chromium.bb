@@ -62,6 +62,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -123,6 +124,10 @@ class NavigationLoaderInterceptorBrowserContainer
 // Only used on the IO thread.
 base::LazyInstance<NavigationURLLoaderImpl::BeginNavigationInterceptor>::Leaky
     g_interceptor = LAZY_INSTANCE_INITIALIZER;
+
+// Only used on the UI thread.
+base::LazyInstance<NavigationURLLoaderImpl::URLLoaderFactoryInterceptor>::Leaky
+    g_loader_factory_interceptor = LAZY_INSTANCE_INITIALIZER;
 
 // Returns true if interception by NavigationLoaderInterceptors is enabled.
 // Both ServiceWorkerServicification and SignedExchange require the loader
@@ -368,6 +373,33 @@ class AboutURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 };
+
+// Creates a URLLoaderFactory that uses |header_client|. This should have the
+// same settings as the factory from the URLLoaderFactoryGetter.
+std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+CreateNetworkFactoryInfoWithHeaderClient(
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    StoragePartitionImpl* partition) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  network::mojom::URLLoaderFactoryPtrInfo factory_info;
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->header_client = std::move(header_client);
+  params->process_id = network::mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
+  params->disable_web_security =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity);
+  auto factory_request = mojo::MakeRequest(&factory_info);
+
+  if (g_loader_factory_interceptor.Get())
+    g_loader_factory_interceptor.Get().Run(&factory_request);
+
+  partition->GetNetworkContext()->CreateURLLoaderFactory(
+      std::move(factory_request), std::move(params));
+  return std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
+      std::move(factory_info));
+}
 
 }  // namespace
 
@@ -1657,6 +1689,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info;
   network::mojom::URLLoaderFactoryRequest proxied_factory_request;
+  network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
   bool bypass_redirect_checks = false;
   if (frame_tree_node) {
     // |frame_tree_node| may be null in some unit test environments.
@@ -1679,7 +1712,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         partition->browser_context(), frame_tree_node->current_frame_host(),
         frame_tree_node->current_frame_host()->GetProcess()->GetID(),
         true /* is_navigation */, navigation_request_initiator,
-        &factory_request, &bypass_redirect_checks);
+        &factory_request, &header_client, &bypass_redirect_checks);
     if (devtools_instrumentation::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true, false,
             &factory_request)) {
@@ -1720,6 +1753,13 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   for (auto& iter : non_network_url_loader_factories_)
     known_schemes.insert(iter.first);
 
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> network_factory_info =
+      partition->url_loader_factory_getter()->GetNetworkFactoryInfo();
+  if (header_client) {
+    network_factory_info = CreateNetworkFactoryInfoWithHeaderClient(
+        std::move(header_client), partition);
+  }
+
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_interceptors), std::move(new_request), resource_context,
@@ -1732,7 +1772,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       base::BindOnce(
           &URLLoaderRequestController::Start,
           base::Unretained(request_controller_.get()),
-          partition->url_loader_factory_getter()->GetNetworkFactoryInfo(),
+          std::move(network_factory_info),
           service_worker_navigation_handle_core, appcache_handle_core,
           std::move(signed_exchange_prefetch_metric_recorder),
           std::move(request_info), std::move(navigation_ui_data),
@@ -1807,6 +1847,14 @@ void NavigationURLLoaderImpl::SetBeginNavigationInterceptorForTesting(
   g_interceptor.Get() = interceptor;
 }
 
+void NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
+    const URLLoaderFactoryInterceptor& interceptor) {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  g_loader_factory_interceptor.Get() = interceptor;
+}
+
 void NavigationURLLoaderImpl::OnRequestStarted(base::TimeTicks timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delegate_->OnRequestStarted(timestamp);
@@ -1833,7 +1881,7 @@ void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryRequest(
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       frame->GetSiteInstance()->GetBrowserContext(), frame,
       frame->GetProcess()->GetID(), true /* is_navigation */,
-      navigation_request_initiator, &factory,
+      navigation_request_initiator, &factory, nullptr /* header_client */,
       nullptr /* bypass_redirect_checks */);
   it->second->Clone(std::move(factory));
 }

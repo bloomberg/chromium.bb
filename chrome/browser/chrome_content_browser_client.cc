@@ -1505,11 +1505,12 @@ network::mojom::URLLoaderFactoryPtrInfo
 ChromeContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     const url::Origin& request_initiator) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::
-      CreateURLLoaderFactoryForNetworkRequests(process, network_context,
-                                               request_initiator);
+      CreateURLLoaderFactoryForNetworkRequests(
+          process, network_context, header_client, request_initiator);
 #else
   return network::mojom::URLLoaderFactoryPtrInfo();
 #endif
@@ -4646,6 +4647,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     bool is_navigation,
     const url::Origin& request_initiator,
     network::mojom::URLLoaderFactoryRequest* factory_request,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     bool* bypass_redirect_checks) {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   bool use_proxy = false;
@@ -4661,7 +4663,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     bool use_proxy_for_web_request =
         web_request_api->MaybeProxyURLLoaderFactory(
             browser_context, frame, render_process_id, is_navigation,
-            factory_request);
+            factory_request, header_client);
     if (bypass_redirect_checks)
       *bypass_redirect_checks = use_proxy_for_web_request;
     use_proxy |= use_proxy_for_web_request;
