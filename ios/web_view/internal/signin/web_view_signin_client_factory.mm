@@ -11,7 +11,6 @@
 #include "ios/web_view/internal/content_settings/web_view_cookie_settings_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
-#include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -36,7 +35,6 @@ WebViewSigninClientFactory::WebViewSigninClientFactory()
     : BrowserStateKeyedServiceFactory(
           "SigninClient",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(WebViewSigninErrorControllerFactory::GetInstance());
   DependsOn(WebViewCookieSettingsFactory::GetInstance());
   DependsOn(WebViewHostContentSettingsMapFactory::GetInstance());
 }
@@ -49,7 +47,6 @@ WebViewSigninClientFactory::BuildServiceInstanceFor(
   return std::make_unique<IOSWebViewSigninClient>(
       browser_state->GetPrefs(), browser_state->GetSharedURLLoaderFactory(),
       browser_state->GetCookieManager(),
-      WebViewSigninErrorControllerFactory::GetForBrowserState(browser_state),
       WebViewCookieSettingsFactory::GetForBrowserState(browser_state),
       WebViewHostContentSettingsMapFactory::GetForBrowserState(browser_state));
 }

@@ -11,7 +11,6 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/ios/browser/wait_for_network_callback_helper.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -19,14 +18,12 @@
 @class CWVSyncController;
 
 // iOS WebView specific signin client.
-class IOSWebViewSigninClient : public SigninClient,
-                               public SigninErrorController::Observer {
+class IOSWebViewSigninClient : public SigninClient {
  public:
   IOSWebViewSigninClient(
       PrefService* pref_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       network::mojom::CookieManager* cookie_manager,
-      SigninErrorController* signin_error_controller,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
       scoped_refptr<HostContentSettingsMap> host_content_settings_map);
 
@@ -59,9 +56,6 @@ class IOSWebViewSigninClient : public SigninClient,
       override;
   void OnSignedOut() override;
 
-  // SigninErrorController::Observer implementation.
-  void OnErrorChanged() override;
-
   // CWVSyncController setter/getter.
   void SetSyncController(CWVSyncController* sync_controller);
   CWVSyncController* GetSyncController() const;
@@ -73,8 +67,6 @@ class IOSWebViewSigninClient : public SigninClient,
   PrefService* pref_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   network::mojom::CookieManager* cookie_manager_;
-  // Used to check for errors related to signing in.
-  SigninErrorController* signin_error_controller_;
   // Used to check if sign in cookies are allowed.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   // Used to add and remove content settings observers.
