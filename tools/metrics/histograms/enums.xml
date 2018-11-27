@@ -2503,6 +2503,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Cannot proceed"/>
 </enum>
 
+<enum name="AutocompleteEvents">
+  <int value="0" label="Suggestions Shown"/>
+  <int value="1" label="Suggestion Selected"/>
+</enum>
+
 <enum name="AutofillCardUploadDecision">
   <obsolete>
     Deprecated as of 2/2016, replaced by AutofillCardUploadDecisionExpanded.

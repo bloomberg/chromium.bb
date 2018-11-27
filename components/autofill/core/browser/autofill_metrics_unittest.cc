@@ -8109,4 +8109,36 @@ TEST_F(AutofillMetricsTest,
   }
 }
 
+TEST_F(AutofillMetricsTest, LogAutocompleteSuggestionAcceptedIndex_WithIndex) {
+  base::HistogramTester histogram_tester;
+  const int test_index = 3;
+  AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(test_index);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SuggestionAcceptedIndex.Autocomplete", test_index,
+      /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount(
+      "Autocomplete.Events", AutofillMetrics::AUTOCOMPLETE_SUGGESTION_SELECTED,
+      /*expected_count=*/1);
+}
+
+TEST_F(AutofillMetricsTest, LogAutocompleteSuggestionAcceptedIndex_IndexCap) {
+  base::HistogramTester histogram_tester;
+  const int test_index = 9000;
+  AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(test_index);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SuggestionAcceptedIndex.Autocomplete", kMaxBucketsCount,
+      /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount(
+      "Autocomplete.Events", AutofillMetrics::AUTOCOMPLETE_SUGGESTION_SELECTED,
+      /*expected_count=*/1);
+}
+
+TEST_F(AutofillMetricsTest, OnAutocompleteSuggestionsShown) {
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::OnAutocompleteSuggestionsShown();
+  histogram_tester.ExpectBucketCount(
+      "Autocomplete.Events", AutofillMetrics::AUTOCOMPLETE_SUGGESTIONS_SHOWN,
+      /*expected_count=*/1);
+}
+
 }  // namespace autofill
