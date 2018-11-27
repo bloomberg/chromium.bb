@@ -239,7 +239,7 @@ TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTPS_SKIP) {
 TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_IMAGE) {
   InitializeProviderHostForWindow();
   // Check provider host's URL after initializing a handler for an image.
-  provider_host_.get()->UpdateURLs(GURL("https://host/scope/doc"),
+  provider_host_.get()->UpdateUrls(GURL("https://host/scope/doc"),
                                    GURL("https://host/scope/doc"));
   std::unique_ptr<net::URLRequest> request =
       CreateRequest("https://host/scope/image", "GET");

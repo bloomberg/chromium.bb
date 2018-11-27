@@ -816,7 +816,7 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
       CreateProviderHostForWindow(
           kRenderProcessId1, provider_id++, true /* is_parent_frame_secure */,
           context()->AsWeakPtr(), &remote_endpoints.back());
-  host1->UpdateURLs(kOrigin1, kOrigin1);
+  host1->UpdateUrls(kOrigin1, kOrigin1);
 
   // Host2 (provider_id=2): process_id=2, origin2.
   remote_endpoints.emplace_back();
@@ -824,7 +824,7 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
       CreateProviderHostForWindow(
           kRenderProcessId2, provider_id++, true /* is_parent_frame_secure */,
           context()->AsWeakPtr(), &remote_endpoints.back());
-  host2->UpdateURLs(kOrigin2, kOrigin2);
+  host2->UpdateUrls(kOrigin2, kOrigin2);
 
   // Host3 (provider_id=3): process_id=2, origin1.
   remote_endpoints.emplace_back();
@@ -832,7 +832,7 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
       CreateProviderHostForWindow(
           kRenderProcessId2, provider_id++, true /* is_parent_frame_secure */,
           context()->AsWeakPtr(), &remote_endpoints.back());
-  host3->UpdateURLs(kOrigin1, kOrigin1);
+  host3->UpdateUrls(kOrigin1, kOrigin1);
 
   // Host4 (provider_id < -1): process_id=2, origin2, for ServiceWorker.
   // Since the provider host is created via

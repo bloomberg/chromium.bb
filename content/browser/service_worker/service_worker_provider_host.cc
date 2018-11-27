@@ -89,7 +89,7 @@ class ServiceWorkerURLTrackingRequestHandler
     if (!provider_host_)
       return nullptr;
     const GURL stripped_url = net::SimplifyUrlForRequest(request->url());
-    provider_host_->UpdateURLs(stripped_url, request->site_for_cookies());
+    provider_host_->UpdateUrls(stripped_url, request->site_for_cookies());
     return nullptr;
   }
 
@@ -103,7 +103,7 @@ class ServiceWorkerURLTrackingRequestHandler
       return;
     const GURL stripped_url =
         net::SimplifyUrlForRequest(tentative_resource_request.url);
-    provider_host_->UpdateURLs(stripped_url,
+    provider_host_->UpdateUrls(stripped_url,
                                tentative_resource_request.site_for_cookies);
     // Fall back to network.
     std::move(callback).Run({});
@@ -371,13 +371,9 @@ int ServiceWorkerProviderHost::frame_id() const {
 bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
   DCHECK(IsProviderForClient());
 
-  // |document_url_| may be empty if loading has not begun, or
-  // ServiceWorkerRequestHandler didn't handle the load (because e.g. another
-  // handler did first, or the initial request URL was such that
-  // OriginCanAccessServiceWorkers returned false).
-  if (!document_url_.is_valid())
+  if (!url_.is_valid())
     return false;
-  if (!OriginCanAccessServiceWorkers(document_url_))
+  if (!OriginCanAccessServiceWorkers(url_))
     return false;
 
   if (is_parent_frame_secure())
@@ -386,7 +382,7 @@ bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
   std::set<std::string> schemes;
   GetContentClient()->browser()->GetSchemesBypassingSecureContextCheckWhitelist(
       &schemes);
-  return schemes.find(document_url_.scheme()) != schemes.end();
+  return schemes.find(url_.scheme()) != schemes.end();
 }
 
 blink::mojom::ControllerServiceWorkerMode
@@ -458,16 +454,16 @@ ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
   return controller_ptr;
 }
 
-void ServiceWorkerProviderHost::UpdateURLs(const GURL& document_url,
+void ServiceWorkerProviderHost::UpdateUrls(const GURL& url,
                                            const GURL& site_for_cookies) {
   DCHECK(IsProviderForClient());
-  DCHECK(!document_url.has_ref());
+  DCHECK(!url.has_ref());
   DCHECK(!controller());
 
-  GURL previous_url = document_url_;
-  document_url_ = document_url;
+  GURL previous_url = url_;
+  url_ = url;
   site_for_cookies_ = site_for_cookies;
-  if (previous_url != document_url) {
+  if (previous_url != url) {
     // Revoke the token on URL change since any service worker holding the token
     // may no longer be the potential controller of this frame and shouldn't
     // have the power to display SSL dialogs for it.
@@ -480,7 +476,7 @@ void ServiceWorkerProviderHost::UpdateURLs(const GURL& document_url,
   }
 
   auto previous_origin = url::Origin::Create(previous_url);
-  auto new_origin = url::Origin::Create(document_url_);
+  auto new_origin = url::Origin::Create(url_);
   // Update client id on cross origin redirects. This corresponds to the HTML
   // standard's "process a navigation fetch" algorithm's step for discarding
   // |reservedEnvironment|.
@@ -507,7 +503,7 @@ void ServiceWorkerProviderHost::UpdateURLs(const GURL& document_url,
 
 const GURL& ServiceWorkerProviderHost::url() const {
   if (IsProviderForClient())
-    return document_url_;
+    return url_;
   return running_hosted_version_->script_url();
 }
 
@@ -615,8 +611,7 @@ void ServiceWorkerProviderHost::SetControllerRegistration(
 
 void ServiceWorkerProviderHost::AddMatchingRegistration(
     ServiceWorkerRegistration* registration) {
-  DCHECK(
-      ServiceWorkerUtils::ScopeMatches(registration->scope(), document_url_));
+  DCHECK(ServiceWorkerUtils::ScopeMatches(registration->scope(), url_));
   if (!IsContextSecureForServiceWorker())
     return;
   size_t key = registration->scope().spec().size();
@@ -893,8 +888,9 @@ void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
   for (const auto& key_registration : registrations) {
     ServiceWorkerRegistration* registration = key_registration.second;
     if (!registration->is_uninstalled() &&
-        ServiceWorkerUtils::ScopeMatches(registration->scope(), document_url_))
+        ServiceWorkerUtils::ScopeMatches(registration->scope(), url_)) {
       AddMatchingRegistration(registration);
+    }
   }
 }
 

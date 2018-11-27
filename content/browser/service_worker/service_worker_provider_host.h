@@ -200,8 +200,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // worker intercepts main resource requests, this check must be done
   // browser-side once the URL is known (see comments in
   // ServiceWorkerNetworkProvider::CreateForNavigation). This function uses
-  // |document_url_| and |is_parent_frame_secure_| to determine context
-  // security, so they must be set properly before calling this function.
+  // |url_| and |is_parent_frame_secure_| to determine context security, so they
+  // must be set properly before calling this function.
   bool IsContextSecureForServiceWorker() const;
 
   // For service worker clients. Describes whether the client has a controller
@@ -271,13 +271,21 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // for posting messages.
   mojom::ControllerServiceWorkerPtr GetControllerServiceWorkerPtr();
 
-  // Sets the |document_url_|, |site_for_cookies_| and updates the uuid if it's
-  // cross origin transition. This is for service worker clients.
-  void UpdateURLs(const GURL& document_url, const GURL& site_for_cookies);
+  // For service worker clients. Sets |url_| and |site_for_cookies_| and updates
+  // the client uuid if it's a cross-origin transition.
+  void UpdateUrls(const GURL& url, const GURL& site_for_cookies);
 
   // The URL of this context. For service worker clients, this is the document
   // URL (for documents) or script URL (for workers). For service worker
   // execution contexts, this is the script URL.
+  //
+  // For clients, url() may be empty if loading has not started, or our custom
+  // loading handler didn't see the load (because e.g. another handler did
+  // first, or the initial request URL was such that
+  // OriginCanAccessServiceWorkers returned false).
+  //
+  // The URL may also change on redirects during loading. Once
+  // is_execution_ready() is true, the URL should no longer change.
   const GURL& url() const;
 
   // The URL representing the first-party site for this context. See
@@ -631,8 +639,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // tab where the navigation occurs.
   WebContentsGetter web_contents_getter_;
 
-  // For service worker clients.
-  GURL document_url_;
+  // For service worker clients. See comments for the getter functions.
+  GURL url_;
   GURL site_for_cookies_;
 
   // Keyed by registration scope URL length.
