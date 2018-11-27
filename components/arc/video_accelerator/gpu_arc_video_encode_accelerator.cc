@@ -78,8 +78,13 @@ void GpuArcVideoEncodeAccelerator::Initialize(
     VideoEncodeClientPtr client,
     InitializeCallback callback) {
   DVLOGF(2) << config.AsHumanReadableString();
-
+  if (!config.storage_type.has_value()) {
+    DLOG(ERROR) << "storage type must be specified";
+    std::move(callback).Run(false);
+    return;
+  }
   input_pixel_format_ = config.input_format;
+  input_storage_type_ = *config.storage_type;
   visible_size_ = config.input_visible_size;
   accelerator_ = media::GpuVideoEncodeAcceleratorFactory::CreateVEA(
       config, this, gpu_preferences_);
@@ -92,7 +97,18 @@ void GpuArcVideoEncodeAccelerator::Initialize(
   std::move(callback).Run(true);
 }
 
+void GpuArcVideoEncodeAccelerator::EncodeDeprecated(
+    mojo::ScopedHandle handle,
+    std::vector<::arc::VideoFramePlane> planes,
+    int64_t timestamp,
+    bool force_keyframe,
+    EncodeCallback callback) {
+  Encode(input_pixel_format_, std::move(handle), planes, timestamp,
+         force_keyframe, std::move(callback));
+}
+
 void GpuArcVideoEncodeAccelerator::Encode(
+    media::VideoPixelFormat format,
     mojo::ScopedHandle handle,
     std::vector<::arc::VideoFramePlane> planes,
     int64_t timestamp,
@@ -115,9 +131,42 @@ void GpuArcVideoEncodeAccelerator::Encode(
     return;
   }
 
-  size_t allocation_size =
-      media::VideoFrame::AllocationSize(input_pixel_format_, coded_size_);
+  if (input_storage_type_ ==
+      media::VideoEncodeAccelerator::Config::StorageType::kShmem) {
+    EncodeSharedMemory(std::move(fd), format, planes, timestamp, force_keyframe,
+                       std::move(callback));
+  } else {
+    EncodeDmabuf(std::move(fd), format, planes, timestamp, force_keyframe,
+                 std::move(callback));
+  }
+}
 
+void GpuArcVideoEncodeAccelerator::EncodeDmabuf(
+    base::ScopedFD fd,
+    media::VideoPixelFormat format,
+    const std::vector<::arc::VideoFramePlane>& planes,
+    int64_t timestamp,
+    bool force_keyframe,
+    EncodeCallback callback) {
+  client_->NotifyError(Error::kInvalidArgumentError);
+  NOTIMPLEMENTED();
+}
+
+void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
+    base::ScopedFD fd,
+    media::VideoPixelFormat format,
+    const std::vector<::arc::VideoFramePlane>& planes,
+    int64_t timestamp,
+    bool force_keyframe,
+    EncodeCallback callback) {
+  if (format != media::PIXEL_FORMAT_I420) {
+    DLOG(ERROR) << "Formats other than I420 are unsupported. format=" << format;
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+
+  size_t allocation_size =
+      media::VideoFrame::AllocationSize(format, coded_size_);
   // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
   // TODO(rockot): This fd comes from a mojo::ScopedHandle in
   // GpuArcVideoService::BindSharedMemory. That should be passed through,
@@ -148,7 +197,7 @@ void GpuArcVideoEncodeAccelerator::Encode(
 
   uint8_t* shm_memory = reinterpret_cast<uint8_t*>(shm->memory());
   auto frame = media::VideoFrame::WrapExternalSharedMemory(
-      input_pixel_format_, coded_size_, gfx::Rect(visible_size_), visible_size_,
+      format, coded_size_, gfx::Rect(visible_size_), visible_size_,
       shm_memory + aligned_offset, allocation_size, shm_handle,
       planes[0].offset, base::TimeDelta::FromMicroseconds(timestamp));
 
