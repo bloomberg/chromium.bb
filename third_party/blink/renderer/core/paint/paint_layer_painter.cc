@@ -202,11 +202,9 @@ static bool ShouldRepaintSubsequence(
     PaintLayer& paint_layer,
     const PaintLayerPaintingInfo& painting_info,
     ShouldRespectOverflowClipType respect_overflow_clip) {
-  bool needs_repaint = false;
-
   // Repaint subsequence if the layer is marked for needing repaint.
   if (paint_layer.NeedsRepaint())
-    needs_repaint = true;
+    return true;
 
   // Repaint if previously the layer may be clipped by cull rect, and cull rect
   // changes.
@@ -216,12 +214,10 @@ static bool ShouldRepaintSubsequence(
        // new and cached subsequences. Normally we can reuse the cached fully
        // painted subsequence even if we would partially paint this time.
        RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) &&
-      paint_layer.PreviousCullRect() != painting_info.cull_rect) {
-    needs_repaint = true;
-  }
-  paint_layer.SetPreviousCullRect(painting_info.cull_rect);
+      paint_layer.PreviousCullRect() != painting_info.cull_rect)
+    return true;
 
-  return needs_repaint;
+  return false;
 }
 
 static bool ShouldUseInfiniteCullRect(const GraphicsContext& context,
@@ -259,30 +255,21 @@ void PaintLayerPainter::AdjustForPaintProperties(
     PaintLayerFlags& paint_flags) {
   const auto& first_fragment = paint_layer_.GetLayoutObject().FirstFragment();
 
-  bool is_using_infinite_cull_rect = painting_info.cull_rect.IsInfinite();
   bool should_use_infinite_cull_rect =
       ShouldUseInfiniteCullRect(context, paint_layer_, painting_info);
-  if (!is_using_infinite_cull_rect && should_use_infinite_cull_rect) {
+  if (should_use_infinite_cull_rect)
     painting_info.cull_rect = CullRect::Infinite();
-    is_using_infinite_cull_rect = true;
-  }
 
   if (painting_info.root_layer == &paint_layer_)
     return;
 
-  const auto& first_root_fragment =
-      painting_info.root_layer->GetLayoutObject().FirstFragment();
-  bool transform_changed =
-      first_root_fragment.LocalBorderBoxProperties().Transform() !=
-      first_fragment.LocalBorderBoxProperties().Transform();
+  if (!should_use_infinite_cull_rect) {
+    const auto& first_root_fragment =
+        painting_info.root_layer->GetLayoutObject().FirstFragment();
+    if (first_root_fragment.LocalBorderBoxProperties().Transform() ==
+        first_fragment.LocalBorderBoxProperties().Transform())
+      return;
 
-  // Will use the current layer as the new root layer if the layer requires
-  // infinite dirty rect or has different transform space from the current
-  // root layer.
-  if (!should_use_infinite_cull_rect && !transform_changed)
-    return;
-
-  if (!is_using_infinite_cull_rect && transform_changed) {
     // painting_info.cull_rect is currently in |painting_info.root_layer|'s
     // pixel-snapped border box space. We need to adjust it into
     // |paint_layer_|'s space. This handles the following cases:
@@ -307,14 +294,16 @@ void PaintLayerPainter::AdjustForPaintProperties(
       // Convert cull_rect from the layer's transform space to the layer's local
       // space.
       cull_rect.MoveBy(-RoundedIntPoint(first_fragment.PaintOffset()));
-    } else {
+    } else if (!painting_info.cull_rect.IsInfinite()) {
       auto rect = painting_info.cull_rect.Rect();
       first_root_fragment.MapRectToFragment(first_fragment, rect);
       painting_info.cull_rect = CullRect(rect);
     }
   }
 
-  // Make the current layer the new root layer.
+  // We reach here if the layer requires infinite cull rect or has different
+  // transform space from the current root layer. Use the current layer as
+  // the new root layer.
   painting_info.root_layer = &paint_layer_;
   // These flags no longer apply for the new root layer.
   paint_flags &= ~kPaintLayerPaintingSkipRootBackground;
@@ -645,8 +634,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
   }
 
-  if (subsequence_recorder)
-    paint_layer_.SetPreviousPaintResult(result);
+  paint_layer_.SetPreviousPaintResult(result);
+  paint_layer_.SetPreviousCullRect(local_painting_info.cull_rect);
   return result;
 }
 

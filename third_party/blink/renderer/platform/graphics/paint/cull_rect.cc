@@ -47,9 +47,6 @@ void CullRect::Move(const IntSize& offset) {
 
 CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
     const TransformPaintPropertyNode* transform) {
-  if (IsInfinite())
-    return kNotExpanded;
-
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     if (const auto* scroll = transform->ScrollNode()) {
       rect_.Intersect(scroll->ContainerRect());
@@ -59,8 +56,6 @@ CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
 
       // Expand the cull rect for scrolling contents in case of composited
       // scrolling.
-      // TODO(wangxianzhu): the expansion distance needs to be scaled to
-      // screen pixels.
       // TODO(wangxianzhu): options for non-composited-scrolling contents:
       // 1. to use non-composted-scrolling heuristics to avoid expansion;
       // 2. to reduce the 4000px distance, no matter if the contents with be
@@ -77,37 +72,42 @@ CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
     }
   }
 
-  rect_ = transform->Matrix().Inverse().MapRect(rect_);
+  if (!IsInfinite())
+    rect_ = transform->Matrix().Inverse().MapRect(rect_);
   return kNotExpanded;
 }
 
-void CullRect::ApplyTransforms(const TransformPaintPropertyNode* from,
-                               const TransformPaintPropertyNode* to,
+void CullRect::ApplyTransforms(const TransformPaintPropertyNode* source,
+                               const TransformPaintPropertyNode* destination,
                                const base::Optional<CullRect>& old_cull_rect) {
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
 
   Vector<const TransformPaintPropertyNode*> scroll_translations;
-  for (const auto* t = to; t != from; t = t->Parent()) {
+  for (const auto* t = destination; t != source; t = t->Parent()) {
     if (!t) {
-      // |from| is not an ancestor of |to|. Simply map.
-      GeometryMapper::SourceToDestinationRect(from, to, rect_);
+      // |source| is not an ancestor of |destination|. Simply map.
+      GeometryMapper::SourceToDestinationRect(source, destination, rect_);
       return;
     }
     if (t->ScrollNode())
       scroll_translations.push_back(t);
   }
 
-  const auto* last_transform = from;
+  const auto* last_transform = source;
   ApplyTransformResult last_scroll_translation_result = kNotExpanded;
   for (auto it = scroll_translations.rbegin(); it != scroll_translations.rend();
        ++it) {
     const auto* scroll_translation = *it;
-    GeometryMapper::SourceToDestinationRect(
-        last_transform, scroll_translation->Parent(), rect_);
+    if (!IsInfinite()) {
+      GeometryMapper::SourceToDestinationRect(
+          last_transform, scroll_translation->Parent(), rect_);
+    }
     last_scroll_translation_result = ApplyTransformInternal(scroll_translation);
     last_transform = scroll_translation;
   }
-  GeometryMapper::SourceToDestinationRect(last_transform, to, rect_);
+
+  if (!IsInfinite())
+    GeometryMapper::SourceToDestinationRect(last_transform, destination, rect_);
 
   if (last_scroll_translation_result == kExpandedForPartialScrollingContents &&
       old_cull_rect && !ChangedEnough(*old_cull_rect))
