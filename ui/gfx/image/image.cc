@@ -457,7 +457,7 @@ UIImage* Image::ToUIImage() const {
         const internal::ImageRepPNG* png_rep =
             GetRepresentation(kImageRepPNG, true)->AsImageRepPNG();
         scoped_rep.reset(new internal::ImageRepCocoaTouch(
-            internal::CreateUIImageFromPNG(png_rep->image_reps())));
+            internal::UIImageFromPNG(png_rep->image_reps())));
         break;
       }
       case kImageRepSkia: {
