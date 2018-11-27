@@ -68,8 +68,6 @@
 
 - (void)dealloc {
   [_signinPromoViewMediator signinPromoViewRemoved];
-  if (!_isIncognito)
-    _identityManagerObserverBridge.reset();
 }
 
 - (void)hidePromoCell {
