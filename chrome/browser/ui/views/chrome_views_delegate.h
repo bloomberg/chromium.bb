@@ -61,10 +61,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   std::string GetApplicationName() override;
 
-#if defined(OS_MACOSX)
-  bool ShouldMirrorArrowsInRTL() const override;
-#endif
-
  private:
 #if defined(OS_WIN)
   typedef std::map<HMONITOR, int> AppbarAutohideEdgeMap;

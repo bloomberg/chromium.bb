@@ -13,7 +13,3 @@ views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
   // By returning null Widget creates the default NativeWidget implementation.
   return nullptr;
 }
-
-bool ChromeViewsDelegate::ShouldMirrorArrowsInRTL() const {
-  return base::FeatureList::IsEnabled(features::kMacRTL);
-}

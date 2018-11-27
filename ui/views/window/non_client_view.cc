@@ -43,7 +43,6 @@ bool NonClientFrameView::GetClientMask(const gfx::Size& size,
 
 NonClientView::NonClientView()
     : client_view_(nullptr),
-      mirror_client_in_rtl_(true),
       overlay_view_(nullptr) {
   SetEventTargeter(
       std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
@@ -166,10 +165,6 @@ void NonClientView::Layout() {
   // Then layout the ClientView, using those bounds.
   gfx::Rect client_bounds = frame_view_->GetBoundsForClientView();
 
-  // RTL code will mirror the ClientView in the frame by default.  If this isn't
-  // desired, do a second mirror here to get the standard LTR position.
-  if (base::i18n::IsRTL() && !mirror_client_in_rtl_)
-    client_bounds.set_x(GetMirroredXForRect(client_bounds));
 
   if (client_bounds != client_view_->bounds()) {
     client_view_->SetBoundsRect(client_bounds);

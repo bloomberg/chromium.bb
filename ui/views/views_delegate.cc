@@ -131,10 +131,6 @@ int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
 }
 #endif
 
-bool ViewsDelegate::ShouldMirrorArrowsInRTL() const {
-  return true;
-}
-
 #if defined(USE_AURA)
 void ViewsDelegate::SetTouchSelectionMenuRunner(
     std::unique_ptr<TouchSelectionMenuRunnerViews> menu_runner) {
