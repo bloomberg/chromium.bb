@@ -30,7 +30,7 @@
 namespace blink {
 
 AudioDestinationHandler::AudioDestinationHandler(AudioNode& node)
-    : AudioHandler(kNodeTypeDestination, node, 0), current_sample_frame_(0) {
+    : AudioHandler(kNodeTypeDestination, node, 0) {
   AddInput();
 }
 
