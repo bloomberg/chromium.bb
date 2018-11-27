@@ -12,12 +12,11 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
-#include "content/public/browser/shared_worker_service.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/mojom/shared_worker/shared_worker_main_script_load_params.mojom.h"
+#include "third_party/blink/public/mojom/shared_worker/worker_main_script_load_params.mojom.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -36,14 +35,14 @@ struct SubresourceLoaderParams;
 
 // PlzWorker:
 // WorkerScriptFetchInitiator is the entry point of browser-side script fetch
-// for SharedWorkerScriptFetcher.
+// for WorkerScriptFetcher.
 class WorkerScriptFetchInitiator {
  public:
   using CompletionCallback = base::OnceCallback<void(
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo,
       std::unique_ptr<URLLoaderFactoryBundleInfo>,
-      blink::mojom::SharedWorkerMainScriptLoadParamsPtr,
+      blink::mojom::WorkerMainScriptLoadParamsPtr,
       base::Optional<SubresourceLoaderParams>,
       bool)>;
 
@@ -87,7 +86,7 @@ class WorkerScriptFetchInitiator {
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
-      blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+      blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       bool success);
 };

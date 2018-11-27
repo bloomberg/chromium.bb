@@ -15,9 +15,9 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/shared_worker/shared_worker_script_fetcher.h"
-#include "content/browser/shared_worker/shared_worker_script_loader.h"
-#include "content/browser/shared_worker/shared_worker_script_loader_factory.h"
+#include "content/browser/shared_worker/worker_script_fetcher.h"
+#include "content/browser/shared_worker/worker_script_loader.h"
+#include "content/browser/shared_worker/worker_script_loader_factory.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -65,7 +65,7 @@ void WorkerScriptFetchInitiator::Start(
 
   // Set up the factory bundle for non-NetworkService URLs, e.g.,
   // chrome-extension:// URLs. One factory bundle is consumed by the browser
-  // for SharedWorkerScriptLoaderFactory, and one is sent to the renderer for
+  // for WorkerScriptLoaderFactory, and one is sent to the renderer for
   // subresource loading.
   std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_browser =
       CreateFactoryBundle(process_id, storage_partition,
@@ -233,8 +233,8 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   base::WeakPtr<ServiceWorkerProviderHost> host =
       context->PreCreateHostForSharedWorker(process_id, &provider_info);
 
-  // Create the URL loader factory for SharedWorkerScriptLoaderFactory to use to
-  // load the main script.
+  // Create the URL loader factory for WorkerScriptLoaderFactory to use to load
+  // the main script.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
   if (blob_url_loader_factory_info) {
     // If we have a blob_url_loader_factory just use that directly rather than
@@ -284,8 +284,8 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
             *resource_request, context->resource_context(), wc_getter,
             nullptr /* navigation_ui_data */, -1 /* frame_tree_node_id */);
 
-    SharedWorkerScriptFetcher::CreateAndStart(
-        std::make_unique<SharedWorkerScriptLoaderFactory>(
+    WorkerScriptFetcher::CreateAndStart(
+        std::make_unique<WorkerScriptLoaderFactory>(
             process_id, host, std::move(appcache_host),
             context->resource_context(), std::move(url_loader_factory)),
         std::move(throttles), std::move(resource_request),
@@ -296,10 +296,10 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
     return;
   }
 
-  // Create the SharedWorkerScriptLoaderFactory.
+  // Create the WorkerScriptLoaderFactory.
   network::mojom::URLLoaderFactoryAssociatedPtrInfo main_script_loader_factory;
   mojo::MakeStrongAssociatedBinding(
-      std::make_unique<SharedWorkerScriptLoaderFactory>(
+      std::make_unique<WorkerScriptLoaderFactory>(
           process_id, host->AsWeakPtr(), std::move(appcache_host),
           context->resource_context(), std::move(url_loader_factory)),
       mojo::MakeRequest(&main_script_loader_factory));
@@ -319,7 +319,7 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
-    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+    blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

@@ -15,7 +15,7 @@ import "content/public/common/renderer_preferences.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
-import "third_party/blink/public/mojom/shared_worker/shared_worker_main_script_load_params.mojom";
+import "third_party/blink/public/mojom/shared_worker/worker_main_script_load_params.mojom";
 import "third_party/blink/public/web/worker_content_settings_proxy.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
@@ -70,7 +70,7 @@ interface SharedWorkerFactory {
       // NetworkService (PlzWorker):
       // Used for passing a main script pre-requested by the browser process and
       // its redirect information.
-      blink.mojom.SharedWorkerMainScriptLoadParams? main_script_load_params,
+      blink.mojom.WorkerMainScriptLoadParams? main_script_load_params,
 
       // NetworkService:
       // When the Network Service is enabled, |subresource_loader_factories|

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/shared_worker/shared_worker_script_fetcher.h"
+#include "content/browser/shared_worker/worker_script_fetcher.h"
 
 #include "base/feature_list.h"
-#include "content/browser/shared_worker/shared_worker_script_loader.h"
-#include "content/browser/shared_worker/shared_worker_script_loader_factory.h"
+#include "content/browser/shared_worker/worker_script_loader.h"
+#include "content/browser/shared_worker/worker_script_loader_factory.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_loader_throttle.h"
@@ -18,16 +18,15 @@ namespace content {
 
 namespace {
 
-const net::NetworkTrafficAnnotationTag
-    kSharedWorkerScriptLoadTrafficAnnotation =
-        net::DefineNetworkTrafficAnnotation("shared_worker_script_load",
-                                            R"(
+const net::NetworkTrafficAnnotationTag kWorkerScriptLoadTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("worker_script_load",
+                                        R"(
       semantics {
-        sender: "Shared Worker Script Load"
+        sender: "Web Worker Script Load"
         description:
-          "This request is issued by SharedWorker to fetch its main script."
+          "This request is issued by Web Worker to fetch its main script."
         trigger:
-          "Calling new SharedWorker()."
+          "Calling new Worker() or SharedWorker()."
         data: "Anything the initiator wants to send."
         destination: OTHER
       }
@@ -50,22 +49,21 @@ const net::NetworkTrafficAnnotationTag
 
 }  // namespace
 
-void SharedWorkerScriptFetcher::CreateAndStart(
-    std::unique_ptr<SharedWorkerScriptLoaderFactory> script_loader_factory,
+void WorkerScriptFetcher::CreateAndStart(
+    std::unique_ptr<WorkerScriptLoaderFactory> script_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     std::unique_ptr<network::ResourceRequest> resource_request,
     CreateAndStartCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   // This fetcher will delete itself. See the class level comment.
-  (new SharedWorkerScriptFetcher(std::move(script_loader_factory),
-                                 std::move(resource_request),
-                                 std::move(callback)))
+  (new WorkerScriptFetcher(std::move(script_loader_factory),
+                           std::move(resource_request), std::move(callback)))
       ->Start(std::move(throttles));
 }
 
-SharedWorkerScriptFetcher::SharedWorkerScriptFetcher(
-    std::unique_ptr<SharedWorkerScriptLoaderFactory> script_loader_factory,
+WorkerScriptFetcher::WorkerScriptFetcher(
+    std::unique_ptr<WorkerScriptLoaderFactory> script_loader_factory,
     std::unique_ptr<network::ResourceRequest> resource_request,
     CreateAndStartCallback callback)
     : script_loader_factory_(std::move(script_loader_factory)),
@@ -75,11 +73,11 @@ SharedWorkerScriptFetcher::SharedWorkerScriptFetcher(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-SharedWorkerScriptFetcher::~SharedWorkerScriptFetcher() {
+WorkerScriptFetcher::~WorkerScriptFetcher() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-void SharedWorkerScriptFetcher::Start(
+void WorkerScriptFetcher::Start(
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -88,6 +86,8 @@ void SharedWorkerScriptFetcher::Start(
           script_loader_factory_.get());
 
   // SharedWorker doesn't have a frame.
+  // TODO(nhiroki): Make the caller pass the frame id to support dedicated
+  // workers (https://crbug.com/906991).
   int32_t routing_id = MSG_ROUTING_NONE;
 
   // NetworkService is not interested in the request ID.
@@ -96,15 +96,15 @@ void SharedWorkerScriptFetcher::Start(
   url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory), std::move(throttles), routing_id,
       request_id, network::mojom::kURLLoadOptionNone, resource_request_.get(),
-      this, kSharedWorkerScriptLoadTrafficAnnotation,
+      this, kWorkerScriptLoadTrafficAnnotation,
       base::ThreadTaskRunnerHandle::Get());
 }
 
-void SharedWorkerScriptFetcher::OnReceiveResponse(
+void WorkerScriptFetcher::OnReceiveResponse(
     const network::ResourceResponseHead& head) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::WeakPtr<SharedWorkerScriptLoader> script_loader =
+  base::WeakPtr<WorkerScriptLoader> script_loader =
       script_loader_factory_->GetScriptLoader();
   if (script_loader && script_loader->default_loader_used_) {
     // If the default network loader was used to handle the URL load request we
@@ -124,10 +124,10 @@ void SharedWorkerScriptFetcher::OnReceiveResponse(
     }
   }
 
-  blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params =
-      blink::mojom::SharedWorkerMainScriptLoadParams::New();
+  blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params =
+      blink::mojom::WorkerMainScriptLoadParams::New();
 
-  // Fill in params for loading shared worker's main script and subresources.
+  // Fill in params for loading worker's main script and subresources.
   main_script_load_params->response_head = head;
   if (url_loader_) {
     // The main script was served by a request interceptor or the default
@@ -160,7 +160,7 @@ void SharedWorkerScriptFetcher::OnReceiveResponse(
   delete this;
 }
 
-void SharedWorkerScriptFetcher::OnReceiveRedirect(
+void WorkerScriptFetcher::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& head) {
   redirect_infos_.push_back(redirect_info);
@@ -168,31 +168,29 @@ void SharedWorkerScriptFetcher::OnReceiveRedirect(
   url_loader_->FollowRedirect(base::nullopt);
 }
 
-void SharedWorkerScriptFetcher::OnUploadProgress(
-    int64_t current_position,
-    int64_t total_size,
-    OnUploadProgressCallback callback) {
+void WorkerScriptFetcher::OnUploadProgress(int64_t current_position,
+                                           int64_t total_size,
+                                           OnUploadProgressCallback callback) {
   NOTREACHED();
 }
 
-void SharedWorkerScriptFetcher::OnReceiveCachedMetadata(
+void WorkerScriptFetcher::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {
   NOTREACHED();
 }
 
-void SharedWorkerScriptFetcher::OnTransferSizeUpdated(
-    int32_t transfer_size_diff) {
+void WorkerScriptFetcher::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   NOTREACHED();
 }
 
-void SharedWorkerScriptFetcher::OnStartLoadingResponseBody(
+void WorkerScriptFetcher::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   // Not reached. At this point, the loader and client endpoints must have
   // been unbound and forwarded to the renderer.
   NOTREACHED();
 }
 
-void SharedWorkerScriptFetcher::OnComplete(
+void WorkerScriptFetcher::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   // We can reach here only when loading fails before receiving a response head.
   DCHECK_NE(net::OK, status.error_code);

@@ -76,7 +76,7 @@ class SharedWorkerHostTest : public testing::Test {
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr provider_info = nullptr;
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory;
-    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params;
+    blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params;
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories;
     base::Optional<SubresourceLoaderParams> subresource_loader_params;
 
@@ -88,8 +88,7 @@ class SharedWorkerHostTest : public testing::Test {
           helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
           &provider_info);
 
-      main_script_load_params =
-          blink::mojom::SharedWorkerMainScriptLoadParams::New();
+      main_script_load_params = blink::mojom::WorkerMainScriptLoadParams::New();
       subresource_loader_factories.reset(new URLLoaderFactoryBundleInfo());
       subresource_loader_params = SubresourceLoaderParams();
 

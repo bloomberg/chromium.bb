@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/shared_worker/shared_worker_script_loader_factory.h"
+#include "content/browser/shared_worker/worker_script_loader_factory.h"
 
 #include <memory>
 #include "base/feature_list.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/shared_worker/shared_worker_script_loader.h"
+#include "content/browser/shared_worker/worker_script_loader.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/features.h"
@@ -20,7 +20,7 @@
 
 namespace content {
 
-SharedWorkerScriptLoaderFactory::SharedWorkerScriptLoaderFactory(
+WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
     int process_id,
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
     base::WeakPtr<AppCacheHost> appcache_host,
@@ -37,11 +37,11 @@ SharedWorkerScriptLoaderFactory::SharedWorkerScriptLoaderFactory(
             blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
 }
 
-SharedWorkerScriptLoaderFactory::~SharedWorkerScriptLoaderFactory() {
+WorkerScriptLoaderFactory::~WorkerScriptLoaderFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-void SharedWorkerScriptLoaderFactory::CreateLoaderAndStart(
+void WorkerScriptLoaderFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderRequest request,
     int32_t routing_id,
     int32_t request_id,
@@ -56,23 +56,24 @@ void SharedWorkerScriptLoaderFactory::CreateLoaderAndStart(
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // Handle only the main script (RESOURCE_TYPE_SHARED_WORKER). Import scripts
     // should go to the network loader or controller.
+    // TODO(nhiroki): Support dedicated workers (https://crbug.com/906991).
     if (resource_request.resource_type != RESOURCE_TYPE_SHARED_WORKER) {
       mojo::ReportBadMessage(
-          "SharedWorkerScriptLoaderFactory should only get requests for shared "
-          "worker scripts");
+          "WorkerScriptLoaderFactory should only get requests for worker "
+          "scripts");
       return;
     }
     if (script_loader_) {
       mojo::ReportBadMessage(
-          "SharedWorkerScriptLoaderFactory should be used only one time");
+          "WorkerScriptLoaderFactory should be used only one time");
       return;
     }
   }
   DCHECK_EQ(RESOURCE_TYPE_SHARED_WORKER, resource_request.resource_type);
   DCHECK(!script_loader_);
 
-  // Create a SharedWorkerScriptLoader to load the script.
-  auto script_loader = std::make_unique<SharedWorkerScriptLoader>(
+  // Create a WorkerScriptLoader to load the script.
+  auto script_loader = std::make_unique<WorkerScriptLoader>(
       process_id_, routing_id, request_id, options, resource_request,
       std::move(client), service_worker_provider_host_, appcache_host_,
       resource_context_, loader_factory_, traffic_annotation);
@@ -80,7 +81,7 @@ void SharedWorkerScriptLoaderFactory::CreateLoaderAndStart(
   mojo::MakeStrongBinding(std::move(script_loader), std::move(request));
 }
 
-void SharedWorkerScriptLoaderFactory::Clone(
+void WorkerScriptLoaderFactory::Clone(
     network::mojom::URLLoaderFactoryRequest request) {
   // This method is required to support synchronous requests, which shared
   // worker script requests are not.

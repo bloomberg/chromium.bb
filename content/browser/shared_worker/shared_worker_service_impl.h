@@ -20,7 +20,7 @@
 #include "content/public/browser/shared_worker_service.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/mojom/shared_worker/shared_worker_main_script_load_params.mojom.h"
+#include "third_party/blink/public/mojom/shared_worker/worker_main_script_load_params.mojom.h"
 
 namespace blink {
 class MessagePortChannel;
@@ -92,7 +92,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
-      blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+      blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       bool success);
   void StartWorker(
@@ -107,7 +107,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
-      blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+      blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       base::Optional<SubresourceLoaderParams> subresource_loader_params);
 
   // Returns nullptr if there is no such host.
