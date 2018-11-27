@@ -105,9 +105,10 @@ public class AwWebContentsObserver extends WebContentsObserver {
 
         AwContentsClient client = mAwContentsClient.get();
         if (client != null) {
-            // OnPageStarted is not called for fragment navigations.
+            // OnPageStarted is not called for in-page navigations, which include fragment
+            // navigations and navigation from history.push/replaceState.
             // Error page is handled by AwContentsClientBridge.onReceivedError.
-            if (!isFragmentNavigation && !isErrorPage && isRendererInitiated) {
+            if (!isSameDocument && !isErrorPage && isRendererInitiated) {
                 client.getCallbackHelper().postOnPageStarted(url);
             }
 
