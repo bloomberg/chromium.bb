@@ -3528,9 +3528,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (webViewScrollViewProxy.isZooming || _applyingPageState || !currentItem)
     return;
   CGSize contentSize = webViewScrollViewProxy.contentSize;
-  if (contentSize.width < CGRectGetWidth(webViewScrollViewProxy.frame)) {
-    // The renderer incorrectly resized the content area.  Resetting the scroll
-    // view's zoom scale will force a re-rendering.  rdar://23963992
+  if (contentSize.width + 1 < CGRectGetWidth(webViewScrollViewProxy.frame)) {
+    // The content area should never be narrower than the frame, but floating
+    // point error from non-integer zoom values can cause it to be at most 1
+    // pixel narrower. If it's any narrower than that, the renderer incorrectly
+    // resized the content area. Resetting the scroll view's zoom scale will
+    // force a re-rendering.  rdar://23963992
     _applyingPageState = YES;
     web::PageZoomState zoomState =
         currentItem->GetPageDisplayState().zoom_state();
