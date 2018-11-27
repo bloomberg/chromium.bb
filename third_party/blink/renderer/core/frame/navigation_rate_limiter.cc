@@ -50,9 +50,10 @@ bool NavigationRateLimiter::CanProceed() {
     if (frame_->IsLocalFrame()) {
       ToLocalFrame(frame_)->Console().AddMessage(ConsoleMessage::Create(
           kJSMessageSource, kWarningMessageLevel,
-          "Throttling navigation to prevent the browser from "
-          "hanging. See https://crbug.com/882238 and "
-          "chrome://flags/#disable-ipc-flooding-protection"));
+          "Throttling navigation to prevent the browser from hanging. See "
+          "https://crbug.com/882238. Command line switch "
+          "--disable-ipc-flooding-protection can be used to bypass the "
+          "protection"));
     }
   }
 
