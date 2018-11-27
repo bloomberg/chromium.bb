@@ -218,9 +218,18 @@ void ContentTranslateDriver::DidFinishNavigation(
   const bool reload =
       navigation_handle->GetReloadType() != content::ReloadType::NONE ||
       navigation_handle->IsSameDocument();
+
+  translate::TranslateLanguageList* language_list =
+      translate::TranslateDownloadManager::GetInstance()->language_list();
+  std::string href_translate;
+  if (language_list->IsSupportedLanguage(
+          navigation_handle->GetHrefTranslate())) {
+    href_translate = navigation_handle->GetHrefTranslate();
+  }
+
   translate_manager_->GetLanguageState().DidNavigate(
       navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
-      reload, navigation_handle->GetHrefTranslate());
+      reload, href_translate);
 }
 
 void ContentTranslateDriver::OnPageAway(int page_seq_no) {

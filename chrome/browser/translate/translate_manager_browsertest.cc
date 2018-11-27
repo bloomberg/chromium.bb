@@ -441,6 +441,51 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateSuccess) {
             chrome_translate_client->GetLanguageState().current_language());
 }
 
+// Test that hrefTranslate with an unsupported language doesn't trigger.
+IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateUnsupported) {
+  ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
+  chrome_translate_client->GetTranslateManager()->SetIgnoreMissingKeyForTesting(
+      true);
+  SetTranslateScript(kTestValidScript);
+
+  // There is a possible race condition, when the language is not yet detected,
+  // so we check for that and wait if necessary.
+  if (chrome_translate_client->GetLanguageState().original_language().empty())
+    WaitUntilLanguageDetected();
+
+  EXPECT_EQ("und",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  ResetObserver();
+  // Load a German page and detect it's language
+  AddTabAtIndex(
+      0, GURL(embedded_test_server()->GetURL("/href_translate_test.html")),
+      ui::PAGE_TRANSITION_TYPED);
+  chrome_translate_client = GetChromeTranslateClient();
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("de",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Navigate to the French page by way of a link on the original page. This
+  // link has the hrefTranslate attribute set to "unsupported", so it shouldn't
+  // trigger translate.
+  ResetObserver();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  const std::string click_link_js =
+      "(function() { "
+      "document.getElementById('test-unsupported-language').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+
+  // Detect language on the new page
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  EXPECT_EQ("", chrome_translate_client->GetLanguageState().AutoTranslateTo());
+}
+
 // Test an href translate link to a conflicted page
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateConflict) {
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
