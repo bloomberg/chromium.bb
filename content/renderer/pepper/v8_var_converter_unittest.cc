@@ -376,8 +376,9 @@ TEST_F(V8VarConverterTest, Cycles) {
     // Array <-> dictionary cycle.
     std::string key = "1";
     object->Set(
-        v8::String::NewFromUtf8(
-            isolate_, key.c_str(), v8::String::kNormalString, key.length()),
+        v8::String::NewFromUtf8(isolate_, key.c_str(),
+                                v8::NewStringType::kInternalized, key.length())
+            .ToLocalChecked(),
         array);
     array->Set(0, object);
 
@@ -420,7 +421,10 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
         "})();";
 
     v8::Local<v8::Script> script(
-        v8::Script::Compile(context, v8::String::NewFromUtf8(isolate_, source))
+        v8::Script::Compile(context,
+                            v8::String::NewFromUtf8(isolate_, source,
+                                                    v8::NewStringType::kNormal)
+                                .ToLocalChecked())
             .ToLocalChecked());
     v8::Local<v8::Object> object =
         script->Run(context).ToLocalChecked().As<v8::Object>();
