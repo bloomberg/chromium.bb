@@ -359,7 +359,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
       std::make_unique<ScopedDisallowSetControllerRegistration>(provider_host_);
 
   stripped_url_ = net::SimplifyUrlForRequest(url);
-  provider_host_->UpdateURLs(stripped_url_, site_for_cookies);
+  provider_host_->UpdateUrls(stripped_url_, site_for_cookies);
   context_->storage()->FindRegistrationForDocument(
       stripped_url_, base::BindOnce(&ServiceWorkerControlleeRequestHandler::
                                         DidLookupRegistrationForMainResource,

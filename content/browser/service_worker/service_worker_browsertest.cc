@@ -693,7 +693,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
             true /* is_parent_frame_secure */,
             wrapper()->context()->AsWeakPtr(), &remote_endpoints_.back());
     const GURL url = embedded_test_server()->GetURL("/service_worker/host");
-    host->UpdateURLs(url, url);
+    host->UpdateUrls(url, url);
     host->SetControllerRegistration(registration_,
                                     false /* notify_controllerchange */);
     wrapper()->context()->AddProviderHost(std::move(host));

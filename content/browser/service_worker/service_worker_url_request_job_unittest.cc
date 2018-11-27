@@ -258,7 +258,7 @@ class ServiceWorkerURLRequestJobTest
             true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
             &remote_endpoint_);
     provider_host_ = provider_host->AsWeakPtr();
-    provider_host.get()->UpdateURLs(GURL("https://example.com/"),
+    provider_host.get()->UpdateUrls(GURL("https://example.com/"),
                                     GURL("https://example.com/"));
     registration_->SetActiveVersion(version_);
     provider_host->SetControllerRegistration(

@@ -910,7 +910,7 @@ class ServiceWorkerRegistrationObjectHostTest
                                     provider_id,
                                     true /* is_parent_frame_secure */,
                                     context()->AsWeakPtr(), &remote_endpoint);
-    host->UpdateURLs(document_url, document_url);
+    host->UpdateUrls(document_url, document_url);
     context()->AddProviderHost(std::move(host));
     return remote_endpoint;
   }
@@ -1000,7 +1000,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, Update_CrossOriginShouldFail) {
   auto* provider_host = context()->GetProviderHost(
       helper_->mock_render_process_id(), kProviderId);
   GURL url("https://does.not.exist/");
-  provider_host->UpdateURLs(url, url);
+  provider_host->UpdateUrls(url, url);
   CallUpdate(registration_host_ptr.get());
   EXPECT_EQ(1u, bad_messages_.size());
 }
@@ -1102,7 +1102,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest,
       helper_->mock_render_process_id(), kProviderId,
       true /* is_parent_frame_secure */, context()->AsWeakPtr(),
       &remote_endpoint);
-  host.get()->UpdateURLs(kScope, kScope);
+  host.get()->UpdateUrls(kScope, kScope);
   version->AddControllee(host.get());
 
   // Initially set |self_update_delay| to zero.
@@ -1169,7 +1169,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest,
   ASSERT_TRUE(bad_messages_.empty());
   auto* provider_host = context()->GetProviderHost(
       helper_->mock_render_process_id(), kProviderId);
-  provider_host->UpdateURLs(GURL("https://does.not.exist/"),
+  provider_host->UpdateUrls(GURL("https://does.not.exist/"),
                             GURL("https://does.not.exist/"));
   CallUnregister(registration_host_ptr.get());
   EXPECT_EQ(1u, bad_messages_.size());

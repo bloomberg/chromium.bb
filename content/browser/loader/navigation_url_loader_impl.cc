@@ -1399,7 +1399,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
             // Worker integration.
             service_worker_provider_host_->SetControllerRegistration(
                 nullptr, false /* notify_controllerchange */);
-            service_worker_provider_host_->UpdateURLs(GURL(), GURL());
+            service_worker_provider_host_->UpdateUrls(GURL(), GURL());
           }
         }
         return true;

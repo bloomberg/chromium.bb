@@ -165,7 +165,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
             false /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
             &remote_endpoints_.back());
     ServiceWorkerProviderHost* host_raw = host.get();
-    host->UpdateURLs(document_url, document_url);
+    host->UpdateUrls(document_url, document_url);
     context_->AddProviderHost(std::move(host));
     return host_raw;
   }
@@ -174,7 +174,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
                         mojom::ServiceWorkerProviderHostInfoPtr info) {
     // In production code, the loader/request handler does this.
     const GURL url("https://www.example.com/page");
-    host->UpdateURLs(url, url);
+    host->UpdateUrls(url, url);
 
     // In production code, the OnProviderCreated IPC is received which
     // does this.
@@ -307,7 +307,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
 
     host->CompleteNavigationInitialized(helper_->mock_render_process_id(),
                                         std::move(info));
-    host->UpdateURLs(document_url, site_for_cookies);
+    host->UpdateUrls(document_url, site_for_cookies);
     return host.get();
   }
 
@@ -328,14 +328,14 @@ TEST_P(ServiceWorkerProviderHostTest, MatchRegistration) {
   ASSERT_EQ(nullptr, provider_host1->MatchRegistration());
 
   // SetDocumentUrl sets all of matching registrations
-  provider_host1->UpdateURLs(GURL("https://www.example.com/example1"),
+  provider_host1->UpdateUrls(GURL("https://www.example.com/example1"),
                              GURL("https://www.example.com/example1"));
   ASSERT_EQ(registration2_, provider_host1->MatchRegistration());
   provider_host1->RemoveMatchingRegistration(registration2_.get());
   ASSERT_EQ(registration1_, provider_host1->MatchRegistration());
 
   // SetDocumentUrl with another origin also updates matching registrations
-  provider_host1->UpdateURLs(GURL("https://other.example.com/example"),
+  provider_host1->UpdateUrls(GURL("https://other.example.com/example"),
                              GURL("https://other.example.com/example"));
   ASSERT_EQ(registration3_, provider_host1->MatchRegistration());
   provider_host1->RemoveMatchingRegistration(registration3_.get());
@@ -350,18 +350,18 @@ TEST_P(ServiceWorkerProviderHostTest, ContextSecurity) {
           GURL("https://www.example.com/example1.html"));
 
   // Insecure document URL.
-  provider_host_secure_parent->UpdateURLs(GURL("http://host"),
+  provider_host_secure_parent->UpdateUrls(GURL("http://host"),
                                           GURL("http://host"));
   EXPECT_FALSE(provider_host_secure_parent->IsContextSecureForServiceWorker());
 
   // Insecure parent frame.
-  provider_host_insecure_parent->UpdateURLs(GURL("https://host"),
+  provider_host_insecure_parent->UpdateUrls(GURL("https://host"),
                                             GURL("https://host"));
   EXPECT_FALSE(
       provider_host_insecure_parent->IsContextSecureForServiceWorker());
 
   // Secure URL and parent frame.
-  provider_host_secure_parent->UpdateURLs(GURL("https://host"),
+  provider_host_secure_parent->UpdateUrls(GURL("https://host"),
                                           GURL("https://host"));
   EXPECT_TRUE(provider_host_secure_parent->IsContextSecureForServiceWorker());
 
@@ -370,16 +370,16 @@ TEST_P(ServiceWorkerProviderHostTest, ContextSecurity) {
   EXPECT_TRUE(url.is_valid());
   EXPECT_FALSE(IsOriginSecure(url));
   EXPECT_TRUE(OriginCanAccessServiceWorkers(url));
-  provider_host_secure_parent->UpdateURLs(url, url);
+  provider_host_secure_parent->UpdateUrls(url, url);
   EXPECT_TRUE(provider_host_secure_parent->IsContextSecureForServiceWorker());
 
   // Exceptional service worker scheme with insecure parent frame.
-  provider_host_insecure_parent->UpdateURLs(url, url);
+  provider_host_insecure_parent->UpdateUrls(url, url);
   EXPECT_FALSE(
       provider_host_insecure_parent->IsContextSecureForServiceWorker());
 }
 
-TEST_P(ServiceWorkerProviderHostTest, UpdateURLs_SameOriginRedirect) {
+TEST_P(ServiceWorkerProviderHostTest, UpdateUrls_SameOriginRedirect) {
   const GURL url1("https://origin1.example.com/page1.html");
   const GURL url2("https://origin1.example.com/page2.html");
 
@@ -388,7 +388,7 @@ TEST_P(ServiceWorkerProviderHostTest, UpdateURLs_SameOriginRedirect) {
   EXPECT_EQ(url1, host->url());
   EXPECT_EQ(url1, host->site_for_cookies());
 
-  host->UpdateURLs(url2, url2);
+  host->UpdateUrls(url2, url2);
   EXPECT_EQ(url2, host->url());
   EXPECT_EQ(url2, host->site_for_cookies());
   EXPECT_EQ(uuid1, host->client_uuid());
@@ -396,7 +396,7 @@ TEST_P(ServiceWorkerProviderHostTest, UpdateURLs_SameOriginRedirect) {
   EXPECT_EQ(host, context_->GetProviderHostByClientID(host->client_uuid()));
 }
 
-TEST_P(ServiceWorkerProviderHostTest, UpdateURLs_CrossOriginRedirect) {
+TEST_P(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
   const GURL url1("https://origin1.example.com/page1.html");
   const GURL url2("https://origin2.example.com/page2.html");
 
@@ -405,7 +405,7 @@ TEST_P(ServiceWorkerProviderHostTest, UpdateURLs_CrossOriginRedirect) {
   EXPECT_EQ(url1, host->url());
   EXPECT_EQ(url1, host->site_for_cookies());
 
-  host->UpdateURLs(url2, url2);
+  host->UpdateUrls(url2, url2);
   EXPECT_EQ(url2, host->url());
   EXPECT_EQ(url2, host->site_for_cookies());
   EXPECT_NE(uuid1, host->client_uuid());
@@ -887,7 +887,7 @@ TEST_P(ServiceWorkerProviderHostTest,
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
             &provider_info);
     const GURL url("https://www.example.com/shared_worker.js");
-    host->UpdateURLs(url, url);
+    host->UpdateUrls(url, url);
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
     host->CompleteSharedWorkerPreparation();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
@@ -903,7 +903,7 @@ TEST_P(ServiceWorkerProviderHostTest,
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
     remote_endpoint.BindWithProviderHostInfo(&info);
     GURL url = GURL("https://www.example.com/page");
-    host->UpdateURLs(url, url);
+    host->UpdateUrls(url, url);
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
 
     FinishNavigation(host.get(), std::move(info));
