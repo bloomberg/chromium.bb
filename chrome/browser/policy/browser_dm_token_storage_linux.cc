@@ -38,6 +38,11 @@ const char kEnrollmentTokenOldFilename[] =
     FILE_PATH_LITERAL("enrollment/enrollment_token");
 const char kMachineIdFilename[] = FILE_PATH_LITERAL("/etc/machine-id");
 
+// Enrollment Mandatory Option.
+const char kEnrollmentOptionsFilePath[] =
+    FILE_PATH_LITERAL("enrollment/CloudManagementEnrollmentOptions");
+const char kEnrollmentMandatoryOption[] = "Mandatory";
+
 bool GetDmTokenFilePath(base::FilePath* token_file_path,
                         const std::string& client_id,
                         bool create_dir) {
@@ -145,8 +150,22 @@ std::string BrowserDMTokenStorageLinux::InitDMToken() {
 }
 
 bool BrowserDMTokenStorageLinux::InitEnrollmentErrorOption() {
-  // TODO(crbug/904983): Load the policy value for this option.
-  return true;
+  std::string options;
+  base::FilePath dir_policy_files_path;
+
+  if (!base::PathService::Get(chrome::DIR_POLICY_FILES,
+                              &dir_policy_files_path)) {
+    return false;
+  }
+
+  base::FilePath options_file_path =
+      dir_policy_files_path.Append(kEnrollmentOptionsFilePath);
+
+  if (!base::ReadFileToString(options_file_path, &options))
+    return false;
+
+  return base::TrimWhitespaceASCII(options, base::TRIM_ALL).as_string() ==
+         kEnrollmentMandatoryOption;
 }
 
 void BrowserDMTokenStorageLinux::SaveDMToken(const std::string& token) {
