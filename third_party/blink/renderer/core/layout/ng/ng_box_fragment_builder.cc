@@ -219,6 +219,10 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
     if (children_[i]->IsLineBox()) {
       const NGPhysicalLineBoxFragment* linebox =
           ToNGPhysicalLineBoxFragment(children_[i].get());
+      const NGPhysicalOffset linebox_offset = offsets_[i].ConvertToPhysical(
+          GetWritingMode(), Direction(),
+          ToNGPhysicalSize(Size(), GetWritingMode()), linebox->Size());
+
       for (auto& descendant :
            NGInlineFragmentTraversal::DescendantsOf(*linebox)) {
         LayoutObject* key = {};
@@ -230,54 +234,31 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
         } else if (descendant.fragment->IsBox()) {
           key = descendant.fragment->GetLayoutObject();
         }
-        if (key && inline_container_fragments->Contains(key)) {
-          NGBoxFragmentBuilder::FragmentPair value =
-              inline_container_fragments->at(key);
-          if (!value.start_fragment) {
-            value.start_fragment = descendant.fragment.get();
-            value.start_fragment_union_rect.offset =
-                descendant.offset_to_container_box;
-            value.start_fragment_union_rect =
-                NGPhysicalOffsetRect(descendant.offset_to_container_box,
-                                     value.start_fragment->Size());
-            value.start_linebox_fragment = linebox;
-            value.start_linebox_offset = offsets_.at(i);
-          }
-          if (!value.end_fragment || value.end_linebox_fragment != linebox) {
-            value.end_fragment = descendant.fragment.get();
-            value.end_fragment_union_rect = NGPhysicalOffsetRect(
-                descendant.offset_to_container_box, value.end_fragment->Size());
-            value.end_linebox_fragment = linebox;
-            value.end_linebox_offset = offsets_.at(i);
-          }
-          // Extend the union size
+        if (!key)
+          continue;
+        auto it = inline_container_fragments->find(key);
+        if (it != inline_container_fragments->end()) {
+          NGBoxFragmentBuilder::FragmentPair& value = it->value;
+          // |DescendantsOf| returns the offset from the given fragment. Since
+          // we give it the line box, need to add the |linebox_offset|.
+          NGPhysicalOffsetRect fragment_rect(
+              linebox_offset + descendant.offset_to_container_box,
+              descendant.fragment->Size());
           if (value.start_linebox_fragment == linebox) {
-            // std::max because initial box might have larger extent than its
-            // descendants.
-            value.start_fragment_union_rect.size.width =
-                std::max(descendant.offset_to_container_box.left +
-                             descendant.fragment->Size().width -
-                             value.start_fragment_union_rect.offset.left,
-                         value.start_fragment_union_rect.size.width);
-            value.start_fragment_union_rect.size.height =
-                std::max(descendant.offset_to_container_box.top +
-                             descendant.fragment->Size().height -
-                             value.start_fragment_union_rect.offset.top,
-                         value.start_fragment_union_rect.size.height);
+            value.start_fragment_union_rect.Unite(fragment_rect);
+          } else if (!value.start_fragment) {
+            value.start_fragment = descendant.fragment.get();
+            value.start_fragment_union_rect = fragment_rect;
+            value.start_linebox_fragment = linebox;
           }
+          // Skip fragments within an empty line boxes for the end fragment.
           if (value.end_linebox_fragment == linebox) {
-            value.end_fragment_union_rect.size.width =
-                std::max(descendant.offset_to_container_box.left +
-                             descendant.fragment->Size().width -
-                             value.start_fragment_union_rect.offset.left,
-                         value.end_fragment_union_rect.size.width);
-            value.end_fragment_union_rect.size.height =
-                std::max(descendant.offset_to_container_box.top +
-                             descendant.fragment->Size().height -
-                             value.start_fragment_union_rect.offset.top,
-                         value.end_fragment_union_rect.size.height);
+            value.end_fragment_union_rect.Unite(fragment_rect);
+          } else if (!value.end_fragment || !linebox->IsEmptyLineBox()) {
+            value.end_fragment = descendant.fragment.get();
+            value.end_fragment_union_rect = fragment_rect;
+            value.end_linebox_fragment = linebox;
           }
-          inline_container_fragments->Set(key, value);
         }
       }
     }
