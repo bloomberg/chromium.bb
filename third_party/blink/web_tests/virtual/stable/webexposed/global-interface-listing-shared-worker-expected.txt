@@ -2393,6 +2393,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter onrejectionhandled
 [Worker]     setter onunhandledrejection
 [Worker]     setter origin
+[Worker]     setter performance
 [Worker] interface WorkerLocation
 [Worker]     attribute @@toStringTag
 [Worker]     getter hash
