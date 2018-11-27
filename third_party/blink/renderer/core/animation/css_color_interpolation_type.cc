@@ -159,8 +159,10 @@ Color CSSColorInterpolationType::ResolveInterpolableColor(
   if (alpha == 0)
     return Color::kTransparent;
 
-  return MakeRGBA(round(red / alpha), round(green / alpha), round(blue / alpha),
-                  round(alpha));
+  return MakeRGBA(static_cast<int>(round(red / alpha)),
+                  static_cast<int>(round(green / alpha)),
+                  static_cast<int>(round(blue / alpha)),
+                  static_cast<int>(round(alpha)));
 }
 
 class InheritedColorChecker
