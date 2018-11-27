@@ -66,7 +66,7 @@ class LazyContextTaskQueue {
   //    is heavily used thoughout the codebase.
   // 2. LazyBackgroundTaskQueue::AddPendingTask is tied to ExtensionHost. This
   //    class should be ExtensionHost agnostic.
-  virtual void AddPendingTaskToDispatchEvent(LazyContextId* context_id,
+  virtual void AddPendingTaskToDispatchEvent(const LazyContextId* context_id,
                                              PendingTask task) = 0;
 };
 

@@ -38,7 +38,7 @@ class ServiceWorkerTaskQueue : public KeyedService,
   bool ShouldEnqueueTask(content::BrowserContext* context,
                          const Extension* extension) override;
   void AddPendingTaskToDispatchEvent(
-      LazyContextId* context_id,
+      const LazyContextId* context_id,
       LazyContextTaskQueue::PendingTask task) override;
 
   // Performs Service Worker related tasks upon |extension| activation,
@@ -89,7 +89,7 @@ class ServiceWorkerTaskQueue : public KeyedService,
       content::ServiceWorkerContext* service_worker_context,
       LazyContextTaskQueue::PendingTask task);
 
-  void RunTaskAfterStartWorker(LazyContextId* context_id,
+  void RunTaskAfterStartWorker(const LazyContextId* context_id,
                                LazyContextTaskQueue::PendingTask task);
 
   void DidRegisterServiceWorker(const ExtensionId& extension_id, bool success);
