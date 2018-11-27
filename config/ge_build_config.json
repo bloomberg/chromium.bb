@@ -2055,7 +2055,7 @@
       "experimental": true,
       "models": [
         {
-          "board_name": "Nocturne",
+          "board_name": "nocturne",
           "name": "Nocturne",
           "test_suites": [
             "sanity",
