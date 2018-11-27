@@ -242,6 +242,10 @@ bool ContentBrowserClient::ShouldEnableStrictSiteIsolation() {
 #endif
 }
 
+bool ContentBrowserClient::ShouldDisableSiteIsolation() {
+  return false;
+}
+
 bool ContentBrowserClient::IsFileAccessAllowed(
     const base::FilePath& path,
     const base::FilePath& absolute_path,
