@@ -45,6 +45,9 @@ enum DialogViewId : int {
   // The following are views::Combobox objects.
   EXPIRATION_DATE_DROPBOX_MONTH,
   EXPIRATION_DATE_DROPBOX_YEAR,
+
+  // The following are views::Label objects.
+  EXPIRATION_DATE_LABEL,  // Appears during save offer bubble
 };
 
 }  // namespace autofill
