@@ -10,6 +10,7 @@
 ]
 interface ElementInternals {
   // Attributes and operations for form-associated custom elements.
+  void setFormValue(FormDataEntryValue value, optional FormData entrySource);
   readonly attribute HTMLFormElement? form;
 };
 

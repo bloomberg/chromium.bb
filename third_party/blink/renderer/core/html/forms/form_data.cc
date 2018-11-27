@@ -87,6 +87,11 @@ String Normalize(const String& input) {
 
 FormData::FormData(const WTF::TextEncoding& encoding) : encoding_(encoding) {}
 
+FormData::FormData(const FormData& form_data)
+    : encoding_(form_data.encoding_),
+      entries_(form_data.entries_),
+      contains_password_data_(form_data.contains_password_data_) {}
+
 FormData::FormData() : encoding_(UTF8Encoding()) {}
 
 FormData* FormData::Create(HTMLFormElement* form,

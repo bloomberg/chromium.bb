@@ -66,6 +66,9 @@ class CORE_EXPORT FormData final
   }
 
   explicit FormData(const WTF::TextEncoding&);
+  // Clones form_data.  This clones |form_data.entries_| Vector, but
+  // doesn't clone entries in it because they are immutable.
+  FormData(const FormData& form_data);
   FormData();
   void Trace(blink::Visitor*) override;
 

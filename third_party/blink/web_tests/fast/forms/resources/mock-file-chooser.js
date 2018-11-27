@@ -87,12 +87,21 @@ class MockFileChooser {
 }
 
 function toFilePath(str) {
-  if (!navigator.platform.startsWith('Win'))
-    return { path: str };
-  str = str.replace(/\//g, '\\');
+  if (str === '')
+    return navigator.platform.startsWith('Win') ? { path: [] } : { path: '' };
+  const absoluteUrl = (new URL(str, document.URL)).href;
+  console.assert(absoluteUrl.startsWith('file:///'),
+      'File selection works only on file: URL documents; document.URL=' + document.URL);
+  if (!navigator.platform.startsWith('Win')) {
+    // "file:///Users/foo/..." -> "/Users/foo/..."
+    return { path: absoluteUrl.substr(7) };
+  }
+  // "file:///D:/Users/foo/..." -> "/Users/foo/..."
+  // We omit drive letters to get identical results on multiple platforms.
+  const fullPath = absoluteUrl.substr(10).replace(/\//g, '\\');
   const path = [];
-  for (let i = 0; i < str.length; ++i) {
-    path.push(str.charCodeAt(i));
+  for (let i = 0; i < fullPath.length; ++i) {
+    path.push(fullPath.charCodeAt(i));
   }
   return { path: path };
 }
