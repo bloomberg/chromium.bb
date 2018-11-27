@@ -483,5 +483,28 @@
         '<(SHARED_INTERMEDIATE_DIR)/include/dlcservice/proto_bindings/dlcservice.pb.cc',
       ],
     },
+    {
+      'target_name': 'system_api-vm_plugin_dispatcher-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/vm_plugin_dispatcher',
+        'proto_out_dir': 'include/vm_plugin_dispatcher/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/service.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-vm_plugin_dispatcher-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-vm_plugin_dispatcher-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/vm_plugin_dispatcher/proto_bindings/service.pb.cc',
+      ],
+    },
   ],
 }
