@@ -10,6 +10,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * A set of utility methods used for calling across the support library boundary.
@@ -129,14 +131,21 @@ public class BoundaryInterfaceReflectionUtil {
         }
     }
 
+    private static boolean isDebuggable() {
+        return !Build.TYPE.equals("user");
+    }
+
     /**
      * Check whether a set of features {@param features} contains a certain feature {@param
      * soughtFeature}.
      */
+    public static boolean containsFeature(Collection<String> features, String soughtFeature) {
+        assert !soughtFeature.endsWith(Features.DEV_SUFFIX);
+        return features.contains(soughtFeature)
+                || (isDebuggable() && features.contains(soughtFeature + Features.DEV_SUFFIX));
+    }
+
     public static boolean containsFeature(String[] features, String soughtFeature) {
-        for (String feature : features) {
-            if (feature.equals(soughtFeature)) return true;
-        }
-        return false;
+        return containsFeature(Arrays.asList(features), soughtFeature);
     }
 }
