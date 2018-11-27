@@ -13,6 +13,8 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "content/public/browser/visibility.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 
@@ -31,7 +33,8 @@ class TemplateURLService;
 // This class gathers metrics of anchor elements from both renderer process
 // and browser process. Then it uses these metrics to make predictions on what
 // are the most likely anchor elements that the user will click.
-class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
+class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
+                            public content::WebContentsObserver {
  public:
   // |render_frame_host| is the host associated with the render frame. It is
   // used to retrieve metrics at the browser side.
@@ -52,7 +55,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
     kPreresolve = 2,
     kPreconnect = 3,
     kPrefetch = 4,
-    kMaxValue = kPrefetch,
+    kPreconnectOnVisibilityChange = 5,
+    kMaxValue = kPreconnectOnVisibilityChange,
   };
 
   // Enum describing the accuracy of actions taken by the navigation predictor.
@@ -146,6 +150,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   // |target_url| is the URL navigated to by the user.
   void RecordActionAccuracyOnClick(const GURL& target_url) const;
 
+  // content::WebContentsObserver:
+  void OnVisibilityChanged(content::Visibility visibility) override;
+
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
 
@@ -183,6 +190,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   // True if the source webpage (i.e., the page on which we are trying to
   // predict the next navigation) is a page from user's default search engine.
   bool source_is_default_search_engine_page_ = false;
+
+  // Current visibility state of the web contents.
+  content::Visibility current_visibility_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
