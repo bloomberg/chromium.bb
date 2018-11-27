@@ -82,6 +82,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
+// Enables the Supervised User Deprecation notices.
+ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
+
 ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
@@ -105,6 +108,8 @@ ASH_PUBLIC_EXPORT bool IsSeparateNetworkIconsEnabled();
 ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 
 ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
+
+ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
 
 }  // namespace features
 }  // namespace ash

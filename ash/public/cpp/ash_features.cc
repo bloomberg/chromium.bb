@@ -63,6 +63,9 @@ const base::Feature kViewsLogin{"ViewsLogin", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSupervisedUserDeprecationNotice{
+    "SupervisedUserDeprecationNotice", base::FEATURE_ENABLED_BY_DEFAULT};
+
 bool IsDockedMagnifierEnabled() {
   return base::FeatureList::IsEnabled(kDockedMagnifier);
 }
@@ -117,6 +120,10 @@ bool IsViewsLoginEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
              ash::switches::kShowWebUiLogin) &&
          base::FeatureList::IsEnabled(kViewsLogin);
+}
+
+bool IsSupervisedUserDeprecationNoticeEnabled() {
+  return base::FeatureList::IsEnabled(kSupervisedUserDeprecationNotice);
 }
 
 }  // namespace features
