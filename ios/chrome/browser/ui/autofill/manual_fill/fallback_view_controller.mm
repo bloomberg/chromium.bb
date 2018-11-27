@@ -63,6 +63,7 @@ constexpr float PopoverMaxHeight = 250;
   self.tableView.sectionFooterHeight = 20.0;
   self.tableView.estimatedRowHeight = 200;
   self.tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0);
+  self.tableView.allowsSelection = NO;
   self.definesPresentationContext = YES;
 }
 
