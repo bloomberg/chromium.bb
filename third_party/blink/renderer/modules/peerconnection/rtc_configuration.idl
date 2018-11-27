@@ -49,5 +49,6 @@ dictionary RTCConfiguration {
     // Nonstandard, added for Unified Plan migration
     [RuntimeEnabled=RTCUnifiedPlan] SdpSemantics sdpSemantics;
     [OriginTrialEnabled=RtcAudioJitterBufferMaxPackets] long rtcAudioJitterBufferMaxPackets;
+    [OriginTrialEnabled=RtcAudioJitterBufferMaxPackets] boolean rtcAudioJitterBufferFastAccelerate;
 };
 
