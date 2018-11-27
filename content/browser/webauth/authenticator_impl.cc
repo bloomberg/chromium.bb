@@ -643,9 +643,11 @@ void AuthenticatorImpl::MakeCredential(
   // used to communicate with the origin.
   if (OriginIsCryptoTokenExtension(caller_origin_)) {
     // As Cryptotoken validates the origin, accept the relying party id as the
-    // origin from requests originating from Cryptotoken.
+    // origin from requests originating from Cryptotoken. The origin is provided
+    // in Cryptotoken requests as the relying party name, which should be used
+    // as part of client data.
     client_data_json_ = SerializeCollectedClientDataToJson(
-        client_data::kU2fRegisterType, relying_party_id_,
+        client_data::kU2fRegisterType, options->relying_party->name,
         std::move(options->challenge), true /* use_legacy_u2f_type_key */);
   } else {
     client_data_json_ = SerializeCollectedClientDataToJson(
