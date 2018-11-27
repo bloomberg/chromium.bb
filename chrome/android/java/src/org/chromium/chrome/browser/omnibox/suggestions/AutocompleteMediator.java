@@ -892,6 +892,17 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
         String userText = mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
         mUrlTextAfterSuggestionsReceived = userText + inlineAutocompleteText;
 
+        if (mCurrentModels.size() == newSuggestions.size()) {
+            boolean sameSuggestions = true;
+            for (int i = 0; i < mCurrentModels.size(); i++) {
+                if (!mCurrentModels.get(i).first.equals(newSuggestions.get(i))) {
+                    sameSuggestions = false;
+                    break;
+                }
+            }
+            if (sameSuggestions) return;
+        }
+
         // Show the suggestion list.
         resetMaxTextWidths();
         // Ensure the list is fully replaced before broadcasting any change notifications.

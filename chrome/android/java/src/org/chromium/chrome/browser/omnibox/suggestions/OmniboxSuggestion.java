@@ -55,6 +55,13 @@ public class OmniboxSuggestion {
             this.offset = offset;
             this.style = style;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof MatchClassification)) return false;
+            MatchClassification other = (MatchClassification) obj;
+            return offset == other.offset && style == other.style;
+        }
     }
 
     private final int mType;
@@ -176,8 +183,14 @@ public class OmniboxSuggestion {
         }
 
         OmniboxSuggestion suggestion = (OmniboxSuggestion) obj;
-        return mType == suggestion.mType && mFillIntoEdit.equals(suggestion.mFillIntoEdit)
-                && mDisplayText.equals(suggestion.mDisplayText)
+        return mType == suggestion.mType
+                && TextUtils.equals(mFillIntoEdit, suggestion.mFillIntoEdit)
+                && TextUtils.equals(mDisplayText, suggestion.mDisplayText)
+                && ObjectsCompat.equals(
+                        mDisplayTextClassifications, suggestion.mDisplayTextClassifications)
+                && TextUtils.equals(mDescription, suggestion.mDescription)
+                && ObjectsCompat.equals(
+                        mDescriptionClassifications, suggestion.mDescriptionClassifications)
                 && mIsStarred == suggestion.mIsStarred && mIsDeletable == suggestion.mIsDeletable
                 && ObjectsCompat.equals(mAnswer, suggestion.mAnswer);
     }
