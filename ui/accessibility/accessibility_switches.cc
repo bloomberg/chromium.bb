@@ -13,6 +13,10 @@ namespace switches {
 const char kEnableExperimentalAccessibilityFeatures[] =
     "enable-experimental-accessibility-features";
 
+// Shows additional automatic click features that haven't launched yet.
+const char kEnableExperimentalAccessibilityAutoclick[] =
+    "enable-experimental-accessibility-autoclick";
+
 // Shows setting to enable Switch Access before it has launched.
 const char kEnableExperimentalAccessibilitySwitchAccess[] =
     "enable-experimental-accessibility-switch-access";
