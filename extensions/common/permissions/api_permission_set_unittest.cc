@@ -33,8 +33,6 @@ TEST(APIPermissionSetTest, General) {
 }
 
 TEST(APIPermissionSetTest, CreateUnion) {
-  APIPermission* permission = NULL;
-
   APIPermissionSet apis1;
   APIPermissionSet apis2;
   APIPermissionSet expected_apis;
@@ -42,7 +40,8 @@ TEST(APIPermissionSetTest, CreateUnion) {
 
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
-  permission = permission_info->CreateAPIPermission();
+  std::unique_ptr<APIPermission> permission(
+      permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -54,10 +53,10 @@ TEST(APIPermissionSetTest, CreateUnion) {
   // Union with an empty set.
   apis1.insert(APIPermission::kAudioCapture);
   apis1.insert(APIPermission::kDns);
-  apis1.insert(permission->Clone());
+  apis1.insert(base::WrapUnique(permission->Clone()));
   expected_apis.insert(APIPermission::kAudioCapture);
   expected_apis.insert(APIPermission::kDns);
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   ASSERT_TRUE(apis2.empty());
   APIPermissionSet::Union(apis1, apis2, &result);
@@ -77,21 +76,21 @@ TEST(APIPermissionSetTest, CreateUnion) {
   apis2.insert(APIPermission::kPower);
   apis2.insert(APIPermission::kSerial);
 
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
     value->AppendString("udp-send-to::8899");
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
-  apis2.insert(permission);
+  apis2.insert(std::move(permission));
 
   expected_apis.insert(APIPermission::kAudioCapture);
   expected_apis.insert(APIPermission::kHid);
   expected_apis.insert(APIPermission::kPower);
   expected_apis.insert(APIPermission::kSerial);
 
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -101,7 +100,7 @@ TEST(APIPermissionSetTest, CreateUnion) {
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
   // Insert a new socket permission which will replace the old one.
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   APIPermissionSet::Union(apis1, apis2, &result);
 
@@ -116,8 +115,6 @@ TEST(APIPermissionSetTest, CreateUnion) {
 }
 
 TEST(APIPermissionSetTest, CreateIntersection) {
-  APIPermission* permission = NULL;
-
   APIPermissionSet apis1;
   APIPermissionSet apis2;
   APIPermissionSet expected_apis;
@@ -129,7 +126,8 @@ TEST(APIPermissionSetTest, CreateIntersection) {
   // Intersection with an empty set.
   apis1.insert(APIPermission::kAudioCapture);
   apis1.insert(APIPermission::kDns);
-  permission = permission_info->CreateAPIPermission();
+  std::unique_ptr<APIPermission> permission(
+      permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -137,7 +135,7 @@ TEST(APIPermissionSetTest, CreateIntersection) {
     value->AppendString("udp-send-to::8888");
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
-  apis1.insert(permission);
+  apis1.insert(std::move(permission));
 
   ASSERT_TRUE(apis2.empty());
   APIPermissionSet::Intersection(apis1, apis2, &result);
@@ -157,7 +155,7 @@ TEST(APIPermissionSetTest, CreateIntersection) {
   apis2.insert(APIPermission::kHid);
   apis2.insert(APIPermission::kPower);
   apis2.insert(APIPermission::kSerial);
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("udp-bind::8080");
@@ -165,17 +163,17 @@ TEST(APIPermissionSetTest, CreateIntersection) {
     value->AppendString("udp-send-to::8899");
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
-  apis2.insert(permission);
+  apis2.insert(std::move(permission));
 
   expected_apis.insert(APIPermission::kAudioCapture);
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   APIPermissionSet::Intersection(apis1, apis2, &result);
 
@@ -190,8 +188,6 @@ TEST(APIPermissionSetTest, CreateIntersection) {
 }
 
 TEST(APIPermissionSetTest, CreateDifference) {
-  APIPermission* permission = NULL;
-
   APIPermissionSet apis1;
   APIPermissionSet apis2;
   APIPermissionSet expected_apis;
@@ -203,7 +199,8 @@ TEST(APIPermissionSetTest, CreateDifference) {
   // Difference with an empty set.
   apis1.insert(APIPermission::kAudioCapture);
   apis1.insert(APIPermission::kDns);
-  permission = permission_info->CreateAPIPermission();
+  std::unique_ptr<APIPermission> permission(
+      permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -211,7 +208,7 @@ TEST(APIPermissionSetTest, CreateDifference) {
     value->AppendString("udp-send-to::8888");
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
-  apis1.insert(permission);
+  apis1.insert(std::move(permission));
 
   ASSERT_TRUE(apis2.empty());
   APIPermissionSet::Difference(apis1, apis2, &result);
@@ -223,24 +220,24 @@ TEST(APIPermissionSetTest, CreateDifference) {
   apis2.insert(APIPermission::kHid);
   apis2.insert(APIPermission::kPower);
   apis2.insert(APIPermission::kSerial);
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
     value->AppendString("udp-send-to::8899");
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
-  apis2.insert(permission);
+  apis2.insert(std::move(permission));
 
   expected_apis.insert(APIPermission::kDns);
-  permission = permission_info->CreateAPIPermission();
+  permission.reset(permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   APIPermissionSet::Difference(apis1, apis2, &result);
 
@@ -256,8 +253,6 @@ TEST(APIPermissionSetTest, CreateDifference) {
 }
 
 TEST(APIPermissionSetTest, IPC) {
-  APIPermission* permission = NULL;
-
   APIPermissionSet apis;
   APIPermissionSet expected_apis;
 
@@ -266,7 +261,8 @@ TEST(APIPermissionSetTest, IPC) {
 
   apis.insert(APIPermission::kAudioCapture);
   apis.insert(APIPermission::kDns);
-  permission = permission_info->CreateAPIPermission();
+  std::unique_ptr<APIPermission> permission(
+      permission_info->CreateAPIPermission());
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -274,7 +270,7 @@ TEST(APIPermissionSetTest, IPC) {
     value->AppendString("udp-send-to::8888");
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
-  apis.insert(permission);
+  apis.insert(std::move(permission));
 
   EXPECT_NE(apis, expected_apis);
 

@@ -387,7 +387,8 @@ void PermissionsParser::AddAPIPermission(Extension* extension,
                                          APIPermission* permission) {
   DCHECK(extension->permissions_parser());
   extension->permissions_parser()
-      ->initial_required_permissions_->api_permissions.insert(permission);
+      ->initial_required_permissions_->api_permissions.insert(
+          base::WrapUnique(permission));
 }
 
 // static

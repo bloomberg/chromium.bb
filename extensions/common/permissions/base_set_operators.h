@@ -9,8 +9,10 @@
 
 #include <iterator>
 #include <map>
+#include <memory>
 
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 
 namespace extensions {
 
@@ -29,7 +31,9 @@ class BaseSetOperators {
  public:
   typedef typename BaseSetOperatorsTraits<T>::ElementType ElementType;
   typedef typename BaseSetOperatorsTraits<T>::ElementIDType ElementIDType;
-  typedef std::map<ElementIDType, linked_ptr<ElementType> > Map;
+
+  // TODO(devlin): Un-link-ptr-ify this.
+  using Map = std::map<ElementIDType, linked_ptr<ElementType>>;
 
   class const_iterator :
     public std::iterator<std::input_iterator_tag, const ElementType*> {
@@ -94,7 +98,7 @@ class BaseSetOperators {
     const_iterator it = rhs.begin();
     const const_iterator end = rhs.end();
     while (it != end) {
-      insert(it->Clone());
+      insert(base::WrapUnique(it->Clone()));
       ++it;
     }
     return *static_cast<T*>(this);
@@ -152,21 +156,21 @@ class BaseSetOperators {
 
     while (it1 != end1 && it2 != end2) {
       if (it1->id() < it2->id()) {
-        set3->insert(it1->Clone());
+        set3->insert(base::WrapUnique(it1->Clone()));
         ++it1;
       } else if (it1->id() > it2->id()) {
         ++it2;
       } else {
         ElementType* p = it1->Diff(*it2);
         if (p)
-          set3->insert(p);
+          set3->insert(base::WrapUnique(p));
         ++it1;
         ++it2;
       }
     }
 
     while (it1 != end1) {
-      set3->insert(it1->Clone());
+      set3->insert(base::WrapUnique(it1->Clone()));
       ++it1;
     }
   }
@@ -188,7 +192,7 @@ class BaseSetOperators {
       } else {
         ElementType* p = it1->Intersect(*it2);
         if (p)
-          set3->insert(p);
+          set3->insert(base::WrapUnique(p));
         ++it1;
         ++it2;
       }
@@ -207,70 +211,52 @@ class BaseSetOperators {
     while (true) {
       if (it1 == end1) {
         while (it2 != end2) {
-          set3->insert(it2->Clone());
+          set3->insert(base::WrapUnique(it2->Clone()));
           ++it2;
         }
         break;
       }
       if (it2 == end2) {
         while (it1 != end1) {
-          set3->insert(it1->Clone());
+          set3->insert(base::WrapUnique(it1->Clone()));
           ++it1;
         }
         break;
       }
       if (it1->id() < it2->id()) {
-        set3->insert(it1->Clone());
+        set3->insert(base::WrapUnique(it1->Clone()));
         ++it1;
       } else if (it1->id() > it2->id()) {
-        set3->insert(it2->Clone());
+        set3->insert(base::WrapUnique(it2->Clone()));
         ++it2;
       } else {
-        set3->insert(it1->Union(*it2));
+        set3->insert(base::WrapUnique(it1->Union(*it2)));
         ++it1;
         ++it2;
       }
     }
   }
 
-  const_iterator begin() const {
-    return const_iterator(map().begin());
+  const_iterator begin() const { return const_iterator(map_.begin()); }
+
+  const_iterator end() const { return map_.end(); }
+
+  const_iterator find(ElementIDType id) const { return map_.find(id); }
+
+  size_t count(ElementIDType id) const { return map_.count(id); }
+
+  bool empty() const { return map_.empty(); }
+
+  size_t erase(ElementIDType id) { return map_.erase(id); }
+
+  void insert(std::unique_ptr<ElementType> item) {
+    ElementIDType id = item->id();
+    map_[id].reset(item.release());
   }
 
-  const_iterator end() const {
-    return map().end();
-  }
-
-  const_iterator find(ElementIDType id) const {
-    return map().find(id);
-  }
-
-  size_t count(ElementIDType id) const {
-    return map().count(id);
-  }
-
-  bool empty() const {
-    return map().empty();
-  }
-
-  size_t erase(ElementIDType id) {
-    return map().erase(id);
-  }
-
-  // Take ownership and insert |item| into the set.
-  void insert(ElementType* item) {
-    map_[item->id()].reset(item);
-  }
-
-  size_t size() const {
-    return map().size();
-  }
+  size_t size() const { return map_.size(); }
 
   const Map& map() const {
-    return map_;
-  }
-
-  Map& map() {
     return map_;
   }
 

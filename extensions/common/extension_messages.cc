@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/extension.h"
@@ -216,7 +217,7 @@ bool ParamTraits<APIPermissionSet>::Read(const base::Pickle* m,
     std::unique_ptr<APIPermission> p(permission_info->CreateAPIPermission());
     if (!p->Read(m, iter))
       return false;
-    r->insert(p.release());
+    r->insert(std::move(p));
   }
   return true;
 }
@@ -253,7 +254,7 @@ bool ParamTraits<ManifestPermissionSet>::Read(const base::Pickle* m,
       return false;
     if (!p->Read(m, iter))
       return false;
-    r->insert(p.release());
+    r->insert(std::move(p));
   }
   return true;
 }

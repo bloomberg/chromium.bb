@@ -5,6 +5,7 @@
 #include "extensions/common/permissions/api_permission_set.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -68,7 +69,7 @@ bool CreateAPIPermission(
       }
       LOG(WARNING) << "Parse permission failed.";
     } else {
-      api_permissions->insert(permission.release());
+      api_permissions->insert(std::move(permission));
     }
     return true;
   }
@@ -132,11 +133,11 @@ void APIPermissionSet::insert(APIPermission::ID id) {
   const APIPermissionInfo* permission_info =
       PermissionsInfo::GetInstance()->GetByID(id);
   DCHECK(permission_info);
-  insert(permission_info->CreateAPIPermission());
+  insert(base::WrapUnique(permission_info->CreateAPIPermission()));
 }
 
-void APIPermissionSet::insert(APIPermission* permission) {
-  BaseSetOperators<APIPermissionSet>::insert(permission);
+void APIPermissionSet::insert(std::unique_ptr<APIPermission> permission) {
+  BaseSetOperators<APIPermissionSet>::insert(std::move(permission));
 }
 
 // static
