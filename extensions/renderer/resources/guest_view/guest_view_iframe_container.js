@@ -12,7 +12,6 @@ GuestViewContainer.prototype.createInternalElement$ = function() {
   iframeElement.style.width = '100%';
   iframeElement.style.height = '100%';
   iframeElement.style.border = '0';
-  privates(iframeElement).internal = this;
   return iframeElement;
 };
 
@@ -20,8 +19,8 @@ GuestViewContainer.prototype.prepareForReattach$ = function() {
   // Since attachment swaps a local frame for a remote frame, we need our
   // internal iframe element to be local again before we can reattach.
   var newFrame = this.createInternalElement$();
-  var oldFrame = privates(this).internalElement;
-  privates(this).internalElement = newFrame;
+  var oldFrame = this.internalElement;
+  this.internalElement = newFrame;
   oldFrame.parentNode.replaceChild(newFrame, oldFrame);
 };
 

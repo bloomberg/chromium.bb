@@ -46,8 +46,7 @@ WebViewElement.prototype.print = function() {
 };
 
 WebViewElement.prototype.back = function(callback) {
-  return $Function.call(
-      privates(WebViewElement).originalGo, this, -1, callback);
+  return $Function.call(originalGo, this, -1, callback);
 };
 
 WebViewElement.prototype.canGoBack = function() {
@@ -62,7 +61,7 @@ WebViewElement.prototype.canGoForward = function() {
 };
 
 WebViewElement.prototype.forward = function(callback) {
-  return $Function.call(privates(WebViewElement).originalGo, this, 1, callback);
+  return $Function.call(originalGo, this, 1, callback);
 };
 
 WebViewElement.prototype.getProcessId = function() {
@@ -89,7 +88,7 @@ forwardApiMethods(
 // Since |back| and |forward| are implemented in terms of |go|, we need to
 // keep a reference to the real |go| function, since user code may override
 // |WebViewElement.prototype.go|.
-privates(WebViewElement).originalGo = WebViewElement.prototype.go;
+var originalGo = WebViewElement.prototype.go;
 
 // Exports.
 exports.$set('WebViewElement', WebViewElement);

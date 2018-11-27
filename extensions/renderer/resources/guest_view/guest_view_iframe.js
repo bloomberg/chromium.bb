@@ -13,7 +13,7 @@ var getIframeContentWindow = function(viewInstanceId) {
   if (!view)
     return null;
 
-  var internalIframeElement = privates(view).internalElement;
+  var internalIframeElement = view.internalElement;
   if (internalIframeElement)
     return internalIframeElement.contentWindow;
 

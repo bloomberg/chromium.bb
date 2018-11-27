@@ -25,9 +25,9 @@ function GuestViewContainer(element, viewType) {
   this.guest = new GuestView(viewType);
   this.setupAttributes();
 
-  privates(this).internalElement = this.createInternalElement$();
+  this.internalElement = this.createInternalElement$();
   var shadowRoot = this.element.attachShadow({mode: 'open'});
-  shadowRoot.appendChild(privates(this).internalElement);
+  shadowRoot.appendChild(this.internalElement);
 
   GuestViewInternalNatives.RegisterView(this.viewInstanceId, this, viewType);
 }
@@ -43,14 +43,14 @@ GuestViewContainer.prototype.__proto__ = null;
 GuestViewContainer.prototype.setupGuestProperty = function() {
   $Object.defineProperty(this, 'guest', {
     get: $Function.bind(function() {
-      return privates(this).guest;
+      return this.guest_;
     }, this),
     set: $Function.bind(function(value) {
-      privates(this).guest = value;
+      this.guest_ = value;
       if (!value) {
         return;
       }
-      privates(this).guest.onresize = $Function.bind(function(e) {
+      this.guest_.onresize = $Function.bind(function(e) {
         // Dispatch the 'contentresize' event.
         var contentResizeEvent = new Event('contentresize', { bubbles: true });
         contentResizeEvent.oldWidth = e.oldWidth;
@@ -77,7 +77,7 @@ GuestViewContainer.prototype.prepareForReattach$ = function() {};
 
 GuestViewContainer.prototype.focus = function() {
   // Focus the internal element when focus() is called on the GuestView element.
-  privates(this).internalElement.focus();
+  this.internalElement.focus();
 }
 
 GuestViewContainer.prototype.attachWindow$ = function() {
@@ -117,7 +117,7 @@ GuestViewContainer.prototype.onInternalInstanceId = function(
 GuestViewContainer.prototype.handleInternalElementAttributeMutation =
     function(name, oldValue, newValue) {
   if (name == 'internalinstanceid' && !oldValue && !!newValue) {
-    privates(this).internalElement.removeAttribute('internalinstanceid');
+    this.internalElement.removeAttribute('internalinstanceid');
     this.onInternalInstanceId(parseInt(newValue));
   }
 };
