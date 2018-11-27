@@ -102,7 +102,7 @@ class ASH_EXPORT ShelfController : public message_center::MessageCenterObserver,
   // Changes to the local ShelfModel should not be reported during this time.
   bool applying_remote_shelf_model_changes_ = false;
 
-  // Whether touchable context menus have been enabled for app icons on the
+  // Whether notification indicators have been enabled for app icons in the
   // shelf.
   const bool is_notification_indicator_enabled_;
 

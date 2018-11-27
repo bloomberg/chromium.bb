@@ -381,13 +381,6 @@ class ASH_EXPORT ShelfView : public views::View,
                               const gfx::Point& location,
                               bool context_menu) const;
 
-  // Gets the menu anchor position for a menu. |for_item| is true if the menu is
-  // for an item on the shelf, or false if the menu is for the shelf view
-  // itself, |context_menu| is whether the menu will be an application menu or
-  // context menu, and |touch_menu| is whether the menu was initiated by touch.
-  views::MenuAnchorPosition GetMenuAnchorPosition(bool for_item,
-                                                  bool context_menu) const;
-
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

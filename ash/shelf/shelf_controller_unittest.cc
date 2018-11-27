@@ -209,27 +209,26 @@ TEST_F(ShelfControllerTest, ShelfItemImageSynchronization) {
   EXPECT_FALSE(controller->model()->items()[index].image.isNull());
 }
 
-class ShelfControllerTouchableContextMenuTest : public AshTestBase {
+class ShelfControllerNotificationIndicatorTest : public AshTestBase {
  public:
-  ShelfControllerTouchableContextMenuTest() = default;
-  ~ShelfControllerTouchableContextMenuTest() override = default;
+  ShelfControllerNotificationIndicatorTest() = default;
+  ~ShelfControllerNotificationIndicatorTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kTouchableAppContextMenu, features::kNotificationIndicator},
-        {});
+    scoped_feature_list_.InitWithFeatures({features::kNotificationIndicator},
+                                          {});
     AshTestBase::SetUp();
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShelfControllerTouchableContextMenuTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfControllerNotificationIndicatorTest);
 };
 
 // Tests that the ShelfController keeps the ShelfModel updated on new
 // notifications.
-TEST_F(ShelfControllerTouchableContextMenuTest, HasNotificationBasic) {
+TEST_F(ShelfControllerNotificationIndicatorTest, HasNotificationBasic) {
   ShelfController* controller = Shell::Get()->shelf_controller();
   const std::string app_id("app_id");
   ShelfItem item;

@@ -2190,69 +2190,30 @@ TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAutoHideShelf) {
   EXPECT_EQ(first_app_id, model_->items()[last_index].id);
 }
 
-struct TouchableAppContextMenuTestParams {
-  TouchableAppContextMenuTestParams(bool enable_touchable_app_context_menu,
-                                    bool context_menu)
-      : enable_touchable_app_context_menu(enable_touchable_app_context_menu),
-        context_menu(context_menu) {}
-  // Whether to enable the touchable app context menu feature.
-  bool enable_touchable_app_context_menu;
-  // Whether the menu is shown as an application or context menu.
-  bool context_menu;
-};
-
-class ShelfViewTouchableContextMenuTest
-    : public ShelfViewTest,
-      public testing::WithParamInterface<TouchableAppContextMenuTestParams> {
+// Tests that the app list button does not show a context menu on right click.
+TEST_F(ShelfViewTest, AppListButtonDoesNotShowContextMenu) {
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const AppListButton* app_list_button = shelf_view_->GetAppListButton();
+  generator->MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
+  EXPECT_FALSE(test_api_->CloseMenu());
+}
+// Test class that tests both context and application menus.
+class ShelfViewMenuTest : public ShelfViewTest,
+                          public testing::WithParamInterface<bool> {
  public:
-  ShelfViewTouchableContextMenuTest() = default;
-  ~ShelfViewTouchableContextMenuTest() override = default;
+  ShelfViewMenuTest() = default;
+  ~ShelfViewMenuTest() override = default;
 
-  void SetUp() override {
-    // If the test is parameterized, respect the parameter. Otherwise enable
-    // touchable app context menus by default.
-    const bool enable_touchable_app_context_menu =
-        testing::UnitTest::GetInstance()->current_test_info()->value_param()
-            ? GetParam().enable_touchable_app_context_menu
-            : true;
-    std::vector<base::Feature> enabled_features = {
-        features::kNotificationIndicator};
-    if (enable_touchable_app_context_menu)
-      enabled_features.push_back(features::kTouchableAppContextMenu);
-    scoped_feature_list_.InitWithFeatures(enabled_features, {});
-    ShelfViewTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfViewTouchableContextMenuTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewMenuTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
-    TouchableDisabledAppMenu,
-    ShelfViewTouchableContextMenuTest,
-    ::testing::Values(TouchableAppContextMenuTestParams(false, false)));
-
-INSTANTIATE_TEST_CASE_P(
-    TouchableEnabledAppMenu,
-    ShelfViewTouchableContextMenuTest,
-    ::testing::Values(TouchableAppContextMenuTestParams(true, false)));
-
-INSTANTIATE_TEST_CASE_P(
-    TouchableDisabledContextMenu,
-    ShelfViewTouchableContextMenuTest,
-    ::testing::Values(TouchableAppContextMenuTestParams(false, true)));
-
-INSTANTIATE_TEST_CASE_P(
-    TouchableEnabledContextMenu,
-    ShelfViewTouchableContextMenuTest,
-    ::testing::Values(TouchableAppContextMenuTestParams(true, true)));
+INSTANTIATE_TEST_CASE_P(, ShelfViewMenuTest, testing::Bool());
 
 // Tests that menu anchor points are aligned with the shelf button bounds.
-TEST_P(ShelfViewTouchableContextMenuTest, ShelfViewMenuAnchorPoint) {
+TEST_P(ShelfViewMenuTest, ShelfViewMenuAnchorPoint) {
   const ShelfButton* shelf_button = GetButtonByID(AddApp());
-  const bool context_menu = GetParam().context_menu;
+  const bool context_menu = GetParam();
   EXPECT_EQ(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM,
             GetPrimaryShelf()->alignment());
 
@@ -2265,13 +2226,8 @@ TEST_P(ShelfViewTouchableContextMenuTest, ShelfViewMenuAnchorPoint) {
   // Test for left shelf.
   GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_LEFT);
 
-  int expected_x = shelf_button->GetBoundsInScreen().x();
-  // Left shelf context menus when TouchableAppContextMenu is disabled anchor
-  // off of the right edge of the shelf.
-  if (context_menu && !features::IsTouchableAppContextMenuEnabled())
-    expected_x = shelf_button->GetBoundsInScreen().right();
   EXPECT_EQ(
-      expected_x,
+      shelf_button->GetBoundsInScreen().x(),
       test_api_->GetMenuAnchorRect(*shelf_button, gfx::Point(), context_menu)
           .x());
 
@@ -2284,19 +2240,27 @@ TEST_P(ShelfViewTouchableContextMenuTest, ShelfViewMenuAnchorPoint) {
           .x());
 }
 
-// Tests that the app list button does not show a context menu on right click
-// when touchable app context menus are enabled.
-TEST_F(ShelfViewTouchableContextMenuTest, AppListButtonDoesNotShowContextMenu) {
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  const AppListButton* app_list_button = shelf_view_->GetAppListButton();
-  generator->MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
-  generator->PressRightButton();
-  EXPECT_FALSE(test_api_->CloseMenu());
-}
+// Test class that enables notification indicators.
+class NotificationIndicatorTest : public ShelfViewTest {
+ public:
+  NotificationIndicatorTest() = default;
+  ~NotificationIndicatorTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures({features::kNotificationIndicator},
+                                          {});
+    ShelfViewTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationIndicatorTest);
+};
 
 // Tests that an item has a notification indicator when it recieves a
 // notification.
-TEST_F(ShelfViewTouchableContextMenuTest, AddedItemHasNotificationIndicator) {
+TEST_F(NotificationIndicatorTest, AddedItemHasNotificationIndicator) {
   const ShelfID id_0 = AddApp();
   const std::string notification_id_0("notification_id_0");
   const ShelfButton* button_0 = GetButtonByID(id_0);
@@ -2336,7 +2300,7 @@ TEST_F(ShelfViewTouchableContextMenuTest, AddedItemHasNotificationIndicator) {
 
 // Tests that the notification indicator is active until all notifications have
 // been removed.
-TEST_F(ShelfViewTouchableContextMenuTest,
+TEST_F(NotificationIndicatorTest,
        NotificationIndicatorStaysActiveUntilNotificationsAreGone) {
   const ShelfID app = AddApp();
   const ShelfButton* button = GetButtonByID(app);
