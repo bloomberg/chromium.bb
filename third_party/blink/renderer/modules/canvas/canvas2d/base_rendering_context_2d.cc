@@ -1254,8 +1254,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
 
   ValidateStateStack();
 
-  if (!origin_tainted_by_content_ &&
-      WouldTaintOrigin(image_source, ExecutionContext::From(script_state)))
+  if (!origin_tainted_by_content_ && WouldTaintOrigin(image_source))
     SetOriginTaintedByContent();
 
   Draw(
@@ -1454,8 +1453,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
   }
   DCHECK(image_for_rendering);
 
-  bool origin_clean =
-      !WouldTaintOrigin(image_source, ExecutionContext::From(script_state));
+  bool origin_clean = !WouldTaintOrigin(image_source);
 
   return CanvasPattern::Create(std::move(image_for_rendering), repeat_mode,
                                origin_clean);

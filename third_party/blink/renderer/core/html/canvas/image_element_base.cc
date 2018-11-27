@@ -73,10 +73,8 @@ scoped_refptr<Image> ImageElementBase::GetSourceImageForCanvas(
   return source_image->ImageForDefaultFrame();
 }
 
-bool ImageElementBase::WouldTaintOrigin(
-    const SecurityOrigin* destination_security_origin) const {
-  return CachedImage() &&
-         !CachedImage()->IsAccessAllowed(destination_security_origin);
+bool ImageElementBase::WouldTaintOrigin() const {
+  return CachedImage() && !CachedImage()->IsAccessAllowed();
 }
 
 FloatSize ImageElementBase::ElementSize(

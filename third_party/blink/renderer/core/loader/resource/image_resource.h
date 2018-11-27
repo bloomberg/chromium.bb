@@ -39,7 +39,6 @@ class FetchParameters;
 class ImageResourceContent;
 class ResourceClient;
 class ResourceFetcher;
-class SecurityOrigin;
 
 // ImageResource implements blink::Resource interface and image-specific logic
 // for loading images.
@@ -127,7 +126,6 @@ class CORE_EXPORT ImageResource final
   // Only for ImageResourceInfoImpl.
   void DecodeError(bool all_data_received);
   bool IsAccessAllowed(
-      const SecurityOrigin*,
       ImageResourceInfo::DoesCurrentFrameHaveSingleSecurityOrigin) const;
 
   bool HasClientsOrObservers() const override;

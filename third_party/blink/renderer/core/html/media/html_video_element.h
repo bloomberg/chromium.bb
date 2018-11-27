@@ -148,7 +148,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
                                                AccelerationHint,
                                                const FloatSize&) override;
   bool IsVideoElement() const override { return true; }
-  bool WouldTaintOrigin(const SecurityOrigin*) const override;
+  bool WouldTaintOrigin() const override;
   FloatSize ElementSize(const FloatSize&) const override;
   const KURL& SourceURL() const override { return currentSrc(); }
   bool IsHTMLVideoElement() const override { return true; }

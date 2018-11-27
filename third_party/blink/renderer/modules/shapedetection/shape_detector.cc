@@ -49,8 +49,7 @@ ScriptPromise ShapeDetector::detect(
     return promise;
   }
 
-  if (canvas_image_source->WouldTaintOrigin(
-          ExecutionContext::From(script_state)->GetSecurityOrigin())) {
+  if (canvas_image_source->WouldTaintOrigin()) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError,
                                           "Source would taint origin."));
     return promise;
