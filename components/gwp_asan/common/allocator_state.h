@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The AllocatorState class is the subset of the GuardedPageAllocator that is
+// The AllocateState class is the subset of the GuardedPageAllocator that is
 // required by the crash handler to analyzer crashes and provide debug
 // information. The crash handler initializes an instance of this class from
 // the crashed processes memory. Because the out-of-process allocator could be
@@ -17,10 +17,6 @@
 // - Free of pointers: Pointers are all uintptr_t since none of these pointers
 //     need to be directly dereferenced. Encourage users like the crash handler
 //     to consider them addresses instead of pointers.
-// - Validatable: The IsValid() method is intended to sanity check the internal
-//     fields such that it's safe to call any method on a valid object. All
-//     additional methods and fields need to be audited to ensure they maintain
-//     this invariant!
 
 #ifndef COMPONENTS_GWP_ASAN_COMMON_ALLOCATOR_STATE_H_
 #define COMPONENTS_GWP_ASAN_COMMON_ALLOCATOR_STATE_H_
@@ -46,12 +42,6 @@ class AllocatorState {
     kBufferOverflow = 2,
     kDoubleFree = 3,
     kUnknown = 4,
-  };
-
-  enum class GetMetadataReturnType {
-    kUnrelatedCrash = 0,
-    kGwpAsanCrash = 1,
-    kErrorBadSlot = 2,
   };
 
   // Structure for storing data about a slot.
@@ -84,25 +74,6 @@ class AllocatorState {
   inline bool PointerIsMine(uintptr_t addr) const {
     return pages_base_addr <= addr && addr < pages_end_addr;
   }
-
-  // Sanity check allocator internals. This method is used to verify that
-  // the allocator base state is well formed when the crash handler analyzes the
-  // allocator from a crashing process. This method is security-sensitive, it
-  // must validate parameters to ensure that an attacker with the ability to
-  // modify the allocator internals can not cause the crash handler to misbehave
-  // and cause memory errors.
-  bool IsValid() const;
-
-  // This method is meant to be called from the crash handler with a validated
-  // AllocatorState object read from the crashed process. This method checks if
-  // exception_address is an address in the GWP-ASan region, and writes the
-  // error type and slot metadata to the provided arguments if so.
-  //
-  // Returns an enum indicating an error, unrelated exception, or a GWP-ASan
-  // exception (with slot and error_type filled out.)
-  GetMetadataReturnType GetMetadataForAddress(uintptr_t exception_address,
-                                              SlotMetadata* slot,
-                                              ErrorType* error_type) const;
 
   // Returns the likely error type given an exception address and whether its
   // previously been allocated and deallocated.
