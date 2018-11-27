@@ -2374,14 +2374,20 @@ void RenderWidgetHostViewAndroid::DidNavigate() {
     RenderWidgetHostViewBase::DidNavigate();
     return;
   }
-
-  if (is_first_navigation_) {
-    SynchronizeVisualProperties(
-        cc::DeadlinePolicy::UseExistingDeadline(),
-        local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
+  if (!is_showing_) {
+    // Navigating while hidden should not allocate a new LocalSurfaceID. Once
+    // sizes are ready, or we begin to Show, we can then allocate the new
+    // LocalSurfaceId.
+    local_surface_id_allocator_.Invalidate();
   } else {
-    SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
-                                base::nullopt);
+    if (is_first_navigation_) {
+      SynchronizeVisualProperties(
+          cc::DeadlinePolicy::UseExistingDeadline(),
+          local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
+    } else {
+      SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
+                                  base::nullopt);
+    }
   }
   delegated_frame_host_->DidNavigate();
   is_first_navigation_ = false;

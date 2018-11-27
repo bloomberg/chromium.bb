@@ -356,14 +356,23 @@ BrowserCompositorMac::CollectSurfaceIdsForEviction() {
 }
 
 void BrowserCompositorMac::DidNavigate() {
-  // The first navigation does not need a new LocalSurfaceID. The renderer can
-  // use the ID that was already provided.
-  if (!is_first_navigation_)
-    dfh_local_surface_id_allocator_.GenerateId();
-  delegated_frame_host_->EmbedSurface(
-      dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(), dfh_size_dip_,
-      cc::DeadlinePolicy::UseExistingDeadline());
-  client_->OnBrowserCompositorSurfaceIdChanged();
+  if (render_widget_host_is_hidden_) {
+    // Navigating while hidden should not allocate a new LocalSurfaceID. Once
+    // sizes are ready, or we begin to Show, we can then allocate the new
+    // LocalSurfaceId.
+    dfh_local_surface_id_allocator_.Invalidate();
+  } else {
+    // The first navigation does not need a new LocalSurfaceID. The renderer can
+    // use the ID that was already provided.
+    if (!is_first_navigation_) {
+      dfh_local_surface_id_allocator_.GenerateId();
+    }
+    delegated_frame_host_->EmbedSurface(
+        dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        dfh_size_dip_, cc::DeadlinePolicy::UseExistingDeadline());
+    client_->OnBrowserCompositorSurfaceIdChanged();
+  }
+
   delegated_frame_host_->DidNavigate();
   is_first_navigation_ = false;
 }
