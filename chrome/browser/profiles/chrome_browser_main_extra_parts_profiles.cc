@@ -94,6 +94,7 @@
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/explore_sites/explore_sites_service_factory.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #else
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -254,6 +255,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   chromeos::EasyUnlockServiceFactory::GetInstance();
 #endif
   EnhancedBookmarkKeyServiceFactory::GetInstance();
+#endif
+#if defined(OS_ANDROID)
+  explore_sites::ExploreSitesServiceFactory::GetInstance();
 #endif
 #if defined(OS_CHROMEOS)
   chromeos::CupsPrintJobManagerFactory::GetInstance();
