@@ -489,6 +489,8 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
   const uint32_t content_source_id = 3;
   const BeginFrameAck begin_frame_ack(5, 10, false);
+  const base::TimeTicks local_surface_id_allocation_time =
+      base::TimeTicks::Now();
 
   CompositorFrame input;
   input.metadata.device_scale_factor = device_scale_factor;
@@ -499,6 +501,8 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   input.resource_list.push_back(resource);
   input.metadata.content_source_id = content_source_id;
   input.metadata.begin_frame_ack = begin_frame_ack;
+  input.metadata.local_surface_id_allocation_time =
+      local_surface_id_allocation_time;
 
   CompositorFrame output;
   mojo::test::SerializeAndDeserialize<mojom::CompositorFrame>(&input, &output);
@@ -509,6 +513,8 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   EXPECT_EQ(scrollable_viewport_size, output.metadata.scrollable_viewport_size);
   EXPECT_EQ(content_source_id, output.metadata.content_source_id);
   EXPECT_EQ(begin_frame_ack, output.metadata.begin_frame_ack);
+  EXPECT_EQ(local_surface_id_allocation_time,
+            output.metadata.local_surface_id_allocation_time);
 
   ASSERT_EQ(1u, output.resource_list.size());
   TransferableResource out_resource = output.resource_list[0];
@@ -622,6 +628,8 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const float min_page_scale_factor = 3.5f;
   const float top_bar_height(1234.5f);
   const float top_bar_shown_ratio(1.0f);
+  const base::TimeTicks local_surface_id_allocation_time =
+      base::TimeTicks::Now();
 
 #if defined(OS_ANDROID)
   const float max_page_scale_factor = 4.6f;
@@ -658,6 +666,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.min_page_scale_factor = min_page_scale_factor;
   input.top_controls_height = top_bar_height;
   input.top_controls_shown_ratio = top_bar_shown_ratio;
+  input.local_surface_id_allocation_time = local_surface_id_allocation_time;
 
 #if defined(OS_ANDROID)
   input.max_page_scale_factor = max_page_scale_factor;
@@ -696,6 +705,8 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(min_page_scale_factor, output.min_page_scale_factor);
   EXPECT_EQ(top_bar_height, output.top_controls_height);
   EXPECT_EQ(top_bar_shown_ratio, output.top_controls_shown_ratio);
+  EXPECT_EQ(local_surface_id_allocation_time,
+            output.local_surface_id_allocation_time);
 
 #if defined(OS_ANDROID)
   EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);

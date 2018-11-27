@@ -180,7 +180,7 @@ class VideoFrameSubmitterTest : public testing::Test {
             viz::FrameSinkId(1, 1),
             viz::LocalSurfaceId(
                 11, base::UnguessableToken::Deserialize(0x111111, 0))),
-        base::TimeTicks());
+        base::TimeTicks::Now());
   }
 
  protected:

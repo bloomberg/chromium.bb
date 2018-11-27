@@ -181,8 +181,11 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
   }
 
   if (!enable_surface_synchronization_) {
-    local_surface_id_ =
-        local_surface_id_provider_->GetLocalSurfaceIdForFrame(frame);
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
+        local_surface_id_provider_->GetLocalSurfaceIdAllocationForFrame(frame);
+    local_surface_id_ = local_surface_id_allocation.local_surface_id();
+    frame.metadata.local_surface_id_allocation_time =
+        local_surface_id_allocation.allocation_time();
   } else {
     if (local_surface_id_ == last_submitted_local_surface_id_) {
       DCHECK_EQ(last_submitted_device_scale_factor_,

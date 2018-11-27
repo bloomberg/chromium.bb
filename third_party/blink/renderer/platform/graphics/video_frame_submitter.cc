@@ -317,6 +317,9 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
       viz::BeginFrameAck::CreateManualAckWithDamage();
   compositor_frame.metadata.device_scale_factor = 1;
   compositor_frame.metadata.may_contain_video = true;
+  compositor_frame.metadata.local_surface_id_allocation_time =
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .allocation_time();
 
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   render_pass->SetNew(1, gfx::Rect(frame_size_), gfx::Rect(frame_size_),
