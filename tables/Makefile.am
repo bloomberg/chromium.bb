@@ -318,7 +318,6 @@ table_files = \
 	sl-si-g1.utb \
 	sl.tbl \
 	sot-za-g1.ctb \
-	spaces.ctb \
 	sr-chardefs.cti \
 	sr-g1.ctb \
 	sr.tbl \

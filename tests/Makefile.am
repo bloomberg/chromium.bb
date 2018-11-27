@@ -210,7 +210,6 @@ LOG_COMPILE = $(WINE)
 EXTRA_DIST = $(dist_yaml_TESTS) $(dist_braille_specs_TESTS) $(YAML_LOG_COMPILER_SCRIPT)
 
 XFAIL_TESTS =					\
-	yaml/all-spaces.yaml			\
 	ueb_test_data.pl
 
 TESTS =				     \

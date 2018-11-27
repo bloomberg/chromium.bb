@@ -1,5 +1,5 @@
-table: [tables/cs-g1.ctb,tables/spaces.ctb]
-table: [tables/en-us-comp8.ctb,tables/spaces.ctb]
+table: [tables/cs-g1.ctb,tables/basic-spaces.uti]
+table: [tables/en-us-comp8.ctb,tables/basic-spaces.uti]
 
 tests:
   - [\x000a, ' '] # LINE FEED (LF)

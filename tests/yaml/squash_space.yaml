@@ -2,9 +2,10 @@
 # Note: Long strings consisting of spaces cannot be folded in yaml.
 
 table: |
-  include tables/basic-spaces.uti
   space \t 9
   space \n 24578
+  space \x00a0 a
+  include tables/basic-spaces.uti
   repeated \s 0
 
 tests:
@@ -36,10 +37,9 @@ tests:
     - "\n "
 
 table: |
-  include tables/basic-spaces.uti
   space \t 9
-  space \n 0
-  space \s 0
+  space \x00a0 a
+  include tables/basic-spaces.uti
   noback context [$s]$s ?
   noback context [$s] @0
 

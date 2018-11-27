@@ -12,6 +12,6 @@
 # the implemented braille code. Preferably submit the documents
 # to https://github.com/liblouis/braille-specs.
 
-include spaces.ctb
+include basic-spaces.uti
 include pi.ctb
 include braille-patterns.cti

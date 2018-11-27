@@ -39,7 +39,7 @@
 ### WHITESPACE
 ###
 
-include spaces.ctb
+include basic-spaces.uti
 
 noback space           \x0009 0-0                          [CHARACTER TABULATION]
 nofor space            \x0009 6-0                          [CHARACTER TABULATION]
