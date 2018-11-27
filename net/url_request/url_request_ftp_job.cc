@@ -72,12 +72,18 @@ bool URLRequestFtpJob::GetMimeType(std::string* mime_type) const {
       return true;
     }
   } else {
-    // No special handling of MIME type is needed. As opposed to direct FTP
-    // transaction, we do not get a raw directory listing to parse.
-    return http_transaction_->GetResponseInfo()->
-        headers->GetMimeType(mime_type);
+    std::string proxy_mime;
+    http_transaction_->GetResponseInfo()->headers->GetMimeType(&proxy_mime);
+    if (proxy_mime == "text/vnd.chromium.ftp-dir") {
+      *mime_type = "text/vnd.chromium.ftp-dir";
+      return true;
+    }
   }
-  return false;
+
+  // FTP resources other than directory listings ought to be handled as raw
+  // binary data, not sniffed into HTML or etc.
+  *mime_type = "application/octet-stream";
+  return true;
 }
 
 void URLRequestFtpJob::GetResponseInfo(HttpResponseInfo* info) {

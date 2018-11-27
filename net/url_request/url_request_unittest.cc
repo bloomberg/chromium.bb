@@ -11222,6 +11222,34 @@ TEST_F(URLRequestTestFTP, FTPGetTestAnonymous) {
   }
 }
 
+TEST_F(URLRequestTestFTP, FTPMimeType) {
+  ASSERT_TRUE(ftp_test_server_.Start());
+
+  struct {
+    const char* path;
+    const char* mime;
+  } test_cases[] = {
+      {"/", "text/vnd.chromium.ftp-dir"},
+      {kFtpTestFile, "application/octet-stream"},
+  };
+
+  for (const auto test : test_cases) {
+    TestDelegate d;
+
+    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+        ftp_test_server_.GetURL(test.path), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->Start();
+    EXPECT_TRUE(r->is_pending());
+
+    d.RunUntilComplete();
+
+    std::string mime;
+    r->GetMimeType(&mime);
+    EXPECT_EQ(test.mime, mime);
+  }
+}
+
 TEST_F(URLRequestTestFTP, FTPGetTest) {
   ASSERT_TRUE(ftp_test_server_.Start());
 
