@@ -35,6 +35,7 @@
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_auth_system.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "chromeos/components/proximity_auth/switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -348,27 +349,55 @@ bool EasyUnlockService::UpdateScreenlockState(ScreenlockState state) {
   return true;
 }
 
+void EasyUnlockService::OnUserEnteredPassword() {
+  if (proximity_auth_system_)
+    proximity_auth_system_->CancelConnectionAttempt();
+}
+
 void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
   const EasyUnlockAuthAttempt::Type auth_attempt_type =
       GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
                                 : EasyUnlockAuthAttempt::TYPE_SIGNIN;
   if (auth_attempt_) {
     PA_LOG(VERBOSE) << "Already attempting auth, skipping this request.";
+    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
+      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
+          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+              kAlreadyAttemptingAuth);
+    }
     return;
   }
 
   if (!GetAccountId().is_valid()) {
     PA_LOG(ERROR) << "Empty user account. Auth attempt failed.";
+    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
+      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
+          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+              kEmptyUserAccount);
+    }
     return;
   }
 
-  CHECK(GetAccountId() == account_id)
-      << "Check failed: " << GetAccountId().Serialize() << " vs "
-      << account_id.Serialize();
+  if (GetAccountId() != account_id) {
+    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
+      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
+          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+              kInvalidAccoundId);
+    }
+    PA_LOG(ERROR) << "Check failed: " << GetAccountId().Serialize() << " vs "
+                  << account_id.Serialize();
+    return;
+  }
 
   auth_attempt_.reset(new EasyUnlockAuthAttempt(account_id, auth_attempt_type));
-  if (!auth_attempt_->Start())
+  if (!auth_attempt_->Start()) {
+    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
+      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
+          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+              kAuthAttemptCannotStart);
+    }
     auth_attempt_.reset();
+  }
 
   // TODO(tengs): We notify ProximityAuthSystem whenever unlock attempts are
   // attempted. However, we ideally should refactor the auth attempt logic to
