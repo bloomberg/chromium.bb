@@ -6,7 +6,7 @@
 # than 2 seconds in Release mode or 6 seconds in Debug mode should be listed here.
 #
 # Further documentation:
-# https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md
+# https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_test_expectations.md
 
 crbug.com/24182 storage/indexeddb/objectstore-cursor.html [ Slow ]
 crbug.com/24182 storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Slow ]

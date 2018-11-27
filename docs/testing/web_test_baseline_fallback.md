@@ -1,8 +1,8 @@
-# Layout Test Baseline Fallback
+# Web Test Baseline Fallback
 
 
 *** promo
-Read [Layout Test Expectations and Baselines](layout_test_expectations.md) first
+Read [Web Test Expectations and Baselines](web_test_expectations.md) first
 if you have not.
 ***
 
@@ -18,8 +18,8 @@ optimization and rebaselining.
 ## Terminology
 
 * **Root directory**:
-    [`//src/third_party/WebKit/LayoutTests`](../../third_party/WebKit/LayoutTests)
-    is the root directory (of all the layout tests and baselines). All relative
+    [`//src/third_party/blink/web_tests`](../../third_party/blink/web_tests)
+    is the root directory (of all the web tests and baselines). All relative
     paths in this document start from this directory.
 * **Test name**: the name of a test is its relative path from the root
     directory (e.g. `html/dom/foo/bar.html`).
@@ -29,10 +29,10 @@ optimization and rebaselining.
     `virtual/gpu/html/dom/foo/bar.html` is the virtual variant of
     `html/dom/foo/bar.html` in the `gpu` suite. Only the latter file exists on
     disk, and is called the base of the virtual test. See
-    [Layout Tests#Testing Runtime Flags](layout_tests.md#testing-runtime-flags)
+    [Web Tests#Testing Runtime Flags](web_tests.md#testing-runtime-flags)
     for more details.
 * **Platform directory**: each directory under
-    [`platform/`](../../third_party/WebKit/LayoutTests/platform) is a platform
+    [`platform/`](../../third_party/blink/web_tests/platform) is a platform
     directory that contains baselines (no tests) for that platform. Directory
     names are in the form of `PLATFORM-VERSION` (e.g. `mac-mac10.12`), except
     for the latest version of a platform which is just `PLATFORM` (e.g. `mac`).

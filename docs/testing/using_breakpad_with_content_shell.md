@@ -1,6 +1,6 @@
 # Using breakpad with content shell
 
-When running layout tests, it is possible to use
+When running web tests, it is possible to use
 [breakpad](../../third_party/breakpad/) to capture stack traces on crashes while
 running without a debugger attached and with the sandbox enabled.
 

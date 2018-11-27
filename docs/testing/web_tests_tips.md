@@ -1,18 +1,18 @@
-# Layout Tests Tips
+# Web Tests Tips
 
 The recommendations here are intended to help you write new tests that go
 through code review with a minimal number of round trips, remain useful as Blink
 evolves, and serve as an asset (rather than a liability) for the team.
 
-While reading existing layout tests, please keep in mind that they represent
+While reading existing web tests, please keep in mind that they represent
 snapshots taken over many years of an ever-evolving collective opinion of what
 good Web pages and solid tests should look like. Thus, it should not come as a
-surprise that most existing layout tests are not consistent with these
+surprise that most existing web tests are not consistent with these
 recommendations, and are not even consistent with each other.
 
 *** note
 This document intentionally uses _should_ a lot more than _must_, as defined in
-[RFC 2119](https://www.ietf.org/rfc/rfc2119.txt). Writing layout tests is a
+[RFC 2119](https://www.ietf.org/rfc/rfc2119.txt). Writing web tests is a
 careful act of balancing many concerns, and this humble document cannot possibly
 capture the context that rests in the head of an experienced Blink engineer.
 ***
@@ -51,7 +51,7 @@ test results less reliable.
 ### Fast
 
 Tests should be as **fast** as possible, without compromising on the principles
-below. Blink has several thousand layout tests that are run in parallel, and
+below. Blink has several thousand web tests that are run in parallel, and
 avoiding unnecessary delays is crucial to keeping our Commit Queue in good
 shape.
 
@@ -72,7 +72,7 @@ and the Commit Queue.
 on a fast system, tests that rely on fixed timeouts can fail when on systems
 that are slower than expected.
 
-When adding or significantly modifying a layout test, use the command below to
+When adding or significantly modifying a web test, use the command below to
 assess its flakiness. While not foolproof, this approach gives you some
 confidence, and giving up CPU cycles for mental energy is a pretty good trade.
 
@@ -81,7 +81,7 @@ third_party/blink/tools/run_web_tests.py path/to/test.html --repeat-each=100
 ```
 
 The
-[PSA on writing reliable layout tests](https://docs.google.com/document/d/1Yl4SnTLBWmY1O99_BTtQvuoffP8YM9HZx2YPkEsaduQ/edit).
+[PSA on writing reliable web tests](https://docs.google.com/document/d/1Yl4SnTLBWmY1O99_BTtQvuoffP8YM9HZx2YPkEsaduQ/edit).
 also has good guidelines for writing reliable tests.
 
 ### Self-Describing
@@ -92,7 +92,7 @@ feature being tested.
 
 `testharness.js` makes a test self-describing when used correctly. Other types
 of tests, such as reference tests and
-[tests with manual fallback](./layout_tests_with_manual_fallback.md),
+[tests with manual fallback](./web_tests_with_manual_fallback.md),
 [must be carefully designed](https://web-platform-tests.org/writing-tests/manual.html#requirements-for-a-manual-test)
 to be self-describing.
 
@@ -179,9 +179,9 @@ the doctype.
 
 ## Coding Style
 
-No coding style is enforced for layout tests. This section highlights coding
-style aspects that are not consistent across our layout tests, and suggests some
-defaults for unopinionated developers. When writing layout tests for a new part
+No coding style is enforced for web tests. This section highlights coding
+style aspects that are not consistent across our web tests, and suggests some
+defaults for unopinionated developers. When writing web tests for a new part
 of the codebase, you can minimize review latency by taking a look at existing
 tests, and pay particular attention to these issues. Also beware of per-project
 style guides, such as the
@@ -192,7 +192,7 @@ style guides, such as the
 [Google's JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html)
 and
 [Google's HTML/CSS Style Guide](https://google.github.io/styleguide/htmlcssguide.xml)
-are a reasonable baseline for coding style defaults, with the caveat that layout
+are a reasonable baseline for coding style defaults, with the caveat that web
 tests do not use Google Closure or JSDoc.
 
 ### == vs ===
@@ -273,7 +273,7 @@ more familiar to developers coming from other programming languages.
 
 A good default is to prefer classes over other OOP constructs, as they will make
 the code easier to read for many of your fellow Chrome developers. At the same
-time, most layout tests are simple enough that OOP is not justified.
+time, most web tests are simple enough that OOP is not justified.
 
 ### Character Encoding
 
@@ -286,7 +286,7 @@ browser-specific heuristics.
 
 The easiest way to not have to think about any of this is to add
 `<meta charset="utf-8">` to all your tests. This is easier to remember if you
-use a template for your layout tests, rather than writing them from scratch.
+use a template for your web tests, rather than writing them from scratch.
 
 ## Tests with Manual Feedback
 
@@ -296,6 +296,6 @@ having the tests gracefully degrade to manual tests in the absence of the
 testing APIs.
 
 The
-[document on layout tests with manual feedback](./layout_tests_with_manual_fallback.md)
+[document on web tests with manual feedback](./web_tests_with_manual_fallback.md)
 describes the approach in detail and highlights the trade-off between added test
 weight and ease of debugging.

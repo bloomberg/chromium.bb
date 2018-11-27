@@ -7,7 +7,7 @@
 # used to make it easier to work on getting them running and passing.
 #
 # Further documentation:
-# https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md
+# https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_test_expectations.md
 
 external/wpt/.codecov.yml [ Skip ]
 external/wpt/.gitmodules [ Skip ]

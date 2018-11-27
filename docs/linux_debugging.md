@@ -306,7 +306,7 @@ See [linux_minidump_to_core.md](linux_minidump_to_core.md)
 Many of our tests bring up windows on screen. This can be annoying (they steal
 your focus) and hard to debug (they receive extra events as you mouse over them).
 Instead, use `Xvfb` or `Xephyr` to run a nested X session to debug them, as
-outlined on [layout_tests_linux.md](layout_tests_linux.md).
+outlined on [web_tests_linux.md](web_tests_linux.md).
 
 ### Browser tests
 
@@ -323,10 +323,10 @@ browser process share the outermost process.
 
 To debug a renderer process in this case, use the tips above about renderers.
 
-### Layout tests
+### Web tests
 
-See [layout_tests_linux.md](layout_tests_linux.md) for some tips. In particular,
-note that it's possible to debug a layout test via `ssh`ing to a Linux box; you
+See [web_tests_linux.md](web_tests_linux.md) for some tips. In particular,
+note that it's possible to debug a web test via `ssh`ing to a Linux box; you
 don't need anything on screen if you use `Xvfb`.
 
 ### UI tests
@@ -464,7 +464,7 @@ See the last section of [Linux Crash Dumping](linux_crash_dumping.md).
 If you break in a debugger during a drag, Chrome will have grabbed your mouse
 and keyboard so you won't be able to interact with the debugger!  To work around
 this, run via `Xephyr`. Instructions for how to use `Xephyr` are on the
-[Running layout tests on Linux](layout_tests_linux.md) page.
+[Running web tests on Linux](web_tests_linux.md) page.
 
 ## Tracking Down Bugs
 
@@ -520,7 +520,7 @@ Some strategies are:
 
 To test on various window managers, you can use a nested X server like `Xephyr`.
 Instructions for how to use `Xephyr` are on the
-[Running layout tests on Linux](layout_tests_linux.md) page.
+[Running web tests on Linux](web_tests_linux.md) page.
 
 If you need to test something with hardware accelerated compositing
 (e.g., compiz), you can use `Xgl` (`sudo apt-get install xserver-xgl`). E.g.:

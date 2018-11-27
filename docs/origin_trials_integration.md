@@ -109,7 +109,7 @@ tools/origin_trials/generate_token.py http://localhost:8000 MyFeature
 ```
 
 The file `tools/origin_trials/eftest.key` is used by default as the private key
-for the test keypair used by Origin Trials unit tests and layout tests (i.e. in
+for the test keypair used by Origin Trials unit tests and web tests (i.e. in
 content shell). Tokens generated with this key will **not** work in the browser
 by default (see the [Developer Guide] for instructions on creating real tokens).
 To use a test token with the browser, run Chrome with the command-line flag:
@@ -123,8 +123,8 @@ it doesn't work, see [trial_token_unittest.cc]. If you cannot set command-line
 switches (e.g., on Chrome OS), you can also directly modify
 [chrome_origin_trial_policy.cc].
 
-### Layout Tests
-When using the \[OriginTrialEnabled\] IDL attribute, you should add layout tests
+### Web Tests
+When using the \[OriginTrialEnabled\] IDL attribute, you should add web tests
 to verify that the V8 bindings code is working as expected. Depending on how
 your feature is exposed, you'll want tests for the exposed interfaces, as well
 as tests for script-added tokens. For examples, refer to the existing tests in
@@ -135,6 +135,6 @@ as tests for script-added tokens. For examples, refer to the existing tests in
 [generate_token.py]: /tools/origin_trials/generate_token.py
 [Developer Guide]: https://github.com/jpchase/OriginTrials/blob/gh-pages/developer-guide.md
 [OriginTrialEnabled]: /third_party/blink/renderer/bindings/IDLExtendedAttributes.md#_OriginTrialEnabled_i_m_a_c_
-[origin_trials/webexposed]: /third_party/WebKit/LayoutTests/http/tests/origin_trials/webexposed/
+[origin_trials/webexposed]: /third_party/blink/web_tests/http/tests/origin_trials/webexposed/
 [runtime\_enabled\_features.json5]: /third_party/blink/renderer/platform/runtime_enabled_features.json5
 [trial_token_unittest.cc]: /third_party/blink/common/origin_trials/trial_token_unittest.cc

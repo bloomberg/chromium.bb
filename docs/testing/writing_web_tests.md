@@ -1,16 +1,10 @@
-# Writing Layout Tests
-
-_Layout tests_ is a bit of a misnomer. This term is
-[a part of our WebKit heritage](https://webkit.org/blog/1452/layout-tests-theory/),
-and we use it to refer to every test that is written as a Web page (HTML, SVG,
-or XHTML) and lives in
-[third_party/WebKit/LayoutTests/](../../third_party/WebKit/LayoutTests).
+# Writing Web Tests
 
 [TOC]
 
 ## Overview
 
-Layout tests should be used to accomplish one of the following goals:
+Web tests should be used to accomplish one of the following goals:
 
 1. The entire surface of Blink that is exposed to the Web should be covered by
    tests that we contribute to [web-platform-tests](./web_platform_tests.md)
@@ -22,12 +16,12 @@ Layout tests should be used to accomplish one of the following goals:
 2. When a Blink feature cannot be tested using the tools provided by WPT, and
    cannot be easily covered by
    [C++ unit tests](https://cs.chromium.org/chromium/src/third_party/blink/renderer/web/tests/?q=webframetest&sq=package:chromium&type=cs),
-   the feature must be covered by layout tests, to avoid unexpected regressions.
+   the feature must be covered by web tests, to avoid unexpected regressions.
    These tests will use Blink-specific testing APIs that are only available in
-   [content_shell](./layout_tests_in_content_shell.md).
+   [content_shell](./web_tests_in_content_shell.md).
 
 *** promo
-If you know that Blink layout tests are upstreamed to other projects, such as
+If you know that Blink web tests are upstreamed to other projects, such as
 [test262](https://github.com/tc39/test262), please update this document. Most
 importantly, our guidelines should to make it easy for our tests to be
 upstreamed. The
@@ -38,9 +32,9 @@ repositories.
 
 ### Test Types
 
-There are four broad types of layout tests, listed in the order of preference.
+There are four broad types of web tests, listed in the order of preference.
 
-* *JavaScript Tests* are the layout test implementation of
+* *JavaScript Tests* are the web test implementation of
   [xUnit tests](https://en.wikipedia.org/wiki/XUnit). These tests contain
   assertions written in JavaScript, and pass if the assertions evaluate to
   true.
@@ -57,7 +51,7 @@ There are four broad types of layout tests, listed in the order of preference.
   system settings. For this reason, it is common for a pixel test to have a
   different reference image for each platform that Blink is tested on, and
   the reference images are
-  [quite cumbersome to manage](./layout_test_expectations.md). You
+  [quite cumbersome to manage](./web_test_expectations.md). You
   should only write a pixel test if you cannot use a reference test.
 * *Text Tests* output pure text which represents the DOM tree, the DOM inner
   text, internal data structure of Blink like layout tree or graphics layer
@@ -84,11 +78,11 @@ to the WPT project. To this end, tests should follow the
 [WPT guidelines](https://web-platform-tests.org/writing-tests/).
 
 
-There is no style guide that applies to all layout tests. However, some projects
+There is no style guide that applies to all web tests. However, some projects
 have adopted style guides, such as the
 [ServiceWorker Tests Style guide](https://www.chromium.org/blink/serviceworker/testing).
 
-Our [document on layout tests tips](./layout_tests_tips.md) summarizes the most
+Our [document on web tests tips](./web_tests_tips.md) summarizes the most
 important WPT guidelines and highlights some JavaScript concepts that are worth
 paying attention to when trying to infer style rules from existing tests. If
 you're unopinionated and looking for a style guide to follow, the document also
@@ -110,8 +104,8 @@ are more accessible to browser developers.
 See the [API documentation](https://web-platform-tests.org/writing-tests/testharness-api.html)
 for a thorough introduction to `testharness.js`.
 
-Layout tests should follow the recommendations of the above documentation.
-Furthermore, layout tests should include relevant
+Web tests should follow the recommendations of the above documentation.
+Furthermore, web tests should include relevant
 [metadata](https://web-platform-tests.org/writing-tests/css-metadata.html). The
 specification URL (in `<link rel="help">`) is almost always relevant, and is
 incredibly helpful to a developer who needs to understand the test quickly.
@@ -190,14 +184,14 @@ Some points that are not immediately obvious from the example:
       `t.done()` call.
 
 *** promo
-Layout tests that load from `file://` origins must currently use relative paths
+Web tests that load from `file://` origins must currently use relative paths
 to point to
-[/resources/testharness.js](../../third_party/WebKit/LayoutTests/resources/testharness.js)
+[/resources/testharness.js](../../third_party/blink/web_tests/resources/testharness.js)
 and
-[/resources/testharnessreport.js](../../third_party/WebKit/LayoutTests/resources/testharnessreport.js).
+[/resources/testharnessreport.js](../../third_party/blink/web_tests/resources/testharnessreport.js).
 This is contrary to the WPT guidelines, which call for absolute paths.
-This limitation does not apply to the tests in `LayoutTests/http`, which rely on
-an HTTP server, or to the tests in `LayoutTests/external/wpt`, which are
+This limitation does not apply to the tests in `web_tests/http`, which rely on
+an HTTP server, or to the tests in `web_tests/external/wpt`, which are
 imported from the [WPT repository](https://github.com/web-platform-tests/wpt).
 ***
 
@@ -210,7 +204,7 @@ via supplemental testing APIs.
 
 When writing tests that rely on supplemental testing APIs, please consider the
 cost and benefits of having the tests
-[gracefully degrade to manual tests](./layout_tests_with_manual_fallback.md) in
+[gracefully degrade to manual tests](./web_tests_with_manual_fallback.md) in
 the absence of the testing APIs.
 
 *** promo
@@ -223,7 +217,7 @@ event handling tests can use
 
 Tests that cannot be expressed using the Web Platform APIs or WPT's testing APIs
 use Blink-specific testing APIs. These APIs are only available in
-[content_shell](./layout_tests_in_content_shell.md), and should only be used as
+[content_shell](./web_tests_in_content_shell.md), and should only be used as
 a last resort.
 
 A downside of Blink-specific APIs is that they are not as well documented as the
@@ -261,7 +255,7 @@ APIs, we should use the qualified name in the `if` statement:
 by tests that stick to Web Platform APIs. The `testharnessreport.js` file in
 `testharness.js` is specifically designated to hold glue code that connects
 `testharness.js` to the testing environment. Our implementation is in
-[third_party/WebKit/LayoutTests/resources/testharnessreport.js](../../third_party/WebKit/LayoutTests/resources/testharnessreport.js),
+[third_party/blink/web_tests/resources/testharnessreport.js](../../third_party/blink/web_tests/resources/testharnessreport.js),
 and uses the `testRunner` API.
 ***
 
@@ -288,8 +282,8 @@ In these situations, a test file will be accompanied by a baseline, which is an
 `-expected.txt` file that contains the test's expected output.
 
 The baselines are generated automatically when appropriate by
-`run_web_tests.py`, which is described [here](./layout_tests.md), and by the
-[rebaselining tools](./layout_test_expectations.md).
+`run_web_tests.py`, which is described [here](./web_tests.md), and by the
+[rebaselining tools](./web_test_expectations.md).
 
 Text baselines for `testharness.js` should be avoided, as having a text baseline
 associated with a `testharness.js` indicates the presence of a bug. For this
@@ -301,7 +295,7 @@ text expectations.
   behavior does not match the specification that is being tested, a text
   baseline is necessary. Remember to create an issue tracking the expectation's
   removal, and to link the issue in the CL description.
-* Layout tests that cannot be upstreamed to WPT should use JavaScript to
+* Web tests that cannot be upstreamed to WPT should use JavaScript to
   document Blink's current behavior, rather than using JavaScript to document
   desired behavior and a text file to document current behavior.
 
@@ -314,7 +308,7 @@ This harness is **deprecated**, and should not be used for new tests.
 
 If you need to understand old tests, the best `js-test` documentation is its
 implementation at
-[third_party/WebKit/LayoutTests/resources/js-test.js](../../third_party/WebKit/LayoutTests/resources/js-test.js).
+[third_party/blink/web_tests/resources/js-test.js](../../third_party/blink/web_tests/resources/js-test.js).
 
 `js-test` tests lean heavily on the Blink-specific `testRunner` testing API.
 In a nutshell, the tests call `testRunner.dumpAsText()` to signal that the page
@@ -329,7 +323,7 @@ By default, tests are loaded as if via `file:` URLs. Some web platform features
 require tests served via HTTP or HTTPS, for example absolute paths (`src=/foo`)
 or features restricted to secure protocols.
 
-HTTP tests are those under `LayoutTests/http/tests` (or virtual variants). Use a
+HTTP tests are those under `web_tests/http/tests` (or virtual variants). Use a
 locally running HTTP server (Apache) to run them. Tests are served off of ports
 8000 and 8080 for HTTP, and 8443 for HTTPS. If you run the tests using
 `run_web_tests.py`, the server will be started automatically. To run the server
@@ -340,7 +334,7 @@ cd src/third_party/blink/tools
 ./run_blink_httpd.py
 ```
 
-The layout tests will be served from `http://127.0.0.1:8000`. For example, to
+The web tests will be served from `http://127.0.0.1:8000`. For example, to
 run the test `http/tests/serviceworker/chromium/service-worker-allowed.html`,
 navigate to
 `http://127.0.0.1:8000/serviceworker/chromium/service-worker-allowed.html`. Some
@@ -351,12 +345,12 @@ To kill the server, hit any key on the terminal where `run_blink_httpd.py` is
 running, or just use `taskkill` or the Task Manager on Windows, and `killall` or
 Activity Monitor on MacOS.
 
-The test server sets up an alias to the `LayoutTests/resources` directory. In
+The test server sets up an alias to the `web_tests/resources` directory. In
 HTTP tests, you can access the testing framework at e.g.
 `src="/resources/testharness.js"`.
 
 TODO: Document [wptserve](http://wptserve.readthedocs.io/) when we are in a
-position to use it to run layout tests.
+position to use it to run web tests.
 
 ## Reference Tests (Reftests)
 
@@ -470,7 +464,7 @@ The recommendation of using Ahem in pixel tests is being discussed on
 [blink-dev](https://groups.google.com/a/chromium.org/d/topic/blink-dev/XsR6PKRrS1E/discussion).
 ***
 
-The following snippet includes the Ahem font in a layout test.
+The following snippet includes the Ahem font in a web test.
 
 ```html
 <style>
@@ -482,31 +476,31 @@ body {
 ```
 
 *** promo
-Tests outside `LayoutTests/http` and `LayoutTests/external/wpt` currently need
+Tests outside `web_tests/http` and `web_tests/external/wpt` currently need
 to use a relative path to
-[/third_party/WebKit/LayoutTests/resources/ahem.js](../../third_party/WebKit/LayoutTests/resources/ahem.js)
+[/third_party/blink/web_tests/resources/ahem.js](../../third_party/blink/web_tests/resources/ahem.js)
 ***
 
 ### Tests that need to paint, raster, or draw a frame of intermediate output
 
-A layout test does not actually draw frames of output until the test exits.
+A web test does not actually draw frames of output until the test exits.
 Tests that need to generate a painted frame can use `runAfterLayoutAndPaint()`
-defined in [third_party/WebKit/LayoutTests/resources/run-after-layout-and-paint.js](../../third_party/WebKit/LayoutTests/resources/run-after-layout-and-paint.js)
+defined in [third_party/blink/web_tests/resources/run-after-layout-and-paint.js](../../third_party/blink/web_tests/resources/run-after-layout-and-paint.js)
 which will run the machinery to put up a frame, then call the passed callback.
 There is also a library at
-[third_party/WebKit/LayoutTests/paint/invalidation/resources/text-based-repaint.js](../../third_party/WebKit/LayoutTests/paint/invalidation/resources/text-based-repaint.js)
+[third_party/blink/web_tests/paint/invalidation/resources/text-based-repaint.js](../../third_party/blink/web_tests/paint/invalidation/resources/text-based-repaint.js)
 to help with writing paint invalidation and repaint tests.
 
 ### Tests for scrolling animations
 
-Some layout tests need to ensure animations such as middle-click auto-scroll,
+Some web tests need to ensure animations such as middle-click auto-scroll,
 fling, etc. get performed properly. When testing in display compositor pixel
 dump mode (now the standard), the standard behavior for tests is to
 synchronously composite without rastering (to save time). However, animations
 run upon surface activation, which only happens once rasterization is performed.
 Therefore, for these tests, an additional setting needs to be set. Near the
 beginning of these tests, call `setAnimationRequiresRaster()` defined in
-[third_party/WebKit/LayoutTests/resources/compositor-controls.js](../../third_party/WebKit/LayoutTests/resources/compositor-controls.js)
+[third_party/blink/web_tests/resources/compositor-controls.js](../../third_party/blink/web_tests/resources/compositor-controls.js)
 which will enable full rasterization during the test.
 
 ## Text tests
@@ -629,7 +623,7 @@ For a test that is both a pixel/reference test and a text test, both pixel and
 text results will be compared to baselines, and the test passes if each result
 matches the corresponding baseline.
 
-Many of the [paint invalidation tests](../../third_party/WebKit/LayoutTests/paint/invalidation)
+Many of the [paint invalidation tests](../../third_party/blink/web_tests/paint/invalidation)
 are of this type. The pixel results (compared against `-expected.png` or
 `-expected.html`) ensure correct rendering, and the text results (compared
 against `-expected.txt`) ensure correct compositing and raster invalidation
@@ -643,7 +637,7 @@ which outputs you really care about.
 
 ## Directory Structure
 
-The [LayoutTests directory](../../third_party/WebKit/LayoutTests) currently
+The [web_tests directory](../../third_party/blink/web_tests) currently
 lacks a strict, formal structure. The following directories have special
 meaning:
 
@@ -652,7 +646,7 @@ meaning:
   as media files, and code that is shared by multiple test files.
 
 *** note
-Some layout tests consist of a minimal HTML page that references a JavaScript
+Some web tests consist of a minimal HTML page that references a JavaScript
 file in `resources/`. Please do not use this pattern for new tests, as it goes
 against the minimality principle. JavaScript and CSS files should only live in
 `resources/` if they are shared by at least two test files.

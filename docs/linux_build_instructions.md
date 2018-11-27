@@ -413,7 +413,7 @@ pulseaudio-libs-devel zlib.i686 httpd mod_ssl php php-cli python-psutil wdiff \
 xorg-x11-server-Xvfb'
 ```
 
-The fonts needed by Blink's LayoutTests can be obtained by following [these
+The fonts needed by Blink's web tests can be obtained by following [these
 instructions](https://gist.github.com/pwnall/32a3b11c2b10f6ae5c6a6de66c1e12ae).
 For the optional packages:
 
