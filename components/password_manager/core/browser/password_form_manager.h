@@ -114,8 +114,9 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // PasswordFormManagerInterface:
   bool IsNewLogin() const override;
   bool IsPendingCredentialsPublicSuffixMatch() const override;
-  bool RetryPasswordFormPasswordUpdate() const override;
   bool IsPossibleChangePasswordFormWithoutUsername() const override;
+  bool RetryPasswordFormPasswordUpdate() const override;
+  bool IsPasswordUpdate() const override;
   std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const override;
   const autofill::PasswordForm* GetSubmittedForm() const override;
 

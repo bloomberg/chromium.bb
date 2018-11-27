@@ -317,8 +317,8 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 
   base::WeakPtr<PasswordManagerDriver> driver() { return driver_->AsWeakPtr(); }
 
-  autofill::AutofillManager* GetAutofillManagerForMainFrame() override {
-    return mock_driver()->mock_autofill_manager();
+  autofill::AutofillDownloadManager* GetAutofillDownloadManager() override {
+    return mock_driver()->mock_autofill_download_manager();
   }
 
   void KillDriver() { driver_.reset(); }
@@ -576,28 +576,23 @@ class PasswordFormManagerTest : public testing::Test {
       expected_available_field_types.insert(autofill::CONFIRMATION_PASSWORD);
     }
 
-    std::string expected_login_signature;
-    if (field_type == autofill::NEW_PASSWORD) {
-      autofill::FormStructure pending_structure(saved_match()->form_data);
-      expected_login_signature = pending_structure.FormSignatureAsStr();
-
-      // An unrelated vote that the credentials were used for the first time.
-      EXPECT_CALL(
-          *client()->mock_driver()->mock_autofill_download_manager(),
-          StartUploadRequest(SignatureIsSameAs(submitted_form), _, _, _, _, _));
-    }
+    InSequence in_sequence;
     EXPECT_CALL(
         *client()->mock_driver()->mock_autofill_download_manager(),
         StartUploadRequest(
             AllOf(SignatureIsSameAs(*observed_form()),
                   UploadedAutofillTypesAre(expected_types),
                   HasGenerationVote(false), HasPasswordAttributesVote(false)),
-            false, expected_available_field_types, expected_login_signature,
-            true, nullptr));
-
+            false, expected_available_field_types, _, true, nullptr));
+    if (field_type == autofill::NEW_PASSWORD) {
+      // An unrelated vote that the credentials were used for the first time.
+      EXPECT_CALL(
+          *client()->mock_driver()->mock_autofill_download_manager(),
+          StartUploadRequest(SignatureIsSameAs(submitted_form), _, _, _, _, _));
+    }
     switch (field_type) {
       case autofill::NEW_PASSWORD:
-        form_manager.Update(*saved_match());
+        form_manager.Save();
         break;
       case autofill::PROBABLY_NEW_PASSWORD:
         form_manager.OnNoInteraction(true /* it is an update */);
@@ -3185,23 +3180,23 @@ TEST_F(PasswordFormManagerTest,
   expected_available_field_types.insert(autofill::PASSWORD);
   expected_available_field_types.insert(autofill::NEW_PASSWORD);
 
+  InSequence in_sequence;
+  // Password change vote.
   std::string expected_login_signature =
       autofill::FormStructure(saved_match()->form_data).FormSignatureAsStr();
-
-  // First login vote.
-  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
-              StartUploadRequest(SignatureIsSameAs(submitted_form), _, _, _, _,
-                                 nullptr));
-  // Password change vote.
   EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
               StartUploadRequest(AllOf(UploadedAutofillTypesAre(expected_types),
                                        HasGenerationVote(false),
                                        SignatureIsSameAs(*observed_form())),
                                  false, expected_available_field_types,
                                  expected_login_signature, true, nullptr));
+  // First login vote.
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(SignatureIsSameAs(submitted_form), _, _, _, _,
+                                 nullptr));
 
   EXPECT_CALL(MockFormSaver::Get(&form_manager), Update(_, _, _, _));
-  form_manager.Update(*saved_match());
+  form_manager.Save();
 }
 
 // Checks uploading a vote about the usage of the password generation popup.

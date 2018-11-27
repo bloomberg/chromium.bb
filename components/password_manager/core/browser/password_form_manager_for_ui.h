@@ -148,6 +148,10 @@ class PasswordFormManagerInterface : public PasswordFormManagerForUI {
   // is a current password field.
   virtual bool RetryPasswordFormPasswordUpdate() const = 0;
 
+  // Helper function that determines whether update or save prompt should be
+  // shown for credentials in |provisional_save_manager|.
+  virtual bool IsPasswordUpdate() const = 0;
+
   // Returns the drivers representing all the frames for the form.
   virtual std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers()
       const = 0;

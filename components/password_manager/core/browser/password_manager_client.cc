@@ -61,8 +61,8 @@ PasswordManager* PasswordManagerClient::GetPasswordManager() {
       static_cast<const PasswordManagerClient*>(this)->GetPasswordManager());
 }
 
-autofill::AutofillManager*
-PasswordManagerClient::GetAutofillManagerForMainFrame() {
+autofill::AutofillDownloadManager*
+PasswordManagerClient::GetAutofillDownloadManager() {
   return nullptr;
 }
 

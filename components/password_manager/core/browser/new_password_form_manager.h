@@ -128,6 +128,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   void SetGenerationElement(const base::string16& generation_element) override;
   bool IsPossibleChangePasswordFormWithoutUsername() const override;
   bool RetryPasswordFormPasswordUpdate() const override;
+  bool IsPasswordUpdate() const override;
   std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const override;
   const autofill::PasswordForm* GetSubmittedForm() const override;
 

@@ -82,7 +82,8 @@ class MockAutofillManager : public autofill::AutofillManager {
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MOCK_METHOD0(GetAutofillManagerForMainFrame, autofill::AutofillManager*());
+  MOCK_METHOD0(GetAutofillDownloadManager,
+               autofill::AutofillDownloadManager*());
 };
 
 }  // namespace
@@ -105,8 +106,8 @@ class VotesUploaderTest : public testing::Test {
     // AutofillManager takes ownership of |mock_autofill_download_manager_|.
     mock_autofill_manager_.SetDownloadManager(mock_autofill_download_manager_);
 
-    EXPECT_CALL(client_, GetAutofillManagerForMainFrame())
-        .WillRepeatedly(Return(&mock_autofill_manager_));
+    EXPECT_CALL(client_, GetAutofillDownloadManager())
+        .WillRepeatedly(Return(mock_autofill_download_manager_));
 
     ON_CALL(*mock_autofill_download_manager_,
             StartUploadRequest(_, _, _, _, _, _))

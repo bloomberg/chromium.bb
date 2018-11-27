@@ -99,7 +99,7 @@ class ChromePasswordManagerClient
   net::CertStatus GetMainFrameCertStatus() const override;
   bool IsIncognito() const override;
   const password_manager::PasswordManager* GetPasswordManager() const override;
-  autofill::AutofillManager* GetAutofillManagerForMainFrame() override;
+  autofill::AutofillDownloadManager* GetAutofillDownloadManager() override;
   const GURL& GetMainFrameURL() const override;
   bool IsMainFrameSecure() const override;
   const GURL& GetLastCommittedEntryURL() const override;

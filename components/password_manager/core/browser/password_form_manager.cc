@@ -351,12 +351,6 @@ void PasswordFormManager::Update(
       submitted_form_->submission_event);
   metrics_recorder_->SetSubmissionIndicatorEvent(
       submitted_form_->submission_event);
-  if (observed_form_.IsPossibleChangePasswordForm()) {
-    FormStructure form_structure(credentials_to_update.form_data);
-    votes_uploader_.UploadPasswordVote(observed_form_, *submitted_form_,
-                                       autofill::NEW_PASSWORD,
-                                       form_structure.FormSignatureAsStr());
-  }
   base::string16 password_to_save = pending_credentials_.password_value;
   bool skip_zero_click = pending_credentials_.skip_zero_click;
   pending_credentials_ = credentials_to_update;
@@ -620,6 +614,12 @@ void PasswordFormManager::ProcessUpdate() {
   if (!observed_form_.IsPossibleChangePasswordForm()) {
     votes_uploader_.SendVoteOnCredentialsReuse(
         observed_form_.form_data, *submitted_form_, &pending_credentials_);
+  }
+  if (IsPasswordUpdate()) {
+    votes_uploader_.UploadPasswordVote(
+        *submitted_form_, *submitted_form_, autofill::NEW_PASSWORD,
+        autofill::FormStructure(pending_credentials_.form_data)
+            .FormSignatureAsStr());
   }
 
   if (pending_credentials_.times_used == 1) {
@@ -902,6 +902,12 @@ void PasswordFormManager::SetGenerationPopupWasShown(
 
 bool PasswordFormManager::RetryPasswordFormPasswordUpdate() const {
   return retry_password_form_password_update_;
+}
+
+bool PasswordFormManager::IsPasswordUpdate() const {
+  return (!GetBestMatches().empty() &&
+          IsPossibleChangePasswordFormWithoutUsername()) ||
+         IsPasswordOverridden() || RetryPasswordFormPasswordUpdate();
 }
 
 void PasswordFormManager::LogSubmitPassed() {

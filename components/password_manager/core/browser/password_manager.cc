@@ -168,19 +168,6 @@ bool AreAllFieldsEmpty(const PasswordForm& form) {
          form.new_password_value.empty();
 }
 
-// Helper function that determines whether update or save prompt should be
-// shown for credentials in |provisional_save_manager|.
-// TODO(https://crbug.com/831123): Move to NewPasswordFormManager when the old
-// PasswordFormManager is gone.
-bool IsPasswordUpdate(
-    const PasswordFormManagerInterface& provisional_save_manager) {
-  return (!provisional_save_manager.GetBestMatches().empty() &&
-          provisional_save_manager
-              .IsPossibleChangePasswordFormWithoutUsername()) ||
-         provisional_save_manager.IsPasswordOverridden() ||
-         provisional_save_manager.RetryPasswordFormPasswordUpdate();
-}
-
 // Finds the matched form manager for |form| in |pending_login_managers|.
 PasswordFormManager* FindMatchedManager(
     const PasswordForm& form,
@@ -255,7 +242,7 @@ std::unique_ptr<PasswordFormManager> FindAndCloneMatchedPasswordFormManager(
 // the state of |manager|.
 bool ShouldPromptUserToSavePassword(
     const PasswordFormManagerInterface& manager) {
-  if (IsPasswordUpdate(manager)) {
+  if (manager.IsPasswordUpdate()) {
     // Updating a credential might erase a useful stored value by accident.
     // Always ask the user to confirm.
     return true;
@@ -691,7 +678,7 @@ void PasswordManager::ShowManualFallbackForSaving(
   // Show the fallback if a prompt or a confirmation bubble should be available.
   bool has_generated_password = manager->HasGeneratedPassword();
   if (ShouldPromptUserToSavePassword(*manager) || has_generated_password) {
-    bool is_update = IsPasswordUpdate(*manager);
+    bool is_update = manager->IsPasswordUpdate();
     manager->GetMetricsRecorder()->RecordShowManualFallbackForSaving(
         has_generated_password, is_update);
     client_->ShowManualFallbackForSaving(std::move(manager),
@@ -1148,7 +1135,7 @@ void PasswordManager::OnLoginSuccessful() {
                           empty_password);
     if (logger)
       logger->LogMessage(Logger::STRING_DECISION_ASK);
-    bool update_password = IsPasswordUpdate(*submitted_manager);
+    bool update_password = submitted_manager->IsPasswordUpdate();
     if (client_->PromptUserToSaveOrUpdatePassword(MoveOwnedSubmittedManager(),
                                                   update_password)) {
       if (logger)

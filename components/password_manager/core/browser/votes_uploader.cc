@@ -9,7 +9,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/common/form_data.h"
@@ -17,8 +17,8 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 
+using autofill::AutofillDownloadManager;
 using autofill::AutofillField;
-using autofill::AutofillManager;
 using autofill::AutofillUploadContents;
 using autofill::FormData;
 using autofill::FormStructure;
@@ -228,8 +228,9 @@ bool VotesUploader::UploadPasswordVote(
     return false;
   }
 
-  AutofillManager* autofill_manager = client_->GetAutofillManagerForMainFrame();
-  if (!autofill_manager || !autofill_manager->download_manager())
+  AutofillDownloadManager* download_manager =
+      client_->GetAutofillDownloadManager();
+  if (!download_manager)
     return false;
 
   // If this is an update, a vote about the observed form is sent. If the user
@@ -310,7 +311,7 @@ bool VotesUploader::UploadPasswordVote(
   form_structure.set_randomized_encoder(
       RandomizedEncoder::Create(client_->GetPrefs()));
 
-  bool success = autofill_manager->download_manager()->StartUploadRequest(
+  bool success = download_manager->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
       login_form_signature, true /* observed_submission */,
       nullptr /* prefs */);
@@ -324,8 +325,9 @@ void VotesUploader::UploadFirstLoginVotes(
     const std::map<base::string16, const PasswordForm*>& best_matches,
     const PasswordForm& pending_credentials,
     const PasswordForm& form_to_upload) {
-  AutofillManager* autofill_manager = client_->GetAutofillManagerForMainFrame();
-  if (!autofill_manager || !autofill_manager->download_manager())
+  AutofillDownloadManager* download_manager =
+      client_->GetAutofillDownloadManager();
+  if (!download_manager)
     return;
 
   if (form_to_upload.form_data.fields.empty()) {
@@ -363,7 +365,7 @@ void VotesUploader::UploadFirstLoginVotes(
   form_structure.set_randomized_encoder(
       RandomizedEncoder::Create(client_->GetPrefs()));
 
-  autofill_manager->download_manager()->StartUploadRequest(
+  download_manager->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
       std::string(), true /* observed_submission */, nullptr /* prefs */);
 }
