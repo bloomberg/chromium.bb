@@ -12,7 +12,7 @@
 namespace blink {
 namespace css_longhand {
 
-// none | strict | content | [ layout || style || paint || size ]
+// none | strict | content | [ size || layout || style || paint ]
 const CSSValue* Contain::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
                                           const CSSParserLocalContext&) const {
@@ -25,16 +25,32 @@ const CSSValue* Contain::ParseSingleValue(CSSParserTokenRange& range,
     list->Append(*css_property_parser_helpers::ConsumeIdent(range));
     return list;
   }
-  while (true) {
-    CSSIdentifierValue* ident = css_property_parser_helpers::ConsumeIdent<
-        CSSValuePaint, CSSValueLayout, CSSValueStyle, CSSValueSize>(range);
-    if (!ident)
-      break;
-    if (list->HasValue(*ident))
-      return nullptr;
-    list->Append(*ident);
-  }
 
+  CSSIdentifierValue* size = nullptr;
+  CSSIdentifierValue* layout = nullptr;
+  CSSIdentifierValue* style = nullptr;
+  CSSIdentifierValue* paint = nullptr;
+  while (true) {
+    CSSValueID id = range.Peek().Id();
+    if (id == CSSValueSize && !size)
+      size = css_property_parser_helpers::ConsumeIdent(range);
+    else if (id == CSSValueLayout && !layout)
+      layout = css_property_parser_helpers::ConsumeIdent(range);
+    else if (id == CSSValueStyle && !style)
+      style = css_property_parser_helpers::ConsumeIdent(range);
+    else if (id == CSSValuePaint && !paint)
+      paint = css_property_parser_helpers::ConsumeIdent(range);
+    else
+      break;
+  }
+  if (size)
+    list->Append(*size);
+  if (layout)
+    list->Append(*layout);
+  if (style)
+    list->Append(*style);
+  if (paint)
+    list->Append(*paint);
   if (!list->length())
     return nullptr;
   return list;
@@ -54,14 +70,14 @@ const CSSValue* Contain::CSSValueFromComputedStyleInternal(
     return CSSIdentifierValue::Create(CSSValueContent);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (style.ContainsStyle())
-    list->Append(*CSSIdentifierValue::Create(CSSValueStyle));
-  if (style.Contain() & kContainsLayout)
-    list->Append(*CSSIdentifierValue::Create(CSSValueLayout));
-  if (style.ContainsPaint())
-    list->Append(*CSSIdentifierValue::Create(CSSValuePaint));
   if (style.ContainsSize())
     list->Append(*CSSIdentifierValue::Create(CSSValueSize));
+  if (style.Contain() & kContainsLayout)
+    list->Append(*CSSIdentifierValue::Create(CSSValueLayout));
+  if (style.ContainsStyle())
+    list->Append(*CSSIdentifierValue::Create(CSSValueStyle));
+  if (style.ContainsPaint())
+    list->Append(*CSSIdentifierValue::Create(CSSValuePaint));
   DCHECK(list->length());
   return list;
 }
