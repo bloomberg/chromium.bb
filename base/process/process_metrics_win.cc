@@ -15,7 +15,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/process/memory.h"
 #include "base/process/process_metrics_iocounters.h"
 #include "base/system/sys_info.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -135,88 +134,6 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
     ProcessHandle process) {
   return WrapUnique(new ProcessMetrics(process));
 }
-
-namespace {
-
-class WorkingSetInformationBuffer {
- public:
-  WorkingSetInformationBuffer() {}
-  ~WorkingSetInformationBuffer() { Clear(); }
-
-  bool Reserve(size_t size) {
-    Clear();
-    // Use UncheckedMalloc here because this can be called from the code
-    // that handles low memory condition.
-    return UncheckedMalloc(size, reinterpret_cast<void**>(&buffer_));
-  }
-
-  const PSAPI_WORKING_SET_INFORMATION* operator ->() const { return buffer_; }
-
-  size_t GetPageEntryCount() const { return number_of_entries; }
-
-  // This function is used to get page entries for a process.
-  bool QueryPageEntries(const ProcessHandle& process) {
-    int retries = 5;
-    number_of_entries = 4096;  // Just a guess.
-
-    for (;;) {
-      size_t buffer_size =
-          sizeof(PSAPI_WORKING_SET_INFORMATION) +
-          (number_of_entries * sizeof(PSAPI_WORKING_SET_BLOCK));
-
-      if (!Reserve(buffer_size))
-        return false;
-
-      // On success, |buffer_| is populated with info about the working set of
-      // |process|. On ERROR_BAD_LENGTH failure, increase the size of the
-      // buffer and try again.
-      if (QueryWorkingSet(process, buffer_, buffer_size))
-        break;  // Success
-
-      if (GetLastError() != ERROR_BAD_LENGTH)
-        return false;
-
-      number_of_entries = buffer_->NumberOfEntries;
-
-      // Maybe some entries are being added right now. Increase the buffer to
-      // take that into account. Increasing by 10% should generally be enough,
-      // especially considering the potentially low memory condition during the
-      // call (when called from OomMemoryDetails) and the potentially high
-      // number of entries (300K was observed in crash dumps).
-      number_of_entries *= 1.1;
-
-      if (--retries == 0) {
-        // If we're looping, eventually fail.
-        return false;
-      }
-    }
-
-    // TODO(chengx): Remove the comment and the logic below. It is no longer
-    // needed since we don't have Win2000 support.
-    // On windows 2000 the function returns 1 even when the buffer is too small.
-    // The number of entries that we are going to parse is the minimum between
-    // the size we allocated and the real number of entries.
-    number_of_entries = std::min(number_of_entries,
-                                 static_cast<size_t>(buffer_->NumberOfEntries));
-
-    return true;
-  }
-
- private:
-  void Clear() {
-    free(buffer_);
-    buffer_ = nullptr;
-  }
-
-  PSAPI_WORKING_SET_INFORMATION* buffer_ = nullptr;
-
-  // Number of page entries.
-  size_t number_of_entries = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(WorkingSetInformationBuffer);
-};
-
-}  // namespace
 
 TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   FILETIME creation_time;
