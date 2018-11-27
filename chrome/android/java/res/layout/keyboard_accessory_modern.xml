@@ -29,6 +29,7 @@
         tools:ignore="ContentDescription" />
 
     <LinearLayout
+        android:id="@+id/accessory_bar_contents"
         android:layout_width="match_parent"
         android:minHeight="@dimen/keyboard_accessory_action_height"
         android:layout_height="wrap_content"

@@ -128,7 +128,7 @@ public class PasswordAccessoryIntegrationTest {
     public void testPasswordSheetDisplaysProvidedItems()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        provideItems(new Item[] {Item.createLabel("Passwords", "Description_Passwords"),
+        mHelper.sendCredentials(new Item[] {Item.createLabel("Passwords", "Description_Passwords"),
                 createSuggestion("mayapark@gmail.com", (item) -> {}),
                 createPassword("SomeHiddenPassword"),
                 createSuggestion("mayaelisabethmercedesgreenepark@googlemail.com", (item) -> {}),
@@ -154,7 +154,7 @@ public class PasswordAccessoryIntegrationTest {
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         final AtomicReference<Item> clicked = new AtomicReference<>();
-        provideItems(new Item[] {
+        mHelper.sendCredentials(new Item[] {
                 Item.createLabel("No saved passwords for abc.com", "Description_Passwords"),
                 Item.createDivider(),
                 Item.createOption(
@@ -183,11 +183,14 @@ public class PasswordAccessoryIntegrationTest {
     public void testPasswordSheetTriggersCallback() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         final AtomicReference<Item> clicked = new AtomicReference<>();
-        provideItems(new Item[] {
+        mHelper.sendCredentials(new Item[] {
                 Item.createLabel("Passwords", "Description_Passwords"),
-                createSuggestion("mpark@abc.com", null), createPassword("ShorterPassword"),
-                createSuggestion("mayap@xyz.com", null), createPassword("PWD"),
-                createSuggestion("park@googlemail.com", null), createPassword("P@$$W0rt"),
+                createSuggestion("mpark@abc.com", null),
+                createPassword("ShorterPassword"),
+                createSuggestion("mayap@xyz.com", null),
+                createPassword("PWD"),
+                createSuggestion("park@googlemail.com", null),
+                createPassword("P@$$W0rt"),
                 createSuggestion("mayapark@gmail.com", clicked::set),
                 createPassword("SomeHiddenLongPassword"),
         });
@@ -246,22 +249,6 @@ public class PasswordAccessoryIntegrationTest {
                 description.appendText("is a transformed password.");
             }
         };
-    }
-
-    /**
-     * Creates a provider, binds it to the accessory sheet like a bridge would do and notifies about
-     * the given |items|.
-     * @param items The items to be provided to the password accessory sheet.
-     */
-    private void provideItems(Item[] items) {
-        KeyboardAccessoryData.PropertyProvider<Item[]> itemProvider =
-                new KeyboardAccessoryData.PropertyProvider<>();
-        mActivityTestRule.getActivity()
-                .getManualFillingController()
-                .getMediatorForTesting()
-                .getPasswordAccessorySheet()
-                .registerItemProvider(itemProvider);
-        itemProvider.notifyObservers(items);
     }
 
     private static Item createSuggestion(String caption, Callback<Item> callback) {
