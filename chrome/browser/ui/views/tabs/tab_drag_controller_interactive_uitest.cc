@@ -246,6 +246,11 @@ void TabDragControllerTest::HandleGestureEvent(TabStrip* tab_strip,
   tab_strip->OnGestureEvent(event);
 }
 
+bool TabDragControllerTest::HasDragStarted(const TabStrip* tab_strip) const {
+  return tab_strip->drag_controller_ &&
+         tab_strip->drag_controller_->started_drag();
+}
+
 void TabDragControllerTest::SetUp() {
 #if defined(USE_AURA)
   // This needs to be disabled as it can interfere with when events are
@@ -1208,6 +1213,31 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
   EXPECT_FALSE(GetIsDragged(browser()));
+}
+
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragDoesntStartFromClick) {
+  // Add another tab.
+  AddTabAndResetBrowser(browser());
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Click on the first tab, but don't move it.
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  EXPECT_TRUE(PressInput(tab_0_center));
+
+  // A drag session should exist, but the drag should not have started.
+  EXPECT_TRUE(tab_strip->IsDragSessionActive());
+  EXPECT_TRUE(TabDragController::IsActive());
+  EXPECT_FALSE(HasDragStarted(tab_strip));
+
+  // Move the mouse enough to start the drag.  It doesn't matter whether this
+  // is enough to create a window or not.
+  EXPECT_TRUE(DragInputTo(gfx::Point(tab_0_center.x() + 20, tab_0_center.y())));
+
+  // Drag should now have started.
+  EXPECT_TRUE(HasDragStarted(tab_strip));
+
+  EXPECT_TRUE(ReleaseInput());
 }
 
 #if defined(OS_CHROMEOS)
