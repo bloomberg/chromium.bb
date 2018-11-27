@@ -16,46 +16,87 @@
 #include "base/values.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace content {
+namespace {
 
-AccessibilityTreeFormatterBlink::AccessibilityTreeFormatterBlink()
-    : AccessibilityTreeFormatterBrowser() {}
+// Compute the attribute value instead of returning the "raw" attribute value
+// for those attributes that have computation methods.
+int32_t GetIntAttribute(const BrowserAccessibility& node,
+                        ax::mojom::IntAttribute attr) {
+  ui::AXNode* ax_node = node.node();
+  if (ax_node == nullptr) {
+    return node.GetIntAttribute(attr);
+  }
 
-AccessibilityTreeFormatterBlink::~AccessibilityTreeFormatterBlink() {
+  // If the current node is not a cell, then trying to compute cell-related
+  // attributes will return incorrect results. We should fall back to the raw
+  // attribute value when that happens.
+  bool is_cell = ax_node->IsTableCellOrHeader();
+
+  switch (attr) {
+    case ax::mojom::IntAttribute::kAriaCellColumnIndex:
+      if (is_cell) {
+        return ax_node->GetTableCellAriaColIndex();
+      }
+      break;
+
+    case ax::mojom::IntAttribute::kAriaCellRowIndex:
+      if (is_cell) {
+        return ax_node->GetTableCellAriaRowIndex();
+      }
+      break;
+
+    case ax::mojom::IntAttribute::kAriaColumnCount:
+      return ax_node->GetTableAriaColCount();
+    case ax::mojom::IntAttribute::kAriaRowCount:
+      return ax_node->GetTableAriaRowCount();
+
+    case ax::mojom::IntAttribute::kTableCellColumnIndex:
+      if (is_cell) {
+        return ax_node->GetTableCellColIndex();
+      }
+      break;
+
+    case ax::mojom::IntAttribute::kTableCellRowIndex:
+      if (is_cell) {
+        return ax_node->GetTableCellRowIndex();
+      }
+      break;
+
+    case ax::mojom::IntAttribute::kTableCellColumnSpan:
+      if (is_cell) {
+        return ax_node->GetTableCellColSpan();
+      }
+      break;
+
+    case ax::mojom::IntAttribute::kTableCellRowSpan:
+      if (is_cell) {
+        return ax_node->GetTableCellRowSpan();
+      }
+      break;
+
+    case ax::mojom::IntAttribute::kTableColumnCount:
+      return ax_node->GetTableColCount();
+    case ax::mojom::IntAttribute::kTableRowCount:
+      return ax_node->GetTableRowCount();
+
+    case ax::mojom::IntAttribute::kTableRowIndex:
+      return ax_node->GetTableRowRowIndex();
+
+    default:
+      break;
+  }
+
+  return node.GetIntAttribute(attr);
 }
 
-const char* const TREE_DATA_ATTRIBUTES[] = {"TreeData.textSelStartOffset",
-                                            "TreeData.textSelEndOffset"};
-
-const char* STATE_FOCUSED = "focused";
-const char* STATE_OFFSCREEN = "offscreen";
-
-uint32_t AccessibilityTreeFormatterBlink::ChildCount(
-    const BrowserAccessibility& node) const {
-  if (node.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
-    return node.PlatformChildCount();
-  else
-    return node.InternalChildCount();
-}
-
-BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
-    const BrowserAccessibility& node,
-    uint32_t i) const {
-  if (node.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
-    return node.PlatformGetChild(i);
-  else
-    return node.InternalGetChild(i);
-}
-
-// TODO(aleventhal) Convert ax enums to friendly strings, e.g.
-// ax::mojom::CheckedState.
-std::string AccessibilityTreeFormatterBlink::IntAttrToString(
-    const BrowserAccessibility& node,
-    ax::mojom::IntAttribute attr,
-    int value) const {
+std::string IntAttrToString(const BrowserAccessibility& node,
+                            ax::mojom::IntAttribute attr,
+                            int32_t value) {
   if (ui::IsNodeIdIntAttribute(attr)) {
     // Relation
     BrowserAccessibility* target = node.manager()->GetFromID(value);
@@ -133,6 +174,36 @@ std::string AccessibilityTreeFormatterBlink::IntAttrToString(
   return std::to_string(value);
 }
 
+}  // namespace
+
+AccessibilityTreeFormatterBlink::AccessibilityTreeFormatterBlink()
+    : AccessibilityTreeFormatterBrowser() {}
+
+AccessibilityTreeFormatterBlink::~AccessibilityTreeFormatterBlink() {}
+
+const char* const TREE_DATA_ATTRIBUTES[] = {"TreeData.textSelStartOffset",
+                                            "TreeData.textSelEndOffset"};
+
+const char* STATE_FOCUSED = "focused";
+const char* STATE_OFFSCREEN = "offscreen";
+
+uint32_t AccessibilityTreeFormatterBlink::ChildCount(
+    const BrowserAccessibility& node) const {
+  if (node.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
+    return node.PlatformChildCount();
+  else
+    return node.InternalChildCount();
+}
+
+BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
+    const BrowserAccessibility& node,
+    uint32_t i) const {
+  if (node.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
+    return node.PlatformGetChild(i);
+  else
+    return node.InternalGetChild(i);
+}
+
 void AccessibilityTreeFormatterBlink::AddProperties(
     const BrowserAccessibility& node,
     base::DictionaryValue* dict) {
@@ -206,7 +277,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
        ++attr_index) {
     auto attr = static_cast<ax::mojom::IntAttribute>(attr_index);
     if (node.HasIntAttribute(attr)) {
-      int value = node.GetIntAttribute(attr);
+      int32_t value = GetIntAttribute(node, attr);
       dict->SetString(ui::ToString(attr), IntAttrToString(node, attr, value));
     }
   }
@@ -320,20 +391,19 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
   if (focused)
     WriteAttribute(false, STATE_FOCUSED, &line);
 
-  WriteAttribute(false,
-                 FormatCoordinates("location", "boundsX", "boundsY", dict),
-                 &line);
+  WriteAttribute(
+      false, FormatCoordinates("location", "boundsX", "boundsY", dict), &line);
   WriteAttribute(false,
                  FormatCoordinates("size", "boundsWidth", "boundsHeight", dict),
                  &line);
 
+  WriteAttribute(
+      false,
+      FormatCoordinates("pageLocation", "pageBoundsX", "pageBoundsY", dict),
+      &line);
   WriteAttribute(false,
-                 FormatCoordinates("pageLocation",
-                                   "pageBoundsX", "pageBoundsY", dict),
-                 &line);
-  WriteAttribute(false,
-                 FormatCoordinates("pageSize",
-                                   "pageBoundsWidth", "pageBoundsHeight", dict),
+                 FormatCoordinates("pageSize", "pageBoundsWidth",
+                                   "pageBoundsHeight", dict),
                  &line);
   WriteAttribute(false,
                  FormatCoordinates("unclippedLocation", "unclippedBoundsX",
