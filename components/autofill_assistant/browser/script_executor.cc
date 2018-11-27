@@ -250,6 +250,8 @@ void ScriptExecutor::Shutdown() {
   } else {
     at_end_ = SHUTDOWN;
   }
+  if (wait_with_interrupts_)
+    wait_with_interrupts_->Shutdown();
 }
 
 void ScriptExecutor::Close() {
@@ -402,17 +404,20 @@ void ScriptExecutor::WaitForElement(base::TimeDelta max_wait_time,
                                     ElementCheckType check_type,
                                     const Selector& selector,
                                     base::OnceCallback<void(bool)> callback) {
-  std::unique_ptr<BatchElementChecker> checker = CreateBatchElementChecker();
-  checker->AddElementCheck(check_type, selector, base::DoNothing());
-  checker->Run(max_wait_time,
-               /* try_done= */ base::DoNothing(),
-               /* all_done= */
-               base::BindOnce(
-                   [](std::unique_ptr<BatchElementChecker> checker_to_delete,
-                      base::OnceCallback<void(bool)> callback) {
-                     std::move(callback).Run(checker_to_delete->all_found());
-                   },
-                   std::move(checker), std::move(callback)));
+  DCHECK(!batch_element_checker_);
+  batch_element_checker_ = CreateBatchElementChecker();
+  batch_element_checker_->AddElementCheck(check_type, selector,
+                                          base::DoNothing());
+  batch_element_checker_->Run(
+      max_wait_time, /* try_done= */ base::DoNothing(), /* all_done= */
+      base::BindOnce(&ScriptExecutor::OnWaitForElement,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ScriptExecutor::OnWaitForElement(base::OnceCallback<void(bool)> callback) {
+  bool all_found = batch_element_checker_->all_found();
+  batch_element_checker_.reset();
+  std::move(callback).Run(all_found);
 }
 
 void ScriptExecutor::OnWaitForElementVisible(
@@ -585,6 +590,11 @@ void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptScroll(
     delegate->GetWebController()->FocusElement(
         main_script_->last_focused_element_selector_, base::DoNothing());
   }
+}
+
+void ScriptExecutor::WaitWithInterrupts::Shutdown() {
+  if (interrupt_executor_)
+    interrupt_executor_->Shutdown();
 }
 
 void ScriptExecutor::OnChosen(

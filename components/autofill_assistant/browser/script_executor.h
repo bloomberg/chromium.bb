@@ -166,6 +166,7 @@ class ScriptExecutor : public ActionDelegate {
     ~WaitWithInterrupts();
 
     void Run();
+    void Shutdown();
 
    private:
     void OnPreconditionCheckDone(const Script* interrupt,
@@ -226,6 +227,7 @@ class ScriptExecutor : public ActionDelegate {
                       ElementCheckType check_type,
                       const Selector& selectors,
                       base::OnceCallback<void(bool)> callback);
+  void OnWaitForElement(base::OnceCallback<void(bool)> callback);
   void OnWaitForElementVisible(
       base::OnceCallback<void(bool)> element_found_callback,
       bool element_found,
@@ -249,6 +251,7 @@ class ScriptExecutor : public ActionDelegate {
   Selector last_focused_element_selector_;
   std::vector<Selector> touchable_elements_;
   std::map<std::string, ScriptStatusProto>* scripts_state_;
+  std::unique_ptr<BatchElementChecker> batch_element_checker_;
 
   // Set of interrupts that might run during wait for dom actions with
   // allow_interrupt. Sorted by priority; an interrupt that appears on the

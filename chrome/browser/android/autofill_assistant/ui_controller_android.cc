@@ -12,6 +12,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -27,6 +28,8 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/channel.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
 #include "jni/AutofillAssistantUiController_jni.h"
@@ -42,6 +45,10 @@ const char* const kAutofillAssistantServerKey = "autofill-assistant-key";
 }  // namespace switches
 
 namespace {
+
+// Time between two attempts to destroy the controller.
+static constexpr base::TimeDelta kDestroyRetryInterval =
+    base::TimeDelta::FromSeconds(2);
 
 // Builds a map from two Java arrays of strings with the same length.
 std::unique_ptr<std::map<std::string, std::string>> BuildParametersFromJava(
@@ -70,7 +77,7 @@ UiControllerAndroid::UiControllerAndroid(
     const JavaParamRef<jobjectArray>& parameterValues,
     const JavaParamRef<jstring>& jlocale,
     const JavaParamRef<jstring>& jcountryCode)
-    : ui_delegate_(nullptr) {
+    : ui_delegate_(nullptr), weak_ptr_factory_(this) {
   java_autofill_assistant_ui_controller_.Reset(env, jcaller);
 
   content::WebContents* web_contents =
@@ -496,6 +503,20 @@ void UiControllerAndroid::InvalidateAccessToken(
 
 void UiControllerAndroid::Destroy(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj) {
+  if (ui_delegate_ == nullptr)
+    return;
+
+  if (!ui_delegate_->Terminate()) {
+    // This is a safety net and should be removed once all uses of
+    // base::Unretained in the execution and script tracking has been removed.
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&UiControllerAndroid::Destroy,
+                       weak_ptr_factory_.GetWeakPtr(), base::Unretained(env),
+                       base::ConstRef(obj)),
+        kDestroyRetryInterval);
+    return;
+  }
   ui_delegate_->OnDestroy();
 }
 

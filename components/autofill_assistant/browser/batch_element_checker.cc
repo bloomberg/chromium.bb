@@ -55,10 +55,9 @@ void BatchElementChecker::Run(const base::TimeDelta& duration,
     try_count = 1;
   }
 
-  Try(base::BindOnce(
-      &BatchElementChecker::OnTryDone,
-      // Callback is run from this class, so this is guaranteed to still exist.
-      base::Unretained(this), try_count, try_done, std::move(all_done)));
+  Try(base::BindOnce(&BatchElementChecker::OnTryDone,
+                     weak_ptr_factory_.GetWeakPtr(), try_count, try_done,
+                     std::move(all_done)));
 }
 
 bool BatchElementChecker::all_found() {

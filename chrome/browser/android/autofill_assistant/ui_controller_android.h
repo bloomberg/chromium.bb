@@ -143,6 +143,8 @@ class UiControllerAndroid : public UiController,
       fetch_access_token_callback_;
   base::OnceCallback<void(bool)> show_details_callback_;
 
+  base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);
 };
 
