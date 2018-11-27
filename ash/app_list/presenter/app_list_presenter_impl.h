@@ -90,7 +90,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   void EndDragFromShelf(AppListViewState app_list_state);
 
   // Passes a MouseWheelEvent from the shelf to the AppListView.
-  void ProcessMouseWheelOffset(int y_scroll_offset);
+  void ProcessMouseWheelOffset(const gfx::Vector2d& scroll_offset_vector);
 
   // Updates the y position and opacity of the full screen app list. The changes
   // are slightly different than UpdateYPositionAndOpacity. If |callback| is non

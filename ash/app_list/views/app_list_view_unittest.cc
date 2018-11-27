@@ -1396,7 +1396,7 @@ TEST_F(AppListViewTest, MouseWheelScrollTransitionsToFullscreen) {
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
 
-  view_->HandleScroll(-30, ui::ET_MOUSEWHEEL);
+  view_->HandleScroll(gfx::Vector2d(0, -30), ui::ET_MOUSEWHEEL);
   EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
 }
 
@@ -1405,7 +1405,7 @@ TEST_F(AppListViewTest, GestureScrollTransitionsToFullscreen) {
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
 
-  view_->HandleScroll(-30, ui::ET_SCROLL);
+  view_->HandleScroll(gfx::Vector2d(0, -30), ui::ET_SCROLL);
   EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
 }
 

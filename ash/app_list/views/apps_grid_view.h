@@ -253,7 +253,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Passes scroll information from AppListView to the PaginationController,
   // returns true if this scroll would change pages.
-  bool HandleScrollFromAppListView(int offset, ui::EventType type);
+  bool HandleScrollFromAppListView(const gfx::Vector2d& offset,
+                                   ui::EventType type);
 
   // Returns the first app list item view in the selected page in the folder.
   AppListItemView* GetCurrentPageFirstItemViewInFolder();
@@ -332,7 +333,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   AppListItemView* CreateViewForItemAtIndex(size_t index);
 
   // Returns true if the event was handled by the pagination controller.
-  bool HandleScroll(int offset, ui::EventType type);
+  bool HandleScroll(const gfx::Vector2d& offset, ui::EventType type);
 
   // Ensures the view is visible. Note that if there is a running page
   // transition, this does nothing.

@@ -460,7 +460,7 @@ void AppListControllerImpl::EndDragFromShelf(
 
 void AppListControllerImpl::ProcessMouseWheelEvent(
     const ui::MouseWheelEvent& event) {
-  presenter_.ProcessMouseWheelOffset(event.offset().y());
+  presenter_.ProcessMouseWheelOffset(event.offset());
 }
 
 void AppListControllerImpl::ToggleAppList(

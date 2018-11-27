@@ -1186,16 +1186,15 @@ AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
   return view;
 }
 
-bool AppsGridView::HandleScroll(int offset, ui::EventType type) {
+bool AppsGridView::HandleScroll(const gfx::Vector2d& offset,
+                                ui::EventType type) {
   // Bail on STATE_START or no apps page to make PaginationModel happy.
   if (contents_view_->GetActiveState() == ash::AppListState::kStateStart ||
       pagination_model_.total_pages() <= 0) {
     return false;
   }
 
-  const gfx::Vector2dF scroll_offset_vector(0, offset);
-  return pagination_controller_->OnScroll(
-      gfx::ToFlooredVector2d(scroll_offset_vector), type);
+  return pagination_controller_->OnScroll(offset, type);
 }
 
 void AppsGridView::EnsureViewVisible(const GridIndex& index) {
@@ -2031,9 +2030,10 @@ void AppsGridView::UpdateOpacity() {
   }
 }
 
-bool AppsGridView::HandleScrollFromAppListView(int offset, ui::EventType type) {
+bool AppsGridView::HandleScrollFromAppListView(const gfx::Vector2d& offset,
+                                               ui::EventType type) {
   // Scroll up at first page in top level apps grid should close the launcher.
-  if (!folder_delegate_ && offset > 0 &&
+  if (!folder_delegate_ && offset.y() > 0 &&
       !pagination_model()->IsValidPageRelative(-1)) {
     return false;
   }
