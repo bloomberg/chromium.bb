@@ -3411,30 +3411,6 @@
         }
       },
       {
-        "args": [
-          "--num-retries=3"
-        ],
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ],
-          "shards": 12
-        }
-      },
-      {
         "isolate_name": "webkit_python_tests",
         "name": "webkit_python_tests",
         "swarming": {
