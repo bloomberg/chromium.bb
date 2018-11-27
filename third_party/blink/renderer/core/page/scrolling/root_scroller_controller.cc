@@ -88,21 +88,6 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
   return ToLayoutBox(element.GetLayoutObject())->GetScrollableArea();
 }
 
-bool ScrollsVerticalOverflow(LayoutView& layout_view) {
-  DCHECK(layout_view.GetScrollableArea());
-
-  if (layout_view.Size().IsZero() ||
-      !layout_view.GetScrollableArea()->HasVerticalOverflow() ||
-      !layout_view.ScrollsOverflowY())
-    return false;
-
-  ScrollbarMode h_mode;
-  ScrollbarMode v_mode;
-  layout_view.CalculateScrollbarModes(h_mode, v_mode);
-
-  return v_mode != kScrollbarAlwaysOff;
-}
-
 }  // namespace
 
 // static
@@ -307,7 +292,29 @@ bool RootScrollerController::IsValidImplicit(const Element& element) const {
   if (!scrollable_area)
     return false;
 
-  return scrollable_area->ScrollsOverflow();
+  if (!scrollable_area->ScrollsOverflow())
+    return false;
+
+  // If any of the ancestors are user scrollable (i.e. overflow == scroll|auto)
+  // then don't promote as we'd likely break intended scrolling by stopping
+  // chaining at this scroller.
+  for (LayoutBox* ancestor = element.GetLayoutObject()->ContainingBlock();
+       ancestor; ancestor = ancestor->ContainingBlock()) {
+    const ComputedStyle* style = ancestor->Style();
+    if (!style)
+      continue;
+
+    PaintLayerScrollableArea* area = ancestor->GetScrollableArea();
+    if (!area)
+      continue;
+
+    if ((style->ScrollsOverflowX() && area->HasHorizontalOverflow()) ||
+        (style->ScrollsOverflowY() && area->HasVerticalOverflow())) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void RootScrollerController::ApplyRootScrollerProperties(Node& node) {
@@ -375,11 +382,6 @@ void RootScrollerController::ProcessImplicitCandidates() {
     return;
 
   if (!document_->GetFrame()->IsMainFrame())
-    return;
-
-  // If the main document has vertical scrolling, that's a good sign we
-  // shouldn't implicitly promote anything.
-  if (ScrollsVerticalOverflow(*document_->GetLayoutView()))
     return;
 
   bool multiple_matches = false;

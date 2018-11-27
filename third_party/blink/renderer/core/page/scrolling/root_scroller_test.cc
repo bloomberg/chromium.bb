@@ -2621,9 +2621,147 @@ TEST_F(ImplicitRootScrollerSimTest, OverflowInMainDocumentRestrictsImplicit) {
                                ASSERT_NO_EXCEPTION);
   Compositor().BeginFrame();
 
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "iframe still shouldn't be promoted due to horizontal overflow in "
+      << "the main document.";
+
+  spacer->style()->setProperty(&GetDocument(), "width", "100%", String(),
+                               ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+
   EXPECT_EQ(GetDocument().getElementById("container"),
             GetDocument().GetRootScrollerController().EffectiveRootScroller())
       << "Once vertical overflow is removed, the iframe should be promoted.";
+}
+
+// Test that we overflow in an ancestor is ok as long as it is overflow:hidden.
+TEST_F(ImplicitRootScrollerSimTest, OverflowHiddenDoesntRestrictImplicit) {
+  WebView().ResizeWithBrowserControls(IntSize(800, 600), 50, 0, true);
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request("https://example.com/child.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            html {
+              overflow: hidden;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+            #spacer {
+              position: absolute;
+              left: 0;
+              top: 0;
+              height: 150%;
+              width: 150%;
+            }
+          </style>
+          <iframe id="container" src="child.html">
+          </iframe>
+          <div id="spacer"></div>
+      )HTML");
+  child_request.Complete(R"HTML(
+        <!DOCTYPE html>
+        <style>
+          body {
+            height: 1000px;
+          }
+        </style>
+  )HTML");
+
+  Compositor().BeginFrame();
+  EXPECT_EQ(GetDocument().getElementById("container"),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "iframe should be promoted since document's overflow is hidden.";
+
+  Element* html = GetDocument().documentElement();
+  html->style()->setProperty(&GetDocument(), "overflow", "auto", String(),
+                             ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "iframe should now be demoted since main document scrolls overflow.";
+}
+
+// Test that we user-scrollable overflow in an ancestor prevents implicit
+// promotion.
+TEST_F(ImplicitRootScrollerSimTest, UserScrollableAncestorPreventsPromotion) {
+  WebView().ResizeWithBrowserControls(IntSize(800, 600), 50, 0, true);
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request("https://example.com/child.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            html {
+              overflow: hidden;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+            #ancestor {
+              width: 100%;
+              height: 100%;
+              overflow: scroll;
+              opacity: 0.5;
+            }
+            #spacer {
+              height: 150%;
+              width: 150%;
+            }
+          </style>
+          <div id="ancestor">
+            <iframe id="container" src="child.html"></iframe>
+            <div id="spacer"></div>
+          </div>
+      )HTML");
+  child_request.Complete(R"HTML(
+        <!DOCTYPE html>
+        <style>
+          body {
+            height: 1000px;
+          }
+        </style>
+  )HTML");
+
+  Compositor().BeginFrame();
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "iframe should not promote since ancestor div scrolls overflow.";
+
+  Element* ancestor = GetDocument().getElementById("ancestor");
+  ancestor->style()->setProperty(&GetDocument(), "overflow", "hidden", String(),
+                                 ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+
+  EXPECT_EQ(GetDocument().getElementById("container"),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "iframe should now be promoted since ancestor's overflow is hidden.";
 }
 
 TEST_F(ImplicitRootScrollerSimTest, AppliedAtFractionalZoom) {
