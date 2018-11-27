@@ -566,7 +566,7 @@ TEST_F(ShelfWidgetVirtualKeyboardTest, ClickingHidesVirtualKeyboard) {
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(
+  generator->set_current_screen_location(
       GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
 
@@ -579,7 +579,7 @@ TEST_F(ShelfWidgetVirtualKeyboardTest, TappingHidesVirtualKeyboard) {
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(
+  generator->set_current_screen_location(
       GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint());
   generator->PressTouch();
 
@@ -592,7 +592,7 @@ TEST_F(ShelfWidgetVirtualKeyboardTest, DoesNotHideLockedVirtualKeyboard) {
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(
+  generator->set_current_screen_location(
       GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint());
 
   generator->ClickLeftButton();

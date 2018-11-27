@@ -842,7 +842,7 @@ TEST_F(TouchSelectionControllerImplTest, MouseEventDeactivatesTouchSelection) {
   ui::test::EventGenerator generator(
       textfield_widget_->GetNativeView()->GetRootWindow());
 
-  generator.set_current_location(gfx::Point(5, 5));
+  generator.set_current_screen_location(gfx::Point(5, 5));
   RunPendingMessages();
 
   // Start touch editing; then move mouse over the textfield and ensure it

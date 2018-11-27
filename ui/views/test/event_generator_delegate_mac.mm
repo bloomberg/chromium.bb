@@ -310,6 +310,8 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
                               gfx::Point* point) const override {}
   void ConvertPointToTarget(const ui::EventTarget* target,
                             gfx::Point* point) const override {}
+  void ConvertPointFromWindow(gfx::NativeWindow window,
+                              gfx::Point* point) const override {}
   void ConvertPointFromHost(const ui::EventTarget* hosted_target,
                             gfx::Point* point) const override {}
   ui::EventDispatchDetails DispatchKeyEventToIME(EventTarget* target,
@@ -619,7 +621,7 @@ CreateEventGeneratorDelegateMac(ui::test::EventGenerator* owner,
 
   // The location is the point in the root window which, for desktop widgets, is
   // the widget itself.
-  gfx::Point point_in_root = generator->current_location();
+  gfx::Point point_in_root = generator->current_screen_location();
   NSWindow* window = EventGeneratorDelegateMac::instance()->window();
   NSPoint point_in_window = ConvertRootPointToTarget(window, point_in_root);
   return ui::ConvertPointFromWindowToScreen(window, point_in_window);

@@ -634,7 +634,7 @@ TEST(WindowTreeTest, ShutdownWithTouchDown) {
   top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
 
   ui::test::EventGenerator event_generator(setup.root());
-  event_generator.set_current_location(gfx::Point(50, 51));
+  event_generator.set_current_screen_location(gfx::Point(50, 51));
   event_generator.PressTouch();
 }
 
@@ -648,7 +648,7 @@ TEST(WindowTreeTest, TouchPressDragRelease) {
   top_level->SetBounds(gfx::Rect(10, 11, 100, 100));
 
   ui::test::EventGenerator event_generator(setup.root());
-  event_generator.set_current_location(gfx::Point(50, 51));
+  event_generator.set_current_screen_location(gfx::Point(50, 51));
   event_generator.PressTouch();
   EXPECT_EQ("ET_TOUCH_PRESSED 40,40",
             LocatedEventToEventTypeAndLocation(
@@ -943,7 +943,7 @@ TEST(WindowTreeTest, MatchesEventObserverSet) {
        ui::mojom::EventType::TOUCH_RELEASED});
 
   ui::test::EventGenerator event_generator(setup.root());
-  event_generator.set_current_location(gfx::Point(50, 50));
+  event_generator.set_current_screen_location(gfx::Point(50, 50));
   event_generator.PressTouch();
 
   // The client should get the input event, and |matches_event_observer| should

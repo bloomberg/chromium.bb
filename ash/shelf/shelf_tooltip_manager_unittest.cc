@@ -170,7 +170,7 @@ TEST_F(ShelfTooltipManagerTest, HideForEvents) {
   // Should hide for touch events in the shelf.
   tooltip_manager_->ShowTooltip(shelf_view_->GetAppListButton());
   ASSERT_TRUE(tooltip_manager_->IsVisible());
-  generator->set_current_location(shelf_bounds.CenterPoint());
+  generator->set_current_screen_location(shelf_bounds.CenterPoint());
   generator->PressTouch();
   EXPECT_FALSE(tooltip_manager_->IsVisible());
 
@@ -187,7 +187,7 @@ TEST_F(ShelfTooltipManagerTest, HideForExternalEvents) {
   // Should hide for touches outside the shelf.
   tooltip_manager_->ShowTooltip(shelf_view_->GetAppListButton());
   ASSERT_TRUE(tooltip_manager_->IsVisible());
-  generator->set_current_location(gfx::Point());
+  generator->set_current_screen_location(gfx::Point());
   generator->PressTouch();
   EXPECT_FALSE(tooltip_manager_->IsVisible());
   generator->ReleaseTouch();
@@ -195,7 +195,7 @@ TEST_F(ShelfTooltipManagerTest, HideForExternalEvents) {
   // Should hide for touch events on the tooltip.
   tooltip_manager_->ShowTooltip(shelf_view_->GetAppListButton());
   ASSERT_TRUE(tooltip_manager_->IsVisible());
-  generator->set_current_location(
+  generator->set_current_screen_location(
       GetTooltip()->GetWindowBoundsInScreen().CenterPoint());
   generator->PressTouch();
   EXPECT_FALSE(tooltip_manager_->IsVisible());

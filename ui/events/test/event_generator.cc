@@ -97,7 +97,7 @@ EventGenerator::EventGenerator(gfx::NativeWindow root_window) {
 
 EventGenerator::EventGenerator(gfx::NativeWindow root_window,
                                const gfx::Point& point)
-    : current_location_(point) {
+    : current_screen_location_(point) {
   Init(root_window, nullptr);
 }
 
@@ -152,7 +152,7 @@ void EventGenerator::MoveMouseWheel(int delta_x, int delta_y) {
 }
 
 void EventGenerator::SendMouseEnter() {
-  gfx::Point enter_location(current_location_);
+  gfx::Point enter_location(current_screen_location_);
   delegate()->ConvertPointToTarget(current_target_, &enter_location);
   ui::MouseEvent mouseev(ui::ET_MOUSE_ENTERED, enter_location, enter_location,
                          ui::EventTimeForNow(), flags_, 0);
@@ -160,7 +160,7 @@ void EventGenerator::SendMouseEnter() {
 }
 
 void EventGenerator::SendMouseExit() {
-  gfx::Point exit_location(current_location_);
+  gfx::Point exit_location(current_screen_location_);
   delegate()->ConvertPointToTarget(current_target_, &exit_location);
   ui::MouseEvent mouseev(ui::ET_MOUSE_EXITED, exit_location, exit_location,
                          ui::EventTimeForNow(), flags_, 0);
@@ -181,8 +181,8 @@ void EventGenerator::MoveMouseToWithNative(const gfx::Point& point_in_host,
   native_event->set_location(point_for_native);
   Dispatch(&mouseev);
 
-  current_location_ = point_in_host;
-  delegate()->ConvertPointFromHost(current_target_, &current_location_);
+  current_screen_location_ = point_in_host;
+  delegate()->ConvertPointFromHost(current_target_, &current_screen_location_);
 }
 #endif
 
@@ -193,8 +193,8 @@ void EventGenerator::MoveMouseToInHost(const gfx::Point& point_in_host) {
                          ui::EventTimeForNow(), flags_, 0);
   Dispatch(&mouseev);
 
-  current_location_ = point_in_host;
-  delegate()->ConvertPointFromHost(current_target_, &current_location_);
+  current_screen_location_ = point_in_host;
+  delegate()->ConvertPointFromHost(current_target_, &current_screen_location_);
 }
 
 void EventGenerator::MoveMouseTo(const gfx::Point& point_in_screen,
@@ -203,11 +203,12 @@ void EventGenerator::MoveMouseTo(const gfx::Point& point_in_screen,
   const ui::EventType event_type = (flags_ & ui::EF_LEFT_MOUSE_BUTTON) ?
       ui::ET_MOUSE_DRAGGED : ui::ET_MOUSE_MOVED;
 
-  gfx::Vector2dF diff(point_in_screen - current_location_);
+  gfx::Vector2dF diff(point_in_screen - current_screen_location_);
   for (float i = 1; i <= count; i++) {
     gfx::Vector2dF step(diff);
     step.Scale(i / count);
-    gfx::Point move_point = current_location_ + gfx::ToRoundedVector2d(step);
+    gfx::Point move_point =
+        current_screen_location_ + gfx::ToRoundedVector2d(step);
     if (!grab_)
       UpdateCurrentDispatcher(move_point);
     delegate()->ConvertPointToTarget(current_target_, &move_point);
@@ -215,7 +216,7 @@ void EventGenerator::MoveMouseTo(const gfx::Point& point_in_screen,
                            ui::EventTimeForNow(), flags_, 0);
     Dispatch(&mouseev);
   }
-  current_location_ = point_in_screen;
+  current_screen_location_ = point_in_screen;
 }
 
 void EventGenerator::MoveMouseRelativeTo(const EventTarget* window,
@@ -269,7 +270,7 @@ void EventGenerator::MoveTouch(const gfx::Point& point) {
 }
 
 void EventGenerator::MoveTouchId(const gfx::Point& point, int touch_id) {
-  current_location_ = point;
+  current_screen_location_ = point;
   TestTouchEvent touchev(ui::ET_TOUCH_MOVED, GetLocationInCurrentRoot(),
                          touch_id, flags_, ui::EventTimeForNow());
   Dispatch(&touchev);
@@ -557,7 +558,7 @@ void EventGenerator::ScrollSequence(const gfx::Point& start,
 
 void EventGenerator::GenerateTrackpadRest() {
   int num_fingers = 2;
-  ui::ScrollEvent scroll(ui::ET_SCROLL, current_location_,
+  ui::ScrollEvent scroll(ui::ET_SCROLL, current_screen_location_,
                          ui::EventTimeForNow(), 0, 0, 0, 0, 0, num_fingers,
                          EventMomentumPhase::MAY_BEGIN);
   Dispatch(&scroll);
@@ -565,7 +566,7 @@ void EventGenerator::GenerateTrackpadRest() {
 
 void EventGenerator::CancelTrackpadRest() {
   int num_fingers = 2;
-  ui::ScrollEvent scroll(ui::ET_SCROLL, current_location_,
+  ui::ScrollEvent scroll(ui::ET_SCROLL, current_screen_location_,
                          ui::EventTimeForNow(), 0, 0, 0, 0, 0, num_fingers,
                          EventMomentumPhase::END);
   Dispatch(&scroll);
@@ -605,8 +606,10 @@ void EventGenerator::Init(gfx::NativeWindow root_window,
                                                        window_context);
   }
   if (window_context)
-    current_location_ = delegate()->CenterOfWindow(window_context);
-  current_target_ = delegate()->GetTargetAt(current_location_);
+    current_screen_location_ = delegate()->CenterOfWindow(window_context);
+  else if (root_window)
+    delegate()->ConvertPointFromWindow(root_window, &current_screen_location_);
+  current_target_ = delegate()->GetTargetAt(current_screen_location_);
   touch_pointer_details_ =
       PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
                      /* pointer_id*/ 0,
@@ -678,7 +681,7 @@ void EventGenerator::ReleaseButton(int flag) {
 }
 
 gfx::Point EventGenerator::GetLocationInCurrentRoot() const {
-  gfx::Point p(current_location_);
+  gfx::Point p = current_screen_location_;
   delegate()->ConvertPointToTarget(current_target_, &p);
   return p;
 }

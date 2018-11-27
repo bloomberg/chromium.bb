@@ -10,6 +10,10 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget_utils.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 namespace views {
 namespace test {
 
@@ -43,6 +47,11 @@ class EventMonitorTest : public WidgetTest {
     if (IsMus()) {
       generator_ =
           std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
+// This #if will always be true on this path, but the code inside won't compile
+// for non-Aura.
+#if defined(USE_AURA)
+      generator_->MoveMouseRelativeTo(widget_->GetNativeWindow(), gfx::Point());
+#endif
     } else {
       generator_ = std::make_unique<ui::test::EventGenerator>(
           GetContext(), widget_->GetNativeWindow());

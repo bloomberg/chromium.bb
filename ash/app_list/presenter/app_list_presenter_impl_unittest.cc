@@ -217,7 +217,8 @@ TEST_F(AppListPresenterImplTest, ClickingContextMenuDoesNotDismiss) {
   // Press the left mouse button on the menu window, it should not close the
   // app list nor the context menu on this pointer event.
   ui::test::EventGenerator menu_event_generator(menu->GetRootWindow());
-  menu_event_generator.set_current_location(menu->GetBoundsInScreen().origin());
+  menu_event_generator.set_current_screen_location(
+      menu->GetBoundsInScreen().origin());
   menu_event_generator.PressLeftButton();
 
   // Check that the window and the app list are still open.

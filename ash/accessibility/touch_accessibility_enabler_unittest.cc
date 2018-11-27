@@ -104,12 +104,12 @@ TEST_F(TouchAccessibilityEnablerTest, InteractsWithTouchExplorationController) {
                                      enabler_->GetWeakPtr()));
 
   EXPECT_TRUE(enabler_->IsInNoFingersDownForTesting());
-  generator_->set_current_location(gfx::Point(11, 12));
+  generator_->set_current_screen_location(gfx::Point(11, 12));
   generator_->PressTouchId(1);
 
   simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(500));
 
-  generator_->set_current_location(gfx::Point(22, 34));
+  generator_->set_current_screen_location(gfx::Point(22, 34));
   generator_->PressTouchId(2);
 
   EXPECT_TRUE(enabler_->IsInTwoFingersDownForTesting());
@@ -124,7 +124,7 @@ TEST_F(TouchAccessibilityEnablerTest, InteractsWithTouchExplorationController) {
 TEST_F(TouchAccessibilityEnablerTest, EntersOneFingerDownMode) {
   EXPECT_TRUE(enabler_->IsInNoFingersDownForTesting());
   EXPECT_FALSE(enabler_->IsInOneFingerDownForTesting());
-  generator_->set_current_location(gfx::Point(11, 12));
+  generator_->set_current_screen_location(gfx::Point(11, 12));
   generator_->PressTouch();
 
   EXPECT_FALSE(enabler_->IsInNoFingersDownForTesting());
@@ -133,10 +133,10 @@ TEST_F(TouchAccessibilityEnablerTest, EntersOneFingerDownMode) {
 
 TEST_F(TouchAccessibilityEnablerTest, EntersTwoFingersDownMode) {
   EXPECT_TRUE(enabler_->IsInNoFingersDownForTesting());
-  generator_->set_current_location(gfx::Point(11, 12));
+  generator_->set_current_screen_location(gfx::Point(11, 12));
   generator_->PressTouchId(1);
 
-  generator_->set_current_location(gfx::Point(22, 34));
+  generator_->set_current_screen_location(gfx::Point(22, 34));
   generator_->PressTouchId(2);
 
   EXPECT_TRUE(enabler_->IsInTwoFingersDownForTesting());
@@ -144,10 +144,10 @@ TEST_F(TouchAccessibilityEnablerTest, EntersTwoFingersDownMode) {
 
 TEST_F(TouchAccessibilityEnablerTest, PlaysProgressSound) {
   EXPECT_TRUE(enabler_->IsInNoFingersDownForTesting());
-  generator_->set_current_location(gfx::Point(11, 12));
+  generator_->set_current_screen_location(gfx::Point(11, 12));
   generator_->PressTouchId(1);
 
-  generator_->set_current_location(gfx::Point(22, 34));
+  generator_->set_current_screen_location(gfx::Point(22, 34));
   generator_->PressTouchId(2);
 
   EXPECT_TRUE(enabler_->IsInTwoFingersDownForTesting());
@@ -163,10 +163,10 @@ TEST_F(TouchAccessibilityEnablerTest, PlaysProgressSound) {
 
 TEST_F(TouchAccessibilityEnablerTest, TogglesSpokenFeedback) {
   EXPECT_TRUE(enabler_->IsInNoFingersDownForTesting());
-  generator_->set_current_location(gfx::Point(11, 12));
+  generator_->set_current_screen_location(gfx::Point(11, 12));
   generator_->PressTouchId(1);
 
-  generator_->set_current_location(gfx::Point(22, 34));
+  generator_->set_current_screen_location(gfx::Point(22, 34));
   generator_->PressTouchId(2);
 
   EXPECT_TRUE(enabler_->IsInTwoFingersDownForTesting());
@@ -186,17 +186,17 @@ TEST_F(TouchAccessibilityEnablerTest, TogglesSpokenFeedback) {
 
 TEST_F(TouchAccessibilityEnablerTest, ThreeFingersCancelsDetection) {
   EXPECT_TRUE(enabler_->IsInNoFingersDownForTesting());
-  generator_->set_current_location(gfx::Point(11, 12));
+  generator_->set_current_screen_location(gfx::Point(11, 12));
   generator_->PressTouchId(1);
 
-  generator_->set_current_location(gfx::Point(22, 34));
+  generator_->set_current_screen_location(gfx::Point(22, 34));
   generator_->PressTouchId(2);
 
   EXPECT_TRUE(enabler_->IsInTwoFingersDownForTesting());
   EXPECT_TRUE(delegate_.started());
   EXPECT_FALSE(delegate_.stopped());
 
-  generator_->set_current_location(gfx::Point(33, 56));
+  generator_->set_current_screen_location(gfx::Point(33, 56));
   generator_->PressTouchId(3);
 
   EXPECT_TRUE(enabler_->IsInWaitForNoFingersForTesting());
@@ -206,7 +206,7 @@ TEST_F(TouchAccessibilityEnablerTest, ThreeFingersCancelsDetection) {
 
 TEST_F(TouchAccessibilityEnablerTest, MovingFingerPastSlopCancelsDetection) {
   EXPECT_TRUE(enabler_->IsInNoFingersDownForTesting());
-  generator_->set_current_location(gfx::Point(11, 12));
+  generator_->set_current_screen_location(gfx::Point(11, 12));
   generator_->PressTouch();
 
   int slop = gesture_detector_config_.double_tap_slop;

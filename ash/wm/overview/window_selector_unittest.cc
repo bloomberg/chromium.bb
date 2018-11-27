@@ -2958,7 +2958,7 @@ TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
   // Long press is one way to start dragging in splitview.
   auto dispatch_long_press = [this]() {
     ui::GestureEventDetails event_details(ui::ET_GESTURE_LONG_PRESS);
-    const gfx::Point location = GetEventGenerator()->current_location();
+    const gfx::Point location = GetEventGenerator()->current_screen_location();
     ui::GestureEvent long_press(location.x(), location.y(), 0,
                                 ui::EventTimeForNow(), event_details);
     GetEventGenerator()->Dispatch(&long_press);
@@ -2966,7 +2966,7 @@ TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
 
   // Verify that the bounds of the tapped window expand when touched.
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(original_bounds1.CenterPoint());
+  generator->set_current_screen_location(original_bounds1.CenterPoint());
   generator->PressTouchId(kTouchId1);
   dispatch_long_press();
   EXPECT_GT(item1->target_bounds().width(), original_bounds1.width());
@@ -2975,7 +2975,7 @@ TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
   // Verify that attempting to touch the second window with a second finger does
   // nothing to the second window. The first window remains the window to be
   // dragged.
-  generator->set_current_location(original_bounds2.CenterPoint());
+  generator->set_current_screen_location(original_bounds2.CenterPoint());
   generator->PressTouchId(kTouchId2);
   dispatch_long_press();
   EXPECT_GT(item1->target_bounds().width(), original_bounds1.width());
@@ -3348,7 +3348,7 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
   // Verify if the drag is not started in either snap region, the drag still
   // must move by |drag_offset| before split view acknowledges the drag (ie.
   // starts moving the selector item).
-  generator->set_current_location(
+  generator->set_current_screen_location(
       left_selector_item->target_bounds().CenterPoint());
   generator->PressLeftButton();
   const gfx::Rect left_original_bounds = left_selector_item->target_bounds();
@@ -3362,7 +3362,7 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
   // move by |drag_offset_snap_region| towards the right side of the screen
   // before split view acknowledges the drag (shows the preview area).
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
-  generator->set_current_location(gfx::Point(
+  generator->set_current_screen_location(gfx::Point(
       left_selector_item->target_bounds().origin().x() + selector_item_inset,
       left_selector_item->target_bounds().CenterPoint().y()));
   generator->PressLeftButton();
@@ -3380,7 +3380,7 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
   // move by |drag_offset_snap_region| towards the left side of the screen
   // before split view acknowledges the drag.
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
-  generator->set_current_location(
+  generator->set_current_screen_location(
       gfx::Point(right_selector_item->target_bounds().top_right().x() -
                      selector_item_inset,
                  right_selector_item->target_bounds().CenterPoint().y()));
@@ -3409,7 +3409,8 @@ TEST_F(SplitViewWindowSelectorTest, OverviewDragControllerBehavior) {
   // snap.
   using DragBehavior = OverviewWindowDragController::DragBehavior;
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(window_item1->target_bounds().CenterPoint());
+  generator->set_current_screen_location(
+      window_item1->target_bounds().CenterPoint());
   generator->PressTouch();
   OverviewWindowDragController* drag_controller =
       window_selector()->window_drag_controller();
@@ -3422,7 +3423,8 @@ TEST_F(SplitViewWindowSelectorTest, OverviewDragControllerBehavior) {
 
   // Verify that if a drag is orginally vertical, the drag behavior is drag to
   // close.
-  generator->set_current_location(window_item2->target_bounds().CenterPoint());
+  generator->set_current_screen_location(
+      window_item2->target_bounds().CenterPoint());
   generator->PressTouch();
   drag_controller = window_selector()->window_drag_controller();
   EXPECT_EQ(DragBehavior::kUndefined, drag_controller->current_drag_behavior());
@@ -4274,7 +4276,8 @@ TEST_F(SplitViewWindowSelectorTest, SelectUnsnappableWindowInSplitView) {
   WindowSelectorItem* selector_item =
       GetWindowItemForWindow(grid_index, unsnappable_window.get());
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(selector_item->target_bounds().CenterPoint());
+  generator->set_current_screen_location(
+      selector_item->target_bounds().CenterPoint());
   generator->ClickLeftButton();
 
   // Verify that we are out of split view and overview mode, and that the active
@@ -4303,7 +4306,8 @@ TEST_F(SplitViewWindowSelectorTest, SelectUnsnappableWindowInSplitView) {
 
   // Now select the unsnappable window.
   selector_item = GetWindowItemForWindow(grid_index, unsnappable_window.get());
-  generator->set_current_location(selector_item->target_bounds().CenterPoint());
+  generator->set_current_screen_location(
+      selector_item->target_bounds().CenterPoint());
   generator->ClickLeftButton();
 
   // Split view mode should be ended. And the unsnappable window should be the
@@ -4350,7 +4354,7 @@ TEST_F(SplitViewWindowSelectorTest, OverviewUnsnappableIndicatorVisibility) {
   const gfx::Rect divider_bounds =
       GetSplitViewDividerBounds(/*is_dragging=*/false);
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->DragMouseTo(0, 0);
 
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
@@ -4536,7 +4540,7 @@ TEST_F(SplitViewWindowSelectorTest,
   const gfx::Rect divider_bounds =
       GetSplitViewDividerBounds(/*is_dragging=*/false);
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->DragMouseTo(0, 0);
 
   // Verify that it is still in overview mode and that |window1| is returned to
@@ -4572,7 +4576,7 @@ TEST_F(SplitViewWindowSelectorTest,
   // Drag the divider to the right edge.
   gfx::Rect divider_bounds = GetSplitViewDividerBounds(/*is_dragging=*/false);
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->PressLeftButton();
 
   // Tests that near the right edge, the grid bounds are fixed at 200 and are
@@ -4595,7 +4599,7 @@ TEST_F(SplitViewWindowSelectorTest,
 
   // Drag the divider to the left edge.
   divider_bounds = GetSplitViewDividerBounds(/*is_dragging=*/false);
-  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->PressLeftButton();
 
   generator->MoveMouseTo(20, 0);

@@ -36,7 +36,7 @@ namespace {
 void ClickButtonWithFlags(ui::test::EventGenerator* generator,
                           int button,
                           int flags) {
-  gfx::Point location = generator->current_location();
+  gfx::Point location = generator->current_screen_location();
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, location, location,
                        ui::EventTimeForNow(), button | flags, button);
   generator->Dispatch(&press);
@@ -121,7 +121,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   generator.ReleaseLeftButton();
   generator.set_flags(ui::EF_IS_DOUBLE_CLICK);
   generator.PressLeftButton();
-  generator.MoveMouseTo(generator.current_location(), 1);
+  generator.MoveMouseTo(generator.current_screen_location(), 1);
   generator.ReleaseLeftButton();
   gfx::Rect bounds_in_screen = window->GetBoundsInScreen();
   EXPECT_EQ(restored_bounds.x(), bounds_in_screen.x());
@@ -171,7 +171,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   generator2.ReleaseLeftButton();
   generator2.set_flags(ui::EF_IS_DOUBLE_CLICK);
   generator2.PressLeftButton();
-  generator2.MoveMouseTo(generator2.current_location(), 1);
+  generator2.MoveMouseTo(generator2.current_screen_location(), 1);
   generator2.ReleaseLeftButton();
   bounds_in_screen = window->GetBoundsInScreen();
   EXPECT_EQ(restored_bounds.x(), bounds_in_screen.x());
@@ -434,10 +434,12 @@ TEST_F(WorkspaceEventHandlerTest, DeleteWhenDragging) {
   ui::test::EventGenerator generator(window->GetRootWindow());
   generator.MoveMouseToCenterOf(window.get());
   generator.PressLeftButton();
-  generator.MoveMouseTo(generator.current_location() + gfx::Vector2d(50, 50));
+  generator.MoveMouseTo(generator.current_screen_location() +
+                        gfx::Vector2d(50, 50));
   DCHECK_NE(bounds.origin().ToString(), window->bounds().origin().ToString());
   window.reset();
-  generator.MoveMouseTo(generator.current_location() + gfx::Vector2d(50, 50));
+  generator.MoveMouseTo(generator.current_screen_location() +
+                        gfx::Vector2d(50, 50));
 }
 
 // Verifies deleting the window while in a run loop doesn't crash.

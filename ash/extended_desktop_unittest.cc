@@ -435,7 +435,7 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocation) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseToCenterOf(r2_w1.get());
   EXPECT_EQ(gfx::Point(1060, 60).ToString(),
-            generator->current_location().ToString());
+            generator->current_screen_location().ToString());
 
   EventLocationHandler location_handler;
   r1_w1->AddPreTargetHandler(&location_handler);
@@ -467,7 +467,7 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocationHighDPI) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseToCenterOf(r2_w1.get());
   EXPECT_EQ(gfx::Point(560, 60).ToString(),
-            generator->current_location().ToString());
+            generator->current_screen_location().ToString());
 
   EventLocationHandler location_handler;
   r1_w1->AddPreTargetHandler(&location_handler);
@@ -499,7 +499,7 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocationHighDPI_2) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseToCenterOf(r2_w1.get());
   EXPECT_EQ(gfx::Point(1060, 60).ToString(),
-            generator->current_location().ToString());
+            generator->current_screen_location().ToString());
 
   EventLocationHandler location_handler;
   r1_w1->AddPreTargetHandler(&location_handler);

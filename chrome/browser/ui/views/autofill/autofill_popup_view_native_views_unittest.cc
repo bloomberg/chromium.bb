@@ -237,7 +237,7 @@ TEST_P(AutofillPopupViewNativeViewsForEveryTypeTest, ShowClickTest) {
   // the window, we need to turn this bit off or the clicks will miss their
   // targets.
   generator_->set_assume_window_at_origin(false);
-  generator_->set_current_location(center);
+  generator_->set_current_screen_location(center);
   generator_->ClickLeftButton();
   view()->RemoveAllChildViews(true /* delete_children */);
 }

@@ -313,7 +313,8 @@ TEST_F(AppListMainViewTest, DISABLED_TapGestureToHighlight) {
   GetContentsView()->SetActiveState(ash::AppListState::kStateApps);
   GetContentsView()->Layout();
 
-  generator.set_current_location(item->GetBoundsInScreen().CenterPoint());
+  generator.set_current_screen_location(
+      item->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
   EXPECT_TRUE(item->is_highlighted());
 

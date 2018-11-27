@@ -633,7 +633,7 @@ TEST_F(PaletteTrayTestWithInternalStylus,
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->EnterPenPointerMode();
-  generator->set_current_location(
+  generator->set_current_screen_location(
       palette_tray_->GetBoundsInScreen().CenterPoint());
   generator->PressTouch();
   generator->ReleaseTouch();

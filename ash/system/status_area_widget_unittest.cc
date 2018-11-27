@@ -280,9 +280,10 @@ TEST_F(StatusAreaWidgetVirtualKeyboardTest,
 
   // The keyboard should hide when clicked.
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(status->virtual_keyboard_tray_for_testing()
-                                      ->GetBoundsInScreen()
-                                      .CenterPoint());
+  generator->set_current_screen_location(
+      status->virtual_keyboard_tray_for_testing()
+          ->GetBoundsInScreen()
+          .CenterPoint());
   generator->ClickLeftButton();
   ASSERT_TRUE(keyboard::WaitUntilHidden());
 }
@@ -311,7 +312,7 @@ TEST_F(StatusAreaWidgetVirtualKeyboardTest, ClickingHidesVirtualKeyboard) {
   ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(
+  generator->set_current_screen_location(
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()
           ->GetWindowBoundsInScreen()
           .CenterPoint());
@@ -326,7 +327,7 @@ TEST_F(StatusAreaWidgetVirtualKeyboardTest, TappingHidesVirtualKeyboard) {
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(
+  generator->set_current_screen_location(
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()
           ->GetWindowBoundsInScreen()
           .CenterPoint());
@@ -341,7 +342,7 @@ TEST_F(StatusAreaWidgetVirtualKeyboardTest, DoesNotHideLockedVirtualKeyboard) {
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(
+  generator->set_current_screen_location(
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()
           ->GetWindowBoundsInScreen()
           .CenterPoint());
