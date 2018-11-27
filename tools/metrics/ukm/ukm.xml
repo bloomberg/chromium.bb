@@ -3746,6 +3746,14 @@ be describing additional metrics about the same event.
     interactions with them. No events are created for pages that don't contain
     password forms.
   </summary>
+  <metric name="FormManagerAvailable">
+    <summary>
+      Records whether Chrome was sufficiently aware of forms during various
+      stages of saving a credential on the site, or whether saving was aborted
+      due to absence of the corresponding form manager. Values correspond to the
+      enum PasswordManagerMetricsRecorder::FormManagerAvailable.
+    </summary>
+  </metric>
   <metric name="PageLevelUserAction">
     <summary>
       Records if the user interacts with the password manager in a way that

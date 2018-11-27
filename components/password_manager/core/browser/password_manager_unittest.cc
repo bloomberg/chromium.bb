@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -2999,37 +3000,201 @@ TEST_F(PasswordManagerTest, SavingAfterUserTypingAndNavigation) {
 }
 
 // Check that when a form is submitted and a NewPasswordFormManager not present,
-// this ends up reported.
-TEST_F(PasswordManagerTest, ReportMissingFormManager_New) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  TurnOnNewParsingForSaving(&scoped_feature_list);
-
+// this ends up reported in ProvisionallySaveFailure UMA and UKM.
+TEST_F(PasswordManagerTest, ProvisionallySaveFailure) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
-  manager()->OnPasswordFormsParsed(&driver_, {});
-  manager()->OnPasswordFormsRendered(&driver_, {}, true);
+  for (bool new_parsing_for_saving : {false, true}) {
+    SCOPED_TRACE(testing::Message()
+                 << "new_parsing_for_saving = " << new_parsing_for_saving);
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (new_parsing_for_saving)
+      TurnOnNewParsingForSaving(&scoped_feature_list);
 
-  base::HistogramTester histogram_tester;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-  auto metrics_recorder = std::make_unique<PasswordManagerMetricsRecorder>(
-      1234, GURL("http://example.com"));
-  EXPECT_CALL(client_, GetMetricsRecorder())
-      .WillRepeatedly(Return(metrics_recorder.get()));
+    manager()->OnPasswordFormsParsed(nullptr, {});
 
-  PasswordForm unobserved_form = MakeSimpleForm();
-  manager()->OnPasswordFormSubmitted(nullptr, unobserved_form);
+    base::HistogramTester histogram_tester;
+    ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+    auto metrics_recorder = std::make_unique<PasswordManagerMetricsRecorder>(
+        1234, GURL("http://example.com"));
+    EXPECT_CALL(client_, GetMetricsRecorder())
+        .WillRepeatedly(Return(metrics_recorder.get()));
 
-  // 2 samples instead of just 1, because one is also reported from the missing
-  // (old) PasswordFormManager.
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.ProvisionalSaveFailure",
-      PasswordManagerMetricsRecorder::NO_MATCHING_FORM, 2);
-  // Flush the UKM reports.
-  metrics_recorder.reset();
-  CheckMetricHasValue(
-      test_ukm_recorder, ukm::builders::PageWithPassword::kEntryName,
-      ukm::builders::PageWithPassword::kProvisionalSaveFailureName,
-      PasswordManagerMetricsRecorder::NO_MATCHING_FORM);
+    PasswordForm unobserved_form = MakeSimpleForm();
+    manager()->OnPasswordFormSubmitted(nullptr, unobserved_form);
+
+    // 2 samples instead of just 1, because one is also reported from the
+    // missing (old) PasswordFormManager.
+    const size_t kExpectedSampleCount = new_parsing_for_saving ? 2u : 1u;
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.ProvisionalSaveFailure",
+        PasswordManagerMetricsRecorder::NO_MATCHING_FORM, kExpectedSampleCount);
+    // Flush the UKM reports.
+    EXPECT_CALL(client_, GetMetricsRecorder()).WillRepeatedly(Return(nullptr));
+    metrics_recorder.reset();
+    CheckMetricHasValue(
+        test_ukm_recorder, ukm::builders::PageWithPassword::kEntryName,
+        ukm::builders::PageWithPassword::kProvisionalSaveFailureName,
+        PasswordManagerMetricsRecorder::NO_MATCHING_FORM);
+  }
+}
+
+namespace {
+
+// A convenience helper for type conversions.
+template <typename T>
+base::Optional<int64_t> MetricValue(T value) {
+  return base::Optional<int64_t>(static_cast<int64_t>(value));
+}
+
+struct MissingFormManagerTestCase {
+  // Description for logging.
+  const char* const description = nullptr;
+  // Is Chrome allowed to save passwords?
+  enum class Saving { Enabled, Disabled } saving = Saving::Enabled;
+  // What signal does Chrome have for saving?
+  enum class Signal { Automatic, Manual, None } save_signal = Signal::Automatic;
+  // All the forms which are parsed at once.
+  std::vector<PasswordForm> parsed_forms;
+  // A list of forms to be processed for saving, one at a time.
+  std::vector<PasswordForm> processed_forms;
+  // The expected value of the PageWithPassword::kFormManagerAvailableName
+  // metric, or base::nullopt if no value should be logged.
+  base::Optional<int64_t> expected_metric_value;
+};
+
+}  // namespace
+
+// Test that presence of form managers in various situations is appropriately
+// reported through UKM.
+TEST_F(PasswordManagerTest, ReportMissingFormManager) {
+  const PasswordForm form = MakeSimpleForm();
+  PasswordForm other_form = MakeSimpleForm();
+  ++other_form.form_data.unique_renderer_id;
+  other_form.signon_realm += "other";
+
+  const MissingFormManagerTestCase kTestCases[] = {
+      {
+          .description =
+              "A form is submitted and a NewPasswordFormManager not present.",
+          .parsed_forms = {},
+          .save_signal = MissingFormManagerTestCase::Signal::Automatic,
+          // .parsed_forms is empty, so the processed form below was not
+          // observed and has no form manager associated.
+          .processed_forms = {form},
+          .expected_metric_value =
+              MetricValue(PasswordManagerMetricsRecorder::FormManagerAvailable::
+                              kMissingProvisionallySave),
+      },
+      {
+          .description = "Manual saving is requested and a "
+                         "NewPasswordFormManager not present.",
+          .parsed_forms = {},
+          .save_signal = MissingFormManagerTestCase::Signal::Manual,
+          // .parsed_forms is empty, so the processed form below was not
+          // observed and has no form manager associated.
+          .processed_forms = {form},
+          .expected_metric_value =
+              MetricValue(PasswordManagerMetricsRecorder::FormManagerAvailable::
+                              kMissingManual),
+      },
+      {
+          .description = "Manual saving is successfully requested.",
+          .parsed_forms = {form},
+          .save_signal = MissingFormManagerTestCase::Signal::Manual,
+          .processed_forms = {form},
+          .expected_metric_value = MetricValue(
+              PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess),
+      },
+      {
+          .description =
+              "A form is submitted and a NewPasswordFormManager present.",
+          .parsed_forms = {form},
+          .save_signal = MissingFormManagerTestCase::Signal::Automatic,
+          .processed_forms = {form},
+          .expected_metric_value = MetricValue(
+              PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess),
+      },
+      {
+          .description = "First failure, then success.",
+          .parsed_forms = {form},
+          .save_signal = MissingFormManagerTestCase::Signal::Automatic,
+          // Processing |other_form| first signals a failure value in the
+          // metric, but processing |form| after that should overwrite that with
+          // kSuccess.
+          .processed_forms = {other_form, form},
+          .expected_metric_value = MetricValue(
+              PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess),
+      },
+      {
+          .description = "No forms, no report.",
+          .parsed_forms = {},
+          .save_signal = MissingFormManagerTestCase::Signal::None,
+          .processed_forms = {},
+          .expected_metric_value = base::nullopt,
+      },
+      {
+          .description = "Not enabled, no report.",
+          .saving = MissingFormManagerTestCase::Saving::Disabled,
+          .parsed_forms = {form},
+          .save_signal = MissingFormManagerTestCase::Signal::Automatic,
+          .processed_forms = {form},
+          .expected_metric_value = base::nullopt,
+      },
+  };
+
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  for (const MissingFormManagerTestCase& test_case : kTestCases) {
+    EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+        .WillRepeatedly(Return(test_case.saving ==
+                               MissingFormManagerTestCase::Saving::Enabled));
+    for (bool new_parsing_for_saving : {true, false}) {
+      SCOPED_TRACE(testing::Message()
+                   << "test case = " << test_case.description
+                   << ", new_parsing_for_saving = " << new_parsing_for_saving);
+      base::test::ScopedFeatureList scoped_feature_list;
+      if (new_parsing_for_saving)
+        TurnOnNewParsingForSaving(&scoped_feature_list);
+
+      manager()->OnPasswordFormsParsed(nullptr, test_case.parsed_forms);
+
+      ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+      auto metrics_recorder = std::make_unique<PasswordManagerMetricsRecorder>(
+          1234, GURL("http://example.com"));
+      EXPECT_CALL(client_, GetMetricsRecorder())
+          .WillRepeatedly(Return(metrics_recorder.get()));
+
+      for (const PasswordForm& processed_form : test_case.processed_forms) {
+        switch (test_case.save_signal) {
+          case MissingFormManagerTestCase::Signal::Automatic:
+            manager()->OnPasswordFormSubmitted(nullptr, processed_form);
+            break;
+          case MissingFormManagerTestCase::Signal::Manual:
+            manager()->ShowManualFallbackForSaving(nullptr, processed_form);
+            break;
+          case MissingFormManagerTestCase::Signal::None:
+            break;
+        }
+      }
+
+      // Flush the UKM reports.
+      EXPECT_CALL(client_, GetMetricsRecorder())
+          .WillRepeatedly(Return(nullptr));
+      metrics_recorder.reset();
+      if (test_case.expected_metric_value) {
+        CheckMetricHasValue(
+            test_ukm_recorder, ukm::builders::PageWithPassword::kEntryName,
+            ukm::builders::PageWithPassword::kFormManagerAvailableName,
+            test_case.expected_metric_value.value());
+      } else {
+        EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(
+            GetMetricEntry(test_ukm_recorder,
+                           ukm::builders::PageWithPassword::kEntryName),
+            ukm::builders::PageWithPassword::kFormManagerAvailableName));
+      }
+    }
+  }
 }
 
 }  // namespace password_manager
