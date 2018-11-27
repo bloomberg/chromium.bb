@@ -453,7 +453,7 @@
   },
   {
     "name": "crostini-usb-support",
-    // "owners": [ "your-team" ],
+    "owners": [ "jopra", "nverne", "benwells" ],
     "expiry_milestone": 76
   },
   {
@@ -523,7 +523,7 @@
   },
   {
     "name": "disable-crostini-files",
-    // "owners": [ "your-team" ],
+    "owners": [ "joelhockey", "nverne", "benwells" ],
     "expiry_milestone": 76
   },
   {
@@ -1143,7 +1143,7 @@
   },
   {
     "name": "enable-experimental-crostini-ui",
-    // "owners": [ "your-team" ],
+    "owners": [ "nverne", "benwells" ],
     "expiry_milestone": 76
   },
   {
