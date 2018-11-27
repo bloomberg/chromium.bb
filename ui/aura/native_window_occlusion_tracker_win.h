@@ -207,6 +207,9 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
   // |root_window_hwnds_occlusion_state_|.
   base::flat_map<HWND, Window*> hwnd_root_window_map_;
 
+  // This is set by UpdateOcclusionState. It is currently only used by tests.
+  int num_visible_root_windows_ = 0;
+
   std::unique_ptr<WindowOcclusionCalculator> occlusion_calculator_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWindowOcclusionTrackerWin);

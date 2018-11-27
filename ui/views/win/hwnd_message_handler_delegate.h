@@ -175,6 +175,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when the window's visibility changed. |visible| holds the new state.
   virtual void HandleVisibilityChanged(bool visible) = 0;
 
+  // Called when a top level window is minimized or restored.
+  virtual void HandleWindowMinimizedOrRestored(bool restored) = 0;
+
   // Called when the window's client size changed. |new_size| holds the new
   // size.
   virtual void HandleClientSizeChanged(const gfx::Size& new_size) = 0;
