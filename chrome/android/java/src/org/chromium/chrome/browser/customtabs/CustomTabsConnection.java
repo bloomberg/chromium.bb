@@ -846,7 +846,8 @@ public class CustomTabsConnection {
      */
     public void onHandledIntent(CustomTabsSessionToken session, String url, Intent intent) {
         if (mLogRequests) {
-            Log.w(TAG, "onHandledIntent, URL: %s, extras:", bundleToJson(intent.getExtras()));
+            Log.w(TAG, "onHandledIntent, URL: %s, extras: %s", url,
+                    bundleToJson(intent.getExtras()));
         }
 
         // If we still have pending warmup tasks, don't continue as they would only delay intent
@@ -1001,14 +1002,7 @@ public class CustomTabsConnection {
     @VisibleForTesting
     boolean canDoParallelRequest(CustomTabsSessionToken session, Uri referrer) {
         ThreadUtils.assertOnUiThread();
-        // The restrictions are:
-        // - Native initialization: Required to get the profile, and the feature state.
-        // - The referrer's origin is allowed.
-        //
-        // TODO(lizeb): Relax the restrictions.
-        return ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
-                       .hasNativeInitializationCompleted()
-                && mClientManager.isFirstPartyOriginForSession(session, new Origin(referrer));
+        return mClientManager.isFirstPartyOriginForSession(session, new Origin(referrer));
     }
 
     /** See {@link ClientManager#getReferrerForSession(CustomTabsSessionToken)} */
