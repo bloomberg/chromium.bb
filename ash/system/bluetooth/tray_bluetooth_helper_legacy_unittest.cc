@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "dbus/object_path.h"
@@ -43,6 +44,10 @@ TEST_F(TrayBluetoothHelperLegacyTest, Basics) {
       static_cast<FakeBluetoothAdapterClient*>(
           BluezDBusManager::Get()->GetBluetoothAdapterClient());
   adapter_client->SetSimulationIntervalMs(0);
+  adapter_client
+      ->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath))
+      ->powered.ReplaceValue(true);
 
   FakeBluetoothDeviceClient* device_client =
       static_cast<FakeBluetoothDeviceClient*>(
@@ -59,11 +64,11 @@ TEST_F(TrayBluetoothHelperLegacyTest, Basics) {
   TrayBluetoothHelperLegacy helper;
   helper.Initialize();
   RunAllPendingInMessageLoop();
-  EXPECT_EQ(device::mojom::BluetoothSystem::State::kPoweredOff,
+  EXPECT_EQ(device::mojom::BluetoothSystem::State::kPoweredOn,
             helper.GetBluetoothState());
   EXPECT_FALSE(helper.HasBluetoothDiscoverySession());
 
-  BluetoothDeviceList devices = helper.GetAvailableBluetoothDevices();
+  const BluetoothDeviceList& devices = helper.GetAvailableBluetoothDevices();
   // The devices are fake in tests, so don't assume any particular number.
   EXPECT_FALSE(devices.empty());
   EXPECT_TRUE(ExistInFilteredDevices(
@@ -134,6 +139,10 @@ TEST_F(TrayBluetoothHelperLegacyTest, UnfilteredBluetoothDevices) {
       static_cast<FakeBluetoothAdapterClient*>(
           BluezDBusManager::Get()->GetBluetoothAdapterClient());
   adapter_client->SetSimulationIntervalMs(0);
+  adapter_client
+      ->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath))
+      ->powered.ReplaceValue(true);
 
   FakeBluetoothDeviceClient* device_client =
       static_cast<FakeBluetoothDeviceClient*>(
@@ -150,7 +159,7 @@ TEST_F(TrayBluetoothHelperLegacyTest, UnfilteredBluetoothDevices) {
   helper.Initialize();
   base::RunLoop().RunUntilIdle();
 
-  BluetoothDeviceList devices = helper.GetAvailableBluetoothDevices();
+  const BluetoothDeviceList& devices = helper.GetAvailableBluetoothDevices();
   // The devices are fake in tests, so don't assume any particular number.
   EXPECT_TRUE(ExistInFilteredDevices(
       FakeBluetoothDeviceClient::kDisplayPinCodeAddress, devices));

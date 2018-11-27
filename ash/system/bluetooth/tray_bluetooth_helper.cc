@@ -3,10 +3,18 @@
 // found in the LICENSE file.
 
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
+#include "base/time/time.h"
 
 using device::mojom::BluetoothSystem;
 
 namespace ash {
+
+namespace {
+
+constexpr base::TimeDelta kUpdateFrequencyMs =
+    base::TimeDelta::FromMilliseconds(1000);
+
+}  // namespace
 
 TrayBluetoothHelper::TrayBluetoothHelper() = default;
 
@@ -18,6 +26,11 @@ void TrayBluetoothHelper::AddObserver(Observer* observer) {
 
 void TrayBluetoothHelper::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+const BluetoothDeviceList& TrayBluetoothHelper::GetAvailableBluetoothDevices()
+    const {
+  return cached_devices_;
 }
 
 bool TrayBluetoothHelper::IsBluetoothStateAvailable() {
@@ -32,6 +45,36 @@ bool TrayBluetoothHelper::IsBluetoothStateAvailable() {
   }
 }
 
+void TrayBluetoothHelper::StartOrStopRefreshingDeviceList() {
+  if (GetBluetoothState() == BluetoothSystem::State::kPoweredOn) {
+    DCHECK(!timer_.IsRunning());
+    UpdateDeviceCache();
+    timer_.Start(FROM_HERE, kUpdateFrequencyMs, this,
+                 &TrayBluetoothHelper::UpdateDeviceCache);
+    return;
+  }
+
+  timer_.Stop();
+  cached_devices_.clear();
+  NotifyBluetoothDeviceListChanged();
+}
+
+void TrayBluetoothHelper::UpdateDeviceCache() {
+  GetBluetoothDevices(
+      base::BindOnce(&TrayBluetoothHelper::OnGetBluetoothDevices,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void TrayBluetoothHelper::OnGetBluetoothDevices(BluetoothDeviceList devices) {
+  cached_devices_ = std::move(devices);
+  NotifyBluetoothDeviceListChanged();
+}
+
+void TrayBluetoothHelper::NotifyBluetoothDeviceListChanged() {
+  for (auto& observer : observers_)
+    observer.OnBluetoothDeviceListChanged();
+}
+
 void TrayBluetoothHelper::NotifyBluetoothSystemStateChanged() {
   for (auto& observer : observers_)
     observer.OnBluetoothSystemStateChanged();
@@ -40,11 +83,6 @@ void TrayBluetoothHelper::NotifyBluetoothSystemStateChanged() {
 void TrayBluetoothHelper::NotifyBluetoothScanStateChanged() {
   for (auto& observer : observers_)
     observer.OnBluetoothScanStateChanged();
-}
-
-void TrayBluetoothHelper::NotifyBluetoothDeviceListChanged() {
-  for (auto& observer : observers_)
-    observer.OnBluetoothDeviceListChanged();
 }
 
 }  // namespace ash
