@@ -27,36 +27,6 @@ using autofill::UserInfo;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
-namespace {
-
-ScopedJavaLocalRef<jobject> ConvertAccessorySheetDataToJavaObject(
-    JNIEnv* env,
-    const AccessorySheetData& data) {
-  ScopedJavaLocalRef<jobject> j_data =
-      Java_ManualFillingBridge_createAccessorySheetData(
-          env, ConvertUTF16ToJavaString(env, data.title()));
-
-  for (const UserInfo& user_info : data.user_info_list()) {
-    ScopedJavaLocalRef<jobject> j_user_info =
-        Java_ManualFillingBridge_addUserInfoToAccessorySheetData(env, j_data);
-    for (const UserInfo::Field& field : user_info.fields()) {
-      Java_ManualFillingBridge_addFieldToUserInfo(
-          env, j_user_info, ConvertUTF16ToJavaString(env, field.display_text()),
-          ConvertUTF16ToJavaString(env, field.a11y_description()),
-          field.is_obfuscated(), field.selectable());
-    }
-  }
-
-  for (const FooterCommand& footer_command : data.footer_commands()) {
-    Java_ManualFillingBridge_addFooterCommandToAccessorySheetData(
-        env, j_data,
-        ConvertUTF16ToJavaString(env, footer_command.display_text()));
-  }
-  return j_data;
-}
-
-}  // namespace
-
 ManualFillingViewAndroid::ManualFillingViewAndroid(
     ManualFillingController* controller)
     : controller_(controller) {
@@ -157,6 +127,35 @@ void ManualFillingViewAndroid::OnImageFetched(
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
 
   RunObjectCallbackAndroid(j_callback, j_bitmap);
+}
+
+ScopedJavaLocalRef<jobject>
+ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
+    JNIEnv* env,
+    const AccessorySheetData& tab_data) {
+  ScopedJavaLocalRef<jobject> j_tab_data =
+      Java_ManualFillingBridge_createAccessorySheetData(
+          env, ConvertUTF16ToJavaString(env, tab_data.title()));
+
+  for (const UserInfo& user_info : tab_data.user_info_list()) {
+    ScopedJavaLocalRef<jobject> j_user_info =
+        Java_ManualFillingBridge_addUserInfoToAccessorySheetData(env,
+                                                                 j_tab_data);
+    for (const UserInfo::Field& field : user_info.fields()) {
+      Java_ManualFillingBridge_addFieldToUserInfo(
+          env, java_object_, j_user_info,
+          ConvertUTF16ToJavaString(env, field.display_text()),
+          ConvertUTF16ToJavaString(env, field.a11y_description()),
+          field.is_obfuscated(), field.selectable());
+    }
+  }
+
+  for (const FooterCommand& footer_command : tab_data.footer_commands()) {
+    Java_ManualFillingBridge_addFooterCommandToAccessorySheetData(
+        env, java_object_, j_tab_data,
+        ConvertUTF16ToJavaString(env, footer_command.display_text()));
+  }
+  return j_tab_data;
 }
 
 // static

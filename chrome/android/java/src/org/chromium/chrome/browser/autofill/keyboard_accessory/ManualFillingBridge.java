@@ -114,19 +114,33 @@ class ManualFillingBridge {
     }
 
     @CalledByNative
-    private static void addFieldToUserInfo(Object objUserInfo, String displayText,
-            String a11yDescription, boolean isObfuscated, boolean selectable) {
+    private void addFieldToUserInfo(Object objUserInfo, String displayText, String a11yDescription,
+            boolean isObfuscated, boolean selectable) {
+        Callback<UserInfo.Field> callback = null;
+        if (selectable) {
+            callback = (field) -> {
+                assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
+                KeyboardAccessoryMetricsRecorder.recordSuggestionSelected(
+                        AccessoryTabType.PASSWORDS,
+                        field.isObfuscated() ? AccessorySuggestionType.PASSWORD
+                                             : AccessorySuggestionType.USERNAME);
+                nativeOnFillingTriggered(mNativeView, field.isObfuscated(), field.getDisplayText());
+            };
+        }
         ((UserInfo) objUserInfo)
                 .getFields()
-                .add(new UserInfo.Field(displayText, a11yDescription, isObfuscated, selectable));
+                .add(new UserInfo.Field(displayText, a11yDescription, isObfuscated, callback));
     }
 
     @CalledByNative
-    private static void addFooterCommandToAccessorySheetData(
+    private void addFooterCommandToAccessorySheetData(
             Object objAccessorySheetData, String displayText) {
         ((AccessorySheetData) objAccessorySheetData)
                 .getFooterCommands()
-                .add(new FooterCommand(displayText));
+                .add(new FooterCommand(displayText, (footerCommand) -> {
+                    assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
+                    nativeOnOptionSelected(mNativeView, footerCommand.getDisplayText());
+                }));
     }
 
     private Item[] convertToItems(AccessorySheetData accessorySheetData) {

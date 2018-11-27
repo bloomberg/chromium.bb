@@ -343,30 +343,26 @@ public class KeyboardAccessoryData {
         /**
          * Represents an item (either selectable or not) presented on the UI, such as the username
          * or a credit card number.
-         *
-         * TODO(crbug.com/902425): Add a callback to be invoked on user tap.
          */
         public final static class Field {
             private final String mDisplayText;
             private final String mA11yDescription;
             private final boolean mIsObfuscated;
-            // TODO(crbug.com/902425): Once the selection callback is added to this class, replace
-            //                         this with a check if the callback is not null.
-            private final boolean mSelectable;
+            private final Callback<Field> mCallback;
 
             /**
              * Creates a new Field.
              * @param displayText The text to display. Plain text if |isObfuscated| is false.
              * @param a11yDescription The description used for accessibility.
              * @param isObfuscated If true, the displayed caption is transformed into stars.
-             * @param selectable If true, user can interact with the suggested field.
+             * @param callback Called when the user taps the suggestions.
              */
             public Field(String displayText, String a11yDescription, boolean isObfuscated,
-                    boolean selectable) {
+                    Callback<Field> callback) {
                 mDisplayText = displayText;
                 mA11yDescription = a11yDescription;
                 mIsObfuscated = isObfuscated;
-                mSelectable = selectable;
+                mCallback = callback;
             }
 
             /**
@@ -388,7 +384,7 @@ public class KeyboardAccessoryData {
              * this is false if this is a password suggestion on a non-password input field.
              */
             public boolean isSelectable() {
-                return mSelectable;
+                return mCallback != null;
             }
 
             /**
@@ -397,6 +393,13 @@ public class KeyboardAccessoryData {
              */
             public boolean isObfuscated() {
                 return mIsObfuscated;
+            }
+
+            /**
+             * The delegate is called when the Item is selected by a user.
+             */
+            public void triggerSelection() {
+                if (mCallback != null) mCallback.onResult(this);
             }
         }
 
@@ -423,13 +426,16 @@ public class KeyboardAccessoryData {
      */
     public final static class FooterCommand {
         private final String mDisplayText;
+        private final Callback<FooterCommand> mCallback;
 
         /**
          * Creates a new FooterCommand.
          * @param displayText The text to be displayed on the footer.
+         * @param callback Called when the user taps the suggestions.
          */
-        public FooterCommand(String displayText) {
+        public FooterCommand(String displayText, Callback<FooterCommand> callback) {
             mDisplayText = displayText;
+            mCallback = callback;
         }
 
         /**
@@ -438,6 +444,14 @@ public class KeyboardAccessoryData {
          */
         public String getDisplayText() {
             return mDisplayText;
+        }
+
+        /**
+         * Returns the translated text to be shown on the UI for this footer command. This text is
+         * used for accessibility.
+         */
+        public void execute() {
+            mCallback.onResult(this);
         }
     }
 
