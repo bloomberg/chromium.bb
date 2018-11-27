@@ -52,11 +52,15 @@ if (enable_vulkan) {
       "viz_vulkan_context_provider_export.h",
     ]
     configs = [ "//third_party/vulkan:vulkan_config" ]
+
+    public_deps = [
+      "//skia",
+    ]
+
     deps = [
       "//base",
       "//gpu/vulkan",
       "//gpu/vulkan:buildflags",
-      "//skia",
     ]
   }
 }

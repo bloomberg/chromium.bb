@@ -61,6 +61,7 @@ VULKAN_DEVICE_FUNCTIONS = [
 { 'name': 'vkDestroySampler' },
 { 'name': 'vkDestroySemaphore' },
 { 'name': 'vkDestroyShaderModule' },
+{ 'name': 'vkDeviceWaitIdle' },
 { 'name': 'vkFreeCommandBuffers' },
 { 'name': 'vkFreeDescriptorSets' },
 { 'name': 'vkFreeMemory' },
