@@ -206,8 +206,16 @@ StyleRecalcChange ComputedStyle::StylePropagationDiff(
     return kReattach;
   }
 
-  if (old_style->ForceLegacyLayout() != new_style->ForceLegacyLayout())
-    return kReattach;
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // LayoutNG needs an anonymous inline wrapper if ::first-line is applied.
+    // Also see |LayoutBlockFlow::NeedsAnonymousInlineWrapper()|.
+    if (new_style->HasPseudoStyle(kPseudoIdFirstLine) &&
+        !old_style->HasPseudoStyle(kPseudoIdFirstLine))
+      return kReattach;
+
+    if (old_style->ForceLegacyLayout() != new_style->ForceLegacyLayout())
+      return kReattach;
+  }
 
   bool independent_equal = old_style->IndependentInheritedEqual(*new_style);
   bool non_independent_equal =

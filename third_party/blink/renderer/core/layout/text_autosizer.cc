@@ -449,6 +449,11 @@ float TextAutosizer::Inflate(LayoutObject* parent,
       }
     } else if (child->IsLayoutInline()) {
       multiplier = Inflate(child, layouter, behavior, multiplier);
+      // If this LayoutInline is an anonymous inline that has multiplied
+      // children, apply the multiplifer to the parent too. We compute
+      // ::first-line style from the style of the parent block.
+      if (multiplier && child->IsAnonymous())
+        has_text_child = true;
     } else if (child->IsLayoutBlock() && behavior == kDescendToInnerBlocks &&
                !ClassifyBlock(child,
                               INDEPENDENT | EXPLICIT_WIDTH | SUPPRESSING)) {
