@@ -224,6 +224,10 @@ const base::Feature kResumeBackgroundVideo {
 #endif
 };
 
+// Enable Media Capabilities with finch-parameters.
+const base::Feature kMediaCapabilitiesWithParameters{
+    "MediaCapabilitiesWithParameters", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Display the Cast overlay button on the media controls.
 const base::Feature kMediaCastOverlayButton{"MediaCastOverlayButton",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
