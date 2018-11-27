@@ -42,7 +42,7 @@ public class AutofillActionModeCallback implements ActionMode.Callback {
             MenuItem item = menu.add(
                     Menu.NONE, mAutofillMenuItem, Menu.CATEGORY_SECONDARY, mAutofillMenuItemTitle);
             item.setShowAsActionFlags(
-                    MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+                    MenuItem.SHOW_AS_ACTION_NEVER | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
         }
         return true;
     }
