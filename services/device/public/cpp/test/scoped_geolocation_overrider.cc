@@ -7,7 +7,7 @@
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace device {
 
@@ -23,10 +23,7 @@ class ScopedGeolocationOverrider::FakeGeolocationContext
   void UpdateLocation(const mojom::Geoposition& position);
   const mojom::Geoposition& GetGeoposition() const;
 
-  void BindForOverrideService(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle handle,
-      const service_manager::BindSourceInfo& source_info);
+  void BindForOverrideService(mojom::GeolocationContextRequest request);
 
   // mojom::GeolocationContext implementation:
   void BindGeolocation(mojom::GeolocationRequest request) override;
@@ -77,15 +74,15 @@ ScopedGeolocationOverrider::ScopedGeolocationOverrider(double latitude,
 }
 
 ScopedGeolocationOverrider::~ScopedGeolocationOverrider() {
-  service_manager::ServiceContext::ClearGlobalBindersForTesting(
-      mojom::kServiceName);
+  service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
+      mojom::GeolocationContext>(mojom::kServiceName);
 }
 
 void ScopedGeolocationOverrider::OverrideGeolocation(
     const mojom::Geoposition& position) {
   geolocation_context_ = std::make_unique<FakeGeolocationContext>(position);
-  service_manager::ServiceContext::SetGlobalBinderForTesting(
-      mojom::kServiceName, mojom::GeolocationContext::Name_,
+  service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
+      mojom::kServiceName,
       base::BindRepeating(&FakeGeolocationContext::BindForOverrideService,
                           base::Unretained(geolocation_context_.get())));
 }
@@ -139,11 +136,8 @@ ScopedGeolocationOverrider::FakeGeolocationContext::GetGeoposition() const {
 }
 
 void ScopedGeolocationOverrider::FakeGeolocationContext::BindForOverrideService(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle handle,
-    const service_manager::BindSourceInfo& source_info) {
-  context_bindings_.AddBinding(
-      this, mojom::GeolocationContextRequest(std::move(handle)));
+    mojom::GeolocationContextRequest request) {
+  context_bindings_.AddBinding(this, std::move(request));
 }
 
 void ScopedGeolocationOverrider::FakeGeolocationContext::BindGeolocation(
