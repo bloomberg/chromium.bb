@@ -189,16 +189,22 @@ bool ImplementationBase::GetBucketContents(uint32_t bucket_id,
   if (!buffer.valid()) {
     return false;
   }
-  typedef cmd::GetBucketStart::Result Result;
-  auto result = GetResultAs<Result>();
-  if (!result) {
-    return false;
+  uint32_t size = 0;
+  {
+    // The Result pointer must be scoped to this block because it can be
+    // invalidated below if resizing the ScopedTransferBufferPtr causes the
+    // transfer buffer to be reallocated.
+    typedef cmd::GetBucketStart::Result Result;
+    auto result = GetResultAs<Result>();
+    if (!result) {
+      return false;
+    }
+    *result = 0;
+    helper_->GetBucketStart(bucket_id, GetResultShmId(), result.offset(),
+                            buffer.size(), buffer.shm_id(), buffer.offset());
+    WaitForCmd();
+    size = *result;
   }
-  *result = 0;
-  helper_->GetBucketStart(bucket_id, GetResultShmId(), result.offset(),
-                          buffer.size(), buffer.shm_id(), buffer.offset());
-  WaitForCmd();
-  uint32_t size = *result;
   data->resize(size);
   if (size > 0u) {
     uint32_t offset = 0;
