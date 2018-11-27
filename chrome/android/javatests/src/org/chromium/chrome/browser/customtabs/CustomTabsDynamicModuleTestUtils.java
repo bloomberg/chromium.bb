@@ -6,13 +6,19 @@ package org.chromium.chrome.browser.customtabs;
 
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME;
+import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.PENDING_URL_KEY;
+import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.URL_KEY;
 
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsCallback;
 import android.support.test.InstrumentationRegistry;
 
+import org.junit.Assert;
+
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.AppHooksModule;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.BaseActivityDelegate;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.BaseModuleEntryPoint;
@@ -22,6 +28,8 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.IModuleHost;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.IObjectWrapper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+
+import java.util.concurrent.TimeoutException;
 
 /**
  * Utility class that contains fake CCT dynamic module classes and convenience calls
@@ -33,6 +41,11 @@ public class CustomTabsDynamicModuleTestUtils {
     /* package */ final static String FAKE_MODULE_CLASS_NAME = FakeCCTDynamicModule.class.getName();
     /* package */ final static ComponentName FAKE_MODULE_COMPONENT_NAME = new ComponentName(
             FAKE_MODULE_PACKAGE_NAME, FAKE_MODULE_CLASS_NAME);
+    private static int sModuleVersion = 1;
+
+    public static void setModuleVersion(int version) {
+        sModuleVersion = version;
+    }
 
     /**
      * To load a fake module in tests we need to bypass a check if package name of module
@@ -54,16 +67,13 @@ public class CustomTabsDynamicModuleTestUtils {
      * This class is used to test CCT module loader.
      */
     public static class FakeCCTDynamicModule extends BaseModuleEntryPoint {
-        private final int mVersion = 1;
-
         @Override
         public void init(IModuleHost moduleHost) {
-
         }
 
         @Override
         public int getModuleVersion() {
-            return mVersion;
+            return sModuleVersion;
         }
 
         @Override
@@ -73,7 +83,7 @@ public class CustomTabsDynamicModuleTestUtils {
 
         @Override
         public IActivityDelegate createActivityDelegate(IActivityHost activityHost) {
-            return new FakeCCTActivityDelegate(mVersion);
+            return new FakeCCTActivityDelegate();
         }
 
         @Override
@@ -85,10 +95,10 @@ public class CustomTabsDynamicModuleTestUtils {
      * Fake class to test CCT dynamic module.
      */
     public static class FakeCCTActivityDelegate extends BaseActivityDelegate {
-        private final int mVersion;
+        private final CallbackHelper mOnNavigationStarted = new CallbackHelper();
+        private final CallbackHelper mOnNavigationFinished = new CallbackHelper();
 
-        public FakeCCTActivityDelegate(int version) {
-            mVersion = version;
+        public FakeCCTActivityDelegate() {
         }
 
         @Override
@@ -141,15 +151,40 @@ public class CustomTabsDynamicModuleTestUtils {
         }
 
         @Override
-        public void onNavigationEvent(int navigationEvent, Bundle extras) {
-        }
-
-        @Override
         public void onMessageChannelReady() {
         }
 
         @Override
         public void onPostMessage(String message) {
+        }
+
+        @Override
+        public void onNavigationEvent(int navigationEvent, Bundle extras) {
+            // Introduced in API version 4.
+            if (sModuleVersion < 4) {
+                Assert.fail("onNavigationEvent must not be used if module version less than 4");
+            }
+
+            if (navigationEvent == CustomTabsCallback.NAVIGATION_STARTED) {
+                Assert.assertNotNull(extras.get(PENDING_URL_KEY));
+                mOnNavigationStarted.notifyCalled();
+            } else if (navigationEvent == CustomTabsCallback.NAVIGATION_FINISHED) {
+                Assert.assertNotNull(extras.get(URL_KEY));
+                mOnNavigationFinished.notifyCalled();
+            }
+        }
+
+        /**
+         * Waits for expected number of navigation events happen.
+         */
+        /* package */ void waitForNavigationEvent(int navigationEvent, int currentCallCount,
+                int numberOfCallsToWaitFor) throws TimeoutException, InterruptedException {
+            if (sModuleVersion < 4) return;
+            if (navigationEvent == CustomTabsCallback.NAVIGATION_STARTED) {
+                mOnNavigationStarted.waitForCallback(currentCallCount, numberOfCallsToWaitFor);
+            } else if (navigationEvent == CustomTabsCallback.NAVIGATION_FINISHED) {
+                mOnNavigationFinished.waitForCallback(currentCallCount, numberOfCallsToWaitFor);
+            }
         }
     }
 
