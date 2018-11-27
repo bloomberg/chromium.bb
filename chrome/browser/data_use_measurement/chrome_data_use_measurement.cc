@@ -120,7 +120,8 @@ void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
   if (!is_user_request || DataUseMeasurement::IsUserDownloadsRequest(
                               network_traffic_annotation_id_hash)) {
     for (auto& observer : services_data_use_observer_list_)
-      observer.OnServicesDataUse(recv_bytes, sent_bytes);
+      observer.OnServicesDataUse(network_traffic_annotation_id_hash, recv_bytes,
+                                 sent_bytes);
   }
   UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesReceived.Delegate", recv_bytes);
   UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesSent.Delegate", sent_bytes);

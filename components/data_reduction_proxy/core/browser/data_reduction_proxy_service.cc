@@ -376,7 +376,8 @@ DataReductionProxyService::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void DataReductionProxyService::OnServicesDataUse(int64_t recv_bytes,
+void DataReductionProxyService::OnServicesDataUse(int32_t service_hash_code,
+                                                  int64_t recv_bytes,
                                                   int64_t sent_bytes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (compression_stats_) {
@@ -389,6 +390,10 @@ void DataReductionProxyService::OnServicesDataUse(int64_t recv_bytes,
     compression_stats_->RecordDataUseByHost(
         util::GetSiteBreakdownOtherHostName(), recv_bytes, recv_bytes,
         base::Time::Now());
+    compression_stats_->RecordDataUseWithMimeType(
+        recv_bytes, recv_bytes, settings_->IsDataReductionProxyEnabled(), HTTPS,
+        std::string(), false, data_use_measurement::DataUseUserData::OTHER,
+        service_hash_code);
   }
 }
 

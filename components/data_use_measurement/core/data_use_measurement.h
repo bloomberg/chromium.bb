@@ -48,7 +48,9 @@ class DataUseMeasurement
   class ServicesDataUseObserver {
    public:
     // Called when services data use is reported.
-    virtual void OnServicesDataUse(int64_t recv_bytes, int64_t sent_bytes) = 0;
+    virtual void OnServicesDataUse(int32_t service_hash_code,
+                                   int64_t recv_bytes,
+                                   int64_t sent_bytes) = 0;
   };
 
   // Returns true if the NTA hash is initiated by user traffic.
