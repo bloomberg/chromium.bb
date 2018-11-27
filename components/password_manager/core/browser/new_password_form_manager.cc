@@ -291,10 +291,6 @@ void NewPasswordFormManager::Update(const PasswordForm& credentials_to_update) {
 
   std::unique_ptr<PasswordForm> parsed_observed_form =
       parser_.Parse(observed_form_, FormDataParser::Mode::kFilling);
-  FormStructure form_structure(credentials_to_update.form_data);
-  votes_uploader_.UploadPasswordVote(
-      *parsed_observed_form, *parsed_submitted_form_, autofill::NEW_PASSWORD,
-      form_structure.FormSignatureAsStr());
 
   base::string16 password_to_save = pending_credentials_.password_value;
   bool skip_zero_click = pending_credentials_.skip_zero_click;
@@ -428,13 +424,18 @@ void NewPasswordFormManager::SetGenerationElement(
 
 bool NewPasswordFormManager::IsPossibleChangePasswordFormWithoutUsername()
     const {
-  // TODO(https://crbug.com/831123): Implement as in PasswordFormManager.
-  return false;
+  return parsed_submitted_form_ &&
+         parsed_submitted_form_->IsPossibleChangePasswordFormWithoutUsername();
 }
 
 bool NewPasswordFormManager::RetryPasswordFormPasswordUpdate() const {
-  // TODO(https://crbug.com/831123): Implement as in PasswordFormManager.
-  return false;
+  return retry_password_form_password_update_;
+}
+
+bool NewPasswordFormManager::IsPasswordUpdate() const {
+  return (!GetBestMatches().empty() &&
+          IsPossibleChangePasswordFormWithoutUsername()) ||
+         IsPasswordOverridden() || RetryPasswordFormPasswordUpdate();
 }
 
 std::vector<base::WeakPtr<PasswordManagerDriver>>
@@ -950,6 +951,13 @@ void NewPasswordFormManager::ProcessUpdate() {
   if (!parsed_submitted_form_->IsPossibleChangePasswordForm()) {
     votes_uploader_.SendVoteOnCredentialsReuse(
         observed_form_, *parsed_submitted_form_, &pending_credentials_);
+  }
+  if (IsPasswordUpdate()) {
+    votes_uploader_.UploadPasswordVote(
+        *parsed_submitted_form_, *parsed_submitted_form_,
+        autofill::NEW_PASSWORD,
+        autofill::FormStructure(pending_credentials_.form_data)
+            .FormSignatureAsStr());
   }
 
   if (pending_credentials_.times_used == 1) {

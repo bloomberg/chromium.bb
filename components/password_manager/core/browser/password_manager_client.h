@@ -21,7 +21,7 @@
 class PrefService;
 
 namespace autofill {
-class AutofillManager;
+class AutofillDownloadManager;
 }
 
 namespace favicon {
@@ -196,8 +196,8 @@ class PasswordManagerClient {
   PasswordManager* GetPasswordManager();
   virtual const PasswordManager* GetPasswordManager() const;
 
-  // Returns the AutofillManager for the main frame.
-  virtual autofill::AutofillManager* GetAutofillManagerForMainFrame();
+  // Returns the AutofillDownloadManager for votes uploading.
+  virtual autofill::AutofillDownloadManager* GetAutofillDownloadManager();
 
   // Returns the main frame URL.
   virtual const GURL& GetMainFrameURL() const;
