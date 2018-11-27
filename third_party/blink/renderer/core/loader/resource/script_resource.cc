@@ -145,6 +145,35 @@ const ParkableString& ScriptResource::SourceText() {
   return source_text_;
 }
 
+String ScriptResource::TextForInspector() const {
+  // If the resource buffer exists, we can safely return the decoded text.
+  if (ResourceBuffer())
+    return DecodedText();
+
+  // If there is no resource buffer, then we have three cases.
+  // TODO(crbug.com/865098): Simplify the below code and remove the CHECKs once
+  // the assumptions are confirmed.
+
+  if (IsLoaded()) {
+    CHECK(IsFinishedInternal());
+    if (!source_text_.IsNull()) {
+      // 1. We have finished loading, and have already decoded the buffer into
+      //    the source text and cleared the resource buffer to save space.
+      return source_text_.ToString();
+    }
+
+    // 2. We have finished loading with no data received, so no streaming ever
+    //    happened or streaming was suppressed.
+    CHECK(!streamer_ || streamer_->StreamingSuppressedReason() ==
+                            ScriptStreamer::kScriptTooSmall);
+    return "";
+  }
+
+  // 3. We haven't started loading, and actually haven't received any data yet
+  //    at all to initialise the resource buffer, so the resource is empty.
+  return "";
+}
+
 SingleCachedMetadataHandler* ScriptResource::CacheHandler() {
   return static_cast<SingleCachedMetadataHandler*>(Resource::CacheHandler());
 }

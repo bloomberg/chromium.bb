@@ -132,6 +132,10 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   const ParkableString& SourceText();
 
+  // Get the resource's current text. This can return partial data, so should
+  // not be used outside of the inspector.
+  String TextForInspector() const;
+
   SingleCachedMetadataHandler* CacheHandler();
 
   // Gets the script streamer from the ScriptResource, clearing the resource's
