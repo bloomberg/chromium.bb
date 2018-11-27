@@ -128,6 +128,8 @@ bool Cryptographer::Decrypt(const sync_pb::EncryptedData& encrypted,
 
 std::string Cryptographer::DecryptToString(
     const sync_pb::EncryptedData& encrypted) const {
+  // TODO(mamir): DecryptToString() should return a boolean to signal failure
+  // instead of an empty string.
   auto it = nigoris_.find(encrypted.key_name());
   if (nigoris_.end() == it) {
     // The key used to encrypt the blob is not part of the set of installed
