@@ -1118,7 +1118,23 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
 
   if (event->type() == ui::ET_KEY_PRESSED) {
     base::WeakPtr<MenuController> this_ref = AsWeakPtr();
+#if defined(OS_MACOSX)
+    // Special handling for Option-Up and Option-Down, which should behave like
+    // Home and End respectively in menus.
+    if ((event->flags() & ui::EF_ALT_DOWN)) {
+      if (event->key_code() == ui::VKEY_UP) {
+        OnKeyDown(ui::VKEY_HOME);
+      } else if (event->key_code() == ui::VKEY_DOWN) {
+        OnKeyDown(ui::VKEY_END);
+      } else {
+        OnKeyDown(event->key_code());
+      }
+    } else {
+      OnKeyDown(event->key_code());
+    }
+#else
     OnKeyDown(event->key_code());
+#endif
     // Key events can lead to this being deleted.
     if (!this_ref)
       return ui::POST_DISPATCH_NONE;
@@ -1348,6 +1364,14 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
     return;
 
   switch (key_code) {
+    case ui::VKEY_HOME:
+      MoveSelectionToFirstOrLastItem(INCREMENT_SELECTION_DOWN);
+      break;
+
+    case ui::VKEY_END:
+      MoveSelectionToFirstOrLastItem(INCREMENT_SELECTION_UP);
+      break;
+
     case ui::VKEY_UP:
       IncrementSelection(INCREMENT_SELECTION_UP);
       break;
@@ -2415,6 +2439,27 @@ void MenuController::IncrementSelection(
       }
     }
   }
+}
+
+void MenuController::MoveSelectionToFirstOrLastItem(
+    SelectionIncrementDirectionType direction) {
+  MenuItemView* item = pending_state_.item;
+  DCHECK(item);
+  MenuItemView* submenu = nullptr;
+
+  if (pending_state_.submenu_open && item->SubmenuIsShowing()) {
+    if (!item->GetSubmenu()->GetMenuItemCount())
+      return;
+
+    // A menu is selected and open, but none of its children are selected,
+    // select the first or last menu item that is visible and enabled.
+    submenu = item;
+  } else {
+    submenu = item->GetParentMenuItem();
+  }
+
+  MenuItemView* to_select = FindInitialSelectableMenuItem(submenu, direction);
+  SetInitialHotTrackedView(to_select, direction);
 }
 
 MenuItemView* MenuController::FindInitialSelectableMenuItem(
