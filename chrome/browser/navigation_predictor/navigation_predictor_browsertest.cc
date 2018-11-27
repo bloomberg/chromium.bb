@@ -267,70 +267,6 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
 // Simulate a click at the anchor element.
 // Test that the action accuracy is properly recorded.
-// User clicks on an anchor element that points to a origin different than the
-// origin of the URL prefetched.
-IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       ActionAccuracy_DifferentOrigin_VisibilityChanged) {
-  base::HistogramTester histogram_tester;
-
-  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(content::ExecuteScript(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "document.getElementById('google').click();"));
-  base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
-  // Same document anchor element should be removed after merge.
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
-  histogram_tester.ExpectUniqueSample(
-      "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPrefetch, 1);
-
-  histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
-
-  histogram_tester.ExpectUniqueSample(
-      "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
-      NavigationPredictor::ActionAccuracy::
-          kPrefetchActionClickToDifferentOrigin,
-      1);
-
-  // Change to visibile.
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    1);
-
-  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    1);
-
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
-  histogram_tester.ExpectBucketCount(
-      "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
-
-  // Hiding and showing the tab again should not cause change in histograms
-  // since Pre* on tab foreground is done at most once per page.
-  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
-  histogram_tester.ExpectBucketCount(
-      "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
-}
-
-// Simulate a click at the anchor element.
-// Test that the action accuracy is properly recorded.
 // User clicks on an anchor element that points to same URL as the URL
 // prefetched.
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
@@ -570,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 // Tests that the browser only receives anchor elements that are in the
 // viewport, and from anchor elements whose target differ from document URL
 // by one digit.
-IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
                        ViewportOnlyAndUrlIncrementByOne) {
   base::HistogramTester histogram_tester;
 
@@ -578,9 +514,15 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
-  // Same document anchor element should be removed after merge.
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+  if (base::FeatureList::IsEnabled(
+          blink::features::kRecordAnchorMetricsVisible)) {
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
+    // Same document anchor element should be removed after merge.
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
+  }
 }

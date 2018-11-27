@@ -18,26 +18,11 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-namespace {
-
-content::RenderFrameHost* GetMainFrame(content::RenderFrameHost* rfh) {
-  // Don't use rfh->GetRenderViewHost()->GetMainFrame() here because
-  // RenderViewHost is being deprecated and because in OOPIF,
-  // RenderViewHost::GetMainFrame() returns nullptr for child frames hosted in a
-  // different process from the main frame.
-  while (rfh->GetParent() != nullptr)
-    rfh = rfh->GetParent();
-  return rfh;
-}
-
-}  // namespace
 
 struct NavigationPredictor::NavigationScore {
   NavigationScore(const GURL& url,
@@ -111,19 +96,10 @@ NavigationPredictor::NavigationPredictor(
       is_low_end_device_(base::SysInfo::IsLowEndDevice()) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
-
-  if (render_frame_host != GetMainFrame(render_frame_host))
-    return;
-
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  current_visibility_ = web_contents->GetVisibility();
-  Observe(web_contents);
 }
 
 NavigationPredictor::~NavigationPredictor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  Observe(nullptr);
 }
 
 void NavigationPredictor::Create(
@@ -207,43 +183,6 @@ void NavigationPredictor::RecordActionAccuracyOnClick(
                                             : histogram_name_non_dse,
       ActionAccuracy::kPrefetchActionClickToDifferentOrigin);
   return;
-}
-
-void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Check if the visibility changed from HIDDEN to VISIBLE. Since navigation
-  // predictor is currently restriced to Android, it is okay to disregard the
-  // occluded state.
-  if (current_visibility_ != content::Visibility::HIDDEN ||
-      visibility != content::Visibility::VISIBLE) {
-    current_visibility_ = visibility;
-    return;
-  }
-
-  current_visibility_ = visibility;
-
-  // Previously, the visibility was HIDDEN, and now it is VISIBLE implying that
-  // the web contents that was fully hidden is now fully visible.
-  base::Optional<url::Origin> preconnect_origin;
-  if (prefetch_url_) {
-    // Preconnect to the origin of the prefetch URL.
-    preconnect_origin = url::Origin::Create(prefetch_url_.value());
-  }
-
-  if (!preconnect_origin)
-    return;
-
-  std::string action_histogram_name =
-      source_is_default_search_engine_page_
-          ? "NavigationPredictor.OnDSE.ActionTaken"
-          : "NavigationPredictor.OnNonDSE.ActionTaken";
-  base::UmaHistogramEnumeration(action_histogram_name,
-                                Action::kPreconnectOnVisibilityChange);
-
-  // To keep the overhead as low, Pre* action on tab foreground is taken at most
-  // once per page.
-  Observe(nullptr);
 }
 
 SiteEngagementService* NavigationPredictor::GetEngagementService() const {
