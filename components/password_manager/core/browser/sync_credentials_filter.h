@@ -34,8 +34,6 @@ class SyncCredentialsFilter : public CredentialsFilter {
   // commited entry URL for a check against GAIA reauth site. Uses the factory
   // functions repeatedly to get the sync service and signin manager to pass
   // them to sync_util methods.
-  // TODO(vabr): Could we safely just get a pointer to the services for the
-  // lifetime of the filter?
   SyncCredentialsFilter(
       const PasswordManagerClient* client,
       SyncServiceFactoryFunction sync_service_factory_function,

@@ -597,10 +597,9 @@ void PasswordManager::AddObserverAndDeliverCredentials(
     const PasswordForm& observed_form) {
   observers_.AddObserver(observer);
 
+  // The observers are responsible for filtering notifications by the observer
+  // signon_realm. Each notification is broadcasted to every observer.
   observer->set_signon_realm(observed_form.signon_realm);
-  // TODO(vabr): Even though the observers do the realm check, this mechanism
-  // will still result in every observer being notified about every form. We
-  // could perhaps do better by registering an observer call-back instead.
 
   std::vector<PasswordForm> observed_forms;
   observed_forms.push_back(observed_form);
