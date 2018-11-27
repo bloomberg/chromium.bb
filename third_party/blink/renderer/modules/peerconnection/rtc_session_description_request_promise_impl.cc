@@ -14,20 +14,25 @@
 namespace blink {
 
 RTCSessionDescriptionRequestPromiseImpl*
-RTCSessionDescriptionRequestPromiseImpl::Create(RTCPeerConnection* requester,
-                                                ScriptPromiseResolver* resolver,
-                                                const char* interface_name,
-                                                const char* property_name) {
+RTCSessionDescriptionRequestPromiseImpl::Create(
+    RTCCreateSessionDescriptionOperation operation,
+    RTCPeerConnection* requester,
+    ScriptPromiseResolver* resolver,
+    const char* interface_name,
+    const char* property_name) {
   return new RTCSessionDescriptionRequestPromiseImpl(
-      requester, resolver, interface_name, property_name);
+      operation, requester, resolver, interface_name, property_name);
 }
 
 RTCSessionDescriptionRequestPromiseImpl::
-    RTCSessionDescriptionRequestPromiseImpl(RTCPeerConnection* requester,
-                                            ScriptPromiseResolver* resolver,
-                                            const char* interface_name,
-                                            const char* property_name)
-    : requester_(requester),
+    RTCSessionDescriptionRequestPromiseImpl(
+        RTCCreateSessionDescriptionOperation operation,
+        RTCPeerConnection* requester,
+        ScriptPromiseResolver* resolver,
+        const char* interface_name,
+        const char* property_name)
+    : operation_(operation),
+      requester_(requester),
       resolver_(resolver),
       interface_name_(interface_name),
       property_name_(property_name) {
@@ -41,6 +46,7 @@ RTCSessionDescriptionRequestPromiseImpl::
 void RTCSessionDescriptionRequestPromiseImpl::RequestSucceeded(
     const WebRTCSessionDescription& web_session_description) {
   if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
+    requester_->NoteSessionDescriptionRequestCompleted(operation_, true);
     auto* description = RTCSessionDescription::Create(web_session_description);
     requester_->NoteSdpCreated(*description);
     resolver_->Resolve(description);
@@ -56,6 +62,7 @@ void RTCSessionDescriptionRequestPromiseImpl::RequestSucceeded(
 void RTCSessionDescriptionRequestPromiseImpl::RequestFailed(
     const webrtc::RTCError& error) {
   if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
+    requester_->NoteSessionDescriptionRequestCompleted(operation_, false);
     ScriptState::Scope scope(resolver_->GetScriptState());
     ExceptionState exception_state(resolver_->GetScriptState()->GetIsolate(),
                                    ExceptionState::kExecutionContext,

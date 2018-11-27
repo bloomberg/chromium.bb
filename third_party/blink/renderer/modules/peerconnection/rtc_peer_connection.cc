@@ -545,6 +545,50 @@ base::Optional<SdpFormat> DeduceSdpFormat(const String& type,
   return SdpFormat::kComplexUnifiedPlan;
 }
 
+RTCSetSessionDescriptionOperation GetRTCVoidRequestOperationType(
+    RTCPeerConnection::SetSdpOperationType operation,
+    const RTCSessionDescriptionInit& description) {
+  switch (operation) {
+    case RTCPeerConnection::SetSdpOperationType::kSetLocalDescription:
+      if (description.type() == "offer")
+        return RTCSetSessionDescriptionOperation::kSetLocalDescriptionOffer;
+      if (description.type() == "answer" || description.type() == "pranswer")
+        return RTCSetSessionDescriptionOperation::kSetLocalDescriptionAnswer;
+      return RTCSetSessionDescriptionOperation::kSetLocalDescriptionInvalidType;
+    case RTCPeerConnection::SetSdpOperationType::kSetRemoteDescription:
+      if (description.type() == "offer")
+        return RTCSetSessionDescriptionOperation::kSetRemoteDescriptionOffer;
+      if (description.type() == "answer" || description.type() == "pranswer")
+        return RTCSetSessionDescriptionOperation::kSetRemoteDescriptionAnswer;
+      return RTCSetSessionDescriptionOperation::
+          kSetRemoteDescriptionInvalidType;
+  }
+}
+
+void NoteCallSetupStateEventPending(
+    CallSetupStateTracker* tracker,
+    RTCPeerConnection::SetSdpOperationType operation,
+    const RTCSessionDescriptionInit& description) {
+  switch (operation) {
+    case RTCPeerConnection::SetSdpOperationType::kSetLocalDescription:
+      if (description.type() == "offer") {
+        tracker->NoteOffererStateEvent(OffererState::kSetLocalOfferPending);
+      } else if (description.type() == "answer" ||
+                 description.type() == "pranswer") {
+        tracker->NoteAnswererStateEvent(AnswererState::kSetLocalAnswerPending);
+      }
+      break;
+    case RTCPeerConnection::SetSdpOperationType::kSetRemoteDescription:
+      if (description.type() == "offer") {
+        tracker->NoteAnswererStateEvent(AnswererState::kSetRemoteOfferPending);
+      } else if (description.type() == "answer" ||
+                 description.type() == "pranswer") {
+        tracker->NoteOffererStateEvent(OffererState::kSetRemoteAnswerPending);
+      }
+      break;
+  }
+}
+
 }  // namespace
 
 SdpUsageCategory DeduceSdpUsageCategory(const String& sdp_type,
@@ -750,12 +794,14 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kSignalingStateClosedMessage));
   }
-
+  call_setup_state_tracker_.NoteOffererStateEvent(
+      OffererState::kCreateOfferPending);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCSessionDescriptionRequest* request =
       RTCSessionDescriptionRequestPromiseImpl::Create(
-          this, resolver, "RTCPeerConnection", "createOffer");
+          RTCCreateSessionDescriptionOperation::kCreateOffer, this, resolver,
+          "RTCPeerConnection", "createOffer");
   if (options->hasOfferToReceiveAudio() || options->hasOfferToReceiveVideo()) {
     ExecutionContext* context = ExecutionContext::From(script_state);
     UseCounter::Count(
@@ -784,9 +830,13 @@ ScriptPromise RTCPeerConnection::createOffer(
       ParseOfferOptions(rtc_offer_options, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
+  call_setup_state_tracker_.NoteOffererStateEvent(
+      OffererState::kCreateOfferPending);
   RTCSessionDescriptionRequest* request =
       RTCSessionDescriptionRequestImpl::Create(
-          GetExecutionContext(), this, success_callback, error_callback);
+          GetExecutionContext(),
+          RTCCreateSessionDescriptionOperation::kCreateOffer, this,
+          success_callback, error_callback);
 
   if (offer_options) {
     if (offer_options->OfferToReceiveAudio() != -1 ||
@@ -837,11 +887,14 @@ ScriptPromise RTCPeerConnection::createAnswer(ScriptState* script_state,
                                            kSignalingStateClosedMessage));
   }
 
+  call_setup_state_tracker_.NoteAnswererStateEvent(
+      AnswererState::kCreateAnswerPending);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCSessionDescriptionRequest* request =
       RTCSessionDescriptionRequestPromiseImpl::Create(
-          this, resolver, "RTCPeerConnection", "createAnswer");
+          RTCCreateSessionDescriptionOperation::kCreateAnswer, this, resolver,
+          "RTCPeerConnection", "createAnswer");
   peer_handler_->CreateAnswer(request, ConvertToWebRTCAnswerOptions(options));
   return promise;
 }
@@ -881,9 +934,13 @@ ScriptPromise RTCPeerConnection::createAnswer(
     return ScriptPromise::CastUndefined(script_state);
   }
 
+  call_setup_state_tracker_.NoteAnswererStateEvent(
+      AnswererState::kCreateAnswerPending);
   RTCSessionDescriptionRequest* request =
       RTCSessionDescriptionRequestImpl::Create(
-          GetExecutionContext(), this, success_callback, error_callback);
+          GetExecutionContext(),
+          RTCCreateSessionDescriptionOperation::kCreateAnswer, this,
+          success_callback, error_callback);
   peer_handler_->CreateAnswer(request, constraints);
   return ScriptPromise::CastUndefined(script_state);
 }
@@ -944,6 +1001,58 @@ bool RTCPeerConnection::ShouldShowComplexPlanBSdpWarning(
   return *sdp_format == SdpFormat::kComplexPlanB;
 }
 
+const CallSetupStateTracker& RTCPeerConnection::call_setup_state_tracker()
+    const {
+  return call_setup_state_tracker_;
+}
+
+void RTCPeerConnection::NoteSessionDescriptionRequestCompleted(
+    RTCCreateSessionDescriptionOperation operation,
+    bool success) {
+  switch (operation) {
+    case RTCCreateSessionDescriptionOperation::kCreateOffer:
+      call_setup_state_tracker_.NoteOffererStateEvent(
+          success ? OffererState::kCreateOfferResolved
+                  : OffererState::kCreateOfferRejected);
+      return;
+    case RTCCreateSessionDescriptionOperation::kCreateAnswer:
+      call_setup_state_tracker_.NoteAnswererStateEvent(
+          success ? AnswererState::kCreateAnswerResolved
+                  : AnswererState::kCreateAnswerRejected);
+      return;
+  }
+}
+
+void RTCPeerConnection::NoteVoidRequestCompleted(
+    RTCSetSessionDescriptionOperation operation,
+    bool success) {
+  switch (operation) {
+    case RTCSetSessionDescriptionOperation::kSetLocalDescriptionOffer:
+      call_setup_state_tracker_.NoteOffererStateEvent(
+          success ? OffererState::kSetLocalOfferResolved
+                  : OffererState::kSetLocalOfferRejected);
+      break;
+    case RTCSetSessionDescriptionOperation::kSetLocalDescriptionAnswer:
+      call_setup_state_tracker_.NoteAnswererStateEvent(
+          success ? AnswererState::kSetLocalAnswerResolved
+                  : AnswererState::kSetLocalAnswerRejected);
+      break;
+    case RTCSetSessionDescriptionOperation::kSetRemoteDescriptionOffer:
+      call_setup_state_tracker_.NoteAnswererStateEvent(
+          success ? AnswererState::kSetRemoteOfferResolved
+                  : AnswererState::kSetRemoteOfferRejected);
+      break;
+    case RTCSetSessionDescriptionOperation::kSetRemoteDescriptionAnswer:
+      call_setup_state_tracker_.NoteOffererStateEvent(
+          success ? OffererState::kSetRemoteAnswerResolved
+                  : OffererState::kSetRemoteAnswerRejected);
+      break;
+    case RTCSetSessionDescriptionOperation::kSetLocalDescriptionInvalidType:
+    case RTCSetSessionDescriptionOperation::kSetRemoteDescriptionInvalidType:
+      break;
+  }
+}
+
 void RTCPeerConnection::ReportSetSdpUsage(
     SetSdpOperationType operation_type,
     const RTCSessionDescriptionInit* session_description_init) const {
@@ -992,9 +1101,14 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
   if (exception) {
     return ScriptPromise::RejectWithDOMException(script_state, exception);
   }
+  NoteCallSetupStateEventPending(&call_setup_state_tracker_,
+                                 SetSdpOperationType::kSetLocalDescription,
+                                 *session_description_init);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
+      GetRTCVoidRequestOperationType(SetSdpOperationType::kSetLocalDescription,
+                                     *session_description_init),
       this, resolver, "RTCPeerConnection", "setLocalDescription");
   peer_handler_->SetLocalDescription(
       request, WebRTCSessionDescription(session_description_init->type(), sdp));
@@ -1040,8 +1154,14 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
     return ScriptPromise::CastUndefined(script_state);
   }
 
+  NoteCallSetupStateEventPending(&call_setup_state_tracker_,
+                                 SetSdpOperationType::kSetLocalDescription,
+                                 *session_description_init);
   RTCVoidRequest* request = RTCVoidRequestImpl::Create(
-      GetExecutionContext(), this, success_callback, error_callback);
+      GetExecutionContext(),
+      GetRTCVoidRequestOperationType(SetSdpOperationType::kSetLocalDescription,
+                                     *session_description_init),
+      this, success_callback, error_callback);
   peer_handler_->SetLocalDescription(
       request, WebRTCSessionDescription(session_description_init->type(),
                                         session_description_init->sdp()));
@@ -1092,9 +1212,14 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
                                            kSignalingStateClosedMessage));
   }
 
+  NoteCallSetupStateEventPending(&call_setup_state_tracker_,
+                                 SetSdpOperationType::kSetRemoteDescription,
+                                 *session_description_init);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
+      GetRTCVoidRequestOperationType(SetSdpOperationType::kSetRemoteDescription,
+                                     *session_description_init),
       this, resolver, "RTCPeerConnection", "setRemoteDescription");
   peer_handler_->SetRemoteDescription(
       request, WebRTCSessionDescription(session_description_init->type(),
@@ -1135,8 +1260,14 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
   if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))
     return ScriptPromise::CastUndefined(script_state);
 
+  NoteCallSetupStateEventPending(&call_setup_state_tracker_,
+                                 SetSdpOperationType::kSetRemoteDescription,
+                                 *session_description_init);
   RTCVoidRequest* request = RTCVoidRequestImpl::Create(
-      GetExecutionContext(), this, success_callback, error_callback);
+      GetExecutionContext(),
+      GetRTCVoidRequestOperationType(SetSdpOperationType::kSetRemoteDescription,
+                                     *session_description_init),
+      this, success_callback, error_callback);
   peer_handler_->SetRemoteDescription(
       request, WebRTCSessionDescription(session_description_init->type(),
                                         session_description_init->sdp()));
@@ -1452,7 +1583,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
-      this, resolver, "RTCPeerConnection", "addIceCandidate");
+      base::nullopt, this, resolver, "RTCPeerConnection", "addIceCandidate");
   scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
       ExecutionContext::From(script_state), candidate);
   bool implemented =
@@ -1484,8 +1615,9 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     return ScriptPromise();
   }
 
-  RTCVoidRequest* request = RTCVoidRequestImpl::Create(
-      GetExecutionContext(), this, success_callback, error_callback);
+  RTCVoidRequest* request =
+      RTCVoidRequestImpl::Create(GetExecutionContext(), base::nullopt, this,
+                                 success_callback, error_callback);
   scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
       ExecutionContext::From(script_state), candidate);
   bool implemented =

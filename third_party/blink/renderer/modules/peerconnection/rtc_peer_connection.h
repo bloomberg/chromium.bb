@@ -42,10 +42,14 @@
 #include "third_party/blink/renderer/modules/crypto/normalize_algorithm.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/peerconnection/call_setup_state_tracker.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_enums.h"
 #include "third_party/blink/renderer/platform/async_method_runner.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
 namespace blink {
@@ -310,6 +314,13 @@ class MODULES_EXPORT RTCPeerConnection final
   // WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics.
   bool ShouldShowComplexPlanBSdpWarning(const RTCSessionDescriptionInit*) const;
 
+  const CallSetupStateTracker& call_setup_state_tracker() const;
+  void NoteSessionDescriptionRequestCompleted(
+      RTCCreateSessionDescriptionOperation operation,
+      bool success);
+  void NoteVoidRequestCompleted(RTCSetSessionDescriptionOperation operation,
+                                bool success);
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -458,6 +469,7 @@ class MODULES_EXPORT RTCPeerConnection final
   webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state_;
   webrtc::PeerConnectionInterface::IceConnectionState ice_connection_state_;
   webrtc::PeerConnectionInterface::PeerConnectionState peer_connection_state_;
+  CallSetupStateTracker call_setup_state_tracker_;
 
   // A map containing any track that is in use by the peer connection. This
   // includes tracks of |rtp_senders_| and |rtp_receivers_|.

@@ -78,6 +78,7 @@ blink_modules_sources("peerconnection") {
     "rtc_rtp_transceiver.h",
     "rtc_session_description.cc",
     "rtc_session_description.h",
+    "rtc_session_description_enums.h",
     "rtc_session_description_request_impl.cc",
     "rtc_session_description_request_impl.h",
     "rtc_session_description_request_promise_impl.cc",

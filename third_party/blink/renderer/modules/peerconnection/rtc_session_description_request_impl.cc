@@ -41,19 +41,22 @@ namespace blink {
 
 RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::Create(
     ExecutionContext* context,
+    RTCCreateSessionDescriptionOperation operation,
     RTCPeerConnection* requester,
     V8RTCSessionDescriptionCallback* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
-  return new RTCSessionDescriptionRequestImpl(context, requester,
+  return new RTCSessionDescriptionRequestImpl(context, operation, requester,
                                               success_callback, error_callback);
 }
 
 RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(
     ExecutionContext* context,
+    RTCCreateSessionDescriptionOperation operation,
     RTCPeerConnection* requester,
     V8RTCSessionDescriptionCallback* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback)
     : ContextLifecycleObserver(context),
+      operation_(operation),
       success_callback_(ToV8PersistentCallbackFunction(success_callback)),
       error_callback_(ToV8PersistentCallbackFunction(error_callback)),
       requester_(requester) {
@@ -67,6 +70,7 @@ void RTCSessionDescriptionRequestImpl::RequestSucceeded(
   bool should_fire_callback =
       requester_ ? requester_->ShouldFireDefaultCallbacks() : false;
   if (should_fire_callback && success_callback_) {
+    requester_->NoteSessionDescriptionRequestCompleted(operation_, true);
     auto* description = RTCSessionDescription::Create(web_session_description);
     requester_->NoteSdpCreated(*description);
     success_callback_->InvokeAndReportException(nullptr, description);
@@ -79,6 +83,7 @@ void RTCSessionDescriptionRequestImpl::RequestFailed(
   bool should_fire_callback =
       requester_ ? requester_->ShouldFireDefaultCallbacks() : false;
   if (should_fire_callback && error_callback_) {
+    requester_->NoteSessionDescriptionRequestCompleted(operation_, false);
     error_callback_->InvokeAndReportException(
         nullptr, CreateDOMExceptionFromRTCError(error));
   }
