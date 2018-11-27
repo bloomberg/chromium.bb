@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
 #include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -310,41 +311,34 @@ ScriptPromise ReadableStream::pipeTo(ScriptState* script_state,
 }
 
 ScriptPromise ReadableStream::pipeTo(ScriptState* script_state,
-                                     ScriptValue destination,
+                                     ScriptValue destination_value,
                                      ScriptValue options,
                                      ExceptionState& exception_state) {
-  auto is_ws = ReadableStreamOperations::IsWritableStream(
-      script_state, destination, exception_state);
-  if (!is_ws)
-    return ScriptPromise();
-  if (!*is_ws) {
+  WritableStream* destination = V8WritableStream::ToImplWithTypeCheck(
+      script_state->GetIsolate(), destination_value.V8Value());
+
+  if (!destination) {
     exception_state.ThrowTypeError("Illegal invocation");
     return ScriptPromise();
   }
-  DCHECK(!exception_state.HadException());
-
   if (locked(script_state, exception_state) &&
       !exception_state.HadException()) {
     exception_state.ThrowTypeError("Cannot pipe a locked stream");
     return ScriptPromise();
   }
-
   if (exception_state.HadException())
     return ScriptPromise();
-
-  auto is_ws_locked = ReadableStreamOperations::IsWritableStreamLocked(
-      script_state, destination, exception_state);
-  if (!is_ws_locked)
-    return ScriptPromise();
-  if (*is_ws_locked) {
+  if (destination->locked(script_state, exception_state) &&
+      !exception_state.HadException()) {
     exception_state.ThrowTypeError("Cannot pipe to a locked stream");
     return ScriptPromise();
   }
-  DCHECK(!exception_state.HadException());
+  if (exception_state.HadException())
+    return ScriptPromise();
 
   return ReadableStreamOperations::PipeTo(
-      script_state, GetInternalStream(script_state), destination, options,
-      exception_state);
+      script_state, GetInternalStream(script_state),
+      destination->GetInternalStream(script_state), options, exception_state);
 }
 
 ScriptValue ReadableStream::tee(ScriptState* script_state,

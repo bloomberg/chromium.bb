@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -200,38 +201,28 @@ void TransformStream::Init(TransformStreamTransformer* transformer,
   InitInternal(script_state, stream.As<v8::Object>(), exception_state);
 }
 
-ScriptValue TransformStream::Writable(ScriptState* script_state,
-                                      ExceptionState& exception_state) const {
-  v8::Local<v8::Value> result;
-  v8::Local<v8::Value> args[] = {stream_.NewLocal(script_state->GetIsolate())};
-  DCHECK(args[0]->IsObject());
-  v8::TryCatch block(script_state->GetIsolate());
-  if (!V8ScriptRunner::CallExtra(script_state, "getTransformStreamWritable",
-                                 args)
-           .ToLocal(&result)) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return ScriptValue();
-  }
-  DCHECK(!block.HasCaught());
-  return ScriptValue(script_state, result);
-}
-
 void TransformStream::Trace(Visitor* visitor) {
   visitor->Trace(stream_);
   visitor->Trace(readable_);
+  visitor->Trace(writable_);
   ScriptWrappable::Trace(visitor);
 }
 
 void TransformStream::InitInternal(ScriptState* script_state,
                                    v8::Local<v8::Object> stream,
                                    ExceptionState& exception_state) {
-  v8::Local<v8::Value> readable;
+  v8::Local<v8::Value> readable, writable;
   v8::Local<v8::Value> args[] = {stream};
   v8::TryCatch block(script_state->GetIsolate());
   if (!V8ScriptRunner::CallExtra(script_state, "getTransformStreamReadable",
                                  args)
            .ToLocal(&readable)) {
-    DCHECK(block.HasCaught());
+    exception_state.RethrowV8Exception(block.Exception());
+    return;
+  }
+  if (!V8ScriptRunner::CallExtra(script_state, "getTransformStreamWritable",
+                                 args)
+           .ToLocal(&writable)) {
     exception_state.RethrowV8Exception(block.Exception());
     return;
   }
@@ -241,6 +232,13 @@ void TransformStream::InitInternal(ScriptState* script_state,
       script_state, readable.As<v8::Object>(), exception_state);
 
   if (!readable_)
+    return;
+
+  DCHECK(writable->IsObject());
+  writable_ = WritableStream::CreateFromInternalStream(
+      script_state, writable.As<v8::Object>(), exception_state);
+
+  if (!writable_)
     return;
 
   stream_.Set(script_state->GetIsolate(), stream);

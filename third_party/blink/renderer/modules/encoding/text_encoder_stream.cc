@@ -174,9 +174,8 @@ ReadableStream* TextEncoderStream::readable() const {
   return transform_->Readable();
 }
 
-ScriptValue TextEncoderStream::writable(ScriptState* script_state,
-                                        ExceptionState& exception_state) const {
-  return transform_->Writable(script_state, exception_state);
+WritableStream* TextEncoderStream::writable() const {
+  return transform_->Writable();
 }
 
 void TextEncoderStream::Trace(Visitor* visitor) {

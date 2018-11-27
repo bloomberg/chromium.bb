@@ -12,5 +12,5 @@
     ConstructorCallWith=ScriptState
 ] interface TransformStream {
     [NotEnumerable] readonly attribute ReadableStream readable;
-    [RaisesException, CallWith=ScriptState, NotEnumerable] readonly attribute any writable;
+    [NotEnumerable] readonly attribute WritableStream writable;
 };

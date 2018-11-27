@@ -324,6 +324,7 @@ core_idl_files =
                     "resize_observer/resize_observer_entry.idl",
                     "streams/readable_stream.idl",
                     "streams/transform_stream.idl",
+                    "streams/writable_stream.idl",
                     "streams/underlying_source_base.idl",
                     "svg/svg_a_element.idl",
                     "svg/svg_angle.idl",

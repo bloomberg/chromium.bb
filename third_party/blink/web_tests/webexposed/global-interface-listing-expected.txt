@@ -10170,6 +10170,7 @@ interface WorkletAnimation
     method constructor
     method play
 interface WritableStream
+    attribute @@toStringTag
     getter locked
     method abort
     method constructor

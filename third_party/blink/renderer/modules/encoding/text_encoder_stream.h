@@ -14,7 +14,9 @@
 namespace blink {
 
 class ExceptionState;
+class ReadableStream;
 class ScriptState;
+class WritableStream;
 class Visitor;
 
 // Implements the TextDecoderStream interface as specified at
@@ -32,7 +34,7 @@ class TextEncoderStream final : public ScriptWrappable {
   // From text_encoder_stream.idl
   String encoding() const;
   ReadableStream* readable() const;
-  ScriptValue writable(ScriptState*, ExceptionState&) const;
+  WritableStream* writable() const;
 
   void Trace(Visitor* visitor) override;
 

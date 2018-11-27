@@ -3492,6 +3492,7 @@ interface WorkerNavigator
     getter userAgent
     method constructor
 interface WritableStream
+    attribute @@toStringTag
     getter locked
     method abort
     method constructor

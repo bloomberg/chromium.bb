@@ -8275,6 +8275,7 @@ interface Worklet
     method addModule
     method constructor
 interface WritableStream
+    attribute @@toStringTag
     getter locked
     method abort
     method constructor

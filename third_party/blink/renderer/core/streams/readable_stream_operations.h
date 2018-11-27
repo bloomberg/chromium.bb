@@ -160,18 +160,6 @@ class CORE_EXPORT ReadableStreamOperations {
                               ScriptValue destination,
                               ScriptValue options,
                               ExceptionState& exception_state);
-
-  // IsWritableStream
-  // TODO(yhirano): Move this function to somewhere else.
-  static base::Optional<bool> IsWritableStream(ScriptState*,
-                                               ScriptValue,
-                                               ExceptionState& exception_state);
-  // IsWritableStreamLocked.
-  // This function assumes |IsWritableStream(stream)|.
-  // TODO(yhirano): Move this function to somewhere else.
-  static base::Optional<bool> IsWritableStreamLocked(ScriptState*,
-                                                     ScriptValue stream,
-                                                     ExceptionState&);
 };
 
 }  // namespace blink
