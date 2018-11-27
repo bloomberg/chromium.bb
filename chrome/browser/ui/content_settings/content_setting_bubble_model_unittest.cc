@@ -1034,7 +1034,7 @@ TEST_F(ContentSettingBubbleModelTest, ValidUrl) {
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
 
-  EXPECT_TRUE(bubble_content.radio_group_enabled);
+  EXPECT_TRUE(bubble_content.radio_group.user_managed);
 }
 
 TEST_F(ContentSettingBubbleModelTest, InvalidUrl) {
@@ -1051,5 +1051,5 @@ TEST_F(ContentSettingBubbleModelTest, InvalidUrl) {
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
 
-  EXPECT_FALSE(bubble_content.radio_group_enabled);
+  EXPECT_FALSE(bubble_content.radio_group.user_managed);
 }

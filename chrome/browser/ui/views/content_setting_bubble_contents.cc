@@ -474,7 +474,7 @@ void ContentSettingBubbleContents::Init() {
     for (auto i(radio_group.radio_items.begin());
          i != radio_group.radio_items.end(); ++i) {
       auto radio = std::make_unique<views::RadioButton>(*i, 0);
-      radio->SetEnabled(bubble_content.radio_group_enabled);
+      radio->SetEnabled(radio_group.user_managed);
       radio->SetMultiLine(true);
       radio_group_.push_back(radio.get());
       rows.push_back({std::move(radio), LayoutRowType::INDENTED});
