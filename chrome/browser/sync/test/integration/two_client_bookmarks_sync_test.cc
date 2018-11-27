@@ -1376,9 +1376,15 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
+// Flaky on win-asan, see htpp://crbug.com/908771
+#if defined(ADDRESS_SANITIZER) && defined(OS_WIN)
+#define MAYBE_MC_MergeDifferentBMModelsModeratelyComplex DISABLED_MC_MergeDifferentBMModelsModeratelyComplex
+#else
+#define MAYBE_MC_MergeDifferentBMModelsModeratelyComplex MC_MergeDifferentBMModelsModeratelyComplex
+#endif
 // Merge moderately complex bookmark models.
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
-                       MC_MergeDifferentBMModelsModeratelyComplex) {
+                       MAYBE_MC_MergeDifferentBMModelsModeratelyComplex) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
 
