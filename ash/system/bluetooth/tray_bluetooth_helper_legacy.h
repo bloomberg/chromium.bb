@@ -38,13 +38,13 @@ class ASH_EXPORT TrayBluetoothHelperLegacy
 
   // TrayBluetoothHelper:
   void Initialize() override;
+  BluetoothDeviceList GetAvailableBluetoothDevices() const override;
   void StartBluetoothDiscovering() override;
   void StopBluetoothDiscovering() override;
   void ConnectToBluetoothDevice(const std::string& address) override;
   device::mojom::BluetoothSystem::State GetBluetoothState() override;
   void SetBluetoothEnabled(bool enabled) override;
   bool HasBluetoothDiscoverySession() override;
-  void GetBluetoothDevices(GetBluetoothDevicesCallback callback) const override;
 
   // BluetoothAdapter::Observer:
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -53,6 +53,12 @@ class ASH_EXPORT TrayBluetoothHelperLegacy
                              bool powered) override;
   void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
                                  bool discovering) override;
+  void DeviceAdded(device::BluetoothAdapter* adapter,
+                   device::BluetoothDevice* device) override;
+  void DeviceChanged(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
+  void DeviceRemoved(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
 
  private:
   void OnStartDiscoverySession(

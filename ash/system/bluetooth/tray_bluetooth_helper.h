@@ -24,7 +24,7 @@ using BluetoothDeviceList = std::vector<device::mojom::BluetoothDeviceInfoPtr>;
 // This is a temporary virtual class used during the migration to the new
 // BluetoothSystem Mojo interface. Once the migration is over, we'll
 // de-virtualize this class and remove its legacy implementation.
-class ASH_EXPORT TrayBluetoothHelper {
+class TrayBluetoothHelper {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -48,7 +48,7 @@ class ASH_EXPORT TrayBluetoothHelper {
   virtual void Initialize() = 0;
 
   // Returns a list of available bluetooth devices.
-  const BluetoothDeviceList& GetAvailableBluetoothDevices() const;
+  virtual BluetoothDeviceList GetAvailableBluetoothDevices() const = 0;
 
   // Requests bluetooth start discovering devices, which happens asynchronously.
   virtual void StartBluetoothDiscovering() = 0;
@@ -75,40 +75,13 @@ class ASH_EXPORT TrayBluetoothHelper {
   virtual bool HasBluetoothDiscoverySession() = 0;
 
  protected:
-  using GetBluetoothDevicesCallback =
-      base::OnceCallback<void(BluetoothDeviceList)>;
-
-  // Using a "push" pattern where the underlying API notifies of device changes
-  // is undesireable because there are hundreds or sometimes thousands of
-  // changes per second. This could result in significantly slowing down the UI.
-  // To avoid this we use a pull pattern where we retrieve the device list every
-  // second and notify observers.
-  //
-  // Implementations of TrayBluetoothHelper should call this whenever the state
-  // changes.
-  void StartOrStopRefreshingDeviceList();
-
   void NotifyBluetoothSystemStateChanged();
   void NotifyBluetoothScanStateChanged();
-
-  virtual void GetBluetoothDevices(
-      GetBluetoothDevicesCallback callback) const = 0;
+  void NotifyBluetoothDeviceListChanged();
 
   base::ObserverList<Observer> observers_;
 
  private:
-  void UpdateDeviceCache();
-  void OnGetBluetoothDevices(BluetoothDeviceList devices);
-  void NotifyBluetoothDeviceListChanged();
-
-  // List of cached devices. Updated every second.
-  BluetoothDeviceList cached_devices_;
-
-  // Timer used to update |cached_devices_|.
-  base::RepeatingTimer timer_;
-
-  base::WeakPtrFactory<TrayBluetoothHelper> weak_ptr_factory_{this};
-
   DISALLOW_COPY_AND_ASSIGN(TrayBluetoothHelper);
 };
 
