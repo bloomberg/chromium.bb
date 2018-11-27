@@ -266,8 +266,6 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.image_url = suggestion.image_url();
   match.contents = suggestion.match_contents();
   match.contents_class = suggestion.match_contents_class();
-  match.answer_contents = suggestion.answer_contents();
-  match.answer_type = suggestion.answer_type();
   match.answer = suggestion.answer();
   match.subtype_identifier = suggestion.subtype_identifier();
   if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
@@ -490,8 +488,6 @@ void BaseSearchProvider::AddMatchToMap(
     const AutocompleteMatch& less_relevant_match =
         more_relevant_match.duplicate_matches.back();
     if (less_relevant_match.answer && !more_relevant_match.answer) {
-      more_relevant_match.answer_type = less_relevant_match.answer_type;
-      more_relevant_match.answer_contents = less_relevant_match.answer_contents;
       more_relevant_match.answer = less_relevant_match.answer;
     }
   }

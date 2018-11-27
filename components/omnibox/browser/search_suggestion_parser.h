@@ -160,11 +160,7 @@ class SearchSuggestionParser {
       return additional_query_params_;
     }
 
-    void SetAnswer(const base::string16& answer_contents,
-                   const base::string16& answer_type,
-                   const SuggestionAnswer& answer);
-    const base::string16& answer_contents() const { return answer_contents_; }
-    const base::string16& answer_type() const { return answer_type_; }
+    void SetAnswer(const SuggestionAnswer& answer);
     const base::Optional<SuggestionAnswer>& answer() const { return answer_; }
 
     const std::string& image_dominant_color() const {
@@ -202,14 +198,6 @@ class SearchSuggestionParser {
 
     // Optional additional parameters to be added to the search URL.
     std::string additional_query_params_;
-
-    // TODO(jdonnelly): Remove the following two properties once the downstream
-    // clients are using the SuggestionAnswer.
-    // Optional formatted Answers result.
-    base::string16 answer_contents_;
-
-    // Type of optional formatted Answers result.
-    base::string16 answer_type_;
 
     // Optional short answer to the input that produced this suggestion.
     base::Optional<SuggestionAnswer> answer_;

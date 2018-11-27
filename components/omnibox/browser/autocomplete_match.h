@@ -437,11 +437,7 @@ struct AutocompleteMatch {
   // before displaying.
   bool swap_contents_and_description;
 
-  // TODO(jdonnelly): Remove the first two properties once the downstream
-  // clients are using the SuggestionAnswer.
   // A rich-format version of the display for the dropdown.
-  base::string16 answer_contents;
-  base::string16 answer_type;
   base::Optional<SuggestionAnswer> answer;
 
   // The transition type to use when the user opens this match.  By default

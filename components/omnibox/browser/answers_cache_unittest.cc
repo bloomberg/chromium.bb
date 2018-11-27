@@ -14,8 +14,7 @@ TEST(AnswersCacheTest, CacheStartsEmpty) {
 
 TEST(AnswersCacheTest, UpdatePopulatesCache) {
   AnswersCache cache(1);
-  cache.UpdateRecentAnswers(base::ASCIIToUTF16("weather los angeles"),
-                            base::ASCIIToUTF16("2334"));
+  cache.UpdateRecentAnswers(base::ASCIIToUTF16("weather los angeles"), 2334);
   EXPECT_FALSE(cache.empty());
 }
 
@@ -23,7 +22,7 @@ TEST(AnswersCacheTest, GetWillRetrieveMatchingInfo) {
   AnswersCache cache(1);
 
   base::string16 full_query_text = base::ASCIIToUTF16("weather los angeles");
-  base::string16 query_type = base::ASCIIToUTF16("2334");
+  int query_type = 2334;
   cache.UpdateRecentAnswers(full_query_text, query_type);
 
   // Partial prefixes retrieve info.
@@ -33,7 +32,8 @@ TEST(AnswersCacheTest, GetWillRetrieveMatchingInfo) {
 
   // Mismatched prefix retrieves empty data.
   data = cache.GetTopAnswerEntry(full_query_text.substr(1, 8));
-  EXPECT_TRUE(data.full_query_text.empty() && data.query_type.empty());
+  EXPECT_TRUE(data.full_query_text.empty());
+  EXPECT_EQ(-1, data.query_type);
 
   // Full match retrieves info.
   data = cache.GetTopAnswerEntry(full_query_text);
@@ -46,7 +46,7 @@ TEST(AnswersCacheTest, MatchMostRecent) {
 
   base::string16 query_weather_la = base::ASCIIToUTF16("weather los angeles");
   base::string16 query_weather_lv = base::ASCIIToUTF16("weather las vegas");
-  base::string16 query_type = base::ASCIIToUTF16("2334");
+  int query_type = 2334;
 
   cache.UpdateRecentAnswers(query_weather_lv, query_type);
   cache.UpdateRecentAnswers(query_weather_la, query_type);
@@ -70,7 +70,7 @@ TEST(AnswersCacheTest, LeastRecentItemIsEvicted) {
   base::string16 query_weather_la = base::ASCIIToUTF16("weather los angeles");
   base::string16 query_weather_lv = base::ASCIIToUTF16("weather las vegas");
   base::string16 query_weather_lb = base::ASCIIToUTF16("weather long beach");
-  base::string16 query_type = base::ASCIIToUTF16("2334");
+  int query_type = 2334;
 
   cache.UpdateRecentAnswers(query_weather_lb, query_type);
   cache.UpdateRecentAnswers(query_weather_lv, query_type);
@@ -96,7 +96,7 @@ TEST(AnswersCacheTest, DuplicateEntries) {
   base::string16 query_weather_lv = base::ASCIIToUTF16("weather las vegas");
   base::string16 query_weather_lb = base::ASCIIToUTF16("weather long beach");
   base::string16 query_weather_l = base::ASCIIToUTF16("weather l");
-  base::string16 query_type = base::ASCIIToUTF16("2334");
+  int query_type = 2334;
 
   cache.UpdateRecentAnswers(query_weather_lb, query_type);
   cache.UpdateRecentAnswers(query_weather_lv, query_type);

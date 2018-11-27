@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -155,14 +156,14 @@ void SearchProvider::RegisterDisplayedAnswers(
   // only be in the second slot if AutocompleteController ranked a local search
   // history or a verbatim item higher than the answer.
   auto match = result.begin();
-  if (match->answer_contents.empty() && result.size() > 1)
+  if (!match->answer && result.size() > 1)
     ++match;
-  if (match->answer_contents.empty() || match->answer_type.empty() ||
-      match->fill_into_edit.empty())
+  if (!match->answer || match->fill_into_edit.empty())
     return;
 
   // Valid answer encountered, cache it for further queries.
-  answers_cache_.UpdateRecentAnswers(match->fill_into_edit, match->answer_type);
+  answers_cache_.UpdateRecentAnswers(match->fill_into_edit,
+                                     match->answer->type());
 }
 
 // static
@@ -882,7 +883,7 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
     search_term_args.prefetch_query =
         base::UTF16ToUTF8(prefetch_data_.full_query_text);
     search_term_args.prefetch_query_type =
-        base::UTF16ToUTF8(prefetch_data_.query_type);
+        base::NumberToString(prefetch_data_.query_type);
   }
 
   // Append a specific suggest client if it is in ChromeOS app_list launcher
@@ -993,8 +994,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     // Verbatim results don't get suggestions and hence, answers.
     // Scan previous matches if the last answer-bearing suggestion matches
     // verbatim, and if so, copy over answer contents.
-    base::string16 answer_contents;
-    base::string16 answer_type;
     SuggestionAnswer answer;
     bool has_answer = false;
     base::string16 trimmed_verbatim_lower =
@@ -1002,8 +1001,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     for (auto it = matches_.begin(); it != matches_.end(); ++it) {
       if (it->answer &&
           base::i18n::ToLower(it->fill_into_edit) == trimmed_verbatim_lower) {
-        answer_contents = it->answer_contents;
-        answer_type = it->answer_type;
         answer = *it->answer;
         has_answer = true;
         break;
@@ -1017,7 +1014,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         verbatim_relevance, relevance_from_server,
         /*input_text=*/trimmed_verbatim);
     if (has_answer)
-      verbatim.SetAnswer(answer_contents, answer_type, answer);
+      verbatim.SetAnswer(answer);
     AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
                   false, keyword_url != nullptr, &map);
   }
@@ -1123,8 +1120,6 @@ void SearchProvider::RemoveExtraAnswers(ACMatches* matches) {
       if (!answer_seen) {
         answer_seen = true;
       } else {
-        it->answer_contents.clear();
-        it->answer_type.clear();
         it->answer.reset();
       }
     }
