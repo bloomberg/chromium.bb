@@ -42,8 +42,8 @@ class PLATFORM_EXPORT PaintChunker final {
 
   const Vector<PaintChunk>& PaintChunks() const { return chunks_; }
 
-  PaintChunk& PaintChunkAt(size_t i) { return chunks_[i]; }
-  size_t LastChunkIndex() const {
+  PaintChunk& PaintChunkAt(wtf_size_t i) { return chunks_[i]; }
+  wtf_size_t LastChunkIndex() const {
     return chunks_.IsEmpty() ? kNotFound : chunks_.size() - 1;
   }
   PaintChunk& LastChunk() { return chunks_.back(); }

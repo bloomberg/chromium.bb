@@ -117,7 +117,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // the same cc::Layer.
   struct PLATFORM_EXPORT PendingLayer {
     PendingLayer(const PaintChunk& first_paint_chunk,
-                 size_t first_chunk_index,
+                 wtf_size_t first_chunk_index,
                  bool requires_own_layer);
     // Merge another pending layer after this one, appending all its paint
     // chunks after chunks in this layer, with appropriate space conversion
@@ -133,7 +133,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     void Upcast(const PropertyTreeState&);
 
     FloatRect bounds;
-    Vector<size_t> paint_chunk_indices;
+    Vector<wtf_size_t> paint_chunk_indices;
     FloatRect rect_known_to_be_opaque;
     PropertyTreeState property_tree_state;
     bool requires_own_layer;

@@ -301,7 +301,7 @@ bool PaintArtifactCompositor::PropertyTreeStateChanged(
 
 PaintArtifactCompositor::PendingLayer::PendingLayer(
     const PaintChunk& first_paint_chunk,
-    size_t chunk_index,
+    wtf_size_t chunk_index,
     bool chunk_requires_own_layer)
     : bounds(first_paint_chunk.bounds),
       rect_known_to_be_opaque(
@@ -503,7 +503,7 @@ void PaintArtifactCompositor::LayerizeGroup(
                                       chunk_it))
     return;
 
-  size_t first_layer_in_current_group = pending_layers.size();
+  wtf_size_t first_layer_in_current_group = pending_layers.size();
   // The worst case time complexity of the algorithm is O(pqd), where
   // p = the number of paint chunks.
   // q = average number of trials to find a squash layer or rejected
@@ -552,7 +552,7 @@ void PaintArtifactCompositor::LayerizeGroup(
         break;
       // Case C: The following chunks belong to a subgroup. Process them by
       //         a recursion call.
-      size_t first_layer_in_subgroup = pending_layers.size();
+      wtf_size_t first_layer_in_subgroup = pending_layers.size();
       LayerizeGroup(paint_artifact, pending_layers, *unaliased_subgroup,
                     chunk_it);
       // Now the chunk iterator stepped over the subgroup we just saw.
@@ -583,7 +583,7 @@ void PaintArtifactCompositor::LayerizeGroup(
     DCHECK(!new_layer.requires_own_layer);
     DCHECK_EQ(&unaliased_group, new_layer.property_tree_state.Effect());
     // This iterates pending_layers[first_layer_in_current_group:-1] in reverse.
-    for (size_t candidate_index = pending_layers.size() - 1;
+    for (wtf_size_t candidate_index = pending_layers.size() - 1;
          candidate_index-- > first_layer_in_current_group;) {
       PendingLayer& candidate_layer = pending_layers[candidate_index];
       if (candidate_layer.CanMerge(new_layer)) {
