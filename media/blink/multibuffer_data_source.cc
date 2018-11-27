@@ -160,6 +160,7 @@ bool MultibufferDataSource::media_has_played() const {
 }
 
 bool MultibufferDataSource::assume_fully_buffered() {
+  DCHECK(url_data());
   return !url_data()->url().SchemeIsHTTPOrHTTPS();
 }
 
@@ -322,6 +323,13 @@ void MultibufferDataSource::Stop() {
   {
     base::AutoLock auto_lock(lock_);
     StopInternal_Locked();
+
+    // Cleanup resources immediately if we're already on the right thread.
+    if (render_task_runner_->BelongsToCurrentThread()) {
+      reader_.reset();
+      url_data_and_loading_state_.SetUrlData(nullptr);
+      return;
+    }
   }
 
   render_task_runner_->PostTask(FROM_HERE,
@@ -634,25 +642,21 @@ void MultibufferDataSource::ProgressCallback(int64_t begin, int64_t end) {
   DVLOG(1) << __func__ << "(" << begin << ", " << end << ")";
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
+  base::AutoLock auto_lock(lock_);
+  if (stop_signal_received_)
+    return;
+
   if (assume_fully_buffered())
     return;
 
-  base::AutoLock auto_lock(lock_);
-
-  if (end > begin) {
-    // TODO(scherkus): we shouldn't have to lock to signal host(), see
-    // http://crbug.com/113712 for details.
-    if (stop_signal_received_)
-      return;
-
+  if (end > begin)
     host_->AddBufferedByteRange(begin, end);
-  }
 
-  if (buffer_size_update_counter_ > 0) {
+  if (buffer_size_update_counter_ > 0)
     buffer_size_update_counter_--;
-  } else {
+  else
     UpdateBufferSizes();
-  }
+
   UpdateLoadingState_Locked(false);
 }
 
