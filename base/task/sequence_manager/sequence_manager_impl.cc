@@ -172,20 +172,19 @@ SequenceManagerImpl::CreateOnCurrentThread() {
 
 // static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
-    MessageLoopBase* message_loop_base) {
+    MessageLoopBase* message_loop_base,
+    const TickClock* clock) {
   return WrapUnique(new SequenceManagerImpl(
-      ThreadControllerImpl::Create(message_loop_base,
-                                   DefaultTickClock::GetInstance()),
+      ThreadControllerImpl::Create(message_loop_base, clock),
       MessageLoop::Type::TYPE_DEFAULT));
 }
 
 // static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnboundWithPump(
-    MessageLoop::Type type) {
+    MessageLoop::Type type,
+    const TickClock* clock) {
   return WrapUnique(new SequenceManagerImpl(
-      ThreadControllerWithMessagePumpImpl::CreateUnbound(
-          DefaultTickClock::GetInstance()),
-      type));
+      ThreadControllerWithMessagePumpImpl::CreateUnbound(clock), type));
 }
 
 void SequenceManagerImpl::BindToMessageLoop(

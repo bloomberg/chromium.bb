@@ -34,6 +34,7 @@
 #include "base/task/sequence_manager/task_queue_selector.h"
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -96,10 +97,12 @@ class BASE_EXPORT SequenceManagerImpl
   //
   // This function should be called only once per MessageLoop.
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
-      MessageLoopBase* message_loop_base);
+      MessageLoopBase* message_loop_base,
+      const TickClock* clock = DefaultTickClock::GetInstance());
 
   static std::unique_ptr<SequenceManagerImpl> CreateUnboundWithPump(
-      MessageLoop::Type type);
+      MessageLoop::Type type,
+      const TickClock* clock = DefaultTickClock::GetInstance());
 
   // SequenceManager implementation:
   void BindToCurrentThread() override;

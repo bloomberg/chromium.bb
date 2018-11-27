@@ -5,11 +5,13 @@
 #include "base/task/sequence_manager/time_domain.h"
 
 #include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
+#include "base/test/mock_callback.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -381,6 +383,41 @@ TEST_F(TimeDomainTest, HighResolutionWakeUps) {
   // Tidy up.
   q1.UnregisterTaskQueue();
   q2.UnregisterTaskQueue();
+}
+
+TEST_F(TimeDomainTest, SetNextWakeUpForQueueInThePast) {
+  constexpr auto kType = MessageLoop::TYPE_DEFAULT;
+  constexpr auto kDelay = TimeDelta::FromMilliseconds(20);
+  SimpleTestTickClock clock;
+  auto sequence_manager =
+      internal::SequenceManagerImpl::CreateUnboundWithPump(kType, &clock);
+  sequence_manager->BindToMessagePump(
+      MessageLoop::CreateMessagePumpForType(kType));
+  auto high_prio_queue =
+      sequence_manager->CreateTaskQueue(TaskQueue::Spec("high_prio_queue"));
+  high_prio_queue->SetQueuePriority(TaskQueue::kHighestPriority);
+  auto high_prio_runner = high_prio_queue->CreateTaskRunner(kTaskTypeNone);
+  auto low_prio_queue =
+      sequence_manager->CreateTaskQueue(TaskQueue::Spec("low_prio_queue"));
+  low_prio_queue->SetQueuePriority(TaskQueue::kBestEffortPriority);
+  auto low_prio_runner = low_prio_queue->CreateTaskRunner(kTaskTypeNone);
+  sequence_manager->SetDefaultTaskRunner(high_prio_runner);
+  base::MockCallback<base::OnceCallback<void()>> task_1, task_2;
+
+  testing::Sequence s;
+  // Expect task_2 to run after task_1
+  EXPECT_CALL(task_1, Run);
+  EXPECT_CALL(task_2, Run);
+  // Schedule high and low priority tasks in such a way that clock.Now() will be
+  // way into the future by the time the low prio task run time is used to setup
+  // a wake up.
+  low_prio_runner->PostDelayedTask(FROM_HERE, task_2.Get(), kDelay);
+  high_prio_runner->PostDelayedTask(FROM_HERE, task_1.Get(), kDelay * 2);
+  high_prio_runner->PostTask(
+      FROM_HERE, Bind([](SimpleTestTickClock* clock,
+                         TimeDelta delay) { clock->Advance(delay); },
+                      base::Unretained(&clock), kDelay * 2));
+  RunLoop().RunUntilIdle();
 }
 
 }  // namespace sequence_manager
