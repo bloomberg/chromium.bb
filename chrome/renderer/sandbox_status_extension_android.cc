@@ -76,11 +76,16 @@ void SandboxStatusExtension::Install() {
 
   v8::Local<v8::Object> chrome =
       content::GetOrCreateChromeObject(isolate, context->Global());
-  bool success = chrome->Set(
-      gin::StringToSymbol(isolate, "getAndroidSandboxStatus"),
+  v8::Local<v8::Function> function;
+  bool success =
       gin::CreateFunctionTemplate(
           isolate, base::Bind(&SandboxStatusExtension::GetSandboxStatus, this))
-          ->GetFunction());
+          ->GetFunction(context)
+          .ToLocal(&function);
+  if (success) {
+    success = chrome->Set(
+        gin::StringToSymbol(isolate, "getAndroidSandboxStatus"), function);
+  }
   DCHECK(success);
 }
 
