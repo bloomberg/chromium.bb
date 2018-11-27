@@ -21,6 +21,10 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "settingsPrivate": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+  },
   "tts": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]

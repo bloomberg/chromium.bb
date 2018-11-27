@@ -263,6 +263,8 @@ cast_source_set("browser") {
       "extensions/api/identity/identity_api.h",
       "extensions/api/notifications/notifications_api.cc",
       "extensions/api/notifications/notifications_api.h",
+      "extensions/api/settings_private/settings_private_api.cc",
+      "extensions/api/settings_private/settings_private_api.h",
       "extensions/api/tabs/tabs_api.cc",
       "extensions/api/tabs/tabs_api.h",
       "extensions/api/tabs/tabs_constants.cc",
