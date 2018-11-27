@@ -2049,6 +2049,7 @@ interface ElementInternals
     attribute @@toStringTag
     getter form
     method constructor
+    method setFormValue
 interface EnterPictureInPictureEvent : Event
     attribute @@toStringTag
     getter pictureInPictureWindow

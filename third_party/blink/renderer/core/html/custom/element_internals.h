@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_ELEMENT_INTERNALS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_ELEMENT_INTERNALS_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/file_or_usv_string.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -25,6 +26,8 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   void DidUpgrade();
 
   // IDL attributes/operations
+  void setFormValue(const FileOrUSVString& value);
+  void setFormValue(const FileOrUSVString& value, FormData* entry_source);
   HTMLFormElement* form() const;
 
  private:
@@ -32,8 +35,12 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   bool IsFormControlElement() const override;
   bool IsElementInternals() const override;
   bool IsEnumeratable() const override;
+  void AppendToFormData(FormData& form_data) override;
 
   Member<HTMLElement> target_;
+
+  FileOrUSVString value_;
+  Member<FormData> entry_source_;
 
   DISALLOW_COPY_AND_ASSIGN(ElementInternals);
 };
