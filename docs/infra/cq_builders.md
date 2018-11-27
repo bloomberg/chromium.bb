@@ -46,6 +46,8 @@ These builders must pass before a CL may land.
 
 * [linux-chromeos-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-chromeos-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-chromeos-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-chromeos-rel))
 
+* [linux-chromeos-compile-dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-chromeos-compile-dbg) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-chromeos-compile-dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-chromeos-compile-dbg))
+
 * [linux-jumbo-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-jumbo-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-jumbo-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-jumbo-rel))
 
 * [linux-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-libfuzzer-asan-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-libfuzzer-asan-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-libfuzzer-asan-rel))
@@ -242,10 +244,6 @@ as required builders.
   https://crbug.com/739556
 
   * Experimental percentage: 10
-
-* [linux-chromeos-compile-dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-chromeos-compile-dbg) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-chromeos-compile-dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-chromeos-compile-dbg))
-
-  * Experimental percentage: 100
 
 * [linux-dcheck-off-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-dcheck-off-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-dcheck-off-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-dcheck-off-rel))
 
