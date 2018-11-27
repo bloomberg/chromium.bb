@@ -1,4 +1,4 @@
-notclipped: #document scrolling (1, 51, 200, 25)
+notclipped: layer(0,0 800x600) has hit test rect (1,51 200x25)
 
 clipped: no rects
 

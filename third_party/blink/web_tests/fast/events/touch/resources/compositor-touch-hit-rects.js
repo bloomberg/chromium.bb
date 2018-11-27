@@ -1,3 +1,13 @@
+// Helper for running touch-action rect tests and dumping the touch
+// action regions from cc::Layers.
+
+// When running these tests manually, the touch action rects can be
+// visualized using the inspector: open devtools and press 'esc' to open
+// the bottom drawer, then go to the 'Rendering' tab (may need to be
+// enabled by clicking the 3-dot menu on the drawer), then check
+// "Scrolling performance issues" and the touch-action rects will appear
+// in blue.
+
 function listener() {
 }
 
@@ -7,22 +17,11 @@ function log(msg) {
     span.innerHTML = msg + '<br />';
 }
 
-function nameForNode(node) {
-    if (!node)
-        return "[unknown-node]";
-    var name = node.nodeName;
-    if (node.id)
-        name += '#' + node.id;
-   return name;
-}
-
 function sortRects(a, b) {
-    return a.layerRelativeRect.top - b.layerRelativeRect.top
-        || a.layerRelativeRect.left - b.layerRelativeRect.left
-        || a.layerRelativeRect.width - b.layerRelativeRect.width
-        || a.layerRelativeRect.height - b.layerRelativeRect.right
-        || nameForNode(a.layerAssociatedNode).localeCompare(nameForNode(b.layerAssociatedNode))
-        || a.layerType.localeCompare(b.layerType);
+    return a.hitTestRect.top - b.hitTestRect.top
+        || a.hitTestRect.left - b.hitTestRect.left
+        || a.hitTestRect.width - b.hitTestRect.width
+        || a.hitTestRect.height - b.hitTestRect.height;
 }
 
 var preRunHandlerForTest = {};
@@ -61,72 +60,19 @@ function logRects(testName, opt_noOverlay) {
         sortedRects[i] = rects[i];
     sortedRects.sort(sortRects);
     for ( var i = 0; i < sortedRects.length; ++i) {
-        var node = sortedRects[i].layerAssociatedNode;
-        var r = sortedRects[i].layerRelativeRect;
-        var nameSuffix = "";
-        if (sortedRects[i].layerType)
-            nameSuffix += " " + sortedRects[i].layerType;
-        var offsetX = sortedRects[i].associatedNodeOffsetX;
-        var offsetY = sortedRects[i].associatedNodeOffsetY;
-        if (offsetX || offsetY)
-            nameSuffix += "[" + offsetX + "," + offsetY + "]"
-        log(testName + ": " + nameForNode(node) + nameSuffix + " ("
-            + r.left + ", " + r.top + ", " + r.width + ", " + r.height + ")");
-
-        if (visualize && node && !opt_noOverlay && window.location.hash != '#nooverlay') {
-            var patch = document.createElement("div");
-            patch.className = "overlay generated display-when-done";
-            patch.style.left = r.left + "px";
-            patch.style.top = r.top + "px";
-            patch.style.width = r.width + "px";
-            patch.style.height = r.height + "px";
-
-            if (node === document) {
-                patch.style.position = "absolute";
-                document.body.appendChild(patch);
-            } else {
-                // Use a zero-size container to avoid changing the position of
-                // the existing elements.
-                var container = document.createElement("div");
-                container.className = "overlay-container generated";
-                patch.style.position = "relative";
-                node.appendChild(container);
-                var x = -offsetX;
-                var y = -offsetY;
-                if (container.offsetParent != node) {
-                    // Assume container.offsetParent == node.offsetParent
-                    y += node.offsetTop - container.offsetTop;
-                    x += node.offsetLeft - container.offsetLeft;
-                }
-                if (x || y) {
-                    container.style.top = y + "px";
-                    container.style.left = x + "px";
-                }
-                container.classList.add("display-when-done");
-                container.appendChild(patch);
-            }
-        }
+        var rect = sortedRects[i].layerRect;
+        var rect_string = `${rect.x},${rect.y} ${rect.width}x${rect.height}`;
+        var hit = sortedRects[i].hitTestRect;
+        var hit_string = `${hit.x},${hit.y} ${hit.width}x${hit.height}`;
+        log(`${testName}: layer(${rect_string}) has hit test rect (${hit_string})`);
     }
 
     log('');
 }
 
-// Set this to true in order to visualize the results in an image.
-// Elements that are expected to be included in hit rects have a red border.
-// The actual hit rects are in a green tranlucent overlay.
-var visualize = false;
-
 if (window.testRunner) {
-    if (visualize)
-        testRunner.dumpAsTextWithPixelResults();
-    else
-        testRunner.dumpAsText();
+    testRunner.dumpAsText();
     document.documentElement.setAttribute('dumpRenderTree', 'true');
-} else {
-    // Note, this test can be run interactively in content-shell with
-    // --expose-internals-for-testing.  In that case we almost certainly
-    // want to visualize the results.
-    visualize = true;
 }
 
 if (window.internals) {
@@ -154,7 +100,7 @@ window.onload = function() {
     if (window.additionalTests)
         additionalTests();
 
-    if (!visualize && window.internals) {
+    if (window.internals) {
         var testContainer = document.getElementById("tests");
         testContainer.parentNode.removeChild(testContainer);
     }

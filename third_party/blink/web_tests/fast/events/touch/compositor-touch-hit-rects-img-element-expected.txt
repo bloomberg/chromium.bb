@@ -1,3 +1,3 @@
-: #document scrolling (8, 8, 13, 13)
+: layer(0,0 800x600) has hit test rect (8,8 13x13)
 
 

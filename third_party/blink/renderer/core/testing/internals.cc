@@ -136,10 +136,10 @@
 #include "third_party/blink/renderer/core/testing/callback_function_test.h"
 #include "third_party/blink/renderer/core/testing/dictionary_test.h"
 #include "third_party/blink/renderer/core/testing/gc_observation.h"
+#include "third_party/blink/renderer/core/testing/hit_test_layer_rect.h"
+#include "third_party/blink/renderer/core/testing/hit_test_layer_rect_list.h"
 #include "third_party/blink/renderer/core/testing/internal_runtime_flags.h"
 #include "third_party/blink/renderer/core/testing/internal_settings.h"
-#include "third_party/blink/renderer/core/testing/layer_rect.h"
-#include "third_party/blink/renderer/core/testing/layer_rect_list.h"
 #include "third_party/blink/renderer/core/testing/mock_hyphenation.h"
 #include "third_party/blink/renderer/core/testing/origin_trials_test.h"
 #include "third_party/blink/renderer/core/testing/record_test.h"
@@ -1864,37 +1864,36 @@ static void MergeRects(Vector<IntRect>& rects) {
   }
 }
 
-static void AccumulateLayerRectList(PaintLayerCompositor* compositor,
-                                    GraphicsLayer* graphics_layer,
-                                    LayerRectList* rects) {
+static void AccumulateTouchActionRectList(
+    PaintLayerCompositor* compositor,
+    GraphicsLayer* graphics_layer,
+    HitTestLayerRectList* hit_test_rects) {
   const cc::TouchActionRegion& touch_action_region =
       graphics_layer->CcLayer()->touch_action_region();
   if (!touch_action_region.region().IsEmpty()) {
-    Vector<IntRect> layer_rects;
-    for (const gfx::Rect& rect : touch_action_region.region()) {
-      layer_rects.push_back(IntRect(rect));
-    }
-    MergeRects(layer_rects);
-    String layer_type;
-    IntSize layer_offset;
-    PaintLayer* paint_layer = FindLayerForGraphicsLayer(
-        compositor->RootLayer(), graphics_layer, &layer_offset, &layer_type);
-    Node* node =
-        paint_layer ? paint_layer->GetLayoutObject().GetNode() : nullptr;
-    for (const IntRect& layer_rect : layer_rects) {
-      if (!layer_rect.IsEmpty()) {
-        rects->Append(node, layer_type, layer_offset.Width(),
-                      layer_offset.Height(),
-                      DOMRectReadOnly::FromIntRect(layer_rect));
+    const auto& layer_position = graphics_layer->CcLayer()->position();
+    const auto& layer_bounds = graphics_layer->CcLayer()->bounds();
+    IntRect layer_rect(layer_position.x(), layer_position.y(),
+                       layer_bounds.width(), layer_bounds.height());
+
+    Vector<IntRect> layer_hit_test_rects;
+    for (const gfx::Rect& hit_test_rect : touch_action_region.region())
+      layer_hit_test_rects.push_back(IntRect(hit_test_rect));
+    MergeRects(layer_hit_test_rects);
+
+    for (const IntRect& hit_test_rect : layer_hit_test_rects) {
+      if (!hit_test_rect.IsEmpty()) {
+        hit_test_rects->Append(DOMRectReadOnly::FromIntRect(layer_rect),
+                               DOMRectReadOnly::FromIntRect(hit_test_rect));
       }
     }
   }
 
   for (GraphicsLayer* child_layer : graphics_layer->Children())
-    AccumulateLayerRectList(compositor, child_layer, rects);
+    AccumulateTouchActionRectList(compositor, child_layer, hit_test_rects);
 }
 
-LayerRectList* Internals::touchEventTargetLayerRects(
+HitTestLayerRectList* Internals::touchEventTargetLayerRects(
     Document* document,
     ExceptionState& exception_state) {
   DCHECK(document);
@@ -1921,9 +1920,9 @@ LayerRectList* Internals::touchEventTargetLayerRects(
       // on layers outside the document hierarchy (e.g. when we replace the
       // document with a video layer).
       if (GraphicsLayer* root_layer = compositor->PaintRootGraphicsLayer()) {
-        LayerRectList* rects = LayerRectList::Create();
-        AccumulateLayerRectList(compositor, root_layer, rects);
-        return rects;
+        HitTestLayerRectList* hit_test_rects = HitTestLayerRectList::Create();
+        AccumulateTouchActionRectList(compositor, root_layer, hit_test_rects);
+        return hit_test_rects;
       }
     }
   }

@@ -28,7 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface LayerRectList {
-    readonly attribute unsigned long length;
-    getter LayerRect item(unsigned long index);
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_HIT_TEST_LAYER_RECT_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_HIT_TEST_LAYER_RECT_LIST_H_
+
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+
+namespace blink {
+
+class DOMRectReadOnly;
+class HitTestLayerRect;
+
+class HitTestLayerRectList final : public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+
+ public:
+  static HitTestLayerRectList* Create() {
+    return MakeGarbageCollected<HitTestLayerRectList>();
+  }
+
+  HitTestLayerRectList();
+
+  unsigned length() const;
+  HitTestLayerRect* item(unsigned index);
+  void Append(DOMRectReadOnly* layer_rect, DOMRectReadOnly* hit_test_rect);
+
+  void Trace(blink::Visitor*) override;
+
+ private:
+  HeapVector<Member<HitTestLayerRect>> list_;
 };
+
+}  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_HIT_TEST_LAYER_RECT_LIST_H_

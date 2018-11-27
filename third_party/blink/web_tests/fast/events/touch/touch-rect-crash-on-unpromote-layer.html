@@ -6,6 +6,9 @@
 #layer {
   position: relative;
   left: 10px;
+  width: 400px;
+  height: 300px;
+  overflow: hidden;
 }
 .composited {
   transform: translate3d(0, 0, 0);
@@ -33,7 +36,10 @@
     internals.forceCompositingUpdate(document);
     rects = internals.touchEventTargetLayerRects(document);
     shouldBe("rects.length", "1");
-    shouldBeEqualToString("rects[0].layerAssociatedNode.id", "layer");
+    shouldBe("rects[0].hitTestRect.x", "0");
+    shouldBe("rects[0].hitTestRect.y", "0");
+    shouldBe("rects[0].hitTestRect.width", "400");
+    shouldBe("rects[0].hitTestRect.height", "300");
   }
 
   // Make the layer non-composited
@@ -44,7 +50,10 @@
     if (window.internals) {
       rects = internals.touchEventTargetLayerRects(document);
       shouldBe("rects.length", "1");
-      shouldBeEqualToString("rects[0].layerAssociatedNode.nodeName", "#document");
+      shouldBe("rects[0].hitTestRect.x", "18");
+      shouldBe("rects[0].hitTestRect.y", "8");
+      shouldBe("rects[0].hitTestRect.width", "400");
+      shouldBe("rects[0].hitTestRect.height", "300");
     }
     finishJSTest();
   });
