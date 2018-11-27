@@ -649,16 +649,6 @@ function setupReorder(tile) {
 
 
 /**
- * Returns whether the given URL has a known, safe scheme.
- * @param {string} url URL to check.
- */
-var isSchemeAllowed = function(url) {
-  return url.startsWith('http://') || url.startsWith('https://') ||
-      url.startsWith('ftp://') || url.startsWith('chrome-extension://');
-};
-
-
-/**
  * Renders a MostVisited tile to the DOM.
  * @param {object} data Object containing rid, url, title, favicon, thumbnail,
  *     and optionally isAddButton. isAddButton is true if you want to construct
@@ -695,7 +685,7 @@ var renderMostVisitedTile = function(data) {
   tile.className = 'mv-tile';
   tile.setAttribute('data-tid', data.tid);
 
-  if (isSchemeAllowed(data.url)) {
+  if (utils.isSchemeAllowed(data.url)) {
     tile.href = data.url;
   }
   tile.setAttribute('aria-label', data.title);
@@ -852,7 +842,7 @@ function renderMaterialDesignTile(data) {
   mdTile.tabIndex = 0;
   mdTile.setAttribute('data-tid', data.tid);
   mdTile.setAttribute('data-pos', position);
-  if (isSchemeAllowed(data.url)) {
+  if (utils.isSchemeAllowed(data.url)) {
     mdTile.href = data.url;
   }
   mdTile.setAttribute('aria-label', data.title);
