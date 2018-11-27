@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/sys_byteorder.h"
 #include "media/filters/vp9_compressed_header_parser.h"
 #include "media/filters/vp9_uncompressed_header_parser.h"
 
@@ -148,6 +149,128 @@ int ClampLf(int lf) {
   return std::min(std::max(0, lf), kMaxLoopFilterLevel);
 }
 
+std::string IncrementIV(const std::string& iv, uint32_t by) {
+  // What we call the 'IV' value is actually somewhat of a misnomer:
+  // "IV" = 0xFFFFFFFFFFFFFFFF0000000000000000
+  //          └──actual IV───┘└─block counter┘
+  // When we want to 'increment' this structure, we treat them both
+  // as big-endian 64 bit unsigned integers, then increment _only_ the
+  // block counter, then combine them back into a big-endian bytestring.
+  // |by| is usually going to be the number of blocks (aka 16 byte chunks)
+  //      of cipher data.
+  DCHECK_EQ(iv.size(), 16u);
+  uint64_t integral_data[2];
+  memcpy(integral_data, reinterpret_cast<const uint8_t*>(iv.data()), 16);
+  uint64_t block_counter = base::NetToHost64(integral_data[1]) + by;
+  integral_data[1] = base::HostToNet64(block_counter);
+  uint8_t new_iv[16];
+  memcpy(new_iv, integral_data, 16);
+  return std::string(reinterpret_cast<char*>(new_iv), 16);
+}
+
+// |frame_size|: The size of the current frame; this controls how long we
+//               loop through the subsamples.
+// |current_subsample_index|: An index into the |subsamples| vector, we need
+//                            to have this saved between function calls.
+// |extra_clear_bytes|: The previous call may have set this variable to show
+//                      that a subsample mey have already started being parsed
+//                      and that only X bytes of free data are left in it.
+// |base_decrypt_config|: Not an output parameter, it is just a raw ptr from a
+//                        unique_ptr.
+// |subsamples|: A vector of subsamples.
+// |iv|: The initialization vector (128bit number stored as std::string). This
+//       gets incremented by (cipher_bytes % 16) for each frame, and must be
+//       preserved across function calls.
+std::unique_ptr<DecryptConfig> SplitSubsamples(
+    uint32_t frame_size,
+    size_t* current_subsample_index,
+    size_t* extra_clear_subsample_bytes,
+    DecryptConfig* base_decrypt_config,
+    const std::vector<SubsampleEntry>& subsamples,
+    std::string* iv) {
+  // We copy iv so that we can use the starting value in our
+  // new config while still incrementing IV for the next frame.
+  std::string frame_dc_iv = *iv;
+  std::vector<SubsampleEntry> frame_dc_subsamples;
+  do {
+    if (*current_subsample_index >= subsamples.size()) {
+      DVLOG(1) << "Not enough subsamples in the superframe decrypt config";
+      return nullptr;
+    }
+
+    uint32_t subsample_clear = subsamples[*current_subsample_index].clear_bytes;
+    uint32_t subsample_cipher =
+        subsamples[*current_subsample_index].cypher_bytes;
+
+    // if clear+cipher bytes would be over the max of uint32_t, we need to
+    // quit immediatly, to prevent malicious overflowing.
+    if (0xFFFFFFFF - subsample_clear < subsample_cipher) {
+      DVLOG(1) << "Invalid subsample alignment";
+      return nullptr;
+    }
+
+    // It's possible that the previous frame didn't use all the clear bytes
+    // in this subsample, in which case we have to start from midway through
+    // the clear section.
+    if (*extra_clear_subsample_bytes)
+      subsample_clear = *extra_clear_subsample_bytes;
+
+    if (subsample_clear > frame_size) {
+      // Support scenario where clear section is larger than our frame:
+      // The entire length is clear. If |subsample_clear| is the same length,
+      // we handle it below.
+      frame_dc_subsamples.push_back(SubsampleEntry(frame_size, 0));
+      *extra_clear_subsample_bytes = subsample_clear - frame_size;
+      frame_size = 0;
+    } else if (subsample_clear + subsample_cipher > frame_size) {
+      // Only a clear section can cross over a frame boundary, otherwise
+      // the frame header for the next frame would be encrypted, which is not
+      // spec compliant.
+      DVLOG(1) << "Invalid subsample alignment";
+      return nullptr;
+    } else if (subsample_clear + subsample_cipher <= frame_size) {
+      // In this case a subsample is less than or equal to a whole frame
+      // This is the most likely case for almost all encrypted media.
+      // note that |subsample_cipher| can be 0.
+      frame_dc_subsamples.push_back(
+          SubsampleEntry(subsample_clear, subsample_cipher));
+      frame_size -= (subsample_clear + subsample_cipher);
+      *extra_clear_subsample_bytes = 0;
+
+      // IV gets incremented by 1 for every 16 bytes of cypher
+      *iv = IncrementIV(*iv, subsample_cipher >> 4);  // uint32 logical shift.
+    }
+
+    // Don't go to the next subsample if there are more clear bytes.
+    if (!*extra_clear_subsample_bytes)
+      (*current_subsample_index)++;
+
+    // It is possible for there to be more than one subsample associated
+    // with a single frame, so we need to try again if there are more bytes
+    // left unaccounted for in this frame.
+  } while (frame_size);
+
+  return base_decrypt_config->CopyNewSubsamplesIV(frame_dc_subsamples,
+                                                  frame_dc_iv);
+}
+
+bool IsByteNEncrypted(off_t byte,
+                      const std::vector<SubsampleEntry>& subsamples) {
+  off_t original_byte = byte;
+  for (const SubsampleEntry& subsample : subsamples) {
+    if (byte < 0)
+      return false;
+    if (static_cast<uint32_t>(byte) < subsample.clear_bytes)
+      return false;
+    byte -= subsample.clear_bytes;
+    if (static_cast<uint32_t>(byte) < subsample.cypher_bytes)
+      return true;
+    byte -= subsample.cypher_bytes;
+  }
+  DVLOG(3) << "Subsamples do not extend to cover offset " << original_byte;
+  return false;
+}
+
 }  // namespace
 
 bool Vp9FrameHeader::IsKeyframe() const {
@@ -199,8 +322,28 @@ VideoColorSpace Vp9FrameHeader::GetColorSpace() const {
   return ret;
 }
 
+Vp9Parser::FrameInfo::FrameInfo() = default;
+
+Vp9Parser::FrameInfo::~FrameInfo() = default;
+
 Vp9Parser::FrameInfo::FrameInfo(const uint8_t* ptr, off_t size)
     : ptr(ptr), size(size) {}
+
+Vp9Parser::FrameInfo::FrameInfo(const FrameInfo& copy_from)
+    : ptr(copy_from.ptr),
+      size(copy_from.size),
+      decrypt_config(copy_from.decrypt_config
+                         ? copy_from.decrypt_config->Clone()
+                         : nullptr) {}
+
+Vp9Parser::FrameInfo& Vp9Parser::FrameInfo::operator=(
+    const FrameInfo& copy_from) {
+  this->ptr = copy_from.ptr;
+  this->size = copy_from.size;
+  this->decrypt_config =
+      copy_from.decrypt_config ? copy_from.decrypt_config->Clone() : nullptr;
+  return *this;
+}
 
 bool Vp9FrameContext::IsValid() const {
   // probs should be in [1, 255] range.
@@ -373,11 +516,14 @@ Vp9Parser::Vp9Parser(bool parsing_compressed_header)
 
 Vp9Parser::~Vp9Parser() = default;
 
-void Vp9Parser::SetStream(const uint8_t* stream, off_t stream_size) {
+void Vp9Parser::SetStream(const uint8_t* stream,
+                          off_t stream_size,
+                          std::unique_ptr<DecryptConfig> stream_config) {
   DCHECK(stream);
   stream_ = stream;
   bytes_left_ = stream_size;
   frames_.clear();
+  stream_decrypt_config_ = std::move(stream_config);
 }
 
 void Vp9Parser::Reset() {
@@ -475,7 +621,9 @@ bool Vp9Parser::ParseCompressedHeader(const FrameInfo& frame_info,
   return false;
 }
 
-Vp9Parser::Result Vp9Parser::ParseNextFrame(Vp9FrameHeader* fhdr) {
+Vp9Parser::Result Vp9Parser::ParseNextFrame(
+    Vp9FrameHeader* fhdr,
+    std::unique_ptr<DecryptConfig>* frame_decrypt_config) {
   DCHECK(fhdr);
   DVLOG(2) << "ParseNextFrame";
   FrameInfo frame_info;
@@ -504,6 +652,11 @@ Vp9Parser::Result Vp9Parser::ParseNextFrame(Vp9FrameHeader* fhdr) {
 
     frame_info = frames_.front();
     frames_.pop_front();
+    if (frame_info.decrypt_config) {
+      *frame_decrypt_config = frame_info.decrypt_config->Clone();
+    } else {
+      *frame_decrypt_config = nullptr;
+    }
 
     if (ParseUncompressedHeader(frame_info, fhdr, &result))
       return result;
@@ -534,6 +687,27 @@ Vp9Parser::ContextRefreshCallback Vp9Parser::GetContextRefreshCb(
   return frame_context_manager.GetUpdateCb();
 }
 
+std::unique_ptr<DecryptConfig> Vp9Parser::NextFrameDecryptContextForTesting() {
+  if (frames_.empty()) {
+    // No frames to be decoded, if there is no more stream, request more.
+    if (!stream_)
+      return nullptr;
+
+    // New stream to be parsed, parse it and fill frames_.
+    frames_ = ParseSuperframe();
+    if (frames_.empty())
+      return nullptr;
+  }
+  FrameInfo frame_info = std::move(frames_.front());
+  frames_.pop_front();
+  return std::move(frame_info.decrypt_config);
+}
+
+std::string Vp9Parser::IncrementIVForTesting(const std::string& iv,
+                                             uint32_t by) {
+  return IncrementIV(iv, by);
+}
+
 // Annex B Superframes
 base::circular_deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
   const uint8_t* stream = stream_;
@@ -543,14 +717,30 @@ base::circular_deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
   stream_ = nullptr;
   bytes_left_ = 0;
 
+  base::circular_deque<FrameInfo> frames;
+
   if (bytes_left < 1)
-    return base::circular_deque<FrameInfo>();
+    return frames;
+
+  // The marker byte might be encrypted, in which case we should treat
+  // the stream as a single frame.
+  off_t marker_offset = bytes_left - 1;
+  if (stream_decrypt_config_) {
+    if (IsByteNEncrypted(marker_offset, stream_decrypt_config_->subsamples())) {
+      frames.push_back(FrameInfo(stream, bytes_left));
+      frames[0].decrypt_config = stream_decrypt_config_->Clone();
+      return frames;
+    }
+  }
 
   // If this is a superframe, the last byte in the stream will contain the
   // superframe marker. If not, the whole buffer contains a single frame.
-  uint8_t marker = *(stream + bytes_left - 1);
+  uint8_t marker = *(stream + marker_offset);
   if ((marker & 0xe0) != 0xc0) {
-    return {FrameInfo(stream, bytes_left)};
+    frames.push_back(FrameInfo(stream, bytes_left));
+    if (stream_decrypt_config_)
+      frames[0].decrypt_config = stream_decrypt_config_->Clone();
+    return frames;
   }
 
   DVLOG(1) << "Parsing a superframe";
@@ -574,7 +764,17 @@ base::circular_deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
 
   // Parse frame information contained in the index and add a pointer to and
   // size of each frame to frames.
-  base::circular_deque<FrameInfo> frames;
+
+  // Use this to calculate the per-frame IV value.
+  std::string iv;
+  std::vector<SubsampleEntry> subsamples;
+  size_t current_subsample = 0;
+  size_t extra_clear_subsample_bytes = 0;
+  if (stream_decrypt_config_) {
+    iv = stream_decrypt_config_->iv();
+    subsamples = stream_decrypt_config_->subsamples();
+  }
+
   for (size_t i = 0; i < num_frames; ++i) {
     uint32_t size = 0;
     for (size_t j = 0; j < mag; ++j) {
@@ -585,10 +785,25 @@ base::circular_deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
     if (!base::IsValueInRangeForNumericType<off_t>(size) ||
         static_cast<off_t>(size) > bytes_left) {
       DVLOG(1) << "Not enough data in the buffer for frame " << i;
-      return base::circular_deque<FrameInfo>();
+      frames.clear();
+      return frames;
     }
 
-    frames.push_back(FrameInfo(stream, size));
+    FrameInfo frame = FrameInfo(stream, size);
+    if (subsamples.size()) {
+      std::unique_ptr<DecryptConfig> frame_dc = SplitSubsamples(
+          size, &current_subsample, &extra_clear_subsample_bytes,
+          stream_decrypt_config_.get(), subsamples, &iv);
+      if (!frame_dc) {
+        DVLOG(1) << "Failed to calculate decrypt config for frame " << i;
+        frames.clear();
+        return frames;
+      }
+
+      frame.decrypt_config = std::move(frame_dc);
+    }
+
+    frames.push_back(std::move(frame));
     stream += size;
     bytes_left -= size;
 

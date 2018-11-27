@@ -22,6 +22,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/media_export.h"
 #include "media/base/video_color_space.h"
 
@@ -368,16 +369,29 @@ class MEDIA_EXPORT Vp9Parser {
   // |stream_size| in bytes. |stream| must point to the beginning of a single
   // frame or a single superframe, is owned by caller and must remain valid
   // until the next call to SetStream().
-  void SetStream(const uint8_t* stream, off_t stream_size);
+  void SetStream(const uint8_t* stream,
+                 off_t stream_size,
+                 std::unique_ptr<DecryptConfig> stream_config);
 
   // Parse the next frame in the current stream buffer, filling |fhdr| with
   // the parsed frame header and updating current segmentation and loop filter
   // state.
+  // Also fills |frame_decrypt_config| _if_ the parser was set to use a super
+  // frame decrypt config.
   // Return kOk if a frame has successfully been parsed,
   //        kEOStream if there is no more data in the current stream buffer,
   //        kAwaitingRefresh if this frame awaiting frame context update, or
   //        kInvalidStream on error.
-  Result ParseNextFrame(Vp9FrameHeader* fhdr);
+  Result ParseNextFrame(Vp9FrameHeader* fhdr,
+                        std::unique_ptr<DecryptConfig>* frame_decrypt_config);
+
+  // Perform the same superframe parsing logic, but don't attempt to parse
+  // the normal frame headers afterwards, and then only return the decrypt
+  // config, since the frame itself isn't useful for the testing.
+  // Returns |true| if a frame would have been sent to |ParseUncompressedHeader|
+  //         |false| if there was an error parsing the superframe.
+  std::unique_ptr<DecryptConfig> NextFrameDecryptContextForTesting();
+  std::string IncrementIVForTesting(const std::string& iv, uint32_t by);
 
   // Return current parsing context.
   const Context& context() const { return context_; }
@@ -393,8 +407,12 @@ class MEDIA_EXPORT Vp9Parser {
  private:
   // Stores start pointer and size of each frame within the current superframe.
   struct FrameInfo {
-    FrameInfo() = default;
+    FrameInfo();
+    FrameInfo(const FrameInfo& copy_from);
     FrameInfo(const uint8_t* ptr, off_t size);
+    ~FrameInfo();
+
+    FrameInfo& operator=(const FrameInfo& copy_from);
     bool IsValid() const { return ptr != nullptr; }
     void Reset() { ptr = nullptr; }
 
@@ -403,6 +421,8 @@ class MEDIA_EXPORT Vp9Parser {
 
     // Size of the frame in bytes.
     off_t size = 0;
+
+    std::unique_ptr<DecryptConfig> decrypt_config;
   };
 
   base::circular_deque<FrameInfo> ParseSuperframe();
@@ -438,6 +458,9 @@ class MEDIA_EXPORT Vp9Parser {
   base::circular_deque<FrameInfo> frames_;
 
   Context context_;
+
+  // Encrypted stream info.
+  std::unique_ptr<DecryptConfig> stream_decrypt_config_;
 
   FrameInfo curr_frame_info_;
   Vp9FrameHeader curr_frame_header_;
