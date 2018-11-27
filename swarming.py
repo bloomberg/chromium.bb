@@ -1076,6 +1076,8 @@ def process_trigger_options(parser, options, args):
 
   if not options.dimensions:
     parser.error('Please at least specify one --dimension')
+  if not any(k == 'pool' for k, _v in options.dimensions):
+    parser.error('You must specify --dimension pool <value>')
   if not all(len(t.split(':', 1)) == 2 for t in options.tags):
     parser.error('--tags must be in the format key:value')
   if options.raw_cmd and not args:

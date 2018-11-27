@@ -95,8 +95,8 @@ def gen_properties(**kwargs):
     'command': None,
     'relative_cwd': None,
     'dimensions': [
-      {'key': 'foo', 'value': 'bar'},
       {'key': 'os', 'value': 'Mac'},
+      {'key': 'pool', 'value': 'default'},
     ],
     'env': [],
     'env_prefixes': [],
@@ -365,7 +365,7 @@ class TestSwarmingTrigger(NetTestCase):
                   cipd_input=None,
                   command=['a', 'b'],
                   relative_cwd=None,
-                  dimensions=[('foo', 'bar'), ('os', 'Mac')],
+                  dimensions=[('os', 'Mac'), ('pool', 'default')],
                   env={},
                   env_prefixes=[],
                   execution_timeout_secs=60,
@@ -447,7 +447,7 @@ class TestSwarmingTrigger(NetTestCase):
                   cipd_input=None,
                   command=['a', 'b'],
                   relative_cwd=None,
-                  dimensions=[('foo', 'bar'), ('os', 'Mac')],
+                  dimensions=[('os', 'Mac'), ('pool', 'default')],
                   env={},
                   env_prefixes=[],
                   execution_timeout_secs=60,
@@ -521,7 +521,7 @@ class TestSwarmingTrigger(NetTestCase):
                       server=None),
                   command=['a', 'b'],
                   relative_cwd=None,
-                  dimensions=[('foo', 'bar'), ('os', 'Mac')],
+                  dimensions=[('os', 'Mac'), ('pool', 'default')],
                   env={},
                   env_prefixes=[],
                   execution_timeout_secs=60,
@@ -935,7 +935,7 @@ class TestMain(NetTestCase):
   def test_trigger_raw_cmd(self):
     # Minimalist use.
     request = {
-      'name': u'None/foo=bar',
+      'name': u'None/pool=default',
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
       'priority': 200,
@@ -944,7 +944,7 @@ class TestMain(NetTestCase):
           'expiration_secs': 21600,
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
-              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              dimensions=[{'key': 'pool', 'value': 'default'}],
               execution_timeout_secs=3600,
               extra_args=None,
               inputs_ref=None,
@@ -968,7 +968,7 @@ class TestMain(NetTestCase):
     ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
-        '--dimension', 'foo', 'bar',
+        '--dimension', 'pool', 'default',
         '--raw-cmd',
         '--relative-cwd', 'deeep',
         '--',
@@ -979,7 +979,7 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        'Triggered task: None/foo=bar\n'
+        'Triggered task: None/pool=default\n'
         'To collect results, use:\n'
         '  tools/swarming_client/swarming.py collect '
         '-S https://localhost:1 12300\n'
@@ -989,7 +989,7 @@ class TestMain(NetTestCase):
 
   def test_trigger_raw_cmd_with_optional(self):
     request = {
-      'name': u'None/caches=c1_foo=bar_foo1=bar1',
+      'name': u'None/caches=c1_foo=bar_foo1=bar1_pool=default',
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
       'priority': 200,
@@ -1004,6 +1004,7 @@ class TestMain(NetTestCase):
                   {'key': 'foo', 'value': 'baz'},
                   {'key': 'foo1', 'value': 'baz1'},
                   {'key': 'opt', 'value': 'tional'},
+                  {'key': 'pool', 'value': 'default'},
               ],
               execution_timeout_secs=3600,
               extra_args=None,
@@ -1021,6 +1022,7 @@ class TestMain(NetTestCase):
                   {'key': 'caches', 'value': 'c2'},
                   {'key': 'foo', 'value': 'bar'},
                   {'key': 'foo1', 'value': 'baz1'},
+                  {'key': 'pool', 'value': 'default'},
               ],
               execution_timeout_secs=3600,
               extra_args=None,
@@ -1037,6 +1039,7 @@ class TestMain(NetTestCase):
                   {'key': 'caches', 'value': 'c1'},
                   {'key': 'foo', 'value': 'bar'},
                   {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'pool', 'value': 'default'},
               ],
               execution_timeout_secs=3600,
               extra_args=None,
@@ -1061,6 +1064,7 @@ class TestMain(NetTestCase):
     ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
+        '--dimension', 'pool', 'default',
         '--dimension', 'foo', 'bar',
         '--dimension', 'foo1', 'bar1',
         '--dimension', 'caches', 'c1',
@@ -1078,7 +1082,7 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        'Triggered task: None/caches=c1_foo=bar_foo1=bar1\n'
+        'Triggered task: None/caches=c1_foo=bar_foo1=bar1_pool=default\n'
         'To collect results, use:\n'
         '  tools/swarming_client/swarming.py collect '
         '-S https://localhost:1 12300\n'
@@ -1088,7 +1092,7 @@ class TestMain(NetTestCase):
 
   def test_trigger_raw_cmd_with_optional_unsorted(self):
     request = {
-      'name': u'None/foo1=bar1_os=Mac-10.12.6',
+      'name': u'None/foo1=bar1_os=Mac-10.12.6_pool=default',
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
       'priority': 200,
@@ -1100,6 +1104,7 @@ class TestMain(NetTestCase):
               dimensions=[
                   {'key': 'foo1', 'value': 'baz1'},
                   {'key': 'os', 'value': 'Mac-10.13'},
+                  {'key': 'pool', 'value': 'default'},
               ],
               execution_timeout_secs=3600,
               extra_args=None,
@@ -1115,6 +1120,7 @@ class TestMain(NetTestCase):
               dimensions=[
                   {'key': 'foo1', 'value': 'baz1'},
                   {'key': 'os', 'value': 'Mac-10.12.6'},
+                  {'key': 'pool', 'value': 'default'},
               ],
               execution_timeout_secs=3600,
               extra_args=None,
@@ -1130,6 +1136,7 @@ class TestMain(NetTestCase):
               dimensions=[
                   {'key': 'foo1', 'value': 'bar1'},
                   {'key': 'os', 'value': 'Mac-10.12.6'},
+                  {'key': 'pool', 'value': 'default'},
               ],
               execution_timeout_secs=3600,
               extra_args=None,
@@ -1155,6 +1162,7 @@ class TestMain(NetTestCase):
         'trigger',
         '--swarming', 'https://localhost:1',
         '--dimension', 'os', 'Mac-10.12.6',
+        '--dimension', 'pool', 'default',
         '--dimension', 'foo1', 'bar1',
         '--optional-dimension', 'foo1', 'baz1', 120,
         '--optional-dimension', 'os', 'Mac-10.13', 60,
@@ -1168,7 +1176,7 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        'Triggered task: None/foo1=bar1_os=Mac-10.12.6\n'
+        'Triggered task: None/foo1=bar1_os=Mac-10.12.6_pool=default\n'
         'To collect results, use:\n'
         '  tools/swarming_client/swarming.py collect '
         '-S https://localhost:1 12300\n'
@@ -1178,7 +1186,7 @@ class TestMain(NetTestCase):
 
   def test_trigger_raw_cmd_with_optional_sameexp(self):
     request = {
-      'name': u'None/foo=bar_foo1=bar1',
+      'name': u'None/foo=bar_foo1=bar1_pool=default',
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
       'priority': 200,
@@ -1191,6 +1199,7 @@ class TestMain(NetTestCase):
                   {'key': 'foo', 'value': 'baz'},
                   {'key': 'foo1', 'value': 'bar1'},
                   {'key': 'foo2', 'value': 'baz2'},
+                  {'key': 'pool', 'value': 'default'},
               ],
               execution_timeout_secs=3600,
               extra_args=None,
@@ -1206,6 +1215,7 @@ class TestMain(NetTestCase):
               dimensions=[
                   {'key': 'foo', 'value': 'bar'},
                   {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'pool', 'value': 'default'},
               ],
               execution_timeout_secs=3600,
               extra_args=None,
@@ -1230,6 +1240,7 @@ class TestMain(NetTestCase):
     ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
+        '--dimension', 'pool', 'default',
         '--dimension', 'foo', 'bar',
         '--dimension', 'foo1', 'bar1',
         '--optional-dimension', 'foo', 'baz', 60,
@@ -1244,7 +1255,7 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        'Triggered task: None/foo=bar_foo1=bar1\n'
+        'Triggered task: None/foo=bar_foo1=bar1_pool=default\n'
         'To collect results, use:\n'
         '  tools/swarming_client/swarming.py collect '
         '-S https://localhost:1 12300\n'
@@ -1252,12 +1263,10 @@ class TestMain(NetTestCase):
         '  https://localhost:1/user/task/12300\n',
         '')
 
-
-
   def test_trigger_raw_cmd_isolated(self):
     # Minimalist use.
     request = {
-      'name': u'None/foo=bar/' + FILE_HASH,
+      'name': u'None/pool=default/' + FILE_HASH,
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
       'priority': 200,
@@ -1266,7 +1275,7 @@ class TestMain(NetTestCase):
           'expiration_secs': 21600,
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
-              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              dimensions=[{'key': 'pool', 'value': 'default'}],
               execution_timeout_secs=3600,
               extra_args=None,
               inputs_ref={
@@ -1293,7 +1302,7 @@ class TestMain(NetTestCase):
     ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
-        '--dimension', 'foo', 'bar',
+        '--dimension', 'pool', 'default',
         '--raw-cmd',
         '--isolate-server', 'https://localhost:2',
         '--isolated', FILE_HASH,
@@ -1305,7 +1314,7 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        u'Triggered task: None/foo=bar/' + FILE_HASH + u'\n'
+        u'Triggered task: None/pool=default/' + FILE_HASH + u'\n'
         u'To collect results, use:\n'
         u'  tools/swarming_client/swarming.py collect '
         u'-S https://localhost:1 12300\n'
@@ -1316,7 +1325,7 @@ class TestMain(NetTestCase):
   def test_trigger_raw_cmd_with_service_account(self):
     # Minimalist use.
     request = {
-      'name': u'None/foo=bar',
+      'name': u'None/pool=default',
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
       'priority': 200,
@@ -1325,7 +1334,7 @@ class TestMain(NetTestCase):
           'expiration_secs': 21600,
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
-              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              dimensions=[{'key': 'pool', 'value': 'default'}],
               execution_timeout_secs=3600,
               extra_args=None,
               inputs_ref=None,
@@ -1349,7 +1358,7 @@ class TestMain(NetTestCase):
     ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
-        '--dimension', 'foo', 'bar',
+        '--dimension', 'pool', 'default',
         '--service-account', 'bot',
         '--raw-cmd',
         '--',
@@ -1360,7 +1369,7 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        'Triggered task: None/foo=bar\n'
+        'Triggered task: None/pool=default\n'
         'To collect results, use:\n'
         '  tools/swarming_client/swarming.py collect '
         '-S https://localhost:1 12300\n'
@@ -1400,8 +1409,8 @@ class TestMain(NetTestCase):
         '--isolate-server', 'https://localhost:2',
         '--shards', '1',
         '--priority', '101',
-        '--dimension', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
+        '--dimension', 'pool', 'default',
         '--expiration', '3600',
         '--user', 'joe@localhost',
         '--tags', 'tag:a',
@@ -1468,8 +1477,8 @@ class TestMain(NetTestCase):
         '--isolate-server', 'https://localhost:2',
         '--shards', '1',
         '--priority', '101',
-        '--dimension', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
+        '--dimension', 'pool', 'default',
         '--expiration', '3600',
         '--user', 'joe@localhost',
         '--tags', 'tag:a',
@@ -1576,8 +1585,8 @@ class TestMain(NetTestCase):
         '--isolate-server', 'https://localhost:2',
         '--shards', '1',
         '--priority', '101',
-        '--dimension', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
+        '--dimension', 'pool', 'default',
         '--expiration', '3600',
         '--user', 'joe@localhost',
         '--tags', 'tag:a',
@@ -1607,7 +1616,7 @@ class TestMain(NetTestCase):
       main([
             'trigger', '--swarming', 'https://host',
             '--isolate-server', 'https://host', '-T', 'foo',
-            '-d', 'os', 'amgia',
+            '-d', 'pool', 'default',
           ])
     self._check_output(
         '',
@@ -1643,7 +1652,7 @@ class TestMain(NetTestCase):
   def test_trigger_no_isolate_server(self):
     with self.assertRaises(SystemExit):
       with test_utils.EnvVars({'SWARMING_SERVER': 'https://host'}):
-        main(['trigger', 'foo.isolated', '-d', 'os', 'amiga'])
+        main(['trigger', 'foo.isolated', '-d', 'pool', 'default'])
     self._check_output(
         '',
         'Usage: swarming.py trigger [options] (hash|isolated) '
@@ -1858,7 +1867,7 @@ class TestMain(NetTestCase):
 
   def test_run(self):
     request = {
-      'name': u'None/foo=bar',
+      'name': u'None/pool=default',
       'parent_task_id': '',
       'priority': 200,
       'pool_task_template': 'AUTO',
@@ -1867,7 +1876,7 @@ class TestMain(NetTestCase):
           'expiration_secs': 21600,
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
-              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              dimensions=[{'key': 'pool', 'value': 'default'}],
               execution_timeout_secs=3600,
               extra_args=None,
               inputs_ref=None,
@@ -1910,7 +1919,7 @@ class TestMain(NetTestCase):
     ret = self.main_safe([
         'run',
         '--swarming', 'https://localhost:1',
-        '--dimension', 'foo', 'bar',
+        '--dimension', 'pool', 'default',
         '--raw-cmd',
         '--relative-cwd', 'deeep',
         '--',
@@ -1921,7 +1930,7 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (ret, actual, sys.stderr.getvalue()))
     self._check_output(
-        u'Triggered task: None/foo=bar\nFake output\n', '')
+        u'Triggered task: None/pool=default\nFake output\n', '')
 
   def test_cancel(self):
     self.expected_requests(
