@@ -152,7 +152,6 @@ class PLATFORM_EXPORT DisplayItem {
         visual_rect_(client.VisualRect()),
         outset_for_raster_effects_(client.VisualRectOutsetForRasterEffects()),
         type_(type),
-        derived_size_(derived_size),
         fragment_(0),
         is_cacheable_(client.IsCacheable()),
         is_tombstone_(false) {
@@ -160,6 +159,7 @@ class PLATFORM_EXPORT DisplayItem {
     // If it doesn't, enlarge |derived_size_| and fix this assert.
     SECURITY_DCHECK(derived_size < (1 << 8));
     SECURITY_DCHECK(derived_size >= sizeof(*this));
+    derived_size_ = static_cast<unsigned>(derived_size);
   }
 
   virtual ~DisplayItem() = default;
