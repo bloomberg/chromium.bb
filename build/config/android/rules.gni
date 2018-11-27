@@ -423,6 +423,9 @@ if (enable_java_templates) {
       deps = [
         "${invoker.target}__build_config",
       ]
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
+      }
       inputs = [
         _build_config,
       ]
@@ -1295,6 +1298,7 @@ if (enable_java_templates) {
     _outer_target_name = target_name
     generate_jni_registration(_jni_srcjar_target) {
       target = ":$_outer_target_name"
+      deps = _deps
     }
 
     java_library_impl(_java_binary_target_name) {
@@ -2434,6 +2438,7 @@ if (enable_java_templates) {
         if (defined(invoker.jni_sources_blacklist)) {
           sources_blacklist = invoker.jni_sources_blacklist
         }
+        deps = _deps
       }
       _srcjar_deps += [ ":${_template_name}__final_jni" ]
     }
