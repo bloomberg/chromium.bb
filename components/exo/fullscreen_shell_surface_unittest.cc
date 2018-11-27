@@ -5,6 +5,7 @@
 #include "components/exo/fullscreen_shell_surface.h"
 
 #include "components/exo/buffer.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base_cast.h"
 #include "components/exo/wm_helper.h"
@@ -98,12 +99,12 @@ TEST_F(FullscreenShellSurfaceTest, SetApplicationId) {
   surface->Attach(buffer.get());
   surface->Commit();
   aura::Window* window = fullscreen_surface->GetWidget()->GetNativeWindow();
-  EXPECT_EQ("test-id", *FullscreenShellSurface::GetApplicationId(window));
+  EXPECT_EQ("test-id", *GetShellApplicationId(window));
   fullscreen_surface->SetApplicationId("test");
-  EXPECT_EQ("test", *FullscreenShellSurface::GetApplicationId(window));
+  EXPECT_EQ("test", *GetShellApplicationId(window));
 
   fullscreen_surface->SetApplicationId(nullptr);
-  EXPECT_EQ(nullptr, FullscreenShellSurface::GetApplicationId(window));
+  EXPECT_EQ(nullptr, GetShellApplicationId(window));
 }
 
 TEST_F(FullscreenShellSurfaceTest, SetStartupId) {
@@ -120,12 +121,12 @@ TEST_F(FullscreenShellSurfaceTest, SetStartupId) {
   surface->Attach(buffer.get());
   surface->Commit();
   aura::Window* window = fullscreen_surface->GetWidget()->GetNativeWindow();
-  EXPECT_EQ("test-id", *FullscreenShellSurface::GetStartupId(window));
+  EXPECT_EQ("test-id", *GetShellStartupId(window));
   fullscreen_surface->SetStartupId("test");
-  EXPECT_EQ("test", *FullscreenShellSurface::GetStartupId(window));
+  EXPECT_EQ("test", *GetShellStartupId(window));
 
   fullscreen_surface->SetStartupId(nullptr);
-  EXPECT_EQ(nullptr, FullscreenShellSurface::GetStartupId(window));
+  EXPECT_EQ(nullptr, GetShellStartupId(window));
 }
 
 TEST_F(FullscreenShellSurfaceTest, Maximize) {

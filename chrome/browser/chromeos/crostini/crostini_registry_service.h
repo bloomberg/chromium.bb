@@ -53,7 +53,7 @@ constexpr char kCrostiniAppIdPrefix[] = "crostini:";
 //    desktop file id, vm name, and container name.
 //    - The Terminal is a special case, using kCrostiniTerminalId (see below).
 // 3) Exo Window App Ids (window_app_id):
-//    - Retrieved from exo::ShellSurface::GetApplicationId()
+//    - Retrieved from exo::GetShellApplicationId()
 //    - For Wayland apps, this is the surface class of the app
 //    - For X apps, this is of the form org.chromium.termina.wmclass.foo when
 //    WM_CLASS is set to foo, or otherwise some string prefixed by

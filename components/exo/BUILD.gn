@@ -33,6 +33,8 @@ source_set("exo") {
     "seat_observer.h",
     "shared_memory.cc",
     "shared_memory.h",
+    "shell_surface_util.cc",
+    "shell_surface_util.h",
     "sub_surface.cc",
     "sub_surface.h",
     "surface.cc",
