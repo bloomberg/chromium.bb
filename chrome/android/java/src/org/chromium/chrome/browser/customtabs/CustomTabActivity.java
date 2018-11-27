@@ -345,11 +345,16 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mModuleCallback = new LoadModuleCallback();
         moduleLoader.addCallbackAndIncrementUseCount(mModuleCallback);
 
-        getComponent().resolveCloseButtonNavigator()
-                .setLandingPageCriteria(this::isModuleManagedUrl);
+        getComponent().resolveCloseButtonNavigator().setLandingPageCriteria(url ->
+                (isModuleLoading() || isModuleLoaded()) && isModuleManagedUrl(url));
     }
 
-    private boolean isModuleLoading() {
+    private boolean isModuleLoaded() {
+        return mModuleActivityDelegate != null;
+    }
+
+    @VisibleForTesting
+    public boolean isModuleLoading() {
         return mModuleCallback != null;
     }
 
@@ -360,6 +365,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private class LoadModuleCallback implements Callback<ModuleEntryPoint> {
         @Override
         public void onResult(@Nullable ModuleEntryPoint entryPoint) {
+            mModuleCallback = null;
+
             if (entryPoint == null) return;
 
             mModuleEntryPoint = entryPoint;
@@ -375,7 +382,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
             mConnection.setActivityDelegateForSession(mSession, mModuleActivityDelegate,
                     mModuleEntryPoint.getModuleVersion());
-            mModuleCallback = null;
 
             // Initialise the PostMessageHandler for the current web contents.
             maybeInitialiseDynamicModulePostMessageHandler(

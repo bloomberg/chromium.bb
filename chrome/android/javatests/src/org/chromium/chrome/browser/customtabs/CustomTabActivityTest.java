@@ -1238,6 +1238,49 @@ public class CustomTabActivityTest {
                 ClickUtils.clickButton(cctActivity.findViewById(R.id.close_button)));
     }
 
+    /**
+     This test executes the following workflow assuming dynamic module loading fails:
+     - moduleManagedUrl1 -> nav1.1 - nav1.2
+     - User hits the close button, thereby closes CCT
+     */
+    @Test
+    @SmallTest
+    public void testCloseButtonBehaviourDynamicModuleLoadFails()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        String moduleManagedUrl = mTestServer.getURL(
+                "/chrome/test/data/android/about.html");
+
+        // Open CCT with moduleManagedUrl1 and navigate
+        // moduleManagedUrl1 -> nav1.1 - nav1.2
+
+        // Make an intent with nonexistent class name so module loading fails.
+        ComponentName componentName =
+                new ComponentName(CustomTabsDynamicModuleTestUtils.FAKE_MODULE_PACKAGE_NAME,
+                        "ClassName");
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
+                componentName, moduleManagedUrl, "^" + moduleManagedUrl+ "$");
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+
+        // Wait until ModuleLoader tries to load a module.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !cctActivity.isModuleLoading();
+            }
+        });
+
+        mCustomTabActivityTestRule.loadUrlInTab(mTestPage, PageTransition.LINK,
+                cctActivity.getActivityTab());
+        mCustomTabActivityTestRule.loadUrlInTab(mTestPage2, PageTransition.LINK,
+                cctActivity.getActivityTab());
+
+        // click close button and wait while cct is hidden
+        runAndWaitForActivityStopped(() ->
+                ClickUtils.clickButton(cctActivity.findViewById(R.id.close_button)));
+    }
+
     @Test
     @SmallTest
     @RetryOnFailure
