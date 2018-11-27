@@ -95,12 +95,15 @@
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wayland/server_util.h"
+#include "components/exo/wayland/wayland_display_output.h"
 #include "components/exo/wayland/wayland_input_delegate.h"
 #include "components/exo/wayland/wayland_keyboard_delegate.h"
 #include "components/exo/wayland/wayland_pointer_delegate.h"
 #include "components/exo/wayland/wayland_touch_delegate.h"
+#include "components/exo/wayland/wl_output.h"
 #include "components/exo/wayland/wl_seat.h"
 #include "components/exo/wayland/wl_shell.h"
+#include "components/exo/wayland/zaura_shell.h"
 #include "components/exo/wayland/zcr_cursor_shapes.h"
 #include "components/exo/wayland/zcr_gaming_input.h"
 #include "components/exo/wayland/zcr_keyboard_configuration.h"
@@ -233,10 +236,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
 // A property key containing a boolean set to true if a blending object is
 // associated with surface object.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false);
-
-// A property key containing a boolean set to true if na aura surface object is
-// associated with surface object.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasAuraSurfaceKey, false);
 
 ////////////////////////////////////////////////////////////////////////////////
 // wl_buffer_interface:
@@ -928,392 +927,6 @@ void bind_subcompositor(wl_client* client,
 
   wl_resource_set_implementation(resource, &subcompositor_implementation, data,
                                  nullptr);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// wl_output_interface:
-
-// Returns the transform that a compositor will apply to a surface to
-// compensate for the rotation of an output device.
-wl_output_transform OutputTransform(display::Display::Rotation rotation) {
-  // Note: |rotation| describes the counter clockwise rotation that a
-  // display's output is currently adjusted for, which is the inverse
-  // of what we need to return.
-  switch (rotation) {
-    case display::Display::ROTATE_0:
-      return WL_OUTPUT_TRANSFORM_NORMAL;
-    case display::Display::ROTATE_90:
-      return WL_OUTPUT_TRANSFORM_270;
-    case display::Display::ROTATE_180:
-      return WL_OUTPUT_TRANSFORM_180;
-    case display::Display::ROTATE_270:
-      return WL_OUTPUT_TRANSFORM_90;
-  }
-  NOTREACHED();
-  return WL_OUTPUT_TRANSFORM_NORMAL;
-}
-
-class WaylandDisplayObserver : public display::DisplayObserver {
- public:
-  class ScaleObserver : public base::SupportsWeakPtr<ScaleObserver> {
-   public:
-    ScaleObserver() {}
-
-    virtual void OnDisplayScalesChanged(const display::Display& display) = 0;
-
-   protected:
-    virtual ~ScaleObserver() {}
-  };
-
-  WaylandDisplayObserver(int64_t id, wl_resource* output_resource)
-      : id_(id), output_resource_(output_resource) {
-    display::Screen::GetScreen()->AddObserver(this);
-    SendDisplayMetrics();
-  }
-  ~WaylandDisplayObserver() override {
-    display::Screen::GetScreen()->RemoveObserver(this);
-  }
-
-  void SetScaleObserver(base::WeakPtr<ScaleObserver> scale_observer) {
-    scale_observer_ = scale_observer;
-    SendDisplayMetrics();
-  }
-
-  bool HasScaleObserver() const { return !!scale_observer_; }
-
-  // Overridden from display::DisplayObserver:
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t changed_metrics) override {
-    if (id_ != display.id())
-      return;
-
-    // There is no need to check DISPLAY_METRIC_PRIMARY because when primary
-    // changes, bounds always changes. (new primary should have had non
-    // 0,0 origin).
-    // Only exception is when switching to newly connected primary with
-    // the same bounds. This happens whenyou're in docked mode, suspend,
-    // unplug the dislpay, then resume to the internal display which has
-    // the same resolution. Since metrics does not change, there is no need
-    // to notify clients.
-    if (changed_metrics &
-        (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
-         DISPLAY_METRIC_ROTATION)) {
-      SendDisplayMetrics();
-    }
-  }
-
- private:
-  void SendDisplayMetrics() {
-    display::Display display;
-    bool rv =
-        display::Screen::GetScreen()->GetDisplayWithDisplayId(id_, &display);
-    DCHECK(rv);
-
-    const display::ManagedDisplayInfo& info =
-        WMHelper::GetInstance()->GetDisplayInfo(display.id());
-
-    const float kInchInMm = 25.4f;
-    const char* kUnknown = "unknown";
-
-    const std::string& make = info.manufacturer_id();
-    const std::string& model = info.product_id();
-
-    gfx::Rect bounds = info.bounds_in_native();
-    wl_output_send_geometry(
-        output_resource_, bounds.x(), bounds.y(),
-        static_cast<int>(kInchInMm * bounds.width() / info.device_dpi()),
-        static_cast<int>(kInchInMm * bounds.height() / info.device_dpi()),
-        WL_OUTPUT_SUBPIXEL_UNKNOWN, make.empty() ? kUnknown : make.c_str(),
-        model.empty() ? kUnknown : model.c_str(),
-        OutputTransform(display.rotation()));
-
-    if (wl_resource_get_version(output_resource_) >=
-        WL_OUTPUT_SCALE_SINCE_VERSION) {
-      wl_output_send_scale(output_resource_, display.device_scale_factor());
-    }
-
-    // TODO(reveman): Send real list of modes.
-    wl_output_send_mode(
-        output_resource_, WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED,
-        bounds.width(), bounds.height(), static_cast<int>(60000));
-
-    if (HasScaleObserver())
-      scale_observer_->OnDisplayScalesChanged(display);
-
-    if (wl_resource_get_version(output_resource_) >=
-        WL_OUTPUT_DONE_SINCE_VERSION) {
-      wl_output_send_done(output_resource_);
-    }
-
-    wl_client_flush(wl_resource_get_client(output_resource_));
-  }
-
-  // The ID of the display being observed.
-  const int64_t id_;
-
-  // The output resource associated with the display.
-  wl_resource* const output_resource_;
-
-  base::WeakPtr<ScaleObserver> scale_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandDisplayObserver);
-};
-
-const uint32_t output_version = 2;
-
-void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
-  Server::Output* output = static_cast<Server::Output*>(data);
-
-  wl_resource* resource = wl_resource_create(
-      client, &wl_output_interface, std::min(version, output_version), id);
-
-  SetImplementation(
-      resource, nullptr,
-      std::make_unique<WaylandDisplayObserver>(output->id(), resource));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// aura_surface_interface:
-
-class AuraSurface : public SurfaceObserver {
- public:
-  explicit AuraSurface(Surface* surface) : surface_(surface) {
-    surface_->AddSurfaceObserver(this);
-    surface_->SetProperty(kSurfaceHasAuraSurfaceKey, true);
-  }
-  ~AuraSurface() override {
-    if (surface_) {
-      surface_->RemoveSurfaceObserver(this);
-      surface_->SetProperty(kSurfaceHasAuraSurfaceKey, false);
-    }
-  }
-
-  void SetFrame(SurfaceFrameType type) {
-    if (surface_)
-      surface_->SetFrame(type);
-  }
-
-  void SetFrameColors(SkColor active_frame_color,
-                      SkColor inactive_frame_color) {
-    if (surface_)
-      surface_->SetFrameColors(active_frame_color, inactive_frame_color);
-  }
-
-  void SetParent(AuraSurface* parent, const gfx::Point& position) {
-    if (surface_)
-      surface_->SetParent(parent ? parent->surface_ : nullptr, position);
-  }
-
-  void SetStartupId(const char* startup_id) {
-    if (surface_)
-      surface_->SetStartupId(startup_id);
-  }
-
-  void SetApplicationId(const char* application_id) {
-    if (surface_)
-      surface_->SetApplicationId(application_id);
-  }
-
-  // Overridden from SurfaceObserver:
-  void OnSurfaceDestroying(Surface* surface) override {
-    surface->RemoveSurfaceObserver(this);
-    surface_ = nullptr;
-  }
-
- private:
-  Surface* surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuraSurface);
-};
-
-SurfaceFrameType AuraSurfaceFrameType(uint32_t frame_type) {
-  switch (frame_type) {
-    case ZAURA_SURFACE_FRAME_TYPE_NONE:
-      return SurfaceFrameType::NONE;
-    case ZAURA_SURFACE_FRAME_TYPE_NORMAL:
-      return SurfaceFrameType::NORMAL;
-    case ZAURA_SURFACE_FRAME_TYPE_SHADOW:
-      return SurfaceFrameType::SHADOW;
-    default:
-      VLOG(2) << "Unkonwn aura-shell frame type: " << frame_type;
-      return SurfaceFrameType::NONE;
-  }
-}
-
-void aura_surface_set_frame(wl_client* client, wl_resource* resource,
-                            uint32_t type) {
-  GetUserDataAs<AuraSurface>(resource)->SetFrame(AuraSurfaceFrameType(type));
-}
-
-void aura_surface_set_parent(wl_client* client,
-                             wl_resource* resource,
-                             wl_resource* parent_resource,
-                             int32_t x,
-                             int32_t y) {
-  GetUserDataAs<AuraSurface>(resource)->SetParent(
-      parent_resource ? GetUserDataAs<AuraSurface>(parent_resource) : nullptr,
-      gfx::Point(x, y));
-}
-
-void aura_surface_set_frame_colors(wl_client* client,
-                                   wl_resource* resource,
-                                   uint32_t active_color,
-                                   uint32_t inactive_color) {
-  GetUserDataAs<AuraSurface>(resource)->SetFrameColors(active_color,
-                                                       inactive_color);
-}
-
-void aura_surface_set_startup_id(wl_client* client,
-                                 wl_resource* resource,
-                                 const char* startup_id) {
-  GetUserDataAs<AuraSurface>(resource)->SetStartupId(startup_id);
-}
-
-void aura_surface_set_application_id(wl_client* client,
-                                     wl_resource* resource,
-                                     const char* application_id) {
-  GetUserDataAs<AuraSurface>(resource)->SetApplicationId(application_id);
-}
-
-const struct zaura_surface_interface aura_surface_implementation = {
-    aura_surface_set_frame, aura_surface_set_parent,
-    aura_surface_set_frame_colors, aura_surface_set_startup_id,
-    aura_surface_set_application_id};
-
-////////////////////////////////////////////////////////////////////////////////
-// aura_output_interface:
-
-class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
- public:
-  explicit AuraOutput(wl_resource* resource) : resource_(resource) {}
-
-  // Overridden from WaylandDisplayObserver::ScaleObserver:
-  void OnDisplayScalesChanged(const display::Display& display) override {
-    display::DisplayManager* display_manager =
-          ash::Shell::Get()->display_manager();
-    const display::ManagedDisplayInfo& display_info =
-          display_manager->GetDisplayInfo(display.id());
-
-    if (wl_resource_get_version(resource_) >=
-        ZAURA_OUTPUT_SCALE_SINCE_VERSION) {
-      display::ManagedDisplayMode active_mode;
-      bool rv = display_manager->GetActiveModeForDisplayId(display.id(),
-                                                           &active_mode);
-      DCHECK(rv);
-      const int32_t current_output_scale =
-          std::round(display_info.zoom_factor() * 1000.f);
-      std::vector<float> zoom_factors =
-          display::GetDisplayZoomFactors(active_mode);
-
-      // Ensure that the current zoom factor is a part of the list.
-      auto it = std::find_if(
-          zoom_factors.begin(), zoom_factors.end(),
-          [&display_info](float zoom_factor) -> bool {
-            return std::abs(display_info.zoom_factor() - zoom_factor) <=
-                   std::numeric_limits<float>::epsilon();
-          });
-      if (it == zoom_factors.end())
-        zoom_factors.push_back(display_info.zoom_factor());
-
-      for (float zoom_factor : zoom_factors) {
-        int32_t output_scale = std::round(zoom_factor * 1000.f);
-        uint32_t flags = 0;
-        if (output_scale == 1000)
-          flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
-        if (current_output_scale == output_scale)
-          flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
-
-        // TODO(malaykeshav): This can be removed in the future when client
-        // has been updated.
-        if (wl_resource_get_version(resource_) < 6)
-          output_scale = std::round(1000.f / zoom_factor);
-
-        zaura_output_send_scale(resource_, flags, output_scale);
-      }
-    }
-
-    if (wl_resource_get_version(resource_) >=
-        ZAURA_OUTPUT_CONNECTION_SINCE_VERSION) {
-      zaura_output_send_connection(resource_,
-                                   display.IsInternal()
-                                       ? ZAURA_OUTPUT_CONNECTION_TYPE_INTERNAL
-                                       : ZAURA_OUTPUT_CONNECTION_TYPE_UNKNOWN);
-    }
-
-    if (wl_resource_get_version(resource_) >=
-        ZAURA_OUTPUT_DEVICE_SCALE_FACTOR_SINCE_VERSION) {
-      zaura_output_send_device_scale_factor(resource_,
-                                            display_info.device_scale_factor() *
-                                            1000);
-    }
-  }
-
- private:
-  wl_resource* const resource_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuraOutput);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// aura_shell_interface:
-
-void aura_shell_get_aura_surface(wl_client* client,
-                                 wl_resource* resource,
-                                 uint32_t id,
-                                 wl_resource* surface_resource) {
-  Surface* surface = GetUserDataAs<Surface>(surface_resource);
-  if (surface->GetProperty(kSurfaceHasAuraSurfaceKey)) {
-    wl_resource_post_error(
-        resource,
-        ZAURA_SHELL_ERROR_AURA_SURFACE_EXISTS,
-        "an aura surface object for that surface already exists");
-    return;
-  }
-
-  wl_resource* aura_surface_resource = wl_resource_create(
-      client, &zaura_surface_interface, wl_resource_get_version(resource), id);
-
-  SetImplementation(aura_surface_resource, &aura_surface_implementation,
-                    std::make_unique<AuraSurface>(surface));
-}
-
-void aura_shell_get_aura_output(wl_client* client,
-                                wl_resource* resource,
-                                uint32_t id,
-                                wl_resource* output_resource) {
-  WaylandDisplayObserver* display_observer =
-      GetUserDataAs<WaylandDisplayObserver>(output_resource);
-  if (display_observer->HasScaleObserver()) {
-    wl_resource_post_error(
-        resource, ZAURA_SHELL_ERROR_AURA_OUTPUT_EXISTS,
-        "an aura output object for that output already exists");
-    return;
-  }
-
-  wl_resource* aura_output_resource = wl_resource_create(
-      client, &zaura_output_interface, wl_resource_get_version(resource), id);
-
-  auto aura_output = std::make_unique<AuraOutput>(aura_output_resource);
-  display_observer->SetScaleObserver(aura_output->AsWeakPtr());
-
-  SetImplementation(aura_output_resource, nullptr, std::move(aura_output));
-}
-
-const struct zaura_shell_interface aura_shell_implementation = {
-    aura_shell_get_aura_surface, aura_shell_get_aura_output};
-
-const uint32_t aura_shell_version = 6;
-
-void bind_aura_shell(wl_client* client,
-                     void* data,
-                     uint32_t version,
-                     uint32_t id) {
-  wl_resource* resource =
-      wl_resource_create(client, &zaura_shell_interface,
-                         std::min(version, aura_shell_version), id);
-
-  wl_resource_set_implementation(resource, &aura_shell_implementation,
-                                 nullptr, nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2211,16 +1824,6 @@ void bind_stylus_v2(wl_client* client,
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// Server::Output, public:
-
-Server::Output::Output(int64_t id) : id_(id) {}
-
-Server::Output::~Output() {
-  if (global_)
-    wl_global_destroy(global_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Server, public:
 
 Server::Server(Display* display)
@@ -2259,7 +1862,7 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &zcr_remote_shell_v1_interface,
                    kZcrRemoteShellVersion, display_, bind_remote_shell);
   wl_global_create(wl_display_.get(), &zaura_shell_interface,
-                   aura_shell_version, display_, bind_aura_shell);
+                   kZAuraShellVersion, display_, bind_aura_shell);
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 1,
                    display_, bind_gaming_input);
   wl_global_create(wl_display_.get(), &zcr_stylus_v2_interface, 1, display_,
@@ -2366,9 +1969,9 @@ void Server::Flush() {
 }
 
 void Server::OnDisplayAdded(const display::Display& new_display) {
-  auto output = std::make_unique<Output>(new_display.id());
+  auto output = std::make_unique<WaylandDisplayOutput>(new_display.id());
   output->set_global(wl_global_create(wl_display_.get(), &wl_output_interface,
-                                      output_version, output.get(),
+                                      kWlOutputVersion, output.get(),
                                       bind_output));
   DCHECK_EQ(outputs_.count(new_display.id()), 0u);
   outputs_.insert(std::make_pair(new_display.id(), std::move(output)));
