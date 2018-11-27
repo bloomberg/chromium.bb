@@ -341,12 +341,14 @@ void TaskQueueImpl::ReloadImmediateWorkQueueIfEmpty() {
 void TaskQueueImpl::ReloadEmptyImmediateQueue(TaskDeque* queue) {
   DCHECK(queue->empty());
 
-  AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
-  queue->swap(immediate_incoming_queue());
+  {
+    AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
+    queue->swap(immediate_incoming_queue());
 
-  // Since |immediate_incoming_queue| is empty, now is a good time to consider
-  // reducing it's capacity if we're wasting memory.
-  immediate_incoming_queue().MaybeShrinkQueue();
+    // Since |immediate_incoming_queue| is empty, now is a good time to consider
+    // reducing it's capacity if we're wasting memory.
+    immediate_incoming_queue().MaybeShrinkQueue();
+  }
 
   // Activate delayed fence if necessary. This is ideologically similar to
   // ActivateDelayedFenceIfNeeded, but due to immediate tasks being posted
