@@ -22,6 +22,8 @@ Lrcon:
 .long	0x0c0f0e0d,0x0c0f0e0d,0x0c0f0e0d,0x0c0f0e0d	@ rotate-n-splat
 .long	0x1b,0x1b,0x1b,0x1b
 
+.text
+
 .globl	_aes_hw_set_encrypt_key
 .private_extern	_aes_hw_set_encrypt_key
 #ifdef __thumb2__
