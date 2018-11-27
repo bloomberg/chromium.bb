@@ -173,6 +173,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
   virtual scoped_refptr<CanvasResource> CreateResource();
+  bool use_hardware_decode_cache() const {
+    return IsAccelerated() && context_provider_wrapper_;
+  }
   cc::ImageDecodeCache* ImageDecodeCacheRGBA8();
   cc::ImageDecodeCache* ImageDecodeCacheF16();
 
