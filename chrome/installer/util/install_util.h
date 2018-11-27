@@ -180,12 +180,16 @@ class InstallUtil {
 
   // Returns the registry key path and value name where the enrollment token is
   // stored for machine level user cloud policies.
+  // Note that the value name was recently changed, we still need to return the
+  // old for some time until it's no longer in use.
+  // TODO(crbug.com/907589) : Remove |old_value_name| once no longer in use.
   static void GetMachineLevelUserCloudPolicyEnrollmentTokenRegistryPath(
       base::string16* key_path,
-      base::string16* value_name);
+      base::string16* value_name,
+      base::string16* old_value_name);
 
-  // Returns the registry key path and value name where the enrollment token is
-  // stored for machine level user cloud policies.
+  // Returns the registry key path and value name where the DM token is stored
+  // for machine level user cloud policies.
   static void GetMachineLevelUserCloudPolicyDMTokenRegistryPath(
       base::string16* key_path,
       base::string16* value_name);

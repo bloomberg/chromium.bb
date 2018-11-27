@@ -41,6 +41,12 @@ class BrowserDMTokenStorageWin : public BrowserDMTokenStorage {
 
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitClientId);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitEnrollmentToken);
+  // TODO(crbug.com/907589): Remove once no longer in use.
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest,
+                           InitOldEnrollmentToken);
+  // TODO(crbug.com/907589): Remove once no longer in use.
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest,
+                           InitOldEnrollmentTokenPriority);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitDMToken);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, SaveDMToken);
 

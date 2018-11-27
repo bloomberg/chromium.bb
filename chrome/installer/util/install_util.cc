@@ -120,7 +120,7 @@ HWND CreateUACForegroundWindow() {
   return foreground_window;
 }
 
-// Returns Regstiry key path of Chrome policies. This is used by the policies
+// Returns Registry key path of Chrome policies. This is used by the policies
 // that are shared between Chrome and installer.
 base::string16 GetChromePoliciesRegistryPath() {
   base::string16 key_path = L"SOFTWARE\\Policies\\";
@@ -646,12 +646,14 @@ void InstallUtil::AddUpdateDowngradeVersionItem(
 // static
 void InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentTokenRegistryPath(
     base::string16* key_path,
-    base::string16* value_name) {
+    base::string16* value_name,
+    base::string16* old_value_name) {
   // This token applies to all installs on the machine, even though only a
   // system install can set it.  This is to prevent users from doing a user
   // install of chrome to get around policies.
   *key_path = GetChromePoliciesRegistryPath();
-  *value_name = L"MachineLevelUserCloudPolicyEnrollmentToken";
+  *value_name = L"CloudManagementEnrollmentToken";
+  *old_value_name = L"MachineLevelUserCloudPolicyEnrollmentToken";
 }
 
 // static
@@ -682,12 +684,14 @@ base::string16 InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentToken() {
   // the enrollment and/or DM tokens.  See crbug.com/823852 for details.
   base::string16 key_path;
   base::string16 value_name;
-  GetMachineLevelUserCloudPolicyEnrollmentTokenRegistryPath(&key_path,
-                                                            &value_name);
+  base::string16 old_value_name;
+  GetMachineLevelUserCloudPolicyEnrollmentTokenRegistryPath(
+      &key_path, &value_name, &old_value_name);
 
   base::string16 value;
   RegKey key(HKEY_LOCAL_MACHINE, key_path.c_str(), KEY_QUERY_VALUE);
-  key.ReadValue(value_name.c_str(), &value);
+  if (key.ReadValue(value_name.c_str(), &value) == ERROR_FILE_NOT_FOUND)
+    key.ReadValue(old_value_name.c_str(), &value);
 
   return value;
 }
