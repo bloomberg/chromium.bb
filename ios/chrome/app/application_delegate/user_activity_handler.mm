@@ -135,6 +135,14 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
       });
       return YES;
     }
+  } else if ([userActivity.activityType
+                 isEqualToString:@"SearchInChromeIntent"]) {
+    base::RecordAction(UserMetricsAction("IOSLaunchedBySearchInChromeIntent"));
+    AppStartupParameters* startupParams = [[AppStartupParameters alloc]
+        initWithExternalURL:GURL(kChromeUINewTabURL)];
+    [startupParams setPostOpeningAction:FOCUS_OMNIBOX];
+    [startupInformation setStartupParameters:startupParams];
+    return YES;
   } else {
     // Do nothing for unknown activity type.
     return NO;

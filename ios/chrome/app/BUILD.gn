@@ -175,6 +175,7 @@ source_set("app_internal") {
     "//components/web_resource",
     "//ios/chrome/app/application_delegate",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/app/intents",
     "//ios/chrome/app/spotlight",
     "//ios/chrome/app/startup",
     "//ios/chrome/app/startup:startup_basic",

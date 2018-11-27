@@ -143,6 +143,7 @@ generate_localizable_strings("system_strings") {
   output_filenames = [
     "InfoPlist.strings",
     "Localizable.strings",
+    "Intents.strings",
   ]
   deps = [
     ios_packed_resources_target,

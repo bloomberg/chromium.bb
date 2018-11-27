@@ -25,6 +25,25 @@
 		</dict>
 		<dict>
 			<key>name</key>
+			<string>Intents.strings</string>
+			<key>strings</key>
+			<array>
+				<dict>
+					<key>input</key>
+					<string>IDS_IOS_INTENTS_SEARCH_IN_CHROME_DESCRIPTION</string>
+					<key>output</key>
+					<string>SearchInChromeIntentDescription</string>
+				</dict>
+				<dict>
+					<key>input</key>
+					<string>IDS_IOS_INTENTS_SEARCH_IN_CHROME_TITLE</string>
+					<key>output</key>
+					<string>SearchInChromeIntentTitle</string>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>name</key>
 			<string>InfoPlist.strings</string>
 			<key>strings</key>
 			<array>
