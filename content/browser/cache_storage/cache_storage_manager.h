@@ -20,7 +20,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_context.h"
 #include "content/public/browser/storage_usage_info.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_client.h"
 #include "url/origin.h"
 
@@ -116,7 +115,6 @@ class CONTENT_EXPORT CacheStorageManager
   // This must be called before creating any of the public *Cache functions
   // above.
   void SetBlobParametersForCache(
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
 
   void AddObserver(CacheStorageContextImpl::Observer* observer);
@@ -180,11 +178,6 @@ class CONTENT_EXPORT CacheStorageManager
                             std::unique_ptr<CacheStorage> cache_storage,
                             int64_t origin_size);
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter()
-      const {
-    return request_context_getter_;
-  }
-
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context() const {
     return blob_context_;
   }
@@ -206,7 +199,6 @@ class CONTENT_EXPORT CacheStorageManager
 
   base::ObserverList<CacheStorageContextImpl::Observer>::Unchecked observers_;
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
 
   base::WeakPtrFactory<CacheStorageManager> weak_ptr_factory_;

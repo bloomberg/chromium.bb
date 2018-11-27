@@ -1956,12 +1956,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   bp_message_filter_ = new BrowserPluginMessageFilter(GetID());
   AddFilter(bp_message_filter_.get());
 
-  scoped_refptr<net::URLRequestContextGetter> request_context(
-      storage_partition_impl_->GetURLRequestContext());
   scoped_refptr<RenderMessageFilter> render_message_filter =
       base::MakeRefCounted<RenderMessageFilter>(
-          GetID(), GetBrowserContext(), request_context.get(),
-          widget_helper_.get(), media_internals);
+          GetID(), GetBrowserContext(), widget_helper_.get(), media_internals);
   AddFilter(render_message_filter.get());
 
   render_frame_message_filter_ = new RenderFrameMessageFilter(
@@ -1975,29 +1972,34 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(render_frame_message_filter_.get());
 
   BrowserContext* browser_context = GetBrowserContext();
-  ResourceContext* resource_context = browser_context->GetResourceContext();
-
-  scoped_refptr<net::URLRequestContextGetter> media_request_context(
-      GetStoragePartition()->GetMediaURLRequestContext());
-
-  ResourceMessageFilter::GetContextsCallback get_contexts_callback(base::Bind(
-      &GetContexts, resource_context, request_context, media_request_context));
-
   // Several filters need the Blob storage context, so fetch it in advance.
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context =
       ChromeBlobStorageContext::GetFor(browser_context);
 
-  resource_message_filter_ = new ResourceMessageFilter(
-      GetID(), storage_partition_impl_->GetAppCacheService(),
-      blob_storage_context.get(),
-      storage_partition_impl_->GetFileSystemContext(),
-      storage_partition_impl_->GetServiceWorkerContext(),
-      storage_partition_impl_->GetPrefetchURLLoaderService(),
-      BrowserContext::GetSharedCorsOriginAccessList(browser_context),
-      std::move(get_contexts_callback),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    scoped_refptr<net::URLRequestContextGetter> request_context(
+        storage_partition_impl_->GetURLRequestContext());
+    ResourceContext* resource_context = browser_context->GetResourceContext();
 
-  AddFilter(resource_message_filter_.get());
+    scoped_refptr<net::URLRequestContextGetter> media_request_context(
+        GetStoragePartition()->GetMediaURLRequestContext());
+
+    ResourceMessageFilter::GetContextsCallback get_contexts_callback(
+        base::Bind(&GetContexts, resource_context, request_context,
+                   media_request_context));
+
+    resource_message_filter_ = new ResourceMessageFilter(
+        GetID(), storage_partition_impl_->GetAppCacheService(),
+        blob_storage_context.get(),
+        storage_partition_impl_->GetFileSystemContext(),
+        storage_partition_impl_->GetServiceWorkerContext(),
+        storage_partition_impl_->GetPrefetchURLLoaderService(),
+        BrowserContext::GetSharedCorsOriginAccessList(browser_context),
+        std::move(get_contexts_callback),
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+
+    AddFilter(resource_message_filter_.get());
+  }
 
   AddFilter(
       new MidiHost(GetID(), BrowserMainLoop::GetInstance()->midi_service()));

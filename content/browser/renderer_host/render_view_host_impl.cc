@@ -79,6 +79,7 @@
 #include "media/base/media_switches.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/device_form_factor.h"
@@ -247,13 +248,15 @@ RenderViewHostImpl::RenderViewHostImpl(
   if (!is_active())
     GetWidget()->UpdatePriority();
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &ResourceDispatcherHostImpl::OnRenderViewHostCreated,
-          GetProcess()->GetID(), GetRoutingID(),
-          base::RetainedRef(
-              GetProcess()->GetStoragePartition()->GetURLRequestContext())));
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(
+            &ResourceDispatcherHostImpl::OnRenderViewHostCreated,
+            GetProcess()->GetID(), GetRoutingID(),
+            base::RetainedRef(
+                GetProcess()->GetStoragePartition()->GetURLRequestContext())));
+  }
 
   close_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderViewHostImpl::ClosePageTimeout, weak_factory_.GetWeakPtr())));
@@ -262,10 +265,12 @@ RenderViewHostImpl::RenderViewHostImpl(
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
-                     GetProcess()->GetID(), GetRoutingID()));
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
+                       GetProcess()->GetID(), GetRoutingID()));
+  }
 
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
 
@@ -714,6 +719,8 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
 }
 
 void RenderViewHostImpl::RenderWidgetWillSetIsLoading(bool is_loading) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading,

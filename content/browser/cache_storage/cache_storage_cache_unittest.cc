@@ -40,7 +40,6 @@
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -311,7 +310,6 @@ class TestCacheStorageCache : public CacheStorageCache {
       const std::string& cache_name,
       const base::FilePath& path,
       CacheStorage* cache_storage,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context)
       : CacheStorageCache(origin,
@@ -319,7 +317,6 @@ class TestCacheStorageCache : public CacheStorageCache {
                           cache_name,
                           path,
                           cache_storage,
-                          request_context_getter,
                           quota_manager_proxy,
                           blob_context,
                           0 /* cache_size */,
@@ -420,8 +417,6 @@ class CacheStorageCacheTest : public testing::Test {
 
     cache_ = std::make_unique<TestCacheStorageCache>(
         kOrigin, kCacheName, temp_dir_path, nullptr /* CacheStorage */,
-        BrowserContext::GetDefaultStoragePartition(&browser_context_)
-            ->GetURLRequestContext(),
         quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr());
     cache_->Init();
   }

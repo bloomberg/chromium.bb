@@ -53,7 +53,7 @@ class CONTENT_EXPORT ChromeAppCacheService
   void InitializeOnIOThread(
       const base::FilePath& cache_path,
       ResourceContext* resource_context,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
   void Bind(std::unique_ptr<mojom::AppCacheBackend> backend,

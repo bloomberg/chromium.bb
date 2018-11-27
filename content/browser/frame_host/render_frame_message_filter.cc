@@ -270,7 +270,10 @@ RenderFrameMessageFilter::RenderFrameMessageFilter(
       plugin_service_(plugin_service),
       profile_data_directory_(storage_partition->GetPath()),
 #endif  // ENABLE_PLUGINS
-      request_context_(storage_partition->GetURLRequestContext()),
+      request_context_(
+          base::FeatureList::IsEnabled(network::features::kNetworkService)
+              ? nullptr
+              : storage_partition->GetURLRequestContext()),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),

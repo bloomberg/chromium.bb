@@ -46,7 +46,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -475,15 +474,13 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
     CacheStorageOwner owner,
     const std::string& cache_name,
     CacheStorage* cache_storage,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
     std::unique_ptr<crypto::SymmetricKey> cache_padding_key) {
   CacheStorageCache* cache = new CacheStorageCache(
       origin, owner, cache_name, base::FilePath(), cache_storage,
-      std::move(request_context_getter), std::move(quota_manager_proxy),
-      blob_context, 0 /* cache_size */, 0 /* cache_padding */,
-      std::move(cache_padding_key));
+      std::move(quota_manager_proxy), blob_context, 0 /* cache_size */,
+      0 /* cache_padding */, std::move(cache_padding_key));
   cache->SetObserver(cache_storage);
   cache->InitBackend();
   return base::WrapUnique(cache);
@@ -496,7 +493,6 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
     const std::string& cache_name,
     CacheStorage* cache_storage,
     const base::FilePath& path,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
     int64_t cache_size,
@@ -504,8 +500,8 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
     std::unique_ptr<crypto::SymmetricKey> cache_padding_key) {
   CacheStorageCache* cache = new CacheStorageCache(
       origin, owner, cache_name, path, cache_storage,
-      std::move(request_context_getter), std::move(quota_manager_proxy),
-      blob_context, cache_size, cache_padding, std::move(cache_padding_key));
+      std::move(quota_manager_proxy), blob_context, cache_size, cache_padding,
+      std::move(cache_padding_key));
   cache->SetObserver(cache_storage);
   cache->InitBackend();
   return base::WrapUnique(cache);
@@ -878,7 +874,6 @@ CacheStorageCache::CacheStorageCache(
     const std::string& cache_name,
     const base::FilePath& path,
     CacheStorage* cache_storage,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
     int64_t cache_size,
@@ -889,7 +884,6 @@ CacheStorageCache::CacheStorageCache(
       cache_name_(cache_name),
       path_(path),
       cache_storage_(cache_storage),
-      request_context_getter_(std::move(request_context_getter)),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
       blob_storage_context_(blob_context),
       scheduler_(

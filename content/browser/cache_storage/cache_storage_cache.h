@@ -29,10 +29,6 @@ namespace crypto {
 class SymmetricKey;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace storage {
 class BlobStorageContext;
 class QuotaManagerProxy;
@@ -96,7 +92,6 @@ class CONTENT_EXPORT CacheStorageCache {
       CacheStorageOwner owner,
       const std::string& cache_name,
       CacheStorage* cache_storage,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       std::unique_ptr<crypto::SymmetricKey> cache_padding_key);
@@ -106,7 +101,6 @@ class CONTENT_EXPORT CacheStorageCache {
       const std::string& cache_name,
       CacheStorage* cache_storage,
       const base::FilePath& path,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       int64_t cache_size,
@@ -283,7 +277,6 @@ class CONTENT_EXPORT CacheStorageCache {
       const std::string& cache_name,
       const base::FilePath& path,
       CacheStorage* cache_storage,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       int64_t cache_size,
@@ -492,7 +485,6 @@ class CONTENT_EXPORT CacheStorageCache {
   // Raw pointer is safe because CacheStorage owns this object.
   CacheStorage* cache_storage_;
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   BackendState backend_state_ = BACKEND_UNINITIALIZED;
