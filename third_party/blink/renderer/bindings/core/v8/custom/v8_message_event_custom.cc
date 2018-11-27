@@ -114,15 +114,8 @@ void V8MessageEvent::InitMessageEventMethodCustom(
 
   MessageEvent* event = V8MessageEvent::ToImpl(info.Holder());
   TOSTRING_VOID(V8StringResource<>, type_arg, info[0]);
-  bool bubbles_arg = false;
-  bool cancelable_arg = false;
-  if (!info[1]
-           ->BooleanValue(info.GetIsolate()->GetCurrentContext())
-           .To(&bubbles_arg) ||
-      !info[2]
-           ->BooleanValue(info.GetIsolate()->GetCurrentContext())
-           .To(&cancelable_arg))
-    return;
+  bool bubbles_arg = info[1]->BooleanValue(info.GetIsolate());
+  bool cancelable_arg = info[2]->BooleanValue(info.GetIsolate());
   v8::Local<v8::Value> data_arg = info[3];
   TOSTRING_VOID(V8StringResource<>, origin_arg, info[4]);
   TOSTRING_VOID(V8StringResource<>, last_event_id_arg, info[5]);

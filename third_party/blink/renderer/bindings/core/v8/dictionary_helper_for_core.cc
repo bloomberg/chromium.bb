@@ -61,7 +61,8 @@ CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
   if (!dictionary.Get(key, v8_value))
     return false;
 
-  return v8_value->BooleanValue(dictionary.V8Context()).To(&value);
+  value = v8_value->BooleanValue(dictionary.GetIsolate());
+  return true;
 }
 
 template <>

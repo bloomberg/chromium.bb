@@ -191,15 +191,12 @@ enum IntegerConversionConfiguration {
 };
 
 // Convert a value to a boolean.
-CORE_EXPORT bool ToBooleanSlow(v8::Isolate*,
-                               v8::Local<v8::Value>,
-                               ExceptionState&);
 inline bool ToBoolean(v8::Isolate* isolate,
                       v8::Local<v8::Value> value,
                       ExceptionState& exception_state) {
   if (LIKELY(value->IsBoolean()))
     return value.As<v8::Boolean>()->Value();
-  return ToBooleanSlow(isolate, value, exception_state);
+  return value->BooleanValue(isolate);
 }
 
 // Convert a value to a 8-bit signed integer. The conversion fails if the

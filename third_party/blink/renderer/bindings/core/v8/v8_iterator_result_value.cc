@@ -31,10 +31,10 @@ v8::MaybeLocal<v8::Value> V8UnpackIteratorResult(ScriptState* script_state,
   if (!result
            ->Get(script_state->GetContext(),
                  V8AtomicString(script_state->GetIsolate(), "done"))
-           .ToLocal(&done_value) ||
-      !done_value->BooleanValue(script_state->GetContext()).To(done)) {
+           .ToLocal(&done_value)) {
     return v8::MaybeLocal<v8::Value>();
   }
+  *done = done_value->BooleanValue(script_state->GetIsolate());
   return maybe_value;
 }
 
