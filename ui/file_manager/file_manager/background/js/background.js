@@ -16,7 +16,7 @@ function FileBrowserBackgroundImpl() {
    * Progress center of the background page.
    * @type {!ProgressCenter}
    */
-  this.progressCenter = new ProgressCenter();
+  this.progressCenter = new ProgressCenterImpl();
 
   /**
    * File operation manager.
