@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
+#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
@@ -26,6 +27,7 @@ namespace {
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierText = kSectionIdentifierEnumZero,
   SectionIdentifierSettings,
+  SectionIdentifierAutofill,
   SectionIdentifierURL,
 };
 
@@ -45,6 +47,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeLinkFooter,
   ItemTypeDetailText,
   ItemTypeSettingsSwitch,
+  ItemTypeAutofillEditItem,
 };
 }
 
@@ -75,6 +78,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierText];
   [model addSectionWithIdentifier:SectionIdentifierSettings];
+  [model addSectionWithIdentifier:SectionIdentifierAutofill];
   [model addSectionWithIdentifier:SectionIdentifierURL];
 
   // SectionIdentifierText.
@@ -167,6 +171,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
       @"This is a footer text view with a BEGIN_LINKlinkEND_LINK in the middle";
   [model setFooter:linkFooter
       forSectionWithIdentifier:SectionIdentifierSettings];
+
+  // SectionIdentifierAutofill.
+  AutofillEditItem* autofillEditItem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeAutofillEditItem];
+  autofillEditItem.textFieldName = @"Autofill field";
+  autofillEditItem.textFieldValue = @" with a value";
+  [model addItem:autofillEditItem
+      toSectionWithIdentifier:SectionIdentifierAutofill];
 
   // SectionIdentifierURL.
   TableViewURLItem* item =
