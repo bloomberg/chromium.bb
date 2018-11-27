@@ -3465,10 +3465,12 @@ void SubmitCompositorFrameWithResources(
     bool flipped = false;
     bool nearest_neighbor = false;
     bool secure_output_only = true;
+    ui::ProtectedVideoType protected_video_type =
+        ui::ProtectedVideoType::kClear;
     quad->SetAll(sqs, rect, visible_rect, needs_blending, resource_ids[i],
                  gfx::Size(), premultiplied_alpha, uv_top_left, uv_bottom_right,
                  background_color, vertex_opacity, flipped, nearest_neighbor,
-                 secure_output_only);
+                 secure_output_only, protected_video_type);
   }
   frame.render_pass_list.push_back(std::move(pass));
   support->SubmitCompositorFrame(surface_id.local_surface_id(),

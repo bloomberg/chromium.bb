@@ -897,7 +897,7 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
           uv_crop.origin(), uv_crop.bottom_right(),
           SK_ColorTRANSPARENT /* background_color */, vertex_opacity,
           false /* y_flipped */, false /* nearest_neighbor */,
-          state_.only_visible_on_secure_output);
+          state_.only_visible_on_secure_output, ui::ProtectedVideoType::kClear);
       if (current_resource_.is_overlay_candidate)
         texture_quad->set_resource_size_in_pixels(current_resource_.size);
       frame->resource_list.push_back(current_resource_);

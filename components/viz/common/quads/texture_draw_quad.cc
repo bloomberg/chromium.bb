@@ -30,7 +30,8 @@ void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const float vertex_opacity[4],
                              bool y_flipped,
                              bool nearest_neighbor,
-                             bool secure_output_only) {
+                             bool secure_output_only,
+                             ui::ProtectedVideoType protected_video_type) {
   needs_blending = needs_blending || vertex_opacity[0] != 1.0f ||
                    vertex_opacity[1] != 1.0f || vertex_opacity[2] != 1.0f ||
                    vertex_opacity[3] != 1.0f;
@@ -49,6 +50,7 @@ void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->y_flipped = y_flipped;
   this->nearest_neighbor = nearest_neighbor;
   this->secure_output_only = secure_output_only;
+  this->protected_video_type = protected_video_type;
 }
 
 void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -64,7 +66,8 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              const float vertex_opacity[4],
                              bool y_flipped,
                              bool nearest_neighbor,
-                             bool secure_output_only) {
+                             bool secure_output_only,
+                             ui::ProtectedVideoType protected_video_type) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,
                    visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;
@@ -81,6 +84,7 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->y_flipped = y_flipped;
   this->nearest_neighbor = nearest_neighbor;
   this->secure_output_only = secure_output_only;
+  this->protected_video_type = protected_video_type;
 }
 
 const TextureDrawQuad* TextureDrawQuad::MaterialCast(const DrawQuad* quad) {
@@ -104,6 +108,8 @@ void TextureDrawQuad::ExtendValue(base::trace_event::TracedValue* value) const {
 
   value->SetBoolean("y_flipped", y_flipped);
   value->SetBoolean("nearest_neighbor", nearest_neighbor);
+  value->SetInteger("protected_video_type",
+                    static_cast<int>(protected_video_type));
 }
 
 TextureDrawQuad::OverlayResources::OverlayResources() = default;
