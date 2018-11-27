@@ -121,6 +121,14 @@ void ChromeSearchResult::SetQueryUrl(const GURL& url) {
     updater->SetSearchResultMetadata(id(), CloneMetadata());
 }
 
+void ChromeSearchResult::SetEquivalentResutlId(
+    const std::string& equivlanet_result_id) {
+  metadata_->equivalent_result_id = equivlanet_result_id;
+  auto* updater = model_updater();
+  if (updater)
+    updater->SetSearchResultMetadata(id(), CloneMetadata());
+}
+
 void ChromeSearchResult::SetIcon(const gfx::ImageSkia& icon) {
   icon.EnsureRepsForSupportedScales();
   metadata_->icon = icon;

@@ -83,6 +83,13 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   const base::Optional<GURL>& query_url() const { return metadata_->query_url; }
   void set_query_url(const GURL& url) { metadata_->query_url = url; }
 
+  const base::Optional<std::string>& equivalent_result_id() const {
+    return metadata_->equivalent_result_id;
+  }
+  void set_equivalent_result_id(const std::string& equivalent_result_id) {
+    metadata_->equivalent_result_id = equivalent_result_id;
+  }
+
   const std::string& id() const { return metadata_->id; }
 
   double display_score() const { return metadata_->display_score; }

@@ -62,8 +62,8 @@ TEST_F(AnswerCardResultTest, Basic) {
   std::unique_ptr<AnswerCardResult> result = CreateResult(
       GURL(kCardUrl), GURL(kSearchResultUrl), GURL(kStrippedSearchResultUrl));
 
-  EXPECT_EQ(kSearchResultUrl, result->id());
-  EXPECT_EQ(kStrippedSearchResultUrl, result->comparable_id());
+  EXPECT_EQ(kCardUrl, result->id());
+  EXPECT_EQ(kStrippedSearchResultUrl, result->equivalent_result_id().value());
   EXPECT_EQ(kCardUrl, result->query_url()->spec());
   EXPECT_EQ(ash::SearchResultDisplayType::kCard, result->display_type());
   EXPECT_EQ(1, result->relevance());

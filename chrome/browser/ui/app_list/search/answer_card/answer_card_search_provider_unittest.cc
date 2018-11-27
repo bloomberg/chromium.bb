@@ -18,11 +18,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
+#include "chrome/browser/ui/app_list/search/answer_card/answer_card_result.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_search_provider.h"
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/search_engines/template_url_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,9 +37,9 @@ constexpr char kQueryBase[] = "http://beasts.org/search";
 constexpr char kSomeParam[] = "&some_param=some_value";
 constexpr char kDogQuery[] = "dog";
 constexpr char kSharkQuery[] = "shark";
-constexpr char kDogCardId[] =
+constexpr char kDogSearchUrl[] =
     "https://www.google.com/search?q=dog&sourceid=chrome&ie=UTF-8";
-constexpr char kSharkCardId[] =
+constexpr char kSharkSearchUrl[] =
     "https://www.google.com/search?q=shark&sourceid=chrome&ie=UTF-8";
 
 GURL GetAnswerCardUrl(const std::string& query) {
@@ -93,6 +95,13 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
         profile_.get(), model_updater_.get(), nullptr);
   }
 
+  GURL GetStrippedSearchUrl(const GURL& search_result_url) {
+    return AutocompleteMatch::GURLToStrippedGURL(
+        GURL(search_result_url), AutocompleteInput(),
+        TemplateURLServiceFactory::GetForProfile(profile_.get()),
+        base::string16() /* keyword */);
+  }
+
  private:
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AnswerCardSearchProvider> provider_;
@@ -109,13 +118,19 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
 TEST_F(AnswerCardSearchProviderTest, Start) {
   provider()->Start(base::UTF8ToUTF16(kDogQuery));
   ASSERT_EQ(1u, results().size());
-  EXPECT_EQ(kDogCardId, results()[0]->id());
-  EXPECT_EQ(GetAnswerCardUrl(kDogQuery), results()[0]->query_url()->spec());
+  AnswerCardResult* result = static_cast<AnswerCardResult*>(results()[0].get());
+  EXPECT_EQ(GURL(kDogSearchUrl), result->search_result_url());
+  EXPECT_EQ(GetStrippedSearchUrl(GURL(kDogSearchUrl)),
+            result->equivalent_result_id().value());
+  EXPECT_EQ(GetAnswerCardUrl(kDogQuery), result->query_url()->spec());
 
   provider()->Start(base::UTF8ToUTF16(kSharkQuery));
   ASSERT_EQ(1u, results().size());
-  EXPECT_EQ(kSharkCardId, results()[0]->id());
-  EXPECT_EQ(GetAnswerCardUrl(kSharkQuery), results()[0]->query_url()->spec());
+  result = static_cast<AnswerCardResult*>(results()[0].get());
+  EXPECT_EQ(GURL(kSharkSearchUrl), result->search_result_url());
+  EXPECT_EQ(GetStrippedSearchUrl(GURL(kSharkSearchUrl)),
+            result->equivalent_result_id().value());
+  EXPECT_EQ(GetAnswerCardUrl(kSharkQuery), result->query_url()->spec());
 }
 
 // Queries to non-Google search engines are ignored.

@@ -61,6 +61,9 @@ class APP_LIST_MODEL_EXPORT SearchModel {
   // Deletes all search results. This is used in profile switches.
   void DeleteAllResults();
 
+  // Delete result by the given id.
+  void DeleteResultById(const std::string& id);
+
  private:
   std::unique_ptr<SearchBoxModel> search_box_;
   std::unique_ptr<SearchResults> results_;
