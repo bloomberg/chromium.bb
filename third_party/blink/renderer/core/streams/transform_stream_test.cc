@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/garbage_collected_script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -55,8 +56,7 @@ class TransformStreamTest : public ::testing::Test {
   void CopyReadableAndWritableToGlobal(const V8TestingScope& scope) {
     auto* script_state = scope.GetScriptState();
     ReadableStream* readable = Stream()->Readable();
-    ScriptValue writable =
-        Stream()->Writable(script_state, ASSERT_NO_EXCEPTION);
+    WritableStream* writable = Stream()->Writable();
     v8::Local<v8::Object> global = script_state->GetContext()->Global();
     EXPECT_TRUE(global
                     ->Set(scope.GetContext(),
@@ -66,7 +66,7 @@ class TransformStreamTest : public ::testing::Test {
     EXPECT_TRUE(global
                     ->Set(scope.GetContext(),
                           V8String(scope.GetIsolate(), "writable"),
-                          writable.V8Value())
+                          ToV8(writable, script_state))
                     .IsJust());
   }
 
@@ -143,12 +143,9 @@ TEST_F(TransformStreamTest, Accessors) {
   V8TestingScope scope;
   Init(new IdentityTransformer(), scope.GetScriptState(), ASSERT_NO_EXCEPTION);
   ReadableStream* readable = Stream()->Readable();
-  ScriptValue writable =
-      Stream()->Writable(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  WritableStream* writable = Stream()->Writable();
   EXPECT_TRUE(readable);
-  EXPECT_TRUE(writable.IsObject());
-  // TODO(ricea): Check writable too once we have a wrapper for
-  // IsWritableStream().
+  EXPECT_TRUE(writable);
 }
 
 TEST_F(TransformStreamTest, TransformIsCalled) {
@@ -437,24 +434,6 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   EXPECT_TRUE(readableTypeErrorThrown);
   EXPECT_TRUE(writableTypeErrorThrown);
-}
-
-// Verify that the JavaScript TransformStream object is kept alive by the C++
-// TransformStream object.
-TEST_F(TransformStreamTest, SurvivesGarbageCollectionWhenTraced) {
-  auto page_holder = DummyPageHolder::Create();
-  Persistent<ScriptState> script_state =
-      ToScriptStateForMainWorld(page_holder->GetDocument().GetFrame());
-  {
-    ScriptState::Scope scope(script_state);
-    Init(new IdentityTransformer(), script_state, ASSERT_NO_EXCEPTION);
-  }
-  Microtask::PerformCheckpoint(script_state->GetIsolate());
-  script_state->GetIsolate()->RequestGarbageCollectionForTesting(
-      v8::Isolate::kFullGarbageCollection);
-  ScriptState::Scope scope(script_state);
-  ScriptValue writable = Stream()->Writable(script_state, ASSERT_NO_EXCEPTION);
-  EXPECT_FALSE(writable.IsEmpty());
 }
 
 }  // namespace

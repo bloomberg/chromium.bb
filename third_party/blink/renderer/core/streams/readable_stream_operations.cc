@@ -393,26 +393,4 @@ ScriptPromise ReadableStreamOperations::PipeTo(
   return ScriptPromise(script_state, result);
 }
 
-base::Optional<bool> ReadableStreamOperations::IsWritableStream(
-    ScriptState* script_state,
-    ScriptValue value,
-    ExceptionState& exception_state) {
-  return BooleanOperationWithRethrow(script_state, value, "IsWritableStream",
-                                     exception_state);
-}
-
-base::Optional<bool> ReadableStreamOperations::IsWritableStreamLocked(
-    ScriptState* script_state,
-    ScriptValue stream,
-    ExceptionState& exception_state) {
-#if DCHECK_IS_ON()
-  auto is_ws = IsWritableStream(script_state, stream, exception_state);
-  if (!is_ws)
-    return base::nullopt;
-  DCHECK(*is_ws);
-#endif
-  return BooleanOperationWithRethrow(script_state, stream,
-                                     "IsWritableStreamLocked", exception_state);
-}
-
 }  // namespace blink

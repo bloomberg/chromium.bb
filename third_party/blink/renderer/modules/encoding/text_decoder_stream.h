@@ -15,9 +15,11 @@
 namespace blink {
 
 class ExceptionState;
+class ReadableStream;
 class ScriptState;
 class TextDecoderOptions;
 class Visitor;
+class WritableStream;
 
 // Implements the TextDecoderStream interface as specified at
 // https://encoding.spec.whatwg.org/#interface-textdecoderstream.
@@ -39,7 +41,7 @@ class TextDecoderStream final : public ScriptWrappable {
   bool fatal() const { return fatal_; }
   bool ignoreBOM() const { return ignore_bom_; }
   ReadableStream* readable() const;
-  ScriptValue writable(ScriptState*, ExceptionState&) const;
+  WritableStream* writable() const;
 
   void Trace(Visitor* visitor) override;
 

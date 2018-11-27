@@ -43,6 +43,8 @@
   const _strategySizeAlgorithm =
         v8.createPrivateSymbol('[[strategySizeAlgorithm]]');
   const _writeAlgorithm = v8.createPrivateSymbol('[[writeAlgorithm]]');
+  const internalWritableStreamSymbol = v8.createPrivateSymbol(
+      'internal WritableStream in exposed WritableStream interface');
 
   // Numeric encodings of stream states. Stored in the _stateAndFlags slot.
   const WRITABLE = 0;
@@ -60,7 +62,6 @@
   // the global object may have been overwritten. See "V8 Extras Design Doc",
   // section "Security Considerations".
   // https://docs.google.com/document/d/1AT5-T0aHGp7Lt29vPWFr2-qG8r3l9CByyvKwEuA8Ec0/edit#heading=h.9yixony1a18r
-  const defineProperty = global.Object.defineProperty;
   const ObjectCreate = global.Object.create;
 
   const Function_call = v8.uncurryThis(global.Function.prototype.call);
@@ -97,8 +98,6 @@
 
   // User-visible strings.
   const streamErrors = binding.streamErrors;
-  const errAbortLockedStream =
-        'Cannot abort a writable stream that is locked to a writer';
   const errWriterLockReleasedPrefix =
         'This writable stream writer has been released and cannot be ';
   const errCloseCloseRequestedStream = 'Cannot close a writable stream that ' +
@@ -158,33 +157,13 @@
       SetUpWritableStreamDefaultControllerFromUnderlyingSink(
           this, underlyingSink, highWaterMark, sizeAlgorithm);
     }
-
-    get locked() {
-      if (!IsWritableStream(this)) {
-        throw new TypeError(streamErrors.illegalInvocation);
-      }
-      return IsWritableStreamLocked(this);
-    }
-
-    abort(reason) {
-      if (!IsWritableStream(this)) {
-        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
-      }
-      if (IsWritableStreamLocked(this)) {
-        return Promise_reject(new TypeError(errAbortLockedStream));
-      }
-      return WritableStreamAbort(this, reason);
-    }
-
-    getWriter() {
-      if (!IsWritableStream(this)) {
-        throw new TypeError(streamErrors.illegalInvocation);
-      }
-      return AcquireWritableStreamDefaultWriter(this);
-    }
   }
 
   const WritableStream_prototype = WritableStream.prototype;
+
+  function createWritableStream(underlyingSink, strategy) {
+    return new WritableStream(underlyingSink, strategy);
+  }
 
   // General Writable Stream Abstract Operations
 
@@ -529,6 +508,14 @@
 
   class WritableStreamDefaultWriter {
     constructor(stream) {
+      // |stream| here can be either an external WritableStream (i.e.,
+      // IDL defined WritableStream) or an internal WritableStream (i.e.,
+      // the class defined in this file). In the former case, the
+      // internal stream is stored in [internalWritableStreamSymbol], so use it
+      // from now on.
+      if (stream[internalWritableStreamSymbol] !== undefined) {
+        stream = stream[internalWritableStreamSymbol];
+      }
       if (!IsWritableStream(stream)) {
         throw new TypeError(streamErrors.illegalConstructor);
       }
@@ -1036,19 +1023,6 @@
     WritableStreamStartErroring(stream, error);
   }
 
-  //
-  // Additions to the global object
-  //
-
-  defineProperty(global, 'WritableStream', {
-    value: WritableStream,
-    enumerable: false,
-    configurable: true,
-    writable: true
-  });
-
-  // TODO(ricea): Exports to Blink
-
   Object.assign(binding, {
     // Exports for ReadableStream
     AcquireWritableStreamDefaultWriter,
@@ -1066,6 +1040,10 @@
     WritableStreamDefaultWriterRelease,
     WritableStreamDefaultWriterWrite,
     getWritableStreamStoredError,
+
+    // Exports for blink
+    createWritableStream,
+    internalWritableStreamSymbol,
 
     // Additional exports for TransformStream
     CreateWritableStream,

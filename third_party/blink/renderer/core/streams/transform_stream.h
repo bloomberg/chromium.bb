@@ -23,6 +23,7 @@ class ScriptState;
 class ReadableStream;
 class TransformStreamTransformer;
 class Visitor;
+class WritableStream;
 
 // Creates and wraps a JavaScript TransformStream object with a transformation
 // defined in C++. Provides access to the readable and writable streams.
@@ -62,13 +63,10 @@ class CORE_EXPORT TransformStream final : public ScriptWrappable {
 
   // IDL attributes
   ReadableStream* readable() const { return readable_; }
-  ScriptValue writable(ScriptState* script_state,
-                       ExceptionState& exception_state) const {
-    return Writable(script_state, exception_state);
-  }
+  WritableStream* writable() const { return writable_; }
 
   ReadableStream* Readable() const { return readable_; }
-  ScriptValue Writable(ScriptState*, ExceptionState&) const;
+  WritableStream* Writable() const { return writable_; }
 
   void Trace(Visitor*) override;
 
@@ -84,6 +82,7 @@ class CORE_EXPORT TransformStream final : public ScriptWrappable {
 
   TraceWrapperV8Reference<v8::Value> stream_;
   TraceWrapperMember<ReadableStream> readable_;
+  TraceWrapperMember<WritableStream> writable_;
 
   DISALLOW_COPY_AND_ASSIGN(TransformStream);
 };

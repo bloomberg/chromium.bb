@@ -171,9 +171,8 @@ ReadableStream* TextDecoderStream::readable() const {
   return transform_->Readable();
 }
 
-ScriptValue TextDecoderStream::writable(ScriptState* script_state,
-                                        ExceptionState& exception_state) const {
-  return transform_->Writable(script_state, exception_state);
+WritableStream* TextDecoderStream::writable() const {
+  return transform_->Writable();
 }
 
 void TextDecoderStream::Trace(Visitor* visitor) {
