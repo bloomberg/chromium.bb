@@ -167,6 +167,16 @@ js_library("device_handler") {
   ]
 }
 
+js_unittest("device_handler_unittest") {
+  deps = [
+    ":device_handler",
+    ":mock_volume_manager",
+    "//ui/file_manager/base/js:mock_chrome",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/file_manager/common/js:test_importer_common",
+  ]
+}
+
 js_library("mock_drive_sync_handler") {
   testonly = true
   deps = [
@@ -451,6 +461,7 @@ js_library("volume_manager_util") {
 js_unit_tests("unit_tests") {
   deps = [
     ":crostini_unittest",
+    ":device_handler_unittest",
     ":duplicate_finder_unittest",
     ":import_history_unittest",
     ":media_scanner_unittest",
