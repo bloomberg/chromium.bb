@@ -17,12 +17,12 @@ namespace previews {
 
 PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     optimization_guide::OptimizationGuideService* optimization_guide_service,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : optimization_guide_service_(optimization_guide_service),
-      io_task_runner_(io_task_runner),
+      ui_task_runner_(ui_task_runner),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
-      io_weak_ptr_factory_(this) {
+      ui_weak_ptr_factory_(this) {
   DCHECK(optimization_guide_service_);
   optimization_guide_service_->AddObserver(this);
 }
@@ -36,7 +36,7 @@ bool PreviewsOptimizationGuide::IsWhitelisted(
     const GURL& url,
     PreviewsType type,
     net::EffectiveConnectionType* out_ect_threshold) const {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   if (!hints_)
     return false;
 
@@ -53,7 +53,7 @@ bool PreviewsOptimizationGuide::IsWhitelisted(
 
 bool PreviewsOptimizationGuide::IsBlacklisted(const GURL& url,
                                               PreviewsType type) const {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   if (!hints_)
     return false;
 
@@ -64,7 +64,7 @@ void PreviewsOptimizationGuide::OnLoadedHint(
     ResourceLoadingHintsCallback callback,
     const GURL& document_url,
     const optimization_guide::proto::Hint& loaded_hint) const {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   const optimization_guide::proto::PageHint* matched_page_hint =
       PreviewsHints::FindPageHint(document_url, loaded_hint);
@@ -101,14 +101,14 @@ void PreviewsOptimizationGuide::OnLoadedHint(
 bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
     const GURL& url,
     ResourceLoadingHintsCallback callback) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   if (!hints_)
     return false;
 
   return hints_->MaybeLoadOptimizationHints(
       url, base::BindOnce(&PreviewsOptimizationGuide::OnLoadedHint,
-                          io_weak_ptr_factory_.GetWeakPtr(),
+                          ui_weak_ptr_factory_.GetWeakPtr(),
                           std::move(callback), url));
 }
 
@@ -125,18 +125,18 @@ void PreviewsOptimizationGuide::LogHintCacheMatch(
 void PreviewsOptimizationGuide::OnHintsProcessed(
     const optimization_guide::proto::Configuration& config,
     const optimization_guide::ComponentInfo& info) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
       base::BindOnce(&PreviewsHints::CreateFromConfig, config, info),
       base::BindOnce(&PreviewsOptimizationGuide::UpdateHints,
-                     io_weak_ptr_factory_.GetWeakPtr()));
+                     ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PreviewsOptimizationGuide::UpdateHints(
     std::unique_ptr<PreviewsHints> hints) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   hints_ = std::move(hints);
   if (hints_)
     hints_->Initialize();

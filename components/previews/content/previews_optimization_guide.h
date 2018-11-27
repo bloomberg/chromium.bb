@@ -42,7 +42,7 @@ class PreviewsOptimizationGuide
   // The embedder guarantees |optimization_guide_service| outlives |this|.
   PreviewsOptimizationGuide(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   ~PreviewsOptimizationGuide() override;
 
@@ -94,8 +94,8 @@ class PreviewsOptimizationGuide
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* optimization_guide_service_;
 
-  // Runner for IO thread tasks.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // Runner for UI thread tasks.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Background thread where hints processing should be performed.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
@@ -103,8 +103,8 @@ class PreviewsOptimizationGuide
   // The current hints used for this optimization guide.
   std::unique_ptr<PreviewsHints> hints_;
 
-  // Used to get |weak_ptr_| to self on the IO thread.
-  base::WeakPtrFactory<PreviewsOptimizationGuide> io_weak_ptr_factory_;
+  // Used to get |weak_ptr_| to self on the UI thread.
+  base::WeakPtrFactory<PreviewsOptimizationGuide> ui_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuide);
 };
