@@ -348,9 +348,7 @@ bool InspectorPageAgent::CachedResourceContent(Resource* cached_resource,
       return true;
     case blink::ResourceType::kScript:
       MaybeEncodeTextContent(
-          cached_resource->ResourceBuffer()
-              ? ToScriptResource(cached_resource)->DecodedText()
-              : ToScriptResource(cached_resource)->SourceText().ToString(),
+          ToScriptResource(cached_resource)->TextForInspector(),
           cached_resource->ResourceBuffer(), result, base64_encoded);
       return true;
     default:
