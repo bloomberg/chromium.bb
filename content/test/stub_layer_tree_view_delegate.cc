@@ -13,7 +13,6 @@
 namespace content {
 
 void StubLayerTreeViewDelegate::RequestNewLayerTreeFrameSink(
-    bool for_warmup,
     LayerTreeFrameSinkCallback callback) {
   std::move(callback).Run(nullptr);
 }

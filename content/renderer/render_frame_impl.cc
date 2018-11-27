@@ -1466,15 +1466,6 @@ void RenderFrameImpl::CreateFrame(
     // pulling the device scale factor off the WebView itself.
     render_widget->UpdateWebViewWithDeviceScaleFactor();
 
-    // It may be questionable, since we create un-frozen RenderWidgets at this
-    // point for subframes, but we don't un-freeze the main frame's RenderWidget
-    // here, instead deferring until the non-provisional frame is swapped in.
-    // But we do need to start the creating compositor resources in parallel to
-    // the navigation being done with the provisional frame, so we inform the
-    // frozen RenderWidget to get prepared. We must abort this if we are no
-    // longer planning to un-freeze the RenderWidget (ie in FrameDetached).
-    render_widget->WarmupCompositor();
-
     render_frame->render_widget_ = render_widget;
   } else if (widget_params.routing_id != MSG_ROUTING_NONE) {
     // This frame is a child local root, so we require a separate RenderWidget
@@ -2262,7 +2253,7 @@ void RenderFrameImpl::OnSwapOut(
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy.
   //
-  // The swap call deletes this RenderFrame via FrameDetached.  Do not access
+  // The swap call deletes this RenderFrame via frameDetached.  Do not access
   // any members after this call.
   //
   // TODO(creis): WebFrame::swap() can return false.  Most of those cases
@@ -2312,7 +2303,7 @@ void RenderFrameImpl::OnSwapIn() {
 }
 
 void RenderFrameImpl::OnDeleteFrame() {
-  // This will result in a call to RenderFrameImpl::FrameDetached, which
+  // This will result in a call to RenderFrameImpl::frameDetached, which
   // deletes the object. Do not access |this| after detach.
   frame_->Detach();
 }
@@ -3989,14 +3980,6 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
     // closing the RenderWidget we only drop the WebFrameWidget in order to also
     // drop its reference on the WebLocalFrameImpl for this detaching frame.
     render_view_->DetachWebFrameWidget();
-    // In the main frame case, we WarmupCompositor() when setting up the
-    // WebFrameWidget, because we can't unfreeze the RenderWidget until
-    // navigation completes. If that navigation aborts then we detach the
-    // provisional main frame, and drop the WebFrameWidget. Since we then no
-    // longer expect to use this RenderWidget immediately, we drop any resources
-    // that were being prepared. This is a no-op if the RenderWidget was
-    // unfrozen and not in a warming up state.
-    render_widget_->AbortWarmupCompositor();
   } else if (render_widget_) {
     // This closes/deletes the RenderWidget if this frame was a local root.
     render_widget_->CloseForFrame();
@@ -5912,7 +5895,7 @@ bool RenderFrameImpl::SwapIn() {
 
   // The proxy should always exist.  If it was detached while the provisional
   // LocalFrame was being navigated, the provisional frame would've been
-  // cleaned up by RenderFrameProxy::FrameDetached.  See
+  // cleaned up by RenderFrameProxy::frameDetached.  See
   // https://crbug.com/526304 and https://crbug.com/568676 for context.
   RenderFrameProxy* proxy = RenderFrameProxy::FromRoutingID(proxy_routing_id_);
   CHECK(proxy);
