@@ -26,7 +26,7 @@ namespace login {
 // context.SetInteger("image-index", 0);
 // context.SetDouble("zoom", 1.25);
 // context.GetChangesAndReset(&dictionary);
-// CallJS("onContextChanged", dictionary);
+// CallJSWithPrefix("onContextChanged", dictionary);
 //
 // ScreenContext memorizes changed key-value pairs and returns them
 // via GetChangesAndReset() method. After call to this method an

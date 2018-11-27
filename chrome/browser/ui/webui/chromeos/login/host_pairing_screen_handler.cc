@@ -118,7 +118,7 @@ void HostPairingScreenHandler::OnContextChanged(
     context_cache_.ApplyChanges(diff, NULL);
     return;
   }
-  CallJS(kMethodContextChanged, diff);
+  CallJSWithPrefix(kMethodContextChanged, diff);
 }
 
 std::string HostPairingScreenHandler::GetErrorStringFromAuthError(

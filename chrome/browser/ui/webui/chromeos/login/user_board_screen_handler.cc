@@ -44,8 +44,8 @@ void UserBoardScreenHandler::HandleAttemptUnlock(const AccountId& account_id) {
 void UserBoardScreenHandler::SetPublicSessionDisplayName(
     const AccountId& account_id,
     const std::string& display_name) {
-  CallJS("login.AccountPickerScreen.setPublicSessionDisplayName", account_id,
-         display_name);
+  CallJSWithPrefix("login.AccountPickerScreen.setPublicSessionDisplayName",
+                   account_id, display_name);
 }
 
 void UserBoardScreenHandler::SetPublicSessionLocales(
@@ -53,13 +53,15 @@ void UserBoardScreenHandler::SetPublicSessionLocales(
     std::unique_ptr<base::ListValue> locales,
     const std::string& default_locale,
     bool multiple_recommended_locales) {
-  CallJS("login.AccountPickerScreen.setPublicSessionLocales", account_id,
-         *locales, default_locale, multiple_recommended_locales);
+  CallJSWithPrefix("login.AccountPickerScreen.setPublicSessionLocales",
+                   account_id, *locales, default_locale,
+                   multiple_recommended_locales);
 }
 
 void UserBoardScreenHandler::ShowBannerMessage(const base::string16& message,
                                                bool is_warning) {
-  CallJS("login.AccountPickerScreen.showBannerMessage", message, is_warning);
+  CallJSWithPrefix("login.AccountPickerScreen.showBannerMessage", message,
+                   is_warning);
 }
 
 void UserBoardScreenHandler::ShowUserPodCustomIcon(
@@ -70,20 +72,22 @@ void UserBoardScreenHandler::ShowUserPodCustomIcon(
       icon_options.ToDictionaryValue();
   if (!icon || icon->empty())
     return;
-  CallJS("login.AccountPickerScreen.showUserPodCustomIcon", account_id, *icon);
+  CallJSWithPrefix("login.AccountPickerScreen.showUserPodCustomIcon",
+                   account_id, *icon);
 }
 
 void UserBoardScreenHandler::HideUserPodCustomIcon(
     const AccountId& account_id) {
-  CallJS("login.AccountPickerScreen.hideUserPodCustomIcon", account_id);
+  CallJSWithPrefix("login.AccountPickerScreen.hideUserPodCustomIcon",
+                   account_id);
 }
 
 void UserBoardScreenHandler::SetAuthType(
     const AccountId& account_id,
     proximity_auth::mojom::AuthType auth_type,
     const base::string16& initial_value) {
-  CallJS("login.AccountPickerScreen.setAuthType", account_id,
-         static_cast<int>(auth_type), base::Value(initial_value));
+  CallJSWithPrefix("login.AccountPickerScreen.setAuthType", account_id,
+                   static_cast<int>(auth_type), base::Value(initial_value));
 }
 
 void UserBoardScreenHandler::Bind(UserSelectionScreen* screen) {

@@ -114,7 +114,7 @@ void AppLaunchSplashScreenHandler::Hide() {
 }
 
 void AppLaunchSplashScreenHandler::ToggleNetworkConfig(bool visible) {
-  CallJS("toggleNetworkConfig", visible);
+  CallJSWithPrefix("toggleNetworkConfig", visible);
 }
 
 void AppLaunchSplashScreenHandler::UpdateAppLaunchState(AppLaunchState state) {
@@ -228,7 +228,7 @@ void AppLaunchSplashScreenHandler::PopulateAppInfo(
 }
 
 void AppLaunchSplashScreenHandler::SetLaunchText(const std::string& text) {
-  CallJS("updateMessage", text);
+  CallJSWithPrefix("updateMessage", text);
 }
 
 int AppLaunchSplashScreenHandler::GetProgressMessageFromState(
