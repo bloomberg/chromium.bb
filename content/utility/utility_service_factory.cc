@@ -130,10 +130,6 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   GetContentClient()->utility()->RegisterServices(services);
 
   GetContentClient()->utility()->RegisterAudioBinders(audio_registry_.get());
-  service_manager::EmbeddedServiceInfo audio_info;
-  audio_info.factory = base::BindRepeating(
-      &UtilityServiceFactory::CreateAudioService, base::Unretained(this));
-  services->insert(std::make_pair(audio::mojom::kServiceName, audio_info));
 
 #if defined(OS_CHROMEOS)
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -166,7 +162,9 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
 bool UtilityServiceFactory::HandleServiceRequest(
     const std::string& name,
     service_manager::mojom::ServiceRequest request) {
-  if (name == data_decoder::mojom::kServiceName) {
+  if (name == audio::mojom::kServiceName) {
+    running_service_ = CreateAudioService(std::move(request));
+  } else if (name == data_decoder::mojom::kServiceName) {
     content::UtilityThread::Get()->EnsureBlinkInitialized();
     running_service_ =
         std::make_unique<data_decoder::DataDecoderService>(std::move(request));
@@ -215,7 +213,8 @@ UtilityServiceFactory::CreateNetworkService() {
 }
 
 std::unique_ptr<service_manager::Service>
-UtilityServiceFactory::CreateAudioService() {
+UtilityServiceFactory::CreateAudioService(
+    service_manager::mojom::ServiceRequest request) {
 #if defined(OS_MACOSX)
   // Don't connect to launch services when running sandboxed
   // (https://crbug.com/874785).
@@ -225,7 +224,8 @@ UtilityServiceFactory::CreateAudioService() {
   }
 #endif
 
-  return audio::CreateStandaloneService(std::move(audio_registry_));
+  return audio::CreateStandaloneService(std::move(audio_registry_),
+                                        std::move(request));
 }
 
 }  // namespace content

@@ -17,8 +17,9 @@
 #include "media/audio/audio_debug_recording_test.h"
 #include "media/audio/mock_audio_debug_recording_manager.h"
 #include "media/audio/mock_audio_manager.h"
+#include "services/audio/public/mojom/constants.mojom.h"
+#include "services/audio/service.h"
 #include "services/audio/service_factory.h"
-#include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,10 +90,10 @@ class DebugRecordingSessionTest : public media::AudioDebugRecordingTest {
     CreateAudioManager();
     InitializeAudioDebugRecordingManager();
 
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            CreateEmbeddedService(
-                static_cast<media::AudioManager*>(mock_audio_manager_.get())));
+    service_ = CreateEmbeddedService(
+        static_cast<media::AudioManager*>(mock_audio_manager_.get()),
+        connector_factory_.RegisterInstance(audio::mojom::kServiceName));
+
     scoped_task_environment_.RunUntilIdle();
   }
 
@@ -103,7 +104,7 @@ class DebugRecordingSessionTest : public media::AudioDebugRecordingTest {
     std::unique_ptr<DebugRecordingSession> session(
         std::make_unique<DebugRecordingSession>(
             base::FilePath(kBaseFileName),
-            connector_factory_->CreateConnector()));
+            connector_factory_.CreateConnector()));
     scoped_task_environment_.RunUntilIdle();
     return session;
   }
@@ -115,7 +116,8 @@ class DebugRecordingSessionTest : public media::AudioDebugRecordingTest {
   }
 
  private:
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<Service> service_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugRecordingSessionTest);
 };
