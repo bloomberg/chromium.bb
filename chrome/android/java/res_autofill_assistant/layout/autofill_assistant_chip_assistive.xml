@@ -9,7 +9,7 @@
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:textAppearance="@style/BlackTitle2"
-    android:gravity="center_vertical"
+    android:gravity="center_vertical|center_horizontal"
     android:minHeight="32dp"
     android:singleLine="true"
     android:background="@drawable/autofill_assistant_chip_assistive_bg" />
