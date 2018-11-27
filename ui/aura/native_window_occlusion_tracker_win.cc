@@ -168,17 +168,20 @@ bool NativeWindowOcclusionTrackerWin::IsWindowVisibleAndFullyOpaque(
 void NativeWindowOcclusionTrackerWin::UpdateOcclusionState(
     const base::flat_map<HWND, Window::OcclusionState>&
         root_window_hwnds_occlusion_state) {
+  num_visible_root_windows_ = 0;
   for (const auto& root_window_pair : root_window_hwnds_occlusion_state) {
     auto it = hwnd_root_window_map_.find(root_window_pair.first);
     // The window was destroyed while processing occlusion.
     if (it == hwnd_root_window_map_.end())
       continue;
-    Window* root_window = it->second;
     // Check Window::IsVisible here, on the UI thread, because it can't be
     // checked on the occlusion calculation thread.
+    bool root_window_hidden = !it->second->IsVisible();
     it->second->GetHost()->SetNativeWindowOcclusionState(
-        !root_window->IsVisible() ? Window::OcclusionState::HIDDEN
-                                  : root_window_pair.second);
+        root_window_hidden ? Window::OcclusionState::HIDDEN
+                           : root_window_pair.second);
+    if (!root_window_hidden)
+      num_visible_root_windows_++;
   }
 }
 
@@ -223,9 +226,12 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     HandleVisibilityChanged(bool visible) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // May have gone from having no visible windows to having one, in
-  // which case we need to register event hooks.
-  if (visible)
+  // which case we need to register event hooks, and make sure that an
+  // occlusion calculation is scheduled.
+  if (visible) {
     MaybeRegisterEventHooks();
+    ScheduleOcclusionCalculationIfNeeded();
+  }
 }
 
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::

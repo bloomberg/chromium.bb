@@ -1038,6 +1038,10 @@ bool Widget::IsAlwaysRenderAsActive() const {
   return always_render_as_active_;
 }
 
+bool Widget::IsNativeWidgetInitialized() const {
+  return native_widget_initialized_;
+}
+
 bool Widget::OnNativeWidgetActivationChanged(bool active) {
   if (g_disable_activation_change_handling_)
     return false;

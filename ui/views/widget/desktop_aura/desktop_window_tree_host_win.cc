@@ -856,6 +856,23 @@ void DesktopWindowTreeHostWin::HandleVisibilityChanged(bool visible) {
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(visible);
 }
 
+void DesktopWindowTreeHostWin::HandleWindowMinimizedOrRestored(bool restored) {
+  // Ignore minimize/restore events that happen before widget initialization is
+  // done. If a window is created minimized, and then activated, restoring
+  // focus will fail because the root window is not visible, which is exposed by
+  // ExtensionWindowCreateTest.AcceptState.
+  if (!native_widget_delegate_->IsNativeWidgetInitialized())
+    return;
+
+  if (restored)
+    window()->Show();
+  else
+    window()->Hide();
+
+  if (compositor())
+    compositor()->SetVisible(restored);
+}
+
 void DesktopWindowTreeHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
   CheckForMonitorChange();

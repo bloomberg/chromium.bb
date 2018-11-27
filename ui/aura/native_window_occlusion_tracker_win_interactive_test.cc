@@ -48,14 +48,18 @@ class MockWindowTreeHostObserver : public WindowTreeHostObserver {
   // WindowTreeHostObserver:
   void OnOcclusionStateChanged(WindowTreeHost* host,
                                Window::OcclusionState new_state) override {
-    EXPECT_NE(new_state, Window::OcclusionState::UNKNOWN);
     // Should only get notified when the occlusion state changes.
     EXPECT_NE(new_state, cur_state_);
     cur_state_ = new_state;
-    if (cur_state_ == expectation_) {
+    if (expectation_ != Window::OcclusionState::UNKNOWN &&
+        cur_state_ == expectation_) {
       EXPECT_FALSE(quit_closure_.is_null());
       std::move(quit_closure_).Run();
     }
+  }
+
+  void set_quit_closure(base::OnceClosure quit_closure) {
+    quit_closure_ = std::move(quit_closure);
   }
 
   void set_expectation(Window::OcclusionState expectation) {
@@ -163,6 +167,11 @@ class NativeWindowOcclusionTrackerTest : public test::AuraTestBase {
     window->env()->GetWindowOcclusionTracker()->Track(window);
   }
 
+  int GetNumVisibleRootWindows() {
+    return NativeWindowOcclusionTrackerWin::GetOrCreateInstance()
+        ->num_visible_root_windows_;
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestNativeWindow> native_win_;
@@ -200,11 +209,59 @@ TEST_F(NativeWindowOcclusionTrackerTest, SimpleHidden) {
   MockWindowTreeHostObserver observer(run_loop.QuitClosure());
   CreateTrackedAuraWindowWithBounds(&observer, gfx::Rect(0, 0, 100, 100));
   CreateNativeWindowWithBounds(gfx::Rect(200, 0, 100, 100));
-  // Minimize the tracked aura window and check that its occlusion state
+  // Iconify the tracked aura window and check that its occlusion state
   // is HIDDEN.
-  ::ShowWindow(host()->GetAcceleratedWidget(), SW_MINIMIZE);
+  CloseWindow(host()->GetAcceleratedWidget());
   observer.set_expectation(Window::OcclusionState::HIDDEN);
   run_loop.Run();
+  EXPECT_FALSE(observer.is_expecting_call());
+}
+
+// Test that minimizing and restoring an app window results in the occlusion
+// tracker re-registering for win events and detecting that a native window
+// occludes the app window.
+TEST_F(NativeWindowOcclusionTrackerTest, OcclusionAfterVisibilityToggle) {
+  base::RunLoop run_loop;
+  MockWindowTreeHostObserver observer(run_loop.QuitClosure());
+  CreateTrackedAuraWindowWithBounds(&observer, gfx::Rect(0, 0, 100, 100));
+  observer.set_expectation(Window::OcclusionState::VISIBLE);
+  run_loop.Run();
+
+  base::RunLoop run_loop2;
+  observer.set_expectation(Window::OcclusionState::HIDDEN);
+  observer.set_quit_closure(run_loop2.QuitClosure());
+  // host()->window()->Hide() is needed to generate OnWindowVisibilityChanged
+  // notifications.
+  host()->window()->Hide();
+  // This makes the window iconic.
+  ::CloseWindow(host()->GetAcceleratedWidget());
+  run_loop2.Run();
+  // HIDDEN state is set synchronously by OnWindowVsiblityChanged notification,
+  // before occlusion is calculated, so the above expectation will be met w/o an
+  // occlusion calculation.
+  // Loop until an occlusion calculation has run with no non-hidden app windows.
+
+  do {
+    // Need to pump events in order for UpdateOcclusionState to get called, and
+    // update the number of non hidden root windows. When that number is 0,
+    // occlusion has been calculated with no visible root windows.
+    base::RunLoop().RunUntilIdle();
+  } while (GetNumVisibleRootWindows() != 0);
+
+  base::RunLoop run_loop3;
+  observer.set_expectation(Window::OcclusionState::VISIBLE);
+  observer.set_quit_closure(run_loop3.QuitClosure());
+  host()->window()->Show();
+  // This opens the window made iconic above.
+  OpenIcon(host()->GetAcceleratedWidget());
+  run_loop3.Run();
+
+  // Open a native window that occludes the visible app window.
+  base::RunLoop run_loop4;
+  observer.set_expectation(Window::OcclusionState::OCCLUDED);
+  observer.set_quit_closure(run_loop4.QuitClosure());
+  CreateNativeWindowWithBounds(gfx::Rect(0, 0, 100, 100));
+  run_loop4.Run();
   EXPECT_FALSE(observer.is_expecting_call());
 }
 
