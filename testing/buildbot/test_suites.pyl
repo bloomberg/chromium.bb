@@ -556,6 +556,7 @@
     'chromium_code_coverage_isolated_scripts': {
       'webkit_layout_tests': {
         'args': [
+          '--additional-driver-flag=--no-sandbox',
           '--num-retries=3',
         ],
         'isolate_name': 'webkit_layout_tests_exparchive',
