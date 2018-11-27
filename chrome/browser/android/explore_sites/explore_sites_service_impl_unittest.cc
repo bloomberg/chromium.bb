@@ -48,7 +48,9 @@ class ExploreSitesServiceImplTest : public testing::Test {
     auto history_stats_reporter =
         std::make_unique<HistoryStatisticsReporter>(nullptr, nullptr, nullptr);
     service_ = std::make_unique<ExploreSitesServiceImpl>(
-        std::move(store), test_shared_url_loader_factory_,
+        std::move(store),
+        std::make_unique<TestURLLoaderFactoryGetter>(
+            test_shared_url_loader_factory_),
         std::move(history_stats_reporter));
     success_ = false;
     test_data_ = CreateTestDataProto();
@@ -104,6 +106,21 @@ class ExploreSitesServiceImplTest : public testing::Test {
   void ValidateTestCatalog();
 
  private:
+  class TestURLLoaderFactoryGetter
+      : public ExploreSitesServiceImpl::URLLoaderFactoryGetter {
+   public:
+    explicit TestURLLoaderFactoryGetter(
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+        : url_loader_factory_(url_loader_factory) {}
+    scoped_refptr<network::SharedURLLoaderFactory> GetFactory() override {
+      return url_loader_factory_;
+    }
+
+   private:
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+    DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactoryGetter);
+  };
+
   std::unique_ptr<explore_sites::ExploreSitesServiceImpl> service_;
   bool success_;
   int callback_count_;

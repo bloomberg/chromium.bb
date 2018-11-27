@@ -24,9 +24,18 @@ namespace explore_sites {
 class ExploreSitesServiceImpl : public ExploreSitesService,
                                 public TaskQueue::Delegate {
  public:
+  // Helper class used to inject a dependency that can later vend a
+  // URLLoaderFactory. URLLoaderFactory fetching requires fully initialized
+  // Profile which is generally available later than service creation time.
+  class URLLoaderFactoryGetter {
+   public:
+    virtual ~URLLoaderFactoryGetter() {}
+    virtual scoped_refptr<network::SharedURLLoaderFactory> GetFactory() = 0;
+  };
+
   ExploreSitesServiceImpl(
       std::unique_ptr<ExploreSitesStore> store,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      std::unique_ptr<URLLoaderFactoryGetter> url_loader_factory_getter,
       std::unique_ptr<HistoryStatisticsReporter> history_statistics_reporter);
   ~ExploreSitesServiceImpl() override;
 
@@ -93,7 +102,7 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   // Used to control access to the ExploreSitesStore.
   TaskQueue task_queue_;
   std::unique_ptr<ExploreSitesStore> explore_sites_store_;
-  scoped_refptr<network ::SharedURLLoaderFactory> url_loader_factory_;
+  std::unique_ptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   std::unique_ptr<ExploreSitesFetcher> explore_sites_fetcher_;
   std::unique_ptr<HistoryStatisticsReporter> history_statistics_reporter_;
   std::vector<BooleanCallback> update_catalog_callbacks_;

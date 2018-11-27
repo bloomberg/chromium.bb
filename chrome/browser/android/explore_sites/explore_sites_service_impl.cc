@@ -33,11 +33,11 @@ namespace explore_sites {
 
 ExploreSitesServiceImpl::ExploreSitesServiceImpl(
     std::unique_ptr<ExploreSitesStore> store,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    std::unique_ptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     std::unique_ptr<HistoryStatisticsReporter> history_statistics_reporter)
     : task_queue_(this),
       explore_sites_store_(std::move(store)),
-      url_loader_factory_(url_loader_factory),
+      url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       history_statistics_reporter_(std::move(history_statistics_reporter)),
       weak_ptr_factory_(this) {
   if (IsExploreSitesEnabled()) {
@@ -213,7 +213,7 @@ void ExploreSitesServiceImpl::GotVersionToStartFetch(
   // Create a fetcher and start fetching the protobuf (async).
   explore_sites_fetcher_ = ExploreSitesFetcher::CreateForGetCatalog(
       is_immediate_fetch, catalog_version, accept_languages,
-      url_loader_factory_,
+      url_loader_factory_getter_->GetFactory(),
       base::BindOnce(&ExploreSitesServiceImpl::OnCatalogFetched,
                      weak_ptr_factory_.GetWeakPtr()));
   explore_sites_fetcher_->Start();
