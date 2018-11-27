@@ -61,10 +61,13 @@ CWVSyncError CWVConvertGoogleServiceAuthErrorStateToCWVSyncError(
 
 @interface CWVSyncController ()
 
-// Called by WebViewSyncServiceObserverBridge's |OnSyncConfigurationCompleted|.
+// Called by WebViewSyncControllerObserverBridge's
+// |OnSyncConfigurationCompleted|.
 - (void)didCompleteSyncConfiguration;
-// Called by WebViewSyncServiceObserverBridge's |OnSyncShutdown|.
+// Called by WebViewSyncControllerObserverBridge's |OnSyncShutdown|.
 - (void)didShutdownSync;
+// Called by WebViewSyncControllerObserverBridge's |OnErrorChanged|.
+- (void)didUpdateAuthError;
 
 // Call to refresh access tokens for |currentIdentity|.
 - (void)reloadCredentials;
@@ -75,18 +78,15 @@ namespace ios_web_view {
 
 // Bridge that observes browser_sync::ProfileSyncService and calls analagous
 // methods on CWVSyncController.
-class WebViewSyncServiceObserverBridge : public syncer::SyncServiceObserver {
+class WebViewSyncControllerObserverBridge
+    : public syncer::SyncServiceObserver,
+      public SigninErrorController::Observer {
  public:
-  explicit WebViewSyncServiceObserverBridge(CWVSyncController* sync_controller)
+  explicit WebViewSyncControllerObserverBridge(
+      CWVSyncController* sync_controller)
       : sync_controller_(sync_controller) {}
-  void OnStateChanged(syncer::SyncService* sync) override {
-    // No op.
-  }
 
-  void OnSyncCycleCompleted(syncer::SyncService* sync) override {
-    // No op.
-  }
-
+  // syncer::SyncServiceObserver:
   void OnSyncConfigurationCompleted(syncer::SyncService* sync) override {
     [sync_controller_ didCompleteSyncConfiguration];
   }
@@ -94,6 +94,9 @@ class WebViewSyncServiceObserverBridge : public syncer::SyncServiceObserver {
   void OnSyncShutdown(syncer::SyncService* sync) override {
     [sync_controller_ didShutdownSync];
   }
+
+  // SigninErrorController::Observer:
+  void OnErrorChanged() override { [sync_controller_ didUpdateAuthError]; }
 
  private:
   __weak CWVSyncController* sync_controller_;
@@ -105,9 +108,9 @@ class WebViewSyncServiceObserverBridge : public syncer::SyncServiceObserver {
   browser_sync::ProfileSyncService* _profileSyncService;
   AccountTrackerService* _accountTrackerService;
   SigninManager* _signinManager;
-  IOSWebViewSigninClient* _signinClient;
   ProfileOAuth2TokenService* _tokenService;
-  std::unique_ptr<ios_web_view::WebViewSyncServiceObserverBridge> _observer;
+  SigninErrorController* _signinErrorController;
+  std::unique_ptr<ios_web_view::WebViewSyncControllerObserverBridge> _observer;
 
   // Data source that can provide access tokens.
   __weak id<CWVSyncControllerDataSource> _dataSource;
@@ -116,19 +119,24 @@ class WebViewSyncServiceObserverBridge : public syncer::SyncServiceObserver {
 @synthesize delegate = _delegate;
 
 - (instancetype)
-initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
-     accountTrackerService:(AccountTrackerService*)accountTrackerService
-             signinManager:(SigninManager*)signinManager
-              tokenService:(ProfileOAuth2TokenService*)tokenService {
+    initWithProfileSyncService:
+        (browser_sync::ProfileSyncService*)profileSyncService
+         accountTrackerService:(AccountTrackerService*)accountTrackerService
+                 signinManager:(SigninManager*)signinManager
+                  tokenService:(ProfileOAuth2TokenService*)tokenService
+         signinErrorController:(SigninErrorController*)signinErrorController {
   self = [super init];
   if (self) {
     _profileSyncService = profileSyncService;
     _accountTrackerService = accountTrackerService;
     _signinManager = signinManager;
     _tokenService = tokenService;
+    _signinErrorController = signinErrorController;
     _observer =
-        std::make_unique<ios_web_view::WebViewSyncServiceObserverBridge>(self);
+        std::make_unique<ios_web_view::WebViewSyncControllerObserverBridge>(
+            self);
     _profileSyncService->AddObserver(_observer.get());
+    _signinErrorController->AddObserver(_observer.get());
 
     // Refresh access tokens on foreground to extend expiration dates.
     [[NSNotificationCenter defaultCenter]
@@ -142,6 +150,7 @@ initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
 
 - (void)dealloc {
   _profileSyncService->RemoveObserver(_observer.get());
+  _signinErrorController->RemoveObserver(_observer.get());
 }
 
 #pragma mark - Public Methods
@@ -204,6 +213,7 @@ initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
 
 - (void)didShutdownSync {
   _profileSyncService->RemoveObserver(_observer.get());
+  _signinErrorController->RemoveObserver(_observer.get());
 }
 
 - (void)reloadCredentials {
@@ -254,7 +264,8 @@ initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
   [_delegate syncController:self didStopSyncWithReason:reason];
 }
 
-- (void)didUpdateAuthError:(const GoogleServiceAuthError&)authError {
+- (void)didUpdateAuthError {
+  GoogleServiceAuthError authError = _signinErrorController->auth_error();
   CWVSyncError code =
       CWVConvertGoogleServiceAuthErrorStateToCWVSyncError(authError.state());
   if (code != CWVSyncErrorNone) {

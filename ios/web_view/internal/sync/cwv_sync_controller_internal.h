@@ -21,15 +21,18 @@ class ProfileSyncService;
 class AccountTrackerService;
 class SigninManager;
 class ProfileOAuth2TokenService;
+class SigninErrorController;
 
 @interface CWVSyncController ()
 
 // All dependencies must out live this class.
 - (instancetype)
-initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
-     accountTrackerService:(AccountTrackerService*)accountTrackerService
-             signinManager:(SigninManager*)signinManager
-              tokenService:(ProfileOAuth2TokenService*)tokenService
+    initWithProfileSyncService:
+        (browser_sync::ProfileSyncService*)profileSyncService
+         accountTrackerService:(AccountTrackerService*)accountTrackerService
+                 signinManager:(SigninManager*)signinManager
+                  tokenService:(ProfileOAuth2TokenService*)tokenService
+         signinErrorController:(SigninErrorController*)SigninErrorController
     NS_DESIGNATED_INITIALIZER;
 
 // Called by WebViewProfileOAuth2TokenServiceIOSProviderImpl to obtain
@@ -40,9 +43,6 @@ initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
 
 // Called by IOSWebViewSigninClient when signing out.
 - (void)didSignoutWithSourceMetric:(signin_metrics::ProfileSignout)metric;
-
-// Called by IOSWebViewSigninClient when auth error changes.
-- (void)didUpdateAuthError:(const GoogleServiceAuthError&)authError;
 
 @end
 

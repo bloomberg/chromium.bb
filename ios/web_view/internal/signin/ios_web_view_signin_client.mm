@@ -18,7 +18,6 @@ IOSWebViewSigninClient::IOSWebViewSigninClient(
     PrefService* pref_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     network::mojom::CookieManager* cookie_manager,
-    SigninErrorController* signin_error_controller,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
     scoped_refptr<HostContentSettingsMap> host_content_settings_map)
     : network_callback_helper_(
@@ -26,14 +25,11 @@ IOSWebViewSigninClient::IOSWebViewSigninClient(
       pref_service_(pref_service),
       url_loader_factory_(url_loader_factory),
       cookie_manager_(cookie_manager),
-      signin_error_controller_(signin_error_controller),
       cookie_settings_(cookie_settings),
       host_content_settings_map_(host_content_settings_map) {
-  signin_error_controller_->AddObserver(this);
 }
 
 IOSWebViewSigninClient::~IOSWebViewSigninClient() {
-  signin_error_controller_->RemoveObserver(this);
 }
 
 void IOSWebViewSigninClient::Shutdown() {
@@ -102,10 +98,6 @@ std::unique_ptr<GaiaAuthFetcher> IOSWebViewSigninClient::CreateGaiaAuthFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return std::make_unique<GaiaAuthFetcher>(consumer, source,
                                            url_loader_factory);
-}
-
-void IOSWebViewSigninClient::OnErrorChanged() {
-  [sync_controller_ didUpdateAuthError:signin_error_controller_->auth_error()];
 }
 
 void IOSWebViewSigninClient::SetSyncController(
