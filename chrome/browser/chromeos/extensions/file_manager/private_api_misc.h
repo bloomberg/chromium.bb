@@ -340,9 +340,6 @@ class FileManagerPrivateInternalGetCrostiniSharedPathsFunction
 
  private:
   ResponseAction Run() override;
-  void OnConvertFileDefinitionListToEntryDefinitionList(
-      std::unique_ptr<file_manager::util::EntryDefinitionList>
-          entry_definition_list);
   DISALLOW_COPY_AND_ASSIGN(
       FileManagerPrivateInternalGetCrostiniSharedPathsFunction);
 };

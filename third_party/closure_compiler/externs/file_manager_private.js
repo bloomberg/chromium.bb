@@ -971,8 +971,9 @@ chrome.fileManagerPrivate.sharePathsWithCrostini = function(
     entries, persist, callback) {};
 
 /**
- * Returns list of paths shared with the crostini container.
- * @param {function(!Array<!Entry>)} callback
+ * Returns list of paths shared with the crostini container, and whether this is
+ * the first time this function is called for this session.
+ * @param {function(!Array<!Entry>, boolean)} callback
  */
 chrome.fileManagerPrivate.getCrostiniSharedPaths = function(callback) {};
 

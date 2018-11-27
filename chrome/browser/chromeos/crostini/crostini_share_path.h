@@ -56,6 +56,9 @@ class CrostiniSharePath : public KeyedService {
                    const base::FilePath& path,
                    base::OnceCallback<void(bool, std::string)> callback);
 
+  // Returns true the first time it is called on this service.
+  bool GetAndSetFirstForSession();
+
   // Get list of all shared paths for the default crostini container.
   std::vector<base::FilePath> GetPersistedSharedPaths();
 
@@ -80,6 +83,7 @@ class CrostiniSharePath : public KeyedService {
       base::OnceCallback<void(bool, std::string)> callback);
 
   Profile* profile_;
+  bool first_for_session_ = true;
   base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniSharePath);

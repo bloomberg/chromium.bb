@@ -21788,6 +21788,7 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="Share with Linux"/>
   <int value="13" label="Manage Linux sharing menu"/>
   <int value="14" label="Manage Linux sharing toast"/>
+  <int value="15" label="Manage Linux sharing toast startup"/>
 </enum>
 
 <enum name="FileManagerQuickViewWayToOpen">

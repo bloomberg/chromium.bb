@@ -319,6 +319,12 @@ void CrostiniSharePath::UnsharePath(
   }
 }
 
+bool CrostiniSharePath::GetAndSetFirstForSession() {
+  bool result = first_for_session_;
+  first_for_session_ = false;
+  return result;
+}
+
 std::vector<base::FilePath> CrostiniSharePath::GetPersistedSharedPaths() {
   std::vector<base::FilePath> result;
   if (!base::FeatureList::IsEnabled(chromeos::features::kCrostiniFiles))

@@ -767,8 +767,9 @@ callback GetDirectorySizeCallback = void(double size);
 callback GetRecentFilesCallback = void([instanceOf=Entry] object[] entries);
 
 // |entries| Entries shared with crostini container.
+// |firstForSession| true the first time this is called for the session.
 callback GetCrostiniSharedPathsCallback =
-    void([instanceOf = Entry] object[] entries);
+    void([instanceOf = Entry] object[] entries, boolean firstForSession);
 
 // |linux_package_info| Package info for the queried package.
 callback GetLinuxPackageInfoCallback =

@@ -1075,6 +1075,9 @@
   <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_CROSTINI" desc="Confirmation message shown when a user shares a folder with the crostini container.">
     1 folder shared with Linux
   </message>
+  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_CROSTINI_PLURAL" desc="Confirmation message shown when a user shares more than 1 folder with the crostini container.">
+    $1 folders shared with Linux
+  </message>
 
   <message name="IDS_FILE_BROWSER_FOLDER" desc="Folder entry type">
     Folder
