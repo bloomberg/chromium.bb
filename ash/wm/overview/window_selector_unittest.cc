@@ -728,7 +728,7 @@ TEST_F(WindowSelectorTest, ActiveWindowChangedUserActionWindowClose) {
 
   aura::Window* window = widget->GetNativeWindow();
   gfx::Rect bounds = GetTransformedBoundsInRootWindow(window);
-  gfx::Point point(bounds.top_right().x() - 5, bounds.top_right().y() + 5);
+  gfx::Point point(bounds.right() - 5, bounds.y() + 5);
   ui::test::EventGenerator event_generator(window->GetRootWindow(), point);
 
   ASSERT_FALSE(widget->IsClosed());
@@ -842,7 +842,7 @@ TEST_F(WindowSelectorTest, CloseButton) {
 
   aura::Window* window = widget->GetNativeWindow();
   gfx::Rect bounds = GetTransformedBoundsInRootWindow(window);
-  gfx::Point point(bounds.top_right().x() - 5, bounds.top_right().y() + 5);
+  gfx::Point point(bounds.right() - 5, bounds.y() + 5);
   ui::test::EventGenerator event_generator(window->GetRootWindow(), point);
 
   EXPECT_FALSE(widget->IsClosed());
@@ -858,8 +858,7 @@ TEST_F(WindowSelectorTest, CloseButton) {
   const gfx::Rect rect =
       GetTransformedBoundsInRootWindow(window_for_minimized_window);
 
-  event_generator.MoveMouseTo(
-      gfx::Point(rect.top_right().x() - 10, rect.top_right().y() - 10));
+  event_generator.MoveMouseTo(gfx::Point(rect.right() - 10, rect.y() - 10));
 
   EXPECT_FALSE(minimized_widget->IsClosed());
   event_generator.ClickLeftButton();
@@ -921,7 +920,7 @@ TEST_F(WindowSelectorTest, CloseButtonOnMultipleDisplay) {
 
   aura::Window* window2 = widget->GetNativeWindow();
   gfx::Rect bounds = GetTransformedBoundsInRootWindow(window2);
-  gfx::Point point(bounds.top_right().x() - 5, bounds.top_right().y() + 5);
+  gfx::Point point(bounds.right() - 5, bounds.y() + 5);
   ui::test::EventGenerator event_generator(window2->GetRootWindow(), point);
 
   EXPECT_FALSE(widget->IsClosed());
@@ -3341,8 +3340,7 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
   ASSERT_LT(
       left_selector_item->target_bounds().origin().x() + selector_item_inset,
       edge_inset);
-  ASSERT_GT(right_selector_item->target_bounds().top_right().x() -
-                selector_item_inset,
+  ASSERT_GT(right_selector_item->target_bounds().right() - selector_item_inset,
             screen_width - edge_inset);
 
   // Verify if the drag is not started in either snap region, the drag still
@@ -3380,10 +3378,9 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
   // move by |drag_offset_snap_region| towards the left side of the screen
   // before split view acknowledges the drag.
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
-  generator->set_current_screen_location(
-      gfx::Point(right_selector_item->target_bounds().top_right().x() -
-                     selector_item_inset,
-                 right_selector_item->target_bounds().CenterPoint().y()));
+  generator->set_current_screen_location(gfx::Point(
+      right_selector_item->target_bounds().right() - selector_item_inset,
+      right_selector_item->target_bounds().CenterPoint().y()));
   generator->PressLeftButton();
   generator->MoveMouseBy(drag_offset, 0);
   EXPECT_FALSE(IsPreviewAreaShowing());

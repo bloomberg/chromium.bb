@@ -91,6 +91,11 @@ void EventGeneratorDelegate::SetFactoryFunction(FactoryFunction factory) {
   g_event_generator_delegate_factory = std::move(factory);
 }
 
+EventGenerator::EventGenerator(std::unique_ptr<EventGeneratorDelegate> delegate)
+    : delegate_(std::move(delegate)) {
+  Init(nullptr, nullptr);
+}
+
 EventGenerator::EventGenerator(gfx::NativeWindow root_window) {
   Init(root_window, nullptr);
 }
@@ -104,11 +109,6 @@ EventGenerator::EventGenerator(gfx::NativeWindow root_window,
 EventGenerator::EventGenerator(gfx::NativeWindow root_window,
                                gfx::NativeWindow window) {
   Init(root_window, window);
-}
-
-EventGenerator::EventGenerator(std::unique_ptr<EventGeneratorDelegate> delegate)
-    : delegate_(std::move(delegate)) {
-  Init(nullptr, nullptr);
 }
 
 EventGenerator::~EventGenerator() {
