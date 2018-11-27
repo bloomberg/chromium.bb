@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/ios/web_favicon_driver.h"
@@ -205,6 +206,13 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 - (void)webStateList:(WebStateList*)webStateList
     didDetachWebState:(web::WebState*)webState
               atIndex:(int)index {
+  // TODO(crbug.com/877792) : Real-world crashes have been caused by
+  // |webStateList| being nil in this callback. Capture histogram to retain
+  // visibility of issue severity.
+  UMA_HISTOGRAM_BOOLEAN("IOS.TabGridMediator.DidDetachNilWebStateList",
+                        !webStateList);
+  if (!webStateList)
+    return;
   TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
   NSString* itemID = tabHelper->tab_id();
   [self.consumer removeItemWithID:itemID
