@@ -113,6 +113,8 @@ static const CGFloat NoMultiplier = 1.0;
   self.siteNameLabel.text = @"";
   [self.usernameButton setTitle:@"" forState:UIControlStateNormal];
   self.usernameButton.enabled = YES;
+  [self.usernameButton setTitleColor:UIColor.cr_manualFillTintColor
+                            forState:UIControlStateNormal];
   [self.passwordButton setTitle:@"" forState:UIControlStateNormal];
   self.manualFillCredential = nil;
 }

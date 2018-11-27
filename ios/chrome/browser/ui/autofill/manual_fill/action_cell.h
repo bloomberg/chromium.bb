@@ -17,6 +17,9 @@
 
 - (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
 
+// Set enable to NO to create a message line cell.
+@property(nonatomic, assign) BOOL enabled;
+
 @end
 
 // A table view cell which contains a button and holds an action block, which
@@ -25,7 +28,8 @@
 // Updates the cell with the passed title and action block.
 - (void)setUpWithTitle:(NSString*)title
        accessibilityID:(NSString*)accessibilityID
-                action:(void (^)(void))action;
+                action:(void (^)(void))action
+               enabled:(BOOL)enabled;
 
 @end
 
