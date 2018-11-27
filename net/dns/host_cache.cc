@@ -183,7 +183,6 @@ HostCache::HostCache(size_t max_entries)
 
 HostCache::~HostCache() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  RecordEraseAll(ERASE_DESTRUCT, tick_clock_->NowTicks());
 }
 
 const HostCache::Entry* HostCache::Lookup(const Key& key, base::TimeTicks now) {
@@ -192,17 +191,12 @@ const HostCache::Entry* HostCache::Lookup(const Key& key, base::TimeTicks now) {
     return nullptr;
 
   HostCache::Entry* entry = LookupInternal(key);
-  if (!entry) {
-    RecordLookup(LOOKUP_MISS_ABSENT, now, nullptr);
+  if (!entry)
     return nullptr;
-  }
-  if (entry->IsStale(now, network_changes_)) {
-    RecordLookup(LOOKUP_MISS_STALE, now, entry);
+  if (entry->IsStale(now, network_changes_))
     return nullptr;
-  }
 
   entry->CountHit(/* hit_is_stale= */ false);
-  RecordLookup(LOOKUP_HIT_VALID, now, entry);
   return entry;
 }
 
@@ -215,14 +209,11 @@ const HostCache::Entry* HostCache::LookupStale(
     return nullptr;
 
   HostCache::Entry* entry = LookupInternal(key);
-  if (!entry) {
-    RecordLookup(LOOKUP_MISS_ABSENT, now, nullptr);
+  if (!entry)
     return nullptr;
-  }
 
   bool is_stale = entry->IsStale(now, network_changes_);
   entry->CountHit(/* hit_is_stale= */ is_stale);
-  RecordLookup(is_stale ? LOOKUP_HIT_STALE : LOOKUP_HIT_VALID, now, entry);
 
   if (stale_out)
     entry->GetStaleness(now, network_changes_, stale_out);
@@ -246,8 +237,6 @@ void HostCache::Set(const Key& key,
   bool result_changed = false;
   auto it = entries_.find(key);
   if (it != entries_.end()) {
-    bool is_stale = it->second.IsStale(now, network_changes_);
-
     base::Optional<AddressListDeltaType> addresses_delta;
     if (entry.addresses() || it->second.addresses()) {
       if (entry.addresses() && it->second.addresses()) {
@@ -297,8 +286,6 @@ void HostCache::Set(const Key& key,
           std::max(addresses_delta.value(), nonaddress_delta.value());
     }
 
-    LogRecordSet(is_stale ? SET_UPDATE_STALE : SET_UPDATE_VALID, now,
-                 &it->second, entry, overall_delta);
     // TODO(juliatuttle): Remember some old metadata (hit count or frequency or
     // something like that) if it's useful for better eviction algorithms?
     result_changed =
@@ -309,7 +296,6 @@ void HostCache::Set(const Key& key,
     result_changed = true;
     if (size() == max_entries_)
       EvictOneEntry(now);
-    LogRecordSet(SET_INSERT, now, nullptr, entry, DELTA_DISJOINT);
   }
 
   AddEntry(Key(key), Entry(entry, now, ttl, network_changes_));
@@ -338,7 +324,6 @@ void HostCache::set_persistence_delegate(PersistenceDelegate* delegate) {
 
 void HostCache::clear() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  RecordEraseAll(ERASE_CLEAR, tick_clock_->NowTicks());
 
   // Don't bother scheduling a write if there's nothing to clear.
   if (size() == 0)
@@ -359,12 +344,10 @@ void HostCache::ClearForHosts(
   }
 
   bool changed = false;
-  base::TimeTicks now = tick_clock_->NowTicks();
   for (auto it = entries_.begin(); it != entries_.end();) {
     auto next_it = std::next(it);
 
     if (host_filter.Run(it->first.hostname)) {
-      RecordErase(ERASE_CLEAR, now, it->second);
       entries_.erase(it);
       changed = true;
     }
@@ -607,108 +590,7 @@ void HostCache::EvictOneEntry(base::TimeTicks now) {
     }
   }
 
-  RecordErase(ERASE_EVICT, now, oldest_it->second);
   entries_.erase(oldest_it);
-}
-
-void HostCache::LogRecordSet(SetOutcome outcome,
-                             base::TimeTicks now,
-                             const Entry* old_entry,
-                             const Entry& new_entry,
-                             AddressListDeltaType delta) {
-  CACHE_HISTOGRAM_ENUM("Set", outcome, MAX_SET_OUTCOME);
-  switch (outcome) {
-    case SET_INSERT:
-    case SET_UPDATE_VALID:
-      // Nothing to log here.
-      break;
-    case SET_UPDATE_STALE: {
-      EntryStaleness stale;
-      old_entry->GetStaleness(now, network_changes_, &stale);
-      CACHE_HISTOGRAM_TIME("UpdateStale.ExpiredBy", stale.expired_by);
-      CACHE_HISTOGRAM_COUNT("UpdateStale.NetworkChanges",
-                            stale.network_changes);
-      CACHE_HISTOGRAM_COUNT("UpdateStale.StaleHits", stale.stale_hits);
-      if (old_entry->error() == OK && new_entry.error() == OK) {
-        LogRecordUpdateStale(delta, stale);
-      }
-      break;
-    }
-    case MAX_SET_OUTCOME:
-      NOTREACHED();
-      break;
-  }
-}
-
-void HostCache::LogRecordUpdateStale(AddressListDeltaType delta,
-                                     const EntryStaleness& stale) {
-  CACHE_HISTOGRAM_ENUM("UpdateStale.AddressListDelta", delta, MAX_DELTA_TYPE);
-  switch (delta) {
-    case DELTA_IDENTICAL:
-      CACHE_HISTOGRAM_TIME("UpdateStale.ExpiredBy_Identical", stale.expired_by);
-      CACHE_HISTOGRAM_COUNT("UpdateStale.NetworkChanges_Identical",
-                            stale.network_changes);
-      break;
-    case DELTA_REORDERED:
-      CACHE_HISTOGRAM_TIME("UpdateStale.ExpiredBy_Reordered", stale.expired_by);
-      CACHE_HISTOGRAM_COUNT("UpdateStale.NetworkChanges_Reordered",
-                            stale.network_changes);
-      break;
-    case DELTA_OVERLAP:
-      CACHE_HISTOGRAM_TIME("UpdateStale.ExpiredBy_Overlap", stale.expired_by);
-      CACHE_HISTOGRAM_COUNT("UpdateStale.NetworkChanges_Overlap",
-                            stale.network_changes);
-      break;
-    case DELTA_DISJOINT:
-      CACHE_HISTOGRAM_TIME("UpdateStale.ExpiredBy_Disjoint", stale.expired_by);
-      CACHE_HISTOGRAM_COUNT("UpdateStale.NetworkChanges_Disjoint",
-                            stale.network_changes);
-      break;
-    case MAX_DELTA_TYPE:
-      NOTREACHED();
-      break;
-  }
-}
-
-void HostCache::RecordLookup(LookupOutcome outcome,
-                             base::TimeTicks now,
-                             const Entry* entry) {
-  CACHE_HISTOGRAM_ENUM("Lookup", outcome, MAX_LOOKUP_OUTCOME);
-  switch (outcome) {
-    case LOOKUP_MISS_ABSENT:
-    case LOOKUP_MISS_STALE:
-    case LOOKUP_HIT_VALID:
-      // Nothing to log here.
-      break;
-    case LOOKUP_HIT_STALE:
-      CACHE_HISTOGRAM_TIME("LookupStale.ExpiredBy", now - entry->expires());
-      CACHE_HISTOGRAM_COUNT("LookupStale.NetworkChanges",
-                            network_changes_ - entry->network_changes());
-      break;
-    case MAX_LOOKUP_OUTCOME:
-      NOTREACHED();
-      break;
-  }
-}
-
-void HostCache::RecordErase(EraseReason reason,
-                            base::TimeTicks now,
-                            const Entry& entry) {
-  HostCache::EntryStaleness stale;
-  entry.GetStaleness(now, network_changes_, &stale);
-  CACHE_HISTOGRAM_ENUM("Erase", reason, MAX_ERASE_REASON);
-  if (stale.is_stale()) {
-    CACHE_HISTOGRAM_TIME("EraseStale.ExpiredBy", stale.expired_by);
-    CACHE_HISTOGRAM_COUNT("EraseStale.NetworkChanges", stale.network_changes);
-    CACHE_HISTOGRAM_COUNT("EraseStale.StaleHits", entry.stale_hits());
-  } else {
-    CACHE_HISTOGRAM_TIME("EraseValid.ValidFor", -stale.expired_by);
-  }
-}
-
-void HostCache::RecordEraseAll(EraseReason reason, base::TimeTicks now) {
-  for (const auto& it : entries_)
-    RecordErase(reason, now, it.second);
 }
 
 bool HostCache::HasEntry(base::StringPiece hostname,
