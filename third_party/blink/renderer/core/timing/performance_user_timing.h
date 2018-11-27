@@ -47,11 +47,12 @@ class UserTiming final : public GarbageCollected<UserTiming> {
     return new UserTiming(performance);
   }
 
-  PerformanceMark* Mark(ScriptState*,
-                        const AtomicString& mark_name,
-                        const DOMHighResTimeStamp& start_time,
-                        const ScriptValue& detail,
-                        ExceptionState&);
+  PerformanceMark* Mark(
+      ScriptState* script_state,
+      const AtomicString& mark_name,
+      DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
+      ExceptionState& exception_state);
+
   void ClearMarks(const AtomicString& mark_name);
 
   PerformanceMeasure* Measure(ScriptState*,
@@ -73,6 +74,11 @@ class UserTiming final : public GarbageCollected<UserTiming> {
  private:
   explicit UserTiming(Performance&);
 
+  PerformanceMark* MarkInternal(ScriptState*,
+                                const AtomicString& mark_name,
+                                const DOMHighResTimeStamp& start_time,
+                                const ScriptValue& detail,
+                                ExceptionState&);
   double FindExistingMarkStartTime(const AtomicString& mark_name,
                                    ExceptionState&);
   double FindStartMarkOrTime(const StringOrDouble& start, ExceptionState&);

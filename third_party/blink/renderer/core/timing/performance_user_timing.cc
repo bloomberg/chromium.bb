@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/timing/performance_user_timing.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/double_or_performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
@@ -99,11 +100,39 @@ static void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
     performance_entry_map.erase(name);
 }
 
-PerformanceMark* UserTiming::Mark(ScriptState* script_state,
-                                  const AtomicString& mark_name,
-                                  const DOMHighResTimeStamp& start_time,
-                                  const ScriptValue& detail,
-                                  ExceptionState& exception_state) {
+PerformanceMark* UserTiming::Mark(
+    ScriptState* script_state,
+    const AtomicString& mark_name,
+    DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
+    ExceptionState& exception_state) {
+  if (!RuntimeEnabledFeatures::CustomUserTimingEnabled())
+    DCHECK(start_time_or_mark_options.IsNull());
+
+  DOMHighResTimeStamp start = 0.0;
+  if (start_time_or_mark_options.IsDouble()) {
+    start = start_time_or_mark_options.GetAsDouble();
+  } else if (start_time_or_mark_options.IsPerformanceMarkOptions() &&
+             start_time_or_mark_options.GetAsPerformanceMarkOptions()
+                 ->hasStartTime()) {
+    start =
+        start_time_or_mark_options.GetAsPerformanceMarkOptions()->startTime();
+  } else {
+    start = performance_->now();
+  }
+
+  // Pass in a null ScriptValue if the mark's detail doesn't exist.
+  ScriptValue detail = ScriptValue::CreateNull(script_state);
+  if (start_time_or_mark_options.IsPerformanceMarkOptions())
+    detail = start_time_or_mark_options.GetAsPerformanceMarkOptions()->detail();
+
+  return MarkInternal(script_state, mark_name, start, detail, exception_state);
+}
+
+PerformanceMark* UserTiming::MarkInternal(ScriptState* script_state,
+                                          const AtomicString& mark_name,
+                                          const DOMHighResTimeStamp& start_time,
+                                          const ScriptValue& detail,
+                                          ExceptionState& exception_state) {
   if (GetRestrictedKeyMap().Contains(mark_name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
