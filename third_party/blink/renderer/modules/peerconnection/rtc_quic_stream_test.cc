@@ -310,6 +310,38 @@ TEST_F(RTCQuicStreamTest, OnRemoteResetSetsWriteBufferedAmountToZero) {
   RunUntilIdle();
 }
 
+// Test that writeBufferedAmount is set to 0 if the stream calls finish(),
+// followed by receiving a finish from the remote side, and reading it out.
+//
+// TODO(https://crbug.com/874296): It doesn't really make sense the write buffer
+// gets cleared in this case. Consider changing this.
+TEST_F(RTCQuicStreamTest,
+       FinishThenReceiveFinishSetsWriteBufferedAmountToZero) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+  stream->write(CreateUint8ArrayOfLength(4), ASSERT_NO_EXCEPTION);
+  stream->finish();
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({}, /*fin=*/true);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(4u, stream->writeBufferedAmount());
+  NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(10));
+  EXPECT_TRUE(stream->readInto(read_buffer, ASSERT_NO_EXCEPTION)->finished());
+  EXPECT_EQ(0u, stream->writeBufferedAmount());
+
+  RunUntilIdle();
+}
+
 // Test that write throws an InvalidStateError if the stream was reset by the
 // remote peer.
 TEST_F(RTCQuicStreamTest, WriteThrowsIfRemoteReset) {
@@ -486,6 +518,34 @@ TEST_F(RTCQuicStreamTest,
             promise_10.V8Value().As<v8::Promise>()->State());
   EXPECT_EQ(v8::Promise::kFulfilled,
             promise_90.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that when receiving OnRemoteReset() the waitForWriteBufferedAmountBelow
+// Promise will be rejected.
+TEST_F(RTCQuicStreamTest,
+       WaitForWriteBufferedAmountBelowPromisesRejectedOnRemoteReset) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+  stream->write(CreateUint8ArrayOfLength(stream->maxWriteBufferedAmount()),
+                ASSERT_NO_EXCEPTION);
+
+  ScriptPromise promise = stream->waitForWriteBufferedAmountBelow(
+      scope.GetScriptState(), 0, ASSERT_NO_EXCEPTION);
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnRemoteReset();
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kRejected,
+            promise.V8Value().As<v8::Promise>()->State());
 }
 
 // Test that there is no crash when the ExecutionContext is being destroyed and
@@ -845,6 +905,32 @@ TEST_F(RTCQuicStreamTest, WaitForReadableResolveImmediately) {
   RunUntilIdle();
 }
 
+// Test that a waitForReadable() promise resolves immediately if finish has
+// been received, but not yet read out.
+TEST_F(RTCQuicStreamTest,
+       WaitForReadableResolveImmediatelyAfterFinishReceived) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({}, /*fin=*/true);
+
+  RunUntilIdle();
+
+  ScriptPromise promise =
+      stream->waitForReadable(scope.GetScriptState(), 10, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise.V8Value().As<v8::Promise>()->State());
+
+  RunUntilIdle();
+}
+
 // Test that a waitForReadable() promise does not resolve until OnDataReceived()
 // delivers at least the readable amount.
 TEST_F(RTCQuicStreamTest, WaitForReadableDoesNotResolveUntilExceedsThreshold) {
@@ -1001,9 +1087,8 @@ TEST_F(RTCQuicStreamTest, WaitForReadableResolvesImmediatelyIfRemoteFinished) {
 // The following group tests state transitions with reset(), finish(), remote
 // reset() and remote finish()
 
-// Test that a OnRemoteReset() immediately transitions the state to 'closed'
-// and clears any buffered data.
-TEST_F(RTCQuicStreamTest, OnRemoteResetTransitionsToClosedAndClearsBuffers) {
+// Test that a OnRemoteReset() immediately transitions the state to 'closed'.
+TEST_F(RTCQuicStreamTest, OnRemoteResetTransitionsToClosed) {
   V8TestingScope scope;
 
   P2PQuicStream::Delegate* stream_delegate = nullptr;
@@ -1011,26 +1096,15 @@ TEST_F(RTCQuicStreamTest, OnRemoteResetTransitionsToClosedAndClearsBuffers) {
   Persistent<RTCQuicStream> stream =
       CreateQuicStream(scope, p2p_quic_stream.get());
 
-  stream->write(CreateUint8Array({1, 2}), ASSERT_NO_EXCEPTION);
-
   RunUntilIdle();
 
   ASSERT_TRUE(stream_delegate);
-  stream_delegate->OnDataReceived({5, 6, 7, 8}, /*fin=*/false);
-
-  RunUntilIdle();
-
   EXPECT_EQ("open", stream->state());
-  EXPECT_EQ(2u, stream->writeBufferedAmount());
-  EXPECT_EQ(4u, stream->readBufferedAmount());
-
   stream_delegate->OnRemoteReset();
 
   RunUntilIdle();
 
   EXPECT_EQ("closed", stream->state());
-  EXPECT_EQ(0u, stream->writeBufferedAmount());
-  EXPECT_EQ(0u, stream->readBufferedAmount());
 
   RunUntilIdle();
 }
