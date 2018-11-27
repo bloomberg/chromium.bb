@@ -56,6 +56,11 @@ class ManualFillingViewAndroid : public ManualFillingViewInterface {
       const base::android::ScopedJavaGlobalRef<jobject>& j_callback,
       const gfx::Image& image);
 
+  base::android::ScopedJavaLocalRef<jobject>
+  ConvertAccessorySheetDataToJavaObject(
+      JNIEnv* env,
+      const autofill::AccessorySheetData& tab_data);
+
   // The controller provides data for this view and owns it.
   ManualFillingController* controller_;
 
