@@ -72,6 +72,9 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // Called when the system wakes up from a suspended state.
   void OnSuspendDone();
 
+  // Called in order to disable attempts to get RemoteStatus from host devices.
+  void CancelConnectionAttempt();
+
  protected:
   // Constructor which allows passing in a custom |unlock_manager_|.
   // Exposed for testing.

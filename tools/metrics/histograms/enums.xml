@@ -46869,10 +46869,35 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Large Downscale"/>
 </enum>
 
+<enum name="SmartLockAuthResultFailureReason">
+  <int value="0" label="Unlock not allowed"/>
+  <int value="1" label="Already attempting auth"/>
+  <int value="2" label="Empty user account"/>
+  <int value="3" label="Invalid account id"/>
+  <int value="4" label="Auth attempt cannot start"/>
+  <int value="5" label="No pending or active host"/>
+  <int value="6" label="Failed to notify host device that Smart Lock was used"/>
+  <int value="7" label="Failed to send unlock request"/>
+  <int value="8" label="Authentication channel dropped"/>
+  <int value="9" label="Authentication attempt timed out"/>
+  <int value="10" label="Unlock event sent but not attempting auth"/>
+  <int value="11" label="Unlock request sent but not attempting auth"/>
+  <int value="12" label="Failed to decrypt sign-in"/>
+</enum>
+
 <enum name="SmartLockEnabledState">
   <int value="0" label="Enabled"/>
   <int value="1" label="Disabled"/>
   <int value="2" label="Unset"/>
+</enum>
+
+<enum name="SmartLockGetRemoteStatusResultFailureReason">
+  <int value="0" label="Timed out Bluetooth disabled"/>
+  <int value="1" label="Timed out could not establish authenticated channel"/>
+  <int value="2" label="Timed out did not receive remote status update"/>
+  <int value="3" label="User entered password while Bluetooth disabled"/>
+  <int value="4" label="User entered password while connecting"/>
+  <int value="5" label="Authenticated channel dropped"/>
 </enum>
 
 <enum name="SnackbarIdentifier">

@@ -105,6 +105,10 @@ void ProximityAuthSystem::OnSuspendDone() {
   }
 }
 
+void ProximityAuthSystem::CancelConnectionAttempt() {
+  unlock_manager_->CancelConnectionAttempt();
+}
+
 std::unique_ptr<RemoteDeviceLifeCycle>
 ProximityAuthSystem::CreateRemoteDeviceLifeCycle(
     cryptauth::RemoteDeviceRef remote_device,

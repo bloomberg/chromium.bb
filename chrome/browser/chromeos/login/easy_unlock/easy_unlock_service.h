@@ -190,6 +190,10 @@ class EasyUnlockService : public KeyedService {
   // Called when the state of the Bluetooth adapter changes.
   virtual void OnBluetoothAdapterPresentChanged();
 
+  // Called when the user enters password before easy unlock succeeds or fails
+  // definitively.
+  virtual void OnUserEnteredPassword();
+
   // KeyedService override:
   void Shutdown() override;
 
