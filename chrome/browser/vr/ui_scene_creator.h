@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_UI_SCENE_CREATOR_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
@@ -56,6 +57,7 @@ class UiSceneCreator {
   void CreateController();
   void CreateKeyboard();
   void Create2dBrowsingHostedUi();
+  void CreateExternalPromptNotifcationOverlay();
 
   UiBrowserInterface* browser_;
   UiScene* scene_;

@@ -378,6 +378,7 @@ jumbo_split_static_library("ui") {
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/app/theme:theme_resources",
+    "//chrome/app/vector_icons",
     "//chrome/browser:resource_prefetch_predictor_proto",
     "//chrome/browser/devtools",
     "//chrome/browser/engagement:mojo_bindings",

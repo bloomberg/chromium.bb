@@ -12,10 +12,14 @@ SchedulerDelegateWin::SchedulerDelegateWin() = default;
 SchedulerDelegateWin::~SchedulerDelegateWin() {}
 
 void SchedulerDelegateWin::OnPose(base::OnceCallback<void()> on_frame_ended,
-                                  gfx::Transform head_pose) {
+                                  gfx::Transform head_pose,
+                                  bool draw_ui) {
   on_frame_ended_ = std::move(on_frame_ended);
   base::TimeTicks now = base::TimeTicks::Now();
-  browser_renderer_->DrawWebXrFrame(now, head_pose);
+  if (draw_ui)
+    browser_renderer_->DrawBrowserFrame(now);
+  else
+    browser_renderer_->DrawWebXrFrame(now, head_pose);
 }
 
 void SchedulerDelegateWin::OnPause() {
@@ -45,7 +49,6 @@ void SchedulerDelegateWin::SetBrowserRenderer(
 
 void SchedulerDelegateWin::SubmitDrawnFrame(FrameType frame_type,
                                             const gfx::Transform& head_pose) {
-  DCHECK(frame_type == FrameType::kWebXrFrame);
   std::move(on_frame_ended_).Run();
 }
 

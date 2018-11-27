@@ -120,6 +120,8 @@ class VR_UI_EXPORT Ui : public UiInterface,
                              int composition_end) override;
   void PerformKeyboardInputForTesting(
       KeyboardTestInput keyboard_input) override;
+  void SetVisibleExternalPromptNotification(
+      ExternalPromptNotificationType prompt) override;
 
   // UiInterface
   base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr() override;

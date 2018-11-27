@@ -16,7 +16,8 @@ class SchedulerDelegateWin : public SchedulerDelegate {
 
   // Tell browser when poses available, when we rendered, etc.
   void OnPose(base::OnceCallback<void()> on_frame_ended,
-              gfx::Transform head_pose);
+              gfx::Transform head_pose,
+              bool draw_ui);
 
  private:
   void OnPause() override;

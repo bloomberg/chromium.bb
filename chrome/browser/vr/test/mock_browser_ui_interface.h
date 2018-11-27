@@ -57,6 +57,8 @@ class MockBrowserUiInterface : public BrowserUiInterface {
   MOCK_METHOD2(OnContentBoundsChanged, void(int, int));
   MOCK_METHOD0(RemoveAllTabs, void());
   MOCK_METHOD1(PerformKeyboardInputForTesting, void(KeyboardTestInput));
+  MOCK_METHOD1(SetVisibleExternalPromptNotification,
+               void(ExternalPromptNotificationType));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBrowserUiInterface);

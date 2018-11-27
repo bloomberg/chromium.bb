@@ -155,6 +155,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void OnContentBoundsChanged(int width, int height) override;
   void PerformKeyboardInputForTesting(
       KeyboardTestInput keyboard_input) override;
+  void SetVisibleExternalPromptNotification(
+      ExternalPromptNotificationType prompt) override;
 
  protected:
   void Init() override;

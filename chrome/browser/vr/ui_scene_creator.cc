@@ -21,6 +21,7 @@
 #include "cc/animation/animation_target.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframed_animation_curve.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/databinding/vector_binding.h"
@@ -74,6 +75,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -1267,9 +1269,132 @@ void UiSceneCreator::CreateContentQuad() {
                                   kBackgroundDistanceMultiplier);
 }
 
+void UiSceneCreator::CreateExternalPromptNotifcationOverlay() {
+#if !defined(OS_ANDROID)
+  auto phase = kPhaseForeground;
+  auto icon = Create<VectorIcon>(kNone, phase, 100);
+  icon->SetType(kTypePromptIcon);
+  icon->SetSize(kPromptIconSize, kPromptIconSize);
+  icon->set_y_anchoring(TOP);
+  VR_BIND_COLOR(model_, icon.get(), &ColorScheme::modal_prompt_icon_foreground,
+                &VectorIcon::SetColor);
+  VectorIcon* vector_icon = icon.get();
+
+  auto text1 = Create<Text>(kNone, phase, kPromptFontSize);
+  text1->SetType(kTypePromptText);
+  text1->SetLayoutMode(kMultiLineFixedWidth);
+  text1->SetAlignment(kTextAlignmentLeft);
+  text1->SetFieldWidth(kPromptTextWidth);
+  VR_BIND_COLOR(model_, text1.get(), &ColorScheme::modal_prompt_foreground,
+                &Text::SetColor);
+  Text* line1_text = text1.get();
+
+  auto text2 = Create<Text>(kNone, phase, kPromptFontSize);
+  text2->SetType(kTypePromptText);
+  text2->SetLayoutMode(kMultiLineFixedWidth);
+  text2->SetAlignment(kTextAlignmentLeft);
+  text2->SetFieldWidth(kPromptTextWidth);
+  text2->SetText(l10n_util::GetStringUTF16(IDS_DESKTOP_PROMPT_DOFF_HEADSET));
+  VR_BIND_COLOR(model_, text2.get(), &ColorScheme::modal_prompt_foreground,
+                &Text::SetColor);
+
+  // This spacer's padding ensures that the top line of text is aligned with the
+  // icon even in the multi-line case.
+  auto text_spacer1 = CreateSpacer(0, 0);
+  text_spacer1->set_bounds_contain_children(true);
+  text_spacer1->set_padding(0, (kPromptIconSize - kPromptFontSize) / 2, 0, 0);
+  text_spacer1->AddChild(std::move(text1));
+
+  // The second spacer gives space between the two strings.
+  auto text_spacer2 = CreateSpacer(0, 0);
+  text_spacer2->set_bounds_contain_children(true);
+  text_spacer2->set_padding(0, kPromptFontSize * 2, 0, 0);
+  text_spacer2->AddChild(std::move(text2));
+
+  // Two lines of text:
+  auto text_layout =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kDown);
+  text_layout->AddChild(std::move(text_spacer1));
+  text_layout->AddChild(std::move(text_spacer2));
+
+  // Contents of the message box.
+  auto message_layout =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kRight);
+  message_layout->set_margin(kPromptIconTextGap);
+  message_layout->AddChild(std::move(icon));
+  message_layout->AddChild(std::move(text_layout));
+
+  auto prompt_window = Create<Rect>(kNone, phase);
+  prompt_window->SetType(kTypePromptBackground);
+  prompt_window->set_bounds_contain_children(true);
+  prompt_window->set_hit_testable(false);
+  prompt_window->set_padding(kPromptPadding, kPromptPadding);
+  prompt_window->SetTranslate(0, 0, kPromptShadowOffsetDMM);
+  prompt_window->set_corner_radius(kPromptCornerRadius);
+  prompt_window->AddChild(std::move(message_layout));
+  VR_BIND_COLOR(model_, prompt_window.get(),
+                &ColorScheme::modal_prompt_background, &Rect::SetColor);
+
+  auto scaler = Create<ScaledDepthAdjuster>(kNone, kPhaseNone, kPromptDistance);
+  scaler->SetType(kTypeScaledDepthAdjuster);
+  scaler->AddChild(std::move(prompt_window));
+  scaler->set_contributes_to_parent_bounds(false);
+  VR_BIND_VISIBILITY(scaler, model->web_vr_enabled() &&
+                                 (model->web_vr.external_prompt_notification !=
+                                  ExternalPromptNotificationType::kPromptNone));
+
+  scaler->AddBinding(std::make_unique<
+                     Binding<std::tuple<ExternalPromptNotificationType, GURL>>>(
+      VR_BIND_LAMBDA(
+          [](Model* m) {
+            return std::tuple<ExternalPromptNotificationType, GURL>(
+                m->web_vr.external_prompt_notification,
+                m->location_bar_state.gurl);
+          },
+          base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](Text* text_element, VectorIcon* icon_element,
+             const std::tuple<ExternalPromptNotificationType, GURL>&
+                 prompt_data) {
+            ExternalPromptNotificationType prompt = std::get<0>(prompt_data);
+            if (prompt == ExternalPromptNotificationType::kPromptNone)
+              return;
+
+            int message_id = 0;
+            const gfx::VectorIcon* icon = nullptr;
+            switch (prompt) {
+              case ExternalPromptNotificationType::kPromptAudio:
+                message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_INFOBAR_TEXT;
+                icon = &vector_icons::kMicIcon;
+                break;
+              case ExternalPromptNotificationType::kPromptBluetooth:
+                message_id = IDS_VR_DESKTOP_BLUETOOTH_PROMPT;
+                icon = &kBluetoothIcon;
+                break;
+              case ExternalPromptNotificationType::kPromptNone:
+                NOTREACHED();
+            }
+
+            const GURL& gurl = std::get<1>(prompt_data);
+            base::string16 url_text =
+                url_formatter::FormatUrlForSecurityDisplay(
+                    gurl.GetOrigin(),
+                    url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
+
+            text_element->SetText(
+                l10n_util::GetStringFUTF16(message_id, url_text));
+            icon_element->SetIcon(icon);
+          },
+          base::Unretained(line1_text), base::Unretained(vector_icon))));
+
+  scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(scaler));
+#endif  // !defined(OS_ANDROID)
+}
+
 void UiSceneCreator::CreateWebVrSubtree() {
   CreateWebVrOverlayElements();
   CreateWebVrTimeoutScreen();
+  CreateExternalPromptNotifcationOverlay();
 
   // This is needed to for accepting permissions in WebVR mode.
   auto hosted_ui_root =
@@ -1285,9 +1410,11 @@ void UiSceneCreator::CreateWebVrSubtree() {
   bg->SetVisible(false);
   bg->SetColor(model_->color_scheme().web_vr_background);
   bg->SetTransitionedProperties({OPACITY});
-  VR_BIND_VISIBILITY(
-      bg, model->web_vr_enabled() && (!model->web_vr.presenting_web_vr() ||
-                                      model->web_vr.showing_hosted_ui));
+  VR_BIND_VISIBILITY(bg, model->web_vr_enabled() &&
+                             (!model->web_vr.IsImmersiveWebXrVisible() ||
+                              model->web_vr.showing_hosted_ui ||
+                              model->web_vr.external_prompt_notification !=
+                                  ExternalPromptNotificationType::kPromptNone));
   auto grid = CreateGrid(model_, kNone);
   grid->set_owner_name_for_test(kWebVrFloor);
   VR_BIND_COLOR(model_, grid.get(), &ColorScheme::web_vr_floor_grid,
@@ -2626,7 +2753,8 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
       VR_BIND_LAMBDA(
           [](Model* model) {
             return std::tuple<bool, bool, bool>(
-                model->web_vr_enabled() && model->web_vr.presenting_web_vr() &&
+                model->web_vr_enabled() &&
+                    model->web_vr.IsImmersiveWebXrVisible() &&
                     model->web_vr.has_received_permissions,
                 model->menu_button_long_pressed,
                 model->web_vr.showing_hosted_ui);
