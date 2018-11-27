@@ -2564,8 +2564,8 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   TransferCacheDeserializeHelperImpl impl(raster_decoder_id_, transfer_cache());
   cc::PaintOp::DeserializeOptions options(&impl, paint_cache_.get(),
                                           font_manager_->strike_client());
+  options.crash_dump_on_failure = true;
 
-  int op_idx = 0;
   size_t paint_buffer_size = raster_shm_size;
   while (paint_buffer_size > 0) {
     size_t skip = 0;
@@ -2573,9 +2573,8 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
         paint_buffer_memory, paint_buffer_size, &data[0],
         sizeof(cc::LargestPaintOp), &skip, options);
     if (!deserialized_op) {
-      std::string msg =
-          base::StringPrintf("RasterCHROMIUM: bad op: %i", op_idx);
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glRasterCHROMIUM", msg.c_str());
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glRasterCHROMIUM",
+                         "RasterCHROMIUM: serialization failure");
       return;
     }
 
@@ -2584,7 +2583,6 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
 
     paint_buffer_size -= skip;
     paint_buffer_memory += skip;
-    op_idx++;
   }
 }
 

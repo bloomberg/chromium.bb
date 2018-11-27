@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "base/bits.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/stl_util.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/paint/paint_cache.h"
@@ -613,6 +614,8 @@ void PaintOpReader::AlignMemory(size_t alignment) {
 }
 
 inline void PaintOpReader::SetInvalid() {
+  if (valid_ && options_.crash_dump_on_failure)
+    base::debug::DumpWithoutCrashing();
   valid_ = false;
 }
 

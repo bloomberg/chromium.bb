@@ -184,8 +184,10 @@ class CC_PAINT_EXPORT PaintOp {
                        SkStrikeClient* strike_client);
     TransferCacheDeserializeHelper* transfer_cache = nullptr;
     ServicePaintCache* paint_cache = nullptr;
-    uint32_t raster_color_space_id = gfx::ColorSpace::kInvalidId;
     SkStrikeClient* strike_client = nullptr;
+    uint32_t raster_color_space_id = gfx::ColorSpace::kInvalidId;
+    // Do a DumpWithoutCrashing when serialization fails.
+    bool crash_dump_on_failure = false;
   };
 
   // Indicates how PaintImages are serialized.
