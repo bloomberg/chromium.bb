@@ -227,7 +227,6 @@ NGPositionedFloat PositionFloat(
     const NGLogicalSize& float_percentage_size,
     const NGLogicalSize& float_replaced_percentage_size,
     const NGBfcOffset& origin_bfc_offset,
-    LayoutUnit parent_bfc_block_offset,
     NGUnpositionedFloat* unpositioned_float,
     const NGConstraintSpace& parent_space,
     const ComputedStyle& parent_style,
@@ -317,7 +316,6 @@ void PositionFloats(const NGLogicalSize& float_available_size,
                     const NGLogicalSize& float_percentage_size,
                     const NGLogicalSize& float_replaced_percentage_size,
                     const NGBfcOffset& origin_bfc_offset,
-                    LayoutUnit parent_bfc_block_offset,
                     NGUnpositionedFloatVector& unpositioned_floats,
                     const NGConstraintSpace& parent_space,
                     const ComputedStyle& parent_style,
@@ -327,11 +325,10 @@ void PositionFloats(const NGLogicalSize& float_available_size,
                                      unpositioned_floats.size());
 
   for (NGUnpositionedFloat& unpositioned_float : unpositioned_floats) {
-    positioned_floats->push_back(
-        PositionFloat(float_available_size, float_percentage_size,
-                      float_replaced_percentage_size, origin_bfc_offset,
-                      parent_bfc_block_offset, &unpositioned_float,
-                      parent_space, parent_style, exclusion_space));
+    positioned_floats->push_back(PositionFloat(
+        float_available_size, float_percentage_size,
+        float_replaced_percentage_size, origin_bfc_offset, &unpositioned_float,
+        parent_space, parent_style, exclusion_space));
   }
 }
 
