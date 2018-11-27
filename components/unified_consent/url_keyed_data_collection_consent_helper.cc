@@ -163,16 +163,9 @@ UrlKeyedDataCollectionConsentHelper::NewAnonymizedDataCollectionConsentHelper(
 std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
 UrlKeyedDataCollectionConsentHelper::NewPersonalizedDataCollectionConsentHelper(
     syncer::SyncService* sync_service) {
-  if (IsUnifiedConsentFeatureEnabled()) {
-    return std::make_unique<SyncBasedUrlKeyedDataCollectionConsentHelper>(
-        sync_service, std::set<syncer::ModelType>(
-                          {syncer::ModelType::HISTORY_DELETE_DIRECTIVES,
-                           syncer::ModelType::USER_EVENTS}));
-  } else {
-    return std::make_unique<SyncBasedUrlKeyedDataCollectionConsentHelper>(
-        sync_service, std::set<syncer::ModelType>(
-                          {syncer::ModelType::HISTORY_DELETE_DIRECTIVES}));
-  }
+  return std::make_unique<SyncBasedUrlKeyedDataCollectionConsentHelper>(
+      sync_service, std::set<syncer::ModelType>(
+                        {syncer::ModelType::HISTORY_DELETE_DIRECTIVES}));
 }
 
 void UrlKeyedDataCollectionConsentHelper::AddObserver(Observer* observer) {
