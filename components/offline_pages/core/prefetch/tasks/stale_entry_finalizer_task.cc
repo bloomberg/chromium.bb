@@ -8,6 +8,9 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/time/clock.h"
+#include "base/time/time.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
@@ -172,8 +175,7 @@ void ReportAndFinalizeStuckItems(base::Time now, sql::Database* db) {
   }
 }
 
-Result FinalizeStaleEntriesSync(StaleEntryFinalizerTask::NowGetter now_getter,
-                                sql::Database* db) {
+Result FinalizeStaleEntriesSync(sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return Result::NO_MORE_WORK;
@@ -189,7 +191,7 @@ Result FinalizeStaleEntriesSync(StaleEntryFinalizerTask::NowGetter now_getter,
       // Bucket 3.
       PrefetchItemState::DOWNLOADING, PrefetchItemState::IMPORTING,
   }};
-  base::Time now = now_getter.Run();
+  base::Time now = OfflineClock()->Now();
   for (PrefetchItemState state : expirable_states) {
     if (!FinalizeStaleItems(state, now, db))
       return Result::NO_MORE_WORK;
@@ -217,7 +219,6 @@ StaleEntryFinalizerTask::StaleEntryFinalizerTask(
     PrefetchStore* prefetch_store)
     : prefetch_dispatcher_(prefetch_dispatcher),
       prefetch_store_(prefetch_store),
-      now_getter_(base::BindRepeating(&base::Time::Now)),
       weak_ptr_factory_(this) {
   DCHECK(prefetch_dispatcher_);
   DCHECK(prefetch_store_);
@@ -226,15 +227,10 @@ StaleEntryFinalizerTask::StaleEntryFinalizerTask(
 StaleEntryFinalizerTask::~StaleEntryFinalizerTask() {}
 
 void StaleEntryFinalizerTask::Run() {
-  prefetch_store_->Execute(
-      base::BindOnce(&FinalizeStaleEntriesSync, now_getter_),
-      base::BindOnce(&StaleEntryFinalizerTask::OnFinished,
-                     weak_ptr_factory_.GetWeakPtr()),
-      Result::NO_MORE_WORK);
-}
-
-void StaleEntryFinalizerTask::SetNowGetterForTesting(NowGetter now_getter) {
-  now_getter_ = now_getter;
+  prefetch_store_->Execute(base::BindOnce(&FinalizeStaleEntriesSync),
+                           base::BindOnce(&StaleEntryFinalizerTask::OnFinished,
+                                          weak_ptr_factory_.GetWeakPtr()),
+                           Result::NO_MORE_WORK);
 }
 
 void StaleEntryFinalizerTask::OnFinished(Result result) {

@@ -27,17 +27,12 @@ class PrefetchStore;
 class StaleEntryFinalizerTask : public Task {
  public:
   enum class Result { NO_MORE_WORK, MORE_WORK_NEEDED };
-  using NowGetter = base::RepeatingCallback<base::Time()>;
 
   StaleEntryFinalizerTask(PrefetchDispatcher* prefetch_dispatcher,
                           PrefetchStore* prefetch_store);
   ~StaleEntryFinalizerTask() override;
 
   void Run() override;
-
-  // Allows tests to control the source of current time values used internally
-  // for freshness checks.
-  void SetNowGetterForTesting(NowGetter now_getter);
 
   // Will be set to true upon after an error-free run.
   Result final_status() const { return final_status_; }
@@ -50,9 +45,6 @@ class StaleEntryFinalizerTask : public Task {
 
   // Prefetch store to execute against. Not owned.
   PrefetchStore* prefetch_store_;
-
-  // Defaults to base::Time::Now upon construction.
-  NowGetter now_getter_;
 
   Result final_status_ = Result::NO_MORE_WORK;
 

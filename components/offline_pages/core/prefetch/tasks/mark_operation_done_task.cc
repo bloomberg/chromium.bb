@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/time/clock.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
@@ -29,7 +31,7 @@ bool UpdatePrefetchItemsSync(sql::Database* db,
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::RECEIVED_GCM));
-  statement.BindInt64(1, store_utils::ToDatabaseTime(base::Time::Now()));
+  statement.BindInt64(1, store_utils::ToDatabaseTime(OfflineClock()->Now()));
   statement.BindInt(2, static_cast<int>(PrefetchItemState::AWAITING_GCM));
   statement.BindString(3, operation_name);
 

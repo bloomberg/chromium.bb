@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/default_clock.h"
-#include "base/time/time.h"
+#include "base/time/clock.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
@@ -76,7 +76,7 @@ bool MarkItemAsDownloading(sql::Database* db,
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::DOWNLOADING));
   statement.BindString(1, guid);
-  statement.BindInt64(2, store_utils::ToDatabaseTime(base::Time::Now()));
+  statement.BindInt64(2, store_utils::ToDatabaseTime(OfflineClock()->Now()));
   statement.BindInt64(3, offline_id);
   return statement.Run();
 }
@@ -100,8 +100,7 @@ std::unique_ptr<ItemsToDownload> SelectAndMarkItemsForDownloadSync(
     return nullptr;
   }
 
-  PrefetchDownloaderQuota downloader_quota(db,
-                                           base::DefaultClock::GetInstance());
+  PrefetchDownloaderQuota downloader_quota(db, OfflineClock());
   int64_t available_quota = downloader_quota.GetAvailableQuotaBytes();
   if (available_quota <= 0 && !IsLimitlessPrefetchingEnabled())
     return nullptr;
@@ -185,7 +184,7 @@ void DownloadArchivesTask::Run() {
   }
 
   prefetch_store_->Execute(
-      base::BindOnce(SelectAndMarkItemsForDownloadSync),
+      base::BindOnce(&SelectAndMarkItemsForDownloadSync),
       base::BindOnce(&DownloadArchivesTask::SendItemsToPrefetchDownloader,
                      weak_ptr_factory_.GetWeakPtr()),
       std::unique_ptr<ItemsToDownload>());
