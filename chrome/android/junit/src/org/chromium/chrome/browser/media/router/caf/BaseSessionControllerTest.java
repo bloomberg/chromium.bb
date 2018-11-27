@@ -14,6 +14,7 @@ import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -32,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
@@ -167,13 +169,27 @@ public class BaseSessionControllerTest {
 
     @Test
     public void testSessionAttachment() {
+        InOrder inOrder = inOrder(mRemoteMediaClient);
+
         mController.attachToCastSession(mCastSession);
         assertSame(mController.getSession(), mCastSession);
-        verify(mRemoteMediaClient).registerCallback(any(RemoteMediaClient.Callback.class));
+        inOrder.verify(mRemoteMediaClient).registerCallback(any(RemoteMediaClient.Callback.class));
 
         mController.detachFromCastSession();
         assertNull(mController.getSession());
-        verify(mRemoteMediaClient).unregisterCallback(any(RemoteMediaClient.Callback.class));
+        inOrder.verify(mRemoteMediaClient)
+                .unregisterCallback(any(RemoteMediaClient.Callback.class));
+
+        // Attaching/detaching while the session is disconnected.
+        doReturn(false).when(mCastSession).isConnected();
+        mController.attachToCastSession(mCastSession);
+        assertSame(mController.getSession(), mCastSession);
+        inOrder.verify(mRemoteMediaClient).registerCallback(any(RemoteMediaClient.Callback.class));
+
+        mController.detachFromCastSession();
+        assertNull(mController.getSession());
+        inOrder.verify(mRemoteMediaClient)
+                .unregisterCallback(any(RemoteMediaClient.Callback.class));
     }
 
     @Test
