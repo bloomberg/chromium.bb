@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -47,10 +48,7 @@ TokenHandleFetcher::TokenHandleFetcher(TokenHandleUtil* util,
                                        const AccountId& account_id)
     : token_handle_util_(util), account_id_(account_id) {}
 
-TokenHandleFetcher::~TokenHandleFetcher() {
-  if (waiting_for_refresh_token_)
-    identity_manager_->RemoveObserver(this);
-}
+TokenHandleFetcher::~TokenHandleFetcher() {}
 
 void TokenHandleFetcher::BackfillToken(Profile* profile,
                                        const TokenFetchingCallback& callback) {
@@ -58,33 +56,17 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
   callback_ = callback;
 
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
-  const std::string user_email = identity_manager_->GetPrimaryAccountId();
-  if (!identity_manager_->HasAccountWithRefreshToken(user_email)) {
-    account_without_token_ = user_email;
+  if (!identity_manager_->HasPrimaryAccountWithRefreshToken()) {
     profile_shutdown_notification_ =
         TokenHandleFetcherShutdownNotifierFactory::GetInstance()
             ->Get(profile)
             ->Subscribe(base::Bind(&TokenHandleFetcher::OnProfileDestroyed,
                                    base::Unretained(this)));
-
-    identity_manager_->AddObserver(this);
-    waiting_for_refresh_token_ = true;
-    return;
   }
-  RequestAccessToken(user_email);
-}
 
-void TokenHandleFetcher::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
-  if (account_without_token_ != account_info.email)
-    return;
-  waiting_for_refresh_token_ = false;
-  identity_manager_->RemoveObserver(this);
-  RequestAccessToken(account_info.email);
-}
-
-void TokenHandleFetcher::RequestAccessToken(const std::string& user_email) {
+  // Now we can request the token, knowing that it will be immediately requested
+  // if the refresh token is available, or that it will be requested once the
+  // refresh token is available for the primary account.
   identity::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
 
@@ -92,12 +74,12 @@ void TokenHandleFetcher::RequestAccessToken(const std::string& user_email) {
   // owned by this object (thus destroyed when this object is destroyed) and
   // PrimaryAccountAccessTokenFetcher guarantees that it doesn't invoke its
   // callback after it is destroyed.
-  access_token_fetcher_ =
-      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-          kAccessTokenFetchId, identity_manager_, scopes,
-          base::BindOnce(&TokenHandleFetcher::OnAccessTokenFetchComplete,
-                         base::Unretained(this)),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+  access_token_fetcher_ = std::make_unique<
+      identity::PrimaryAccountAccessTokenFetcher>(
+      kAccessTokenFetchId, identity_manager_, scopes,
+      base::BindOnce(&TokenHandleFetcher::OnAccessTokenFetchComplete,
+                     base::Unretained(this)),
+      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void TokenHandleFetcher::OnAccessTokenFetchComplete(

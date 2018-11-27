@@ -14,10 +14,10 @@
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 namespace identity {
-class PrimaryAccountAccessTokenFetcher;
+class IdentityManager;
 }
 
 class TokenHandleUtil;
@@ -28,8 +28,7 @@ class Profile;
 // an OAuth2 token available. If there is profile already loaded, then
 // minting additional access token might be required.
 
-class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate,
-                           public identity::IdentityManager::Observer {
+class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate {
  public:
   TokenHandleFetcher(TokenHandleUtil* util, const AccountId& account_id);
   ~TokenHandleFetcher() override;
@@ -46,10 +45,6 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate,
   void BackfillToken(Profile* profile, const TokenFetchingCallback& callback);
 
  private:
-  // identity::IdentityManager::Observer override:
-  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
-                                       bool is_valid) override;
-
   // AccessTokenFetcher::TokenCallback for PrimaryAccountAccessTokenFetcher.
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
                                   identity::AccessTokenInfo token_info);
@@ -60,7 +55,6 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate,
   void OnGetTokenInfoResponse(
       std::unique_ptr<base::DictionaryValue> token_info) override;
 
-  void RequestAccessToken(const std::string& user_email);
   void FillForAccessToken(const std::string& access_token);
 
   // This is called before profile is detroyed.
@@ -70,8 +64,6 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate,
   AccountId account_id_;
   identity::IdentityManager* identity_manager_ = nullptr;
 
-  bool waiting_for_refresh_token_ = false;
-  std::string account_without_token_;
   Profile* profile_ = nullptr;
   base::TimeTicks tokeninfo_response_start_time_ = base::TimeTicks();
   TokenFetchingCallback callback_;
