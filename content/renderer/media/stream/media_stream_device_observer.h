@@ -57,6 +57,8 @@ class CONTENT_EXPORT MediaStreamDeviceObserver
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDeviceObserverTest,
                            GetNonScreenCaptureDevices);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamDeviceObserverTest, OnDeviceStopped);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamDeviceObserverTest, OnDeviceChanged);
 
   // Private class for keeping track of opened devices and who have
   // opened it.
@@ -71,6 +73,9 @@ class CONTENT_EXPORT MediaStreamDeviceObserver
   // mojom::MediaStreamDeviceObserver implementation.
   void OnDeviceStopped(const std::string& label,
                        const MediaStreamDevice& device) override;
+  void OnDeviceChanged(const std::string& label,
+                       const MediaStreamDevice& old_device,
+                       const MediaStreamDevice& new_device) override;
 
   void BindMediaStreamDeviceObserverRequest(
       mojom::MediaStreamDeviceObserverRequest request);

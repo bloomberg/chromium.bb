@@ -133,6 +133,11 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     OnDeviceStoppedInternal(label, device);
   }
 
+  // mojom::MediaStreamDeviceObserver implementation.
+  void OnDeviceChanged(const std::string& label,
+                       const MediaStreamDevice& old_device,
+                       const MediaStreamDevice& new_device) override {}
+
   mojom::MediaStreamDeviceObserverPtr CreateInterfacePtrAndBind() {
     mojom::MediaStreamDeviceObserverPtr observer;
     binding_.Bind(mojo::MakeRequest(&observer));

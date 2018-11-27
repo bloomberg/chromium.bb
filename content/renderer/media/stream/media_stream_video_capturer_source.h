@@ -40,6 +40,12 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
       const media::VideoCaptureParams& capture_params);
   ~MediaStreamVideoCapturerSource() override;
 
+  using DeviceVideoCapturerFactoryCallback =
+      base::RepeatingCallback<std::unique_ptr<media::VideoCapturerSource>(
+          int session_id)>;
+  void SetDeviceVideoCapturerFactoryCallbackForTesting(
+      DeviceVideoCapturerFactoryCallback testing_factory_callback);
+
  private:
   friend class CanvasCaptureHandlerTest;
   friend class MediaStreamVideoCapturerSourceTest;
@@ -47,6 +53,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   FRIEND_TEST_ALL_PREFIXES(MediaStreamVideoCapturerSourceTest, StartAndStop);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamVideoCapturerSourceTest,
                            CaptureTimeAndMetadataPlumbing);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamVideoCapturerSourceTest, ChangeSource);
 
   // MediaStreamVideoSource overrides.
   void RequestRefreshFrame() override;
@@ -60,6 +67,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const override;
   base::Optional<media::VideoCaptureParams> GetCurrentCaptureParams()
       const override;
+  void ChangeSourceImpl(const MediaStreamDevice& new_device) override;
 
   // Method to bind as RunningCallback in VideoCapturerSource::StartCapture().
   void OnRunStateChanged(const media::VideoCaptureParams& new_capture_params,
@@ -68,18 +76,29 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   const mojom::MediaStreamDispatcherHostPtr& GetMediaStreamDispatcherHost(
       RenderFrame* render_frame);
 
+  static std::unique_ptr<media::VideoCapturerSource>
+  RecreateLocalVideoCapturerSource(int session_id);
+
   mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
 
   int render_frame_id_;
 
   // The source that provides video frames.
-  const std::unique_ptr<media::VideoCapturerSource> source_;
+  std::unique_ptr<media::VideoCapturerSource> source_;
 
-  enum State { STARTING, STARTED, STOPPING_FOR_RESTART, RESTARTING, STOPPED };
+  enum State {
+    STARTING,
+    STARTED,
+    STOPPING_FOR_RESTART,
+    STOPPING_FOR_CHANGE_SOURCE,
+    RESTARTING,
+    STOPPED
+  };
   State state_ = STOPPED;
 
   media::VideoCaptureParams capture_params_;
   VideoCaptureDeliverFrameCB frame_callback_;
+  DeviceVideoCapturerFactoryCallback device_video_capturer_factory_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoCapturerSource);
 };

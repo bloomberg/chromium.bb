@@ -64,4 +64,9 @@ void MediaStreamSource::ResetSourceStoppedCallback() {
   stop_callback_.Reset();
 }
 
+void MediaStreamSource::ChangeSource(const MediaStreamDevice& new_device) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DoChangeSource(new_device);
+}
+
 }  // namespace content

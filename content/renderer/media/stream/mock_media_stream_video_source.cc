@@ -61,6 +61,11 @@ void MockMediaStreamVideoSource::OnHasConsumers(bool has_consumers) {
   is_suspended_ = !has_consumers;
 }
 
+void MockMediaStreamVideoSource::DoChangeSource(
+    const MediaStreamDevice& new_device) {
+  ChangeSourceImpl(new_device);
+}
+
 void MockMediaStreamVideoSource::StartSourceImpl(
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(frame_callback_.is_null());

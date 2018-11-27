@@ -60,10 +60,17 @@ class CONTENT_EXPORT MediaStreamSource
   // in the future.
   void ResetSourceStoppedCallback();
 
+  // Change the source to the |new_device| by calling DoChangeSource().
+  void ChangeSource(const MediaStreamDevice& new_device);
+
  protected:
   // Called when StopSource is called. It allows derived classes to implement
   // its own Stop method.
   virtual void DoStopSource() = 0;
+
+  // Called when ChangeSource is called. It allows derived class to implement
+  // it's own ChangeSource method.
+  virtual void DoChangeSource(const MediaStreamDevice& new_device) = 0;
 
   // Runs the stop callback (if set) and sets the
   // WebMediaStreamSource::readyState to ended. This can be used by

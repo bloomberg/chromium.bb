@@ -134,6 +134,11 @@ class CONTENT_EXPORT MediaStreamAudioSource : public MediaStreamSource {
   // should override this method.
   virtual void EnsureSourceIsStopped();
 
+  // Stops the source and start the |new_device|.
+  // A default no-op implementation is provided in this base class. Subclasses
+  // should override this method.
+  virtual void ChangeSourceImpl(const MediaStreamDevice& new_device);
+
   // Called by subclasses to update the format of the audio passing through this
   // source to the sinks. This may be called at any time, before or after
   // tracks have been connected; but must be called at least once before
@@ -159,6 +164,7 @@ class CONTENT_EXPORT MediaStreamAudioSource : public MediaStreamSource {
  private:
   // MediaStreamSource override.
   void DoStopSource() final;
+  void DoChangeSource(const MediaStreamDevice& new_device) final;
 
   // Removes |track| from the list of instances that get a copy of the source
   // audio data. The "stop callback" that was provided to the track calls

@@ -132,4 +132,14 @@ void LocalMediaStreamAudioSource::OnCaptureMuted(bool is_muted) {
   SetMutedState(is_muted);
 }
 
+void LocalMediaStreamAudioSource::ChangeSourceImpl(
+    const MediaStreamDevice& new_device) {
+  WebRtcLogMessage(
+      "LocalMediaStreamAudioSource::ChangeSourceImpl(new_device = " +
+      new_device.id + ")");
+  EnsureSourceIsStopped();
+  SetDevice(new_device);
+  EnsureSourceIsStarted();
+}
+
 }  // namespace content

@@ -39,6 +39,7 @@
 #include "third_party/blink/public/web/web_heap.h"
 
 using testing::_;
+using testing::Mock;
 
 namespace content {
 
@@ -135,6 +136,18 @@ void CheckVideoSourceAndTrack(MediaStreamVideoSource* source,
   EXPECT_EQ(settings.frame_rate, expected_track_frame_rate);
 }
 
+class MockLocalMediaStreamAudioSource : public MediaStreamAudioSource {
+ public:
+  MockLocalMediaStreamAudioSource()
+      : MediaStreamAudioSource(true /* is_local_source */) {}
+
+  MOCK_METHOD0(EnsureSourceIsStopped, void());
+
+  void ChangeSourceImpl(const MediaStreamDevice& new_device) {
+    EnsureSourceIsStopped();
+  }
+};
+
 class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
  public:
   MockMediaStreamVideoCapturerSource(const MediaStreamDevice& device,
@@ -144,6 +157,8 @@ class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
     SetDevice(device);
     SetStopCallback(stop_callback);
   }
+
+  MOCK_METHOD1(ChangeSourceImpl, void(const MediaStreamDevice& new_device));
 };
 
 const char kInvalidDeviceId[] = "invalid";
@@ -300,6 +315,10 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   MockMediaStreamVideoCapturerSource* last_created_video_source() const {
     return video_source_;
   }
+  MockLocalMediaStreamAudioSource* last_created_local_audio_source() const {
+    return local_audio_source_;
+  }
+
   void SetCreateSourceThatFails(bool should_fail) {
     create_source_that_fails_ = should_fail;
   }
@@ -342,6 +361,9 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
         bool EnsureSourceIsStarted() override { return false; }
       };
       source = new FailedAtLifeAudioSource();
+    } else if (IsDesktopCaptureMediaType(device.type)) {
+      local_audio_source_ = new MockLocalMediaStreamAudioSource();
+      source = local_audio_source_;
     } else {
       source = new MediaStreamAudioSource(true);
     }
@@ -385,6 +407,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   PeerConnectionDependencyFactory* factory_;
   blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
   MockMediaStreamVideoCapturerSource* video_source_ = nullptr;
+  MockLocalMediaStreamAudioSource* local_audio_source_ = nullptr;
   bool create_source_that_fails_ = false;
   blink::WebMediaStream last_generated_stream_;
   content::MediaStreamRequestResult result_ = NUM_MEDIA_REQUEST_RESULTS;
@@ -1345,6 +1368,77 @@ TEST_F(UserMediaClientImplTest, IsCapturing) {
   user_media_client_impl_->StopTrack(stream.VideoTracks()[0]);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(user_media_client_impl_->IsCapturing());
+}
+
+TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSource) {
+  MockConstraintFactory factory;
+  factory.basic().media_stream_source.SetExact(
+      blink::WebString::FromASCII(kMediaStreamSourceDesktop));
+  blink::WebMediaConstraints audio_constraints =
+      factory.CreateWebMediaConstraints();
+  blink::WebMediaConstraints video_constraints =
+      factory.CreateWebMediaConstraints();
+  blink::WebUserMediaRequest request =
+      blink::WebUserMediaRequest::CreateForTesting(audio_constraints,
+                                                   video_constraints);
+  user_media_client_impl_->RequestUserMediaForTest(request);
+
+  // Test changing video source.
+  MockMediaStreamVideoCapturerSource* video_source =
+      user_media_processor_->last_created_video_source();
+  MediaStreamDevice fake_video_device(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+                                      kFakeVideoInputDeviceId1,
+                                      "Fake Video Device");
+  EXPECT_CALL(*video_source, ChangeSourceImpl(_));
+  user_media_processor_->OnDeviceChanged(video_source->device(),
+                                         fake_video_device);
+
+  // Test changing audio source.
+  MockLocalMediaStreamAudioSource* audio_source =
+      user_media_processor_->last_created_local_audio_source();
+  EXPECT_NE(audio_source, nullptr);
+  MediaStreamDevice fake_audio_device(MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
+                                      kFakeVideoInputDeviceId1,
+                                      "Fake Audio Device");
+  EXPECT_CALL(*audio_source, EnsureSourceIsStopped()).Times(2);
+  user_media_processor_->OnDeviceChanged(audio_source->device(),
+                                         fake_audio_device);
+
+  user_media_client_impl_->CancelUserMediaRequest(request);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSourceWithoutAudio) {
+  MockConstraintFactory factory;
+  factory.basic().media_stream_source.SetExact(
+      blink::WebString::FromASCII(kMediaStreamSourceDesktop));
+  blink::WebMediaConstraints audio_constraints =
+      factory.CreateWebMediaConstraints();
+  blink::WebMediaConstraints video_constraints =
+      factory.CreateWebMediaConstraints();
+  blink::WebUserMediaRequest request =
+      blink::WebUserMediaRequest::CreateForTesting(audio_constraints,
+                                                   video_constraints);
+  user_media_client_impl_->RequestUserMediaForTest(request);
+  EXPECT_EQ(1U, mock_dispatcher_host_.audio_devices().size());
+  EXPECT_EQ(1U, mock_dispatcher_host_.video_devices().size());
+
+  // If the new desktop capture source doesn't have audio, the previous audio
+  // device should be stopped. Here |EnsureSourceIsStopped()| should be called
+  // only once by |OnDeviceChanged()|.
+  MockLocalMediaStreamAudioSource* audio_source =
+      user_media_processor_->last_created_local_audio_source();
+  EXPECT_NE(audio_source, nullptr);
+  EXPECT_CALL(*audio_source, EnsureSourceIsStopped()).Times(1);
+  MediaStreamDevice fake_audio_device(MEDIA_NO_SERVICE, "", "");
+  user_media_processor_->OnDeviceChanged(audio_source->device(),
+                                         fake_audio_device);
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(audio_source);
+  EXPECT_CALL(*audio_source, EnsureSourceIsStopped()).Times(0);
+  user_media_client_impl_->CancelUserMediaRequest(request);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace content
