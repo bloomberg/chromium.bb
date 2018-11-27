@@ -74,7 +74,6 @@ table_files = \
 	de-g2-core.cti \
 	de-g2-core-patterns.dic \
 	de-g2.ctb \
-	de.tbl \
 	devanagari.cti \
 	digits6DotsPlusDot6.uti \
 	digits6Dots.uti \
