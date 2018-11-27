@@ -181,7 +181,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   virtual void PushFrame() {}
   virtual ImageBitmap* TransferToImageBitmap(ScriptState*) { return nullptr; }
 
-  bool WouldTaintOrigin(CanvasImageSource*, const SecurityOrigin*);
+  bool WouldTaintOrigin(CanvasImageSource*);
   void DidMoveToNewDocument(Document*);
 
   void DetachHost() { host_ = nullptr; }

@@ -28,7 +28,6 @@ class ImageResourceObserver;
 class ResourceError;
 class ResourceFetcher;
 class ResourceResponse;
-class SecurityOrigin;
 
 // ImageResourceContent is a container that holds fetch result of
 // an ImageResource in a decoded form.
@@ -108,7 +107,7 @@ class CORE_EXPORT ImageResourceContent final
 
   // Redirecting methods to Resource.
   const KURL& Url() const;
-  bool IsAccessAllowed(const SecurityOrigin*);
+  bool IsAccessAllowed();
   const ResourceResponse& GetResponse() const;
   base::Optional<ResourceError> GetResourceError() const;
   // DEPRECATED: ImageResourceContents consumers shouldn't need to worry about

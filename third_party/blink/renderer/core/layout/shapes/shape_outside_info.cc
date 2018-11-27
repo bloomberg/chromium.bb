@@ -139,7 +139,7 @@ static bool CheckShapeImageOrigin(Document& document,
 
   DCHECK(style_image.CachedImage());
   ImageResourceContent& image_resource = *(style_image.CachedImage());
-  if (image_resource.IsAccessAllowed(document.GetSecurityOrigin()))
+  if (image_resource.IsAccessAllowed())
     return true;
 
   const KURL& url = image_resource.Url();

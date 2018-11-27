@@ -212,7 +212,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   virtual bool OriginClean() const = 0;
   virtual void SetOriginTainted() = 0;
-  virtual bool WouldTaintOrigin(CanvasImageSource*, ExecutionContext*) = 0;
+  virtual bool WouldTaintOrigin(CanvasImageSource*) = 0;
 
   virtual int Width() const = 0;
   virtual int Height() const = 0;

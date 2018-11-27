@@ -195,7 +195,7 @@ class CORE_EXPORT HTMLCanvasElement final
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                                AccelerationHint,
                                                const FloatSize&) override;
-  bool WouldTaintOrigin(const SecurityOrigin*) const override;
+  bool WouldTaintOrigin() const override;
   FloatSize ElementSize(const FloatSize&) const override;
   bool IsCanvasElement() const override { return true; }
   bool IsOpaque() const override;

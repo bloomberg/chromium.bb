@@ -108,11 +108,10 @@ class ImageResource::ImageResourceInfoImpl final
            resource_->ShouldReloadBrokenPlaceholder();
   }
   bool IsAccessAllowed(
-      const SecurityOrigin* security_origin,
       DoesCurrentFrameHaveSingleSecurityOrigin
           does_current_frame_has_single_security_origin) const override {
     return resource_->IsAccessAllowed(
-        security_origin, does_current_frame_has_single_security_origin);
+        does_current_frame_has_single_security_origin);
   }
   bool HasCacheControlNoStoreHeader() const override {
     return resource_->HasCacheControlNoStoreHeader();
@@ -704,20 +703,13 @@ void ImageResource::MultipartDataReceived(const char* bytes, size_t size) {
 }
 
 bool ImageResource::IsAccessAllowed(
-    const SecurityOrigin* security_origin,
     ImageResourceInfo::DoesCurrentFrameHaveSingleSecurityOrigin
         does_current_frame_has_single_security_origin) const {
-  if (GetResponse().WasFetchedViaServiceWorker())
-    return GetResponse().IsCorsSameOrigin();
-
   if (does_current_frame_has_single_security_origin !=
       ImageResourceInfo::kHasSingleSecurityOrigin)
     return false;
 
-  if (GetResponse().IsCorsSameOrigin())
-    return true;
-
-  return security_origin->CanReadContent(GetResponse().Url());
+  return GetResponse().IsCorsSameOrigin();
 }
 
 ImageResourceContent* ImageResource::GetContent() {

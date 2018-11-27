@@ -7561,7 +7561,7 @@ bool WebGLRenderingContextBase::ValidateHTMLImageElement(
     return false;
   }
 
-  if (WouldTaintOrigin(image, security_origin)) {
+  if (WouldTaintOrigin(image)) {
     exception_state.ThrowSecurityError(
         "The image element contains cross-origin data, and may not be loaded.");
     return false;
@@ -7579,7 +7579,7 @@ bool WebGLRenderingContextBase::ValidateCanvasRenderingContextHost(
     return false;
   }
 
-  if (WouldTaintOrigin(context_host, security_origin)) {
+  if (WouldTaintOrigin(context_host)) {
     exception_state.ThrowSecurityError("Tainted canvases may not be loaded.");
     return false;
   }
@@ -7596,7 +7596,7 @@ bool WebGLRenderingContextBase::ValidateHTMLVideoElement(
     return false;
   }
 
-  if (WouldTaintOrigin(video, security_origin)) {
+  if (WouldTaintOrigin(video)) {
     exception_state.ThrowSecurityError(
         "The video element contains cross-origin data, and may not be loaded.");
     return false;
