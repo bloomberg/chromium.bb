@@ -20,6 +20,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/prefs/pref_service.h"
@@ -352,6 +353,37 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UMAMetricsRecorded) {
       "PageLoad.Clients.DataReductionProxy.PaintTiming."
       "NavigationToFirstContentfulPaint",
       1);
+}
+
+class DataReductionProxyBrowsertestWithNetworkService
+    : public DataReductionProxyBrowsertest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        network::features::kNetworkService);
+    DataReductionProxyBrowsertest::SetUp();
+  }
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertestWithNetworkService,
+                       DataUsePrefsRecorded) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+
+  // Make sure we wait for timing information.
+  page_load_metrics::PageLoadMetricsTestWaiter waiter(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  waiter.AddPageExpectation(
+      page_load_metrics::PageLoadMetricsTestWaiter::TimingField::kFirstPaint);
+
+  // Proxy will be used, so it shouldn't matter if the host cannot be resolved.
+  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/echo"));
+  waiter.Wait();
+
+  ASSERT_GE(0, prefs->GetInt64(
+                   data_reduction_proxy::prefs::kHttpReceivedContentLength));
+  ASSERT_GE(0, prefs->GetInt64(
+                   data_reduction_proxy::prefs::kHttpOriginalContentLength));
 }
 
 class DataReductionProxyFallbackBrowsertest

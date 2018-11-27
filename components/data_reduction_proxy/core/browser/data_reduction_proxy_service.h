@@ -193,7 +193,9 @@ class DataReductionProxyService
   // Loads the Data Reduction Proxy configuration from |prefs_| and applies it.
   void ReadPersistedClientConfig();
 
-  void OnServicesDataUse(int64_t recv_bytes, int64_t sent_bytes) override;
+  void OnServicesDataUse(int32_t service_hash_code,
+                         int64_t recv_bytes,
+                         int64_t sent_bytes) override;
 
   // NetworkConnectionTracker::NetworkConnectionObserver
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
