@@ -30,9 +30,9 @@ main(int argc, char **argv)
   /* Then check a test table that defines lastworditalafter */
   str      = "Er sagte es funktioniere nicht immer wie erwartet.";
   const formtype typeform2[] = {1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-  expected = "_ER SAGTE ES __FUNKTION0RE NI4T', IMMER W0 ERWARTET.";
+  expected = "_er sagte es __funktion0re ni4t'. immer w0 erwartet.";
 
-  result |= check("tables/de-ch-g1.ctb", str, expected, .typeform=typeform2);
+  result |= check("tables/de-eurobrl6.dis,tables/de-g1.ctb", str, expected, .typeform=typeform2);
 
   lou_free();
 

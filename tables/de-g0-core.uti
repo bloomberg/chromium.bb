@@ -141,23 +141,20 @@ emphclass italic
 emphclass underline
 emphclass bold
 
+begemphphrase italic 456-456
 endemphphrase italic after 6-3
-lenemphphrase italic 1
-begemphword italic 6-456
-endemphword italic 6-3
-emphletter italic 456
+lenemphphrase italic 2
+begemphword italic 456
 
+begemphphrase bold 456-456
 endemphphrase bold after 6-3
-lenemphphrase bold 1
-begemphword bold 6-456
-endemphword bold 6-3
-emphletter bold 456
+lenemphphrase bold 2
+begemphword bold 456
 
+begemphphrase underline 456-456
 endemphphrase underline after 6-3
-lenemphphrase underline 1
-begemphword underline 6-456
-endemphword underline 6-3
-emphletter underline 456
+lenemphphrase underline 2
+begemphword underline 456
 
 begcomp 6-46
 # endcomp 6-3         # Omitted here (only to be used when longer than one word)
