@@ -155,13 +155,24 @@ public class CustomTabsDynamicModuleTestUtils {
 
     /**
      * Creates the simplest intent that is sufficient to let {@link ChromeLauncherActivity} launch
-     * the {@link CustomTabActivity} with dynamic module.
+     * the {@link CustomTabActivity} with fake dynamic module.
+     *
+     * @see #makeDynamicModuleIntent(ComponentName, String, String)
      */
     public static Intent makeDynamicModuleIntent(String url, @Nullable String managedUrlsRegex) {
+        return makeDynamicModuleIntent(FAKE_MODULE_COMPONENT_NAME, url, managedUrlsRegex);
+    }
+
+    /**
+     * Creates the simplest intent that is sufficient to let {@link ChromeLauncherActivity} launch
+     * the {@link CustomTabActivity} with dynamic module.
+     */
+    public static Intent makeDynamicModuleIntent(
+            ComponentName componentName, String url, @Nullable String managedUrlsRegex) {
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(), url);
-        intent.putExtra(EXTRA_MODULE_PACKAGE_NAME, FAKE_MODULE_PACKAGE_NAME);
-        intent.putExtra(EXTRA_MODULE_CLASS_NAME, FAKE_MODULE_CLASS_NAME);
+        intent.putExtra(EXTRA_MODULE_PACKAGE_NAME, componentName.getPackageName());
+        intent.putExtra(EXTRA_MODULE_CLASS_NAME, componentName.getClassName());
 
         if (managedUrlsRegex != null) {
             intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
