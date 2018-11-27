@@ -128,14 +128,20 @@ public class BaseSessionController {
     /** Attaches the controller to the current {@link CastSession}. */
     public void attachToCastSession(CastSession session) {
         mCastSession = session;
-        getRemoteMediaClient().registerCallback(mRemoteMediaClientCallback);
+        RemoteMediaClient uncheckedRemoteMediaClient = mCastSession.getRemoteMediaClient();
+        if (uncheckedRemoteMediaClient != null) {
+            uncheckedRemoteMediaClient.registerCallback(mRemoteMediaClientCallback);
+        }
     }
 
     /** Detaches the controller from any {@link CastSession}. */
     public void detachFromCastSession() {
         if (mCastSession == null) return;
 
-        getRemoteMediaClient().unregisterCallback(mRemoteMediaClientCallback);
+        RemoteMediaClient uncheckedRemoteMediaClient = mCastSession.getRemoteMediaClient();
+        if (uncheckedRemoteMediaClient != null) {
+            uncheckedRemoteMediaClient.unregisterCallback(mRemoteMediaClientCallback);
+        }
         mCastSession = null;
     }
 
