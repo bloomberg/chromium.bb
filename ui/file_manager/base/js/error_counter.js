@@ -18,10 +18,6 @@ window.JSErrorCount = 0;
  * Count uncaught exceptions.
  */
 window.onerror = function(message, url) {
-  // Analytics raises errors if the tracker instance is initiated in guest mode.
-  // crbug.com/459983
-  if (url === 'chrome://resources/js/analytics.js')
-    return;
   window.JSErrorCount++;
 };
 

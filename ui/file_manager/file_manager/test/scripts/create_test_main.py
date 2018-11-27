@@ -81,10 +81,6 @@ def includes2scripts(include_filename):
       continue
     if l.startswith('// <include '):
       l = l.replace('// <include ', '<script ')
-      # Special fix for analytics.
-      if 'webui/resources/js/analytics.js' in l:
-        l = l.replace('webui/resources/js/analytics.js',
-                      '../third_party/analytics/google-analytics-bundle.js')
       # main.js should be defer.
       if 'src="main.js"' in l:
         l = l.replace('src="main.js"', 'src="main.js" defer')
