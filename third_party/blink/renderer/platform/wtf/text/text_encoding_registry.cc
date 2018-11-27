@@ -26,9 +26,9 @@
 
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
+#include <atomic>
 #include <memory>
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -108,14 +108,14 @@ static TextEncodingNameMap* g_text_encoding_name_map;
 static TextCodecMap* g_text_codec_map;
 
 namespace {
-static unsigned g_did_extend_text_codec_maps = 0;
+static std::atomic_bool g_did_extend_text_codec_maps{false};
 
-ALWAYS_INLINE unsigned AtomicDidExtendTextCodecMaps() {
-  return AcquireLoad(&g_did_extend_text_codec_maps);
+ALWAYS_INLINE bool AtomicDidExtendTextCodecMaps() {
+  return g_did_extend_text_codec_maps.load(std::memory_order_acquire);
 }
 
 ALWAYS_INLINE void AtomicSetDidExtendTextCodecMaps() {
-  ReleaseStore(&g_did_extend_text_codec_maps, 1);
+  g_did_extend_text_codec_maps.store(true, std::memory_order_release);
 }
 }  // namespace
 
