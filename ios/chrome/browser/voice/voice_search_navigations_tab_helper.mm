@@ -16,8 +16,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(VoiceSearchNavigationTabHelper);
-
 namespace {
 // The key under which the VoiceSearchNavigationMarkers are stored.
 const void* const kNavigationMarkerKey = &kNavigationMarkerKey;
