@@ -703,7 +703,7 @@
     "label": "//ios/chrome/test/earl_grey:ios_chrome_manual_fill_egtests",
     "type": "raw",
     "args": [
-      "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging",
+      "--enable-features=AutofillManualFallback,WebFrameMessaging",
     ],
   },
   "ios_chrome_reading_list_egtests": {
