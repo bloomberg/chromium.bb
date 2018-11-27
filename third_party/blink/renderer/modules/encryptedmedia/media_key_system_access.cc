@@ -131,9 +131,8 @@ static Vector<String> ConvertSessionTypes(
 }  // namespace
 
 MediaKeySystemAccess::MediaKeySystemAccess(
-    const String& key_system,
     std::unique_ptr<WebContentDecryptionModuleAccess> access)
-    : key_system_(key_system), access_(std::move(access)) {}
+    : access_(std::move(access)) {}
 
 MediaKeySystemAccess::~MediaKeySystemAccess() = default;
 

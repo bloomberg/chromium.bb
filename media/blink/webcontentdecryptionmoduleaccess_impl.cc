@@ -61,6 +61,10 @@ WebContentDecryptionModuleAccessImpl::WebContentDecryptionModuleAccessImpl(
 WebContentDecryptionModuleAccessImpl::~WebContentDecryptionModuleAccessImpl() =
     default;
 
+blink::WebString WebContentDecryptionModuleAccessImpl::GetKeySystem() {
+  return key_system_;
+}
+
 blink::WebMediaKeySystemConfiguration
 WebContentDecryptionModuleAccessImpl::GetConfiguration() {
   return configuration_;
