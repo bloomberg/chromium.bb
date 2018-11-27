@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
@@ -22,17 +23,16 @@
 namespace views {
 namespace {
 
-// TestAXTreeSourceViews provides a root object for testing.
+// TestAXTreeSourceViews provides a root with a default tree ID.
 class TestAXTreeSourceViews : public AXTreeSourceViews {
  public:
-  TestAXTreeSourceViews(AXAuraObjWrapper* root) : root_(root) {}
+  TestAXTreeSourceViews(AXAuraObjWrapper* root) {
+    Init(root, ui::AXTreeID::FromString("123"));
+  }
+
   ~TestAXTreeSourceViews() override = default;
 
-  // AXTreeSource:
-  AXAuraObjWrapper* GetRoot() const override { return root_; }
-
  private:
-  AXAuraObjWrapper* root_;
   DISALLOW_COPY_AND_ASSIGN(TestAXTreeSourceViews);
 };
 
@@ -71,8 +71,8 @@ class AXTreeSourceViewsTest : public ViewsTestBase {
   }
 
   std::unique_ptr<Widget> widget_;
-  Label* label1_ = nullptr;  // Owned by views hierarchy.
-  Label* label2_ = nullptr;  // Owned by views hierarchy.
+  Label* label1_ = nullptr;         // Owned by views hierarchy.
+  Label* label2_ = nullptr;         // Owned by views hierarchy.
   Textfield* textfield_ = nullptr;  // Owned by views hierarchy.
 
  private:
