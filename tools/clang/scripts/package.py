@@ -8,7 +8,6 @@ to a tgz file."""
 
 import argparse
 import fnmatch
-import glob
 import itertools
 import os
 import shutil
@@ -482,23 +481,6 @@ def main():
     tar.add(os.path.join(cfiverifydir, 'bin'), arcname='bin',
             filter=PrintTarProgress)
   MaybeUpload(args, cfiverifydir, platform)
-
-  # Zip up the SafeStack runtime for Linux
-  safestackdir = 'safestack-' + stamp
-  shutil.rmtree(safestackdir, ignore_errors=True)
-  os.makedirs(os.path.join(safestackdir, 'lib'))
-  for build in glob.glob(os.path.join(LLVM_RELEASE_DIR, 'lib', 'clang', '*')):
-    version = os.path.basename(build)
-    dest_dir = os.path.join(safestackdir, 'lib', 'clang', version,
-                            'lib', 'linux')
-    os.makedirs(dest_dir)
-    for lib in glob.glob(os.path.join(build, 'lib', 'linux',
-                                      '*libclang_rt.safestack*')):
-      shutil.copy(lib, dest_dir)
-  with tarfile.open(safestackdir + '.tgz', 'w:gz') as tar:
-    tar.add(os.path.join(safestackdir, 'lib'), arcname='lib',
-            filter=PrintTarProgress)
-  MaybeUpload(args, safestackdir, platform)
 
   # On Mac, lld isn't part of the main zip.  Upload it in a separate zip.
   if sys.platform == 'darwin':
