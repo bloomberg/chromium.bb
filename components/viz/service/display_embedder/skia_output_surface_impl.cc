@@ -556,6 +556,8 @@ void SkiaOutputSurfaceImpl::CopyOutput(
     const gfx::Rect& copy_rect,
     std::unique_ptr<CopyOutputRequest> request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!request->has_result_task_runner())
+    request->set_result_task_runner(base::ThreadTaskRunnerHandle::Get());
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CopyOutput,
                                  base::Unretained(impl_on_gpu_.get()), id,

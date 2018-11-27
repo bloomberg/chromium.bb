@@ -292,6 +292,11 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     const gfx::Rect& copy_rect,
     std::unique_ptr<CopyOutputRequest> request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!MakeCurrent()) {
+    request->SendResult(
+        std::make_unique<CopyOutputSkBitmapResult>(gfx::Rect(), SkBitmap()));
+    return;
+  }
 
   // TODO(crbug.com/644851): Complete the implementation for all request types,
   // scaling, etc.
