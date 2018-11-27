@@ -172,6 +172,30 @@ void SanitizeFormData(FormData* form) {
   }
 }
 
+// Verifies that |test_ukm_recorder| recorder has a single entry called |entry|
+// and returns it.
+const ukm::mojom::UkmEntry* GetMetricEntry(
+    const ukm::TestUkmRecorder& test_ukm_recorder,
+    base::StringPiece entry) {
+  std::vector<const ukm::mojom::UkmEntry*> ukm_entries =
+      test_ukm_recorder.GetEntriesByName(entry);
+  EXPECT_EQ(1u, ukm_entries.size());
+  return ukm_entries[0];
+}
+
+// Verifies the expectation that |test_ukm_recorder| recorder has a single entry
+// called |entry|, and that the entry contains the metric called |metric| set
+// to |value|.
+template <typename T>
+void CheckMetricHasValue(const ukm::TestUkmRecorder& test_ukm_recorder,
+                         base::StringPiece entry,
+                         base::StringPiece metric,
+                         T value) {
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      GetMetricEntry(test_ukm_recorder, entry), metric,
+      static_cast<int64_t>(value));
+}
+
 }  // namespace
 
 class PasswordManagerTest : public testing::Test {
@@ -2264,12 +2288,8 @@ TEST_F(PasswordManagerTest, ManualFallbackForSaving) {
   form_manager_to_save.reset();
 
   // Verify that the last state is recorded.
-  std::vector<const ukm::mojom::UkmEntry*> ukm_entries =
-      test_ukm_recorder.GetEntriesByName(
-          ukm::builders::PasswordForm::kEntryName);
-  ASSERT_EQ(1u, ukm_entries.size());
-  test_ukm_recorder.ExpectEntryMetric(
-      ukm_entries[0],
+  CheckMetricHasValue(
+      test_ukm_recorder, ukm::builders::PasswordForm::kEntryName,
       ukm::builders::PasswordForm::kSaving_ShowedManualFallbackForSavingName,
       1);
 }
@@ -2883,12 +2903,9 @@ TEST_F(PasswordManagerTest, ParsingOnSavingMetricRecorded) {
   // Destroy |manager_| to send off UKM metrics.
   manager_.reset();
 
-  std::vector<const ukm::mojom::UkmEntry*> ukm_entries =
-      test_ukm_recorder.GetEntriesByName(
-          ukm::builders::PasswordForm::kEntryName);
-  ASSERT_EQ(1u, ukm_entries.size());
-  test_ukm_recorder.EntryHasMetric(
-      ukm_entries[0],
+  ukm::TestUkmRecorder::EntryHasMetric(
+      GetMetricEntry(test_ukm_recorder,
+                     ukm::builders::PasswordForm::kEntryName),
       ukm::builders::PasswordForm::kParsingOnSavingDifferenceName);
 }
 
@@ -3009,14 +3026,10 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager_New) {
       PasswordManagerMetricsRecorder::NO_MATCHING_FORM, 2);
   // Flush the UKM reports.
   metrics_recorder.reset();
-  std::vector<const ukm::mojom::UkmEntry*> ukm_entries =
-      test_ukm_recorder.GetEntriesByName(
-          ukm::builders::PageWithPassword::kEntryName);
-  ASSERT_EQ(1u, ukm_entries.size());
-  test_ukm_recorder.ExpectEntryMetric(
-      ukm_entries[0],
+  CheckMetricHasValue(
+      test_ukm_recorder, ukm::builders::PageWithPassword::kEntryName,
       ukm::builders::PageWithPassword::kProvisionalSaveFailureName,
-      static_cast<int64_t>(PasswordManagerMetricsRecorder::NO_MATCHING_FORM));
+      PasswordManagerMetricsRecorder::NO_MATCHING_FORM);
 }
 
 }  // namespace password_manager
