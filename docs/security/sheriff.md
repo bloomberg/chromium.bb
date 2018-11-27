@@ -232,10 +232,12 @@ necessary bugs.
 
 * Reproduce using iOS device, desktop Safari, or [Browserstack](http://browserstack.com/)
 * Assign severity, impact, milestone, and component labels
-* CC Apple friends (if you don't know who they are, ping awhalley@)
 * Label **ExternalDependency**
-* File the bug at [bugs.webkit.org](https://bugs.webkit.org) or with
-  product-security@apple.com.
+* Label **Hotlist-WebKit**. This label is monitored by Apple friends.
+* File a security bug at [bugs.webkit.org](https://bugs.webkit.org), and CC
+  chrome-ios-security-bugs@google.com. This alias is monitored by iOS Chrome
+  team so they can be notified when the WebKit bug is fixed.
+* Note the WebKit bug ID in the crbug report.
 
 ### Find An Owner To Fix The Bug
 
