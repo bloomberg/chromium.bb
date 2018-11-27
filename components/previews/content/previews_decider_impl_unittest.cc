@@ -133,8 +133,8 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
  public:
   TestPreviewsOptimizationGuide(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-      : PreviewsOptimizationGuide(optimization_guide_service, io_task_runner) {}
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
+      : PreviewsOptimizationGuide(optimization_guide_service, ui_task_runner) {}
   ~TestPreviewsOptimizationGuide() override {}
 
   // PreviewsOptimizationGuide:

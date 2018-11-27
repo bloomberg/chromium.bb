@@ -39,8 +39,8 @@ class TestOptimizationGuideService
     : public optimization_guide::OptimizationGuideService {
  public:
   explicit TestOptimizationGuideService(
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-      : OptimizationGuideService(io_task_runner),
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
+      : OptimizationGuideService(ui_task_runner),
         remove_observer_called_(false) {}
 
   void RemoveObserver(
