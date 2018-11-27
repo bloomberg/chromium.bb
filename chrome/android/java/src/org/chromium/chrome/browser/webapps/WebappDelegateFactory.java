@@ -42,7 +42,7 @@ public class WebappDelegateFactory extends TabDelegateFactory {
             // compatibility we relaunch it the hard way.
             String startUrl = mActivity.getWebappInfo().uri().toString();
 
-            String webApkPackageName = mActivity.getWebappInfo().apkPackageName();
+            String webApkPackageName = mActivity.getWebappInfo().webApkPackageName();
             if (!TextUtils.isEmpty(webApkPackageName)) {
                 Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
                         webApkPackageName, startUrl, false /* forceNavigation */);

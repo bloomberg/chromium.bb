@@ -274,7 +274,7 @@ public class WebappInfo {
         return mDisplayMode;
     }
 
-    public String apkPackageName() {
+    public String webApkPackageName() {
         return null;
     }
 
