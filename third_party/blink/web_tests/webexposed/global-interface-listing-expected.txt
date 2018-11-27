@@ -3166,6 +3166,8 @@ interface HTMLLinkElement : HTMLElement
     getter disabled
     getter href
     getter hreflang
+    getter imageSizes
+    getter imageSrcset
     getter import
     getter importance
     getter integrity
@@ -3185,6 +3187,8 @@ interface HTMLLinkElement : HTMLElement
     setter disabled
     setter href
     setter hreflang
+    setter imageSizes
+    setter imageSrcset
     setter importance
     setter integrity
     setter media
