@@ -656,6 +656,8 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     if 'FlexibleArrayBufferView' in extended_attributes:
         if base_idl_type not in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES:
             raise ValueError('Unrecognized base type for extended attribute "FlexibleArrayBufferView": %s' % (idl_type.base_type))
+        if 'AllowShared' not in extended_attributes:
+            raise ValueError('"FlexibleArrayBufferView" extended attribute requires "AllowShared" on %s' % (idl_type.base_type))
         base_idl_type = 'FlexibleArrayBufferView'
 
     if 'AllowShared' in extended_attributes and not idl_type.is_array_buffer_view_or_typed_array:
