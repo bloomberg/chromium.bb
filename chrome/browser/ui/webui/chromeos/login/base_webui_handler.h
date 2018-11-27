@@ -120,37 +120,39 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   virtual void GetAdditionalParameters(base::DictionaryValue* parameters);
 
   // Shortcut for calling JS methods on WebUI side.
-  void CallJS(const std::string& method);
+  void CallJSWithPrefix(const std::string& method);
 
   template <typename A1>
-  void CallJS(const std::string& method, const A1& arg1) {
+  void CallJSWithPrefix(const std::string& method, const A1& arg1) {
     web_ui()->CallJavascriptFunctionUnsafe(FullMethodPath(method),
                                            ::login::MakeValue(arg1));
   }
 
   template <typename A1, typename A2>
-  void CallJS(const std::string& method, const A1& arg1, const A2& arg2) {
+  void CallJSWithPrefix(const std::string& method,
+                        const A1& arg1,
+                        const A2& arg2) {
     web_ui()->CallJavascriptFunctionUnsafe(FullMethodPath(method),
                                            ::login::MakeValue(arg1),
                                            ::login::MakeValue(arg2));
   }
 
   template <typename A1, typename A2, typename A3>
-  void CallJS(const std::string& method,
-              const A1& arg1,
-              const A2& arg2,
-              const A3& arg3) {
+  void CallJSWithPrefix(const std::string& method,
+                        const A1& arg1,
+                        const A2& arg2,
+                        const A3& arg3) {
     web_ui()->CallJavascriptFunctionUnsafe(
         FullMethodPath(method), ::login::MakeValue(arg1),
         ::login::MakeValue(arg2), ::login::MakeValue(arg3));
   }
 
   template <typename A1, typename A2, typename A3, typename A4>
-  void CallJS(const std::string& method,
-              const A1& arg1,
-              const A2& arg2,
-              const A3& arg3,
-              const A4& arg4) {
+  void CallJSWithPrefix(const std::string& method,
+                        const A1& arg1,
+                        const A2& arg2,
+                        const A3& arg3,
+                        const A4& arg4) {
     web_ui()->CallJavascriptFunctionUnsafe(
         FullMethodPath(method), ::login::MakeValue(arg1),
         ::login::MakeValue(arg2), ::login::MakeValue(arg3),
@@ -158,10 +160,11 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   }
 
   template <typename... Args>
-  void CallJSOrDefer(const std::string& function_name, const Args&... args) {
+  void CallJSWithPrefixOrDefer(const std::string& function_name,
+                               const Args&... args) {
     DCHECK(js_calls_container_);
     if (js_calls_container_->is_initialized()) {
-      CallJS(function_name, args...);
+      CallJSWithPrefix(function_name, args...);
     } else {
       // Note that std::conditional is used here in order to obtain a sequence
       // of base::Value types with the length equal to sizeof...(Args); the C++
@@ -236,7 +239,7 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   template <typename... Args>
   void ExecuteDeferredJSCall(const std::string& function_name,
                              std::unique_ptr<Args>... args) {
-    CallJS(function_name, *args...);
+    CallJSWithPrefix(function_name, *args...);
   }
 
   // Returns full name of JS method based on screen and method

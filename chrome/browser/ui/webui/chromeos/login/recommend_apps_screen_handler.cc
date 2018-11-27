@@ -133,7 +133,7 @@ void RecommendAppsScreenHandler::Initialize() {}
 void RecommendAppsScreenHandler::LoadAppListInUI(const base::Value& app_list) {
   if (!page_is_ready()) {
     RecordUmaScreenState(RecommendAppsScreenState::ERROR);
-    CallJS("showError");
+    CallJSWithPrefix("showError");
     return;
   }
 
@@ -142,13 +142,13 @@ void RecommendAppsScreenHandler::LoadAppListInUI(const base::Value& app_list) {
       ui::ResourceBundle::GetSharedInstance();
   base::StringPiece app_list_webview = resource_bundle.GetRawDataResource(
       IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
-  CallJS("setWebview", app_list_webview.as_string());
-  CallJS("loadAppList", app_list);
+  CallJSWithPrefix("setWebview", app_list_webview.as_string());
+  CallJSWithPrefix("loadAppList", app_list);
 }
 
 void RecommendAppsScreenHandler::OnLoadError() {
   RecordUmaScreenState(RecommendAppsScreenState::ERROR);
-  CallJS("showError");
+  CallJSWithPrefix("showError");
 }
 
 void RecommendAppsScreenHandler::OnLoadSuccess(const base::Value& app_list) {

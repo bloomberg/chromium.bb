@@ -158,15 +158,15 @@ void AssistantOptInFlowScreenHandler::Initialize() {
 }
 
 void AssistantOptInFlowScreenHandler::OnListeningHotword() {
-  CallJS("onVoiceMatchUpdate", base::Value("listen"));
+  CallJSWithPrefix("onVoiceMatchUpdate", base::Value("listen"));
 }
 
 void AssistantOptInFlowScreenHandler::OnProcessingHotword() {
-  CallJS("onVoiceMatchUpdate", base::Value("process"));
+  CallJSWithPrefix("onVoiceMatchUpdate", base::Value("process"));
 }
 
 void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentDone() {
-  CallJS("onVoiceMatchUpdate", base::Value("done"));
+  CallJSWithPrefix("onVoiceMatchUpdate", base::Value("done"));
 }
 
 void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentFailure() {
@@ -188,7 +188,7 @@ void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {
 }
 
 void AssistantOptInFlowScreenHandler::ShowNextScreen() {
-  CallJS("showNextScreen");
+  CallJSWithPrefix("showNextScreen");
 }
 
 void AssistantOptInFlowScreenHandler::OnActivityControlOptInResult(
@@ -257,12 +257,12 @@ void AssistantOptInFlowScreenHandler::SendGetSettingsRequest() {
 }
 
 void AssistantOptInFlowScreenHandler::ReloadContent(const base::Value& dict) {
-  CallJS("reloadContent", dict);
+  CallJSWithPrefix("reloadContent", dict);
 }
 
 void AssistantOptInFlowScreenHandler::AddSettingZippy(const std::string& type,
                                                       const base::Value& data) {
-  CallJS("addSettingZippy", type, data);
+  CallJSWithPrefix("addSettingZippy", type, data);
 }
 
 void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
@@ -472,7 +472,7 @@ void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
   if (screen_)
     screen_->OnUserAction(kFlowFinished);
   else
-    CallJS("closeDialog");
+    CallJSWithPrefix("closeDialog");
 }
 
 void AssistantOptInFlowScreenHandler::HandleFlowInitialized() {}

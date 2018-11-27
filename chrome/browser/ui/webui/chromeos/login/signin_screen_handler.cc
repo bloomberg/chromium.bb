@@ -941,14 +941,14 @@ void SigninScreenHandler::OnWallpaperColorsChanged(
       dark_muted_color);
   SkColor scroll_color =
       SkColorSetA(base_color, ash::login_constants::kScrollTranslucentAlpha);
-  CallJSOrDefer("login.AccountPickerScreen.setOverlayColors",
-                color_utils::SkColorToRgbaString(dark_muted_color),
-                color_utils::SkColorToRgbaString(scroll_color));
+  CallJSWithPrefixOrDefer("login.AccountPickerScreen.setOverlayColors",
+                          color_utils::SkColorToRgbaString(dark_muted_color),
+                          color_utils::SkColorToRgbaString(scroll_color));
 }
 
 void SigninScreenHandler::OnWallpaperBlurChanged(bool blurred) {
-  CallJSOrDefer("login.AccountPickerScreen.togglePodBackground",
-                !blurred /*show_pod_background=*/);
+  CallJSWithPrefixOrDefer("login.AccountPickerScreen.togglePodBackground",
+                          !blurred /*show_pod_background=*/);
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
@@ -971,26 +971,26 @@ void SigninScreenHandler::UpdatePinKeyboardState(const AccountId& account_id) {
 
 void SigninScreenHandler::SetPinEnabledForUser(const AccountId& account_id,
                                                bool is_enabled) {
-  CallJS("login.AccountPickerScreen.setPinEnabledForUser", account_id,
-         is_enabled);
+  CallJSWithPrefix("login.AccountPickerScreen.setPinEnabledForUser", account_id,
+                   is_enabled);
 }
 
 void SigninScreenHandler::PreloadPinKeyboard(bool should_preload) {
   if (should_preload)
-    CallJS("cr.ui.Oobe.preloadPinKeyboard");
+    CallJSWithPrefix("cr.ui.Oobe.preloadPinKeyboard");
 }
 
 void SigninScreenHandler::OnUserRemoved(const AccountId& account_id,
                                         bool last_user_removed) {
-  CallJS("login.AccountPickerScreen.removeUser", account_id);
+  CallJSWithPrefix("login.AccountPickerScreen.removeUser", account_id);
   if (last_user_removed)
     gaia_screen_handler_->OnShowAddUser();
 }
 
 void SigninScreenHandler::OnUserImageChanged(const user_manager::User& user) {
   if (page_is_ready()) {
-    CallJSOrDefer("login.AccountPickerScreen.updateUserImage",
-                  user.GetAccountId());
+    CallJSWithPrefixOrDefer("login.AccountPickerScreen.updateUserImage",
+                            user.GetAccountId());
   }
 }
 
@@ -1065,7 +1065,7 @@ void SigninScreenHandler::ShowWhitelistCheckFailedError() {
 }
 
 void SigninScreenHandler::ShowUnrecoverableCrypthomeErrorDialog() {
-  CallJS("login.UnrecoverableCryptohomeErrorScreen.show");
+  CallJSWithPrefix("login.UnrecoverableCryptohomeErrorScreen.show");
 }
 
 void SigninScreenHandler::Observe(int type,
@@ -1119,7 +1119,8 @@ void SigninScreenHandler::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 
 void SigninScreenHandler::OnTabletModeToggled(bool enabled) {
-  CallJSOrDefer("login.AccountPickerScreen.setTabletModeState", enabled);
+  CallJSWithPrefixOrDefer("login.AccountPickerScreen.setTabletModeState",
+                          enabled);
 }
 
 void SigninScreenHandler::OnSessionStateChanged() {
@@ -1168,8 +1169,8 @@ void SigninScreenHandler::OnLockScreenNoteStateChanged(
       lock_screen_apps_state = kNoLockScreenApps;
       break;
   }
-  CallJSOrDefer("login.AccountPickerScreen.setLockScreenAppsState",
-                lock_screen_apps_state);
+  CallJSWithPrefixOrDefer("login.AccountPickerScreen.setLockScreenAppsState",
+                          lock_screen_apps_state);
 }
 
 bool SigninScreenHandler::ShouldLoadGaia() const {
@@ -1181,8 +1182,8 @@ bool SigninScreenHandler::ShouldLoadGaia() const {
 }
 
 void SigninScreenHandler::UpdateAddButtonStatus() {
-  CallJS("cr.ui.login.DisplayManager.updateAddUserButtonStatus",
-         AllWhitelistedUsersPresent());
+  CallJSWithPrefix("cr.ui.login.DisplayManager.updateAddUserButtonStatus",
+                   AllWhitelistedUsersPresent());
 }
 
 void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
@@ -1343,8 +1344,8 @@ void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
 
 void SigninScreenHandler::LoadUsers(const user_manager::UserList& users,
                                     const base::ListValue& users_list) {
-  CallJSOrDefer("login.AccountPickerScreen.loadUsers", users_list,
-                delegate_->IsShowGuest());
+  CallJSWithPrefixOrDefer("login.AccountPickerScreen.loadUsers", users_list,
+                          delegate_->IsShowGuest());
 
   // Enable pin for any users who can use it.
   // TODO(jdufault): Cache pin state in BrowserProcess::local_state() so we
@@ -1558,8 +1559,8 @@ void SigninScreenHandler::SendPublicSessionKeyboardLayouts(
     const AccountId& account_id,
     const std::string& locale,
     std::unique_ptr<base::ListValue> keyboard_layouts) {
-  CallJS("login.AccountPickerScreen.setPublicSessionKeyboardLayouts",
-         account_id, locale, *keyboard_layouts);
+  CallJSWithPrefix("login.AccountPickerScreen.setPublicSessionKeyboardLayouts",
+                   account_id, locale, *keyboard_layouts);
 }
 
 void SigninScreenHandler::HandleLaunchKioskApp(const AccountId& app_account_id,
@@ -1579,13 +1580,13 @@ void SigninScreenHandler::HandleLaunchArcKioskApp(
 }
 
 void SigninScreenHandler::HandleGetTabletModeState() {
-  CallJS("login.AccountPickerScreen.setTabletModeState",
-         TabletModeClient::Get()->tablet_mode_enabled());
+  CallJSWithPrefix("login.AccountPickerScreen.setTabletModeState",
+                   TabletModeClient::Get()->tablet_mode_enabled());
 }
 
 void SigninScreenHandler::HandleGetDemoModeState() {
-  CallJS("login.AccountPickerScreen.setDemoModeState",
-         DemoSession::IsDeviceInDemoMode());
+  CallJSWithPrefix("login.AccountPickerScreen.setDemoModeState",
+                   DemoSession::IsDeviceInDemoMode());
 }
 
 void SigninScreenHandler::HandleLogRemoveUserWarningShown() {
@@ -1724,7 +1725,8 @@ net::Error SigninScreenHandler::FrameError() const {
 void SigninScreenHandler::OnCapsLockChanged(bool enabled) {
   caps_lock_enabled_ = enabled;
   if (page_is_ready())
-    CallJS("login.AccountPickerScreen.setCapsLockState", caps_lock_enabled_);
+    CallJSWithPrefix("login.AccountPickerScreen.setCapsLockState",
+                     caps_lock_enabled_);
 }
 
 void SigninScreenHandler::OnFeedbackFinished() {
@@ -1732,7 +1734,8 @@ void SigninScreenHandler::OnFeedbackFinished() {
 }
 
 void SigninScreenHandler::OnUnrecoverableCryptohomeFeedbackFinished() {
-  CallJS("login.UnrecoverableCryptohomeErrorScreen.resumeAfterFeedbackUI");
+  CallJSWithPrefix(
+      "login.UnrecoverableCryptohomeErrorScreen.resumeAfterFeedbackUI");
 
   // Recreate user's cryptohome after the feedback is attempted.
   HandleResyncUserData();
@@ -1783,7 +1786,7 @@ void SigninScreenHandler::UpdateDetachableBaseChangedError() {
   // focused might be too late to warn the user their keyboard might not be
   // trusted.
   if (!focused_pod_account_id_) {
-    CallJSOrDefer(
+    CallJSWithPrefixOrDefer(
         "login.AccountPickerScreen.selectPodForDetachableBaseWarningBubble");
     return;
   }
@@ -1810,7 +1813,7 @@ void SigninScreenHandler::UpdateDetachableBaseChangedError() {
 void SigninScreenHandler::ShowDetachableBaseChangedError() {
   account_with_detachable_base_error_ = *focused_pod_account_id_;
 
-  CallJSOrDefer(
+  CallJSWithPrefixOrDefer(
       "cr.ui.login.DisplayManager.showDetachableBaseChangedWarning",
       *focused_pod_account_id_,
       l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_DETACHABLE_BASE_CHANGED),
@@ -1821,8 +1824,9 @@ void SigninScreenHandler::HideDetachableBaseChangedError() {
   if (!account_with_detachable_base_error_.has_value())
     return;
 
-  CallJSOrDefer("cr.ui.login.DisplayManager.hideDetachableBaseChangedWarning",
-                *account_with_detachable_base_error_);
+  CallJSWithPrefixOrDefer(
+      "cr.ui.login.DisplayManager.hideDetachableBaseChangedWarning",
+      *account_with_detachable_base_error_);
   account_with_detachable_base_error_ = base::nullopt;
 }
 

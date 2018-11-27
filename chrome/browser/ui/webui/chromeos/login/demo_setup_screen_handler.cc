@@ -44,16 +44,17 @@ void DemoSetupScreenHandler::Bind(DemoSetupScreen* screen) {
 void DemoSetupScreenHandler::OnSetupFailed(
     const DemoSetupController::DemoSetupError& error) {
   // TODO(wzang): Consider customization for RecoveryMethod::kReboot as well.
-  CallJS("onSetupFailed",
-         base::JoinString({error.GetLocalizedErrorMessage(),
-                           error.GetLocalizedRecoveryMessage()},
-                          base::UTF8ToUTF16(" ")),
-         error.recovery_method() ==
-             DemoSetupController::DemoSetupError::RecoveryMethod::kPowerwash);
+  CallJSWithPrefix(
+      "onSetupFailed",
+      base::JoinString({error.GetLocalizedErrorMessage(),
+                        error.GetLocalizedRecoveryMessage()},
+                       base::UTF8ToUTF16(" ")),
+      error.recovery_method() ==
+          DemoSetupController::DemoSetupError::RecoveryMethod::kPowerwash);
 }
 
 void DemoSetupScreenHandler::OnSetupSucceeded() {
-  CallJS("onSetupSucceeded");
+  CallJSWithPrefix("onSetupSucceeded");
 }
 
 void DemoSetupScreenHandler::Initialize() {}
