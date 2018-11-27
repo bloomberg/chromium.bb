@@ -329,9 +329,7 @@ cr.define('extensions', function() {
     /** @override */
     requestFileSource(args) {
       return new Promise(function(resolve, reject) {
-        chrome.developerPrivate.requestFileSource(args, function(code) {
-          resolve(code);
-        });
+        chrome.developerPrivate.requestFileSource(args, resolve);
       });
     }
 
@@ -349,9 +347,7 @@ cr.define('extensions', function() {
                   chrome.activityLogPrivate.ExtensionActivityFilter.ANY,
               extensionId: extensionId
             },
-            function(result) {
-              resolve(result);
-            });
+            resolve);
       });
     }
   }

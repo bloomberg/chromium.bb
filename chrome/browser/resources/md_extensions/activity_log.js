@@ -66,6 +66,7 @@ cr.define('extensions', function() {
       onDataFetched: {type: Object, value: new PromiseResolver()},
     },
 
+    /** @private {?number} */
     navigationListener_: null,
 
     /** @override */
