@@ -101,15 +101,15 @@ class EventGeneratorDelegate {
 // EventGeneratorDelegate.
 class EventGenerator {
  public:
-  // Creates an EventGenerator with the mouse/touch location (0,0),
-  // which uses the |root_window|'s coordinates and the default delegate for
-  // this platform.
-  explicit EventGenerator(gfx::NativeWindow root_window);
-
   // Create an EventGenerator with EventGeneratorDelegate,
   // which uses the coordinates conversions and targeting provided by
   // |delegate|.
   explicit EventGenerator(std::unique_ptr<EventGeneratorDelegate> delegate);
+
+  // Creates an EventGenerator with the mouse/touch location (0,0),
+  // which uses the |root_window|'s coordinates and the default delegate for
+  // this platform.
+  explicit EventGenerator(gfx::NativeWindow root_window);
 
   // Creates an EventGenerator with the mouse/touch location
   // at |initial_location|, which uses the |root_window|'s coordinates.

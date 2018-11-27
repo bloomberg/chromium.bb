@@ -60,6 +60,9 @@ class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
                                                  ui::KeyEvent* event) override;
 
  private:
+  gfx::Point CenterOfWindow(const Window* window) const;
+  void ConvertPointFromWindow(const Window* window, gfx::Point* point) const;
+
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateAura);
 };
 

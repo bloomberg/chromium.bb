@@ -114,10 +114,8 @@ class EventGeneratorDelegateMus : public EventGeneratorDelegateAura {
   gfx::Point CenterOfTarget(const ui::EventTarget* target) const override {
     if (target != &event_targeter_)
       return EventGeneratorDelegateAura::CenterOfTarget(target);
-    return display::Screen::GetScreen()
-        ->GetPrimaryDisplay()
-        .bounds()
-        .CenterPoint();
+    display::Screen* const screen = display::Screen::GetScreen();
+    return screen->GetPrimaryDisplay().bounds().CenterPoint();
   }
   void ConvertPointFromTarget(const ui::EventTarget* target,
                               gfx::Point* point) const override {
@@ -143,6 +141,9 @@ class EventGeneratorDelegateMus : public EventGeneratorDelegateAura {
 
 const Window* WindowFromTarget(const ui::EventTarget* event_target) {
   return static_cast<const Window*>(event_target);
+}
+Window* WindowFromTarget(ui::EventTarget* event_target) {
+  return static_cast<Window*>(event_target);
 }
 
 }  // namespace
@@ -178,32 +179,23 @@ EventGeneratorDelegateAura::GetScreenPositionClient(
 
 ui::EventSource* EventGeneratorDelegateAura::GetEventSource(
     ui::EventTarget* target) {
-  return static_cast<Window*>(target)->GetHost()->GetEventSource();
+  return WindowFromTarget(target)->GetHost()->GetEventSource();
 }
 
 gfx::Point EventGeneratorDelegateAura::CenterOfTarget(
     const ui::EventTarget* target) const {
-  gfx::Point center =
-      gfx::Rect(WindowFromTarget(target)->bounds().size()).CenterPoint();
-  ConvertPointFromTarget(target, &center);
-  return center;
+  return CenterOfWindow(WindowFromTarget(target));
 }
 
 gfx::Point EventGeneratorDelegateAura::CenterOfWindow(
     gfx::NativeWindow window) const {
-  return CenterOfTarget(window);
+  return CenterOfWindow(static_cast<const Window*>(window));
 }
 
 void EventGeneratorDelegateAura::ConvertPointFromTarget(
     const ui::EventTarget* event_target,
     gfx::Point* point) const {
-  DCHECK(point);
-  const Window* target = WindowFromTarget(event_target);
-  aura::client::ScreenPositionClient* client = GetScreenPositionClient(target);
-  if (client)
-    client->ConvertPointToScreen(target, point);
-  else
-    aura::Window::ConvertPointToTarget(target, target->GetRootWindow(), point);
+  ConvertPointFromWindow(WindowFromTarget(event_target), point);
 }
 
 void EventGeneratorDelegateAura::ConvertPointToTarget(
@@ -221,7 +213,7 @@ void EventGeneratorDelegateAura::ConvertPointToTarget(
 void EventGeneratorDelegateAura::ConvertPointFromWindow(
     gfx::NativeWindow window,
     gfx::Point* point) const {
-  return ConvertPointFromTarget(window, point);
+  return ConvertPointFromWindow(static_cast<const Window*>(window), point);
 }
 
 void EventGeneratorDelegateAura::ConvertPointFromHost(
@@ -234,8 +226,26 @@ void EventGeneratorDelegateAura::ConvertPointFromHost(
 ui::EventDispatchDetails EventGeneratorDelegateAura::DispatchKeyEventToIME(
     ui::EventTarget* target,
     ui::KeyEvent* event) {
-  Window* window = static_cast<Window*>(target);
+  Window* const window = WindowFromTarget(target);
   return window->GetHost()->GetInputMethod()->DispatchKeyEvent(event);
+}
+
+gfx::Point EventGeneratorDelegateAura::CenterOfWindow(
+    const Window* window) const {
+  gfx::Point center = gfx::Rect(window->bounds().size()).CenterPoint();
+  ConvertPointFromWindow(window, &center);
+  return center;
+}
+
+void EventGeneratorDelegateAura::ConvertPointFromWindow(
+    const Window* window,
+    gfx::Point* point) const {
+  DCHECK(point);
+  aura::client::ScreenPositionClient* client = GetScreenPositionClient(window);
+  if (client)
+    client->ConvertPointToScreen(window, point);
+  else
+    aura::Window::ConvertPointToTarget(window, window->GetRootWindow(), point);
 }
 
 }  // namespace test
