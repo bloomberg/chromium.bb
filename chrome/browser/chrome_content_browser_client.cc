@@ -2172,8 +2172,10 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
                                     identity.name());
   }
   // TODO(crbug.com/906954): whitelist flags to copy.
-  for (const auto& sw : base::CommandLine::ForCurrentProcess()->GetSwitches())
-    command_line->AppendSwitchNative(sw.first, sw.second);
+  if (copy_switches) {
+    for (const auto& sw : base::CommandLine::ForCurrentProcess()->GetSwitches())
+      command_line->AppendSwitchNative(sw.first, sw.second);
+  }
 #endif
 
 #if defined(OS_MACOSX)
