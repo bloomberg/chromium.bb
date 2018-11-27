@@ -327,7 +327,7 @@ void AwAutofillClient::ShowLocalCardMigrationResults(
 
 void AwAutofillClient::ConfirmCreditCardFillAssist(
     const autofill::CreditCard& card,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   NOTIMPLEMENTED();
 }
 

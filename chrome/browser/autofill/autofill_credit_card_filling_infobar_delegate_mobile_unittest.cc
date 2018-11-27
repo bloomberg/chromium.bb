@@ -41,9 +41,9 @@ AutofillCreditCardFillingInfoBarDelegateMobileTest::CreateDelegate() {
   std::unique_ptr<AutofillCreditCardFillingInfoBarDelegateMobile> delegate(
       new AutofillCreditCardFillingInfoBarDelegateMobile(
           credit_card,
-          base::Bind(&AutofillCreditCardFillingInfoBarDelegateMobileTest::
-                         AcceptInfoBarCallback,
-                     base::Unretained(this))));
+          base::BindOnce(&AutofillCreditCardFillingInfoBarDelegateMobileTest::
+                             AcceptInfoBarCallback,
+                         base::Unretained(this))));
   delegate->set_was_shown();
   return delegate;
 }

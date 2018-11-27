@@ -235,7 +235,7 @@ class AutofillClient : public RiskDataLoader {
   // Will show an infobar to get user consent for Credit Card assistive filling.
   // Will run |callback| on success.
   virtual void ConfirmCreditCardFillAssist(const CreditCard& card,
-                                           const base::Closure& callback) = 0;
+                                           base::OnceClosure callback) = 0;
 
   // Returns true if both the platform and the device support scanning credit
   // cards. Should be called before ScanCreditCard().

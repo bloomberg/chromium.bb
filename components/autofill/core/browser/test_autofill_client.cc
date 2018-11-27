@@ -145,8 +145,8 @@ void TestAutofillClient::ConfirmSaveCreditCardToCloud(
 
 void TestAutofillClient::ConfirmCreditCardFillAssist(
     const CreditCard& card,
-    const base::Closure& callback) {
-  callback.Run();
+    base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 void TestAutofillClient::LoadRiskData(

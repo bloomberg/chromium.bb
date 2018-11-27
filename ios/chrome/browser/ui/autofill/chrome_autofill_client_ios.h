@@ -83,7 +83,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
       bool show_prompt,
       UserAcceptedUploadCallback callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
-                                   const base::Closure& callback) override;
+                                   base::OnceClosure callback) override;
   void LoadRiskData(
       base::OnceCallback<void(const std::string&)> callback) override;
   bool HasCreditCardScanFeature() override;

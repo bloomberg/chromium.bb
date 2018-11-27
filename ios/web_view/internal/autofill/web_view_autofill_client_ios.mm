@@ -171,7 +171,7 @@ void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
 
 void WebViewAutofillClientIOS::ConfirmCreditCardFillAssist(
     const CreditCard& card,
-    const base::Closure& callback) {}
+    base::OnceClosure callback) {}
 
 void WebViewAutofillClientIOS::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {

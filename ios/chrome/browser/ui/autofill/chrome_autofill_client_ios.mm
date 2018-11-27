@@ -251,10 +251,10 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
 
 void ChromeAutofillClientIOS::ConfirmCreditCardFillAssist(
     const CreditCard& card,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   auto infobar_delegate =
       std::make_unique<AutofillCreditCardFillingInfoBarDelegateMobile>(
-          card, callback);
+          card, std::move(callback));
   auto* raw_delegate = infobar_delegate.get();
   if (infobar_manager_->AddInfoBar(
           ::CreateConfirmInfoBar(std::move(infobar_delegate)))) {
