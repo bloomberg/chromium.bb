@@ -186,25 +186,23 @@ class ServiceManager::Instance
            const InterfaceProviderSpecMap& interface_provider_specs,
            const catalog::ServiceOptions& options)
       : service_manager_(service_manager),
-        id_(GenerateUniqueID()),
         identity_(identity),
         interface_provider_specs_(interface_provider_specs),
         options_(options),
         allow_any_application_(GetConnectionSpec().requires.count("*") == 1),
         pid_receiver_binding_(this),
         control_binding_(this),
-        state_(State::IDLE),
+        state_(mojom::InstanceState::kCreated),
         weak_factory_(this) {
     if (identity_.name() == service_manager::mojom::kServiceName ||
         identity_.name() == catalog::mojom::kServiceName) {
       pid_ = GetCurrentPid();
     }
-    DCHECK_GT(id_, 0u);
     DCHECK(identity_.IsValid());
   }
 
   void Stop() {
-    DCHECK_NE(state_, State::STOPPED);
+    DCHECK(!stopped_);
 
     // Shutdown all bindings. This way the process should see the pipes closed
     // and exit, as well as waking up any potential
@@ -214,22 +212,22 @@ class ServiceManager::Instance
       pid_receiver_binding_.Close();
     connectors_.CloseAllBindings();
     service_manager_bindings_.CloseAllBindings();
-    service_manager_->OnInstanceUnreachable(this);
+    MarkUnreachable();
 
-    if (state_ == State::STARTING) {
+    if (state_ == mojom::InstanceState::kCreated) {
       service_manager_->NotifyServiceFailedToStart(identity_);
     } else {
       // Notify the ServiceManager that this Instance is really going away.
       service_manager_->OnInstanceStopped(identity_);
     }
 
-    state_ = State::STOPPED;
+    stopped_ = true;
   }
 
   ~Instance() override {
     // The instance may have already been stopped prior to destruction if the
     // ServiceManager itself is being torn down.
-    if (state_ != State::STOPPED)
+    if (!stopped_)
       Stop();
   }
 
@@ -271,8 +269,9 @@ class ServiceManager::Instance
   }
 
   void StartWithService(mojom::ServicePtr service) {
+    service_manager_->NotifyServiceCreated(this);
+
     CHECK(!service_);
-    state_ = State::STARTING;
     service_ = std::move(service);
     service_.set_connection_error_handler(
         base::BindOnce(&Instance::OnServiceLost, base::Unretained(this),
@@ -307,9 +306,9 @@ class ServiceManager::Instance
 
   mojom::RunningServiceInfoPtr CreateRunningServiceInfo() const {
     mojom::RunningServiceInfoPtr info(mojom::RunningServiceInfo::New());
-    info->id = id_;
     info->identity = identity_;
     info->pid = pid_;
+    info->state = state_;
     return info;
   }
 
@@ -334,8 +333,6 @@ class ServiceManager::Instance
     identity_ = identity;
   }
 
-  uint32_t id() const { return id_; }
-
   // Service:
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
@@ -353,21 +350,6 @@ class ServiceManager::Instance
   }
 
  private:
-  enum class State {
-    // The service was not started yet.
-    IDLE,
-
-    // The service was started but the service manager hasn't received the
-    // initial response from it yet.
-    STARTING,
-
-    // The service was started successfully.
-    STARTED,
-
-    // The service has been stopped.
-    STOPPED,
-  };
-
   class InterfaceProviderImpl : public mojom::InterfaceProvider {
    public:
     InterfaceProviderImpl(Instance* instance,
@@ -439,6 +421,21 @@ class ServiceManager::Instance
 
     DISALLOW_COPY_AND_ASSIGN(InterfaceProviderImpl);
   };
+
+  void MarkUnreachable() {
+    state_ = mojom::InstanceState::kUnreachable;
+    service_manager_->OnInstanceUnreachable(this);
+  }
+
+  void MaybeNotifyPidAvailable() {
+    // Ensure that we only notify listeners of the PID after notifying them of
+    // instance start to ensure consistent ordering of ServiceManagerListener
+    // messages pertaining to this instance.
+    if (state_ == mojom::InstanceState::kStarted &&
+        pid_ != base::kNullProcessId) {
+      service_manager_->NotifyServicePIDReceived(identity_, pid_);
+    }
+  }
 
   // mojom::Connector implementation:
   void BindInterface(const service_manager::ServiceFilter& target_filter,
@@ -637,7 +634,7 @@ class ServiceManager::Instance
     }
 #endif
     pid_ = pid;
-    service_manager_->NotifyServicePIDReceived(identity_, pid_);
+    MaybeNotifyPidAvailable();
   }
 
   void OnServiceLost(
@@ -654,13 +651,13 @@ class ServiceManager::Instance
       if (connectors_.empty())
         service_manager->OnInstanceError(this);
       else
-        service_manager->OnInstanceUnreachable(this);
+        MarkUnreachable();
     }
   }
 
   void OnStartComplete(mojom::ConnectorRequest connector_request,
                        mojom::ServiceControlAssociatedRequest control_request) {
-    state_ = State::STARTED;
+    state_ = mojom::InstanceState::kStarted;
     if (connector_request.is_pending()) {
       connectors_.AddBinding(this, std::move(connector_request));
       connectors_.set_connection_error_handler(base::BindRepeating(
@@ -670,6 +667,7 @@ class ServiceManager::Instance
     if (control_request.is_pending())
       control_binding_.Bind(std::move(control_request));
     service_manager_->NotifyServiceStarted(identity_, pid_);
+    MaybeNotifyPidAvailable();
   }
 
   // mojom::ServiceControl:
@@ -684,7 +682,6 @@ class ServiceManager::Instance
   // An id that identifies this instance. Distinct from pid, as a single process
   // may vend multiple application instances, and this object may exist before a
   // process is launched.
-  const uint32_t id_;
   Identity identity_;
   const InterfaceProviderSpecMap interface_provider_specs_;
   const catalog::ServiceOptions options_;
@@ -698,7 +695,8 @@ class ServiceManager::Instance
   mojo::BindingSet<mojom::ServiceManager> service_manager_bindings_;
   mojo::AssociatedBinding<mojom::ServiceControl> control_binding_;
   base::ProcessId pid_ = base::kNullProcessId;
-  State state_;
+  mojom::InstanceState state_;
+  bool stopped_ = false;
 
   std::map<InterfaceProviderImpl*, std::unique_ptr<InterfaceProviderImpl>>
       filters_;
@@ -1312,6 +1310,13 @@ void ServiceManager::EraseInstanceIdentity(Instance* instance) {
   identity_to_instance_->Erase(instance->identity());
 }
 
+void ServiceManager::NotifyServiceCreated(Instance* instance) {
+  mojom::RunningServiceInfoPtr info = instance->CreateRunningServiceInfo();
+  listeners_.ForAllPtrs([&info](mojom::ServiceManagerListener* listener) {
+    listener->OnServiceCreated(info.Clone());
+  });
+}
+
 void ServiceManager::NotifyServiceStarted(const Identity& identity,
                                           base::ProcessId pid) {
   listeners_.ForAllPtrs(
@@ -1350,11 +1355,6 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
   // point forward. It's safe for the extent of this method.
 
   identity_to_instance_->Insert(identity, instance_type, raw_instance);
-
-  mojom::RunningServiceInfoPtr info = raw_instance->CreateRunningServiceInfo();
-  listeners_.ForAllPtrs([&info](mojom::ServiceManagerListener* listener) {
-    listener->OnServiceCreated(info.Clone());
-  });
 
   return raw_instance;
 }
