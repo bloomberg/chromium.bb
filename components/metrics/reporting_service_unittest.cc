@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/sha1.h"
+#include "base/strings/string_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/log_store.h"
@@ -41,6 +42,9 @@ class TestLogStore : public LogStore {
   const std::string& staged_log() const override { return logs_.front(); }
   const std::string& staged_log_hash() const override {
     return staged_log_hash_;
+  }
+  const std::string& staged_log_signature() const override {
+    return base::EmptyString();
   }
   void StageNextLog() override {
     if (has_unsent_logs())
