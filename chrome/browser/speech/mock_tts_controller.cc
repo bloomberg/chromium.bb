@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/speech/tts_controller.h"
+#include "content/public/browser/tts_controller.h"
 
-UtteranceContinuousParameters::UtteranceContinuousParameters()
+content::UtteranceContinuousParameters::UtteranceContinuousParameters()
     : rate(1.0), pitch(1.0), volume(1.0) {}
 
-VoiceData::VoiceData() : remote(false), native(false) {}
+content::VoiceData::VoiceData() : remote(false), native(false) {}
 
-VoiceData::VoiceData(const VoiceData& other) = default;
+content::VoiceData::VoiceData(const VoiceData& other) = default;
 
-VoiceData::~VoiceData() {}
+content::VoiceData::~VoiceData() {}
 
-class MockTtsController : public TtsController {
+class MockTtsController : public content::TtsController {
  public:
   static MockTtsController* GetInstance() {
     return base::Singleton<MockTtsController>::get();
@@ -24,7 +24,7 @@ class MockTtsController : public TtsController {
 
   bool IsSpeaking() override { return false; }
 
-  void SpeakOrEnqueue(Utterance* utterance) override {}
+  void SpeakOrEnqueue(content::Utterance* utterance) override {}
 
   void Stop() override {}
 
@@ -33,29 +33,29 @@ class MockTtsController : public TtsController {
   void Resume() override {}
 
   void OnTtsEvent(int utterance_id,
-                  TtsEventType event_type,
+                  content::TtsEventType event_type,
                   int char_index,
                   const std::string& error_message) override {}
 
   void GetVoices(content::BrowserContext* browser_context,
-                 std::vector<VoiceData>* out_voices) override {}
+                 std::vector<content::VoiceData>* out_voices) override {}
 
   void VoicesChanged() override {}
 
-  void AddVoicesChangedDelegate(VoicesChangedDelegate* delegate) override {}
+  void AddVoicesChangedDelegate(
+      content::VoicesChangedDelegate* delegate) override {}
 
-  void RemoveVoicesChangedDelegate(VoicesChangedDelegate* delegate) override {}
+  void RemoveVoicesChangedDelegate(
+      content::VoicesChangedDelegate* delegate) override {}
 
-  void RemoveUtteranceEventDelegate(UtteranceEventDelegate* delegate) override {
+  void RemoveUtteranceEventDelegate(
+      content::UtteranceEventDelegate* delegate) override {}
+
+  void SetTtsEngineDelegate(content::TtsEngineDelegate* delegate) override {}
+
+  content::TtsEngineDelegate* GetTtsEngineDelegate() override {
+    return nullptr;
   }
-
-  void SetTtsEngineDelegate(TtsEngineDelegate* delegate) override {}
-
-  TtsEngineDelegate* GetTtsEngineDelegate() override { return nullptr; }
-
-  void SetPlatformImpl(TtsPlatformImpl* platform_impl) override {}
-
-  int QueueSize() override { return 0; }
 
  private:
   friend struct base::DefaultSingletonTraits<MockTtsController>;
@@ -63,6 +63,6 @@ class MockTtsController : public TtsController {
 };
 
 // static
-TtsController* TtsController::GetInstance() {
+content::TtsController* content::TtsController::GetInstance() {
   return MockTtsController::GetInstance();
 }
