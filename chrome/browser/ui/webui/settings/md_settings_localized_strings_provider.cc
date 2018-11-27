@@ -334,6 +334,11 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
           ::switches::kEnableExperimentalAccessibilityFeatures));
 
   html_source->AddBoolean(
+      "showExperimentalAccessibilityAutoclick",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableExperimentalAccessibilityAutoclick));
+
+  html_source->AddBoolean(
       "showExperimentalAccessibilitySwitchAccess",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kEnableExperimentalAccessibilitySwitchAccess));

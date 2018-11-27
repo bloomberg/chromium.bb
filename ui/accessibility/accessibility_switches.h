@@ -11,6 +11,7 @@
 namespace switches {
 
 AX_EXPORT extern const char kEnableExperimentalAccessibilityFeatures[];
+AX_EXPORT extern const char kEnableExperimentalAccessibilityAutoclick[];
 AX_EXPORT extern const char kEnableExperimentalAccessibilitySwitchAccess[];
 
 // Returns true if experimental accessibility features are enabled.

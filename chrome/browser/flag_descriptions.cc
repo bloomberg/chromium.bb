@@ -697,6 +697,11 @@ const char kExperimentalAccessibilityFeaturesName[] =
 const char kExperimentalAccessibilityFeaturesDescription[] =
     "Enable additional accessibility features in the Settings page.";
 
+const char kExperimentalAccessibilityAutoclickName[] =
+    "Experimental automatic click features";
+const char kExperimentalAccessibilityAutoclickDescription[] =
+    "Enable additional features for automatic clicks.";
+
 const char kExperimentalAccessibilitySwitchAccessName[] =
     "Experimental feature Switch Access";
 const char kExperimentalAccessibilitySwitchAccessDescription[] =

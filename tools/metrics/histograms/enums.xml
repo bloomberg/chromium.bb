@@ -30513,6 +30513,7 @@ from previous Chrome versions.
   <int value="348115702" label="new-password-form-parsing-for-saving:enabled"/>
   <int value="348854923" label="v8-cache-strategies-for-cache-storage"/>
   <int value="350399958" label="ModuleScriptsImportMetaUrl:disabled"/>
+  <int value="351005753" label="enable-experimental-accessibility-autoclick"/>
   <int value="352191859" label="disabled-new-style-notification"/>
   <int value="352937987" label="OverflowIconsForMediaControls:disabled"/>
   <int value="357138275" label="enable-floating-virtual-keyboard:disabled"/>
