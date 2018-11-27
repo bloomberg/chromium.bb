@@ -34607,8 +34607,10 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Unknown"/>
   <int value="1" label="None"/>
   <int value="2" label="A host was preresolved"/>
-  <int value="3" label="A host was preconnected to"/>
+  <int value="3" label="An origin was preconnected to at onLoad"/>
   <int value="4" label="A URL was prefetched"/>
+  <int value="5"
+      label="An origin was preconnected to when tab was foregrounded"/>
 </enum>
 
 <enum name="NavigationScheme">
