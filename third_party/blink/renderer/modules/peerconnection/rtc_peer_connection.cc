@@ -420,6 +420,12 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
         static_cast<int>(configuration->rtcAudioJitterBufferMaxPackets());
   }
 
+  if (configuration->hasRtcAudioJitterBufferFastAccelerate()) {
+    UseCounter::Count(context, WebFeature::kRTCMaxAudioBufferSize);
+    web_configuration.audio_jitter_buffer_fast_accelerate =
+        configuration->hasRtcAudioJitterBufferFastAccelerate();
+  }
+
   return web_configuration;
 }
 
@@ -1255,6 +1261,8 @@ RTCConfiguration* RTCPeerConnection::getConfiguration(
         webrtc_configuration.audio_jitter_buffer_max_packets;
     result->setRtcAudioJitterBufferMaxPackets(
         static_cast<int32_t>(audio_jitter_buffer_max_packets));
+    result->setRtcAudioJitterBufferFastAccelerate(
+        webrtc_configuration.audio_jitter_buffer_fast_accelerate);
   }
 
   return result;

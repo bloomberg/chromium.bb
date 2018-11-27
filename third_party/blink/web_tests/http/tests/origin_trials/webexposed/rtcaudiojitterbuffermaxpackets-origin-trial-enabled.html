@@ -19,4 +19,15 @@ test(t => {
   );
 }, 'rtcAudioJitterBufferMaxPackets property in Origin-Trial enabled document.');
 
+test(t => {
+  var peerconnection = new RTCPeerConnection({
+      rtcAudioJitterBufferFastAccelerate: true
+  });
+  var configuration = peerconnection.getConfiguration();
+  assert_true(
+      configuration.rtcAudioJitterBufferFastAccelerate,
+      'rtcAudioJitterBufferFastAccelerate equals passed values'
+  );
+}, 'rtcAudioJitterBufferFastAccelerate property in Origin-Trial enabled document.');
+
 </script>
