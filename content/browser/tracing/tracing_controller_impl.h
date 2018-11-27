@@ -67,6 +67,10 @@ class TracingControllerImpl : public TracingController,
 
   CONTENT_EXPORT tracing::TraceEventAgent* GetTraceEventAgent() const;
 
+  // For unittests.
+  CONTENT_EXPORT void SetTracingDelegateForTesting(
+      std::unique_ptr<TracingDelegate> delegate);
+
  private:
   friend std::default_delete<TracingControllerImpl>;
 

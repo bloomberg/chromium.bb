@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
@@ -63,6 +64,26 @@ bool IsTraceEventArgsWhitelisted(
   return false;
 }
 
+bool KeyEquals(const base::Value* value,
+               const char* key_name,
+               const char* expected) {
+  const base::Value* content =
+      value->FindKeyOfType(key_name, base::Value::Type::STRING);
+  if (!content)
+    return false;
+  return content->GetString() == expected;
+}
+
+bool KeyNotEquals(const base::Value* value,
+                  const char* key_name,
+                  const char* expected) {
+  const base::Value* content =
+      value->FindKeyOfType(key_name, base::Value::Type::STRING);
+  if (!content)
+    return false;
+  return content->GetString() != expected;
+}
+
 }  // namespace
 
 class TracingControllerTestEndpoint
@@ -97,23 +118,15 @@ class TracingControllerTestEndpoint
       done_callback_;
 };
 
-class TracingTestBrowserClient : public TestContentBrowserClient {
+class TestTracingDelegate : public TracingDelegate {
  public:
-  TracingDelegate* GetTracingDelegate() override {
-    return new TestTracingDelegate();
-  };
-
- private:
-  class TestTracingDelegate : public TracingDelegate {
-   public:
-    std::unique_ptr<TraceUploader> GetTraceUploader(
-        scoped_refptr<network::SharedURLLoaderFactory>) override {
-      return nullptr;
-    }
-    MetadataFilterPredicate GetMetadataFilterPredicate() override {
-      return base::Bind(IsMetadataWhitelisted);
-    }
-  };
+  std::unique_ptr<TraceUploader> GetTraceUploader(
+      scoped_refptr<network::SharedURLLoaderFactory>) override {
+    return nullptr;
+  }
+  MetadataFilterPredicate GetMetadataFilterPredicate() override {
+    return base::BindRepeating(IsMetadataWhitelisted);
+  }
 };
 
 class TracingControllerTest : public ContentBrowserTest {
@@ -231,8 +244,9 @@ class TracingControllerTest : public ContentBrowserTest {
   }
 
   void TestStartAndStopTracingStringWithFilter() {
-    TracingTestBrowserClient client;
-    ContentBrowserClient* old_client = SetBrowserClientForTesting(&client);
+    TracingControllerImpl::GetInstance()->SetTracingDelegateForTesting(
+        std::make_unique<TestTracingDelegate>());
+
     Navigate(shell());
 
     base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
@@ -276,7 +290,8 @@ class TracingControllerTest : public ContentBrowserTest {
       run_loop.Run();
       EXPECT_EQ(disable_recording_done_callback_count(), 1);
     }
-    SetBrowserClientForTesting(old_client);
+
+    TracingControllerImpl::GetInstance()->SetTracingDelegateForTesting(nullptr);
   }
 
   void TestStartAndStopTracingCompressed() {
@@ -417,9 +432,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   EXPECT_EQ(TraceConfig().ToString(), trace_config);
 }
 
-// TODO(crbug.com/642991) Disabled for flakiness.
-IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       DISABLED_NotWhitelistedMetadataStripped) {
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, NotWhitelistedMetadataStripped) {
   TestStartAndStopTracingStringWithFilter();
   // Check that a number of important keys exist in the metadata dictionary.
   ASSERT_NE(last_metadata(), nullptr);
@@ -442,15 +455,25 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   EXPECT_FALSE(not_whitelisted.empty());
   EXPECT_TRUE(not_whitelisted == "__stripped__");
 
-  // Also check the string data.
-  EXPECT_FALSE(last_data().empty());
-  EXPECT_TRUE(last_data().find("cpu-brand") != std::string::npos);
-  EXPECT_TRUE(last_data().find("network-type") != std::string::npos);
-  EXPECT_TRUE(last_data().find("os-name") != std::string::npos);
-  EXPECT_TRUE(last_data().find("user-agent") != std::string::npos);
+  // Also check the trace content.
+  std::unique_ptr<base::Value> trace_json = base::JSONReader::Read(last_data());
+  ASSERT_TRUE(trace_json);
+  const base::Value* metadata_json =
+      trace_json->FindKeyOfType("metadata", base::Value::Type::DICTIONARY);
+  ASSERT_TRUE(metadata_json);
 
-  EXPECT_TRUE(last_data().find("not-whitelisted") != std::string::npos);
-  EXPECT_TRUE(last_data().find("this_not_found") == std::string::npos);
+  EXPECT_TRUE(KeyNotEquals(metadata_json, "cpu-brand", "__stripped__"));
+  EXPECT_TRUE(KeyNotEquals(metadata_json, "network-type", "__stripped__"));
+  EXPECT_TRUE(KeyNotEquals(metadata_json, "os-name", "__stripped__"));
+  EXPECT_TRUE(KeyNotEquals(metadata_json, "user-agent", "__stripped__"));
+
+  // The following field is not whitelisted and is supposed to be stripped.
+  EXPECT_TRUE(KeyEquals(metadata_json, "chrome-bitness", "__stripped__"));
+
+  // TODO(770017): This test is currently broken since metadata filtering is
+  // only done in |TracingControllerImpl::GenerateMetadataDict()|. Metadata
+  // set by other providers are not filtered correctly.
+  // EXPECT_TRUE(KeyEquals(metadata_json, "not-whitelisted", "__stripped__"));
 }
 
 // TODO(crbug.com/871770): Disabled for failing on ASAN.
@@ -540,9 +563,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_DoubleStopTracing) {
 // TODO(crbug.com/871770): Disabled for failing on ASAN.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_SystemTraceEvents DISABLED_SystemTraceEvents
-// Only CrOS, Cast, and Windows support system tracing.
-#elif defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX)) || \
-    defined(OS_WIN)
+// Only CrOS, and Cast support system tracing.
+#elif defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
 #define MAYBE_SystemTraceEvents SystemTraceEvents
 #else
 #define MAYBE_SystemTraceEvents DISABLED_SystemTraceEvents

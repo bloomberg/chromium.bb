@@ -170,6 +170,14 @@ void ForEachCategoryFilter(const unsigned char* category_group_enabled,
   }
 }
 
+// The fallback arguments filtering function will filter away every argument.
+bool DefaultIsTraceEventArgsWhitelisted(
+    const char* category_group_name,
+    const char* event_name,
+    base::trace_event::ArgumentNameFilterPredicate* arg_name_filter) {
+  return false;
+}
+
 }  // namespace
 
 // A helper class that allows the lock to be acquired in the middle of the scope
@@ -976,8 +984,14 @@ void TraceLog::FinishFlush(int generation, bool discard_events) {
     flush_output_callback_.Reset();
 
     if (trace_options() & kInternalEnableArgumentFilter) {
-      CHECK(!argument_filter_predicate_.is_null());
-      argument_filter_predicate = argument_filter_predicate_;
+      // If argument filtering is activated and there is no filtering predicate,
+      // use the safe default filtering predicate.
+      if (argument_filter_predicate_.is_null()) {
+        argument_filter_predicate =
+            base::BindRepeating(&DefaultIsTraceEventArgsWhitelisted);
+      } else {
+        argument_filter_predicate = argument_filter_predicate_;
+      }
     }
   }
 
