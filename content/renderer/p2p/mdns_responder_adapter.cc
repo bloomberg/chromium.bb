@@ -39,22 +39,26 @@ void OnNameRemovedForAddress(
 }  // namespace
 
 MdnsResponderAdapter::MdnsResponderAdapter() {
+  network::mojom::MdnsResponderPtr client;
+  auto request = mojo::MakeRequest(&client);
+  thread_safe_client_ =
+      network::mojom::ThreadSafeMdnsResponderPtr::Create(std::move(client));
   ChildThreadImpl::current()->GetConnector()->BindInterface(
-      mojom::kBrowserServiceName, mojo::MakeRequest(&client_));
+      mojom::kBrowserServiceName, std::move(request));
 }
 
 MdnsResponderAdapter::~MdnsResponderAdapter() = default;
 
 void MdnsResponderAdapter::CreateNameForAddress(const rtc::IPAddress& addr,
                                                 NameCreatedCallback callback) {
-  client_->CreateNameForAddress(
+  thread_safe_client_->get()->CreateNameForAddress(
       jingle_glue::RtcIPAddressToNetIPAddress(addr),
       base::BindOnce(&OnNameCreatedForAddress, callback, addr));
 }
 
 void MdnsResponderAdapter::RemoveNameForAddress(const rtc::IPAddress& addr,
                                                 NameRemovedCallback callback) {
-  client_->RemoveNameForAddress(
+  thread_safe_client_->get()->RemoveNameForAddress(
       jingle_glue::RtcIPAddressToNetIPAddress(addr),
       base::BindOnce(&OnNameRemovedForAddress, callback));
 }
