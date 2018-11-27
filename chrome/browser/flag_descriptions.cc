@@ -580,6 +580,12 @@ const char kEnableHeavyPageCappingDescription[] =
     "will reduce the triggering threshold to 1MB. Data saver must be enabled "
     "in order to see the InfoBar.";
 
+const char kEnableImplicitRootScrollerName[] = "Implicit Root Scroller";
+const char kEnableImplicitRootScrollerDescription[] =
+    "Enables implicitly choosing which scroller on a page is the 'root "
+    "scroller'. i.e. The one that gets special features like URL bar movement, "
+    "overscroll glow, rotation anchoring, etc.";
+
 const char kEnablePreviewsAndroidOmniboxUIName[] =
     "Previews Android Omnibox UI";
 const char kEnablePreviewsAndroidOmniboxUIDescription[] =

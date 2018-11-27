@@ -1304,6 +1304,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-implicit-root-scroller",
+    "owners": [ "bokan" ],
+    "expiry_milestone": 75
+  },
+  {
     "name": "enable-improved-language-settings",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
