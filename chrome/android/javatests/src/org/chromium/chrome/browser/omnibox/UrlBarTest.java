@@ -32,7 +32,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.parameter.CommandLineParameter;
@@ -637,7 +636,6 @@ public class UrlBarTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    @FlakyTest(message = "crbug.com/908542")
     public void testBatchModeChangesTriggerCorrectSuggestions() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
 
@@ -689,7 +687,6 @@ public class UrlBarTest {
     @SmallTest
     @Feature("Omnibox")
     @RetryOnFailure
-    @FlakyTest(message = "crbug.com/908542")
     public void testAutocompleteCorrectlyPerservedOnBatchMode() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         stubLocationBarAutocomplete();
@@ -850,7 +847,6 @@ public class UrlBarTest {
     @Feature("Omnibox")
     @RetryOnFailure
     @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE}) // crbug.com/635714
-    @FlakyTest(message = "crbug.com/908542")
     public void testDelayedCompositionCorrectedWithAutocomplete()
             throws InterruptedException, ExecutionException {
         mActivityTestRule.startMainActivityOnBlankPage();
@@ -996,7 +992,6 @@ public class UrlBarTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    @FlakyTest(message = "crbug.com/908542")
     public void testFocusingOnStartup() {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -1023,7 +1018,6 @@ public class UrlBarTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    @FlakyTest(message = "crbug.com/908542")
     public void testCutHuge() throws InterruptedException {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         toggleFocusAndIgnoreImeOperations(getUrlBar(), true);
