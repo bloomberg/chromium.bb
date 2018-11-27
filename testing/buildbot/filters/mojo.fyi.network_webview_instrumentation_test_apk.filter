@@ -88,11 +88,9 @@
 -org.chromium.android_webview.test.AwSettingsTest.testUniversalAccessFromFilesWithTwoViews
 
 # https://crbug.com/893572
--org.chromium.android_webview.test.ClientOnPageStartedTest.testBrowserInitiatedHangingNavigation
 -org.chromium.android_webview.test.ClientOnPageStartedTest.testBrowserInitiatedRedirectHangingNavigation
 -org.chromium.android_webview.test.ClientOnPageStartedTest.testNotCalledForDownloadContentDisposition
 -org.chromium.android_webview.test.ClientOnPageStartedTest.testNotCalledForDownloadPdf
--org.chromium.android_webview.test.ClientOnPageStartedTest.testRendererInitiatedHangingNavigation
 -org.chromium.android_webview.test.ClientOnPageStartedTest.testRendererInitiatedRedirectHangingNavigation
 
 # https://crbug.com/893573
