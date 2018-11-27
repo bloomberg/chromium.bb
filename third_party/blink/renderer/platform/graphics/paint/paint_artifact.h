@@ -54,7 +54,7 @@ class PLATFORM_EXPORT PaintArtifact final : public RefCounted<PaintArtifact> {
   const Vector<PaintChunk>& PaintChunks() const { return chunks_; }
 
   PaintChunkSubset GetPaintChunkSubset(
-      const Vector<size_t>& subset_indices) const {
+      const Vector<wtf_size_t>& subset_indices) const {
     return PaintChunkSubset(PaintChunks(), subset_indices);
   }
 
