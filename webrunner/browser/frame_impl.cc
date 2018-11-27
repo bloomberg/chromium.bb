@@ -432,7 +432,7 @@ bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
                                        int32_t line_no,
                                        const base::string16& source_id) {
   if (static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
-          log_level_) > static_cast<uint32_t>(level)) {
+          log_level_) > level) {
     return false;
   }
 

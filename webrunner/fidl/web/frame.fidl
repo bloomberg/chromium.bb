@@ -13,7 +13,7 @@ enum ExecuteMode {
   ON_PAGE_LOAD = 2;    // Will evaluate the script on all subsequent page loads.
 };
 
-enum LogLevel {
+enum LogLevel : int32 {
   NONE = 100;  // No logging.
   DEBUG = -1;  // Outputs messages from console.debug().
   INFO = 0;    // Outputs messages from console.log().
