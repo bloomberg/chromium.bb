@@ -23,6 +23,8 @@
 .long	0x0c0f0e0d,0x0c0f0e0d,0x0c0f0e0d,0x0c0f0e0d	@ rotate-n-splat
 .long	0x1b,0x1b,0x1b,0x1b
 
+.text
+
 .globl	aes_hw_set_encrypt_key
 .hidden	aes_hw_set_encrypt_key
 .type	aes_hw_set_encrypt_key,%function
