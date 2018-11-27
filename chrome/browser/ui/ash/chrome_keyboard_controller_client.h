@@ -41,7 +41,8 @@ class ChromeKeyboardControllerClient
 
     // Forwards the 'OnKeyboardOccludedBoundsChanged' mojo observer method.
     // This is used by overscrolling.
-    virtual void OnKeyboardOccludedBoundsChanged(const gfx::Rect& new_bounds) {}
+    virtual void OnKeyboardOccludedBoundsChanged(
+        const gfx::Rect& screen_bounds) {}
 
     // Notifies observers when the keyboard content (i.e. the extension) has
     // loaded. Note: if the content is already loaded when the observer is
@@ -125,8 +126,8 @@ class ChromeKeyboardControllerClient
   void OnKeyboardConfigChanged(
       keyboard::mojom::KeyboardConfigPtr config) override;
   void OnKeyboardVisibilityChanged(bool visible) override;
-  void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
-  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& bounds) override;
+  void OnKeyboardVisibleBoundsChanged(const gfx::Rect& screen_bounds) override;
+  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& screen_bounds) override;
 
   // Returns either the test profile or the active user profile.
   Profile* GetProfile();

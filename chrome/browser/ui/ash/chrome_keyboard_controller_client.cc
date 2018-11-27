@@ -281,7 +281,7 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibilityChanged(bool visible) {
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
-    const gfx::Rect& bounds) {
+    const gfx::Rect& screen_bounds) {
   Profile* profile = GetProfile();
   extensions::EventRouter* router = extensions::EventRouter::Get(profile);
   // |router| may be null in tests.
@@ -290,12 +290,14 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
     return;
   }
 
+  // Note: |bounds| is in screen coordinates, which is what we want to pass to
+  // the extension.
   auto event_args = std::make_unique<base::ListValue>();
   auto new_bounds = std::make_unique<base::DictionaryValue>();
-  new_bounds->SetInteger("left", bounds.x());
-  new_bounds->SetInteger("top", bounds.y());
-  new_bounds->SetInteger("width", bounds.width());
-  new_bounds->SetInteger("height", bounds.height());
+  new_bounds->SetInteger("left", screen_bounds.x());
+  new_bounds->SetInteger("top", screen_bounds.y());
+  new_bounds->SetInteger("width", screen_bounds.width());
+  new_bounds->SetInteger("height", screen_bounds.height());
   event_args->Append(std::move(new_bounds));
 
   auto event = std::make_unique<extensions::Event>(
@@ -306,9 +308,9 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardOccludedBoundsChanged(
-    const gfx::Rect& bounds) {
+    const gfx::Rect& screen_bounds) {
   for (auto& observer : observers_)
-    observer.OnKeyboardOccludedBoundsChanged(bounds);
+    observer.OnKeyboardOccludedBoundsChanged(screen_bounds);
 }
 
 Profile* ChromeKeyboardControllerClient::GetProfile() {
