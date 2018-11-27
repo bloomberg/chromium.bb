@@ -173,7 +173,7 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusClick) {
   EXPECT_FALSE(event_capturer_.last_key_event()->handled());
 
   gfx::Point click_location = gfx::Point(100, 12);
-  generator_->set_current_location(click_location);
+  generator_->set_current_screen_location(click_location);
   generator_->PressLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
 
@@ -196,7 +196,7 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusDrag) {
 
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
   gfx::Point click_location = gfx::Point(100, 12);
-  generator_->set_current_location(click_location);
+  generator_->set_current_screen_location(click_location);
   generator_->PressLeftButton();
 
   EXPECT_EQ(click_location, GetDelegate()->last_mouse_event_location());
@@ -224,7 +224,7 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusDragOnLargeDisplay) {
 
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
   gfx::Point click_location_px = gfx::Point(100, 12);
-  generator_->set_current_location(click_location_px);
+  generator_->set_current_screen_location(click_location_px);
   generator_->PressLeftButton();
   EXPECT_EQ(gfx::Point(click_location_px.x() / 2, click_location_px.y() / 2),
             GetDelegate()->last_mouse_event_location());
@@ -251,7 +251,7 @@ TEST_F(SelectToSpeakEventHandlerTest, RepeatSearchKey) {
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
 
-  generator_->set_current_location(gfx::Point(100, 12));
+  generator_->set_current_screen_location(gfx::Point(100, 12));
   generator_->PressLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
 
@@ -290,7 +290,7 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusClickTwice) {
   ASSERT_TRUE(event_capturer_.last_key_event());
   EXPECT_FALSE(event_capturer_.last_key_event()->handled());
 
-  generator_->set_current_location(gfx::Point(100, 12));
+  generator_->set_current_screen_location(gfx::Point(100, 12));
   generator_->PressLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
   EXPECT_TRUE(GetDelegate()->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
@@ -329,7 +329,7 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusKeyIgnoresClicks) {
   ASSERT_TRUE(event_capturer_.last_key_event());
   EXPECT_FALSE(event_capturer_.last_key_event()->handled());
 
-  generator_->set_current_location(gfx::Point(100, 12));
+  generator_->set_current_screen_location(gfx::Point(100, 12));
   generator_->PressLeftButton();
   ASSERT_TRUE(event_capturer_.last_mouse_event());
   EXPECT_FALSE(event_capturer_.last_mouse_event()->handled());
@@ -435,7 +435,7 @@ TEST_F(SelectToSpeakEventHandlerTest, DoesntStartSelectionModeIfNotInactive) {
 
   // Mouse event still captured.
   gfx::Point click_location = gfx::Point(100, 12);
-  generator_->set_current_location(click_location);
+  generator_->set_current_screen_location(click_location);
   generator_->PressLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
 
@@ -456,7 +456,7 @@ TEST_F(SelectToSpeakEventHandlerTest,
        CancelSearchKeyUpAfterEarlyInactiveStateChange) {
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
   gfx::Point click_location = gfx::Point(100, 12);
-  generator_->set_current_location(click_location);
+  generator_->set_current_screen_location(click_location);
   generator_->PressLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
   EXPECT_TRUE(GetDelegate()->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
@@ -479,7 +479,7 @@ TEST_F(SelectToSpeakEventHandlerTest,
 
 TEST_F(SelectToSpeakEventHandlerTest, SelectionRequestedWorksWithMouse) {
   gfx::Point click_location = gfx::Point(100, 12);
-  generator_->set_current_location(click_location);
+  generator_->set_current_screen_location(click_location);
 
   // Mouse events are let through normally before entering selecting state.
   // Another mouse event is let through normally.
@@ -521,7 +521,7 @@ TEST_F(SelectToSpeakEventHandlerTest, SelectionRequestedWorksWithMouse) {
 
 TEST_F(SelectToSpeakEventHandlerTest, SelectionRequestedWorksWithTouch) {
   gfx::Point touch_location = gfx::Point(100, 12);
-  generator_->set_current_location(touch_location);
+  generator_->set_current_screen_location(touch_location);
 
   // Mouse events are let through normally before entering selecting state.
   // Another mouse event is let through normally.
@@ -600,7 +600,7 @@ TEST_F(SelectToSpeakEventHandlerTest, SelectionRequestedIgnoresOtherInput) {
 TEST_F(SelectToSpeakEventHandlerTest, TrackingTouchIgnoresOtherTouchPointers) {
   gfx::Point touch_location = gfx::Point(100, 12);
   gfx::Point drag_location = gfx::Point(120, 32);
-  generator_->set_current_location(touch_location);
+  generator_->set_current_screen_location(touch_location);
   controller_->SetSelectToSpeakState(
       mojom::SelectToSpeakState::kSelectToSpeakStateSelecting);
 

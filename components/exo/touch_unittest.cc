@@ -67,7 +67,7 @@ TEST_F(TouchTest, OnTouchDown) {
   EXPECT_CALL(delegate,
               OnTouchDown(top_window.surface(), testing::_, 1, gfx::PointF()));
   EXPECT_CALL(delegate, OnTouchFrame());
-  generator.set_current_location(top_window.origin());
+  generator.set_current_screen_location(top_window.origin());
   generator.PressTouchId(1);
 
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(bottom_window.surface()))
@@ -78,7 +78,7 @@ TEST_F(TouchTest, OnTouchDown) {
                                     gfx::PointF(-1, -1)));
   EXPECT_CALL(delegate, OnTouchFrame());
 
-  generator.set_current_location(bottom_window.origin());
+  generator.set_current_screen_location(bottom_window.origin());
   generator.PressTouchId(2);
 
   EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
@@ -100,7 +100,7 @@ TEST_F(TouchTest, OnTouchUp) {
                                     gfx::PointF()))
       .Times(2);
   EXPECT_CALL(delegate, OnTouchFrame()).Times(2);
-  generator.set_current_location(window.origin());
+  generator.set_current_screen_location(window.origin());
   generator.PressTouchId(1);
   generator.PressTouchId(2);
 
@@ -132,7 +132,7 @@ TEST_F(TouchTest, OnTouchMotion) {
               OnTouchMotion(testing::_, testing::_, gfx::PointF(5, 5)));
   EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
   EXPECT_CALL(delegate, OnTouchFrame()).Times(3);
-  generator.set_current_location(window.origin());
+  generator.set_current_screen_location(window.origin());
   generator.PressMoveAndReleaseTouchBy(5, 5);
 
   // Check if touch point motion outside focus surface is reported properly to
@@ -143,7 +143,7 @@ TEST_F(TouchTest, OnTouchMotion) {
               OnTouchMotion(testing::_, testing::_, gfx::PointF(100, 100)));
   EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
   EXPECT_CALL(delegate, OnTouchFrame()).Times(3);
-  generator.set_current_location(window.origin());
+  generator.set_current_screen_location(window.origin());
   generator.PressMoveAndReleaseTouchBy(100, 100);
 
   EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
@@ -176,7 +176,7 @@ TEST_F(TouchTest, OnTouchShape) {
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
     EXPECT_CALL(delegate, OnTouchFrame());
   }
-  generator.set_current_location(window.origin());
+  generator.set_current_screen_location(window.origin());
   generator.SetTouchRadius(10, 5);
   generator.PressTouch();
   generator.MoveTouchBy(5, 5);
@@ -202,7 +202,7 @@ TEST_F(TouchTest, OnTouchCancel) {
                                     gfx::PointF()))
       .Times(2);
   EXPECT_CALL(delegate, OnTouchFrame()).Times(2);
-  generator.set_current_location(window.origin());
+  generator.set_current_screen_location(window.origin());
   generator.PressTouchId(1);
   generator.PressTouchId(2);
 
@@ -249,7 +249,7 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
     EXPECT_CALL(delegate, OnTouchFrame());
   }
-  generator.set_current_location(modal.origin());
+  generator.set_current_screen_location(modal.origin());
   generator.PressMoveAndReleaseTouchBy(1, 1);
 
   // Check if touch events on non-modal window are ignored.
@@ -264,7 +264,7 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_)).Times(0);
     EXPECT_CALL(delegate, OnTouchFrame()).Times(0);
   }
-  generator.set_current_location(window.origin());
+  generator.set_current_screen_location(window.origin());
   generator.PressMoveAndReleaseTouchBy(1, 1);
 
   // Make the window non-modal.
@@ -283,7 +283,7 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
     EXPECT_CALL(delegate, OnTouchFrame());
   }
-  generator.set_current_location(window.origin());
+  generator.set_current_screen_location(window.origin());
   generator.PressMoveAndReleaseTouchBy(1, 1);
 
   EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
@@ -315,7 +315,7 @@ TEST_F(TouchTest, OnTouchTool) {
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
     EXPECT_CALL(delegate, OnTouchFrame());
   }
-  generator.set_current_location(window.origin());
+  generator.set_current_screen_location(window.origin());
   generator.SetTouchPointerType(ui::EventPointerType::POINTER_TYPE_PEN);
   generator.PressTouch();
   generator.ReleaseTouch();
@@ -350,7 +350,7 @@ TEST_F(TouchTest, OnTouchForce) {
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
     EXPECT_CALL(delegate, OnTouchFrame());
   }
-  generator.set_current_location(window.origin());
+  generator.set_current_screen_location(window.origin());
   generator.SetTouchPointerType(ui::EventPointerType::POINTER_TYPE_PEN);
   generator.SetTouchForce(1.0);
   generator.PressTouch();
@@ -387,7 +387,7 @@ TEST_F(TouchTest, OnTouchTilt) {
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
     EXPECT_CALL(delegate, OnTouchFrame());
   }
-  generator.set_current_location(window.origin());
+  generator.set_current_screen_location(window.origin());
   generator.SetTouchPointerType(ui::EventPointerType::POINTER_TYPE_PEN);
   generator.SetTouchTilt(1.0, 2.0);
   generator.PressTouch();

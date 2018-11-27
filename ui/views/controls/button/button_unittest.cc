@@ -400,7 +400,7 @@ TEST_F(ButtonTest, ButtonClickTogglesInkDrop) {
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
   ui::test::EventGenerator generator(GetRootWindow(widget()));
-  generator.set_current_location(gfx::Point(50, 50));
+  generator.set_current_screen_location(gfx::Point(50, 50));
   generator.PressLeftButton();
   EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
@@ -415,7 +415,7 @@ TEST_F(ButtonTest, CaptureLossHidesInkDrop) {
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
   ui::test::EventGenerator generator(GetRootWindow(widget()));
-  generator.set_current_location(gfx::Point(50, 50));
+  generator.set_current_screen_location(gfx::Point(50, 50));
   generator.PressLeftButton();
   EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 

@@ -3407,7 +3407,7 @@ TEST_F(WidgetTest, MouseEventTypesViaGenerator) {
   widget->Show();
 
   ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
-  generator.set_current_location(gfx::Point(20, 20));
+  generator.set_current_screen_location(gfx::Point(20, 20));
 
   generator.ClickLeftButton();
   EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_PRESSED));

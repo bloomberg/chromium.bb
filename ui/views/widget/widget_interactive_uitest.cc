@@ -1684,7 +1684,7 @@ TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
 
   widget.Show();
   ui::test::EventGenerator generator(GetContext(), widget.GetNativeWindow());
-  generator.set_current_location(gfx::Point(300, 10));
+  generator.set_current_screen_location(gfx::Point(300, 10));
   generator.PressLeftButton();
 
   EXPECT_FALSE(mouse_view1->pressed());
@@ -1724,7 +1724,7 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseExitOnCaptureGrab) {
   widget2.SetBounds(gfx::Rect(400, 0, 300, 300));
 
   ui::test::EventGenerator generator(GetRootWindow(&widget1));
-  generator.set_current_location(gfx::Point(100, 100));
+  generator.set_current_screen_location(gfx::Point(100, 100));
   generator.MoveMouseBy(0, 0);
 
   EXPECT_EQ(1, mouse_view1->EnteredCalls());

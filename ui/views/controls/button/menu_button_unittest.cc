@@ -93,7 +93,7 @@ class MenuButtonTest : public ViewsTestBase {
         std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
     // Set initial mouse location in a consistent way so that the menu button we
     // are about to create initializes its hover state in a consistent manner.
-    generator_->set_current_location(gfx::Point(10, 10));
+    generator_->set_current_screen_location(gfx::Point(10, 10));
 
     button_ = new TestMenuButton(menu_button_listener);
     button_->SetBoundsRect(gfx::Rect(0, 0, 200, 20));

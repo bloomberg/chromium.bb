@@ -560,7 +560,7 @@ class ShelfViewTest : public AshTestBase {
     gfx::Point center_point_of_drag_item = GetButtonCenter(drag_button);
 
     ui::test::EventGenerator* generator = GetEventGenerator();
-    generator->set_current_location(center_point_of_drag_item);
+    generator->set_current_screen_location(center_point_of_drag_item);
     // Rip an item off this source shelf.
     generator->PressLeftButton();
     gfx::Point rip_off_point(center_point_of_drag_item.x(), 0);
@@ -1195,7 +1195,7 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
   // Verify that dragging an app off the shelf will trigger the app getting
   // ripped off, unless the distance is less than |kRipOffDistance|.
   gfx::Point first_app_location = GetButtonCenter(GetButtonByID(first_app_id));
-  generator->set_current_location(first_app_location);
+  generator->set_current_screen_location(first_app_location);
   generator->PressLeftButton();
   // Drag the mouse to just off the shelf.
   generator->MoveMouseBy(0, -ShelfConstants::shelf_size() / 2 - 1);
@@ -1221,7 +1221,7 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
       GetButtonCenter(GetButtonByID(second_app_id));
   gfx::Point overflow_app_location = GetButtonCenter(
       test_api_for_overflow.GetButton(model_->ItemIndexByID(overflow_app_id)));
-  generator->set_current_location(second_app_location);
+  generator->set_current_screen_location(second_app_location);
   generator->PressLeftButton();
   generator->MoveMouseTo(overflow_app_location);
   EXPECT_TRUE(test_api_->IsRippedOffFromShelf());
@@ -1232,7 +1232,7 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
   // Verify that when an app from the overflow shelf is dragged to a location on
   // the main shelf, it is ripped off.
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
-  generator->set_current_location(overflow_app_location);
+  generator->set_current_screen_location(overflow_app_location);
   generator->PressLeftButton();
   generator->MoveMouseTo(second_app_location);
   EXPECT_TRUE(test_api_for_overflow.IsRippedOffFromShelf());
@@ -1261,7 +1261,7 @@ TEST_F(ShelfViewTest, DragAndDropPinnedRunningApp) {
   EXPECT_TRUE(IsAppPinned(GetItemId(index)));
 
   gfx::Point app_location = GetButtonCenter(GetButtonByID(id));
-  generator->set_current_location(app_location);
+  generator->set_current_screen_location(app_location);
   generator->PressLeftButton();
   generator->MoveMouseBy(0, -ShelfConstants::shelf_size() / 2 - 1);
   EXPECT_FALSE(test_api_->IsRippedOffFromShelf());
@@ -1730,12 +1730,13 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
   // Fetch the start point of dragging.
   gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
+  gfx::Point end_point = start_point + gfx::Vector2d(400, 0);
   ::wm::ConvertPointFromScreen(root_window, &start_point);
   ui::test::EventGenerator generator(root_window, start_point);
 
   // Rip off the browser item.
   generator.PressLeftButton();
-  generator.MoveMouseTo(start_point.x() + 400, start_point.y());
+  generator.MoveMouseTo(end_point);
   test_api_for_secondary_shelf_view.RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(test_api_for_secondary_shelf_view.IsRippedOffFromShelf());
 }
@@ -1785,7 +1786,7 @@ TEST_F(ShelfViewTest, TestDragWithinOverflow) {
   gfx::Point drop_point = GetButtonCenter(item_b_button);
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(drag_point);
+  generator->set_current_screen_location(drag_point);
   EXPECT_EQ(nullptr, overflow_shelf_view->drag_view());
 
   // TODO(manucornet): Test the same thing with only touches.
@@ -1893,13 +1894,13 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   test_api_->ShowOverflowBubble();
 
   // Make sure the point we chose is not on the shelf or its overflow bubble.
-  ASSERT_FALSE(
-      shelf_view_->GetBoundsInScreen().Contains(generator->current_location()));
+  ASSERT_FALSE(shelf_view_->GetBoundsInScreen().Contains(
+      generator->current_screen_location()));
   ASSERT_FALSE(test_api_->overflow_bubble()
                    ->bubble_view()
                    ->shelf_view()
                    ->GetBoundsInScreen()
-                   .Contains(generator->current_location()));
+                   .Contains(generator->current_screen_location()));
   generator->PressLeftButton();
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
   generator->ReleaseLeftButton();
@@ -1908,7 +1909,7 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   // bubble is opened, the overflow bubble will close.
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
   test_api_->ShowOverflowBubble();
-  generator->set_current_location(GetButtonCenter(first_app_id));
+  generator->set_current_screen_location(GetButtonCenter(first_app_id));
   generator->ClickLeftButton();
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 
@@ -1920,7 +1921,8 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
       test_api_->overflow_bubble()->bubble_view()->shelf_view());
   ShelfButton* button_on_overflow_shelf =
       test_api_for_overflow.GetButton(model_->ItemIndexByID(overflow_app_id2));
-  generator->set_current_location(GetButtonCenter(button_on_overflow_shelf));
+  generator->set_current_screen_location(
+      GetButtonCenter(button_on_overflow_shelf));
   generator->ClickLeftButton();
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 
@@ -1928,7 +1930,7 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   // bubble.
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
   test_api_->ShowOverflowBubble();
-  generator->set_current_location(GetButtonCenter(first_app_id));
+  generator->set_current_screen_location(GetButtonCenter(first_app_id));
   generator->DragMouseTo(GetButtonCenter(second_app_id));
   EXPECT_TRUE(test_api_->IsShowingOverflowBubble());
   test_api_->HideOverflowBubble();
@@ -1943,7 +1945,8 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
       test_api_for_overflow2.GetButton(model_->ItemIndexByID(overflow_app_id1));
   ShelfButton* button_on_overflow_shelf1 =
       test_api_for_overflow2.GetButton(model_->ItemIndexByID(overflow_app_id2));
-  generator->set_current_location(GetButtonCenter(button_on_overflow_shelf));
+  generator->set_current_screen_location(
+      GetButtonCenter(button_on_overflow_shelf));
   generator->DragMouseTo(GetButtonCenter(button_on_overflow_shelf1));
   EXPECT_TRUE(test_api_->IsShowingOverflowBubble());
 }
@@ -1977,7 +1980,7 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   // The shelf items should animate if they are moved within the shelf, either
   // by swapping or if the items need to be rearranged due to an item getting
   // ripped off.
-  generator->set_current_location(GetButtonCenter(first_app_id));
+  generator->set_current_screen_location(GetButtonCenter(first_app_id));
   generator->DragMouseTo(GetButtonCenter(second_app_id));
   generator->DragMouseBy(0, 50);
   test_api_->RunMessageLoopUntilAnimationsDone();
@@ -2145,7 +2148,7 @@ TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAlwaysShownShelf) {
   const gfx::Point start = GetButtonCenter(first_app_id);
   // Drag the app long enough to ensure the drag can be triggered.
   const gfx::Point end(start.x() + 100, start.y());
-  generator->set_current_location(start);
+  generator->set_current_screen_location(start);
 
   // Add |STATE_DRAGGING| state to emulate the gesture drag after context menu
   // is shown.
@@ -2178,7 +2181,7 @@ TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAutoHideShelf) {
   const gfx::Point start = GetButtonCenter(first_app_id);
   // Drag the app long enough to ensure the drag can be triggered.
   const gfx::Point end = gfx::Point(start.x() + 100, start.y());
-  generator->set_current_location(start);
+  generator->set_current_screen_location(start);
 
   // Add |STATE_DRAGGING| state to emulate the gesture drag after context menu
   // is shown.
@@ -3031,7 +3034,7 @@ TEST_F(OverflowButtonInkDropTest, MouseContextMenu) {
 // on it.
 TEST_F(OverflowButtonInkDropTest, TouchActivate) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(GetScreenPointInsideOverflowButton());
+  generator->set_current_screen_location(GetScreenPointInsideOverflowButton());
 
   generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
@@ -3052,7 +3055,7 @@ TEST_F(OverflowButtonInkDropTest, TouchActivate) {
 // down on it and drags it out of the button bounds.
 TEST_F(OverflowButtonInkDropTest, TouchDragOut) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(GetScreenPointInsideOverflowButton());
+  generator->set_current_screen_location(GetScreenPointInsideOverflowButton());
 
   generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
@@ -3079,7 +3082,7 @@ TEST_F(OverflowButtonInkDropTest, TouchDragOut) {
 // down on it and drags it out of the button bounds and back.
 TEST_F(OverflowButtonInkDropTest, TouchDragOutAndBack) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(GetScreenPointInsideOverflowButton());
+  generator->set_current_screen_location(GetScreenPointInsideOverflowButton());
 
   generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
@@ -3241,7 +3244,7 @@ TEST_F(OverflowButtonActiveInkDropTest, MouseDragOutAndBack) {
 // and the user taps on it.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDeactivate) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(GetScreenPointInsideOverflowButton());
+  generator->set_current_screen_location(GetScreenPointInsideOverflowButton());
 
   generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
@@ -3262,7 +3265,7 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDeactivate) {
 // and the user taps down on it and drags it out of the button bounds.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDragOut) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(GetScreenPointInsideOverflowButton());
+  generator->set_current_screen_location(GetScreenPointInsideOverflowButton());
 
   generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
@@ -3290,7 +3293,7 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDragOut) {
 // back.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDragOutAndBack) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(GetScreenPointInsideOverflowButton());
+  generator->set_current_screen_location(GetScreenPointInsideOverflowButton());
 
   generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,

@@ -54,11 +54,15 @@ class EventGeneratorDelegate {
   virtual gfx::Point CenterOfTarget(const EventTarget* target) const = 0;
   virtual gfx::Point CenterOfWindow(gfx::NativeWindow window) const = 0;
 
-  // Convert a point between API's coordinates and |target|'s coordinates.
+  // Convert a point between screen coordinates and |target|'s coordinates.
   virtual void ConvertPointFromTarget(const EventTarget* target,
                                       gfx::Point* point) const = 0;
   virtual void ConvertPointToTarget(const EventTarget* target,
                                     gfx::Point* point) const = 0;
+
+  // Converts |point| from |window|'s coordinates to screen coordinates.
+  virtual void ConvertPointFromWindow(gfx::NativeWindow window,
+                                      gfx::Point* point) const = 0;
 
   // Convert a point from the coordinate system in the host that contains
   // |hosted_target| into the root window's coordinate system.
@@ -118,13 +122,15 @@ class EventGenerator {
 
   virtual ~EventGenerator();
 
-  // Explicitly sets the location used by mouse/touch events. This is set by the
-  // various methods that take a location but can be manipulated directly,
-  // typically for touch.
-  void set_current_location(const gfx::Point& location) {
-    current_location_ = location;
+  // Explicitly sets the location used by mouse/touch events, in screen
+  // coordinates. This is set by the various methods that take a location but
+  // can be manipulated directly, typically for touch.
+  void set_current_screen_location(const gfx::Point& location) {
+    current_screen_location_ = location;
   }
-  const gfx::Point& current_location() const { return current_location_; }
+  const gfx::Point& current_screen_location() const {
+    return current_screen_location_;
+  }
 
   // Events could be dispatched using different methods. The choice is a
   // tradeoff between test robustness and coverage of OS internals that affect
@@ -155,7 +161,7 @@ class EventGenerator {
   // the root window to window coordinates when dispatching events.
   // Setting this to false skips that step, in which case the test must ensure
   // it correctly maps coordinates in window coordinates to root window (screen)
-  // coordinates when calling, e.g., set_current_location().
+  // coordinates when calling, e.g., set_current_screen_location().
   // Default is true. This only has any effect on Mac.
   void set_assume_window_at_origin(bool assume_window_at_origin) {
     assume_window_at_origin_ = assume_window_at_origin;
@@ -221,7 +227,7 @@ class EventGenerator {
   }
 
   void MoveMouseBy(int x, int y) {
-    MoveMouseTo(current_location_ + gfx::Vector2d(x, y));
+    MoveMouseTo(current_screen_location_ + gfx::Vector2d(x, y));
   }
 
   // Generates events to drag mouse to given |point|.
@@ -232,7 +238,7 @@ class EventGenerator {
   }
 
   void DragMouseBy(int dx, int dy) {
-    DragMouseTo(current_location_ + gfx::Vector2d(dx, dy));
+    DragMouseTo(current_screen_location_ + gfx::Vector2d(dx, dy));
   }
 
   // Generates events to move the mouse to the center of the window.
@@ -271,7 +277,7 @@ class EventGenerator {
 
   // Generates a ET_TOUCH_MOVED event moving by (x, y) from current location.
   void MoveTouchBy(int x, int y) {
-    MoveTouch(current_location_ + gfx::Vector2d(x, y));
+    MoveTouch(current_screen_location_ + gfx::Vector2d(x, y));
   }
 
   // Generates a ET_TOUCH_MOVED event to |point| with |touch_id|.
@@ -280,7 +286,7 @@ class EventGenerator {
   // Generates a ET_TOUCH_MOVED event moving (x, y) from current location with
   // |touch_id|.
   void MoveTouchIdBy(int touch_id, int x, int y) {
-    MoveTouchId(current_location_ + gfx::Vector2d(x, y), touch_id);
+    MoveTouchId(current_screen_location_ + gfx::Vector2d(x, y), touch_id);
   }
 
   // Generates a touch release event.
@@ -298,7 +304,7 @@ class EventGenerator {
   }
 
   void PressMoveAndReleaseTouchBy(int x, int y) {
-    PressMoveAndReleaseTouchTo(current_location_ + gfx::Vector2d(x, y));
+    PressMoveAndReleaseTouchTo(current_screen_location_ + gfx::Vector2d(x, y));
   }
 
   // Generates press, move and release events to move touch
@@ -442,7 +448,7 @@ class EventGenerator {
   gfx::Point CenterOfWindow(const EventTarget* window) const;
 
   std::unique_ptr<EventGeneratorDelegate> delegate_;
-  gfx::Point current_location_;
+  gfx::Point current_screen_location_;
   EventTarget* current_target_ = nullptr;
   int flags_ = 0;
   bool grab_ = false;

@@ -218,6 +218,12 @@ void EventGeneratorDelegateAura::ConvertPointToTarget(
     aura::Window::ConvertPointToTarget(target->GetRootWindow(), target, point);
 }
 
+void EventGeneratorDelegateAura::ConvertPointFromWindow(
+    gfx::NativeWindow window,
+    gfx::Point* point) const {
+  return ConvertPointFromTarget(window, point);
+}
+
 void EventGeneratorDelegateAura::ConvertPointFromHost(
     const ui::EventTarget* hosted_target,
     gfx::Point* point) const {
