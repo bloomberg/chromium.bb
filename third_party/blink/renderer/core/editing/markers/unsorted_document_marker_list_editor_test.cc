@@ -21,8 +21,8 @@ class UnsortedDocumentMarkerListEditorTest : public testing::Test {
 
  protected:
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
-    return new SuggestionMarker(start_offset, end_offset,
-                                SuggestionMarkerProperties());
+    return MakeGarbageCollected<SuggestionMarker>(start_offset, end_offset,
+                                                  SuggestionMarkerProperties());
   }
 
   Persistent<HeapVector<Member<DocumentMarker>>> marker_list_;
@@ -41,7 +41,8 @@ TEST_F(UnsortedDocumentMarkerListEditorTest, MoveMarkers) {
   marker_list_->push_back(CreateMarker(10, 20));
   marker_list_->push_back(CreateMarker(11, 21));
 
-  DocumentMarkerList* dst_list = new SuggestionMarkerListImpl();
+  DocumentMarkerList* dst_list =
+      MakeGarbageCollected<SuggestionMarkerListImpl>();
   // The markers with start and end offset < 11 should be moved to dst_list.
   // Markers that start before 11 and end at 11 or later should be removed.
   // Markers that start at 11 or later should not be moved.

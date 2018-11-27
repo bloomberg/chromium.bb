@@ -106,9 +106,9 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
     DCHECK_EQ(kReferrerPolicyDefault, creation_params->referrer_policy);
     DCHECK(creation_params->origin_trial_tokens->IsEmpty());
   }
-  return new ServiceWorkerGlobalScope(std::move(creation_params), thread,
-                                      std::move(cache_storage_info),
-                                      time_origin);
+  return MakeGarbageCollected<ServiceWorkerGlobalScope>(
+      std::move(creation_params), thread, std::move(cache_storage_info),
+      time_origin);
 }
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
@@ -315,8 +315,8 @@ void ServiceWorkerGlobalScope::SetRegistration(
     WebServiceWorkerRegistrationObjectInfo info) {
   if (!GetExecutionContext())
     return;
-  registration_ =
-      new ServiceWorkerRegistration(GetExecutionContext(), std::move(info));
+  registration_ = MakeGarbageCollected<ServiceWorkerRegistration>(
+      GetExecutionContext(), std::move(info));
 }
 
 ServiceWorker* ServiceWorkerGlobalScope::GetOrCreateServiceWorker(
@@ -325,7 +325,7 @@ ServiceWorker* ServiceWorkerGlobalScope::GetOrCreateServiceWorker(
     return nullptr;
   ServiceWorker* worker = service_worker_objects_.at(info.version_id);
   if (!worker) {
-    worker = new ServiceWorker(this, std::move(info));
+    worker = MakeGarbageCollected<ServiceWorker>(this, std::move(info));
     service_worker_objects_.Set(info.version_id, worker);
   }
   return worker;

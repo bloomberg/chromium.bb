@@ -39,12 +39,12 @@ class MODULES_EXPORT SpeechRecognitionAlternative final
  public:
   static SpeechRecognitionAlternative* Create(const String&, double);
 
+  SpeechRecognitionAlternative(const String&, double);
+
   const String& transcript() const { return transcript_; }
   double confidence() const { return confidence_; }
 
  private:
-  SpeechRecognitionAlternative(const String&, double);
-
   String transcript_;
   double confidence_;
 };

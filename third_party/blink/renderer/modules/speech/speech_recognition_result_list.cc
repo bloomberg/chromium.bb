@@ -29,7 +29,7 @@ namespace blink {
 
 SpeechRecognitionResultList* SpeechRecognitionResultList::Create(
     const HeapVector<Member<SpeechRecognitionResult>>& results) {
-  return new SpeechRecognitionResultList(results);
+  return MakeGarbageCollected<SpeechRecognitionResultList>(results);
 }
 
 SpeechRecognitionResult* SpeechRecognitionResultList::item(unsigned index) {

@@ -63,6 +63,9 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
   // because SpinButtonElement can be outlive SpinButtonOwner
   // implementation, e.g. during event handling.
   static SpinButtonElement* Create(Document&, SpinButtonOwner&);
+
+  SpinButtonElement(Document&, SpinButtonOwner&);
+
   UpDownState GetUpDownState() const { return up_down_state_; }
   void ReleaseCapture(EventDispatch = kEventDispatchAllowed);
   void RemoveSpinButtonOwner() { spin_button_owner_ = nullptr; }
@@ -77,8 +80,6 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
   void Trace(blink::Visitor*) override;
 
  private:
-  SpinButtonElement(Document&, SpinButtonOwner&);
-
   void DetachLayoutTree(const AttachContext&) override;
   bool IsSpinButtonElement() const override { return true; }
   bool IsDisabledFormControl() const override {

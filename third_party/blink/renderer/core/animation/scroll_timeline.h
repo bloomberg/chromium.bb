@@ -39,6 +39,12 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
                                 ScrollTimelineOptions*,
                                 ExceptionState&);
 
+  ScrollTimeline(Element*,
+                 ScrollDirection,
+                 CSSPrimitiveValue*,
+                 CSSPrimitiveValue*,
+                 double);
+
   // AnimationTimeline implementation.
   double currentTime(bool& is_null) final;
   bool IsScrollTimeline() const override { return true; }
@@ -79,12 +85,6 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   static bool HasActiveScrollTimeline(Node* node);
 
  private:
-  ScrollTimeline(Element*,
-                 ScrollDirection,
-                 CSSPrimitiveValue*,
-                 CSSPrimitiveValue*,
-                 double);
-
   // Use |scroll_source_| only to implement the web-exposed API but use
   // resolved_scroll_source_ to actually access the scroll related properties.
   Member<Element> scroll_source_;

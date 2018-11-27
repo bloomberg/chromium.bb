@@ -172,7 +172,8 @@ namespace blink {
 ServiceWorkerGlobalScopeProxy* ServiceWorkerGlobalScopeProxy::Create(
     WebEmbeddedWorkerImpl& embedded_worker,
     WebServiceWorkerContextClient& client) {
-  return new ServiceWorkerGlobalScopeProxy(embedded_worker, client);
+  return MakeGarbageCollected<ServiceWorkerGlobalScopeProxy>(embedded_worker,
+                                                             client);
 }
 
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {

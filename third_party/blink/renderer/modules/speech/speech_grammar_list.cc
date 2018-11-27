@@ -32,7 +32,7 @@
 namespace blink {
 
 SpeechGrammarList* SpeechGrammarList::Create() {
-  return new SpeechGrammarList;
+  return MakeGarbageCollected<SpeechGrammarList>();
 }
 
 SpeechGrammar* SpeechGrammarList::item(unsigned index) const {

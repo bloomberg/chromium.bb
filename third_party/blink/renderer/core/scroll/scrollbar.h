@@ -52,7 +52,8 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
                            ScrollbarOrientation orientation,
                            ScrollbarControlSize size,
                            ChromeClient* chrome_client) {
-    return new Scrollbar(scrollable_area, orientation, size, chrome_client);
+    return MakeGarbageCollected<Scrollbar>(scrollable_area, orientation, size,
+                                           chrome_client);
   }
 
   // Theme object ownership remains with the caller and it must outlive the
@@ -61,9 +62,15 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
                                      ScrollbarOrientation orientation,
                                      ScrollbarControlSize size,
                                      ScrollbarTheme* theme) {
-    return new Scrollbar(scrollable_area, orientation, size, nullptr, theme);
+    return MakeGarbageCollected<Scrollbar>(scrollable_area, orientation, size,
+                                           nullptr, theme);
   }
 
+  Scrollbar(ScrollableArea*,
+            ScrollbarOrientation,
+            ScrollbarControlSize,
+            ChromeClient* = nullptr,
+            ScrollbarTheme* = nullptr);
   ~Scrollbar() override;
 
   int X() const { return frame_rect_.X(); }
@@ -197,12 +204,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   virtual void Trace(blink::Visitor*);
 
  protected:
-  Scrollbar(ScrollableArea*,
-            ScrollbarOrientation,
-            ScrollbarControlSize,
-            ChromeClient* = nullptr,
-            ScrollbarTheme* = nullptr);
-
   void AutoscrollTimerFired(TimerBase*);
   void StartTimerIfNeeded(TimeDelta delay);
   void StopTimerIfNeeded();

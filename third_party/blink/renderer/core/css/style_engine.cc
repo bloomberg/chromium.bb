@@ -114,7 +114,8 @@ TreeScopeStyleSheetCollection& StyleEngine::EnsureStyleSheetCollectionFor(
       style_sheet_collection_map_.insert(&tree_scope, nullptr);
   if (result.is_new_entry) {
     result.stored_value->value =
-        new ShadowTreeStyleSheetCollection(ToShadowRoot(tree_scope));
+        MakeGarbageCollected<ShadowTreeStyleSheetCollection>(
+            ToShadowRoot(tree_scope));
   }
   return *result.stored_value->value.Get();
 }

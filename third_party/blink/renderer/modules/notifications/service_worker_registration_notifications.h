@@ -47,15 +47,15 @@ class ServiceWorkerRegistrationNotifications final
                                         ServiceWorkerRegistration& registration,
                                         const GetNotificationOptions* options);
 
+  ServiceWorkerRegistrationNotifications(ExecutionContext*,
+                                         ServiceWorkerRegistration*);
+
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext* context) override;
 
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  ServiceWorkerRegistrationNotifications(ExecutionContext*,
-                                         ServiceWorkerRegistration*);
-
   static ServiceWorkerRegistrationNotifications& From(
       ExecutionContext* context,
       ServiceWorkerRegistration& registration);

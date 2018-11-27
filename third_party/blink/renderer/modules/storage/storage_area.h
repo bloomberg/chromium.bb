@@ -66,6 +66,14 @@ class StorageArea final : public ScriptWrappable,
                                               scoped_refptr<CachedStorageArea>,
                                               StorageType);
 
+  // TODO(dmurph): Remove this after onion souping. crbug.com/781870
+  StorageArea(LocalFrame*, std::unique_ptr<WebStorageArea>, StorageType);
+
+  StorageArea(LocalFrame*,
+              scoped_refptr<CachedStorageArea>,
+              StorageType,
+              bool should_enqueue_events);
+
   unsigned length(ExceptionState&) const;
   String key(unsigned index, ExceptionState&) const;
   String getItem(const String& key, ExceptionState&) const;
@@ -111,14 +119,6 @@ class StorageArea final : public ScriptWrappable,
                                           WebStorageArea* source_area_instance);
 
  private:
-  // TODO(dmurph): Remove this after onion souping. crbug.com/781870
-  StorageArea(LocalFrame*, std::unique_ptr<WebStorageArea>, StorageType);
-
-  StorageArea(LocalFrame*,
-              scoped_refptr<CachedStorageArea>,
-              StorageType,
-              bool should_enqueue_events);
-
   // TODO(dmurph): Remove this after onion souping. crbug.com/781870
   std::unique_ptr<WebStorageArea> storage_area_;
 

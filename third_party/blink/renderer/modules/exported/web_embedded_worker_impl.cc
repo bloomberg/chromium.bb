@@ -376,8 +376,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   ProvideContentSettingsClientToWorker(worker_clients,
                                        std::move(content_settings_client_));
   ProvideServiceWorkerGlobalScopeClientToWorker(
-      worker_clients,
-      new ServiceWorkerGlobalScopeClient(*worker_context_client_));
+      worker_clients, MakeGarbageCollected<ServiceWorkerGlobalScopeClient>(
+                          *worker_context_client_));
 
   // |web_worker_fetch_context| is null in some unit tests.
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =

@@ -49,6 +49,8 @@ class MODULES_EXPORT SpeechSynthesis final
  public:
   static SpeechSynthesis* Create(ExecutionContext*);
 
+  explicit SpeechSynthesis(ExecutionContext*);
+
   bool pending() const;
   bool speaking() const;
   bool paused() const;
@@ -72,8 +74,6 @@ class MODULES_EXPORT SpeechSynthesis final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SpeechSynthesis(ExecutionContext*);
-
   // PlatformSpeechSynthesizerClient override methods.
   void VoicesDidChange() override;
   void DidStartSpeaking(PlatformSpeechSynthesisUtterance*) override;

@@ -26,7 +26,7 @@ ScreenOrientationControllerImpl::~ScreenOrientationControllerImpl() = default;
 
 void ScreenOrientationControllerImpl::ProvideTo(LocalFrame& frame) {
   ScreenOrientationController::ProvideTo(
-      frame, new ScreenOrientationControllerImpl(frame));
+      frame, MakeGarbageCollected<ScreenOrientationControllerImpl>(frame));
 }
 
 ScreenOrientationControllerImpl* ScreenOrientationControllerImpl::From(

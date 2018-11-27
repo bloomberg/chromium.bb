@@ -61,6 +61,9 @@ class CORE_EXPORT ScriptStreamer final
     kInvalid = -1,
   };
 
+  ScriptStreamer(ScriptResource*,
+                 v8::ScriptCompiler::CompileOptions,
+                 scoped_refptr<base::SingleThreadTaskRunner>);
   ~ScriptStreamer();
   void Trace(blink::Visitor*);
 
@@ -128,10 +131,6 @@ class CORE_EXPORT ScriptStreamer final
   static size_t small_script_threshold_;
   // Maximum size of the BOM marker.
   static constexpr size_t kMaximumLengthOfBOM = 4;
-
-  ScriptStreamer(ScriptResource*,
-                 v8::ScriptCompiler::CompileOptions,
-                 scoped_refptr<base::SingleThreadTaskRunner>);
 
   void Prefinalize();
 

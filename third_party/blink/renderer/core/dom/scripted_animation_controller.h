@@ -47,8 +47,10 @@ class CORE_EXPORT ScriptedAnimationController
       public NameClient {
  public:
   static ScriptedAnimationController* Create(Document* document) {
-    return new ScriptedAnimationController(document);
+    return MakeGarbageCollected<ScriptedAnimationController>(document);
   }
+
+  explicit ScriptedAnimationController(Document*);
   virtual ~ScriptedAnimationController() = default;
 
   void Trace(blink::Visitor*);
@@ -88,8 +90,6 @@ class CORE_EXPORT ScriptedAnimationController
   bool NextFrameHasPendingRAF() const { return next_frame_has_pending_raf_; }
 
  private:
-  explicit ScriptedAnimationController(Document*);
-
   void ScheduleAnimationIfNeeded();
 
   void RunTasks();

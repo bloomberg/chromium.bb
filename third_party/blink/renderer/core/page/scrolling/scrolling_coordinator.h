@@ -82,6 +82,7 @@ class CORE_EXPORT ScrollingCoordinator final
 
   static ScrollingCoordinator* Create(Page*);
 
+  explicit ScrollingCoordinator(Page*);
   ~ScrollingCoordinator();
   void Trace(blink::Visitor*);
 
@@ -173,8 +174,6 @@ class CORE_EXPORT ScrollingCoordinator final
   void Reset(LocalFrame*);
 
  protected:
-  explicit ScrollingCoordinator(Page*);
-
   bool IsForRootLayer(ScrollableArea*) const;
   bool IsForMainFrame(ScrollableArea*) const;
 

@@ -111,7 +111,7 @@ ScriptErrorCallback* ScriptErrorCallback::Wrap(V8ErrorCallback* callback) {
   // and checking during invoke().
   if (!callback)
     return nullptr;
-  return new ScriptErrorCallback(callback);
+  return MakeGarbageCollected<ScriptErrorCallback>(callback);
 }
 
 void ScriptErrorCallback::Trace(blink::Visitor* visitor) {

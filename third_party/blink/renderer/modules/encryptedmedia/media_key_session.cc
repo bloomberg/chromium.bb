@@ -714,8 +714,8 @@ ScriptPromise MediaKeySession::update(ScriptState* script_state,
       DOMArrayBuffer::Create(response.Data(), response.ByteLength());
 
   // 5. Let promise be a new promise.
-  SimpleResultPromise* result =
-      new SimpleResultPromise(script_state, this, "MediaKeySession", "update");
+  SimpleResultPromise* result = MakeGarbageCollected<SimpleResultPromise>(
+      script_state, this, "MediaKeySession", "update");
   ScriptPromise promise = result->Promise();
 
   // 6. Run the following steps asynchronously (done in updateTask())
@@ -760,8 +760,8 @@ ScriptPromise MediaKeySession::close(ScriptState* script_state) {
     return CreateRejectedPromiseNotCallable(script_state);
 
   // 3. Let promise be a new promise.
-  SimpleResultPromise* result =
-      new SimpleResultPromise(script_state, this, "MediaKeySession", "close");
+  SimpleResultPromise* result = MakeGarbageCollected<SimpleResultPromise>(
+      script_state, this, "MediaKeySession", "close");
   ScriptPromise promise = result->Promise();
 
   // 4. Set this object's closing or closed value to true.
@@ -804,8 +804,8 @@ ScriptPromise MediaKeySession::remove(ScriptState* script_state) {
     return CreateRejectedPromiseNotCallable(script_state);
 
   // 3. Let promise be a new promise.
-  SimpleResultPromise* result =
-      new SimpleResultPromise(script_state, this, "MediaKeySession", "remove");
+  SimpleResultPromise* result = MakeGarbageCollected<SimpleResultPromise>(
+      script_state, this, "MediaKeySession", "remove");
   ScriptPromise promise = result->Promise();
 
   // 4. Run the following steps asynchronously (done in removeTask()).

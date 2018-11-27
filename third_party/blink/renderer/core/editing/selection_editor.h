@@ -45,8 +45,10 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
 
  public:
   static SelectionEditor* Create(LocalFrame& frame) {
-    return new SelectionEditor(frame);
+    return MakeGarbageCollected<SelectionEditor>(frame);
   }
+
+  explicit SelectionEditor(LocalFrame&);
   virtual ~SelectionEditor();
   void Dispose();
 
@@ -66,8 +68,6 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SelectionEditor(LocalFrame&);
-
   Document& GetDocument() const;
   LocalFrame* GetFrame() const { return frame_.Get(); }
 

@@ -81,9 +81,13 @@ class CORE_EXPORT ScriptResource final : public TextResource {
     ResourceLoaderOptions options;
     TextResourceDecoderOptions decoder_options(
         TextResourceDecoderOptions::kPlainTextContent, encoding);
-    return new ScriptResource(request, options, decoder_options);
+    return MakeGarbageCollected<ScriptResource>(request, options,
+                                                decoder_options);
   }
 
+  ScriptResource(const ResourceRequest&,
+                 const ResourceLoaderOptions&,
+                 const TextResourceDecoderOptions&);
   ~ScriptResource() override;
 
   void Trace(blink::Visitor*) override;
@@ -184,13 +188,10 @@ class CORE_EXPORT ScriptResource final : public TextResource {
         const ResourceRequest& request,
         const ResourceLoaderOptions& options,
         const TextResourceDecoderOptions& decoder_options) const override {
-      return new ScriptResource(request, options, decoder_options);
+      return MakeGarbageCollected<ScriptResource>(request, options,
+                                                  decoder_options);
     }
   };
-
-  ScriptResource(const ResourceRequest&,
-                 const ResourceLoaderOptions&,
-                 const TextResourceDecoderOptions&);
 
   bool CanUseCacheValidator() const override;
 

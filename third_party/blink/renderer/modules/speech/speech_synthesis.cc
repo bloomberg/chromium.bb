@@ -41,7 +41,7 @@
 namespace blink {
 
 SpeechSynthesis* SpeechSynthesis::Create(ExecutionContext* context) {
-  return new SpeechSynthesis(context);
+  return MakeGarbageCollected<SpeechSynthesis>(context);
 }
 
 SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)

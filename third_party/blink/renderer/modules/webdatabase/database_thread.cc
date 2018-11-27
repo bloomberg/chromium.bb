@@ -69,7 +69,7 @@ void DatabaseThread::Start() {
 void DatabaseThread::SetupDatabaseThread() {
   DCHECK(thread_->IsCurrentThread());
   thread_->InitializeOnThread();
-  transaction_coordinator_ = new SQLTransactionCoordinator();
+  transaction_coordinator_ = MakeGarbageCollected<SQLTransactionCoordinator>();
 }
 
 void DatabaseThread::Terminate() {

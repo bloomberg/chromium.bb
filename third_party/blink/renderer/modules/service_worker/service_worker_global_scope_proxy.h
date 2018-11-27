@@ -73,6 +73,9 @@ class ServiceWorkerGlobalScopeProxy final
  public:
   static ServiceWorkerGlobalScopeProxy* Create(WebEmbeddedWorkerImpl&,
                                                WebServiceWorkerContextClient&);
+
+  ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&,
+                                WebServiceWorkerContextClient&);
   ~ServiceWorkerGlobalScopeProxy() override;
 
   // WebServiceWorkerContextProxy overrides:
@@ -179,9 +182,6 @@ class ServiceWorkerGlobalScopeProxy final
   void TerminateWorkerContext();
 
  private:
-  ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&,
-                                WebServiceWorkerContextClient&);
-
   WebServiceWorkerContextClient& Client() const;
   ServiceWorkerGlobalScope* WorkerGlobalScope() const;
 

@@ -304,8 +304,9 @@ ScriptPromise MediaKeys::setServerCertificate(
       server_certificate.Data(), server_certificate.ByteLength());
 
   // 4. Let promise be a new promise.
-  SetCertificateResultPromise* result = new SetCertificateResultPromise(
-      script_state, this, "MediaKeys", "setServerCertificate");
+  SetCertificateResultPromise* result =
+      MakeGarbageCollected<SetCertificateResultPromise>(
+          script_state, this, "MediaKeys", "setServerCertificate");
   ScriptPromise promise = result->Promise();
 
   // 5. Run the following steps asynchronously. See SetServerCertificateTask().

@@ -51,6 +51,8 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
  public:
   static SpellChecker* Create(LocalFrame&);
 
+  explicit SpellChecker(LocalFrame&);
+
   void Trace(blink::Visitor*);
 
   WebSpellCheckPanelHostClient& SpellCheckPanelHostClient() const;
@@ -100,8 +102,6 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   void DidAttachDocument(Document*);
 
  private:
-  explicit SpellChecker(LocalFrame&);
-
   LocalFrame& GetFrame() const {
     DCHECK(frame_);
     return *frame_;

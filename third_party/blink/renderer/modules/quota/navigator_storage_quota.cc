@@ -82,7 +82,7 @@ DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage() const {
 
 StorageManager* NavigatorStorageQuota::storage() const {
   if (!storage_manager_)
-    storage_manager_ = new StorageManager();
+    storage_manager_ = MakeGarbageCollected<StorageManager>();
   return storage_manager_.Get();
 }
 

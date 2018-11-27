@@ -47,8 +47,10 @@ class CORE_EXPORT ScriptRunner final
       public NameClient {
  public:
   static ScriptRunner* Create(Document* document) {
-    return new ScriptRunner(document);
+    return MakeGarbageCollected<ScriptRunner>(document);
   }
+
+  explicit ScriptRunner(Document*);
 
   void QueueScriptForExecution(PendingScript*);
   bool HasPendingScripts() const {
@@ -67,8 +69,6 @@ class CORE_EXPORT ScriptRunner final
 
  private:
   class Task;
-
-  explicit ScriptRunner(Document*);
 
   void MovePendingScript(ScriptRunner*, PendingScript*);
   bool RemovePendingInOrderScript(PendingScript*);

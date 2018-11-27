@@ -47,22 +47,25 @@ namespace blink {
 StorageArea* StorageArea::Create(LocalFrame* frame,
                                  std::unique_ptr<WebStorageArea> storage_area,
                                  StorageType storage_type) {
-  return new StorageArea(frame, std::move(storage_area), storage_type);
+  return MakeGarbageCollected<StorageArea>(frame, std::move(storage_area),
+                                           storage_type);
 }
 
 StorageArea* StorageArea::Create(LocalFrame* frame,
                                  scoped_refptr<CachedStorageArea> storage_area,
                                  StorageType storage_type) {
-  return new StorageArea(frame, std::move(storage_area), storage_type,
-                         /* should_enqueue_events */ true);
+  return MakeGarbageCollected<StorageArea>(frame, std::move(storage_area),
+                                           storage_type,
+                                           /* should_enqueue_events */ true);
 }
 
 StorageArea* StorageArea::CreateForInspectorAgent(
     LocalFrame* frame,
     scoped_refptr<CachedStorageArea> storage_area,
     StorageType storage_type) {
-  return new StorageArea(frame, std::move(storage_area), storage_type,
-                         /* should_enqueue_events */ false);
+  return MakeGarbageCollected<StorageArea>(frame, std::move(storage_area),
+                                           storage_type,
+                                           /* should_enqueue_events */ false);
 }
 
 StorageArea::StorageArea(LocalFrame* frame,

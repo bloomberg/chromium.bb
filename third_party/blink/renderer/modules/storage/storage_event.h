@@ -47,6 +47,15 @@ class StorageEvent final : public Event {
                               const String& url,
                               StorageArea* storage_area);
   static StorageEvent* Create(const AtomicString&, const StorageEventInit*);
+
+  StorageEvent();
+  StorageEvent(const AtomicString& type,
+               const String& key,
+               const String& old_value,
+               const String& new_value,
+               const String& url,
+               StorageArea* storage_area);
+  StorageEvent(const AtomicString&, const StorageEventInit*);
   ~StorageEvent() override;
 
   const String& key() const { return key_; }
@@ -75,15 +84,6 @@ class StorageEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  StorageEvent();
-  StorageEvent(const AtomicString& type,
-               const String& key,
-               const String& old_value,
-               const String& new_value,
-               const String& url,
-               StorageArea* storage_area);
-  StorageEvent(const AtomicString&, const StorageEventInit*);
-
   String key_;
   String old_value_;
   String new_value_;

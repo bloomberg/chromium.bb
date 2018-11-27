@@ -41,6 +41,8 @@ class MODULES_EXPORT SpeechGrammarList final : public ScriptWrappable {
  public:
   static SpeechGrammarList* Create();
 
+  SpeechGrammarList();
+
   unsigned length() const { return grammars_.size(); }
   SpeechGrammar* item(unsigned) const;
 
@@ -50,8 +52,6 @@ class MODULES_EXPORT SpeechGrammarList final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  SpeechGrammarList();
-
   HeapVector<Member<SpeechGrammar>> grammars_;
 };
 

@@ -58,9 +58,11 @@ class CORE_EXPORT ScriptLoader final
   static ScriptLoader* Create(ScriptElementBase* element,
                               bool created_by_parser,
                               bool is_evaluated) {
-    return new ScriptLoader(element, created_by_parser, is_evaluated);
+    return MakeGarbageCollected<ScriptLoader>(element, created_by_parser,
+                                              is_evaluated);
   }
 
+  ScriptLoader(ScriptElementBase*, bool created_by_parser, bool is_evaluated);
   ~ScriptLoader() override;
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "ScriptLoader"; }
@@ -112,9 +114,6 @@ class CORE_EXPORT ScriptLoader final
   // Only for ScriptRunner::MovePendingScript() and should be removed once
   // crbug.com/721914 is fixed.
   PendingScript* GetPendingScriptIfControlledByScriptRunnerForCrossDocMove();
-
- protected:
-  ScriptLoader(ScriptElementBase*, bool created_by_parser, bool is_evaluated);
 
  private:
   bool IgnoresLoadRequest() const;

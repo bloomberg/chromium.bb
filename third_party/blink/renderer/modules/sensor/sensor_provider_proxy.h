@@ -28,6 +28,7 @@ class SensorProviderProxy final
 
   static SensorProviderProxy* From(Document*);
 
+  explicit SensorProviderProxy(Document&);
   ~SensorProviderProxy();
 
   SensorProxy* CreateSensorProxy(device::mojom::blink::SensorType, Page*);
@@ -50,7 +51,6 @@ class SensorProviderProxy final
   const SensorsSet& sensor_proxies() const { return sensor_proxies_; }
 
   // For SensorProviderProxy personal use.
-  explicit SensorProviderProxy(Document&);
   void InitializeIfNeeded();
   bool IsInitialized() const { return sensor_provider_.is_bound(); }
   void OnSensorProviderConnectionError();

@@ -62,7 +62,8 @@ inline SliderThumbElement::SliderThumbElement(Document& document)
 }
 
 SliderThumbElement* SliderThumbElement::Create(Document& document) {
-  SliderThumbElement* element = new SliderThumbElement(document);
+  SliderThumbElement* element =
+      MakeGarbageCollected<SliderThumbElement>(document);
   element->setAttribute(kIdAttr, shadow_element_names::SliderThumb());
   return element;
 }

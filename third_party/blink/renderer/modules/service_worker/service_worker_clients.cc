@@ -104,7 +104,7 @@ void DidGetClients(ScriptPromiseResolver* resolver,
 }  // namespace
 
 ServiceWorkerClients* ServiceWorkerClients::Create() {
-  return new ServiceWorkerClients();
+  return MakeGarbageCollected<ServiceWorkerClients>();
 }
 
 ServiceWorkerClients::ServiceWorkerClients() = default;

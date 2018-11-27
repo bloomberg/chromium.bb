@@ -75,11 +75,12 @@ class SearchFieldCancelButtonElement final : public HTMLDivElement {
  public:
   static SearchFieldCancelButtonElement* Create(Document&);
 
+  explicit SearchFieldCancelButtonElement(Document&);
+
   void DefaultEventHandler(Event&) override;
   bool WillRespondToMouseClickEvents() override;
 
  private:
-  explicit SearchFieldCancelButtonElement(Document&);
   bool SupportsFocus() const override { return false; }
 };
 

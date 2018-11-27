@@ -30,7 +30,7 @@
 namespace blink {
 
 SourceAlpha* SourceAlpha::Create(FilterEffect* source_effect) {
-  return new SourceAlpha(source_effect);
+  return MakeGarbageCollected<SourceAlpha>(source_effect);
 }
 
 SourceAlpha::SourceAlpha(FilterEffect* source_effect)

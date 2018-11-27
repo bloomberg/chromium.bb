@@ -44,6 +44,9 @@ class MODULES_EXPORT SpeechGrammar final : public ScriptWrappable {
                                    // constructor should look like.
   static SpeechGrammar* Create(const KURL& src, double weight);
 
+  SpeechGrammar();
+  SpeechGrammar(const KURL& src, double weight);
+
   const KURL& src(ScriptState*) const { return src_; }
   const KURL& src() const { return src_; }
   void setSrc(ScriptState*, const String& src);
@@ -52,9 +55,6 @@ class MODULES_EXPORT SpeechGrammar final : public ScriptWrappable {
   void setWeight(double weight) { weight_ = weight; }
 
  private:
-  SpeechGrammar();
-  SpeechGrammar(const KURL& src, double weight);
-
   KURL src_;
   double weight_;
 };

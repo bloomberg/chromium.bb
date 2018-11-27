@@ -39,8 +39,9 @@ class SubmitInputType final : public BaseButtonInputType {
  public:
   static InputType* Create(HTMLInputElement&);
 
- private:
   SubmitInputType(HTMLInputElement& element) : BaseButtonInputType(element) {}
+
+ private:
   const AtomicString& FormControlType() const override;
   void AppendToFormData(FormData&) const override;
   bool SupportsRequired() const override;

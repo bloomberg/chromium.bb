@@ -139,6 +139,12 @@ class ScriptProcessorNode final
                                      unsigned number_of_output_channels,
                                      ExceptionState&);
 
+  ScriptProcessorNode(BaseAudioContext&,
+                      float sample_rate,
+                      size_t buffer_size,
+                      unsigned number_of_input_channels,
+                      unsigned number_of_output_channels);
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess, kAudioprocess);
   size_t bufferSize() const;
 
@@ -146,13 +152,6 @@ class ScriptProcessorNode final
   bool HasPendingActivity() const final;
 
   void Trace(blink::Visitor* visitor) override { AudioNode::Trace(visitor); }
-
- private:
-  ScriptProcessorNode(BaseAudioContext&,
-                      float sample_rate,
-                      size_t buffer_size,
-                      unsigned number_of_input_channels,
-                      unsigned number_of_output_channels);
 };
 
 }  // namespace blink

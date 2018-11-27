@@ -77,8 +77,10 @@ using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
 class StubLocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
   static StubLocalFrameClientWithParent* Create(Frame* parent) {
-    return new StubLocalFrameClientWithParent(parent);
+    return MakeGarbageCollected<StubLocalFrameClientWithParent>(parent);
   }
+
+  explicit StubLocalFrameClientWithParent(Frame* parent) : parent_(parent) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(parent_);
@@ -88,8 +90,6 @@ class StubLocalFrameClientWithParent final : public EmptyLocalFrameClient {
   Frame* Parent() const override { return parent_.Get(); }
 
  private:
-  explicit StubLocalFrameClientWithParent(Frame* parent) : parent_(parent) {}
-
   Member<Frame> parent_;
 };
 

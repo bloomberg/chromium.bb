@@ -41,6 +41,10 @@ class MODULES_EXPORT SpeechRecognitionResult final : public ScriptWrappable {
       const HeapVector<Member<SpeechRecognitionAlternative>>&,
       bool final);
 
+  SpeechRecognitionResult(
+      const HeapVector<Member<SpeechRecognitionAlternative>>&,
+      bool final);
+
   unsigned length() { return alternatives_.size(); }
   SpeechRecognitionAlternative* item(unsigned index);
   bool isFinal() { return final_; }
@@ -48,10 +52,6 @@ class MODULES_EXPORT SpeechRecognitionResult final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  SpeechRecognitionResult(
-      const HeapVector<Member<SpeechRecognitionAlternative>>&,
-      bool final);
-
   bool final_;
   HeapVector<Member<SpeechRecognitionAlternative>> alternatives_;
 };

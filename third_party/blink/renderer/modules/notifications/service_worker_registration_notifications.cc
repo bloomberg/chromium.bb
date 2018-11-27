@@ -116,8 +116,8 @@ ServiceWorkerRegistrationNotifications::From(
       Supplement<ServiceWorkerRegistration>::From<
           ServiceWorkerRegistrationNotifications>(registration);
   if (!supplement) {
-    supplement = new ServiceWorkerRegistrationNotifications(execution_context,
-                                                            &registration);
+    supplement = MakeGarbageCollected<ServiceWorkerRegistrationNotifications>(
+        execution_context, &registration);
     ProvideTo(registration, supplement);
   }
   return *supplement;

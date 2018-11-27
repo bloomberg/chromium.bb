@@ -33,13 +33,13 @@ namespace blink {
 class SinkDocumentParser : public RawDataDocumentParser {
  public:
   static SinkDocumentParser* Create(SinkDocument* document) {
-    return new SinkDocumentParser(document);
+    return MakeGarbageCollected<SinkDocumentParser>(document);
   }
 
- private:
   explicit SinkDocumentParser(SinkDocument* document)
       : RawDataDocumentParser(document) {}
 
+ private:
   // Ignore all data.
   void AppendBytes(const char*, size_t) override {}
 };

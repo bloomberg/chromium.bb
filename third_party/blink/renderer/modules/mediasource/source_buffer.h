@@ -69,6 +69,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   static const AtomicString& SegmentsKeyword();
   static const AtomicString& SequenceKeyword();
 
+  SourceBuffer(std::unique_ptr<WebSourceBuffer>, MediaSource*, EventQueue*);
   ~SourceBuffer() override;
 
   // SourceBuffer.idl methods
@@ -120,7 +121,6 @@ class SourceBuffer final : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  SourceBuffer(std::unique_ptr<WebSourceBuffer>, MediaSource*, EventQueue*);
   void Dispose();
 
   bool IsRemoved() const;

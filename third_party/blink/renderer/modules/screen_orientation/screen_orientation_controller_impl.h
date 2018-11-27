@@ -30,6 +30,7 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   WTF_MAKE_NONCOPYABLE(ScreenOrientationControllerImpl);
 
  public:
+  explicit ScreenOrientationControllerImpl(LocalFrame&);
   ~ScreenOrientationControllerImpl() override;
 
   void SetOrientation(ScreenOrientation*);
@@ -52,8 +53,6 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
  private:
   friend class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest;
   friend class ScreenOrientationControllerImplTest;
-
-  explicit ScreenOrientationControllerImpl(LocalFrame&);
 
   static WebScreenOrientationType ComputeOrientation(const IntRect&, uint16_t);
 

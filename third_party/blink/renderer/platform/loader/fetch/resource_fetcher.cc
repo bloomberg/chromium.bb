@@ -1994,8 +1994,9 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
   // requests.
   FetchParameters params(stale_resource->GetResourceRequest());
   params.SetStaleRevalidation(true);
-  RawResource::Fetch(params, this,
-                     new StaleRevalidationResourceClient(stale_resource));
+  RawResource::Fetch(
+      params, this,
+      MakeGarbageCollected<StaleRevalidationResourceClient>(stale_resource));
 }
 
 void ResourceFetcher::Trace(blink::Visitor* visitor) {

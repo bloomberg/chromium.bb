@@ -46,8 +46,10 @@ class SVGSVGElement;
 class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
  public:
   static SMILTimeContainer* Create(SVGSVGElement& owner) {
-    return new SMILTimeContainer(owner);
+    return MakeGarbageCollected<SMILTimeContainer>(owner);
   }
+
+  explicit SMILTimeContainer(SVGSVGElement& owner);
   ~SMILTimeContainer();
 
   void Schedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
@@ -75,8 +77,6 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   void Trace(blink::Visitor*);
 
  private:
-  explicit SMILTimeContainer(SVGSVGElement& owner);
-
   enum FrameSchedulingState {
     // No frame scheduled.
     kIdle,

@@ -76,7 +76,7 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
       needs_distribution_recalc_(false),
       unused_(0) {
   if (IsV0())
-    shadow_root_v0_ = new ShadowRootV0(*this);
+    shadow_root_v0_ = MakeGarbageCollected<ShadowRootV0>(*this);
 }
 
 ShadowRoot::~ShadowRoot() = default;

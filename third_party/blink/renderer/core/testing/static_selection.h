@@ -19,6 +19,8 @@ class StaticSelection final : public ScriptWrappable {
  public:
   static StaticSelection* FromSelectionInFlatTree(const SelectionInFlatTree&);
 
+  explicit StaticSelection(const SelectionInFlatTree&);
+
   Node* anchorNode() const { return anchor_node_; }
   unsigned anchorOffset() const { return anchor_offset_; }
   Node* focusNode() const { return focus_node_; }
@@ -27,8 +29,6 @@ class StaticSelection final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit StaticSelection(const SelectionInFlatTree&);
-
   const Member<Node> anchor_node_;
   const unsigned anchor_offset_;
   const Member<Node> focus_node_;

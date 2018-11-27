@@ -207,7 +207,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
-      new SourceKeyedCachedMetadataHandler(
+      MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
           WTF::TextEncoding(), std::make_unique<MockCachedMetadataSender>(url));
 
   WTF::String source1("source1");
@@ -231,7 +231,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
-      new SourceKeyedCachedMetadataHandler(
+      MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
           WTF::TextEncoding(), std::make_unique<MockCachedMetadataSender>(url));
 
   WTF::String source1("source1");
@@ -258,7 +258,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest, HandlerForSource_BothHandlersSet) {
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
-      new SourceKeyedCachedMetadataHandler(
+      MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
           WTF::TextEncoding(), std::make_unique<MockCachedMetadataSender>(url));
 
   WTF::String source1("source1");
@@ -288,7 +288,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_EmptyClearDoesSend) {
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
-      new SourceKeyedCachedMetadataHandler(
+      MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
           WTF::TextEncoding(), std::make_unique<MockCachedMetadataSender>(url));
 
   // Clear and send to the platform
@@ -307,7 +307,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_EachSetDoesSend) {
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
-      new SourceKeyedCachedMetadataHandler(
+      MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
           WTF::TextEncoding(), std::make_unique<MockCachedMetadataSender>(url));
 
   WTF::String source1("source1");
@@ -337,7 +337,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_SetWithNoSendDoesNotSend) {
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
-      new SourceKeyedCachedMetadataHandler(
+      MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
           WTF::TextEncoding(), std::make_unique<MockCachedMetadataSender>(url));
 
   WTF::String source1("source1");
@@ -372,7 +372,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
   WTF::String source2("source2");
   {
     SourceKeyedCachedMetadataHandler* handler =
-        new SourceKeyedCachedMetadataHandler(
+        MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
             WTF::TextEncoding(),
             std::make_unique<MockCachedMetadataSender>(url));
 
@@ -389,7 +389,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
     CacheMetadataEntry& last_cache_metadata = cache_metadatas[0];
 
     SourceKeyedCachedMetadataHandler* handler =
-        new SourceKeyedCachedMetadataHandler(
+        MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
             WTF::TextEncoding(),
             std::make_unique<MockCachedMetadataSender>(url));
     handler->SetSerializedCachedMetadata(last_cache_metadata.data.data(),
@@ -420,7 +420,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
   std::array<char, 4> data2 = {3, 4, 5, 6};
   {
     SourceKeyedCachedMetadataHandler* handler =
-        new SourceKeyedCachedMetadataHandler(
+        MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
             WTF::TextEncoding(),
             std::make_unique<MockCachedMetadataSender>(url));
 
@@ -442,7 +442,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
     CacheMetadataEntry& last_cache_metadata = cache_metadatas[1];
 
     SourceKeyedCachedMetadataHandler* handler =
-        new SourceKeyedCachedMetadataHandler(
+        MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
             WTF::TextEncoding(),
             std::make_unique<MockCachedMetadataSender>(url));
     handler->SetSerializedCachedMetadata(last_cache_metadata.data.data(),

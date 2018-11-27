@@ -574,8 +574,9 @@ ScriptStreamer* ScriptStreamer::Create(
   // to arrive: the Content-Length HTTP header is not sent for chunked
   // downloads.
 
-  return new ScriptStreamer(resource, v8::ScriptCompiler::kNoCompileOptions,
-                            std::move(loading_task_runner));
+  return MakeGarbageCollected<ScriptStreamer>(
+      resource, v8::ScriptCompiler::kNoCompileOptions,
+      std::move(loading_task_runner));
 }
 
 }  // namespace blink

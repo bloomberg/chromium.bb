@@ -40,8 +40,9 @@ class SearchInputType final : public BaseTextInputType {
  public:
   static InputType* Create(HTMLInputElement&);
 
- private:
   SearchInputType(HTMLInputElement&);
+
+ private:
   void CountUsage() override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&) const override;
   const AtomicString& FormControlType() const override;

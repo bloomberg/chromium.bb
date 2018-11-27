@@ -67,6 +67,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       mojom::blink::CacheStoragePtrInfo,
       base::TimeTicks time_origin);
 
+  ServiceWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                           ServiceWorkerThread*,
+                           mojom::blink::CacheStoragePtrInfo,
+                           base::TimeTicks time_origin);
   ~ServiceWorkerGlobalScope() override;
 
   // ExecutionContext overrides:
@@ -149,10 +153,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       const AddEventListenerOptionsResolved*) override;
 
  private:
-  ServiceWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
-                           ServiceWorkerThread*,
-                           mojom::blink::CacheStoragePtrInfo,
-                           base::TimeTicks time_origin);
   void importScripts(const Vector<String>& urls, ExceptionState&) override;
   SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,

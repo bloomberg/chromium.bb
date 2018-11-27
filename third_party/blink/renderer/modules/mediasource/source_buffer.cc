@@ -108,8 +108,8 @@ SourceBuffer* SourceBuffer::Create(
     std::unique_ptr<WebSourceBuffer> web_source_buffer,
     MediaSource* source,
     EventQueue* async_event_queue) {
-  SourceBuffer* source_buffer =
-      new SourceBuffer(std::move(web_source_buffer), source, async_event_queue);
+  SourceBuffer* source_buffer = MakeGarbageCollected<SourceBuffer>(
+      std::move(web_source_buffer), source, async_event_queue);
   source_buffer->PauseIfNeeded();
   return source_buffer;
 }

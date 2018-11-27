@@ -85,8 +85,8 @@ SQLTransaction* SQLTransaction::Create(Database* db,
                                        OnSuccessCallback* success_callback,
                                        OnErrorCallback* error_callback,
                                        bool read_only) {
-  return new SQLTransaction(db, callback, success_callback, error_callback,
-                            read_only);
+  return MakeGarbageCollected<SQLTransaction>(db, callback, success_callback,
+                                              error_callback, read_only);
 }
 
 SQLTransaction::SQLTransaction(Database* db,

@@ -25,6 +25,7 @@ class CORE_EXPORT ScrollState final : public ScriptWrappable {
   static ScrollState* Create(ScrollStateInit*);
   static ScrollState* Create(std::unique_ptr<ScrollStateData>);
 
+  explicit ScrollState(std::unique_ptr<ScrollStateData>);
   ~ScrollState() override = default;
 
   // Web exposed methods.
@@ -94,7 +95,6 @@ class CORE_EXPORT ScrollState final : public ScriptWrappable {
 
  private:
   ScrollState() = delete;
-  explicit ScrollState(std::unique_ptr<ScrollStateData>);
 
   std::unique_ptr<ScrollStateData> data_;
   std::deque<DOMNodeId> scroll_chain_;

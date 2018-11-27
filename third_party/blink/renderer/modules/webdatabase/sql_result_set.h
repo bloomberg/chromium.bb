@@ -41,7 +41,10 @@ class SQLResultSet final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SQLResultSet* Create() { return new SQLResultSet; }
+  static SQLResultSet* Create() { return MakeGarbageCollected<SQLResultSet>(); }
+
+  SQLResultSet();
+
   void Trace(blink::Visitor*) override;
 
   SQLResultSetRowList* rows() const;
@@ -55,8 +58,6 @@ class SQLResultSet final : public ScriptWrappable {
   bool IsValid() { return is_valid_; }
 
  private:
-  SQLResultSet();
-
   Member<SQLResultSetRowList> rows_;
   int64_t insert_id_;
   int rows_affected_;

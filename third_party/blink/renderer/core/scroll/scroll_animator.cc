@@ -57,7 +57,7 @@ ScrollAnimatorBase* ScrollAnimatorBase::Create(
     ScrollableArea* scrollable_area) {
   if (scrollable_area && scrollable_area->ScrollAnimatorEnabled())
     return new ScrollAnimator(scrollable_area);
-  return new ScrollAnimatorBase(scrollable_area);
+  return MakeGarbageCollected<ScrollAnimatorBase>(scrollable_area);
 }
 
 ScrollAnimator::ScrollAnimator(ScrollableArea* scrollable_area,
