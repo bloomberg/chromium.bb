@@ -452,10 +452,6 @@ class WizardController : public BaseScreenDelegate,
 
   bool is_in_session_oobe_ = false;
 
-  // Indicates that once image selection screen finishes we should return to
-  // a previous screen instead of proceeding with usual flow.
-  bool user_image_screen_return_to_previous_hack_ = false;
-
   // Non-owning pointer to local state used for testing.
   static PrefService* local_state_for_testing_;
 
