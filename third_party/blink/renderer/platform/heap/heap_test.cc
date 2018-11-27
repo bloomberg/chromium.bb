@@ -6782,14 +6782,6 @@ TEST(HeapTest, PromptlyFreeStackAllocatedHeapLinkedHashSet) {
 }
 
 TEST(HeapTest, ShrinkVector) {
-  HashMap<int, int> a;
-  a.insert(1, 2);
-  HashMap<int, int> b;
-  b = std::move(a);
-  a.clear();
-  LOG(ERROR) << "a.size() " << a.size();
-  LOG(ERROR) << "b.size() " << b.size();
-
   // Regression test: https://crbug.com/823289
 
   HeapVector<Member<IntWrapper>> vector;
