@@ -37,7 +37,6 @@
 #endif
 
 using l10n_util::GetNSString;
-using unified_consent::prefs::kUnifiedConsentGiven;
 
 typedef NSArray<CollectionViewItem*>* ItemArray;
 
@@ -88,12 +87,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @interface GoogleServicesSettingsMediator ()<BooleanObserver,
-                                             PrefObserverDelegate,
                                              SyncObserverModelBridge> {
-  // Bridge to listen to pref changes.
-  std::unique_ptr<PrefObserverBridge> prefObserverBridge_;
-  // Registrar for pref changes notifications.
-  PrefChangeRegistrar prefChangeRegistrar_;
   std::unique_ptr<SyncObserverBridge> _syncObserver;
 }
 
@@ -206,10 +200,6 @@ initWithUserPrefService:(PrefService*)userPrefService
     _syncSetupService = syncSetupService;
     _unifiedConsentService = unifiedConsentService;
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
-    prefObserverBridge_ = std::make_unique<PrefObserverBridge>(self);
-    prefChangeRegistrar_.Init(userPrefService);
-    prefObserverBridge_->ObserveChangesForPreference(kUnifiedConsentGiven,
-                                                     &prefChangeRegistrar_);
     _autocompleteWalletPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:autofill::prefs::kAutofillWalletImportEnabled];
@@ -296,7 +286,7 @@ initWithUserPrefService:(PrefService*)userPrefService
 }
 
 - (BOOL)isConsentGiven {
-  return self.unifiedConsentService->IsUnifiedConsentGiven();
+  return NO;
 }
 
 - (SettingsImageDetailTextItem*)syncErrorItem {
@@ -729,7 +719,6 @@ textItemWithItemType:(NSInteger)itemType
     return;
   // Mark the switch has being animated to avoid being reloaded.
   base::AutoReset<BOOL> autoReset(&_syncEverythingSwitchBeingAnimated, YES);
-  self.unifiedConsentService->SetUnifiedConsentGiven(value);
 }
 
 - (void)toggleSyncDataSync:(NSInteger)dataTypeInt withValue:(BOOL)value {
@@ -766,42 +755,6 @@ textItemWithItemType:(NSInteger)itemType
 
 - (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)value {
   self.anonymizedDataCollectionPreference.value = value;
-}
-
-#pragma mark - PrefObserverDelegate
-
-- (void)onPreferenceChanged:(const std::string&)preferenceName {
-  DCHECK_EQ(kUnifiedConsentGiven, preferenceName);
-  self.syncEverythingItem.on = self.isConsentGiven;
-  [self updatePersonalizedSection];
-  [self updateNonPersonalizedSection];
-  CollectionViewModel* model = self.consumer.collectionViewModel;
-  if (!self.isConsentGiven) {
-    // If the consent is removed, both collapsible sections should be expanded.
-    [model setSection:PersonalizedSectionIdentifier collapsed:NO];
-    [self syncPersonalizationItem].collapsed = NO;
-    [model setSection:NonPersonalizedSectionIdentifier collapsed:NO];
-    [self nonPersonalizedServicesItem].collapsed = NO;
-  }
-  // Reload sections.
-  NSMutableIndexSet* sectionIndexToReload = [NSMutableIndexSet indexSet];
-  if (!self.syncEverythingSwitchBeingAnimated) {
-    // The sync everything section can be reloaded only if the switch for
-    // syncEverythingItem is not currently animated. Otherwise the animation
-    // would be stopped before the end.
-    [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
-                                              SyncEverythingSectionIdentifier]];
-  }
-  if (!self.personalizedSectionBeingAnimated) {
-    // The sync everything section can be reloaded only if none of the switches
-    // in the personalized section are not currently animated. Otherwise the
-    // animation would be stopped before the end.
-    [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
-                                              PersonalizedSectionIdentifier]];
-  }
-  [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
-                                            NonPersonalizedSectionIdentifier]];
-  [self.consumer reloadSections:sectionIndexToReload];
 }
 
 #pragma mark - SyncObserverModelBridge

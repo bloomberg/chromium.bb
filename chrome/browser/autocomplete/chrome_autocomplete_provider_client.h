@@ -56,7 +56,6 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   bool SearchSuggestEnabled() const override;
   bool IsPersonalizedUrlDataCollectionActive() const override;
   bool IsAuthenticated() const override;
-  bool IsUnifiedConsentGiven() const override;
   bool IsSyncActive() const override;
   void Classify(
       const base::string16& text,

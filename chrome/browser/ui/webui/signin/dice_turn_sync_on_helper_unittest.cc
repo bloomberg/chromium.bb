@@ -721,8 +721,7 @@ TEST_F(DiceTurnSyncOnHelperTestWithUnifiedConsent,
   EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id()));
   EXPECT_EQ(account_id(), signin_manager()->GetAuthenticatedAccountId());
   CheckDelegateCalls();
-  EXPECT_TRUE(UnifiedConsentServiceFactory::GetForProfile(profile())
-                  ->IsUnifiedConsentGiven());
+  // TODO(crbug.com/908111): Check if Google services are enabled.
 }
 
 // For enterprise user, tests that the user is signed in only after Sync engine

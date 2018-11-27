@@ -186,10 +186,6 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   // Aborts the flow and deletes this object.
   void AbortAndDelete();
 
-  // This function enables all unified consent services when the unified consent
-  // feature is enabled.
-  void EnableUnifiedConsentIfNeeded();
-
   std::unique_ptr<Delegate> delegate_;
   Profile* profile_;
   SigninManager* signin_manager_;

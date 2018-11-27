@@ -13,7 +13,6 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -30,8 +29,6 @@
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/unified_consent/scoped_unified_consent.h"
-#include "components/unified_consent/unified_consent_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
@@ -119,15 +116,11 @@ class TestSafeBrowsingBlockingPageFactory
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
         prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled);
-    unified_consent::UnifiedConsentService* consent_service =
-        UnifiedConsentServiceFactory::GetForProfile(profile);
-    bool is_unified_consent_given =
-        consent_service && consent_service->IsUnifiedConsentGiven();
     BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
         BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),
-        is_unified_consent_given, IsExtendedReportingEnabled(*prefs),
+        IsExtendedReportingEnabled(*prefs),
         IsExtendedReportingPolicyManaged(*prefs), is_proceed_anyway_disabled,
         true,  // should_open_links_in_new_tab
         true,  // always_show_back_to_safety
@@ -206,15 +199,11 @@ class TestSafeBrowsingBlockingQuietPageFactory
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
         prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled);
-    unified_consent::UnifiedConsentService* consent_service =
-        UnifiedConsentServiceFactory::GetForProfile(profile);
-    bool is_unified_consent_given =
-        consent_service && consent_service->IsUnifiedConsentGiven();
     BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
         BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),
-        is_unified_consent_given, IsExtendedReportingEnabled(*prefs),
+        IsExtendedReportingEnabled(*prefs),
         IsExtendedReportingPolicyManaged(*prefs), is_proceed_anyway_disabled,
         true,  // should_open_links_in_new_tab
         true,  // always_show_back_to_safety
@@ -395,12 +384,6 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   ScopedTestingLocalState scoped_testing_local_state_;
   UserResponse user_response_;
   TestSafeBrowsingBlockingPageFactory factory_;
-};
-
-class SafeBrowsingBlockingPageTestDiceEnabled
-    : public SafeBrowsingBlockingPageTest {
- private:
-  ScopedAccountConsistencyDice scoped_dice_;
 };
 
 // Tests showing a blocking page for a malware page and not proceeding.
@@ -1194,60 +1177,6 @@ TEST_F(SafeBrowsingBlockingQuietPageTest, GiantWebView) {
   bool is_giant;
   load_time_data.GetBoolean("is_giant", &is_giant);
   EXPECT_TRUE(is_giant);
-}
-
-// Test that extended reporting option is not shown if Unified Consent is
-// enabled.
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#define TEST_CLASS_ExtendedReportingNotShownUnifiedConsent \
-  SafeBrowsingBlockingPageTestDiceEnabled
-#else
-#define TEST_CLASS_ExtendedReportingNotShownUnifiedConsent \
-  SafeBrowsingBlockingPageTest
-#endif
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ExtendedReportingNotShownUnifiedConsent \
-  DISABLED_ExtendedReportingNotShownUnifiedConsent
-#else
-#define MAYBE_ExtendedReportingNotShownUnifiedConsent \
-  ExtendedReportingNotShownUnifiedConsent
-#endif
-TEST_F(TEST_CLASS_ExtendedReportingNotShownUnifiedConsent,
-       MAYBE_ExtendedReportingNotShownUnifiedConsent) {
-  // Enable unified consent.
-  unified_consent::ScopedUnifiedConsent scoped_unified_consent(
-      unified_consent::UnifiedConsentFeatureState::kEnabledWithBump);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-
-  // Fake sign in so unified consent can be given.
-  SigninManagerFactory::GetForProfile(profile)->SetAuthenticatedAccountInfo(
-      "gaia_id", "user");
-
-  // Give unified consent.
-  UnifiedConsentServiceFactory::GetForProfile(profile)->SetUnifiedConsentGiven(
-      true);
-
-  // Start a load.
-  auto navigation = NavigationSimulator::CreateBrowserInitiated(GURL(kBadURL),
-                                                                web_contents());
-  navigation->Start();
-
-  // Simulate the load causing a safe browsing interstitial to be shown.
-  ShowInterstitial(false, kBadURL);
-  SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
-  ASSERT_TRUE(sb_interstitial);
-  EXPECT_FALSE(
-      sb_interstitial->sb_error_ui()->CanShowExtendedReportingOption());
-
-  base::RunLoop().RunUntilIdle();
-
-  // Simulate the user clicking "don't proceed".
-  DontProceedThroughInterstitial(sb_interstitial);
-
-  // The interstitial should be gone.
-  EXPECT_EQ(CANCEL, user_response());
-  EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 }
 
 }  // namespace safe_browsing

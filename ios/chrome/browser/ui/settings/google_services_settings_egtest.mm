@@ -6,7 +6,6 @@
 #import <XCTest/XCTest.h>
 
 #include "components/prefs/pref_service.h"
-#include "components/unified_consent/pref_names.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
@@ -28,7 +27,6 @@ using chrome_test_util::GetOriginalBrowserState;
 using chrome_test_util::GoogleServicesSettingsButton;
 using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SettingsDoneButton;
-using unified_consent::prefs::kUnifiedConsentGiven;
 
 // Integration tests using the Google services settings screen.
 @interface GoogleServicesSettingsTestCase : ChromeTestCase
@@ -73,7 +71,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // expanded.
 - (void)testOpeningServicesWhileSignedIn {
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
-  [self resetUnifiedConsent];
   [self openGoogleServicesSettings];
   [self assertSyncEverythingSection];
   [self assertPersonalizedServicesCollapsed:NO];
@@ -87,9 +84,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // collapsed.
 - (void)testOpeningServicesWhileSignedInAndConsentGiven {
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
-  PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
-  GREYAssert(prefService->GetBoolean(kUnifiedConsentGiven),
-             @"Unified consent should be given");
   [self openGoogleServicesSettings];
   [self assertSyncEverythingSection];
   [self assertPersonalizedServicesCollapsed:YES];
@@ -121,7 +115,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // Tests the "Manage synced data" cell does nothing when the user is not signed
 // in.
 - (void)testOpenManageSyncedDataWebPage {
-  [self resetUnifiedConsent];
   [self openGoogleServicesSettings];
   [self togglePersonalizedServicesSection];
   [[self cellElementInteractionWithTitleID:
@@ -135,7 +128,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // page, while the user is signed in without user consent.
 - (void)testOpenManageSyncedDataWebPageWhileSignedIn {
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
-  [self resetUnifiedConsent];
   [self openGoogleServicesSettings];
   [[self cellElementInteractionWithTitleID:
              IDS_IOS_GOOGLE_SERVICES_SETTINGS_MANAGED_SYNC_DATA_TEXT
@@ -151,7 +143,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
   EARL_GREY_TEST_DISABLED(@"Test disabled on devices and simulators.");
 
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
-  [self resetUnifiedConsent];
   [self openGoogleServicesSettings];
   // "Activity and Interactions" is enabled.
   [self
@@ -176,12 +167,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 }
 
 #pragma mark - Helpers
-
-// Resets the unified consent given by the user.
-- (void)resetUnifiedConsent {
-  PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
-  prefService->SetBoolean(kUnifiedConsentGiven, false);
-}
 
 // Opens the Google services settings.
 - (void)openGoogleServicesSettings {

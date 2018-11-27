@@ -128,12 +128,9 @@ bool DocumentProvider::IsDocumentProviderAllowed(
   if (client->IsOffTheRecord())
     return false;
 
-  // If the user opted into unity, we may proceed.
-  // Otherwise (either unity hasn't been offered or the not-yet button was
-  // clicked), we may check sync's status and proceed if active.
+  // Check sync's status and proceed if active.
   bool authenticated_and_syncing =
-      client->IsAuthenticated() &&
-      (client->IsUnifiedConsentGiven() || client->IsSyncActive());
+      client->IsAuthenticated() && client->IsSyncActive();
   if (!authenticated_and_syncing)
     return false;
 

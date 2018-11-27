@@ -10,6 +10,8 @@
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/common/pref_names.h"
+#include "components/contextual_search/buildflags.h"
+#include "components/contextual_search/core/browser/contextual_search_preference.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -40,6 +42,10 @@ ChromeUnifiedConsentServiceClient::ChromeUnifiedConsentServiceClient(
   ObserveServicePrefChange(Service::kSpellCheck,
                            spellcheck::prefs::kSpellCheckUseSpellingService,
                            pref_service_);
+#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
+  ObserveServicePrefChange(Service::kContextualSearch,
+                           contextual_search::GetPrefName(), pref_service_);
+#endif
 }
 
 ChromeUnifiedConsentServiceClient::~ChromeUnifiedConsentServiceClient() {}
@@ -75,6 +81,13 @@ ChromeUnifiedConsentServiceClient::GetServiceState(Service service) {
     case Service::kSpellCheck:
       enabled = pref_service_->GetBoolean(
           spellcheck::prefs::kSpellCheckUseSpellingService);
+      break;
+    case Service::kContextualSearch:
+#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
+      enabled = contextual_search::IsEnabled(*pref_service_);
+#else
+      return ServiceState::kNotSupported;
+#endif
       break;
   }
   return enabled ? ServiceState::kEnabled : ServiceState::kDisabled;
@@ -112,6 +125,16 @@ void ChromeUnifiedConsentServiceClient::SetServiceEnabled(Service service,
     case Service::kSpellCheck:
       pref_service_->SetBoolean(
           spellcheck::prefs::kSpellCheckUseSpellingService, enabled);
+      break;
+    case Service::kContextualSearch:
+#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
+      contextual_search::ContextualSearchPreference* contextual_search_pref =
+          contextual_search::ContextualSearchPreference::GetInstance();
+      if (enabled)
+        contextual_search_pref->EnableIfUndecided(pref_service_);
+      else
+        contextual_search_pref->SetPref(pref_service_, false);
+#endif
       break;
   }
 }

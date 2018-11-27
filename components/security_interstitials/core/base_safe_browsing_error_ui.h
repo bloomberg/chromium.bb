@@ -30,7 +30,6 @@ class BaseSafeBrowsingErrorUI {
     SBErrorDisplayOptions(bool is_main_frame_load_blocked,
                           bool is_extended_reporting_opt_in_allowed,
                           bool is_off_the_record,
-                          bool is_unified_consent_enabled,
                           bool is_extended_reporting_enabled,
                           bool is_extended_reporting_policy_managed,
                           bool is_proceed_anyway_disabled,
@@ -48,10 +47,6 @@ class BaseSafeBrowsingErrorUI {
 
     // Indicates if user is in incognito mode.
     bool is_off_the_record;
-
-    // Indicates if user is enrolled in unified consent, if so, checkbox is not
-    // shown in SB interstitials.
-    bool is_unified_consent_enabled;
 
     // Indicates if user opted in for SB extended reporting.
     bool is_extended_reporting_enabled;
@@ -97,10 +92,6 @@ class BaseSafeBrowsingErrorUI {
 
   bool is_off_the_record() const { return display_options_.is_off_the_record; }
 
-  bool is_unified_consent_enabled() const {
-    return display_options_.is_unified_consent_enabled;
-  }
-
   bool is_extended_reporting_enabled() const {
     return display_options_.is_extended_reporting_enabled;
   }
@@ -140,8 +131,7 @@ class BaseSafeBrowsingErrorUI {
   // - if kSafeBrowsingExtendedReporting is managed by enterprise policy.
   bool CanShowExtendedReportingOption() {
     return !is_off_the_record() && is_extended_reporting_opt_in_allowed() &&
-           !is_extended_reporting_policy_managed() &&
-           !is_unified_consent_enabled();
+           !is_extended_reporting_policy_managed();
   }
 
   SBInterstitialReason interstitial_reason() const {

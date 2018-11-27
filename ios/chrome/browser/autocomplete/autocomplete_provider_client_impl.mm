@@ -12,7 +12,6 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/unified_consent/unified_consent_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -29,7 +28,6 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
-#include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -183,12 +181,6 @@ bool AutocompleteProviderClientImpl::IsAuthenticated() const {
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state_);
   return identity_manager != nullptr && identity_manager->HasPrimaryAccount();
-}
-
-bool AutocompleteProviderClientImpl::IsUnifiedConsentGiven() const {
-  unified_consent::UnifiedConsentService* consent_service =
-      UnifiedConsentServiceFactory::GetForBrowserState(browser_state_);
-  return consent_service && consent_service->IsUnifiedConsentGiven();
 }
 
 bool AutocompleteProviderClientImpl::IsSyncActive() const {

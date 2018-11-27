@@ -18,9 +18,6 @@ const char kAllUnifiedConsentServicesWereEnabled[] =
 const char kShouldShowUnifiedConsentBump[] =
     "unified_consent.consent_bump.should_show";
 
-// Boolean that is true when the user opted into unified consent.
-const char kUnifiedConsentGiven[] = "unified_consent_given";
-
 // Integer indicating the migration state of unified consent, defined in
 // unified_consent::MigrationState.
 const char kUnifiedConsentMigrationState[] = "unified_consent.migration_state";

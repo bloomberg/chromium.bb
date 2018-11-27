@@ -441,17 +441,21 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
   if (!sync_setup_completed_callback_.is_null())
     sync_setup_completed_callback_.Run(SYNC_SETUP_SUCCESS);
 
+  unified_consent::UnifiedConsentService* consent_service =
+      UnifiedConsentServiceFactory::GetForProfile(profile_);
+
   switch (result) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
-      EnableUnifiedConsentIfNeeded();
+      if (consent_service)
+        consent_service->EnableGoogleServices();
       ShowSyncSetupSettingsSubpage();
       break;
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
-      ProfileSyncService* profile_sync_service = GetProfileSyncService();
-      if (profile_sync_service) {
-        profile_sync_service->GetUserSettings()->SetFirstSetupComplete();
-        EnableUnifiedConsentIfNeeded();
-      }
+      ProfileSyncService* sync_service = GetProfileSyncService();
+      if (sync_service)
+        sync_service->GetUserSettings()->SetFirstSetupComplete();
+      if (consent_service)
+        consent_service->EnableGoogleServices();
       FinishProfileSyncServiceSetup();
       break;
     }
@@ -464,13 +468,6 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
   }
 
   delete this;
-}
-
-void OneClickSigninSyncStarter::EnableUnifiedConsentIfNeeded() {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    UnifiedConsentServiceFactory::GetForProfile(profile_)
-        ->SetUnifiedConsentGiven(true);
-  }
 }
 
 void OneClickSigninSyncStarter::SigninFailed(

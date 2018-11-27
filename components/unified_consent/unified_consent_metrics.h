@@ -20,15 +20,6 @@ enum class UnifiedConsentBumpAction : int {
   kUnifiedConsentBumpActionMoreOptionsMax,
 };
 
-// Histogram enum: UnifiedConsentRevokeReason.
-enum class UnifiedConsentRevokeReason : int {
-  kUserSignedOut = 0,
-  kServiceWasDisabled,
-  kCustomPassphrase,
-  kUserDisabledSettingsToggle,
-  kMaxValue = kUserDisabledSettingsToggle
-};
-
 // Used in histograms. Do not change existing values, append new values at the
 // end.
 enum class ConsentBumpSuppressReason {
@@ -67,8 +58,9 @@ enum class SettingsHistogramValue {
   kUrlKeyedAnonymizedDataCollection = 3,
   kSafeBrowsingExtendedReporting = 4,
   kSpellCheck = 5,
+  kAllServicesWereEnabled = 6,
 
-  kMaxValue = kSpellCheck
+  kMaxValue = kAllServicesWereEnabled
 };
 
 // Records histogram action for the unified consent bump.
@@ -77,9 +69,6 @@ void RecordConsentBumpMetric(UnifiedConsentBumpAction action);
 // Records whether the user is eligible for the consent bump. This method should
 // be called at startup.
 void RecordConsentBumpEligibility(bool eligible);
-
-// Records the reason why the unified consent was revoked.
-void RecordUnifiedConsentRevoked(UnifiedConsentRevokeReason reason);
 
 // Records a sample in the kSyncAndGoogleServicesSettingsHistogram. Wrapped in a
 // function to avoid code size issues caused by histogram macros.

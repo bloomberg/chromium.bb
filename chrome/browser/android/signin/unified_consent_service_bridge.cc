@@ -17,10 +17,8 @@ static jboolean JNI_UnifiedConsentServiceBridge_IsUnifiedConsentGiven(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobject>& profileAndroid) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(profileAndroid);
-  auto* unifiedConsentService =
-      UnifiedConsentServiceFactory::GetForProfile(profile);
-  return unifiedConsentService->IsUnifiedConsentGiven();
+  // TODO(crbug.com/907856): Remove.
+  return false;
 }
 
 static void JNI_UnifiedConsentServiceBridge_SetUnifiedConsentGiven(
@@ -28,10 +26,7 @@ static void JNI_UnifiedConsentServiceBridge_SetUnifiedConsentGiven(
     const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobject>& profileAndroid,
     jboolean unifiedConsentGiven) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(profileAndroid);
-  auto* unifiedConsentService =
-      UnifiedConsentServiceFactory::GetForProfile(profile);
-  unifiedConsentService->SetUnifiedConsentGiven(unifiedConsentGiven);
+  // TODO(crbug.com/907856): Remove.
 }
 
 static jboolean JNI_UnifiedConsentServiceBridge_ShouldShowConsentBump(

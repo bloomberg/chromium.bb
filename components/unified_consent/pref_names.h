@@ -10,7 +10,6 @@ namespace prefs {
 
 extern const char kAllUnifiedConsentServicesWereEnabled[];
 extern const char kShouldShowUnifiedConsentBump[];
-extern const char kUnifiedConsentGiven[];
 extern const char kUnifiedConsentMigrationState[];
 extern const char kUrlKeyedAnonymizedDataCollectionEnabled[];
 
