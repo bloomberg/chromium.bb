@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/tabs/alert_indicator.h"
@@ -305,18 +306,17 @@ class TabTest : public ChromeViewsTestBase {
       fade_animation->Stop();
   }
 
-  static void FinishRunningLoadingAnimations(TabIcon* icon) {
-    for (auto* animation :
-         {&icon->loading_progress_timer_, &icon->favicon_fade_in_animation_}) {
-      if (!animation->is_animating())
-        continue;
-      animation->Stop();
-      animation->SetCurrentValue(1.0);
-    }
+  void SetupFakeClock(TabIcon* icon) { icon->clock_ = &fake_clock_; }
+
+  void FinishRunningLoadingAnimations(TabIcon* icon) {
+    // Forward the clock enough for any running animations to finish.
+    DCHECK(icon->clock_ == &fake_clock_);
+    fake_clock_.Advance(base::TimeDelta::FromMilliseconds(2000));
+    icon->UpdateLoadingAnimationState();
   }
 
   static float GetLoadingProgress(TabIcon* icon) {
-    return icon->loading_progress_;
+    return icon->target_loading_progress_;
   }
 
  protected:
@@ -337,6 +337,7 @@ class TabTest : public ChromeViewsTestBase {
   }
 
   std::string original_locale_;
+  base::SimpleTestTickClock fake_clock_;
 };
 
 class AlertIndicatorTest : public ChromeViewsTestBase {
@@ -585,6 +586,7 @@ TEST_F(TabTest, LayeredThrobber) {
   tab.SizeToPreferredSize();
 
   TabIcon* icon = GetTabIcon(tab);
+  SetupFakeClock(icon);
   TabRendererData data;
   data.url = GURL("http://example.com");
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
