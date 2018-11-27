@@ -5,7 +5,6 @@
 #include "components/gwp_asan/common/allocator_state.h"
 
 #include "base/bits.h"
-#include "base/process/process_metrics.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
@@ -16,47 +15,6 @@ namespace internal {
 
 // TODO: Delete out-of-line constexpr defininitons once C++17 is in use.
 constexpr size_t AllocatorState::kGpaMaxPages;
-
-AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
-    uintptr_t exception_address,
-    SlotMetadata* slot,
-    ErrorType* error_type) const {
-  CHECK(IsValid());
-
-  if (!PointerIsMine(exception_address))
-    return GetMetadataReturnType::kUnrelatedCrash;
-
-  size_t slot_idx = GetNearestSlot(exception_address);
-  if (slot_idx >= kGpaMaxPages)
-    return GetMetadataReturnType::kErrorBadSlot;
-
-  *slot = data[slot_idx];
-  *error_type = GetErrorType(exception_address, slot->alloc.trace_addr != 0,
-                             slot->dealloc.trace_addr != 0);
-
-  return GetMetadataReturnType::kGwpAsanCrash;
-}
-
-bool AllocatorState::IsValid() const {
-  if (!page_size || page_size != base::GetPageSize())
-    return false;
-
-  if (num_pages == 0 || num_pages > kGpaMaxPages)
-    return false;
-
-  if (pages_base_addr % page_size != 0 || pages_end_addr % page_size != 0 ||
-      first_page_addr % page_size != 0)
-    return false;
-
-  if (pages_base_addr >= pages_end_addr)
-    return false;
-
-  if (first_page_addr != pages_base_addr + page_size ||
-      pages_end_addr - pages_base_addr != page_size * (num_pages * 2 + 1))
-    return false;
-
-  return true;
-}
 
 uintptr_t AllocatorState::GetPageAddr(uintptr_t addr) const {
   const uintptr_t addr_mask = ~(page_size - 1ULL);

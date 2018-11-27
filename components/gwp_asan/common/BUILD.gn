@@ -13,15 +13,3 @@ static_library("common") {
     "//base",
   ]
 }
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "allocator_state_unittest.cc",
-  ]
-  deps = [
-    ":common",
-    "//base/test:test_support",
-    "//testing/gtest",
-  ]
-}
