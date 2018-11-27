@@ -247,6 +247,7 @@ void BackgroundHTMLParser::PumpTokenizer() {
     if (simulated_token == HTMLTreeBuilderSimulator::kScriptEnd ||
         simulated_token == HTMLTreeBuilderSimulator::kStyleEnd ||
         simulated_token == HTMLTreeBuilderSimulator::kLink ||
+        simulated_token == HTMLTreeBuilderSimulator::kCustomElementBegin ||
         pending_tokens_.size() >= kPendingTokenLimit) {
       EnqueueTokenizedChunk();
 
