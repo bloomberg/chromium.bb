@@ -28,6 +28,8 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #endif  // defined(OS_CHROMEOS)
@@ -176,6 +178,10 @@ void ManagementUIHandler::RegisterMessages() {
       "getExtensions",
       base::BindRepeating(&ManagementUIHandler::HandleGetExtensions,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getLocalTrustRootsInfo",
+      base::BindRepeating(&ManagementUIHandler::HandleGetLocalTrustRootsInfo,
+                          base::Unretained(this)));
 }
 
 void ManagementUIHandler::HandleGetDeviceManagementStatus(
@@ -224,4 +230,21 @@ void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             base::Value(base::Value::Type::LIST));
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
+
+void ManagementUIHandler::HandleGetLocalTrustRootsInfo(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  base::Value trust_roots_configured(false);
+// Only Chrome OS could have installed trusted certificates.
+#if defined(OS_CHROMEOS)
+  policy::PolicyCertService* policy_service =
+      policy::PolicyCertServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()));
+  if (policy_service && policy_service->has_policy_certificates())
+    trust_roots_configured = base::Value(true);
+#endif  // defined(OS_CHROMEOS)
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            trust_roots_configured);
 }
