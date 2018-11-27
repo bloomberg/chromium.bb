@@ -14,10 +14,14 @@
 //
 // https://blogs.msdn.microsoft.com/larryosterman/2004/09/27/when-i-moved-my-code-into-a-library-what-happened-to-my-atl-com-objects/
 
+#include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/win/current_module.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
@@ -30,6 +34,9 @@
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
+#include "components/crash/content/app/crash_switches.h"
+#include "components/crash/content/app/run_as_crashpad_handler_win.h"
+#include "content/public/common/content_switches.h"
 
 using credential_provider::putHR;
 
@@ -85,7 +92,8 @@ STDAPI DllRegisterServer(void) {
       hr = HRESULT_FROM_WIN32(sts);
       LOGFN(ERROR) << "key.WriteValue(pv) hr=" << putHR(hr);
     } else {
-      sts = key.WriteValue(L"name",
+      sts = key.WriteValue(
+          L"name",
           credential_provider::GetStringResource(IDS_PROJNAME).c_str());
       if (sts != ERROR_SUCCESS) {
         hr = HRESULT_FROM_WIN32(sts);
@@ -129,7 +137,6 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
                                wchar_t* /*pszCmdLine*/,
                                int /*show*/) {
   LOGFN(INFO);
-
   HANDLE hStdin = ::GetStdHandle(STD_INPUT_HANDLE);  // No need to close.
   if (hStdin == INVALID_HANDLE_VALUE) {
     LOGFN(INFO) << "No stdin";
@@ -178,8 +185,43 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
   LOGFN(INFO) << "Done";
 }
 
-void CALLBACK SetFakesForTesting(
-    const credential_provider::FakesForTesting* fakes) {
+void CALLBACK RunAsCrashpadHandlerW(HWND /*hwnd*/,
+                                    HINSTANCE /*hinst*/,
+                                    wchar_t* /*pszCmdLine*/,
+                                    int /*show*/) {
+  base::CommandLine::Init(0, nullptr);
+
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+  DCHECK_EQ(cmd_line->GetSwitchValueASCII(switches::kProcessType),
+            crash_reporter::switches::kCrashpadHandler);
+
+  base::string16 entrypoint_arg;
+  credential_provider::GetEntryPointArgumentForRunDll(
+      CURRENT_MODULE(), credential_provider::kRunAsCrashpadHandlerEntryPoint,
+      &entrypoint_arg);
+
+  // Get all the arguments from the original command line except for the
+  // entrypoint argument otherwise the crashpad handler will fail to start
+  // thinking that it is an invalid argument.
+  base::CommandLine::StringVector argv_without_entry_point;
+  argv_without_entry_point.reserve(cmd_line->argv().size());
+  for (const auto& argv : cmd_line->argv()) {
+    if (argv == entrypoint_arg)
+      continue;
+
+    argv_without_entry_point.push_back(argv);
+  }
+
+  base::CommandLine cmd_line_without_entry_point(argv_without_entry_point);
+
+  crash_reporter::RunAsCrashpadHandler(cmd_line_without_entry_point,
+                                       base::FilePath(), switches::kProcessType,
+                                       "user-data-dir");
+}
+
+void CALLBACK
+SetFakesForTesting(const credential_provider::FakesForTesting* fakes) {
   DCHECK(fakes);
   credential_provider::ScopedLsaPolicy::SetCreatorForTesting(
       fakes->scoped_lsa_policy_creator);

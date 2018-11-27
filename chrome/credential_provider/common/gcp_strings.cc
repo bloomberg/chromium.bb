@@ -35,12 +35,12 @@ const wchar_t kDesktopName[] = L"Winlogon";
 const wchar_t kDesktopFullName[] = L"WinSta0\\Winlogon";
 
 // Google Update related registry paths.
+#define GCPW_UPDATE_CLIENT_GUID L"{32987697-A14E-4B89-84D6-630D5431E831}"
+
 const wchar_t kRegUpdaterClientStateAppPath[] =
-    L"SOFTWARE\\Google\\Update\\ClientState\\"
-    L"{32987697-A14E-4B89-84D6-630D5431E831}";
+    L"SOFTWARE\\Google\\Update\\ClientState\\" GCPW_UPDATE_CLIENT_GUID;
 const wchar_t kRegUpdaterClientsAppPath[] =
-    L"SOFTWARE\\Google\\Update\\Clients\\"
-    L"{32987697-A14E-4B89-84D6-630D5431E831}";
+    L"SOFTWARE\\Google\\Update\\Clients\\" GCPW_UPDATE_CLIENT_GUID;
 
 // Chrome is being opened to show the credential provider logon page.  This
 // page is always shown in incognito mode.
@@ -48,5 +48,7 @@ const char kGcpwSigninSwitch[] = "gcpw-signin";
 const char kEmailDomainSwitch[] = "email-domain";
 
 const char kEmailDomainSigninPromoParameter[] = "emailDomain";
+
+const wchar_t kRunAsCrashpadHandlerEntryPoint[] = L"RunAsCrashpadHandler";
 
 }  // namespace credential_provider

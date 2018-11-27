@@ -26,6 +26,7 @@
 namespace base {
 
 class CommandLine;
+class FilePath;
 
 }  // namespace base
 
@@ -150,9 +151,27 @@ HRESULT InitializeStdHandles(CommDirection direction,
                              ScopedStartupInfo* startupinfo,
                              StdParentHandles* parent_handles);
 
+// Fills |path_to_dll| with the short path to the dll referenced by
+// |dll_handle|. The short path is needed to correctly call rundll32.exe in
+// cases where there might be quotes or spaces in the path.
+HRESULT GetPathToDllFromHandle(HINSTANCE dll_handle,
+                               base::FilePath* path_to_dll);
+
+// This function gets a correctly formatted entry point argument to pass to
+// rundll32.exe for a dll referenced by the handle |dll_handle| and an entry
+// point function with the name |entrypoint|. |entrypoint_arg| will be filled
+// with the argument value.
+HRESULT GetEntryPointArgumentForRunDll(HINSTANCE dll_handle,
+                                       const wchar_t* entrypoint,
+                                       base::string16* entrypoint_arg);
+
 // This function is used to build the command line for rundll32 to call an
-// exported entrypoint from the DLL given by |hDll|.
-HRESULT GetCommandLineForEntrypoint(HINSTANCE hDll,
+// exported entrypoint from the DLL given by |dll_handle|.
+// Returns S_FALSE if a command line can successfully be built but if the
+// path to the "dll" actually points to a non ".dll" file. This allows
+// detection of calls to this function via a unit test which will be
+// running under an ".exe" module.
+HRESULT GetCommandLineForEntrypoint(HINSTANCE dll_handle,
                                     const wchar_t* entrypoint,
                                     base::CommandLine* command_line);
 
@@ -173,8 +192,8 @@ base::string16 GetDictString(const std::unique_ptr<base::DictionaryValue>& dict,
 std::string GetDictStringUTF8(const base::DictionaryValue* dict,
                               const char* name);
 std::string GetDictStringUTF8(
-  const std::unique_ptr<base::DictionaryValue>& dict,
-  const char* name);
+    const std::unique_ptr<base::DictionaryValue>& dict,
+    const char* name);
 
 class OSUserManager;
 

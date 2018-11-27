@@ -4,9 +4,9 @@
 
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 
+#include <wincred.h>  // For <ntsecapi.h>
 #include <windows.h>
 #include <winternl.h>
-#include <wincred.h>  // For <ntsecapi.h>
 
 #define _NTDEF_  // Prevent redefition errors, must come after <winternl.h>
 #include <MDMRegistration.h>  // For RegisterDeviceWithManagement()
@@ -103,10 +103,9 @@ ScopedStartupInfo::~ScopedStartupInfo() {
   Shutdown();
 }
 
-HRESULT ScopedStartupInfo::SetStdHandles(
-    base::win::ScopedHandle* hstdin,
-    base::win::ScopedHandle* hstdout,
-    base::win::ScopedHandle* hstderr) {
+HRESULT ScopedStartupInfo::SetStdHandles(base::win::ScopedHandle* hstdin,
+                                         base::win::ScopedHandle* hstdout,
+                                         base::win::ScopedHandle* hstderr) {
   if ((info_.dwFlags & STARTF_USESTDHANDLES) == STARTF_USESTDHANDLES) {
     LOGFN(ERROR) << "Already set";
     return E_UNEXPECTED;
@@ -407,7 +406,61 @@ HRESULT InitializeStdHandles(CommDirection direction,
   return S_OK;
 }
 
-HRESULT GetCommandLineForEntrypoint(HINSTANCE hDll,
+HRESULT GetPathToDllFromHandle(HINSTANCE dll_handle,
+                               base::FilePath* path_to_dll) {
+  wchar_t path[MAX_PATH];
+  DWORD length = base::size(path);
+  length = ::GetModuleFileName(dll_handle, path, length);
+  if (length == 0 || length >= base::size(path)) {
+    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    LOGFN(ERROR) << "GetModuleFileNameW hr=" << putHR(hr);
+    return hr;
+  }
+
+  *path_to_dll = base::FilePath(base::StringPiece16(path, length));
+  return S_OK;
+}
+
+HRESULT GetEntryPointArgumentForRunDll(HINSTANCE dll_handle,
+                                       const wchar_t* entrypoint,
+                                       base::string16* entrypoint_arg) {
+  DCHECK(entrypoint);
+  DCHECK(entrypoint_arg);
+
+  entrypoint_arg->clear();
+
+  // rundll32 expects the first command line argument to be the path to the
+  // DLL, followed by a comma and the name of the function to call.  There can
+  // be no spaces around the comma.  There can be no spaces in the path.  It
+  // is recommended to use the short path name of the DLL.
+  base::FilePath path_to_dll;
+  HRESULT hr = GetPathToDllFromHandle(dll_handle, &path_to_dll);
+  if (FAILED(hr))
+    return hr;
+
+  wchar_t short_path[MAX_PATH];
+  DWORD short_length = base::size(short_path);
+  short_length =
+      ::GetShortPathName(path_to_dll.value().c_str(), short_path, short_length);
+  if (short_length >= base::size(short_path)) {
+    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    LOGFN(ERROR) << "GetShortPathNameW hr=" << putHR(hr);
+    return hr;
+  }
+
+  *entrypoint_arg =
+      base::string16(base::StringPrintf(L"%ls,%ls", short_path, entrypoint));
+
+  // In tests, the current module is the unittest exe, not the real dll.
+  // The unittest exe does not expose entrypoints, so return S_FALSE as a hint
+  // that this will not work.  The command line is built anyway though so
+  // tests of the command line construction can be written.
+  return wcsicmp(wcsrchr(path_to_dll.value().c_str(), L'.'), L".dll") == 0
+             ? S_OK
+             : S_FALSE;
+}
+
+HRESULT GetCommandLineForEntrypoint(HINSTANCE dll_handle,
                                     const wchar_t* entrypoint,
                                     base::CommandLine* command_line) {
   DCHECK(entrypoint);
@@ -421,38 +474,13 @@ HRESULT GetCommandLineForEntrypoint(HINSTANCE hDll,
   command_line->SetProgram(
       system_dir.Append(FILE_PATH_LITERAL("rundll32.exe")));
 
-  // rundll32 expects the first command line argument to be the path to the
-  // DLL, followed by a comma and the name of the function to call.  There can
-  // be no spaces around the comma.  There can be no spaces in the path.  It
-  // is recommended to use the short path name of the DLL.
+  base::string16 entrypoint_arg;
+  HRESULT hr =
+      GetEntryPointArgumentForRunDll(dll_handle, entrypoint, &entrypoint_arg);
+  if (SUCCEEDED(hr))
+    command_line->AppendArgNative(entrypoint_arg);
 
-  wchar_t path[MAX_PATH];
-  DWORD length = base::size(path);
-  length = ::GetModuleFileName(hDll, path, length);
-  if (length == base::size(path) &&
-      ::GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "GetModuleFileNameW hr=" << putHR(hr);
-    return hr;
-  }
-
-  wchar_t short_path[MAX_PATH];
-  DWORD short_length = base::size(short_path);
-  short_length = ::GetShortPathName(path, short_path, short_length);
-  if (short_length >= base::size(short_path)) {
-    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "GetShortPathNameW hr=" << putHR(hr);
-    return hr;
-  }
-
-  command_line->AppendArgNative(
-      base::StringPrintf(L"%ls,%ls", short_path, entrypoint));
-
-  // In tests, the current module is the unittest exe, not the real dll.
-  // The unittest exe does not expose entrypoints, so return S_FALSE as a hint
-  // that this will not work.  The command line is built anyway though so tests
-  // of the command line construction can be written.
-  return wcsicmp(wcsrchr(path, L'.'), L".dll") == 0 ? S_OK : S_FALSE;
+  return hr;
 }
 
 // Gets the serial number of the machine based on the recipe found at
@@ -618,9 +646,8 @@ base::string16 GetStringResource(UINT id) {
   return base::string16(str, length);
 }
 
-base::string16 GetDictString(
-    const base::DictionaryValue* dict,
-    const char* name) {
+base::string16 GetDictString(const base::DictionaryValue* dict,
+                             const char* name) {
   DCHECK(name);
   auto* value = dict->FindKey(name);
   return value && value->is_string() ? base::UTF8ToUTF16(value->GetString())
@@ -632,9 +659,8 @@ base::string16 GetDictString(const std::unique_ptr<base::DictionaryValue>& dict,
   return GetDictString(dict.get(), name);
 }
 
-std::string GetDictStringUTF8(
-    const base::DictionaryValue* dict,
-    const char* name) {
+std::string GetDictStringUTF8(const base::DictionaryValue* dict,
+                              const char* name) {
   DCHECK(name);
   auto* value = dict->FindKey(name);
   return value && value->is_string() ? value->GetString() : std::string();
