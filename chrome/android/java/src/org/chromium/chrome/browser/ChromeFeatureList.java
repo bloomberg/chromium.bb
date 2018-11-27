@@ -284,6 +284,7 @@ public abstract class ChromeFeatureList {
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";
     public static final String UNIFIED_CONSENT = "UnifiedConsent";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";
+    public static final String USER_ACTIVATION_V2 = "UserActivationV2";
     public static final String WEB_AUTH = "WebAuthentication";
     public static final String WEB_PAYMENTS = "WebPayments";
     public static final String WEB_PAYMENTS_METHOD_SECTION_ORDER_V2 =
