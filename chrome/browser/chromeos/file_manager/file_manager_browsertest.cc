@@ -710,6 +710,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
             .WithBrowser()
             .InIncognito()
             .EnableDriveFs(),
+        TestCase("openFileDialogDriveHostedDoc").WithBrowser(),
         TestCase("openFileDialogCancelDrive").WithBrowser().DisableDriveFs(),
         TestCase("openFileDialogCancelDrive").WithBrowser().EnableDriveFs(),
         TestCase("openFileDialogEscapeDrive").WithBrowser().DisableDriveFs(),

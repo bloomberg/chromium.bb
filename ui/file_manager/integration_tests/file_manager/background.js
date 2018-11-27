@@ -302,18 +302,26 @@ function openNewWindow(appState, initialRoot, opt_callback) {
  * @param {Array<TestEntryInfo>} expectedSet Expected set of the entries.
  * @param {function(windowId:string):Promise} closeDialog Function to close the
  *     dialog.
+ * @param {boolean} useBrowserOpen Whether to launch the select file dialog via
+ *     a browser OpenFile() call.
  * @return {Promise} Promise to be fulfilled with the result entry of the
  *     dialog.
  */
 function openAndWaitForClosingDialog(
-    dialogParams, volumeName, expectedSet, closeDialog) {
+    dialogParams, volumeName, expectedSet, closeDialog,
+    useBrowserOpen = false) {
   var caller = getCaller();
-  var resultPromise = new Promise(function(fulfill) {
-    chrome.fileSystem.chooseEntry(
-        dialogParams,
-        function(entry) { fulfill(entry); });
-    chrome.test.assertTrue(!chrome.runtime.lastError, 'chooseEntry failed.');
-  });
+  var resultPromise;
+  if (useBrowserOpen) {
+    resultPromise = sendTestMessage({name: 'runSelectFileDialog'});
+  } else {
+    resultPromise = new Promise(function(fulfill) {
+      chrome.fileSystem.chooseEntry(dialogParams, function(entry) {
+        fulfill(entry);
+      });
+      chrome.test.assertTrue(!chrome.runtime.lastError, 'chooseEntry failed.');
+    });
+  }
 
   return remoteCall.waitForWindow('dialog#').then(function(windowId) {
     return remoteCall.waitForElement(windowId, '#file-list').
