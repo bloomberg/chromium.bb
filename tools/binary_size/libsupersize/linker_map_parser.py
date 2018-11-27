@@ -413,7 +413,7 @@ class MapFileParserLld(object):
             else:
               # e.g. <internal>:(.text.thunk)
               sym_maker.cur_sym.full_name = '** ' + mangled_name
-          elif cur_obj == 'lto.tmp' or cur_obj.startswith('thinlto-cache'):
+          elif cur_obj == 'lto.tmp' or 'thinlto-cache' in cur_obj:
             pass
           else:
             sym_maker.cur_sym.object_path = cur_obj
