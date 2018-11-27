@@ -1065,8 +1065,8 @@
   },
   {
     "name": "enable-devtools-experiments",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//third_party/blink/renderer/devtools/OWNERS" ],
+    "expiry_milestone": -1
   },
   {
     "name": "enable-display-cutout-api",
