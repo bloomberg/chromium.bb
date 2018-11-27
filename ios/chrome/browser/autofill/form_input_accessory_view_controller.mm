@@ -72,21 +72,16 @@ CGFloat const kInputAccessoryHeight = 44.0f;
                                   blue:217 / 255.f
                                  alpha:1];
 
-      [[NSNotificationCenter defaultCenter]
-          addObserver:self
-             selector:@selector(keyboardWillOrDidChangeFrame:)
-                 name:UIKeyboardWillChangeFrameNotification
-               object:nil];
     }
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(keyboardWillOrDidChangeFrame:)
-               name:UIKeyboardDidChangeFrameNotification
+               name:UIKeyboardWillChangeFrameNotification
              object:nil];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(keyboardWillShow:)
-               name:UIKeyboardWillShowNotification
+           selector:@selector(keyboardWillOrDidChangeFrame:)
+               name:UIKeyboardDidChangeFrameNotification
              object:nil];
   }
   return self;
@@ -295,25 +290,19 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   return nil;
 }
 
-- (void)keyboardWillShow:(NSNotification*)notification {
-  // If the inputAccessoryView has not been added to the hierarchy, do it here.
-  // This can happen when returning from a full screen view controller.
-  if (!IsIPadIdiom()) {
-    [self addInputAccessoryViewIfNeeded];
-    [self addCustomKeyboardViewIfNeeded];
-  }
-}
-
 - (void)keyboardWillOrDidChangeFrame:(NSNotification*)notification {
   CGRect keyboardFrame =
       [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
   UIView* keyboardView = [self getKeyboardView];
   CGRect windowRect = keyboardView.window.bounds;
-  // On iPad when the keyboard is undocked, on iOS 10 and 11,
+  // On iPad when the keyboard is undocked, on iOS 11 and 12,
   // `UIKeyboard*HideNotification` or `UIKeyboard*ShowNotification` are not
-  // being sent. So the check is done here.
+  // being sent. So the check for all devices is done here.
   if (CGRectContainsRect(windowRect, keyboardFrame)) {
     _keyboardFrame = keyboardFrame;
+    // Make sure the input accessory is there if needed.
+    [self addInputAccessoryViewIfNeeded];
+    [self addCustomKeyboardViewIfNeeded];
   } else {
     _keyboardFrame = CGRectZero;
   }
