@@ -15,6 +15,7 @@ class TestSmbBrowserProxy extends TestBrowserProxy {
   smbMount(smbUrl, smbName, username, password, authMethod) {
     this.methodCalled(
         'smbMount', [smbUrl, smbName, username, password, authMethod]);
+    return Promise.resolve(SmbMountResult.SUCCESS);
   }
 
   /** @override */
@@ -62,7 +63,7 @@ suite('AddSmbShareDialogTests', function() {
     expectTrue(!!url);
     url.value = 'smb://192.168.1.1/testshare';
 
-    const addButton = addDialog.$$('#actionButton');
+    const addButton = addDialog.$$('.action-button');
     expectTrue(!!addButton);
     expectFalse(addButton.disabled);
   });

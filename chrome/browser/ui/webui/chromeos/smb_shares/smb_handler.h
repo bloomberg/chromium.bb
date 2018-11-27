@@ -35,7 +35,8 @@ class SmbHandler : public content::WebUIMessageHandler {
   void HandleStartDiscovery(const base::ListValue* args);
 
   // Callback handler for SmbMount.
-  void HandleSmbMountResponse(SmbMountResult result);
+  void HandleSmbMountResponse(const std::string& callback_id,
+                              SmbMountResult result);
 
   // Callback handler for StartDiscovery.
   void HandleGatherSharesResponse(

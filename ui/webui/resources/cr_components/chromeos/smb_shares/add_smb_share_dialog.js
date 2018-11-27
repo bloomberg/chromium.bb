@@ -65,6 +65,15 @@ Polymer({
             SmbAuthMethod.CREDENTIALS;
       },
     },
+
+    /** @private */
+    addShareResultText_: String,
+
+    /** @private */
+    inProgress_: {
+      type: Boolean,
+      value: false,
+    }
   },
 
   /** @private {?smb_shares.SmbBrowserProxy} */
@@ -91,10 +100,14 @@ Polymer({
 
   /** @private */
   onAddButtonTap_: function() {
-    this.browserProxy_.smbMount(
-        this.mountUrl_, this.mountName_.trim(), this.username_, this.password_,
-        this.authenticationMethod_);
-    this.$.dialog.close();
+    this.inProgress_ = true;
+    this.browserProxy_
+        .smbMount(
+            this.mountUrl_, this.mountName_.trim(), this.username_,
+            this.password_, this.authenticationMethod_)
+        .then(result => {
+          this.onAddShare_(result);
+        });
   },
 
   /** @private */
@@ -108,7 +121,7 @@ Polymer({
    * @private
    */
   canAddShare_: function() {
-    return !!this.mountUrl_;
+    return !!this.mountUrl_ && !this.inProgress_;
   },
 
   /**
@@ -126,4 +139,42 @@ Polymer({
   shouldShowCredentialUI_: function() {
     return this.authenticationMethod_ == SmbAuthMethod.CREDENTIALS;
   },
+
+  /**
+   * @param {SmbMountResult} result
+   * @private
+   */
+  onAddShare_: function(result) {
+    this.inProgress_ = false;
+    switch (result) {
+      case SmbMountResult.SUCCESS:
+        this.$.dialog.close();
+        break;
+      case SmbMountResult.AUTHENTICATION_FAILED:
+        this.addShareResultText_ =
+            loadTimeData.getString('smbShareAddedAuthFailedMessage');
+        break;
+      case SmbMountResult.NOT_FOUND:
+        this.addShareResultText_ =
+            loadTimeData.getString('smbShareAddedNotFoundMessage');
+        break;
+      case SmbMountResult.UNSUPPORTED_DEVICE:
+        this.addShareResultText_ =
+            loadTimeData.getString('smbShareAddedUnsupportedDeviceMessage');
+        break;
+      case SmbMountResult.MOUNT_EXISTS:
+        this.addShareResultText_ =
+            loadTimeData.getString('smbShareAddedMountExistsMessage');
+        break;
+      case SmbMountResult.INVALID_URL:
+        this.addShareResultText_ =
+            loadTimeData.getString('smbShareAddedInvalidURLMessage');
+        break;
+      default:
+        this.addShareResultText_ =
+            loadTimeData.getString('smbShareAddedErrorMessage');
+    }
+    this.$.errorToast.show();
+  },
+
 });

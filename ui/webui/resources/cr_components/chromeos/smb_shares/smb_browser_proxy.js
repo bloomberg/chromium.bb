@@ -38,6 +38,7 @@ cr.define('smb_shares', function() {
      * @param {string} username
      * @param {string} password
      * @param {string} authMethod
+     * @return {!Promise<SmbMountResult>}
      */
     smbMount(smbUrl, smbName, username, password, authMethod) {}
 
@@ -51,10 +52,9 @@ cr.define('smb_shares', function() {
   class SmbBrowserProxyImpl {
     /** @override */
     smbMount(smbUrl, smbName, username, password, authMethod) {
-      chrome.send('smbMount', [
-        smbUrl, smbName, username, password,
-        authMethod == SmbAuthMethod.KERBEROS
-      ]);
+      return cr.sendWithPromise(
+          'smbMount', smbUrl, smbName, username, password,
+          authMethod == SmbAuthMethod.KERBEROS);
     }
 
     /** @override */
