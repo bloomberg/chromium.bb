@@ -9,10 +9,12 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
 namespace metrics {
@@ -113,6 +115,7 @@ std::vector<SampledProfile> PendingProfiles::RetrieveProfiles() {
   }
 
   // Deserialize all serialized profiles, skipping over any that fail to parse.
+  base::ElapsedTimer timer;
   std::vector<SampledProfile> profiles;
   profiles.reserve(serialized_profiles.size());
   for (const auto& serialized_profile : serialized_profiles) {
@@ -122,6 +125,8 @@ std::vector<SampledProfile> PendingProfiles::RetrieveProfiles() {
       profiles.push_back(std::move(profile));
     }
   }
+  UMA_HISTOGRAM_TIMES("StackSamplingProfiler.DeserializeAllPendingProfilesTime",
+                      timer.Elapsed());
 
   return profiles;
 }
