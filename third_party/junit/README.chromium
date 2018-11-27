@@ -6,5 +6,10 @@ License File: NOT_SHIPPED
 Security Critical: no
 License Android Compatible: yes
 Description: JUnit is a java unit testing library.
-Local Modifications: None
+Local Modifications:
+ - Removed the classes provided in android.test.base.jar and
+   android.test.runner.jar from the junit build target. To check which classes
+   are removed, run "unzip -l" on the jars (found in the SDK). Alternatively,
+   look at the classes listed on
+   https://developer.android.com/training/testing/set-up-project#junit-based-libs
 
