@@ -127,15 +127,9 @@ class ScopedStickyKeyboardEnabler {
       : accessibility_controller_(Shell::Get()->accessibility_controller()),
         enabled_(accessibility_controller_->IsVirtualKeyboardEnabled()) {
     accessibility_controller_->SetVirtualKeyboardEnabled(true);
-    keyboard::KeyboardController::Get()->EnableKeyboard(
-        std::make_unique<keyboard::TestKeyboardUI>(
-            Shell::Get()->window_tree_host_manager()->input_method()),
-        nullptr);
-    keyboard::KeyboardController::Get()->set_keyboard_locked(true);
   }
 
   ~ScopedStickyKeyboardEnabler() {
-    keyboard::KeyboardController::Get()->set_keyboard_locked(false);
     accessibility_controller_->SetVirtualKeyboardEnabled(enabled_);
   }
 
@@ -1870,8 +1864,7 @@ class WorkspaceLayoutManagerSystemUiAreaTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    keyboard::SetTouchKeyboardEnabled(true);
-    Shell::Get()->EnableKeyboard();
+    SetTouchKeyboardEnabled(true);
 
     window_ = CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 100, 100));
     wm::WindowState* window_state = wm::GetWindowState(window_);
@@ -1881,7 +1874,7 @@ class WorkspaceLayoutManagerSystemUiAreaTest : public AshTestBase {
   }
 
   void TearDown() override {
-    keyboard::SetTouchKeyboardEnabled(false);
+    SetTouchKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 
