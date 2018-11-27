@@ -551,10 +551,15 @@ message ShowDetailsProto {
 message SetFormFieldValueProto {
   message KeyPress {
     oneof keypress {
+      // Text to insert as-is into a form field.
       string text = 1;
-      // A single key with this exact keycode (KeyboardEvent.keyCode) e.g. 8 for
-      // Backspace.
+      // DEPRECATED: A single US-ASCII character (e.g., 13 for carriage return).
       int32 keycode = 2;
+      // One or multiple UTF-8 characters to input in the form element. In
+      // contrast to |text|, |keyboard_input| is evaluated as if the user had
+      // tapped the keyboard. This can also be used for control sequences such
+      // as "\r".
+      string keyboard_input = 3;
     }
   }
 
