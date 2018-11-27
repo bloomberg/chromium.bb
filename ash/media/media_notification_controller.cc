@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -20,6 +21,8 @@
 #include "url/gurl.h"
 
 namespace ash {
+
+using media_session::mojom::MediaSessionAction;
 
 namespace {
 
@@ -138,25 +141,25 @@ void MediaNotificationController::OnNotificationClicked(
     base::Optional<int> button_id) {
   DCHECK(button_id.has_value());
 
-  // TODO(beccahughes): Replace with MediaSessionAction enum when moved.
-  switch (*button_id) {
-    case 0:
+  switch (static_cast<MediaSessionAction>(*button_id)) {
+    case MediaSessionAction::kPreviousTrack:
       media_controller_ptr_->PreviousTrack();
       break;
-    case 1:
+    case MediaSessionAction::kSeekBackward:
       media_controller_ptr_->Seek(kDefaultSeekTime * -1);
       break;
-    case 2:
-      media_controller_ptr_->ToggleSuspendResume();
+    case MediaSessionAction::kPlay:
+      media_controller_ptr_->Resume();
       break;
-    case 3:
+    case MediaSessionAction::kPause:
+      media_controller_ptr_->Suspend();
+      break;
+    case MediaSessionAction::kSeekForward:
       media_controller_ptr_->Seek(kDefaultSeekTime);
       break;
-    case 4:
+    case MediaSessionAction::kNextTrack:
       media_controller_ptr_->NextTrack();
       break;
-    default:
-      NOTREACHED();
   }
 }
 

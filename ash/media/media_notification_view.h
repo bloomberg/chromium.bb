@@ -11,6 +11,10 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 
+namespace media_session {
+enum class MediaSessionAction;
+}  // namespace media_session
+
 namespace message_center {
 class NotificationHeaderView;
 }  // namespace message_center
@@ -55,8 +59,10 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void UpdateControlButtonsVisibilityWithNotification(
       const message_center::Notification& notification);
 
-  // Creates an image button with |icon| and adds it to |button_row_|.
-  void CreateMediaButton(const gfx::VectorIcon& icon);
+  // Creates an image button with |icon| and adds it to |button_row_|. When
+  // clicked it will trigger |action| on the sesssion.
+  void CreateMediaButton(const gfx::VectorIcon& icon,
+                         media_session::mojom::MediaSessionAction action);
 
   // View containing close and settings buttons.
   std::unique_ptr<message_center::NotificationControlButtonsView>

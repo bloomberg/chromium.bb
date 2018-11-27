@@ -17,6 +17,14 @@ mojom::MediaControllerPtr TestMediaController::CreateMediaControllerPtr() {
   return ptr;
 }
 
+void TestMediaController::Suspend() {
+  ++suspend_count_;
+}
+
+void TestMediaController::Resume() {
+  ++resume_count_;
+}
+
 void TestMediaController::ToggleSuspendResume() {
   ++toggle_suspend_resume_count_;
 }

@@ -19,6 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
@@ -27,6 +28,7 @@
 
 namespace ash {
 
+using media_session::mojom::MediaSessionAction;
 using media_session::test::TestMediaController;
 
 namespace {
@@ -124,6 +126,17 @@ class MediaNotificationViewTest : public AshTestBase {
 
   views::View* button_row() const { return view_->button_row_; }
 
+  views::Button* GetButtonForAction(MediaSessionAction action) const {
+    for (int i = 0; i < button_row()->child_count(); ++i) {
+      views::Button* child = views::Button::AsButton(button_row()->child_at(i));
+
+      if (child->tag() == static_cast<int>(action))
+        return child;
+    }
+
+    return nullptr;
+  }
+
  private:
   std::unique_ptr<message_center::MessageView> CreateAndCaptureCustomView(
       const message_center::Notification& notification) {
@@ -179,14 +192,23 @@ TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
     EXPECT_EQ(kMediaButtonIconSize, child->width());
     EXPECT_EQ(kMediaButtonIconSize, child->height());
   }
+
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPreviousTrack));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kNextTrack));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kSeekBackward));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kSeekForward));
+
+  // |kPause| cannot be present if |kPlay| is.
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
 }
 
 TEST_F(MediaNotificationViewTest, NextTrackButtonClick) {
   EXPECT_EQ(0, media_controller()->next_track_count());
 
   gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(button_row()->child_at(4),
-                                    &cursor_location);
+  views::View::ConvertPointToScreen(
+      GetButtonForAction(MediaSessionAction::kNextTrack), &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
   Shell::Get()->media_notification_controller()->FlushForTesting();
@@ -194,25 +216,45 @@ TEST_F(MediaNotificationViewTest, NextTrackButtonClick) {
   EXPECT_EQ(1, media_controller()->next_track_count());
 }
 
-TEST_F(MediaNotificationViewTest, PlayPauseButtonClick) {
-  EXPECT_EQ(0, media_controller()->toggle_suspend_resume_count());
+TEST_F(MediaNotificationViewTest, PlayButtonClick) {
+  EXPECT_EQ(0, media_controller()->resume_count());
 
   gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(button_row()->child_at(2),
-                                    &cursor_location);
+  views::View::ConvertPointToScreen(
+      GetButtonForAction(MediaSessionAction::kPlay), &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
   Shell::Get()->media_notification_controller()->FlushForTesting();
 
-  EXPECT_EQ(1, media_controller()->toggle_suspend_resume_count());
+  EXPECT_EQ(1, media_controller()->resume_count());
+}
+
+TEST_F(MediaNotificationViewTest, PauseButtonClick) {
+  EXPECT_EQ(0, media_controller()->suspend_count());
+
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPlaying;
+  Shell::Get()->media_notification_controller()->MediaSessionInfoChanged(
+      session_info.Clone());
+
+  gfx::Point cursor_location(1, 1);
+  views::View::ConvertPointToScreen(
+      GetButtonForAction(MediaSessionAction::kPause), &cursor_location);
+  GetEventGenerator()->MoveMouseTo(cursor_location);
+  GetEventGenerator()->ClickLeftButton();
+  Shell::Get()->media_notification_controller()->FlushForTesting();
+
+  EXPECT_EQ(1, media_controller()->suspend_count());
 }
 
 TEST_F(MediaNotificationViewTest, PreviousTrackButtonClick) {
   EXPECT_EQ(0, media_controller()->previous_track_count());
 
   gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(button_row()->child_at(0),
-                                    &cursor_location);
+  views::View::ConvertPointToScreen(
+      GetButtonForAction(MediaSessionAction::kPreviousTrack), &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
   Shell::Get()->media_notification_controller()->FlushForTesting();
@@ -224,8 +266,8 @@ TEST_F(MediaNotificationViewTest, SeekBackwardButtonClick) {
   EXPECT_EQ(0, media_controller()->seek_backward_count());
 
   gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(button_row()->child_at(1),
-                                    &cursor_location);
+  views::View::ConvertPointToScreen(
+      GetButtonForAction(MediaSessionAction::kSeekBackward), &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
   Shell::Get()->media_notification_controller()->FlushForTesting();
@@ -237,9 +279,9 @@ TEST_F(MediaNotificationViewTest, SeekForwardButtonClick) {
   EXPECT_EQ(0, media_controller()->seek_forward_count());
 
   gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(button_row()->child_at(3),
-                                    &cursor_location);
-  GetEventGenerator()->MoveMouseTo(cursor_location.x(), cursor_location.y());
+  views::View::ConvertPointToScreen(
+      GetButtonForAction(MediaSessionAction::kSeekForward), &cursor_location);
+  GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
   Shell::Get()->media_notification_controller()->FlushForTesting();
 
@@ -251,7 +293,7 @@ TEST_F(MediaNotificationViewTest, ClickNotification) {
 
   gfx::Point cursor_location(1, 1);
   views::View::ConvertPointToScreen(view(), &cursor_location);
-  GetEventGenerator()->MoveMouseTo(cursor_location.x(), cursor_location.y());
+  GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
   Shell::Get()->media_notification_controller()->FlushForTesting();
 
@@ -260,8 +302,8 @@ TEST_F(MediaNotificationViewTest, ClickNotification) {
 
 TEST_F(MediaNotificationViewTest, PlayToggle_FromActiveSessionChanged) {
   {
-    views::ToggleImageButton* button =
-        static_cast<views::ToggleImageButton*>(button_row()->child_at(2));
+    views::ToggleImageButton* button = static_cast<views::ToggleImageButton*>(
+        GetButtonForAction(MediaSessionAction::kPlay));
     ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
     EXPECT_FALSE(button->toggled_for_testing());
   }
@@ -284,16 +326,16 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromActiveSessionChanged) {
   ShowNotificationAndCaptureView(std::move(session_info));
 
   {
-    views::ToggleImageButton* button =
-        static_cast<views::ToggleImageButton*>(button_row()->child_at(2));
+    views::ToggleImageButton* button = static_cast<views::ToggleImageButton*>(
+        GetButtonForAction(MediaSessionAction::kPause));
     ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
     EXPECT_TRUE(button->toggled_for_testing());
   }
 }
 
 TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_Empty) {
-  views::ToggleImageButton* button =
-      static_cast<views::ToggleImageButton*>(button_row()->child_at(2));
+  views::ToggleImageButton* button = static_cast<views::ToggleImageButton*>(
+      GetButtonForAction(MediaSessionAction::kPlay));
   ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
   EXPECT_FALSE(button->toggled_for_testing());
 
@@ -303,8 +345,8 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_Empty) {
 }
 
 TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
-  views::ToggleImageButton* button =
-      static_cast<views::ToggleImageButton*>(button_row()->child_at(2));
+  views::ToggleImageButton* button = static_cast<views::ToggleImageButton*>(
+      GetButtonForAction(MediaSessionAction::kPlay));
   ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
   EXPECT_FALSE(button->toggled_for_testing());
 
