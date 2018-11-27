@@ -21,6 +21,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -39,6 +40,27 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ActivityTabProviderTest {
+    /** A test observer that provides access to the tab being observed. */
+    private static class TestActivityTabTabObserver extends ActivityTabTabObserver {
+        /** Callback helper for notification that the observer is watching a different tab. */
+        private CallbackHelper mObserverMoveHelper;
+
+        /** The tab currently being observed. */
+        private Tab mObservedTab;
+
+        public TestActivityTabTabObserver(ActivityTabProvider provider) {
+            super(provider);
+            mObserverMoveHelper = new CallbackHelper();
+            mObservedTab = provider.getActivityTab();
+        }
+
+        @Override
+        public void onObservingDifferentTab(Tab tab) {
+            mObservedTab = tab;
+            mObserverMoveHelper.notifyCalled();
+        }
+    }
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -203,6 +225,28 @@ public class ActivityTabProviderTest {
                 () -> { mActivity.getTabModelSelector().closeTab(startingTab); });
 
         assertEquals("The activity tab should not have changed.", activityTabBefore, mActivityTab);
+    }
+
+    /** Test that the {@link ActivityTabTabObserver} switches between tabs as the tab changes. */
+    @Test
+    @SmallTest
+    @Feature({"ActivityTabObserver"})
+    public void testActivityTabTabObserver() throws InterruptedException, TimeoutException {
+        Tab startingTab = getModelSelectedTab();
+
+        TestActivityTabTabObserver tabObserver = new TestActivityTabTabObserver(mProvider);
+
+        assertEquals("The observer should be attached to the starting tab.", startingTab,
+                tabObserver.mObservedTab);
+
+        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(), mActivity,
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL, false);
+
+        assertNotEquals("The tab should have changed.", startingTab, getModelSelectedTab());
+        assertEquals("The observer should be attached to the new tab.", getModelSelectedTab(),
+                tabObserver.mObservedTab);
+
+        tabObserver.destroy();
     }
 
     /**
