@@ -2644,9 +2644,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   if (NTPHelper && NTPHelper->IsActive()) {
     return _ntpCoordinatorsForWebStates[webState].viewController.view;
   }
+  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
   // TODO(crbug.com/904588): Move |RecordPageLoadStart| to TabUsageRecorder.
-  if (webState->IsEvicted() && [tab.parentTabModel tabUsageRecorder]) {
-    [tab.parentTabModel tabUsageRecorder]->RecordPageLoadStart(webState);
+  if (webState->IsEvicted() && [self.tabModel tabUsageRecorder]) {
+    [self.tabModel tabUsageRecorder] -> RecordPageLoadStart(webState);
   }
   if (!webState->IsCrashed()) {
     // Load the page if it was evicted by browsing data clearing logic.
