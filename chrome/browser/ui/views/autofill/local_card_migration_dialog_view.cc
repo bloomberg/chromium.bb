@@ -7,8 +7,10 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_factory.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
+#include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/views/autofill/migratable_card_view.h"
 #include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -45,9 +47,6 @@
 namespace autofill {
 
 namespace {
-
-constexpr int kMainContainerChildSpacing = 24;
-constexpr gfx::Insets kMigrationDialogInsets = gfx::Insets(0, 24, 48, 24);
 
 // Create the title label container for the migration dialogs. The title
 // text depends on the |view_state| of the dialog.
@@ -220,7 +219,7 @@ class LocalCardMigrationOfferView : public views::View,
     ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical, gfx::Insets(),
-        kMainContainerChildSpacing));
+        kMigrationDialogMainContainerChildSpacing));
 
     auto* contents_container = new views::View();
     contents_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -391,7 +390,8 @@ void LocalCardMigrationDialogView::Init() {
     return;
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), kMainContainerChildSpacing));
+      views::BoxLayout::kVertical, gfx::Insets(),
+      kMigrationDialogMainContainerChildSpacing));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   auto* image = new views::ImageView();
@@ -402,9 +402,10 @@ void LocalCardMigrationDialogView::Init() {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   AddChildView(image);
 
-  AddChildView(CreateTitle(controller_->GetViewState()).release());
+  LocalCardMigrationDialogState view_state = controller_->GetViewState();
+  AddChildView(CreateTitle(view_state).release());
 
-  if (controller_->GetViewState() == LocalCardMigrationDialogState::kOffered) {
+  if (view_state == LocalCardMigrationDialogState::kOffered) {
     offer_view_ = new LocalCardMigrationOfferView(controller_, this);
     AddChildView(offer_view_);
   } else {

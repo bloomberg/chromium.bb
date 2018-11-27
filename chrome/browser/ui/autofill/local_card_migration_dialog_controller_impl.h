@@ -35,15 +35,21 @@ class LocalCardMigrationDialogControllerImpl
       AutofillClient::LocalCardMigrationCallback
           start_migrating_cards_callback);
 
-  // When migration is finished, show a credit card icon in the omnibox.
+  // When migration is finished, show a credit card icon in the omnibox. Also
+  // passes |tip_message|, and |migratable_credit_cards| to controller.
   void ShowCreditCardIcon(
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards);
 
-  // If the user clicks on the credit card icon in the omnibox, we show
-  // the feedback dialog containing the uploading results of the cards that
-  // the user selected to upload.
+  // If the user clicks on the credit card icon in the omnibox, we show the
+  // feedback dialog containing the uploading results of the cards that the
+  // user selected to upload.
   void ShowFeedbackDialog();
+
+  // If the user clicks on the credit card icon in the omnibox after the
+  // migration request failed due to some internal server errors, we show the
+  // error dialog containing an error message.
+  void ShowErrorDialog();
 
   // LocalCardMigrationDialogController:
   LocalCardMigrationDialogState GetViewState() const override;

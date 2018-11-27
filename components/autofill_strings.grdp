@@ -290,6 +290,11 @@
       =1 {This card has been added to your Google Account. You can now use it from any signed-in device.}
       other {These cards have been added to your Google Account. You can now use them from any signed-in device.}}
     </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_ERROR" desc="The body text shown on a dialog when the user attempts to migrate their cards to Google Payments, but all migrations fail. [ICU Syntax]">
+      {NUM_CARDS, plural,
+      =1 {This card can't be added right now}
+      other {These cards can't be added right now}}
+    </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_FIX" desc="The body text shown on a dialog after the user accepts another dialog that offers to migrate local cards into the cloud but there are errors with the cards that they need to address.">
       Check the info below and delete any invalid cards
     </message>
