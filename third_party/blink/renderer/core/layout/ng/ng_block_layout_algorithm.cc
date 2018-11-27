@@ -2228,19 +2228,13 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
           border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction()),
       origin_block_offset};
 
-  LayoutUnit bfc_block_offset =
-      container_builder_.BfcBlockOffset()
-          ? container_builder_.BfcBlockOffset().value()
-          : ConstraintSpace().FloatsBfcBlockOffset().value();
-
   NGPositionedFloatVector positioned_floats;
   PositionFloats(child_available_size_, child_percentage_size_,
                  replaced_child_percentage_size_, origin_bfc_offset,
-                 bfc_block_offset, unpositioned_floats_, ConstraintSpace(),
-                 Style(), &exclusion_space_, &positioned_floats);
+                 unpositioned_floats_, ConstraintSpace(), Style(),
+                 &exclusion_space_, &positioned_floats);
 
   AddPositionedFloats(positioned_floats);
-
   unpositioned_floats_.Shrink(0);
 }
 

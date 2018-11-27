@@ -919,8 +919,8 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
         constraint_space_.PercentageResolutionSize(),
         constraint_space_.ReplacedPercentageResolutionSize(),
         {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
-        constraint_space_.BfcOffset().block_offset, &unpositioned_float,
-        constraint_space_, node_.Style(), exclusion_space_);
+        &unpositioned_float, constraint_space_, node_.Style(),
+        exclusion_space_);
     positioned_floats_->push_back(positioned_float);
 
     NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
