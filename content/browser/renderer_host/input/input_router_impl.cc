@@ -381,7 +381,7 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
         base::NumberToString(event.event.unique_touch_event_id).c_str());
     touch_action_filter_.IncreaseActiveTouches();
     if ((compositor_touch_action_enabled_ &&
-         ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) ||
+         !touch_action_filter_.white_listed_touch_action().has_value()) ||
         (!compositor_touch_action_enabled_ &&
          !touch_action_filter_.allowed_touch_action().has_value())) {
       touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
