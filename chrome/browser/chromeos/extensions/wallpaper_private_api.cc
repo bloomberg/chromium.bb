@@ -267,7 +267,7 @@ WallpaperPrivateGetSyncSettingFunction::Run() {
 }
 
 void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = std::make_unique<base::DictionaryValue>();
 
   if (retry_number_ > kRetryLimit) {
     // It's most likely that the wallpaper synchronization is enabled (It's
@@ -280,25 +280,27 @@ void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
 
   Profile* profile =  Profile::FromBrowserContext(browser_context());
   browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  if (!sync_service) {
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  if (!sync_service || !sync_service->CanSyncFeatureStart()) {
+    // Sync as a whole is disabled.
     dict->SetBoolean(kSyncThemes, false);
     Respond(OneArgument(std::move(dict)));
     return;
   }
 
-  if (sync_service->GetTransportState() ==
-      syncer::SyncService::TransportState::ACTIVE) {
+  if (sync_service->IsFirstSetupComplete()) {
+    // Sync is set up. Report whether the user has chosen to sync themes.
     dict->SetBoolean(kSyncThemes,
-                     sync_service->GetActiveDataTypes().Has(syncer::THEMES));
+                     sync_service->GetUserSettings()->GetChosenDataTypes().Has(
+                         syncer::THEMES));
     Respond(OneArgument(std::move(dict)));
     return;
   }
 
-  // It's possible that the profile sync service hasn't finished configuring yet
-  // when we're trying to query the user preference (this seems only happen for
-  // the first time configuration). In this case GetActiveDataTypes() returns an
-  // empty set. So re-check the status later.
+  // The user hasn't finished setting up sync, so we don't know whether they'll
+  // want to sync themes. Try again in a bit.
+  // TODO(xdai): It would be cleaner to implement a SyncServiceObserver and wait
+  // for OnStateChanged() instead of polling.
   retry_number_++;
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
