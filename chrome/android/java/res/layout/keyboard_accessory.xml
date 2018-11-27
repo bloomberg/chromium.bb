@@ -22,7 +22,7 @@
      <ImageView
         android:id="@+id/accessory_shadow"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/keyboard_accessory_shadow"
+        android:layout_height="@dimen/toolbar_shadow_height"
         android:src="@drawable/modern_toolbar_shadow"
         android:scaleType="fitXY"
         android:scaleY="-1"

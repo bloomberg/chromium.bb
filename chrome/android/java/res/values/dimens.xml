@@ -130,9 +130,9 @@
     <dimen name="keyboard_accessory_action_padding">16dp</dimen>
     <dimen name="keyboard_accessory_half_padding">6dp</dimen>
     <dimen name="keyboard_accessory_height">48dp</dimen>
-    <dimen name="keyboard_accessory_height_with_shadow">50dp</dimen>
+    <dimen name="keyboard_accessory_height_with_shadow">56dp</dimen>
     <dimen name="keyboard_accessory_padding">6dp</dimen>
-    <dimen name="keyboard_accessory_shadow">2dp</dimen>
+    <dimen name="keyboard_accessory_shadow">5dp</dimen>
     <dimen name="keyboard_accessory_sheet_height">330dp</dimen>
     <dimen name="keyboard_accessory_suggestion_padding">16dp</dimen>
     <dimen name="keyboard_accessory_suggestion_height">48dp</dimen>
