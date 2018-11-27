@@ -151,6 +151,8 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   }
 
  protected:
+  // MediaStreamSource implementation.
+  void DoChangeSource(const MediaStreamDevice& new_device) override;
   void DoStopSource() override;
 
   // Sets ready state and notifies the ready state to all registered tracks.
@@ -225,6 +227,9 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   // Optionally overridden by subclasses to act on whether the capturing link
   // has become secure or insecure.
   virtual void OnCapturingLinkSecured(bool is_secure) {}
+
+  // Optionally overridden by subclasses to implement changing source.
+  virtual void ChangeSourceImpl(const MediaStreamDevice& new_device) {}
 
   enum State {
     NEW,

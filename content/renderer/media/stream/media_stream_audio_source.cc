@@ -103,6 +103,16 @@ void* MediaStreamAudioSource::GetClassIdentifier() const {
   return nullptr;
 }
 
+void MediaStreamAudioSource::DoChangeSource(
+    const MediaStreamDevice& new_device) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  if (is_stopped_)
+    return;
+
+  ChangeSourceImpl(new_device);
+}
+
 std::unique_ptr<MediaStreamAudioTrack>
 MediaStreamAudioSource::CreateMediaStreamAudioTrack(const std::string& id) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -119,6 +129,13 @@ bool MediaStreamAudioSource::EnsureSourceIsStarted() {
 void MediaStreamAudioSource::EnsureSourceIsStopped() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::EnsureSourceIsStopped()";
+}
+
+void MediaStreamAudioSource::ChangeSourceImpl(
+    const MediaStreamDevice& new_device) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DVLOG(1) << "MediaStreamAudioSource@" << this << "::ChangeSourceImpl()";
+  NOTIMPLEMENTED();
 }
 
 void MediaStreamAudioSource::SetFormat(const media::AudioParameters& params) {

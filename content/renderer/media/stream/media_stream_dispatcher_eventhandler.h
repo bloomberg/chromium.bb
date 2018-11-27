@@ -17,6 +17,10 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
   // A device has been stopped in the browser process.
   virtual void OnDeviceStopped(const MediaStreamDevice& device) = 0;
 
+  // Switch to the new device within the working session.
+  virtual void OnDeviceChanged(const MediaStreamDevice& old_device,
+                               const MediaStreamDevice& new_device) = 0;
+
  protected:
   virtual ~MediaStreamDispatcherEventHandler() {}
 };

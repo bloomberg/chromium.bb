@@ -816,7 +816,6 @@ void UserMediaProcessor::OnAudioSourceStarted(
     NotifyCurrentRequestInfoOfAudioSourceStarted(source, result, result_name);
     return;
   }
-  NOTREACHED();
 }
 
 void UserMediaProcessor::NotifyCurrentRequestInfoOfAudioSourceStarted(
@@ -850,7 +849,7 @@ void UserMediaProcessor::OnDeviceStopped(const MediaStreamDevice& device) {
   const blink::WebMediaStreamSource* source_ptr = FindLocalSource(device);
   if (!source_ptr) {
     // This happens if the same device is used in several guM requests or
-    // if a user happen stop a track from JS at the same time
+    // if a user happens to stop a track from JS at the same time
     // as the underlying media device is unplugged from the system.
     return;
   }
@@ -859,6 +858,41 @@ void UserMediaProcessor::OnDeviceStopped(const MediaStreamDevice& device) {
   blink::WebMediaStreamSource source(*source_ptr);
   StopLocalSource(source, false);
   RemoveLocalSource(source);
+}
+
+void UserMediaProcessor::OnDeviceChanged(const MediaStreamDevice& old_device,
+                                         const MediaStreamDevice& new_device) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(1) << "UserMediaClientImpl::OnDeviceChange("
+           << "{old_device_id = " << old_device.id
+           << ", session id = " << old_device.session_id
+           << ", type = " << old_device.type << "}"
+           << "{new_device_id = " << new_device.id
+           << ", session id = " << new_device.session_id
+           << ", type = " << new_device.type << "})";
+
+  const blink::WebMediaStreamSource* source_ptr = FindLocalSource(old_device);
+  if (!source_ptr) {
+    // This happens if the same device is used in several guM requests or
+    // if a user happens to stop a track from JS at the same time
+    // as the underlying media device is unplugged from the system.
+    DVLOG(1) << "failed to find existing source with device " << old_device.id;
+    return;
+  }
+
+  if (old_device.type != MEDIA_NO_SERVICE &&
+      new_device.type == MEDIA_NO_SERVICE) {
+    // At present, this will only happen to the case that a new desktop capture
+    // source without audio share is selected, then the previous audio capture
+    // device should be stopped if existing.
+    DCHECK(IsAudioInputMediaType(old_device.type));
+    OnDeviceStopped(old_device);
+    return;
+  }
+
+  MediaStreamSource* const source_impl =
+      static_cast<MediaStreamSource*>(source_ptr->GetExtraData());
+  source_impl->ChangeSource(new_device);
 }
 
 blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(

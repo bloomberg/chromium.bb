@@ -311,6 +311,19 @@ MediaStreamVideoSource::GetCurrentCaptureParams() const {
   return base::Optional<media::VideoCaptureParams>();
 }
 
+void MediaStreamVideoSource::DoChangeSource(
+    const MediaStreamDevice& new_device) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(1) << "MediaStreamVideoSource::DoChangeSource: "
+           << ", new device id = " << new_device.id
+           << ", session id = " << new_device.session_id;
+  if (state_ != STARTED) {
+    return;
+  }
+
+  ChangeSourceImpl(new_device);
+}
+
 void MediaStreamVideoSource::DoStopSource() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << "DoStopSource()";
