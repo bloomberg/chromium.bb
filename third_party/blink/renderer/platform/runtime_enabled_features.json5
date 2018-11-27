@@ -606,10 +606,6 @@
       status: "experimental",
     },
     {
-      name: "IdleTimeColdModeSpellChecking",
-      status: "stable",
-    },
-    {
       name: "IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
       status: "experimental",
     },

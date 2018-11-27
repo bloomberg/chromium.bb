@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -133,8 +132,7 @@ void IdleSpellCheckController::SetNeedsInvocation() {
 }
 
 void IdleSpellCheckController::SetNeedsColdModeInvocation() {
-  if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled() ||
-      !IsSpellCheckingEnabled()) {
+  if (!IsSpellCheckingEnabled()) {
     Deactivate();
     return;
   }
@@ -152,7 +150,6 @@ void IdleSpellCheckController::SetNeedsColdModeInvocation() {
 }
 
 void IdleSpellCheckController::ColdModeTimerFired(TimerBase*) {
-  DCHECK(RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled());
   DCHECK_EQ(State::kColdModeTimerStarted, state_);
 
   if (!IsSpellCheckingEnabled() || !IsAvailable()) {
@@ -208,7 +205,6 @@ void IdleSpellCheckController::Invoke(IdleDeadline* deadline) {
     HotModeInvocation(deadline);
     SetNeedsColdModeInvocation();
   } else if (state_ == State::kColdModeRequested) {
-    DCHECK(RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled());
     state_ = State::kInColdModeInvocation;
     cold_mode_requester_->Invoke(deadline);
     if (cold_mode_requester_->FullyChecked())
