@@ -58,6 +58,7 @@ gn analyze //out/Debug <(echo '{
       * `grit()` does this.
 
 ### Outputs
+#### What to List as Outputs
 Do not list files as `outputs` unless they are important. Outputs are important
 if they are:
   * used as an input by another target, or
@@ -66,6 +67,38 @@ if they are:
 Example:
 * An action runs a binary that creates an output as well as a log file. Do not
   list the log file as an output.
+  
+#### Where to Place Outputs
+**Option 1:** To make outputs visible in codesearch (e.g. generated sources):
+* use `$target_gen_dir/$target_name.$EXTENSION`.
+
+**Option 2:** Otherwise (for binary files):
+* use `$target_out_dir/$target_name.$EXTENSION`.
+
+**Option 3:** For outputs that are required at runtime
+(e.g. [runtime_deps](https://gn.googlesource.com/gn/+/master/docs/reference.md#runtime_deps)),
+options 1 & 2 do not work because they are not archived in builder/tester bot
+configurations. In this case:
+* use `$root_out_dir/gen.runtime` or `$root_out_dir/obj.runtime`.
+
+Example:
+```python
+# This .json file is used at runtime and thus cannot go in target_gen_dir.
+_target_dir_name = rebase_path(get_label_info(":$target_name", "dir"), "//")
+_output_path = "$root_out_dir/gen.runtime/$_target_dir_name/$target_name.json"
+```
+
+**Option 4:** For outputs that map 1:1 with executables, and whose paths cannot
+be derived at runtime:
+* use `$root_build_dir/YOUR_NAME_HERE/$target_name`.
+
+Examples:
+```python
+# Wrapper scripts for apks:
+_output_path = "$root_build_dir/bin/$target_name"
+# Metadata for apks. Used by binary size tools.
+_output_path = "$root_build_dir/size-info/${invoker.name}.apk.jar.info"
+```
 
 ## Best Practices for Python Actions
 Outputs should be atomic and take advantage of `restat=1`.
