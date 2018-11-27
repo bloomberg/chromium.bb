@@ -27,7 +27,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_tests.json",
@@ -38,7 +38,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_tests.json",
@@ -49,7 +49,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_tests.json",
@@ -60,7 +60,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_tests.json",
@@ -71,7 +71,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_tests.json",
@@ -82,7 +82,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_cq_tests.json",
@@ -93,7 +93,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_cq_tests.json",
@@ -104,7 +104,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_cq_tests.json",
@@ -115,7 +115,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_cq_tests.json",
@@ -126,7 +126,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     }
   ]
 }

@@ -30,7 +30,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "cronet_unittests_ios",
@@ -41,7 +41,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "cronet_unittests_ios",
@@ -52,7 +52,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "cronet_test",
@@ -63,7 +63,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "cronet_test",
@@ -74,7 +74,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "cronet_test",
@@ -85,7 +85,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "app": "cronet_test",
@@ -96,7 +96,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     }
   ]
 }
