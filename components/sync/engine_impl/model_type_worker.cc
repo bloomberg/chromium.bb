@@ -24,6 +24,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
@@ -312,26 +313,36 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
                               : update_entity.specifics();
 
   // Passwords use their own legacy encryption scheme.
-  if (specifics.has_password()) {
+  if (specifics.password().has_encrypted()) {
     DCHECK(cryptographer);
-
-    // Independently of whether the password can be decrypted or not, we send it
-    // encrypted to the processor.
-    // TODO(crbug.com/856941): Reconsider when PASSWORDS are migrated to full
-    // USS.
-    data.specifics = specifics;
-    response_data->entity = data.PassToPtr();
+    // TODO(crbug.com/516866): If we switch away from the password legacy
+    // encryption, this method and DecryptStoredEntities() )should be already
+    // ready for that change. Add unit test for this future-proofness.
 
     // Make sure the worker defers password entities if the encryption key
     // hasn't been received yet.
-    if (!update_entity.server_defined_unique_tag().empty() ||
-        cryptographer->CanDecrypt(specifics.password().encrypted())) {
-      response_data->encryption_key_name =
-          specifics.password().encrypted().key_name();
-      return SUCCESS;
-    } else {
+    if (!cryptographer->CanDecrypt(specifics.password().encrypted())) {
+      data.specifics = specifics;
+      response_data->entity = data.PassToPtr();
       return DECRYPTION_PENDING;
     }
+    response_data->encryption_key_name =
+        specifics.password().encrypted().key_name();
+    // TODO(crbug.com/902349): Once passwords are fully migrated to USS and this
+    // feature toggle isn't needed anymore, make sure to remove the
+    // "+components/sync/driver", from "components/sync/engine_impl/DEPS"
+    if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+      // Full-blown USS implementation requires the password to be decrypted at
+      // the worker.
+      if (!DecryptPasswordSpecifics(*cryptographer, specifics,
+                                    &data.specifics)) {
+        return FAILED_TO_DECRYPT;
+      }
+    } else {
+      data.specifics = specifics;
+    }
+    response_data->entity = data.PassToPtr();
+    return SUCCESS;
   }
 
   // Check if specifics are encrypted and try to decrypt if so.
@@ -350,7 +361,7 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     response_data->encryption_key_name = specifics.encrypted().key_name();
     return SUCCESS;
   }
-  // Can't decrypt right now. Ask the entity tracker to handle it.
+  // Can't decrypt right now.
   data.specifics = specifics;
   response_data->entity = data.PassToPtr();
   return DECRYPTION_PENDING;
@@ -567,15 +578,29 @@ void ModelTypeWorker::DecryptStoredEntities() {
     EntityDataPtr data = encrypted_update.entity;
 
     sync_pb::EntitySpecifics specifics;
+    std::string encryption_key_name;
 
-    if (data->specifics.has_password()) {
+    if (data->specifics.password().has_encrypted()) {
+      encryption_key_name = data->specifics.password().encrypted().key_name();
       if (!cryptographer_->CanDecrypt(data->specifics.password().encrypted())) {
         ++it;
         continue;
       }
-      specifics = data->specifics;
+      if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+        // Full-blown USS implementation requires the password to be decrypted
+        // at the worker.
+        if (!DecryptPasswordSpecifics(*cryptographer_, data->specifics,
+                                      &specifics)) {
+          ++it;
+          continue;
+        }
+      } else {
+        specifics = data->specifics;
+      }
     } else {
       DCHECK(data->specifics.has_encrypted());
+      encryption_key_name = data->specifics.encrypted().key_name();
+
       if (!cryptographer_->CanDecrypt(data->specifics.encrypted())) {
         ++it;
         continue;
@@ -592,10 +617,7 @@ void ModelTypeWorker::DecryptStoredEntities() {
 
     UpdateResponseData decrypted_update;
     decrypted_update.response_version = encrypted_update.response_version;
-    // Copy the encryption_key_name from data->specifics before it gets
-    // overriden in data->UpdateSpecifics().
-    decrypted_update.encryption_key_name =
-        data->specifics.encrypted().key_name();
+    decrypted_update.encryption_key_name = encryption_key_name;
     decrypted_update.entity = data->UpdateSpecifics(specifics);
     pending_updates_.push_back(decrypted_update);
     it = entries_pending_decryption_.erase(it);
@@ -669,6 +691,24 @@ bool ModelTypeWorker::DecryptSpecifics(const Cryptographer& cryptographer,
   }
   if (!out->ParseFromString(plaintext)) {
     LOG(ERROR) << "Failed to parse decrypted entity";
+    return false;
+  }
+  return true;
+}
+
+// static
+bool ModelTypeWorker::DecryptPasswordSpecifics(
+    const Cryptographer& cryptographer,
+    const sync_pb::EntitySpecifics& in,
+    sync_pb::EntitySpecifics* out) {
+  DCHECK(in.has_password());
+  DCHECK(in.password().has_encrypted());
+  DCHECK(cryptographer.CanDecrypt(in.password().encrypted()));
+  // TODO(mamir): unify implementation with DecryptSpecifics() above.
+  if (!cryptographer.Decrypt(
+          in.password().encrypted(),
+          out->mutable_password()->mutable_client_only_encrypted_data())) {
+    LOG(ERROR) << "Failed to decrypt a decryptable password";
     return false;
   }
   return true;
