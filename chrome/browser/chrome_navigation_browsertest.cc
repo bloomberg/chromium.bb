@@ -845,9 +845,8 @@ class WillProcessResponseObserver : public content::WebContentsObserver {
 // submitted to load an iframe.
 // See https://crbug.com/757809.
 // Note: This test couldn't be a content_browsertests, since there would be
-// not handler defined for the "ftp" protocol in
+// no handler defined for the "ftp" protocol in
 // URLRequestJobFactoryImpl::protocol_handler_map_.
-// Flaky on Mac only.  http://crbug.com/816646
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
   net::SpawnedTestServer ftp_server(
       net::SpawnedTestServer::TYPE_FTP,
@@ -855,7 +854,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
   ASSERT_TRUE(ftp_server.Start());
 
   GURL main_url_http(embedded_test_server()->GetURL("/iframe.html"));
-  GURL main_url_ftp(ftp_server.GetURL("iframe.html"));
   GURL iframe_url_http(embedded_test_server()->GetURL("/simple.html"));
   GURL iframe_url_ftp(ftp_server.GetURL("simple.html"));
   GURL redirect_url(embedded_test_server()->GetURL("/server-redirect?"));
@@ -867,8 +865,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
   } kTestCases[] = {
       {main_url_http, iframe_url_http, true},
       {main_url_http, iframe_url_ftp, false},
-      {main_url_ftp, iframe_url_http, true},
-      {main_url_ftp, iframe_url_ftp, true},
   };
   for (const auto test_case : kTestCases) {
     // Blocking the request should work, even after a redirect.

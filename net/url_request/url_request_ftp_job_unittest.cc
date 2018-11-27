@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_states.h"
@@ -279,6 +280,9 @@ class URLRequestFtpJobTest : public TestWithScopedTaskEnvironment {
 
   FtpTestURLRequestContext* request_context() { return &request_context_; }
   TestNetworkDelegate* network_delegate() { return &network_delegate_; }
+  std::vector<std::unique_ptr<SequencedSocketData>>* socket_data() {
+    return &socket_data_;
+  }
 
  private:
   std::vector<std::unique_ptr<SequencedSocketData>> socket_data_;
@@ -289,37 +293,69 @@ class URLRequestFtpJobTest : public TestWithScopedTaskEnvironment {
 };
 
 TEST_F(URLRequestFtpJobTest, FtpProxyRequest) {
-  MockWrite writes[] = {
-    MockWrite(ASYNC, 0, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
-              "Host: ftp.example.com\r\n"
-              "Proxy-Connection: keep-alive\r\n\r\n"),
+  const struct {
+    const char* proxy_mime;
+    const char* expected_mime;
+  } kTestCases[] = {
+      {"text/vnd.chromium.ftp-dir", "text/vnd.chromium.ftp-dir"},
+      {"text/html", "application/octet-stream"},
+      {"text/plain", "application/octet-stream"},
+      {"image/png", "application/octet-stream"},
+      {"application/json", "application/octet-stream"},
+      {"", "application/octet-stream"},
   };
-  MockRead reads[] = {
-    MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n"),
-    MockRead(ASYNC, 2, "Content-Length: 9\r\n\r\n"),
-    MockRead(ASYNC, 3, "test.html"),
-  };
 
-  AddSocket(reads, writes);
+  int completed_requests = 0;
+  for (const auto test : kTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << std::endl
+                 << "Proxied MIME: " << test.proxy_mime << std::endl
+                 << "Expected MIME: " << test.expected_mime << std::endl);
 
-  TestDelegate request_delegate;
-  std::unique_ptr<URLRequest> url_request(request_context()->CreateRequest(
-      GURL("ftp://ftp.example.com/"), DEFAULT_PRIORITY, &request_delegate,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  url_request->Start();
-  ASSERT_TRUE(url_request->is_pending());
+    std::string test_mime =
+        strlen(test.proxy_mime) == 0
+            ? "X-Placeholding: Header\r\n"
+            : base::StrCat({"Content-Type: ", test.proxy_mime, "\r\n"});
 
-  // The TestDelegate will by default quit the message loop on completion.
-  base::RunLoop().Run();
+    MockWrite writes[] = {
+        MockWrite(ASYNC, 0,
+                  "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+                  "Host: ftp.example.com\r\n"
+                  "Proxy-Connection: keep-alive\r\n\r\n"),
+    };
+    MockRead reads[] = {
+        MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n"),
+        MockRead(ASYNC, 2, test_mime.c_str()),
+        MockRead(ASYNC, 3, "Content-Length: 9\r\n\r\n"),
+        MockRead(ASYNC, 4, "test.html"),
+    };
 
-  EXPECT_THAT(request_delegate.request_status(), IsOk());
-  EXPECT_EQ(ProxyServer(ProxyServer::SCHEME_HTTP,
-                        HostPortPair::FromString("localhost:80")),
-            url_request->proxy_server());
-  EXPECT_EQ(1, network_delegate()->completed_requests());
-  EXPECT_EQ(0, network_delegate()->error_count());
-  EXPECT_FALSE(request_delegate.auth_required_called());
-  EXPECT_EQ("test.html", request_delegate.data_received());
+    socket_data()->clear();
+    AddSocket(reads, writes);
+
+    TestDelegate request_delegate;
+    std::unique_ptr<URLRequest> url_request(request_context()->CreateRequest(
+        GURL("ftp://ftp.example.com/"), DEFAULT_PRIORITY, &request_delegate,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    url_request->Start();
+    ASSERT_TRUE(url_request->is_pending());
+
+    // The TestDelegate will by default quit the message loop on completion.
+    base::RunLoop().Run();
+
+    EXPECT_THAT(request_delegate.request_status(), IsOk());
+    EXPECT_EQ(ProxyServer(ProxyServer::SCHEME_HTTP,
+                          HostPortPair::FromString("localhost:80")),
+              url_request->proxy_server());
+    EXPECT_EQ(++completed_requests, network_delegate()->completed_requests());
+    EXPECT_EQ(0, network_delegate()->error_count());
+    EXPECT_FALSE(request_delegate.auth_required_called());
+    EXPECT_EQ("test.html", request_delegate.data_received());
+
+    std::string mime;
+    url_request->GetMimeType(&mime);
+    EXPECT_EQ(test.expected_mime, mime);
+  }
 }
 
 // Regression test for http://crbug.com/237526.

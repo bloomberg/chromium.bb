@@ -6,12 +6,15 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -74,6 +77,11 @@ IN_PROC_BROWSER_TEST_F(FtpBrowserTest, DirectoryListingNavigation) {
   WaitForTitle(browser()->tab_strip_model()->GetActiveWebContents(),
                "Index of /dir1/");
 
+  // Navigate to file `test.html`, verify that it's downloaded.
+  content::DownloadTestObserverTerminal download_test_observer_terminal(
+      content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE);
+
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "(function() {"
@@ -91,6 +99,8 @@ IN_PROC_BROWSER_TEST_F(FtpBrowserTest, DirectoryListingNavigation) {
       "  }"
       "})()"));
 
-  WaitForTitle(browser()->tab_strip_model()->GetActiveWebContents(),
-               "PASS");
+  download_test_observer_terminal.WaitForFinished();
+  EXPECT_EQ(download_test_observer_terminal.NumDownloadsSeenInState(
+                download::DownloadItem::COMPLETE),
+            1u);
 }

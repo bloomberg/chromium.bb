@@ -698,7 +698,6 @@ static bool SniffCRX(const char* content,
 bool ShouldSniffMimeType(const GURL& url, const std::string& mime_type) {
   bool sniffable_scheme = url.is_empty() ||
                           url.SchemeIsHTTPOrHTTPS() ||
-                          url.SchemeIs("ftp") ||
 #if defined(OS_ANDROID)
                           url.SchemeIs("content") ||
 #endif
