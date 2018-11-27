@@ -731,7 +731,7 @@ def GeneralTemplates(site_config, ge_build_config):
       hwqual=False,
       factory_toolkit=False,
       packages=['virtual/chromeos-firmware'],
-      usepkg_build_packages=True,
+      usepkg_build_packages=False,
       sync_chrome=False,
       chrome_sdk=False,
       unittests=False,
