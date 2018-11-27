@@ -44,8 +44,9 @@ const char kChromeUISignInInternalsHost[] = "signin-internals";
 const char kChromeUISuggestionsHost[] = "suggestions";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUITermsHost[] = "terms";
-const char kChromeUIVersionHost[] = "version";
 const char kChromeUIURLKeyedMetricsHost[] = "ukm";
+const char kChromeUIUserActionsHost[] = "user-actions";
+const char kChromeUIVersionHost[] = "version";
 
 // Add hosts here to be included in chrome://chrome-urls (about:about).
 // These hosts will also be suggested by BuiltinProvider.
@@ -63,6 +64,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUISuggestionsHost,
     kChromeUISyncInternalsHost,
     kChromeUITermsHost,
+    kChromeUIUserActionsHost,
     kChromeUIVersionHost,
 };
 const size_t kNumberOfChromeHostURLs = base::size(kChromeHostURLs);
