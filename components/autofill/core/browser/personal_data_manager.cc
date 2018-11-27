@@ -37,6 +37,7 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/autofill/core/browser/suggestion_selection.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -137,26 +138,6 @@ bool IsSyncEnabledFor(const syncer::SyncService* sync_service,
          sync_service->GetPreferredDataTypes().Has(model_type);
 }
 
-// In addition to just getting the values out of the autocomplete profile, this
-// function handles formatting of the street address into a single string.
-base::string16 GetInfoInOneLine(const AutofillProfile* profile,
-                                const AutofillType& type,
-                                const std::string app_locale) {
-  std::vector<base::string16> results;
-
-  AddressField address_field;
-  if (i18n::FieldForType(type.GetStorableType(), &address_field) &&
-      address_field == STREET_ADDRESS) {
-    std::string street_address_line;
-    GetStreetAddressLinesAsSingleLine(
-        *i18n::CreateAddressDataFromAutofillProfile(*profile, app_locale),
-        &street_address_line);
-    return base::UTF8ToUTF16(street_address_line);
-  }
-
-  return profile->GetInfo(type, app_locale);
-}
-
 // Receives the loaded profiles from the web data service and stores them in
 // |*dest|. The pending handle is the address of the pending handle
 // corresponding to this request type. This function is used to save both
@@ -178,52 +159,6 @@ void ReceiveLoadedDbValues(WebDataServiceBase::Handle h,
 static bool CompareVotes(const std::pair<std::string, int>& a,
                          const std::pair<std::string, int>& b) {
   return a.second < b.second;
-}
-
-// Returns whether the |suggestion| is valid considering the
-// |field_contents_canon|, the |type| and |is_masked_server_card|. Assigns true
-// to |is_prefix_matched| if the |field_contents_canon| is a prefix to
-// |suggestion|, assigns false otherwise.
-bool IsValidSuggestionForFieldContents(base::string16 suggestion_canon,
-                                       base::string16 field_contents_canon,
-                                       const AutofillType& type,
-                                       bool is_masked_server_card,
-                                       bool* is_prefix_matched) {
-  *is_prefix_matched = true;
-
-  // Phones should do a substring match because they can be trimmed to remove
-  // the first parts (e.g. country code or prefix). It is still considered a
-  // prefix match in order to put it at the top of the suggestions.
-  if ((type.group() == PHONE_HOME || type.group() == PHONE_BILLING) &&
-      suggestion_canon.find(field_contents_canon) != base::string16::npos) {
-    return true;
-  }
-
-  // For card number fields, suggest the card if:
-  // - the number matches any part of the card, or
-  // - it's a masked card and there are 6 or fewer typed so far.
-  if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
-    if (suggestion_canon.find(field_contents_canon) == base::string16::npos &&
-        (!is_masked_server_card || field_contents_canon.size() >= 6)) {
-      return false;
-    }
-    return true;
-  }
-
-  if (base::StartsWith(suggestion_canon, field_contents_canon,
-                       base::CompareCase::SENSITIVE)) {
-    return true;
-  }
-
-  if (IsFeatureSubstringMatchEnabled() &&
-      suggestion_canon.length() >= field_contents_canon.length() &&
-      GetTextSelectionStart(suggestion_canon, field_contents_canon, false) !=
-          base::string16::npos) {
-    *is_prefix_matched = false;
-    return true;
-  }
-
-  return false;
 }
 
 AutofillProfile CreateBasicTestAddress(const std::string& locale) {
@@ -1049,8 +984,8 @@ void PersonalDataManager::ResetFullServerCards() {
       UpdateServerCreditCard(card_copy);
     }
   }
-    UMA_HISTOGRAM_COUNTS_100("Autofill.ResetFullServerCards.NumberOfCardsReset",
-                             nb_cards_reset);
+  UMA_HISTOGRAM_COUNTS_100("Autofill.ResetFullServerCards.NumberOfCardsReset",
+                           nb_cards_reset);
 }
 
 void PersonalDataManager::ClearAllServerData() {
@@ -1288,22 +1223,6 @@ std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
 }
 
 // static
-void PersonalDataManager::RemoveProfilesNotUsedSinceTimestamp(
-    base::Time min_last_used,
-    std::vector<AutofillProfile*>* profiles) {
-  const size_t original_size = profiles->size();
-  profiles->erase(
-      std::stable_partition(profiles->begin(), profiles->end(),
-                            [min_last_used](const AutofillDataModel* m) {
-                              return m->use_date() > min_last_used;
-                            }),
-      profiles->end());
-  const size_t num_profiles_supressed = original_size - profiles->size();
-  AutofillMetrics::LogNumberOfAddressesSuppressedForDisuse(
-      num_profiles_supressed);
-}
-
-// static
 void PersonalDataManager::MaybeRemoveInvalidSuggestions(
     const AutofillType& type,
     std::vector<AutofillProfile*>* profiles) {
@@ -1349,7 +1268,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
       comparator.NormalizeForComparison(field_contents);
 
   // Get the profiles to suggest, which are already sorted.
-  std::vector<AutofillProfile*> profiles = GetProfilesToSuggest();
+  std::vector<AutofillProfile*> sorted_profiles = GetProfilesToSuggest();
 
   // When suggesting with no prefix to match, consider suppressing disused
   // address suggestions as well as those based on invalid profile data.
@@ -1358,82 +1277,26 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
             features::kAutofillSuppressDisusedAddresses)) {
       const base::Time min_last_used =
           AutofillClock::Now() - kDisusedProfileTimeDelta;
-      RemoveProfilesNotUsedSinceTimestamp(min_last_used, &profiles);
+      suggestion_selection::RemoveProfilesNotUsedSinceTimestamp(
+          min_last_used, &sorted_profiles);
     }
     // We need the updated information on the validity states of the profiles.
-    UpdateProfilesValidityMapsIfNeeded(profiles);
-    MaybeRemoveInvalidSuggestions(type, &profiles);
+    UpdateProfilesValidityMapsIfNeeded(sorted_profiles);
+    MaybeRemoveInvalidSuggestions(type, &sorted_profiles);
   }
 
-  std::vector<Suggestion> suggestions;
-  // Match based on a prefix search.
   std::vector<AutofillProfile*> matched_profiles;
-  for (AutofillProfile* profile : profiles) {
-    base::string16 value = GetInfoInOneLine(profile, type, app_locale_);
-    if (value.empty())
-      continue;
-
-    bool prefix_matched_suggestion;
-    base::string16 suggestion_canon = comparator.NormalizeForComparison(value);
-    if (IsValidSuggestionForFieldContents(
-            suggestion_canon, field_contents_canon, type,
-            /* is_masked_server_card= */ false, &prefix_matched_suggestion)) {
-      matched_profiles.push_back(profile);
-      suggestions.push_back(Suggestion(value));
-      suggestions.back().backend_id = profile->guid();
-      suggestions.back().match = prefix_matched_suggestion
-                                     ? Suggestion::PREFIX_MATCH
-                                     : Suggestion::SUBSTRING_MATCH;
-    }
-  }
-
-  // Prefix matches should precede other token matches.
-  if (IsFeatureSubstringMatchEnabled()) {
-    std::stable_sort(suggestions.begin(), suggestions.end(),
-                     [](const Suggestion& a, const Suggestion& b) {
-                       return a.match < b.match;
-                     });
-  }
+  std::vector<Suggestion> suggestions =
+      suggestion_selection::GetPrefixMatchedSuggestions(
+          type, field_contents_canon, comparator, sorted_profiles,
+          &matched_profiles);
 
   // Don't show two suggestions if one is a subset of the other.
   std::vector<AutofillProfile*> unique_matched_profiles;
-  std::vector<Suggestion> unique_suggestions;
-  // If there are many profiles, subset checking will take a long time(easily
-  // seconds). We will only do this if the profiles count is reasonable.
-  if (matched_profiles.size() <= 15) {
-    ServerFieldTypeSet types(other_field_types.begin(),
-                             other_field_types.end());
-    for (size_t i = 0; i < matched_profiles.size(); ++i) {
-      bool include = true;
-      AutofillProfile* profile_a = matched_profiles[i];
-      for (size_t j = 0; j < matched_profiles.size(); ++j) {
-        AutofillProfile* profile_b = matched_profiles[j];
-        // Check if profile A is a subset of profile B. If not, continue.
-        if (i == j || suggestions[i].value != suggestions[j].value ||
-            !profile_a->IsSubsetOfForFieldSet(*profile_b, app_locale_, types)) {
-          continue;
-        }
-
-        // Check if profile B is also a subset of profile A. If so, the
-        // profiles are identical. Include the first one but not the second.
-        if (i < j &&
-            profile_b->IsSubsetOfForFieldSet(*profile_a, app_locale_, types)) {
-          continue;
-        }
-
-        // One-way subset. Don't include profile A.
-        include = false;
-        break;
-      }
-      if (include) {
-        unique_matched_profiles.push_back(matched_profiles[i]);
-        unique_suggestions.push_back(suggestions[i]);
-      }
-    }
-  } else {
-    unique_matched_profiles = matched_profiles;
-    unique_suggestions = suggestions;
-  }
+  std::vector<Suggestion> unique_suggestions =
+      suggestion_selection::GetUniqueSuggestions(other_field_types, app_locale_,
+                                                 matched_profiles, suggestions,
+                                                 &unique_matched_profiles);
 
   // Generate disambiguating labels based on the list of matches.
   std::vector<base::string16> labels;
@@ -2188,7 +2051,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
         base::i18n::ToLower(creditcard_field_value);
 
     bool prefix_matched_suggestion;
-    if (IsValidSuggestionForFieldContents(
+    if (suggestion_selection::IsValidSuggestionForFieldContents(
             creditcard_field_lower, field_contents_lower, type,
             credit_card->record_type() == CreditCard::MASKED_SERVER_CARD,
             &prefix_matched_suggestion)) {

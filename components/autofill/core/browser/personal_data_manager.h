@@ -268,12 +268,6 @@ class PersonalDataManager : public KeyedService,
   // Returns the profiles to suggest to the user, ordered by frecency.
   std::vector<AutofillProfile*> GetProfilesToSuggest() const;
 
-  // Remove profiles that haven't been used after |min_last_used| from
-  // |profiles|. The relative ordering of |profiles| is maintained.
-  static void RemoveProfilesNotUsedSinceTimestamp(
-      base::Time min_last_used,
-      std::vector<AutofillProfile*>* profiles);
-
   // Remove profiles that whose |type| field is flagged as invalid, if Chrome
   // is configured to not make suggestions based on invalid data.
   static void MaybeRemoveInvalidSuggestions(
