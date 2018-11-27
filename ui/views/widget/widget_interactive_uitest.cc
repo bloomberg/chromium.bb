@@ -1177,7 +1177,8 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
   RunPendingMessages();
 
   ui::test::EventGenerator generator(GetRootWindow(widget));
-  generator.GestureTapAt(gfx::Point(10, 10));
+  generator.GestureTapAt(textfield->GetBoundsInScreen().origin() +
+                         gfx::Vector2d(10, 10));
   ShowQuickMenuImmediately(static_cast<TouchSelectionControllerImpl*>(
       textfield_test_api.touch_selection_controller()));
 

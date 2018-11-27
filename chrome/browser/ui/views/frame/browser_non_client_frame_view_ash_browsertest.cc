@@ -635,8 +635,7 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
   ui::test::EventGenerator event_generator(window->GetRootWindow());
   gfx::Size button_size =
       ash::GetAshLayoutSize(ash::AshLayoutSize::kBrowserCaptionMaximized);
-  gfx::Point point_in_restore_button(
-      window->GetBoundsInRootWindow().top_right());
+  gfx::Point point_in_restore_button(window->GetBoundsInScreen().top_right());
   point_in_restore_button.Offset(-2 * button_size.width(),
                                  button_size.height() / 2);
 

@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/default_event_generator_delegate.h"
 
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -22,7 +23,7 @@ ui::EventTarget* DefaultEventGeneratorDelegate::GetTargetAt(
 client::ScreenPositionClient*
 DefaultEventGeneratorDelegate::GetScreenPositionClient(
     const Window* window) const {
-  return nullptr;
+  return client::GetScreenPositionClient(root_window_);
 }
 
 }  // namespace test
