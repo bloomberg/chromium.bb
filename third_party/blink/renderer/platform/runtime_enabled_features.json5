@@ -619,7 +619,7 @@
     },
     {
       name: "ImplicitRootScroller",
-      status: "stable",
+      status: "experimental",
       settable_from_internals: true,
     },
     {
