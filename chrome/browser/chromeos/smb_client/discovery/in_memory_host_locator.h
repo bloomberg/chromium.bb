@@ -15,6 +15,8 @@ namespace smb_client {
 class InMemoryHostLocator : public HostLocator {
  public:
   InMemoryHostLocator();
+  explicit InMemoryHostLocator(bool should_run_synchronously);
+
   ~InMemoryHostLocator() override;
 
   // Adds host with |hostname| and |address| to host_map_.
@@ -29,8 +31,13 @@ class InMemoryHostLocator : public HostLocator {
   // HostLocator override.
   void FindHosts(FindHostsCallback callback) override;
 
+  // Runs the callback, |stored_callback_|.
+  void RunCallback();
+
  private:
   HostMap host_map_;
+  FindHostsCallback stored_callback_;
+  bool should_run_synchronously_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryHostLocator);
 };
