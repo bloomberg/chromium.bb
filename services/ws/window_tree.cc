@@ -317,6 +317,11 @@ bool WindowTree::IsWindowKnown(aura::Window* window) const {
   return window && known_windows_map_.count(window) > 0u;
 }
 
+Id WindowTree::TransportIdForWindow(aura::Window* window) const {
+  DCHECK(IsWindowKnown(window));
+  return ClientWindowIdToTransportId(ClientWindowIdForWindow(window));
+}
+
 ClientWindowId WindowTree::ClientWindowIdForWindow(aura::Window* window) const {
   auto iter = known_windows_map_.find(window);
   return iter == known_windows_map_.end() ? ClientWindowId()
@@ -636,11 +641,6 @@ Id WindowTree::ClientWindowIdToTransportId(
     return client_window_id.sink_id();
   const Id client_id = client_window_id.client_id();
   return (client_id << 32) | client_window_id.sink_id();
-}
-
-Id WindowTree::TransportIdForWindow(aura::Window* window) const {
-  DCHECK(IsWindowKnown(window));
-  return ClientWindowIdToTransportId(ClientWindowIdForWindow(window));
 }
 
 ClientWindowId WindowTree::MakeClientWindowId(Id transport_window_id) const {

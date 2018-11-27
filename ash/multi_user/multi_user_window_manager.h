@@ -21,6 +21,7 @@
 namespace ash {
 
 class MultiUserWindowManagerDelegate;
+class MultiUserWindowManagerWindowDelegate;
 class UserSwitchAnimator;
 
 // MultiUserWindowManager associates windows with users and ensures the
@@ -63,10 +64,15 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
   // Associates a window with a particular account. This may result in hiding
   // |window|. This should *not* be called more than once with a different
   // account. If |show_for_current_user| is true, this sets the 'shown'
-  // account to the current account.
+  // account to the current account. If |delegate| is non-null, it is notified
+  // of changes rather than MultiUserWindowManagerDelegate.
   void SetWindowOwner(aura::Window* window,
                       const AccountId& account_id,
-                      bool show_for_current_user);
+                      bool show_for_current_user,
+                      MultiUserWindowManagerWindowDelegate* delegate = nullptr);
+
+  // Removes all references to |delegate|.
+  void RemoveWindowDelegate(MultiUserWindowManagerWindowDelegate* delegate);
 
   // Sets the 'shown' account for a window. See class description for details on
   // what the 'shown' account is. This function may trigger changing the active
@@ -103,8 +109,9 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
  protected:
   class WindowEntry {
    public:
-    explicit WindowEntry(const AccountId& account_id)
-        : owner_(account_id), show_for_user_(account_id) {}
+    WindowEntry(const AccountId& account_id,
+                MultiUserWindowManagerWindowDelegate* delegate)
+        : owner_(account_id), show_for_user_(account_id), delegate_(delegate) {}
     ~WindowEntry() {}
 
     // Returns the owner of this window. This cannot be changed.
@@ -125,12 +132,17 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
     // Sets if the window gets shown for the active user or not.
     void set_show(bool show) { show_ = show; }
 
+    void clear_delegate() { delegate_ = nullptr; }
+    MultiUserWindowManagerWindowDelegate* delegate() { return delegate_; }
+
    private:
     // The user id of the owner of this window.
     const AccountId owner_;
 
     // The user id of the user on which desktop the window gets shown.
     AccountId show_for_user_;
+
+    MultiUserWindowManagerWindowDelegate* delegate_;
 
     // True if the window should be visible for the user which shows the window.
     bool show_ = true;

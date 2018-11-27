@@ -149,6 +149,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // windows exposed to the client are referred to as the known windows.
   bool IsWindowKnown(aura::Window* window) const;
 
+  Id TransportIdForWindow(aura::Window* window) const;
+
   ClientWindowId ClientWindowIdForWindow(aura::Window* window) const;
 
   // If |window| is a client root, the ClientRoot is returned. This does not
@@ -282,8 +284,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // were created by this client always have the high bits set to 0 (because
   // the client doesn't know its own id).
   Id ClientWindowIdToTransportId(const ClientWindowId& client_window_id) const;
-
-  Id TransportIdForWindow(aura::Window* window) const;
 
   // Returns the ClientWindowId from a transport id. Uses |client_id_| as the
   // ClientWindowId::client_id part if invalid. This function does a straight

@@ -18,7 +18,16 @@ MultiUserWindowManagerBridge::MultiUserWindowManagerBridge(
                mojo::AssociatedInterfaceRequest<mojom::MultiUserWindowManager>(
                    std::move(handle))) {}
 
-MultiUserWindowManagerBridge::~MultiUserWindowManagerBridge() = default;
+MultiUserWindowManagerBridge::~MultiUserWindowManagerBridge() {
+  // We may get here after MultiUserWindowManager has been destroyed.
+  if (ash::MultiUserWindowManager::Get())
+    ash::MultiUserWindowManager::Get()->RemoveWindowDelegate(this);
+}
+
+void MultiUserWindowManagerBridge::SetClient(
+    mojom::MultiUserWindowManagerClientAssociatedPtrInfo client_info) {
+  client_.Bind(std::move(client_info));
+}
 
 void MultiUserWindowManagerBridge::SetWindowOwner(ws::Id window_id,
                                                   const AccountId& account_id,
@@ -29,8 +38,8 @@ void MultiUserWindowManagerBridge::SetWindowOwner(ws::Id window_id,
   DCHECK(ash::MultiUserWindowManager::Get());
   aura::Window* window = window_tree_->GetWindowByTransportId(window_id);
   if (window && window_tree_->IsTopLevel(window)) {
-    ash::MultiUserWindowManager::Get()->SetWindowOwner(window, account_id,
-                                                       show_for_current_user);
+    ash::MultiUserWindowManager::Get()->SetWindowOwner(
+        window, account_id, show_for_current_user, this);
   } else {
     DVLOG(1) << "SetWindowOwner passed invalid window, id=" << window_id;
   }
@@ -48,6 +57,18 @@ void MultiUserWindowManagerBridge::ShowWindowForUser(
     ash::MultiUserWindowManager::Get()->ShowWindowForUser(window, account_id);
   else
     DVLOG(1) << "ShowWindowForUser passed invalid window, id=" << window_id;
+}
+
+void MultiUserWindowManagerBridge::OnWindowOwnerEntryChanged(
+    aura::Window* window,
+    const AccountId& account_id,
+    bool was_minimized,
+    bool teleported) {
+  if (!client_)
+    return;
+
+  client_->OnWindowOwnerEntryChanged(window_tree_->TransportIdForWindow(window),
+                                     account_id, was_minimized, teleported);
 }
 
 }  // namespace ash

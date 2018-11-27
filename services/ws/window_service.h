@@ -110,10 +110,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Returns true if |window| hosts a remote client and is a toplevel window.
   static bool IsTopLevelWindow(const aura::Window* window);
 
-  // Returns the transport id for |window|. If |window| is not a top-level
-  // window, returns kInvalidTransportId.
-  ws::Id GetTopLevelWindowId(aura::Window* window);
-
   // Returns the window representing the specified id.
   aura::Window* GetWindowByClientId(Id transport_id);
 
