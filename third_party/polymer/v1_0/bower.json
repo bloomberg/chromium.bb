@@ -45,7 +45,7 @@
     "paper-tooltip": "PolymerElements/paper-tooltip#2.0.0",
     "polymer2": "Polymer/polymer#2.6.0",
     "polymer": "Polymer/polymer#1.11.2",
-    "shadycss": "webcomponents/shadycss#1.2.1",
+    "shadycss": "webcomponents/shadycss#1.6.0",
     "web-animations-js": "web-animations/web-animations-js#2.2.2"
   }
 }
