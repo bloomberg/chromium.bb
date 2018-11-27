@@ -18,7 +18,6 @@ using ::testing::HasSubstr;
 using ::testing::InSequence;
 using ::testing::Property;
 using ::testing::StrictMock;
-using ::testing::_;
 
 namespace http2 {
 namespace test {

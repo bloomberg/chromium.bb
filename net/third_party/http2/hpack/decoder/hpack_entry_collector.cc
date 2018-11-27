@@ -26,13 +26,8 @@ HpackEntryCollector::HpackEntryCollector() {
   Clear();
 }
 
-HpackEntryCollector::HpackEntryCollector(const HpackEntryCollector& other)
-    : header_type_(other.header_type_),
-      index_(other.index_),
-      name_(other.name_),
-      value_(other.value_),
-      started_(other.started_),
-      ended_(other.ended_) {}
+HpackEntryCollector::HpackEntryCollector(const HpackEntryCollector& other) =
+    default;
 
 HpackEntryCollector::HpackEntryCollector(HpackEntryType type,
                                          size_t index_or_size)

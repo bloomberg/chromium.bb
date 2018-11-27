@@ -77,7 +77,7 @@ AssertionResult FrameParts::VerifyEquals(const FrameParts& that) const {
   VERIFY_EQ(padding_, that.padding_) << COMMON_MESSAGE;
   VERIFY_EQ(altsvc_origin_, that.altsvc_origin_) << COMMON_MESSAGE;
   VERIFY_EQ(altsvc_value_, that.altsvc_value_) << COMMON_MESSAGE;
-  VERIFY_EQ(settings_, that.settings_) << COMMON_MESSAGE;
+  VERIFY_THAT(settings_, ContainerEq(that.settings_)) << COMMON_MESSAGE;
 
 #define VERIFY_OPTIONAL_FIELD(field_name) \
   VERIFY_SUCCESS(VerifyOptionalEq(field_name, that.field_name))

@@ -44,6 +44,36 @@ E IncrementEnum(E e) {
   return static_cast<E>(1 + static_cast<I>(e));
 }
 
+template <class T>
+AssertionResult VerifyRandomCalls() {
+  T t1;
+  Http2Random seq1;
+  Randomize(&t1, &seq1);
+
+  T t2;
+  Http2Random seq2(seq1.Key());
+  Randomize(&t2, &seq2);
+
+  // The two Randomize calls should have made the same number of calls into
+  // the Http2Random implementations.
+  VERIFY_EQ(seq1.Rand64(), seq2.Rand64());
+
+  // And because Http2Random implementation is returning the same sequence, and
+  // Randomize should have been consistent in applying those results, the two
+  // Ts should have the same value.
+  VERIFY_EQ(t1, t2);
+
+  Randomize(&t2, &seq2);
+  VERIFY_NE(t1, t2);
+
+  Randomize(&t1, &seq1);
+  VERIFY_EQ(t1, t2);
+
+  VERIFY_EQ(seq1.Rand64(), seq2.Rand64());
+
+  return AssertionSuccess();
+}
+
 #if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
 std::vector<Http2FrameType> ValidFrameTypes() {
   std::vector<Http2FrameType> valid_types{Http2FrameType::DATA};
@@ -111,6 +141,8 @@ TEST(Http2FrameHeaderTest, Eq) {
   EXPECT_TRUE(v == u);
   EXPECT_FALSE(u != v);
   EXPECT_FALSE(v != u);
+
+  EXPECT_TRUE(VerifyRandomCalls<Http2FrameHeader>());
 }
 
 #if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
@@ -345,6 +377,8 @@ TEST(Http2PriorityFieldsTest, Constructor) {
   EXPECT_DEBUG_DEATH(
       Http2PriorityFields(stream_dependency, weight + 256, is_exclusive),
       "too large");
+
+  EXPECT_TRUE(VerifyRandomCalls<Http2PriorityFields>());
 }
 #endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
 
@@ -354,6 +388,8 @@ TEST(Http2RstStreamFieldsTest, IsSupported) {
 
   Http2RstStreamFields u{static_cast<Http2ErrorCode>(~0)};
   EXPECT_FALSE(u.IsSupportedErrorCode()) << v;
+
+  EXPECT_TRUE(VerifyRandomCalls<Http2RstStreamFields>());
 }
 
 TEST(Http2SettingFieldsTest, Misc) {
@@ -388,6 +424,8 @@ TEST(Http2SettingFieldsTest, Misc) {
   std::stringstream s;
   s << x;
   EXPECT_EQ("parameter=MAX_FRAME_SIZE, value=123", s.str());
+
+  EXPECT_TRUE(VerifyRandomCalls<Http2SettingFields>());
 }
 
 TEST(Http2PushPromiseTest, Misc) {
@@ -410,6 +448,8 @@ TEST(Http2PushPromiseTest, Misc) {
 
   v.promised_stream_id = promised_stream_id;
   EXPECT_EQ(v, w);
+
+  EXPECT_TRUE(VerifyRandomCalls<Http2PushPromiseFields>());
 }
 
 TEST(Http2PingFieldsTest, Misc) {
@@ -417,6 +457,8 @@ TEST(Http2PingFieldsTest, Misc) {
   std::stringstream s;
   s << v;
   EXPECT_EQ("opaque_bytes=0x3820627974657300", s.str());
+
+  EXPECT_TRUE(VerifyRandomCalls<Http2PingFields>());
 }
 
 TEST(Http2GoAwayFieldsTest, Misc) {
@@ -439,6 +481,8 @@ TEST(Http2GoAwayFieldsTest, Misc) {
   EXPECT_NE(v, u);
   EXPECT_NE(v.last_stream_id, u.last_stream_id);
   EXPECT_EQ(v.error_code, u.error_code);
+
+  EXPECT_TRUE(VerifyRandomCalls<Http2GoAwayFields>());
 }
 
 TEST(Http2WindowUpdateTest, Misc) {
@@ -462,6 +506,8 @@ TEST(Http2WindowUpdateTest, Misc) {
 
   v.window_size_increment = window_size_increment;
   EXPECT_EQ(v, w);
+
+  EXPECT_TRUE(VerifyRandomCalls<Http2WindowUpdateFields>());
 }
 
 TEST(Http2AltSvcTest, Misc) {
@@ -482,6 +528,8 @@ TEST(Http2AltSvcTest, Misc) {
 
   v.origin_length = w.origin_length;
   EXPECT_EQ(v, w);
+
+  EXPECT_TRUE(VerifyRandomCalls<Http2AltSvcFields>());
 }
 
 }  // namespace

@@ -209,7 +209,8 @@ class RandomDecoderTest : public ::testing::Test {
   // TODO(jamessynge): Replace this overload with the next, as using this method
   // usually means that the wrapped function doesn't need to be passed the
   // DecodeBuffer nor the DecodeStatus.
-  static Validator ValidateDoneAndOffset(uint32_t offset, Validator wrapped) {
+  static Validator ValidateDoneAndOffset(uint32_t offset,
+                                         const Validator& wrapped) {
     return [wrapped, offset](const DecodeBuffer& input,
                              DecodeStatus status) -> AssertionResult {
       VERIFY_EQ(status, DecodeStatus::kDecodeDone);
