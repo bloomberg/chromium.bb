@@ -1062,20 +1062,23 @@ void GLRenderer::UpdateRPDQShadersForBlending(
           DCHECK(params->background_image_id || IsContextLost());
         }
       }
-    }
-
-    if (params->background_image_id) {
-      // Reset original background texture if there is not any mask.
-      if (!quad->mask_resource_id()) {
+      if (params->background_image_id) {
+        // Reset original background texture if there is not any mask.
+        if (!quad->mask_resource_id()) {
+          gl_->DeleteTextures(1, &params->background_texture);
+          params->background_texture = 0;
+        }
+      } else if (CanApplyBlendModeUsingBlendFunc(blend_mode) &&
+                 ShouldApplyBackgroundFilters(quad, params->backdrop_filters)) {
+        // Something went wrong with applying background filters to the
+        // backdrop.
+        params->use_shaders_for_blending = false;
         gl_->DeleteTextures(1, &params->background_texture);
         params->background_texture = 0;
       }
-    } else if (CanApplyBlendModeUsingBlendFunc(blend_mode) &&
-               ShouldApplyBackgroundFilters(quad, params->backdrop_filters)) {
-      // Something went wrong with applying background filters to the backdrop.
+    } else {  // params->background_rect.IsEmpty()
+      DCHECK(!params->background_image_id);
       params->use_shaders_for_blending = false;
-      gl_->DeleteTextures(1, &params->background_texture);
-      params->background_texture = 0;
     }
   }
 
