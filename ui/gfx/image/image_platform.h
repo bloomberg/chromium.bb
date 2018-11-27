@@ -35,13 +35,11 @@ namespace internal {
 #if defined(OS_IOS)
 scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromUIImage(
     UIImage* uiimage);
-// Caller takes ownership of the returned UIImage.
-UIImage* CreateUIImageFromPNG(const std::vector<ImagePNGRep>& image_png_reps);
+UIImage* UIImageFromPNG(const std::vector<ImagePNGRep>& image_png_reps);
 gfx::Size UIImageSize(UIImage* image);
 #elif defined(OS_MACOSX)
 scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromNSImage(
     NSImage* nsimage);
-// Caller takes ownership of the returned NSImage.
 NSImage* NSImageFromPNG(const std::vector<ImagePNGRep>& image_png_reps,
                         CGColorSpaceRef color_space);
 gfx::Size NSImageSize(NSImage* image);
