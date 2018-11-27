@@ -292,6 +292,14 @@ void SigninManager::Initialize(PrefService* local_state) {
     //
     // Note: The token service has not yet loaded its credentials, so accounts
     // cannot be revoked here.
+    //
+    // On desktop, when SigninManager is initializing, the profile was not yet
+    // marked with sign out allowed. Therefore sign out is not allowed and all
+    // calls to SignOut methods are no-op.
+    //
+    // TODO(msarda): SignOut methods do not gurantee that sign out can actually
+    // be done (this depends on whether sign out is allowed). Add a check here
+    // on desktop to make it clear that SignOut does not do anything.
     SignOutAndKeepAllAccounts(signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN,
                               signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
