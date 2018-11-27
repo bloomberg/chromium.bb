@@ -50,7 +50,10 @@ import java.util.concurrent.Callable;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1",
+})
 public class SiteSettingsPreferencesTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
@@ -387,7 +390,38 @@ public class SiteSettingsPreferencesTest {
         Assert.assertEquals(
                 "\"Foo=Bar\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
-        WebsiteAddress address = WebsiteAddress.create(url);
+        resetSite(WebsiteAddress.create(url));
+
+        // Load the page again and ensure the cookie is gone.
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+    }
+
+    /**
+     * Set cookies for domains and check that they are removed when a site is cleared.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testClearDomainCookies() throws Exception {
+        final String url = mTestServer.getURLWithHostName(
+                "test.example.com", "/chrome/test/data/android/cookie.html");
+
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie(\".example.com\")");
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie(\".test.example.com\")");
+        Assert.assertEquals("\"Foo=Bar; Foo=Bar\"",
+                mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        resetSite(WebsiteAddress.create("test.example.com"));
+
+        // Load the page again and ensure the cookie is gone.
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+    }
+
+    private void resetSite(WebsiteAddress address) {
         Website website = new Website(address, address);
         final Preferences preferenceActivity = startSingleWebsitePreferences(website);
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -396,10 +430,6 @@ public class SiteSettingsPreferencesTest {
             websitePreferences.resetSite();
         });
         preferenceActivity.finish();
-
-        // Load the page again and ensure the cookie is gone.
-        mActivityTestRule.loadUrl(url);
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
     }
 
     /**
@@ -510,18 +540,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testResetDoesntCrash() throws Exception {
         WebsiteAddress address = WebsiteAddress.create("example.com");
-        Website website = new Website(address, address);
-        final Preferences preferenceActivity = startSingleWebsitePreferences(website);
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                SingleWebsitePreferences websitePreferences =
-                        (SingleWebsitePreferences) preferenceActivity.getFragmentForTest();
-                websitePreferences.resetSite();
-            }
-        });
-        preferenceActivity.finish();
+        resetSite(address);
     }
 
     /**
