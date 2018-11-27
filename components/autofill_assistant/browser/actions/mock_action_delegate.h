@@ -139,6 +139,11 @@ class MockActionDelegate : public ActionDelegate {
                     const std::vector<std::string>& attribute,
                     const std::string& value,
                     base::OnceCallback<void(bool)> callback));
+
+  MOCK_METHOD3(SendKeyboardInput,
+               void(const Selector& selector,
+                    const std::string& text,
+                    base::OnceCallback<void(bool)> callback));
   MOCK_METHOD2(
       GetOuterHtml,
       void(const Selector& selector,

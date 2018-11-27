@@ -1090,11 +1090,21 @@ void WebController::OnClickElementForDispatchKeyEvent(
     base::OnceCallback<void(bool)> callback,
     bool click_status) {
   if (!click_status) {
+    OnResult(/* result= */ false, std::move(callback));
+    return;
+  }
+  DispatchKeyDownEvent(value, 0, std::move(callback));
+}
+
+void WebController::OnClickElementForSendKeyboardInput(
+    const std::string& text,
+    base::OnceCallback<void(bool)> callback,
+    bool click_status) {
+  if (!click_status) {
     OnResult(false, std::move(callback));
     return;
   }
-
-  DispatchKeyDownEvent(value, 0, std::move(callback));
+  DispatchKeyboardTextDownEvent(text, std::move(callback));
 }
 
 void WebController::DispatchKeyDownEvent(
@@ -1136,6 +1146,47 @@ void WebController::OnDispatchKeyUpEvent(
     size_t index,
     base::OnceCallback<void(bool)> callback) {
   DispatchKeyDownEvent(value, index + 1, std::move(callback));
+}
+
+void WebController::DispatchKeyboardTextDownEvent(
+    const std::string& text,
+    base::OnceCallback<void(bool)> callback) {
+  devtools_client_->GetInput()->DispatchKeyEvent(
+      CreateKeyEventParamsFromText(
+          autofill_assistant::input::DispatchKeyEventType::KEY_DOWN, text),
+      base::BindOnce(&WebController::DispatchKeyboardTextUpEvent,
+                     weak_ptr_factory_.GetWeakPtr(), text,
+                     std::move(callback)));
+}
+
+void WebController::DispatchKeyboardTextUpEvent(
+    const std::string& text,
+    base::OnceCallback<void(bool)> callback) {
+  devtools_client_->GetInput()->DispatchKeyEvent(
+      CreateKeyEventParamsFromText(
+          autofill_assistant::input::DispatchKeyEventType::KEY_UP, text),
+      base::BindOnce(&WebController::OnDispatchKeyboardTextUpEvent,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+auto WebController::CreateKeyEventParamsFromText(
+    autofill_assistant::input::DispatchKeyEventType type,
+    const std::string& text) -> DispatchKeyEventParamsPtr {
+  auto params = input::DispatchKeyEventParams::Builder().SetType(type).Build();
+  params->SetText(text);
+  return params;
+}
+
+void WebController::OnDispatchKeyboardTextUpEvent(
+    base::OnceCallback<void(bool)> callback) {
+  OnResult(/* result= */ true, std::move(callback));
+}
+
+void WebController::OnPressKeyboard(
+    int key_code,
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  OnResult(result && !result->HasExceptionDetails(), std::move(callback));
 }
 
 void WebController::OnFindElementForSetFieldValue(
@@ -1221,6 +1272,28 @@ void WebController::OnSetAttribute(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   OnResult(result && !result->HasExceptionDetails(), std::move(callback));
+}
+
+void WebController::SendKeyboardInput(const Selector& selector,
+                                      const std::string& text,
+                                      base::OnceCallback<void(bool)> callback) {
+  DCHECK(!selector.empty());
+  FindElement(selector,
+              /* strict_mode= */ true,
+              base::BindOnce(&WebController::OnFindElementForSendKeyboardInput,
+                             weak_ptr_factory_.GetWeakPtr(), selector, text,
+                             std::move(callback)));
+}
+
+void WebController::OnFindElementForSendKeyboardInput(
+    const Selector& selector,
+    const std::string& text,
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<FindElementResult> element_result) {
+  ClickElement(selector,
+               base::BindOnce(
+                   &WebController::OnClickElementForSendKeyboardInput,
+                   weak_ptr_factory_.GetWeakPtr(), text, std::move(callback)));
 }
 
 void WebController::GetOuterHtml(

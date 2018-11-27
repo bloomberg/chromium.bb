@@ -262,7 +262,9 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
                        const std::string& expected_value,
                        bool exists,
                        const std::string& value) {
-    ASSERT_EQ(expected_value, value);
+    // Don't use ASSERT_EQ here: if the check fails, this would result in
+    // an endless loop without meaningful test results.
+    EXPECT_EQ(expected_value, value);
     *pending_number_of_checks_output -= 1;
     if (*pending_number_of_checks_output == 0) {
       std::move(done_callback).Run();
@@ -286,6 +288,25 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   void OnSetFieldValue(const base::Closure& done_callback,
                        bool* result_output,
                        bool result) {
+    *result_output = result;
+    std::move(done_callback).Run();
+  }
+
+  bool SendKeyboardInput(const Selector& selector, const std::string& text) {
+    base::RunLoop run_loop;
+    bool result;
+    web_controller_->SendKeyboardInput(
+        selector, text,
+        base::BindOnce(&WebControllerBrowserTest::OnSendKeyboardInput,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       &result));
+    run_loop.Run();
+    return result;
+  }
+
+  void OnSendKeyboardInput(const base::Closure& done_callback,
+                           bool* result_output,
+                           bool result) {
     *result_output = result;
     std::move(done_callback).Run();
   }
@@ -653,6 +674,21 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
 
   EXPECT_FALSE(
       SetFieldValue(a_selector, "foobar", /* simulate_key_presses= */ false));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendKeyboardInput) {
+  std::vector<std::string> input = {
+      "Z", /* letter u with diaeresis */ "\xc3\xbc", "r", "i", "c", "h", "\r"};
+  std::vector<std::string> expected_values = {"Z\xc3\xbcrich"};
+
+  std::vector<Selector> selectors;
+  Selector a_selector;
+  a_selector.selectors.emplace_back("#input6");
+  selectors.emplace_back(a_selector);
+  for (const auto& text : input) {
+    EXPECT_TRUE(SendKeyboardInput(a_selector, text));
+  }
+  GetFieldsValue(selectors, expected_values);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SetAttribute) {

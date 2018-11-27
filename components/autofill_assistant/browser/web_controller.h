@@ -112,6 +112,12 @@ class WebController {
                             const std::string& value,
                             base::OnceCallback<void(bool)> callback);
 
+  // Sets the keyboard focus to |selector| and inputs the specified text.
+  // Returns the result through |callback|.
+  virtual void SendKeyboardInput(const Selector& selector,
+                                 const std::string& text,
+                                 base::OnceCallback<void(bool)> callback);
+
   // Return the outerHTML of |selector|.
   virtual void GetOuterHtml(
       const Selector& selector,
@@ -383,6 +389,10 @@ class WebController {
       const std::string& value,
       base::OnceCallback<void(bool)> callback,
       bool click_status);
+  void OnClickElementForSendKeyboardInput(
+      const std::string& text,
+      base::OnceCallback<void(bool)> callback,
+      bool click_status);
   void DispatchKeyDownEvent(const std::string& value,
                             size_t index,
                             base::OnceCallback<void(bool)> callback);
@@ -392,6 +402,11 @@ class WebController {
   void OnDispatchKeyUpEvent(const std::string& value,
                             size_t index,
                             base::OnceCallback<void(bool)> callback);
+  void OnDispatchKeyboardTextUpEvent(base::OnceCallback<void(bool)> callback);
+  void DispatchKeyboardTextDownEvent(const std::string& text,
+                                     base::OnceCallback<void(bool)> callback);
+  void DispatchKeyboardTextUpEvent(const std::string& text,
+                                   base::OnceCallback<void(bool)> callback);
   void OnFindElementForSetAttribute(
       const std::vector<std::string>& attribute,
       const std::string& value,
@@ -399,6 +414,14 @@ class WebController {
       std::unique_ptr<FindElementResult> element_result);
   void OnSetAttribute(base::OnceCallback<void(bool)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnFindElementForSendKeyboardInput(
+      const Selector& selector,
+      const std::string& text,
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<FindElementResult> element_result);
+  void OnPressKeyboard(int key_code,
+                       base::OnceCallback<void(bool)> callback,
+                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSetFieldValue(
       const std::string& value,
       base::OnceCallback<void(bool)> callback,
@@ -420,6 +443,14 @@ class WebController {
   void OnGetElementPositionResult(
       base::OnceCallback<void(bool, const RectF&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
+
+  // Creates a new instance of DispatchKeyEventParams for the specified type and
+  // text.
+  using DispatchKeyEventParamsPtr =
+      std::unique_ptr<autofill_assistant::input::DispatchKeyEventParams>;
+  static DispatchKeyEventParamsPtr CreateKeyEventParamsFromText(
+      autofill_assistant::input::DispatchKeyEventType type,
+      const std::string& text);
 
   void OnSetCookie(base::OnceCallback<void(bool)> callback,
                    std::unique_ptr<network::SetCookieResult> result);

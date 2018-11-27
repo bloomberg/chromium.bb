@@ -231,6 +231,14 @@ void ScriptExecutor::SetAttribute(const Selector& selector,
                                               std::move(callback));
 }
 
+void ScriptExecutor::SendKeyboardInput(
+    const Selector& selector,
+    const std::string& text,
+    base::OnceCallback<void(bool)> callback) {
+  delegate_->GetWebController()->SendKeyboardInput(selector, text,
+                                                   std::move(callback));
+}
+
 void ScriptExecutor::GetOuterHtml(
     const Selector& selector,
     base::OnceCallback<void(bool, const std::string&)> callback) {
