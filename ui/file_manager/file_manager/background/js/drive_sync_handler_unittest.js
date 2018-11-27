@@ -118,7 +118,7 @@ function testUniqueErrorIds() {
     fileUrl: '',
   });
 
-  // Check that this created second item.
+  // Check that this created a second item.
   assertEquals(2, progressCenter.getItemCount());
 }
 
@@ -139,7 +139,7 @@ function testErrorDedupe() {
     fileUrl: '',
   });
 
-  // Check that this created second item.
+  // Check that this did not create a second item.
   assertEquals(1, progressCenter.getItemCount());
 }
 
@@ -157,14 +157,16 @@ function testOffline() {
 
   // Check that this created one item.
   assertEquals(1, progressCenter.getItemCount());
-  assertEquals(
-      ProgressItemState.PROGRESSING, progressCenter.items['drive-sync'].state);
+  var item = progressCenter.items['drive-sync'];
+  assertEquals(ProgressItemState.PROGRESSING, item.state);
   assertTrue(driveSyncHandler.syncing);
 
+  // Go offline.
   chrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_();
 
+  // Check that this item was cancelled.
   assertEquals(1, progressCenter.getItemCount());
-  assertEquals(
-      ProgressItemState.CANCELED, progressCenter.items['drive-sync'].state);
+  item = progressCenter.items['drive-sync'];
+  assertEquals(ProgressItemState.CANCELED, item.state);
   assertFalse(driveSyncHandler.syncing);
 }
