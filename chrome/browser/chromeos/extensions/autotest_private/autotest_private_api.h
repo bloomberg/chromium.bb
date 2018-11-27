@@ -243,6 +243,17 @@ class AutotestPrivateIsAppShownFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateIsArcProvisionedFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.isArcProvisioned",
+                             AUTOTESTPRIVATE_ISARCPROVISIONED)
+
+ private:
+  ~AutotestPrivateIsArcProvisionedFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateLaunchAppFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.launchApp",

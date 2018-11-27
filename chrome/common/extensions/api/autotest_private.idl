@@ -104,6 +104,8 @@ namespace autotestPrivate {
 
   callback IsAppShownCallback = void (boolean appShown);
 
+  callback IsArcProvisionedCallback = void (boolean arcProvisioned);
+
   callback TakeScreenshotCallback = void (DOMString base64Png);
 
   callback VoidCallback = void ();
@@ -174,6 +176,9 @@ namespace autotestPrivate {
 
     // Returns true if requested app is shown in Chrome.
     static void isAppShown(DOMString appId, IsAppShownCallback callback);
+
+    // Returns true if ARC is provisioned.
+    static void isArcProvisioned(IsArcProvisionedCallback callback);
 
     // Launches an application from the launcher with the given appId.
     static void launchApp(DOMString appId, VoidCallback callback);

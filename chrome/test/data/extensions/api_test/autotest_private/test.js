@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.test.runTests([
+var defaultTests = [
   // logout/restart/shutdown don't do anything as we don't want to kill the
   // browser with these tests.
   function logout() {
@@ -206,5 +206,47 @@ chrome.test.runTests([
     chrome.autotestPrivate.getPrinterList(function(){
       chrome.test.succeed();
     });
+  },
+  function setAssistantEnabled() {
+    chrome.autotestPrivate.setAssistantEnabled(true, 1000 /* timeout_ms */,
+        chrome.test.callbackFail(
+            'Assistant is not available for the current user'));
+  },
+  // This test verifies that ARC is not provisioned by default.
+  function isArcProvisioned() {
+    chrome.autotestPrivate.isArcProvisioned(
+        function(arcProvisioned) {
+          chrome.test.assertFalse(arcProvisioned);
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
+  },
+];
+
+var arcProvisionedTests = [
+  // This test verifies that isArcProvisioned returns True in case ARC
+  // provisiong is done.
+  function isArcProvisioned() {
+    chrome.autotestPrivate.isArcProvisioned(
+        function(arcProvisioned) {
+          chrome.test.assertTrue(arcProvisioned);
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
+  },
+];
+
+var test_suites = {
+  'default': defaultTests,
+  'arcProvisioned': arcProvisionedTests
+};
+
+chrome.test.getConfig(function(config) {
+  var suite = test_suites[config.customArg];
+  if (config.customArg in test_suites) {
+    chrome.test.runTests(test_suites[config.customArg]);
+  } else {
+    chrome.test.fail('Invalid test suite');
   }
-]);
+});
+

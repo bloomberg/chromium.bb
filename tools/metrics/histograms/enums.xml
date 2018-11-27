@@ -17066,6 +17066,7 @@ Called by update_net_error_codes.py.-->
   <int value="1285" label="ACCESSIBILITY_PRIVATE_ENABLECHROMEVOXMOUSEEVENTS"/>
   <int value="1286" label="ACCESSIBILITY_PRIVATE_SENDSYNTHETICMOUSEEVENT"/>
   <int value="1287" label="FILEMANAGERPRIVATE_DETECTCHARACTERENCODING"/>
+  <int value="1293" label="AUTOTESTPRIVATE_ISARCPROVISIONED"/>
 </enum>
 
 <enum name="ExtensionIconState">
