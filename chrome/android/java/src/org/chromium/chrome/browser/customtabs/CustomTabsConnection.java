@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityDelegate;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleLoader;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChainedTasks;
@@ -1126,17 +1125,8 @@ public class CustomTabsConnection {
      * @return true for success.
      */
     public boolean notifyNavigationEvent(CustomTabsSessionToken session, int navigationEvent) {
-        // Notify dynamic module
-        ClientManager.DynamicModuleSessionParams params =
-                mClientManager.getDynamicModuleParamsForSession(session);
-        if (params != null && params.moduleVersion >= 4) {
-            params.activityDelegate.onNavigationEvent(navigationEvent,
-                    getExtrasBundleForNavigationEventForSession(session));
-        }
-
         CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
         if (callback == null) return false;
-
         try {
             callback.onNavigationEvent(
                     navigationEvent, getExtrasBundleForNavigationEventForSession(session));
@@ -1523,11 +1513,6 @@ public class CustomTabsConnection {
                     + mModuleLoader.getComponentName());
         }
         return mModuleLoader;
-    }
-
-    public void setActivityDelegateForSession(CustomTabsSessionToken sessionToken,
-            ActivityDelegate activityDelegate, int moduleVersion) {
-        mClientManager.setActivityDelegateForSession(sessionToken, activityDelegate, moduleVersion);
     }
 
     @CalledByNative

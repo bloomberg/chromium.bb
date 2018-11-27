@@ -73,6 +73,9 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActi
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityDelegate;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityHostImpl;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleConstants;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.IActivityDelegate;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleEntryPoint;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleLoader;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
@@ -172,6 +175,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private boolean mHasSpeculated;
     private CustomTabObserver mTabObserver;
     private CustomTabNavigationEventObserver mTabNavigationEventObserver;
+    private DynamicModuleNavigationEventObserver mModuleNavigationEventObserver;
     /** Adds and removes observers from tabs when needed. */
     private final TabObserverRegistrar mTabObserverRegistrar = new TabObserverRegistrar();
 
@@ -319,25 +323,27 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     /**
      * Dynamically loads a module using the component name specified in the intent if the feature is
      * enabled, the package is Google-signed, and it is not loaded yet.
+     *
+     * @return whether or not module loading starts.
      */
-    private void maybeLoadModule() {
+    private boolean maybeLoadModule() {
         ComponentName componentName = mIntentDataProvider.getModuleComponentName();
         // Return early if no component name was provided. It's important to do this before checking
         // the feature experiment group, to avoid entering users into the experiment that do not
         // even receive the extras for using the feature.
-        if (componentName == null) return;
+        if (componentName == null) return false;
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
             Log.w(TAG, "The %s feature is disabled.", ChromeFeatureList.CCT_MODULE);
             ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.FEATURE_DISABLED);
-            return;
+            return false;
         }
 
         ExternalAuthUtils authUtils = getComponent().getParent().resolveExternalAuthUtils();
         if (!authUtils.isGoogleSigned(componentName.getPackageName())) {
             Log.w(TAG, "The %s package is not Google-signed.", componentName.getPackageName());
             ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.NOT_GOOGLE_SIGNED);
-            return;
+            return false;
         }
 
         ModuleLoader moduleLoader = mConnection.getModuleLoader(componentName);
@@ -347,6 +353,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
         getComponent().resolveCloseButtonNavigator().setLandingPageCriteria(url ->
                 (isModuleLoading() || isModuleLoaded()) && isModuleManagedUrl(url));
+
+        return true;
     }
 
     private boolean isModuleLoaded() {
@@ -358,6 +366,12 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         return mModuleCallback != null;
     }
 
+    private void unregisterModuleNavigationEventObserver() {
+        getActivityTab().removeObserver(mModuleNavigationEventObserver);
+        mTabObserverRegistrar.unregisterTabObserver(mModuleNavigationEventObserver);
+        mModuleNavigationEventObserver = null;
+    }
+
     /**
      * Callback to receive the entry point if it was loaded successfully,
      * or null if there was a problem. This is always called on the UI thread.
@@ -367,8 +381,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         public void onResult(@Nullable ModuleEntryPoint entryPoint) {
             mModuleCallback = null;
 
-            if (entryPoint == null) return;
-
+            if (entryPoint == null) {
+                unregisterModuleNavigationEventObserver();
+                return;
+            }
             mModuleEntryPoint = entryPoint;
 
             long createActivityDelegateStartTime = ModuleMetrics.now();
@@ -380,8 +396,12 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             if (mModuleOnStartPending) startModule();
             if (mModuleOnResumePending) resumeModule();
 
-            mConnection.setActivityDelegateForSession(mSession, mModuleActivityDelegate,
-                    mModuleEntryPoint.getModuleVersion());
+            if (mModuleEntryPoint.getModuleVersion() >=
+                    DynamicModuleConstants.ON_NAVIGATION_EVENT_MODULE_API_VERSION) {
+                mModuleNavigationEventObserver.setActivityDelegate(mModuleActivityDelegate);
+            } else {
+                unregisterModuleNavigationEventObserver();
+            }
 
             // Initialise the PostMessageHandler for the current web contents.
             maybeInitialiseDynamicModulePostMessageHandler(
@@ -705,7 +725,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             }
         };
 
-        maybeLoadModule();
+        if (!maybeLoadModule()) {
+            unregisterModuleNavigationEventObserver();
+        }
 
         recordClientPackageName();
         mConnection.showSignInToastIfNecessary(mSession, getIntent());
@@ -847,9 +869,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mTabObserver = new CustomTabObserver(
                 getApplication(), mSession, mIntentDataProvider.isOpenedByChrome());
         mTabNavigationEventObserver = new CustomTabNavigationEventObserver(mSession);
+        mModuleNavigationEventObserver = new DynamicModuleNavigationEventObserver();
 
         mTabObserverRegistrar.registerTabObserver(mTabObserver);
         mTabObserverRegistrar.registerTabObserver(mTabNavigationEventObserver);
+        mTabObserverRegistrar.registerTabObserver(mModuleNavigationEventObserver);
         mTabObserverRegistrar.registerPageLoadMetricsObserver(
                 new PageLoadMetricsObserver(mConnection, mSession, tab));
         mTabObserverRegistrar.registerPageLoadMetricsObserver(
@@ -1660,5 +1684,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             getToolbarManager().setProgressBarEnabled(
                     isModuleManagedUrl ? false : mDefaultIsProgressBarEnabled);
         }
+    }
+
+    @VisibleForTesting
+    public IActivityDelegate getActivityDelegateForTesting() {
+        return mModuleActivityDelegate.getIActivityDelegateForTesting();
     }
 }

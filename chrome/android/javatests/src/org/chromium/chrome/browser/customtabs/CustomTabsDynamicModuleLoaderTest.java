@@ -31,17 +31,18 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Instrumentation tests for CCT dynamic module functionality.
+ * Tests for {@link ModuleLoader}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class CustomTabsDynamicModuleTest {
-    @Rule
-    public Features.JUnitProcessor mProcessor = new Features.JUnitProcessor();
-
+@SmallTest
+public class CustomTabsDynamicModuleLoaderTest {
     @Before
     public void setUp() throws Exception {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
     }
+
+    @Rule
+    public Features.JUnitProcessor mProcessor = new Features.JUnitProcessor();
 
     /**
      * Test fake dynamic module is correctly loaded.
@@ -54,10 +55,10 @@ public class CustomTabsDynamicModuleTest {
 
         CallbackHelper onLoaded = new CallbackHelper();
         moduleLoader.addCallbackAndIncrementUseCount(
-           result -> {
-              assertNotNull(result);
-              onLoaded.notifyCalled();
-           });
+                result -> {
+                    assertNotNull(result);
+                    onLoaded.notifyCalled();
+                });
 
         onLoaded.waitForCallback();
     }
@@ -67,7 +68,7 @@ public class CustomTabsDynamicModuleTest {
      */
     @Test
     @SmallTest
-    @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE_CACHE)
+    @Features.EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CACHE})
     public void testModuleUseCounter() throws TimeoutException, InterruptedException {
         final int callbacksNumber = 3;
         ModuleLoader moduleLoader = new ModuleLoader(FAKE_MODULE_COMPONENT_NAME);

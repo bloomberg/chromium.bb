@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 import android.os.Bundle;
 import android.os.RemoteException;
 
+import org.chromium.base.VisibleForTesting;
+
 /**
  * A wrapper around a {@link IActivityDelegate}.
  *
@@ -99,5 +101,10 @@ public class ActivityDelegate {
 
     public void onPostMessage(String message) {
         safeRun(() -> mActivityDelegate.onPostMessage(message));
+    }
+
+    @VisibleForTesting
+    public IActivityDelegate getIActivityDelegateForTesting() {
+        return mActivityDelegate;
     }
 }

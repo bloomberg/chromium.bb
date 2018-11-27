@@ -36,6 +36,13 @@ public class TabObserverRegistrar extends EmptyTabModelObserver {
         mTabObservers.add(observer);
     }
 
+    /**
+     * Unregisters a {@link TabObserver} to be managed by this Registrar.
+     */
+    public void unregisterTabObserver(TabObserver observer) {
+        mTabObservers.remove(observer);
+    }
+
     @Override
     public void didAddTab(Tab tab, int type) {
         addObserversForTab(tab);
