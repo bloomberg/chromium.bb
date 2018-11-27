@@ -11,7 +11,7 @@
     {
       "app": "ios_chrome_manual_fill_egtests",
       "test args": [
-        "--enable-features=AutofillManualFallback,WebFrameMessaging"
+        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging"
       ],
       "xctest": true
     },
