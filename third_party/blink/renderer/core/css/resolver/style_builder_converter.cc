@@ -1102,6 +1102,11 @@ float StyleBuilderConverter::ConvertNumberOrPercentage(
   return primitive_value.GetFloatValue() / 100.0f;
 }
 
+float StyleBuilderConverter::ConvertAlpha(StyleResolverState& state,
+                                          const CSSValue& value) {
+  return clampTo<float>(ConvertNumberOrPercentage(state, value), 0, 1);
+}
+
 StyleOffsetRotation StyleBuilderConverter::ConvertOffsetRotate(
     StyleResolverState&,
     const CSSValue& value) {
