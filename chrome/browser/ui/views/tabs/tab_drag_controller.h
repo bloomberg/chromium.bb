@@ -114,18 +114,20 @@ class TabDragController : public views::WidgetObserver,
   EventSource event_source() const { return event_source_; }
 
   // See description above fields for details on these.
-  bool active() const { return active_; }
+  bool active() const { return current_state_ != DragState::kStopped; }
   const TabStrip* attached_tabstrip() const { return attached_tabstrip_; }
 
   // Returns true if a drag started.
-  bool started_drag() const { return started_drag_; }
+  bool started_drag() const { return current_state_ != DragState::kNotStarted; }
 
   // Returns true if mutating the TabStripModel.
   bool is_mutating() const { return is_mutating_; }
 
   // Returns true if we've detached from a tabstrip and are running a nested
   // move message loop.
-  bool is_dragging_window() const { return is_dragging_window_; }
+  bool is_dragging_window() const {
+    return current_state_ == DragState::kDraggingWindow;
+  }
 
   // Returns true if currently dragging a tab with |contents|.
   bool IsDraggingTab(content::WebContents* contents);
@@ -142,6 +144,24 @@ class TabDragController : public views::WidgetObserver,
   // Used to indicate the direction the mouse has moved when attached.
   static const int kMovedMouseLeft  = 1 << 0;
   static const int kMovedMouseRight = 1 << 1;
+
+  enum class DragState {
+    // The drag has not yet started; the user has not dragged far enough to
+    // begin a session.
+    kNotStarted,
+    // The session is dragging a set of tabs within |attached_tabstrip_|.
+    kDraggingTabs,
+    // The session is dragging a window; |attached_tabstrip_| is that window's
+    // tabstrip.
+    kDraggingWindow,
+    // The session is waiting for the nested move loop to exit to transition
+    // to kDraggingTabs.  Not used on all platforms.
+    kWaitingToDragTabs,
+    // The session is waiting for the nested move loop to exit to end the drag.
+    kWaitingToStop,
+    // The drag session has completed or been canceled.
+    kStopped
+  };
 
   enum class Liveness {
     ALIVE,
@@ -164,15 +184,6 @@ class TabDragController : public views::WidgetObserver,
   enum ReleaseCapture {
     RELEASE_CAPTURE,
     DONT_RELEASE_CAPTURE,
-  };
-
-  // Specifies what should happen when RunMoveLoop completes.
-  enum EndRunLoopBehavior {
-    // Indicates the drag should end.
-    END_RUN_LOOP_STOP_DRAGGING,
-
-    // Indicates the drag should continue.
-    END_RUN_LOOP_CONTINUE_DRAGGING
   };
 
   // Enumeration of the possible positions the detached tab may detach from.
@@ -473,6 +484,8 @@ class TabDragController : public views::WidgetObserver,
   // property.
   void SetDeferredTargetTabstrip(TabStrip* deferred_target_tabstrip);
 
+  DragState current_state_;
+
   // Whether a drag to |window| should be blocked (for example, if the window
   // is showing a modal).
   bool ShouldDisallowDrag(gfx::NativeWindow window);
@@ -544,12 +557,6 @@ class TabDragController : public views::WidgetObserver,
   // StartMoveStackedTimerIfNecessary().
   base::OneShotTimer move_stacked_timer_;
 
-  // Did the mouse move enough that we started a drag?
-  bool started_drag_;
-
-  // Is the drag active?
-  bool active_;
-
   DragData drag_data_;
 
   // Index of the source tab in |drag_data_|.
@@ -591,9 +598,6 @@ class TabDragController : public views::WidgetObserver,
   // The following are needed when detaching into a browser
   // (|detach_into_browser_| is true).
 
-  // See description above getter.
-  bool is_dragging_window_;
-
   // True if |attached_tabstrip_| is in a browser specifically created for
   // the drag.
   bool is_dragging_new_browser_;
@@ -607,11 +611,6 @@ class TabDragController : public views::WidgetObserver,
   // True if the initial drag resulted in restoring the window (because it was
   // maximized).
   bool did_restore_window_;
-
-  EndRunLoopBehavior end_run_loop_behavior_;
-
-  // If true, we're waiting for a move loop to complete.
-  bool waiting_for_run_loop_to_exit_;
 
   // The TabStrip to attach to after the move loop completes.
   TabStrip* tab_strip_to_attach_to_after_exit_;
