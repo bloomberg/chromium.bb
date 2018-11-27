@@ -1433,6 +1433,8 @@ Summary: `[FlexibleArrayBufferView]` wraps a parameter that is known to be an Ar
 
 The FlexibleArrayBufferView itself can then either refer to an actual ArrayBufferView or a temporary copy (for small payloads) that may even live on the stack. The idea is that copying the payload on the stack and referring to the temporary copy saves creating global handles (resulting in weak roots) in V8. Note that `[FlexibleArrayBufferView]`  will actually result in a TypedFlexibleArrayBufferView wrapper for typed arrays.
 
+The FlexibleArrayBufferView extended attribute always requires the AllowShared extended attribute.
+
 Usage: Applies to arguments of methods. See modules/webgl/WebGLRenderingContextBase.idl for an example.
 
 ### [AllowShared] _(p)_

@@ -289,8 +289,8 @@ interface TestObject {
     void voidMethodArrayBufferArg(ArrayBuffer arrayBufferArg);
     void voidMethodArrayBufferOrNullArg(ArrayBuffer? arrayBufferArg);
     void voidMethodArrayBufferViewArg(ArrayBufferView arrayBufferViewArg);
-    void voidMethodFlexibleArrayBufferViewArg([FlexibleArrayBufferView] ArrayBufferView arrayBufferViewArg);
-    void voidMethodFlexibleArrayBufferViewTypedArg([FlexibleArrayBufferView] Float32Array typedArrayBufferViewArg);
+    void voidMethodFlexibleArrayBufferViewArg([FlexibleArrayBufferView, AllowShared] ArrayBufferView arrayBufferViewArg);
+    void voidMethodFlexibleArrayBufferViewTypedArg([FlexibleArrayBufferView, AllowShared] Float32Array typedArrayBufferViewArg);
     void voidMethodFloat32ArrayArg(Float32Array float32ArrayArg);
     void voidMethodInt32ArrayArg(Int32Array int32ArrayArg);
     void voidMethodUint8ArrayArg(Uint8Array uint8ArrayArg);
