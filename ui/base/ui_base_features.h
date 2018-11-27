@@ -19,6 +19,9 @@ UI_BASE_EXPORT extern const base::Feature
 UI_BASE_EXPORT extern const base::Feature kEnableStylusVirtualKeyboard;
 UI_BASE_EXPORT extern const base::Feature kEnableVirtualKeyboardUkm;
 UI_BASE_EXPORT extern const base::Feature kExperimentalUi;
+#if defined(OS_CHROMEOS)
+UI_BASE_EXPORT extern const base::Feature kSettingsShowsPerKeyboardSettings;
+#endif  // defined(OS_CHROMEOS)
 UI_BASE_EXPORT extern const base::Feature kInputMethodSettingsUiUpdate;
 UI_BASE_EXPORT extern const base::Feature kSystemKeyboardLock;
 UI_BASE_EXPORT extern const base::Feature kTouchableAppContextMenu;
