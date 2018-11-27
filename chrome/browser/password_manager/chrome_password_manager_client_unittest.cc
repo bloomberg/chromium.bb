@@ -75,8 +75,8 @@ using testing::Return;
 using testing::_;
 
 namespace {
-// TODO(vabr): Get rid of the mocked client in the client's own test, see
-// http://crbug.com/474577.
+// TODO(crbug.com/474577): Get rid of the mocked client in the client's own
+// test.
 class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
  public:
   MOCK_CONST_METHOD0(GetMainFrameCertStatus, net::CertStatus());

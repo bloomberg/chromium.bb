@@ -835,8 +835,6 @@ TEST_F(NativeBackendGnomeTest, PSLUpdatingStrictUpdateLogin) {
 }
 
 TEST_F(NativeBackendGnomeTest, PSLUpdatingStrictAddLogin) {
-  // TODO(vabr): if AddLogin becomes no longer valid for existing logins, then
-  // just delete this test.
   CheckPSLUpdate(UPDATE_BY_ADDLOGIN);
 }
 

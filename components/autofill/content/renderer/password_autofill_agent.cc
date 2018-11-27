@@ -735,7 +735,7 @@ void PasswordAutofillAgent::PasswordValueGatekeeper::ShowValue(
 
 bool PasswordAutofillAgent::TextDidChangeInTextField(
     const WebInputElement& element) {
-  // TODO(vabr): Get a mutable argument instead. http://crbug.com/397083
+  // TODO(crbug.com/415449): Do this through const WebInputElement.
   WebInputElement mutable_element = element;  // We need a non-const.
   mutable_element.SetAutofillState(WebAutofillState::kNotFilled);
 
@@ -754,7 +754,7 @@ void PasswordAutofillAgent::DidEndTextFieldEditing() {
 
 void PasswordAutofillAgent::UpdateStateForTextChange(
     const WebInputElement& element) {
-  // TODO(vabr): Get a mutable argument instead. http://crbug.com/397083
+  // TODO(crbug.com/415449): Do this through const WebInputElement.
   WebInputElement mutable_element = element;  // We need a non-const.
 
   if (element.IsTextField()) {

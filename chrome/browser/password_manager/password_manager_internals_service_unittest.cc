@@ -52,7 +52,6 @@ TEST_F(PasswordManagerInternalsServiceTest, ServiceActiveNonIncognito) {
   ASSERT_TRUE(service);
   EXPECT_EQ(std::string(), service->RegisterReceiver(&receiver));
 
-  // TODO(vabr): Use a MockPasswordManagerClient to detect activity changes.
   EXPECT_CALL(receiver, LogSavePasswordProgress(kTestText)).Times(1);
   service->ProcessLog(kTestText);
 
