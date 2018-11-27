@@ -1873,6 +1873,7 @@ class ComputedStyle : public ComputedStyleBase,
   bool ContainsStyle() const { return Contain() & kContainsStyle; }
   bool ContainsLayout() const { return Contain() & kContainsLayout; }
   bool ContainsSize() const { return Contain() & kContainsSize; }
+  bool ContainsContent() const { return Contain() & kContainsContent; }
 
   // Display utility functions.
   bool IsDisplayReplacedType() const {

@@ -1,12 +1,12 @@
 <!doctype HTML>
 
 <style>
-#parent {
+.contained {
+  contain: content;
   width: 100px;
   height: 100px;
-  contain: content;
+  background: lightblue;
 }
 </style>
-
 <div id="log">PASS</div>
-<div id="parent"></div>
+<div class="contained"></div>

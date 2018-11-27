@@ -475,6 +475,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&
            (!IsTablePart() || IsTableCaption()) && !IsTable();
   }
+  inline bool ShouldApplyStyleContainment() const {
+    return StyleRef().ContainsStyle();
+  }
+  inline bool ShouldApplyContentContainment() const {
+    return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment() &&
+           ShouldApplyStyleContainment();
+  }
 
  private:
   //////////////////////////////////////////

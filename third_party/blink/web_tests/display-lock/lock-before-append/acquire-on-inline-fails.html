@@ -1,0 +1,40 @@
+<!doctype HTML>
+
+<!--
+Runs an acquireDisplayLock on an element that doesn't has contain: paint, but
+is an inline, which means we won't actually apply paint containment.
+
+This rejects the promise.
+-->
+
+<style>
+#container {
+  contain: content;
+}
+</style>
+
+<div id="log"></div>
+
+<script>
+if (window.testRunner)
+  window.testRunner.waitUntilDone();
+
+function finishTest(status_string) {
+  if (document.getElementById("log").innerHTML === "")
+    document.getElementById("log").innerHTML = status_string;
+  if (window.testRunner)
+    window.testRunner.notifyDone();
+}
+
+function acquire() {
+  let container = document.createElement("span");
+  container.id = "container";
+  container.acquireDisplayLock((context) => {}).then(
+    () => { finishTest("FAIL"); },
+    () => { finishTest("PASS"); });
+  document.body.appendChild(container);
+}
+
+window.onload = acquire;
+</script>
+

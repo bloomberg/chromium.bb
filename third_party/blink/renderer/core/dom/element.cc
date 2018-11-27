@@ -2076,6 +2076,9 @@ void Element::AttachLayoutTree(AttachContext& context) {
   } else {
     context.previous_in_flow = children_context.previous_in_flow;
   }
+
+  if (auto* display_lock_context = GetDisplayLockContext())
+    display_lock_context->DidAttachLayoutTree();
 }
 
 void Element::DetachLayoutTree(const AttachContext& context) {
@@ -2212,7 +2215,6 @@ void Element::RecalcStyle(StyleRecalcChange change) {
 
   if (StyleRecalcBlockedByDisplayLock())
     return;
-  NotifyDisplayLockDidRecalcStyle();
 
   // If we are re-attaching in a Shadow DOM v0 tree, we recalc down to the
   // distributed nodes to propagate kReattach down the flat tree (See
@@ -2315,6 +2317,7 @@ void Element::RecalcStyle(StyleRecalcChange change) {
 
   if (HasCustomStyleCallbacks())
     DidRecalcStyle(change);
+  NotifyDisplayLockDidRecalcStyle();
 }
 
 scoped_refptr<ComputedStyle> Element::PropagateInheritedProperties(

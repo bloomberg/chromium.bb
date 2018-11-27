@@ -2,19 +2,18 @@
 
 <!--
 Runs an acquireDisplayLock, which suspends the context.
-The context is then resumed which is when the promise resolves.
+The associated promise should never resolve.
 -->
 
 <style>
-#parent {
+#container {
+  contain: content;
   width: 100px;
   height: 100px;
-  contain: content;
 }
 </style>
 
 <div id="log"></div>
-<div id="parent"></div>
 
 <script>
 if (window.testRunner)
@@ -28,22 +27,16 @@ function finishTest(status_string) {
 }
 
 function acquire() {
-  let current_status = "FAIL";
-  let resume_handle = undefined;
-  document.getElementById("parent").acquireDisplayLock(
-    (context) => {
-      resume_handle = context.suspend();
-  }).then(
-    () => { finishTest(current_status); },
-    () => { finishTest("FAIL - rejected"); });
-  setTimeout(() => {
-    current_status = "PASS";
-    resume_handle.resume();
-  }, 50);
+  let container = document.createElement("div");
+  container.id = "container";
+  container.acquireDisplayLock((context) => { context.suspend(); }).then(
+    () => { finishTest("FAIL"); },
+    () => { finishTest("FAIL"); });
+  document.body.appendChild(container);
+  setTimeout(() => { finishTest("PASS"); }, 100);
 }
 
 window.onload = acquire;
 </script>
-
 
 

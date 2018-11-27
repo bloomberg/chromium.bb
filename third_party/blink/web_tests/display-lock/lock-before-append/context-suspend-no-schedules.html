@@ -1,13 +1,13 @@
 <!doctype HTML>
 
 <!--
-Runs an acquireDisplayLock, which suspends the context and schedules
-a continuation, which should never run.
+Runs an acquireDisplayLock, which changes DOM and suspends the context.
+DOM changes should never be visible.
 -->
 
 <style>
-#parent {
-  contain: paint;
+#container {
+  contain: content;
   width: 150px;
   height: 150px;
   background: lightblue;
@@ -20,7 +20,6 @@ a continuation, which should never run.
 </style>
 
 <div id="log"></div>
-<div id="parent"></div>
 
 <script>
 if (window.testRunner)
@@ -29,7 +28,7 @@ if (window.testRunner)
 function modifyDom(context) {
   let child = document.createElement("div");
   child.id = "child";
-  document.getElementById("parent").appendChild(child);
+  context.lockedElement.appendChild(child);
 }
 
 function finishTest(status_string) {
@@ -40,14 +39,17 @@ function finishTest(status_string) {
 }
 
 function acquire() {
-  document.getElementById("parent").acquireDisplayLock(
+  let container = document.createElement("div");
+  container.id = "container";
+  container.acquireDisplayLock(
     (context) => {
-      context.schedule(modifyDom);
+      modifyDom(context);
       context.suspend();
   }).then(
     () => { finishTest("FAIL"); },
     () => { finishTest("FAIL"); });
-  setTimeout(() => { finishTest("PASS"); }, 50);
+  document.body.appendChild(container);
+  setTimeout(() => { finishTest("PASS"); }, 100);
 }
 
 window.onload = acquire;

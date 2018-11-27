@@ -93,6 +93,8 @@ class CORE_EXPORT DisplayLockContext final
   bool ShouldPaint() const;
   void DidPaint();
 
+  void DidAttachLayoutTree();
+
  private:
   friend class DisplayLockSuspendedHandle;
 
@@ -130,14 +132,18 @@ class CORE_EXPORT DisplayLockContext final
   // Initiate a commit.
   void StartCommit();
 
+  // Invalidates the layout of the element, making sure that the layout code can
+  // reach it.
+  void InvalidateElementLayout();
+
   HeapVector<Member<V8DisplayLockCallback>> callbacks_;
   Member<ScriptPromiseResolver> resolver_;
-  WeakMember<Element> element_;
+  Member<Element> element_;
 
   bool process_queue_task_scheduled_ = false;
   unsigned suspended_count_ = 0;
   State state_ = kUninitialized;
-  LifecycleUpdateState lifecycle_update_state_ = kNeedsLayout;
+  LifecycleUpdateState lifecycle_update_state_ = kNeedsStyle;
 };
 
 }  // namespace blink
