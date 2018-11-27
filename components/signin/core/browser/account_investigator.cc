@@ -13,11 +13,11 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -44,10 +44,10 @@ const TimeDelta AccountInvestigator::kPeriodicReportingInterval =
 AccountInvestigator::AccountInvestigator(
     GaiaCookieManagerService* cookie_service,
     PrefService* pref_service,
-    SigninManagerBase* signin_manager)
+    identity::IdentityManager* identity_manager)
     : cookie_service_(cookie_service),
       pref_service_(pref_service),
-      signin_manager_(signin_manager) {}
+      identity_manager_(identity_manager) {}
 
 AccountInvestigator::~AccountInvestigator() {}
 
@@ -60,7 +60,7 @@ void AccountInvestigator::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void AccountInvestigator::Initialize() {
   cookie_service_->AddObserver(this);
-  previously_authenticated_ = signin_manager_->IsAuthenticated();
+  previously_authenticated_ = identity_manager_->HasPrimaryAccount();
 
   Time previous = Time::FromDoubleT(
       pref_service_->GetDouble(prefs::kGaiaCookiePeriodicReportTime));
@@ -102,7 +102,7 @@ void AccountInvestigator::OnGaiaAccountsInCookieUpdated(
   const std::string old_hash(pref_service_->GetString(prefs::kGaiaCookieHash));
   const std::string new_hash(
       HashAccounts(signed_in_accounts, signed_out_accounts));
-  const bool currently_authenticated = signin_manager_->IsAuthenticated();
+  const bool currently_authenticated = identity_manager_->HasPrimaryAccount();
   if (old_hash != new_hash) {
     SharedCookieJarReport(signed_in_accounts, signed_out_accounts, Time::Now(),
                           ReportingType::ON_CHANGE);
@@ -239,7 +239,7 @@ void AccountInvestigator::SharedCookieJarReport(
                                      signed_out_count,
                                      signed_in_count + signed_out_count, type);
 
-  if (signin_manager_->IsAuthenticated()) {
+  if (identity_manager_->HasPrimaryAccount()) {
     SignedInAccountRelationReport(signed_in_accounts, signed_out_accounts,
                                   type);
   }
@@ -255,7 +255,7 @@ void AccountInvestigator::SignedInAccountRelationReport(
     const std::vector<ListedAccount>& signed_out_accounts,
     ReportingType type) {
   signin_metrics::LogAccountRelation(
-      DiscernRelation(signin_manager_->GetAuthenticatedAccountInfo(),
+      DiscernRelation(identity_manager_->GetPrimaryAccountInfo(),
                       signed_in_accounts, signed_out_accounts),
       type);
 }
