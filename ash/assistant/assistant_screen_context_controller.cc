@@ -47,7 +47,7 @@ std::vector<uint8_t> DownsampleAndEncodeImage(gfx::Image image) {
 }
 
 void EncodeScreenshotAndRunCallback(
-    mojom::AssistantController::RequestScreenshotCallback callback,
+    mojom::AssistantScreenContextController::RequestScreenshotCallback callback,
     std::unique_ptr<ui::LayerTreeOwner> layer_owner,
     gfx::Image image) {
   base::PostTaskWithTraitsAndReplyWithResult(
@@ -129,12 +129,18 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
 AssistantScreenContextController::AssistantScreenContextController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
+      binding_(this),
       screen_context_request_factory_(this) {
   assistant_controller_->AddObserver(this);
 }
 
 AssistantScreenContextController::~AssistantScreenContextController() {
   assistant_controller_->RemoveObserver(this);
+}
+
+void AssistantScreenContextController::BindRequest(
+    mojom::AssistantScreenContextControllerRequest request) {
+  binding_.Bind(std::move(request));
 }
 
 void AssistantScreenContextController::SetAssistant(
@@ -154,7 +160,8 @@ void AssistantScreenContextController::RemoveModelObserver(
 
 void AssistantScreenContextController::RequestScreenshot(
     const gfx::Rect& rect,
-    mojom::AssistantController::RequestScreenshotCallback callback) {
+    mojom::AssistantScreenContextController::RequestScreenshotCallback
+        callback) {
   aura::Window* root_window = Shell::Get()->GetRootWindowForNewWindows();
 
   std::unique_ptr<ui::LayerTreeOwner> layer_owner =

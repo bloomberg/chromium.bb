@@ -79,12 +79,12 @@ class AssistantHotwordNotificationDelegate
 
 AssistantSetup::AssistantSetup(service_manager::Connector* connector)
     : connector_(connector), binding_(this) {
-  // Bind to the Assistant controller in ash.
-  ash::mojom::AssistantControllerPtr assistant_controller;
-  connector_->BindInterface(ash::mojom::kServiceName, &assistant_controller);
+  // Bind to the AssistantSetupController in ash.
+  ash::mojom::AssistantSetupControllerPtr setup_controller;
+  connector_->BindInterface(ash::mojom::kServiceName, &setup_controller);
   ash::mojom::AssistantSetupPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
-  assistant_controller->SetAssistantSetup(std::move(ptr));
+  setup_controller->SetAssistantSetup(std::move(ptr));
 
   arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
 }

@@ -281,9 +281,6 @@ void Service::CreateAssistantManagerService() {
       service_binding_.GetConnector(), std::move(battery_monitor), this,
       network_connection_tracker_);
 
-  // Bind to Assistant controller in ash.
-  service_binding_.GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                                 &assistant_controller_);
   assistant_settings_manager_ =
       assistant_manager_service_.get()->GetAssistantSettingsManager();
 #else
@@ -298,9 +295,17 @@ void Service::FinalizeAssistantManagerService() {
 
   // Using session_observer_binding_ as a flag to control onetime initialization
   if (!session_observer_binding_) {
+    // Bind to the AssistantController in ash.
+    service_binding_.GetConnector()->BindInterface(ash::mojom::kServiceName,
+                                                   &assistant_controller_);
+
     mojom::AssistantPtr ptr;
     BindAssistantConnection(mojo::MakeRequest(&ptr));
     assistant_controller_->SetAssistant(std::move(ptr));
+
+    // Bind to the AssistantScreenContextController in ash.
+    service_binding_.GetConnector()->BindInterface(
+        ash::mojom::kServiceName, &assistant_screen_context_controller_);
 
     registry_.AddInterface<mojom::Assistant>(base::BindRepeating(
         &Service::BindAssistantConnection, base::Unretained(this)));

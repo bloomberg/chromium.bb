@@ -338,7 +338,7 @@ void AssistantManagerServiceImpl::StartMetalayerInteraction(
   if (!IsScreenContextAllowed(service_->assistant_state()))
     return;
 
-  service_->assistant_controller()->RequestScreenshot(
+  service_->assistant_screen_context_controller()->RequestScreenshot(
       region,
       base::BindOnce(&AssistantManagerServiceImpl::SendScreenContextRequest,
                      weak_factory_.GetWeakPtr(), /*assistant_extra=*/nullptr,
@@ -1113,7 +1113,7 @@ void AssistantManagerServiceImpl::CacheScreenContext(
       base::BindOnce(&AssistantManagerServiceImpl::CacheAssistantStructure,
                      weak_factory_.GetWeakPtr(), on_done));
 
-  service_->assistant_controller()->RequestScreenshot(
+  service_->assistant_screen_context_controller()->RequestScreenshot(
       gfx::Rect(),
       base::BindOnce(&AssistantManagerServiceImpl::CacheAssistantScreenshot,
                      weak_factory_.GetWeakPtr(), on_done));

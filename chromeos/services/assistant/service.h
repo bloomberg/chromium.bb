@@ -58,10 +58,18 @@ class Service : public service_manager::Service,
   ~Service() override;
 
   mojom::Client* client() { return client_.get(); }
+
   mojom::DeviceActions* device_actions() { return device_actions_.get(); }
+
   ash::mojom::AssistantController* assistant_controller() {
     return assistant_controller_.get();
   }
+
+  ash::mojom::AssistantScreenContextController*
+  assistant_screen_context_controller() {
+    return assistant_screen_context_controller_.get();
+  }
+
   ash::AssistantStateBase* assistant_state() { return &assistant_state_; }
 
   void RequestAccessToken();
@@ -155,6 +163,8 @@ class Service : public service_manager::Service,
   base::Optional<std::string> access_token_;
 
   ash::mojom::AssistantControllerPtr assistant_controller_;
+  ash::mojom::AssistantScreenContextControllerPtr
+      assistant_screen_context_controller_;
   ash::AssistantStateProxy assistant_state_;
 
   network::NetworkConnectionTracker* network_connection_tracker_;

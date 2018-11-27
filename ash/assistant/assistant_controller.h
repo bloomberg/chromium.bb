@@ -27,7 +27,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
-#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
@@ -65,15 +64,10 @@ class ASH_EXPORT AssistantController
 
   // mojom::AssistantController:
   // TODO(updowndota): Refactor Set() calls to use a factory pattern.
-  // TODO(dmblack): Expose RequestScreenshot(...) over mojo through
-  // AssistantScreenContextController.
   void SetAssistant(
       chromeos::assistant::mojom::AssistantPtr assistant) override;
   void SetAssistantImageDownloader(
       mojom::AssistantImageDownloaderPtr assistant_image_downloader) override;
-  void SetAssistantSetup(mojom::AssistantSetupPtr assistant_setup) override;
-  void RequestScreenshot(const gfx::Rect& rect,
-                         RequestScreenshotCallback callback) override;
   void OpenAssistantSettings() override;
 
   // AssistantControllerObserver:
@@ -157,8 +151,6 @@ class ASH_EXPORT AssistantController
   chromeos::assistant::mojom::AssistantPtr assistant_;
 
   mojom::AssistantImageDownloaderPtr assistant_image_downloader_;
-
-  mojom::AssistantSetupPtr assistant_setup_;
 
   std::unique_ptr<AssistantCacheController> assistant_cache_controller_;
 
