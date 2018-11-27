@@ -104,16 +104,20 @@ void TimeDomain::SetNextWakeUpForQueue(
   // SequenceManager's time. Right now it's not an issue since
   // VirtualTimeDomain doesn't invoke SequenceManager itself.
 
-  if (new_wake_up) {
-    if (new_wake_up != previous_wake_up) {
-      // Update the wake-up.
-      SetNextDelayedDoWork(lazy_now, new_wake_up.value());
-    }
+  if (new_wake_up == previous_wake_up) {
+    // Nothing to be done
+    return;
+  }
+
+  if (!new_wake_up) {
+    // No new wake-up to be set, cancel the previous one.
+    new_wake_up = TimeTicks::Max();
+  }
+
+  if (*new_wake_up <= lazy_now->Now()) {
+    RequestDoWork();
   } else {
-    if (previous_wake_up) {
-      // No new wake-up to be set, cancel the previous one.
-      SetNextDelayedDoWork(lazy_now, TimeTicks::Max());
-    }
+    SetNextDelayedDoWork(lazy_now, *new_wake_up);
   }
 }
 
