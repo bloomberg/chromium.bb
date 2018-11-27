@@ -109,9 +109,14 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   bool IsRetryingAccessTokenFetchForTest() const;
   void ResetRequestAccessTokenBackoffForTest();
 
- private:
   // Determines which account should be used for Sync and returns the
-  // corresponding AccountInfo.
+  // corresponding SyncAccountInfo. This is exposed so that autofill metrics
+  // code can use it.
+  static SyncAccountInfo DetermineAccountToUse(
+      identity::IdentityManager* identity_manager,
+      bool allow_secondary_accounts);
+
+ private:
   SyncAccountInfo DetermineAccountToUse() const;
 
   // Updates |sync_account_| to the appropriate account (i.e.

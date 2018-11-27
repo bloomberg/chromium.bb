@@ -351,32 +351,39 @@ void SyncAuthManager::ResetRequestAccessTokenBackoffForTest() {
   request_access_token_backoff_.Reset();
 }
 
-SyncAuthManager::SyncAccountInfo SyncAuthManager::DetermineAccountToUse()
-    const {
-  DCHECK(registered_for_auth_notifications_);
-
+// static
+SyncAuthManager::SyncAccountInfo SyncAuthManager::DetermineAccountToUse(
+    identity::IdentityManager* identity_manager,
+    bool allow_secondary_accounts) {
   // If there is a "primary account", i.e. the user explicitly chose to
   // sign-in to Chrome, then always use that account.
-  if (identity_manager_->HasPrimaryAccount()) {
-    return SyncAccountInfo(identity_manager_->GetPrimaryAccountInfo(),
+  if (identity_manager->HasPrimaryAccount()) {
+    return SyncAccountInfo(identity_manager->GetPrimaryAccountInfo(),
                            /*is_primary=*/true);
   }
 
   // Otherwise, fall back to the default content area signed-in account.
-  // TODO(crbug.com/871221): Add tests for this code path.
-  if (base::FeatureList::IsEnabled(switches::kSyncStandaloneTransport) &&
-      base::FeatureList::IsEnabled(switches::kSyncSupportSecondaryAccount)) {
+  if (allow_secondary_accounts) {
     // Check if there is a content area signed-in account, and we have a refresh
     // token for it.
     std::vector<AccountInfo> cookie_accounts =
-        identity_manager_->GetAccountsInCookieJar();
+        identity_manager->GetAccountsInCookieJar();
     if (!cookie_accounts.empty() &&
-        identity_manager_->HasAccountWithRefreshToken(
+        identity_manager->HasAccountWithRefreshToken(
             cookie_accounts[0].account_id)) {
       return SyncAccountInfo(cookie_accounts[0], /*is_primary=*/false);
     }
   }
   return SyncAccountInfo();
+}
+
+SyncAuthManager::SyncAccountInfo SyncAuthManager::DetermineAccountToUse()
+    const {
+  DCHECK(registered_for_auth_notifications_);
+  return DetermineAccountToUse(
+      identity_manager_,
+      base::FeatureList::IsEnabled(switches::kSyncStandaloneTransport) &&
+          base::FeatureList::IsEnabled(switches::kSyncSupportSecondaryAccount));
 }
 
 bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
