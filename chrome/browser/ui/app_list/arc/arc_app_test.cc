@@ -43,6 +43,15 @@ std::string ArcAppTest::GetAppId(const arc::mojom::ShortcutInfo& shortcut) {
   return ArcAppListPrefs::GetAppId(shortcut.package_name, shortcut.intent_uri);
 }
 
+// static
+std::vector<arc::mojom::ArcPackageInfoPtr> ArcAppTest::ClonePackages(
+    const std::vector<arc::mojom::ArcPackageInfoPtr>& packages) {
+  std::vector<arc::mojom::ArcPackageInfoPtr> result;
+  for (const auto& package : packages)
+    result.emplace_back(package->Clone());
+  return result;
+}
+
 ArcAppTest::ArcAppTest() {
   user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
       std::make_unique<chromeos::FakeChromeUserManager>());
@@ -148,29 +157,20 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
   app.sticky = true;
   fake_default_apps_.push_back(app);
 
-  arc::mojom::ArcPackageInfo package1;
-  package1.package_name = kPackageName1;
-  package1.package_version = 1;
-  package1.last_backup_android_id = 1;
-  package1.last_backup_time = 1;
-  package1.sync = false;
-  fake_packages_.push_back(package1);
+  fake_packages_.emplace_back(arc::mojom::ArcPackageInfo::New(
+      kPackageName1 /* package_name */, 1 /* package_version */,
+      1 /* last_backup_android_id */, 1 /* last_backup_time */,
+      false /* sync */));
 
-  arc::mojom::ArcPackageInfo package2;
-  package2.package_name = kPackageName2;
-  package2.package_version = 2;
-  package2.last_backup_android_id = 2;
-  package2.last_backup_time = 2;
-  package2.sync = true;
-  fake_packages_.push_back(package2);
+  fake_packages_.emplace_back(arc::mojom::ArcPackageInfo::New(
+      kPackageName2 /* package_name */, 2 /* package_version */,
+      2 /* last_backup_android_id */, 2 /* last_backup_time */,
+      true /* sync */));
 
-  arc::mojom::ArcPackageInfo package3;
-  package3.package_name = kPackageName3;
-  package3.package_version = 3;
-  package3.last_backup_android_id = 3;
-  package3.last_backup_time = 3;
-  package3.sync = false;
-  fake_packages_.push_back(package3);
+  fake_packages_.emplace_back(arc::mojom::ArcPackageInfo::New(
+      kPackageName3 /* package_name */, 3 /* package_version */,
+      3 /* last_backup_android_id */, 3 /* last_backup_time */,
+      false /* sync */));
 
   for (int i = 0; i < 3; ++i) {
     arc::mojom::ShortcutInfo shortcut_info;
@@ -220,25 +220,24 @@ const user_manager::User* ArcAppTest::CreateUserAndLogin() {
   return user;
 }
 
-void ArcAppTest::AddPackage(const arc::mojom::ArcPackageInfo& package) {
-  if (!FindPackage(package))
-    fake_packages_.push_back(package);
+void ArcAppTest::AddPackage(arc::mojom::ArcPackageInfoPtr package) {
+  if (FindPackage(package->package_name))
+    return;
+  fake_packages_.push_back(std::move(package));
 }
 
-void ArcAppTest::RemovePackage(const arc::mojom::ArcPackageInfo& package) {
-  std::vector<arc::mojom::ArcPackageInfo>::iterator iter;
-  for (iter = fake_packages_.begin(); iter != fake_packages_.end(); iter++) {
-    if ((*iter).package_name == package.package_name) {
-      fake_packages_.erase(iter);
-      break;
-    }
-  }
+void ArcAppTest::RemovePackage(const std::string& package_name) {
+  fake_packages_.erase(
+      std::remove_if(fake_packages_.begin(), fake_packages_.end(),
+                     [package_name](const auto& package) {
+                       return package->package_name == package_name;
+                     }),
+      fake_packages_.end());
 }
 
-bool ArcAppTest::FindPackage(const arc::mojom::ArcPackageInfo& package) {
-  for (auto fake_package : fake_packages_) {
-    if (package.package_name == fake_package.package_name)
-      return true;
-  }
-  return false;
+bool ArcAppTest::FindPackage(const std::string& package_name) {
+  return std::find_if(fake_packages_.begin(), fake_packages_.end(),
+                      [package_name](const auto& package) {
+                        return package->package_name == package_name;
+                      }) != fake_packages_.end();
 }

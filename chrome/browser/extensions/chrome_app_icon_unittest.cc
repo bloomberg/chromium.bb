@@ -373,9 +373,10 @@ TEST_F(ChromeAppIconTest, ChromeBadging) {
   // Badging should be applied once package is installed.
   arc_test.app_instance()->RefreshAppList();
   std::vector<arc::mojom::AppInfo> fake_apps = arc_test.fake_apps();
-  fake_apps[0].package_name = arc_test.fake_packages()[0].package_name;
+  fake_apps[0].package_name = arc_test.fake_packages()[0]->package_name;
   arc_test.app_instance()->SendRefreshAppList(fake_apps);
-  arc_test.app_instance()->SendRefreshPackageList(arc_test.fake_packages());
+  arc_test.app_instance()->SendRefreshPackageList(
+      ArcAppTest::ClonePackages(arc_test.fake_packages()));
   EXPECT_EQ(1U, reference_icon.icon_update_count());
   EXPECT_FALSE(AreEqual(reference_icon.image_skia(), image_before_badging));
 
