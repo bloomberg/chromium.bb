@@ -239,6 +239,9 @@ void ContextualSuggestionsService::CreateDefaultRequest(
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = suggest_url;
   request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
+  // Try to attach cookies for signed in user.
+  request->attach_same_site_cookies = true;
+  request->site_for_cookies = suggest_url;
   AddVariationHeaders(request.get());
   // TODO(https://crbug.com/808498) re-add data use measurement once
   // SimpleURLLoader supports it.
