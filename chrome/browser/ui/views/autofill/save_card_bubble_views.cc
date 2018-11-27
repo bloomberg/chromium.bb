@@ -188,16 +188,21 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
       new views::Label(card.NetworkAndLastFourDigits(), CONTEXT_BODY_TEXT_LARGE,
                        views::style::STYLE_PRIMARY));
 
-  // The spacer will stretch to use the available horizontal space in the
-  // dialog, which will end-align the expiration date label.
-  auto* spacer = new views::View();
-  description_view->AddChildView(spacer);
-  box_layout->SetFlexForView(spacer, /*flex=*/1);
+  if (!card.IsExpired(base::Time::Now())) {
+    // The spacer will stretch to use the available horizontal space in the
+    // dialog, which will end-align the expiration date label.
+    auto* spacer = new views::View();
+    description_view->AddChildView(spacer);
+    box_layout->SetFlexForView(spacer, /*flex=*/1);
 
-  description_view->AddChildView(new views::Label(
-      card.AbbreviatedExpirationDateForDisplay(
-          !features::IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled()),
-      CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY));
+    auto* expiration_date_label = new views::Label(
+        card.AbbreviatedExpirationDateForDisplay(
+            !features::
+                IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled()),
+        CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
+    expiration_date_label->set_id(DialogViewId::EXPIRATION_DATE_LABEL);
+    description_view->AddChildView(expiration_date_label);
+  }
 
   return view;
 }

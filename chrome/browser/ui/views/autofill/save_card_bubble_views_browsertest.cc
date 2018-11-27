@@ -1383,6 +1383,7 @@ IN_PROC_BROWSER_TEST_F(
                   ->visible());
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH)
                   ->visible());
+  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_LABEL));
 }
 
 // Tests the upload save bubble. Ensures that the bubble surfaces a pair of
@@ -1419,6 +1420,7 @@ IN_PROC_BROWSER_TEST_F(
                   ->visible());
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH)
                   ->visible());
+  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_LABEL));
 }
 
 // Tests the upload save bubble. Ensures that the bubble is not shown when
@@ -1478,6 +1480,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   EXPECT_TRUE(
       FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_LABEL)->visible());
 
   // Assert that expiration date was not explicitly requested in the bubble.
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW));
