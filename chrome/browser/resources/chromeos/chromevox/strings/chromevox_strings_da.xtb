@@ -45,6 +45,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1275718070701477396">Valgt</translation>
 <translation id="1286609444451033486">Tryk på søgetasten+mellemrumstasten for at skifte indstilling.</translation>
 <translation id="1291286136605998134">Til/fra-knap</translation>
+<translation id="1303806948938513162">Tryk med fire fingre for at åbne ChromeVox-menuerne</translation>
 <translation id="1319608975892113573">Ingen tidligere blockquotes.</translation>
 <translation id="1321576897702511272">Skjul Hjælp til ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> af <ph name="TOTAL" /></translation>
@@ -239,6 +240,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3046838483509668188">Indstillinger i ChromeVox</translation>
 <translation id="3047143736589213134">Eksperimentelt tastatur</translation>
 <translation id="3060756054951570867">Menuen <ph name="TITLE" /> åbnet</translation>
+<translation id="3060880924447482063">Stryg til venstre eller højre for at flytte ét element ad gangen</translation>
 <translation id="3070245424257836917">Stryg opad med tre fingre</translation>
 <translation id="3078345202707391975">Næste niveau 2-overskrift</translation>
 <translation id="3078740164268491126">tabel</translation>
@@ -332,6 +334,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3389259863310851658">Forrige formularfelt</translation>
 <translation id="3390225400784126843">Næste anderledes element.</translation>
 <translation id="3392045790598181549">Menupunktet <ph name="NAME" /></translation>
+<translation id="3393605254399152980">Træk med én finger for at høre, hvad du berører</translation>
 <translation id="3406283310380167331">Vis formularliste</translation>
 <translation id="3423495725743882470">række $1 kolonne 2$</translation>
 <translation id="3457000393508828486">Delvist trykket ned</translation>
@@ -347,6 +350,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3497063866483065785">{COUNT,plural, =1{spørgsmålstegn}one{# spørgsmålstegn}other{# spørgsmålstegn}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{cirkumfleks}one{ # cirkumflekser}other{# cirkumflekser}}</translation>
 <translation id="352577523970648069">Et justerbart tekstfelt</translation>
+<translation id="3549680091535286226">Tryk med to fingre for midlertidigt at stoppe tale</translation>
 <translation id="3568702578574425662">Afkrydsningsfeltet <ph name="NAME" /> er ikke markeret</translation>
 <translation id="3589661172894441357">Ordliste</translation>
 <translation id="3599054940393788245">Ikke inden i matematik</translation>
@@ -411,6 +415,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4166192625054637755">Slut på sænket skrift</translation>
 <translation id="4173994908659439270">Ikke flere redigerbare tekstfelter.</translation>
 <translation id="4176463684765177261">Deaktiveret</translation>
+<translation id="4187322598335821254">Stryg op eller ned for at flytte én linje ad gangen</translation>
 <translation id="4188530942454211480">Forrige sætning</translation>
 <translation id="4191918948604314587">En knap</translation>
 <translation id="419265409837491189">Gå til forrige kolonne</translation>
@@ -709,6 +714,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="6583174818554398774">Gå til næste ved granularitet</translation>
 <translation id="6587021927234520429">Ikke flere niveau 4-overskrifter.</translation>
 <translation id="6601344353291556895">Aktivér detaljerede beskrivelser.</translation>
+<translation id="6609828810966525877">Find flere bevægelser i indlæringstilstanden og Hjælp til Chromebook</translation>
 <translation id="6615602925644411249">Find på siden.</translation>
 <translation id="6628427060004938651">Del</translation>
 <translation id="6633350132811819843">Ikke flere tabeller.</translation>
@@ -760,6 +766,7 @@ Tryk på Ctrl+W for at lukke en fane.
 Tryk på Ctrl+tabulatortast for at gå fremad mellem åbne faner.
 Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="7086377898680121060">Lysstyrke op</translation>
+<translation id="7088743565397416204">Tryk to gange for at aktivere det, der er fremhævet</translation>
 <translation id="7095834689119144465">Rediger kun tal i tekst</translation>
 <translation id="7096001299300236431">Forrige medie</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -815,6 +822,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="7491962110804786152">fane</translation>
 <translation id="7492049978501397201">Indtastet dialog</translation>
 <translation id="7518543783849163354">Tryk på Ctrl for midlertidigt at afbryde oplæsning i ChromeVox.</translation>
+<translation id="7521682724501952239">Du kan bruge ChromeVox med touchskærmen</translation>
 <translation id="7532613204005497612">Juni</translation>
 <translation id="7552432549459840808">Nyttige genveje i Chrome</translation>
 <translation id="7579911500627256166">prikken <ph name="DOT" /></translation>

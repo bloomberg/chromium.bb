@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome のプライバシーに関するお知らせ</translation>
 <translation id="1863312987075920112">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK_TOS" />利用規約<ph name="END_LINK_TOS" />と<ph name="BEGIN_LINK_PRIVACY" />プライバシーに関するお知らせ<ph name="END_LINK_PRIVACY" />に同意したことになります。</translation>
-<translation id="1878302395768190018">この設定は Chrome の [設定] ページでいつでもカスタマイズできます</translation>
 <translation id="2147651015520127414">このウェブサイトの証明書が <ph name="ISSUER" /> 発行のものであると確認されました。</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2342981853652716282">Chrome にログインすれば、ブックマーク、パスワード、その他の設定をどの端末からでもご利用いただけます。</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Chrome の機能と動作の改善に協力する</translation>
 <translation id="4523886039239821078">アドオンが原因でChromeがクラッシュしました。次をアンインストールしてください:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> で管理されているアカウントからログアウトします。Chrome データはこのデバイスから削除されますが、Google アカウントで保持されます。</translation>
-<translation id="5240817131241497236">Chrome で同期、カスタマイズ、その他の Google サービスを管理する設定を変更しました。これにより、現在の設定に影響が生じる可能性があります。</translation>
 <translation id="5389212809648216794">カメラは別のアプリが使用中のため、Google Chrome では使用できません</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />設定<ph name="END_LINK" />はいつでも変更できます。Google は、Chrome やその他の Google サービス（翻訳、検索、広告など）をカスタマイズする目的で、ユーザーがアクセスしたサイトのコンテンツ、ユーザーの閲覧行動や操作を使用することがあります。</translation>
 <translation id="5639704535586432836">[設定] &gt; [プライバシー] &gt; [カメラ] &gt; [Google Chrome] の順に選択し、カメラをオンにします。</translation>

@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">메뉴 접기</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1419738280318246476">알림 작업을 실행하려면 기기의 잠금을 해제하세요.</translation>
+<translation id="1455242230282523554">언어 설정 표시</translation>
 <translation id="1467432559032391204">왼쪽</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />(HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{알림 설정을 표시합니다. 앱 1개의 알림이 사용 중지되어 있습니다.}other{알림 설정을 표시합니다. 앱 #개의 알림이 사용 중지되어 있습니다.}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">표시할 내용 없음</translation>
 <translation id="3445925074670675829">USB-C 기기</translation>
 <translation id="3454224730401036106">보다 안전한 네트워크로 연결이 전환되었습니다.</translation>
+<translation id="3465223694362104965">마지막으로 로그인한 이후로 다른 키보드가 이 기기에 연결되었습니다. 사용하기 전에 이 키보드를 신뢰하는지 확인하세요.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">마우스 커서 강조표시</translation>
 <translation id="3510503721818156981">Chromebook이 새 휴대전화에 연결되었습니다.</translation>
@@ -260,6 +262,7 @@
 <translation id="5571066253365925590">블루투스를 사용함</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> <ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">음성 피드백을 사용 중지하려면 Ctrl + Alt + Z를 누르세요.</translation>
+<translation id="5626283214046138476">관리 대상 사용자 계정이 곧 만료됩니다.</translation>
 <translation id="5648021990716966815">마이크 잭</translation>
 <translation id="5669267381087807207">활성화 중</translation>
 <translation id="5673434351075758678">설정 동기화 후 ‘<ph name="FROM_LOCALE" />’에서 ‘<ph name="TO_LOCALE" />’(으)로 변경합니다.</translation>

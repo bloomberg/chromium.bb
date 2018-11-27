@@ -145,7 +145,6 @@
 <translation id="1826516787628120939">Sprawdzam</translation>
 <translation id="1834321415901700177">Ta strona zawiera szkodliwe programy</translation>
 <translation id="1839551713262164453">Weryfikacja wartości zasad nie udała się z powodu błędów</translation>
-<translation id="1840414022444569775">Ten numer karty jest już używany</translation>
 <translation id="1842969606798536927">Zapłać</translation>
 <translation id="1866450167992311397">Korzystaj ze swoich kart w większej liczbie miejsc</translation>
 <translation id="1871208020102129563">Proxy skonfigurowano do używania stałych serwerów proxy, a nie URL-a skryptu PAC.</translation>
@@ -184,6 +183,7 @@
 <translation id="2108755909498034140">Uruchom ponownie komputer</translation>
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Ignorowana, ponieważ jest zastąpiona przez <ph name="POLICY_NAME" />.</translation>
+<translation id="2129308444951592399">Warunki korzystania z usługi</translation>
 <translation id="213826338245044447">Zakładki na komórce</translation>
 <translation id="214556005048008348">Anuluj płatność</translation>
 <translation id="2147827593068025794">Synchronizacja w tle</translation>
@@ -384,6 +384,7 @@
 <translation id="3427092606871434483">Zezwalaj (domyślnie)</translation>
 <translation id="3427342743765426898">&amp;Ponów edycję</translation>
 <translation id="342781501876943858">Chromium zaleca zresetowanie hasła, jeśli zostało użyte na innej stronie.</translation>
+<translation id="3430691998045392297">Wyświetlany jest inny film. Czy chcesz kontynuować?</translation>
 <translation id="3431636764301398940">Zapisz tę kartę na tym urządzeniu</translation>
 <translation id="3447661539832366887">Właściciel tego urządzenia wyłączył grę z dinozaurem.</translation>
 <translation id="3447884698081792621">Pokaż certyfikat (wydany przez: <ph name="ISSUER" />)</translation>
@@ -401,6 +402,7 @@
 <translation id="3566021033012934673">Połączenie nie jest prywatne</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Komunikat z elementu umieszczonego na stronie <ph name="SITE" /></translation>
+<translation id="3581089476000296252">Chrome powiadomi Cię, gdy strona będzie gotowa. &lt;a&gt;Anuluj&lt;/a&gt;</translation>
 <translation id="358285529439630156">Karty kredytowe i przedpłacone są akceptowane.</translation>
 <translation id="3582930987043644930">Dodaj nazwę</translation>
 <translation id="3583757800736429874">&amp;Ponów przeniesienie</translation>
@@ -432,6 +434,7 @@
 <translation id="3736520371357197498">Jeśli rozumiesz zagrożenie, możesz <ph name="BEGIN_LINK" />odwiedzić tę niebezpieczną stronę<ph name="END_LINK" />, zanim niebezpieczne programy zostaną usunięte.</translation>
 <translation id="3739623965217189342">Skopiowany link</translation>
 <translation id="3744899669254331632">Nie możesz teraz odwiedzić strony <ph name="SITE" />, ponieważ wysłała ona zaszyfrowane dane logowania, których Chromium nie może przetworzyć. Błędy sieciowe i ataki są zazwyczaj tymczasowe, więc prawdopodobnie strona będzie dostępna później.</translation>
+<translation id="3745099705178523657">Po potwierdzeniu dane karty z Twojego konta Google zostaną udostępnione tej stronie.</translation>
 <translation id="3748148204939282805">Osoby atakujące na stronie <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogą podstępem nakłonić Cię do wykonania czynności niebezpiecznych takich jak zainstalowanie oprogramowania czy ujawnienie danych osobowych (na przykład haseł, numerów telefonów lub danych kart kredytowych). <ph name="BEGIN_LEARN_MORE_LINK" />Więcej informacji<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Tłumaczenie nie powiodło się z powodu błędu serwera.</translation>
 <translation id="3759461132968374835">Brak ostatnio zgłoszonych awarii. Awarie, które nastąpiły wówczas, gdy funkcja zgłaszania awarii była wyłączona, nie są tutaj wymienione.</translation>
@@ -453,6 +456,7 @@
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">Przesłano raport o awarii – identyfikator: <ph name="CRASH_ID" /> (lokalny identyfikator awarii: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Zawsze pytaj na tej stronie</translation>
+<translation id="3947577358805392297">Zapisz stronę na później</translation>
 <translation id="3949571496842715403">Serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie określa alternatywnych nazw podmiotu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="3949601375789751990">Tutaj wyświetla się Twoja historia przeglądania</translation>
 <translation id="3950820424414687140">Zaloguj się</translation>
@@ -571,6 +575,7 @@
 <translation id="4771973620359291008">Wystąpił nieznany błąd.</translation>
 <translation id="4785689107224900852">Przełącz na tę kartę</translation>
 <translation id="4792143361752574037">Podczas uzyskiwania dostępu do plików sesji wystąpił problem. Zapisywanie na dysku jest obecnie wyłączone. Załaduj stronę jeszcze i raz i spróbuj ponownie.</translation>
+<translation id="4798078619018708837">Wpisz datę ważności i kod CVC karty <ph name="CREDIT_CARD" />, by zaktualizować jej dane. Po potwierdzeniu dane karty z Twojego konta Google zostaną udostępnione tej stronie.</translation>
 <translation id="4800132727771399293">Sprawdź datę ważności i kod CVC, a potem spróbuj ponownie</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4807049035289105102">Nie możesz teraz wejść na stronę <ph name="SITE" />, bo wysłała ona zaszyfrowane dane logowania, których Google Chrome nie może przetworzyć. Błędy sieci i ataki są zazwyczaj przejściowe, więc prawdopodobnie strona będzie wkrótce działać.</translation>
@@ -622,6 +627,7 @@
 <translation id="5141240743006678641">Szyfruj synchronizowane hasła za pomocą danych logowania Google</translation>
 <translation id="5145883236150621069">W odebranej polityce znajduje się kod błędu</translation>
 <translation id="5159010409087891077">Otwórz stronę w nowym oknie incognito (⇧⌘N)</translation>
+<translation id="516920405563544094">Wpisz kod CVC karty <ph name="CREDIT_CARD" />. Po potwierdzeniu dane karty z Twojego konta Google zostaną udostępnione tej stronie.</translation>
 <translation id="5169827969064885044">Możesz stracić dostęp do swojego konta organizacji lub paść ofiarą kradzieży tożsamości. Chrome zaleca natychmiastową zmianę hasła.</translation>
 <translation id="5171045022955879922">Wyszukaj lub wpisz URL</translation>
 <translation id="5172758083709347301">Komputer</translation>
@@ -720,6 +726,7 @@
 <translation id="5810442152076338065">Połączenie z <ph name="DOMAIN" /> jest szyfrowane przy użyciu przestarzałego zestawu szyfrów.</translation>
 <translation id="5813119285467412249">&amp;Ponów dodanie</translation>
 <translation id="5838278095973806738">Nie podawaj żadnych informacji poufnych (takich jak hasła czy karty kredytowe) w tej witrynie, bo osoby atakujące będą mogły je wykraść.</translation>
+<translation id="5844286946362376359">Znam warunki korzystania z usługi, politykę prywatności i prawo do odstąpienia od umowy obowiązujące w <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (pozostaw niezaznaczone, by przeczytać).</translation>
 <translation id="5863847714970149516">Otwierana strona może próbować obciążyć Cię płatnością</translation>
 <translation id="5866257070973731571">Dodaj numer telefonu</translation>
 <translation id="5869405914158311789">Ta witryna jest nieosiągalna</translation>
@@ -728,6 +735,7 @@
 <translation id="5893752035575986141">Karty kredytowe są akceptowane.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (zsynchronizowane)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{W użyciu: 1}few{W użyciu: #}many{W użyciu: #}other{W użyciu: #}}</translation>
+<translation id="5921639886840618607">Zapisać kartę na koncie Google?</translation>
 <translation id="5922853866070715753">Prawie gotowe</translation>
 <translation id="5932224571077948991">Na tej stronie wyświetlają się uciążliwe lub wprowadzające w błąd reklamy</translation>
 <translation id="5939518447894949180">Resetuj</translation>
@@ -858,7 +866,7 @@
 <translation id="6950684638814147129">Błąd podczas przetwarzania wartości JSON: <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">Otwórz stronę na nowej karcie prywatnej</translation>
 <translation id="6957887021205513506">Certyfikat serwera wydaje się sfałszowany.</translation>
-<translation id="6964255747740675745">Nie udało się przetworzyć konfiguracji sieci (nieprawidłowy plik JSON).</translation>
+<translation id="6964255747740675745">Nie udało się przeanalizować konfiguracji sieci (nieprawidłowy plik JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Urządzenie</translation>
 <translation id="6970216967273061347">Okręg</translation>

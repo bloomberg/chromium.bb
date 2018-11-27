@@ -211,6 +211,14 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
 <translation id="1523774894176285446">Browser alternativo da aprire per i siti web configurati.</translation>
 <translation id="152657506688053119">Elenco di URL alternativi per il fornitore del servizio di ricerca predefinito</translation>
 <translation id="1530812829012954197">Visualizza sempre i seguenti schemi URL nel browser host</translation>
+<translation id="1532965933165453786">Consente di attivare o disattivare Fast Transition.
+      La scelta è valida per tutti gli utenti e per tutte le interfacce sul dispositivo.
+      Per poter usare Fast Transition, è necessario attivare sia questa impostazione che la proprietà ONC per ogni rete.
+      Una volta impostato, Fast Transition rimane valido fino alla modifica della norma per disattivarlo.
+
+      Se la norma non è impostata, Fast Transition non viene utilizzato.
+      Se è impostata su false, Fast Transition non viene utilizzato.
+      Se è impostata su true, Fast Transition viene utilizzato quando il punto di accesso wireless lo supporta.</translation>
 <translation id="1541170838458414064">Limita le dimensioni delle pagine di stampa</translation>
 <translation id="1553684822621013552">Quando questo criterio è impostato su true, ARC è attivato (soggetto ad altri controlli delle impostazioni dei criteri - ARC continuerà a essere disattivato se nella sessione utente corrente è attivata la modalità temporanea o l'accesso simultaneo).
 
@@ -893,6 +901,13 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Questa norma può essere impostata solo come consigliata. È possibile utilizzare questa norma per spostare un set di impostazioni internazionali consigliate nella parte superiore, ma gli utenti possono sempre scegliere una qualsiasi impostazione internazionale supportata da <ph name="PRODUCT_OS_NAME" /> per la sessione.
       </translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
+<translation id="3388153794103186066">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e vendor definiti. Perché la norma sia valida, ogni elemento dell'elenco deve contenere sia dispositivi che URL. Ogni elemento nei dispositivi può contenere un campo ID vendor e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID vendor. In caso contrario, la norma non sarà valida e verrà ignorata.
+
+        Il modello di autorizzazione USB utilizza l'URL del sito richiedente ("URL richiedente") e l'URL del sito frame di livello principale ("URL di incorporamento") per concedere l'autorizzazione all'URL richiedente di accedere al dispositivo USB. L'URL richiedente può essere diverso dall'URL di incorporamento quando il sito richiedente viene caricato in un iframe. Di conseguenza il campo "urls" può contenere fino a due stringhe URL delimitate da virgola per specificare rispettivamente l'URL richiedente e l'URL di incorporamento. Se è specificato un solo URL, l'accesso ai dispositivi USB corrispondenti viene concesso quando l'URL del sito richiedente corrisponde all'URL, a prescindere dallo stato di incorporamento. Gli URL in "urls" devono essere validi, altrimenti la norma viene ignorata.
+
+        Se questa norma non viene impostata, per tutti i siti viene usato il valore predefinito globale dalla norma "DefaultWebUsbGuardSetting" (se impostata) o dalla configurazione personale dell'utente (se non impostata).
+
+        I pattern URL di questa norma non devono essere in conflitto con quelli configurati tramite WebUsbBlockedForUrls. In caso di conflitto, questa norma ha la precedenza su WebUsbBlockedForUrls e WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Se questa norma non viene configurata, <ph name="PRODUCT_NAME" /> utilizza una versione minima predefinita, ossia TLS 1.0.
 
       In caso contrario, la norma potrebbe essere impostata su uno dei seguenti valori: "tls1", "tls1.1" o "tls1.2". Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> non utilizzerà versioni SSL/TLS precedenti alla versione specificata. I valori non riconosciuti verranno ignorati.</translation>
@@ -1133,6 +1148,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 <translation id="3925020515212192040">Consente di specificare un elenco di condivisioni di file di rete preconfigurate.
 
       Ogni voce della norma è un oggetto con due componenti: "share_url" e "mode". "share_url" deve essere l'URL della condivisione e "mode" deve essere "drop_down", che indica che il valore "share_url" verrà aggiunto al menu a discesa per il rilevamento delle condivisioni.</translation>
+<translation id="3925377537407648234">Imposta fattore di scala e risoluzione del display</translation>
 <translation id="3939893074578116847">Invia pacchetti di rete al server di gestione per monitorare lo stato online, per consentire
       al server di rilevare se il dispositivo è offline.
 
@@ -1917,6 +1933,29 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Questa norma viene applicata soltanto se il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Questa norma effettua l'installazione forzata di <ph name="CHROME_REPORTING_EXTENSION_NAME" /> per il reporting ed esegue l'override di tutte le norme di estensione relative a quell'estensione.</translation>
+<translation id="6155247658847899816">Quando questa norma è impostata, la risoluzione e il fattore di scala per ogni
+      display sono impostati sui valori specificati. Le impostazioni del display esterno vengono
+      applicate a tutti i display esterni collegati.
+
+      I valori "external_width" ed "external_height" devono essere specificati in
+      pixel. I valori "external_scale_percentage" e
+      "internal_scale_percentage" devono essere specificati in percentuale.
+
+      Se il valore "external_use_native" è impostato su true, la norma ignora i valori
+      "external_height" ed "external_width" e imposta la risoluzione nativa
+      dei display esterni.
+
+      Se il valore "external_use_native" è impostato su false o non è fornito e non viene fornito nemmeno
+      il valore "external_height" o "external_width", la norma non
+      influisce sulle impostazioni del display esterno. Se la risoluzione o il
+      fattore di scala specificati non sono supportati da un display, la norma non viene applicata
+      al display.
+
+      Se il contrassegno "recommended" è impostato su true, gli utenti possono modificare la risoluzione e
+      il fattore di scala di qualsiasi display tramite la pagina delle impostazioni dopo aver eseguito l'accesso, tuttavia
+      al riavvio successivo le loro impostazioni verranno sostituite dal valore della norma.
+      Se il contrassegno "recommended" è impostato su false o non è impostato, gli utenti non possono modificare le
+      impostazioni del display.</translation>
 <translation id="6155936611791017817">Impostazione stato predefinito del puntatore grande nella schermata di accesso</translation>
 <translation id="6157537876488211233">Elenco separato da virgole delle regole di bypass proxy</translation>
 <translation id="6158324314836466367">Nome del web store dell'azienda (obsoleta)</translation>
@@ -2020,6 +2059,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6553143066970470539">Percentuale di luminosità dello schermo</translation>
 <translation id="6559057113164934677">Non consentire ad alcun sito di accedere alla fotocamera e al microfono</translation>
 <translation id="6561396069801924653">Mostra le opzioni di accessibilità nel menu della barra delle applicazioni di sistema</translation>
+<translation id="6563458316362153786">Attiva 802.11r Fast Transition</translation>
 <translation id="6565312346072273043">Imposta lo stato predefinito della funzione di accessibilità della tastiera sullo schermo nella schermata di accesso.
 
           Se questa norma viene impostata su true, la tastiera sullo schermo viene attivata quando viene visualizzata la schermata di accesso.
@@ -2659,6 +2699,11 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Quando questa norma non è impostata su un dispositivo gestito, il dispositivo non può eseguire macchine virtuali.
        I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
 <translation id="8001701200415781021">Limita gli Account Google che è possibile impostare come account principali del browser in <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Se attivi questa impostazione, le impostazioni memorizzate nei profili <ph name="PRODUCT_NAME" />, come i preferiti, i dati della compilazione automatica, le password e così via, saranno scritte anche in un file memorizzato nella cartella del profilo utente Roaming o in una posizione specificata dall'amministratore tramite la norma <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se si attiva questa norma, viene disattivata la sincronizzazione nella cloud.
+
+      Se questa norma viene disattivata o non viene impostata, saranno utilizzati solo i normali profili locali.
+
+      La norma <ph name="SYNC_DISABLED_POLICY_NAME" /> consente di disattivare la sincronizzazione di tutti i dati e sostituisce la norma <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Ruota lo schermo di 0°</translation>
 <translation id="8033913082323846868">Questa norma è stata ritirata in M70, utilizza le norme AutofillAddressEnabled e AutofillCreditCardEnabled.
 
@@ -2785,6 +2830,7 @@ Su Windows è consigliabile configurare le norme tramite Criteri di gruppo, anch
 <translation id="8274603902181597201">Cancella la home directory ecryptfs dell'utente e inizia con una nuova home directory criptata tramite ext4</translation>
 <translation id="8285435910062771358">Ingrandimento a schermo intero attivo</translation>
 <translation id="8288199156259560552">Attiva il servizio di geolocalizzazione di Google per Android</translation>
+<translation id="8290453559005611000">Immagine di PluginVm</translation>
 <translation id="8294750666104911727">In genere le pagine con X-UA-Compatible impostato su chrome=1 saranno visualizzate in <ph name="PRODUCT_FRAME_NAME" /> nonostante la norma "£ChromeFrameRendererSettings".
 
 Se attivi questa impostazione, le pagine non saranno sottoposte a scansione per i metatag.
@@ -2856,6 +2902,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
           Se la norma non viene impostata, viene utilizzato per tutti i siti il renderer predefinito specificato dalla norma "ChromeFrameRendererSettings".
 
           Per avere pattern di esempio, visita il sito https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Disabilita salvataggio della cronologia del browser</translation>
 <translation id="8498293625012059298">Configura l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password indirizzerà gli utenti a questo URL dopo la visualizzazione di un avviso nel browser perché modifichino la loro password.
       Per consentire a <ph name="PRODUCT_NAME" /> di acquisire correttamente l'impronta digitale della nuova password in questa pagina di modifica della password, assicurati che la pagina di modifica della password che stai utilizzando rispetti le linee guida disponibili all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

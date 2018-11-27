@@ -34,6 +34,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2008474315282236005">Se eliminará un elemento de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Tu administrador pide que reinicies Chromium para aplicar esta actualización</translation>
 <translation id="2119636228670142020">Información de &amp;Chromium OS</translation>
+<translation id="2178765360243863853">Deberías reiniciar Chromium ahora</translation>
 <translation id="2241627712206172106">Si compartes un ordenador, tus amigos y familiares pueden navegar de forma independiente y configurar Chromium a su gusto.</translation>
 <translation id="2265088490657775772">descarga Chromium en tu iPhone</translation>
 <translation id="2347108572062610441">Esta extensión ha cambiado la página que se muestra al iniciar Chromium.</translation>
@@ -110,6 +111,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4708774505295300557">Otro usuario ha iniciado sesión anteriormente en Chromium con la cuenta <ph name="ACCOUNT_EMAIL_LAST" /> a través de este ordenador. Debes crear un usuario de Chromium para proteger tu información.</translation>
 <translation id="4714956846925717402">Accede a Chromium más rápido</translation>
 <translation id="4746050847053251315">¿Quieres cerrar Chromium de todas formas?</translation>
+<translation id="4748217263233248895">Se acaba de instalar una actualización de seguridad especial para Chromium. Reinicia ahora y restauraremos las pestañas.</translation>
 <translation id="4888717733111232871">Regla entrante para que Chromium permita tráfico mDNS.</translation>
 <translation id="4943838377383847465">Chromium está en modo de segundo plano.</translation>
 <translation id="4987820182225656817">Los invitados pueden utilizar Chromium sin dejar nada atrás.</translation>

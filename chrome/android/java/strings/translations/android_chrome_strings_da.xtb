@@ -220,6 +220,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="2586657967955657006">Udklipsholder</translation>
 <translation id="2587052924345400782">Der findes en nyere version</translation>
 <translation id="2593272815202181319">Enkelt tegnafstand</translation>
+<translation id="2610239185026711824">Foreslå en adgangskode</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
 <translation id="2621115761605608342">Tillad JavaScript for et bestemt website.</translation>
 <translation id="2625189173221582860">Adgangskoden er kopieret</translation>
@@ -236,6 +237,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="271033894570825754">Nyt</translation>
 <translation id="2728754400939377704">Sortér efter website</translation>
 <translation id="2744248271121720757">Tryk på et ord for at søge øjeblikkeligt eller se relaterede handlinger</translation>
+<translation id="2760323196215778921">Tilladelsen skal også aktiveres i Chrome. Se <ph name="BEGIN_LINK" />indstillingerne for Android<ph name="END_LINK" /> for at få flere oplysninger.</translation>
 <translation id="2762000892062317888">lige nu</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder tilbage</translation>
 <translation id="2779651927720337254">mislykkedes</translation>
@@ -707,6 +709,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6378173571450987352">Oplysninger: Sorteret efter mængden af brugte data</translation>
 <translation id="6383961787135158834">Ryd websitelagerplads…</translation>
 <translation id="6388207532828177975">Ryd og nulstil</translation>
+<translation id="6393156038355142111">Foreslå en stærk adgangskode</translation>
 <translation id="6393863479814692971">Chrome skal have tilladelse til at bruge dit kamera og din mikrofon på dette website.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Rediger bogmærke</translation>
@@ -887,6 +890,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="773466115871691567">Oversæt altid sider på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Beskytter dig og din enhed mod farlige websites</translation>
+<translation id="7759822418208302953">Assistenten til AutoFyld stopper</translation>
 <translation id="7762668264895820836">SD-kort <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Tilføj adresse</translation>
 <translation id="7765158879357617694">Flyt</translation>
@@ -931,6 +935,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8037750541064988519"><ph name="DAYS" /> dage tilbage</translation>
 <translation id="804335162455518893">SD-kortet blev ikke fundet</translation>
 <translation id="805047784848435650">Baseret på din browserhistorik</translation>
+<translation id="8051303708327298699">Tilladelserne skal også aktiveres i Chrome. Se <ph name="BEGIN_LINK" />indstillingerne for Android<ph name="END_LINK" /> for at få flere oplysninger.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB er ledig</translation>
 <translation id="8058746566562539958">Åbn på ny fane i Chrome</translation>
 <translation id="8063895661287329888">Bogmærket kunne ikke tilføjes.</translation>
@@ -1002,6 +1007,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="857509777403223202">Der vises snart flere artikler. Hav en god aften!</translation>
 <translation id="857943718398505171">Tilladt (anbefales)</translation>
 <translation id="8583805026567836021">Kontodataene ryddes</translation>
+<translation id="860043288473659153">Kortholderens navn</translation>
 <translation id="8609465669617005112">Flyt op</translation>
 <translation id="8616006591992756292">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Vil du åbne den foreslåede webadresse, som er angivet i det downloadede indhold?</translation>

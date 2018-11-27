@@ -63,6 +63,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="2314101195544969792">Sesi <ph name="APPLICATION_NAME" /> anda tidak aktif untuk sementara waktu dan akan diputuskan sambungannya tidak lama lagi.</translation>
 <translation id="2317666076142640974">Intai sepintas lalu <ph name="LINK_BEGIN" />apl web Desktop Jauh Chrome<ph name="LINK_END" />. Kami ingin mendengar maklum balas anda.</translation>
 <translation id="2320166752086256636">Sembunyikan papan kekunci</translation>
+<translation id="2332192922827071008">Buka Pilihan</translation>
 <translation id="2353140552984634198">Anda boleh mengakses komputer ini dengan selamat menggunakan Chromoting.</translation>
 <translation id="2359808026110333948">Teruskan</translation>
 <translation id="2366718077645204424">Tidak dapat mencapai hos. Hal ini mungkin disebabkan oleh konfigurasi rangkaian yang anda gunakan.</translation>
@@ -190,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Apabila memuat turun Pemasang Hos Chromoting, anda bersetuju menerima <ph name="LINK_BEGIN" />Syarat Perkhidmatan<ph name="LINK_END" /> Google.</translation>
 <translation id="4974476491460646149">Sambungan ditutup untuk <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Anda perlu menyediakan komputer untuk akses jauh terlebih dahulu</translation>
+<translation id="5059773780693835145">Langkah konfigurasi tambahan diperlukan sebelum anda boleh mengawal mesin ini dari jauh menggunakan <ph name="PRODUCT_NAME" />.
+
+Untuk mendayakan fungsian ini, pilih '<ph name="BUTTON_NAME" />' untuk mendapatkan anak tetingkap pilihan Keselamatan dan Privasi, kemudian tandai kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (luar talian)</translation>
 <translation id="5070121137485264635">Hos jauh memerlukan anda membuat pengesahan pada tapak web pihak ketiga. Untuk meneruskan, anda hendaklah memberikan Desktop Jauh Chrome kebenaran tambahan untuk mengakses alamat ini:</translation>
 <translation id="507204348399810022">Adakah anda pasti mahu melumpuhkan sambungan jauh ke <ph name="HOSTNAME" />?</translation>
@@ -314,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Komputer Saya</translation>
 <translation id="811307782653349804">Akses komputer anda sendiri dari mana-mana sahaja.</translation>
 <translation id="8116630183974937060">Ralat rangkaian berlaku. Sila pastikan peranti anda berada dalam talian dan cuba lagi.</translation>
+<translation id="8123581458650016326">Benarkan pengguna jauh mengawal mesin ini</translation>
 <translation id="8178433417677596899">Perkongsian skrin pengguna kepada pengguna, sesuai untuk sokongan teknikal jauh.</translation>
 <translation id="8187079423890319756">Hak Cipta 2013 Pengarang Chromium. Hak Cipta Terpelihara.</translation>
 <translation id="8196755618196986400">Untuk membolehkan kami menghubungi anda untuk mendapatkan maklumat lanjut, alamat e-mel anda akan dimasukkan ke dalam mana-mana maklum balas yang anda serahkan.</translation>

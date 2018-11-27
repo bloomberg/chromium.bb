@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Sekretessmeddelande för Google Chrome</translation>
 <translation id="1863312987075920112">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK_TOS" />användarvillkor<ph name="END_LINK_TOS" /> och <ph name="BEGIN_LINK_PRIVACY" />sekretessmeddelande<ph name="END_LINK_PRIVACY" />.</translation>
-<translation id="1878302395768190018">Du kan när som helst ändra detta i Chrome-inställningarna</translation>
 <translation id="2147651015520127414">Chrome har verifierat att <ph name="ISSUER" /> har utfärdat webbplatsens certifikat.</translation>
 <translation id="2334084861041072223">Upphovsrätt <ph name="YEAR" /> Google Inc. Med ensamrätt.</translation>
 <translation id="2342981853652716282">Logga in i Chrome om du vill få dina bokmärken, lösenord med mera på alla dina enheter.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Bidra till att förbättra Chromes funktioner och prestanda</translation>
 <translation id="4523886039239821078">Några tillägg har fått Chrome att krascha. Avinstallera följande:</translation>
 <translation id="4615174829807303908">Du håller på att logga ut från ett konto som hanteras av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Åtgärden raderar din data i Chrome från den här enheten, men den finns kvar på Google-kontot.</translation>
-<translation id="5240817131241497236">Inställningarna som styr synkronisering, anpassning och andra tjänster från Google i Chrome har ändrats. Detta kan påverka dina nuvarande inställningar.</translation>
 <translation id="5389212809648216794">Google Chrome kan inte använda kameran eftersom den används av en annan app</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />Inställningarna<ph name="END_LINK" /> kan anpassas när som helst. Google kan anpassa Chrome och tjänster från Google som Översätt, Sök och annonser utifrån innehållet på webbplatser du besöker, vad du interagerar med i webbläsaren och annan aktivitet.</translation>
 <translation id="5639704535586432836">Öppna Inställningar &gt; Sekretess &gt; Kamera &gt; Google Chrome och aktivera kameran.</translation>

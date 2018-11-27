@@ -17,7 +17,6 @@
 <translation id="2647554856022461007">Chromium var izmantot tīmekļa pakalpojumus, lai uzlabotu jūsu pārlūkošanas pieredzi. Varat arī atspējot šos pakalpojumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="2687023731466035790">Google viedās tehnoloģijas pārlūkā Chromium</translation>
 <translation id="2730884209570016437">Chromium nevar izmantot kameru, jo to izmanto cita lietojumprogramma.</translation>
-<translation id="2797210818057553964">Varat to jebkurā laikā pielāgot Chromium iestatījumos</translation>
 <translation id="2915596697727466327">Chromium izmanto Face ID, lai jūsu parolēm varētu piekļūt tikai pilnvarotas personas.</translation>
 <translation id="3256316712990552818">Nokopēta pārlūkā Chromium</translation>
 <translation id="3413120535237193088">Pierakstieties pārlūkā Chromium, lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs.</translation>
@@ -47,7 +46,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Atlasītie dati ir noņemti no pārlūka Chromium un sinhronizētajām ierīcēm. Jūsu Google kontam vietnē history.google.com var būt citu veidu pārlūkošanas vēstures dati, piemēram, meklēšanas vaicājumi un darbības citos Google pakalpojumos.</translation>
 <translation id="7400689562045506105">Chromium lietošana visur</translation>
-<translation id="7499048969477415415">Ir mainīti sinhronizācijas, personalizācijas un citu Google pakalpojumu pārvaldības iestatījumi pārlūkā Chromium. Tas var ietekmēt jūsu pašreizējos iestatījumus.</translation>
 <translation id="7674213385180944843">Atveriet sadaļu Iestatījumi &gt; Konfidencialitāte &gt; Kamera &gt; Chromium un ieslēdziet kameru.</translation>
 <translation id="7746854981345936341">Chromium padoms. Tagad dažas pogas ir ekrāna apakšdaļā, piemēram, Atpakaļ, Pārsūtīt un Meklēt.</translation>
 <translation id="786327964234957808">Jūs pārslēdzat sinhronizējamos kontus no konta <ph name="USER_EMAIL1" /> uz kontu <ph name="USER_EMAIL2" />. Jūsu pašreizējos Chromium datus pārvalda <ph name="DOMAIN" />. Šādi jūsu dati tiks dzēsti no šīs ierīces, bet dati joprojām būs pieejami kontā <ph name="USER_EMAIL1" />.</translation>

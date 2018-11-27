@@ -228,6 +228,14 @@
 <translation id="1523774894176285446">Alternative browser to launch for configured websites.</translation>
 <translation id="152657506688053119">List of alternative URLs for the default search provider</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
+<translation id="1532965933165453786">Allows enabling or disabling Fast Transition.
+      This applies to all users, and to all interfaces on the device.
+      In order for Fast Transition to be used, both this setting and the per-network ONC property need to be enabled.
+      Once set, Fast Transition persists until the policy is changed to disable it.
+
+      If policy is not set, Fast Transition is not used.
+      If set to false, Fast Transition is not used.
+      If set to true, Fast Transition is used when the wireless access point supports it.</translation>
 <translation id="1541170838458414064">Restrict printing page size</translation>
 <translation id="1553684822621013552">When this policy is set to true, ARC will be enabled for the user
       (subject to additional policy settings checks – ARC will still be
@@ -955,6 +963,13 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       This policy can only be set as recommended. You can use this policy to move a set of recommended locales to the top but users are always allowed to choose any locale supported by <ph name="PRODUCT_OS_NAME" /> for their session.
       </translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
+<translation id="3388153794103186066">Allows you to set a list of URLs that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and URLs in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
+
+        The USB permission model uses the URL of the requesting site ('requesting URL') and the URL of the top-level frame site ('embedding URL') to grant permission to the requesting URL to access the USB device. The requesting URL may be different from the embedding URL when the requesting site is loaded in an iframe. Therefore, the 'urls' field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in 'urls' must be valid URLs, otherwise the policy will be ignored.
+
+        If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+
+        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">If this policy is not configured then <ph name="PRODUCT_NAME" /> uses a default minimum version which is TLS 1.0.
 
       Otherwise it may be set to one of the following values: 'tls1', 'tls1.1' or 'tls1.2'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions less than the specified version. An unrecognised value will be ignored.</translation>
@@ -1202,6 +1217,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3925020515212192040">Specifies a list of preconfigued network file shares.
 
       Each list item of the policy is an object with two members: 'share_url' and 'mode'. 'share_url' should be the URL of the share and 'mode' should be 'drop_down' which indicates that 'share_url' will be added to the share discovery drop-down.</translation>
+<translation id="3925377537407648234">Set display resolution and scale factor</translation>
 <translation id="3939893074578116847">Send network packets to the management server to monitor online status, to allow
       the server to detect if the device is offline.
 
@@ -2043,6 +2059,29 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       This policy is only effective when the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       This policy force installs <ph name="CHROME_REPORTING_EXTENSION_NAME" /> for the reporting and overrides any extension policies related to that extension.</translation>
+<translation id="6155247658847899816">When this policy is set, resolution and scale factor of each
+      display are set to the specified values. External display settings are
+      applied to all connected external displays.
+
+      Values of 'external_width' and 'external_height' should be specified in
+      pixels. Values of 'external_scale_percentage' and
+      'internal_scale_percentage' should be specified in per cents.
+
+      If 'external_use_native' is set to true, policy will ignore values of
+      'external_height' and 'external_width' and set resolution of the external
+      displays to their native resolution.
+
+      If 'external_use_native' is false or not provided and either
+      'external_height' or 'external_width' is not provided, policy doesn't
+      affect the external display settings. If specified resolution or
+      scale factor is not supported by some display, policy is not applied to
+      that display.
+
+      If 'recommended' flag is set to true, users may change resolution and
+      scale factor of any display via the settings page after logging in, but
+      their settings will be overridden by the policy value at the next reboot.
+      If 'recommended' flag is set to false or not set, users can't change the
+      display settings.</translation>
 <translation id="6155936611791017817">Set default state of the large cursor on the login screen</translation>
 <translation id="6157537876488211233">Comma-separated list of proxy bypass rules</translation>
 <translation id="6158324314836466367">Enterprise web store name (deprecated)</translation>
@@ -2150,6 +2189,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="6553143066970470539">Screen brightness per cent</translation>
 <translation id="6559057113164934677">Do not allow any site to access the camera and microphone</translation>
 <translation id="6561396069801924653">Show accessibility options in system tray menu</translation>
+<translation id="6563458316362153786">Enable 802.11r Fast Transition</translation>
 <translation id="6565312346072273043">Set the default state of the on-screen keyboard accessibility feature on the login screen.
 
           If this policy is set to true, the on-screen keyboard will be enabled when the login screen is shown.
@@ -2823,6 +2863,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       When this policy is not set on a managed device, the device is not allowed to run virtual machines.
       Unmanaged devices are allowed to run virtual machines.</translation>
 <translation id="8001701200415781021">Restrict which Google accounts are allowed to be set as browser primary accounts in <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">If you enable this setting, the settings stored in <ph name="PRODUCT_NAME" /> profiles such as bookmarks, auto-fill data, passwords, etc. will also be written to a file stored in the Roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> policy. Enabling this policy disables cloud sync.
+
+      If this policy is disabled or left not set only the regular local profiles will be used.
+
+      The <ph name="SYNC_DISABLED_POLICY_NAME" /> policy disables all data synchronisation, overriding <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Rotate screen by 0 degrees</translation>
 <translation id="8033913082323846868">This policy is deprecated in M70, please use AutofillAddressEnabled and AutofillCreditCardEnabled instead.
 
@@ -2951,6 +2996,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8274603902181597201">Wipe the user’s eCryptfs home directory and start with a fresh ext4-encrypted home directory.</translation>
 <translation id="8285435910062771358">Full-screen magnifier enabled</translation>
 <translation id="8288199156259560552">Enable Android Google Location Service</translation>
+<translation id="8290453559005611000">PluginVm image</translation>
 <translation id="8294750666104911727">Normally pages with X-UA-Compatible set to chrome=1 will be rendered in <ph name="PRODUCT_FRAME_NAME" /> regardless of the 'ChromeFrameRendererSettings' policy.
 
           If you enable this setting, pages will not be scanned for meta tags.
@@ -3030,6 +3076,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
 
           For example patterns see https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Disable saving browser history</translation>
 <translation id="8498293625012059298">Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their password after seeing a warning in the browser.
       In order for <ph name="PRODUCT_NAME" /> to correctly capture the new password fingerprint on this change password page, please make sure that your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

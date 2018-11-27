@@ -17,7 +17,6 @@
 <translation id="2647554856022461007">‏Chromium עשוי להשתמש בשירותי אינטרנט לשיפור חוויית הגלישה. ניתן להשבית את השירותים האלה. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">‏קבלת גישה אל תכונות חכמות של Google ב-Chromium</translation>
 <translation id="2730884209570016437">‏Chromium לא יכול להשתמש במצלמה כי אפליקציה אחרת משתמשת בה</translation>
-<translation id="2797210818057553964">‏אפשר תמיד להתאים אישית דרך הגדרות Chromium</translation>
 <translation id="2915596697727466327">‏Chromium משתמש ב-Face ID כדי להבטיח גישה מאושרת לסיסמאות שלך.</translation>
 <translation id="3256316712990552818">‏הועתק אל Chromium</translation>
 <translation id="3413120535237193088">‏היכנס ל-Chromium כדי לקבל גישה אל הסימניות שלך בכל המכשירים.</translation>
@@ -47,7 +46,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">‏הנתונים שבחרת הוסרו מ-Chromium ומהמכשירים המסונכרנים. ייתכן שבכתובת history.google.com תוכל לגשת לסוגים אחרים של היסטוריית גלישה בחשבון Google, כמו חיפושים ופעילות משירותי Google אחרים.</translation>
 <translation id="7400689562045506105">‏אפשר להשתמש ב-Chromium בכל מקום</translation>
-<translation id="7499048969477415415">‏ההגדרות ששולטות בסנכרון, בהתאמה האישית ובשירותים אחרים של Google ב-Chromium השתנו. השינוי עשוי להשפיע על ההגדרות הנוכחיות שלך.</translation>
 <translation id="7674213385180944843">‏עבור אל 'הגדרות' &gt; 'פרטיות' &gt; 'מצלמה' &gt; Chromium והפעל את המצלמה.</translation>
 <translation id="7746854981345936341">‏טיפ למשתמשי Chromium. חלק מהלחצנים נמצאים עכשיו בחלק התחתון של המסך, כמו 'הקודם', 'קדימה' ו'חיפוש'.</translation>
 <translation id="786327964234957808">‏אתה עובר מחשבון סינכרון <ph name="USER_EMAIL1" /> אל <ph name="USER_EMAIL2" />. נתוני Chromium הקיימים שלך מנוהלים על-ידי <ph name="DOMAIN" />. פעולה זו תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו ב-<ph name="USER_EMAIL1" />.</translation>

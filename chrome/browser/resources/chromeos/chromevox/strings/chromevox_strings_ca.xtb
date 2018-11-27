@@ -45,6 +45,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="1275718070701477396">Seleccionat</translation>
 <translation id="1286609444451033486">Prem Cerca+Espai per activar o desactivar l'opció.</translation>
 <translation id="1291286136605998134">Botó per activar o desactivar</translation>
+<translation id="1303806948938513162">Toca amb 4 dits per entrar als menús de ChromeVox</translation>
 <translation id="1319608975892113573">No hi ha cap cita en bloc anterior.</translation>
 <translation id="1321576897702511272">Amaga l'ajuda de ChromeVox.</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> de <ph name="TOTAL" /></translation>
@@ -238,6 +239,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3046838483509668188">Opcions de ChromeVox</translation>
 <translation id="3047143736589213134">Teclat experimental</translation>
 <translation id="3060756054951570867">S'ha obert el menú <ph name="TITLE" />.</translation>
+<translation id="3060880924447482063">Llisca cap a l'esquerra o cap a la dreta per moure't d'un element a un altre</translation>
 <translation id="3070245424257836917">Fes lliscar tres dits cap amunt</translation>
 <translation id="3078345202707391975">Capçalera del nivell 2 següent</translation>
 <translation id="3078740164268491126">taula</translation>
@@ -331,6 +333,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3389259863310851658">Camp del formulari anterior</translation>
 <translation id="3390225400784126843">Element diferent següent</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, element de menú</translation>
+<translation id="3393605254399152980">Arrossega un dit per sentir què estàs tocant</translation>
 <translation id="3406283310380167331">Mostra la llista de formularis.</translation>
 <translation id="3423495725743882470">fila $1, columna $2</translation>
 <translation id="3457000393508828486">S'ha premut parcialment.</translation>
@@ -346,6 +349,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3497063866483065785">{COUNT,plural, =1{signe d'interrogació}other{# signes d'interrogació}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{accent circumflex}other{# accents circumflexos}}</translation>
 <translation id="352577523970648069">Un camp de text que es pot editar</translation>
+<translation id="3549680091535286226">Toca amb 2 dits per aturar temporalment la veu</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, casella de selecció no activada</translation>
 <translation id="3589661172894441357">Glossari</translation>
 <translation id="3599054940393788245">No sou dins de math.</translation>
@@ -410,6 +414,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4166192625054637755">Final del subíndex</translation>
 <translation id="4173994908659439270">No hi ha cap més camp de text que es pugui editar.</translation>
 <translation id="4176463684765177261">Desactivat</translation>
+<translation id="4187322598335821254">Llisca cap amunt o cap avall per moure't d'una línia a una altra</translation>
 <translation id="4188530942454211480">Frase anterior</translation>
 <translation id="4191918948604314587">Un botó</translation>
 <translation id="419265409837491189">Ves a la columna anterior</translation>
@@ -708,6 +713,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="6583174818554398774">Ves al gest següent en granularitat</translation>
 <translation id="6587021927234520429">No hi ha cap capçalera més del nivell 4.</translation>
 <translation id="6601344353291556895">Activa les descripcions detallades</translation>
+<translation id="6609828810966525877">Descobreix més gestos al mode d'aprenentatge i al Centre d'ajuda de Chromebook</translation>
 <translation id="6615602925644411249">Cerca a la pàgina.</translation>
 <translation id="6628427060004938651">Part</translation>
 <translation id="6633350132811819843">No hi ha cap taula més.</translation>
@@ -759,6 +765,7 @@ Per tancar una pestanya, prem Control+W.
 Per avançar per diverses pestanyes obertes, prem Control+Tab.
 Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="7086377898680121060">augmenta la brillantor</translation>
+<translation id="7088743565397416204">Fes doble toc per activar l'element destacat</translation>
 <translation id="7095834689119144465">Edita només text numèric</translation>
 <translation id="7096001299300236431">Fitxer multimèdia anterior</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -814,6 +821,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="7491962110804786152">pestanya</translation>
 <translation id="7492049978501397201">Diàleg introduït</translation>
 <translation id="7518543783849163354">Per aturar els comentaris de ChromeVox temporalment, prem la tecla Control.</translation>
+<translation id="7521682724501952239">Pots fer servir ChromeVox amb la pantalla tàctil.</translation>
 <translation id="7532613204005497612">Juny</translation>
 <translation id="7552432549459840808">Dreceres útils de Chrome</translation>
 <translation id="7579911500627256166">punt <ph name="DOT" /></translation>

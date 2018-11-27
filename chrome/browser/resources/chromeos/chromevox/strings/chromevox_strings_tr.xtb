@@ -45,6 +45,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="1275718070701477396">Seçili</translation>
 <translation id="1286609444451033486">Geçiş yapmak için Arama+Boşluk tuşlarına basın.</translation>
 <translation id="1291286136605998134">Açma/Kapatma Düğmesi</translation>
+<translation id="1303806948938513162">ChromeVox menülerine girmek için 4 parmağınızla dokunun</translation>
 <translation id="1319608975892113573">Önceki blok alıntı yok.</translation>
 <translation id="1321576897702511272">ChromeVox yardımını gizle</translation>
 <translation id="1331702245475014624">toplam: <ph name="TOTAL" />, öğe: <ph name="INDEX" /></translation>
@@ -238,6 +239,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="3046838483509668188">ChromeVox Seçenekleri</translation>
 <translation id="3047143736589213134">Deneysel tuş eşleme</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> menüsü açıldı</translation>
+<translation id="3060880924447482063">Öğeler arasında geçiş yapmak için sola veya sağa hızlıca kaydırın.</translation>
 <translation id="3070245424257836917">Üç parmağınızı yukarı kaydırın</translation>
 <translation id="3078345202707391975">Sonraki 2. düzey başlık</translation>
 <translation id="3078740164268491126">tablo</translation>
@@ -331,6 +333,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="3389259863310851658">Önceki form alanı</translation>
 <translation id="3390225400784126843">Sonraki farklı öğe.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, menü öğesi</translation>
+<translation id="3393605254399152980">Dokunduğunuz öğenin açıklamasını duymak için bir parmağınızı sürükleyin</translation>
 <translation id="3406283310380167331">Form listesini göster</translation>
 <translation id="3423495725743882470">$1. satır, $2. sütun</translation>
 <translation id="3457000393508828486">Kısmen basıldı</translation>
@@ -346,6 +349,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="3497063866483065785">{COUNT,plural, =1{soru işareti}other{# soru işareti}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{düzeltme işareti}other{# düzeltme işareti}}</translation>
 <translation id="352577523970648069">Düzenlenebilir metin alanı</translation>
+<translation id="3549680091535286226">Konuşmayı geçici olarak durdurmak için 2 parmağınızla dokunun</translation>
 <translation id="3568702578574425662"><ph name="NAME" /> adlı onay kutusu işaretli değil</translation>
 <translation id="3589661172894441357">Terimler sözlüğü</translation>
 <translation id="3599054940393788245">Matematik sembol kullanımında değil</translation>
@@ -410,6 +414,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4166192625054637755">Alt simge sonu</translation>
 <translation id="4173994908659439270">Düzenlenebilir sonraki metin alanı yok.</translation>
 <translation id="4176463684765177261">Devre dışı</translation>
+<translation id="4187322598335821254">Satırlar arasında geçiş yapmak için yukarı veya aşağı doğru hızlıca kaydırın</translation>
 <translation id="4188530942454211480">Önceki Cümle</translation>
 <translation id="4191918948604314587">Düğme</translation>
 <translation id="419265409837491189">Önceki sütuna git</translation>
@@ -708,6 +713,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="6583174818554398774">Ayrıntı düzeyinde sonraki öğeye gidin</translation>
 <translation id="6587021927234520429">Sonraki 4. düzey başlık yok.</translation>
 <translation id="6601344353291556895">Ayrıntılı açıklamaları etkinleştir.</translation>
+<translation id="6609828810966525877">Öğrenme Modu'nda ve Chromebook Yardım Merkezi'nde diğer hareketleri keşfedin</translation>
 <translation id="6615602925644411249">Sayfada bul.</translation>
 <translation id="6628427060004938651">Bölüm</translation>
 <translation id="6633350132811819843">Sonraki tablo yok.</translation>
@@ -759,6 +765,7 @@ Bir sekmeyi kapatmak için Control+W tuşlarına basın.
 Açık sekmeler arasında ileriye doğru gitmek için Control+Sekme tuşlarını kullanın.
 Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translation>
 <translation id="7086377898680121060">Parlaklığı artır</translation>
+<translation id="7088743565397416204">Odaklanılan öğeyi etkinleştirmek için iki kez dokunun</translation>
 <translation id="7095834689119144465">Yalnızca sayısal düzenleme metni</translation>
 <translation id="7096001299300236431">Önceki medya tuşu</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -814,6 +821,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">İletişim kutusuna girildi</translation>
 <translation id="7518543783849163354">ChromeVox'un konuşmasını geçici olarak durdurmak için Control tuşuna basın.</translation>
+<translation id="7521682724501952239">ChromeVox'u dokunmatik ekranla kullanabilirsiniz.</translation>
 <translation id="7532613204005497612">Haziran</translation>
 <translation id="7552432549459840808">Yararlı Chrome Kısayolları</translation>
 <translation id="7579911500627256166">nokta <ph name="DOT" /></translation>

@@ -237,6 +237,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="271033894570825754">New</translation>
 <translation id="2728754400939377704">Sort by site</translation>
 <translation id="2744248271121720757">Tap a word to search instantly or see related actions</translation>
+<translation id="2760323196215778921">You also need to turn this permission on for Chrome. See <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" /> for details.</translation>
 <translation id="2762000892062317888">just now</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> secs left</translation>
 <translation id="2779651927720337254">failed</translation>
@@ -934,6 +935,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8037750541064988519"><ph name="DAYS" /> days left</translation>
 <translation id="804335162455518893">SD card not found</translation>
 <translation id="805047784848435650">Based on your browsing history</translation>
+<translation id="8051303708327298699">You also need to turn these permissions on for Chrome. See <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" /> for details.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB available</translation>
 <translation id="8058746566562539958">Open in new Chrome tab</translation>
 <translation id="8063895661287329888">Failed to add bookmark.</translation>
@@ -1005,6 +1007,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="857509777403223202">More articles will appear soon. Enjoy your evening!</translation>
 <translation id="857943718398505171">Allowed (recommended)</translation>
 <translation id="8583805026567836021">Clearing account data</translation>
+<translation id="860043288473659153">Cardholder name</translation>
 <translation id="8609465669617005112">Move up</translation>
 <translation id="8616006591992756292">Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Open the suggested URL specified in the downloaded content?</translation>

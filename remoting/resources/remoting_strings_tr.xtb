@@ -63,6 +63,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" /> oturumunuz bir süredir etkin değil ve kısa bir süre sonra bağlantısı kesilecek.</translation>
 <translation id="2317666076142640974">Yeni <ph name="LINK_BEGIN" />Chrome Uzaktan Masaüstü web uygulamasına<ph name="LINK_END" /> önceden göz atın. Geri bildirimlerinizi merakla bekliyoruz.</translation>
 <translation id="2320166752086256636">Klavyeyi gizle</translation>
+<translation id="2332192922827071008">Tercihleri Aç</translation>
 <translation id="2353140552984634198">Chromoting'i kullanarak bu bilgisayara güvenli bir şekilde erişebilirsiniz.</translation>
 <translation id="2359808026110333948">Devam Et</translation>
 <translation id="2366718077645204424">Ana bilgisayara erişilemiyor. Bu sorun, kullandığınız ağın yapılandırmasından kaynaklanıyor olabilir.</translation>
@@ -190,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Chromoting Ana Makine Yükleyicisi'ni indirerek Google <ph name="LINK_BEGIN" />Hizmet Şartları<ph name="LINK_END" />'nı kabul etmiş olursunuz.</translation>
 <translation id="4974476491460646149"><ph name="HOSTNAME" /> adlı ana makinenin bağlantısı kapandı</translation>
 <translation id="4985296110227979402">İlk olarak bilgisayarınızı uzaktan erişim için ayarlamanız gerekir</translation>
+<translation id="5059773780693835145">Bu makineyi <ph name="PRODUCT_NAME" /> kullanarak uzaktan kontrol edebilmeniz için öncelikle bir ek yapılandırma adımını tamamlamanız gerekmektedir.
+
+Bu işlevi etkinleştirmek için "<ph name="BUTTON_NAME" />" düğmesini seçerek Güvenlik ve Gizlilik tercihleri bölmesini görüntüleyin, ardından "<ph name="SERVICE_SCRIPT_NAME" />" öğesinin yanındaki kutuyu işaretleyin.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (çevrimdışı)</translation>
 <translation id="5070121137485264635">Uzak ana makine üçüncü taraf bir web sitesine kimlik doğrulama işlemi yapmanızı gerektiriyor. Devam etmek üzere şu adrese erişim için Chrome Uzaktan Masaüstü'ne ek izinler vermelisiniz:</translation>
 <translation id="507204348399810022"><ph name="HOSTNAME" /> adlı ana bilgisayara uzaktan bağlantıları devre dışı bırakmak istediğinizden emin misiniz?</translation>
@@ -314,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Bilgisayarlarım</translation>
 <translation id="811307782653349804">Bilgisayarınıza her yerden erişin.</translation>
 <translation id="8116630183974937060">Bir ağ hatası oluştu. Lütfen cihazınızın çevrimiçi olduğundan emin olun ve yeniden deneyin.</translation>
+<translation id="8123581458650016326">Uzak kullanıcıların bu makineyi kontrol etmesine izin verin</translation>
 <translation id="8178433417677596899">Kullanıcılar arası ekran paylaşımı, uzaktan teknik destek için mükemmeldir.</translation>
 <translation id="8187079423890319756">Telif Hakkı 2013 The Chromium Authors. Tüm hakları saklıdır.</translation>
 <translation id="8196755618196986400">Daha ayrıntılı bilgi almak üzere sizinle iletişim kurabilmemiz için e-posta adresiniz gönderdiğiniz geri bildirimlere eklenecektir.</translation>

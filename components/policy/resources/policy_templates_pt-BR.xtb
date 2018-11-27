@@ -222,6 +222,14 @@
 <translation id="1523774894176285446">Navegador alternativo que será iniciado com sites configurados.</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o provedor de pesquisa padrão</translation>
 <translation id="1530812829012954197">Sempre renderizar os seguintes padrões de URL no navegador do host</translation>
+<translation id="1532965933165453786">Permite ativar ou desativar a transição rápida.
+      Essa opção se aplica a todos os usuários e todas as interfaces no dispositivo.
+      Para usar a transição rápida, esta configuração e a propriedade do ONC por rede precisam estar ativadas.
+      Depois de definida, a transição rápida permanece até que a política seja alterada para desativá-la.
+
+      Se a política não for definida, a transição rápida não será usada.
+      Se for definida como false, a transição rápida não será usada.
+      Se for definida como true, a transição rápida será usada quando o ponto de acesso da rede sem fio for compatível.</translation>
 <translation id="1541170838458414064">Restringir o tamanho da página de impressão</translation>
 <translation id="1553684822621013552">Quando esta política está definida como "true", o recurso ARC fica ativado para o usuário
       (sujeito a verificações de configuração adicionais de política - O ARC ainda estará
@@ -919,6 +927,13 @@
       Esta política só pode ser definida conforme recomendado. É possível usar esta política para mover um conjunto de localidades recomendadas para o topo da lista, mas os usuários sempre poderão escolher qualquer localidade compatível com o <ph name="PRODUCT_OS_NAME" /> para a sessão deles.
       </translation>
 <translation id="3381968327636295719">Usar o navegador de host por padrão</translation>
+<translation id="3388153794103186066">Permite definir uma lista de urls que especificam quais sites terão permissão automática para acessar um dispositivo USB com os códigos de fornecedor e de produto fornecidos. Cada item da lista precisa conter dispositivos e URLs para que a política seja válida. Cada item nos dispositivos pode conter um campo para código de fornecedor e código de produto. Os códigos omitidos são tratados como caracteres coringa com uma exceção, e essa exceção é que um código de produto não pode ser especificado sem que um código de fornecedor também seja. Caso contrário, a política não será válida e será ignorada.
+
+        O modelo de permissão de USB usa o URL do site solicitante ("URL solicitante") e o URL do site de frame superior ("URL de incorporação") para conceder permissão ao URL solicitante para acessar o dispositivo USB. O URL solicitante pode ser diferente do URL de incorporação quando o site solicitante é carregado em um iframe. Portanto, o campo "urls" pode conter até duas strings de URL delimitadas por vírgula para especificar o URL solicitante e o de incorporação, respectivamente. Se apenas um URL for especificado, o acesso aos dispositivos USB correspondentes será permitido quando o URL do site solicitante corresponder a esse URL, independentemente do status de incorporação. Os URLs em "urls" precisam ser válidos, caso contrário, a política será ignorada.
+
+        Se esta política não for definida, o valor padrão global será usado para todos os sites, seja da política "DefaultWebUsbGuardSetting", se ela estiver definida, ou das configurações pessoais do usuário.
+
+        Os padrões de URL desta política não devem ser contrários àqueles configurados por meio de WebUsbBlockedForUrls. Se forem, esta política terá precedência sobre WebUsbBlockedForUrls e WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Se esta política não for configurada, o <ph name="PRODUCT_NAME" /> utilizará a versão mínima padrão, que é TLS 1.0.
 
       Caso contrário, ela poderá ser definida com um dos seguintes valores: "tls1", "tls1.1" ou "tls1.2". Quando definida, o <ph name="PRODUCT_NAME" /> não usará versões SSL/TLS inferiores à versão especificada. Valores não reconhecidos serão ignorados.</translation>
@@ -1162,6 +1177,7 @@
 <translation id="3925020515212192040">Especifica uma lista de compartilhamentos de arquivos de rede pré-configurados.
 
       Cada item da lista da política é um objeto com dois membros: "share_url" e "mode". O "share_url" é o URL do compartilhamento, e "mode" é o "drop_down" que indica que "share_url" será adicionado ao menu suspenso de descoberta de compartilhamento.</translation>
+<translation id="3925377537407648234">Define resolução de tela e fator de escala</translation>
 <translation id="3939893074578116847">Enviar pacotes de rede ao servidor de gerenciamento para monitorar o status on-line, a fim de permitir
       que o servidor detecte se o dispositivo está off-line.
 
@@ -1955,6 +1971,29 @@
       Esta política só é eficaz quando a máquina está inscrita em <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Esta política instala <ph name="CHROME_REPORTING_EXTENSION_NAME" /> forçadamente para a geração de relatórios e modifica todas as políticas relacionadas a essa extensão.</translation>
+<translation id="6155247658847899816">Quando está política está definida, a resolução e o fator de escala de cada
+      tela são definidos para os valores especificados. As configurações de tela externa são
+      aplicadas a todas as telas externas conectadas.
+
+      Os valores de "external_width" e "external_height" precisam ser especificados em
+      pixels. Os valores de "external_scale_percentage" e
+      "internal_scale_percentage" precisam ser especificados em porcentagem.
+
+      Se "external_use_native" estiver definido como true, a política ignorará os valores de
+      "external_height" e "external_width" e definirá a resolução das telas
+      externas com a resolução nativa.
+
+      Se "external_use_native" for false ou não definido e
+      "external_height" ou "external_width" não for fornecido, a política não
+      afetará as configurações de tela externa. Se a resolução especificada ou
+      o fator de escala não for compatível com alguma tela, a política não será
+      aplicada a ela.
+
+      Se a sinalização "recomendada" for definida como true, os usuários poderão alterar a resolução e
+      o fator de escala de qualquer tela na página de configurações depois de fazer login, mas
+      configurações deles serão substituídas pelo valor da política na próxima reinicialização.
+      Se a sinalização "recomendada" estiver definida como false ou não estiver definida, os usuários não poderão alterar as
+      configurações da tela.</translation>
 <translation id="6155936611791017817">Definir estado padrão do cursor grande na tela de login</translation>
 <translation id="6157537876488211233">Lista separada por vírgulas das regras de proxies ignoráveis</translation>
 <translation id="6158324314836466367">Nome da loja on-line da empresa (uso suspenso)</translation>
@@ -2062,6 +2101,7 @@
 <translation id="6553143066970470539">Porcentagem de brilho da tela</translation>
 <translation id="6559057113164934677">Não permitir que nenhum site acesse minha câmera e meu microfone</translation>
 <translation id="6561396069801924653">Mostrar opções de acessibilidade no menu da bandeja do sistema</translation>
+<translation id="6563458316362153786">Ativa a transição rápida 802.11r</translation>
 <translation id="6565312346072273043">Define o estado padrão do recurso de acessibilidade de teclado na tela na tela de login.
 
           Se essa política for definida como "true", o teclado na tela será ativado quando a tela de login for exibida.
@@ -2706,6 +2746,11 @@
       Quando esta política não for definida em um dispositivo gerenciado, ele não poderá executar máquinas virtuais.
       Dispositivos não gerenciados podem executar máquinas virtuais.</translation>
 <translation id="8001701200415781021">Restringir quais Contas do Google são permitidas como principais do navegador no <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Se você ativar esta configuração, as definições armazenadas nos perfis do <ph name="PRODUCT_NAME" />, como favoritos, dados de preenchimento automático, senhas, entre outras, serão gravadas em um arquivo armazenado na pasta "Perfil de usuário de roaming" ou em um local especificado pelo administrador por meio da política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. A ativação dessa política desativa a sincronização em nuvem.
+
+      Se essa política for desativada ou não for configurada, apenas os perfis locais normais serão usados.
+
+      A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados por meio da substituição da política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Girar tela em 0 graus</translation>
 <translation id="8033913082323846868">O uso desta política foi suspenso no M70. Em vez dela, use AutofillAddressEnabled e AutofillCreditCardEnabled.
 
@@ -2834,6 +2879,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8274603902181597201">Faz a limpeza do diretório inicial do ecryptfs do usuário e começa com um novo diretório inicial ext4-encrypted.</translation>
 <translation id="8285435910062771358">Lupa de tela inteira ativada</translation>
 <translation id="8288199156259560552">Ativar o Serviço de Localização do Google para Android</translation>
+<translation id="8290453559005611000">Imagem do PluginVm</translation>
 <translation id="8294750666104911727">Normalmente as páginas com X-UA-Compatible configuradas para chrome=1 são renderizadas no <ph name="PRODUCT_FRAME_NAME" /> independentemente da política "ChromeFrameRendererSettings".
 
           Se você ativar essa configuração, não haverá a busca de metatags nas páginas.
@@ -2909,6 +2955,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
           Se esta política não estiver definida, o renderizador padrão será usado para todos os sites, conforme especificado pela política "ChromeFrameRendererSettings".
 
           Para ver exemplos de padrões, acesse http://www.chromium.org/developers/how-tos/chrome-frame-getting-started (link em inglês).</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Desativar o salvamento do histórico do navegador</translation>
 <translation id="8498293625012059298">Configura o URL de alteração de senha (somente para esquemas HTTP e HTTPS). O serviço de proteção de senhas encaminhará os usuários para este URL para que alterem a própria senha após receberem um aviso no navegador.
       Para que o <ph name="PRODUCT_NAME" /> capture corretamente a nova impressão digital de senha na página de alteração de senha, certifique-se de que sua página de alteração de senha siga as diretrizes que constam em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

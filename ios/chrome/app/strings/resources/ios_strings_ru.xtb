@@ -46,7 +46,6 @@
 <translation id="1582732959743469162">Скачивание файлов будет приостановлено.</translation>
 <translation id="1605658421715042784">Копировать изображение</translation>
 <translation id="1612730193129642006">Показать сетку таблицы</translation>
-<translation id="162035744160882748">Включить синхронизацию, персонализацию и другие сервисы Google</translation>
 <translation id="1644574205037202324">История</translation>
 <translation id="1657011748321897393">Не удалось опубликовать запись из-за ошибки сети.</translation>
 <translation id="165877110639533037">Нет открытых вкладок</translation>
@@ -115,8 +114,10 @@
 <translation id="2780046210906776326">Создайте аккаунт</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Закрыть переключатель вкладок</translation>
+<translation id="2830972654601096923">Управление адресами</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Сбросить настройки перевода</translation>
+<translation id="2858204748079866344">Чтобы обеспечить конфиденциальность ваших данных, мы просим вас ввести пароль вручную.</translation>
 <translation id="285960592395650245">Повторить скачивание</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2871695793448672541">Скрытый пароль</translation>
@@ -128,11 +129,13 @@
 <translation id="2923448633003185837">Вставить и перейти</translation>
 <translation id="292639812446257861">Отметить как непрочитанное</translation>
 <translation id="2933759065870693102">Вспышка</translation>
+<translation id="2958718410589002129">Пароли</translation>
 <translation id="2969979262385602596">Не удалось войти в аккаунт. Повторите попытку.</translation>
 <translation id="2989805286512600854">Открыть в новой вкладке</translation>
 <translation id="3024255823539804759">За вчерашний день</translation>
 <translation id="3037605927509011580">Опаньки...</translation>
 <translation id="3112556859945124369">Отметить…</translation>
+<translation id="3126574100374611517">Управление картами</translation>
 <translation id="3157684681743766797">Отметить все…</translation>
 <translation id="3175081911749765310">Веб-сервисы</translation>
 <translation id="3207960819495026254">Добавлено в закладки</translation>
@@ -161,13 +164,13 @@
 <translation id="3494788280727468875">Подтвердить удаление данных о работе в браузере</translation>
 <translation id="3519193562722059437">Чтобы просматривать веб-страницы, откройте вкладку.</translation>
 <translation id="3527085408025491307">Папка</translation>
+<translation id="3529024052484145543">Автозаполнение не используется</translation>
 <translation id="3533202363250687977">Закрыть все вкладки инкогнито</translation>
 <translation id="3533436815740441613">Новая вкладка</translation>
 <translation id="3551320343578183772">Закрыть вкладку</translation>
 <translation id="3588820906588687999">Открыть изображение в новой вкладке</translation>
 <translation id="3603009562372709545">Копировать URL</translation>
 <translation id="3607167657931203000">Данные автозаполнения</translation>
-<translation id="360930808415985584">Настройки синхронизации, персонализации и других сервисов</translation>
 <translation id="3609785682760573515">Cинхронизация…</translation>
 <translation id="3638472932233958418">Предварительная загрузка</translation>
 <translation id="3691593122358196899">Закладка добавлена в папку "<ph name="FOLDER_TITLE" />"</translation>
@@ -179,6 +182,8 @@
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3915450441834151894">Информация о сайте</translation>
 <translation id="3928666092801078803">Объединить данные</translation>
+<translation id="3929457972718048006">Адреса</translation>
+<translation id="3943492037546055397">Пароли</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="3967822245660637423">Скачивание завершено</translation>
 <translation id="3989635538409502728">Выйти</translation>
@@ -196,7 +201,6 @@
 <translation id="4124987746317609294">Временной диапазон</translation>
 <translation id="4172051516777682613">Показывать всегда</translation>
 <translation id="418156467088430727">Открыть офлайн-версию в новой вкладке</translation>
-<translation id="4192273449750167573">Проверить настройки на следующем экране</translation>
 <translation id="4237682350741091554">Управление персонализацией и синхронизацией Chrome доступно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Введите кодовую фразу</translation>
 <translation id="4272631900155121838">Чтобы отсканировать QR-код, разрешите доступ к камере в настройках.</translation>
@@ -215,8 +219,8 @@
 <translation id="4508750114462689118">Закрыть сообщение о входе</translation>
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Войдите в аккаунт снова.</translation>
-<translation id="4541241553780729349">Данные, которые синхронизируются с серверами Google, и функции, которыми вы пользуетесь, останутся без изменений.</translation>
 <translation id="457386861538956877">Ещё...</translation>
+<translation id="4592368184551360546">Клавиатура</translation>
 <translation id="461440297010471931">Поиск с помощью Google</translation>
 <translation id="4619615317237390068">Вкладки с других устройств</translation>
 <translation id="4620246317052452550">Прочитанные</translation>
@@ -249,6 +253,7 @@
 <translation id="5010803260590204777">Чтобы просматривать веб-страницы, не оставляя следов, откройте вкладку инкогнито.</translation>
 <translation id="5011684439661633295">Здравствуйте, <ph name="FULL_ACCOUNT_NAME" />!</translation>
 <translation id="5039804452771397117">Разрешить</translation>
+<translation id="5059136629401106827">ОК</translation>
 <translation id="5062321486222145940">Установить Google Диск</translation>
 <translation id="5083464117946352670">Не установлен размер файла</translation>
 <translation id="5094827893301452931">Опубликовано в Твиттере.</translation>
@@ -266,6 +271,7 @@
 <translation id="5409365236829784218">Нет приложений, поддерживающих файлы этого типа.</translation>
 <translation id="5433691172869980887">Имя пользователя скопировано</translation>
 <translation id="54401264925851789">Сведения о надежности страницы</translation>
+<translation id="5443952882982198570">Кредитные карты</translation>
 <translation id="5525269841082836315">Создание код. фразы</translation>
 <translation id="5548760955356983418">Функция Handoff позволит начать просмотр веб-сайта на одном устройстве и продолжить на другом. Открытый сайт появится на панели Dock вашего компьютера Mac.
 
@@ -296,7 +302,6 @@
 <translation id="5938160824633642847">Освободите место на устройстве и повторите попытку.</translation>
 <translation id="5948291296578561264">Это позволяет вам сохранять фотографии в галерее.</translation>
 <translation id="5955891643922670672">Просматривается в офлайн-режиме</translation>
-<translation id="5957613098218939406">Другое</translation>
 <translation id="5964480694698977962">Создать вкладку инкогнито.</translation>
 <translation id="5965679971710331625">Вы вошли в аккаунт</translation>
 <translation id="5979837087407522202">Поиск паролей</translation>
@@ -358,7 +363,6 @@
 <translation id="6797885426782475225">Голосовой поиск</translation>
 <translation id="6807889908376551050">Показать все…</translation>
 <translation id="681368974849482173">Сохранено</translation>
-<translation id="685040365210406336">Ничего не менять</translation>
 <translation id="6851516051005285358">Полная версия</translation>
 <translation id="6896758677409633944">Копировать</translation>
 <translation id="6903907808598579934">Включить</translation>
@@ -391,7 +395,6 @@
 <translation id="7346909386216857016">ОК</translation>
 <translation id="7383797227493018512">Список для чтения</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="741204030948306876">ОК</translation>
 <translation id="7425346204213733349">Изменения в ваших закладках, паролях, истории и других настройках больше не будут синхронизироваться с аккаунтом Google. Это не повлияет на данные, сохраненные в аккаунте ранее.</translation>
 <translation id="744343212394640790">Не <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Регион</translation>
@@ -418,6 +421,7 @@
 <translation id="7840771868269352570">Выбранные элементы будут удалены</translation>
 <translation id="7856733331829174190">Не удалось скачать файл</translation>
 <translation id="7859704718976024901">История просмотра веб-страниц</translation>
+<translation id="7887198238286927132">Чтобы обеспечить конфиденциальность ваших данных, Chrome не использует автозаполнение для этого поля.</translation>
 <translation id="7918293828610777738">Список для чтения доступен без подключения к Интернету. Чтобы добавить в него страницу, нажмите <ph name="SHARE_OPENING_ICON" />, а затем –<ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Экспорт паролей...</translation>

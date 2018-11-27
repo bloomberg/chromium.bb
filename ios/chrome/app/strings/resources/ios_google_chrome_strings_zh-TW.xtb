@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome 隱私權聲明</translation>
 <translation id="1863312987075920112">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK_TOS" />服務條款<ph name="END_LINK_TOS" />》和《<ph name="BEGIN_LINK_PRIVACY" />隱私權聲明<ph name="END_LINK_PRIVACY" />》。</translation>
-<translation id="1878302395768190018">你隨時可在 Chrome 設定中自訂這項設定</translation>
 <translation id="2147651015520127414">Chrome 已驗證這個網站的憑證是由「<ph name="ISSUER" />」所核發。</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. 版權所有。</translation>
 <translation id="2342981853652716282">無論使用任何裝置，只要登入 Chrome，即可取得你的書籤、密碼，並沿用其他設定。</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">協助改善 Chrome 的功能與效能</translation>
 <translation id="4523886039239821078">部分外掛程式造成 Chrome 當機，請解除安裝這些外掛程式：</translation>
 <translation id="4615174829807303908">您即將登出由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 所管理的帳戶。系統會將您的 Chrome 資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
-<translation id="5240817131241497236">Chrome 的同步處理、個人化功能和其他 Google 服務控制設定已變更。這可能影響你目前的設定。</translation>
 <translation id="5389212809648216794">另一個應用程式正在使用你的相機，因此 Google Chrome 無法使用</translation>
 <translation id="5489543008378040943">你隨時可以調整<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />。Google 可能會根據你所造訪網站的內容、瀏覽器互動行為和瀏覽活動，提供個人化的 Chrome 體驗和 Google 服務體驗，例如翻譯、搜尋和廣告。</translation>
 <translation id="5639704535586432836">請前往 [設定] &gt; [隱私權] &gt; [相機] &gt; [Google Chrome]，並開啟相機。</translation>

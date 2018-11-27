@@ -237,6 +237,7 @@
 <translation id="271033894570825754">חדש</translation>
 <translation id="2728754400939377704">מיון לפי אתר</translation>
 <translation id="2744248271121720757">כדי לחפש באופן מיידי או לראות פעולות קשורות, צריך להקיש על מילה</translation>
+<translation id="2760323196215778921">‏צריך גם להפעיל את ההרשאה הזו עבור Chrome. פרטים ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="2762000892062317888">ברגע זה</translation>
 <translation id="2777555524387840389">נותרו <ph name="SECONDS" /> שניות</translation>
 <translation id="2779651927720337254">נכשל</translation>
@@ -934,6 +935,7 @@
 <translation id="8037750541064988519">נותרו <ph name="DAYS" /> ימים</translation>
 <translation id="804335162455518893">‏לא נמצא כרטיס SD</translation>
 <translation id="805047784848435650">על סמך היסטוריית הגלישה שלך</translation>
+<translation id="8051303708327298699">‏צריך גם להפעיל את ההרשאות האלה עבור Chrome. פרטים ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="8051695050440594747">‏‎<ph name="MEGABYTES" /> MB זמינים</translation>
 <translation id="8058746566562539958">‏פתח בכרטיסייה חדשה של Chrome</translation>
 <translation id="8063895661287329888">הוספת הסימנייה נכשלה.</translation>
@@ -1005,6 +1007,7 @@
 <translation id="857509777403223202">בקרוב יופיעו מאמרים נוספים. שיהיה לך ערב נפלא!</translation>
 <translation id="857943718398505171">מותרת (מומלץ)</translation>
 <translation id="8583805026567836021">מנקה נתוני חשבון</translation>
+<translation id="860043288473659153">שם בעל הכרטיס</translation>
 <translation id="8609465669617005112">הזז למעלה</translation>
 <translation id="8616006591992756292">‏ייתכן שלחשבון Google שלך יהיו צורות אחרות של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">האם לעבור אל כתובת האתר שצוינה כהצעה בתוכן שהורדת?</translation>

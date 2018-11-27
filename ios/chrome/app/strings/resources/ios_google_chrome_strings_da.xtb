@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Erklæring om privatliv for Google Chrome</translation>
 <translation id="1863312987075920112">Når du bruger denne app, accepterer du Chromes <ph name="BEGIN_LINK_TOS" />servicevilkår<ph name="END_LINK_TOS" /> og <ph name="BEGIN_LINK_PRIVACY" />erklæring om privatliv<ph name="END_LINK_PRIVACY" />.</translation>
-<translation id="1878302395768190018">Du kan til enhver tid tilpasse dette i Chrome-indstillingerne</translation>
 <translation id="2147651015520127414">Chrome bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="2342981853652716282">Log ind på Chrome for at få dine bogmærker, adgangskoder og meget mere på alle dine enheder.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Vær med til at forbedre Chromes funktioner og ydeevne</translation>
 <translation id="4523886039239821078">Nogle tilføjelser får Chrome til at gå ned. Prøv at afinstallere:</translation>
 <translation id="4615174829807303908">Du er ved at logge ud af en konto, der administreres af <ph name="SIGNOUT_MANAGED_DOMAIN" />. Denne handling sletter dine Chrome-data fra denne enhed, men dine data forbliver på din Google-konto.</translation>
-<translation id="5240817131241497236">De indstillinger, der styrer synkronisering, tilpasning og andre Google-tjenester i Chrome, er blevet ændret. Dette kan påvirke dine aktuelle indstillinger.</translation>
 <translation id="5389212809648216794">Google Chrome kan ikke bruge dit kamera, da det bruges af en anden app</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" /> kan tilpasses når som helst. Google kan bruge indholdet på de websites, du besøger, samt browserinteraktioner og -aktivitet til at tilpasse Chrome og Google-tjenester såsom Oversæt, Søgning og annoncer.</translation>
 <translation id="5639704535586432836">Åbn Indstillinger &gt; Privatliv &gt; Kamera &gt; Google Chrome, og slå kameraet til.</translation>

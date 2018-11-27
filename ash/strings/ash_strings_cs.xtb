@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">Sbalit nabídku</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1419738280318246476">Chcete-li provést akci s oznámením, odemkněte zařízení</translation>
+<translation id="1455242230282523554">Zobrazit jazykové nastavení</translation>
 <translation id="1467432559032391204">Doleva</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Zobrazit nastavení oznámení. U jedné aplikace jsou oznámení vypnutá}few{Zobrazit nastavení oznámení. U # aplikací jsou oznámení vypnutá}many{Zobrazit nastavení oznámení. U # aplikace jsou oznámení vypnutá}other{Zobrazit nastavení oznámení. U # aplikací jsou oznámení vypnutá}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">Zatím tu není nic k vidění</translation>
 <translation id="3445925074670675829">Zařízení USB Type-C</translation>
 <translation id="3454224730401036106">Vaše připojení se přepnulo na bezpečnější síť</translation>
+<translation id="3465223694362104965">K tomuto zařízení je připojena jiná klávesnice než při vašem posledním přihlášení. Před použitím této klávesnice se ujistěte, zda jí důvěřujete.</translation>
 <translation id="3477079411857374384">Control + Shift + mezerník</translation>
 <translation id="3510164367642747937">Zvýraznit ukazatel myši</translation>
 <translation id="3510503721818156981">Chromebook se připojil k novému telefonu</translation>

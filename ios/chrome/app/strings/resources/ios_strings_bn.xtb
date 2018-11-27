@@ -46,7 +46,6 @@
 <translation id="1582732959743469162">এর ফলে আপনি এখন যা ডাউনলোড করছেন সেগুলি সব বন্ধ হয়ে যাবে।</translation>
 <translation id="1605658421715042784">ছবি কপি করুন</translation>
 <translation id="1612730193129642006">ট্যাব গ্রিড দেখান</translation>
-<translation id="162035744160882748">সিঙ্ক, ব্যক্তিগতকরণ এবং অন্যান্য Google পরিষেবাগুলি চালু করুন</translation>
 <translation id="1644574205037202324">ইতিহাস</translation>
 <translation id="1657011748321897393">শেয়ার করা ব্যার্থ হয়েছে কারণ আপনি নেটওয়ার্কের সাথে সংযুক্ত নন৷</translation>
 <translation id="165877110639533037">কোনো ট্যাব খোলা নেই</translation>
@@ -115,6 +114,7 @@
 <translation id="2780046210906776326">কোনো ইমেল অ্যাকাউন্ট নেই</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ট্যাব পরিবর্তনকারী থেকে বেরিয়ে যান</translation>
+<translation id="2830972654601096923">ঠিকানাগুলি ম্যানেজ করুন...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">অনুবাদ সেটিংস আবার সেট করুন</translation>
 <translation id="285960592395650245">আবার ডাউনলোডের চেষ্টা করুন</translation>
@@ -133,6 +133,7 @@
 <translation id="3024255823539804759">গত দিন</translation>
 <translation id="3037605927509011580">ইস!</translation>
 <translation id="3112556859945124369">চিহ্নিত করুন…</translation>
+<translation id="3126574100374611517">ক্রেডিট কার্ডগুলি ম্যানেজ করুন...</translation>
 <translation id="3157684681743766797">সবগুলি চিহ্নিত করুন…</translation>
 <translation id="3175081911749765310">ওয়েব পরিষেবা</translation>
 <translation id="3207960819495026254">বুকমার্ক করা হয়েছে</translation>
@@ -167,7 +168,6 @@
 <translation id="3588820906588687999">নতুন ট্যাবে ছবি খুলুন</translation>
 <translation id="3603009562372709545">লিঙ্ক URL কপি করুন</translation>
 <translation id="3607167657931203000">ডেটা স্বতঃপূর্ণ করুন</translation>
-<translation id="360930808415985584">সিঙ্ক, নিজের মতন করে সাজিয়ে নেওয়া এবং আরও অনেক কিছু নিয়ন্ত্রণ করুন</translation>
 <translation id="3609785682760573515">সিঙ্ক হচ্ছে...</translation>
 <translation id="3638472932233958418">পূর্বলোড ওয়েবপৃষ্ঠা</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> এ বুকমার্ক করা হয়েছে</translation>
@@ -196,7 +196,6 @@
 <translation id="4124987746317609294">সময় সীমা</translation>
 <translation id="4172051516777682613">সর্বদা দেখান</translation>
 <translation id="418156467088430727">নতুন ট্যাবে অফলাইন সংস্করণ দেখুন</translation>
-<translation id="4192273449750167573">পরবর্তী স্ক্রিনে আপনার সেটিংস পর্যালোচনা করুন</translation>
 <translation id="4237682350741091554"><ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> থেকে Chrome সিঙ্ক এবং ব্যক্তিগতকরণ পরিচালনা করুন</translation>
 <translation id="424315890655130736">পাসফ্রেজ লিখুন</translation>
 <translation id="4272631900155121838">একটি QR কোড স্ক্যান করতে, সেটিংস থেকে ক্যামেরা সক্ষম করুন</translation>
@@ -215,7 +214,6 @@
 <translation id="4508750114462689118">সাইন-ইন প্রচার বন্ধ করুন</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> এ গিয়ে সংরক্ষণ করা পাসওয়ার্ডগুলি দেখুন ও পরিচালনা করুন</translation>
 <translation id="4536418791685807335">আবার সাইন ইন করার চেষ্টা করুন।</translation>
-<translation id="4541241553780729349">Google-এ সিঙ্ক করা ডেটা এবং আপনার ব্যবহার করা বৈশিষ্ট্য পরিবর্তন হবে না</translation>
 <translation id="457386861538956877">আরও...</translation>
 <translation id="461440297010471931">Google এর মাধ্যমে সার্চ করা হচ্ছে</translation>
 <translation id="4619615317237390068">অন্যান্য ডিভাইসগুলি থেকে ট্যাব</translation>
@@ -297,7 +295,6 @@
 <translation id="5938160824633642847">আপনার ডিভাইসে পর্যাপ্ত জায়গা নেই। জায়গা খালি করে আবার চেষ্টা করুন।</translation>
 <translation id="5948291296578561264">এর ফলে আপনি ফটো লাইব্রেরিতে ফটো সেভ করতে পারবেন।</translation>
 <translation id="5955891643922670672">অফলাইন সংস্করণ দেখছেন</translation>
-<translation id="5957613098218939406">আরও বিকল্পগুলি</translation>
 <translation id="5964480694698977962">নতুন ছদ্মবেশী ট্যাব তৈরি করুন।</translation>
 <translation id="5965679971710331625">আপনি প্রবেশ করেছেন</translation>
 <translation id="5979837087407522202">পাসওয়ার্ড খুঁজুন</translation>
@@ -359,7 +356,6 @@
 <translation id="6797885426782475225">ভয়েস সার্চ</translation>
 <translation id="6807889908376551050">সমস্ত দেখান...</translation>
 <translation id="681368974849482173">আইটেম তৈরি করা হয়েছে</translation>
-<translation id="685040365210406336">কোনও পরিবর্তন করবেন না</translation>
 <translation id="6851516051005285358">ডেস্কটপ সাইটের জন্য অনুরোধ করুন</translation>
 <translation id="6896758677409633944">অনুলিপি</translation>
 <translation id="6903907808598579934">সিঙ্ক চালু করুন</translation>
@@ -392,7 +388,6 @@
 <translation id="7346909386216857016">ঠিক আছে, বুঝেছি</translation>
 <translation id="7383797227493018512">পড়ার সূচি খুলুন</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="741204030948306876">হ্যাঁ, আমি রাজি</translation>
 <translation id="7425346204213733349">আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংসে করা পরিবর্তন আর আপনার Google অ্যাকাউন্টের সাথে সিঙ্ক করা হবে না। অবশ্য, আপনার বিদ্যমান ডেটা আপনার Google অ্যাকাউন্টে সঞ্চিত থাকবে।</translation>
 <translation id="744343212394640790"><ph name="EMAIL" /> না</translation>
 <translation id="7454057999980797137">রাজ্য / দেশ</translation>

@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome'i privaatsust.</translation>
 <translation id="1863312987075920112">Seda rakendust kasutades nõustute Chrome'i <ph name="BEGIN_LINK_TOS" />teenusetingimuste<ph name="END_LINK_TOS" /> ja <ph name="BEGIN_LINK_PRIVACY" />privaatsusteatisega<ph name="END_LINK_PRIVACY" />.</translation>
-<translation id="1878302395768190018">Seda saate Chrome'i seadetes igal ajal kohandada</translation>
 <translation id="2147651015520127414">Chrome kinnitas, et veebisaidi sertifikaadi väljastas <ph name="ISSUER" />.</translation>
 <translation id="2334084861041072223">Autoriõigus <ph name="YEAR" /> Google Inc. Kõik õigused on kaitstud.</translation>
 <translation id="2342981853652716282">Logige Chrome'i sisse, et kõikides oma seadmetes kasutada järjehoidjaid, paroole ja muud.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Aidake täiustada Chrome'i funktsioone ja toimivust</translation>
 <translation id="4523886039239821078">Mõned pistikprogrammid põhjustavad Chrome'i kokkujooksmise. Desinstallige need:</translation>
 <translation id="4615174829807303908">Logite välja kontolt, mida haldab <ph name="SIGNOUT_MANAGED_DOMAIN" />. Selle tulemusel kustutatakse seadmes olevad Chrome'i andmed, kuid need jäävad alles teie Google'i kontole.</translation>
-<translation id="5240817131241497236">Sünkroonimist, isikupärastamist ja muid Chrome'is saadaolevaid Google'i teenuseid juhtivad seaded on muutunud. See võib teie praegusi seadeid mõjutada.</translation>
 <translation id="5389212809648216794">Google Chrome ei saa kaamerat kasutada, kuna seda kasutab muu rakendus</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />Seadeid<ph name="END_LINK" /> saab igal ajal kohandada. Google võib kasutada teie külastatavate saitide sisu, brauseri interaktsioone ja tegevusi Chrome'i ja Google'i teenuste, näiteks tõlke, otsingu ja reklaamide täiustamiseks.</translation>
 <translation id="5639704535586432836">Tehke valikud Seaded &gt; Privaatsus &gt; Kaamera &gt; Google Chrome ja lülitage kaamera sisse.</translation>

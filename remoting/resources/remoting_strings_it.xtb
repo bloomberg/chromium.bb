@@ -63,6 +63,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="2314101195544969792">La tua sessione in <ph name="APPLICATION_NAME" /> non è attiva da un po' di tempo e verrà disconnessa a breve.</translation>
 <translation id="2317666076142640974">Dai un'occhiata alla nuova <ph name="LINK_BEGIN" />app web Chrome Remote Desktop<ph name="LINK_END" />. Ci piacerebbe sapere cosa ne pensi.</translation>
 <translation id="2320166752086256636">Nascondi tastiera</translation>
+<translation id="2332192922827071008">Apri Preferenze</translation>
 <translation id="2353140552984634198">Puoi accedere a questo computer in sicurezza utilizzando Chromoting.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2366718077645204424">Impossibile raggiungere l'host. Il problema potrebbe essere dovuto alla configurazione della rete in uso.</translation>
@@ -190,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Se scarichi il programma di installazione di Chromoting Host, accetti i <ph name="LINK_BEGIN" />Termini di servizio<ph name="LINK_END" /> di Google.</translation>
 <translation id="4974476491460646149">Connessione a <ph name="HOSTNAME" /> chiusa</translation>
 <translation id="4985296110227979402">Devi eseguire prima la configurazione del computer per poter effettuare l'accesso remoto</translation>
+<translation id="5059773780693835145">Prima che tu possa controllare questo computer da remoto con <ph name="PRODUCT_NAME" />, è richiesto un passaggio di configurazione aggiuntivo.
+
+Per abilitare questa funzionalità, seleziona "<ph name="BUTTON_NAME" />" per visualizzare il riquadro delle preferenze di sicurezza e privacy, poi seleziona la casella accanto a "<ph name="SERVICE_SCRIPT_NAME" />".</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chrome Remote Desktop ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
 <translation id="507204348399810022">Vuoi disattivare le connessioni remote a <ph name="HOSTNAME" />?</translation>
@@ -314,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">I miei computer</translation>
 <translation id="811307782653349804">Accedi al tuo computer ovunque tu sia.</translation>
 <translation id="8116630183974937060">Si è verificato un errore di rete. Controlla che il dispositivo sia online e riprova.</translation>
+<translation id="8123581458650016326">Consenti agli utenti remoti di controllare questo computer</translation>
 <translation id="8178433417677596899">Condivisione dello schermo tra utenti, perfetta per l'assistenza tecnica da remoto.</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. Tutti i diritti riservati.</translation>
 <translation id="8196755618196986400">Per poterti contattare qualora ci servissero ulteriori informazioni, il tuo indirizzo email verrà incluso in ogni feedback da te inviato.</translation>

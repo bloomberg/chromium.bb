@@ -45,6 +45,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1275718070701477396">Geselecteerd</translation>
 <translation id="1286609444451033486">Druk op de zoektoets en de spatiebalk om in/uit te schakelen.</translation>
 <translation id="1291286136605998134">Schakelknop</translation>
+<translation id="1303806948938513162">Tik met vier vingers om de ChromeVox-menu's te openen</translation>
 <translation id="1319608975892113573">Geen vorig blok met geciteerde tekst.</translation>
 <translation id="1321576897702511272">Help van ChromeVox verbergen</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> van <ph name="TOTAL" /></translation>
@@ -238,6 +239,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="3046838483509668188">ChromeVox-opties</translation>
 <translation id="3047143736589213134">Experimentele toetsenbordindeling</translation>
 <translation id="3060756054951570867">menu <ph name="TITLE" /> geopend</translation>
+<translation id="3060880924447482063">Veeg naar links of rechts om per item te navigeren</translation>
 <translation id="3070245424257836917">Veeg met drie vingers omhoog</translation>
 <translation id="3078345202707391975">Volgende kop voor niveau 2</translation>
 <translation id="3078740164268491126">tabel</translation>
@@ -331,6 +333,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="3389259863310851658">Vorig formulierveld</translation>
 <translation id="3390225400784126843">Volgend ander element.</translation>
 <translation id="3392045790598181549"><ph name="NAME" /> , menu-item</translation>
+<translation id="3393605254399152980">Sleep met één vinger om te horen wat je aanraakt</translation>
 <translation id="3406283310380167331">Lijst met formulieren weergeven</translation>
 <translation id="3423495725743882470">rij $1 kolom $2</translation>
 <translation id="3457000393508828486">Gedeeltelijk ingedrukt</translation>
@@ -346,6 +349,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="3497063866483065785">{COUNT,plural, =1{vraagteken}other{# vraagtekens}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{caret-teken}other{# caret-tekens}}</translation>
 <translation id="352577523970648069">Een bewerkbaar tekstveld</translation>
+<translation id="3549680091535286226">Tik met twee vingers om spraak tijdelijk te stoppen</translation>
 <translation id="3568702578574425662"><ph name="NAME" /> , selectievakje niet aangevinkt</translation>
 <translation id="3589661172894441357">Woordenlijst</translation>
 <translation id="3599054940393788245">Valt niet onder wiskunde</translation>
@@ -410,6 +414,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4166192625054637755">Einde van subscript</translation>
 <translation id="4173994908659439270">Geen volgend bewerkbaar tekstveld.</translation>
 <translation id="4176463684765177261">Uitgeschakeld</translation>
+<translation id="4187322598335821254">Veeg omhoog of omlaag om per regel te navigeren</translation>
 <translation id="4188530942454211480">Vorige zin</translation>
 <translation id="4191918948604314587">Een knop</translation>
 <translation id="419265409837491189">Naar vorige kolom</translation>
@@ -708,6 +713,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6583174818554398774">Naar het volgende detailniveau</translation>
 <translation id="6587021927234520429">Geen volgende kop voor niveau 4.</translation>
 <translation id="6601344353291556895">Uitgebreide beschrijvingen inschakelen.</translation>
+<translation id="6609828810966525877">Ontdek meer gebaren in de leermodus en het Helpcentrum voor Chromebook</translation>
 <translation id="6615602925644411249">Zoeken op pagina.</translation>
 <translation id="6628427060004938651">Deel</translation>
 <translation id="6633350132811819843">Geen volgende tabel.</translation>
@@ -758,6 +764,7 @@ Als je een tabblad wilt sluiten, druk je op Ctrl + W.
 Als je vooruit wilt browsen door geopende tabbladen, druk je op Ctrl + Tab.
 Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translation>
 <translation id="7086377898680121060">helderheid omhoog</translation>
+<translation id="7088743565397416204">Dubbeltik om het item te activeren waarop de focus is geplaatst</translation>
 <translation id="7095834689119144465">Tekst alleen numeriek bewerken</translation>
 <translation id="7096001299300236431">Vorige media</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -813,6 +820,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Geopend dialoogvenster</translation>
 <translation id="7518543783849163354">Druk op de Ctrl-toets om de spraakfunctie van ChromeVox tijdelijk uit te schakelen.</translation>
+<translation id="7521682724501952239">Je kunt ChromeVox gebruiken met het touchscreen.</translation>
 <translation id="7532613204005497612">juni</translation>
 <translation id="7552432549459840808">Handige Chrome-snelkoppelingen</translation>
 <translation id="7579911500627256166">punt <ph name="DOT" /></translation>

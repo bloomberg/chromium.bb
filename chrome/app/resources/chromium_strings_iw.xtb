@@ -32,6 +32,7 @@
 <translation id="2008474315282236005">‏הפעולה הזו תמחק פריט אחד מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chromium עם <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">‏לפי בקשת מנהל המערכת, יש להפעיל מחדש את Chromium כדי להחיל את העדכון הזה</translation>
 <translation id="2119636228670142020">‏מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
+<translation id="2178765360243863853">‏עליך להפעיל מחדש את Chromium עכשיו</translation>
 <translation id="2241627712206172106">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chromium בדיוק כפי שהם רוצים.</translation>
 <translation id="2265088490657775772">‏להורדת Chromium ל-iPhone</translation>
 <translation id="2347108572062610441">‏התוסף שינה את הדף שמוצג כשאתה מפעיל את Chromium.</translation>
@@ -106,6 +107,7 @@
 <translation id="4708774505295300557">‏מישהו נכנס בעבר ל-Chromium מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. צור משתמש חדש ל-Chromium כדי לשמור על הפרדת המידע שלך.</translation>
 <translation id="4714956846925717402">‏רוצה להגיע ל-Chromium מהר יותר?</translation>
 <translation id="4746050847053251315">‏לסגור את Chromium בכל זאת?</translation>
+<translation id="4748217263233248895">‏בוצע עדכון אבטחה מיוחד של Chromium. עכשיו עליך להפעיל מחדש ואנחנו נשחזר את הכרטיסיות.</translation>
 <translation id="4888717733111232871">‏כלל נכנס עבור Chromium על מנת לאפשר תנועת mDNS.</translation>
 <translation id="4943838377383847465">‏Chromium נמצא במצב רקע.</translation>
 <translation id="4987820182225656817">‏אורחים יכולים להשתמש ב-Chromium בלי להשאיר דבר מאחור.</translation>

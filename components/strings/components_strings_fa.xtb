@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">دامنه ثبت‌نام:</translation>
 <translation id="1340482604681802745">نشانی تحویل گرفتن کالا</translation>
 <translation id="1348198688976932919">سایت پیش‌رو حاوی برنامه‌های خطرناک است</translation>
+<translation id="1348779747280417563">تأیید نام</translation>
 <translation id="1374468813861204354">پیشنهادات</translation>
 <translation id="1375198122581997741">درباره نسخه</translation>
 <translation id="1376836354785490390">نمایش موارد کمتر</translation>
@@ -144,7 +145,6 @@
 <translation id="1826516787628120939">در حال بررسی</translation>
 <translation id="1834321415901700177">این سایت محتوی برنامه‌های مضر است</translation>
 <translation id="1839551713262164453">اعتبارسنجی مقادیر خط‌مشی با خطا متوقف شد</translation>
-<translation id="1840414022444569775">این شماره کارت قبلاً استفاده شده است</translation>
 <translation id="1842969606798536927">پرداخت</translation>
 <translation id="1866450167992311397">استفاده از کارت‌ها در مکان‌های بیشتر</translation>
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
@@ -183,6 +183,7 @@
 <translation id="2108755909498034140">رایانه را راه‌اندازی مجدد کنید</translation>
 <translation id="2113977810652731515">کارت</translation>
 <translation id="2114841414352855701">نادیده گرفته شد زیرا <ph name="POLICY_NAME" /> آن را لغو می‌کند.</translation>
+<translation id="2129308444951592399">شرایط و ضوابط</translation>
 <translation id="213826338245044447">نشانک‌های تلفن‌ همراه</translation>
 <translation id="214556005048008348">لغو پرداخت</translation>
 <translation id="2147827593068025794">همگام‌سازی پس‌زمینه</translation>
@@ -383,6 +384,7 @@
 <translation id="3427092606871434483">اجازه (پیش‌فرض)</translation>
 <translation id="3427342743765426898">&amp;انجام مجدد ویرایش</translation>
 <translation id="342781501876943858">‏Chromium توصیه می‌کند اگر از گذرواژه‌تان در سایت‌های دیگری استفاده کردید آن را بازنشانی کنید.</translation>
+<translation id="3430691998045392297">نمایش فیلم متفاوت است، می‌خواهید ادامه دهید؟</translation>
 <translation id="3431636764301398940">این کارت را در این دستگاه ذخیره کنید</translation>
 <translation id="3447661539832366887">مالک این دستگاه بازی دایناسور را خاموش کرده است</translation>
 <translation id="3447884698081792621">نمایش  گواهی (صادرشده توسط <ph name="ISSUER" />)</translation>
@@ -400,6 +402,7 @@
 <translation id="3566021033012934673">اتصال شما خصوصی نیست</translation>
 <translation id="3574305903863751447"><ph name="CITY" />، <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">صفحه جاسازی‌شده‌ای در <ph name="SITE" /> می‌گوید</translation>
+<translation id="3581089476000296252">‏وقتی این صفحه آماده شد، Chrome به شما اطلاع می‌دهد. &lt;a&gt;لغو&lt;/a&gt;</translation>
 <translation id="358285529439630156">کارت‌های اعتباری و پیش‌پرداخت پذیرفته می‌شوند.</translation>
 <translation id="3582930987043644930">افزودن نام</translation>
 <translation id="3583757800736429874">&amp;انجام مجدد انتقال</translation>
@@ -431,6 +434,7 @@
 <translation id="3736520371357197498">اگر خطرات امنیتی که متوجه شما هستند را درک می‌کنید، می‌توانید قبل از حذف شدن برنامه‌های خطرناک از <ph name="BEGIN_LINK" />این سایت غیرایمن بازدید کنید<ph name="END_LINK" />.</translation>
 <translation id="3739623965217189342">پیوندی که کپی کرده‌اید</translation>
 <translation id="3744899669254331632">‏نمی‌توانید اکنون از <ph name="SITE" /> دیدن کنید زیرا وب‌سایت اعتبارنامه‌های درهمی ارسال کرده که Chromium نمی‌تواند پردازش کند. خطاها و حمله‌های شبکه معمولاً موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار می‌کند.</translation>
+<translation id="3745099705178523657">‏بعد از تأیید کردن، جزئیات کارت از حساب Google شما با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="3748148204939282805">ممکن است مهاجم‌ها در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> شما را فریب دهند تا اقدام خطرناکی همچون نصب نرم‌افزار یا افشای اطلاعات شخصی (مانند گذرواژه‌ها، پیام‌ها یا کارت‌های اعتباری) انجام دهید. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">بدلیل خطای سرور ترجمه انجام نشد.</translation>
 <translation id="3759461132968374835">شما اخیراً گزارش خرابی ارسال نکرده‌اید. مشکلاتی که در هنگام غیرفعال بودن ویژگی ارائه گزارش خرابی ایجاد شده است، در اینجا نمایش داده نمی‌شود.</translation>
@@ -452,10 +456,12 @@
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">شناسه گزارش خرابی بارگذاری‌شده <ph name="CRASH_ID" /> (شناسه خرابی محلی: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">در این سایت، همیشه سؤال شود</translation>
+<translation id="3947577358805392297">ذخیره صفحه برای بعد</translation>
 <translation id="3949571496842715403">‏این سرور نتوانست ثابت کند که <ph name="DOMAIN" /> است؛ در گواهی امنیتی آن، Subject Alternative Names مشخص نشده است. ممکن است این مشکل به دلیل پیکربندی نادرست یا قطع اتصال شما توسط مهاجم ایجاد شده باشد.</translation>
 <translation id="3949601375789751990">سابقه مرورتان در اینجا نشان داده می‌شود</translation>
 <translation id="3950820424414687140">ورود به سیستم</translation>
 <translation id="3963721102035795474">حالت «خواننده»</translation>
+<translation id="3963837677003247395">به‌صورت دستی ادامه می‌دهید؟</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{هیچ‌کدام}=1{از ۱ سایت }one{از # سایت }other{از # سایت }}</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود است</translation>
@@ -569,6 +575,7 @@
 <translation id="4771973620359291008">خطای ناشناخته‌ای رخ داد.</translation>
 <translation id="4785689107224900852">جابجا شدن به این برگه</translation>
 <translation id="4792143361752574037">مشکلی در دسترسی به فایل‌های جلسه وجود داشت. درحال‌حاضر ذخیره‌سازی در دیسک غیرفعال است. لطفاً برای امتحان مجدد، صفحه را تازه‌سازی کنید.</translation>
+<translation id="4798078619018708837">‏برای به‌روزرسانی جزئیات کارت، تاریخ انقضا و CVC کارت <ph name="CREDIT_CARD" /> را وارد کنید. بعد از تأیید کردن، جزئیات کارت از حساب Google شما با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="4800132727771399293">‏تاریخ انقضا و CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">‏در این لحظه نمی‌توانید از <ph name="SITE" /> دیدن کنید زیرا این وب‌سایت اعتبارنامه‌های درهمی ارسال کرده است که Google Chrome نمی‌تواند پردازش کند. خطاهای شبکه و حمله‌ها معمولاً موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
@@ -620,6 +627,7 @@
 <translation id="5141240743006678641">‏رمزگذاری گذرواژه‌های همگام‌سازی شده با اطلاعات کاربری Google شما</translation>
 <translation id="5145883236150621069">کد خطا در پاسخ خط‌مشی موجود است</translation>
 <translation id="5159010409087891077">‏صفحه را در پنجره «ناشناس» جدیدی باز کنید (N⌘⇧)</translation>
+<translation id="516920405563544094">‏CVC کارت <ph name="CREDIT_CARD" /> را وارد کنید. بعد از تأیید کردن، جزئیات کارت از حساب Google شما با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="5169827969064885044">‏ممکن است دسترسی به حساب سازمانتان را از دست بدهید یا به سرقت هویت دچار شوید. Chrome توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="5171045022955879922">‏جستجو یا تایپ URL</translation>
 <translation id="5172758083709347301">دستگاه</translation>
@@ -718,6 +726,7 @@
 <translation id="5810442152076338065">اتصال شما به <ph name="DOMAIN" /> با استفاده از یک مجموعه رمز منسوخ، رمزگذاری شده است.</translation>
 <translation id="5813119285467412249">&amp;انجام مجدد افزودن</translation>
 <translation id="5838278095973806738">نباید هیچ اطلاعات حساسی (مثل گذرواژه یا کارت اعتباری) را در این سایت وارد کنید، زیرا ممکن است مهاجمین آن‌ها را سرقت کنند.</translation>
+<translation id="5844286946362376359">با شرایط و ضوابط، خط‌مشی رازداری و حق فسخ <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> آشنا هستم (برای خواندن کادر را علامت نزنید)</translation>
 <translation id="5863847714970149516">صفحه پیش‌رو ممکن است تلاش کند از شما پول دریافت کند</translation>
 <translation id="5866257070973731571">افزودن شماره تلفن</translation>
 <translation id="5869405914158311789">دسترسی به این سایت امکان‌پذیر نیست</translation>
@@ -726,6 +735,7 @@
 <translation id="5893752035575986141">کارت‌های اعتباری پذیرفته می‌شوند.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (همگام‌سازی‌شده)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{۱ کوکی درحال استفاده}one{# کوکی درحال استفاده}other{# کوکی درحال استفاده}}</translation>
+<translation id="5921639886840618607">‏کارت در حساب Google ذخیره شود؟</translation>
 <translation id="5922853866070715753">تقريباً تمام است</translation>
 <translation id="5932224571077948991">سایتْ آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهد</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
@@ -812,6 +822,7 @@
 <translation id="6569060085658103619">درحال مشاهده یک صفحه افزونه هستید</translation>
 <translation id="6596325263575161958">گزینه‌های رمزگذاری</translation>
 <translation id="6604181099783169992">حسگرهای نوری یا حرکتی</translation>
+<translation id="6607617806003952240">دیگر نمی‌توانم کمک کنم، لطفاً به‌صورت دستی ادامه دهید.</translation>
 <translation id="6624427990725312378">اطلاعات تماس</translation>
 <translation id="6626291197371920147">افزودن شماره کارت معتبر</translation>
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE" /></translation>
@@ -855,6 +866,7 @@
 <translation id="6950684638814147129">‏خطا هنگام تجزیه مقدار JSON: <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">صفحه را در برگه «ناشناس» جدیدی باز کنید</translation>
 <translation id="6957887021205513506">به نظر می‌رسد که گواهی سرور جعلی باشد.</translation>
+<translation id="6964255747740675745">‏پیکربندی شبکه تجزیه نشد (JSON نامعتبر).</translation>
 <translation id="6965382102122355670">قبول</translation>
 <translation id="6965978654500191972">دستگاه</translation>
 <translation id="6970216967273061347">حوزه</translation>
@@ -1148,11 +1160,13 @@
 <translation id="893332455753468063">افزودن نام</translation>
 <translation id="8938939909778640821">کارت‌های اعتباری و پیش‌پرداخت قابل‌قبول</translation>
 <translation id="8957210676456822347">مجوز پورتال محدود</translation>
+<translation id="8968766641738584599">ذخیره کارت</translation>
 <translation id="8971063699422889582">گواهی سرور منقضی شده است.</translation>
 <translation id="8975012916872825179">شامل اطلاعاتی مانند شماره تلفن، نشانی ایمیل و نشانی تحویل کالا می‌شود</translation>
 <translation id="8978053250194585037">‏Google Safe Browsing اخیراً در <ph name="SITE" />، <ph name="BEGIN_LINK" />فیشینگ شناسایی کرده است<ph name="END_LINK" />. سایت‌های فیشینگ وانمود می‌کنند وب‌سایت‌های دیگری هستند تا شما را فریب دهند.</translation>
 <translation id="8983003182662520383">‏روش‌های پرداخت و نشانی‌های مورداستفاده در Google Pay</translation>
 <translation id="8987927404178983737">ماه</translation>
+<translation id="8988408250700415532">مشکلی پیش آمد. می‌توانید سفارشتان را در وب‌سایت تمام کنید.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">سایت در پیش‌رو حاوی برنامه‌های خطرناک است</translation>
 <translation id="8997023839087525404">سرور گواهی‌ای را ارائه کرده است که با استفاده از خط‌مشی شفافیت گواهینامه به‌صورت عمومی نشان داده نشده است. برای برخی گواهی‌ها این یک مسئله ضروری است تا از قابل اعتماد بودن آن‌ها و محافظت دربرابر مهاجمین اطمینان حاصل شود.</translation>

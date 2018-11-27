@@ -214,6 +214,13 @@
 <translation id="1523774894176285446">Navegador alternatiu que cal iniciar per als llocs web configurats.</translation>
 <translation id="152657506688053119">Llista d'URL alternatius per al proveïdor de cerca predeterminat</translation>
 <translation id="1530812829012954197">Renderitza sempre els patrons d'URL següents al navegador de l'amfitrió</translation>
+<translation id="1532965933165453786">Permet activar o desactivar la transició ràpida.
+      S'aplica a tots els usuaris i a totes les interfícies del dispositiu.
+      Per poder utilitza la transició ràpida, s'han d'activar tant aquesta opció com la propietat ONC de cada xarxa.
+      Un cop establerta la transició ràpida, no es desactiva fins que no es canvia la política amb aquesta finalitat.
+
+      Si no s'estableix la política o s'estableix en "false", no s'utilitza la transició ràpida.
+      Si s'estableix en "true", la transició ràpida s'utilitza quan el punt d'accés sense fil ho admet.</translation>
 <translation id="1541170838458414064">Restringeix la mida de la pàgina d'impressió</translation>
 <translation id="1553684822621013552">Quan aquesta política s'estableix en "true", s'activa ARC per a l'usuari
       (depenent de les comprovacions addicionals de la configuració de la política;
@@ -265,7 +272,7 @@
 
       Si aquesta política no es defineix, no es mostren els Termes i condicions.
 
-      La política s'ha de definir en un URL del qual <ph name="PRODUCT_OS_NAME" /> pugui baixar els Termes i condicions, que han de trobar-se com a text sense format proporcionat com a text/sense format de tipus MIME. No es permet el marcatge.</translation>
+      La política s'ha de definir en un URL del qual <ph name="PRODUCT_OS_NAME" /> pugui baixar els Termes i condicions, que han de trobar-se com a text sense format proporcionat com a text/sense format de tipus MIME. No es permet l'etiquetatge.</translation>
 <translation id="1750315445671978749">Bloqueja totes les baixades</translation>
 <translation id="1781356041596378058">Aquesta política també controla l'accés a les Opcions per a desenvolupadors d'Android. Si l'estableixes en "true", els usuaris no hi poden accedir. Si l'estableixes en "false" o la deixes sense establir, els usuaris hi poden accedir tocant set vegades el número de compilació que hi ha a l'aplicació de configuració d'Android.</translation>
 <translation id="1797233582739332495">Mostra una sol·licitud periòdica a l'usuari per indicar-li que cal reiniciar el navegador</translation>
@@ -910,6 +917,13 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Aquesta política només es pot establir com a recomanada. Pots fer-la servir per moure una sèrie de configuracions regionals recomanades al capdamunt de la llista, però els usuaris sempre poden triar per a la sessió qualsevol de les configuracions admeses a <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
+<translation id="3388153794103186066">Permet definir una llista d'URL que especifiquin quins llocs web obtindran permís automàticament per accedir a un dispositiu USB amb els identificadors indicats de proveïdor i producte. Perquè la política sigui vàlida, tots els elements de la llista han d'incloure tant dispositius com URL. A més, cada dispositiu pot incloure un camp per a l'identificador de proveïdor i per al de producte. Els identificadors omesos es tracten com un comodí, amb excepció dels identificadors de producte, que no es poden especificar si no s'especifica també un identificador de proveïdor. En cas contrari, la política no serà vàlida i s'ignorarà.
+
+        El model de permisos per a USB utilitza l'URL del lloc web que sol·licita permís ("URL sol·licitant") i l'URL del lloc web de marcs de nivell superior ("URL d'inserció") per concedir permís a l'URL sol·licitant per accedir al dispositiu USB. Si el lloc web que sol·licita permís es carrega en un iframe, l'URL sol·licitant pot ser diferent de l'URL d'inserció. Per tant, el camp urls pot incloure fins a dues cadenes d'URL delimitades per una coma a fi d'especificar l'URL sol·licitant i el d'inserció, respectivament. Si només se n'especifica un, l'accés als dispositius USB corresponents es concedeix quan l'URL del lloc web sol·licitant coincideixi amb aquest URL independentment de l'estat d'inserció. Els URL del camp urls han de ser vàlids. Si no, la política s'ignorarà.
+
+        Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat general per a tots els llocs web, ja sigui de la política DefaultWebUsbGuardSetting si està establerta o de la configuració personal de l'usuari si no ho està.
+
+        Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. Si hi ha un conflicte, aquesta política té prioritat sobre WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitzarà TLS 1.0 com a versió mínima predeterminada.
 
       També es pot definir en un dels valors següents: "tls1", "tls1.1" o "tls1.2". Quan s'hagi definit, <ph name="PRODUCT_NAME" /> no utilitzarà versions SSL/TLS inferiors a la versió especificada. Els valors que no es reconeguin s'ignoraran.</translation>
@@ -1151,6 +1165,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3925020515212192040">Especifica una llista de fitxers compartits de la xarxa configurats prèviament.
 
       Cada element de la llista de la política és un objecte amb dos membres: "share_url" i "mode". "share_url" ha de ser l'URL del fitxer compartit i "mode" ha de ser "drop_down", que indica que "share_url" s'afegirà a la llista desplegable de detecció de fitxers compartits.</translation>
+<translation id="3925377537407648234">Estableix la resolució i el factor d'escala de la pantalla</translation>
 <translation id="3939893074578116847">Envia paquets de xarxa al servidor de gestió per supervisar l'estat en línia, de manera que el servidor pugui detectar si el dispositiu no té connexió.
 
       Si aquesta política s'estableix en "true", s'envien paquets de xarxa de supervisió (anomenats <ph name="HEARTBEATS_TERM" />).
@@ -1941,6 +1956,16 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Aquesta política només funciona quan l'ordinador està inscrit amb <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Aquesta política força la instal·lació de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> per als informes i substitueix les polítiques d'extensió relacionades amb aquesta extensió.</translation>
+<translation id="6155247658847899816">Si s'estableix aquesta política, la resolució i el factor d'escala de cada pantalla s'estableixen en els valors especificats. La configuració de les pantalles externes s'aplica a totes les que estan connectades.
+
+      Els valors "external_width" i "external_height" s'han d'especificar en píxels. Els d'"external_scale_percentage" i "internal_scale_percentage" s'han d'especificar en percentatges.
+
+      Si "external_use_native" s'estableix en "true", la política ignorarà els valors d'"external_height" i "external_width", i establirà la resolució de les pantalles externes amb el valor de la resolució nativa corresponent.
+
+      Si el valor d'"external_use_native" és "false" o no es proporciona, i el valor d'"external_height" o "external_width" no es facilita, la política no afectarà la configuració de les pantalles externes. Si la resolució o el factor d'escala especificats no són compatibles amb una pantalla, la política no s'aplicarà a aquesta pantalla.
+
+      Si la marca "recommended" s'estableix en "true", els usuaris podran anar a la pàgina de configuració després d'iniciar la sessió per canviar la resolució i el factor d'escala de qualsevol pantalla, però el valor de la política anul·larà la configuració el proper cop que es reiniciï el dispositiu.
+      Si la marca "recommended" s'estableix en "false" o no s'estableix, els usuaris no podran canviar la configuració de les pantalles.</translation>
 <translation id="6155936611791017817">Defineix l'estat predeterminat del cursor gran a la pàgina d'inici de sessió</translation>
 <translation id="6157537876488211233">Llista de regles d'evitació de servidors intermediaris separada per comes</translation>
 <translation id="6158324314836466367">Nom de la botiga web de l'empresa (obsolet)</translation>
@@ -2048,6 +2073,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6553143066970470539">Percentatge de brillantor de la pantalla</translation>
 <translation id="6559057113164934677">No permetis que cap lloc accedeixi a la càmera ni al micròfon</translation>
 <translation id="6561396069801924653">Mostra les opcions d'accessibilitat al menú de la safata del sistema</translation>
+<translation id="6563458316362153786">Activa la transició ràpida 802.11r</translation>
 <translation id="6565312346072273043">Defineix l'estat predeterminat de la funció d'accessibilitat del teclat en pantalla a la pantalla d'inici de sessió.
 
           Si aquesta política es configura com a "true", el teclat en pantalla estarà activat quan es mostri la pantalla d'inici de sessió.
@@ -2683,6 +2709,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="7992136759457836904">Et permet controlar si es poden executar màquines virtuals a Chrome OS. Si la política s'estableix en "true", el dispositiu podrà executar màquines virtuals. Si s'estableix en "false", el dispositiu no podrà executar màquines virtuals. Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan siguin rellevants perquè Crostini tingui permís per executar-se. Quan la política es canvia a "false", afecta l'execució de màquines virtuals noves, però no tanca les que ja s'estan executant. Quan la política no s'estableix en un dispositiu gestionat, el dispositiu no té permís per executar màquines virtuals. Els dispositius no gestionats tenen permís per executar màquines virtuals.</translation>
 <translation id="8001701200415781021">Restringeix quins comptes de Google es permet establir com a comptes principals del navegador a <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Si actives aquesta opció de configuració, les opcions emmagatzemades als perfils que hi ha a <ph name="PRODUCT_NAME" />, com ara les adreces d'interès, les dades d'Emplenament automàtic o les contrasenyes, entre d'altres, també s'introduiran en un fitxer emmagatzemat a la carpeta Itinerància del perfil de l'usuari o a la ubicació que l'administrador especifiqui a la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. En activar aquesta política, es desactivarà la sincronització en núvol.
+
+      Si aquesta política es desactiva o es deixa sense establir, només s'utilitzaran els perfils locals habituals.
+
+      La política <ph name="SYNC_DISABLED_POLICY_NAME" /> desactivarà la sincronització de totes les dades i substituirà <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Gira la pantalla 0 graus</translation>
 <translation id="8033913082323846868">Aquesta política es considera obsoleta a M70; substitueix-la per AutofillAddressEnabled i AutofillCreditCardEnabled.
 
@@ -2811,6 +2842,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8274603902181597201">Esborra el directori d'inici eCryptfs de l'usuari i inicia un directori d'inici nou encriptat amb ext4.</translation>
 <translation id="8285435910062771358">Lupa de pantalla completa activada</translation>
 <translation id="8288199156259560552">Activa el servei d'ubicació de Google a Android</translation>
+<translation id="8290453559005611000">Imatge de PluginVm</translation>
 <translation id="8294750666104911727">Normalment, les pàgines compatibles amb X-UA que s'estableixen com a chrome=1 es renderitzen a <ph name="PRODUCT_FRAME_NAME" />, independentment de la política "ChromeFrameRendererSettings".
 
           Si activeu el paràmetre, no se cercaran metaetiquetes a les pàgines.
@@ -2892,6 +2924,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 
 
           Per veure exemples de patrons, consulteu l'enllaç https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Desactiva el desament de l'historial de navegació</translation>
 <translation id="8498293625012059298">Configura l'URL per canviar la contrasenya (només esquemes HTTP i HTTPS). El servei de protecció de contrasenyes enviarà els usuaris a aquest URL perquè canviïn la contrasenya després que vegin un advertiment al navegador.
       Perquè <ph name="PRODUCT_NAME" /> pugui capturar correctament l'empremta digital de la nova contrasenya en aquesta pàgina per canviar de contrasenya, assegura't que la pàgina segueixi les directrius descrites a https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

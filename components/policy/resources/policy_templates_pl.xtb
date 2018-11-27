@@ -225,6 +225,14 @@
 <translation id="1523774894176285446">Alternatywna przeglądarka, w której otwierane są skonfigurowane witryny.</translation>
 <translation id="152657506688053119">Lista alternatywnych URL-i dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="1530812829012954197">Zawsze renderuj strony w przeglądarce hosta według następujących wzorców adresów URL</translation>
+<translation id="1532965933165453786">Umożliwia włączanie i wyłączanie szybkiego roamingu.
+      Ta zasada wpływa na wszystkich użytkowników i wszystkie interfejsy urządzenia.
+      Aby używać szybkiego roamingu, włączone musi być zarówno to ustawienie, jak i odpowiednia właściwość w konfiguracji ONC danej sieci.
+      Po włączeniu szybki roaming pozostaje włączony, dopóki nie zostanie wyłączony przez zmianę ustawienia zasady.
+
+      Jeśli zasada nie jest skonfigurowana, szybki roaming nie jest używany.
+      Jeśli zasada ma wartość Fałsz, szybki roaming nie jest używany.
+      Jeśli zasada ma wartość Prawda, szybki roaming jest używany, o ile obsługuje go bezprzewodowy punkt dostępu.</translation>
 <translation id="1541170838458414064">Ogranicz rozmiar drukowanych stron</translation>
 <translation id="1553684822621013552">Gdy ta zasada jest włączona, użytkownik ma dostęp do rozszerzenia ARC
       (zależy to jednak od kontroli dodatkowych ustawień zasad – rozszerzenie ARC nadal jest niedostępne,
@@ -926,6 +934,13 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może zobaczyć pytanie, cz
       Tę zasadę możesz ustawić tylko jako zalecaną. Za jej pomocą możesz przenieść zalecane języki na początek, ale użytkownicy zawsze mogą wybrać dla swojej sesji dowolny język obsługiwany w systemie <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
+<translation id="3388153794103186066">Umożliwia ustawienie listy adresów URL określającej witryny, które mają automatycznie uzyskiwać dostęp do urządzeń USB o podanych identyfikatorach producenta i produktu. Aby zasada była poprawna, każda pozycja na liście musi zawierać zarówno urządzenia, jak i adresy URL. Każda definicja urządzenia może zawierać pole identyfikatora producenta i identyfikatora produktu. Każde pominięcie identyfikatora jest traktowane jako symbol wieloznaczny, ale nie można podać identyfikatora produktu bez podania identyfikatora producenta. W przeciwnym razie zasada będzie niepoprawna i będzie ignorowana.
+
+        W modelu przyznawania uprawnień dostępu do urządzeń USB rozróżniamy adres URL witryny wysyłającej żądanie („URL źródła żądania”) oraz URL witryny ramki najwyższego poziomu („URL miejsca osadzenia”). URL źródła żądania może być inny niż URL miejsca osadzenia, gdy witryna wysyłająca żądanie jest ładowana w elemencie iframe. Dlatego pole „adresy URL” może zawierać maksymalnie dwa adresy URL oddzielone przecinkiem: pierwszy to URL źródła żądania, drugi to URL miejsca osadzenia. Jeśli podany jest tylko jeden adres URL, witryna o tym adresie uzyska dostęp do wskazanych urządzeń USB niezależnie od osadzenia. W polu „adresy URL” muszą znajdować się poprawne adresy URL – w przeciwnym razie zasada będzie ignorowana.
+
+        Jeśli zasada pozostanie nieskonfigurowana, dla wszystkich witryn będzie stosowana globalna wartość domyślna pochodząca z zasady „DefaultWebUsbGuardSetting”, o ile ta jest skonfigurowana, a w przeciwnym razie z osobistej konfiguracji użytkownika.
+
+        Wzorce adresów URL w tej zasadzie nie powinny być w konflikcie z wzorcami w zasadzie WebUsbBlockedForUrls. W przypadku konfliktu ta zasada ma pierwszeństwo nad WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> korzysta z domyślnej najniższej wersji TLS, czyli 1.0.
 
       W przeciwnym razie zasada może mieć jedną z tych wartości: „tls1”, „tls1.1” lub „tls1.2”. Po jej ustawieniu <ph name="PRODUCT_NAME" /> nie używa wersji SSL/TLS niższych niż określona. Nierozpoznana wartość jest ignorowana.</translation>
@@ -1166,6 +1181,7 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
 <translation id="3925020515212192040">Określa listę prekonfigurowanych sieciowych udziałów plików.
 
       Wartością tej zasady jest lista, której pozycje są obiektami o dwóch składowych: „share_url” i „mode”. „share_url” to URL udziału, a „mode” musi mieć wartość „drop_down”, która wskazuje, że udział „share_url” zostanie dodany do menu wykrywania udziałów.</translation>
+<translation id="3925377537407648234">Ustaw rozdzielczość ekranu i współczynnik skalowania</translation>
 <translation id="3939893074578116847">Wysyłaj pakiety sieciowe do serwera zarządzania w celu monitorowania stanu online,
       by serwer mógł sprawdzić, czy urządzenie jest offline.
 
@@ -1969,6 +1985,29 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Ta zasada działa tylko wtedy, gdy komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Ta zasada wymusza instalację rozszerzenia <ph name="CHROME_REPORTING_EXTENSION_NAME" /> na potrzeby raportowania i zastępuje związane z nim zasady rozszerzeń.</translation>
+<translation id="6155247658847899816">Gdy ta zasada jest skonfigurowana, rozdzielczość i współczynnik skalowania
+      wyświetlacza zostają ustawione na podane wartości. Ustawienia wyświetlacza zewnętrznego
+      są stosowane do wszystkich podłączonych wyświetlaczy zewnętrznych.
+
+      Wartości „external_width” i „external_height” należy podać w pikselach
+      Wartości „external_scale_percentage” i „internal_scale_percentage”
+      należy podać w procentach.
+
+      Jeśli „external_use_native” ma wartość Prawda, zasada będzie ignorować
+      wartości „external_height” i „external_width” i ustawi na wyświetlaczach
+      zewnętrznych ich rozdzielczość natywną.
+
+      Jeśli „external_use_native” ma wartość Fałsz lub nie ma ustawionej wartości
+      i nie podano wartości „external_height” lub „external_width”, zasada nie ma
+      wpływu na ustawienia wyświetlacza zewnętrznego. Jeśli dany wyświetlacz nie obsługuje
+      podanej rozdzielczości lub współczynnika skalowania, zasada nie będzie
+      stosowana do tego wyświetlacza.
+
+      Jeśli flaga „recommended” ma wartość Prawda, zalogowani użytkownicy mogą zmienić
+      rozdzielczość i współczynnik skalowania dowolnego wyświetlacza na stronie ustawień,
+      ale ich ustawienia zostaną zastąpione przez wartość zasady po następnym uruchomieniu urządzenia.
+      Jeśli flaga „recommended” ma wartość Fałsz lub jest nieskonfigurowana,
+      użytkownicy nie mogą zmieniać ustawień wyświetlacza.</translation>
 <translation id="6155936611791017817">Ustaw domyślny stan dużego kursora na ekranie logowania</translation>
 <translation id="6157537876488211233">Lista rozdzielonych przecinkami reguł omijania serwera proxy</translation>
 <translation id="6158324314836466367">Nazwa firmowego sklepu internetowego (wycofana)</translation>
@@ -2076,6 +2115,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6553143066970470539">Procent jasności ekranu</translation>
 <translation id="6559057113164934677">Nie pozwalaj żadnym stronom na dostęp do kamery i mikrofonu</translation>
 <translation id="6561396069801924653">Pokaż opcje ułatwień dostępu w menu na pasku zadań</translation>
+<translation id="6563458316362153786">Włącz szybki roaming 802.11r</translation>
 <translation id="6565312346072273043">Ustawia domyślny stan funkcji dostępności klawiatury ekranowej na ekranie logowania.
 
           Jeśli ustawisz tu wartość prawda, klawiatura ekranowa będzie włączona na ekranie logowania.
@@ -2715,6 +2755,11 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
       Gdy zasada jest nieskonfigurowana na urządzeniu zarządzanym, nie można na nim uruchamiać maszyn wirtualnych.
       Na urządzeniach niezarządzanych można uruchamiać maszyny wirtualne.</translation>
 <translation id="8001701200415781021">Określa, które konta Google można ustawić jako konta podstawowe przeglądarki w <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Jeśli włączysz to ustawienie, ustawienia zapisane w profilach <ph name="PRODUCT_NAME" />, takie jak zakładki, dane autouzupełniania, hasła itp., będą też zapisywane w folderze profilu mobilnego użytkownika lub w lokalizacji ustawionej przez administratora w zasadzie <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Włączenie tej zasady wyłącza synchronizację z chmurą.
+
+      Jeśli nie włączysz tej zasady lub jej nie skonfigurujesz, używane będą tylko zwykłe profile lokalne.
+
+      Zasada <ph name="SYNC_DISABLED_POLICY_NAME" /> powoduje całkowite wyłączenie synchronizacji danych, zastępując zasadę <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Obróć ekran o 0 stopni</translation>
 <translation id="8033913082323846868">Ta zasada została wycofana w M70. Zamiast niej należy używać zasad AutofillAddressEnabled i AutofillCreditCardEnabled.
 
@@ -2843,6 +2888,7 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 <translation id="8274603902181597201">Wyczyść katalog główny użytkownika zabezpieczony szyfrowaniem ecryptfs i zacznij korzystać z nowego katalogu głównego zaszyfrowanego przy użyciu ext4.</translation>
 <translation id="8285435910062771358">Lupa pełnoekranowa włączona</translation>
 <translation id="8288199156259560552">Włącz usługę lokalizacyjną Google na Androida</translation>
+<translation id="8290453559005611000">Obraz PluginVm</translation>
 <translation id="8294750666104911727">Normalnie strony, które w tagu X-UA-Compatible mają wartość chrome=1, będą renderowane w <ph name="PRODUCT_FRAME_NAME" /> niezależnie od ustawienia zasady „ChromeFrameRendererSettings”.
 
           Jeśli włączysz to ustawienie, strony nie będą skanowane w poszukiwaniu metatagów.
@@ -2923,6 +2969,7 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
           Jeśli nie ustawisz tej zasady, na wszystkich stronach działa domyślny mechanizm renderowania określony przez zasadę ChromeFrameRendererSettings.
 
           Przykładowe wzorce znajdziesz na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Wyłącz zapisywanie historii przeglądarki</translation>
 <translation id="8498293625012059298">Konfigurowanie adresu URL do zmiany hasła (tylko schematy HTTP i HTTPS). Usługa ochrony haseł będzie kierować użytkowników na stronę pod tym adresem URL, by zmienili hasło, po wyświetleniu ostrzeżenia w przeglądarce.
       Jeśli <ph name="PRODUCT_NAME" /> ma poprawnie rejestrować odciski cyfrowe nowych haseł na stronie zmiany hasła, strona powinna być zgodna z wytycznymi podanymi na https://www.chromium.org/developers/design-documents/create-amazing-password-forms

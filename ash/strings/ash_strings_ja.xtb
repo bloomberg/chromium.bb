@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">メニューを折りたたむ</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1419738280318246476">通知に関する操作を行うには、端末のロックを解除してください</translation>
+<translation id="1455242230282523554">言語設定を表示</translation>
 <translation id="1467432559032391204">左</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />（HDMI / DP）</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{通知設定を表示します。1 件のアプリで通知がオフになっています}other{通知設定を表示します。# 件のアプリで通知がオフになっています}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">通知はありません</translation>
 <translation id="3445925074670675829">USB-C デバイス</translation>
 <translation id="3454224730401036106">より安全なネットワークに接続が切り替えられました</translation>
+<translation id="3465223694362104965">前回のログイン後に、別のキーボードがこの端末に接続されました。このキーボードを使用する前に信頼できるものかどうか確認してください。</translation>
 <translation id="3477079411857374384">Control+Shift+Space</translation>
 <translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
 <translation id="3510503721818156981">Chromebook が新しいスマートフォンに接続されました</translation>
@@ -260,6 +262,7 @@
 <translation id="5571066253365925590">Bluetooth オン</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> (<ph name="SHORT_WEEKDAY" />)</translation>
 <translation id="5600837773213129531">音声フィードバックを無効にするには Ctrl+Alt+Z を押してください。</translation>
+<translation id="5626283214046138476">管理対象ユーザー アカウントがまもなく有効期限切れとなります。</translation>
 <translation id="5648021990716966815">マイク差込口</translation>
 <translation id="5669267381087807207">有効にしています</translation>
 <translation id="5673434351075758678">設定の同期後に「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>

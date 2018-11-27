@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">Recolher menu</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1419738280318246476">Desbloqueie o dispositivo para executar a ação de notificação</translation>
+<translation id="1455242230282523554">Mostrar configurações de idioma</translation>
 <translation id="1467432559032391204">Para a esquerda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostrar configurações de notificação. As notificações estão desativadas para um app}one{Mostrar configurações de notificação. As notificações estão desativadas para # app}other{Mostrar configurações de notificação. As notificações estão desativadas para # apps}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">Nada para ver ainda</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3454224730401036106">Sua conexão foi alterada para uma rede mais segura</translation>
+<translation id="3465223694362104965">Outro teclado foi conectado a este dispositivo desde seu último acesso. Verifique se esse teclado é confiável antes de usá-lo.</translation>
 <translation id="3477079411857374384">Control-Shift-Espaço</translation>
 <translation id="3510164367642747937">Destacar cursor do mouse</translation>
 <translation id="3510503721818156981">Chromebook conectado a um novo smartphone</translation>
@@ -261,6 +263,7 @@
 <translation id="5571066253365925590">Bluetooth ativado</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Pressione Ctrl + Alt + Z para desativar o feedback falado.</translation>
+<translation id="5626283214046138476">A conta de usuário supervisionado expirará em breve.</translation>
 <translation id="5648021990716966815">Entrada para microfone</translation>
 <translation id="5669267381087807207">Ativando</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas configurações.</translation>

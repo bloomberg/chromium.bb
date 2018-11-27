@@ -46,7 +46,6 @@
 <translation id="1582732959743469162">Aceasta va opri progresul descărcării actuale.</translation>
 <translation id="1605658421715042784">Copiază imaginea</translation>
 <translation id="1612730193129642006">Afișează Grila de file</translation>
-<translation id="162035744160882748">Activează sincronizarea, personalizarea și alte servicii Google</translation>
 <translation id="1644574205037202324">Istoric</translation>
 <translation id="1657011748321897393">Nu s-a trimis, pentru că nu te-ai conectat la rețea.</translation>
 <translation id="165877110639533037">Nu există file deschise</translation>
@@ -115,8 +114,10 @@
 <translation id="2780046210906776326">Niciun cont e-mail</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Părăsește comutatorul de file</translation>
+<translation id="2830972654601096923">Gestionează adresele…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Resetează Traducere</translation>
+<translation id="2858204748079866344">Pentru a-ți proteja confidențialitatea, Chrome nu va completa automat parola în acest câmp.</translation>
 <translation id="285960592395650245">Reîncearcă să descarci</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Parolă ascunsă</translation>
@@ -128,11 +129,13 @@
 <translation id="2923448633003185837">Inserează și accesează</translation>
 <translation id="292639812446257861">Marchează ca necitite</translation>
 <translation id="2933759065870693102">Lanterna</translation>
+<translation id="2958718410589002129">Parole</translation>
 <translation id="2969979262385602596">Nu te-ai conectat. Încearcă din nou mai târziu.</translation>
 <translation id="2989805286512600854">Deschideți într-o filă nouă</translation>
 <translation id="3024255823539804759">Din ultima zi</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3112556859945124369">Marchează…</translation>
+<translation id="3126574100374611517">Gestionează cardurile de credit…</translation>
 <translation id="3157684681743766797">Marchează-le pe toate…</translation>
 <translation id="3175081911749765310">Servicii web</translation>
 <translation id="3207960819495026254">Marcată</translation>
@@ -161,13 +164,13 @@
 <translation id="3494788280727468875">Confirmă ștergerea datelor de navigare</translation>
 <translation id="3519193562722059437">Deschide o filă pentru a naviga pe web.</translation>
 <translation id="3527085408025491307">Dosar</translation>
+<translation id="3529024052484145543">Nesecurizat</translation>
 <translation id="3533202363250687977">Închide toate filele incognito</translation>
 <translation id="3533436815740441613">Filă nouă</translation>
 <translation id="3551320343578183772">Închide fila</translation>
 <translation id="3588820906588687999">Deschide imaginea într-o filă nouă</translation>
 <translation id="3603009562372709545">Copiază adresa URL a linkului</translation>
 <translation id="3607167657931203000">Datele de completare automată</translation>
-<translation id="360930808415985584">Gestionează sincronizarea, personalizarea și altele</translation>
 <translation id="3609785682760573515">Se sincronizează...</translation>
 <translation id="3638472932233958418">Preîncarcă pagini</translation>
 <translation id="3691593122358196899">Marcaj adăugat în <ph name="FOLDER_TITLE" /></translation>
@@ -179,6 +182,8 @@
 <translation id="3897092660631435901">Meniu</translation>
 <translation id="3915450441834151894">Informații despre site</translation>
 <translation id="3928666092801078803">Combină datele</translation>
+<translation id="3929457972718048006">Adrese</translation>
+<translation id="3943492037546055397">Parole</translation>
 <translation id="3950820424414687140">Conectează-te</translation>
 <translation id="3967822245660637423">Descărcare finalizată</translation>
 <translation id="3989635538409502728">Deconectați-vă</translation>
@@ -196,7 +201,6 @@
 <translation id="4124987746317609294">Interval de timp</translation>
 <translation id="4172051516777682613">Afișați întotdeauna</translation>
 <translation id="418156467088430727">Vezi versiunea offline într-o filă nouă</translation>
-<translation id="4192273449750167573">Examinează setările pe ecranul următor</translation>
 <translation id="4237682350741091554">Gestionează Sincronizarea Chrome și personalizarea în <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Introdu expresia de acces</translation>
 <translation id="4272631900155121838">Pentru a scana un cod QR, activează camera foto din setări</translation>
@@ -215,8 +219,8 @@
 <translation id="4508750114462689118">Închide mesajul promoțional de conectare</translation>
 <translation id="4526249700380860531">Vezi și gestionează parolele salvate la <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Încearcă să te conectezi din nou.</translation>
-<translation id="4541241553780729349">Datele pe care le sincronizezi cu Google și funcțiile pe care le folosești nu se vor schimba</translation>
 <translation id="457386861538956877">Mai multe...</translation>
+<translation id="4592368184551360546">Tastatură</translation>
 <translation id="461440297010471931">Căutare cu Google</translation>
 <translation id="4619615317237390068">File de pe alte dispozitive</translation>
 <translation id="4620246317052452550">Paginile citite</translation>
@@ -249,6 +253,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5010803260590204777">Deschide o filă incognito pentru a naviga privat pe web.</translation>
 <translation id="5011684439661633295">Salut, <ph name="FULL_ACCOUNT_NAME" /></translation>
 <translation id="5039804452771397117">Permite</translation>
+<translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Instalează Google Drive</translation>
 <translation id="5083464117946352670">Dimensiune fișier necunoscută.</translation>
 <translation id="5094827893301452931">Tweet finalizat.</translation>
@@ -266,6 +271,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5409365236829784218">Nicio aplicație instalată nu poate deschide fișierul.</translation>
 <translation id="5433691172869980887">Numele de utilizator a fost copiat</translation>
 <translation id="54401264925851789">Informații privind securitatea paginii</translation>
+<translation id="5443952882982198570">Carduri de credit</translation>
 <translation id="5525269841082836315">Creează o expresie de acces</translation>
 <translation id="5548760955356983418">Cu Handoff, începi să navighezi pe un site de pe acest dispozitiv, apoi continui cu ușurință de pe Mac. Site-ul deschis actual va apărea în Dock pe Mac.
 
@@ -296,7 +302,6 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="5938160824633642847">Dispozitivul este aproape plin. Eliberează spațiu și încearcă din nou.</translation>
 <translation id="5948291296578561264">Astfel, poți să salvezi fotografiile în fototecă.</translation>
 <translation id="5955891643922670672">Se afișează versiunea offline</translation>
-<translation id="5957613098218939406">Mai multe opțiuni</translation>
 <translation id="5964480694698977962">Creează o filă incognito nouă.</translation>
 <translation id="5965679971710331625">Te-ai conectat</translation>
 <translation id="5979837087407522202">Caută parole</translation>
@@ -358,7 +363,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="6797885426782475225">Căutare vocală</translation>
 <translation id="6807889908376551050">Afișați toate...</translation>
 <translation id="681368974849482173">Element creat</translation>
-<translation id="685040365210406336">Nu face modificări</translation>
 <translation id="6851516051005285358">Solicită site desktop</translation>
 <translation id="6896758677409633944">Copiază</translation>
 <translation id="6903907808598579934">Activează sincronizarea</translation>
@@ -391,7 +395,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7346909386216857016">OK, am înțeles</translation>
 <translation id="7383797227493018512">Listă de lectură</translation>
 <translation id="7400418766976504921">Adresă URL</translation>
-<translation id="741204030948306876">Da, accept</translation>
 <translation id="7425346204213733349">Modificările marcajelor, istoricului, parolelor sau ale altor setări nu vor mai fi sincronizate cu Contul Google. Totuși, datele existente vor rămâne stocate în Contul Google.</translation>
 <translation id="744343212394640790">Nu ca <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Stat/Județ</translation>
@@ -418,6 +421,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7840771868269352570">Elementele selectate vor fi eliminate.</translation>
 <translation id="7856733331829174190">Nu s-a putut descărca</translation>
 <translation id="7859704718976024901">Istoricul de navigare</translation>
+<translation id="7887198238286927132">Pentru a-ți proteja confidențialitatea, Chrome nu va completa automat acest câmp.</translation>
 <translation id="7918293828610777738">Lista de lectură este disponibilă offline. Pentru a adăuga o pagină în lista de lectură, atinge <ph name="SHARE_OPENING_ICON" />, apoi <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportă parolele...</translation>

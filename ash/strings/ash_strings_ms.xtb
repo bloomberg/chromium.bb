@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">Runtuhkan menu</translation>
 <translation id="1383876407941801731">Carian</translation>
 <translation id="1419738280318246476">Buka kunci peranti untuk melaksanakan tindakan pemberitahuan</translation>
+<translation id="1455242230282523554">Tunjukkan tetapan bahasa</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan untuk satu apl}other{Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan untuk # apl}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">Tiada apa-apa untuk dilihat</translation>
 <translation id="3445925074670675829">Peranti USB-C</translation>
 <translation id="3454224730401036106">Sambungan anda telah beralih kepada rangkaian yang lebih selamat</translation>
+<translation id="3465223694362104965">Papan kekunci lain telah disambungkan ke peranti ini sejak kali terakhir anda log masuk. Pastikan anda mempercayai papan kekunci ini sebelum anda menggunakannya.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Serlahkan kursor tetikus</translation>
 <translation id="3510503721818156981">Chromebook disambungkan ke telefon baharu</translation>

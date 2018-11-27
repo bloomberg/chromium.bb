@@ -210,6 +210,14 @@ Pokud je tato zásada nastavena na hodnotu false nebo ponechána bez nastavení,
 <translation id="1523774894176285446">Alternativní prohlížeč, který se má spustit pro nakonfigurované weby.</translation>
 <translation id="152657506688053119">Seznam alternativních adres URL výchozího poskytovatele vyhledávání</translation>
 <translation id="1530812829012954197">Následující vzory adres URL vykreslit vždy v hostitelském prohlížeči</translation>
+<translation id="1532965933165453786">Umožňuje aktivovat nebo deaktivovat Rychlé převádění.
+      Toto nastavení platí pro všechny uživatele a všechna rozhraní na zařízení.
+      Aby se Rychlé převádění použilo, musí být zapnuté toto nastavení i vlastnost ONC na úrovni sítě.
+      Jakmile je Rychlé převádění nastaveno, zůstane aktivní, dokud nebude deaktivováno změnou této zásady.
+
+      Pokud tato zásada není nastavená, Rychlé převádění se nepoužívá.
+      Pokud je nastavená na hodnotu false, Rychlé převádění se nepoužívá.
+      Pokud je nastavená na hodnotu true, Rychlé převádění se používá v případě, že ho bezdrátový přístupový bod podporuje.</translation>
 <translation id="1541170838458414064">Omezit velikost stránky tisku</translation>
 <translation id="1553684822621013552">Je-li zásada nastavena na hodnotu true, rozšíření ARC bude uživateli povoleno (pokud bude v aktuální uživatelské relaci povolen režim dočasných profilů nebo vícenásobné přihlašování, rozšíření ARC dostupné nebude).
 
@@ -919,6 +927,13 @@ Jako předvybrané rozložení klávesnice se vždy použije nejoblíbenější 
 Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunutí několika doporučených národních prostředí na začátek seznamu. Uživatelé však pro svou relaci mohou vždy zvolit kterékoliv z národních prostředí, která systém <ph name="PRODUCT_OS_NAME" /> podporuje.
       </translation>
 <translation id="3381968327636295719">Používat ve výchozím nastavení hostitelský prohlížeč</translation>
+<translation id="3388153794103186066">Umožňuje nastavit seznam adres URL určujících, kterým webům bude automaticky uděleno oprávnění k přístupu k zařízení USB od určitého dodavatele s určitými ID produktu. Aby zásada byla platná, musí každá položka v seznamu obsahovat jak zařízení, tak adresy URL. Každá položka zařízení může obsahovat pole ID dodavatele a ID produktu. Chybějící ID je považováno za zástupný znak. ID produktu však nesmí být zadáno bez ID dodavatele, jinak zásada nebude platná.
+
+        Model oprávnění USB k udělení přístupu k zařízení USB žádajícímu webu používá adresu URL žádajícího webu („žádající adresa URL“) a adresu URL webu v rámci nejvyšší úrovně („adresa URL hlavního rámce“). Pokud je žádající web načten v prvku iframe, může se žádající adresa URL od adresy URL hlavního rámce lišit. Pole „urls“ proto může obsahovat až dva řetězce URL oddělené čárkou, které určují žádající adresu URL a adresu URL hlavního rámce. Pokud je zadána jen jedna adresa URL, bude přístup k příslušným zařízením USB udělen, když adresa URL žádajícího webu odpovídá této adrese URL, bez ohledu na stav vložení. Adresy URL v poli „urls“ musejí být platné, jinak tato zásada bude ignorována.
+
+        Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultWebUsbGuardSetting (pokud je nastavena), nebo z osobního nastavení uživatele.
+
+        Vzory adres URL v této zásadě by neměly být v konfliktu se vzory nakonfigurovanými prostřednictvím zásady WebUsbBlockedForUrls. V případě konfliktu bude mít tato zásada před zásadami WebUsbBlockedForUrls a WebUsbAskForUrls přednost.</translation>
 <translation id="3414260318408232239">Pokud tato zásada není nakonfigurovaná, používá <ph name="PRODUCT_NAME" /> výchozí minimální verzi, což je TLS 1.0.
 
       Jinak lze zásadu nastavit na jednu z těchto hodnot: tls1, tls1.1 nebo tls1.2. Je-li nastavena, nebude <ph name="PRODUCT_NAME" /> používat verze protokolů SSL a TLS nižší, než je uvedená verze. Nerozpoznané hodnoty budou ignorovány.</translation>
@@ -1162,6 +1177,7 @@ Existující nepřihlášené profily po zapnutí této zásady budou uzamčeny 
 <translation id="3925020515212192040">Určuje seznam předem nakonfigurovaných síťových sdílených úložišť.
 
       Každá položka v seznamu zásady je objekt se dvěma členy: „share_url“ a „mode“. „share_url“ by měla být adresa URL sdíleného úložiště a „mode“ by měla být hodnota „drop_down“, která udává, že adresa „share_url“ bude přidána do rozbalovacího seznamu pro výběr sdílených úložišť.</translation>
+<translation id="3925377537407648234">Nastavit rozlišení a měřítko obrazovky</translation>
 <translation id="3939893074578116847">Odesílá na server správy síťové pakety ke sledování stavu online, což serveru umožňuje zjistit, zda zařízení není offline.
 
       Je-li tato zásada nastavena na hodnotu True, budou se odesílat sledovací síťové pakety (tzv. <ph name="HEARTBEATS_TERM" />).
@@ -1991,6 +2007,16 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
       Tato zásada je účinná jen v případě, že je zařízení zaregistrováno pomocí zásady <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Tato zásada vynutí instalaci rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> k hlášení a přepíše případné zásady, které se ho týkají.</translation>
+<translation id="6155247658847899816">Když je tato zásada nastavená, jsou rozlišení a měřítko každé obrazovky nastaveny na zadané hodnoty. Nastavení externích obrazovek platí pro všechny připojené externí obrazovky.
+
+      Hodnoty „external_width“ a „external_height“ je třeba zadat v pixelech. Hodnoty „external_scale_percentage“ a „internal_scale_percentage“ je třeba zadat v procentech.
+
+      Pokud je parametr „external_use_native“ nastavený na hodnotu true, bude zásada ignorovat hodnoty „external_height“ a „external_width“ a nastaví rozlišení externích obrazovek na jejich nativní rozlišení.
+
+      Pokud je parametr „external_use_native“ nastavený na hodnotu false nebo není nastavený a není nastavená jedna z hodnot „external_height“ a „external_width“, zásada na nastavení externích obrazovek nemá vliv. Pokud některá obrazovka zadané rozlišení nebo měřítko nepodporuje, zásada se na ni nepoužije.
+
+      Pokud je příznak „recommended“ nastavený na hodnotu true, uživatelé po přihlášení mohou rozlišení a měřítko libovolné obrazovky změnit pomocí stránky nastavení. Při příštím restartu však jejich nastavení budou přepsána hodnotami ze zásady.
+      Pokud je příznak „recommended“ nastavený na hodnotu false nebo není nastavený, uživatelé nastavení obrazovky nemohou změnit.</translation>
 <translation id="6155936611791017817">Nastavení výchozího stavu velkého kurzoru na přihlašovací obrazovce</translation>
 <translation id="6157537876488211233">Seznam pravidel vynechání proxy serveru oddělených čárkami</translation>
 <translation id="6158324314836466367">Název podnikového úložiště aplikací (podpora ukončena)</translation>
@@ -2102,6 +2128,7 @@ Nastavením této zásady můžete nakonfigurovat, zda má uživatel povoleno p�
 <translation id="6553143066970470539">Procento jasu obrazovky</translation>
 <translation id="6559057113164934677">Nedovolit žádnému webu používat kameru a mikrofon</translation>
 <translation id="6561396069801924653">Zobrazit možnosti usnadnění přístupu v nabídce panelu systému</translation>
+<translation id="6563458316362153786">Aktivovat rychlé převádění 802.11r</translation>
 <translation id="6565312346072273043">Nastavuje výchozí stav funkce usnadnění přístupu pomocí softwarové klávesnice na přihlašovací obrazovce.
 
           Pokud je tato zásada nastavena na hodnotu true, bude při zobrazení přihlašovací obrazovky softwarová klávesnice aktivní.
@@ -2760,6 +2787,11 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
       Pokud na spravovaném zařízení není nastavena tato zásada, je v něm spouštění virtuálních počítačů zakázáno.
       Na zařízeních, která nejsou spravována, je spouštění virtuálních počítačů povoleno.</translation>
 <translation id="8001701200415781021">Omezení, které účty Google je v prohlížeči <ph name="PRODUCT_NAME" /> povoleno nastavit jako primární</translation>
+<translation id="8009554972280451023">Pokud zapnete toto nastavení, budou nastavení uložená v profilech <ph name="PRODUCT_NAME" /> (např. záložky, data automatického vyplňování nebo hesla) zapsána také do souboru uloženého ve složce cestovního uživatelského profilu nebo v umístění, které administrátor definuje prostřednictvím zásady <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Aktivací této zásady deaktivujete cloudovou synchronizaci.
+
+      Pokud je tato zásada vypnutá nebo není nastavená, budou se používat pouze běžné místní profily.
+
+      Zásada <ph name="SYNC_DISABLED_POLICY_NAME" /> zakáže veškerou synchronizaci dat a tím zásadu <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> přepíše.</translation>
 <translation id="802147957407376460">Otočit obrazovku o 0 stupňů</translation>
 <translation id="8033913082323846868">Podpora této zásada byla ve verzi M70 ukončena. Použijte namísto ní zásady AutofillAddressEnabled a AutofillCreditCardEnabled.
 
@@ -2879,6 +2911,7 @@ Tato zásada se nevztahuje na anonymní režim.</translation>
 <translation id="8274603902181597201">Vymazat domovský adresář ecryptfs uživatele a začít s novým zašifrovaným domovským adresářem ext4.</translation>
 <translation id="8285435910062771358">Aktivace lupy pro celou obrazovku</translation>
 <translation id="8288199156259560552">Zapnout službu určování polohy Google systému Android</translation>
+<translation id="8290453559005611000">Obrázek PluginVm</translation>
 <translation id="8294750666104911727">Stránky s vlastností X-UA-Compatible nastavenou na hodnotu chrome=1 budou v běžném provozu vykresleny ve službě <ph name="PRODUCT_FRAME_NAME" /> bez ohledu na zásadu ChromeFrameRendererSettings.
 
          Pokud toto nastavení aktivujete, na stránkách nebudou hledány metaznačky.
@@ -2950,6 +2983,7 @@ Ve verzi M75 bude tato zásada odstraněna.</translation>
           Pokud tato zásada není nastavena, použije se pro všechny weby výchozí modul vykreslení určený zásadou ChromeFrameRendererSettings.
 
           Ukázkové vzory naleznete na stránce https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Deaktivovat ukládání historie prohlížeče</translation>
 <translation id="8498293625012059298">Konfiguruje adresu URL pro změnu hesla (pouze schémata HTTP a HTTPS). Po zobrazení upozornění v prohlížeči bude služba pro ochranu hesel odesílat uživatele na tuto adresu URL, aby si změnili heslo.
       Aby prohlížeč <ph name="PRODUCT_NAME" /> na stránce pro změnu hesla mohl správně pořídit otisk nového hesla, měla by odpovídat pokynům na stránce https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

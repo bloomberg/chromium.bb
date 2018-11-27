@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Chrome-Datenschutzhinweise</translation>
 <translation id="1863312987075920112">Durch die Verwendung dieser App stimmen Sie den <ph name="BEGIN_LINK_TOS" />Nutzungsbedingungen<ph name="END_LINK_TOS" /> und <ph name="BEGIN_LINK_PRIVACY" />Datenschutzhinweisen<ph name="END_LINK_PRIVACY" /> von Chrome zu.</translation>
-<translation id="1878302395768190018">Diese Option lässt sich jederzeit in den Chrome-Einstellungen anpassen</translation>
 <translation id="2147651015520127414">Chrome hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="2342981853652716282">Melden Sie sich in Chrome an, um Daten wie Lesezeichen und Passwörter auf allen Ihren Geräten zu nutzen.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Helfen, die Funktionen und die Leistung von Chrome zu verbessern</translation>
 <translation id="4523886039239821078">Einige Add-ons führen zum Ausfall von Chrome. Bitte deinstallieren Sie:</translation>
 <translation id="4615174829807303908">Sie melden sich von einem Konto ab, das von <ph name="SIGNOUT_MANAGED_DOMAIN" /> verwaltet wird. Dadurch werden Ihre Chrome-Daten von diesem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
-<translation id="5240817131241497236">Die Einstellungen für die Synchronisierung, Personalisierung und andere Google-Dienste in Chrome wurden geändert. Dadurch könnten sich auch Ihre aktuellen Einstellungen geändert haben.</translation>
 <translation id="5389212809648216794">Google Chrome kann nicht auf die Kamera zugreifen, da diese gerade von einer anderen App verwendet wird</translation>
 <translation id="5489543008378040943">Die <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> können jederzeit angepasst werden. Google kann die Inhalte der von Ihnen besuchten Websites, Browserinteraktionen und Browseraktivitäten nutzen, um Chrome und andere Google-Dienste wie Übersetzer, die Google-Suche und Anzeigen zu personalisieren.</translation>
 <translation id="5639704535586432836">Öffnen Sie "Einstellungen" &gt; "Datenschutz" &gt; "Kamera" &gt; "Google Chrome" und aktivieren Sie die Kamera.</translation>

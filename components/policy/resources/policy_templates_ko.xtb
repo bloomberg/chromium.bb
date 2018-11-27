@@ -228,6 +228,14 @@
 <translation id="1523774894176285446">구성된 웹사이트를 실행하기 위한 대체 브라우저입니다.</translation>
 <translation id="152657506688053119">기본 검색 공급자의 대체 URL 목록</translation>
 <translation id="1530812829012954197">호스트 브라우저에서 다음 URL 패턴을 항상 렌더링</translation>
+<translation id="1532965933165453786">빠른 전환을 사용 또는 사용 중지하도록 허용합니다.
+      이 정책은 모든 사용자 및 기기의 모든 인터페이스에 적용됩니다.
+      빠른 전환을 사용하려면 이 설정과 네트워크별 ONC 속성을 모두 사용 설정해야 합니다.
+      한번 설정되면 사용 중지하도록 정책이 변경될 때까지 빠른 전환이 계속됩니다.
+
+      정책이 설정되어 있지 않으면 빠른 전환이 사용되지 않습니다.
+      false로 설정하면 빠른 전환이 사용되지 않습니다.
+      true로 설정하면 무선 액세스 포인트에서 지원하는 경우 빠른 전환이 사용됩니다.</translation>
 <translation id="1541170838458414064">인쇄 페이지 크기 제한</translation>
 <translation id="1553684822621013552">이 정책이 true로 설정된 경우 사용자에게 ARC가 사용 설정됩니다
       (추가 정책 설정 선택에 따라 다름 - 현재 사용자 세션에 임시 모드나
@@ -953,6 +961,13 @@
       이 정책은 추천으로만 설정할 수 있습니다. 이 정책을 사용하여 추천 언어 모음을 상단으로 이동할 수 있지만, 사용자는 언제든지 <ph name="PRODUCT_OS_NAME" />이(가) 지원하는 언어 중에 자신의 세션에서 사용할 언어를 선택할 수 있습니다.
       </translation>
 <translation id="3381968327636295719">호스트 브라우저를 기본으로 사용</translation>
+<translation id="3388153794103186066">URL 목록을 설정하여 주어진 공급업체 및 제품 ID로 USB 기기에 액세스할 권한을 자동으로 부여할 사이트를 지정할 수 있습니다. 이 정책이 유효하려면 목록에 있는 모든 항목에 기기 및 URL이 포함되어 있어야 합니다. 기기에 있는 모든 항목에는 공급업체 ID 및 제품 ID 입력란이 포함될 수 있습니다. 생략된 모든 ID는 공급업체 ID가 지정되지 않으면 제품 ID도 지정될 수 없다는 하나의 예외 사항이 있는 와일드 카드로 취급됩니다. 그렇지 않은 경우 정책은 유효하지 않게 되며 무시됩니다.
+
+        USB 권한 모델은 요청하는 사이트의 URL('요청 URL')과 최상위 프레임 사이트의 URL('삽입 URL')을 사용하여 요청 URL에 USB 기기에 액세스할 권한을 부여합니다. 요청하는 사이트가 iframe에서 로드되는 경우 요청 URL과 삽입 URL이 다를 수 있습니다. 따라서 'URL' 입력란에는 요청 URL과 삽입 URL을 구분하여 지정할 수 있도록 쉼표로 구분되는 두 개의 URL 문자열이 포함될 수 있습니다. URL이 하나만 지정된 경우 삽입 상태와 관계없이 요청하는 사이트의 URL이 이 URL과 일치하면 관련 USB 기기에 액세스할 권한이 부여됩니다. 'URL' 입력란의 URL은 유효한 URL이어야 하며, 그렇지 않으면 정책이 무시됩니다.
+
+        이 정책을 설정하지 않으면 'DefaultWebUsbGuardSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.
+
+        이 정책의 URL 패턴은 WebUsbBlockedForUrls를 통해 구성된 패턴과 충돌해서는 안 됩니다. 충돌이 발생한 경우 이 정책이 WebUsbBlockedForUrls 및 WebUsbAskForUrls에 우선합니다.</translation>
 <translation id="3414260318408232239">이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 기본 최소 버전인 TLS 1.0이 사용됩니다.
 
       정책을 설정하는 경우 'tls1', 'tls1.1', 'tls1.2' 중 하나로 설정할 수 있으며, 버전을 설정하면 <ph name="PRODUCT_NAME" />에서 지정된 버전보다 낮은 SSL/TLS 버전은 사용되지 않습니다. 인식할 수 없는 값은 무시됩니다.</translation>
@@ -1200,6 +1215,7 @@
 <translation id="3925020515212192040">사전 구성된 네트워크 파일 공유 목록을 지정합니다.
 
       정책 목록에 있는 각 항목은 'share_url' 및 'mode'의 두 가지 구성 요소가 있는 객체입니다. 'share_url'은 공유할 URL이어야 하며 'mode'는 'share_url'이 공유 조회 드롭다운에 추가될지 여부를 나타내는 'drop_down'이어야 합니다.</translation>
+<translation id="3925377537407648234">디스플레이 해상도 및 배율 설정</translation>
 <translation id="3939893074578116847">온라인 상태를 모니터링하기 위해 관리 서버에 네트워크 패킷을 전송하여
       기기가 오프라인일 때 서버에서 감지할 수 있도록 합니다.
 
@@ -2037,6 +2053,29 @@
       이 정책은 기기가 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />에 등록되어 있는 경우에만 적용됩니다.
 
       또한 보고를 위해 <ph name="CHROME_REPORTING_EXTENSION_NAME" />을(를) 강제 설치하며, 이 확장 프로그램과 관련된 모든 확장 프로그램 정책을 재정의합니다.</translation>
+<translation id="6155247658847899816">이 정책을 설정하면 모든 디스플레이의 해상도 및 배율이
+      지정한 값으로 설정됩니다. 연결된 모든 외부 디스플레이에
+      외부 디스플레이 설정이 적용됩니다.
+
+      'external_width' 및 'external_height'의 값은 픽셀로 지정해야
+      합니다. 'external_scale_percentage' 및
+      'internal_scale_percentage'의 값은 백분율로 지정해야 합니다.
+
+      'external_use_native'를 true로 설정하면 정책이 'external_height' 및
+      'external_width'의 값을 무시하고 외부 디스플레이의 해상도를
+      원래 해상도로 설정합니다.
+
+      'external_use_native'를 false로 설정하거나 제공하지 않고
+      'external_height' 또는 'external_width'를 제공하지 않으면 정책이
+      외부 디스플레이 설정에 영향을 주지 않습니다. 지정한 해상도 또는
+      배율이 일부 디스플레이에서 지원되지 않으면 지원되지 않는 디스플레이에는
+      정책이 적용되지 않습니다.
+
+      'recommended' 플래그를 true로 설정하면 사용자가 로그인 후
+      설정 페이지를 통해 디스플레이의 해상도와 배율을 변경할 수 있지만
+      다음번 재부팅 시 사용자의 설정이 정책 값을 무시합니다.
+      'recommended' 플래그를 false로 설정하거나 설정하지 않으면 사용자가
+      디스플레이 설정을 변경할 수 없습니다.</translation>
 <translation id="6155936611791017817">로그인 화면에서 큰 커서의 기본 상태를 설정</translation>
 <translation id="6157537876488211233">쉼표로 구분된 프록시 우회 규칙 목록</translation>
 <translation id="6158324314836466367">엔터프라이즈 웹 스토어 이름(지원 중단됨)</translation>
@@ -2148,6 +2187,7 @@
 <translation id="6553143066970470539">화면 밝기 퍼센트</translation>
 <translation id="6559057113164934677">카메라 및 마이크에 대한 모든 사이트의 액세스 허용 안함</translation>
 <translation id="6561396069801924653">작업 표시줄 메뉴에 접근성 옵션 표시</translation>
+<translation id="6563458316362153786">802.11r 빠른 전환 사용</translation>
 <translation id="6565312346072273043">로그인 화면에서 터치 키보드 접근성 기능의 기본 상태를 설정합니다.
 
           이 정책을 true로 설정하면 로그인 화면이 표시될 때 터치 키보드를 사용하도록 설정됩니다.
@@ -2821,6 +2861,11 @@
       이 정책이 관리 기기에서 설정되어 있지 않으면 기기에서 가상 머신을 실행할 수 없습니다.
       관리되지 않는 기기는 가상 머신을 실행할 수 있습니다.</translation>
 <translation id="8001701200415781021"><ph name="PRODUCT_NAME" />에서 어떤 Google 계정이 브라우저 기본 계정으로 설정될 수 있는지 제한합니다.</translation>
+<translation id="8009554972280451023">이 설정을 사용하면 북마크, 데이터 자동 완성, 비밀번호 등 <ph name="PRODUCT_NAME" /> 프로필에 저장된 설정이 로밍 사용자 프로필 폴더나 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 정책을 통해 관리자가 지정한 위치에 저장된 파일에도 작성됩니다. 이 정책을 사용하면 클라우드 동기화는 사용 중지됩니다.
+
+      이 정책을 사용 중지하거나 설정하지 않으면 일반 로컬 프로필만 사용됩니다.
+
+      <ph name="SYNC_DISABLED_POLICY_NAME" /> 정책은 모든 데이터 동기화를 사용 중지하며 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 정책을 무시합니다.</translation>
 <translation id="802147957407376460">화면을 0도 회전</translation>
 <translation id="8033913082323846868">이 정책은 M70에서 지원이 중단되었습니다. 대신 AutofillAddressEnabled 및 AutofillCreditCardEnabled를 사용하시기 바랍니다.
 
@@ -2948,6 +2993,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8274603902181597201">사용자의 ecryptfs 홈 디렉토리를 삭제하고 ext4로 암호화된 새 홈 디렉토리로 시작합니다.</translation>
 <translation id="8285435910062771358">전체화면 돋보기 사용</translation>
 <translation id="8288199156259560552">Android Google 위치 서비스 사용</translation>
+<translation id="8290453559005611000">PluginVm 이미지</translation>
 <translation id="8294750666104911727">일반적으로 X-UA-호환성이 chrome=1로 설정된 페이지는 'ChromeFrameRendererSettings' 정책에 관계없이 <ph name="PRODUCT_FRAME_NAME" />에서 렌더링됩니다.
 
           이 설정을 사용하도록 설정하면 메타 태그에 대해 페이지가 스캔되지 않습니다.
@@ -3027,6 +3073,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
           이 정책을 설정하지 않은 경우 'ChromeFrameRendererSettings' 정책에서 지정한 대로 모든 사이트에서 기본 렌더러가 사용됩니다.
 
           예제 패턴은 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started 페이지를 참조하세요.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">브라우저 기록 저장 사용 중지</translation>
 <translation id="8498293625012059298">비밀번호 변경 URL(HTTP 및 HTTPS 스키마만 해당)을 설정합니다. 브라우저에서 경고가 표시되면 비밀번호 보호 서비스는 사용자를 이 URL로 안내하여 비밀번호를 변경할 수 있게 합니다.
       <ph name="PRODUCT_NAME" />에서 이 비밀번호 변경 페이지의 새 비밀번호 지문을 정확히 캡처할 수 있게 하려면 비밀번호 변경 페이지가 https://www.chromium.org/developers/design-documents/create-amazing-password-forms에 설명된 가이드라인을 따르는지 확인하세요.

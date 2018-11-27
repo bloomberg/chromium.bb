@@ -237,6 +237,7 @@
 <translation id="271033894570825754">Νέο</translation>
 <translation id="2728754400939377704">Ταξινόμηση κατά ιστότοπο</translation>
 <translation id="2744248271121720757">Πατήστε μια λέξη για άμεση αναζήτηση ή για να δείτε τις σχετικές ενέργειες</translation>
+<translation id="2760323196215778921">Θα πρέπει να ενεργοποιήσετε αυτήν την άδεια για το Chrome. Ανατρέξτε στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" /> για λεπτομέρειες.</translation>
 <translation id="2762000892062317888">μόλις τώρα</translation>
 <translation id="2777555524387840389">Απομένουν <ph name="SECONDS" /> δευτερόλεπτα</translation>
 <translation id="2779651927720337254">απέτυχε</translation>
@@ -934,6 +935,7 @@
 <translation id="8037750541064988519">Απομένουν <ph name="DAYS" /> ημέρες</translation>
 <translation id="804335162455518893">Δεν βρέθηκε κάρτα SD</translation>
 <translation id="805047784848435650">Βάσει του ιστορικού περιήγησής σας</translation>
+<translation id="8051303708327298699">Θα πρέπει επίσης να ενεργοποιήσετε αυτές τις άδειες για το Chrome. Ανατρέξτε στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" /> για λεπτομέρειες.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB διαθέσιμα</translation>
 <translation id="8058746566562539958">Άνοιγμα σε νέα καρτέλα Chrome</translation>
 <translation id="8063895661287329888">Η προσθήκη του σελιδοδείκτη απέτυχε.</translation>
@@ -1005,6 +1007,7 @@
 <translation id="857509777403223202">Περισσότερα άρθρα θα εμφανιστούν σύντομα. Απολαύστε το βράδυ σας!</translation>
 <translation id="857943718398505171">Επιτρέπεται (συνιστάται)</translation>
 <translation id="8583805026567836021">Διαγραφή δεδομένων λογαριασμού</translation>
+<translation id="860043288473659153">Όνομα κατόχου κάρτας</translation>
 <translation id="8609465669617005112">Μετακίνηση προς τα επάνω</translation>
 <translation id="8616006591992756292">Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Άνοιγμα της προτεινόμενης διεύθυνσης URL που καθορίζεται στο ληφθέν περιεχόμενο;</translation>

@@ -32,6 +32,7 @@
 <translation id="2008474315282236005">See kustutab seadmest ühe üksuse. Hiljem oma andmete toomiseks logige Chromiumi sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Administraator palub teil Chromiumi selle värskenduse rakendamiseks uuesti käivitada</translation>
 <translation id="2119636228670142020">Teave &amp;Chromium OS-i kohta</translation>
+<translation id="2178765360243863853">Soovitame Chromiumi kohe taaskäivitada</translation>
 <translation id="2241627712206172106">Kui jagate arvutit, saavad sõbrad ja pereliikmed eraldi sirvida ning seadistada Chromiumi just nii, nagu neile meeldib.</translation>
 <translation id="2265088490657775772">hankige oma iPhone'ile Chromium</translation>
 <translation id="2347108572062610441">See laiendus muutis seda, milline leht kuvatakse Chromiumi käivitamisel.</translation>
@@ -108,6 +109,7 @@
 <translation id="4708774505295300557">Keegi on varem selles arvutis Chromiumi sisse loginud kasutajana <ph name="ACCOUNT_EMAIL_LAST" />. Looge uus Chromiumi kasutaja, et oma teave eraldi hoida.</translation>
 <translation id="4714956846925717402">Chromiumi kiirem avamine</translation>
 <translation id="4746050847053251315">Kas väljuda Chromiumist ikkagi?</translation>
+<translation id="4748217263233248895">Äsja rakendati Chromiumi spetsiaalne turvavärskendus. Taaskäivitage brauser, misjärel teie vahelehed taastatakse.</translation>
 <translation id="4888717733111232871">Sissetuleku reegel Chromiumile mDNS-liikluse lubamiseks.</translation>
 <translation id="4943838377383847465">Chromium on taustarežiimis.</translation>
 <translation id="4987820182225656817">Külastajad saavad kasutada Chromiumi jälgi jätmata.</translation>

@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Aviso de Privacidade do Google Chrome</translation>
 <translation id="1863312987075920112">Ao usar este aplicativo, você concorda com os <ph name="BEGIN_LINK_TOS" />Termos de Serviço<ph name="END_LINK_TOS" /> e o <ph name="BEGIN_LINK_PRIVACY" />Aviso de Privacidade<ph name="END_LINK_PRIVACY" /> do Chrome.</translation>
-<translation id="1878302395768190018">Você pode alterar isso a qualquer momento nas configurações do Chrome</translation>
 <translation id="2147651015520127414">O Chrome verificou que <ph name="ISSUER" /> emitiu o certificado desse website.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2342981853652716282">Faça login no Chrome para ver seus favoritos, senhas e muito mais em todos os seus dispositivos.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Ajude a melhorar os recursos e o desempenho do Chrome</translation>
 <translation id="4523886039239821078">Alguns complementos causam a falha do Google Chrome. Desinstale-os.</translation>
 <translation id="4615174829807303908">Você está saindo de uma conta gerenciada por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Os dados do Chrome serão excluídos desse dispositivo, mas permanecerão na sua Conta do Google.</translation>
-<translation id="5240817131241497236">As configurações que controlam sincronização, personalização e outros serviços do Google no Chrome foram alteradas. Isso pode afetar suas configurações atuais.</translation>
 <translation id="5389212809648216794">O Google Chrome não pode usar a câmera porque ela está sendo usada por outro app</translation>
 <translation id="5489543008378040943">As <ph name="BEGIN_LINK" />configurações<ph name="END_LINK" /> podem ser personalizadas a qualquer momento. O Google pode usar o conteúdo dos sites que você visita, interações do navegador e atividades para personalizar o Chrome e os serviços do Google, como o Tradutor, a Pesquisa e os anúncios.</translation>
 <translation id="5639704535586432836">Abra Ajustes &gt; Privacidade &gt; Câmera &gt; Google Chrome e ative a câmera.</translation>

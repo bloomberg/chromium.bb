@@ -220,6 +220,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="2586657967955657006">Área de transferência</translation>
 <translation id="2587052924345400782">Versão mais recente disponível</translation>
 <translation id="2593272815202181319">Espaçamento uniforme</translation>
+<translation id="2610239185026711824">Sugerir senha</translation>
 <translation id="2612676031748830579">Número do cartão</translation>
 <translation id="2621115761605608342">Permitir JavaScript para um site específico.</translation>
 <translation id="2625189173221582860">Senha copiada</translation>
@@ -236,6 +237,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="271033894570825754">Novo</translation>
 <translation id="2728754400939377704">Classificar por site</translation>
 <translation id="2744248271121720757">Toque em uma palavra para pesquisar instantaneamente ou ver as ações relacionadas</translation>
+<translation id="2760323196215778921">Também é necessário ativar essa permissão para o Chrome. Consulte <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" /> para ver os detalhes.</translation>
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
 <translation id="2779651927720337254">falha</translation>
@@ -707,6 +709,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6378173571450987352">Detalhes: classificados pela quantidade de dados usados</translation>
 <translation id="6383961787135158834">Limpar armaz. de sites…</translation>
 <translation id="6388207532828177975">Limpar e redefinir</translation>
+<translation id="6393156038355142111">Sugerir senha forte</translation>
 <translation id="6393863479814692971">O Chrome precisa de permissão para este site acessar sua câmera e seu microfone.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Editar favorito</translation>
@@ -887,6 +890,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="773466115871691567">Sempre traduzir páginas em <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Protege você e seu dispositivo de sites perigosos</translation>
+<translation id="7759822418208302953">Parando o Assistente de preenchimento automático</translation>
 <translation id="7762668264895820836">Cartão SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7765158879357617694">Mover</translation>
@@ -931,6 +935,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8037750541064988519"><ph name="DAYS" /> dias restantes</translation>
 <translation id="804335162455518893">Cartão SD não encontrado</translation>
 <translation id="805047784848435650">Com base no seu histórico de navegação</translation>
+<translation id="8051303708327298699">Também é necessário ativar essas permissões para o Chrome. Consulte <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" /> para ver os detalhes.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponíveis</translation>
 <translation id="8058746566562539958">Abrir em nova guia do Chrome</translation>
 <translation id="8063895661287329888">Falha ao adicionar favorito.</translation>
@@ -1002,6 +1007,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="857509777403223202">Mais artigos serão exibidos em breve. Aproveite o fim do dia.</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8583805026567836021">Limpando os dados da conta</translation>
+<translation id="860043288473659153">Nome do titular do cartão</translation>
 <translation id="8609465669617005112">Mover para cima</translation>
 <translation id="8616006591992756292">Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Abrir o URL sugerido especificado no conteúdo transferido por download?</translation>

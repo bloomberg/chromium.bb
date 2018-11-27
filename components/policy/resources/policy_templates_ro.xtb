@@ -215,6 +215,14 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="1523774894176285446">Browser secundar care se va lansa pentru website-urile configurate.</translation>
 <translation id="152657506688053119">Lista adreselor URL alternative pentru furnizorul de căutare prestabilit</translation>
 <translation id="1530812829012954197">Redă întotdeauna următoarele șabloane de adrese URL în browserul gazdă</translation>
+<translation id="1532965933165453786">Permite activarea sau dezactivarea Tranziției rapide.
+      Se aplică tuturor utilizatorilor și tuturor interfețelor de pe dispozitiv.
+      Pentru ca Tranziția rapidă să fie folosită, trebuie activată atât această setare, cât și proprietatea ONC pentru rețea.
+      După ce este configurată, Tranziția rapidă se aplică până când politica este modificată pentru a o dezactiva.
+
+      Dacă politica nu este setată, Tranziția rapidă nu este folosită.
+      Dacă politica este dezactivată, Tranziția rapidă nu este folosită.
+      Dacă politica este activată, Tranziția rapidă este folosită când punctul de acces wireless o acceptă.</translation>
 <translation id="1541170838458414064">Restricționează dimensiunea paginii de printare</translation>
 <translation id="1553684822621013552">Dacă această politică este activată, funcția ARC va fi activată pentru utilizator
       (în funcție de verificările suplimentare ale setărilor politicii – funcția ARC va fi în continuare
@@ -916,6 +924,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Această politică poate fi setată numai ca recomandare. O poți folosi pentru a muta un set de limbi recomandate în capul listei, însă utilizatorii vor avea întotdeauna posibilitatea să aleagă pentru sesiunea lor orice limbă compatibilă cu <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
+<translation id="3388153794103186066">Îți permite să setezi o listă de adrese URL ce specifică site-urile care vor primi automat permisiunea să acceseze un dispozitiv USB cu ID-ul de furnizor și de produs oferit. Fiecare articol din listă trebuie să conțină ambele dispozitive și adrese URL pentru ca politica să fie validă. Fiecare articol din dispozitive poate conține un câmp pentru ID-ul furnizorului și ID-ul produsului. Orice ID omis este considerat un metacaracter, cu o excepție, și acea excepție este că un ID de produs nu poate fi specificat fără să fie specificat și un ID de furnizor. În caz contrar, politica nu va fi validă și va fi ignorată.
+
+        Modelul permisiunii USB folosește adresa URL a site-ului care face solicitarea („adresa URL solicitantă”) și adresa URL a site-ului cadru de nivel superior („adresa URL încorporantă”) pentru a acorda permisiunea adresei URL solicitante de a accesa dispozitivul USB. Adresa URL solicitantă poate fi diferită de adresa URL încorporantă când site-ul solicitant este încărcat într-un iframe. De aceea, câmpul „urls” poate conține până la două șiruri separate cu o virgulă pentru a specifica adresa URL încorporantă și, respectiv, solicitantă. Dacă este specificată o singură adresă URL, accesul la dispozitivele USB corespunzătoare va fi acordat când adresa URL a site-ului solicitant este aceeași cu această adresă URL, indiferent de starea încorporării. Adresele URL din „urls” trebuie să fie adrese URL valide; în caz contrar, politica va fi ignorată.
+
+        Dacă această politică nu este setată, valoarea globală prestabilită va fi folosită pentru toate site-urile, fie din politica „DefaultWebUsbGuardSetting”, dacă este setată, fie din configurația personală a utilizatorului, în caz contrar.
+
+        Șabloanele de adrese URL din această politică nu trebuie să fie în contradicție cu cele configurate prin WebUsbBlockedForUrls. Dacă există o contradicție, această politică va avea întâietate în fața WebUsbBlockedForUrls și WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> folosește versiunea minimă prestabilită, care este TLS 1.0.
 
       În caz contrar, politica poate fi configurată la una dintre următoarele valori: „tls1”, „tls1.1” sau „tls1.2”. Când este configurată, <ph name="PRODUCT_NAME" /> nu va folosi versiunile SSL/TLS inferioare versiunii specificate. Valorile nerecunoscute vor fi ignorate.</translation>
@@ -1164,6 +1179,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3925020515212192040">Specifică o listă de dispozitive de stocare în rețea preconfigurate.
 
       Fiecare element din lista politicii este un obiect cu doi membri: „share_url” și „mode”. „share_url” trebuie să fie adresa URL a dispozitivului, iar „mode” trebuie să fie „drop_down”, care indică faptul că „share_url” va fi adăugat în meniul drop-down al descoperirii dispozitivelor de stocare.</translation>
+<translation id="3925377537407648234">Setează rezoluția ecranului și factorul de scalare</translation>
 <translation id="3939893074578116847">Trimite pachete din rețea serverului de gestionare, pentru a monitoriza starea
        online, permițând astfel serverului să detecteze dacă dispozitivul este offline.
 
@@ -1966,6 +1982,29 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Această politică se aplică numai când dispozitivul este înregistrat la <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Această politică instalează automat <ph name="CHROME_REPORTING_EXTENSION_NAME" /> pentru raportare și modifică toate politicile privind extensiile care au legătură cu acea extensie.</translation>
+<translation id="6155247658847899816">Când această politică este setată, factorul de rezoluție și cel de scalare pentru fiecare
+      ecran sunt setați la valorile specificate. Setările ecranului extern se
+      aplică la toate ecranele externe conectate.
+
+      Valorile „external_width” și „external_height” trebuie să fie specificate în
+      pixeli. Valorile „external_scale_percentage” și
+      „internal_scale_percentage” trebuie să fie specificate în procente.
+
+      Dacă „external_use_native” este activată, politica va ignora valorile pentru
+      „external_height” și „external_width” și va seta rezoluția ecranelor
+      externe la rezoluția lor nativă.
+
+      Dacă „external_use_native” nu este activată sau nu este oferită și nici
+      „external_height”, nici „external_width” nu este oferită, politica nu
+      afectează setările ecranului extern. Dacă factorul specificat de rezoluție sau
+      de scalare nu este acceptat de un ecran, politica nu se aplică
+      pentru acel ecran.
+
+      Dacă semnalul „recomandat” este activat, utilizatorii pot modifica factorul
+      de rezoluție și de scalare al oricărui ecran pe pagina setărilor după conectare, dar
+      setările lor vor fi modificate de valoarea politicii la următoarea repornire.
+      Dacă semnalul „recomandat” este dezactivat sau nu este setat, utilizatorii nu pot modifica
+      setările ecranului.</translation>
 <translation id="6155936611791017817">Setați cursorul mare pe ecranul de conectare ca stare prestabilită</translation>
 <translation id="6157537876488211233">Lista de valori separate prin virgulă a regulilor de ocolire a proxy-ului</translation>
 <translation id="6158324314836466367">Numele magazinului web pentru întreprinderi (politică învechită)</translation>
@@ -2073,6 +2112,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6553143066970470539">Procentul de luminozitate a ecranului</translation>
 <translation id="6559057113164934677">Nu permiteți niciunui site să acceseze camera și microfonul</translation>
 <translation id="6561396069801924653">Afișați opțiuni de accesibilitate în meniul barei de sistem</translation>
+<translation id="6563458316362153786">Activează 802.11r Tranziție rapidă</translation>
 <translation id="6565312346072273043">Setează starea prestabilită a funcției de accesibilitate cu tastatura pe ecran din ecranul de conectare.
 
           Dacă politica este activată, tastatura pe ecran va fi activată la afișarea ecranului de conectare.
@@ -2716,6 +2756,11 @@ nu poate fi stabilit de utilizator din setările browserului.
       Atunci când politica nu este setată pe un dispozitiv gestionat, acesta nu are permisiunea de a rula mașini virtuale.
       Dispozitivele care nu sunt gestionate au permisiunea de a rula mașini virtuale.</translation>
 <translation id="8001701200415781021">Restricționează Conturile Google care au permisiunea de a fi setate drept conturi principale de browser în <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Dacă activezi această setare, setările stocate în profilurile <ph name="PRODUCT_NAME" />, cum ar fi marcajele, datele de completare automată, parolele etc. vor fi scrise și într-un fișier stocat în dosarul profilului de utilizator pentru roaming sau într-o locație specificată de administrator prin politica <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Dacă activezi această politică, se dezactivează sincronizarea în cloud.
+
+      Dacă această politică este dezactivată sau nu este configurată, se vor folosi numai profilurile locale obișnuite.
+
+      Politica <ph name="SYNC_DISABLED_POLICY_NAME" /> dezactivează integral sincronizarea datelor, modificând <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Rotește ecranul la 0 grade</translation>
 <translation id="8033913082323846868">În M70 s-a renunțat la dezvoltarea acestei politici; folosește AutofillAddressEnabled și AutofillCreditCardEnabled.
 
@@ -2836,6 +2881,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8274603902181597201">Șterge directorul principal ecryptfs al utilizatorului și începe cu un nou director principal ext4-encrypted.</translation>
 <translation id="8285435910062771358">Lupă ecran complet activată</translation>
 <translation id="8288199156259560552">Activează Serviciul de localizare Google pentru Android</translation>
+<translation id="8290453559005611000">Imagine PluginVm</translation>
 <translation id="8294750666104911727">În mod normal, paginile cu X-UA-Compatible setate la chrome=1 vor fi redate în <ph name="PRODUCT_FRAME_NAME" />, indiferent de politica „ChromeFrameRendererSettings”.
 
           Dacă activați această setare, nu vor fi căutate metaetichete în pagini.
@@ -2914,6 +2960,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
           Dacă această politică nu este configurată, va fi folosit programul de redare prestabilit pentru toate site-urile, așa cum este indicat în politica „ChromeFrameRendererSettings”.
 
           Pentru exemple de șabloane, accesează https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Dezactivează salvarea istoricului browserului</translation>
 <translation id="8498293625012059298">Configurează adresa URL de modificare a parolei (doar schemele HTTP și HTTPS). Serviciul de protecție a parolei va direcționa utilizatorii la această adresă URL pentru a-și schimba parola după ce se afișează un avertisment în browser.
       Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect noua amprentă a parolei pe această pagină de schimbare a parolei, asigură-te că pagina de schimbare a parolei respectă regulile prevăzute la https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

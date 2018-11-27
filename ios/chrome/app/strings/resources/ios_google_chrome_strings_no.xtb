@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Merknad om personvern for Google Chrome</translation>
 <translation id="1863312987075920112">Ved å bruke denne appen samtykker du i Chromes <ph name="BEGIN_LINK_TOS" />vilkår for bruk<ph name="END_LINK_TOS" /> og <ph name="BEGIN_LINK_PRIVACY" />merknad om personvern<ph name="END_LINK_PRIVACY" />.</translation>
-<translation id="1878302395768190018">Du kan når som helst tilpasse dette i Chrome-innstillingene</translation>
 <translation id="2147651015520127414">Chrome bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Med enerett.</translation>
 <translation id="2342981853652716282">Logg på Chrome for å hente blant annet bokmerkene og passordene dine på alle enhetene du bruker.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Hjelp til med å forbedre funksjonene og ytelsen til Chrome</translation>
 <translation id="4523886039239821078">Noen tillegg fører til at Chrome krasjer. Avinstaller:</translation>
 <translation id="4615174829807303908">Du logger av en konto som administreres av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Dette sletter Chrome-dataene dine fra denne enheten, men dataene blir værende i Google-kontoen din.</translation>
-<translation id="5240817131241497236">Innstillingene som kontrollerer synkronisering, personlig tilpasning og andre Google-tjenester i Chrome, er blitt endret. Dette kan påvirke de nåværende innstillingene dine.</translation>
 <translation id="5389212809648216794">Google Chrome kan ikke bruke kameraet fordi det brukes av en annen app</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" /> kan tilpasses når som helst. Google kan bruke innhold på nettsteder du besøker, nettleserinteraksjoner og aktiviteter for å gi Chrome og Google-tjenester (som Oversetter, Søk og annonser) et personlig preg.</translation>
 <translation id="5639704535586432836">Åpne Innstillinger &gt; Personvern &gt; Kamera &gt; Google Chrome, og slå på kameraet.</translation>

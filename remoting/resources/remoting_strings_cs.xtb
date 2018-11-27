@@ -63,6 +63,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="2314101195544969792">Relace aplikace <ph name="APPLICATION_NAME" /> je již nějakou dobu neaktivní a brzy bude odpojena.</translation>
 <translation id="2317666076142640974">Vyzkoušejte novou <ph name="LINK_BEGIN" />webovou aplikaci Vzdálená plocha Chrome<ph name="LINK_END" /> a dejte nám vědět, jak se vám líbí.</translation>
 <translation id="2320166752086256636">Skrýt klávesnici</translation>
+<translation id="2332192922827071008">Otevřít nastavení</translation>
 <translation id="2353140552984634198">K tomuto počítači se můžete bezpečně připojit pomocí funkce Chromoting.</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2366718077645204424">Hostitele nelze nalézt. Pravděpodobnou příčinou je aktuální konfigurace sítě.</translation>
@@ -190,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Stažením instalačního programu hostitele funkce Chromoting vyjadřujete souhlas se <ph name="LINK_BEGIN" />smluvními podmínkami<ph name="LINK_END" /> společnosti Google.</translation>
 <translation id="4974476491460646149">Připojení k zařízení <ph name="HOSTNAME" /> bylo ukončeno</translation>
 <translation id="4985296110227979402">Nejdříve je potřeba v počítači nastavit vzdálený přístup.</translation>
+<translation id="5059773780693835145">Abyste tento počítač mohli ovládat vzdáleně pomocí aplikace <ph name="PRODUCT_NAME" />, je potřeba provést další konfigurační krok.
+
+Chcete-li tuto funkci aktivovat, kliknutím na tlačítko <ph name="BUTTON_NAME" /> zobrazte panel nastavení zabezpečení a ochrany soukromí a poté zaškrtněte políčko vedle položky <ph name="SERVICE_SCRIPT_NAME" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Vzdálený hostitelský server vyžaduje, abyste provedli ověření na stránce třetí strany. Aby bylo možné pokračovat, je nutné udělit Vzdálené ploše Chrome dodatečná oprávnění k přístupu na tuto adresu:</translation>
 <translation id="507204348399810022">Opravdu chcete vzdálená připojení k počítači <ph name="HOSTNAME" /> zakázat?</translation>
@@ -314,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Mé počítače</translation>
 <translation id="811307782653349804">Přistupujte ke svému počítači odkudkoli.</translation>
 <translation id="8116630183974937060">Došlo k chybě sítě. Zkontrolujte prosím, zda je zařízení online a zkuste to znovu.</translation>
+<translation id="8123581458650016326">Povolit vzdáleným uživatelům ovládat tento počítač</translation>
 <translation id="8178433417677596899">Sdílení obrazovky mezi uživateli je ideální pro vzdálenou technickou podporu.</translation>
 <translation id="8187079423890319756">Copyright 2013 Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="8196755618196986400">Abychom vás mohli kontaktovat kvůli dalším informacím, všechny zpětné vazby, které odešlete, budou obsahovat vaši e-mailovou adresu.</translation>

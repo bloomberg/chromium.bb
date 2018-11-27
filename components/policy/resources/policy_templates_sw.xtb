@@ -210,6 +210,18 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
 <translation id="1523774894176285446">Kivinjari mbadala cha kufunguka katika tovuti zilizowekewa mipangilio.</translation>
 <translation id="152657506688053119">Orodha ya URL mbadala za mtoa huduma chaguomsingi wa utafutaji.</translation>
 <translation id="1530812829012954197">Onyesha ruwaza zifuatazo za URL mara kwa mara katika kivinjari cha mpangishaji</translation>
+<translation id="1532965933165453786">Huruhusu kuwashwa na kuzimwa kwa kipengele cha Ubadilishaji Haraka wa Vigezo vya Muunganisho.
+      Hii inatumika kwa watumiaji wote na kwa violesura vyote kwenye kifaa hiki.
+      Ili utumie kipengele cha Ubadilishaji haraka wa vigezo vya muunganisho, unahitaji kuwasha 
+      mipangilio hii pamoja na mipangilio ya kipengele cha Usanidi Huru wa Mtandao kwa kila
+      mtandao.
+      Baada ya kuwekwa, kipengele cha Ubadilishaji Haraka wa Vigezo vya Muunganisho kitaendelea kutumika
+      hadi sera ibadilike ili kukizima.
+
+      Sera hii isipowekwa, kipengele cha Ubadilishaji Haraka wa Vigezo vya Muunganisho
+      hakitatumika.
+      Ikiwekwa kuwa sivyo, kipengele cha Ubadilishaji Haraka wa Vigezo vya Muunganisho hakitatumika.
+      Ikiwekwa kuwa ndivyo, kipengele cha Ubadilishaji Haraka wa Vigezo vya Muunganisho kinatumika wakati lango lisilotumia waya la mtandao lina uwezo wa kukitumia.</translation>
 <translation id="1541170838458414064">Dhibiti ukubwa wa ukurasa wa kuchapisha</translation>
 <translation id="1553684822621013552">Sera hii ikiwekwa kuwa ndivyo, kipengee cha ARC kitawashiwa mtumiaji
       (kutegemea kanuni za mipangilio ya ziada ya sera - kipengee cha ARC bado hakitapatikana ikiwa kipindi cha matumizi ya muda au kipengee cha kuingia katika akaunti nyingi kitawashwa katika kipindi cha sasa cha mtumiaji).
@@ -929,6 +941,13 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
     Sera hii inaweza tu kuwekwa kama ilivyopendekezwa. Unaweza kutumia sera hii kuhamishia seti ya lugha zilizopendekezwa upande wa juu lakini watumiaji wanaruhusiwa kuchagua lugha inayotumika kwenye <ph name="PRODUCT_OS_NAME" /> kwa kipindi chao wakati wowote.
       </translation>
 <translation id="3381968327636295719">Tumia kivinjari kipangishi kwa chaguomsingi</translation>
+<translation id="3388153794103186066">Hukuruhusu kuweka orodha ya urls ambazo zinabainisha tovuti zitakazopewa ruhusa kiotomatiki ya kufikia kifaa cha USB chenye Vitambulisho husika vya muuzaji na bidhaa. Lazima kila kipengee kwenye orodha kijumuishe vifaa na urls ili sera itumike. Kila kipengee kwenye vifaa kinaweza kujumuisha sehemu ya Kitambulisho cha muuzaji na Kitambulisho cha bidhaa. Kitambulisho chochote kisichowekwa kinachukuliwa kuwa herufi wakilishi isiyofuata kanuni moja na kanuni hii ni kwamba kitambulisho cha bidhaa hakiwezi kubainishwa bila kitambulisho cha muuzaji kubainishwa pia. Vinginevyo, sera haitakuwa sahihi na itapuuzwa.
+
+        Muundo wa ruhusa za USB hutumia URL ya tovuti inayotuma ombi ("URL inayotuma ombi") na URL ya tovuti maarufu ya fremu ("URL iliyopachikwa") ili kutoa ruhusa kwa URL inayotuma ombi iweze kufikia kifaa cha USB. URL inayotuma ombi inaweza kuwa tofauti na URL iliyopachikwa wakati tovuti inayotuma ombi imepakiwa kwenye iframe. Kwa hivyo, sehemu ya "urls" inaweza kujumuisha hadi mifuatano miwili ya URL inayotenganishwa kwa koma ili kubainisha URL ya kutuma ombi na URL iliyopachikwa mtawalia. Ikiwa URL moja tu imebainishwa, basi ufikiaji wa vifaa vinavyolingana vya USB utatolewa wakati URL ya tovuti inayotuma ombi inalingana na URL hii bila kuzingatia hali ya upachikwaji. Lazima URL kwenye "urls" ziwe URL sahihi, vinginevyo sera hii itapuuzwa.
+
+        Sera hii isipowekwa, thamani chaguomsingi ya jumla itatumiwa kwenye tovuti zote, kutoka sera ya 'DefaultWebUsbGuardSetting' ikiwa sera imewekwa au vinginevyo kutoka mipangilio ya binafsi ya mtumiaji.
+
+        Ruwaza za URL katika sera hii hazipaswi kukinzana na zile ambazo mipangilio yake huwekwa kupitia WebUsbBlockedForUrls. Kama zinakinzana, sera hii itatumika kwanza kabla ya WebUsbBlockedForUrls na WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Ikiwa hujaweka mipangilio ya sera hii inamaanisha kuwa <ph name="PRODUCT_NAME" /> itatumia toleo la chini zaidi katika mipangilio chaguomsingi ambalo ni TLS 1.0.
 
       Vinginevyo, inaweza kuwekwa kuwa mojawapo ya thamani zifuatazo: "tls1", "tls1.1" au "tls1.2". Ikiwekwa, <ph name="PRODUCT_NAME" /> itatumia matoleo ya SSL/TLS yaliyo chini ya toleo lililobainishwa. Haitazingatia thamani ambayo haitambuliki.</translation>
@@ -1178,6 +1197,7 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
 <translation id="3925020515212192040">Hubainisha orodha ya faili za kushiriki mtandaoni zilizowekewa mipangilio mapema.
 
       Kila kipengee cha orodha ya sera ni kipengele kilicho na sehemu mbili: "url ya kushiriki" na "hali". "url ya kushiriki" inapaswa kuwa URL ya kipengee cha kushiriki na "hali" inapaswa kuwa "menyu kunjuzi" ambayo inaashiria kuwa "url ya kushiriki" itaongezwa kwenye menyu kunjuzi ya kutambua kipengee cha kushiriki.</translation>
+<translation id="3925377537407648234">Weka mipangilio ya ubora wa onyesho na kigezo cha kipimo</translation>
 <translation id="3939893074578116847">Tuma vifurushi vya mtandao kwenye seva ya udhibiti ili kufuatilia hali ya mtandaoni, ili kuruhusu
       seva igundue kama kifaa kiko nje ya mtandao.
 
@@ -2000,6 +2020,28 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
       Sera hii inaweza kutumika tu wakati mashine imejumuishwa katika <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Sera hii inalazimisha usakinishaji wa <ph name="CHROME_REPORTING_EXTENSION_NAME" /> kwa ajili ya kuripoti na hufuta sera zingine zozote za viendelezi zinazohusiana na kiendelezi hicho.</translation>
+<translation id="6155247658847899816">Baada ya kuweka sera hii, ubora na kigezo cha kipimo cha kila
+      onyesho kitawekwa kuwa thamani zilizobainishwa. Mipangilio ya onyesho la nje
+      itawekwa kwa maonyesho yote ya nje yaliyounganishwa.
+
+      Thamani za "external_width" na "external_height" zinapaswa kubainishwa kwa
+      pikseli. Thamani za "external_scale_percentage" na
+      "internal_scale_percentage" zinapaswa kubainishwa kwa asilimia.
+
+      Ikiwa "external_use_native" imewekwa kuwa ndivyo, sera itapuuza thamani za
+      "external_height" na "external_width" na iweke ubora wa maonyesho
+      ya nje kuwa na ubora wa asili.
+
+      Ikiwa "external_use_native" imewekwa kuwa sivyo au haijatolewa na      "external_height" au "external_width" haujatolewa, sera haitaathiri
+      mipangilio ya onyesho la nje. Ikiwa ubora au kigezo cha kipimo
+      kilichobainishwa hakitumiki kwenye onyesho fulani, sera haitatumika
+      kwenye onyesho hilo.
+
+      Ikiwa alama "iliyopendekezwa" imewekwa kuwa ndivyo, huenda watumiaji
+      wakabadilisha ubora na kigezo cha kipimo cha onyesho lolote kupitia ukurasa wa
+      mipangilio baada ya kuingia katika akaunti, lakini mipangilio yao itabatilishwa na
+      thamani ya sera inapowashwa tena.
+      Ikiwa alama "iliyopendekezwa" imewekwa kuwa sivyo au haijawekwa, watumiaji hawataweza kubadilisha mipangilio ya onyesho.</translation>
 <translation id="6155936611791017817">Weka hali chaguomsingi ya kiteuzi kikubwa kwenye skrini ya kuingia katika akaunti</translation>
 <translation id="6157537876488211233">Orodha iliyotenganishwa kwa koma ya kanuni za ukwepaji wa proksi</translation>
 <translation id="6158324314836466367">Jina la biashara la duka la wavuti (limeacha kuendesha huduma)</translation>
@@ -2111,6 +2153,7 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 <translation id="6553143066970470539">Asilimia ya ung'avu wa skrini</translation>
 <translation id="6559057113164934677">Usiruhusu tovuti yoyote kufikia kamera na maikrofoni yangu</translation>
 <translation id="6561396069801924653">Onyesha chaguo za ufikiaji katika menyu ya trei ya mfumo</translation>
+<translation id="6563458316362153786">Washa Ubadilishaji Haraka wa Vigezo vya Muunganisho wa 802.11r</translation>
 <translation id="6565312346072273043">Weka hali chaguomsingi ya kipengele cha ufikiaji cha kibodi ya skrini kwenye skrini ya kuingia katika akaunti.
 
           Sera hii ikiwekwa kuwa ndivyo, kibodi ya skrini itawashwa wakati skrini ya kuingia katika akaunti inaonyeshwa.
@@ -2775,6 +2818,12 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Kama sera hii haijawekwa kwenye kifaa kinachodhibitiwa, kifaa hakiruhusiwi kutumia mashine pepe.
       Vifaa ambavyo havidhibitiwi vinaruhusiwa kutumia mashine pepe.</translation>
 <translation id="8001701200415781021">Dhibiti aina za akaunti za Google zinazoruhusiwa kuwekwa kuwa akaunti za msingi za kivinjari katika <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Ukiwasha mipangilio hii, mipangilio iliyohifadhiwa kwenye maelezo ya <ph name="PRODUCT_NAME" /> kama vile alamisho, data ya kujaza kiotomatiki, manenosiri, n.k. pia itahifadhiwa kwenye faili iliyohifadhiwa katika folda ya wasifu wa mtumiaji asiye na mahali palipobainishwa au kwenye mahali palipobainishwa na Msimamizi kupitia sera ya <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. 
+Ukiwasha sera hii, usawazishaji kwenye wingu utazimwa.
+
+      Sera hii ikizimwa au kuachwa bila kuwekwa, wasifu wa karibu wa kawaida pekee ndio utakaotumiwa.
+
+      Sera ya <ph name="SYNC_DISABLED_POLICY_NAME" /> huzima usawazishaji wote wa data, hivyo kubatilisha <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Zungusha skrini kwa digrii 0</translation>
 <translation id="8033913082323846868">Sera hii iliacha kuendesha huduma katika M70, badala yake, tafadhali tumia AutofillAddressEnabled na AutofillCreditCardEnabled.
 
@@ -2891,6 +2940,7 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
 <translation id="8274603902181597201">Futa saraka ya nyumbani ya ecryptfs ya mtumiaji na uanze kutumia saraka mpya ya nyumbani ya ext4- iliyosimbwa kwa njia fiche.</translation>
 <translation id="8285435910062771358">Kikuza skrini nzima kimewashwa</translation>
 <translation id="8288199156259560552">Washa Huduma ya Mahali ya Android Google</translation>
+<translation id="8290453559005611000">Picha ya PluginVm</translation>
 <translation id="8294750666104911727">Kwa kawaida kurasa Zinazooana na X-UA zilizowekwa kwa chrome=1  zitaonyeshwa katika <ph name="PRODUCT_FRAME_NAME" /> bila kujali sera ya 'ChromeFrameRendererSettings'.
 
          Ukiwasha mpangilio huu, kurasa hazitachanganuliwa kwa metatagi. 
@@ -2962,6 +3012,7 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
           Ikiwa sera hii haitawekwa kionyeshi chaguomsingi kitatumiwa kwa tovuti zote kama ilivyobainishwa na sera ya 'ChromeFrameRendererSettings'.
 
           Kwa mifano ya ruwaza angalia https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Lemaza kuhifadhi historia ya kivinjari</translation>
 <translation id="8498293625012059298">Weka mipangilio ya kubadilisha URL ya nenosiri (mifumo ya HTTP na HTTPS pekee). Huduma ya ulinzi wa nenosiri itaelekeza watumiaji kwenye URL hii ili wabadilishe manenosiri baada ya kuona ilani katika kivinjari.
       Ili <ph name="PRODUCT_NAME" /> iweze kurekodi vizuri alama bainifu ya nenosiri jipya kwenye ukurasa huu wa kubadilisha nenosiri, tafadhali hakikisha kuwa ukurasa wa kubadilisha nenosiri lako unafuata mwongozo ulio kwenye https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

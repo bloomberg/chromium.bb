@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">ยุบเมนู</translation>
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1419738280318246476">ปลดล็อกอุปกรณ์เพื่อดำเนินการแจ้งเตือน</translation>
+<translation id="1455242230282523554">แสดงการตั้งค่าภาษา</translation>
 <translation id="1467432559032391204">ซ้าย</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{แสดงการตั้งค่าการแจ้งเตือน ปิดการแจ้งเตือนไว้สำหรับ 1 แอป}other{แสดงการตั้งค่าการแจ้งเตือน ปิดการแจ้งเตือนไว้สำหรับ # แอป}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">ไม่มีการแจ้งเตือนใหม่</translation>
 <translation id="3445925074670675829">อุปกรณ์ USB-C</translation>
 <translation id="3454224730401036106">ระบบเปลี่ยนไปเชื่อมต่อกับเครือข่ายที่ปลอดภัยกว่าเดิมแล้ว</translation>
+<translation id="3465223694362104965">แป้นพิมพ์อีกรายการหนึ่งเชื่อมต่อกับอุปกรณ์นี้นับจากที่คุณลงชื่อเข้าใช้ครั้งล่าสุด โปรดตรวจสอบว่าแป้นพิมพ์นี้เชื่อถือได้ก่อนใช้งาน</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">ไฮไลต์เคอร์เซอร์เมาส์</translation>
 <translation id="3510503721818156981">Chromebook เชื่อมต่อกับโทรศัพท์เครื่องใหม่แล้ว</translation>
@@ -261,6 +263,7 @@
 <translation id="5571066253365925590">เปิดใช้งานบลูทูธแล้ว</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">กด Ctrl + Alt + Z เพื่อปิดใช้อธิบายและอ่านออกเสียง</translation>
+<translation id="5626283214046138476">บัญชีผู้ใช้ภายใต้การควบคุมดูแลจะหมดอายุเร็วๆ นี้</translation>
 <translation id="5648021990716966815">ช่องเสียบไมโครโฟน</translation>
 <translation id="5669267381087807207">กำลังเปิดการใช้งาน</translation>
 <translation id="5673434351075758678">เปลี่ยนจาก "<ph name="FROM_LOCALE" />" เป็น "<ph name="TO_LOCALE" />" หลังการซิงก์การตั้งค่า</translation>

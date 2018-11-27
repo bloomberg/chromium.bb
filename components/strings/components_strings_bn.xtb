@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">ডোমেন নথিভুক্ত করুন:</translation>
 <translation id="1340482604681802745">যে ঠিকানা থেকে নিতে হবে</translation>
 <translation id="1348198688976932919">যে সাইট খুলতে চলেছেন সেটিতে বিপজ্জনক অ্যাপ আছে</translation>
+<translation id="1348779747280417563">নাম কনফার্ম করুন</translation>
 <translation id="1374468813861204354">প্রস্তাবনাগুলি</translation>
 <translation id="1375198122581997741">ভার্সন সম্পর্কে</translation>
 <translation id="1376836354785490390">কম দেখুন</translation>
@@ -144,7 +145,6 @@
 <translation id="1826516787628120939">চেক করা হচ্ছে</translation>
 <translation id="1834321415901700177">এই সাইটটিতে ক্ষতিকর প্রোগ্রাম রয়েছে</translation>
 <translation id="1839551713262164453">নীতির মূল্য যাচাইকরণে সমস্যা হওয়ার জন্য যাচাই করা যায়নি</translation>
-<translation id="1840414022444569775">এই কার্ডের নম্বরটি আগেই ব্যবহার করেছেন</translation>
 <translation id="1842969606798536927">পেমেন্ট করুন</translation>
 <translation id="1866450167992311397">আরও বেশি জায়গায় আপনার কার্ড ব্যবহার করুন</translation>
 <translation id="1871208020102129563">
@@ -457,6 +457,7 @@
 <translation id="3949601375789751990">আপনার ব্রাউজিং এর ইতিহাস এখানে দেখা যায়</translation>
 <translation id="3950820424414687140">প্রবেশ করুন</translation>
 <translation id="3963721102035795474">পাঠক মোড</translation>
+<translation id="3963837677003247395">ম্যানুয়ালি চালিয়ে যেতে চান?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{কিছুই নয়}=1{১টি সাইট থেকে }one{#টি সাইট থেকে }other{#টি সাইট থেকে }}</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> অবরুদ্ধ হয়ে রয়েছে</translation>
@@ -812,6 +813,7 @@
 <translation id="6569060085658103619">আপনি একটি এক্সটেনশন পৃষ্ঠা দেখছেন</translation>
 <translation id="6596325263575161958">এনক্রিপশন বিকল্পগুলি</translation>
 <translation id="6604181099783169992">মোশন বা হাল্কা সেন্সর</translation>
+<translation id="6607617806003952240">আমি আর সাহায্য করতে পারব না, ম্যানুয়ালি চালিয়ে যান।</translation>
 <translation id="6624427990725312378">পরিচিতির তথ্য</translation>
 <translation id="6626291197371920147">বৈধ কার্ড নম্বর যোগ করুন</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> সার্চ</translation>
@@ -855,6 +857,7 @@
 <translation id="6950684638814147129">JSON মান পার্স করার সময় সমস্যা: <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">নতুন ব্যক্তিগত ট্যাবে একটি পৃষ্ঠা খুলুন</translation>
 <translation id="6957887021205513506">সার্ভারটির শংসাপত্রটি একটি জাল হিসাবে উপস্থিত হয়েছে৷</translation>
+<translation id="6964255747740675745">নেটওয়ার্ক কনফিগারেশন পার্স করা যায়নি (ভুল JSON)।</translation>
 <translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="6965978654500191972">ডিভাইস</translation>
 <translation id="6970216967273061347">জেলা</translation>
@@ -1148,11 +1151,13 @@
 <translation id="893332455753468063">নাম যোগ করুন</translation>
 <translation id="8938939909778640821">ক্রেডিট ও প্রিপেড কার্ড গ্রহণ করা হয়</translation>
 <translation id="8957210676456822347">ক্যাপটিভ পোর্টাল অনুমোদন</translation>
+<translation id="8968766641738584599">কার্ড সেভ করুন</translation>
 <translation id="8971063699422889582">সার্ভারের শংসাপত্রের মেয়াদ ফুরিয়েছে৷</translation>
 <translation id="8975012916872825179">ফোন নম্বর, ইমেল আইডি এবং শিপিং ঠিকানার মতো তথ্য এতে আছে</translation>
 <translation id="8978053250194585037">Google Safe Browsing সম্প্রতি <ph name="SITE" /> এ <ph name="BEGIN_LINK" />ফিশিং শনাক্ত করেছে<ph name="END_LINK" />। ফিশিং সাইটগুলি আপনাকে প্রতারিত করার জন্য অন্যান্য সাইট যেমন হয় সেইরকম ভান করে।</translation>
 <translation id="8983003182662520383">Google Pay ব্যবহার করে এমন পেমেন্টের পদ্ধতি এবং ঠিকানা</translation>
 <translation id="8987927404178983737">মাস</translation>
+<translation id="8988408250700415532">কোনও সমস্যা হয়েছে। আপনি ওয়েবসাইট থেকে এই অর্ডারটি দিতে পারেন।</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">সামনের সাইটটিতে ক্ষতিকর প্রোগ্রামগুলি রয়েছে</translation>
 <translation id="8997023839087525404">সার্ভারটি এমন একটি শংসাপত্র উপস্থাপন করেছে যেটি শংসাপত্রের স্বচ্ছতার নীতি ব্যবহার করে সর্বজনীনভাবে প্রকাশ করা হয়নি। এটা কিছু শংসাপত্রের জন্য একটি আবশ্যকতা, যাতে করে সেগুলির বিশ্বাসযোগ্যত করা যায় এবং আক্রমণকারীদের বিরুদ্ধে সুরক্ষা নেওয়া যায়।</translation>

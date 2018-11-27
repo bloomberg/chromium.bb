@@ -34,6 +34,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2008474315282236005">Ett objekt tas bort från enheten. Logga in i Chromium som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="2117378023188580026">Administratören meddelar att du bör starta om Chromium så att uppdateringen tillämpas</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
+<translation id="2178765360243863853">Starta om Chromium nu</translation>
 <translation id="2241627712206172106">Om du delar en dator med vänner och familj kan de konfigurera Chromium precis som de vill och surfa separat.</translation>
 <translation id="2265088490657775772">Ladda ned Chromium på iPhone</translation>
 <translation id="2347108572062610441">Det här tillägget har ändrat vilken sida som visas när du startar Chromium.</translation>
@@ -110,6 +111,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4708774505295300557">Någon har tidigare loggat in i Chrome som <ph name="ACCOUNT_EMAIL_LAST" /> på den här datorn. Skapa en ny Chromium-användare så att dina uppgifter hålls separat.</translation>
 <translation id="4714956846925717402">Öppna Chromium snabbare</translation>
 <translation id="4746050847053251315">Vill du avsluta Chromium ändå?</translation>
+<translation id="4748217263233248895">En särskild säkerhetsuppdatering för Chromium installerades precis. Starta om webbläsaren nu. Flikarna återställs efteråt.</translation>
 <translation id="4888717733111232871">Regel som tillåter inkommande mDNS-trafik för Chromium.</translation>
 <translation id="4943838377383847465">Chromium körs i bakgrundsläge.</translation>
 <translation id="4987820182225656817">Gäster kan använda Chromium utan att lämna spår efter sig.</translation>

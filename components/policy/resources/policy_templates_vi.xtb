@@ -228,6 +228,14 @@
 <translation id="1523774894176285446">Trình duyệt thay thế để chạy các trang web đã định cấu hình.</translation>
 <translation id="152657506688053119">Danh sách các URL thay thế cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1530812829012954197">Luôn hiển thị các mẫu URL sau đây trong trình duyệt chính</translation>
+<translation id="1532965933165453786">Cho phép bật hoặc tắt tính năng Chuyển đổi nhanh.
+      Tính năng này áp dụng cho tất cả người dùng và tất cả giao diện trên thiết bị.
+      Để sử dụng tính năng Chuyển đổi nhanh, bạn cần phải bật cả tùy chọn cài đặt này và thuộc tính ONC trên mỗi mạng.
+      Sau khi bạn đặt, tính năng Chuyển đổi nhanh sẽ tiếp tục cho đến khi bạn thay đổi chính sách này thành tắt tính năng Chuyển đổi nhanh.
+
+      Nếu không đặt chính sách này, bạn không thể sử dụng tính năng Chuyển đổi nhanh.
+      Nếu đặt chính sách này thành false, bạn không thể sử dụng tính năng Chuyển đổi nhanh.
+      Nếu đặt chính sách này thành true, bạn có thể sử dụng tính năng Chuyển đổi nhanh khi điểm truy cập không dây hỗ trợ tính năng này.</translation>
 <translation id="1541170838458414064">Giới hạn kích thước trang in</translation>
 <translation id="1553684822621013552">Khi chính sách này được đặt thành true, ARC sẽ được bật cho người dùng
       (theo kiểm tra cài đặt chính sách bổ sung - ARC sẽ vẫn không khả
@@ -952,6 +960,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Chỉ có thể đặt chính sách này thành đề xuất. Bạn có thể sử dụng chính sách này để di chuyển một nhóm ngôn ngữ đề xuất lên trên cùng, tuy nhiên, người dùng luôn được phép chọn bất kỳ ngôn ngữ nào được <ph name="PRODUCT_OS_NAME" /> hỗ trợ cho phiên của họ.
       </translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
+<translation id="3388153794103186066">Cho phép bạn đặt danh sách các url chỉ định những trang web sẽ tự động được cấp quyền truy cập vào thiết bị USB bằng ID sản phẩm và nhà cung cấp cụ thể. Mỗi mục trong danh sách phải chứa cả thiết bị và url để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường ID sản phẩm và ID nhà cung cấp. Bất kỳ ID nào bị bỏ qua đều được coi là ký tự đại diện có một ngoại lệ và ngoại lệ đó chính là không thể chỉ định ID sản phẩm nếu không chỉ định được ID nhà cung cấp. Nếu không, chính sách sẽ không có hiệu lực và bị bỏ qua.
+
+        Mô hình quyền của USB sử dụng URL của trang web yêu cầu ("URL yêu cầu") và URL của trang web khung cấp cao nhất ("URL nhúng") để cấp quyền cho URL yêu cầu truy cập vào thiết bị USB. URL yêu cầu có thể khác với URL nhúng khi bạn tải trang web yêu cầu trong khung nội tuyến. Do đó, trường "url" có thể chứa tối đa hai chuỗi URL được phân tách bằng dấu phẩy để chỉ định URL yêu cầu và URL nhúng tương ứng. Nếu chỉ có một URL được chỉ định, thì quyền truy cập vào các thiết bị USB tương ứng sẽ được cấp khi URL của trang web yêu cầu khớp với URL này bất kể trạng thái nhúng. Các URL trong "url" phải là các URL hợp lệ. Nếu không, chính sách này sẽ bị bỏ qua.
+
+        Nếu bạn không đặt chính sách này, thì giá trị mặc định chung sẽ được dùng cho tất cả các trang web của chính sách 'DefaultWebUsbGuardSetting' nếu chính sách này được đặt, hoặc nếu không sẽ được sử dụng cho cấu hình cá nhân của người dùng.
+
+        Các mẫu URL trong chính sách này không được xung đột với các URL đã định cấu hình thông qua WebUsbBlockedForUrls. Nếu có xung đột, thì chính sách này sẽ được ưu tiên so với WebUsbBlockedForUrls và WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Nếu bạn chưa định cấu hình chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng phiên bản tối thiểu mặc định là TLS 1.0.
 
       Nếu không, bạn có thể đặt chính sách này thành một trong các giá trị sau: "tls1", "tls1.1" hoặc "tls1.2". Khi được đặt, <ph name="PRODUCT_NAME" /> sẽ không sử dụng các phiên bản SSL/TLS thấp hơn phiên bản đã chỉ định. Giá trị không xác định sẽ bị bỏ qua.</translation>
@@ -1199,6 +1214,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3925020515212192040">Chỉ định một danh sách các mục chia sẻ tệp trong mạng đã định cấu hình sẵn.
 
       Mỗi mục trong danh sách của chính sách này là một đối tượng có hai thành phần: "share_url" và "mode". "share_url" phải là URL của mục chia sẻ và "mode" phải là "drop_down" cho biết rằng "share_url" sẽ được thêm vào danh sách thả xuống phát hiện chia sẻ.</translation>
+<translation id="3925377537407648234">Đặt độ phân giải màn hình và hệ số tỷ lệ</translation>
 <translation id="3939893074578116847">Gửi gói mạng tới máy chủ quản lý để theo dõi trạng thái trực tuyến, để cho phép
       máy chủ phát hiện xem thiết bị có ngoại tuyến hay không.
 
@@ -2038,6 +2054,29 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Chính sách này chỉ có hiệu lực khi thiết bị được đăng ký bằng <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Chính sách này sẽ buộc cài đặt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> để sử dụng tính năng báo cáo, cũng như sẽ ghi đè mọi chính sách về tiện ích liên quan đến tiện ích đó.</translation>
+<translation id="6155247658847899816">Khi đặt chính sách này, bạn sẽ phải đặt độ phân giải và hệ số tỷ lệ của từng
+      màn hình thành giá trị được chỉ định. Các tùy chọn cài đặt màn hình bên ngoài
+      áp dụng cho tất cả màn hình bên ngoài được kết nối.
+
+      Bạn phải chỉ định giá trị "external_width" và "external_height" bằng
+      pixel. Giá trị "external_scale_percentage" và
+      "internal_scale_percentage" phải được chỉ định theo phần trăm.
+
+      Nếu bạn đặt giá trị "external_use_native" thành true, thì chính sách này sẽ bỏ qua các giá trị
+      "external_height" và "external_width", sau đó sẽ đặt độ phân giải của
+      màn hình bên ngoài theo độ phân giải gốc của các màn hình đó.
+
+      Nếu bạn đặt giá trị "external_use_native" thành false hoặc không đặt, cũng như không đặt giá trị
+      "external_height" hoặc "external_width", thì chính sách này sẽ không
+      ảnh hưởng đến các tùy chọn cài đặt màn hình bên ngoài. Nếu một số màn hình không hỗ trợ
+      độ phân giải hoặc hệ số tỷ lệ được chỉ định, thì bạn sẽ không thể áp dụng chính sách này cho
+      màn hình đó.
+
+      Nếu bạn đặt cờ "được đề xuất" thành true, thì sau khi đăng nhập, người dùng có thể thay đổi độ phân giải và
+      hệ số tỷ lệ của bất kỳ màn hình nào thông qua trang cài đặt. Tuy nhiên,
+      giá trị chính sách sẽ ghi đè các tùy chọn cài đặt đó vào lần khởi động lại tiếp theo.
+      Nếu bạn đặt cờ "được đề xuất" thành false hoặc không đặt, thì người dùng không thể thay đổi
+      các tùy chọn cài đặt màn hình đó.</translation>
 <translation id="6155936611791017817">Đặt trạng thái của con trỏ lớn mặc định trên màn hình đăng nhập</translation>
 <translation id="6157537876488211233">Danh sách quy tắc bỏ qua proxy được phân cách bằng dấu phẩy</translation>
 <translation id="6158324314836466367">Tên cửa hàng trực tuyến dành cho doanh nghiệp (không dùng nữa)</translation>
@@ -2149,6 +2188,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6553143066970470539">Phần trăm độ sáng màn hình</translation>
 <translation id="6559057113164934677">Không cho phép bất kỳ trang web nào truy cập vào máy ảnh và micrô</translation>
 <translation id="6561396069801924653">Hiển thị tùy chọn trợ năng trong menu của khay hệ thống</translation>
+<translation id="6563458316362153786">Bật tính năng Chuyển đổi nhanh 802.11r</translation>
 <translation id="6565312346072273043">Đặt trạng thái mặc định của tính năng trợ năng bàn phím ảo trên màn hình đăng nhập.
 
           Nếu chính sách này được đặt thành true, bàn phím ảo sẽ được bật khi màn hình đăng nhập hiển thị.
@@ -2812,6 +2852,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Khi không đặt chính sách này trên thiết bị được quản lý, thiết bị sẽ không được phép sử dụng máy ảo.
       Các thiết bị chưa được quản lý được phép sử dụng máy ảo.</translation>
 <translation id="8001701200415781021">Hạn chế Tài khoản Google nào được phép đặt làm tài khoản chính của trình duyệt trong <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Nếu bạn bật tùy chọn cài đặt này, thì các tùy chọn cài đặt lưu trữ trong cấu hình của <ph name="PRODUCT_NAME" /> như dấu trang, dữ liệu tự động điền, mật khẩu, v.v cũng sẽ được ghi vào một tệp được lưu trữ trong thư mục cấu hình Người dùng chuyển vùng hoặc một vị trí do Quản trị viên chỉ định thông qua chính sách <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Việc bật chính sách này sẽ tắt đồng bộ hóa trên đám mây.
+
+      Nếu tắt hoặc chưa đặt chính sách này thì bạn chỉ có thể sử dụng các cấu hình cục bộ thông thường.
+
+      Chính sách <ph name="SYNC_DISABLED_POLICY_NAME" /> sẽ tắt tất cả tính năng đồng bộ hóa dữ liệu, ghi đè <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Xoay màn hình 0 độ</translation>
 <translation id="8033913082323846868">Chính sách này không còn dùng trong M70, thay vào đó, hãy sử dụng AutofillAddressEnabled và AutofillCreditCardEnabled.
 
@@ -2938,6 +2983,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8274603902181597201">Xóa thư mục chính ecryptf của người dùng và bắt đầu bằng một thư mục chính mới được mã hóa ext4.</translation>
 <translation id="8285435910062771358">Đã bật kính lúp toàn màn hình</translation>
 <translation id="8288199156259560552">Bật Dịch vụ vị trí của Google trên thiết bị Android</translation>
+<translation id="8290453559005611000">Hình ảnh PluginVm</translation>
 <translation id="8294750666104911727">Thông thường các trang có Tương thích với X-UA được đặt thành chrome=1 sẽ được hiển thị trong <ph name="PRODUCT_FRAME_NAME" /> bất kể chính sách 'ChromeFrameRendererSettings'.
 
           Nếu bạn bật cài đặt này, trang sẽ không được quét tìm thẻ meta.
@@ -3017,6 +3063,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Nếu bạn không đặt chính sách này, kết xuất đồ họa mặc định sẽ được sử dụng cho tất cả các trang web được chỉ định theo chính sách 'ChromeFrameRendererSettings'.
 
           Để biết các mẫu ví dụ, hãy xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Tắt lưu lịch sử trình duyệt</translation>
 <translation id="8498293625012059298">Định cấu hình URL thay đổi mật khẩu (chỉ dành cho giao thức HTTP và HTTPS). Dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng đến URL này để họ thay đổi mật khẩu của mình sau khi thấy cảnh báo trên trình duyệt.
       Để <ph name="PRODUCT_NAME" /> quét chính xác dấu vân tay của mật khẩu mới trên trang thay đổi mật khẩu này, hãy đảm bảo trang thay đổi mật khẩu của bạn tuân thủ nguyên tắc tại https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

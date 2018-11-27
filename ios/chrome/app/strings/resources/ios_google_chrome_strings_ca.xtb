@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Avís de privadesa de Google Chrome</translation>
 <translation id="1863312987075920112">En fer servir aquesta aplicació, acceptes les <ph name="BEGIN_LINK_TOS" />condicions del servei<ph name="END_LINK_TOS" /> i l'<ph name="BEGIN_LINK_PRIVACY" />avís de privadesa<ph name="END_LINK_PRIVACY" /> de Chrome.</translation>
-<translation id="1878302395768190018">Pots personalitzar aquesta opció en qualsevol moment des de la configuració de Chrome</translation>
 <translation id="2147651015520127414">Chrome ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Tots els drets reservats.</translation>
 <translation id="2342981853652716282">Inicia la sessió a Chrome per accedir a les teves adreces d'interès, les contrasenyes i altres continguts des de tots els teus dispositius.</translation>
@@ -33,7 +32,6 @@
 <translation id="447252321002412580">Ajuda a millorar les funcions i el rendiment de Chrome</translation>
 <translation id="4523886039239821078">Alguns complements fan que Chrome es bloquegi. Desinstal·leu-los.</translation>
 <translation id="4615174829807303908">Esteu tancant la sessió d'un compte gestionat per <ph name="SIGNOUT_MANAGED_DOMAIN" />. Se suprimiran les vostres dades de Chrome d'aquest dispositiu, però continuaran al vostre compte de Google.</translation>
-<translation id="5240817131241497236">La configuració que controla la sincronització, la personalització i altres serveis de Google a Chrome ha canviat. Això pot afectar la teva configuració actual.</translation>
 <translation id="5389212809648216794">Google Chrome no pot utilitzar la càmera perquè l'està utilitzant una altra aplicació</translation>
 <translation id="5489543008378040943">La <ph name="BEGIN_LINK" />configuració<ph name="END_LINK" /> es pot personalitzar en qualsevol moment. Google pot utilitzar contingut dels llocs web que visites, així com l'activitat i les interaccions al navegador per personalitzar Chrome i els serveis de Google, com ara el Traductor, la Cerca i els anuncis.</translation>
 <translation id="5639704535586432836">Obre Configuració &gt; Privacitat &gt; Càmera &gt; Google Chrome i activa la càmera.</translation>

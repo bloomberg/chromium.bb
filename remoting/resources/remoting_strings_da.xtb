@@ -63,6 +63,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="2314101195544969792">Din <ph name="APPLICATION_NAME" />-session har været inaktiv i et stykke tid og vil snart blive afbrudt.</translation>
 <translation id="2317666076142640974">Få et smugkig på den nye <ph name="LINK_BEGIN" />webapp Chrome Fjernskrivebord<ph name="LINK_END" />. Vi vil meget gerne have feedback fra dig.</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
+<translation id="2332192922827071008">Åbn præferencer</translation>
 <translation id="2353140552984634198">Du kan få sikker adgang til denne computer via Chromoting.</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2366718077645204424">Værten kunne ikke nås. Dette skyldes sandsynligvis konfigurationen af det netværk, du bruger.</translation>
@@ -190,6 +191,9 @@ Pc</translation>
 <translation id="4973800994433240357">Når du downloader installationsprogrammet til Chromoting-host, accepterer du automatisk Google <ph name="LINK_BEGIN" />Servicevilkår<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Forbindelsen til <ph name="HOSTNAME" /> er lukket</translation>
 <translation id="4985296110227979402">Du skal først konfigurere din computer til fjernadgang</translation>
+<translation id="5059773780693835145">Der kræves et ekstra konfigurationstrin, før du kan fjernstyre denne maskine via <ph name="PRODUCT_NAME" />.
+
+Du kan aktivere funktionen ved at vælge "<ph name="BUTTON_NAME" />", så ruden med præferencer for Sikkerhed og privatliv vises. Markér derefter afkrydsningsfeltet ud for "<ph name="SERVICE_SCRIPT_NAME" />".</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="507204348399810022">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME" />?</translation>
@@ -314,6 +318,7 @@ Pc</translation>
 <translation id="809687642899217504">Mine computere</translation>
 <translation id="811307782653349804">Få adgang til din egen computer, uanset hvor du er.</translation>
 <translation id="8116630183974937060">Der opstod en netværksfejl. Kontrollér, at din enhed er online, og prøv igen.</translation>
+<translation id="8123581458650016326">Giv eksterne brugere tilladelse til at styre denne maskine</translation>
 <translation id="8178433417677596899">Skærmdeling med funktionen bruger-til-bruger – perfekt til ekstern teknisk support.</translation>
 <translation id="8187079423890319756">Copyright 2013 Udviklerne af Chromium. Alle rettigheder forbeholdes.</translation>
 <translation id="8196755618196986400">Din mailadresse medtages i din feedback, så vi kan kontakte dig i tilfælde af, at vi har brug for yderligere oplysninger.</translation>

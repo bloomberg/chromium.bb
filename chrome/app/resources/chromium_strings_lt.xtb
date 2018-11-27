@@ -34,6 +34,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2008474315282236005">Atlikus šį veiksmą iš šio įrenginio bus ištrintas 1 elementas. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Administratorius prašo paleisti iš naujo „Chromium“, kad galėtų pritaikyti šį naujinį</translation>
 <translation id="2119636228670142020">Apie &amp;„Chromium“ OS</translation>
+<translation id="2178765360243863853">Dabar turėtumėte paleisti „Chromium“ iš naujo</translation>
 <translation id="2241627712206172106">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chromium“ pagal savo poreikius.</translation>
 <translation id="2265088490657775772">gauti „Chromium“ „iPhone“ įrenginyje</translation>
 <translation id="2347108572062610441">Šis plėtinys pakeitė, kuris puslapis rodomas paleidus „Chromium“.</translation>
@@ -110,6 +111,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4708774505295300557">Kažkas anksčiau prisijungė prie „Chromium“ šiame kompiuteryje kaip <ph name="ACCOUNT_EMAIL_LAST" />. Sukurkite naują „Chromium“ naudotoją, kad apsaugotumėte savo informaciją.</translation>
 <translation id="4714956846925717402">Greičiau pasiekite „Chromium“</translation>
 <translation id="4746050847053251315">Vis tiek išeiti iš „Chromium“?</translation>
+<translation id="4748217263233248895">Ką tik pritaikytas specialus „Chromium“ skirtas saugos naujinys. Paleiskite naršyklę iš naujo ir atkursime visus skirtukus.</translation>
 <translation id="4888717733111232871">„Chromium“ skirta taisyklė, pagal kurią leidžiamas mDNS srautas.</translation>
 <translation id="4943838377383847465">„Chromium“ veikia fono režimu.</translation>
 <translation id="4987820182225656817">Svečiai gali naudoti „Chromium“ nepalikdami jokių duomenų.</translation>

@@ -46,7 +46,6 @@
 <translation id="1582732959743469162">Cette action arrêtera le téléchargement en cours.</translation>
 <translation id="1605658421715042784">Copier l'image</translation>
 <translation id="1612730193129642006">Afficher la grille d'onglets</translation>
-<translation id="162035744160882748">Activer la synchronisation, la personnalisation et d'autres services Google</translation>
 <translation id="1644574205037202324">Historique</translation>
 <translation id="1657011748321897393">Échec du partage, car vous n'êtes pas connecté au réseau.</translation>
 <translation id="165877110639533037">Aucun onglet ouvert</translation>
@@ -115,8 +114,10 @@
 <translation id="2780046210906776326">Aucun compte messag.</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Quitter le sélecteur d'onglets</translation>
+<translation id="2830972654601096923">Gérer les adresses…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Réinitialiser paramètres Traduction</translation>
+<translation id="2858204748079866344">Pour protéger votre vie privée, Chrome ne renseigne pas automatiquement le champ du mot de passe.</translation>
 <translation id="285960592395650245">Relancer téléchargement</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Masqué, Mot de passe</translation>
@@ -128,11 +129,13 @@
 <translation id="2923448633003185837">Coller et rechercher</translation>
 <translation id="292639812446257861">Marquer comme non lues</translation>
 <translation id="2933759065870693102">Lampe torche</translation>
+<translation id="2958718410589002129">Mots de passe</translation>
 <translation id="2969979262385602596">Échec de la connexion. Veuillez réessayer plus tard.</translation>
 <translation id="2989805286512600854">Ouvrir dans un nouvel onglet</translation>
 <translation id="3024255823539804759">Dernières 24 heures</translation>
 <translation id="3037605927509011580">Aïe aïe aïe</translation>
 <translation id="3112556859945124369">Marquer…</translation>
+<translation id="3126574100374611517">Gérer les cartes de crédit…</translation>
 <translation id="3157684681743766797">Tout marquer…</translation>
 <translation id="3175081911749765310">Services Web</translation>
 <translation id="3207960819495026254">Favori</translation>
@@ -161,13 +164,13 @@
 <translation id="3494788280727468875">Confirmer la suppression des données de navigation</translation>
 <translation id="3519193562722059437">Ouvrez un onglet pour naviguer sur le Web.</translation>
 <translation id="3527085408025491307">Dossier</translation>
+<translation id="3529024052484145543">Non sécurisé</translation>
 <translation id="3533202363250687977">Fermer tous les onglets de navigation privée</translation>
 <translation id="3533436815740441613">Nouvel onglet</translation>
 <translation id="3551320343578183772">Fermer l'onglet</translation>
 <translation id="3588820906588687999">Ouvrir l'image dans un nouvel onglet</translation>
 <translation id="3603009562372709545">Copier l'URL du lien</translation>
 <translation id="3607167657931203000">Saisie automatique</translation>
-<translation id="360930808415985584">Contrôler les paramètres de synchronisation et de personnalisation, et bien plus</translation>
 <translation id="3609785682760573515">Synchronisation en cours…</translation>
 <translation id="3638472932233958418">Précharger pages Web</translation>
 <translation id="3691593122358196899">Ajouté aux favoris dans "<ph name="FOLDER_TITLE" />"</translation>
@@ -179,6 +182,8 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Informations sur le site</translation>
 <translation id="3928666092801078803">Combiner mes données</translation>
+<translation id="3929457972718048006">Adresses</translation>
+<translation id="3943492037546055397">Mots de passe</translation>
 <translation id="3950820424414687140">Ouvrir une session</translation>
 <translation id="3967822245660637423">Téléchargement terminé</translation>
 <translation id="3989635538409502728">Déconnexion</translation>
@@ -196,7 +201,6 @@
 <translation id="4124987746317609294">Période</translation>
 <translation id="4172051516777682613">Toujours afficher</translation>
 <translation id="418156467088430727">Afficher version hors connexion dans nouvel onglet</translation>
-<translation id="4192273449750167573">Consulter vos paramètres sur l'écran suivant</translation>
 <translation id="4237682350741091554">Gérer la synchronisation et la personnalisation de Chrome dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Saisir la phrase secrète</translation>
 <translation id="4272631900155121838">Pour scanner un code QR, activez l'appareil photo depuis les paramètres</translation>
@@ -215,8 +219,8 @@
 <translation id="4508750114462689118">Fermer la promo de connexion</translation>
 <translation id="4526249700380860531">Afficher et gérer les mots de passe enregistrés sur <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Veuillez essayer de vous reconnecter.</translation>
-<translation id="4541241553780729349">Les données que vous synchronisez avec Google et les fonctionnalités que vous utilisez ne changeront pas</translation>
 <translation id="457386861538956877">Autres...</translation>
+<translation id="4592368184551360546">Clavier</translation>
 <translation id="461440297010471931">Recherche sur Google</translation>
 <translation id="4619615317237390068">Onglets d'autres appareils</translation>
 <translation id="4620246317052452550">Pages lues</translation>
@@ -249,6 +253,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5010803260590204777">Ouvrez un onglet de navigation privée pour naviguer sur le Web en toute confidentialité.</translation>
 <translation id="5011684439661633295">Bonjour <ph name="FULL_ACCOUNT_NAME" />,</translation>
 <translation id="5039804452771397117">Autoriser</translation>
+<translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Installer Google Drive</translation>
 <translation id="5083464117946352670">Impos. déterm. taille fichier.</translation>
 <translation id="5094827893301452931">Tweet publié.</translation>
@@ -266,6 +271,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5409365236829784218">Aucune application installée ne peut ouvrir ce fichier.</translation>
 <translation id="5433691172869980887">Nom d'utilisateur copié</translation>
 <translation id="54401264925851789">Informations sur la sécurité de cette page</translation>
+<translation id="5443952882982198570">Cartes de crédit</translation>
 <translation id="5525269841082836315">Créer une phrase secrète</translation>
 <translation id="5548760955356983418">Avec Handoff, vous pouvez commencer à consulter un site Web sur cet appareil et poursuivre votre lecture facilement sur votre Mac. Le site Web actuellement ouvert apparaît alors dans le Dock.
 
@@ -296,7 +302,6 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5938160824633642847">Votre appareil est presque saturé. Libérez de l'espace et réessayez.</translation>
 <translation id="5948291296578561264">Cela vous permet d'enregistrer des photos dans votre photothèque.</translation>
 <translation id="5955891643922670672">Affichage de la version hors connexion</translation>
-<translation id="5957613098218939406">Plus d'options</translation>
 <translation id="5964480694698977962">Créer un onglet de navigation privée</translation>
 <translation id="5965679971710331625">Vous êtes connecté</translation>
 <translation id="5979837087407522202">Rechercher des mots de passe</translation>
@@ -358,7 +363,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6797885426782475225">Recherche vocale</translation>
 <translation id="6807889908376551050">Tout afficher…</translation>
 <translation id="681368974849482173">Élément créé</translation>
-<translation id="685040365210406336">Ne rien modifier</translation>
 <translation id="6851516051005285358">Voir la version pour ordinateur</translation>
 <translation id="6896758677409633944">Copier</translation>
 <translation id="6903907808598579934">Activer la synchronisation</translation>
@@ -391,7 +395,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7346909386216857016">OK</translation>
 <translation id="7383797227493018512">Liste de lecture</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="741204030948306876">J'accepte</translation>
 <translation id="7425346204213733349">Les modifications apportées à vos favoris, votre historique, vos mots de passe et d'autres paramètres ne seront plus synchronisées avec votre compte Google. Vos données seront cependant maintenues sur votre compte Google.</translation>
 <translation id="744343212394640790">Autre que <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">État/Comté</translation>
@@ -418,6 +421,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7840771868269352570">Les éléments sélectionnés seront supprimés.</translation>
 <translation id="7856733331829174190">Téléchargement impossible</translation>
 <translation id="7859704718976024901">Historique de navigation</translation>
+<translation id="7887198238286927132">Pour protéger votre vie privée, Chrome ne renseigne pas automatiquement de champ.</translation>
 <translation id="7918293828610777738">Votre liste de lecture est disponible hors connexion. Pour y ajouter une page, appuyez sur <ph name="SHARE_OPENING_ICON" />, puis sur <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Export mots de passe…</translation>

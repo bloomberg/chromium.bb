@@ -63,6 +63,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2314101195544969792">Je <ph name="APPLICATION_NAME" />-sessie is al enige tijd inactief. Binnenkort wordt de verbinding verbroken.</translation>
 <translation id="2317666076142640974">Bekijk een voorproefje van de nieuwe <ph name="LINK_BEGIN" />Chrome Remote Desktop-webapp<ph name="LINK_END" />. We horen graag wat je ervan vindt.</translation>
 <translation id="2320166752086256636">Toetsenbord verbergen</translation>
+<translation id="2332192922827071008">Voorkeuren openen</translation>
 <translation id="2353140552984634198">Je kunt beveiligd toegang krijgen tot deze computer via Chromoting.</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2366718077645204424">Kan de host niet bereiken. Dit komt waarschijnlijk door de configuratie van het netwerk dat je gebruikt.</translation>
@@ -190,6 +191,9 @@ Pc</translation>
 <translation id="4973800994433240357">Door het installatieprogramma voor de Chromoting-host te downloaden, ga je akkoord met de <ph name="LINK_BEGIN" />Servicevoorwaarden<ph name="LINK_END" /> van Google.</translation>
 <translation id="4974476491460646149">Verbinding verbroken voor <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Je moet eerst je computer instellen voor externe toegang</translation>
+<translation id="5059773780693835145">Er is een aanvullende configuratiestap vereist voordat je deze machine extern met <ph name="PRODUCT_NAME" /> kunt beheren.
+
+Als je deze functionaliteit wilt inschakelen, selecteer je '<ph name="BUTTON_NAME" />' om het deelvenster met beveiligings- en privacyvoorkeuren weer te geven en vink je vervolgens het selectievakje naast '<ph name="SERVICE_SCRIPT_NAME" />' aan.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">De externe host vereist dat je op een website van derden wordt geverifieerd. Als je wilt doorgaan, moet je Chrome Remote Desktop aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="507204348399810022">Weet je zeker dat je externe verbindingen met <ph name="HOSTNAME" /> wilt uitschakelen?</translation>
@@ -314,6 +318,7 @@ Pc</translation>
 <translation id="809687642899217504">Mijn computers</translation>
 <translation id="811307782653349804">Krijg overal toegang tot je eigen computer.</translation>
 <translation id="8116630183974937060">Er is een netwerkfout opgetreden. Controleer of je apparaat online is en probeer het opnieuw.</translation>
+<translation id="8123581458650016326">Externe gebruikers toestaan om deze machine te beheren</translation>
 <translation id="8178433417677596899">Schermen delen tussen gebruikers, perfect voor externe ondersteuning.</translation>
 <translation id="8187079423890319756">Copyright 2013 De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="8196755618196986400">Je e-mailadres wordt opgenomen in alle feedback die je verzendt zodat we contact met je kunnen opnemen voor meer informatie.</translation>

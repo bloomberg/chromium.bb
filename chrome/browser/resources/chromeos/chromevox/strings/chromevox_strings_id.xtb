@@ -45,6 +45,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="1275718070701477396">Dipilih</translation>
 <translation id="1286609444451033486">Tekan Search+Space untuk beralih.</translation>
 <translation id="1291286136605998134">Tombol</translation>
+<translation id="1303806948938513162">Tap dengan 4 jari untuk membuka menu ChromeVox</translation>
 <translation id="1319608975892113573">Tidak ada blockquote sebelumnya.</translation>
 <translation id="1321576897702511272">Menyembunyikan bantuan ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> dari <ph name="TOTAL" /></translation>
@@ -239,6 +240,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="3046838483509668188">Opsi ChromeVox</translation>
 <translation id="3047143736589213134">Peta tombol eksperimental</translation>
 <translation id="3060756054951570867">menu <ph name="TITLE" /> dibuka</translation>
+<translation id="3060880924447482063">Geser ke kiri atau ke kanan untuk berpindah per item</translation>
 <translation id="3070245424257836917">Geser tiga jari ke atas</translation>
 <translation id="3078345202707391975">Judul tingkat 2 berikutnya</translation>
 <translation id="3078740164268491126">tabel</translation>
@@ -332,6 +334,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="3389259863310851658">Bidang formulir sebelumnya</translation>
 <translation id="3390225400784126843">Elemen berbeda berikutnya.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, item menu</translation>
+<translation id="3393605254399152980">Tarik satu jari untuk mendengarkan item yang Anda sentuh</translation>
 <translation id="3406283310380167331">Menampilkan daftar formulir</translation>
 <translation id="3423495725743882470">baris $1 kolom $2</translation>
 <translation id="3457000393508828486">Ditekan sebagian</translation>
@@ -347,6 +350,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="3497063866483065785">{COUNT,plural, =1{tanda tanya}other{# tanda tanya}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{tanda caret}other{# tanda caret}}</translation>
 <translation id="352577523970648069">Kolom teks yang dapat diedit</translation>
+<translation id="3549680091535286226">Tap dengan 2 jari untuk menghentikan ucapan untuk sementara</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, kotak centang tidak dicentang</translation>
 <translation id="3589661172894441357">Glosarium</translation>
 <translation id="3599054940393788245">Tidak di dalam matematika</translation>
@@ -411,6 +415,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="4166192625054637755">Akhir subskrip</translation>
 <translation id="4173994908659439270">Tidak ada bidang teks yang dapat diedit berikutnya.</translation>
 <translation id="4176463684765177261">Dinonaktifkan</translation>
+<translation id="4187322598335821254">Geser ke atas atau ke bawah untuk berpindah per baris</translation>
 <translation id="4188530942454211480">Kalimat Sebelumnya</translation>
 <translation id="4191918948604314587">Tombol</translation>
 <translation id="419265409837491189">Buka kolom sebelumnya</translation>
@@ -709,6 +714,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="6583174818554398774">Pindah ke level perincian berikutnya</translation>
 <translation id="6587021927234520429">Tidak ada judul tingkat 4 berikutnya.</translation>
 <translation id="6601344353291556895">Aktifkan deskripsi panjang.</translation>
+<translation id="6609828810966525877">Temukan gestur lainnya dalam Mode Pembelajaran dan Pusat Bantuan Chromebook</translation>
 <translation id="6615602925644411249">Cari di halaman.</translation>
 <translation id="6628427060004938651">Bagian</translation>
 <translation id="6633350132811819843">Tidak ada tabel berikutnya.</translation>
@@ -760,6 +766,7 @@ Untuk menutup tab, tekan Control+W.
 Untuk berpindah antar-tab yang terbuka, gunakan Control+Tab.
 Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="7086377898680121060">menambah Kecerahan</translation>
+<translation id="7088743565397416204">Tap dua kali untuk mengaktifkan item yang dipilih</translation>
 <translation id="7095834689119144465">Edit teks numerik saja</translation>
 <translation id="7096001299300236431">Media sebelumnya</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -815,6 +822,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Telah memasukkan dialog</translation>
 <translation id="7518543783849163354">Untuk menghentikan ChromeVox berbicara sementara, tekan tombol Control.</translation>
+<translation id="7521682724501952239">Anda dapat menggunakan ChromeVox dengan layar sentuh.</translation>
 <translation id="7532613204005497612">Juni</translation>
 <translation id="7552432549459840808">Pintasan Chrome Yang Berguna</translation>
 <translation id="7579911500627256166">titik <ph name="DOT" /></translation>

@@ -17,7 +17,6 @@
 <translation id="2647554856022461007">‏ممکن است Chromium برای بهبود تجربه مرور شما از سرویس‌های وب استفاده کند. می‌توانید به‌صورت اختیاری این سرویس‌ها را غیرفعال کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">‏هوشمندی‌های Google را در Chromium دریافت کنید</translation>
 <translation id="2730884209570016437">‏Chromium نمی‌تواند از دوربین استفاده کند زیرا برنامه دیگری از آن استفاده می‌کند</translation>
-<translation id="2797210818057553964">‏هرزمان بخواهید، می‌توانید این گزینه را در «تنظیمات Chromium» سفارشی کنید</translation>
 <translation id="2915596697727466327">‏Chromium برای اطمینان از دسترسی مجاز به گذرواژه‌هایتان، از «شناسه تشخیص چهره» استفاده می‌کند.</translation>
 <translation id="3256316712990552818">‏به Chromium کپی شد</translation>
 <translation id="3413120535237193088">‏برای اینکه نشانک‌ها را در همه دستگاه‌هایتان دریافت کنید، به سیستم Chromium وارد شوید.</translation>
@@ -47,7 +46,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">‏داده‌های انتخاب‌‌شده از Chromium و دستگاه‌های همگام‌سازی‌شده حذف شده‌اند. ممکن است اشکال دیگری از سابقه مرورتان (مانند جستجو‌ها و فعالیت دیگر سرویس‌های Google در history.google.com) در حساب Google شما وجود داشته باشد.</translation>
 <translation id="7400689562045506105">‏استفاده از Chromium در همه‌جا</translation>
-<translation id="7499048969477415415">‏تنظیماتی که همگام‌سازی، شخصی‌سازی، و سایر سرویس‌های Google در Chromium را کنترل می‌کند، تغییر کرده است. این تغییر ممکن است روی تنظیمات فعلی تأثیر بگذارد.</translation>
 <translation id="7674213385180944843">‏Settings (تنظیمات) &gt; Privacy (حریم خصوصی) &gt; Camera (دوربین) &gt; Chromium را باز کنید و دوربین را روشن کنید.</translation>
 <translation id="7746854981345936341">‏نکته Chromium. بعضی از دکمه‌ها مثل Back (برگشت)، Forward (به جلو) و Search (جستجو) اکنون در پایین صفحه هستند.</translation>
 <translation id="786327964234957808">‏هم‌اکنون درحال تغییر حساب‌های همگام‌سازی از <ph name="USER_EMAIL1" /> به <ph name="USER_EMAIL2" /> هستید. داده‌های موجود Chromium شما توسط <ph name="DOMAIN" /> مدیریت می‌شوند. با این کار، داده‌هایتان از این دستگاه حذف می‌شود اما همچنان در <ph name="USER_EMAIL1" /> باقی می‌ماند.</translation>

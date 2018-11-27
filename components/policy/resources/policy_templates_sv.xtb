@@ -229,6 +229,14 @@
 <translation id="1523774894176285446">Alternativa webbläsare som ska öppnas för konfigurerade webbplatser</translation>
 <translation id="152657506688053119">Lista över alternativa webbadresser för standardsökleverantören.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
+<translation id="1532965933165453786">Gör det möjligt att aktivera eller inaktivera Fast Transition.
+      Detta gäller alla användare och alla gränssnitt på enheten.
+      Både den här inställningen och ONC-egenskapen som ställs in per nätverk måste ha aktiverats för att Fast Transition ska kunna användas.
+      När principen har ställts in används Fast Transition tills det inaktiveras via principen.
+
+      Om principen saknar inställning används inte Fast Transition.
+      När principen är inställd på falskt används inte Fast Transition.
+      När principen är inställd på sant används Fast Transition om den trådlösa åtkomstpunkten har stöd för det.</translation>
 <translation id="1541170838458414064">Begränsa pappersformat för utskrift</translation>
 <translation id="1553684822621013552">När den här principen är inställd på sant aktiveras ARC för användaren
       (givet att övriga principinställningar tillåter det – ACR är fortfarande
@@ -956,6 +964,13 @@
       Den här principen kan endast ställas in som rekommenderad. Du kan använda principen för att flytta flera rekommenderade språkkoder högst upp, men användare kan alltid välja en språkkod som stöds av <ph name="PRODUCT_OS_NAME" /> för sessionen.
       </translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
+<translation id="3388153794103186066">Gör att du kan ange en lista med webbadresser som styr vilka webbplatser som automatiskt ska ges åtkomstbehörighet till en USB-enhet med angivet leverantörs- och produkt-id. Varje post i listan måste innehålla både enheter och webbadresser för att principen ska gälla. Varje enhetspost kan ha ett fält för leverantörs-id och ett för produkt-id. Om ett id utelämnas fungerar det som om ett jokertecken hade angetts, med ett undantag: det går inte att ange ett produkt-id om inget leverantörs-id har angetts. I så fall blir principen ogiltig och ignoreras.
+
+        Med behörighetsmodellen för USB används webbadressen till den webbplats som begäran kommer från (den ”begärande” webbadressen) och webbadressen till ramen på toppnivå (den ”inbäddande” webbplatsen) när den begärande webbadressen ska ges åtkomstbehörighet till USB-enheten. Den begärande webbadressen behöver inte vara samma som den inbäddande webbadressen, om webbadressen som begäran kommer från har lästs in i en iframe. Därför kan webbadressfältet innehålla upp till två kommaavgränsade strängar som anger den begärande respektive inbäddande webbadressen. Om bara en webbadress har angetts kommer åtkomstbehörighet till USB-enheten att beviljas om den begärande webbadressen matchar denna, oavsett om den har bäddats in eller inte. Webbadresserna i webbadressfältet måste vara giltiga. I annat fall ignoreras principen.
+
+        Om administratören har lämnat principen utan inställning används det globala standardvärdet för alla webbplatser, som hämtas antingen från principen DefaultWebUsbGuardSetting om den har ställts in eller från användarens konfiguration om den inte har det.
+
+        Webbadressmönstren i den här principen får inte överlappa dem som konfigurerats via WebUsbBlockedForUrls. I händelse av konflikt har den här principen företräde framför WebUsbBlockedForUrls och WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Om denna princip inte konfigureras används den lägsta standardversionen (TLS 1.0.) av <ph name="PRODUCT_NAME" />.
 
       I annat fall kan följande värden anges: tls1, tls1.1 eller tls1.2. Om ett värde har angetts används inte versioner av SSL/TLS som är tidigare än den angivna versionen av <ph name="PRODUCT_NAME" />. Ett värde som inte känns igen ignoreras.</translation>
@@ -1203,6 +1218,7 @@
 <translation id="3925020515212192040">Anger en lista med förkonfigurerade filresurser i nätverket.
 
       Varje post i principens lista är ett objekt med två medlemmar: share_url och mode. share_url ska vara filresursens webbadress och mode ska vara drop_down, som anger att share_url läggs till på rullgardinsmenyn för filresurser att söka efter.</translation>
+<translation id="3925377537407648234">Ange skärmupplösning och skalningsfaktor</translation>
 <translation id="3939893074578116847">Skicka nätverkspaket för övervakning av onlinestatusen till hanteringsservern, så att
       den kan identifiera om enheten är offline.
 
@@ -2044,6 +2060,29 @@
       Principen träder bara i kraft när enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Med principen tvångsinstalleras <ph name="CHROME_REPORTING_EXTENSION_NAME" /> för rapportering och eventuella principer för det tillägget åsidosätts.</translation>
+<translation id="6155247658847899816">När den här principen används ställs upplösningen och skalningsfaktorn
+      på alla skärmar in på de angivna värdena. Inställningarna för externa
+      skärmar gäller alla externa skärmar som anslutits.
+
+      Värdet på external_width och external_height ska anges i pixlar.
+      Värdet på external_scale_percentage och internal_scale_percentage
+      ska anges i procent.
+
+      Om external_use_native är inställt på sant ignoreras värdena på
+      external_height och external_width och de externa skärmarnas
+      standardupplösning används.
+
+      Om external_use_native är inställt på falskt eller saknar inställning
+      och antingen external_height eller external_width saknas påverkas
+      inte den externa skärmens inställningar av principen. Om någon skärm
+      skulle sakna stöd för den angivna upplösningen eller skalningsfaktorn
+      gäller inte principen för den skärmen.
+
+      Om flaggan recommended är inställd på sant får användarna ändra
+      upplösningen och skalningsfaktorn på alla skärmar via inställningssidan när
+      de har loggat in, men deras inställningar åsidosätts av värdet i principen
+      vid nästa omstart. Om flaggan recommended är inställd på falskt eller inte
+      har tilldelats något värde får användarna inte ändra skärminställningarna.</translation>
 <translation id="6155936611791017817">Ange standardläget för den stora markören på inloggningsskärmen</translation>
 <translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
 <translation id="6158324314836466367">Namn på företagets webbutik (föråldrat)</translation>
@@ -2155,6 +2194,7 @@
 <translation id="6553143066970470539">Skärmens ljusstyrka i procent</translation>
 <translation id="6559057113164934677">Tillåt inte att webbplatser kommer åt min kamera och mikrofon</translation>
 <translation id="6561396069801924653">Visa tillgänglighetsalternativ i menyn i systemfältet</translation>
+<translation id="6563458316362153786">Aktivera 802.11r Fast Transition</translation>
 <translation id="6565312346072273043">Ange standardläge för tillgänglighetsfunktionen för skärmtangentbord på inloggningsskärmen.
 
           Om policyn är inställd på sant är skärmtangentbordet aktiverat när inloggningsskärmen visas.
@@ -2827,6 +2867,11 @@
       Om principen lämnas utan inställning på en hanterad enhet får virtuella maskiner inte köras på den.
       Virtuella maskiner får köras på enheter som inte hanteras.</translation>
 <translation id="8001701200415781021">Begränsa vilka Google-konton som får vara primära webbläsarkonton i <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Om du aktiverar den här inställningen skrivs inställningar som sparas i en profil i <ph name="PRODUCT_NAME" />, t.ex. bokmärken, autofylluppgifter och lösenord, även till en fil som lagras i användarprofilmappen för roaming eller en plats som anges av administratören i principen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Molnsynkronisering inaktiveras när principen aktiveras.
+
+      Om den här principen är inaktiverad eller saknar inställning används endast vanliga lokala profiler.
+
+      Principen <ph name="SYNC_DISABLED_POLICY_NAME" /> inaktiverar all synkronisering av data och åsidosätter <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Rotera skärmen 0 grader</translation>
 <translation id="8033913082323846868">Den här principen fasas ut i M70. Använd AutofillAddressEnabled och AutofillCreditCardEnabled i stället.
 
@@ -2954,6 +2999,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8274603902181597201">Rensa bort användarens ecryptfs-krypterade hemkatalog och börja om med en ny ext4-krypterad hemkatalog.</translation>
 <translation id="8285435910062771358">Helskärmsförstoraren är aktiverad</translation>
 <translation id="8288199156259560552">Aktivera Googles platstjänst för Android</translation>
+<translation id="8290453559005611000">PluginVm-avbildning</translation>
 <translation id="8294750666104911727">Normalt kommer sidor med X-UA-Compatible som är inställda på chrome=1 att renderas i <ph name="PRODUCT_FRAME_NAME" /> trots policyn ChromeFrameRendererSettings.
 
           Om du aktiverar inställningen kommer sidorna inte att kunna genomsökas efter metataggar.
@@ -3035,6 +3081,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
           Om principen inte har ställts in används standardrenderaren för alla webbplatser enligt specifikationen i principen ChromeFrameRendererSettings.
 
           Exempel på mönster finns på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Spara inte webbhistorik</translation>
 <translation id="8498293625012059298">Konfigurera webbadressen för att byta lösenord (endast HTTP och HTTPS). Användarna skickas till den här webbadressen av tjänsten för lösenordsskydd så att de kan byta lösenord efter att en varning visats i webbläsaren.
       Se till att sidan för att byta lösenord följer riktlinjerna på https://www.chromium.org/developers/design-documents/create-amazing-password-forms så att <ph name="PRODUCT_NAME" /> kan registrera lösenordssignaturer korrekt.

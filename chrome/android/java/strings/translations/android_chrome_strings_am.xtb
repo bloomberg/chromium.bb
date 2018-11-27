@@ -237,6 +237,7 @@
 <translation id="271033894570825754">አዲስ</translation>
 <translation id="2728754400939377704">በጣቢያ ደርድር</translation>
 <translation id="2744248271121720757">አንድ ቃል በቅጽበት ለመፈለግ ወይም ተዛማጅ እርምጃዎችን ለመመልከት አንድ ቃል መታ ያድርጉ</translation>
+<translation id="2760323196215778921">ይህን ፈቃድ በተጨማሪ ለChrome ማብራት ይኖርብዎታል። ለዝርዝሩ <ph name="BEGIN_LINK" />የAndroid ቅንብሮች<ph name="END_LINK" />ን ይመልከቱ።</translation>
 <translation id="2762000892062317888">አሁን</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> ሰከንዶች ይቀራሉ</translation>
 <translation id="2779651927720337254">አልተሳካም</translation>
@@ -934,6 +935,7 @@
 <translation id="8037750541064988519"><ph name="DAYS" /> ቀኖች ይቀራሉ</translation>
 <translation id="804335162455518893">ኤስዲ ካርድ አልተገኘም</translation>
 <translation id="805047784848435650">በእርስዎ የአሰሳ ታሪክ ላይ በመመስረት</translation>
+<translation id="8051303708327298699">እነዚህን ፈቃዶች በተጨማሪ ለChrome ማብራት ይኖርብዎታል። ለዝርዝሩ <ph name="BEGIN_LINK" />የAndroid ቅንብሮች<ph name="END_LINK" />ን ይመልከቱ።</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> ሜባ አለ</translation>
 <translation id="8058746566562539958">በአዲስ የChrome ትር ውስጥ ክፈት</translation>
 <translation id="8063895661287329888">ዕልባት ማከል አልተሳካም።</translation>
@@ -1005,6 +1007,7 @@
 <translation id="857509777403223202">ተጨማሪ ጽሑፎች በቅርቡ ይታያሉ። የእርስዎን ምሽት ይዝናኑበት!</translation>
 <translation id="857943718398505171">ተፈቅዷል (የሚመከር)</translation>
 <translation id="8583805026567836021">የመለያ ውሂብን በማጽዳት ላይ</translation>
+<translation id="860043288473659153">የካርድ ያዢ ስም</translation>
 <translation id="8609465669617005112">ወደላይ አውጣ</translation>
 <translation id="8616006591992756292">የእርስዎ Google መለያ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖረው ይችላል።</translation>
 <translation id="8617240290563765734">በወረደው ይዘት ላይ የተጠቆመው ዩአርኤል ይከፈት?</translation>

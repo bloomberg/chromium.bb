@@ -63,6 +63,7 @@
 <translation id="2314101195544969792">לא הייתה פעילות ב-<ph name="APPLICATION_NAME" /> במשך זמן-מה. אתה תנותק בקרוב.</translation>
 <translation id="2317666076142640974">‏יש לך הזדמנות לקבל הצצה מקדימה אל <ph name="LINK_BEGIN" />אפליקציית האינטרנט 'שולחן העבודה המרוחק של Chrome'<ph name="LINK_END" />. נשמח לקבל ממך משוב.</translation>
 <translation id="2320166752086256636">הסתר מקלדת</translation>
+<translation id="2332192922827071008">פתיחת ההעדפות</translation>
 <translation id="2353140552984634198">‏תוכל לגשת למחשב זה באופן מאובטח באמצעות Chromoting.</translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2366718077645204424">לא ניתן להשיג את המארח. הסיבה לכך יכולה להיות תצורת הרשת שבה אתה משתמש.</translation>
@@ -190,6 +191,9 @@ Chrome
 <translation id="4973800994433240357">‏בהורדת מנהל ההתקנה של מארח Chromoting, אתה מביע הסכמה ל<ph name="LINK_BEGIN" />תנאים ולהגבלות<ph name="LINK_END" /> של Google.</translation>
 <translation id="4974476491460646149">ההתחברות אל <ph name="HOSTNAME" /> סגורה</translation>
 <translation id="4985296110227979402">תחילה עליך להגדיר את המחשב שלך לגישה מרחוק</translation>
+<translation id="5059773780693835145">יש לבצע שלב הגדרה נוסף כדי לשלוט במחשב מרחוק באמצעות <ph name="PRODUCT_NAME" />.
+
+כדי להפעיל את הפונקציונליות הזו, יש להציג את חלונית העדפות האבטחה והפרטיות על ידי בחירה באפשרות '<ph name="BUTTON_NAME" />'. אחר כך, יש לסמן את התיבה לצד '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (לא מקוון)</translation>
 <translation id="5070121137485264635">‏המארח המרוחק דורש שתבצע אימות מול אתר של צד שלישי. כדי להמשיך, עליך להעניק לשולחן העבודה המרוחק של Chrome הרשאות נוספות כדי לגשת לכתובת זו:</translation>
 <translation id="507204348399810022">האם אתה בטוח שברצונך להשבית את החיבורים המרוחקים אל <ph name="HOSTNAME" />?</translation>
@@ -314,6 +318,7 @@ Chrome
 <translation id="809687642899217504">המחשבים שלי</translation>
 <translation id="811307782653349804">גש למחשב שלך מכל מקום.</translation>
 <translation id="8116630183974937060">אירעה שגיאת רשת. בדוק שהמכשיר מקוון ונסה שוב.</translation>
+<translation id="8123581458650016326">משתמשים מרוחקים יוכלו לשלוט במחשב הזה</translation>
 <translation id="8178433417677596899">שיתוף מסך ממשתמש למשתמש, הפתרון המושלם לתמיכה טכנית מרחוק.</translation>
 <translation id="8187079423890319756">‏Copyright 2013 The Chromium Authors. כל הזכויות שמורות.</translation>
 <translation id="8196755618196986400">כדי שנוכל ליצור איתך קשר ולקבל מידע נוסף, כתובת האימייל שלך תיכלל בכל משוב שתשלח.</translation>

@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">Skjul menu</translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1419738280318246476">Lås enheden op for at udføre underretningshandlingen</translation>
+<translation id="1455242230282523554">Vis sprogindstillinger</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Vis indstillinger for underretninger. Underretninger er slået fra for en app}one{Vis indstillinger for underretninger. Underretninger er slået fra for # app}other{Vis indstillinger for underretninger. Underretninger er slået fra for # apps}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">Der er intet at se endnu</translation>
 <translation id="3445925074670675829">USB-C-enhed</translation>
 <translation id="3454224730401036106">Din forbindelse er skiftet til et mere sikkert netværk</translation>
+<translation id="3465223694362104965">Et andet tastatur er blevet tilsluttet denne enhed, siden du sidst loggede ind. Tjek, at du har tillid til dette tastatur, før du bruger det.</translation>
 <translation id="3477079411857374384">Ctrl-Shift-mellemrumstast</translation>
 <translation id="3510164367642747937">Fremhæv musemarkør</translation>
 <translation id="3510503721818156981">Chromebook har oprettet forbindelse til en ny telefon</translation>
@@ -260,6 +262,7 @@
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> d. <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Tryk på Ctrl+Alt+Z for at deaktivere oplæsning.</translation>
+<translation id="5626283214046138476">Din administrerede brugerkonto udløber snart.</translation>
 <translation id="5648021990716966815">Stik til mikrofon</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5673434351075758678">Fra "<ph name="FROM_LOCALE" />" til "<ph name="TO_LOCALE" />", efter at du har synkroniseret dine indstillinger.</translation>

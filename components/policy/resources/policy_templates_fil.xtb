@@ -228,6 +228,14 @@
 <translation id="1523774894176285446">Alternatibong browser na ilulunsad para sa mga na-configure na website.</translation>
 <translation id="152657506688053119">Listahan ng mga kahaliling URL para sa default na search provider</translation>
 <translation id="1530812829012954197">Palaging i-render ang mga sumusunod na pattern ng URL sa browser ng host</translation>
+<translation id="1532965933165453786">Nagbibigay-daan sa pag-enable o pag-disable ng Mabilis na Transition.
+      Nalalapat ito sa lahat ng user at sa lahat ng interface sa device.
+      Para magamit ang Mabilis na Transition, kailangang naka-enable ang setting na ito at ang per-network ONC property.
+      Kapag naitakda na, magpapatuloy ang Mabilis na Transition hanggang baguhin ang patakaran para ma-disable ito.
+
+      Kung hindi itatakda ang patakaran, hindi gagamitin ang Mabilis na Transition.
+      Kung itatakda sa false, hindi gagamitin ang Mabilis na Transition.
+      Kung itatakda sa true, gagamitin ang Mabilis na Transition kapag sinusuportahan ito ng wireless na access point.</translation>
 <translation id="1541170838458414064">Paghigpitan ang laki ng page ng pag-print</translation>
 <translation id="1553684822621013552">Kapag itinakda sa true ang patakarang ito, mae-enable ang ARC para sa user
       (napapailalim sa mga karagdagang pagsusuri sa mga setting ng patakaran - hindi pa rin
@@ -950,6 +958,13 @@
       Maitatakda lang bilang inirerekomenda ang patakarang ito. Magagamit mo ang patakarang ito para maglipat ng hanay ng mga inirerekomendang lokalidad sa itaas, ngunit maaaring pumili anumang oras ang mga user ng anumang lokalidad na sinusuportahan ng <ph name="PRODUCT_OS_NAME" /> para sa kanilang session.
       </translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
+<translation id="3388153794103186066">Nagbibigay-daan sa iyong magtakda ng listahan ng mga url na tumutukoy kung aling mga site ang awtomatikong bibigyan ng pahintulot na mag-access ng USB device gamit ang mga ibinigay na vendor at product ID. Dapat makita sa bawat item sa listahan ang mga device at url para maging valid ang patakaran. Maaaring makakita sa bawat item sa mga device ng field ng vendor ID at product ID. Ang anumang ID na aalisin ay ituturing na wildcard maliban sa isang exception, at iyon ay hindi makakatukoy ng product ID kung hindi tutukoy ng vendor ID. Kung hindi, hindi magiging valid ang patakaran at babalewalain ito.
+
+        Ginagamit ng model ng pahintulot sa USB ang URL ng humihiling na site ("humihiling na URL") at ang URL ng nangungunang frame site ("nag-e-embed na URL") para magbigay ng pahintulot sa humihiling na URL na i-access ang USB device. Maaaring iba ang humihiling na URL sa nag-e-embed na URL kapag na-load ang humihiling na site sa iframe. Kung kaya, maaaring magkaroon ang field ng "mga url" ng hanggang dalawang string ng URL na dine-delimit ng kuwit para matukoy ang humihiling at nag-e-embed na URL. Kung isang URL lang ang tutukuyin, magbibigay ng access sa mga kaukulang USB device kapag tumugma ang URL ng humihiling na site sa URL na ito anuman ang status ng pag-embed. Ang mga URL sa "mga url" ay dapat mga valid na URL, kung hindi ay babalewalain ang patakaran.
+
+        Kung hahayaang hindi nakatakda ang patakarang ito, gagamitin ang pangkalahatang default na value para sa lahat ng site mula sa patakarang 'DefaultWebUsbGuardSetting' kung nakatakda ito, o kung hindi ay ang personal na configuration ng user.
+
+        Hindi dapat sumalungat ang mga pattern ng URL sa patakarang ito sa mga pattern na na-configure sa pamamagitan ng WebUsbBlockedForUrls. Kung magkakaroon ng salungatan, mananaig ang patakarang ito sa WebUsbBlockedForUrls at WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Kung hindi na-configure ang patakarang ito, gumagamit ang <ph name="PRODUCT_NAME" /> ng default na minimum na bersyon na TLS 1.0.
 
       Kung hindi, maaari itong itakda sa isa sa mga sumusunod na value: "tls1", "tls1.1" o "tls1.2". Kapag naitakda, hindi gagamit ang <ph name="PRODUCT_NAME" /> ng mga bersyon ng SSL/TLS na mas luma kaysa sa tinukoy na bersyon. Babalewalain ang hindi kinikilalang value.</translation>
@@ -1197,6 +1212,7 @@
 <translation id="3925020515212192040">Tumutukoy ng listahan ng mga naka-preconfigure na file share sa network.
 
       Ang bawat item sa listahan ng patakaran ay isang object na may dalawang miyembro: "share_url" at "mode." Ang "share_url" ay ang URL dapat ng pagbabahagi at ang "mode" ay dapat na "drop_down" na nagsasaad na idaragdag ang "share_url" sa drop down ng pagtuklas ng pagbabahagi.</translation>
+<translation id="3925377537407648234">Itakda ang resolution at scale factor ng display</translation>
 <translation id="3939893074578116847">Magpadala ng mga network packet sa server sa pamamahala upang masubaybayan ang online status, upang mabigyang-daan ang
       server na tukuyin kung offline ang device.
 
@@ -2034,6 +2050,29 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       May bisa lang ang patakarang ito kapag naka-enroll ang machine sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Dahil sa patakarang ito, sapilitang ii-install ang <ph name="CHROME_REPORTING_EXTENSION_NAME" /> para sa pag-uulat, at ino-override ang anumang patakaran ng extension na nauugnay sa extension na iyon.</translation>
+<translation id="6155247658847899816">Kapag nakatakda ang patakarang ito, itatakda ang resolution at scale factor ng bawat
+      display sa mga tinukoy na value. Ilalapat ang mga setting ng external na display
+      sa lahat ng nakakonektang external na display.
+
+      Dapat tukuyin ang mga value ng "external_width" at "external_height" sa
+      mga pixel. Dapat tukuyin ang mga value ng "external_scale_percentage" at
+      "internal_scale_percentage" sa mga porsyento.
+
+      Kung itatakda sa true ang "external_use_native," babalewalain ng patakaran ang mga value ng
+      "external_height" at "external_width" at itatakda nito ang resolution ng mga external
+      na display sa native na resolution ng mga ito.
+
+      Kung false o hindi ibibigay ang "external_use_native" at hindi ibibigay ang
+      "external_height" o "external_width," hindi maaapektuhan ng patakaran
+      ang mga setting ng external na display. Kung hindi sinusuportahan ang tinukoy na resolution o
+      scale factor ng ilang display, hindi malalapat ang patakaran sa
+      display na iyon.
+
+      Kung itatakda sa true ang "inirerekomendang" flag, maaaring baguhin ng mga user ang resolution at
+      scale factor ng anumang display sa pamamagitan ng page ng mga setting pagkatapos mag-log in, ngunit
+      mao-override ang mga setting ng mga ito ng value ng patakaran sa susunod na pag-reboot.
+      Kung itatakda sa false o hindi itatakda ang "inirerekomendang" flag, hindi mababago ng mga user ang
+      mga setting ng display.</translation>
 <translation id="6155936611791017817">Itakda ang default na katayuan ng malaking cursor sa screen ng pag-login</translation>
 <translation id="6157537876488211233">Listahang pinaghihiwalay ng kuwit ng mga panuntunan sa pag-bypass ng proxy</translation>
 <translation id="6158324314836466367">Pangalan ng web store na enterprise (hindi na ginagamit)</translation>
@@ -2145,6 +2184,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6553143066970470539">Porsyento ng liwanag ng screen</translation>
 <translation id="6559057113164934677">Huwag payagan ang anumang site na i-access ang camera at mikropono</translation>
 <translation id="6561396069801924653">Ipakita ang mga pagpipilian sa accessibility sa tray menu ng system</translation>
+<translation id="6563458316362153786">I-enable ang 802.11r Fast Transition</translation>
 <translation id="6565312346072273043">Itakda ang default na estado ng feature na pagiging naa-access ng on-screen na keyboard sa screen sa pag-log in.
 
           Kung itinakda sa true ang patakarang ito, i-e-enable ang on-screen na keyboard kapag ipinapakita ang screen sa pag-log in.
@@ -2819,6 +2859,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kapag hindi nakatakda ang patakaran sa isang pinamamahalaang device, hindi pinapayagan ang device na magpatakbo ng mga virtual machine.
       Pinapayagan ang mga hindi pinapamahalaang device na magpatakbo ng mga virtual machine.</translation>
 <translation id="8001701200415781021">Paghigpitan kung aling Google account ang papayagang itakda bilang mga pangunahing account sa browser sa <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Kung ie-enable mo ang setting na ito, ang mga setting na naka-store sa mga profile sa <ph name="PRODUCT_NAME" /> tulad ng mga bookmark, data ng autofill, mga password, atbp. ay ira-write din sa isang file na naka-store sa folder ng profile ng user ng Roaming o sa isang lokasyong tinukoy ng Administrator sa pamamagitan ng patakarang <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Madi-disable ang pag-sync sa cloud kapag na-enable ang patakarang ito.
+
+      Kung idi-disable o hahayaang hindi nakatakda ang patakarang ito, ang mga regular na lokal na profile lang ang gagamitin.
+
+      Dini-disable ng patakarang <ph name="SYNC_DISABLED_POLICY_NAME" /> ang lahat ng pag-synchronize ng data, na nag-o-override sa <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">I-rotate ang screen nang 0 degrees</translation>
 <translation id="8033913082323846868">Hindi na ginagamit ang patakarang ito sa M70, pakigamit na lang ang AutofillAddressEnabled at AutofillCreditCardEnabled.
 
@@ -2947,6 +2992,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8274603902181597201">Nagwa-wipe sa ecryptfs na home directory ng user at nagsisimula gamit ang isang bagong ext4-encrypted na home directory.</translation>
 <translation id="8285435910062771358">Naka-enable ang magnifier na full-screen</translation>
 <translation id="8288199156259560552">I-enable ang Serbisyo sa Lokasyon ng Google sa Android</translation>
+<translation id="8290453559005611000">Imahe ng PluginVm</translation>
 <translation id="8294750666104911727">Karaniwang ire-render ang mga pahina na may X-UA-Compatible na nakatakda sa chrome=1 sa <ph name="PRODUCT_FRAME_NAME" /> hindi alintana ang patakaran sa 'ChromeFrameRendererSettings.'
 
           Kung i-e-enable mo ang setting na ito, hindi iii-scan ang mga pahina para sa mga meta tag.
@@ -3026,6 +3072,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
           Kung hindi nakatakda ang patakarang ito, gagamitin ang default na tagapag-render para sa lahat ng site tulad ng tinukoy sa patakarang 'ChromeFrameRendererSettings.'
 
           Para sa mga halimbawang pattern, tingnan ang https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Huwag paganahin ang pag-save ng kasaysayan ng browser</translation>
 <translation id="8498293625012059298">Kino-configure ang URL para sa pagpapalit ng password (HTTP at HTTPS na scheme lang). Ididirekta ng serbisyo sa pagprotekta ng password ang mga user sa URL na ito para mapalitan nila ang kanilang password pagkatapos nilang makakita ng babala sa browser.
       Para maayos na ma-capture ng <ph name="PRODUCT_NAME" /> ang bagong password na fingerprint sa page na ito ng pagpapalit ng password, tiyaking sumusunod ang iyong page ng pagpapalit ng password sa mga alituntunin sa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

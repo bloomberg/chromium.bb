@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">Domena upisa:</translation>
 <translation id="1340482604681802745">Adresa preuzimanja</translation>
 <translation id="1348198688976932919">Sljedeća web-lokacija sadrži opasne aplikacije</translation>
+<translation id="1348779747280417563">Potvrda imena</translation>
 <translation id="1374468813861204354">prijedlozi</translation>
 <translation id="1375198122581997741">O verziji</translation>
 <translation id="1376836354785490390">Manje</translation>
@@ -144,7 +145,6 @@
 <translation id="1826516787628120939">Provjera</translation>
 <translation id="1834321415901700177">Ova web-lokacija sadrži štetne programe</translation>
 <translation id="1839551713262164453">Potvrđivanje vrijednosti pravila nije uspjelo zbog pogrešaka</translation>
-<translation id="1840414022444569775">Taj se broj kartice već upotrebljava</translation>
 <translation id="1842969606798536927">Plaćanje</translation>
 <translation id="1866450167992311397">Upotreba kartica na više mjesta</translation>
 <translation id="1871208020102129563">Proxy poslužitelj postavljen je na upotrebu fiksnih proxy poslužitelja, a ne URL .pac skripte.</translation>
@@ -183,6 +183,7 @@
 <translation id="2108755909498034140">Ponovo pokrenite računalo</translation>
 <translation id="2113977810652731515">Kartica</translation>
 <translation id="2114841414352855701">Zanemareno jer je nadjačano pravilom <ph name="POLICY_NAME" />.</translation>
+<translation id="2129308444951592399">Uvjeti i odredbe</translation>
 <translation id="213826338245044447">Mobilne oznake</translation>
 <translation id="214556005048008348">Otkaži plaćanje</translation>
 <translation id="2147827593068025794">Sinkronizacija u pozadini</translation>
@@ -383,6 +384,7 @@
 <translation id="3427092606871434483">Dopusti (zadano)</translation>
 <translation id="3427342743765426898">&amp;Ponovi uređivanje</translation>
 <translation id="342781501876943858">Chromium preporučuje poništavanje zaporke ako ste je upotrebljavali za druge web-lokacije.</translation>
+<translation id="3430691998045392297">Filmska projekcija je drugačija. Želite li nastaviti?</translation>
 <translation id="3431636764301398940">Spremi tu karticu na ovaj uređaj</translation>
 <translation id="3447661539832366887">Vlasnik tog uređaja isključio je igru s dinosaurima.</translation>
 <translation id="3447884698081792621">Prikaz certifikata (izdavač: <ph name="ISSUER" />)</translation>
@@ -400,6 +402,7 @@
 <translation id="3566021033012934673">Vaša veza nije privatna</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Na ugrađenoj stranici na web-lokaciji <ph name="SITE" /> navodi se sljedeće</translation>
+<translation id="3581089476000296252">Chrome će vas obavijestiti kada je stranica spremna. &lt;a&gt;Otkaži&lt;/a&gt;</translation>
 <translation id="358285529439630156">Prihvaćaju se kreditne i pretplatne kartice.</translation>
 <translation id="3582930987043644930">Dodajte ime</translation>
 <translation id="3583757800736429874">&amp;Ponovi premještanje</translation>
@@ -430,6 +433,7 @@
 <translation id="3736520371357197498">Ako ste svjesni sigurnosnih rizika, možete <ph name="BEGIN_LINK" />posjetiti tu nesigurnu web-lokaciju<ph name="END_LINK" /> prije uklanjanja opasnih programa.</translation>
 <translation id="3739623965217189342">Veza koju ste kopirali</translation>
 <translation id="3744899669254331632">Trenutačno ne možete otvoriti <ph name="SITE" /> jer je web-lokacija poslala šifrirane vjerodajnice koje Chromium ne može obraditi. Mrežne pogreške i napadi obično su privremeni, tako da će stranica kasnije vjerojatno funkcionirati.</translation>
+<translation id="3745099705178523657">Nakon što ih potvrdite, podaci o kartici s Google računa podijelit će se s ovom web-lokacijom.</translation>
 <translation id="3748148204939282805">Napadači na web-lokaciji <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogu vas na prijevaru pokušati navesti da napravite nešto opasno kao što je instaliranje softvera ili otkrivanje osobnih podataka (npr. zaporki, telefonskih brojeva ili brojeva kreditnih kartica). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Prijevod nije uspio zbog poslužiteljske pogreške.</translation>
 <translation id="3759461132968374835">Nemate nedavnih izvješća o padu. Ovdje se neće prikazati padovi do kojih je došlo kada je izvješćivanje o padovima onemogućeno.</translation>
@@ -451,10 +455,12 @@
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">Preneseno je izvješće o rušenju programa s ID-om <ph name="CRASH_ID" /> (lokalni ID rušenja: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Uvijek pitaj na ovoj web-lokaciji</translation>
+<translation id="3947577358805392297">Spremi stranicu za kasnije</translation>
 <translation id="3949571496842715403">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat ne navodi alternativne nazive predmeta. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="3949601375789751990">Ovdje se prikazuje vaša povijest pregledavanja</translation>
 <translation id="3950820424414687140">Prijava</translation>
 <translation id="3963721102035795474">Način čitača</translation>
+<translation id="3963837677003247395">Želite li nastaviti ručno?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Nijedna}=1{S 1 web-lokacije }one{S/sa # web-lokacije }few{S/sa # web-lokacije }other{S/sa # web-lokacija }}</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="3973234410852337861">Host <ph name="HOST_NAME" /> je blokiran</translation>
@@ -568,6 +574,7 @@
 <translation id="4771973620359291008">Došlo je do nepoznate pogreške.</translation>
 <translation id="4785689107224900852">Prijeđite na ovu karticu</translation>
 <translation id="4792143361752574037">Pojavio se problem prilikom pristupa datotekama sesije. Spremanje na disk trenutačno je onemogućeno. Ponovo učitajte stranicu i pokušajte opet.</translation>
+<translation id="4798078619018708837">Unesite datum isteka i CVC za karticu <ph name="CREDIT_CARD" /> da biste ažurirali podatke o kartici. Nakon što ih potvrdite, podaci o kartici s vašeg Google računa podijelit će se s ovom web-lokacijom.</translation>
 <translation id="4800132727771399293">Provjerite datum isteka i CVC pa pokušajte ponovo</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4807049035289105102">Trenutačno ne možete posjetiti <ph name="SITE" /> jer je web-lokacija poslala kodirane vjerodajnice koje Google Chrome ne može obraditi. Mrežne pogreške i napadi uglavnom su privremeni, tako da će ta stranica vjerojatno kasnije funkcionirati.</translation>
@@ -619,6 +626,7 @@
 <translation id="5141240743006678641">Šifriranje sinkroniziranih zaporki s vjerodajnicama za Google</translation>
 <translation id="5145883236150621069">Odgovor na pravilo sadrži kôd pogreške</translation>
 <translation id="5159010409087891077">Otvorite stranicu u novom anonimnom prozoru (⇧⌘N)</translation>
+<translation id="516920405563544094">Unesite CVC za karticu <ph name="CREDIT_CARD" />. Nakon što ga potvrdite, podaci o kartici s vašeg Google računa podijelit će se s ovom web-lokacijom.</translation>
 <translation id="5169827969064885044">Mogli biste izgubiti pristup računu svoje organizacije ili bi netko mogao ukrasti vaš identitet. Chrome preporučuje da odmah promijenite zaporku.</translation>
 <translation id="5171045022955879922">Pretražite ili upišite URL</translation>
 <translation id="5172758083709347301">Strojno</translation>
@@ -717,6 +725,7 @@
 <translation id="5810442152076338065">Vaša veza s domenom <ph name="DOMAIN" /> kriptirana je zastarjelim kriptografskim paketom.</translation>
 <translation id="5813119285467412249">&amp;Ponovi dodavanje</translation>
 <translation id="5838278095973806738">Na ovu web-lokaciju nemojte unositi osjetljive podatke (na primjer, zaporke ili kreditne kartice) jer su je možda ukrali napadači.</translation>
+<translation id="5844286946362376359">Poznati su mi Uvjeti i odredbe, pravila o privatnosti i pravo na odustajanje <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (nemojte označiti za čitanje).</translation>
 <translation id="5863847714970149516">Stranica koja će se otvoriti može vam pokušati nešto naplatiti</translation>
 <translation id="5866257070973731571">Dodajte telefonski broj</translation>
 <translation id="5869405914158311789">Web-lokacija ne može se dohvatiti</translation>
@@ -725,6 +734,7 @@
 <translation id="5893752035575986141">Prihvaćaju se kreditne kartice.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sinkronizirano)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 u upotrebi}one{# u upotrebi}few{# u upotrebi}other{# u upotrebi}}</translation>
+<translation id="5921639886840618607">Želite li spremiti karticu na Google račun?</translation>
 <translation id="5922853866070715753">Skoro gotovo</translation>
 <translation id="5932224571077948991">Web-lokacija prikazuje ometajuće ili obmanjujuće oglase</translation>
 <translation id="5939518447894949180">Ponovno postavi</translation>
@@ -811,6 +821,7 @@
 <translation id="6569060085658103619">Gledate stranicu proširenja</translation>
 <translation id="6596325263575161958">Opcije šifriranja</translation>
 <translation id="6604181099783169992">Senzori pokreta ili osvjetljenja</translation>
+<translation id="6607617806003952240">Ne mogu više pomoći, nastavite ručno.</translation>
 <translation id="6624427990725312378">Podaci za kontakt</translation>
 <translation id="6626291197371920147">Dodajte važeći broj kartice</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Pretraživanje</translation>
@@ -854,6 +865,7 @@
 <translation id="6950684638814147129">Došlo je do pogreške prilikom raščlanjivanja vrijednosti JSON-a: <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">Otvorite stranicu u novoj privatnoj kartici</translation>
 <translation id="6957887021205513506">Certifikat poslužitelja izgleda kao falsifikat.</translation>
+<translation id="6964255747740675745">Mrežna konfiguracija nije uspješno analizirana (nevažeći JSON).</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="6965978654500191972">Uređaj</translation>
 <translation id="6970216967273061347">Distrikt</translation>
@@ -1148,11 +1160,13 @@ Dodatne pojedinosti:
 <translation id="893332455753468063">Dodajte ime</translation>
 <translation id="8938939909778640821">Prihvaćene kreditne i pretplatne kartice</translation>
 <translation id="8957210676456822347">Autorizacija obaveznog portala za autentifikaciju</translation>
+<translation id="8968766641738584599">Spremanje kartice</translation>
 <translation id="8971063699422889582">Istekao je certifikat poslužitelja.</translation>
 <translation id="8975012916872825179">Sadrži podatke kao što su telefonski brojevi, e-adrese i adrese za dostavu</translation>
 <translation id="8978053250194585037">Google sigurno pregledavanje nedavno je <ph name="BEGIN_LINK" />otkrilo krađu identiteta<ph name="END_LINK" /> na web-lokaciji <ph name="SITE" />. Web-lokacije za krađu identiteta predstavljaju se kao druge web-lokacije kako bi vas prevarile.</translation>
 <translation id="8983003182662520383">Načini plaćanja i adrese s Google Paya</translation>
 <translation id="8987927404178983737">Mjesec</translation>
+<translation id="8988408250700415532">Došlo je do pogreške. Narudžbu možete dovršiti na web-lokaciji.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Sljedeća web-lokacija sadrži štetne programe</translation>
 <translation id="8997023839087525404">Poslužitelj je prikazao certifikat koji nije javno otkriven putem pravila Transparentnost certifikata. Taj se zahtjev postavlja za neke certifikate radi provjere njihove pouzdanosti i zaštite od napada.</translation>

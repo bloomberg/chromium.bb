@@ -17,7 +17,6 @@
 <translation id="2647554856022461007">Aby zwiększyć wygodę przeglądania, Chromium może korzystać z usług internetowych. Możesz je opcjonalnie wyłączyć. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Inteligentne rozwiązania Google w Chromium</translation>
 <translation id="2730884209570016437">Chromium nie może użyć aparatu, bo używa go już inna aplikacja</translation>
-<translation id="2797210818057553964">Możesz w każdej chwili zmienić tę opcję w Ustawieniach Chromium</translation>
 <translation id="2915596697727466327">Chromium używa Face ID do autoryzacji dostępu do Twoich haseł.</translation>
 <translation id="3256316712990552818">Skopiowana do Chromium</translation>
 <translation id="3413120535237193088">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, zaloguj się w Chromium.</translation>
@@ -47,7 +46,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Wybrane dane zostały usunięte z Chromium i synchronizowanych urządzeń. Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w innych usługach Google, mogą być nadal dostępne na Twoim koncie Google na history.google.com</translation>
 <translation id="7400689562045506105">Korzystaj z Chromium w dowolnym miejscu</translation>
-<translation id="7499048969477415415">Zmieniono ustawienia synchronizacji, personalizacji i innych usług Google w Chromium. Może to wpłynąć na Twoje bieżące ustawienia.</translation>
 <translation id="7674213385180944843">Wybierz Ustawienia &gt; Prywatność &gt; Aparat &gt; Chromium i włącz aparat.</translation>
 <translation id="7746854981345936341">Wskazówka dla użytkowników Chromium. Niektóre przyciski (na przykład Wstecz, Dalej i Szukaj) znajdują się teraz na dole ekranu.</translation>
 <translation id="786327964234957808">Przełączasz synchronizację kont z <ph name="USER_EMAIL1" /> na <ph name="USER_EMAIL2" />. Twoimi istniejącymi danymi Chromium zarządza <ph name="DOMAIN" />. Dane zostaną usunięte z tego urządzenia, ale pozostaną na koncie <ph name="USER_EMAIL1" />.</translation>

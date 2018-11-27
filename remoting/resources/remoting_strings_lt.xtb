@@ -63,6 +63,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="2314101195544969792">Jūsų „<ph name="APPLICATION_NAME" />“ sesija buvo neaktyvi ir netrukus bus atjungta.</translation>
 <translation id="2317666076142640974">Išbandykite naująją <ph name="LINK_BEGIN" />„Chrome“ nuotolinio kompiuterio valdymo žiniatinklio programą<ph name="LINK_END" /> pirmieji. Džiaugtumės, jeigu gautume jūsų atsiliepimus.</translation>
 <translation id="2320166752086256636">Slėpti klaviatūrą</translation>
+<translation id="2332192922827071008">Atidaryti nuostatas</translation>
 <translation id="2353140552984634198">Galite saugiai pasiekti kompiuterį naudodami „Chrome“ nuotolinį ryšį.</translation>
 <translation id="2359808026110333948">Tęsti</translation>
 <translation id="2366718077645204424">Neįmanoma pasiekti prieglobos. Taip greičiausiai nutiko dėl naudojamo tinklo konfigūracijos.</translation>
@@ -190,6 +191,9 @@ AK</translation>
 <translation id="4973800994433240357">Atsisiųsdami „Chrome“ nuotolinio ryšio prieglobos diegimo programą sutinkate su „Google“ <ph name="LINK_BEGIN" />paslaugų teikimo sąlygomis<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Nutrūko ryšys su „<ph name="HOSTNAME" />“</translation>
 <translation id="4985296110227979402">Pirmiausia turite nustatyti nuotolinę kompiuterio prieigą</translation>
+<translation id="5059773780693835145">Kad galėtumėte valdyti šį prietaisą nuotoliniu būdu naudodami „<ph name="PRODUCT_NAME" />“, būtina atlikti papildomą konfigūracijos veiksmą.
+
+Norėdami įgalinti šias funkcijas, pasirinkite „<ph name="BUTTON_NAME" />“, kad būtų parodytas saugos ir privatumo nuostatų polangis, ir jame pažymėkite laukelį prie parinkties „<ph name="SERVICE_SCRIPT_NAME" />“.</translation>
 <translation id="5064360042339518108">„<ph name="HOSTNAME" />“ (neprisijungta)</translation>
 <translation id="5070121137485264635">Nuotolinė priegloba reikalauja autentifikuoti trečiosios šalies svetainę. Jei norite tęsti, turite suteikti „Chrome“ nuotolinio kompiuterio valdymo programai papildomas teises pasiekti šį adresą</translation>
 <translation id="507204348399810022">Ar tikrai norite išjungti nuotolinį ryšį su „<ph name="HOSTNAME" />“?</translation>
@@ -314,6 +318,7 @@ AK</translation>
 <translation id="809687642899217504">Mano kompiuteriai</translation>
 <translation id="811307782653349804">Pasiekite savo kompiuterį iš bet kur.</translation>
 <translation id="8116630183974937060">Įvyko tinklo klaida. Patikrinkite, ar įrenginys prijungtas, ir bandykite dar kartą.</translation>
+<translation id="8123581458650016326">Leiskite nuotoliniams naudotojams valdyti šį prietaisą</translation>
 <translation id="8178433417677596899">Ekrano „naudotojas naudotojui“ bendrinimas, puikiai tinkantis nuotoliniam techniniam palaikymui vykdyti.</translation>
 <translation id="8187079423890319756">Autorių teisės priklauso „Chromium“ autoriams, 2013 m. Visos teisės saugomos.</translation>
 <translation id="8196755618196986400">Kad galėtume su jumis susisiekti dėl išsamesnės informacijos, jūsų el. pašto adresas bus įtrauktas į bet kurį jūsų pateiktą atsiliepimą.</translation>
