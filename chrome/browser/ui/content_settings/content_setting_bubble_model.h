@@ -99,9 +99,12 @@ class ContentSettingBubbleModel {
     ~RadioGroup();
 
     GURL url;
-    base::string16 title;
     RadioItems radio_items;
     int default_item;
+
+    // Whether the user can control this radio group. False if controlled by
+    // policy, etc.
+    bool user_managed = true;
   };
 
   struct DomainList {
@@ -142,7 +145,6 @@ class ContentSettingBubbleModel {
     base::string16 message;
     ListItems list_items;
     RadioGroup radio_group;
-    bool radio_group_enabled = false;
     std::vector<DomainList> domain_lists;
     base::string16 custom_link;
     bool custom_link_enabled = false;
@@ -231,9 +233,6 @@ class ContentSettingBubbleModel {
   void RemoveListItem(int index);
   void set_radio_group(const RadioGroup& radio_group) {
     bubble_content_.radio_group = radio_group;
-  }
-  void set_radio_group_enabled(bool enabled) {
-    bubble_content_.radio_group_enabled = enabled;
   }
   void add_domain_list(const DomainList& domain_list) {
     bubble_content_.domain_lists.push_back(domain_list);

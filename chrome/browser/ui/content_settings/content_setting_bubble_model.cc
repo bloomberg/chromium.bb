@@ -391,9 +391,8 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
   RadioGroup radio_group;
   radio_group.url = url;
 
-  radio_group.radio_items.push_back(radio_allow_label);
-  radio_group.radio_items.push_back(radio_deny_label);
-  radio_group.radio_items.push_back(radio_ignore_label);
+  radio_group.radio_items = {radio_allow_label, radio_deny_label,
+                             radio_ignore_label};
   ContentSetting setting = content_settings->pending_protocol_handler_setting();
   if (setting == CONTENT_SETTING_ALLOW)
     radio_group.default_item = RPH_ALLOW;
@@ -402,7 +401,7 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
   else
     radio_group.default_item = RPH_IGNORE;
 
-  set_radio_group_enabled(true);
+  radio_group.user_managed = true;
   set_radio_group(radio_group);
 }
 
@@ -827,11 +826,10 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
         kBlockedBlockIDs, arraysize(kBlockedBlockIDs), content_type()));
   }
 
-  radio_group.radio_items.push_back(radio_allow_label);
-  radio_group.radio_items.push_back(radio_block_label);
+  radio_group.radio_items = {radio_allow_label, radio_block_label};
 
   ContentSetting setting;
-  bool managed_by_user =
+  radio_group.user_managed =
       GetSettingManagedByUser(url, content_type(), GetProfile(), &setting);
   if (setting == CONTENT_SETTING_ALLOW) {
     radio_group.default_item = kAllowButtonIndex;
@@ -840,7 +838,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     radio_group.default_item = 1;
     block_setting_ = setting;
   }
-  set_radio_group_enabled(managed_by_user);
   set_radio_group(radio_group);
 }
 
@@ -1171,11 +1168,10 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
                    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA))
           ? 1
           : 0;
-  radio_group.radio_items.push_back(radio_allow_label);
-  radio_group.radio_items.push_back(radio_block_label);
+  radio_group.radio_items = {radio_allow_label, radio_block_label};
+  radio_group.user_managed = true;
 
   set_radio_group(radio_group);
-  set_radio_group_enabled(true);
 }
 
 void ContentSettingMediaStreamBubbleModel::UpdateSettings(
@@ -1413,26 +1409,25 @@ void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
   radio_group.url = url;
   switch (download_request_limiter->GetDownloadUiStatus(web_contents())) {
     case DownloadRequestLimiter::DOWNLOAD_UI_ALLOWED:
-      radio_group.radio_items.push_back(
-          l10n_util::GetStringUTF16(IDS_ALLOWED_DOWNLOAD_NO_ACTION));
-      radio_group.radio_items.push_back(
-          l10n_util::GetStringFUTF16(IDS_ALLOWED_DOWNLOAD_BLOCK, display_host));
+      radio_group.radio_items = {
+          l10n_util::GetStringUTF16(IDS_ALLOWED_DOWNLOAD_NO_ACTION),
+          l10n_util::GetStringFUTF16(IDS_ALLOWED_DOWNLOAD_BLOCK, display_host)};
       radio_group.default_item = kAllowButtonIndex;
       break;
     case DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED:
-      radio_group.radio_items.push_back(l10n_util::GetStringFUTF16(
-          IDS_BLOCKED_DOWNLOAD_UNBLOCK, display_host));
-      radio_group.radio_items.push_back(
-          l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOAD_NO_ACTION));
+      radio_group.radio_items = {
+          l10n_util::GetStringFUTF16(IDS_BLOCKED_DOWNLOAD_UNBLOCK,
+                                     display_host),
+          l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOAD_NO_ACTION)};
       radio_group.default_item = 1;
       break;
     case DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT:
       NOTREACHED();
       return;
   }
+  radio_group.user_managed = GetSettingManagedByUser(
+      url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, GetProfile(), nullptr);
   set_radio_group(radio_group);
-  set_radio_group_enabled(GetSettingManagedByUser(
-      url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, GetProfile(), nullptr));
 }
 
 void ContentSettingDownloadsBubbleModel::SetTitle() {
