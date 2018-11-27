@@ -19,7 +19,6 @@
 #include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/base/buffering_controller.h"
 #include "chromecast/media/cma/base/buffering_state.h"
-#include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/cma_pipeline_buildflags.h"
@@ -71,8 +70,8 @@ void LogEstimatedBitrate(int decoded_bytes,
   if (estimated_bitrate_in_kbps <= 0)
     return;
 
-  CMALOG(kLogControl) << "Estimated " << tag << " bitrate is "
-                      << estimated_bitrate_in_kbps << " kbps";
+  LOG(INFO) << "Estimated " << tag << " bitrate is "
+            << estimated_bitrate_in_kbps << " kbps";
   metrics::CastMetricsHelper* metrics_helper =
       metrics::CastMetricsHelper::GetInstance();
   metrics_helper->RecordApplicationEventWithValue(metric,
@@ -101,13 +100,13 @@ MediaPipelineImpl::MediaPipelineImpl()
       playback_stalled_(false),
       playback_stalled_notification_sent_(false),
       weak_factory_(this) {
-  CMALOG(kLogControl) << __FUNCTION__;
+  LOG(INFO) << __FUNCTION__;
   weak_this_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
 }
 
 MediaPipelineImpl::~MediaPipelineImpl() {
-  CMALOG(kLogControl) << __FUNCTION__;
+  LOG(INFO) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // TODO(b/67112414): Do something better than this.
@@ -122,7 +121,7 @@ MediaPipelineImpl::~MediaPipelineImpl() {
 void MediaPipelineImpl::Initialize(
     LoadType load_type,
     std::unique_ptr<CmaBackend> media_pipeline_backend) {
-  CMALOG(kLogControl) << __FUNCTION__;
+  LOG(INFO) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   media_pipeline_backend_ = std::move(media_pipeline_backend);
 
@@ -152,7 +151,7 @@ void MediaPipelineImpl::SetClient(const MediaPipelineClient& client) {
 }
 
 void MediaPipelineImpl::SetCdm(int cdm_id) {
-  CMALOG(kLogControl) << __FUNCTION__ << " cdm_id=" << cdm_id;
+  LOG(INFO) << __FUNCTION__ << " cdm_id=" << cdm_id;
   DCHECK(thread_checker_.CalledOnValidThread());
   NOTIMPLEMENTED();
   // TODO(gunsch): SetCdm(int) is not implemented.
@@ -160,7 +159,7 @@ void MediaPipelineImpl::SetCdm(int cdm_id) {
 }
 
 void MediaPipelineImpl::SetCdm(CastCdmContext* cdm_context) {
-  CMALOG(kLogControl) << __FUNCTION__;
+  LOG(INFO) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   cdm_context_ = cdm_context;
   if (audio_pipeline_)
@@ -212,7 +211,7 @@ void MediaPipelineImpl::SetCdm(CastCdmContext* cdm_context) {
 }
 
 void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
-  CMALOG(kLogControl) << __FUNCTION__ << " t0=" << time.InMilliseconds();
+  LOG(INFO) << __FUNCTION__ << " t0=" << time.InMilliseconds();
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(audio_pipeline_ || video_pipeline_);
   DCHECK(!pending_flush_task_);
@@ -269,7 +268,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
 }
 
 void MediaPipelineImpl::Flush(const base::Closure& flush_cb) {
-  CMALOG(kLogControl) << __FUNCTION__;
+  LOG(INFO) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK((backend_state_ == BACKEND_STATE_PLAYING) ||
          (backend_state_ == BACKEND_STATE_PAUSED));
@@ -296,7 +295,7 @@ void MediaPipelineImpl::Flush(const base::Closure& flush_cb) {
 }
 
 void MediaPipelineImpl::SetPlaybackRate(double rate) {
-  CMALOG(kLogControl) << __FUNCTION__ << " rate=" << rate;
+  LOG(INFO) << __FUNCTION__ << " rate=" << rate;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK((backend_state_ == BACKEND_STATE_PLAYING) ||
          (backend_state_ == BACKEND_STATE_PAUSED));
@@ -323,7 +322,7 @@ void MediaPipelineImpl::SetPlaybackRate(double rate) {
 }
 
 void MediaPipelineImpl::SetVolume(float volume) {
-  CMALOG(kLogControl) << __FUNCTION__ << " vol=" << volume;
+  LOG(INFO) << __FUNCTION__ << " vol=" << volume;
   DCHECK(thread_checker_.CalledOnValidThread());
   if (audio_pipeline_)
     audio_pipeline_->SetVolume(volume);
@@ -351,7 +350,7 @@ bool MediaPipelineImpl::HasVideo() const {
 }
 
 void MediaPipelineImpl::OnFlushDone(bool is_audio_stream) {
-  CMALOG(kLogControl) << __FUNCTION__ << " is_audio_stream=" << is_audio_stream;
+  LOG(INFO) << __FUNCTION__ << " is_audio_stream=" << is_audio_stream;
   DCHECK(pending_flush_task_);
 
   if (is_audio_stream) {
@@ -378,7 +377,7 @@ void MediaPipelineImpl::OnFlushDone(bool is_audio_stream) {
 }
 
 void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
-  CMALOG(kLogControl) << __FUNCTION__ << " is_buffering=" << is_buffering;
+  LOG(INFO) << __FUNCTION__ << " is_buffering=" << is_buffering;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK((backend_state_ == BACKEND_STATE_PLAYING) ||
          (backend_state_ == BACKEND_STATE_PAUSED));
@@ -422,9 +421,8 @@ void MediaPipelineImpl::CheckForPlaybackStall(base::TimeDelta media_time,
     if (playback_stalled_) {
       // Transition out of the stalled condition.
       base::TimeDelta stall_duration = current_stc - playback_stalled_time_;
-      CMALOG(kLogControl)
-          << "Transitioning out of stalled state. Stall duration was "
-          << stall_duration.InMilliseconds() << " ms";
+      LOG(INFO) << "Transitioning out of stalled state. Stall duration was "
+                << stall_duration.InMilliseconds() << " ms";
       playback_stalled_ = false;
       playback_stalled_notification_sent_ = false;
     }
@@ -445,7 +443,7 @@ void MediaPipelineImpl::CheckForPlaybackStall(base::TimeDelta media_time,
         current_stc - playback_stalled_time_;
     if (current_stall_duration.InMilliseconds() >=
         kPlaybackStallEventThresholdMs) {
-      CMALOG(kLogControl) << "Playback stalled";
+      LOG(INFO) << "Playback stalled";
       metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
           "Cast.Platform.PlaybackStall");
       playback_stalled_notification_sent_ = true;

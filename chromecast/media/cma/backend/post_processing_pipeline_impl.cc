@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/scoped_native_library.h"
 #include "base/values.h"
@@ -205,8 +206,8 @@ void PostProcessingPipelineImpl::SetPostProcessorConfig(
               [&name](PostProcessorInfo& p) { return p.name == name; });
   if (it != processors_.end()) {
     it->ptr->UpdateParameters(config);
-    VLOG(1) << "Config string: " << config << " was delivered to postprocessor "
-            << name;
+    LOG(INFO) << "Config string: " << config
+              << " was delivered to postprocessor " << name;
   }
 }
 
