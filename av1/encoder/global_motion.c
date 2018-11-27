@@ -324,6 +324,16 @@ static int compute_global_motion_feature_based(
   return 0;
 }
 #else
+static INLINE RansacFuncDouble
+get_ransac_double_prec_type(TransformationType type) {
+  switch (type) {
+    case AFFINE: return ransac_affine_double_prec;
+    case ROTZOOM: return ransac_rotzoom_double_prec;
+    case TRANSLATION: return ransac_translation_double_prec;
+    default: assert(0); return NULL;
+  }
+}
+
 double getCubicValue(double p[4], double x) {
   return p[1] + 0.5 * x *
                     (p[2] - p[0] +
