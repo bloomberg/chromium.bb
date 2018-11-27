@@ -99,11 +99,10 @@ void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
       max_duration,
       /* try_done= */
       base::BindRepeating(&ScriptTracker::UpdateRunnableScriptsIfNecessary,
-                          base::Unretained(this)),
+                          weak_ptr_factory_.GetWeakPtr()),
       /* all_done= */
-      base::BindOnce(&ScriptTracker::OnCheckDone, base::Unretained(this)));
-  // base::Unretained(this) is safe since this instance owns
-  // batch_element_checker_.
+      base::BindOnce(&ScriptTracker::OnCheckDone,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,
@@ -129,6 +128,15 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
 
 void ScriptTracker::ClearRunnableScripts() {
   runnable_scripts_.clear();
+}
+
+bool ScriptTracker::Terminate() {
+  if (running()) {
+    executor_->Shutdown();
+    return false;
+  }
+  TerminatePendingChecks();
+  return true;
 }
 
 base::Value ScriptTracker::GetDebugContext() const {

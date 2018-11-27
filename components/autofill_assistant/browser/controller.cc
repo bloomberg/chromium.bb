@@ -424,6 +424,11 @@ void Controller::OnDestroy() {
   delete this;
 }
 
+bool Controller::Terminate() {
+  StopPeriodicScriptChecks();
+  return script_tracker_->Terminate();
+}
+
 void Controller::ScrollBy(float distanceXRatio, float distanceYRatio) {
   GetWebController()->ScrollBy(distanceXRatio, distanceYRatio);
   touchable_element_area_.UpdatePositions();

@@ -41,6 +41,21 @@ class UiDelegate {
   // when analyzing feedback forms and for debugging in general.
   virtual std::string GetDebugContext() = 0;
 
+  // Initiates a clean shutdown.
+  //
+  // This function returns false when it needs more time to properly shut down
+  // the script tracker. It usually means that it either has to wait for a
+  // script to find an appropriate moment to suspend execution or wait for a
+  // script checking round to complete.
+  //
+  // A caller is expected to try again later when this function returns false. A
+  // return value of true means that the scrip tracker can safely be destroyed.
+  //
+  // TODO(crbug.com/806868): Instead of this safety net, the proper fix is to
+  // switch to weak pointers everywhere so that dangling callbacks are not an
+  // issue.
+  virtual bool Terminate() = 0;
+
  protected:
   UiDelegate() = default;
 };

@@ -70,6 +70,7 @@ class MockUiController : public UiController {
   MOCK_METHOD2(UpdateTouchableArea,
                void(bool enabled, const std::vector<RectF>& areas));
   MOCK_CONST_METHOD0(GetDebugContext, std::string());
+  MOCK_CONST_METHOD0(Terminate, bool());
 };
 
 }  // namespace autofill_assistant

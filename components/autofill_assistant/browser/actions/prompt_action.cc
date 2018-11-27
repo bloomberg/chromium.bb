@@ -50,8 +50,8 @@ void PromptAction::InternalProcessAction(ActionDelegate* delegate,
     choice_proto.SerializeToString(&payload);
     batch_element_checker_->AddElementCheck(
         kExistenceCheck, ExtractSelector(choice_proto.element_exists()),
-        base::BindOnce(&PromptAction::OnElementExist, base::Unretained(this),
-                       payload));
+        base::BindOnce(&PromptAction::OnElementExist,
+                       weak_ptr_factory_.GetWeakPtr(), payload));
   }
   // Wait as long as necessary for one of the elements to show up. This is
   // cancelled by OnSuggestionChosen()
@@ -59,7 +59,8 @@ void PromptAction::InternalProcessAction(ActionDelegate* delegate,
       base::TimeDelta::Max(),
       /* try_done= */
       base::BindRepeating(&PromptAction::OnElementChecksDone,
-                          base::Unretained(this), base::Unretained(delegate)),
+                          weak_ptr_factory_.GetWeakPtr(),
+                          base::Unretained(delegate)),
       /* all_done= */ base::DoNothing());
 }
 

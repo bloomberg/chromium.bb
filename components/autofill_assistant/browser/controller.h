@@ -106,6 +106,7 @@ class Controller : public ScriptExecutorDelegate,
   void UpdateTouchableArea() override;
   void OnScriptSelected(const std::string& script_path) override;
   std::string GetDebugContext() override;
+  bool Terminate() override;
 
   // Overrides ScriptTracker::Listener:
   void OnNoRunnableScriptsAnymore() override;

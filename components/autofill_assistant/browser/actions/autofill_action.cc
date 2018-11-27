@@ -294,17 +294,15 @@ void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
     batch_element_checker_->AddFieldValueCheck(
         ExtractSelector(required_address_field.element()),
         base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
-                       // this instance owns batch_element_checker_
-                       base::Unretained(this), i));
+                       weak_ptr_factory_.GetWeakPtr(), i));
   }
   batch_element_checker_->Run(
       base::TimeDelta::FromSeconds(0),
       /* try_done= */ base::DoNothing(),
       /* all_done= */
-      base::BindOnce(
-          &AutofillAction::OnCheckRequiredFieldsDone,
-          base::Unretained(this),  // this instance owns batch_element_checker_
-          base::Unretained(delegate), allow_fallback));
+      base::BindOnce(&AutofillAction::OnCheckRequiredFieldsDone,
+                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
+                     allow_fallback));
 }
 
 void AutofillAction::OnGetRequiredFieldValue(int required_fields_index,
