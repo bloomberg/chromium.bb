@@ -111,21 +111,14 @@ void InitializeMetadataEvent(TraceEvent* trace_event,
   unsigned char arg_type;
   unsigned long long arg_value;
   ::trace_event_internal::SetTraceValue(value, &arg_type, &arg_value);
-  trace_event->Initialize(
-      thread_id,
-      TimeTicks(),
-      ThreadTicks(),
-      TRACE_EVENT_PHASE_METADATA,
-      CategoryRegistry::kCategoryMetadata->state_ptr(),
-      metadata_name,
+
+  trace_event->Reset(
+      thread_id, TimeTicks(), ThreadTicks(), TRACE_EVENT_PHASE_METADATA,
+      CategoryRegistry::kCategoryMetadata->state_ptr(), metadata_name,
       trace_event_internal::kGlobalScope,  // scope
-      trace_event_internal::kNoId,  // id
-      trace_event_internal::kNoId,  // bind_id
-      num_args,
-      &arg_name,
-      &arg_type,
-      &arg_value,
-      nullptr,
+      trace_event_internal::kNoId,         // id
+      trace_event_internal::kNoId,         // bind_id
+      num_args, &arg_name, &arg_type, &arg_value, nullptr,
       TRACE_EVENT_FLAG_NONE);
 }
 
@@ -1291,7 +1284,6 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       reinterpret_cast<AddTraceEventOverrideCallback>(
           subtle::NoBarrier_Load(&trace_event_override_));
   if (trace_event_override) {
-    TraceEvent new_trace_event;
     // If we have an override in place for events, rather than sending
     // them to the tracelog, we don't have a way of going back and updating
     // the duration of _COMPLETE events. Instead, we emit separate _BEGIN
@@ -1299,7 +1291,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     if (phase == TRACE_EVENT_PHASE_COMPLETE)
       phase = TRACE_EVENT_PHASE_BEGIN;
 
-    new_trace_event.Initialize(thread_id, offset_event_timestamp, thread_now,
+    TraceEvent new_trace_event(thread_id, offset_event_timestamp, thread_now,
                                phase, category_group_enabled, name, scope, id,
                                bind_id, num_args, arg_names, arg_types,
                                arg_values, convertable_values, flags);
@@ -1314,11 +1306,10 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   std::unique_ptr<TraceEvent> filtered_trace_event;
   bool disabled_by_filters = false;
   if (*category_group_enabled & TraceCategory::ENABLED_FOR_FILTERING) {
-    std::unique_ptr<TraceEvent> new_trace_event(new TraceEvent);
-    new_trace_event->Initialize(thread_id, offset_event_timestamp, thread_now,
-                                phase, category_group_enabled, name, scope, id,
-                                bind_id, num_args, arg_names, arg_types,
-                                arg_values, convertable_values, flags);
+    auto new_trace_event = std::make_unique<TraceEvent>(
+        thread_id, offset_event_timestamp, thread_now, phase,
+        category_group_enabled, name, scope, id, bind_id, num_args, arg_names,
+        arg_types, arg_values, convertable_values, flags);
 
     disabled_by_filters = true;
     ForEachCategoryFilter(
@@ -1347,12 +1338,12 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
     if (trace_event) {
       if (filtered_trace_event) {
-        trace_event->MoveFrom(std::move(filtered_trace_event));
+        *trace_event = std::move(*filtered_trace_event);
       } else {
-        trace_event->Initialize(thread_id, offset_event_timestamp, thread_now,
-                                phase, category_group_enabled, name, scope, id,
-                                bind_id, num_args, arg_names, arg_types,
-                                arg_values, convertable_values, flags);
+        trace_event->Reset(thread_id, offset_event_timestamp, thread_now, phase,
+                           category_group_enabled, name, scope, id, bind_id,
+                           num_args, arg_names, arg_types, arg_values,
+                           convertable_values, flags);
       }
 
 #if defined(OS_ANDROID)
@@ -1383,12 +1374,11 @@ void TraceLog::AddMetadataEvent(
     std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
     unsigned int flags) {
   HEAP_PROFILER_SCOPED_IGNORE;
-  std::unique_ptr<TraceEvent> trace_event(new TraceEvent);
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   ThreadTicks thread_now = ThreadNow();
   TimeTicks now = OffsetNow();
   AutoLock lock(lock_);
-  trace_event->Initialize(
+  auto trace_event = std::make_unique<TraceEvent>(
       thread_id, now, thread_now, TRACE_EVENT_PHASE_METADATA,
       category_group_enabled, name,
       trace_event_internal::kGlobalScope,  // scope
@@ -1504,8 +1494,7 @@ void TraceLog::UpdateTraceEventDurationExplicit(
     // we don't have way of updating the prior event so we'll emit a
     // separate _END event instead.
     if (trace_event_override) {
-      TraceEvent new_trace_event;
-      new_trace_event.Initialize(
+      TraceEvent new_trace_event(
           static_cast<int>(base::PlatformThread::CurrentId()), now, thread_now,
           TRACE_EVENT_PHASE_END, category_group_enabled, name,
           trace_event_internal::kGlobalScope,
@@ -1591,7 +1580,7 @@ void TraceLog::AddMetadataEventsWhileLocked() {
     while (!metadata_events_.empty()) {
       TraceEvent* event =
           AddEventToThreadSharedChunkWhileLocked(nullptr, false);
-      event->MoveFrom(std::move(metadata_events_.back()));
+      *event = std::move(*metadata_events_.back());
       metadata_events_.pop_back();
     }
   }

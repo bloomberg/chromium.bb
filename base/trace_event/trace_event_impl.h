@@ -23,6 +23,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
 #include "build/build_config.h"
 
@@ -99,27 +100,54 @@ class BASE_EXPORT TraceEvent {
   };
 
   TraceEvent();
+
+  TraceEvent(int thread_id,
+             TimeTicks timestamp,
+             ThreadTicks thread_timestamp,
+             char phase,
+             const unsigned char* category_group_enabled,
+             const char* name,
+             const char* scope,
+             unsigned long long id,
+             unsigned long long bind_id,
+             int num_args,
+             const char* const* arg_names,
+             const unsigned char* arg_types,
+             const unsigned long long* arg_values,
+             std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
+             unsigned int flags);
+
   ~TraceEvent();
 
-  void MoveFrom(std::unique_ptr<TraceEvent> other);
+  // Allow move operations.
+  TraceEvent(TraceEvent&&) noexcept;
+  TraceEvent& operator=(TraceEvent&&) noexcept;
 
-  void Initialize(int thread_id,
-                  TimeTicks timestamp,
-                  ThreadTicks thread_timestamp,
-                  char phase,
-                  const unsigned char* category_group_enabled,
-                  const char* name,
-                  const char* scope,
-                  unsigned long long id,
-                  unsigned long long bind_id,
-                  int num_args,
-                  const char* const* arg_names,
-                  const unsigned char* arg_types,
-                  const unsigned long long* arg_values,
-                  std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
-                  unsigned int flags);
-
+  // Reset instance to empty state.
   void Reset();
+
+  // Reset instance to new state. This is equivalent but slightly more
+  // efficient than doing a move assignment, since it avoids creating
+  // temporary copies. I.e. compare these two statements:
+  //
+  //    event = TraceEvent(thread_id, ....);  // Create and destroy temporary.
+  //    event.Reset(thread_id, ...);  // Direct re-initialization.
+  //
+  void Reset(int thread_id,
+             TimeTicks timestamp,
+             ThreadTicks thread_timestamp,
+             char phase,
+             const unsigned char* category_group_enabled,
+             const char* name,
+             const char* scope,
+             unsigned long long id,
+             unsigned long long bind_id,
+             int num_args,
+             const char* const* arg_names,
+             const unsigned char* arg_types,
+             const unsigned long long* arg_values,
+             std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
+             unsigned int flags);
 
   void UpdateDuration(const TimeTicks& now, const ThreadTicks& thread_now);
 
@@ -171,32 +199,43 @@ class BASE_EXPORT TraceEvent {
 #endif
 
  private:
+  void InitArgs(int num_args,
+                const char* const* arg_names,
+                const unsigned char* arg_types,
+                const unsigned long long* arg_values,
+                std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
+                unsigned int flags);
+
   // Note: these are ordered by size (largest first) for optimal packing.
-  TimeTicks timestamp_;
-  ThreadTicks thread_timestamp_;
-  TimeDelta duration_;
-  TimeDelta thread_duration_;
+  TimeTicks timestamp_ = TimeTicks();
+  ThreadTicks thread_timestamp_ = ThreadTicks();
+  TimeDelta duration_ = TimeDelta::FromInternalValue(-1);
+  TimeDelta thread_duration_ = TimeDelta();
   // scope_ and id_ can be used to store phase-specific data.
-  const char* scope_;
-  unsigned long long id_;
+  // The following should be default-initialized to the expression
+  // trace_event_internal::kGlobalScope, which is nullptr, but its definition
+  // cannot be included here due to cyclical header dependencies.
+  // The equivalence is checked with a static_assert() in trace_event_impl.cc.
+  const char* scope_ = nullptr;
+  unsigned long long id_ = 0u;
   TraceValue arg_values_[kTraceMaxNumArgs];
   const char* arg_names_[kTraceMaxNumArgs];
   std::unique_ptr<ConvertableToTraceFormat>
       convertable_values_[kTraceMaxNumArgs];
-  const unsigned char* category_group_enabled_;
-  const char* name_;
+  const unsigned char* category_group_enabled_ = nullptr;
+  const char* name_ = nullptr;
   std::unique_ptr<std::string> parameter_copy_storage_;
   // Depending on TRACE_EVENT_FLAG_HAS_PROCESS_ID the event will have either:
   //  tid: thread_id_, pid: current_process_id (default case).
   //  tid: -1, pid: process_id_ (when flags_ & TRACE_EVENT_FLAG_HAS_PROCESS_ID).
   union {
-    int thread_id_;
+    int thread_id_ = 0;
     int process_id_;
   };
-  unsigned int flags_;
-  unsigned long long bind_id_;
+  unsigned int flags_ = 0;
+  unsigned long long bind_id_ = 0;
   unsigned char arg_types_[kTraceMaxNumArgs];
-  char phase_;
+  char phase_ = TRACE_EVENT_PHASE_BEGIN;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEvent);
 };
