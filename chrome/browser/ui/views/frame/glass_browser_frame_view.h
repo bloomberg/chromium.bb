@@ -39,10 +39,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   bool HasVisibleBackgroundTabShapes(ActiveState active_state) const override;
+  bool CanDrawStrokes() const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
   bool IsSingleTabModeAvailable() const override;
-  bool ShouldDrawStrokes() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;

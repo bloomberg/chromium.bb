@@ -705,6 +705,28 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
          tabstrip_right;
 }
 
+bool TabStrip::ShouldDrawStrokes() const {
+  // If the controller says we can't draw strokes, don't.
+  if (!controller_->CanDrawStrokes())
+    return false;
+
+  // In single-tab mode, the whole point is to have the active tab blend with
+  // the frame.
+  if (SingleTabMode())
+    return false;
+
+  // The tabstrip normally avoids strokes and relies on the active tab
+  // contrasting sufficiently with the frame background.  When there isn't
+  // enough contrast, fall back to a stroke.  Always compute the contrast ratio
+  // against the active frame color, to avoid toggling the stroke on and off as
+  // the window activation state changes.
+  return color_utils::GetContrastRatio(
+             GetTabBackgroundColor(TAB_ACTIVE,
+                                   BrowserNonClientFrameView::kActive),
+             controller_->GetFrameColor(BrowserNonClientFrameView::kActive)) <
+         1.3;
+}
+
 void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
   if (selected_tabs_.active() != new_selection.active()) {
     if (selected_tabs_.active() >= 0)
@@ -1186,7 +1208,7 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) {
 }
 
 int TabStrip::GetStrokeThickness() const {
-  return controller_->ShouldDrawStrokes() ? 1 : 0;
+  return ShouldDrawStrokes() ? 1 : 0;
 }
 
 bool TabStrip::CanPaintThrobberToLayer() const {
@@ -1204,6 +1226,10 @@ bool TabStrip::HasVisibleBackgroundTabShapes() const {
   return controller_->HasVisibleBackgroundTabShapes();
 }
 
+bool TabStrip::ShouldPaintAsActiveFrame() const {
+  return controller_->ShouldPaintAsActiveFrame();
+}
+
 SkColor TabStrip::GetToolbarTopSeparatorColor() const {
   return controller_->GetToolbarTopSeparatorColor();
 }
@@ -1212,12 +1238,78 @@ SkColor TabStrip::GetTabSeparatorColor() const {
   return separator_color_;
 }
 
-SkColor TabStrip::GetTabBackgroundColor(TabState state) const {
-  return controller_->GetTabBackgroundColor(state);
+SkColor TabStrip::GetTabBackgroundColor(
+    TabState tab_state,
+    BrowserNonClientFrameView::ActiveState active_state) const {
+  const ui::ThemeProvider* tp = GetThemeProvider();
+  if (!tp)
+    return SK_ColorBLACK;
+
+  if (tab_state == TAB_ACTIVE)
+    return tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
+
+  bool is_active_frame;
+  if (active_state == BrowserNonClientFrameView::kUseCurrent)
+    is_active_frame = ShouldPaintAsActiveFrame();
+  else
+    is_active_frame = active_state == BrowserNonClientFrameView::kActive;
+
+  const int color_id = is_active_frame
+                           ? ThemeProperties::COLOR_BACKGROUND_TAB
+                           : ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE;
+  // When the background tab color has not been customized, use the actual frame
+  // color instead of COLOR_BACKGROUND_TAB; these will differ for single-tab
+  // mode and custom window frame colors.
+  const SkColor frame = controller_->GetFrameColor(active_state);
+  const SkColor background =
+      tp->HasCustomColor(color_id)
+          ? tp->GetColor(color_id)
+          : color_utils::HSLShift(
+                frame, tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB));
+
+  return color_utils::GetResultingPaintColor(background, frame);
 }
 
-SkColor TabStrip::GetTabForegroundColor(TabState state) const {
-  return controller_->GetTabForegroundColor(state);
+SkColor TabStrip::GetTabForegroundColor(TabState tab_state) const {
+  const ui::ThemeProvider* tp = GetThemeProvider();
+  if (!tp)
+    return SK_ColorBLACK;
+
+  const bool is_active_frame = ShouldPaintAsActiveFrame();
+  const SkColor background_color = GetTabBackgroundColor(tab_state);
+
+  // This color varies based on the tab and frame active states.
+  SkColor default_color;
+  if (tab_state == TAB_ACTIVE) {
+    default_color = tp->GetColor(ThemeProperties::COLOR_TAB_TEXT);
+  } else {
+    // If there's a custom color for the background-tab inactive-frame case, use
+    // that instead of alpha blending.
+    if (!is_active_frame &&
+        tp->HasCustomColor(
+            ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE)) {
+      return tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE);
+    }
+
+    const int color_id = ThemeProperties::COLOR_BACKGROUND_TAB_TEXT;
+    if (tp->HasCustomColor(color_id)) {
+      default_color = tp->GetColor(color_id);
+    } else {
+      default_color = color_utils::IsDark(background_color)
+                          ? gfx::kGoogleGrey400
+                          : gfx::kGoogleGrey800;
+    }
+  }
+
+  if (!ShouldPaintAsActiveFrame()) {
+    // For inactive frames, we draw text at 75%.
+    constexpr SkAlpha inactive_alpha = 0.75 * SK_AlphaOPAQUE;
+    default_color = color_utils::AlphaBlend(default_color, background_color,
+                                            inactive_alpha);
+  }
+
+  return color_utils::GetColorWithMinimumContrast(default_color,
+                                                  background_color);
 }
 
 // Returns the accessible tab name for the tab.

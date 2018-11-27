@@ -380,10 +380,6 @@ bool BrowserTabStripController::IsSingleTabModeAvailable() {
   return GetFrameView()->IsSingleTabModeAvailable();
 }
 
-bool BrowserTabStripController::ShouldDrawStrokes() const {
-  return GetFrameView()->ShouldDrawStrokes();
-}
-
 void BrowserTabStripController::OnStartedDraggingTabs() {
   if (!immersive_reveal_lock_.get()) {
     // The top-of-window views should be revealed while the user is dragging
@@ -428,20 +424,21 @@ bool BrowserTabStripController::EverHasVisibleBackgroundTabShapes() const {
   return GetFrameView()->EverHasVisibleBackgroundTabShapes();
 }
 
-SkColor BrowserTabStripController::GetFrameColor() const {
-  return GetFrameView()->GetFrameColor();
+bool BrowserTabStripController::ShouldPaintAsActiveFrame() const {
+  return GetFrameView()->ShouldPaintAsActive();
+}
+
+bool BrowserTabStripController::CanDrawStrokes() const {
+  return GetFrameView()->CanDrawStrokes();
+}
+
+SkColor BrowserTabStripController::GetFrameColor(
+    BrowserNonClientFrameView::ActiveState active_state) const {
+  return GetFrameView()->GetFrameColor(active_state);
 }
 
 SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
   return GetFrameView()->GetToolbarTopSeparatorColor();
-}
-
-SkColor BrowserTabStripController::GetTabBackgroundColor(TabState state) const {
-  return GetFrameView()->GetTabBackgroundColor(state);
-}
-
-SkColor BrowserTabStripController::GetTabForegroundColor(TabState state) const {
-  return GetFrameView()->GetTabForegroundColor(state);
 }
 
 int BrowserTabStripController::GetTabBackgroundResourceId(

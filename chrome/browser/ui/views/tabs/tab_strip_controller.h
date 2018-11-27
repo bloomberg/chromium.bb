@@ -101,9 +101,6 @@ class TabStripController {
   // Whether the special painting mode for one tab is allowed.
   virtual bool IsSingleTabModeAvailable() = 0;
 
-  // Returns whether or not strokes should be drawn around and under the tabs.
-  virtual bool ShouldDrawStrokes() const = 0;
-
   // Notifies controller that the user started dragging this tabstrip's tabs.
   virtual void OnStartedDraggingTabs() = 0;
 
@@ -125,21 +122,23 @@ class TabStripController {
   // frame for either active or inactive windows.
   virtual bool EverHasVisibleBackgroundTabShapes() const = 0;
 
-  // Returns the color of the browser frame, which is also the color of the
-  // tabstrip background.
-  virtual SkColor GetFrameColor() const = 0;
+  // Returnes whether the window frame is being painted as active. This
+  // determines which colors are used in the tab strip.
+  virtual bool ShouldPaintAsActiveFrame() const = 0;
+
+  // Returns whether tab strokes can ever be drawn. If true, strokes will only
+  // be drawn if necessary.
+  virtual bool CanDrawStrokes() const = 0;
+
+  // Returns the color of the browser frame for the given window activation
+  // state.
+  virtual SkColor GetFrameColor(
+      BrowserNonClientFrameView::ActiveState active_state =
+          BrowserNonClientFrameView::kUseCurrent) const = 0;
 
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
   virtual SkColor GetToolbarTopSeparatorColor() const = 0;
-
-  // Returns the tab background color based on both the |state| of the tab and
-  // the activation state of the window.
-  virtual SkColor GetTabBackgroundColor(TabState state) const = 0;
-
-  // Returns the tab foreground color of the the text based on both the |state|
-  // of the tab and the activation state of the window.
-  virtual SkColor GetTabForegroundColor(TabState state) const = 0;
 
   // For non-transparent windows, returns the resource ID to use behind
   // background tabs.  |has_custom_image| will be set to true if this has been
