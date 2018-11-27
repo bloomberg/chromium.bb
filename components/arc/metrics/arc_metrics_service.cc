@@ -349,7 +349,10 @@ void ArcMetricsService::OnTaskCreated(int32_t task_id,
 void ArcMetricsService::OnTaskDestroyed(int32_t task_id) {
   UpdateEngagementTime();
   auto it = std::find(task_ids_.begin(), task_ids_.end(), task_id);
-  DCHECK(it != task_ids_.end());
+  if (it == task_ids_.end()) {
+    LOG(WARNING) << "unknown task_id, background time might be undermeasured";
+    return;
+  }
   task_ids_.erase(it);
 }
 
