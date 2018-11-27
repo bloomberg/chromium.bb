@@ -827,6 +827,10 @@ ServiceManagerContext::ServiceManagerContext(
 }
 
 ServiceManagerContext::~ServiceManagerContext() {
+  ShutDown();
+}
+
+void ServiceManagerContext::ShutDown() {
   // NOTE: The in-process ServiceManager MUST be destroyed before the browser
   // process-wide ServiceManagerConnection. Otherwise it's possible for the
   // ServiceManager to receive connection requests for service:content_browser
@@ -837,6 +841,7 @@ ServiceManagerContext::~ServiceManagerContext() {
     ServiceManagerConnection::DestroyForProcess();
   service_manager_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DestroyConnectorOnIOThread));
+  packaged_services_connection_.reset();
 }
 
 // static
@@ -860,22 +865,12 @@ void ServiceManagerContext::StartBrowserConnection() {
   RegisterCommonBrowserInterfaces(browser_connection);
   browser_connection->Start();
 
-  bool network_service_enabled =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
-  bool network_service_in_process =
-      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess);
-  if (!network_service_enabled) {
-    // Create the in-process NetworkService object so that its getter is
-    // available on the IO thread.
-    GetNetworkService();
-  } else if (!network_service_in_process) {
-    // Start the network service process as soon as possible, since it is
-    // critical to start up performance.
-    browser_connection->GetConnector()->WarmService(
-        service_manager::ServiceFilter::ByName(mojom::kNetworkServiceName));
-  }
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  // Create the in-process NetworkService object so that its getter is
+  // available on the IO thread.
+  GetNetworkService();
 }
 
 // static

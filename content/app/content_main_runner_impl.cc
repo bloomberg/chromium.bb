@@ -39,6 +39,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "components/tracing/common/trace_startup.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/browser/browser_process_sub_thread.h"
@@ -153,6 +154,10 @@
 #include "services/service_manager/zygote/host/zygote_host_impl_linux.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "content/browser/android/browser_startup_controller.h"
+#endif
+
 namespace content {
 extern int GpuMain(const content::MainFunctionParams&);
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -166,6 +171,11 @@ extern int UtilityMain(const MainFunctionParams&);
 namespace content {
 
 namespace {
+
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+const char kAllowStartingServiceManagerOnly[] =
+    "allow-start-service-manager-only";
+#endif
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
 #if defined __LP64__
@@ -857,19 +867,25 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
   RegisterMainThreadFactories();
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-  // The thread used to start the ServiceManager is handed-off to
-  // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
-  if (process_type.empty()) {
-    startup_data_ = std::make_unique<StartupDataImpl>();
+  if (process_type.empty())
+    return RunServiceManager(main_params, start_service_manager_only);
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
+  return RunOtherNamedProcessTypeMain(process_type, main_params, delegate_);
+}
+
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
+                                             bool start_service_manager_only) {
+  if (is_browser_main_loop_started_)
+    return -1;
+
+  if (!service_manager_context_) {
     if (delegate_->ShouldCreateFeatureList()) {
       DCHECK(!field_trial_list_);
       field_trial_list_ = SetUpFieldTrialsAndFeatureList();
       delegate_->PostFieldTrialInitialization();
     }
-
-    startup_data_->thread = BrowserProcessSubThread::CreateIOThread();
-    main_params.startup_data = startup_data_.get();
 
     if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
       // Create and start the TaskScheduler early to allow upcoming code to use
@@ -904,12 +920,32 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
     // incorrect to post to a BrowserThread before this point.
     BrowserTaskExecutor::Create();
 
-    return RunBrowserProcessMain(main_params, delegate_);
+    // The thread used to start the ServiceManager is handed-off to
+    // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
+    service_manager_thread_ = BrowserProcessSubThread::CreateIOThread();
+    service_manager_context_.reset(
+        new ServiceManagerContext(service_manager_thread_->task_runner()));
+    download::SetIOTaskRunner(service_manager_thread_->task_runner());
+#if defined(OS_ANDROID)
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ServiceManagerStartupComplete));
+#endif
   }
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
-  return RunOtherNamedProcessTypeMain(process_type, main_params, delegate_);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kAllowStartingServiceManagerOnly) &&
+      start_service_manager_only) {
+    return -1;
+  }
+
+  is_browser_main_loop_started_ = true;
+  startup_data_ = std::make_unique<StartupDataImpl>();
+  startup_data_->thread = std::move(service_manager_thread_);
+  startup_data_->service_manager_context = service_manager_context_.get();
+  main_params.startup_data = startup_data_.get();
+  return RunBrowserProcessMain(main_params, delegate_);
 }
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 void ContentMainRunnerImpl::Shutdown() {
   DCHECK(is_initialized_);

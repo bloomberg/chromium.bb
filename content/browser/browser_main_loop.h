@@ -354,8 +354,10 @@ class CONTENT_EXPORT BrowserMainLoop {
       gpu_data_manager_visual_proxy_;
 #endif
 
+  ServiceManagerContext* service_manager_context_ = nullptr;
+  std::unique_ptr<ServiceManagerContext> owned_service_manager_context_;
+
   // Members initialized in |BrowserThreadsStarted()| --------------------------
-  std::unique_ptr<ServiceManagerContext> service_manager_context_;
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.

@@ -26,7 +26,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
@@ -300,19 +299,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
   InputHandlerManagerDestroyedAfterCompositorThread
 #endif
 
-// TODO(crbug.com/902311): We should not disable
-// |NonResourceDispatchIPCTasksDontGoThroughScheduler| for Windows.
-#if defined(OS_WIN) && !defined(LEAK_SANITIZER)
-#define MAYBE_NonResourceDispatchIPCTasksDontGoThroughScheduler \
-  DISABLED_NonResourceDispatchIPCTasksDontGoThroughScheduler
-#else
-#define MAYBE_NonResourceDispatchIPCTasksDontGoThroughScheduler \
-  NonResourceDispatchIPCTasksDontGoThroughScheduler
-#endif
-
 // Disabled under LeakSanitizer due to memory leaks.
 TEST_F(RenderThreadImplBrowserTest,
-       WILL_LEAK(MAYBE_NonResourceDispatchIPCTasksDontGoThroughScheduler)) {
+       WILL_LEAK(NonResourceDispatchIPCTasksDontGoThroughScheduler)) {
   // NOTE other than not being a resource message, the actual message is
   // unimportant.
 
