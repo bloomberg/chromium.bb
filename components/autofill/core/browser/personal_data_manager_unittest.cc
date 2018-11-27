@@ -38,6 +38,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/browser/suggestion_selection.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_profile_validator.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -1810,36 +1811,75 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_HideSubsets) {
   EXPECT_EQ(base::ASCIIToUTF16("Hollywood, TX"), suggestions[1].label);
 }
 
-TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestions_NoDeduplicationIfTooManyProfiles) {
-  // De-duplication of suggestions takes noticeable time when there are more
-  // than 15 or so suggestions. In that case, Auofill just shows them all to
-  // the user.
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-
-  personal_data_->AddProfile(profile);
-  // 16 profiles in a total, expecting no de-duplication.
-  for (int i = 0; i < 15; i++) {
-    AutofillProfile profile_no_state = profile;
-    profile_no_state.set_guid(base::GenerateGUID());
-    profile_no_state.SetRawInfo(ADDRESS_HOME_STATE, base::string16());
-    personal_data_->AddProfile(profile_no_state);
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_SuggestionsLimit) {
+  // Drawing takes noticeable time when there are more than 10 profiles.
+  // Therefore, we keep only the 10 first suggested profiles.
+  std::vector<AutofillProfile> profiles;
+  for (size_t i = 0; i < 2 * suggestion_selection::kMaxUniqueSuggestionsCount;
+       i++) {
+    AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+    test::SetProfileInfo(&profile, base::StringPrintf("Marion%zu", i).c_str(),
+                         "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox",
+                         "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                         "Hollywood", "CA", "91601", "US", "12345678910");
+    personal_data_->AddProfile(profile);
+    profiles.push_back(profile);
   }
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(NAME_FIRST), base::ASCIIToUTF16("Ma"), false,
+      std::vector<ServerFieldType>());
+
+  ASSERT_EQ(2 * suggestion_selection::kMaxUniqueSuggestionsCount,
+            personal_data_->GetProfiles().size());
+  ASSERT_EQ(suggestion_selection::kMaxUniqueSuggestionsCount,
+            suggestions.size());
+}
+
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfilesLimit) {
+  // Deduping takes noticeable time when there are more than 50 profiles.
+  // Therefore, keep only the 50 first pre-dedupe matching profiles.
+  std::vector<AutofillProfile> profiles;
+  for (size_t i = 0; i < suggestion_selection::kMaxSuggestedProfilesCount;
+       i++) {
+    AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+
+    test::SetProfileInfo(
+        &profile, "Marion", "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox",
+        base::StringPrintf("%zu123 Zoo St.\nSecond Line\nThird line", i)
+            .c_str(),
+        "unit 5", "Hollywood", "CA", "91601", "US", "12345678910");
+
+    // Set frecency such that they appear before the "last" profile (added
+    // next).
+    profile.set_use_count(12);
+    profile.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(1));
+
+    personal_data_->AddProfile(profile);
+    profiles.push_back(profile);
+  }
+
+  // Add another profile that matches, but that will get stripped out.
+  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Marie", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "000 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  profile.set_use_count(1);
+  profile.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(7));
+  personal_data_->AddProfile(profile);
 
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
-  ASSERT_EQ(16U, personal_data_->GetProfiles().size());
-  std::vector<ServerFieldType> types;
-  types.push_back(ADDRESS_HOME_CITY);
-  types.push_back(ADDRESS_HOME_STATE);
   std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("123"),
-      false, types);
-  ASSERT_EQ(16U, suggestions.size());
+      AutofillType(NAME_FIRST), base::ASCIIToUTF16("Ma"), false,
+      std::vector<ServerFieldType>());
+
+  ASSERT_EQ(suggestion_selection::kMaxSuggestedProfilesCount + 1,
+            personal_data_->GetProfiles().size());
+  ASSERT_EQ(1U, suggestions.size());
+  EXPECT_EQ(base::ASCIIToUTF16("Marion"), suggestions[0].value);
 }
 
 // Tests that GetProfileSuggestions orders its suggestions based on the frecency
@@ -5709,145 +5749,6 @@ TEST_F(PersonalDataManagerTest, LogStoredProfileMetrics) {
                                      3, 1);
   histogram_tester.ExpectBucketCount("Autofill.DaysSinceLastUse.StoredProfile",
                                      200, 1);
-}
-
-TEST_F(PersonalDataManagerTest, RemoveProfilesNotUsedSinceTimestamp) {
-  const char kHistogramName[] = "Autofill.AddressesSuppressedForDisuse";
-  const base::Time kNow = AutofillClock::Now();
-  constexpr size_t kNumProfiles = 10;
-
-  // Set up the profile vectors with last use dates ranging from |now| to 270
-  // days ago, in 30 day increments.  Note that the profiles are sorted by
-  // decreasing last use date.
-  std::vector<AutofillProfile> all_profile_data;
-  std::vector<AutofillProfile*> all_profile_ptrs;
-  all_profile_data.reserve(kNumProfiles);
-  all_profile_ptrs.reserve(kNumProfiles);
-  for (size_t i = 0; i < kNumProfiles; ++i) {
-    constexpr base::TimeDelta k30Days = base::TimeDelta::FromDays(30);
-    all_profile_data.emplace_back(base::GenerateGUID(), "https://example.com");
-    all_profile_data.back().set_use_date(kNow - (i * k30Days));
-    all_profile_ptrs.push_back(&all_profile_data.back());
-  }
-
-  // Verify that disused profiles get removed from the end. Note that the last
-  // four profiles have use dates more than 175 days ago.
-  {
-    // Create a working copy of the profile pointers.
-    std::vector<AutofillProfile*> profiles(all_profile_ptrs);
-
-    // The first 6 have use dates more recent than 175 days ago.
-    std::vector<AutofillProfile*> expected_profiles(profiles.begin(),
-                                                    profiles.begin() + 6);
-
-    // Filter the profiles while capturing histograms.
-    base::HistogramTester histogram_tester;
-    PersonalDataManager::RemoveProfilesNotUsedSinceTimestamp(
-        kNow - base::TimeDelta::FromDays(175), &profiles);
-
-    // Validate that we get the expected filtered profiles and histograms.
-    EXPECT_EQ(expected_profiles, profiles);
-    histogram_tester.ExpectTotalCount(kHistogramName, 1);
-    histogram_tester.ExpectBucketCount(kHistogramName, 4, 1);
-  }
-
-  // Reverse the profile order and verify that disused profiles get removed
-  // from the beginning. Note that the first five profiles, post reversal, have
-  // use dates more then 145 days ago.
-  {
-    // Create a reversed working copy of the profile pointers.
-    std::vector<AutofillProfile*> profiles(all_profile_ptrs.rbegin(),
-                                           all_profile_ptrs.rend());
-
-    // The last 5 profiles have use dates more recent than 145 days ago.
-    std::vector<AutofillProfile*> expected_profiles(profiles.begin() + 5,
-                                                    profiles.end());
-
-    // Filter the profiles while capturing histograms.
-    base::HistogramTester histogram_tester;
-    PersonalDataManager::RemoveProfilesNotUsedSinceTimestamp(
-        kNow - base::TimeDelta::FromDays(145), &profiles);
-
-    // Validate that we get the expected filtered profiles and histograms.
-    EXPECT_EQ(expected_profiles, profiles);
-    histogram_tester.ExpectTotalCount(kHistogramName, 1);
-    histogram_tester.ExpectBucketCount(kHistogramName, 5, 1);
-  }
-
-  // Randomize the profile order and validate that the filtered list retains
-  // that order. Note that the six profiles have use dates more then 115 days
-  // ago.
-  {
-    // A handy constant.
-    const base::Time k115DaysAgo = kNow - base::TimeDelta::FromDays(115);
-
-    // Created a shuffled master copy of the profile pointers.
-    std::vector<AutofillProfile*> shuffled_profiles(all_profile_ptrs);
-    base::RandomShuffle(shuffled_profiles.begin(), shuffled_profiles.end());
-
-    // Copy the shuffled profile pointer collections to use as the working set.
-    std::vector<AutofillProfile*> profiles(shuffled_profiles);
-
-    // Filter the profiles while capturing histograms.
-    base::HistogramTester histogram_tester;
-    PersonalDataManager::RemoveProfilesNotUsedSinceTimestamp(k115DaysAgo,
-                                                             &profiles);
-
-    // Validate that we have the right profiles. Iterate of the the shuffled
-    // master copy and the filtered copy at the same time. making sure that the
-    // elements in the filtered copy occur in the same order as the shuffled
-    // master. Along the way, validate that the elements in and out of the
-    // filtered copy have appropriate use dates.
-    EXPECT_EQ(4u, profiles.size());
-    auto it = shuffled_profiles.begin();
-    for (const AutofillProfile* profile : profiles) {
-      for (; it != shuffled_profiles.end() && (*it) != profile; ++it) {
-        EXPECT_LT((*it)->use_date(), k115DaysAgo);
-      }
-      ASSERT_TRUE(it != shuffled_profiles.end());
-      EXPECT_GT(profile->use_date(), k115DaysAgo);
-      ++it;
-    }
-    for (; it != shuffled_profiles.end(); ++it) {
-      EXPECT_LT((*it)->use_date(), k115DaysAgo);
-    }
-
-    // Validate the histograms.
-    histogram_tester.ExpectTotalCount(kHistogramName, 1);
-    histogram_tester.ExpectBucketCount(kHistogramName, 6, 1);
-  }
-
-  // Verify all profiles are removed if they're all disused.
-  {
-    // Create a working copy of the profile pointers.
-    std::vector<AutofillProfile*> profiles(all_profile_ptrs);
-
-    // Filter the profiles while capturing histograms.
-    base::HistogramTester histogram_tester;
-    PersonalDataManager::RemoveProfilesNotUsedSinceTimestamp(
-        kNow + base::TimeDelta::FromDays(1), &profiles);
-
-    // Validate that we get the expected filtered profiles and histograms.
-    EXPECT_TRUE(profiles.empty());
-    histogram_tester.ExpectTotalCount(kHistogramName, 1);
-    histogram_tester.ExpectBucketCount(kHistogramName, kNumProfiles, 1);
-  }
-
-  // Verify all profiles are retained if they're sufficiently recently used.
-  {
-    // Create a working copy of the profile pointers.
-    std::vector<AutofillProfile*> profiles(all_profile_ptrs);
-
-    // Filter the profiles while capturing histograms.
-    base::HistogramTester histogram_tester;
-    PersonalDataManager::RemoveProfilesNotUsedSinceTimestamp(
-        kNow - base::TimeDelta::FromDays(720), &profiles);
-
-    // Validate that we get the expected filtered profiles and histograms.
-    EXPECT_EQ(all_profile_ptrs, profiles);
-    histogram_tester.ExpectTotalCount(kHistogramName, 1);
-    histogram_tester.ExpectBucketCount(kHistogramName, 0, 1);
-  }
 }
 
 TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
