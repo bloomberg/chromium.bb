@@ -7,11 +7,9 @@
 
 #include <memory>
 
+#include "services/audio/service.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-
-namespace service_manager {
-class Service;
-}
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace media {
 class AudioManager;
@@ -22,13 +20,15 @@ namespace audio {
 // Creates an instance of Audio service which will live in the current process
 // on top of AudioManager instance belonging to that process. Must be called on
 // the device thread of AudioManager.
-std::unique_ptr<service_manager::Service> CreateEmbeddedService(
-    media::AudioManager* audio_manager);
+std::unique_ptr<Service> CreateEmbeddedService(
+    media::AudioManager* audio_manager,
+    service_manager::mojom::ServiceRequest request);
 
 // Creates an instance of Audio service which will live in the current process
 // and will create and own an AudioManager instance.
-std::unique_ptr<service_manager::Service> CreateStandaloneService(
-    std::unique_ptr<service_manager::BinderRegistry> registry);
+std::unique_ptr<Service> CreateStandaloneService(
+    std::unique_ptr<service_manager::BinderRegistry> registry,
+    service_manager::mojom::ServiceRequest request);
 
 }  // namespace audio
 

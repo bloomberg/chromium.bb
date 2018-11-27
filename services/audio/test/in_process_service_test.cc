@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_task_environment.h"
 #include "media/audio/audio_system_test_util.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
@@ -12,17 +13,20 @@
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service.h"
 #include "services/audio/test/service_lifetime_test_template.h"
+#include "services/audio/tests_catalog_source.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Exactly;
 using testing::Invoke;
 
 namespace audio {
 
-class ServiceTestClient : public service_manager::test::ServiceTestClient,
+class ServiceTestHelper : public service_manager::Service,
                           public service_manager::mojom::ServiceFactory {
  public:
   class AudioThreadContext
@@ -42,55 +46,57 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
                            this, std::move(request)));
         return;
       }
-      DCHECK(!service_context_);
-      service_context_ = std::make_unique<service_manager::ServiceContext>(
-          std::make_unique<audio::Service>(
-              std::make_unique<InProcessAudioManagerAccessor>(audio_manager_),
-              service_quit_timeout_, false /* device_notifications_enabled */,
-              std::make_unique<service_manager::BinderRegistry>()),
+      DCHECK(!service_);
+      service_ = std::make_unique<audio::Service>(
+          std::make_unique<InProcessAudioManagerAccessor>(audio_manager_),
+          service_quit_timeout_, false /* device_notifications_enabled */,
+          std::make_unique<service_manager::BinderRegistry>(),
           std::move(request));
-      service_context_->SetQuitClosure(base::BindRepeating(
+      service_->set_termination_closure(base::BindOnce(
           &AudioThreadContext::QuitOnAudioThread, base::Unretained(this)));
     }
 
     void QuitOnAudioThread() {
-      if (!audio_manager_->GetTaskRunner()->BelongsToCurrentThread()) {
-        audio_manager_->GetTaskRunner()->PostTask(
-            FROM_HERE,
-            base::BindOnce(&AudioThreadContext::QuitOnAudioThread, this));
-        return;
-      }
-      service_context_.reset();
+      DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+      service_.reset();
     }
 
    private:
     friend class base::RefCountedThreadSafe<AudioThreadContext>;
-    virtual ~AudioThreadContext() {
-      if (service_context_)
-        service_context_->QuitNow();
-    }
+    virtual ~AudioThreadContext() = default;
 
     media::AudioManager* const audio_manager_;
     const base::TimeDelta service_quit_timeout_;
-    std::unique_ptr<service_manager::ServiceContext> service_context_;
+    std::unique_ptr<Service> service_;
+
+    DISALLOW_COPY_AND_ASSIGN(AudioThreadContext);
   };
 
-  ServiceTestClient(service_manager::test::ServiceTest* test,
-                    media::AudioManager* audio_manager,
-                    base::TimeDelta service_quit_timeout)
-      : service_manager::test::ServiceTestClient(test),
+  ServiceTestHelper(media::AudioManager* audio_manager,
+                    base::TimeDelta service_quit_timeout,
+                    service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)),
+        audio_manager_(audio_manager),
         audio_thread_context_(
             new AudioThreadContext(audio_manager, service_quit_timeout)) {
     registry_.AddInterface<service_manager::mojom::ServiceFactory>(
-        base::BindRepeating(&ServiceTestClient::Create,
+        base::BindRepeating(&ServiceTestHelper::Create,
                             base::Unretained(this)));
   }
 
-  ~ServiceTestClient() override {}
+  ~ServiceTestHelper() override {
+    // Ensure that the AudioThreadContext is destroyed on the correct thread by
+    // passing our only reference into a task posted there.
+    audio_manager_->GetTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&AudioThreadContext::QuitOnAudioThread,
+                                  std::move(audio_thread_context_)));
+  }
+
+  service_manager::Connector* connector() {
+    return service_binding_.GetConnector();
+  }
 
  protected:
-  bool OnServiceManagerConnectionLost() override { return true; }
-
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
@@ -111,11 +117,14 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   }
 
  private:
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
+  media::AudioManager* const audio_manager_;
   scoped_refptr<AudioThreadContext> audio_thread_context_;
-  DISALLOW_COPY_AND_ASSIGN(ServiceTestClient);
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceTestHelper);
 };
 
 // if |use_audio_thread| is true, AudioManager has a dedicated audio thread and
@@ -125,11 +134,18 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
 // thread it lives on (which imitates access to Audio service from UI thread on
 // Mac).
 template <bool use_audio_thread>
-class InProcessServiceTest : public service_manager::test::ServiceTest {
+class InProcessServiceTest : public testing::Test {
  public:
   explicit InProcessServiceTest(base::TimeDelta service_quit_timeout)
-      : ServiceTest("audio_unittests"),
-        service_quit_timeout_(service_quit_timeout) {}
+      : test_service_manager_(CreateUnittestCatalog()),
+        audio_manager_(
+            std::make_unique<media::TestAudioThread>(use_audio_thread)),
+        helper_(std::make_unique<ServiceTestHelper>(
+            &audio_manager_,
+            service_quit_timeout,
+            test_service_manager_.RegisterTestInstance("audio_unittests"))),
+        audio_system_(std::make_unique<AudioSystemToServiceAdapter>(
+            connector()->Clone())) {}
 
   InProcessServiceTest()
       : InProcessServiceTest(base::TimeDelta() /* not timeout */) {}
@@ -137,41 +153,34 @@ class InProcessServiceTest : public service_manager::test::ServiceTest {
   ~InProcessServiceTest() override {}
 
  protected:
-  // service_manager::test::ServiceTest:
-  std::unique_ptr<service_manager::Service> CreateService() override {
-    return std::make_unique<ServiceTestClient>(this, audio_manager_.get(),
-                                               service_quit_timeout_);
-  }
-
-  void SetUp() override {
-    audio_manager_ = std::make_unique<media::MockAudioManager>(
-        std::make_unique<media::TestAudioThread>(use_audio_thread));
-    ServiceTest::SetUp();
-    audio_system_ =
-        std::make_unique<AudioSystemToServiceAdapter>(connector()->Clone());
+  service_manager::Connector* connector() {
+    DCHECK(helper_);
+    return helper_->connector();
   }
 
   void TearDown() override {
     audio_system_.reset();
 
-    // Deletes ServiceTestClient, which will result in posting
+    // Deletes ServiceTestHelper, which will result in posting
     // AuioThreadContext::QuitOnAudioThread() to AudioManager thread, so that
     // Service is delete there.
-    ServiceTest::TearDown();
+    helper_.reset();
 
     // Joins AudioManager thread if it is used.
-    audio_manager_->Shutdown();
+    audio_manager_.Shutdown();
   }
 
  protected:
-  media::MockAudioManager* audio_manager() { return audio_manager_.get(); }
+  media::MockAudioManager* audio_manager() { return &audio_manager_; }
   media::AudioSystem* audio_system() { return audio_system_.get(); }
 
-  std::unique_ptr<media::MockAudioManager> audio_manager_;
+ private:
+  base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::TestServiceManager test_service_manager_;
+  media::MockAudioManager audio_manager_;
+  std::unique_ptr<ServiceTestHelper> helper_;
   std::unique_ptr<media::AudioSystem> audio_system_;
 
- private:
-  const base::TimeDelta service_quit_timeout_;
   DISALLOW_COPY_AND_ASSIGN(InProcessServiceTest);
 };
 
