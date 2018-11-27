@@ -393,7 +393,7 @@ config("compiler") {
 
     # Compiler instrumentation can introduce dependencies in DSOs to symbols in
     # the executable they are loaded into, so they are unresolved at link-time.
-    if (!using_sanitizer && !is_safestack) {
+    if (!using_sanitizer) {
       ldflags += [
         "-Wl,-z,defs",
         "-Wl,--as-needed",

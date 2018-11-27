@@ -283,11 +283,7 @@ if (!is_android && !is_mac) {
         }
 
         if (is_desktop_linux && !is_component_build && !using_sanitizer) {
-          if (is_safestack) {
-            version_script = "//build/linux/chrome.safestack.map"
-          } else {
-            version_script = "//build/linux/chrome.map"
-          }
+          version_script = "//build/linux/chrome.map"
           inputs = [
             version_script,
           ]
