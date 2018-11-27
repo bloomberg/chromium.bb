@@ -1717,8 +1717,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   auto request = mojo::MakeRequest(&factory);
   auto temp_web_contents =
       WebContents::Create(WebContents::CreateParams(temp_profile));
-  EXPECT_TRUE(api->MaybeProxyURLLoaderFactory(temp_web_contents->GetMainFrame(),
-                                              false, &request));
+  content::RenderFrameHost* frame = temp_web_contents->GetMainFrame();
+  EXPECT_TRUE(api->MaybeProxyURLLoaderFactory(
+      frame->GetProcess()->GetBrowserContext(), frame,
+      frame->GetProcess()->GetID(), false, &request));
   temp_web_contents.reset();
   auto params = network::mojom::URLLoaderFactoryParams::New();
   params->process_id = 0;

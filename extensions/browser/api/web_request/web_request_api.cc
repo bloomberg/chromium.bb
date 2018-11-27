@@ -593,7 +593,9 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
 }
 
 bool WebRequestAPI::MaybeProxyURLLoaderFactory(
+    content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
+    int render_process_id,
     bool is_navigation,
     network::mojom::URLLoaderFactoryRequest* factory_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -627,6 +629,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
 
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data;
   if (is_navigation) {
+    DCHECK(frame);
     int tab_id;
     int window_id;
     ExtensionsBrowserClient::Get()->GetTabAndWindowIdForWebContents(
@@ -637,9 +640,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
 
   // NOTE: This request may be proxied on behalf of an incognito frame, but
   // |this| will always be bound to a regular profile (see
-  // |BrowserContextKeyedAPI::kServiceRedirectedInIncognito|). As such, we use
-  // the frame's BrowserContext.
-  auto* browser_context = frame->GetProcess()->GetBrowserContext();
+  // |BrowserContextKeyedAPI::kServiceRedirectedInIncognito|).
   DCHECK(browser_context == browser_context_ ||
          (browser_context->IsOffTheRecord() &&
           ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context) ==
@@ -650,7 +651,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
                      browser_context, browser_context->GetResourceContext(),
                      // Match the behavior of the WebRequestInfo constructor
                      // which takes a net::URLRequest*.
-                     is_navigation ? -1 : frame->GetProcess()->GetID(),
+                     is_navigation ? -1 : render_process_id,
                      request_id_generator_, std::move(navigation_ui_data),
                      base::Unretained(info_map_), std::move(proxied_request),
                      std::move(target_factory_info)));

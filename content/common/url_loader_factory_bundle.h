@@ -42,6 +42,7 @@ class CONTENT_EXPORT URLLoaderFactoryBundleInfo
   URLLoaderFactoryBundleInfo();
   URLLoaderFactoryBundleInfo(
       network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
+      network::mojom::URLLoaderFactoryPtrInfo default_network_factory_info,
       SchemeMap scheme_specific_factory_infos,
       OriginMap initiator_specific_factory_infos,
       bool bypass_redirect_checks);
@@ -49,6 +50,10 @@ class CONTENT_EXPORT URLLoaderFactoryBundleInfo
 
   network::mojom::URLLoaderFactoryPtrInfo& default_factory_info() {
     return default_factory_info_;
+  }
+
+  network::mojom::URLLoaderFactoryPtrInfo& default_network_factory_info() {
+    return default_network_factory_info_;
   }
 
   SchemeMap& scheme_specific_factory_infos() {
@@ -68,6 +73,7 @@ class CONTENT_EXPORT URLLoaderFactoryBundleInfo
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info_;
+  network::mojom::URLLoaderFactoryPtrInfo default_network_factory_info_;
   SchemeMap scheme_specific_factory_infos_;
   OriginMap initiator_specific_factory_infos_;
   bool bypass_redirect_checks_ = false;
@@ -128,7 +134,30 @@ class CONTENT_EXPORT URLLoaderFactoryBundle
     return output;
   }
 
+  // |default_factory_| is the default factory used by the bundle. It usually
+  // goes to "network", but it's possible it was overriden by a web platform
+  // feature like AppCache or for non-network-based pages like WebUI.
+  //
+  // |default_network_factory_| is the default factory that *always* goes to
+  // "network" if it is non-null.
+  //
+  // When both are set, it means that the context that gets this bundle has
+  // an overriding factory in |default_factory_| but also needs "network"
+  // factory (which is |default_network_factory_|) in some cases. This is used
+  // when a frame has AppCache, but is also controlled by Service Workers so it
+  // wants to bypass |default_factory_| in regular cases, but still needs
+  // "network" for fallback cases. See
+  // ChildURLLoaderFactoryBundle::CloneWithoutDefaultFactory() to see when it
+  // can be used instead of |default_factory_|.
+  //
+  // Note that the reason we don't simply let the consumer (i.e. renderer) use
+  // the per-process default network loader factory (exposed by
+  // RenderProcessHostImpl) is that we want the relevant factory that might be
+  // proxied like WebRequestProxyingURLLoaderFactory.
+  // TODO(bashi): Figure out a better way to handle all above cases without
+  // these confusing |default_factory_| and |default_network_factory_|.
   network::mojom::URLLoaderFactoryPtr default_factory_;
+  network::mojom::URLLoaderFactoryPtr default_network_factory_;
 
   // Map from URL scheme to URLLoaderFactoryPtr for handling URL requests for
   // schemes not handled by the |default_factory_|.  See also

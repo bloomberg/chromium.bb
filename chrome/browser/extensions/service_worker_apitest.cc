@@ -813,6 +813,49 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest,
   EXPECT_EQ("hello", ExecuteScriptInBackgroundPage(extension->id(), kScript));
 }
 
+// Tests that fetch() from service worker and network fallback
+// go through webRequest.onBeforeRequest API.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, OnBeforeRequest) {
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("service_worker/webrequest"), kFlagNone);
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Start a service worker and make it control the page.
+  GURL page_url = embedded_test_server()->GetURL(
+      "/extensions/api_test/service_worker/"
+      "webrequest/webpage.html");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  content::WaitForLoadStop(web_contents);
+
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(web_contents,
+                                                     "register();", &result));
+  EXPECT_EQ("ready", result);
+
+  // Initiate a fetch that the service worker doesn't intercept
+  // (network fallback).
+  result.clear();
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "doFetch('hello.txt?fallthrough');", &result));
+  EXPECT_EQ("hello", result);
+  EXPECT_EQ(
+      "/extensions/api_test/service_worker/webrequest/hello.txt?fallthrough",
+      ExecuteScriptInBackgroundPage(extension->id(), "getLastHookedPath()"));
+
+  // Initiate a fetch that results in calling fetch() in the service worker.
+  result.clear();
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "doFetch('hello.txt?respondWithFetch');", &result));
+  EXPECT_EQ("hello", result);
+  EXPECT_EQ(
+      "/extensions/api_test/service_worker/webrequest/"
+      "hello.txt?respondWithFetch",
+      ExecuteScriptInBackgroundPage(extension->id(), "getLastHookedPath()"));
+}
+
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, SWServedBackgroundPageReceivesEvent) {
   const Extension* extension =
       StartTestFromBackgroundPage("replace_background.js");

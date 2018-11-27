@@ -186,11 +186,16 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   // BrowserContext, |*factory_request| is swapped out for a new request which
   // proxies through an internal URLLoaderFactory. This supports lifetime
   // observation and control on behalf of the WebRequest API.
+  // |frame| and |render_process_id| are the frame and render process id in
+  // which the URLLoaderFactory will be used. |frame| can be nullptr for
+  // factories proxied for service worker.
   //
   // Returns |true| if the URLLoaderFactory will be proxied; |false| otherwise.
   // Only used when the Network Service is enabled.
   bool MaybeProxyURLLoaderFactory(
+      content::BrowserContext* browser_context,
       content::RenderFrameHost* frame,
+      int render_process_id,
       bool is_navigation,
       network::mojom::URLLoaderFactoryRequest* factory_request);
 

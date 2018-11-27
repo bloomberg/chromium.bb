@@ -38,6 +38,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
       std::unique_ptr<URLLoaderFactoryBundleInfo> base_info);
   ChildURLLoaderFactoryBundleInfo(
       network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
+      network::mojom::URLLoaderFactoryPtrInfo default_network_factory_info,
       SchemeMap scheme_specific_factory_infos,
       OriginMap initiator_specific_factory_infos,
       PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
@@ -97,7 +98,9 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
   // Returns an info that omits this bundle's default factory, if any. This is
-  // useful to make a clone that bypasses AppCache, for example.
+  // useful to make a clone that bypasses AppCache, for example. The clone's
+  // default factory is cloned from this bundle's |default_network_factory_|, if
+  // any.
   virtual std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   CloneWithoutDefaultFactory();
 

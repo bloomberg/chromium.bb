@@ -29,6 +29,7 @@ class CONTENT_EXPORT TrackedChildURLLoaderFactoryBundleInfo
   TrackedChildURLLoaderFactoryBundleInfo();
   TrackedChildURLLoaderFactoryBundleInfo(
       network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
+      network::mojom::URLLoaderFactoryPtrInfo default_network_factory_info,
       SchemeMap scheme_specific_factory_infos,
       OriginMap initiator_specific_factory_infos,
       PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,

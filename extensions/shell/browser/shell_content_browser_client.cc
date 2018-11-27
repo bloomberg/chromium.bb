@@ -288,6 +288,7 @@ void ShellContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
 bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
+    int render_process_id,
     bool is_navigation,
     const url::Origin& request_initiator,
     network::mojom::URLLoaderFactoryRequest* factory_request,
@@ -296,7 +297,8 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
           browser_context);
   bool use_proxy = web_request_api->MaybeProxyURLLoaderFactory(
-      frame, is_navigation, factory_request);
+      browser_context, frame, render_process_id, is_navigation,
+      factory_request);
   if (bypass_redirect_checks)
     *bypass_redirect_checks = use_proxy;
   return use_proxy;

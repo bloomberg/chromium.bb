@@ -711,6 +711,7 @@ void ContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
 bool ContentBrowserClient::WillCreateURLLoaderFactory(
     BrowserContext* browser_context,
     RenderFrameHost* frame,
+    int render_process_id,
     bool is_navigation,
     const url::Origin& request_initiator,
     network::mojom::URLLoaderFactoryRequest* factory_request,
