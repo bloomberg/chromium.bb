@@ -58,7 +58,6 @@
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_controller.h"
@@ -121,7 +120,6 @@ NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting =
 NSString* const kTabUrlKey = @"url";
 
 @interface Tab ()<CRWWebStateObserver> {
-  __weak TabModel* _parentTabModel;
   ios::ChromeBrowserState* _browserState;
 
   OpenInController* _openInController;
@@ -261,11 +259,6 @@ NSString* const kTabUrlKey = @"url";
 }
 
 #pragma mark - Public API
-
-- (void)setParentTabModel:(TabModel*)model {
-  DCHECK(!model || !_parentTabModel);
-  _parentTabModel = model;
-}
 
 - (UIView*)viewForPrinting {
   return self.webController.viewForPrinting;
@@ -445,10 +438,6 @@ NSString* const kTabUrlKey = @"url";
 #pragma mark - TestingSupport
 
 @implementation Tab (TestingSupport)
-
-- (TabModel*)parentTabModel {
-  return _parentTabModel;
-}
 
 // TODO(crbug.com/620465): this require the Tab's WebState to be a WebStateImpl,
 // remove this helper once this is no longer true (and fix the unit tests).

@@ -10,12 +10,11 @@
 #include "base/macros.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 
-@class TabModel;
 
 // WebStateList delegate for the old architecture.
 class TabModelWebStateListDelegate : public WebStateListDelegate {
  public:
-  explicit TabModelWebStateListDelegate(TabModel* tab_model);
+  TabModelWebStateListDelegate();
   ~TabModelWebStateListDelegate() override;
 
   // WebStateListDelegate implementation.
@@ -23,8 +22,6 @@ class TabModelWebStateListDelegate : public WebStateListDelegate {
   void WebStateDetached(web::WebState* web_state) override;
 
  private:
-  __weak TabModel* tab_model_ = nil;
-
   DISALLOW_COPY_AND_ASSIGN(TabModelWebStateListDelegate);
 };
 

@@ -328,8 +328,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   if ((self = [super init])) {
     _observers = [TabModelObservers observers];
 
-    _webStateListDelegate =
-        std::make_unique<TabModelWebStateListDelegate>(self);
+    _webStateListDelegate = std::make_unique<TabModelWebStateListDelegate>();
     _webStateList = std::make_unique<WebStateList>(_webStateListDelegate.get());
 
     _browserState = browserState;

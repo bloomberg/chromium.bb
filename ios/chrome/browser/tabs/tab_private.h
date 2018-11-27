@@ -18,9 +18,6 @@
 
 @interface Tab (TestingSupport)
 
-// Returns the Tab owning TabModel.
-- (TabModel*)parentTabModel;
-
 // The CRWWebController from the Tab's WebState. This should only be used
 // by tests and will be removed when Tab can wrap TestWebState (see issue
 // crbug.com/620465 for progress).
