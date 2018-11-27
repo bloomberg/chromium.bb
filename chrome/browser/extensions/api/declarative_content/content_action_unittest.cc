@@ -122,43 +122,79 @@ TEST(DeclarativeContentActionTest, ShowPageActionWithoutPageAction) {
                  "  \"instanceType\": \"declarativeContent.ShowPageAction\",\n"
                  "}"),
       &error);
-  EXPECT_THAT(error, testing::HasSubstr("without a page action"));
+  EXPECT_THAT(error, testing::HasSubstr("without an action"));
   ASSERT_FALSE(result.get());
 }
 
-TEST(DeclarativeContentActionTest, ShowPageAction) {
+class ParameterizedDeclarativeContentActionTest
+    : public ::testing::TestWithParam<ExtensionBuilder::ActionType> {};
+
+TEST_P(ParameterizedDeclarativeContentActionTest, ShowPageAction) {
   TestExtensionEnvironment env;
 
-  const Extension* extension = env.MakeExtension(
-      *ParseJson("{\"page_action\": { \"default_title\": \"Extension\" } }"));
-  TestingProfile profile;
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .SetAction(GetParam())
+          .SetLocation(Manifest::INTERNAL)
+          .Build();
+
+  env.GetExtensionService()->AddExtension(extension.get());
+
   std::string error;
+  TestingProfile profile;
   std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      &profile, extension,
-      *ParseJson("{\n"
-                 "  \"instanceType\": \"declarativeContent.ShowPageAction\",\n"
-                 "}"),
+      nullptr, extension.get(),
+      *ParseJson(R"({"instanceType": "declarativeContent.ShowPageAction"})"),
       &error);
-  EXPECT_EQ("", error);
+  EXPECT_TRUE(error.empty()) << error;
   ASSERT_TRUE(result.get());
 
-  ExtensionAction* page_action =
-      ExtensionActionManager::Get(env.profile())->GetPageAction(*extension);
+  ExtensionAction* action = nullptr;
+  auto* action_manager = ExtensionActionManager::Get(env.profile());
+  const bool is_browser_action =
+      GetParam() == ExtensionBuilder::ActionType::BROWSER_ACTION;
+  if (is_browser_action) {
+    action = action_manager->GetBrowserAction(*extension);
+    ASSERT_TRUE(action);
+    // Switch the default so we properly see the action toggling.
+    action->SetIsVisible(ExtensionAction::kDefaultTabId, false);
+  } else {
+    action = action_manager->GetPageAction(*extension);
+    ASSERT_TRUE(action);
+  }
+
   std::unique_ptr<content::WebContents> contents = env.MakeTab();
   const int tab_id = ExtensionTabUtil::GetTabId(contents.get());
-  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
-  ContentAction::ApplyInfo apply_info = {
-    extension, env.profile(), contents.get(), 100
-  };
+
+  // Currently, the action is not visible on the given tab.
+  EXPECT_FALSE(action->GetIsVisible(tab_id));
+  ContentAction::ApplyInfo apply_info = {extension.get(), env.profile(),
+                                         contents.get(), /*priority=*/100};
+
+  // Apply the content action once. The action should be visible on the tab.
   result->Apply(apply_info);
-  EXPECT_TRUE(page_action->GetIsVisible(tab_id));
+  EXPECT_TRUE(action->GetIsVisible(tab_id));
+  // Apply the content action a second time. The extension action should be
+  // visible on the tab, with a "count" of 2 (i.e., two different content
+  // actions are keeping it visible).
   result->Apply(apply_info);
-  EXPECT_TRUE(page_action->GetIsVisible(tab_id));
+  EXPECT_TRUE(action->GetIsVisible(tab_id));
+  // Revert one of the content actions. Since two content actions caused the
+  // extension action to be visible, it should still be visible after reverting
+  // only one.
   result->Revert(apply_info);
-  EXPECT_TRUE(page_action->GetIsVisible(tab_id));
+  EXPECT_TRUE(action->GetIsVisible(tab_id));
+  // Revert the final content action. The extension action should now be hidden
+  // again.
   result->Revert(apply_info);
-  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+  EXPECT_FALSE(action->GetIsVisible(tab_id));
 }
+
+INSTANTIATE_TEST_CASE_P(
+    ,
+    ParameterizedDeclarativeContentActionTest,
+    testing::Values(ExtensionBuilder::ActionType::BROWSER_ACTION,
+                    ExtensionBuilder::ActionType::PAGE_ACTION));
 
 TEST(DeclarativeContentActionTest, SetIcon) {
   TestExtensionEnvironment env;

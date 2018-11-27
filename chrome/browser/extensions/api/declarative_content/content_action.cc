@@ -42,8 +42,8 @@ const char kInvalidInstanceTypeError[] =
     "An action has an invalid instanceType: %s";
 const char kMissingInstanceTypeError[] = "Action is missing instanceType";
 const char kMissingParameter[] = "Missing parameter is required: %s";
-const char kNoPageAction[] =
-    "Can't use declarativeContent.ShowPageAction without a page action";
+const char kNoAction[] =
+    "Can't use declarativeContent.ShowPageAction without an action";
 const char kNoPageOrBrowserAction[] =
     "Can't use declarativeContent.SetIcon without a page or browser action";
 const char kIconNotSufficientlyVisible[] =
@@ -66,9 +66,12 @@ class ShowPageAction : public ContentAction {
       const Extension* extension,
       const base::DictionaryValue* dict,
       std::string* error) {
-    // We can't show a page action if the extension doesn't have one.
-    if (ActionInfo::GetPageActionInfo(extension) == NULL) {
-      *error = kNoPageAction;
+    // TODO(devlin): We should probably throw an error if the extension has no
+    // action specified in the manifest. Currently, this is allowed since
+    // extensions will have a synthesized page action.
+    if (!ActionInfo::GetPageActionInfo(extension) &&
+        !ActionInfo::GetBrowserActionInfo(extension)) {
+      *error = kNoAction;
       return std::unique_ptr<ContentAction>();
     }
     return base::WrapUnique(new ShowPageAction);
@@ -77,7 +80,7 @@ class ShowPageAction : public ContentAction {
   // Implementation of ContentAction:
   void Apply(const ApplyInfo& apply_info) const override {
     ExtensionAction* action =
-        GetPageAction(apply_info.browser_context, apply_info.extension);
+        GetAction(apply_info.browser_context, apply_info.extension);
     action->DeclarativeShow(ExtensionTabUtil::GetTabId(apply_info.tab));
     ExtensionActionAPI::Get(apply_info.browser_context)->NotifyChange(
         action, apply_info.tab, apply_info.browser_context);
@@ -86,7 +89,7 @@ class ShowPageAction : public ContentAction {
   void Reapply(const ApplyInfo& apply_info) const override {}
   void Revert(const ApplyInfo& apply_info) const override {
     if (ExtensionAction* action =
-            GetPageAction(apply_info.browser_context, apply_info.extension)) {
+            GetAction(apply_info.browser_context, apply_info.extension)) {
       action->UndoDeclarativeShow(ExtensionTabUtil::GetTabId(apply_info.tab));
       ExtensionActionAPI::Get(apply_info.browser_context)->NotifyChange(
           action, apply_info.tab, apply_info.browser_context);
@@ -94,11 +97,10 @@ class ShowPageAction : public ContentAction {
   }
 
  private:
-  static ExtensionAction* GetPageAction(
-      content::BrowserContext* browser_context,
-      const Extension* extension) {
+  static ExtensionAction* GetAction(content::BrowserContext* browser_context,
+                                    const Extension* extension) {
     return ExtensionActionManager::Get(browser_context)
-        ->GetPageAction(*extension);
+        ->GetExtensionAction(*extension);
   }
 
   DISALLOW_COPY_AND_ASSIGN(ShowPageAction);
