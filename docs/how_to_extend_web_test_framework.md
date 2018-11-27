@@ -1,6 +1,6 @@
-# How to Extend the Layout Test Framework
+# How to Extend the Web Test Framework
 
-The Layout Test Framework that Blink uses is a regression testing tool that is
+The Web Test Framework that Blink uses is a regression testing tool that is
 multi-platform and it has a large amount of tools that help test varying types
 of regression, such as pixel diffs, text diffs, etc. The framework is mainly
 used by Blink, however it was made to be extensible so that other projects can
@@ -12,18 +12,17 @@ to help people who want to actually the framework to test whatever they want.
 ## Background
 
 Before you can start actually extending the framework, you should be familiar
-with how to use it. See the
-[layout tests documentation](testing/layout_tests.md).
+with how to use it. See the [web tests documentation](testing/web_tests.md).
 
 ## How to Extend the Framework
 
 There are two parts to actually extending framework to test a piece of software.
 The first part is extending certain files in:
 [/third_party/blink/tools/blinkpy/web_tests/](/third_party/blink/tools/blinkpy/web_tests/)
-The code in `blinkpy/web_tests` is the layout test framework itself
+The code in `blinkpy/web_tests` is the web test framework itself
 
 The second part is creating a driver (program) to actually communicate the
-layout test framework. This part is significantly more tricky and dependent on
+web test framework. This part is significantly more tricky and dependent on
 what exactly exactly is being tested.
 
 ### Part 1
@@ -31,10 +30,10 @@ what exactly exactly is being tested.
 This part isn’t too difficult. There are basically two classes that need to be
 extended (ideally, just inherited from). These classes are:
 
-*   `Driver`. Located in `layout_tests/port/driver.py`. Each instance of this is
+*   `Driver`. Located in `web_tests/port/driver.py`. Each instance of this is
     the class that will actually an instance of the program that produces the
     test data (program in Part 2).
-*   `Port`. Located in `layout_tests/port/base.py`. This class is responsible
+*   `Port`. Located in `web_tests/port/base.py`. This class is responsible
     creating drivers with the correct settings, giving access to certain OS
     functionality to access expected files, etc.
 
@@ -129,7 +128,7 @@ Here are some of the functions that most likely need to be overridden.
 *   `layout_tests_dir`
     *   This tells the port where to look for all the and everything associated
         with them such as resources files.
-    *   By default it returns the absolute path to the layout tests directory.
+    *   By default it returns the absolute path to the web tests directory.
     *   If you are planning on running something in the chromium src/ directory,
         there are helper functions to allow you to return a path relative to the
         base of the chromium src directory.
@@ -137,7 +136,7 @@ Here are some of the functions that most likely need to be overridden.
 The rest of the functions can definitely be overridden for your projects
 specific needs, however these are the bare minimum needed to get it running.
 There are also functions you can override to make certain actions that aren’t on
-by default always take place. For example, the layout test framework always
+by default always take place. For example, the web test framework always
 checks for system dependencies unless you pass in a switch. If you want them
 disabled for your project, just override `check_sys_deps` to always return OK.
 This way you don’t need to pass in so many switches.
@@ -173,7 +172,7 @@ and has stdout, stdin, stderr.
 #### Goals
 
 Your goal for this part of the project is to create a program (or extend a
-program) to interface with the layout test framework. The layout test framework
+program) to interface with the web test framework. The layout test framework
 will communicate with this program to tell it what to do and it will accept data
 from this program to perform the regression testing or create new base line
 files.
@@ -189,7 +188,7 @@ This is how your code should be laid out.
         the `run_test()` in the driver.
 1.  Infinite Loop (!)
     *   After initialization, your program needs to actually wait for input,
-        then process that input to carry out the test. In the context of layout
+        then process that input to carry out the test. In the context of web
         testing, the `content_shell` needs to wait for an html file to navigate
         to, render it, then convert that rendering to a PNG. It does this
         constantly, until a signal/message is sent to indicate that no more
@@ -228,12 +227,12 @@ That’s basically what the skeleton of your program should be.
 ### Details
 
 This is information about how to do some specific things, such as sending data
-to the layout test framework.
+to the web test framework.
 
 *   Content Blocks
-    *   The layout test framework accepts output from your program in blocks of
+    *   The web test framework accepts output from your program in blocks of
         data through stdout. Therefore, printing to stdout is really sending
-        data to the layout test framework.
+        data to the web test framework.
     *   Structure of block
         *   “Header: Data\n”
             *   Header indicates what type of data will be sent through. A list

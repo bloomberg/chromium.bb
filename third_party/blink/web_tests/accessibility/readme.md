@@ -1,13 +1,13 @@
-# LayoutTests for Accessibility
+# Web Tests for Accessibility
 
-## General Info on LayoutTests: Building and Running the Tests
+## General Info on web tests: Building and Running the Tests
 
-See [Layout Tests](/docs/testing/layout_tests.md) for general
-info on how to build and run layout tests.
+See [Web Tests](/docs/testing/web_tests.md) for general
+info on how to build and run web tests.
 
 ## Old vs. New
 
-There are two styles of accessibility layout tests:
+There are two styles of accessibility web tests:
 
 * Using a ```-expected.txt``` (now deprecated)
 * Unit-style tests with assertions

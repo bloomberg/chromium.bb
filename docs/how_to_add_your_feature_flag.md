@@ -28,7 +28,7 @@ to see
 4. how to use it in blink
 [[1](https://chromium-review.googlesource.com/c/554510/8/third_party/blnk/renderere/core/workers/worker_thread.cc)]
 
-Also, this patch added a virtual test for running layout tests with the flag.
+Also, this patch added a virtual test for running web tests with the flag.
 When you add a flag, you can consider to use that.
 
 ## Step 2: Adding the feature flag to the chrome://flags UI.

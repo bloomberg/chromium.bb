@@ -1,4 +1,4 @@
-# Layout Tests with Manual Fallback
+# Web Tests with Manual Fallback
 
 Some Blink features cannot be automatically tested using the Web Platform. Prime
 examples are the APIs that require
@@ -17,7 +17,7 @@ when loaded in an environment that exposes the needed testing APIs.
 
 ## Motivation
 
-Layout tests that degrade to manual tests in the absence of testing APIs have
+Web tests that degrade to manual tests in the absence of testing APIs have
 the following benefits.
 
 * The manual test component can be debugged in a normal browser session, using
@@ -25,7 +25,7 @@ the following benefits.
   without a manual fallback can only be debugged in the test runner.
 * The manual tests can run in other browsers, making it easy to check whether
   our behavior matches other browsers.
-* The layout tests can form the basis for manual tests that are contributed to
+* The web tests can form the basis for manual tests that are contributed to
   [web-platform-tests](./web_platform_tests.md).
 
 Therefore, the desirability of adding a manual fallback to a test heavily
@@ -36,7 +36,7 @@ and the size and complexity introduced by the manual fallback.
 
 ## Development Tips
 
-A natural workflow for writing a layout test that gracefully degrades to a
+A natural workflow for writing a web test that gracefully degrades to a
 manual test is to first develop the manual test in a browser, and then add code
 that feature-checks for testing APIs, and uses them to automate the test's
 manual steps.

@@ -499,7 +499,7 @@ def parse_args(args):
     option_parser = optparse.OptionParser(
         prog='run_web_tests.py',
         usage='%prog [options] [tests]',
-        description='Runs Blink layout tests as described in docs/testing/layout_tests.md')
+        description='Runs Blink layout tests as described in docs/testing/web_tests.md')
 
     for group_name, group_options in option_group_definitions:
         option_group = optparse.OptionGroup(option_parser, group_name)

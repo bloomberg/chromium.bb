@@ -10,7 +10,7 @@ test suite where all browser engines are collaborating.
 
 Chromium has a 2-way import/export process with the upstream web-platform-tests
 repository, where tests are imported into
-[LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
+[web_tests/external/wpt](../../third_party/blink/web_tests/external/wpt)
 and any changes to the imported tests are also exported to web-platform-tests.
 
 See https://web-platform-tests.org/ for general documentation on
@@ -22,7 +22,7 @@ web-platform-tests, including tips for writing and reviewing tests.
 
 Chromium has a [mirror](https://chromium.googlesource.com/external/w3c/web-platform-tests/)
 of the GitHub repo and periodically imports a subset of the tests to
-run as part of the regular Blink layout test testing process.
+run as part of the regular Blink web test testing process.
 
 The goals of this process are to be able to run web-platform-tests unmodified
 locally just as easily as we can run the Blink tests, and ensure that we are
@@ -59,14 +59,14 @@ there are several possible causes, including:
 
 Because these tests are imported from the Web Platform tests, it is better
 to have them in the repository (and marked failing) than not, so prefer to
-[add test expectations](layout_test_expectations.md) rather than reverting.
+[add test expectations](web_test_expectations.md) rather than reverting.
 However, if a huge number of tests are failing, please revert the CL so we
 can fix it manually.
 
 ### Automatic export process
 
 If you upload a CL with any changes in
-[third_party/WebKit/LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt),
+[third_party/blink/web_tests/external/wpt](../../third_party/blink/web_tests/external/wpt),
 once you add reviewers the exporter will create a provisional pull request with
 those changes in the [upstream WPT GitHub repository](https://github.com/web-platform-tests/wpt/).
 
@@ -101,7 +101,7 @@ For maintainers:
 ### Skipped tests
 
 We control which tests are imported via a file called
-[W3CImportExpectations](../../third_party/WebKit/LayoutTests/W3CImportExpectations),
+[W3CImportExpectations](../../third_party/blink/web_tests/W3CImportExpectations),
 which has a list of directories to skip while importing.
 
 In addition to the directories and tests explicitly skipped there, tests may
@@ -159,21 +159,21 @@ the script.
 ## Writing tests
 
 To contribute changes to web-platform-tests, just commit your changes directly
-to [LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
+to [web_tests/external/wpt](../../third_party/blink/web_tests/external/wpt)
 and the changes will be automatically upstreamed within 24 hours.
 
 Changes involving adding, removing or modifying tests can all be upstreamed.
 Any changes outside of
-[external/wpt](../../third_party/WebKit/LayoutTests/external/wpt) will not be
+[external/wpt](../../third_party/blink/web_tests/external/wpt) will not be
 upstreamed, and any changes `*-expected.txt`, `OWNERS`, and `MANIFEST.json`,
 will also not be upstreamed.
 
-Running the layout tests will automatically regenerate MANIFEST.json to pick up
+Running the web tests will automatically regenerate MANIFEST.json to pick up
 any local modifications.
 
 Most tests are written using testharness.js, see
-[Writing Layout Tests](./writing_layout_tests.md) and
-[Layout Tests Tips](./layout_tests_tips.md) for general guidelines.
+[Writing Web Tests](./writing_web_tests.md) and
+[Web Tests Tips](./web_tests_tips.md) for general guidelines.
 
 ### Write tests against specifications
 
@@ -193,22 +193,22 @@ and what needs to be resolved to make it non-tentative.
 [testdriver.js](https://web-platform-tests.org/writing-tests/testdriver.html)
 provides a means to automate tests that cannot be written purely using web
 platform APIs, similar to `internals.*` and `eventSender.*` in regular Blink
-layout tests.
+web tests.
 
 If no testdriver.js API exists, check if it's a
 [known issue](https://github.com/web-platform-tests/wpt/labels/testdriver.js)
 and otherwise consider filing a new issue.
 
 An alternative is to write manual tests that are automated with scripts from
-[wpt_automation](../../third_party/WebKit/LayoutTests/external/wpt_automation).
+[wpt_automation](../../third_party/blink/web_tests/external/wpt_automation).
 Injection of JS in manual tests is determined by `loadAutomationScript` in
-[testharnessreport.js](../../third_party/WebKit/LayoutTests/resources/testharnessreport.js).
+[testharnessreport.js](../../third_party/blink/web_tests/resources/testharnessreport.js).
 
 Such tests still require case-by-case automation to run for other browser
 engines, but are more valuable than purely manual tests.
 
 Manual tests that have no automation are still imported, but skipped in
-[NeverFixTests](../../third_party/WebKit/LayoutTests/NeverFixTests); see
+[NeverFixTests](../../third_party/blink/web_tests/NeverFixTests); see
 [issue 738489](https://crbug.com/738489).
 
 ### Adding new top-level directories
@@ -244,15 +244,15 @@ https://web-platform-tests.org/appendix/github-intro.html.
 
 ## Running tests
 
-Same as Blink layout tests, you can use
-[`run_web_tests.py`](layout_tests.md#running-the-tests) to run any WPT test.
+Same as Blink web tests, you can use
+[`run_web_tests.py`](web_tests.md#running-the-tests) to run any WPT test.
 
 One thing to note is that glob patterns for WPT tests are not yet supported.
 
 ## Reviewing tests
 
 Anyone who can review code and tests in Chromium can also review changes in
-[external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
+[external/wpt](../../third_party/blink/web_tests/external/wpt)
 that will be automatically upstreamed. There will be no additional review in
 web-platform-tests as part of the export process.
 

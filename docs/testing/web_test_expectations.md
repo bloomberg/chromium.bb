@@ -1,14 +1,14 @@
-# Layout Test Expectations and Baselines
+# Web Test Expectations and Baselines
 
 
-The primary function of the LayoutTests is as a regression test suite; this
+The primary function of the web tests is as a regression test suite; this
 means that, while we care about whether a page is being rendered correctly, we
 care more about whether the page is being rendered the way we expect it to. In
 other words, we look more for changes in behavior than we do for correctness.
 
 [TOC]
 
-All layout tests have "expected results", or "baselines", which may be one of
+All web tests have "expected results", or "baselines", which may be one of
 several forms. The test may produce one or more of:
 
 * A text file containing JavaScript log messages.
@@ -16,12 +16,12 @@ several forms. The test may produce one or more of:
 * A screen capture of the rendered page as a PNG file.
 * WAV files of the audio output, for WebAudio tests.
 
-For any of these types of tests, baselines are checked into the LayoutTests
+For any of these types of tests, baselines are checked into the web_tests
 directory. The filename of a baseline is the same as that of the corresponding
 test, but the extension is replaced with `-expected.{txt,png,wav}` (depending on
 the type of test output). Baselines usually live alongside tests, with the
 exception when baselines vary by platforms; read
-[Layout Test Baseline Fallback](layout_test_baseline_fallback.md) for more
+[Web Test Baseline Fallback](web_test_baseline_fallback.md) for more
 details.
 
 Lastly, we also support the concept of "reference tests", which check that two
@@ -49,10 +49,10 @@ lines to TestExpectations.
 
 Bugs at [crbug.com](https://crbug.com) should track fixing incorrect behavior,
 not lines in
-[TestExpectations](../../third_party/WebKit/LayoutTests/TestExpectations). If a
+[TestExpectations](../../third_party/blink/web_tests/TestExpectations). If a
 test is never supposed to pass (e.g. it's testing Windows-specific behavior, so
 can't ever pass on Linux/Mac), move it to the
-[NeverFixTests](../../third_party/WebKit/LayoutTests/NeverFixTests) file. That
+[NeverFixTests](../../third_party/blink/web_tests/NeverFixTests) file. That
 gets it out of the way of the rest of the project.
 
 There are some cases where you can't rebaseline and, unfortunately, we don't
@@ -112,7 +112,7 @@ results from try jobs, by using the command-tool
 
 This way, the new baselines can be reviewed along with the changes, which helps
 the reviewer verify that the new baselines are correct. It also means that there
-is no period of time when the layout test results are ignored.
+is no period of time when the web test results are ignored.
 
 #### Options
 
@@ -133,36 +133,36 @@ depends on its arguments.
 
 ## Kinds of expectations files
 
-* [TestExpectations](../../third_party/WebKit/LayoutTests/TestExpectations): The
+* [TestExpectations](../../third_party/blink/web_tests/TestExpectations): The
   main test failure suppression file. In theory, this should be used for
   temporarily marking tests as flaky.
-* [ASANExpectations](../../third_party/WebKit/LayoutTests/ASANExpectations):
+* [ASANExpectations](../../third_party/blink/web_tests/ASANExpectations):
   Tests that fail under ASAN.
-* [LeakExpectations](../../third_party/WebKit/LayoutTests/LeakExpectations):
+* [LeakExpectations](../../third_party/blink/web_tests/LeakExpectations):
   Tests that have memory leaks under the leak checker.
-* [MSANExpectations](../../third_party/WebKit/LayoutTests/MSANExpectations):
+* [MSANExpectations](../../third_party/blink/web_tests/MSANExpectations):
   Tests that fail under MSAN.
-* [NeverFixTests](../../third_party/WebKit/LayoutTests/NeverFixTests): Tests
+* [NeverFixTests](../../third_party/blink/web_tests/NeverFixTests): Tests
   that we never intend to fix (e.g. a test for Windows-specific behavior will
   never be fixed on Linux/Mac). Tests that will never pass on any platform
   should just be deleted, though.
-* [SlowTests](../../third_party/WebKit/LayoutTests/SlowTests): Tests that take
+* [SlowTests](../../third_party/blink/web_tests/SlowTests): Tests that take
   longer than the usual timeout to run. Slow tests are given 5x the usual
   timeout.
-* [SmokeTests](../../third_party/WebKit/LayoutTests/SmokeTests): A small subset
+* [SmokeTests](../../third_party/blink/web_tests/SmokeTests): A small subset
   of tests that we run on the Android bot.
-* [StaleTestExpectations](../../third_party/WebKit/LayoutTests/StaleTestExpectations):
+* [StaleTestExpectations](../../third_party/blink/web_tests/StaleTestExpectations):
   Platform-specific lines that have been in TestExpectations for many months.
   They're moved here to get them out of the way of people doing rebaselines
   since they're clearly not getting fixed anytime soon.
-* [W3CImportExpectations](../../third_party/WebKit/LayoutTests/W3CImportExpectations):
+* [W3CImportExpectations](../../third_party/blink/web_tests/W3CImportExpectations):
   A record of which W3C tests should be imported or skipped.
 
 ### Flag-specific expectations files
 
 It is possible to handle tests that only fail when run with a particular flag
 being passed to `content_shell`. See
-[LayoutTests/FlagExpectations/README.txt](../../third_party/WebKit/LayoutTests/FlagExpectations/README.txt)
+[web_tests/FlagExpectations/README.txt](../../third_party/blink/web_tests/FlagExpectations/README.txt)
 for more.
 
 ## Updating the expectations files
@@ -233,14 +233,14 @@ Bug(darin) [ Mac10.9 Debug ] fast/html/keygen.html [ Skip ]
 * `WontFix` implies `Skip` and also indicates that we don't have any plans to
   make the test pass.
 * `WontFix` lines always go in the
-  [NeverFixTests file](../../third_party/WebKit/LayoutTests/NeverFixTests) as
+  [NeverFixTests file](../../third_party/blink/web_tests/NeverFixTests) as
   we never intend to fix them. These are just for tests that only apply to some
   subset of the platforms we support.
 * `WontFix` and `Skip` must be used by themselves and cannot be specified
   alongside `Crash` or another expectation keyword.
 * `Slow` causes the test runner to give the test 5x the usual time limit to run.
   `Slow` lines go in the
-  [SlowTests file ](../../third_party/WebKit/LayoutTests/SlowTests). A given
+  [SlowTests file ](../../third_party/blink/web_tests/SlowTests). A given
   line cannot have both Slow and Timeout.
 
 Also, when parsing the file, we use two rules to figure out if an expectation

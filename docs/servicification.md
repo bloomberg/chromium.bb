@@ -195,7 +195,7 @@ Below, we go through strategies for some common challenges encountered when
 servicifying features that have Blink as a client.
 
 #### Mocking Interface Impls in JS
-It is a common pattern in Blink's layout tests to mock a remote Mojo interface
+It is a common pattern in Blink's web tests to mock a remote Mojo interface
 in JS. [This CL](https://codereview.chromium.org/2643713002) illustrates the
 basic pattern for porting such mocking of an interface hosted by
 //content/browser to an interface hosted by an arbitrary service (see the
@@ -308,7 +308,7 @@ To answer this question, there are several different strategies. These
 strategies are not mutually-exclusive; they can and should be combined to
 preserve the full breadth of coverage.
 
-- Blink client-side behavior can be tested via [layout tests](https://codereview.chromium.org/2731953003)
+- Blink client-side behavior can be tested via [web tests](https://codereview.chromium.org/2731953003)
 - To test service impl behavior, create [service tests](https://codereview.chromium.org/2774783003).
 - To preserve tests of end-to-end behavior (e.g., that when Blink makes a
   request via a Web API in JS, the relevant feature impl receives a connection

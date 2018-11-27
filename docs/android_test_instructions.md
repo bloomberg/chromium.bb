@@ -284,9 +284,9 @@ out/Release/bin/java_deobfuscate out/Release/apks/ChromePublicTest.apk.mapping <
 Any stacks produced by test runner output will already be deobfuscated.
 
 
-## Running Blink Layout Tests
+## Running Blink Web Tests
 
-See [Layout Tests](testing/layout_tests.md).
+See [Web Tests](testing/web_tests.md).
 
 ## Running GPU tests
 

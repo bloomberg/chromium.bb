@@ -1,8 +1,8 @@
-# Running layout tests using the content shell
+# Running web tests using the content shell
 
 ## Basic usage
 
-Layout tests can be run with `content_shell`. To just dump the render tree, use
+Web tests can be run with `content_shell`. To just dump the render tree, use
 the `--run-web-tests` flag:
 
 ```bash
@@ -11,13 +11,13 @@ out/Default/content_shell --run-web-tests foo.html
 
 ### Compiling
 
-If you want to run layout tests,
-[build the target `blink_tests`](layout_tests.md); this includes all the other
+If you want to run web tests,
+[build the target `blink_tests`](web_tests.md); this includes all the other
 binaries required to run the tests.
 
 ### Running
 
-You can run layout tests using `run_web_tests.py` (in
+You can run web tests using `run_web_tests.py` (in
 `src/third_party/blink/tools`).
 
 ```bash

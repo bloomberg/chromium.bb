@@ -341,7 +341,7 @@ pointers for how to get started. If Chrome does not correctly implement the
 spec, add a corresponding -expected.txt file with your test listing the expected
 failure in Chrome.
 
-[Layout tests](../../../../../docs/testing/writing_layout_tests.md) are located
+[Web tests](../../../../../docs/testing/writing_web_tests.md) are located
 in [third_party/blink/web_tests][]. These should be written when needing end
 to end testing but either when testing chrome specific features (i.e.
 non-standardized) such as compositing or when the test requires access to chrome

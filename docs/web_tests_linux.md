@@ -1,16 +1,16 @@
-# Running layout tests on Linux
+# Running web tests on Linux
 
 1.  Build `blink_tests` (see [Linux-specific build instructions](https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md))
-1.  Checkout the layout tests
+1.  Checkout the web tests
     *   If you have an entry in your `.gclient` file that includes
-        "LayoutTests", you may need to comment it out and sync.
+        "web_tests", you may need to comment it out and sync.
     *   You can run a subset of the tests by passing in a path relative to
-        `src/third_party/WebKit/LayoutTests/`.  For example,
+        `src/third_party/blink/web_tests/`.  For example,
         `third_party/blink/tools/run_web_tests.py fast` will only run the tests under
-        `src/third_party/WebKit/LayoutTests/fast/`.
+        `src/third_party/blink/web_tests/fast/`.
 1.  When the tests finish, any unexpected results should be displayed.
 
-See [Layout Tests](testing/layout_tests.md)
+See [Web Tests](testing/web_tests.md)
 for full documentation about set up and available options.
 
 ## Pixel Tests
@@ -61,15 +61,15 @@ If `fast/dom/object-plugin-hides-properties.html` and
     set up a Lucid 64 chroot. Learn more about
     [using a linux chroot](using_a_linux_chroot.md).
 
-## Getting a layout test into a debugger
+## Getting a web test into a debugger
 
 There are two ways:
 
 1.  Run `content_shell` directly rather than using `run_web_tests.py`. You
     will need to pass some options:
     *   `--no-timeout` to give you plenty of time to debug
-    *   the fully qualified path of the layout test (rather than relative to
-        `WebKit/LayoutTests`).
+    *   the fully qualified path of the web test (rather than relative to
+        `blink/web_tests`).
 1.  Or, run as normal but with the
     `--additional-drt-flag=--renderer-startup-dialog
     --additional-drt-flag=--no-timeout --time-out-ms=86400000` flags. The first
@@ -86,7 +86,7 @@ create a separate X server for running the tests.
 
 1.  Install Xephyr (`sudo apt-get install xserver-xephyr`)
 1.  Start Xephyr as display 4: `Xephyr :4 -screen 1024x768x24`
-1.  Run the layout tests in the Xephyr: `DISPLAY=:4 run_web_tests.py`
+1.  Run the web tests in the Xephyr: `DISPLAY=:4 run_web_tests.py`
 
 Xephyr supports debugging repainting. See the
 [Xephyr README](http://cgit.freedesktop.org/xorg/xserver/tree/hw/kdrive/ephyr/README)
@@ -99,11 +99,11 @@ If you don't want to see anything at all, you can use Xvfb (should already be
 installed).
 
 1.  Start Xvfb as display 4: `Xvfb :4 -screen 0 1024x768x24`
-1.  Run the layout tests in the Xvfb: `DISPLAY=:4 run_web_tests.py`
+1.  Run the web tests in the Xvfb: `DISPLAY=:4 run_web_tests.py`
 
 ## Tiling Window managers
 
-The layout tests want to run with the window at a particular size down to the
+The web tests want to run with the window at a particular size down to the
 pixel level.  This means if your window manager resizes the window it'll cause
 test failures.  This is another good reason to use an embedded X server.
 
