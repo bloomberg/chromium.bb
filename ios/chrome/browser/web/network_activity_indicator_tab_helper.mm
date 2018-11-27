@@ -12,8 +12,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(NetworkActivityIndicatorTabHelper);
-
 // static
 void NetworkActivityIndicatorTabHelper::CreateForWebState(
     web::WebState* web_state,
