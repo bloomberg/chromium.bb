@@ -189,6 +189,8 @@ bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
   }
 
   SyncWaiter sw;
+  if (!waiting_is_blocking_)
+    sw.cv()->declare_only_used_while_idle();
   sw.lock()->Acquire();
 
   Enqueue(&sw);

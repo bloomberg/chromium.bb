@@ -54,7 +54,6 @@ void MessagePumpDefault::Run(Delegate* delegate) {
     if (did_work)
       continue;
 
-    ThreadRestrictions::ScopedAllowWait allow_wait;
     if (delayed_work_time_.is_null()) {
       event_.Wait();
     } else {
