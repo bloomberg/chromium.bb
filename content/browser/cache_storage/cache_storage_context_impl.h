@@ -18,10 +18,6 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace storage {
 class QuotaManagerProxy;
 }
@@ -65,14 +61,11 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
 
   bool is_incognito() const { return is_incognito_; }
 
-  // The URLRequestContext doesn't exist until after the StoragePartition is
-  // made (which is after this object is made). This function must be called
-  // after this object is created but before any CacheStorageCache operations.
-  // It must be called on the IO thread. If either parameter is NULL the
-  // function immediately returns without forwarding to the
-  // CacheStorageManager.
+  // This function must be called after this object is created but before any
+  // CacheStorageCache operations. It must be called on the IO thread. If
+  // |blob_storage_context| is NULL the function immediately returns without
+  // forwarding to the CacheStorageManager.
   void SetBlobParametersForCache(
-      net::URLRequestContextGetter* request_context_getter,
       ChromeBlobStorageContext* blob_storage_context);
 
   // CacheStorageContext

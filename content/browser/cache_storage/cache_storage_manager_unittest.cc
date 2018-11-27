@@ -275,8 +275,6 @@ class CacheStorageManagerTest : public testing::Test {
         quota_manager_proxy_);
 
     cache_manager_->SetBlobParametersForCache(
-        BrowserContext::GetDefaultStoragePartition(&browser_context_)
-            ->GetURLRequestContext(),
         blob_storage_context->context()->AsWeakPtr());
   }
 

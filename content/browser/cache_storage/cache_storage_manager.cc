@@ -174,8 +174,7 @@ scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
       old_manager->quota_manager_proxy_.get()));
   // These values may be NULL, in which case this will be called again later by
   // the dispatcher host per usual.
-  manager->SetBlobParametersForCache(old_manager->url_request_context_getter(),
-                                     old_manager->blob_storage_context());
+  manager->SetBlobParametersForCache(old_manager->blob_storage_context());
   return manager;
 }
 
@@ -267,14 +266,10 @@ void CacheStorageManager::WriteToCache(
 }
 
 void CacheStorageManager::SetBlobParametersForCache(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(cache_storage_map_.empty());
-  DCHECK(!request_context_getter_ ||
-         request_context_getter_.get() == request_context_getter.get());
   DCHECK(!blob_context_ || blob_context_.get() == blob_storage_context.get());
-  request_context_getter_ = std::move(request_context_getter);
   blob_context_ = blob_storage_context;
 }
 
@@ -500,13 +495,12 @@ CacheStorage* CacheStorageManager::FindOrCreateCacheStorage(
     const url::Origin& origin,
     CacheStorageOwner owner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(request_context_getter_);
   CacheStorageMap::const_iterator it = cache_storage_map_.find({origin, owner});
   if (it == cache_storage_map_.end()) {
     CacheStorage* cache_storage = new CacheStorage(
         ConstructOriginPath(root_path_, origin, owner), IsMemoryBacked(),
-        cache_task_runner_.get(), request_context_getter_, quota_manager_proxy_,
-        blob_context_, this, origin, owner);
+        cache_task_runner_.get(), quota_manager_proxy_, blob_context_, this,
+        origin, owner);
     cache_storage_map_[{origin, owner}] = base::WrapUnique(cache_storage);
     return cache_storage;
   }

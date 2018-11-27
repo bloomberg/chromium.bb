@@ -27,10 +27,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace storage {
 class BlobStorageContext;
 }
@@ -72,7 +68,6 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
       const base::FilePath& origin_path,
       bool memory_only,
       base::SequencedTaskRunner* cache_task_runner,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       CacheStorageManager* cache_storage_manager,

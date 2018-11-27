@@ -76,7 +76,6 @@ void BackgroundFetchTestDataManager::InitializeOnIOThread() {
   DCHECK(cache_manager_);
 
   cache_manager_->SetBlobParametersForCache(
-      storage_partition_->GetURLRequestContext(),
       blob_storage_context_->context()->AsWeakPtr());
 }
 
