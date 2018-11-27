@@ -177,16 +177,13 @@ struct AndroidVpnConfiguration {
 };
 
 // Next Method ID: 14
+// ID 3 is missing as it belonged to a deprecated method.
 interface NetHost {
   // Sends a request to get enabled / disabled status of WiFi.
   GetWifiEnabledState@1() => (bool is_enabled);
 
   // Sends a request to start scan of WiFi APs.
   [MinVersion=1] StartScan@2();
-
-  // Sends a request to get configured or visible WiFi networks based on the
-  // request type.
-  [MinVersion=2] GetNetworksDeprecated@3(GetNetworksRequestType type) => (NetworkData data);
 
   // Sends a request to enable or disable WiFi. The |result| is true when the
   // the state has been successfully set or WiFi is already in the desired
