@@ -8,6 +8,10 @@ from blinkpy.w3c.common import CHROMIUM_WPT_DIR
 
 
 DEFAULT_COMMIT_HISTORY_WINDOW = 10000
+SKIPPED_REVISIONS = [
+    # The great blink mv: https://crbug.com/843412#c13
+    '77578ccb4082ae20a9326d9e673225f1189ebb63',
+]
 
 
 def exportable_commits_over_last_n_commits(
@@ -63,9 +67,9 @@ def _exportable_commits_since(chromium_commit_hash, host, local_wpt, wpt_github,
 
     wpt_path = chromium_repo_root + '/' + CHROMIUM_WPT_DIR
     commit_range = '{}..HEAD'.format(chromium_commit_hash)
-    commit_hashes = host.executive.run_command([
-        'git', 'rev-list', commit_range, '--reverse', '--', wpt_path
-    ], cwd=absolute_chromium_dir(host)).splitlines()
+    skipped_revs = ['^' + rev for rev in SKIPPED_REVISIONS]
+    command = ['git', 'rev-list', commit_range] + skipped_revs + ['--reverse', '--', wpt_path]
+    commit_hashes = host.executive.run_command(command, cwd=absolute_chromium_dir(host)).splitlines()
     chromium_commits = [ChromiumCommit(host, sha=sha) for sha in commit_hashes]
     exportable_commits = []
     errors = []
