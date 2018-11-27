@@ -180,6 +180,7 @@ function registerInputviewApi() {
     Quote: 0xBF,
     Semicolon: 0xBA,
     Slash: 0xBF,
+    Space: 0x20,
     Tab: 0x09
   };
 
