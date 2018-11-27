@@ -6711,6 +6711,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--additional-driver-flag=--no-sandbox",
           "--num-retries=3"
         ],
         "isolate_coverage_data": true,
