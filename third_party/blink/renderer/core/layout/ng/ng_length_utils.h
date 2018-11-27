@@ -130,10 +130,11 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     NGLayoutInputNode child,
     const MinMaxSizeInput& input);
 
-// Resolves the computed value in style.logicalWidth (Length) to a layout unit,
-// then constrains the result by the resolved min logical width and max logical
-// width from the ComputedStyle object. Calls Node::ComputeMinMaxSize if needed.
-// override_minmax is provided *solely* for use by unit tests.
+// Returns inline size of the node's border box by resolving the computed value
+// in style.logicalWidth (Length) to a layout unit, adding border and padding,
+// then constraining the result by the resolved min logical width and max
+// logical width from the ComputedStyle object. Calls Node::ComputeMinMaxSize if
+// needed. override_minmax is provided *solely* for use by unit tests.
 // border_padding can be passed in as an optimization; otherwise this function
 // will compute it itself.
 CORE_EXPORT LayoutUnit ComputeInlineSizeForFragment(
