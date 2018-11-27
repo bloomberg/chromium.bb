@@ -187,3 +187,21 @@ source_set("unit_tests") {
     "//ui/gfx:test_support",
   ]
 }
+
+source_set("test_support") {
+  sources = [
+    "immersive/immersive_fullscreen_controller_test_api.cc",
+    "immersive/immersive_fullscreen_controller_test_api.h",
+    "test/test_keyboard_controller_observer.cc",
+    "test/test_keyboard_controller_observer.h",
+  ]
+
+  deps = [
+    ":cpp",
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//ui/aura",
+    "//ui/gfx",
+    "//ui/views",
+  ]
+}

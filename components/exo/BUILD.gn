@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/common/features.gni")
 import("//build/config/ui.gni")
+import("//chrome/common/features.gni")
 import("//testing/test.gni")
 
 source_set("exo") {
@@ -82,6 +82,7 @@ source_set("exo") {
       "//ash/public/cpp",
       "//chromeos",
       "//ui/keyboard",
+      "//ui/keyboard:mojom",
     ]
     sources += [
       "client_controlled_shell_surface.cc",
