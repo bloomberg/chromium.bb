@@ -25,16 +25,16 @@
   </Type>
   <Type Name="WTF::StringImpl">
     <DisplayString IncludeView="bare"
-        Condition="is8_bit_">{(this+1),[length_]sb}</DisplayString>
+        Condition="is_8bit_">{(this+1),[length_]sb}</DisplayString>
     <DisplayString
-        Condition="is8_bit_">[{length_}] {(this+1),[length_]s}</DisplayString>
+        Condition="is_8bit_">[{length_}] {(this+1),[length_]s}</DisplayString>
     <DisplayString IncludeView="bare">{(this+1),[length_]sub}</DisplayString>
     <DisplayString>[{length_}] {(this+1),[length_]su}</DisplayString>
     <Expand>
       <Item Name="Length">length_</Item>
       <Item Name="Hash">hash_</Item>
-      <Item Name="AsciiText" Condition="is8_bit_">(char*)(this+1),[length_]s</Item>
-      <Item Name="UnicodeText" Condition="!is8_bit_">(wchar_t*)(this+1),[length_]su</Item>
+      <Item Name="AsciiText" Condition="is_8bit_">(char*)(this+1),[length_]s</Item>
+      <Item Name="UnicodeText" Condition="!is_8bit_">(wchar_t*)(this+1),[length_]su</Item>
     </Expand>
   </Type>
   <Type Name="WTF::AtomicString">
@@ -254,7 +254,7 @@
   </Type>
   <!-- Layout: TextRun -->
   <Type Name="blink::TextRun">
-    <DisplayString Condition="is8_bit_">{data_.characters8,[len_]s}</DisplayString>
+    <DisplayString Condition="is_8bit_">{data_.characters8,[len_]s}</DisplayString>
     <DisplayString>{(data_.characters16),[len_]su}</DisplayString>
   </Type>
   <Type Name="blink::BidiRun">
