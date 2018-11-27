@@ -490,7 +490,8 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
  public:
   CanvasImageProvider(cc::ImageDecodeCache* cache_n32,
                       cc::ImageDecodeCache* cache_f16,
-                      SkColorType target_color_type);
+                      SkColorType target_color_type,
+                      bool is_hardware_decode_cache);
   ~CanvasImageProvider() override = default;
 
   // cc::ImageProvider implementation.
@@ -502,6 +503,7 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
   void CanUnlockImage(ScopedDecodedDrawImage);
   void CleanupLockedImages();
 
+  bool is_hardware_decode_cache_;
   bool cleanup_task_pending_ = false;
   std::vector<ScopedDecodedDrawImage> locked_images_;
   cc::PlaybackImageProvider playback_image_provider_n32_;
@@ -515,8 +517,10 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
 CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
     cc::ImageDecodeCache* cache_n32,
     cc::ImageDecodeCache* cache_f16,
-    SkColorType canvas_color_type)
-    : playback_image_provider_n32_(cache_n32,
+    SkColorType canvas_color_type,
+    bool is_hardware_decode_cache)
+    : is_hardware_decode_cache_(is_hardware_decode_cache),
+      playback_image_provider_n32_(cache_n32,
                                    cc::PlaybackImageProvider::Settings()),
       weak_factory_(this) {
   // If the image provider may require to decode to half float instead of
@@ -543,7 +547,17 @@ CanvasResourceProvider::CanvasImageProvider::GetDecodedDrawImage(
     scoped_decoded_image =
         playback_image_provider_n32_.GetDecodedDrawImage(draw_image);
   }
-  if (!scoped_decoded_image.needs_unlock())
+
+  // Holding onto locked images here is a performance optimization for the
+  // gpu image decode cache.  For that cache, it is expensive to lock and
+  // unlock gpu discardable, and so it is worth it to hold the lock on
+  // these images across multiple potential decodes.  In the software case,
+  // locking in this manner makes it easy to run out of discardable memory
+  // (backed by shared memory sometimes) because each per-colorspace image
+  // decode cache has its own limit.  In the software case, just unlock
+  // immediately and let the discardable system manage the cache logic
+  // behind the scenes.
+  if (!scoped_decoded_image.needs_unlock() || !is_hardware_decode_cache_)
     return scoped_decoded_image;
 
   constexpr int kMaxLockedImagesCount = 500;
@@ -562,6 +576,12 @@ CanvasResourceProvider::CanvasImageProvider::GetDecodedDrawImage(
 
 void CanvasResourceProvider::CanvasImageProvider::CanUnlockImage(
     ScopedDecodedDrawImage image) {
+  // We should early out and avoid calling this function for software decodes.
+  DCHECK(is_hardware_decode_cache_);
+
+  // Because these image decodes are being done in javascript calling into
+  // canvas code, there's no obvious time to do the cleanup.  To handle this,
+  // post a cleanup task to run after javascript is done running.
   if (!cleanup_task_pending_) {
     cleanup_task_pending_ = true;
     Thread::Current()->GetTaskRunner()->PostTask(
@@ -615,7 +635,8 @@ cc::PaintCanvas* CanvasResourceProvider::Canvas() {
     if (ColorParams().PixelFormat() == kF16CanvasPixelFormat)
       cache_f16 = ImageDecodeCacheF16();
     canvas_image_provider_ = std::make_unique<CanvasImageProvider>(
-        ImageDecodeCacheRGBA8(), cache_f16, color_params_.GetSkColorType());
+        ImageDecodeCacheRGBA8(), cache_f16, color_params_.GetSkColorType(),
+        use_hardware_decode_cache());
 
     cc::SkiaPaintCanvas::ContextFlushes context_flushes;
     if (IsAccelerated() &&
@@ -749,7 +770,7 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheRGBA8() {
     color_space = kSRGBCanvasColorSpace;
   }
 
-  if (IsAccelerated() && context_provider_wrapper_) {
+  if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
         kN32_SkColorType,
         blink::CanvasColorParams::CanvasColorSpaceToSkColorSpace(color_space));
@@ -764,7 +785,7 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
     color_space = kSRGBCanvasColorSpace;
   }
 
-  if (IsAccelerated() && context_provider_wrapper_) {
+  if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
         kRGBA_F16_SkColorType,
         blink::CanvasColorParams::CanvasColorSpaceToSkColorSpace(color_space));
