@@ -48,7 +48,7 @@ AudioDestinationHandler& AudioDestinationNode::GetAudioDestinationHandler()
   return static_cast<AudioDestinationHandler&>(Handler());
 }
 
-unsigned long AudioDestinationNode::maxChannelCount() const {
+uint32_t AudioDestinationNode::maxChannelCount() const {
   return GetAudioDestinationHandler().MaxChannelCount();
 }
 

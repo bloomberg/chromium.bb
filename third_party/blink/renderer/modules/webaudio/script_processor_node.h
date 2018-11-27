@@ -63,9 +63,9 @@ class ScriptProcessorHandler final : public AudioHandler {
   void Process(size_t frames_to_process) override;
   void Initialize() override;
 
-  size_t BufferSize() const { return buffer_size_; }
+  uint32_t BufferSize() const { return static_cast<uint32_t>(buffer_size_); }
 
-  void SetChannelCount(unsigned long, ExceptionState&) override;
+  void SetChannelCount(unsigned, ExceptionState&) override;
   void SetChannelCountMode(const String&, ExceptionState&) override;
 
   unsigned NumberOfOutputChannels() const override {
@@ -146,7 +146,7 @@ class ScriptProcessorNode final
                       unsigned number_of_output_channels);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess, kAudioprocess);
-  size_t bufferSize() const;
+  uint32_t bufferSize() const;
 
   // ScriptWrappable
   bool HasPendingActivity() const final;

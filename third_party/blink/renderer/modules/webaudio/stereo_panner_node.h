@@ -30,7 +30,7 @@ class StereoPannerHandler final : public AudioHandler {
   void ProcessOnlyAudioParams(size_t frames_to_process) override;
   void Initialize() override;
 
-  void SetChannelCount(unsigned long, ExceptionState&) final;
+  void SetChannelCount(unsigned, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;
 
   double TailTime() const override { return 0; }

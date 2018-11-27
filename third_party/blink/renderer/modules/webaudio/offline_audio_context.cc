@@ -268,7 +268,8 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* script_state,
 
   // The specified suspend time is in the past; reject the promise.
   if (frame < CurrentSampleFrame()) {
-    size_t current_frame_clamped = std::min(CurrentSampleFrame(), length());
+    size_t current_frame_clamped =
+        std::min(CurrentSampleFrame(), static_cast<size_t>(length()));
     double current_time_clamped =
         std::min(currentTime(), length() / static_cast<double>(sampleRate()));
     resolver->Reject(DOMException::Create(

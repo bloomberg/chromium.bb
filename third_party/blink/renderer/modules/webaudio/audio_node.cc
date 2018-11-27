@@ -199,7 +199,7 @@ AudioNodeOutput& AudioHandler::Output(unsigned i) {
   return *outputs_[i];
 }
 
-unsigned long AudioHandler::ChannelCount() {
+unsigned AudioHandler::ChannelCount() {
   return channel_count_;
 }
 
@@ -214,7 +214,7 @@ void AudioHandler::SetInternalChannelInterpretation(
   new_channel_interpretation_ = interpretation;
 }
 
-void AudioHandler::SetChannelCount(unsigned long channel_count,
+void AudioHandler::SetChannelCount(unsigned channel_count,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());
@@ -1023,11 +1023,11 @@ unsigned AudioNode::numberOfOutputs() const {
   return Handler().NumberOfOutputs();
 }
 
-unsigned long AudioNode::channelCount() const {
+unsigned AudioNode::channelCount() const {
   return Handler().ChannelCount();
 }
 
-void AudioNode::setChannelCount(unsigned long count,
+void AudioNode::setChannelCount(unsigned count,
                                 ExceptionState& exception_state) {
   Handler().SetChannelCount(count, exception_state);
 }

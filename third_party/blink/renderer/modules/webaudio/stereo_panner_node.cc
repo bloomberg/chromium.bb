@@ -90,7 +90,7 @@ void StereoPannerHandler::Initialize() {
   AudioHandler::Initialize();
 }
 
-void StereoPannerHandler::SetChannelCount(unsigned long channel_count,
+void StereoPannerHandler::SetChannelCount(unsigned channel_count,
                                           ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());

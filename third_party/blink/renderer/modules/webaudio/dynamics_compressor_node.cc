@@ -141,7 +141,7 @@ double DynamicsCompressorHandler::LatencyTime() const {
 }
 
 void DynamicsCompressorHandler::SetChannelCount(
-    unsigned long channel_count,
+    unsigned channel_count,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());

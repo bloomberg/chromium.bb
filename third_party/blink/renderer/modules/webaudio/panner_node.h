@@ -118,7 +118,7 @@ class PannerHandler final : public AudioHandler {
   }
   bool RequiresTailProcessing() const final;
 
-  void SetChannelCount(unsigned long, ExceptionState&) final;
+  void SetChannelCount(unsigned, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;
 
  private:

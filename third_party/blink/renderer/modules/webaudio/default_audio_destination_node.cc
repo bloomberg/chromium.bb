@@ -86,7 +86,7 @@ void DefaultAudioDestinationHandler::Uninitialize() {
 }
 
 void DefaultAudioDestinationHandler::SetChannelCount(
-    unsigned long channel_count,
+    unsigned channel_count,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -134,7 +134,7 @@ void DefaultAudioDestinationHandler::RestartRendering() {
   StartRendering();
 }
 
-unsigned long DefaultAudioDestinationHandler::MaxChannelCount() const {
+uint32_t DefaultAudioDestinationHandler::MaxChannelCount() const {
   return AudioDestination::MaxChannelCount();
 }
 

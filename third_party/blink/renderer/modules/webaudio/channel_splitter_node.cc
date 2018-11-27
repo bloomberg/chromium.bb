@@ -83,7 +83,7 @@ void ChannelSplitterHandler::Process(size_t frames_to_process) {
   }
 }
 
-void ChannelSplitterHandler::SetChannelCount(unsigned long channel_count,
+void ChannelSplitterHandler::SetChannelCount(unsigned channel_count,
                                              ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());

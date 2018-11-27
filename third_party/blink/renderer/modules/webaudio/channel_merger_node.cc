@@ -94,7 +94,7 @@ void ChannelMergerHandler::Process(size_t frames_to_process) {
   }
 }
 
-void ChannelMergerHandler::SetChannelCount(unsigned long channel_count,
+void ChannelMergerHandler::SetChannelCount(unsigned channel_count,
                                            ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());
