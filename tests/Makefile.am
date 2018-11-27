@@ -122,12 +122,8 @@ dist_braille_specs_TESTS =					\
 	braille-specs/da-dk-g28-dictionary_harness.yaml		\
 	braille-specs/da-dk-g28.yaml				\
 	braille-specs/da-dk-g28l.yaml				\
-	braille-specs/de-ch-abbr.yaml				\
-	braille-specs/de-ch-computer.yaml			\
 	braille-specs/de-ch-g1-dictionary.yaml			\
 	braille-specs/de-ch-g2-dictionary.yaml			\
-	braille-specs/de-ch-g2.yaml				\
-	braille-specs/de-ch-vform.yaml				\
 	braille-specs/el-backward.yaml				\
 	braille-specs/el-forward.yaml				\
 	braille-specs/en-GB-g2_backward.yaml			\
@@ -246,9 +242,7 @@ LOG_COMPILE = $(WINE)
 EXTRA_DIST = $(dist_yaml_TESTS) $(dist_braille_specs_TESTS) $(YAML_LOG_COMPILER_SCRIPT)
 
 XFAIL_TESTS +=					\
-	ueb_test_data.pl			\
-	braille-specs/de-ch-abbr.yaml
-
+	ueb_test_data.pl
 
 TESTS =				     \
 	$(program_TESTS)	     \
