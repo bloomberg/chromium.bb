@@ -2893,20 +2893,20 @@ TEST_F(PasswordManagerTest, ParsingOnSavingMetricRecorded) {
 
   PasswordForm form = MakeSimpleForm();
   std::vector<PasswordForm> observed = {form};
-  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsParsed(nullptr, observed);
 
   // Provisionally save and simulate a successful landing page load to make
   // manager() believe this password should be saved.
-  manager()->ProvisionallySavePassword(form, nullptr);
-  manager()->OnPasswordFormsRendered(&driver_, {}, true);
+  manager()->OnPasswordFormSubmitted(nullptr, form);
+  manager()->OnPasswordFormsRendered(nullptr, {}, true);
 
   // Destroy |manager_| to send off UKM metrics.
   manager_.reset();
 
-  ukm::TestUkmRecorder::EntryHasMetric(
+  EXPECT_TRUE(ukm::TestUkmRecorder::EntryHasMetric(
       GetMetricEntry(test_ukm_recorder,
                      ukm::builders::PasswordForm::kEntryName),
-      ukm::builders::PasswordForm::kParsingOnSavingDifferenceName);
+      ukm::builders::PasswordForm::kParsingOnSavingDifferenceName));
 }
 
 TEST_F(PasswordManagerTest, NoSavePromptWhenPasswordManagerDisabled) {
