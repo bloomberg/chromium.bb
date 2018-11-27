@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
+#include "ios/chrome/app/intents/SearchInChromeIntent.h"
 #include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"
@@ -19,7 +20,9 @@
 #include "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 #import "ios/chrome/browser/upgrade/upgrade_center.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -77,6 +80,20 @@ NSString* const kStartProfileStartupTaskRunners =
          selector:@selector(applicationWillResignActiveNotification:)
              name:UIApplicationWillResignActiveNotification
            object:nil];
+}
+
+- (void)donateIntents {
+  if (@available(iOS 12.0, *)) {
+    SearchInChromeIntent* searchInChromeIntent =
+        [[SearchInChromeIntent alloc] init];
+    searchInChromeIntent.suggestedInvocationPhrase = l10n_util::GetNSString(
+        IDS_IOS_INTENTS_SEARCH_IN_CHROME_INVOCATION_PHRASE);
+    INInteraction* interaction =
+        [[INInteraction alloc] initWithIntent:searchInChromeIntent
+                                     response:nil];
+    [interaction donateInteractionWithCompletion:^(NSError* _Nullable error){
+    }];
+  }
 }
 
 #pragma mark - Private methods.

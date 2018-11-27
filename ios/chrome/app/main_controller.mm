@@ -1161,6 +1161,7 @@ enum class ShowTabSwitcherSnapshotResult {
 
 - (void)scheduleLowPriorityStartupTasks {
   [_startupTasks initializeOmaha];
+  [_startupTasks donateIntents];
   [_startupTasks registerForApplicationWillResignActiveNotification];
   [self registerForOrientationChangeNotifications];
 
