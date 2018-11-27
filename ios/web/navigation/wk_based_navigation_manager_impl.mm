@@ -501,6 +501,10 @@ void WKBasedNavigationManagerImpl::Restore(
   // This pending item will become the first item in the restored history.
   params.virtual_url = items[0]->GetVirtualURL();
 
+  // Grab the title of the first item before |restored_visible_item_| (which may
+  // or may not be the first index) is moved out of |items| below.
+  const base::string16& firstTitle = items[0]->GetTitle();
+
   // Ordering is important. Cache the visible item of the restored session
   // before starting the new navigation, which may trigger client lookup of
   // visible item. The visible item of the restored session is the last
@@ -512,6 +516,13 @@ void WKBasedNavigationManagerImpl::Restore(
     restored_visible_item_ = std::move(items[last_committed_item_index]);
 
   LoadURLWithParams(params);
+
+  // On restore prime the first navigation item with the title.  The remaining
+  // navItem titles will be set from the WKBackForwardListItem title value.
+  NavigationItemImpl* pendingItem = GetPendingItemImpl();
+  if (pendingItem) {
+    pendingItem->SetTitle(firstTitle);
+  }
 }
 
 void WKBasedNavigationManagerImpl::AddRestoreCompletionCallback(
@@ -742,6 +753,7 @@ WKBasedNavigationManagerImpl::WKWebViewCache::GetNavigationItemImplAtIndex(
           nullptr /* use default rewriters only */);
   new_item->SetTimestamp(
       navigation_manager_->time_smoother_.GetSmoothedTime(base::Time::Now()));
+  new_item->SetTitle(base::SysNSStringToUTF16(wk_item.title));
   const GURL& url = new_item->GetURL();
   // If this navigation item has a restore_session.html URL, then it was created
   // to restore session history and will redirect to the target URL encoded in

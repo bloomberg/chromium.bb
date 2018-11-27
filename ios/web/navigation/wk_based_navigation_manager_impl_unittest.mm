@@ -617,11 +617,11 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
   EXPECT_TRUE(pending_url.SchemeIsFile());
   EXPECT_EQ("restore_session.html", pending_url.ExtractFileName());
   EXPECT_EQ("http://www.0.com/", pending_item->GetVirtualURL());
+  EXPECT_EQ("Test Website 0", base::UTF16ToUTF8(pending_item->GetTitle()));
 
-  EXPECT_EQ(
-      "{\"offset\":0,\"titles\":[\"Test Website 0\",\"\"],"
-      "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\"]}",
-      ExtractRestoredSession(pending_url));
+  EXPECT_EQ("{\"offset\":0,\"titles\":[\"Test Website 0\",\"\"],"
+            "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\"]}",
+            ExtractRestoredSession(pending_url));
 
   // Check that cached visible item is returned.
   EXPECT_EQ("http://www.1.com/", manager_->GetVisibleItem()->GetURL());
