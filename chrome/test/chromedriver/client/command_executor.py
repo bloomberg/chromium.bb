@@ -92,9 +92,9 @@ class Command(object):
   SET_WINDOW_RECT = (
       _Method.POST, '/session/:sessionId/window/rect')
   MAXIMIZE_WINDOW = (
-      _Method.POST, '/session/:sessionId/window/:windowHandle/maximize')
+      _Method.POST, '/session/:sessionId/window/maximize')
   MINIMIZE_WINDOW = (
-      _Method.POST, '/session/:sessionId/window/:windowHandle/minimize')
+      _Method.POST, '/session/:sessionId/window/minimize')
   FULLSCREEN_WINDOW = (
       _Method.POST, '/session/:sessionId/window/fullscreen')
   CLOSE = (_Method.DELETE, '/session/:sessionId/window')
