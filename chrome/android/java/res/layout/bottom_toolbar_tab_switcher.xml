@@ -9,7 +9,8 @@
     android:id="@+id/bottom_toolbar_tab_switcher"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:visibility="gone" >
+    android:visibility="gone"
+    android:clickable="true" >
 
     <ImageView
         android:id="@+id/bottom_toolbar_top_shadow"
