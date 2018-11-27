@@ -798,6 +798,8 @@ static_library("test_support_driver") {
     "driver/sync_api_component_factory_mock.h",
     "driver/sync_client_mock.cc",
     "driver/sync_client_mock.h",
+    "driver/test_sync_service.cc",
+    "driver/test_sync_service.h",
     "engine/fake_sync_engine.cc",
     "engine/fake_sync_engine.h",
     "engine/mock_sync_engine.cc",

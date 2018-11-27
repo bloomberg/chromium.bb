@@ -5,84 +5,29 @@
 #include "components/sync/driver/sync_service_utils.h"
 
 #include <vector>
+
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/test_sync_service.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
-class TestSyncService : public FakeSyncService {
- public:
-  TestSyncService() = default;
-  ~TestSyncService() override = default;
+namespace {
 
-  void SetDisableReasons(int disable_reasons) {
-    disable_reasons_ = disable_reasons;
-  }
-  void SetTransportState(TransportState state) { state_ = state; }
-  void SetLocalSyncEnabled(bool local) { local_sync_enabled_ = local; }
-  void SetPreferredDataTypes(const ModelTypeSet& types) {
-    preferred_data_types_ = types;
-  }
-  void SetActiveDataTypes(const ModelTypeSet& types) {
-    active_data_types_ = types;
-  }
-  void SetCustomPassphraseEnabled(bool enabled) {
-    custom_passphrase_enabled_ = enabled;
-  }
-  void SetSyncCycleComplete(bool complete) { sync_cycle_complete_ = complete; }
+static SyncCycleSnapshot MakeSyncCycleSnapshot() {
+  return SyncCycleSnapshot(
+      ModelNeutralState(), ProgressMarkerMap(), false, 5, 2, 7, false, 0,
+      base::Time::Now(), base::Time::Now(),
+      std::vector<int>(MODEL_TYPE_COUNT, 0),
+      std::vector<int>(MODEL_TYPE_COUNT, 0), sync_pb::SyncEnums::UNKNOWN_ORIGIN,
+      /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
+      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
+      /*has_remaining_local_changes=*/false);
+}
 
-  // SyncService implementation.
-  int GetDisableReasons() const override { return disable_reasons_; }
-  TransportState GetTransportState() const override { return state_; }
-  bool IsLocalSyncEnabled() const override { return local_sync_enabled_; }
-  bool IsFirstSetupComplete() const override { return true; }
-  ModelTypeSet GetPreferredDataTypes() const override {
-    return preferred_data_types_;
-  }
-  ModelTypeSet GetActiveDataTypes() const override {
-    if (!IsSyncFeatureActive())
-      return ModelTypeSet();
-    return active_data_types_;
-  }
-  ModelTypeSet GetEncryptedDataTypes() const override {
-    if (!custom_passphrase_enabled_) {
-      // PASSWORDS are always encrypted.
-      return ModelTypeSet(syncer::PASSWORDS);
-    }
-    // Some types can never be encrypted, e.g. DEVICE_INFO and
-    // AUTOFILL_WALLET_DATA, so make sure we don't report them as encrypted.
-    return syncer::Intersection(preferred_data_types_,
-                                syncer::EncryptableUserTypes());
-  }
-  SyncCycleSnapshot GetLastCycleSnapshot() const override {
-    if (sync_cycle_complete_) {
-      return SyncCycleSnapshot(
-          ModelNeutralState(), ProgressMarkerMap(), false, 5, 2, 7, false, 0,
-          base::Time::Now(), base::Time::Now(),
-          std::vector<int>(MODEL_TYPE_COUNT, 0),
-          std::vector<int>(MODEL_TYPE_COUNT, 0),
-          sync_pb::SyncEnums::UNKNOWN_ORIGIN,
-          /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-          /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
-          /*has_remaining_local_changes=*/false);
-    }
-    return SyncCycleSnapshot();
-  }
-  bool IsUsingSecondaryPassphrase() const override {
-    return custom_passphrase_enabled_;
-  }
-
- private:
-  int disable_reasons_ = DISABLE_REASON_PLATFORM_OVERRIDE;
-  TransportState state_ = TransportState::DISABLED;
-  bool sync_cycle_complete_ = false;
-  bool local_sync_enabled_ = false;
-  ModelTypeSet preferred_data_types_;
-  ModelTypeSet active_data_types_;
-  bool custom_passphrase_enabled_ = false;
-};
+}  // namespace
 
 TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfSyncNotAllowed) {
   TestSyncService service;
@@ -91,6 +36,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfSyncNotAllowed) {
   // data types are enabled.
   service.SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+  service.SetTransportState(syncer::SyncService::TransportState::DISABLED);
 
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetActiveDataTypes(ProtocolTypes());
@@ -127,7 +73,7 @@ TEST(SyncServiceUtilsTest,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 
   // Only after a sync cycle has been completed is upload actually ACTIVE.
-  service.SetSyncCycleComplete(true);
+  service.SetLastCycleSnapshot(MakeSyncCycleSnapshot());
   EXPECT_EQ(UploadState::ACTIVE,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 }
@@ -136,7 +82,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledForModelType) {
   TestSyncService service;
   service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  service.SetSyncCycleComplete(true);
+  service.SetLastCycleSnapshot(MakeSyncCycleSnapshot());
 
   // Sync is enabled only for a specific model type.
   service.SetPreferredDataTypes(ModelTypeSet(syncer::BOOKMARKS));
@@ -159,7 +105,7 @@ TEST(SyncServiceUtilsTest,
   TestSyncService service;
   service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  service.SetSyncCycleComplete(true);
+  service.SetLastCycleSnapshot(MakeSyncCycleSnapshot());
 
   // Sync is enabled for some model types.
   service.SetPreferredDataTypes(
@@ -182,7 +128,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfLocalSyncEnabled) {
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetActiveDataTypes(ProtocolTypes());
   service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  service.SetSyncCycleComplete(true);
+  service.SetLastCycleSnapshot(MakeSyncCycleSnapshot());
 
   // Sanity check: Upload is active now.
   ASSERT_EQ(UploadState::ACTIVE,
@@ -202,7 +148,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledOnPersistentAuthError) {
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetActiveDataTypes(ProtocolTypes());
   service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  service.SetSyncCycleComplete(true);
+  service.SetLastCycleSnapshot(MakeSyncCycleSnapshot());
 
   // Sanity check: Upload is active now.
   ASSERT_EQ(UploadState::ACTIVE,
@@ -212,7 +158,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledOnPersistentAuthError) {
   GoogleServiceAuthError transient_error(
       GoogleServiceAuthError::CONNECTION_FAILED);
   ASSERT_TRUE(transient_error.IsTransientError());
-  service.set_auth_error(transient_error);
+  service.SetAuthError(transient_error);
 
   EXPECT_EQ(UploadState::INITIALIZING,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
@@ -222,14 +168,14 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledOnPersistentAuthError) {
   GoogleServiceAuthError persistent_error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   ASSERT_TRUE(persistent_error.IsPersistentError());
-  service.set_auth_error(persistent_error);
+  service.SetAuthError(persistent_error);
 
   EXPECT_EQ(UploadState::NOT_ACTIVE,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 
   // Once the auth error is resolved (e.g. user re-authenticated), uploading is
   // active again.
-  service.set_auth_error(GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  service.SetAuthError(GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
 
   EXPECT_EQ(UploadState::ACTIVE,
@@ -242,7 +188,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfCustomPassphraseInUse) {
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetActiveDataTypes(ProtocolTypes());
   service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  service.SetSyncCycleComplete(true);
+  service.SetLastCycleSnapshot(MakeSyncCycleSnapshot());
 
   // Sanity check: Upload is ACTIVE, even for data types that are always
   // encrypted implicitly (PASSWORDS).
