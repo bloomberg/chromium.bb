@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -39,6 +40,33 @@
       cr-input:not(:last-child),
       cr-searchable-drop-down {
         margin-bottom: var(--cr-form-field-bottom-spacing);
+      }
+
+      cr-toast {
+        left: 0;
+        max-height: 78px;
+        max-width: 300px;
+        position: absolute;
+        right: 0;
+      }
+
+      paper-button {
+        position: relative;
+        top: 38px;
+      }
+
+      .error-message {
+        color: white;
+        font: 13px;
+        padding-bottom: 15px;
+        padding-top: 15px;
+        text-align: center;
+        white-space: normal;
+      }
+
+      [slot='button-container'] {
+        height: 78px;
+        justify-content: space-between;
       }
     </style>
 
@@ -78,13 +106,24 @@
         </div>
       </div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-click="cancel_" id="cancel">
-          [[i18n('cancel')]]
-        </paper-button>
-        <paper-button id="actionButton" class="action-button"
-            on-click="onAddButtonTap_" disabled="[[!canAddShare_(mountUrl_)]]">
-          [[i18n('add')]]
-        </paper-button>
+        <!-- Error toast -->
+        <div>
+          <cr-toast id="errorToast" duration="3000">
+            <div class="error-message">
+              [[addShareResultText_]]
+            </div>
+          </cr-toast>
+        </div>
+        <!-- Buttons -->
+        <div>
+          <paper-button class="cancel-button" on-click="cancel_" id="cancel">
+            [[i18n('cancel')]]
+          </paper-button>
+          <paper-button class="action-button" on-click="onAddButtonTap_"
+              disabled="[[!canAddShare_(mountUrl_, inProgress_)]]">
+            [[i18n('add')]]
+          </paper-button>
+        </div>
       </div>
     </cr-dialog>
   </template>

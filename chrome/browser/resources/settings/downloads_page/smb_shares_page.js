@@ -6,7 +6,6 @@ Polymer({
   is: 'settings-smb-shares-page',
 
   behaviors: [
-    WebUIListenerBehavior,
     settings.RouteObserverBehavior,
   ],
 
@@ -21,9 +20,6 @@ Polymer({
 
     /** @private */
     showAddSmbDialog_: Boolean,
-
-    /** @private */
-    addShareResultText_: String,
   },
 
   /**
@@ -38,11 +34,6 @@ Polymer({
     }
   },
 
-  /** @override */
-  attached: function() {
-    this.addWebUIListener('on-add-smb-share', this.onAddShare_.bind(this));
-  },
-
   /** @private */
   onAddShareTap_: function() {
     this.showAddSmbDialog_ = true;
@@ -52,42 +43,4 @@ Polymer({
   onAddSmbDialogClosed_: function() {
     this.showAddSmbDialog_ = false;
   },
-
-  /**
-   * @param {SmbMountResult} result
-   * @private
-   */
-  onAddShare_: function(result) {
-    switch (result) {
-      case SmbMountResult.SUCCESS:
-        this.addShareResultText_ =
-            loadTimeData.getString('smbShareAddedSuccessfulMessage');
-        break;
-      case SmbMountResult.AUTHENTICATION_FAILED:
-        this.addShareResultText_ =
-            loadTimeData.getString('smbShareAddedAuthFailedMessage');
-        break;
-      case SmbMountResult.NOT_FOUND:
-        this.addShareResultText_ =
-            loadTimeData.getString('smbShareAddedNotFoundMessage');
-        break;
-      case SmbMountResult.UNSUPPORTED_DEVICE:
-        this.addShareResultText_ =
-            loadTimeData.getString('smbShareAddedUnsupportedDeviceMessage');
-        break;
-      case SmbMountResult.MOUNT_EXISTS:
-        this.addShareResultText_ =
-            loadTimeData.getString('smbShareAddedMountExistsMessage');
-        break;
-      case SmbMountResult.INVALID_URL:
-        this.addShareResultText_ =
-            loadTimeData.getString('smbShareAddedInvalidURLMessage');
-        break;
-      default:
-        this.addShareResultText_ =
-            loadTimeData.getString('smbShareAddedErrorMessage');
-    }
-    this.$.errorToast.show();
-  },
-
 });
