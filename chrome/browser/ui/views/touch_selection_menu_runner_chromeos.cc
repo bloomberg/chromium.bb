@@ -46,6 +46,50 @@ void TouchSelectionMenuRunnerChromeOS::OpenMenuWithTextSelectionAction(
   ShowMenu(menu, anchor_rect, handle_image_size);
 }
 
+bool TouchSelectionMenuRunnerChromeOS::RequestTextSelection(
+    ui::TouchSelectionMenuClient* client,
+    const gfx::Rect& anchor_rect,
+    const gfx::Size& handle_image_size,
+    aura::Window* context) {
+  if (!base::FeatureList::IsEnabled(arc::kSmartTextSelectionFeature))
+    return false;
+
+  const std::string converted_text =
+      base::UTF16ToUTF8(client->GetSelectedText());
+  if (converted_text.empty())
+    return false;
+
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager)
+    return false;
+
+  arc::mojom::IntentHelperInstance* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->intent_helper(),
+      RequestTextSelectionActions);
+  if (!instance)
+    return false;
+
+  // aura::WindowTracker is used since the newly created menu may need to know
+  // about the parent window.
+  std::unique_ptr<aura::WindowTracker> tracker =
+      std::make_unique<aura::WindowTracker>();
+  tracker->Add(context);
+
+  const display::Screen* screen = display::Screen::GetScreen();
+  DCHECK(screen);
+
+  // Fetch actions for selected text and then show quick menu.
+  instance->RequestTextSelectionActions(
+      converted_text,
+      arc::mojom::ScaleFactor(
+          screen->GetDisplayNearestWindow(context).device_scale_factor()),
+      base::BindOnce(
+          &TouchSelectionMenuRunnerChromeOS::OpenMenuWithTextSelectionAction,
+          weak_ptr_factory_.GetWeakPtr(), client, anchor_rect,
+          handle_image_size, std::move(tracker)));
+  return true;
+}
+
 void TouchSelectionMenuRunnerChromeOS::OpenMenu(
     ui::TouchSelectionMenuClient* client,
     const gfx::Rect& anchor_rect,
@@ -53,45 +97,11 @@ void TouchSelectionMenuRunnerChromeOS::OpenMenu(
     aura::Window* context) {
   views::TouchSelectionMenuRunnerViews::CloseMenu();
 
-  if (!views::TouchSelectionMenuRunnerViews::IsMenuAvailable(client))
+  // If there are no commands to show in the menu finish right away. Also if
+  // classification is possible delegate creating/showing a new menu.
+  if (!views::TouchSelectionMenuRunnerViews::IsMenuAvailable(client) ||
+      RequestTextSelection(client, anchor_rect, handle_image_size, context)) {
     return;
-
-  if (base::FeatureList::IsEnabled(arc::kSmartTextSelectionFeature)) {
-    const std::string converted_text =
-        base::UTF16ToUTF8(client->GetSelectedText());
-
-    if (!converted_text.empty()) {
-      auto* arc_service_manager = arc::ArcServiceManager::Get();
-      if (arc_service_manager) {
-        arc::mojom::IntentHelperInstance* instance =
-            ARC_GET_INSTANCE_FOR_METHOD(
-                arc_service_manager->arc_bridge_service()->intent_helper(),
-                RequestTextSelectionActions);
-
-        if (instance) {
-          // aura::WindowTracker is used since the newly created menu may need
-          // to know about the parent window.
-          std::unique_ptr<aura::WindowTracker> tracker =
-              std::make_unique<aura::WindowTracker>();
-          tracker->Add(context);
-
-          const display::Screen* screen = display::Screen::GetScreen();
-          DCHECK(screen);
-
-          // Fetch actions for selected text and then show quick menu.
-          instance->RequestTextSelectionActions(
-              converted_text,
-              arc::mojom::ScaleFactor(screen->GetDisplayNearestWindow(context)
-                                          .device_scale_factor()),
-              base::BindOnce(&TouchSelectionMenuRunnerChromeOS::
-                                 OpenMenuWithTextSelectionAction,
-                             weak_ptr_factory_.GetWeakPtr(), client,
-                             anchor_rect, handle_image_size,
-                             std::move(tracker)));
-          return;
-        }
-      }
-    }
   }
 
   // The menu manages its own lifetime and deletes itself when closed.
