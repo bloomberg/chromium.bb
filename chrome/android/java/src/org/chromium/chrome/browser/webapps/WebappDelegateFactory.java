@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
-import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -42,10 +41,10 @@ public class WebappDelegateFactory extends TabDelegateFactory {
             // compatibility we relaunch it the hard way.
             String startUrl = mActivity.getWebappInfo().uri().toString();
 
-            String webApkPackageName = mActivity.getWebappInfo().webApkPackageName();
-            if (!TextUtils.isEmpty(webApkPackageName)) {
+            WebappInfo webappInfo = mActivity.getWebappInfo();
+            if (webappInfo.isForWebApk()) {
                 Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
-                        webApkPackageName, startUrl, false /* forceNavigation */);
+                        webappInfo.webApkPackageName(), startUrl, false /* forceNavigation */);
                 IntentUtils.safeStartActivity(ContextUtils.getApplicationContext(), intent);
                 return;
             }

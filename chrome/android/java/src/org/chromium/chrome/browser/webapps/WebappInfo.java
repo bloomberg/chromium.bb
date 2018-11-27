@@ -274,6 +274,10 @@ public class WebappInfo {
         return mDisplayMode;
     }
 
+    public boolean isForWebApk() {
+        return false;
+    }
+
     public String webApkPackageName() {
         return null;
     }

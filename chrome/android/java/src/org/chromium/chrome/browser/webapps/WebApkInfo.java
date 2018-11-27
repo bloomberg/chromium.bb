@@ -311,6 +311,11 @@ public class WebApkInfo extends WebappInfo {
     }
 
     @Override
+    public boolean isForWebApk() {
+        return true;
+    }
+
+    @Override
     public String webApkPackageName() {
         return mApkPackageName;
     }
