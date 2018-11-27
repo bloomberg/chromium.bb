@@ -53,11 +53,17 @@ class PrCleanupTool(object):
             change_id = self.wpt_github.extract_metadata('Change-Id: ', pull_request.body)
             if not change_id:
                 continue
-            cl_status = self.gerrit.query_cl(change_id).status
+            cl = self.gerrit.query_cl(change_id)
+            cl_status = cl.status
             if cl_status == 'ABANDONED':
-                _log.info('https://github.com/web-platform-tests/wpt/pull/%s', pull_request.number)
-                _log.info(self.wpt_github.extract_metadata('Reviewed-on: ', pull_request.body))
-                self.close_abandoned_pr(pull_request)
+                comment = 'Close this PR because the Chromium CL has been abandoned.'
+                self.log_affected_pr_details(pull_request, comment)
+                self.close_pr_and_delete_branch(pull_request.number, comment)
+            elif cl_status == 'MERGED' and (not cl.is_exportable()):
+                comment = 'Close this PR because the Chromium CL does not have exportable changes.'
+                self.log_affected_pr_details(pull_request, comment)
+                self.close_pr_and_delete_branch(pull_request.number, comment)
+
         return True
 
     def parse_args(self, argv):
@@ -73,11 +79,18 @@ class PrCleanupTool(object):
         return parser.parse_args(argv)
 
     def retrieve_all_prs(self):
-        """Retrieve last 1000 PRs."""
+        """Retrieves last 1000 PRs."""
         return self.wpt_github.all_pull_requests()
 
-    def close_abandoned_pr(self, pull_request):
-        """Closes a PR if the original CL is abandoned."""
-        comment = 'Close this PR because the Chromium CL has been abandoned.'
-        self.wpt_github.add_comment(pull_request.number, comment)
-        self.wpt_github.update_pr(pull_request.number, state='closed')
+    def close_pr_and_delete_branch(self, pull_request_number, comment):
+        """Closes a PR with a comment and delete the corresponding branch."""
+        self.wpt_github.add_comment(pull_request_number, comment)
+        self.wpt_github.update_pr(pull_request_number, state='closed')
+        branch = self.wpt_github.get_pr_branch(pull_request_number)
+        self.wpt_github.delete_remote_branch(branch)
+
+    def log_affected_pr_details(self, pull_request, comment):
+        """Logs details of an affected PR."""
+        _log.info(comment)
+        _log.info('https://github.com/web-platform-tests/wpt/pull/%s', pull_request.number)
+        _log.info(self.wpt_github.extract_metadata('Reviewed-on: ', pull_request.body))
