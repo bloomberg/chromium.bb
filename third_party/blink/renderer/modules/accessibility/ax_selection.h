@@ -39,7 +39,7 @@ class MODULES_EXPORT AXSelection final {
  public:
   class Builder;
 
-  static void ClearCurrentSelection(const Document&);
+  static void ClearCurrentSelection(Document&);
 
   static AXSelection FromCurrentSelection(
       const Document&,
@@ -66,8 +66,10 @@ class MODULES_EXPORT AXSelection final {
       const AXSelectionBehavior =
           AXSelectionBehavior::kExtendToValidDOMRange) const;
 
-  // Tries to set the DOM selection to this.
-  void Select(
+  // Tries to set the DOM selection to this. Returns |false| if the selection
+  // has been cancelled via the "selectionstart" event or if the selection could
+  // not be set for any other reason.
+  bool Select(
       const AXSelectionBehavior = AXSelectionBehavior::kExtendToValidDOMRange);
 
   // Returns a string representation of this object.

@@ -4,8 +4,11 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
 
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
@@ -14,6 +17,18 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
 namespace blink {
+
+namespace {
+
+DispatchEventResult DispatchSelectStart(Node* node) {
+  if (!node)
+    return DispatchEventResult::kNotCanceled;
+
+  return node->DispatchEvent(
+      *Event::CreateCancelableBubble(event_type_names::kSelectstart));
+}
+
+}  // namespace
 
 //
 // AXSelection::Builder
@@ -80,7 +95,7 @@ const AXSelection AXSelection::Builder::Build() {
 //
 
 // static
-void AXSelection::ClearCurrentSelection(const Document& document) {
+void AXSelection::ClearCurrentSelection(Document& document) {
   LocalFrame* frame = document.GetFrame();
   if (!frame)
     return;
@@ -223,10 +238,10 @@ const SelectionInDOMTree AXSelection::AsSelection(
   return selection_builder.Build();
 }
 
-void AXSelection::Select(const AXSelectionBehavior selection_behavior) {
+bool AXSelection::Select(const AXSelectionBehavior selection_behavior) {
   if (!IsValid()) {
     NOTREACHED() << "Trying to select an invalid accessibility selection.";
-    return;
+    return false;
   }
 
   const SelectionInDOMTree selection = AsSelection(selection_behavior);
@@ -234,23 +249,31 @@ void AXSelection::Select(const AXSelectionBehavior selection_behavior) {
   Document* document = selection.Base().GetDocument();
   if (!document) {
     NOTREACHED();
-    return;
+    return false;
   }
 
   LocalFrame* frame = document->GetFrame();
   if (!frame) {
     NOTREACHED();
-    return;
+    return false;
   }
 
   FrameSelection& frame_selection = frame->Selection();
   if (!frame_selection.IsAvailable())
-    return;
+    return false;
+
+  // See the following section in the Selection API Specification:
+  // https://w3c.github.io/selection-api/#selectstart-event
+  if (DispatchSelectStart(selection.Extent().ComputeContainerNode()) !=
+      DispatchEventResult::kNotCanceled) {
+    return false;
+  }
 
   SetSelectionOptions::Builder options_builder;
   options_builder.SetIsDirectional(true)
       .SetShouldCloseTyping(true)
-      .SetShouldClearTypingStyle(true);
+      .SetShouldClearTypingStyle(true)
+      .SetSetSelectionBy(SetSelectionBy::kUser);
   frame_selection.ClearDocumentCachedRange();
   frame_selection.SetSelection(selection, options_builder.Build());
 
@@ -281,6 +304,7 @@ void AXSelection::Select(const AXSelectionBehavior selection_behavior) {
                   selection.Base().ComputeOffsetInContainerNode());
   }
   frame_selection.CacheRangeOfDocument(range);
+  return true;
 }
 
 String AXSelection::ToString() const {
