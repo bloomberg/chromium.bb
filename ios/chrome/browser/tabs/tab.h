@@ -26,7 +26,6 @@ class GURL;
 @class FormSuggestionController;
 @protocol TabDialogDelegate;
 @class Tab;
-@class TabModel;
 
 namespace ios {
 class ChromeBrowserState;
@@ -102,11 +101,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 - (instancetype)initWithWebState:(web::WebState*)webState;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-// Sets the parent tab model for this tab.  Can only be called if the tab does
-// not already have a parent tab model set.
-// TODO(crbug.com/228575): Create a delegate interface and remove this.
-- (void)setParentTabModel:(TabModel*)model;
 
 // The view that generates print data when printing. It can be nil when printing
 // is not supported with this tab. It can be different from |Tab view|.

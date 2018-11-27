@@ -688,20 +688,6 @@ TEST_P(TabModelTest, MoveTabs) {
   [tab_model_ removeObserver:tab_model_observer];
 }
 
-TEST_P(TabModelTest, ParentTabModel) {
-  std::unique_ptr<web::WebState> web_state = web::WebState::Create(
-      web::WebState::CreateParams(chrome_browser_state_.get()));
-  AttachTabHelpers(web_state.get(), /*for_prerender=*/false);
-
-  Tab* tab = LegacyTabHelper::GetTabForWebState(web_state.get());
-  EXPECT_NSEQ(nil, [tab parentTabModel]);
-
-  [tab_model_ webStateList]->InsertWebState(0, std::move(web_state),
-                                            WebStateList::INSERT_FORCE_INDEX,
-                                            WebStateOpener());
-  EXPECT_NSEQ(tab_model_, [tab parentTabModel]);
-}
-
 TEST_P(TabModelTest, TabCreatedOnInsertion) {
   std::unique_ptr<web::WebState> web_state = web::WebState::Create(
       web::WebState::CreateParams(chrome_browser_state_.get()));
