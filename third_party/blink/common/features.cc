@@ -43,6 +43,10 @@ const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
 // Enable Portals. https://crbug.com/865123.
 const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable Implicit Root Scroller. https://crbug.com/903260.
+const base::Feature kImplicitRootScroller{"ImplicitRootScroller",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Used to control the collection of anchor element metrics (crbug.com/856683).
 // If kRecordAnchorMetricsClicked is enabled, then metrics of anchor elements
 // clicked by the user will be extracted and recorded.

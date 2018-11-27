@@ -192,6 +192,10 @@ void WebRuntimeFeatures::EnableHeapCompaction(bool enable) {
   RuntimeEnabledFeatures::SetHeapCompactionEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableImplicitRootScroller(bool enable) {
+  RuntimeEnabledFeatures::SetImplicitRootScrollerEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableInputMultipleFieldsUI(bool enable) {
   RuntimeEnabledFeatures::SetInputMultipleFieldsUIEnabled(enable);
 }

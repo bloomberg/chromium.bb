@@ -4461,6 +4461,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"google-password-manager", flag_descriptions::kGooglePasswordManagerName,
      flag_descriptions::kGooglePasswordManagerDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kGooglePasswordManager)},
+
+    {"enable-implicit-root-scroller",
+     flag_descriptions::kEnableImplicitRootScrollerName,
+     flag_descriptions::kEnableImplicitRootScrollerDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kImplicitRootScroller)},
 };
 
 class FlagsStateSingleton {
