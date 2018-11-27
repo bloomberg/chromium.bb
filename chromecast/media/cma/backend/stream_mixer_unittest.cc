@@ -955,7 +955,7 @@ TEST_F(StreamMixerTest, PicksPlayoutChannel) {
   VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 0 ch0 = 0 ch1 = 2.
-  EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr, UpdatePlayoutChannel(1));
+  // Playout channel is still 1.
   mixer_->AddInput(&input4);
   WaitForMixer();
   VerifyAndClearPostProcessors(factory_ptr);
@@ -969,8 +969,7 @@ TEST_F(StreamMixerTest, PicksPlayoutChannel) {
   VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 1 ch0 = 0 ch1 = 1.
-  EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr,
-                                 UpdatePlayoutChannel(kChannelAll));
+  // Playout channel is still 'all'.
   mixer_->RemoveInput(&input3);
   WaitForMixer();
   VerifyAndClearPostProcessors(factory_ptr);

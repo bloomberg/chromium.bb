@@ -176,6 +176,7 @@ class StreamMixer {
   void PlaybackLoop();
   void WriteOneBuffer();
   void WriteMixedPcm(int frames, int64_t expected_playback_time);
+  void MixToMono(float* data, int frames, int channels);
 
   void SetVolumeOnThread(AudioContentType type, float level);
   void SetMutedOnThread(AudioContentType type, bool muted);
@@ -235,6 +236,7 @@ class StreamMixer {
   // AudioPostProcessors require stricter alignment conditions.
   const int filter_frame_alignment_;
 
+  int playout_channel_ = kChannelAll;
   int requested_output_samples_per_second_ = 0;
   int output_samples_per_second_ = 0;
   int frames_per_write_ = 0;

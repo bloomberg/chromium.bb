@@ -19,15 +19,11 @@ namespace chromecast {
 namespace media {
 
 FilterGroup::FilterGroup(int num_channels,
-                         GroupType type,
                          const std::string& name,
                          std::unique_ptr<PostProcessingPipeline> pipeline,
                          const base::flat_set<std::string>& device_ids,
                          const std::vector<FilterGroup*>& mixed_inputs)
     : num_channels_(num_channels),
-      type_(type),
-      mix_to_mono_(false),
-      playout_channel_(kChannelAll),
       name_(name),
       device_ids_(device_ids),
       mixed_inputs_(mixed_inputs),
@@ -145,19 +141,6 @@ float FilterGroup::MixAndFilter(
     }
   }
 
-  // Copy the active channel to all channels. Only used in the "linearize"
-  // instance.
-  if (playout_channel_ != kChannelAll && type_ == GroupType::kLinearize) {
-    DCHECK_GE(playout_channel_, 0);
-    DCHECK_LT(playout_channel_, num_channels_);
-
-    for (int frame = 0; frame < num_frames; ++frame) {
-      float s = interleaved_.get()[frame * num_channels_ + playout_channel_];
-      for (int c = 0; c < num_channels_; ++c)
-        interleaved_.get()[frame * num_channels_ + c] = s;
-    }
-  }
-
   // Allow paused streams to "ring out" at the last valid volume.
   // If the stream volume is actually 0, this doesn't matter, since the
   // data is 0's anyway.
@@ -174,18 +157,6 @@ float FilterGroup::MixAndFilter(
 
   delay_frames_ = post_processing_pipeline_->ProcessFrames(
       interleaved_.get(), num_frames, last_volume_, is_silence);
-
-  // Mono mixing if needed. Only used in the "Mix" instance.
-  if (mix_to_mono_ && type_ == GroupType::kFinalMix) {
-    for (int frame = 0; frame < num_frames; ++frame) {
-      float sum = 0;
-      for (int c = 0; c < num_channels_; ++c)
-        sum += interleaved_.get()[frame * num_channels_ + c];
-      for (int c = 0; c < num_channels_; ++c)
-        interleaved_.get()[frame * num_channels_ + c] = sum / num_channels_;
-    }
-  }
-
   return last_volume_;
 }
 
@@ -240,18 +211,13 @@ void FilterGroup::SetPostProcessorConfig(const std::string& name,
   post_processing_pipeline_->SetPostProcessorConfig(name, config);
 }
 
-void FilterGroup::SetMixToMono(bool mix_to_mono) {
-  mix_to_mono_ = (num_channels_ != 1 && mix_to_mono);
-}
-
 void FilterGroup::UpdatePlayoutChannel(int playout_channel) {
   if (playout_channel >= num_channels_) {
     LOG(ERROR) << "only " << num_channels_ << " present, wanted channel #"
                << playout_channel;
     return;
   }
-  playout_channel_ = playout_channel;
-  post_processing_pipeline_->UpdatePlayoutChannel(playout_channel_);
+  post_processing_pipeline_->UpdatePlayoutChannel(playout_channel);
 }
 
 }  // namespace media

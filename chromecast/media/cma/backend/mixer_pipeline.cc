@@ -30,7 +30,6 @@ bool IsOutputDeviceId(const std::string& device) {
 }
 
 std::unique_ptr<FilterGroup> CreateFilterGroup(
-    FilterGroup::GroupType type,
     int input_channels,
     const std::string& name,
     const base::ListValue* filter_list,
@@ -40,9 +39,8 @@ std::unique_ptr<FilterGroup> CreateFilterGroup(
   DCHECK(ppp_factory);
   auto pipeline =
       ppp_factory->CreatePipeline(name, filter_list, input_channels);
-  return std::make_unique<FilterGroup>(input_channels, type, name,
-                                       std::move(pipeline), device_ids,
-                                       mixed_inputs);
+  return std::make_unique<FilterGroup>(
+      input_channels, name, std::move(pipeline), device_ids, mixed_inputs);
 }
 
 }  // namespace
@@ -83,8 +81,8 @@ bool MixerPipeline::BuildPipeline(PostProcessingPipelineParser* config,
         return false;
       }
       filter_groups_.push_back(CreateFilterGroup(
-          FilterGroup::GroupType::kStream, kNumInputChannels,
-          *device_ids.begin() /* name */, stream_pipeline.pipeline, device_ids,
+          kNumInputChannels, *device_ids.begin() /* name */,
+          stream_pipeline.pipeline, device_ids,
           std::vector<FilterGroup*>() /* mixed_inputs */, factory));
       if (device_ids.find(::media::AudioDeviceDescription::kDefaultDeviceId) !=
           device_ids.end()) {
@@ -110,8 +108,7 @@ bool MixerPipeline::BuildPipeline(PostProcessingPipelineParser* config,
     }
 
     filter_groups_.push_back(CreateFilterGroup(
-        FilterGroup::GroupType::kFinalMix, mix_group_input_channels, "mix",
-        config->GetMixPipeline(),
+        mix_group_input_channels, "mix", config->GetMixPipeline(),
         base::flat_set<std::string>() /* device_ids */, filter_group_ptrs,
         factory));
   } else {
@@ -119,8 +116,7 @@ bool MixerPipeline::BuildPipeline(PostProcessingPipelineParser* config,
     std::string kDefaultDeviceId =
         ::media::AudioDeviceDescription::kDefaultDeviceId;
     filter_groups_.push_back(CreateFilterGroup(
-        FilterGroup::GroupType::kFinalMix, kNumInputChannels, "mix",
-        config->GetMixPipeline(),
+        kNumInputChannels, "mix", config->GetMixPipeline(),
         base::flat_set<std::string>({kDefaultDeviceId}),
         std::vector<FilterGroup*>() /* mixed_inputs */, factory));
     default_stream_group_ = filter_groups_.back().get();
@@ -129,7 +125,6 @@ bool MixerPipeline::BuildPipeline(PostProcessingPipelineParser* config,
   loopback_output_group_ = filter_groups_.back().get();
 
   filter_groups_.push_back(CreateFilterGroup(
-      FilterGroup::GroupType::kLinearize,
       loopback_output_group_->GetOutputChannelCount(), "linearize",
       config->GetLinearizePipeline(),
       base::flat_set<std::string>() /* device_ids */,
@@ -204,10 +199,6 @@ void MixerPipeline::SetPostProcessorConfig(const std::string& name,
   for (auto&& filter_group : filter_groups_) {
     filter_group->SetPostProcessorConfig(name, config);
   }
-}
-
-void MixerPipeline::SetMixToMono(bool mix_to_mono) {
-  loopback_output_group_->SetMixToMono(mix_to_mono);
 }
 
 void MixerPipeline::SetPlayoutChannel(int playout_channel) {

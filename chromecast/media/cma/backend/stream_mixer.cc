@@ -230,6 +230,7 @@ StreamMixer::StreamMixer(
 
   CreatePostProcessors([](bool, const std::string&) {},
                        "" /* override_config */);
+  mixer_pipeline_->SetPlayoutChannel(playout_channel_);
 
   // TODO(jyw): command line flag for filter frame alignment.
   DCHECK_EQ(filter_frame_alignment_ & (filter_frame_alignment_ - 1), 0)
@@ -580,14 +581,15 @@ void StreamMixer::UpdatePlayoutChannel() {
           std::min(it.second->source()->playout_channel(), playout_channel);
     }
   }
+  if (playout_channel == playout_channel_) {
+    return;
+  }
 
   DCHECK(playout_channel == kChannelAll ||
          playout_channel >= 0 && playout_channel < kNumInputChannels);
   LOG(INFO) << "Update playout channel: " << playout_channel;
-
-  mixer_pipeline_->SetMixToMono(num_output_channels_ == 1 &&
-                                playout_channel == kChannelAll);
-  mixer_pipeline_->SetPlayoutChannel(playout_channel);
+  playout_channel_ = playout_channel;
+  mixer_pipeline_->SetPlayoutChannel(playout_channel_);
 }
 
 MediaPipelineBackend::AudioDecoder::RenderingDelay
@@ -655,13 +657,7 @@ void StreamMixer::WriteMixedPcm(int frames, int64_t expected_playback_time) {
 
   float* mixed_data = mixer_pipeline_->GetLoopbackOutput();
   if (num_output_channels_ == 1 && mix_channel_count != 1) {
-    for (int i = 0; i < frames; ++i) {
-      float sum = 0;
-      for (int c = 0; c < mix_channel_count; ++c) {
-        sum += mixed_data[i * mix_channel_count + c];
-      }
-      mixed_data[i] = sum / mix_channel_count;
-    }
+    MixToMono(mixed_data, frames, mix_channel_count);
     loopback_channel_count = 1;
   }
 
@@ -685,8 +681,14 @@ void StreamMixer::WriteMixedPcm(int frames, int64_t expected_playback_time) {
   float* linearized_data = mixer_pipeline_->GetOutput();
   int linearize_channel_count = mixer_pipeline_->GetOutputChannelCount();
   if (num_output_channels_ == 1 && linearize_channel_count != 1) {
-    for (int i = 0; i < frames; ++i) {
-      linearized_data[i] = linearized_data[i * linearize_channel_count];
+    MixToMono(linearized_data, frames, linearize_channel_count);
+  } else if (num_output_channels_ > 1 && playout_channel_ != kChannelAll) {
+    // Duplicate selected channel to all channels.
+    for (int f = 0; f < frames; ++f) {
+      float selected =
+          linearized_data[f * num_output_channels_ + playout_channel_];
+      for (int c = 0; c < num_output_channels_; ++c)
+        linearized_data[f * num_output_channels_ + c] = selected;
     }
   }
 
@@ -701,6 +703,23 @@ void StreamMixer::WriteMixedPcm(int frames, int64_t expected_playback_time) {
 
   if (playback_interrupted) {
     PostLoopbackInterrupted();
+  }
+}
+
+void StreamMixer::MixToMono(float* data, int frames, int channels) {
+  DCHECK_EQ(num_output_channels_, 1);
+  if (playout_channel_ == kChannelAll) {
+    for (int i = 0; i < frames; ++i) {
+      float sum = 0;
+      for (int c = 0; c < channels; ++c) {
+        sum += data[i * channels + c];
+      }
+      data[i] = sum / channels;
+    }
+  } else {
+    for (int i = 0; i < frames; ++i) {
+      data[i] = data[i * channels + playout_channel_];
+    }
   }
 }
 
