@@ -373,14 +373,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTabToFocus) {
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 }
 
-#if defined(OS_MACOSX)
-// Focusing or input is not completely working on Mac: http://crbug.com/824418
-#define MAYBE_CloseOmniboxPopupOnTextDrag DISABLED_CloseOmniboxPopupOnTextDrag
-#else
-#define MAYBE_CloseOmniboxPopupOnTextDrag CloseOmniboxPopupOnTextDrag
-#endif
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
-                       MAYBE_CloseOmniboxPopupOnTextDrag) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
   OmniboxViewViews* omnibox_view_views =
@@ -414,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   // Simulate a mouse click before dragging the mouse.
-  gfx::Point point(omnibox_view_views->origin());
+  gfx::Point point(omnibox_view_views->origin() + gfx::Vector2d(10, 10));
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, point, point,
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_LEFT_MOUSE_BUTTON);
