@@ -180,7 +180,6 @@
     <dimen name="fre_vertical_spacing">32dp</dimen>
     <dimen name="fre_button_bar_height">52dp</dimen>
     <dimen name="fre_button_padding">12dp</dimen>
-    <dimen name="fre_stacked_button_margin">8dp</dimen>
     <dimen name="fre_margin">24dp</dimen>
     <dimen name="fre_image_height">120dp</dimen>
     <dimen name="fre_tos_checkbox_padding">12dp</dimen>
@@ -206,14 +205,16 @@
     <dimen name="autofill_card_unmask_tooltip_horizontal_padding">16dp</dimen>
     <dimen name="autofill_card_unmask_tooltip_vertical_padding">4dp</dimen>
 
+    <!-- Button bar dimensions -->
+    <dimen name="button_bar_stacked_margin">8dp</dimen>
+
     <!-- Alert dialog -->
     <dimen name="dialog_padding_top">@dimen/abc_dialog_padding_top_material</dimen>
     <dimen name="dialog_padding_sides">@dimen/abc_dialog_padding_material</dimen>
     <dimen name="dialog_max_width">600dp</dimen>
 
     <!-- ModalDialogView dimensions -->
-    <dimen name="modal_dialog_control_padding_vertical">4dp</dimen>
-    <dimen name="modal_dialog_control_padding_horizontal">12dp</dimen>
+    <dimen name="modal_dialog_control_padding">8dp</dimen>
     <dimen name="tab_modal_scrim_vertical_margin">16dp</dimen>
 
     <!-- Tab Strip Dimensions -->
