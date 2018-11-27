@@ -25,25 +25,6 @@ class TextSuggestionControllerTest : public EditingTestBase {
                     ->GetTextSuggestionController()
                     .text_suggestion_host_);
   }
-
-  void ShowSuggestionMenu(
-      const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
-          node_suggestion_marker_pairs,
-      size_t max_number_of_suggestions) {
-    GetDocument().GetFrame()->GetTextSuggestionController().ShowSuggestionMenu(
-        node_suggestion_marker_pairs, max_number_of_suggestions);
-  }
-
-  EphemeralRangeInFlatTree ComputeRangeSurroundingCaret(
-      const PositionInFlatTree& caret_position) {
-    const Node* const position_node = caret_position.ComputeContainerNode();
-    const unsigned position_offset_in_node =
-        caret_position.ComputeOffsetInContainerNode();
-    // See ComputeRangeSurroundingCaret() in TextSuggestionController.
-    return EphemeralRangeInFlatTree(
-        PositionInFlatTree(position_node, position_offset_in_node - 1),
-        PositionInFlatTree(position_node, position_offset_in_node + 1));
-  }
 };
 
 TEST_F(TextSuggestionControllerTest, ApplySpellCheckSuggestion) {
@@ -496,23 +477,6 @@ TEST_F(TextSuggestionControllerTest, SuggestionMarkerWithEmptySuggestion) {
   // We don't trigger menu in this case so there shouldn't be any mojom
   // connection available.
   EXPECT_FALSE(IsTextSuggestionHostAvailable());
-
-  const VisibleSelectionInFlatTree& selection =
-      GetFrame().Selection().ComputeVisibleSelectionInFlatTree();
-  EXPECT_FALSE(selection.IsNone());
-
-  const EphemeralRangeInFlatTree& range_to_check =
-      ComputeRangeSurroundingCaret(selection.Start());
-
-  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
-      node_suggestion_marker_pairs =
-          GetFrame().GetDocument()->Markers().MarkersIntersectingRange(
-              range_to_check, DocumentMarker::MarkerTypes::Suggestion());
-  EXPECT_FALSE(node_suggestion_marker_pairs.IsEmpty());
-
-  // Calling ShowSuggestionMenu() shouldn't crash. See crbug.com/901135.
-  // ShowSuggestionMenu() may still get called because of race condition.
-  ShowSuggestionMenu(node_suggestion_marker_pairs, 3);
 }
 
 TEST_F(TextSuggestionControllerTest, SuggestionMarkerWithSuggestion) {
