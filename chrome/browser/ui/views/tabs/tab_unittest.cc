@@ -81,6 +81,7 @@ class FakeTabController : public TabController {
   bool ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) override {
     return true;
   }
+  bool ShouldPaintAsActiveFrame() const override { return true; }
   int GetStrokeThickness() const override { return 0; }
   bool CanPaintThrobberToLayer() const override {
     return paint_throbber_to_layer_;
@@ -88,11 +89,16 @@ class FakeTabController : public TabController {
   bool HasVisibleBackgroundTabShapes() const override { return false; }
   SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabSeparatorColor() const override { return SK_ColorBLACK; }
-  SkColor GetTabBackgroundColor(TabState state) const override {
-    return state == TAB_ACTIVE ? tab_bg_color_active_ : tab_bg_color_inactive_;
+  SkColor GetTabBackgroundColor(
+      TabState tab_state,
+      BrowserNonClientFrameView::ActiveState active_state =
+          BrowserNonClientFrameView::kUseCurrent) const override {
+    return tab_state == TAB_ACTIVE ? tab_bg_color_active_
+                                   : tab_bg_color_inactive_;
   }
-  SkColor GetTabForegroundColor(TabState state) const override {
-    return state == TAB_ACTIVE ? tab_fg_color_active_ : tab_fg_color_inactive_;
+  SkColor GetTabForegroundColor(TabState tab_state) const override {
+    return tab_state == TAB_ACTIVE ? tab_fg_color_active_
+                                   : tab_fg_color_inactive_;
   }
   int GetBackgroundResourceId(
       bool* has_custom_image,

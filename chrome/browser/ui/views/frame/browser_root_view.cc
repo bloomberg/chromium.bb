@@ -308,8 +308,7 @@ void BrowserRootView::PaintChildren(const views::PaintInfo& paint_info) {
   // offset from the widget by a few DIPs, which is toublesome for computing a
   // subpixel offset when using fractional scale factors.  So we're forced to
   // put this drawing in the BrowserRootView.
-  if (tabstrip()->controller()->ShouldDrawStrokes() &&
-      browser_view_->IsToolbarVisible()) {
+  if (tabstrip()->ShouldDrawStrokes() && browser_view_->IsToolbarVisible()) {
     ui::PaintRecorder recorder(paint_info.context(),
                                paint_info.paint_recording_size(),
                                paint_info.paint_recording_scale_x(),

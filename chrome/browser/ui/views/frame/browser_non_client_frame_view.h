@@ -90,6 +90,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // for either active or inactive windows.
   bool EverHasVisibleBackgroundTabShapes() const;
 
+  // Returns whether tab strokes can be drawn.
+  virtual bool CanDrawStrokes() const;
+
   // Returns the color of the browser frame, which is also the color of the
   // tabstrip background.
   SkColor GetFrameColor(ActiveState active_state = kUseCurrent) const;
@@ -97,15 +100,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
   SkColor GetToolbarTopSeparatorColor() const;
-
-  // Returns the tab background color based on both the |state| of the tab and
-  // the activation state of the window.
-  SkColor GetTabBackgroundColor(TabState state,
-                                ActiveState active_state = kUseCurrent) const;
-
-  // Returns the tab foreground color of the for the text based on both the
-  // |state| of the tab and the activation state of the window.
-  SkColor GetTabForegroundColor(TabState state) const;
 
   // For non-transparent windows, returns the resource ID to use behind
   // background tabs.  |has_custom_image| will be set to true if this has been
@@ -129,8 +123,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // many tabs there are right now.
   virtual bool IsSingleTabModeAvailable() const;
 
-  // Returns whether or not strokes should be drawn around and under the tabs.
-  virtual bool ShouldDrawStrokes() const;
+  // Whether the frame should be painted with the special mode for one tab.
+  bool ShouldPaintAsSingleTabMode() const;
 
   // views::NonClientFrameView:
   using views::NonClientFrameView::ShouldPaintAsActive;
@@ -154,9 +148,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Converts an ActiveState to a bool representing whether the frame should be
   // treated as active.
   bool ShouldPaintAsActive(ActiveState active_state) const;
-
-  // Whether the frame should be painted with the special mode for one tab.
-  bool ShouldPaintAsSingleTabMode() const;
 
   // Compute aspects of the frame needed to paint the frame background.
   gfx::ImageSkia GetFrameImage(ActiveState active_state = kUseCurrent) const;

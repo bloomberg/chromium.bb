@@ -165,6 +165,9 @@ class TabStrip : public views::AccessiblePaneView,
   // to clip).
   bool ShouldTabBeVisible(const Tab* tab) const;
 
+  // Returns whether or not strokes should be drawn around and under the tabs.
+  bool ShouldDrawStrokes() const;
+
   // Invoked when the selection is updated.
   void SetSelection(const ui::ListSelectionModel& new_selection);
 
@@ -278,10 +281,14 @@ class TabStrip : public views::AccessiblePaneView,
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
   bool HasVisibleBackgroundTabShapes() const override;
+  bool ShouldPaintAsActiveFrame() const override;
   SkColor GetToolbarTopSeparatorColor() const override;
   SkColor GetTabSeparatorColor() const override;
-  SkColor GetTabBackgroundColor(TabState state) const override;
-  SkColor GetTabForegroundColor(TabState state) const override;
+  SkColor GetTabBackgroundColor(
+      TabState tab_state,
+      BrowserNonClientFrameView::ActiveState active_state =
+          BrowserNonClientFrameView::kUseCurrent) const override;
+  SkColor GetTabForegroundColor(TabState tab_state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   int GetBackgroundResourceId(
       bool* has_custom_image,

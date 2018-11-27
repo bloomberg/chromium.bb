@@ -71,16 +71,17 @@ class BrowserTabStripController : public TabStripController,
   void CreateNewTabWithLocation(const base::string16& loc) override;
   void StackedLayoutMaybeChanged() override;
   bool IsSingleTabModeAvailable() override;
-  bool ShouldDrawStrokes() const override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;
-  SkColor GetFrameColor() const override;
+  bool ShouldPaintAsActiveFrame() const override;
+  bool CanDrawStrokes() const override;
+  SkColor GetFrameColor(
+      BrowserNonClientFrameView::ActiveState active_state =
+          BrowserNonClientFrameView::kUseCurrent) const override;
   SkColor GetToolbarTopSeparatorColor() const override;
-  SkColor GetTabBackgroundColor(TabState active) const override;
-  SkColor GetTabForegroundColor(TabState state) const override;
   int GetTabBackgroundResourceId(
       BrowserNonClientFrameView::ActiveState active_state,
       bool* has_custom_image) const override;
