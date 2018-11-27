@@ -18,6 +18,12 @@ namespace configuration {
 // automatically.
 const char kWelcomeNext[] = "welcomeNext";
 
+// String value that contains preferred input method.
+const char kInputMethod[] = "inputMethod";
+
+// String value that contains preferred input method.
+const char kLanguage[] = "language";
+
 // Boolean value indicating if device should automatically run the demo mode
 // setup flow.
 const char kEnableDemoMode[] = "enableDemoMode";
@@ -96,6 +102,8 @@ constexpr struct {
   ConfigurationHandlerSide side;
 } kAllConfigurationKeys[] = {
     {kWelcomeNext, ValueType::BOOLEAN, ConfigurationHandlerSide::HANDLER_JS},
+    {kLanguage, ValueType::STRING, ConfigurationHandlerSide::HANDLER_JS},
+    {kInputMethod, ValueType::STRING, ConfigurationHandlerSide::HANDLER_JS},
     {kNetworkSelectGUID, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_JS},
     {kEULASendUsageStatistics, ValueType::BOOLEAN,

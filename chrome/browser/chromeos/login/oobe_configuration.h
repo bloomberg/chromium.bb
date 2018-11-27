@@ -52,6 +52,8 @@ class OobeConfiguration {
                             const std::string& configuration);
   void NotifyObservers();
 
+  void UpdateConfigurationValues();
+
   // Pointer to the existing OobeConfiguration instance (if any).
   // Set in ctor, reset in dtor. Not owned since we need to control the lifetime
   // externally.

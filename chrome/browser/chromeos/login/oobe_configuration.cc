@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/oobe_configuration_client.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/chromeos/input_method_util.h"
 
 namespace chromeos {
 
@@ -92,8 +94,22 @@ void OobeConfiguration::OnConfigurationCheck(bool has_configuration,
     LOG(ERROR) << "Invalid OOBE configuration";
   } else {
     configuration_ = std::move(value);
+    UpdateConfigurationValues();
   }
   NotifyObservers();
+}
+
+void OobeConfiguration::UpdateConfigurationValues() {
+  auto* ime_value = configuration_->FindKeyOfType(configuration::kInputMethod,
+                                                  base::Value::Type::STRING);
+  if (ime_value) {
+    chromeos::input_method::InputMethodManager* imm =
+        chromeos::input_method::InputMethodManager::Get();
+    configuration_->SetKey(
+        configuration::kInputMethod,
+        base::Value(imm->GetInputMethodUtil()->MigrateInputMethod(
+            ime_value->GetString())));
+  }
 }
 
 void OobeConfiguration::NotifyObservers() {
