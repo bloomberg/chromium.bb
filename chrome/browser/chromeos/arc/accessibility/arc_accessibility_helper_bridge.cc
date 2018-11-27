@@ -17,6 +17,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -39,12 +40,12 @@ exo::Surface* GetArcSurface(const aura::Window* window) {
 
   exo::Surface* arc_surface = exo::Surface::AsSurface(window);
   if (!arc_surface)
-    arc_surface = exo::ShellSurface::GetMainSurface(window);
+    arc_surface = exo::GetShellMainSurface(window);
   return arc_surface;
 }
 
 int32_t GetTaskId(aura::Window* window) {
-  const std::string* arc_app_id = exo::ShellSurface::GetApplicationId(window);
+  const std::string* arc_app_id = exo::GetShellApplicationId(window);
   if (!arc_app_id)
     return kNoTaskId;
 
@@ -186,7 +187,7 @@ void ArcAccessibilityHelperBridge::OnSetNativeChromeVoxArcSupportProcessed(
   if (!enabled) {
     task_id_to_tree_.erase(task_id);
 
-    exo::Surface* surface = exo::ShellSurfaceBase::GetMainSurface(window);
+    exo::Surface* surface = exo::GetShellMainSurface(window);
     if (surface) {
       views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
       static_cast<exo::ShellSurfaceBase*>(widget->widget_delegate())
@@ -282,8 +283,7 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
 
         ui::AXTreeData tree_data;
         tree_source->GetTreeData(&tree_data);
-        exo::Surface* surface =
-            exo::ShellSurfaceBase::GetMainSurface(active_window);
+        exo::Surface* surface = exo::GetShellMainSurface(active_window);
         if (surface) {
           views::Widget* widget =
               views::Widget::GetWidgetForNativeWindow(active_window);

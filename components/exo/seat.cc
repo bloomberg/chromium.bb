@@ -4,12 +4,11 @@
 
 #include "components/exo/seat.h"
 
-#include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/data_source.h"
-#include "components/exo/keyboard.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/seat_observer.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/focus_client.h"
@@ -31,14 +30,13 @@ Surface* GetEffectiveFocus(aura::Window* window) {
   aura::Window* const top_level_window = window->GetToplevelWindow();
   if (!top_level_window)
     return nullptr;
-  return ShellSurface::GetMainSurface(top_level_window);
+  return GetShellMainSurface(top_level_window);
 }
 
 }  // namespace
 
 Seat::Seat() : changing_clipboard_data_to_selection_source_(false) {
-  aura::client::GetFocusClient(ash::Shell::Get()->GetPrimaryRootWindow())
-      ->AddObserver(this);
+  WMHelper::GetInstance()->AddFocusObserver(this);
   // Prepend handler as it's critical that we see all events.
   WMHelper::GetInstance()->PrependPreTargetHandler(this);
   ui::ClipboardMonitor::GetInstance()->AddObserver(this);
@@ -50,8 +48,7 @@ Seat::Seat() : changing_clipboard_data_to_selection_source_(false) {
 
 Seat::~Seat() {
   DCHECK(!selection_source_) << "DataSource must be released before Seat";
-  aura::client::GetFocusClient(ash::Shell::Get()->GetPrimaryRootWindow())
-      ->RemoveObserver(this);
+  WMHelper::GetInstance()->RemoveFocusObserver(this);
   WMHelper::GetInstance()->RemovePreTargetHandler(this);
   ui::ClipboardMonitor::GetInstance()->RemoveObserver(this);
   if (ui::PlatformEventSource::GetInstance())

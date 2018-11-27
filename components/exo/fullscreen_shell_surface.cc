@@ -4,8 +4,7 @@
 
 #include "components/exo/fullscreen_shell_surface.h"
 
-#include "base/trace_event/trace_event.h"
-#include "base/trace_event/traced_value.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/window.h"
@@ -18,18 +17,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
-
-namespace {
-// Main surface key
-DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
-
-// Application Id set by the client.
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr);
-
-// Application Id set by the client.
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kStartupIdKey, nullptr);
-
-}  // namespace
 
 FullscreenShellSurface::FullscreenShellSurface(Surface* surface)
     : SurfaceTreeHost("FullscreenShellSurfaceHost") {
@@ -57,53 +44,6 @@ FullscreenShellSurface::~FullscreenShellSurface() {
     root_surface()->RemoveSurfaceObserver(this);
 }
 
-// static
-void FullscreenShellSurface::SetStartupId(
-    aura::Window* window,
-    const base::Optional<std::string>& id) {
-  TRACE_EVENT1("exo", "FullscreenShellSurface::SetStartupId", "startup_id",
-               id ? *id : "null");
-
-  if (id)
-    window->SetProperty(kStartupIdKey, new std::string(*id));
-  else
-    window->ClearProperty(kStartupIdKey);
-}
-
-// static
-void FullscreenShellSurface::SetStartupId(const char* startup_id) {
-  // Store the value in |startup_id_| in case the window does not exist yet.
-  if (startup_id)
-    startup_id_ = std::string(startup_id);
-  else
-    startup_id_.reset();
-
-  if (widget_ && widget_->GetNativeWindow())
-    SetStartupId(widget_->GetNativeWindow(), startup_id_);
-}
-
-// static
-std::string* FullscreenShellSurface::GetStartupId(aura::Window* window) {
-  return window->GetProperty(kStartupIdKey);
-}
-
-void FullscreenShellSurface::SetApplicationId(
-    aura::Window* window,
-    const base::Optional<std::string>& id) {
-  TRACE_EVENT1("exo", "ShellSurfaceBase::SetApplicationId", "application_id",
-               id ? *id : "null");
-
-  if (id)
-    window->SetProperty(kApplicationIdKey, new std::string(*id));
-  else
-    window->ClearProperty(kApplicationIdKey);
-}
-
-// static
-std::string* FullscreenShellSurface::GetApplicationId(aura::Window* window) {
-  return window->GetProperty(kApplicationIdKey);
-}
-
 void FullscreenShellSurface::SetApplicationId(const char* application_id) {
   // Store the value in |application_id_| in case the window does not exist yet.
   if (application_id)
@@ -112,18 +52,18 @@ void FullscreenShellSurface::SetApplicationId(const char* application_id) {
     application_id_.reset();
 
   if (widget_ && widget_->GetNativeWindow())
-    SetApplicationId(widget_->GetNativeWindow(), application_id_);
+    SetShellApplicationId(widget_->GetNativeWindow(), application_id_);
 }
 
-// static
-void FullscreenShellSurface::SetMainSurface(aura::Window* window,
-                                            Surface* surface) {
-  window->SetProperty(kMainSurfaceKey, surface);
-}
+void FullscreenShellSurface::SetStartupId(const char* startup_id) {
+  // Store the value in |startup_id_| in case the window does not exist yet.
+  if (startup_id)
+    startup_id_ = std::string(startup_id);
+  else
+    startup_id_.reset();
 
-// static
-Surface* FullscreenShellSurface::GetMainSurface(aura::Window* window) {
-  return window->GetProperty(kMainSurfaceKey);
+  if (widget_ && widget_->GetNativeWindow())
+    SetShellStartupId(widget_->GetNativeWindow(), startup_id_);
 }
 
 void FullscreenShellSurface::Maximize() {
@@ -177,7 +117,7 @@ void FullscreenShellSurface::OnSurfaceDestroying(Surface* surface) {
   SetRootSurface(nullptr);
 
   if (widget_)
-    SetMainSurface(widget_->GetNativeWindow(), nullptr);
+    SetShellMainSurface(widget_->GetNativeWindow(), nullptr);
 
   // Hide widget before surface is destroyed. This allows hide animations to
   // run using the current surface contents.
@@ -278,9 +218,9 @@ void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(
   window->SetName("FullscreenShellSurface");
   window->AddChild(host_window());
 
-  SetApplicationId(window, application_id_);
-  SetStartupId(window, startup_id_);
-  SetMainSurface(window, root_surface());
+  SetShellApplicationId(window, application_id_);
+  SetShellStartupId(window, startup_id_);
+  SetShellMainSurface(window, root_surface());
 
   window->AddObserver(this);
 }

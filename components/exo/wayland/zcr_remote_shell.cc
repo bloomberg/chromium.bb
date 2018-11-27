@@ -24,6 +24,7 @@
 #include "components/exo/notification_surface.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/shell_surface_base.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wm_helper_chromeos.h"
@@ -707,9 +708,9 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
 
   void SendActivated(aura::Window* gained_active, aura::Window* lost_active) {
     Surface* gained_active_surface =
-        gained_active ? ShellSurface::GetMainSurface(gained_active) : nullptr;
+        gained_active ? GetShellMainSurface(gained_active) : nullptr;
     Surface* lost_active_surface =
-        lost_active ? ShellSurface::GetMainSurface(lost_active) : nullptr;
+        lost_active ? GetShellMainSurface(lost_active) : nullptr;
     wl_resource* gained_active_surface_resource =
         gained_active_surface ? GetSurfaceResource(gained_active_surface)
                               : nullptr;

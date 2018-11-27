@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -309,7 +310,7 @@ void ShellSurface::InitializeWindowState(ash::wm::WindowState* window_state) {
   // Sommelier sets the null application id for override redirect windows,
   // which controls its bounds by itself.
   bool emulate_x11_override_redirect =
-      (GetApplicationId(window_state->window()) == nullptr) && !!parent_;
+      (GetShellApplicationId(window_state->window()) == nullptr) && !!parent_;
   window_state->set_allow_set_bounds_direct(emulate_x11_override_redirect);
   widget_->set_movement_disabled(movement_disabled_);
   window_state->set_ignore_keyboard_bounds_change(movement_disabled_);

@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "ui/aura/client/aura_constants.h"
@@ -187,14 +187,13 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   }
 
   // Handle genuine Crostini app windows.
-  const std::string* window_app_id =
-      exo::ShellSurface::GetApplicationId(window);
+  const std::string* window_app_id = exo::GetShellApplicationId(window);
 
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(
           owner()->profile());
   const std::string& shelf_app_id = registry_service->GetCrostiniShelfAppId(
-      window_app_id, exo::ShellSurface::GetStartupId(window));
+      window_app_id, exo::GetShellStartupId(window));
   // Non-crostini apps (i.e. arc++) are filtered out here.
   if (shelf_app_id.empty())
     return;

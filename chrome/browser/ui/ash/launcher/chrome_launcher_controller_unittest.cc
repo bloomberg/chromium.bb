@@ -89,7 +89,7 @@
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/test/fake_app_instance.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/sync/model/fake_sync_change_processor.h"
@@ -1009,8 +1009,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     widget->Init(params);
     // Set ARC id before showing the window to be recognized in
     // ArcAppWindowLauncherController.
-    exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
-                                        window_app_id);
+    exo::SetShellApplicationId(widget->GetNativeWindow(), window_app_id);
     widget->Show();
     widget->Activate();
     return widget;

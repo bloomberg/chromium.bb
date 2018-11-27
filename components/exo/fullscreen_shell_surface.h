@@ -36,34 +36,11 @@ class FullscreenShellSurface : public SurfaceTreeHost,
     surface_destroyed_callback_ = std::move(surface_destroyed_callback);
   }
 
-  // Sets the application ID for the window. The application ID identifies the
-  // general class of applications to which the window belongs.
-  static void SetApplicationId(aura::Window* window,
-                               const base::Optional<std::string>& id);
-
-  // Gets the application ID for the window. The application ID identifies the
-  // general class of applications to which the window belongs.
-  static std::string* GetApplicationId(aura::Window* window);
-
   // Set the application ID for the surface
   void SetApplicationId(const char* startup_id);
 
-  // Sets the startup ID for the window. The startup ID identifies the
-  // application using startup notification protocol.
-  static void SetStartupId(aura::Window* window,
-                           const base::Optional<std::string>& id);
-
-  // Gets the startup ID for the window. The startup ID identifies the
-  // application using startup notification protocol.
-  static std::string* GetStartupId(aura::Window* window);
-
   // Set the startup ID for the surface.
   void SetStartupId(const char* startup_id);
-
-  // Sets the main surface for the window.
-  static void SetMainSurface(aura::Window* window, Surface* surface);
-
-  static Surface* GetMainSurface(aura::Window* window);
 
   void Maximize();
 

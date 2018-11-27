@@ -24,6 +24,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
@@ -62,7 +63,7 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
     ~TestArcAccessibilityHelperBridge() override { window_.reset(); }
 
     void SetActiveWindowId(const std::string& id) {
-      exo::ShellSurface::SetApplicationId(window_.get(), id);
+      exo::SetShellApplicationId(window_.get(), id);
     }
 
    protected:

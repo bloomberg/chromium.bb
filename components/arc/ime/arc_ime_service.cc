@@ -13,7 +13,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/ime/arc_ime_bridge_impl.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -67,7 +67,7 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
       // Specifically, a window of ARC++ Kiosk should have ash::AppType::ARC_APP
       // property. Please see implementation of IsArcAppWindow().
       if (window == active) {
-        const std::string* app_id = exo::ShellSurface::GetApplicationId(window);
+        const std::string* app_id = exo::GetShellApplicationId(window);
         if (IsArcKioskMode() && app_id &&
             base::StartsWith(*app_id, kArcAppIdPrefix,
                              base::CompareCase::SENSITIVE)) {

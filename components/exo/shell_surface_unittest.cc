@@ -18,6 +18,7 @@
 #include "components/exo/buffer.h"
 #include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/display.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
@@ -283,13 +284,13 @@ TEST_F(ShellSurfaceTest, SetApplicationId) {
   surface->Attach(buffer.get());
   surface->Commit();
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
-  EXPECT_EQ("pre-widget-id", *ShellSurface::GetApplicationId(window));
+  EXPECT_EQ("pre-widget-id", *GetShellApplicationId(window));
   shell_surface->SetApplicationId("test");
-  EXPECT_EQ("test", *ShellSurface::GetApplicationId(window));
+  EXPECT_EQ("test", *GetShellApplicationId(window));
   EXPECT_FALSE(ash::wm::GetWindowState(window)->allow_set_bounds_direct());
 
   shell_surface->SetApplicationId(nullptr);
-  EXPECT_EQ(nullptr, ShellSurface::GetApplicationId(window));
+  EXPECT_EQ(nullptr, GetShellApplicationId(window));
 }
 
 TEST_F(ShellSurfaceTest, EmulateOverrideRedirect) {
@@ -332,12 +333,12 @@ TEST_F(ShellSurfaceTest, SetStartupId) {
   surface->Attach(buffer.get());
   surface->Commit();
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
-  EXPECT_EQ("pre-widget-id", *ShellSurface::GetStartupId(window));
+  EXPECT_EQ("pre-widget-id", *GetShellStartupId(window));
   shell_surface->SetStartupId("test");
-  EXPECT_EQ("test", *ShellSurface::GetStartupId(window));
+  EXPECT_EQ("test", *GetShellStartupId(window));
 
   shell_surface->SetStartupId(nullptr);
-  EXPECT_EQ(nullptr, ShellSurface::GetStartupId(window));
+  EXPECT_EQ(nullptr, GetShellStartupId(window));
 }
 
 TEST_F(ShellSurfaceTest, StartMove) {
