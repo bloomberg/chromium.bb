@@ -191,9 +191,11 @@ void AccessibilityController::NotificationReceived(
 
   // Call global notification listeners.
   v8::Local<v8::Value> argv[] = {
-      element_handle, v8::String::NewFromUtf8(isolate, notification_name.data(),
-                                              v8::String::kNormalString,
-                                              notification_name.size()),
+      element_handle,
+      v8::String::NewFromUtf8(isolate, notification_name.data(),
+                              v8::NewStringType::kNormal,
+                              notification_name.size())
+          .ToLocalChecked(),
   };
   local_frame->CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>::New(isolate, notification_callback_),

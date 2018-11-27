@@ -45,17 +45,24 @@ TEST_F(ConverterTest, Bool) {
     Local<Value> input;
     bool expected;
   } test_data[] = {
-    { Boolean::New(instance_->isolate(), false).As<Value>(), false },
-    { Boolean::New(instance_->isolate(), true).As<Value>(), true },
-    { Number::New(instance_->isolate(), 0).As<Value>(), false },
-    { Number::New(instance_->isolate(), 1).As<Value>(), true },
-    { Number::New(instance_->isolate(), -1).As<Value>(), true },
-    { Number::New(instance_->isolate(), 0.1).As<Value>(), true },
-    { String::NewFromUtf8(instance_->isolate(), "").As<Value>(), false },
-    { String::NewFromUtf8(instance_->isolate(), "foo").As<Value>(), true },
-    { Object::New(instance_->isolate()).As<Value>(), true },
-    { Null(instance_->isolate()).As<Value>(), false },
-    { Undefined(instance_->isolate()).As<Value>(), false },
+      {Boolean::New(instance_->isolate(), false).As<Value>(), false},
+      {Boolean::New(instance_->isolate(), true).As<Value>(), true},
+      {Number::New(instance_->isolate(), 0).As<Value>(), false},
+      {Number::New(instance_->isolate(), 1).As<Value>(), true},
+      {Number::New(instance_->isolate(), -1).As<Value>(), true},
+      {Number::New(instance_->isolate(), 0.1).As<Value>(), true},
+      {String::NewFromUtf8(instance_->isolate(), "", v8::NewStringType::kNormal)
+           .ToLocalChecked()
+           .As<Value>(),
+       false},
+      {String::NewFromUtf8(instance_->isolate(), "foo",
+                           v8::NewStringType::kNormal)
+           .ToLocalChecked()
+           .As<Value>(),
+       true},
+      {Object::New(instance_->isolate()).As<Value>(), true},
+      {Null(instance_->isolate()).As<Value>(), false},
+      {Undefined(instance_->isolate()).As<Value>(), false},
   };
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
@@ -86,19 +93,27 @@ TEST_F(ConverterTest, Int32) {
     bool expect_success;
     int expected_result;
   } test_data_from[] = {
-    { Boolean::New(instance_->isolate(), false).As<Value>(), false, 0 },
-    { Boolean::New(instance_->isolate(), true).As<Value>(), false, 0 },
-    { Integer::New(instance_->isolate(), -1).As<Value>(), true, -1 },
-    { Integer::New(instance_->isolate(), 0).As<Value>(), true, 0 },
-    { Integer::New(instance_->isolate(), 1).As<Value>(), true, 1 },
-    { Number::New(instance_->isolate(), -1).As<Value>(), true, -1 },
-    { Number::New(instance_->isolate(), 1.1).As<Value>(), false, 0 },
-    { String::NewFromUtf8(instance_->isolate(), "42").As<Value>(), false, 0 },
-    { String::NewFromUtf8(instance_->isolate(), "foo").As<Value>(), false, 0 },
-    { Object::New(instance_->isolate()).As<Value>(), false, 0 },
-    { Array::New(instance_->isolate()).As<Value>(), false, 0 },
-    { v8::Null(instance_->isolate()).As<Value>(), false, 0 },
-    { v8::Undefined(instance_->isolate()).As<Value>(), false, 0 },
+      {Boolean::New(instance_->isolate(), false).As<Value>(), false, 0},
+      {Boolean::New(instance_->isolate(), true).As<Value>(), false, 0},
+      {Integer::New(instance_->isolate(), -1).As<Value>(), true, -1},
+      {Integer::New(instance_->isolate(), 0).As<Value>(), true, 0},
+      {Integer::New(instance_->isolate(), 1).As<Value>(), true, 1},
+      {Number::New(instance_->isolate(), -1).As<Value>(), true, -1},
+      {Number::New(instance_->isolate(), 1.1).As<Value>(), false, 0},
+      {String::NewFromUtf8(instance_->isolate(), "42",
+                           v8::NewStringType::kNormal)
+           .ToLocalChecked()
+           .As<Value>(),
+       false, 0},
+      {String::NewFromUtf8(instance_->isolate(), "foo",
+                           v8::NewStringType::kNormal)
+           .ToLocalChecked()
+           .As<Value>(),
+       false, 0},
+      {Object::New(instance_->isolate()).As<Value>(), false, 0},
+      {Array::New(instance_->isolate()).As<Value>(), false, 0},
+      {v8::Null(instance_->isolate()).As<Value>(), false, 0},
+      {v8::Undefined(instance_->isolate()).As<Value>(), false, 0},
   };
 
   for (size_t i = 0; i < arraysize(test_data_from); ++i) {
