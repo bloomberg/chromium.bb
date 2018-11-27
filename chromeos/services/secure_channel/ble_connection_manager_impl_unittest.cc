@@ -1299,23 +1299,23 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
   EXPECT_TRUE(WasChannelHandledByDisconnector(fake_secure_channel));
 }
 
-TEST_F(SecureChannelBleConnectionManagerImplTest, ConnectionTimestamps) {
+TEST_F(SecureChannelBleConnectionManagerImplTest, ConnectionMetrics) {
   DeviceIdPair pair(test_devices()[1].GetDeviceId(),
                     test_devices()[0].GetDeviceId());
 
+  // Start a connection attempt and advance the clock.
   AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
                                true /* expected_to_add_request */);
-
   test_clock()->Advance(kScanToAdvertisementTime);
 
+  // Simulate a connection being established, then disconnected.
   cryptauth::FakeSecureChannel* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kListenerRole);
-
-  SimulateSecureChannelAuthentication(
-      pair.remote_device_id(), fake_secure_channel,
-      true /* created_via_background_advertisement */);
-
+  test_clock()->Advance(kAdvertisementToConnectionTime);
+  SimulateSecureChannelDisconnection(pair.remote_device_id(),
+                                     false /* fail_during_authentication */,
+                                     fake_secure_channel);
   histogram_tester()->ExpectTimeBucketCount(
       "MultiDevice.SecureChannel.BLE.Performance."
       "StartScanToReceiveAdvertisementDuration.Background",
@@ -1328,10 +1328,47 @@ TEST_F(SecureChannelBleConnectionManagerImplTest, ConnectionTimestamps) {
       "MultiDevice.SecureChannel.BLE.Performance."
       "StartScanToConnectionDuration.Background",
       kScanToAdvertisementTime + kAdvertisementToConnectionTime, 1);
+  histogram_tester()->ExpectBucketCount(
+      "MultiDevice.SecureChannel.BLE.ReceiveAdvertisementToGattConnection."
+      "EffectiveSuccessRateWithRetries",
+      true, 1u /* expected_count */);
+
+  // Advance the clock again, then simulate a successful authentication.
+  test_clock()->Advance(kScanToAdvertisementTime);
+  fake_secure_channel = SimulateConnectionEstablished(
+      test_devices()[1], ConnectionRole::kListenerRole);
+  SimulateSecureChannelAuthentication(
+      pair.remote_device_id(), fake_secure_channel,
+      true /* created_via_background_advertisement */);
+
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "StartScanToReceiveAdvertisementDuration.Background",
+      kScanToAdvertisementTime, 2);
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "ReceiveAdvertisementToConnectionDuration.Background",
+      kAdvertisementToConnectionTime, 2);
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "StartScanToConnectionDuration.Background",
+      kScanToAdvertisementTime + kAdvertisementToConnectionTime, 2);
   histogram_tester()->ExpectTimeBucketCount(
       "MultiDevice.SecureChannel.BLE.Performance."
       "ConnectionToAuthenticationDuration.Background",
       kConnectionToAuthenticationTime, 1);
+  histogram_tester()->ExpectBucketCount(
+      "MultiDevice.SecureChannel.BLE.ReceiveAdvertisementToGattConnection."
+      "EffectiveSuccessRateWithRetries",
+      true, 2u /* expected_count */);
+  histogram_tester()->ExpectBucketCount(
+      "MultiDevice.SecureChannel.BLE.ReceiveAdvertisementToAuthentication."
+      "EffectiveSuccessRateWithRetries",
+      true, 1u /* expected_count */);
+  histogram_tester()->ExpectBucketCount(
+      "MultiDevice.SecureChannel.BLE.GattConnectionToAuthentication."
+      "EffectiveSuccessRateWithRetries",
+      true, 1u /* expected_count */);
 }
 
 }  // namespace secure_channel

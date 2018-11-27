@@ -72,15 +72,23 @@ class BleConnectionManagerImpl : public BleConnectionManager,
     void RecordGattConnectionEstablished();
     void RecordChannelAuthenticated();
 
-    // Resets the connection attempt metrics by resetting the "start
-    // scan" timestamp and resetting the other timestamps.
+    // Resets the connection attempt metrics by setting the "start scan"
+    // timestamp to the current time and by and nulling out the other
+    // timestamps.
     void Reset();
 
    private:
+    void RecordEffectiveSuccessRateMetrics(bool will_continue_to_retry);
+
     const ConnectionRole connection_role_;
     base::Clock* clock_;
 
+    // Set to the current time when this object is created and updated whenever
+    // Reset() is called.
     base::Time start_scan_timestamp_;
+
+    // Start as null timestamps and are set whenever the relevant event occurs;
+    // if Reset() is called, these timestamps are nulled out again.
     base::Time advertisement_received_timestamp_;
     base::Time gatt_connection_timestamp_;
     base::Time authentication_timestamp_;

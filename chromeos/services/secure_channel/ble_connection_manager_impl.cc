@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
@@ -90,7 +91,9 @@ BleConnectionManagerImpl::ConnectionAttemptTimestamps::
       start_scan_timestamp_(clock_->Now()) {}
 
 BleConnectionManagerImpl::ConnectionAttemptTimestamps::
-    ~ConnectionAttemptTimestamps() = default;
+    ~ConnectionAttemptTimestamps() {
+  RecordEffectiveSuccessRateMetrics(false /* will_continue_to_retry */);
+}
 
 void BleConnectionManagerImpl::ConnectionAttemptTimestamps::
     RecordAdvertisementReceived() {
@@ -143,16 +146,64 @@ void BleConnectionManagerImpl::ConnectionAttemptTimestamps::
     LogLatencyMetric(
         "MultiDevice.SecureChannel.BLE.Performance."
         "ConnectionToAuthenticationDuration.Background",
-        clock_->Now() - gatt_connection_timestamp_);
+        authentication_timestamp_ - gatt_connection_timestamp_);
   }
 }
 
 void BleConnectionManagerImpl::ConnectionAttemptTimestamps::Reset() {
-  start_scan_timestamp_ = clock_->Now();
+  RecordEffectiveSuccessRateMetrics(true /* will_continue_to_retry */);
 
+  start_scan_timestamp_ = clock_->Now();
   advertisement_received_timestamp_ = base::Time();
   gatt_connection_timestamp_ = base::Time();
   authentication_timestamp_ = base::Time();
+}
+
+void BleConnectionManagerImpl::ConnectionAttemptTimestamps::
+    RecordEffectiveSuccessRateMetrics(bool will_continue_to_retry) {
+  bool has_received_advertisement =
+      !advertisement_received_timestamp_.is_null();
+  bool has_established_gatt_connection = !gatt_connection_timestamp_.is_null();
+  bool has_authenticated = !authentication_timestamp_.is_null();
+
+  // Received advertisement ==> GATT connection effective success rate:
+  // (a) Log "success" if a GATT connection was established.
+  // (b) Log "fail" if an advertisement was received but no GATT connection was
+  //     established, but only if there are no more retries.
+  // (c) Log nothing at all if no advertisement was received.
+  if (has_established_gatt_connection ||
+      (!will_continue_to_retry && has_received_advertisement)) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "MultiDevice.SecureChannel.BLE.ReceiveAdvertisementToGattConnection."
+        "EffectiveSuccessRateWithRetries",
+        has_established_gatt_connection);
+  }
+
+  // Received advertisement ==> authentication effective success rate:
+  // (a) Log "success" if authentication succeeded.
+  // (b) Log "fail" if an advertisement was received but no authentication,
+  //     occurred, but only if there are no more retries.
+  // (c) Log nothing at all if no advertisement was received.
+  if (has_authenticated ||
+      (!will_continue_to_retry && has_received_advertisement)) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "MultiDevice.SecureChannel.BLE.ReceiveAdvertisementToAuthentication."
+        "EffectiveSuccessRateWithRetries",
+        has_authenticated);
+  }
+
+  // GATT connection ==> authentication effective success rate:
+  // (a) Log "success" if authentication succeeded.
+  // (b) Log "fail" if a GATT connection was established but no authentication,
+  //     occurred, but only if there are no more retries.
+  // (c) Log nothing at all if no GATT connection was established.
+  if (has_authenticated ||
+      (!will_continue_to_retry && has_established_gatt_connection)) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "MultiDevice.SecureChannel.BLE.GattConnectionToAuthentication."
+        "EffectiveSuccessRateWithRetries",
+        has_authenticated);
+  }
 }
 
 BleConnectionManagerImpl::BleConnectionManagerImpl(
