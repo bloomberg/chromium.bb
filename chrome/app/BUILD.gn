@@ -365,6 +365,7 @@ static_library("test_support") {
       "//chrome:chrome_initial",
       "//chrome/install_static:install_static_util",
       "//chrome_elf:test_stubs",
+      "//components/gwp_asan/client",
       "//sandbox/win:sandbox",
     ]
   }

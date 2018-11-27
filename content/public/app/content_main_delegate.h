@@ -124,9 +124,15 @@ class CONTENT_EXPORT ContentMainDelegate {
 
   // Allows the embedder to perform its own initialization after content
   // performed its own and already brought up MessageLoop, TaskScheduler, field
-  // tials and FeatureList (by default).
+  // trials and FeatureList (by default).
   // |is_running_tests| indicates whether it is running in tests.
   virtual void PostEarlyInitialization(bool is_running_tests) {}
+
+  // Allows the embedder to perform initialization once field trials/FeatureList
+  // initialization has completed if ShouldCreateFeatureList() returns true.
+  // Otherwise, the embedder is responsible for calling this method once feature
+  // list initialization is complete.
+  virtual void PostFieldTrialInitialization() {}
 
  protected:
   friend class ContentClientInitializer;

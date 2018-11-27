@@ -17,6 +17,7 @@ include_rules = [
   "+components/component_updater",
   "+components/content_settings/core/common/content_settings_pattern.h",
   "+components/crash",
+  "+components/gwp_asan/client/gwp_asan.h",
   "+components/nacl/common",
   "+components/nacl/renderer/plugin/ppapi_entrypoints.h",
   "+components/nacl/zygote",

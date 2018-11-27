@@ -484,6 +484,7 @@ int RunZygote(ContentMainDelegate* delegate) {
   main_params.zygote_child = true;
 
   InitializeFieldTrialAndFeatureList();
+  delegate->PostFieldTrialInitialization();
 
   service_manager::SandboxType sandbox_type =
       service_manager::SandboxTypeFromCommandLine(command_line);
@@ -838,8 +839,10 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
   // Run this logic on all child processes. Zygotes will run this at a later
   // point in time when the command line has been updated.
   if (!process_type.empty() &&
-      process_type != service_manager::switches::kZygoteProcess)
+      process_type != service_manager::switches::kZygoteProcess) {
     InitializeFieldTrialAndFeatureList();
+    delegate_->PostFieldTrialInitialization();
+  }
 #endif
 
   MainFunctionParams main_params(command_line);
@@ -862,6 +865,7 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
     if (delegate_->ShouldCreateFeatureList()) {
       DCHECK(!field_trial_list_);
       field_trial_list_ = SetUpFieldTrialsAndFeatureList();
+      delegate_->PostFieldTrialInitialization();
     }
 
     startup_data_->thread = BrowserProcessSubThread::CreateIOThread();
