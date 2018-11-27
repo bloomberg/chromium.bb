@@ -190,37 +190,43 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
   if (!save_result)
     return;
 
-  std::vector<CreditCard> migrated_cards;
-  // Traverse the migratable credit cards to update each migrated card status.
-  for (MigratableCreditCard& card : migratable_credit_cards_) {
-    // Not every card exists in the |save_result| since some cards are unchecked
-    // by the user and not migrated.
-    auto it = save_result->find(card.credit_card().guid());
-    // If current card exists in the |save_result|, update its migration status.
-    if (it != save_result->end()) {
-      // Server-side response can return SUCCESS, TEMPORARY_FAILURE, or
-      // PERMANENT_FAILURE (see SaveResult enum). Branch here depending on which
-      // is received.
-      if (it->second == kMigrationResultPermanentFailure ||
-          it->second == kMigrationResultTemporaryFailure) {
-        card.set_migration_status(
-            autofill::MigratableCreditCard::MigrationStatus::FAILURE_ON_UPLOAD);
-      } else if (it->second == kMigrationResultSuccess) {
-        card.set_migration_status(
-            autofill::MigratableCreditCard::MigrationStatus::SUCCESS_ON_UPLOAD);
-        migrated_cards.push_back(card.credit_card());
-      } else {
-        NOTREACHED();
+  if (result == AutofillClient::PaymentsRpcResult::SUCCESS) {
+    std::vector<CreditCard> migrated_cards;
+    // Traverse the migratable credit cards to update each migrated card status.
+    for (MigratableCreditCard& card : migratable_credit_cards_) {
+      // Not every card exists in the |save_result| since some cards are
+      // unchecked by the user and not migrated.
+      auto it = save_result->find(card.credit_card().guid());
+      // If current card exists in the |save_result|, update its migration
+      // status.
+      if (it != save_result->end()) {
+        // Server-side response can return SUCCESS, TEMPORARY_FAILURE, or
+        // PERMANENT_FAILURE (see SaveResult enum). Branch here depending on
+        // which is received.
+        if (it->second == kMigrationResultPermanentFailure ||
+            it->second == kMigrationResultTemporaryFailure) {
+          card.set_migration_status(autofill::MigratableCreditCard::
+                                        MigrationStatus::FAILURE_ON_UPLOAD);
+        } else if (it->second == kMigrationResultSuccess) {
+          card.set_migration_status(autofill::MigratableCreditCard::
+                                        MigrationStatus::SUCCESS_ON_UPLOAD);
+          migrated_cards.push_back(card.credit_card());
+        } else {
+          NOTREACHED();
+        }
       }
     }
+    // Remove cards that were successfully migrated from local storage.
+    personal_data_manager_->DeleteLocalCreditCards(migrated_cards);
   }
-  // Remove cards that were successfully migrated from local storage.
-  personal_data_manager_->DeleteLocalCreditCards(migrated_cards);
 
   if (base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationShowFeedback)) {
-    client_->ShowLocalCardMigrationResults(base::UTF8ToUTF16(display_text),
-                                           migratable_credit_cards_);
+    client_->ShowLocalCardMigrationResults(
+        base::UTF8ToUTF16(display_text),
+        result == AutofillClient::PaymentsRpcResult::SUCCESS
+            ? migratable_credit_cards_
+            : std::vector<MigratableCreditCard>());
   }
 }
 

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/autofill/local_card_migration_bubble.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog.h"
+#include "components/autofill/core/browser/local_card_migration_manager.h"
 
 namespace autofill {
 
@@ -50,6 +51,9 @@ void ManageMigrationUiController::ShowCreditCardIcon(
 
   DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::OFFER_DIALOG);
   flow_step_ = LocalCardMigrationFlowStep::CREDIT_CARD_ICON;
+  // Show error dialog when the vector is an empty vector, which indicates
+  // Payments Rpc failure.
+  show_error_dialog_ = migratable_credit_cards.empty();
   dialog_controller_->ShowCreditCardIcon(tip_message, migratable_credit_cards);
 }
 
@@ -60,7 +64,7 @@ void ManageMigrationUiController::OnUserClickingCreditCardIcon() {
       break;
     }
     case LocalCardMigrationFlowStep::CREDIT_CARD_ICON: {
-      ShowFeedbackDialog();
+      show_error_dialog_ ? ShowErrorDialog() : ShowFeedbackDialog();
       break;
     }
     default: {
@@ -99,6 +103,15 @@ void ManageMigrationUiController::ReshowBubble() {
 
   DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::PROMO_BUBBLE);
   bubble_controller_->ReshowBubble();
+}
+
+void ManageMigrationUiController::ShowErrorDialog() {
+  if (!dialog_controller_)
+    return;
+
+  DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::CREDIT_CARD_ICON);
+  flow_step_ = LocalCardMigrationFlowStep::ERROR_DIALOG;
+  dialog_controller_->ShowErrorDialog();
 }
 
 void ManageMigrationUiController::ShowFeedbackDialog() {

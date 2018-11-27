@@ -100,6 +100,13 @@ void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog() {
   local_card_migration_dialog_->ShowDialog();
 }
 
+void LocalCardMigrationDialogControllerImpl::ShowErrorDialog() {
+  local_card_migration_dialog_ =
+      CreateLocalCardMigrationErrorDialogView(this, web_contents());
+  UpdateIcon();
+  local_card_migration_dialog_->ShowDialog();
+}
+
 LocalCardMigrationDialogState
 LocalCardMigrationDialogControllerImpl::GetViewState() const {
   return view_state_;

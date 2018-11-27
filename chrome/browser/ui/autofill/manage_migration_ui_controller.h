@@ -28,9 +28,13 @@ enum class LocalCardMigrationFlowStep {
   // Should show the credit card icon when migration is finished and the
   // feedback dialog is ready.
   CREDIT_CARD_ICON,
-  // Should show the feedback dialog dialog after the user clicking the
-  // credit card.
+  // Should show the feedback dialog containing the migration results of cards
+  // that the user selected to upload after the user clicking the credit card
+  // icon.
   FEEDBACK_DIALOG,
+  // Should show the error dialog if the Payments Rpc request failed after the
+  // user clicks the credit card icon.
+  ERROR_DIALOG,
 };
 
 // Controller controls the step of migration flow and is responsible
@@ -71,6 +75,8 @@ class ManageMigrationUiController
 
   void ReshowBubble();
 
+  void ShowErrorDialog();
+
   void ShowFeedbackDialog();
 
   LocalCardMigrationBubbleControllerImpl* bubble_controller_ = nullptr;
@@ -79,6 +85,10 @@ class ManageMigrationUiController
   // This indicates what step the migration flow is currently in and
   // what should be shown next.
   LocalCardMigrationFlowStep flow_step_ = LocalCardMigrationFlowStep::NOT_SHOWN;
+
+  // This indicates if we should show error dialog or normal feedback dialog
+  // after users click the credit card icon.
+  bool show_error_dialog_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ManageMigrationUiController);
 };
