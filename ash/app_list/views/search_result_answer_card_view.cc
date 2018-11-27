@@ -275,6 +275,11 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     if (!has_children()) {
       AddChildView(content_view);
       ExcludeCardFromEventHandling(contents_->GetView()->native_view());
+
+      if (search_result_->equivalent_result_id().has_value()) {
+        view_delegate_->GetSearchModel()->DeleteResultById(
+            search_result_->equivalent_result_id().value());
+      }
     }
     SetPreferredSize(content_view->GetPreferredSize());
     container_->Update();

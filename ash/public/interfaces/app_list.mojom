@@ -67,6 +67,12 @@ struct SearchResultMetadata {
                              // (e.g. displaying inline web contents) is
                              // dependent on the result type.
 
+  string? equivalent_result_id;  // An optional id that identifies an equivalent
+                                 // result to this result. Answer card result
+                                 // has this set to remove the equivalent
+                                 // omnibox search-what-you-typed result when
+                                 // there is an answer card for the query.
+
   gfx.mojom.ImageSkia? icon;  // The icon of this result.
   gfx.mojom.ImageSkia? chip_icon;  // The icon of this result in a smaller
                                    // dimension to be rendered in suggestion

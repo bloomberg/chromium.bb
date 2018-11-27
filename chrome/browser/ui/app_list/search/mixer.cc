@@ -18,14 +18,6 @@
 
 namespace app_list {
 
-namespace {
-
-const std::string& GetComparableId(const ChromeSearchResult& result) {
-  return !result.comparable_id().empty() ? result.comparable_id() : result.id();
-}
-
-}  // namespace
-
 Mixer::SortData::SortData() : result(nullptr), score(0.0) {}
 
 Mixer::SortData::SortData(ChromeSearchResult* result, double score)
@@ -149,7 +141,7 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
 
   std::set<std::string> id_set;
   for (const SortData& sort_data : *results) {
-    if (!id_set.insert(GetComparableId(*sort_data.result)).second)
+    if (!id_set.insert(sort_data.result->id()).second)
       continue;
 
     final.emplace_back(sort_data);

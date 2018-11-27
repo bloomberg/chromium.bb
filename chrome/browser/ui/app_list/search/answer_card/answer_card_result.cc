@@ -14,20 +14,23 @@ AnswerCardResult::AnswerCardResult(Profile* profile,
                                    const GURL& potential_card_url,
                                    const GURL& search_result_url,
                                    const GURL& stripped_search_result_url)
-    : profile_(profile), list_controller_(list_controller) {
+    : profile_(profile),
+      list_controller_(list_controller),
+      search_result_url_(search_result_url) {
   DCHECK(!stripped_search_result_url.is_empty());
   SetDisplayType(ash::SearchResultDisplayType::kCard);
   SetResultType(ash::SearchResultType::kAnswerCard);
   SetQueryUrl(potential_card_url);
-  set_id(search_result_url.spec());
-  set_comparable_id(stripped_search_result_url.spec());
+  SetEquivalentResutlId(stripped_search_result_url.spec());
+  set_id(potential_card_url.spec());
   set_relevance(1);
 }
 
 AnswerCardResult::~AnswerCardResult() = default;
 
 void AnswerCardResult::Open(int event_flags) {
-  list_controller_->OpenURL(profile_, GURL(id()), ui::PAGE_TRANSITION_GENERATED,
+  list_controller_->OpenURL(profile_, search_result_url_,
+                            ui::PAGE_TRANSITION_GENERATED,
                             ui::DispositionFromEventFlags(event_flags));
   RecordHistogram(ANSWER_CARD);
 }

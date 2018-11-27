@@ -51,16 +51,18 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
   }
 
  protected:
-  void SetUpSearchResult() {
+  std::unique_ptr<TestSearchResult> CreateAnswerCardResult() {
     const GURL kFakeQueryUrl = GURL("https://www.google.com/coac?q=fake");
-    SearchModel::SearchResults* results = GetResults();
-    std::unique_ptr<TestSearchResult> result =
-        std::make_unique<TestSearchResult>();
+    auto result = std::make_unique<TestSearchResult>();
     result->set_display_type(ash::SearchResultDisplayType::kCard);
     result->set_title(base::UTF8ToUTF16(kResultTitle));
     result->set_display_score(kDisplayScore);
     result->set_query_url(kFakeQueryUrl);
-    results->Add(std::move(result));
+    return result;
+  }
+
+  void SetUpSearchResult() {
+    GetResults()->Add(CreateAnswerCardResult());
 
     // Adding results will schedule Update().
     view_delegate_.fake_navigable_contents_factory()
@@ -102,6 +104,8 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) {
     result_container_view_->child_at(0)->GetAccessibleNodeData(node_data);
   }
+
+  AppListTestViewDelegate& view_delegate() { return view_delegate_; }
 
  private:
   AppListTestViewDelegate view_delegate_;
@@ -145,6 +149,36 @@ TEST_F(SearchResultAnswerCardViewTest, DeleteResult) {
   EXPECT_EQ(0, GetYSize());
   ASSERT_FALSE(search_card_view()->visible());
   EXPECT_EQ(0, GetContainerScore());
+}
+
+TEST_F(SearchResultAnswerCardViewTest, RemoveEquivalent) {
+  // Ensures no results.
+  DeleteResult();
+
+  // Creates a result that will be removed later when answer card loads.
+  constexpr char kEquivalentResultId[] = "equivalent-id";
+  auto result = std::make_unique<TestSearchResult>();
+  result->set_result_id(kEquivalentResultId);
+  result->set_display_type(ash::SearchResultDisplayType::kList);
+  result->set_display_score(kDisplayScore);
+  GetResults()->Add(std::move(result));
+
+  // Creates an answer card result and associated with an equivalent result id.
+  result = CreateAnswerCardResult();
+  result->set_equivalent_result_id(kEquivalentResultId);
+  GetResults()->Add(std::move(result));
+
+  EXPECT_EQ(2u, GetResults()->item_count());
+  EXPECT_TRUE(
+      view_delegate().GetSearchModel()->FindSearchResult(kEquivalentResultId));
+
+  // Wait for the answer card result to load.
+  RunPendingMessages();
+
+  // Equivalent result should be removed.
+  EXPECT_EQ(1u, GetResults()->item_count());
+  EXPECT_FALSE(
+      view_delegate().GetSearchModel()->FindSearchResult(kEquivalentResultId));
 }
 
 }  // namespace test

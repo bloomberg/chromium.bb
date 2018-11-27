@@ -133,8 +133,7 @@ OmniboxResult::OmniboxResult(Profile* profile,
     autocomplete_controller_->UpdateMatchDestinationURL(
         *match_.search_terms_args, &match_);
   }
-  set_id(match_.destination_url.spec());
-  set_comparable_id(match_.stripped_destination_url.spec());
+  set_id(match_.stripped_destination_url.spec());
   SetResultType(ash::SearchResultType::kOmnibox);
 
   // Derive relevance from omnibox relevance and normalize it to [0, 1].

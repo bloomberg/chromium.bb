@@ -101,4 +101,14 @@ void SearchModel::DeleteAllResults() {
   PublishResults(std::vector<std::unique_ptr<SearchResult>>());
 }
 
+void SearchModel::DeleteResultById(const std::string& id) {
+  for (size_t i = 0; i < results_->item_count(); ++i) {
+    SearchResult* result = results_->GetItemAt(i);
+    if (result->id() == id) {
+      results_->DeleteAt(i);
+      break;
+    }
+  }
+}
+
 }  // namespace app_list

@@ -29,9 +29,12 @@ class AnswerCardResult : public ChromeSearchResult {
 
   void Open(int event_flags) override;
 
+  const GURL& search_result_url() const { return search_result_url_; }
+
  private:
   Profile* const profile_;                            // Unowned
   AppListControllerDelegate* const list_controller_;  // Unowned
+  GURL search_result_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AnswerCardResult);
 };
