@@ -265,10 +265,13 @@ class CONTENT_EXPORT RenderThreadImpl
 
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager();
 
-  std::unique_ptr<cc::LayerTreeFrameSink> RequestNewLayerTreeFrameSink(
-      int widget_routing_id,
+  using LayerTreeFrameSinkCallback =
+      base::OnceCallback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
+  void RequestNewLayerTreeFrameSink(
+      int routing_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
+      LayerTreeFrameSinkCallback callback,
       mojom::RenderFrameMetadataObserverClientRequest
           render_frame_metadata_observer_client_request,
       mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,

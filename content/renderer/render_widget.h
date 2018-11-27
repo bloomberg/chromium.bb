@@ -240,20 +240,6 @@ class CONTENT_EXPORT RenderWidget
   void SetIsFrozen(bool is_frozen);
   bool is_frozen() const { return is_frozen_; }
 
-  // When a RenderWidget is created, even if frozen, if we expect to unfreeze
-  // and use the RenderWidget imminently, then we want to pre-emptively start
-  // the process of getting the resources needed for the compositor. This helps
-  // to parallelize the critical path to first pixels with the loading process.
-  // This should only be called when the RenderWidget is frozen, otherwise it
-  // would be redundant at best. Non-frozen RenderWidgets will start to warmup
-  // immediately on their own.
-  void WarmupCompositor();
-  // If after calling WarmupCompositor() we can determine that the RenderWidget
-  // does not expect to be used shortly after all, call this to cancel the
-  // warmup process and release any unused resources that had been created by
-  // it.
-  void AbortWarmupCompositor();
-
   // This is true once a Close IPC has been received. The actual action of
   // closing must be done on another stack frame, in case the IPC receipt
   // is in a nested message loop and will unwind back up to javascript (from
@@ -298,7 +284,6 @@ class CONTENT_EXPORT RenderWidget
                                          bool has_scrolled_by_touch) override;
   void BeginMainFrame(base::TimeTicks frame_time) override;
   void RequestNewLayerTreeFrameSink(
-      bool for_warmup,
       LayerTreeFrameSinkCallback callback) override;
   void DidCommitAndDrawCompositorFrame() override;
   void DidCommitCompositorFrame() override;
@@ -939,11 +924,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
-
-  // If WarmupCompositor() is used, this may hold a LayerTreeFrameSink to be
-  // dispensed to the compositor once the RenderWidget is unfrozen and the
-  // compositor is started.
-  std::unique_ptr<cc::LayerTreeFrameSink> warmup_frame_sink_;
 
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
 

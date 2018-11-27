@@ -88,19 +88,47 @@ void RendererWindowTreeClient::SetVisible(bool visible) {
   }
 }
 
-std::unique_ptr<cc::LayerTreeFrameSink>
-RendererWindowTreeClient::RequestLayerTreeFrameSink(
+void RendererWindowTreeClient::RequestLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    LayerTreeFrameSinkCallback callback) {
   DCHECK(pending_layer_tree_frame_sink_callback_.is_null());
-  if (!tree_) {
-    // The compositor will try again repeatedly.
-    // TODO(danakj): The RenderWidget's compositor should not be started
-    // until there is a |tree_| present, so that we don't waste work requesting
-    // to make a CompositorFrameSink for no reason.
-    return nullptr;
+  if (tree_) {
+    RequestLayerTreeFrameSinkInternal(std::move(context_provider),
+                                      gpu_memory_buffer_manager,
+                                      std::move(callback));
+    return;
   }
 
+  pending_context_provider_ = std::move(context_provider);
+  pending_gpu_memory_buffer_manager_ = gpu_memory_buffer_manager;
+  pending_layer_tree_frame_sink_callback_ = std::move(callback);
+}
+
+std::unique_ptr<MusEmbeddedFrame>
+RendererWindowTreeClient::CreateMusEmbeddedFrame(
+    MusEmbeddedFrameDelegate* delegate,
+    const base::UnguessableToken& token) {
+  std::unique_ptr<MusEmbeddedFrame> frame = base::WrapUnique<MusEmbeddedFrame>(
+      new MusEmbeddedFrame(this, delegate, ++next_window_id_, token));
+  embedded_frames_.insert(frame.get());
+  return frame;
+}
+
+RendererWindowTreeClient::RendererWindowTreeClient(int routing_id)
+    : routing_id_(routing_id),
+      binding_(this),
+      render_widget_window_tree_client_binding_(this) {}
+
+RendererWindowTreeClient::~RendererWindowTreeClient() {
+  g_connections.Get().erase(routing_id_);
+  DCHECK(embedded_frames_.empty());
+}
+
+void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
+    scoped_refptr<viz::ContextProvider> context_provider,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    LayerTreeFrameSinkCallback callback) {
   viz::mojom::CompositorFrameSinkPtrInfo sink_info;
   viz::mojom::CompositorFrameSinkRequest sink_request =
       mojo::MakeRequest(&sink_info);
@@ -126,27 +154,7 @@ RendererWindowTreeClient::RequestLayerTreeFrameSink(
           &params);
   tree_->AttachCompositorFrameSink(root_window_id_, std::move(sink_request),
                                    std::move(client));
-  return frame_sink;
-}
-
-std::unique_ptr<MusEmbeddedFrame>
-RendererWindowTreeClient::CreateMusEmbeddedFrame(
-    MusEmbeddedFrameDelegate* delegate,
-    const base::UnguessableToken& token) {
-  std::unique_ptr<MusEmbeddedFrame> frame = base::WrapUnique<MusEmbeddedFrame>(
-      new MusEmbeddedFrame(this, delegate, ++next_window_id_, token));
-  embedded_frames_.insert(frame.get());
-  return frame;
-}
-
-RendererWindowTreeClient::RendererWindowTreeClient(int routing_id)
-    : routing_id_(routing_id),
-      binding_(this),
-      render_widget_window_tree_client_binding_(this) {}
-
-RendererWindowTreeClient::~RendererWindowTreeClient() {
-  g_connections.Get().erase(routing_id_);
-  DCHECK(embedded_frames_.empty());
+  std::move(callback).Run(std::move(frame_sink));
 }
 
 void RendererWindowTreeClient::OnEmbeddedFrameDestroyed(
@@ -202,6 +210,16 @@ void RendererWindowTreeClient::OnEmbed(
   if (!is_reembed) {
     for (MusEmbeddedFrame* frame : embedded_frames_)
       frame->OnTreeAvailable();
+  }
+
+  if (!pending_layer_tree_frame_sink_callback_.is_null()) {
+    RequestLayerTreeFrameSinkInternal(
+        std::move(pending_context_provider_),
+        pending_gpu_memory_buffer_manager_,
+        std::move(pending_layer_tree_frame_sink_callback_));
+    pending_context_provider_ = nullptr;
+    pending_gpu_memory_buffer_manager_ = nullptr;
+    pending_layer_tree_frame_sink_callback_.Reset();
   }
 }
 

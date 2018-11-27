@@ -73,9 +73,10 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
 
   using LayerTreeFrameSinkCallback =
       base::OnceCallback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
-  std::unique_ptr<cc::LayerTreeFrameSink> RequestLayerTreeFrameSink(
+  void RequestLayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      LayerTreeFrameSinkCallback callback);
 
   // Creates a new MusEmbeddedFrame. |token| is an UnguessableToken that was
   // registered for an embedding with mus (specifically ws::mojom::WindowTree).
@@ -88,6 +89,11 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
 
   explicit RendererWindowTreeClient(int routing_id);
   ~RendererWindowTreeClient() override;
+
+  void RequestLayerTreeFrameSinkInternal(
+      scoped_refptr<viz::ContextProvider> context_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      LayerTreeFrameSinkCallback callback);
 
   // Called from ~MusEmbeddedFrame to cleanup up internall mapping.
   void OnEmbeddedFrameDestroyed(MusEmbeddedFrame* frame);

@@ -46,7 +46,6 @@ class FakeLayerTreeViewDelegate : public StubLayerTreeViewDelegate {
   FakeLayerTreeViewDelegate() = default;
 
   void RequestNewLayerTreeFrameSink(
-      bool for_warmup,
       LayerTreeFrameSinkCallback callback) override {
     // Subtract one cuz the current request has already been counted but should
     // not be included for this.

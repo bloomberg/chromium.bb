@@ -83,7 +83,6 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
   // content::LayerTreeViewDelegate implementation.
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override;
   void RequestNewLayerTreeFrameSink(
-      bool for_warmup,
       LayerTreeFrameSinkCallback callback) override;
   void BeginMainFrame(base::TimeTicks frame_time) override;
 

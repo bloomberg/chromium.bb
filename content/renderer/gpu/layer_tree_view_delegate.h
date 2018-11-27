@@ -45,10 +45,7 @@ class LayerTreeViewDelegate {
   virtual void BeginMainFrame(base::TimeTicks frame_time) = 0;
 
   // Requests a LayerTreeFrameSink to submit CompositorFrames to.
-  // |for_warmup| is whether the frame sink is being requested pre-emptively
-  // before the compositor is started and requesting the frame sink.
   virtual void RequestNewLayerTreeFrameSink(
-      bool for_warmup,
       LayerTreeFrameSinkCallback callback) = 0;
 
   // Notifies that the draw commands for a committed frame have been issued.
