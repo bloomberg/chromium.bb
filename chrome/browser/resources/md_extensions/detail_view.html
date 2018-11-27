@@ -376,15 +376,15 @@
             </template>
           </div>
         </template>
-        <cr-link-row class="hr" is="" id="extensions-options"
+        <cr-link-row class="hr" id="extensions-options"
             disabled="[[!isEnabled_(data.state)]]"
             hidden="[[!shouldShowOptionsLink_(data.*)]]"
             icon-class="icon-external" label="$i18n{itemOptions}"
             on-click="onExtensionOptionsTap_">
         </cr-link-row>
-        <cr-link-row class="hr" is="" id="extensions-activity-log-link"
-            hidden$="[[!showActivityLog]]" label="$i18n{viewActivityLog}"
-            on-click="onActivityLogTap_">
+        <cr-link-row class="hr" icon-class="subpage-arrow"
+            id="extensions-activity-log-link" hidden$="[[!showActivityLog]]"
+            label="$i18n{viewActivityLog}" on-click="onActivityLogTap_">
         </cr-link-row>
         <cr-link-row class="hr" hidden="[[!data.manifestHomePageUrl.length]]"
             icon-class="icon-external" id="extensionWebsite"

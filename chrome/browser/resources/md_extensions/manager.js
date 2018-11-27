@@ -97,7 +97,6 @@ cr.define('extensions', function() {
       /**
        * The id of the item for the activity log view subpage.
        * See also errorPageItem_.
-       * @private {!string|undefined}
        */
       activityLogItemId_: String,
 

@@ -19,6 +19,10 @@
         margin-top: 80px;
         text-align: center;
       }
+
+      #activity-log-heading {
+        margin-inline-start: 16px;
+      }
     </style>
     <div class="page-container" id="container">
       <div class="page-content">
@@ -27,7 +31,7 @@
             <button id="close-button" aria-label="$i18n{back}"
                 on-click="onCloseButtonTap_"></button>
           </paper-icon-button-light>
-          <span>$i18n{activityLogPageHeading}</span>
+          <span id="activity-log-heading">$i18n{activityLogPageHeading}</span>
         </div>
         <div id="loading-activities" class="activity-message"
             hidden$="[[!shouldShowLoadingMessage_(
