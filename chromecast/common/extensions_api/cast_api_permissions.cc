@@ -55,6 +55,8 @@ APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kVirtualKeyboardPrivate, "virtualKeyboardPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
+    {APIPermission::kSettingsPrivate, "settingsPrivate",
+     APIPermissionInfo::kFlagCannotBeOptional},
 };
 
 }  // namespace

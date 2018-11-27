@@ -94,6 +94,16 @@
       "chrome://bookmarks/*"
     ]
   }],
+  "settingsPrivate": [{
+    "dependencies": ["permission:settingsPrivate"],
+    "contexts": ["blessed_extension"]
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://settings/*"
+    ]
+  }],
   "tabs": [{
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],
