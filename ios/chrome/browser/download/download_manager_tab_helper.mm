@@ -14,8 +14,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(DownloadManagerTabHelper);
-
 DownloadManagerTabHelper::DownloadManagerTabHelper(
     web::WebState* web_state,
     id<DownloadManagerTabHelperDelegate> delegate)
