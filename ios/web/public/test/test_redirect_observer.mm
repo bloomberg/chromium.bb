@@ -15,8 +15,6 @@
 
 namespace web {
 
-DEFINE_WEB_STATE_USER_DATA_KEY(TestRedirectObserver);
-
 #pragma mark - TestRedirectObserver
 
 TestRedirectObserver::TestRedirectObserver(WebState* web_state) {
