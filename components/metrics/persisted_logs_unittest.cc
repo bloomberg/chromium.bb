@@ -115,6 +115,8 @@ TEST_F(PersistedLogsTest, SingleElementLogList) {
   EXPECT_EQ(persisted_logs.staged_log(), result_persisted_logs.staged_log());
   EXPECT_EQ(persisted_logs.staged_log_hash(),
             result_persisted_logs.staged_log_hash());
+  EXPECT_EQ(persisted_logs.staged_log_signature(),
+            result_persisted_logs.staged_log_signature());
   EXPECT_EQ(persisted_logs.staged_log_timestamp(),
             result_persisted_logs.staged_log_timestamp());
 }
@@ -285,6 +287,24 @@ TEST_F(PersistedLogsTest, Hashes) {
 
   EXPECT_EQ(Compress(kFooText), persisted_logs.staged_log());
   EXPECT_EQ(foo_hash, persisted_logs.staged_log_hash());
+}
+
+TEST_F(PersistedLogsTest, Signatures) {
+  const char kFooText[] = "foo";
+
+  TestPersistedLogs persisted_logs(&prefs_, kLogByteLimit);
+  persisted_logs.StoreLog(kFooText);
+  persisted_logs.StageNextLog();
+
+  EXPECT_EQ(Compress(kFooText), persisted_logs.staged_log());
+
+  // Decode the expected signature from a base 64 encoded string.
+  std::string expected_signature;
+  base::Base64Decode("DA2Y9+PZ1F5y6Id7wbEEMn77nAexjy/+ztdtgTB/H/8=",
+                     &expected_signature);
+
+  std::string actual_signature = persisted_logs.staged_log_signature();
+  EXPECT_EQ(expected_signature, actual_signature);
 }
 
 }  // namespace metrics

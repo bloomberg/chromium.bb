@@ -115,6 +115,7 @@ jumbo_static_library("metrics") {
     "//components/prefs",
     "//components/variations",
     "//components/version_info:version_info",
+    "//crypto",
     "//extensions/buildflags",
     "//third_party/zlib/google:compression_utils",
   ]

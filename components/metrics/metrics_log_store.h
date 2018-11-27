@@ -40,6 +40,7 @@ class MetricsLogStore : public LogStore {
   bool has_staged_log() const override;
   const std::string& staged_log() const override;
   const std::string& staged_log_hash() const override;
+  const std::string& staged_log_signature() const override;
   void StageNextLog() override;
   void DiscardStagedLog() override;
   void PersistUnsentLogs() const override;
