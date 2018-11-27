@@ -6262,14 +6262,6 @@ the Bookmarks menu.">
         This account is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>
       </message>
 
-      <!-- Clear profile dialog-->
-      <message name="IDS_PROFILE_WILL_BE_DELETED_DIALOG_TITLE" desc="The title of the dialog shown when the user is syncing with an enterprise account and when this account is no longer allowed as the primary account.">
-        Profile will be deleted
-      </message>
-      <message name="IDS_PROFILE_WILL_BE_DELETED_DIALOG_DESCRIPTION" desc="The description of the dialog shown when the user closes a browser and force sign in is enabled and local auth info is not valid.">
-        Your account <ph name="EMAIL">$1<ex>john.doe@example.com</ex></ph> is no longer allowed as the primary account. Because this account is managed by <ph name="DOMAIN">$2<ex>example.com</ex></ph>, your bookmarks, history, passwords, and other settings will be cleared from this device.
-      </message>
-
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_REMOVE_LABEL" desc="The label of the 'Remove' button in the Cookies Window">
         Remove

@@ -34,16 +34,12 @@ enum MessageBoxType {
 // non-NULL, the box will be made modal to the |parent|, except on Mac, where it
 // is always app-modal.
 //
-// If |can_close| is false, then this dialog will not show the close button and
-// the dialog will only be dismissed when the user presses the OK button.
-//
 // NOTE: In general, you should avoid this since it's usually poor UI.
 // We have a variety of other surfaces such as app menu notifications and
 // infobars; consult the UI leads for a recommendation.
 void ShowWarningMessageBox(gfx::NativeWindow parent,
                            const base::string16& title,
-                           const base::string16& message,
-                           bool can_close = true);
+                           const base::string16& message);
 
 // As above, but shows the dialog box asynchronously with a checkbox.
 // |callback| will be invoked after the dialog is dismissed. It is invoked with
