@@ -675,7 +675,7 @@ TEST_F(FeedSchedulerHostTest, EulaNotAccepted) {
 TEST_F(FeedSchedulerHostTest, DisableOneTrigger) {
   variations::testing::VariationParamsManager variation_params(
       kInterestFeedContentSuggestions.name,
-      {{"disable_trigger_types", "foregrounded"}},
+      {{kDisableTriggerTypes.name, "foregrounded"}},
       {kInterestFeedContentSuggestions.name});
   NewScheduler();
 
@@ -694,7 +694,7 @@ TEST_F(FeedSchedulerHostTest, DisableOneTrigger) {
 TEST_F(FeedSchedulerHostTest, DisableAllTriggers) {
   variations::testing::VariationParamsManager variation_params(
       kInterestFeedContentSuggestions.name,
-      {{"disable_trigger_types", "ntp_shown,foregrounded,fixed_timer"}},
+      {{kDisableTriggerTypes.name, "ntp_shown,foregrounded,fixed_timer"}},
       {kInterestFeedContentSuggestions.name});
   NewScheduler();
 
@@ -713,7 +713,7 @@ TEST_F(FeedSchedulerHostTest, DisableAllTriggers) {
 TEST_F(FeedSchedulerHostTest, DisableBogusTriggers) {
   variations::testing::VariationParamsManager variation_params(
       kInterestFeedContentSuggestions.name,
-      {{"disable_trigger_types", "foo,123,#$*,,"}},
+      {{kDisableTriggerTypes.name, "foo,123,#$*,,"}},
       {kInterestFeedContentSuggestions.name});
 
   NewScheduler();
@@ -766,7 +766,7 @@ TEST_F(FeedSchedulerHostTest, OnHistoryCleared) {
 TEST_F(FeedSchedulerHostTest, SuppressRefreshDuration) {
   variations::testing::VariationParamsManager variation_params(
       kInterestFeedContentSuggestions.name,
-      {{"suppress_refresh_duration_minutes", "100"}},
+      {{kSuppressRefreshDurationMinutes.name, "100"}},
       {kInterestFeedContentSuggestions.name});
   scheduler()->OnHistoryCleared();
 

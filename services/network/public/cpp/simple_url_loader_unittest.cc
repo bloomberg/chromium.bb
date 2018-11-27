@@ -1707,6 +1707,9 @@ enum class TestLoaderEvent {
   kResponseCompleteWithExtraData,
   kClientPipeClosed,
   kBodyBufferClosed,
+  // Advances time by 1 second. Only callable when the test environment is
+  // configured to be MainThreadType::MOCK_TIME.
+  kAdvanceOneSecond,
 };
 
 // URLLoader that the test fixture can control. This allows finer grained
@@ -1907,6 +1910,11 @@ class MockURLLoader : public network::mojom::URLLoader {
         }
         case TestLoaderEvent::kBodyBufferClosed: {
           body_stream_.reset();
+          break;
+        }
+        case TestLoaderEvent::kAdvanceOneSecond: {
+          scoped_task_environment_->FastForwardBy(
+              base::TimeDelta::FromSeconds(1));
           break;
         }
       }
@@ -2981,6 +2989,147 @@ TEST_F(SimpleURLLoaderStreamTest, OnRetryDestruction) {
   EXPECT_FALSE(test_helper->simple_url_loader());
   // Make sure no pending task results in a crash.
   base::RunLoop().RunUntilIdle();
+}
+
+// Don't inherit from SimpleURLLoaderTestBase so that we can initialize our
+// |scoped_task_environment_| different namely with MainThreadType::MOCK_TIME.
+class SimpleURLLoaderMockTimeTest : public testing::Test {
+ public:
+  SimpleURLLoaderMockTimeTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        disallow_blocking_(std::make_unique<base::ScopedDisallowBlocking>()) {
+    SimpleURLLoader::SetTimeoutTickClockForTest(
+        scoped_task_environment_.GetMockTickClock());
+  }
+  ~SimpleURLLoaderMockTimeTest() override {}
+
+  std::unique_ptr<SimpleLoaderTestHelper> CreateHelper() {
+    std::unique_ptr<network::ResourceRequest> resource_request =
+        std::make_unique<network::ResourceRequest>();
+    resource_request->url = GURL("foo://bar/");
+    resource_request->method = "GET";
+    resource_request->enable_upload_progress = true;
+    return std::make_unique<SimpleLoaderTestHelper>(
+        std::move(resource_request),
+        SimpleLoaderTestHelper::DownloadType::TO_STRING);
+  }
+
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<base::ScopedDisallowBlocking> disallow_blocking_;
+};
+
+// The amount of time that's simulated passing is equal to the timeout value
+// specified, so the request should fail.
+TEST_F(SimpleURLLoaderMockTimeTest, TimeoutTriggered) {
+  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  loader_factory.AddEvents(
+      {TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kReceivedResponse,
+       TestLoaderEvent::kBodyBufferReceived, TestLoaderEvent::kResponseComplete,
+       TestLoaderEvent::kBodyBufferClosed});
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper = CreateHelper();
+  test_helper->simple_url_loader()->SetTimeoutDuration(
+      base::TimeDelta::FromSeconds(1));
+
+  loader_factory.RunTest(test_helper.get());
+
+  EXPECT_EQ(net::ERR_TIMED_OUT, test_helper->simple_url_loader()->NetError());
+}
+
+// Less time is simulated passing than the timeout value, so this request should
+// succeed normally.
+TEST_F(SimpleURLLoaderMockTimeTest, TimeoutNotTriggered) {
+  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  loader_factory.AddEvents(
+      {TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kReceivedResponse,
+       TestLoaderEvent::kBodyBufferReceived, TestLoaderEvent::kResponseComplete,
+       TestLoaderEvent::kBodyBufferClosed});
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper = CreateHelper();
+  test_helper->simple_url_loader()->SetTimeoutDuration(
+      base::TimeDelta::FromSeconds(2));
+
+  loader_factory.RunTest(test_helper.get());
+
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper->GetResponseCode());
+}
+
+// Simulate time passing, without setting the timeout. This should result in no
+// timer being started, and request should succeed.
+TEST_F(SimpleURLLoaderMockTimeTest, TimeNotSetAndTimeAdvanced) {
+  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  loader_factory.AddEvents(
+      {TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kReceivedResponse,
+       TestLoaderEvent::kBodyBufferReceived, TestLoaderEvent::kResponseComplete,
+       TestLoaderEvent::kBodyBufferClosed});
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper = CreateHelper();
+
+  loader_factory.RunTest(test_helper.get());
+
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper->GetResponseCode());
+}
+
+// Simulate time passing before and after a redirect. The redirect should not
+// reset the timeout timer, and the request should timeout.
+TEST_F(SimpleURLLoaderMockTimeTest, TimeoutAfterRedirectTriggered) {
+  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  loader_factory.AddEvents(
+      {TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kReceivedRedirect,
+       TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kReceivedResponse,
+       TestLoaderEvent::kBodyBufferReceived, TestLoaderEvent::kBodyBufferClosed,
+       TestLoaderEvent::kResponseComplete});
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper = CreateHelper();
+  test_helper->simple_url_loader()->SetTimeoutDuration(
+      base::TimeDelta::FromSeconds(2));
+
+  loader_factory.RunTest(test_helper.get());
+
+  EXPECT_EQ(net::ERR_TIMED_OUT, test_helper->simple_url_loader()->NetError());
+}
+
+// Simulate time passing after a failure. The retry restarts the timeout timer,
+// so the second attempt gets a full two seconds and it is not exhausted.
+TEST_F(SimpleURLLoaderMockTimeTest, TimeoutAfterRetryNotTriggered) {
+  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  loader_factory.AddEvents({TestLoaderEvent::kAdvanceOneSecond,
+                            TestLoaderEvent::kReceived501Response});
+  loader_factory.AddEvents(
+      {TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kReceivedResponse,
+       TestLoaderEvent::kBodyBufferReceived, TestLoaderEvent::kBodyBufferClosed,
+       TestLoaderEvent::kResponseComplete});
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper = CreateHelper();
+  test_helper->simple_url_loader()->SetTimeoutDuration(
+      base::TimeDelta::FromSeconds(2));
+  test_helper->simple_url_loader()->SetRetryOptions(
+      1, SimpleURLLoader::RETRY_ON_5XX);
+
+  loader_factory.RunTest(test_helper.get());
+
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper->GetResponseCode());
+}
+
+// Trigger a failure and retry, and then simulate enough time passing to trigger
+// the timeout. The retry should have correctly started its timeout timer.
+TEST_F(SimpleURLLoaderMockTimeTest, TimeoutAfterRetryTriggered) {
+  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  loader_factory.AddEvents({TestLoaderEvent::kAdvanceOneSecond,
+                            TestLoaderEvent::kReceived501Response});
+  loader_factory.AddEvents(
+      {TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kAdvanceOneSecond,
+       TestLoaderEvent::kBodyBufferReceived, TestLoaderEvent::kBodyBufferClosed,
+       TestLoaderEvent::kResponseComplete});
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper = CreateHelper();
+  test_helper->simple_url_loader()->SetTimeoutDuration(
+      base::TimeDelta::FromMilliseconds(1900));
+  test_helper->simple_url_loader()->SetRetryOptions(
+      1, SimpleURLLoader::RETRY_ON_5XX);
+
+  loader_factory.RunTest(test_helper.get());
+
+  EXPECT_EQ(net::ERR_TIMED_OUT, test_helper->simple_url_loader()->NetError());
 }
 
 TEST_P(SimpleURLLoaderTest, OnUploadProgressCallback) {

@@ -18,6 +18,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "url/gurl.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace identity {
 class IdentityManager;
 }
@@ -44,7 +48,8 @@ class FeedNetworkingHost {
   FeedNetworkingHost(
       identity::IdentityManager* identity_manager,
       const std::string& api_key,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+      const base::TickClock* tick_clock);
 
   ~FeedNetworkingHost();
 
@@ -73,6 +78,7 @@ class FeedNetworkingHost {
   identity::IdentityManager* identity_manager_;
   const std::string api_key_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
+  const base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedNetworkingHost);
 };
