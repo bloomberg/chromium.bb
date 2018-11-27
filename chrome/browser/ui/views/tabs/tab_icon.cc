@@ -339,7 +339,8 @@ void TabIcon::PaintLoadingProgressIndicator(gfx::Canvas* canvas,
   cc::PaintFlags flags;
   flags.setColor(color);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setAntiAlias(true);
+  // Disable anti-aliasing to effectively "pixel align" the rectangle.
+  flags.setAntiAlias(false);
   flags.setAlpha(animation_state_.loading_progress_alpha);
 
   canvas->DrawRect(bounds, flags);

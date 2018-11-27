@@ -222,7 +222,8 @@ GFX_EXPORT void PaintNewThrobberWaiting(Canvas* canvas,
   cc::PaintFlags flags;
   flags.setColor(color);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setAntiAlias(true);
+  // Disable anti-aliasing to effectively "pixel align" the rectangle.
+  flags.setAntiAlias(false);
 
   // Draw with circular end caps.
   canvas->DrawRect(bounds, flags);
