@@ -47,7 +47,6 @@ class CORE_EXPORT TextSuggestionController final
   void Trace(blink::Visitor*) override;
 
  private:
-  friend class TextSuggestionControllerTest;
   Document& GetDocument() const;
   bool IsAvailable() const;
   LocalFrame& GetFrame() const;

@@ -232,11 +232,6 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
   if (!node_and_marker.first)
     return;
 
-  const SuggestionMarker* marker =
-      ToSuggestionMarkerOrNull(node_and_marker.second);
-  if (marker && marker->Suggestions().IsEmpty())
-    return;
-
   if (!text_suggestion_host_) {
     GetFrame().GetInterfaceProvider().GetInterface(
         mojo::MakeRequest(&text_suggestion_host_));
