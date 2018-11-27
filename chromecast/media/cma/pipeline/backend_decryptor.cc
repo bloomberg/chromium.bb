@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/pipeline/decrypt_util.h"
 
 namespace chromecast {
@@ -85,8 +84,8 @@ void BackendDecryptor::OnDecryptComplete(bool success) {
     // Last frame, all the buffers should be decrypted.
     DCHECK(pending_buffers_.empty());
     DCHECK(decrypt_cb_);
-    CMALOG(kLogControl) << "Return all the ready buffers, size = "
-                        << ready_buffers_.size();
+    LOG(INFO) << "Return all the ready buffers, size = "
+              << ready_buffers_.size();
     decrypt_cb_.Run(decrypt_success_, std::move(ready_buffers_));
   }
 }

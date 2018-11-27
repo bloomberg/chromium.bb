@@ -14,6 +14,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -191,7 +192,7 @@ StreamMixer::StreamMixer(
       external_audio_pipeline_supported_(
           ExternalAudioPipelineShlib::IsSupported()),
       weak_factory_(this) {
-  VLOG(1) << __func__;
+  LOG(INFO) << __func__;
 
   volume_info_[AudioContentType::kOther].volume = 1.0f;
   volume_info_[AudioContentType::kOther].limit = 1.0f;
@@ -336,7 +337,7 @@ void StreamMixer::SetNumOutputChannelsForTest(int num_output_channels) {
 }
 
 StreamMixer::~StreamMixer() {
-  VLOG(1) << __func__;
+  LOG(INFO) << __func__;
   if (shim_thread_) {
     shim_thread_->Stop();
   }
@@ -366,7 +367,7 @@ void StreamMixer::FinalizeOnMixerThread() {
 }
 
 void StreamMixer::Start() {
-  VLOG(1) << __func__;
+  LOG(INFO) << __func__;
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kStateStopped);
   DCHECK(inputs_.empty());
@@ -423,7 +424,7 @@ void StreamMixer::Start() {
 }
 
 void StreamMixer::Stop() {
-  VLOG(1) << __func__;
+  LOG(INFO) << __func__;
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
 
   weak_factory_.InvalidateWeakPtrs();
@@ -725,7 +726,7 @@ void StreamMixer::MixToMono(float* data, int frames, int channels) {
 
 void StreamMixer::AddLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
-  VLOG(1) << __func__;
+  LOG(INFO) << __func__;
   POST_TASK_TO_SHIM_THREAD(&StreamMixer::AddLoopbackAudioObserverOnShimThread,
                            observer);
 }
@@ -739,7 +740,7 @@ void StreamMixer::AddLoopbackAudioObserverOnShimThread(
 
 void StreamMixer::RemoveLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
-  VLOG(1) << __func__;
+  LOG(INFO) << __func__;
   POST_TASK_TO_SHIM_THREAD(
       &StreamMixer::RemoveLoopbackAudioObserverOnShimThread, observer);
 }
@@ -753,7 +754,7 @@ void StreamMixer::RemoveLoopbackAudioObserverOnShimThread(
 
 void StreamMixer::AddAudioOutputRedirector(
     std::unique_ptr<AudioOutputRedirector> redirector) {
-  VLOG(1) << __func__;
+  LOG(INFO) << __func__;
   POST_THROUGH_INPUT_THREAD(&StreamMixer::AddAudioOutputRedirectorOnThread,
                             std::move(redirector));
 }
@@ -775,7 +776,7 @@ void StreamMixer::AddAudioOutputRedirectorOnThread(
 
 void StreamMixer::RemoveAudioOutputRedirector(
     AudioOutputRedirector* redirector) {
-  VLOG(1) << __func__;
+  LOG(INFO) << __func__;
   POST_THROUGH_INPUT_THREAD(&StreamMixer::RemoveAudioOutputRedirectorOnThread,
                             redirector);
 }

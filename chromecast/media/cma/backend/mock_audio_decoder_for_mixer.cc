@@ -35,11 +35,11 @@ void MockAudioDecoderForMixer::PushBufferPeriodic() {
   MediaPipelineBackend::AudioDecoder::RenderingDelay delay(
       audio_play_delay, (now_ticks - base::TimeTicks()).InMicroseconds());
 
-  VLOG(4) << "audio_buffer_pushed"
-          << " current_audio_pts_=" << current_audio_pts_
-          << " buffer_timestamp=" << buffer_timestamp
-          << " delay.timestamp_microseconds=" << delay.timestamp_microseconds
-          << " delay.delay_microseconds=" << delay.delay_microseconds;
+  DVLOG(4) << "audio_buffer_pushed"
+           << " current_audio_pts_=" << current_audio_pts_
+           << " buffer_timestamp=" << buffer_timestamp
+           << " delay.timestamp_microseconds=" << delay.timestamp_microseconds
+           << " delay.delay_microseconds=" << delay.delay_microseconds;
 }
 
 void MockAudioDecoderForMixer::PlayAudio() {
@@ -48,7 +48,7 @@ void MockAudioDecoderForMixer::PlayAudio() {
   // maintained after an audio glitch.
   if (next_push_buffer_pts_ >= (current_audio_pts_ + audio_play_interval_us_)) {
     current_audio_pts_ += audio_play_interval_us_;
-    VLOG(4) << "current_audio_pts_=" << current_audio_pts_;
+    DVLOG(4) << "current_audio_pts_=" << current_audio_pts_;
   }
 }
 

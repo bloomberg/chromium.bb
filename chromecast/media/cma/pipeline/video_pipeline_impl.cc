@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
-#include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
@@ -43,8 +43,7 @@ VideoPipelineImpl::~VideoPipelineImpl() {
     std::unique_ptr<CodedFrameProvider> frame_provider) {
   DCHECK_GT(configs.size(), 0u);
   for (const auto& config : configs) {
-    CMALOG(kLogControl) << __FUNCTION__ << " "
-                        << config.AsHumanReadableString();
+    LOG(INFO) << __FUNCTION__ << " " << config.AsHumanReadableString();
   }
 
   if (frame_provider) {
@@ -105,8 +104,8 @@ void VideoPipelineImpl::OnUpdateConfig(
     const ::media::AudioDecoderConfig& audio_config,
     const ::media::VideoDecoderConfig& video_config) {
   if (video_config.IsValidConfig()) {
-    CMALOG(kLogControl) << __FUNCTION__ << " id:" << id << " "
-                        << video_config.AsHumanReadableString();
+    LOG(INFO) << __FUNCTION__ << " id:" << id << " "
+              << video_config.AsHumanReadableString();
 
     DCHECK_LT(id, encryption_schemes_.size());
     VideoConfig cast_video_config =

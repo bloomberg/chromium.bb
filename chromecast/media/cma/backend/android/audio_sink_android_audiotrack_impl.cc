@@ -293,8 +293,8 @@ void AudioSinkAndroidAudioTrackImpl::TrackRawMonotonicClockDeviation() {
 
   // TODO(ckuiper): Eventually we want to use this to convert from non-RAW to
   // RAW timestamps to improve accuracy.
-  VLOG(3) << __func__ << "(" << this << "):"
-          << " now - now_raw=" << (now_usec - now_raw_usec);
+  DVLOG(3) << __func__ << "(" << this << "):"
+           << " now - now_raw=" << (now_usec - now_raw_usec);
 }
 
 void AudioSinkAndroidAudioTrackImpl::FeedDataContinue() {
@@ -325,9 +325,9 @@ void AudioSinkAndroidAudioTrackImpl::PostPcmCallback(
     const MediaPipelineBackendAndroid::RenderingDelay& delay) {
   RUN_ON_CALLER_THREAD(PostPcmCallback, delay);
   DCHECK(pending_data_);
-  VLOG(3) << __func__ << "(" << this << "): "
-          << " delay=" << delay.delay_microseconds
-          << " ts=" << delay.timestamp_microseconds;
+  DVLOG(3) << __func__ << "(" << this << "): "
+           << " delay=" << delay.delay_microseconds
+           << " ts=" << delay.timestamp_microseconds;
   pending_data_ = nullptr;
   pending_data_bytes_already_fed_ = 0;
   delegate_->OnWritePcmCompletion(MediaPipelineBackendAndroid::kBufferSuccess,
