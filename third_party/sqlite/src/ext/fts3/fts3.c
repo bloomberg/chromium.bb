@@ -4182,8 +4182,8 @@ static int fts3EvalDeferredPhrase(Fts3Cursor *pCsr, Fts3Phrase *pPhrase){
     Fts3DeferredToken *pDeferred = pToken->pDeferred;
 
     if( pDeferred ){
-      char *pList = 0;
-      int nList = 0;
+      char *pList;
+      int nList;
       int rc = sqlite3Fts3DeferredTokenList(pDeferred, &pList, &nList);
       if( rc!=SQLITE_OK ) return rc;
 
