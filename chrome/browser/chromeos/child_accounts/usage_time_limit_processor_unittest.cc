@@ -182,7 +182,6 @@ namespace internal {
 
 using UsageTimeLimitProcessorInternalTest = testing::Test;
 
-// TODO: improve tests to cover bugs on crbug/894047
 TEST_F(UsageTimeLimitProcessorInternalTest, TimeLimitWindowValid) {
   std::string last_updated_millis =
       CreatePolicyTimestamp("1 Jan 1970 00:00:00");
@@ -286,11 +285,11 @@ TEST_F(UsageTimeLimitProcessorInternalTest, OverrideValid) {
   // Create policy information.
   std::string created_at_millis = CreatePolicyTimestamp("1 Jan 2018 10:00:00");
   base::Value override_one = base::Value(base::Value::Type::DICTIONARY);
-  override_one.SetKey("action", base::Value("UNLOCK"));
+  override_one.SetKey("action", base::Value(kUnlock));
   override_one.SetKey("created_at_millis", base::Value(created_at_millis));
 
   base::Value override_two = base::Value(base::Value::Type::DICTIONARY);
-  override_two.SetKey("action", base::Value("LOCK"));
+  override_two.SetKey("action", base::Value(kLock));
   override_two.SetKey("created_at_millis",
                       base::Value(CreatePolicyTimestamp("1 Jan 2018 9:00:00")));
 
@@ -304,6 +303,42 @@ TEST_F(UsageTimeLimitProcessorInternalTest, OverrideValid) {
   // Assert right fields are set.
   ASSERT_EQ(override_struct.action, TimeLimitOverride::Action::kUnlock);
   ASSERT_EQ(override_struct.created_at, TimeFromString("1 Jan 2018 10:00:00"));
+  ASSERT_FALSE(override_struct.duration);
+}
+
+// Check that the most recent override is chosen when more than one is sent on
+// the policy. This test covers the corner case when the timestamp strings have
+// different sizes.
+TEST_F(UsageTimeLimitProcessorInternalTest, MultipleOverrides) {
+  // Create policy information.
+  base::Value override_one = base::Value(base::Value::Type::DICTIONARY);
+  override_one.SetKey("action", base::Value(kUnlock));
+  override_one.SetKey("created_at_millis", base::Value("1000000"));
+
+  base::Value override_two = base::Value(base::Value::Type::DICTIONARY);
+  override_two.SetKey("action", base::Value(kLock));
+  override_two.SetKey("created_at_millis", base::Value("999999"));
+
+  base::Value override_three = base::Value(base::Value::Type::DICTIONARY);
+  override_two.SetKey("action", base::Value(kLock));
+  override_two.SetKey("created_at_millis", base::Value("900000"));
+
+  base::Value override_four = base::Value(base::Value::Type::DICTIONARY);
+  override_two.SetKey("action", base::Value(kUnlock));
+  override_two.SetKey("created_at_millis", base::Value("1200000"));
+
+  base::Value overrides(base::Value::Type::LIST);
+  overrides.GetList().push_back(std::move(override_one));
+  overrides.GetList().push_back(std::move(override_two));
+  overrides.GetList().push_back(std::move(override_three));
+  overrides.GetList().push_back(std::move(override_four));
+
+  // Call tested functions.
+  TimeLimitOverride override_struct(overrides);
+
+  // Assert right fields are set.
+  ASSERT_EQ(override_struct.action, TimeLimitOverride::Action::kUnlock);
+  ASSERT_EQ(override_struct.created_at, base::Time::FromJavaTime(1200000));
   ASSERT_FALSE(override_struct.duration);
 }
 
