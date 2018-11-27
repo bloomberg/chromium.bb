@@ -12,8 +12,8 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   int utterance_id = 0;
   std::string utterance;
   std::string lang;
-  VoiceData voice;
-  UtteranceContinuousParameters params;
+  content::VoiceData voice;
+  content::UtteranceContinuousParameters params;
   params.pitch = 1.0;
   params.rate = 1.0;
   params.volume = 0.1;
