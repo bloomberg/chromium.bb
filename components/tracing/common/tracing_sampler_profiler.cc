@@ -9,6 +9,7 @@
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "base/process/process.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -43,6 +44,11 @@ class TracingProfileBuilder
 
   void OnSampleCompleted(
       std::vector<base::StackSamplingProfiler::Frame> frames) override {
+    int process_priority = base::Process::Current().GetPriority();
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+                         "ProcessPriority", TRACE_EVENT_SCOPE_THREAD,
+                         "priority", process_priority);
+
     if (frames.empty()) {
       TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
                            "StackCpuSampling", TRACE_EVENT_SCOPE_THREAD,

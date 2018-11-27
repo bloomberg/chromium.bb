@@ -54,8 +54,6 @@ class TracingSampleProfilerTest : public testing::Test {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
   }
 
-  size_t events_received_count() { return events_received_count_; }
-
   // Returns whether of not the sampler profiling is able to unwind the stack
   // on this platform.
   bool IsStackUnwindingSupported() {
@@ -106,9 +104,22 @@ class TracingSampleProfilerTest : public testing::Test {
         CHECK(item->GetAsDictionary(&dict));
         std::string name;
         CHECK(dict->GetString("name", &name));
-        if (name == "StackCpuSampling")
-          events_received_count_++;
+        if (name == "StackCpuSampling") {
+          events_stack_received_count_++;
+        } else if (name == "ProcessPriority") {
+          events_priority_received_count_++;
+        }
       }
+    }
+  }
+
+  void ValidateReceivedEvents() {
+    if (IsStackUnwindingSupported()) {
+      EXPECT_GT(events_stack_received_count_, 0U);
+      EXPECT_GT(events_priority_received_count_, 0U);
+    } else {
+      EXPECT_EQ(events_stack_received_count_, 0U);
+      EXPECT_EQ(events_priority_received_count_, 0U);
     }
   }
 
@@ -120,8 +131,11 @@ class TracingSampleProfilerTest : public testing::Test {
   base::trace_event::TraceResultBuffer trace_buffer_;
   base::trace_event::TraceResultBuffer::SimpleOutput json_output_;
 
-  // Number of events received.
-  size_t events_received_count_ = 0;
+  // Number of stack sampling events received.
+  size_t events_stack_received_count_ = 0;
+
+  // Number of priority sampling events received.
+  size_t events_priority_received_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TracingSampleProfilerTest);
 };
@@ -136,10 +150,7 @@ TEST_F(TracingSampleProfilerTest, OnSampleCompleted) {
   WaitForEvents();
   EndTracing();
   base::RunLoop().RunUntilIdle();
-  if (IsStackUnwindingSupported())
-    EXPECT_GT(events_received_count(), 0U);
-  else
-    EXPECT_EQ(events_received_count(), 0U);
+  ValidateReceivedEvents();
 }
 
 TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
@@ -150,10 +161,7 @@ TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
   WaitForEvents();
   EndTracing();
   base::RunLoop().RunUntilIdle();
-  if (IsStackUnwindingSupported())
-    EXPECT_GT(events_received_count(), 0U);
-  else
-    EXPECT_EQ(events_received_count(), 0U);
+  ValidateReceivedEvents();
 }
 
 TEST_F(TracingSampleProfilerTest, SamplingChildThread) {
@@ -165,10 +173,7 @@ TEST_F(TracingSampleProfilerTest, SamplingChildThread) {
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
   EndTracing();
-  if (IsStackUnwindingSupported())
-    EXPECT_GT(events_received_count(), 0U);
-  else
-    EXPECT_EQ(events_received_count(), 0U);
+  ValidateReceivedEvents();
 }
 
 }  // namespace tracing
