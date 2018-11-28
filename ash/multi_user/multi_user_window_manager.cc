@@ -258,6 +258,9 @@ void MultiUserWindowManager::OnActiveUserSessionChanged(
   // This needs to be set before the animation starts.
   current_account_id_ = account_id;
 
+  if (delegate_)
+    delegate_->OnWillSwitchActiveAccount(current_account_id_);
+
   // Here to avoid a very nasty race condition, we must destruct any previously
   // created animation before creating a new one. Otherwise, the newly
   // constructed will hide all windows of the old user in the first step of the
