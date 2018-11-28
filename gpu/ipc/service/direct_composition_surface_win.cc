@@ -45,9 +45,6 @@
 
 namespace gpu {
 namespace {
-// Number of stable frames before the swap chain can be resized
-static constexpr int kNumFramesBeforeSwapChainResize = 30;
-
 // Some drivers fail to correctly handle BT.709 video in overlays. This flag
 // converts them to BT.601 in the video processor.
 const base::Feature kFallbackBT709VideoToBT601{
@@ -490,10 +487,6 @@ class DCLayerTree::SwapChainPresenter {
   // Returns optimal swap chain size for given layer.
   gfx::Size CalculateSwapChainSize(const ui::DCRendererLayerParams& params);
 
-  // Returns a stable swap chain size to prevent frequently recreating the swap
-  // chain until a number of frames with the size have been presented.
-  gfx::Size GetStableSwapChainSize(gfx::Size requested_swap_chain_size);
-
   // Update direct composition visuals for layer with given swap chain size, and
   // returns true if a commit is needed.
   bool UpdateVisuals(const ui::DCRendererLayerParams& params,
@@ -527,8 +520,6 @@ class DCLayerTree::SwapChainPresenter {
   // Number of frames since we switched from YUV to BGRA swap chain, or
   // vice-versa.
   int frames_since_color_space_change_ = 0;
-  int frames_since_stable_swap_chain_resize_ = 0;
-  gfx::Size last_requested_swap_chain_size_;
 
   // This struct is used to cache information about what visuals are currently
   // being presented so that properties that aren't changed aren't sent to
@@ -701,36 +692,6 @@ bool DCLayerTree::SwapChainPresenter::ShouldUseYUVSwapChain() {
   }
 }
 
-// To avoid frequent swap chain recreation during video resizing, keep
-// the same swap chain size until the onscreen video size is stable for
-// at least 30 frames.
-gfx::Size DCLayerTree::SwapChainPresenter::GetStableSwapChainSize(
-    gfx::Size requested_swap_chain_size) {
-  if (requested_swap_chain_size == swap_chain_size_ ||
-      swap_chain_size_.IsEmpty() || requested_swap_chain_size.IsEmpty()) {
-    frames_since_stable_swap_chain_resize_ = 0;
-    last_requested_swap_chain_size_ = requested_swap_chain_size;
-    return requested_swap_chain_size;
-  }
-
-  if (requested_swap_chain_size == last_requested_swap_chain_size_) {
-    frames_since_stable_swap_chain_resize_++;
-    // Resize after seeing the same requested size for 30 consecutive frames.
-    if (frames_since_stable_swap_chain_resize_ >=
-        kNumFramesBeforeSwapChainResize) {
-      frames_since_stable_swap_chain_resize_ = 0;
-      last_requested_swap_chain_size_ = requested_swap_chain_size;
-      return requested_swap_chain_size;
-    }
-  } else {
-    frames_since_stable_swap_chain_resize_ = 0;
-    last_requested_swap_chain_size_ = requested_swap_chain_size;
-  }
-
-  // Keep the previous swap chain size
-  return swap_chain_size_;
-}
-
 bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
     gl::GLImageMemory* y_image_memory,
     gl::GLImageMemory* uv_image_memory) {
@@ -856,11 +817,6 @@ gfx::Size DCLayerTree::SwapChainPresenter::CalculateSwapChainSize(
     gfx::Size ceiled_input_size =
         gfx::ToCeiledSize(params.contents_rect.size());
     swap_chain_size.SetToMin(ceiled_input_size);
-    // We don't want to recreate the swap chain too frequently, so override the
-    // swap chain size with GetStableSwapChainSize().
-    // TODO(magchen): This might cause overlay downscaling if the new size is
-    // bigger than display_rect.
-    swap_chain_size = GetStableSwapChainSize(swap_chain_size);
   }
 
   // 4:2:2 subsampled formats like YUY2 must have an even width, and 4:2:0
@@ -1564,11 +1520,6 @@ OverlayCapabilities DirectCompositionSurfaceWin::GetOverlayCapabilities() {
 void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
     bool value) {
   g_supports_scaled_overlays = value;
-}
-
-// static
-int DirectCompositionSurfaceWin::GetNumFramesBeforeSwapChainResizeForTesting() {
-  return kNumFramesBeforeSwapChainResize;
 }
 
 // static
