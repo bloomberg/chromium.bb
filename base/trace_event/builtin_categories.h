@@ -249,7 +249,7 @@ static_assert(!StrEqConstexpr("abc", "ab"), "strings should not be equal");
 class BuiltinCategories {
  public:
   // Returns a built-in category name at |index| in the registry.
-  static constexpr const char* At(int index) {
+  static constexpr const char* At(size_t index) {
     return kBuiltinCategories[index];
   }
 
