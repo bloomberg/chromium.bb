@@ -28,6 +28,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_param.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
@@ -39,7 +40,7 @@ class AudioNodeInput;
 
 // AudioNodeOutput represents a single output for an AudioNode.
 // It may be connected to one or more AudioNodeInputs.
-class AudioNodeOutput final {
+class MODULES_EXPORT AudioNodeOutput final {
   USING_FAST_MALLOC(AudioNodeOutput);
 
  public:

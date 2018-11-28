@@ -346,6 +346,7 @@ jumbo_source_set("unit_tests") {
     "webaudio/audio_basic_processor_handler_test.cc",
     "webaudio/audio_context_autoplay_test.cc",
     "webaudio/audio_context_test.cc",
+    "webaudio/audio_node_input_test.cc",
     "webaudio/audio_worklet_global_scope_test.cc",
     "webaudio/audio_worklet_thread_test.cc",
     "webaudio/convolver_node_test.cc",
