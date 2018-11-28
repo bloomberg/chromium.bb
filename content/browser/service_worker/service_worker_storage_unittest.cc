@@ -1872,7 +1872,6 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
   http_info.ssl_info.cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   EXPECT_TRUE(http_info.ssl_info.is_valid());
-  http_info.ssl_info.security_bits = 0x100;
   // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
   http_info.ssl_info.connection_status = 0x300039;
 

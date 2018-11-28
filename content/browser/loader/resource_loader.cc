@@ -138,7 +138,6 @@ void PopulateResourceResponse(
   } else {
     // We should not have any SSL state.
     DCHECK(!request->ssl_info().cert_status);
-    DCHECK_EQ(request->ssl_info().security_bits, -1);
     DCHECK_EQ(request->ssl_info().key_exchange_group, 0);
     DCHECK_EQ(request->ssl_info().peer_signature_algorithm, 0);
     DCHECK_EQ(request->ssl_info().connection_status, 0);

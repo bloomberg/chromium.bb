@@ -415,7 +415,7 @@ void CheckSecurityInfoForSecure(
   EXPECT_EQ(pkp_bypassed, security_info.pkp_bypassed);
   EXPECT_EQ(expect_cert_error,
             net::IsCertStatusError(security_info.cert_status));
-  EXPECT_GT(security_info.security_bits, 0);
+  EXPECT_TRUE(security_info.connection_info_initialized);
   EXPECT_TRUE(!!security_info.certificate);
 }
 
@@ -433,7 +433,7 @@ void CheckSecurityInfoForNonSecure(content::WebContents* contents) {
             security_info.mixed_content_status);
   EXPECT_FALSE(security_info.scheme_is_cryptographic);
   EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  EXPECT_EQ(-1, security_info.security_bits);
+  EXPECT_FALSE(security_info.connection_info_initialized);
   EXPECT_FALSE(!!security_info.certificate);
 }
 
@@ -638,8 +638,10 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, HttpPage) {
             security_info.mixed_content_status);
   EXPECT_FALSE(security_info.scheme_is_cryptographic);
   EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
+  // TODO(dmcardle): Should determine the expected value for
+  // |security_info.connection_info_initialized|. Follow up with estark.
+  // See crbug.com/780972
   EXPECT_FALSE(!!security_info.certificate);
-  EXPECT_EQ(-1, security_info.security_bits);
   EXPECT_EQ(0, security_info.connection_status);
 }
 

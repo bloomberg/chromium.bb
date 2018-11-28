@@ -257,7 +257,6 @@ void SecurityInfoForRequest(
   security_info->content_with_cert_errors_status = GetContentStatus(
       visible_security_state.displayed_content_with_cert_errors,
       visible_security_state.ran_content_with_cert_errors);
-  security_info->security_bits = visible_security_state.security_bits;
   security_info->connection_status = visible_security_state.connection_status;
   security_info->key_exchange_group = visible_security_state.key_exchange_group;
   security_info->peer_signature_algorithm =
@@ -321,7 +320,6 @@ SecurityInfo::SecurityInfo()
       content_with_cert_errors_status(CONTENT_STATUS_NONE),
       scheme_is_cryptographic(false),
       cert_status(0),
-      security_bits(-1),
       connection_status(0),
       key_exchange_group(0),
       peer_signature_algorithm(0),
@@ -351,7 +349,6 @@ VisibleSecurityState::VisibleSecurityState()
       connection_status(0),
       key_exchange_group(0),
       peer_signature_algorithm(0),
-      security_bits(-1),
       displayed_mixed_content(false),
       contained_mixed_form(false),
       ran_mixed_content(false),

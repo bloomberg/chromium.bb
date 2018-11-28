@@ -761,15 +761,9 @@ void PageInfo::Init(const GURL& url,
     site_connection_details_.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
         subject_name));
-  } else if (security_info.security_bits < 0) {
-    // Security strength is unknown.  Say nothing.
-    site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
-  } else if (security_info.security_bits == 0) {
+  } else if (!security_info.connection_info_initialized) {
     DCHECK_NE(security_info.security_level, security_state::NONE);
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
-    site_connection_details_.assign(l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
-        subject_name));
   } else {
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED;
 
@@ -788,7 +782,7 @@ void PageInfo::Init(const GURL& url,
 
   uint16_t cipher_suite =
       net::SSLConnectionStatusToCipherSuite(security_info.connection_status);
-  if (security_info.security_bits > 0 && cipher_suite) {
+  if (security_info.connection_info_initialized && cipher_suite) {
     int ssl_version =
         net::SSLConnectionStatusToVersion(security_info.connection_status);
     const char* ssl_version_str;

@@ -177,7 +177,6 @@ TEST_F(NavigationEntryTest, NavigationEntrySSLStatus) {
   EXPECT_FALSE(entry2_->GetSSL().initialized);
   EXPECT_FALSE(!!entry1_->GetSSL().certificate);
   EXPECT_EQ(0U, entry1_->GetSSL().cert_status);
-  EXPECT_EQ(-1, entry1_->GetSSL().security_bits);
   int content_status = entry1_->GetSSL().content_status;
   EXPECT_FALSE(!!(content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT));
   EXPECT_FALSE(!!(content_status & SSLStatus::RAN_INSECURE_CONTENT));

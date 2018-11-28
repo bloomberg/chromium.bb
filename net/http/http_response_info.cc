@@ -57,8 +57,8 @@ enum {
   // versions include the available certificate chain.
   RESPONSE_INFO_HAS_CERT = 1 << 8,
 
-  // This bit is set if the response info has a security-bits field (security
-  // strength, in bits, of the SSL connection) at the end.
+  // This bit was historically set if the response info had a security-bits
+  // field (security strength, in bits, of the SSL connection) at the end.
   RESPONSE_INFO_HAS_SECURITY_BITS = 1 << 9,
 
   // This bit is set if the response info has a cert status at the end.
@@ -180,10 +180,11 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
     ssl_info.cert_status = cert_status;
   }
   if (flags & RESPONSE_INFO_HAS_SECURITY_BITS) {
+    // The security_bits field has been removed from ssl_info. For backwards
+    // compatibility, we should still read the value out of iter.
     int security_bits;
     if (!iter.ReadInt(&security_bits))
       return false;
-    ssl_info.security_bits = security_bits;
   }
 
   if (flags & RESPONSE_INFO_HAS_SSL_CONNECTION_STATUS) {
@@ -305,8 +306,6 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
   if (ssl_info.is_valid()) {
     flags |= RESPONSE_INFO_HAS_CERT;
     flags |= RESPONSE_INFO_HAS_CERT_STATUS;
-    if (ssl_info.security_bits != -1)
-      flags |= RESPONSE_INFO_HAS_SECURITY_BITS;
     if (ssl_info.key_exchange_group != 0)
       flags |= RESPONSE_INFO_HAS_KEY_EXCHANGE_GROUP;
     if (ssl_info.connection_status != 0)
@@ -358,8 +357,6 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
   if (ssl_info.is_valid()) {
     ssl_info.cert->Persist(pickle);
     pickle->WriteUInt32(ssl_info.cert_status);
-    if (ssl_info.security_bits != -1)
-      pickle->WriteInt(ssl_info.security_bits);
     if (ssl_info.connection_status != 0)
       pickle->WriteInt(ssl_info.connection_status);
   }

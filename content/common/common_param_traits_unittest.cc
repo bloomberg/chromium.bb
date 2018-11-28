@@ -166,7 +166,6 @@ TEST(IPCMessageTest, SSLInfo) {
   in.unverified_cert = net::ImportCertFromFile(net::GetTestCertsDirectory(),
                                                "ok_cert_by_intermediate.pem");
   in.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
-  in.security_bits = 0x100;
   in.key_exchange_group = 1024;
   in.peer_signature_algorithm = 0x0804;
   in.connection_status = 0x300039;  // TLS_DHE_RSA_WITH_AES_256_CBC_SHA
@@ -210,7 +209,6 @@ TEST(IPCMessageTest, SSLInfo) {
   ASSERT_TRUE(in.cert->EqualsIncludingChain(out.cert.get()));
   ASSERT_TRUE(
       in.unverified_cert->EqualsIncludingChain(out.unverified_cert.get()));
-  ASSERT_EQ(in.security_bits, out.security_bits);
   ASSERT_EQ(in.key_exchange_group, out.key_exchange_group);
   ASSERT_EQ(in.peer_signature_algorithm, out.peer_signature_algorithm);
   ASSERT_EQ(in.connection_status, out.connection_status);

@@ -118,7 +118,6 @@ class TestSecurityStateHelper {
     state->certificate = cert_;
     state->cert_status = cert_status_;
     state->connection_status = connection_status_;
-    state->security_bits = 256;
     state->displayed_mixed_content = displayed_mixed_content_;
     state->contained_mixed_form = contained_mixed_form_;
     state->ran_mixed_content = ran_mixed_content_;
