@@ -279,6 +279,8 @@ test("components_unittests") {
       "//base:base_java_unittest_support",
       "//components/autofill_assistant/browser:unit_tests",
       "//components/cdm/browser:unit_tests",
+      "//components/crash/android:java",
+      "//components/crash/android:unit_tests",
       "//components/gcm_driver/instance_id:test_support",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",

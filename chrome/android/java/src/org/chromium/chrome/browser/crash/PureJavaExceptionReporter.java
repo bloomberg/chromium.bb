@@ -20,6 +20,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.components.crash.CrashKeys;
 
 import java.io.File;
 import java.io.FileNotFoundException;

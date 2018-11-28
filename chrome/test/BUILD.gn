@@ -2356,7 +2356,6 @@ test("unit_tests") {
 
     # TODO(newt): move this to test_support_unit?
     "../browser/android/chrome_backup_agent_unittest.cc",
-    "../browser/android/crash/crash_keys_android_unittest.cc",
     "../browser/android/customtabs/detached_resource_request_unittest.cc",
     "../browser/android/favicon_helper_unittest.cc",
     "../browser/android/mock_location_settings.cc",
