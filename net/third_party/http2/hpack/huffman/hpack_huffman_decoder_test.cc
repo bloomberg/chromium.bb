@@ -13,7 +13,7 @@
 #include "net/third_party/http2/decoder/decode_status.h"
 #include "net/third_party/http2/platform/api/http2_arraysize.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/http2/tools/failure.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

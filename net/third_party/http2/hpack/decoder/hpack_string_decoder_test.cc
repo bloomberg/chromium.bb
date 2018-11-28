@@ -10,8 +10,8 @@
 #include "net/third_party/http2/hpack/decoder/hpack_string_decoder_listener.h"
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
 #include "net/third_party/http2/test_tools/http2_random.h"
-#include "net/third_party/http2/tools/failure.h"
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

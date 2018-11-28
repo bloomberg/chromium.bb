@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/http2/tools/failure.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
 
 namespace http2 {
 namespace test {

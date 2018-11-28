@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_THIRD_PARTY_HTTP2_TOOLS_FAILURE_H_
-#define NET_THIRD_PARTY_HTTP2_TOOLS_FAILURE_H_
+#ifndef NET_THIRD_PARTY_HTTP2_PLATFORM_IMPL_HTTP2_TEST_HELPERS_IMPL_H_
+#define NET_THIRD_PARTY_HTTP2_PLATFORM_IMPL_HTTP2_TEST_HELPERS_IMPL_H_
 
 // Defines VERIFY_* macros, analogous to gUnit's EXPECT_* and ASSERT_* macros,
 // but these return an appropriate AssertionResult if the condition is not
@@ -15,7 +15,9 @@
 #include <iosfwd>
 #include <sstream>
 
+#include "net/test/gtest_util.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,6 +60,17 @@ Http2String GetBoolAssertionFailureMessage(
     const char* expression_text,
     const char* actual_predicate_value,
     const char* expected_predicate_value);
+
+namespace {
+// Define HasSubstr() for Http2StringPiece arguments.
+// This shadows ::testing::HasSubstr(), which only works on argument types
+// that can be implicitly converted to a Http2String.
+inline ::testing::PolymorphicMatcher<net::test::StringPieceHasSubstrMatcher>
+HasSubstr(const Http2String& substring) {
+  return ::testing::MakePolymorphicMatcher(
+      net::test::StringPieceHasSubstrMatcher(substring));
+}
+}  // namespace
 
 }  // namespace test
 }  // namespace http2
@@ -151,4 +164,4 @@ Http2String GetBoolAssertionFailureMessage(
     return ::testing::AssertionSuccess();     \
   }
 
-#endif  // NET_THIRD_PARTY_HTTP2_TOOLS_FAILURE_H_
+#endif  // NET_THIRD_PARTY_HTTP2_PLATFORM_IMPL_HTTP2_TEST_HELPERS_IMPL_H_

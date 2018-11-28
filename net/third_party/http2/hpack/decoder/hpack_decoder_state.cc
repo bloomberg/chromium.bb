@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "net/third_party/http2/hpack/hpack_string.h"
 #include "net/third_party/http2/http2_constants.h"
+#include "net/third_party/http2/platform/api/http2_macros.h"
 
 namespace http2 {
 namespace {
@@ -24,15 +25,13 @@ HpackString ExtractHpackString(HpackDecoderStringBuffer* string_buffer) {
 }  // namespace
 
 HpackDecoderState::HpackDecoderState(HpackDecoderListener* listener)
-    : listener_(listener),
+    : listener_(HTTP2_DIE_IF_NULL(listener)),
       final_header_table_size_(Http2SettingsInfo::DefaultHeaderTableSize()),
       lowest_header_table_size_(final_header_table_size_),
       require_dynamic_table_size_update_(false),
       allow_dynamic_table_size_update_(true),
       saw_dynamic_table_size_update_(false),
-      error_detected_(false) {
-  CHECK(listener);
-}
+      error_detected_(false) {}
 HpackDecoderState::~HpackDecoderState() = default;
 
 void HpackDecoderState::set_tables_debug_listener(

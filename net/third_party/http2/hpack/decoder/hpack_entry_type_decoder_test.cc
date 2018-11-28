@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
-#include "net/third_party/http2/tools/failure.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

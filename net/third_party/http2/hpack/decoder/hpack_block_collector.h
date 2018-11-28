@@ -24,6 +24,7 @@
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 #include "net/third_party/http2/test_tools/http2_random.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace http2 {
 namespace test {

@@ -8,8 +8,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "net/third_party/http2/tools/failure.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
 
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;

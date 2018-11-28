@@ -5,6 +5,9 @@
 #include "net/third_party/http2/decoder/http2_frame_decoder_listener_test_util.h"
 
 #include "base/logging.h"
+#include "net/third_party/http2/decoder/http2_frame_decoder_listener.h"
+#include "net/third_party/http2/http2_constants.h"
+#include "net/third_party/http2/http2_structures.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace http2 {

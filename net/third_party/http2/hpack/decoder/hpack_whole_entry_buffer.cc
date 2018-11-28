@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/third_party/http2/platform/api/http2_estimate_memory_usage.h"
+#include "net/third_party/http2/platform/api/http2_macros.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
 namespace http2 {
@@ -18,8 +19,7 @@ HpackWholeEntryBuffer::HpackWholeEntryBuffer(HpackWholeEntryListener* listener,
 HpackWholeEntryBuffer::~HpackWholeEntryBuffer() = default;
 
 void HpackWholeEntryBuffer::set_listener(HpackWholeEntryListener* listener) {
-  CHECK(listener);
-  listener_ = listener;
+  listener_ = HTTP2_DIE_IF_NULL(listener);
 }
 
 void HpackWholeEntryBuffer::set_max_string_size_bytes(
