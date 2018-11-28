@@ -8,7 +8,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -18,9 +18,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "net/base/url_util.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -74,13 +73,11 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
   standard_params.has_seen_welcome_page =
       prefs && prefs->GetBoolean(prefs::kHasSeenWelcomePage);
   standard_params.is_signin_allowed = profile->IsSyncAllowed();
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
   standard_params.is_signed_in =
-      identity_manager && identity_manager->HasPrimaryAccount();
+      signin_manager && signin_manager->IsAuthenticated();
   standard_params.is_signin_in_progress =
-      identity_manager && identity_manager->GetPrimaryAccountMutator() &&
-      identity_manager->GetPrimaryAccountMutator()
-          ->LegacyIsPrimaryAccountAuthInProgress();
+      signin_manager && signin_manager->AuthInProgress();
   standard_params.is_supervised_user = profile->IsSupervised();
   standard_params.is_force_signin_enabled = signin_util::IsForceSigninEnabled();
 
