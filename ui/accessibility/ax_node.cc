@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_language_info.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_table_info.h"
 #include "ui/accessibility/ax_tree.h"
@@ -20,11 +21,17 @@ AXNode::AXNode(AXNode::OwnerTree* tree,
                AXNode* parent,
                int32_t id,
                int32_t index_in_parent)
-    : tree_(tree), index_in_parent_(index_in_parent), parent_(parent) {
+    : tree_(tree),
+      index_in_parent_(index_in_parent),
+      parent_(parent),
+      language_info_(nullptr) {
   data_.id = id;
 }
 
-AXNode::~AXNode() {}
+AXNode::~AXNode() {
+  if (language_info_)
+    delete language_info_;
+}
 
 int AXNode::GetUnignoredChildCount() const {
   int count = 0;
@@ -173,6 +180,41 @@ const std::string& AXNode::GetInheritedStringAttribute(
 base::string16 AXNode::GetInheritedString16Attribute(
     ax::mojom::StringAttribute attribute) const {
   return base::UTF8ToUTF16(GetInheritedStringAttribute(attribute));
+}
+
+const AXLanguageInfo* AXNode::GetLanguageInfo() {
+  if (language_info_)
+    return language_info_;
+
+  const auto& lang_attr =
+      GetStringAttribute(ax::mojom::StringAttribute::kLanguage);
+
+  // Promote language attribute to LanguageInfo.
+  if (!lang_attr.empty()) {
+    language_info_ = new AXLanguageInfo(this, lang_attr);
+    return language_info_;
+  }
+
+  // Try search for language through parent instead.
+  if (!parent())
+    return nullptr;
+
+  const AXLanguageInfo* parent_lang_info = GetLanguageInfo();
+  if (!parent_lang_info)
+    return nullptr;
+
+  // Cache the results on this node.
+  language_info_ = new AXLanguageInfo(parent_lang_info, this);
+  return language_info_;
+}
+
+std::string AXNode::GetLanguage() {
+  const AXLanguageInfo* lang_info = GetLanguageInfo();
+
+  if (lang_info)
+    return lang_info->language();
+
+  return "";
 }
 
 std::ostream& operator<<(std::ostream& stream, const AXNode& node) {
