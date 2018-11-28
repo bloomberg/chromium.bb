@@ -31,11 +31,11 @@
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
-#import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
@@ -693,8 +693,8 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 }
 
 - (CollectionViewItem*)autofillItemWithMainAndTrailingText {
-  AutofillDataItem* item =
-      [[AutofillDataItem alloc] initWithType:ItemTypeAutofillDynamicHeight];
+  LegacyAutofillDataItem* item = [[LegacyAutofillDataItem alloc]
+      initWithType:ItemTypeAutofillDynamicHeight];
   item.text = @"Main Text";
   item.trailingDetailText = @"Trailing Detail Text";
   item.accessoryType = MDCCollectionViewCellAccessoryNone;
@@ -702,8 +702,8 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 }
 
 - (CollectionViewItem*)autofillItemWithLeadingTextOnly {
-  AutofillDataItem* item =
-      [[AutofillDataItem alloc] initWithType:ItemTypeAutofillDynamicHeight];
+  LegacyAutofillDataItem* item = [[LegacyAutofillDataItem alloc]
+      initWithType:ItemTypeAutofillDynamicHeight];
   item.text = @"Main Text";
   item.leadingDetailText = @"Leading Detail Text";
   item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
@@ -711,8 +711,8 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 }
 
 - (CollectionViewItem*)autofillItemWithAllText {
-  AutofillDataItem* item =
-      [[AutofillDataItem alloc] initWithType:ItemTypeAutofillDynamicHeight];
+  LegacyAutofillDataItem* item = [[LegacyAutofillDataItem alloc]
+      initWithType:ItemTypeAutofillDynamicHeight];
   item.text = @"Main Text";
   item.leadingDetailText = @"Leading Detail Text";
   item.trailingDetailText = @"Trailing Detail Text";

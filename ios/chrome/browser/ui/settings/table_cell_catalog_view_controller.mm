@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
@@ -48,6 +49,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeDetailText,
   ItemTypeSettingsSwitch,
   ItemTypeAutofillEditItem,
+  ItemTypeAutofillData,
 };
 }
 
@@ -145,6 +147,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierText];
 
   // SectionIdentifierSettings.
+  TableViewTextHeaderFooterItem* settingsHeader =
+      [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeTextHeader];
+  settingsHeader.text = @"Settings";
+  [model setHeader:settingsHeader
+      forSectionWithIdentifier:SectionIdentifierSettings];
+
   SettingsDetailItem* settingsDetailItem =
       [[SettingsDetailItem alloc] initWithType:ItemTypeTextSettingsDetail];
   settingsDetailItem.text = @"Settings cells";
@@ -173,6 +181,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
       forSectionWithIdentifier:SectionIdentifierSettings];
 
   // SectionIdentifierAutofill.
+  TableViewTextHeaderFooterItem* autofillHeader =
+      [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeTextHeader];
+  autofillHeader.text = @"Autofill";
+  [model setHeader:autofillHeader
+      forSectionWithIdentifier:SectionIdentifierAutofill];
+
   AutofillEditItem* autofillEditItem =
       [[AutofillEditItem alloc] initWithType:ItemTypeAutofillEditItem];
   autofillEditItem.textFieldName = @"Autofill field";
@@ -180,6 +194,32 @@ typedef NS_ENUM(NSInteger, ItemType) {
   autofillEditItem.identifyingIcon =
       [UIImage imageNamed:@"table_view_cell_check_mark"];
   [model addItem:autofillEditItem
+      toSectionWithIdentifier:SectionIdentifierAutofill];
+
+  AutofillDataItem* autofillItemWithMainLeading =
+      [[AutofillDataItem alloc] initWithType:ItemTypeAutofillData];
+  autofillItemWithMainLeading.text = @"Main Text";
+  autofillItemWithMainLeading.trailingDetailText = @"Trailing Detail Text";
+  [model addItem:autofillItemWithMainLeading
+      toSectionWithIdentifier:SectionIdentifierAutofill];
+
+  AutofillDataItem* autofillItemWithLeading =
+      [[AutofillDataItem alloc] initWithType:ItemTypeAutofillData];
+  autofillItemWithLeading.text = @"Main Text";
+  autofillItemWithLeading.leadingDetailText = @"Leading Detail Text";
+  autofillItemWithLeading.accessoryType =
+      UITableViewCellAccessoryDisclosureIndicator;
+  [model addItem:autofillItemWithLeading
+      toSectionWithIdentifier:SectionIdentifierAutofill];
+
+  AutofillDataItem* autofillItemWithAllTexts =
+      [[AutofillDataItem alloc] initWithType:ItemTypeAutofillData];
+  autofillItemWithAllTexts.text = @"Main Text";
+  autofillItemWithAllTexts.leadingDetailText = @"Leading Detail Text";
+  autofillItemWithAllTexts.trailingDetailText = @"Trailing Detail Text";
+  autofillItemWithAllTexts.accessoryType =
+      UITableViewCellAccessoryDisclosureIndicator;
+  [model addItem:autofillItemWithAllTexts
       toSectionWithIdentifier:SectionIdentifierAutofill];
 
   // SectionIdentifierURL.

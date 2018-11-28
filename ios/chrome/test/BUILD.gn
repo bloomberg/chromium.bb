@@ -224,6 +224,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/safe_mode:unit_tests",
     "//ios/chrome/browser/ui/settings:unit_tests",
     "//ios/chrome/browser/ui/settings/cells:unit_tests",
+    "//ios/chrome/browser/ui/settings/cells/legacy:unit_tests",
     "//ios/chrome/browser/ui/side_swipe:unit_tests",
     "//ios/chrome/browser/ui/snackbar:unit_tests",
     "//ios/chrome/browser/ui/static_content:unit_tests",

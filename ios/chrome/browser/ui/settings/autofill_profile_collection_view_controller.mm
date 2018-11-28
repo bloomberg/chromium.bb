@@ -20,7 +20,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_edit_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -183,8 +183,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   bool isServerProfile = autofillProfile.record_type() ==
                          autofill::AutofillProfile::SERVER_PROFILE;
 
-  AutofillDataItem* item =
-      [[AutofillDataItem alloc] initWithType:ItemTypeAddress];
+  LegacyAutofillDataItem* item =
+      [[LegacyAutofillDataItem alloc] initWithType:ItemTypeAddress];
   item.text = title;
   item.leadingDetailText = subTitle;
   item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
@@ -350,9 +350,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Only autofill data cells are editable.
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  if ([item isKindOfClass:[AutofillDataItem class]]) {
-    AutofillDataItem* autofillItem =
-        base::mac::ObjCCastStrict<AutofillDataItem>(item);
+  if ([item isKindOfClass:[LegacyAutofillDataItem class]]) {
+    LegacyAutofillDataItem* autofillItem =
+        base::mac::ObjCCastStrict<LegacyAutofillDataItem>(item);
     return [autofillItem isDeletable];
   }
   return NO;
@@ -362,8 +362,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     willDeleteItemsAtIndexPaths:(NSArray*)indexPaths {
   _deletionInProgress = YES;
   for (NSIndexPath* indexPath in indexPaths) {
-    AutofillDataItem* item = base::mac::ObjCCastStrict<AutofillDataItem>(
-        [self.collectionViewModel itemAtIndexPath:indexPath]);
+    LegacyAutofillDataItem* item =
+        base::mac::ObjCCastStrict<LegacyAutofillDataItem>(
+            [self.collectionViewModel itemAtIndexPath:indexPath]);
     _personalDataManager->RemoveByGUID([item GUID]);
   }
   // Must call super at the end of the child implementation.
