@@ -50,10 +50,6 @@ void ReopenTabInProductHelp::NewTabOpened() {
   trigger_.NewTabOpened();
 }
 
-void ReopenTabInProductHelp::OmniboxFocused() {
-  trigger_.OmniboxFocused();
-}
-
 void ReopenTabInProductHelp::TabReopened() {
   GetTracker()->NotifyEvent(feature_engagement::events::kTabReopened);
 }

@@ -37,12 +37,9 @@ class ReopenTabInProductHelpTrigger {
   // Should be called when an active tab is closed.
   void ActiveTabClosed(base::TimeDelta active_duration);
 
-  // Should be called when a blank new tab is opened by user action.
+  // Should be called when a blank new tab is opened by user action. Possibly
+  // triggers IPH.
   void NewTabOpened();
-
-  // Should be called when the user focuses on the omnibox. Possibly triggers
-  // IPH.
-  void OmniboxFocused();
 
   // Must be called once after IPH finishes. Must only be called after the
   // callback is called.
@@ -51,7 +48,6 @@ class ReopenTabInProductHelpTrigger {
   // Timeout constants. Exposed for unit testing.
   static const base::TimeDelta kTabMinimumActiveDuration;
   static const base::TimeDelta kNewTabOpenedTimeout;
-  static const base::TimeDelta kOmniboxFocusedTimeout;
 
  private:
   // Sets state as if user has not performed any actions.
@@ -65,7 +61,6 @@ class ReopenTabInProductHelpTrigger {
   enum TriggerState {
     NO_ACTIONS_SEEN,
     ACTIVE_TAB_CLOSED,
-    NEW_TAB_OPENED,
   };
 
   TriggerState trigger_state_;

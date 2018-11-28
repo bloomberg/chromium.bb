@@ -74,5 +74,4 @@ TEST_F(ReopenTabInProductHelpTest, TriggersIPH) {
   tab_strip_model->CloseSelectedTabs();
 
   reopen_tab_iph.NewTabOpened();
-  reopen_tab_iph.OmniboxFocused();
 }
