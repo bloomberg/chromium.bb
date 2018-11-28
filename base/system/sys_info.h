@@ -78,6 +78,11 @@ class BASE_EXPORT SysInfo {
   struct HardwareInfo {
     std::string manufacturer;
     std::string model;
+    // On Windows, this is the BIOS serial number. Unsupported platforms will be
+    // set to an empty string.
+    // Note: validate any new usage with the privacy team.
+    // TODO(crbug.com/907518): Implement support on other platforms.
+    std::string serial_number;
   };
   // Returns via |callback| a struct containing descriptive UTF-8 strings for
   // the current machine manufacturer and model, or empty strings if the

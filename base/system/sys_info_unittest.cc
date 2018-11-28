@@ -161,6 +161,13 @@ TEST_F(SysInfoTest, GetHardwareInfo) {
 #endif
   EXPECT_EQ(hardware_info->manufacturer.empty(), empty_result_expected);
   EXPECT_EQ(hardware_info->model.empty(), empty_result_expected);
+
+#if defined(OS_WIN)
+  EXPECT_FALSE(hardware_info->serial_number.empty());
+#else
+  // TODO(crbug.com/907518): Implement support on other platforms.
+  EXPECT_EQ(hardware_info->serial_number, std::string());
+#endif
 }
 
 #if defined(OS_CHROMEOS)
