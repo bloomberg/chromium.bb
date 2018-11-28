@@ -7,6 +7,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -272,6 +273,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  mojom::FeaturePolicyFeature::kSyncXHR);
     // Under origin trial: Should be made conditional on WebVR and WebXR
     // runtime flags once it is out of trial.
+    ASSERT_ORIGIN_TRIAL(WebVR);
+    ASSERT_ORIGIN_TRIAL(WebXR);
     default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
       default_feature_name_map.Set(
