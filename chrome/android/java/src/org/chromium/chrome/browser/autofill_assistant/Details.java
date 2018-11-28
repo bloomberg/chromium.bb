@@ -4,10 +4,13 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
 import org.json.JSONObject;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -22,7 +25,17 @@ import java.util.Set;
  * Java side equivalent of autofill_assistant::DetailsProto.
  */
 class Details {
-    enum DetailsField { TITLE, URL, DATE, DESCRIPTION, MID, IS_FINAL }
+    @IntDef({DetailsField.TITLE, DetailsField.URL, DetailsField.DATE, DetailsField.DESCRIPTION,
+            DetailsField.MID, DetailsField.IS_FINAL})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DetailsField {
+        int TITLE = 0;
+        int URL = 1;
+        int DATE = 2;
+        int DESCRIPTION = 3;
+        int MID = 4;
+        int IS_FINAL = 5;
+    }
 
     private final String mTitle;
     private final String mUrl;
@@ -32,7 +45,7 @@ class Details {
     private final String mMid;
     private final boolean mIsFinal;
     /** Contains the fields that have changed when merging with other Details object. */
-    private final Set<DetailsField> mFieldsChanged;
+    private final Set<Integer> mFieldsChanged;
     // NOTE: When adding a new field, update the isEmpty and toJSONObject methods.
 
     static final Details EMPTY_DETAILS =
@@ -41,7 +54,7 @@ class Details {
     private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
 
     Details(String title, String url, @Nullable Date date, String description, String mId,
-            boolean isFinal, Set<DetailsField> fieldsChanged) {
+            boolean isFinal, Set<Integer> fieldsChanged) {
         this.mTitle = title;
         this.mUrl = url;
         this.mDate = date;
@@ -91,7 +104,7 @@ class Details {
         return mIsFinal;
     }
 
-    Set<DetailsField> getFieldsChanged() {
+    Set<Integer> getFieldsChanged() {
         return mFieldsChanged;
     }
 
@@ -154,7 +167,7 @@ class Details {
                     Collections.emptySet());
         }
 
-        Set<DetailsField> changedFields = new HashSet<>();
+        Set<Integer> changedFields = new HashSet<>();
 
         String title = oldDetails.getTitle();
         String mId = oldDetails.getMid();
