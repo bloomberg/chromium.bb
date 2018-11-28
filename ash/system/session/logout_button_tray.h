@@ -48,6 +48,8 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
 
+  views::MdTextButton* button_for_test() const { return button_; }
+
  private:
   void UpdateShowLogoutButtonInTray();
   void UpdateLogoutDialogDuration();

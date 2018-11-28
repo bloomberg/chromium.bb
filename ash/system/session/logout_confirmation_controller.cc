@@ -15,6 +15,7 @@
 #include "ash/system/session/logout_confirmation_dialog.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/metrics/user_metrics.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "ui/aura/window.h"
@@ -29,7 +30,11 @@ const int kLogoutConfirmationDelayInSeconds = 20;
 const int kLastWindowClosedContainerIds[] = {
     kShellWindowId_DefaultContainer, kShellWindowId_AlwaysOnTopContainer};
 
-void SignOut() {
+void SignOut(LogoutConfirmationController::Source source) {
+  if (Shell::Get()->session_controller()->IsDemoSession() &&
+      source == LogoutConfirmationController::Source::kShelfExitButton) {
+    base::RecordAction(base::UserMetricsAction("DemoMode.ExitFromShelf"));
+  }
   Shell::Get()->session_controller()->RequestSignOut();
 }
 
@@ -94,7 +99,8 @@ class LogoutConfirmationController::LastWindowClosedObserver
     // No more windows except currently removing. Show logout time.
     Shell::Get()->logout_confirmation_controller()->ConfirmLogout(
         base::TimeTicks::Now() +
-        base::TimeDelta::FromSeconds(kLogoutConfirmationDelayInSeconds));
+            base::TimeDelta::FromSeconds(kLogoutConfirmationDelayInSeconds),
+        Source::kCloseAllWindows);
   }
 
   // ShellObserver:
@@ -120,7 +126,7 @@ class LogoutConfirmationController::LastWindowClosedObserver
 
 LogoutConfirmationController::LogoutConfirmationController()
     : clock_(base::DefaultTickClock::GetInstance()),
-      logout_closure_(base::Bind(&SignOut)) {
+      logout_callback_(base::BindRepeating(&SignOut)) {
   if (Shell::HasInstance())  // Null in testing::Test.
     Shell::Get()->session_controller()->AddObserver(this);
 }
@@ -133,7 +139,8 @@ LogoutConfirmationController::~LogoutConfirmationController() {
     Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
-void LogoutConfirmationController::ConfirmLogout(base::TimeTicks logout_time) {
+void LogoutConfirmationController::ConfirmLogout(base::TimeTicks logout_time,
+                                                 Source source) {
   if (!logout_time_.is_null() && logout_time >= logout_time_) {
     // If a confirmation dialog is already being shown and its countdown expires
     // no later than the |logout_time| requested now, keep the current dialog
@@ -150,8 +157,10 @@ void LogoutConfirmationController::ConfirmLogout(base::TimeTicks logout_time) {
     dialog_->Update(logout_time_);
   }
 
+  source_ = source;
   logout_timer_.Start(FROM_HERE, logout_time_ - clock_->NowTicks(),
-                      logout_closure_);
+                      base::BindOnce(logout_callback_, source));
+  ++confirm_logout_count_for_test_;
 }
 
 void LogoutConfirmationController::OnLoginStatusChanged(
@@ -178,7 +187,7 @@ void LogoutConfirmationController::OnLockStateChanged(bool locked) {
 
 void LogoutConfirmationController::OnLogoutConfirmed() {
   logout_timer_.Stop();
-  logout_closure_.Run();
+  logout_callback_.Run(source_);
 }
 
 void LogoutConfirmationController::OnDialogClosed() {
@@ -192,9 +201,9 @@ void LogoutConfirmationController::SetClockForTesting(
   clock_ = clock;
 }
 
-void LogoutConfirmationController::SetLogoutClosureForTesting(
-    const base::Closure& logout_closure) {
-  logout_closure_ = logout_closure;
+void LogoutConfirmationController::SetLogoutCallbackForTesting(
+    const base::RepeatingCallback<void(Source)>& logout_callback) {
+  logout_callback_ = logout_callback;
 }
 
 }  // namespace ash

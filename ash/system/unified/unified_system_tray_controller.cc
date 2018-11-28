@@ -119,6 +119,8 @@ void UnifiedSystemTrayController::HandleAddUserAction() {
 
 void UnifiedSystemTrayController::HandleSignOutAction() {
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_STATUS_AREA_SIGN_OUT);
+  if (Shell::Get()->session_controller()->IsDemoSession())
+    base::RecordAction(base::UserMetricsAction("DemoMode.ExitFromSystemTray"));
   Shell::Get()->session_controller()->RequestSignOut();
 }
 

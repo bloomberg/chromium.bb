@@ -4773,6 +4773,23 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="DemoMode.ExitFromShelf">
+  <owner>michaelpg@chromium.org</owner>
+  <owner>wzang@chromium.org</owner>
+  <description>
+    Recorded when user exits Demo Mode from the logout button on the shelf.
+  </description>
+</action>
+
+<action name="DemoMode.ExitFromSystemTray">
+  <owner>michaelpg@chromium.org</owner>
+  <owner>wzang@chromium.org</owner>
+  <description>
+    Recorded when user exits Demo Mode from the logout button in the system
+    tray.
+  </description>
+</action>
+
 <action name="Desktop_SwitchTask">
   <owner>bruthig@google.com</owner>
   <owner>tdanderson@google.com</owner>

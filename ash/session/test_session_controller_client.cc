@@ -184,6 +184,7 @@ void TestSessionControllerClient::RequestLockScreen() {
 
 void TestSessionControllerClient::RequestSignOut() {
   Reset();
+  ++request_sign_out_count_;
 }
 
 void TestSessionControllerClient::SwitchActiveUser(
