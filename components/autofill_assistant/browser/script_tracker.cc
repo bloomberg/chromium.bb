@@ -117,8 +117,8 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
   }
 
   executor_ = std::make_unique<ScriptExecutor>(
-      script_path, last_server_payload_, /* listener= */ this, &scripts_state_,
-      &interrupts_, delegate_);
+      script_path, last_global_payload_, last_script_payload_,
+      /* listener= */ this, &scripts_state_, &interrupts_, delegate_);
   ScriptExecutor::RunScriptCallback run_script_callback = base::BindOnce(
       &ScriptTracker::OnScriptRun, weak_ptr_factory_.GetWeakPtr(), script_path,
       std::move(callback));
@@ -141,9 +141,14 @@ bool ScriptTracker::Terminate() {
 
 base::Value ScriptTracker::GetDebugContext() const {
   base::Value dict(base::Value::Type::DICTIONARY);
-  std::string last_server_payload_js = last_server_payload_;
-  base::Base64Encode(last_server_payload_js, &last_server_payload_js);
-  dict.SetKey("last-payload", base::Value(last_server_payload_js));
+
+  std::string last_global_payload_js = last_global_payload_;
+  base::Base64Encode(last_global_payload_js, &last_global_payload_js);
+  dict.SetKey("last-global-payload", base::Value(last_global_payload_js));
+
+  std::string last_script_payload_js = last_script_payload_;
+  base::Base64Encode(last_script_payload_js, &last_script_payload_js);
+  dict.SetKey("last-script-payload", base::Value(last_script_payload_js));
 
   std::vector<base::Value> scripts_state_js;
   for (const auto& entry : scripts_state_) {
@@ -229,8 +234,10 @@ void ScriptTracker::OnPreconditionCheck(Script* script,
     pending_runnable_scripts_.push_back(script);
 }
 
-void ScriptTracker::OnServerPayloadChanged(const std::string& server_payload) {
-  last_server_payload_ = server_payload;
+void ScriptTracker::OnServerPayloadChanged(const std::string& global_payload,
+                                           const std::string& script_payload) {
+  last_global_payload_ = global_payload;
+  last_script_payload_ = script_payload;
 }
 
 }  // namespace autofill_assistant

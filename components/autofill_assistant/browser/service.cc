@@ -98,28 +98,28 @@ void Service::GetScriptsForUrl(
 void Service::GetActions(const std::string& script_path,
                          const GURL& url,
                          const std::map<std::string, std::string>& parameters,
-                         const std::string& server_payload,
+                         const std::string& global_payload,
+                         const std::string& script_payload,
                          ResponseCallback callback) {
   DCHECK(!script_path.empty());
 
-  SendRequest(AddLoader(
-      script_action_server_url_,
-      ProtocolUtils::CreateInitialScriptActionsRequest(
-          script_path, url, parameters, server_payload, client_context_),
-      std::move(callback)));
+  SendRequest(AddLoader(script_action_server_url_,
+                        ProtocolUtils::CreateInitialScriptActionsRequest(
+                            script_path, url, parameters, global_payload,
+                            script_payload, client_context_),
+                        std::move(callback)));
 }
 
 void Service::GetNextActions(
-    const std::string& previous_server_payload,
+    const std::string& previous_global_payload,
+    const std::string& previous_script_payload,
     const std::vector<ProcessedActionProto>& processed_actions,
     ResponseCallback callback) {
-  DCHECK(!previous_server_payload.empty());
-
-  SendRequest(AddLoader(
-      script_action_server_url_,
-      ProtocolUtils::CreateNextScriptActionsRequest(
-          previous_server_payload, processed_actions, client_context_),
-      std::move(callback)));
+  SendRequest(AddLoader(script_action_server_url_,
+                        ProtocolUtils::CreateNextScriptActionsRequest(
+                            previous_global_payload, previous_script_payload,
+                            processed_actions, client_context_),
+                        std::move(callback)));
 }
 
 void Service::SendRequest(Loader* loader) {

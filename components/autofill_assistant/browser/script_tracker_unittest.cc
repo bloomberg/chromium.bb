@@ -43,8 +43,8 @@ class ScriptTrackerTest : public testing::Test,
     ON_CALL(mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
 
     // Scripts run, but have no actions.
-    ON_CALL(mock_service_, OnGetActions(_, _, _, _, _))
-        .WillByDefault(RunOnceCallback<4>(true, ""));
+    ON_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+        .WillByDefault(RunOnceCallback<5>(true, ""));
   }
 
  protected:

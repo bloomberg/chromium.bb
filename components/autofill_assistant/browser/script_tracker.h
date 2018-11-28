@@ -114,7 +114,8 @@ class ScriptTracker : public ScriptExecutor::Listener {
   void OnCheckDone();
 
   // Overrides ScriptExecutor::Listener.
-  void OnServerPayloadChanged(const std::string& server_payload) override;
+  void OnServerPayloadChanged(const std::string& global_payload,
+                              const std::string& script_payload) override;
 
   // Stops running pending checks and cleans up any state used by pending
   // checks. This can safely be called at any time, including when no checks are
@@ -163,7 +164,8 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // this is nullptr.
   std::unique_ptr<ScriptExecutor> executor_;
 
-  std::string last_server_payload_;
+  std::string last_global_payload_;
+  std::string last_script_payload_;
 
   base::WeakPtrFactory<ScriptTracker> weak_ptr_factory_;
 

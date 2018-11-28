@@ -25,20 +25,25 @@ namespace autofill_assistant {
 class ScriptExecutor : public ActionDelegate {
  public:
   // Listens to events on ScriptExecutor.
-  // TODO(b/806868): Make server_payload a part of callback instead of the
+  // TODO(b/806868): Make global_payload a part of callback instead of the
   // listener.
   class Listener {
    public:
     virtual ~Listener() = default;
 
-    // Called when new server_payload is available.
-    virtual void OnServerPayloadChanged(const std::string& server_payload) = 0;
+    // Called when new server payloads are available.
+    //
+    // TODO(b/806868): Stop reporting the script payload once the server has
+    // transitioned to global payloads.
+    virtual void OnServerPayloadChanged(const std::string& global_payload,
+                                        const std::string& script_payload) = 0;
   };
 
   // |delegate|, |listener|, |script_state| and |ordered_interrupts| should
   // outlive this object and should not be nullptr.
   ScriptExecutor(const std::string& script_path,
-                 const std::string& server_payload,
+                 const std::string& global_payload,
+                 const std::string& script_payload,
                  ScriptExecutor::Listener* listener,
                  std::map<std::string, ScriptStatusProto>* scripts_state,
                  const std::vector<Script*>* ordered_interrupts,
@@ -150,7 +155,7 @@ class ScriptExecutor : public ActionDelegate {
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to
   // run interrupts while waiting for a specific element.
-  class WaitWithInterrupts {
+  class WaitWithInterrupts : public ScriptExecutor::Listener {
    public:
     // Let the caller know about either the result of looking for the element or
     // of an abnormal result from an interrupt.
@@ -161,17 +166,21 @@ class ScriptExecutor : public ActionDelegate {
         base::OnceCallback<void(bool, const ScriptExecutor::Result*)>;
 
     // |main_script_| must not be null and outlive this instance.
-    WaitWithInterrupts(const ScriptExecutor* main_script,
+    WaitWithInterrupts(ScriptExecutor* main_script,
                        base::TimeDelta max_wait_time,
                        ElementCheckType check_type,
                        const Selector& selectors,
                        WaitWithInterrupts::Callback callback);
-    ~WaitWithInterrupts();
+    ~WaitWithInterrupts() override;
 
     void Run();
     void Shutdown();
 
    private:
+    // Implements ScriptExecutor::Listener
+    void OnServerPayloadChanged(const std::string& global_payload,
+                                const std::string& script_payload) override;
+
     void OnPreconditionCheckDone(const Script* interrupt,
                                  bool precondition_match);
     void OnElementCheckDone(bool found);
@@ -191,7 +200,7 @@ class ScriptExecutor : public ActionDelegate {
     // the original area.
     void RestorePreInterruptScroll(bool element_found);
 
-    const ScriptExecutor* main_script_;
+    ScriptExecutor* main_script_;
     const base::TimeDelta max_wait_time_;
     const ElementCheckType check_type_;
     const Selector selector_;
@@ -220,6 +229,7 @@ class ScriptExecutor : public ActionDelegate {
   friend class WaitWithInterrupts;
 
   void OnGetActions(bool result, const std::string& response);
+  void ReportPayloadsToListener();
   void RunCallback(bool success);
   void RunCallbackWithResult(const Result& result);
   void ProcessNextAction();
@@ -239,8 +249,9 @@ class ScriptExecutor : public ActionDelegate {
                 const std::string& chosen);
 
   std::string script_path_;
-  const std::string initial_server_payload_;
-  std::string last_server_payload_;
+  std::string last_global_payload_;
+  const std::string initial_script_payload_;
+  std::string last_script_payload_;
   ScriptExecutor::Listener* const listener_;
   ScriptExecutorDelegate* delegate_;
   RunScriptCallback callback_;
