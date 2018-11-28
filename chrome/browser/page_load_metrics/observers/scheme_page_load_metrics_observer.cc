@@ -28,6 +28,15 @@ SchemePageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
+  if (currently_committed_url.scheme() == url::kHttpScheme) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "PageLoad.Clients.Scheme.HTTP.Internal.NavigationStartedInForeground",
+        started_in_foreground);
+  } else if (currently_committed_url.scheme() == url::kHttpsScheme) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "PageLoad.Clients.Scheme.HTTPS.Internal.NavigationStartedInForeground",
+        started_in_foreground);
+  }
   return started_in_foreground ? CONTINUE_OBSERVING : STOP_OBSERVING;
 }
 
@@ -129,5 +138,19 @@ void SchemePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
         "PageLoad.Clients.Scheme.HTTPS.Experimental.PaintTiming."
         "NavigationToFirstMeaningfulPaint",
         timing.paint_timing->first_meaningful_paint.value());
+  }
+}
+
+void SchemePageLoadMetricsObserver::OnPageInteractive(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (extra_info.url.scheme() == url::kHttpScheme) {
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.Scheme.HTTP.Experimental.NavigationToInteractive",
+        timing.interactive_timing->interactive.value());
+  } else if (extra_info.url.scheme() == url::kHttpsScheme) {
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.Scheme.HTTPS.Experimental.NavigationToInteractive",
+        timing.interactive_timing->interactive.value());
   }
 }
