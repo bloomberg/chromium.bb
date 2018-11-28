@@ -9,6 +9,8 @@
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+class Profile;
+
 namespace apps {
 
 // An app publisher (in the App Service sense) of built-in Chrome OS apps.
@@ -19,7 +21,8 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
   BuiltInChromeOsApps();
   ~BuiltInChromeOsApps() override;
 
-  void Register(apps::mojom::AppServicePtr& app_service);
+  void Initialize(const apps::mojom::AppServicePtr& app_service,
+                  Profile* profile);
 
  private:
   // apps::mojom::Publisher overrides.
@@ -32,6 +35,7 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
                 LoadIconCallback callback) override;
 
   mojo::Binding<apps::mojom::Publisher> binding_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(BuiltInChromeOsApps);
 };
