@@ -24,7 +24,7 @@ using BluetoothDeviceList = std::vector<device::mojom::BluetoothDeviceInfoPtr>;
 // This is a temporary virtual class used during the migration to the new
 // BluetoothSystem Mojo interface. Once the migration is over, we'll
 // de-virtualize this class and remove its legacy implementation.
-class TrayBluetoothHelper {
+class ASH_EXPORT TrayBluetoothHelper {
  public:
   class Observer : public base::CheckedObserver {
    public:
