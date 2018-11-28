@@ -808,6 +808,7 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   result->username_may_use_prefilled_placeholder =
       GetMayUsePrefilledPlaceholder(form_predictions, significant_fields);
   result->only_for_fallback_saving = significant_fields.is_fallback;
+  result->submission_event = form_data.submission_event;
 
   // Set data related to specific fields.
   SetFields(significant_fields, result.get());

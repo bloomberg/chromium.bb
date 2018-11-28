@@ -1322,6 +1322,8 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
     }
     submitted_form->submission_event =
         SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+    submitted_form->form_data.submission_event =
+        SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
     if (FrameCanAccessPasswordManager()) {
       // Some observers depend on sending this information now instead of when

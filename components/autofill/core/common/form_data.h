@@ -78,7 +78,7 @@ struct FormData {
   // The type of the event that was taken as an indication that this form is
   // being or has already been submitted. This field is filled only in Password
   // Manager for submitted password forms.
-  SubmissionIndicatorEvent submission_event;
+  SubmissionIndicatorEvent submission_event = SubmissionIndicatorEvent::NONE;
   // A vector of all the input fields in the form.
   std::vector<FormFieldData> fields;
   // Contains unique renderer IDs of text elements which are predicted to be
