@@ -74,10 +74,12 @@ int CallStat(const char* path, stat_wrapper_t* sb) {
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   return stat(path, sb);
 }
+#if !defined(OS_NACL_NONSFI)
 int CallLstat(const char* path, stat_wrapper_t* sb) {
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   return lstat(path, sb);
 }
+#endif
 #else
 int CallStat(const char* path, stat_wrapper_t* sb) {
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
