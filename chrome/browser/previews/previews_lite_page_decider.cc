@@ -344,6 +344,10 @@ void PreviewsLitePageDecider::ReportDataSavings(int64_t network_bytes,
 
 bool PreviewsLitePageDecider::NeedsToNotifyUser() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          previews::switches::kDoNotRequireLitePageRedirectInfoBar)) {
+    return false;
+  }
   return need_to_show_notification_;
 }
 

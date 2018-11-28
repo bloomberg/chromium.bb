@@ -8,6 +8,7 @@
 namespace previews {
 namespace switches {
 
+extern const char kDoNotRequireLitePageRedirectInfoBar[];
 extern const char kIgnorePreviewsBlacklist[];
 extern const char kLitePageServerPreviewHost[];
 extern const char kIgnoreLitePageRedirectOptimizationBlacklist[];

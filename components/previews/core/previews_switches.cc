@@ -7,6 +7,11 @@
 namespace previews {
 namespace switches {
 
+// Do not require the user notification InfoBar to be shown before triggering a
+// Lite Page Redirect preview.
+const char kDoNotRequireLitePageRedirectInfoBar[] =
+    "dont-require-litepage-redirect-infobar";
+
 // Ignore decisions made by PreviewsBlackList.
 const char kIgnorePreviewsBlacklist[] = "ignore-previews-blacklist";
 
