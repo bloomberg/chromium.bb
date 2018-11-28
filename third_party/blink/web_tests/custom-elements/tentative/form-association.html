@@ -8,6 +8,14 @@ class PreDefined extends HTMLElement {
   constructor() {
     super();
     this.internals_ = this.attachInternals();
+    this.formHistory_ = [];
+  }
+
+  formAssociatedCallback(nullableForm) {
+    this.formHistory_.push(nullableForm);
+  }
+  formHistory() {
+    return this.formHistory_;
   }
 
   get form() {
@@ -55,6 +63,7 @@ test(() => {
   assert_equals(controls.length, 3);
   assert_equals(controls[1], $('#pd1'), 'form.elements');
   assert_equals($('#pd1').form, $('#form1'));
+  assert_array_equals($('#pd1').formHistory(), [$('#form1')]);
   assert_equals($('#fs1').elements[1], $('#pd1'), 'fieldset.elements');
 
   controls = $('#form2').elements;
@@ -63,6 +72,8 @@ test(() => {
   assert_equals(controls[3], $('#pd3'));
   assert_equals($('#pd2').form, $('#form2'));
   assert_equals($('#pd3').form, $('#form2'));
+  assert_array_equals($('#pd2').formHistory(), [$('#form2')]);
+  assert_array_equals($('#pd3').formHistory(), [$('#form2')]);
   controls = $('#fs2').elements;
   assert_equals(controls.length, 3);
   assert_equals(controls[0], $('#pd2'), 'fieldset.elements');
@@ -94,6 +105,14 @@ test(() => {
     constructor() {
       super();
       this.internals_ = this.attachInternals();
+      this.formHistory_ = [];
+    }
+
+    formAssociatedCallback(nullableForm) {
+      this.formHistory_.push(nullableForm);
+    }
+    formHistory() {
+      return this.formHistory_;
     }
 
     get form() {
@@ -114,6 +133,8 @@ test(() => {
   controls = $('#form2').elements;
   assert_equals($('#wbd2').form, $('#form2'));
   assert_equals($('#wbd3').form, $('#form2'));
+  assert_array_equals($('#wbd2').formHistory(), [$('#form2')]);
+  assert_array_equals($('#wbd3').formHistory(), [$('#form2')]);
   assert_equals(controls.length, 2, 'form.elements.length');
   assert_equals(controls[0], $('#wbd2'));
   assert_equals(controls[1], $('#wbd3'));
@@ -133,6 +154,7 @@ test(() => {
   assert_equals($('#fs1').elements.length, 3, 'fildset.elements.length before removal');
   pd1.remove();
   assert_equals(pd1.form, null);
+  assert_array_equals(pd1.formHistory(), [$('#form1'), null]);
   assert_equals($('#form1').elements.length, 2, 'form.elements.length after removal');
   assert_equals($('#fs1').elements.length, 2, 'fildset.elements.length after removal');
 
@@ -144,6 +166,8 @@ test(() => {
   pd3.remove();
   assert_equals(pd2.form, null);
   assert_equals(pd3.form, null);
+  assert_array_equals(pd2.formHistory(), [$('#form2'), null]);
+  assert_array_equals(pd3.formHistory(), [$('#form2'), null]);
   assert_equals($('#form2').elements.length, 0, 'form.elements.length after removal');
   assert_equals($('#fs2').elements.length, 0, 'fieldset.elements.length after removal');
 }, 'Disassociation');
