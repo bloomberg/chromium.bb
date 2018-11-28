@@ -5,11 +5,12 @@
 #ifndef BASE_TEST_FUZZED_DATA_PROVIDER_H_
 #define BASE_TEST_FUZZED_DATA_PROVIDER_H_
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
-#include <limits>
+#include <cstring>
 #include <string>
 #include <utility>
 #include <vector>
