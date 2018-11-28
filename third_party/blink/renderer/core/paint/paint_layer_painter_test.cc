@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 using testing::ElementsAre;
+using testing::UnorderedElementsAre;
 
 namespace blink {
 
@@ -1041,6 +1042,62 @@ TEST_P(PaintLayerPainterTestSPv2, TallScrolledLayerCullRect) {
   // Used new cull rect.
   EXPECT_EQ(IntRect(-4000, 2600, 8800, 8600),
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
+}
+
+TEST_P(PaintLayerPainterTestSPv2, WholeDocumentCullRect) {
+  GetDocument().GetSettings()->SetMainFrameClipsContent(false);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div { background: blue; }
+      ::-webkit-scrollbar { display: none; }
+    </style>
+    <div id='relative'
+         style='width: 200px; height: 10000px; position: relative'>
+    </div>
+    <div id='fixed' style='width: 200px; height: 200px; position: fixed'>
+    </div>
+    <div id='scroll' style='width: 200px; height: 200px; overflow: scroll'>
+      <div id='below-scroll' style='height: 5000px; position: relative'></div>
+      <div style='height: 200px'>Should not paint</div>
+    </div>
+    <div id='normal' style='width: 200px; height: 200px'></div>
+  )HTML");
+
+  // Viewport clipping is disabled.
+  EXPECT_TRUE(GetLayoutView().Layer()->PreviousCullRect().IsInfinite());
+  EXPECT_TRUE(
+      GetPaintLayerByElementId("relative")->PreviousCullRect().IsInfinite());
+  EXPECT_TRUE(
+      GetPaintLayerByElementId("fixed")->PreviousCullRect().IsInfinite());
+  EXPECT_TRUE(
+      GetPaintLayerByElementId("scroll")->PreviousCullRect().IsInfinite());
+
+  // Cull rect is normal for contents below scroll other than the viewport.
+  EXPECT_EQ(
+      IntRect(-4000, -4000, 8200, 8200),
+      GetPaintLayerByElementId("below-scroll")->PreviousCullRect().Rect());
+
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      UnorderedElementsAre(
+          IsSameId(&GetLayoutView(), DisplayItem::kScrollHitTest),
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(GetDisplayItemClientFromElementId("relative"),
+                   kBackgroundType),
+          IsSameId(GetDisplayItemClientFromElementId("normal"),
+                   kBackgroundType),
+          IsSameId(GetLayoutObjectByElementId("scroll"),
+                   DisplayItem::kScrollHitTest),
+          IsSameId(GetDisplayItemClientFromElementId("scroll"),
+                   kBackgroundType),
+          IsSameId(&ToLayoutBox(GetLayoutObjectByElementId("scroll"))
+                        ->GetScrollableArea()
+                        ->GetScrollingBackgroundDisplayItemClient(),
+                   kBackgroundType),
+          IsSameId(GetDisplayItemClientFromElementId("below-scroll"),
+                   kBackgroundType),
+          IsSameId(GetDisplayItemClientFromElementId("fixed"),
+                   kBackgroundType)));
 }
 
 TEST_P(PaintLayerPainterTestSPv2, VerticalRightLeftWritingModeDocument) {

@@ -69,6 +69,15 @@ void ScopedBoxContentsPaintState::AdjustForBoxContents(const LayoutBox& box) {
   // descendant objects' Paint() method, e.g. inline boxes.
   paint_offset_ += box.ScrollOrigin();
 
+  // If a LayoutView is using infinite cull rect, we are painting with viewport
+  // clip disabled, so don't cull the scrolling contents. This is just for
+  // completeness because we always paint the whole scrolling background even
+  // with a smaller cull rect, and the scrolling document contents are under the
+  // layer of document element which will use infinite cull rect calculated in
+  // PaintLayerPainter::AdjustForPaintProperties().
+  if (box.IsLayoutView() && input_paint_info_.GetCullRect().IsInfinite())
+    return;
+
   adjusted_paint_info_.emplace(input_paint_info_);
   adjusted_paint_info_->TransformCullRect(scroll_translation);
 }
