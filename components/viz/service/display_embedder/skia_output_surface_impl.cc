@@ -136,7 +136,6 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
 
     using PlaneHelper = PromiseTextureHelper<ResourceMetadata>;
     bool is_i420 = has_alpha ? metadatas.size() == 4 : metadatas.size() == 3;
-    auto size = metadatas[0].size;
 
     GrBackendFormat formats[4];
     SkYUVAIndex indices[4] = {
@@ -145,48 +144,63 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
         {-1, SkColorChannel::kR},
         {-1, SkColorChannel::kR},
     };
+    SkISize yuva_sizes[4] = {};
     SkDeferredDisplayListRecorder::TextureContext contexts[4] = {
         nullptr, nullptr, nullptr, nullptr};
 
     // The ownership of the contexts will be passed into
     // makeYUVAPromisTexture(). The HelperType::Done will always be called. It
     // will delete contexts.
-    for (size_t i = 0; i < metadatas.size(); i++) {
+    const auto process_planar = [&](size_t i, auto format) {
       auto& metadata = metadatas[i];
-      formats[i] = metadata.backend_format;
+      metadata.driver_backend_format = GrBackendFormat::MakeGL(
+          format, *metadata.backend_format.getGLTarget());
+      formats[i] = metadata.driver_backend_format;
+      yuva_sizes[i].set(metadata.size.width(), metadata.size.height());
       contexts[i] =
           new PlaneHelper(impl->impl_on_gpu_->weak_ptr(), std::move(metadata));
-    }
+    };
 
     if (is_i420) {
+      process_planar(0, GL_R8);
       indices[SkYUVAIndex::kY_Index].fIndex = 0;
       indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
+
+      process_planar(1, GL_R8);
       indices[SkYUVAIndex::kU_Index].fIndex = 1;
       indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
+
+      process_planar(2, GL_R8);
       indices[SkYUVAIndex::kV_Index].fIndex = 2;
       indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kR;
       if (has_alpha) {
+        process_planar(3, GL_R8);
         indices[SkYUVAIndex::kA_Index].fIndex = 3;
-        indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kA;
+        indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
       }
     } else {
+      process_planar(0, GL_R8);
       indices[SkYUVAIndex::kY_Index].fIndex = 0;
       indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
+
+      process_planar(1, GL_RG8);
       indices[SkYUVAIndex::kU_Index].fIndex = 1;
       indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
+
       indices[SkYUVAIndex::kV_Index].fIndex = 1;
       indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kG;
       if (has_alpha) {
+        process_planar(2, GL_R8);
         indices[SkYUVAIndex::kA_Index].fIndex = 2;
-        indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kA;
+        indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
       }
     }
 
     auto image = recorder->makeYUVAPromiseTexture(
-        yuv_color_space, formats, indices, size.width(), size.height(),
-        kTopLeft_GrSurfaceOrigin, nullptr /* color_space */,
-        PlaneHelper::Fulfill, PlaneHelper::Release, PlaneHelper::Done,
-        contexts);
+        yuv_color_space, formats, yuva_sizes, indices, yuva_sizes[0].width(),
+        yuva_sizes[0].height(), kTopLeft_GrSurfaceOrigin,
+        nullptr /* color_space */, PlaneHelper::Fulfill, PlaneHelper::Release,
+        PlaneHelper::Done, contexts);
     return image;
   }
 
