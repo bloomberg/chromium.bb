@@ -103,7 +103,7 @@ std::vector<BrokerFilePermission> GetAudioFilePermissions() {
 
 void LoadAudioLibraries() {
   const std::string kLibraries[]{"libasound.so.2", "libpulse.so.0",
-                                 "libpulsecommon-11.1.so", "libnss_files.so.2"};
+                                 "libnss_files.so.2"};
   for (const auto& library_name : kLibraries) {
     if (nullptr ==
         dlopen(library_name.c_str(), RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE)) {
