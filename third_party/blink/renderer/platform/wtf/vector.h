@@ -271,12 +271,7 @@ struct VectorFiller<true, T, Allocator> {
   STATIC_ONLY(VectorFiller);
   static void UninitializedFill(T* dst, T* dst_end, const T& val) {
     static_assert(sizeof(T) == sizeof(char), "size of type should be one");
-#if defined(COMPILER_GCC) && defined(_FORTIFY_SOURCE)
-    if (!__builtin_constant_p(dst_end - dst) || (!(dst_end - dst)))
-      memset(dst, val, dst_end - dst);
-#else
     memset(dst, val, dst_end - dst);
-#endif
   }
 };
 
