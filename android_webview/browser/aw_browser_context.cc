@@ -220,8 +220,7 @@ bool AwBrowserContext::IsOffTheRecord() const {
 
 content::ResourceContext* AwBrowserContext::GetResourceContext() {
   if (!resource_context_) {
-    resource_context_.reset(
-        new AwResourceContext(url_request_context_getter_.get()));
+    resource_context_.reset(new AwResourceContext);
   }
   return resource_context_.get();
 }

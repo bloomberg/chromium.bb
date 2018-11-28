@@ -30,20 +30,7 @@ class WebRunnerBrowserContext::ResourceContext
   ResourceContext() = default;
   ~ResourceContext() override = default;
 
-  // ResourceContext implementation.
-  net::URLRequestContext* GetRequestContext() override {
-    DCHECK(getter_);
-    return getter_->GetURLRequestContext();
-  }
-
-  void set_url_request_context_getter(
-      scoped_refptr<WebRunnerURLRequestContextGetter> getter) {
-    getter_ = std::move(getter);
-  }
-
  private:
-  scoped_refptr<WebRunnerURLRequestContextGetter> getter_;
-
   DISALLOW_COPY_AND_ASSIGN(ResourceContext);
 };
 
@@ -157,7 +144,6 @@ net::URLRequestContextGetter* WebRunnerBrowserContext::CreateRequestContext(
           {content::BrowserThread::IO}),
       net_log_.get(), std::move(*protocol_handlers),
       std::move(request_interceptors), data_dir_path_);
-  resource_context_->set_url_request_context_getter(url_request_getter_);
   return url_request_getter_.get();
 }
 

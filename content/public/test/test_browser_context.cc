@@ -114,8 +114,7 @@ DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {
 
 ResourceContext* TestBrowserContext::GetResourceContext() {
   if (!resource_context_)
-    resource_context_.reset(new MockResourceContext(
-        GetRequestContext()->GetURLRequestContext()));
+    resource_context_.reset(new MockResourceContext);
   return resource_context_.get();
 }
 

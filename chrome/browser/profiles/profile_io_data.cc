@@ -899,18 +899,11 @@ void ProfileIOData::set_data_reduction_proxy_io_data(
 }
 
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
-    : io_data_(io_data),
-      request_context_(NULL) {
+    : io_data_(io_data) {
   DCHECK(io_data);
 }
 
 ProfileIOData::ResourceContext::~ResourceContext() {}
-
-net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(io_data_->initialized_);
-  return request_context_;
-}
 
 void ProfileIOData::Init(
     content::ProtocolHandlerMap* protocol_handlers,
@@ -1062,8 +1055,6 @@ void ProfileIOData::Init(
             std::move(profile_params_->main_network_context_request),
             std::move(profile_params_->main_network_context_params),
             std::move(builder), &main_request_context_);
-
-    resource_context_->request_context_ = main_request_context_;
   }
 
   OnMainRequestContextCreated(profile_params_.get());

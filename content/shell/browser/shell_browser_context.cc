@@ -38,16 +38,9 @@
 
 namespace content {
 
-ShellBrowserContext::ShellResourceContext::ShellResourceContext()
-    : getter_(nullptr) {}
+ShellBrowserContext::ShellResourceContext::ShellResourceContext() {}
 
 ShellBrowserContext::ShellResourceContext::~ShellResourceContext() {
-}
-
-net::URLRequestContext*
-ShellBrowserContext::ShellResourceContext::GetRequestContext() {
-  CHECK(getter_);
-  return getter_->GetURLRequestContext();
 }
 
 ShellBrowserContext::ShellBrowserContext(bool off_the_record,
@@ -176,7 +169,6 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
   DCHECK(!url_request_getter_.get());
   url_request_getter_ = CreateURLRequestContextGetter(
       protocol_handlers, std::move(request_interceptors));
-  resource_context_->set_url_request_context_getter(url_request_getter_.get());
   return url_request_getter_.get();
 }
 
