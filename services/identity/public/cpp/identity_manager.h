@@ -304,6 +304,10 @@ class IdentityManager : public SigninManagerBase::Observer,
                                            const std::string& account_id);
   friend void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                           AccountInfo account_info);
+  friend void SetAccountWithRefreshTokenInPersistentErrorState(
+      IdentityManager* identity_manager,
+      const std::string& account_id,
+      const GoogleServiceAuthError& auth_error);
 
   friend MultiProfileDownloadNotificationTest;
   friend file_manager::MultiProfileFilesAppBrowserTest;
