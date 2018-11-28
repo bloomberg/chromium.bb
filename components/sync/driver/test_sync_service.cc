@@ -152,8 +152,6 @@ ModelTypeSet TestSyncService::GetActiveDataTypes() const {
   return active_data_types_;
 }
 
-void TestSyncService::RequestStart() {}
-
 void TestSyncService::RequestStop(SyncService::SyncStopDataFate data_fate) {}
 
 void TestSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}

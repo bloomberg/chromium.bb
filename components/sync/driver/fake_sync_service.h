@@ -39,7 +39,6 @@ class FakeSyncService : public SyncService {
   bool HasObserver(const SyncServiceObserver* observer) const override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void RequestStop(SyncService::SyncStopDataFate data_fate) override;
-  void RequestStart() override;
   ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             ModelTypeSet chosen_types) override;
