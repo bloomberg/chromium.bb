@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
@@ -38,7 +37,7 @@ namespace autofill {
 // Base class for any interactive SaveCardBubbleViews browser test that will
 // need to show and interact with the offer-to-save bubble.
 class SaveCardBubbleViewsBrowserTestBase
-    : public SyncTest,
+    : public InProcessBrowserTest,
       public CreditCardSaveManager::ObserverForTest,
       public SaveCardBubbleControllerImpl::ObserverForTest {
  public:
@@ -78,8 +77,14 @@ class SaveCardBubbleViewsBrowserTestBase
   void OnBubbleClosed() override;
   void OnSCBCStrikeChangeComplete() override;
 
-  // Sets the full name of the signed-in account to the provided |full_name|.
-  void SetAccountFullName(const std::string& full_name);
+  // BrowserTestBase:
+  void SetUpInProcessBrowserTestFixture() override;
+
+  // Sets up the ability to sign in the user.
+  void OnWillCreateBrowserContextServices(content::BrowserContext* context);
+
+  // Signs in the user with the provided |full_name|.
+  void SignInWithFullName(const std::string& full_name);
 
   // Will call JavaScript to fill and submit the form in different ways.
   void SubmitForm();
@@ -157,8 +162,6 @@ class SaveCardBubbleViewsBrowserTestBase
       will_create_browser_context_services_subscription_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  std::unique_ptr<ProfileSyncServiceHarness> harness_;
 
  private:
   std::unique_ptr<autofill::EventWaiter<DialogEvent>> event_waiter_;

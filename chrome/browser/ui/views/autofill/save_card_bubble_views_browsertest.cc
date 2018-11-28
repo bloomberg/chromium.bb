@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
@@ -40,13 +39,6 @@
 using base::Bucket;
 using testing::ElementsAre;
 
-namespace {
-const char kCreditCardUploadForm[] =
-    "/credit_card_upload_form_address_and_cc.html";
-const char kCreditCardAndShippingUploadForm[] =
-    "/credit_card_upload_form_shipping_address.html";
-}  // namespace
-
 namespace autofill {
 
 class SaveCardBubbleViewsFullFormBrowserTest
@@ -60,6 +52,38 @@ class SaveCardBubbleViewsFullFormBrowserTest
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViewsFullFormBrowserTest);
 };
 
+class SaveCardBubbleViewsFullFormWithShippingBrowserTest
+    : public SaveCardBubbleViewsBrowserTestBase {
+ protected:
+  SaveCardBubbleViewsFullFormWithShippingBrowserTest()
+      : SaveCardBubbleViewsBrowserTestBase(
+            "/credit_card_upload_form_shipping_address.html") {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViewsFullFormWithShippingBrowserTest);
+};
+
+// Tests the local save bubble. Ensures that local save appears if the RPC to
+// Google Payments fails unexpectedly.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Local_SubmittingFormShowsBubbleIfGetUploadDetailsRpcFails) {
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcServerError();
+
+  // Submitting the form and having the call to Payments fail should show the
+  // local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+}
+
 // Tests the local save bubble. Ensures that clicking the [Save] button
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
@@ -68,10 +92,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndDisableFeature(
       features::kAutofillSaveCardSignInAfterLocalSave);
 
-  // Submitting the form without signed in user should show the local save
-  // bubble.
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -102,11 +132,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillSaveCardImprovedUserConsent);
 
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
   // Submitting the form and having Payments decline offering to save should
   // show the local save bubble.
   // (Must wait for response from Payments before accessing the controller.)
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -131,10 +166,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillSaveCardSignInAfterLocalSave);
 
-  // Submitting the form without signed in user should show the local save
-  // bubble.
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -161,19 +202,19 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 #endif
 
 // Tests the sign in promo bubble. Ensures that the sign-in promo
-// is not shown when the user is signed-in and syncing, even if the local save
-// bubble is shown.
+// is not shown when the user is signed-in and syncing, even if
+// the local save bubble is shown.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_NoSigninPromoShowsWhenUserIsSyncing) {
   // Enable the sign-in promo.
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillSaveCardSignInAfterLocalSave);
 
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
+
+  // Sign the user in.
+  SignInWithFullName("John Smith");
 
   // Submitting the form and having Payments decline offering to save should
   // show the local save bubble.
@@ -182,7 +223,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
        DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -209,10 +249,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillSaveCardSignInAfterLocalSave);
 
-  // Submitting the form without signed in user should show the local save
-  // bubble.
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -244,10 +290,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillSaveCardSignInAfterLocalSave);
 
-  // Submitting the form without signed in user should show the local save
-  // bubble.
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -285,10 +337,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillSaveCardSignInAfterLocalSave);
 
-  // Submitting the form without signed in user should show the local save
-  // bubble.
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -332,10 +390,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillSaveCardSignInAfterLocalSave);
 
-  // Submitting the form without signed in user should show the local save
-  // bubble.
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -393,10 +457,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillSaveCardSignInAfterLocalSave);
 
-  // Submitting the form without signed in user should show the local save
-  // bubble.
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -446,10 +516,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillSaveCardSignInAfterLocalSave);
 
-  // Submitting the form without signed in user should show the local save
-  // bubble.
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -489,10 +565,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillSaveCardSignInAfterLocalSave);
 
-  // Submitting the form without signed in user should show the local save
-  // bubble.
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -537,10 +619,17 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Disable the updated UI.
   scoped_feature_list_.InitAndDisableFeature(
       features::kAutofillSaveCardImprovedUserConsent);
-  // Submitting the form without signed in user should show the local save
-  // bubble.
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -556,10 +645,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // https://crbug.com/842577 .
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_SynchronousCloseAfterAsynchronousClose) {
-  // Submitting the form without signed in user should show the local save
-  // bubble.
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -588,9 +683,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // to Google Payments.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ClickingSaveClosesBubble) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -599,7 +691,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -625,9 +716,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillSaveCardImprovedUserConsent);
 
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -636,7 +724,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -661,9 +748,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndDisableFeature(
       features::kAutofillSaveCardImprovedUserConsent);
 
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -672,7 +756,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -687,9 +770,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // button successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ClickingCloseClosesBubble) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -698,7 +778,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -713,9 +792,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // cardholder name textfield if it is not needed.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ShouldNotRequestCardholderNameInHappyPath) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableCardholderName);
@@ -728,7 +804,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -748,9 +823,6 @@ IN_PROC_BROWSER_TEST_F(
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableCardholderName);
 
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -760,7 +832,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -772,20 +843,16 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that the bubble surfaces a textfield
 // requesting cardholder name if cardholder name is conflicting.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormWithShippingBrowserTest,
     Upload_SubmittingFormWithConflictingNamesRequestsCardholderNameIfExpOn) {
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableCardholderName);
 
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
   // Submit first shipping address form with a conflicting name.
-  NavigateTo(kCreditCardAndShippingUploadForm);
   FillAndSubmitFormWithConflictingName();
 
   // Submitting the second form should still show the upload save bubble and
@@ -795,7 +862,6 @@ IN_PROC_BROWSER_TEST_F(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
   FillAndSubmitForm();
-
   WaitForObservedEvent();
   EXPECT_TRUE(
       FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
@@ -808,9 +874,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Upload_SaveButtonIsDisabledIfNoCardholderNameAndCardholderNameRequested) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableCardholderName);
@@ -824,7 +887,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -853,9 +915,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Upload_EnteringCardholderNameAndClickingSaveClosesBubbleIfCardholderNameRequested) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableCardholderName);
@@ -869,7 +928,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -905,13 +963,11 @@ IN_PROC_BROWSER_TEST_F(
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableCardholderName);
 
-  // Start sync.
-  harness_->SetupSync();
-  // Set the user's full name.
-  SetAccountFullName("John Smith");
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
+
+  // Sign the user in.
+  SignInWithFullName("John Smith");
 
   // Submitting the form should show the upload save bubble, along with a
   // textfield specifically requesting the cardholder name.
@@ -920,7 +976,6 @@ IN_PROC_BROWSER_TEST_F(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
   base::HistogramTester histogram_tester;
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
@@ -948,9 +1003,6 @@ IN_PROC_BROWSER_TEST_F(
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableCardholderName);
 
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -964,7 +1016,6 @@ IN_PROC_BROWSER_TEST_F(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
   base::HistogramTester histogram_tester;
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
@@ -990,13 +1041,11 @@ IN_PROC_BROWSER_TEST_F(
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableCardholderName);
 
-  // Start sync.
-  harness_->SetupSync();
-  // Set the user's full name.
-  SetAccountFullName("John Smith");
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
+
+  // Sign the user in.
+  SignInWithFullName("John Smith");
 
   // Submitting the form should show the upload save bubble, along with a
   // textfield specifically requesting the cardholder name.
@@ -1004,7 +1053,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
@@ -1028,13 +1076,11 @@ IN_PROC_BROWSER_TEST_F(
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableCardholderName);
 
-  // Start sync.
-  harness_->SetupSync();
-  // Set the user's full name.
-  SetAccountFullName("John Smith");
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
+
+  // Sign the user in.
+  SignInWithFullName("John Smith");
 
   // Submitting the form should show the upload save bubble, along with a
   // textfield specifically requesting the cardholder name.
@@ -1042,7 +1088,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
@@ -1075,13 +1120,11 @@ IN_PROC_BROWSER_TEST_F(
       // Disabled
       {});
 
-  // Start sync.
-  harness_->SetupSync();
-  // Set the user's full name.
-  SetAccountFullName("John Smith");
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
+
+  // Sign the user in.
+  SignInWithFullName("John Smith");
 
   // Submitting the form should show the upload save bubble, along with a
   // textfield specifically requesting the cardholder name.
@@ -1090,7 +1133,6 @@ IN_PROC_BROWSER_TEST_F(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
   base::HistogramTester histogram_tester;
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
@@ -1112,62 +1154,11 @@ IN_PROC_BROWSER_TEST_F(
 //              gfx::Range of the link. When/if that can be worked around,
 //              create an Upload_ClickingTosLinkClosesBubble test.
 
-// Tests the upload save logic. Ensures that Chrome offers a local save when the
-// data is complete, even if Payments rejects the data.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldOfferLocalSaveIfPaymentsDeclines) {
-  // Start sync.
-  harness_->SetupSync();
-
-  // Set up the Payments RPC.
-  SetUploadDetailsRpcPaymentsDeclines();
-
-  // Submitting the form and having Payments decline offering to save should
-  // show the local save bubble.
-  // (Must wait for response from Payments before accessing the controller.)
-  ResetEventWaiterForSequence(
-      {DialogEvent::REQUESTED_UPLOAD_SAVE,
-       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
-       DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
-}
-
-// Tests the upload save logic. Ensures that Chrome offers a local save when the
-// data is complete, even if the Payments upload fails unexpectedly.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldOfferLocalSaveIfPaymentsFails) {
-  // Start sync.
-  harness_->SetupSync();
-
-  // Set up the Payments RPC.
-  SetUploadDetailsRpcServerError();
-
-  // Submitting the form and having the call to Payments fail should show the
-  // local save bubble.
-  // (Must wait for response from Payments before accessing the controller.)
-  ResetEventWaiterForSequence(
-      {DialogEvent::REQUESTED_UPLOAD_SAVE,
-       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
-       DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
-}
-
 // Tests the upload save logic. Ensures that Chrome delegates the offer-to-save
 // call to Payments, and offers to upload save the card if Payments allows it.
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Logic_CanOfferToSaveEvenIfNothingFoundIfPaymentsAccepts) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -1178,7 +1169,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithCardDetailsOnly();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1192,9 +1182,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Logic_ShouldNotOfferToSaveIfNothingFoundAndPaymentsDeclines) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
 
@@ -1205,7 +1192,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithCardDetailsOnly();
   WaitForObservedEvent();
   EXPECT_FALSE(GetSaveCardBubbleViews());
@@ -1215,13 +1201,9 @@ IN_PROC_BROWSER_TEST_F(
 // upload save should be offered, even if CVC is not detected.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Logic_ShouldAttemptToOfferToSaveIfCvcNotFound) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though CVC is missing.
   ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutCvc();
   WaitForObservedEvent();
 }
@@ -1230,14 +1212,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // upload save should be offered, even if the detected CVC is invalid.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Logic_ShouldAttemptToOfferToSaveIfInvalidCvcFound) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though the provided
   // CVC is invalid.
   ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithInvalidCvc();
   WaitForObservedEvent();
 }
@@ -1247,14 +1225,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // detected.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Logic_ShouldAttemptToOfferToSaveIfNameNotFound) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though name is
   // missing.
   ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
 }
@@ -1262,13 +1236,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
 // upload save should be offered, even if multiple conflicting names are
 // detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormWithShippingBrowserTest,
                        Logic_ShouldAttemptToOfferToSaveIfNamesConflict) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Submit first shipping address form with a conflicting name.
-  NavigateTo(kCreditCardAndShippingUploadForm);
   FillAndSubmitFormWithConflictingName();
 
   // Submitting the form should still start the flow of asking Payments if
@@ -1283,14 +1253,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // upload save should be offered, even if billing address is not detected.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Logic_ShouldAttemptToOfferToSaveIfAddressNotFound) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though billing address
   // is missing.
   ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutAddress();
   WaitForObservedEvent();
 }
@@ -1298,13 +1264,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
 // upload save should be offered, even if multiple conflicting billing address
 // postal codes are detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormWithShippingBrowserTest,
                        Logic_ShouldAttemptToOfferToSaveIfPostalCodesConflict) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Submit first shipping address form with a conflicting postal code.
-  NavigateTo(kCreditCardAndShippingUploadForm);
   FillAndSubmitFormWithConflictingPostalCode();
 
   // Submitting the form should still start the flow of asking Payments if
@@ -1320,9 +1282,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Upload_DecliningUploadDoesNotLogUserAcceptedCardOriginUMA) {
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -1332,7 +1291,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1358,9 +1316,6 @@ IN_PROC_BROWSER_TEST_F(
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableExpirationDate);
 
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -1371,7 +1326,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutExpirationDate();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1395,9 +1349,6 @@ IN_PROC_BROWSER_TEST_F(
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableExpirationDate);
 
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -1408,7 +1359,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithExpiredExpirationDate();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1434,7 +1384,6 @@ IN_PROC_BROWSER_TEST_F(
 
   // The credit card will not be imported if the expiration date is expired and
   // experiment is off.
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithExpiredExpirationDate();
   EXPECT_FALSE(GetSaveCardBubbleViews());
 }
@@ -1450,7 +1399,6 @@ IN_PROC_BROWSER_TEST_F(
 
   // The credit card will not be imported if there is no expiration date and
   // experiment is off.
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutExpirationDate();
   EXPECT_FALSE(GetSaveCardBubbleViews());
 }
@@ -1463,9 +1411,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableExpirationDate);
 
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -1474,7 +1419,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1500,9 +1444,6 @@ IN_PROC_BROWSER_TEST_F(
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableExpirationDate);
 
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -1513,7 +1454,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutExpirationDate();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1563,9 +1503,6 @@ IN_PROC_BROWSER_TEST_F(
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableExpirationDate);
 
-  // Start sync.
-  harness_->SetupSync();
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -1576,7 +1513,6 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
   FillAndSubmitFormWithoutExpirationDate();
   WaitForObservedEvent();
   EXPECT_TRUE(

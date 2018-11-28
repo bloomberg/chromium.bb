@@ -251,16 +251,12 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
 }
 
 bool CreditCardSaveManager::IsCreditCardUploadEnabled() {
-#if defined(OS_IOS)
   // If observer_for_testing_ is set, assume we are in a browsertest and
   // credit card upload should be enabled by default.
-  // TODO(crbug.com/859761): Remove dependency from iOS tests on this behavior.
-  if (observer_for_testing_)
-    return true;
-#endif  // defined(OS_IOS)
-  return ::autofill::IsCreditCardUploadEnabled(
-      client_->GetPrefs(), client_->GetSyncService(),
-      personal_data_manager_->GetAccountInfoForPaymentsServer().email);
+  return observer_for_testing_ ||
+         ::autofill::IsCreditCardUploadEnabled(
+             client_->GetPrefs(), client_->GetSyncService(),
+             personal_data_manager_->GetAccountInfoForPaymentsServer().email);
 }
 
 bool CreditCardSaveManager::IsUploadEnabledForNetwork(
