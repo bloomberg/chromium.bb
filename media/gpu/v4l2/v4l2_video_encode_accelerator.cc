@@ -210,14 +210,25 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
       return false;
     }
 
-    auto input_layout =
-        VideoFrameLayout::Create(config.input_format, visible_size_);
+    // It is necessary to set strides and buffers even with dummy values,
+    // because VideoFrameLayout::num_buffers() specifies v4l2 pix format
+    // associated with |config.input_format| is multi-planar.
+    auto input_layout = VideoFrameLayout::CreateWithStrides(
+        config.input_format, visible_size_,
+        std::vector<int32_t>(
+            VideoFrameLayout::NumPlanes(config.input_format)) /* strides */,
+        std::vector<size_t>(
+            VideoFrameLayout::NumPlanes(config.input_format)) /* buffers */);
     if (!input_layout) {
       VLOGF(1) << "Invalid image processor input layout";
       return false;
     }
-    auto output_layout =
-        VideoFrameLayout::Create(device_input_format_, input_allocated_size_);
+    auto output_layout = VideoFrameLayout::CreateWithStrides(
+        device_input_format_, input_allocated_size_,
+        std::vector<int32_t>(
+            VideoFrameLayout::NumPlanes(device_input_format_)) /* strides */,
+        std::vector<size_t>(
+            VideoFrameLayout::NumPlanes(device_input_format_)) /* buffers */);
     if (!output_layout) {
       VLOGF(1) << "Invalid image processor output layout";
       return false;
@@ -1115,62 +1126,49 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   device_input_format_ = PIXEL_FORMAT_UNKNOWN;
   input_planes_count_ = 0;
 
-  uint32_t input_format_fourcc =
-      V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format);
-  if (!input_format_fourcc) {
-    VLOGF(1) << "Unsupported input format" << input_format_fourcc;
-    return false;
-  }
+  const std::vector<uint32_t> pix_fmt_candidates = {
+      // First see if the device can use the provided format directly.
+      // V4L2 VEA only supports multi plane input pixel format.
+      V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format, false),
+      // Second try preferred input format.
+      device_->PreferredInputFormat(V4L2Device::Type::kEncoder),
+  };
 
-  size_t input_planes_count = VideoFrame::NumPlanes(input_format);
-  DCHECK_LE(input_planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
+  for (const auto pix_fmt : pix_fmt_candidates) {
+    auto trying_format = V4L2Device::V4L2PixFmtToVideoPixelFormat(pix_fmt);
+    DCHECK_NE(trying_format, PIXEL_FORMAT_UNKNOWN);
+    size_t planes_count = VideoFrame::NumPlanes(trying_format);
+    DCHECK_LE(planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
+    VLOGF(2) << "Trying S_FMT with " << FourccToString(pix_fmt) << " ("
+             << trying_format << ").";
 
-  // First see if we the device can use the provided input_format directly.
-  struct v4l2_format format;
-  memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  format.fmt.pix_mp.width = visible_size_.width();
-  format.fmt.pix_mp.height = visible_size_.height();
-  format.fmt.pix_mp.pixelformat = input_format_fourcc;
-  format.fmt.pix_mp.num_planes = input_planes_count;
-  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
-    // Error or format unsupported by device, try to negotiate a fallback.
-    input_format_fourcc =
-        device_->PreferredInputFormat(V4L2Device::Type::kEncoder);
-    input_format =
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(input_format_fourcc);
-    if (input_format == PIXEL_FORMAT_UNKNOWN) {
-      VLOGF(1) << "Unsupported input format: "
-               << FourccToString(input_format_fourcc);
-      return false;
-    }
-
-    input_planes_count = VideoFrame::NumPlanes(input_format);
-    DCHECK_LE(input_planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
-
-    // Device might have adjusted parameters, reset them along with the format.
+    struct v4l2_format format;
     memset(&format, 0, sizeof(format));
     format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     format.fmt.pix_mp.width = visible_size_.width();
     format.fmt.pix_mp.height = visible_size_.height();
-    format.fmt.pix_mp.pixelformat = input_format_fourcc;
-    format.fmt.pix_mp.num_planes = input_planes_count;
-    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
-    DCHECK_EQ(format.fmt.pix_mp.num_planes, input_planes_count);
+    format.fmt.pix_mp.pixelformat = pix_fmt;
+    format.fmt.pix_mp.num_planes = planes_count;
+    if (device_->Ioctl(VIDIOC_S_FMT, &format) == 0) {
+      VLOGF(2) << "Success: S_FMT with" << FourccToString(pix_fmt);
+      // Take device-adjusted sizes for allocated size. If the size is adjusted
+      // down, it means the input is too big and the hardware does not support
+      // it.
+      auto adjusted_size = V4L2Device::CodedSizeFromV4L2Format(format);
+      if (!gfx::Rect(adjusted_size).Contains(gfx::Rect(visible_size_))) {
+        VLOGF(1) << "Input size too big " << visible_size_.ToString()
+                 << ", adjusted to " << adjusted_size.ToString();
+        return false;
+      }
+
+      device_input_format_ = trying_format;
+      input_planes_count_ = planes_count;
+      input_allocated_size_ = adjusted_size;
+      return true;
+    }
   }
 
-  // Take device-adjusted sizes for allocated size. If the size is adjusted
-  // down, it means the input is too big and the hardware does not support it.
-  input_allocated_size_ = V4L2Device::CodedSizeFromV4L2Format(format);
-  if (!gfx::Rect(input_allocated_size_).Contains(gfx::Rect(visible_size_))) {
-    VLOGF(1) << "Input size too big " << visible_size_.ToString()
-             << ", adjusted to " << input_allocated_size_.ToString();
-    return false;
-  }
-
-  device_input_format_ = input_format;
-  input_planes_count_ = input_planes_count;
-  return true;
+  return false;
 }
 
 bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
