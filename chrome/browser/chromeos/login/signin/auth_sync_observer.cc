@@ -10,13 +10,13 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace chromeos {
 
@@ -70,8 +70,7 @@ void AuthSyncObserver::OnErrorChanged() {
   const std::string error_account_id = error_controller->error_account_id();
 
   const std::string primary_account_id =
-      SigninManagerFactory::GetForProfile(profile_)
-          ->GetAuthenticatedAccountId();
+      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId();
 
   // Bail if there is an error account id and it is not the primary account id.
   if (!error_account_id.empty() && error_account_id != primary_account_id)
