@@ -327,21 +327,7 @@ Bug(none) fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ Fai
 Bug(none) fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ Failure ]
 Bug(none) fast/events/scroll-after-click-on-tab-index.html [ Failure ]
 Bug(none) fast/events/space-scroll-textinput-canceled.html [ Failure ]
-Bug(none) fast/events/touch/compositor-touch-hit-rects-animation.html [ Failure ]
-Bug(none) fast/events/touch/compositor-touch-hit-rects-global.html [ Failure Crash ]
-Bug(none) fast/events/touch/compositor-touch-hit-rects-many.html [ Failure ]
-Bug(none) fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
-Bug(none) fast/events/touch/compositor-touch-hit-rects-non-composited-scroll-overflow-with-handler.html  [ Failure ]
-Bug(none) fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure ]
-Bug(none) fast/events/touch/compositor-touch-hit-rects-squashing.html [ Failure ]
-Bug(none) fast/events/touch/compositor-touch-hit-rects-trigger-commit.html [ Failure ]
-Bug(none) fast/events/touch/compositor-touch-hit-rects-transform-changed-nolayout.html [ Failure ]
-Bug(none) fast/events/touch/compositor-touch-hit-rects-with-negative-child.html [ Failure ]
-Bug(none) fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 Bug(none) fast/events/touch/gesture/gesture-scroll-by-page.html [ Failure ]
-Bug(none) fast/events/touch/touch-handler-assert-input-range.html [ Failure ]
-Bug(none) fast/events/touch/touch-rect-assert-first-layer-special.html [ Failure ]
-Bug(none) fast/events/touch/touch-rect-crash-on-unpromote-layer.html [ Failure ]
 Bug(none) fast/webgl/pixelated.html [ Failure ]
 Bug(none) images/color-profile-reflection.html [ Crash Failure ]
 Bug(none) images/color-profile-svg-foreign-object.html [ Failure ]
@@ -757,10 +743,6 @@ Bug(none) paint/invalidation/selection/japanese-rl-selection-repaint.html [ Fail
 Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Failure ]
 Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Failure ]
 
-# Many of these tests are currently failing or crashing, and the tests change
-# quickly, so just tolerate the whole directory until we start to work on them.
-Bug(none) fast/events/touch [ Failure Pass Crash ]
-
 Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-fake-mouse-wheel.html [ Pass Failure Crash ]
 Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-into-center.html [ Pass Failure Crash ]
 Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-pan-position-fixed.html [ Pass Failure Crash ]
@@ -775,6 +757,17 @@ Bug(none) synthetic_gestures/animated-wheel-tiny-delta.html [ Failure ]
 
 # Duplicated display item id of background of scrollable table cell.
 Bug(none) fast/table/overflowHidden.html [ Crash ]
+
+# These tests have incorrect layer positions.
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-animation.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-global.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-many.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-non-composited-scroll-overflow-with-handler.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-squashing.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-with-negative-child.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 
 # These tests have failures that were introduced between enabling BGPT for the
 # first time and later disabling it. These are not real failures and can be

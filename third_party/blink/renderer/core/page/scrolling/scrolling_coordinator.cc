@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -254,44 +255,21 @@ static void ForAllGraphicsLayers(GraphicsLayer& layer,
 // on the GraphicsLayer's paint chunks.
 static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
   DCHECK(RuntimeEnabledFeatures::PaintTouchActionRectsEnabled());
-
-  // TODO(pdr): This will need to be moved to PaintArtifactCompositor (or later)
-  // for SPV2 because composited layers are not known until then. The SPV2
-  // implementation will iterate over the paint chunks in each composited layer
-  // and will look almost the same as this function.
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-
   if (!layer.DrawsContent())
     return;
 
-  const auto& layer_state = layer.GetPropertyTreeState();
-  Vector<HitTestRect> touch_action_rects_in_layer_space;
   if (layer.Client().ShouldThrottleRendering()) {
-    layer.CcLayer()->SetTouchActionRegion(
-        HitTestRect::BuildRegion(touch_action_rects_in_layer_space));
+    layer.CcLayer()->SetTouchActionRegion(cc::TouchActionRegion());
     return;
   }
-  for (const auto& chunk : layer.GetPaintController().PaintChunks()) {
-    const auto* hit_test_data = chunk.hit_test_data.get();
-    if (!hit_test_data || hit_test_data->touch_action_rects.IsEmpty())
-      continue;
 
-    const auto& chunk_state = chunk.properties.GetPropertyTreeState();
-    for (auto touch_action_rect : hit_test_data->touch_action_rects) {
-      auto rect =
-          FloatClipRect(FloatRect(PixelSnappedIntRect(touch_action_rect.rect)));
-      if (!GeometryMapper::LocalToAncestorVisualRect(chunk_state, layer_state,
-                                                     rect)) {
-        continue;
-      }
-      LayoutRect layout_rect = LayoutRect(rect.Rect());
-      layout_rect.MoveBy(-layer.GetOffsetFromTransformNode());
-      touch_action_rects_in_layer_space.emplace_back(
-          HitTestRect(layout_rect, touch_action_rect.whitelisted_touch_action));
-    }
-  }
-  layer.CcLayer()->SetTouchActionRegion(
-      HitTestRect::BuildRegion(touch_action_rects_in_layer_space));
+  auto offset = layer.GetOffsetFromTransformNode();
+  gfx::Vector2dF layer_offset = gfx::Vector2dF(offset.X(), offset.Y());
+  PaintChunkSubset paint_chunks =
+      PaintChunkSubset(layer.GetPaintController().PaintChunks());
+  PaintArtifactCompositor::UpdateTouchActionRects(layer.CcLayer(), layer_offset,
+                                                  layer.GetPropertyTreeState(),
+                                                  paint_chunks);
 }
 
 static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,

@@ -155,6 +155,7 @@
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -1901,6 +1902,38 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "The document provided is invalid.");
     return nullptr;
+  }
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    auto* pac = document->View()->GetPaintArtifactCompositorForTesting();
+    pac->EnableExtraDataForTesting();
+    document->View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
+
+    const auto& content_layers = pac->GetExtraDataForTesting()->content_layers;
+
+    HitTestLayerRectList* hit_test_rects = HitTestLayerRectList::Create();
+    for (const auto& layer : content_layers) {
+      const cc::TouchActionRegion& touch_action_region =
+          layer->touch_action_region();
+      if (!touch_action_region.region().IsEmpty()) {
+        IntRect layer_rect(RoundedIntPoint(FloatPoint(layer->position())),
+                           IntSize(layer->bounds()));
+
+        Vector<IntRect> layer_hit_test_rects;
+        for (const gfx::Rect& hit_test_rect : touch_action_region.region())
+          layer_hit_test_rects.push_back(IntRect(hit_test_rect));
+        MergeRects(layer_hit_test_rects);
+
+        for (const IntRect& hit_test_rect : layer_hit_test_rects) {
+          if (!hit_test_rect.IsEmpty()) {
+            hit_test_rects->Append(DOMRectReadOnly::FromIntRect(layer_rect),
+                                   DOMRectReadOnly::FromIntRect(hit_test_rect));
+          }
+        }
+      }
+    }
+    return hit_test_rects;
   }
 
   if (ScrollingCoordinator* scrolling_coordinator =

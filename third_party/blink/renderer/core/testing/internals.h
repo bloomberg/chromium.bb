@@ -43,11 +43,11 @@ namespace blink {
 class Animation;
 class CallbackFunctionTest;
 class CanvasRenderingContext;
+class DOMArrayBuffer;
+class DOMPoint;
 class DOMRect;
 class DOMRectList;
 class DOMRectReadOnly;
-class DOMArrayBuffer;
-class DOMPoint;
 class DOMWindow;
 class DictionaryTest;
 class Document;
@@ -56,15 +56,15 @@ class Element;
 class ExceptionState;
 class ExecutionContext;
 class GCObservation;
-class HitTestLocation;
-class HitTestResult;
 class HTMLInputElement;
 class HTMLMediaElement;
 class HTMLSelectElement;
 class HTMLVideoElement;
+class HitTestLayerRectList;
+class HitTestLocation;
+class HitTestResult;
 class InternalRuntimeFlags;
 class InternalSettings;
-class HitTestLayerRectList;
 class LocalDOMWindow;
 class LocalFrame;
 class Location;
@@ -73,15 +73,16 @@ class OriginTrialsTest;
 class Page;
 class Range;
 class RecordTest;
+class ScrollState;
 class SequenceTest;
 class SerializedScriptValue;
 class ShadowRoot;
+template <typename NodeType>
+class StaticNodeTypeList;
 class StaticSelection;
 class TypeConversions;
 class UnionTypesTest;
-class ScrollState;
-template <typename NodeType>
-class StaticNodeTypeList;
+
 using StaticNodeList = StaticNodeTypeList<Node>;
 
 class Internals final : public ScriptWrappable {
