@@ -1912,6 +1912,7 @@ crbug.com/280342 [ Win ] http/tests/media/progress-events-generated-correctly.ht
 
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 crbug.com/520736 [ Linux ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
+crbug.com/909095 [ Mac ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 # This is also flaky from findit, see crbug.com/903019:
 crbug.com/520736 virtual/video-surface-layer/media/W3C/video/networkState/networkState_during_progress.html [ Pass Failure Timeout Crash ]
 crbug.com/865839 external/wpt/service-workers/service-worker/update-after-navigation-redirect.https.html [ Timeout ]
