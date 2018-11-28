@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/gpu/format_utils.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -16,8 +17,6 @@
 #if defined(OS_POSIX)
 #include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
 #endif
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
 
 namespace media {
 namespace test {

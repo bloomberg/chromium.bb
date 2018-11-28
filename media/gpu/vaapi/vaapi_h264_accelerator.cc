@@ -8,15 +8,9 @@
 
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/h264_dpb.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-
-#define ARRAY_MEMCPY_CHECKED(to, from)                               \
-  do {                                                               \
-    static_assert(sizeof(to) == sizeof(from),                        \
-                  #from " and " #to " arrays must be of same size"); \
-    memcpy(to, from, sizeof(to));                                    \
-  } while (0)
 
 namespace media {
 

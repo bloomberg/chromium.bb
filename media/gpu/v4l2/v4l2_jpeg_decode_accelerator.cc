@@ -16,11 +16,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/filters/jpeg_parser.h"
+#include "media/gpu/macros.h"
 #include "third_party/libyuv/include/libyuv.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-#define VPLOGF(level) VPLOG(level) << __func__ << "(): "
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_name)    \
   do {                                                              \

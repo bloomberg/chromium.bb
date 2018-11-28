@@ -27,6 +27,7 @@
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/h264_decoder.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_h264_accelerator.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
@@ -36,9 +37,6 @@
 #include "media/gpu/vp9_decoder.h"
 #include "media/video/picture.h"
 #include "ui/gl/gl_image.h"
-
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
 
 namespace media {
 

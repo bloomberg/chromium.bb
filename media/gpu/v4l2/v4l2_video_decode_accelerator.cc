@@ -28,16 +28,13 @@
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/h264_parser.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/scoped_binders.h"
-
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define VPLOGF(level) VPLOG(level) << __func__ << "(): "
 
 #define NOTIFY_ERROR(x)                      \
   do {                                       \

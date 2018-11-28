@@ -30,6 +30,7 @@
 #include "media/base/video_bitrate_allocation.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/h264_dpb.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/h264_encoder.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
@@ -39,9 +40,6 @@
 #if defined(OS_POSIX)
 #include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
 #endif
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
 
 #define NOTIFY_ERROR(error, msg)                        \
   do {                                                  \

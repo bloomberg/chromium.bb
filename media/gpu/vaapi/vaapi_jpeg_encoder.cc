@@ -12,14 +12,8 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/filters/jpeg_parser.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-
-#define ARRAY_MEMCPY_CHECKED(to, from)                               \
-  do {                                                               \
-    static_assert(sizeof(to) == sizeof(from),                        \
-                  #from " and " #to " arrays must be of same size"); \
-    memcpy(to, from, sizeof(to));                                    \
-  } while (0)
 
 namespace media {
 
@@ -92,12 +86,12 @@ void FillHuffmanTableParameters(
     huff_table_param->load_huffman_table[i] = true;
 
     // Load DC Table.
-    ARRAY_MEMCPY_CHECKED(huff_table_param->huffman_table[i].num_dc_codes,
-                         dcTable.code_length);
+    SafeArrayMemcpy(huff_table_param->huffman_table[i].num_dc_codes,
+                    dcTable.code_length);
     // |code_values| of JpegHuffmanTable needs to hold DC and AC code values
     // so it has different size than
     // |huff_table_param->huffman_table[i].dc_values|. Therefore we can't use
-    // ARRAY_MEMCPY_CHECKED() here.
+    // SafeArrayMemcpy() here.
     static_assert(arraysize(huff_table_param->huffman_table[i].dc_values) <=
                       arraysize(dcTable.code_value),
                   "DC table code value array too small.");
@@ -105,10 +99,10 @@ void FillHuffmanTableParameters(
            sizeof(huff_table_param->huffman_table[i].dc_values));
 
     // Load AC Table.
-    ARRAY_MEMCPY_CHECKED(huff_table_param->huffman_table[i].num_ac_codes,
-                         acTable.code_length);
-    ARRAY_MEMCPY_CHECKED(huff_table_param->huffman_table[i].ac_values,
-                         acTable.code_value);
+    SafeArrayMemcpy(huff_table_param->huffman_table[i].num_ac_codes,
+                    acTable.code_length);
+    SafeArrayMemcpy(huff_table_param->huffman_table[i].ac_values,
+                    acTable.code_value);
 
     memset(huff_table_param->huffman_table[i].pad, 0,
            sizeof(huff_table_param->huffman_table[i].pad));

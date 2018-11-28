@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "media/base/video_types.h"
 #include "media/gpu/buildflags.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/egl_util.h"
@@ -46,10 +47,6 @@ using media_gpu_v4l2::StubPathMap;
 static const base::FilePath::CharType kV4l2Lib[] =
     FILE_PATH_LITERAL("/usr/lib/libv4l2.so");
 #endif
-
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define VPLOGF(level) VPLOG(level) << __func__ << "(): "
 
 namespace media {
 

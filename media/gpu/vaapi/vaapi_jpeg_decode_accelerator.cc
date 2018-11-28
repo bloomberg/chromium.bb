@@ -21,13 +21,11 @@
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "third_party/libyuv/include/libyuv.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
 
 namespace media {
 

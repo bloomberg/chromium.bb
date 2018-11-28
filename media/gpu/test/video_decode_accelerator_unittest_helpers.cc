@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/video_decoder_config.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/test/rendering_helper.h"
 #include "media/gpu/test/texture_ref.h"
 #include "media/video/h264_parser.h"
@@ -19,8 +20,6 @@
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
 #endif
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
 
 namespace media {
 namespace test {

@@ -25,15 +25,12 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
-#include "media/base/video_types.h"
 #include "media/base/video_frame_layout.h"
+#include "media/base/video_types.h"
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/h264_parser.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-#define VPLOGF(level) VPLOG(level) << __func__ << "(): "
 
 #define NOTIFY_ERROR(x)                      \
   do {                                       \

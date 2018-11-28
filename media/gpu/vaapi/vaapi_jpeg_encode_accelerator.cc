@@ -19,10 +19,8 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_jpeg_encoder.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
 
 namespace media {
 
