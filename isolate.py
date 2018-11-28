@@ -859,9 +859,7 @@ def isolate_and_archive(trees, server_ref):
     try:
       items = _process_infiles(itertools.chain(*files_generators))
       with isolateserver.get_storage(server_ref) as storage:
-        # TODO(maruel): Stop serializing the list as soon as upload_items() is
-        # fixed.
-        storage.upload_items(list(items))
+        storage.upload_items(items)
     except Exception:
       logging.exception('Exception while uploading files')
       return None

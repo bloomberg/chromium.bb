@@ -403,7 +403,6 @@ class IsolateServer(StorageApi):
 
     # Default to item.content().
     content = item.content() if content is None else content
-    logging.info('Push state size: %d', push_state.size)
     guard_memory_use(self, content, push_state.size)
 
     try:
