@@ -570,8 +570,7 @@ public class LoadDataWithBaseUrlTest {
         AwSettings contentSettings = mActivityTestRule.getAwSettingsOnUiThread(mAwContents);
         contentSettings.setJavaScriptEnabled(true);
         loadDataWithBaseUrlSync("", "text/html", false, baseUri, null);
-        // TODO(dcheng): https://crbug.com/896059 this should be fixed as "x-thread://".
-        Assert.assertEquals("\"null\"",
+        Assert.assertEquals("\"x-thread://\"",
                 mActivityTestRule.executeJavaScriptAndWaitForResult(
                         mAwContents, mContentsClient, "window.origin;"));
     }
@@ -588,8 +587,7 @@ public class LoadDataWithBaseUrlTest {
     @Feature({"AndroidWebView"})
     // https://crbug.com/900528
     public void testXhrForCustomSchemeUrl() throws Throwable {
-        // TODO(dcheng): this should be fixed by https://crbug.com/900528.
-        Assert.assertFalse(verifyXhrForUrls("myscheme://mydomain/1", "myscheme://mydomain/2"));
+        Assert.assertTrue(verifyXhrForUrls("myscheme://mydomain/1", "myscheme://mydomain/2"));
     }
 
     /**

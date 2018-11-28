@@ -20,6 +20,8 @@ namespace url {
 
 namespace {
 
+bool g_allow_non_standard_schemes = false;
+
 // Pass this enum through for methods which would like to know if whitespace
 // removal is necessary.
 enum WhitespaceRemovalPolicy {
@@ -530,6 +532,7 @@ void Initialize() {
 
 void Shutdown() {
   initialized = false;
+  g_allow_non_standard_schemes = false;
   delete standard_schemes;
   standard_schemes = nullptr;
   delete referrer_schemes;
@@ -548,6 +551,14 @@ void Shutdown() {
   csp_bypassing_schemes = nullptr;
   delete empty_document_schemes;
   empty_document_schemes = nullptr;
+}
+
+void EnableNonStandardSchemesForAndroidWebView() {
+  g_allow_non_standard_schemes = true;
+}
+
+bool AllowNonStandardSchemesForAndroidWebView() {
+  return g_allow_non_standard_schemes;
 }
 
 void AddStandardScheme(const char* new_scheme, SchemeType type) {

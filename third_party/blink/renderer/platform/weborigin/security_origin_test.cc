@@ -790,4 +790,21 @@ TEST_F(SecurityOriginTest, ToTokenForFastCheck) {
   }
 }
 
+TEST_F(SecurityOriginTest, NonStandardScheme) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("cow://");
+  EXPECT_TRUE(origin->IsOpaque());
+}
+
+TEST_F(SecurityOriginTest, NonStandardSchemeWithAndroidWebViewHack) {
+  url::EnableNonStandardSchemesForAndroidWebView();
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("cow://");
+  EXPECT_FALSE(origin->IsOpaque());
+  EXPECT_EQ("cow", origin->Protocol());
+  EXPECT_EQ("", origin->Host());
+  EXPECT_EQ(0, origin->Port());
+  url::Shutdown();
+}
+
 }  // namespace blink
