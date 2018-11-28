@@ -298,24 +298,8 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
   return true;
 #else
   // fcntl(_, F_GETFL) is not implemented on NaCl.
-  void* temp_memory = nullptr;
-  temp_memory =
-      mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, handle.fd, 0);
-
-  bool mmap_succeeded = temp_memory && temp_memory != MAP_FAILED;
-  if (mmap_succeeded)
-    munmap(temp_memory, size);
-
-  bool is_read_only = !mmap_succeeded;
-  bool expected_read_only = mode == Mode::kReadOnly;
-
-  if (is_read_only != expected_read_only) {
-    DLOG(ERROR) << "Descriptor has a wrong access mode: it is"
-                << (is_read_only ? " " : " not ") << "read-only but it should"
-                << (expected_read_only ? " " : " not ") << "be";
-    return false;
-  }
-
+  // We also cannot try to mmap() a region as writable and look at the return
+  // status because the plugin process crashes if system mmap() fails.
   return true;
 #endif  // !defined(OS_NACL)
 }
