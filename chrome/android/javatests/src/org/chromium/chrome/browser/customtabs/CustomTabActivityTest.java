@@ -1283,10 +1283,13 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
+    @EnableFeatures(ChromeFeatureList.CCT_MODULE)
     public void testSetTopBarContentView() throws Exception {
-        Intent intent = createMinimalCustomTabIntent();
+        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        Intent intent =
+                CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(moduleManagedUrl, null);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        waitForModuleLoading();
 
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
@@ -1301,10 +1304,13 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
+    @EnableFeatures(ChromeFeatureList.CCT_MODULE)
     public void testSetTopBarContentView_secondCallIsNoOp() throws Exception {
-        Intent intent = createMinimalCustomTabIntent();
+        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        Intent intent =
+                CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(moduleManagedUrl, null);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        waitForModuleLoading();
 
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
@@ -1318,48 +1324,63 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @EnableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testSetTopBarContentView_moduleNotProvided_topBarInvisible() throws Exception {
+    public void testSetTopBarContentView_moduleNotProvided_noTopBar() throws Exception {
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(),
                 "https://www.google.com/search?q=london");
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
                 "^https://www.google.com/search.*");
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        waitForModuleLoading();
 
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
             View anyView = new View(cctActivity);
             cctActivity.setTopBarContentView(anyView);
             ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
-            Assert.assertNotNull(topBar);
-            Assert.assertThat(anyView.getParent(), equalTo(topBar));
-            Assert.assertEquals(View.GONE, anyView.getVisibility());
+            Assert.assertNull(topBar);
         });
     }
 
     @Test
     @SmallTest
     @DisableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testSetTopBarContentView_featureDisabled_topBarInvisible() throws Exception {
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                "https://www.google.com/search?q=london");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME,
-                "com.google.android.googlequicksearchbox");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME,
-                "com.google.android.googlequicksearchbox.SearchActivity");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
-                "^https://www.google.com/search.*");
+    public void testSetTopBarContentView_featureDisabled_noTopBar() throws Exception {
+        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
+                moduleManagedUrl, "^(" + moduleManagedUrl + ")$");
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        waitForModuleLoading();
 
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
             View anyView = new View(cctActivity);
             cctActivity.setTopBarContentView(anyView);
             ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
-            Assert.assertNotNull(topBar);
-            Assert.assertThat(anyView.getParent(), equalTo(topBar));
-            Assert.assertEquals(View.GONE, anyView.getVisibility());
+            Assert.assertNull(topBar);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_MODULE)
+    public void testSetTopBarContentView_moduleLoadingFailed_noTopBar() throws Exception {
+        // Make an intent with nonexistent class name so module loading fail
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(),
+                "https://www.google.com/search?q=london");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME,
+                CustomTabsDynamicModuleTestUtils.FAKE_MODULE_PACKAGE_NAME);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME, "ClassName");
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        waitForModuleLoading();
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            View anyView = new View(cctActivity);
+            cctActivity.setTopBarContentView(anyView);
+            ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
+            Assert.assertNull(topBar);
         });
     }
 
@@ -1367,16 +1388,11 @@ public class CustomTabActivityTest {
     @SmallTest
     @EnableFeatures(ChromeFeatureList.CCT_MODULE)
     public void testSetTopBarContentView_withModuleAndManagedUrls_topBarVisible() throws Exception {
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                "https://www.google.com/search?q=london");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME,
-                "com.google.android.googlequicksearchbox");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME,
-                "com.google.android.googlequicksearchbox.SearchActivity");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
-                "^https://www.google.com/search.*");
+        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
+                moduleManagedUrl, "^(" + moduleManagedUrl + ")$");
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        waitForModuleLoading();
 
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
@@ -1401,6 +1417,7 @@ public class CustomTabActivityTest {
         intent.putExtra(
                 CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        waitForModuleLoading();
 
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
@@ -1417,18 +1434,13 @@ public class CustomTabActivityTest {
     @SmallTest
     @DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
     public void testSetTopBarContentView_featureDisabled_cctHeaderVisible() throws Exception {
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                "https://www.google.com/search?q=london");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME,
-                "com.google.android.googlequicksearchbox");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME,
-                "com.google.android.googlequicksearchbox.SearchActivity");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
-                "^https://www.google.com/search.*");
+        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
+                moduleManagedUrl, "^(" + moduleManagedUrl + ")$");
         intent.putExtra(
                 CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        waitForModuleLoading();
 
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
@@ -1445,18 +1457,13 @@ public class CustomTabActivityTest {
     @SmallTest
     @EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
     public void testSetTopBarContentView_withModuleAndExtras_cctHeaderHidden() throws Exception {
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                "https://www.google.com/search?q=london");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME,
-                "com.google.android.googlequicksearchbox");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME,
-                "com.google.android.googlequicksearchbox.SearchActivity");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
-                "^https://www.google.com/search.*");
+        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
+                moduleManagedUrl, "^(" + moduleManagedUrl + ")$");
         intent.putExtra(
                 CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        waitForModuleLoading();
 
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
@@ -3257,5 +3264,14 @@ public class CustomTabActivityTest {
         } catch (TimeoutException e) {
             fail("Tab title didn't update in time");
         }
+    }
+
+    private void waitForModuleLoading() {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !mCustomTabActivityTestRule.getActivity().isModuleLoading();
+            }
+        });
     }
 }
