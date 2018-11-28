@@ -31,13 +31,20 @@ class AppServiceImpl : public apps::mojom::AppService {
                          apps::mojom::AppType app_type) override;
   void RegisterSubscriber(apps::mojom::SubscriberPtr subscriber,
                           apps::mojom::ConnectOptionsPtr opts) override;
+  void LoadIcon(apps::mojom::AppType app_type,
+                const std::string& app_id,
+                apps::mojom::IconKeyPtr icon_key,
+                apps::mojom::IconCompression icon_compression,
+                int32_t size_hint_in_dip,
+                LoadIconCallback callback) override;
 
  private:
-  mojo::BindingSet<apps::mojom::AppService> bindings_;
+  void OnPublisherDisconnected(apps::mojom::AppType app_type);
 
-  std::map<apps::mojom::AppType, mojo::InterfacePtrSetElementId>
-      publishers_by_type_;
-  mojo::InterfacePtrSet<apps::mojom::Publisher> publishers_;
+  mojo::BindingSet<apps::mojom::AppService> bindings_;
+  // publishers_ is a std::map, not a mojo::InterfacePtrSet, since we want to
+  // be able to find *the* publisher for a given apps::mojom::AppType.
+  std::map<apps::mojom::AppType, apps::mojom::PublisherPtr> publishers_;
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceImpl);

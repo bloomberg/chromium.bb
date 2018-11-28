@@ -44,6 +44,30 @@ AppRegistryCache& AppServiceProxy::Cache() {
   return cache_;
 }
 
+void AppServiceProxy::LoadIcon(
+    const std::string& app_id,
+    apps::mojom::IconCompression icon_compression,
+    int32_t size_hint_in_dip,
+    apps::mojom::Publisher::LoadIconCallback callback) {
+  bool found = false;
+  cache_.ForOneApp(app_id, [this, &icon_compression, &size_hint_in_dip,
+                            &callback, &found](const apps::AppUpdate& update) {
+    apps::mojom::IconKeyPtr icon_key = update.IconKey();
+    if (icon_key.is_null()) {
+      return;
+    }
+    found = true;
+    app_service_->LoadIcon(update.AppType(), update.AppId(),
+                           std::move(icon_key), icon_compression,
+                           size_hint_in_dip, std::move(callback));
+  });
+
+  if (!found) {
+    // On failure, we still run the callback, with the zero IconValue.
+    std::move(callback).Run(apps::mojom::IconValue::New());
+  }
+}
+
 void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   cache_.OnApps(std::move(deltas));
 }

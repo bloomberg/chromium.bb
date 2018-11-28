@@ -4,6 +4,8 @@
 
 module apps.mojom;
 
+import "ui/gfx/image/mojo/image.mojom";
+
 // Information about an app. See chrome/services/app_service/README.md.
 struct App {
   AppType app_type;
@@ -13,9 +15,8 @@ struct App {
 
   Readiness readiness;
   string? name;
+  IconKey? icon_key;
   OptionalBool show_in_launcher;
-
-  // TODO: add more fields, e.g. icon_key.
 
   // When adding new fields, also update the Merge method and other helpers in
   // chrome/services/app_service/public/cpp/app_update.*
@@ -72,4 +73,29 @@ struct AppInfo {
 
   // The app's current preferred state.
   AppPreferred preferred;
+};
+
+enum IconType {
+  kUnknown,
+  kExtension,
+  kResource,
+};
+
+struct IconKey {
+  IconType icon_type;
+  // The semantics of u_key and s_key depend on the icon_type.
+  uint64 u_key;
+  string s_key;
+};
+
+enum IconCompression {
+  kUnknown,
+  kUncompressed,
+  kCompressed,
+};
+
+struct IconValue {
+  IconCompression icon_compression;
+  gfx.mojom.ImageSkia? uncompressed;
+  array<uint8>? compressed;
 };

@@ -68,6 +68,21 @@ class AppRegistryCache {
     }
   }
 
+  // Calls f, a void-returning function whose arguments are (const
+  // apps::AppUpdate&), on the app in the cache with the given app_id. It will
+  // return true (and call f) if there is such an app, otherwise it will return
+  // false (and not call f). The AppUpdate argument to f has the same semantics
+  // as for ForEachApp, above.
+  template <typename FunctionType>
+  bool ForOneApp(const std::string& app_id, FunctionType f) {
+    auto iter = states_.find(app_id);
+    if (iter != states_.end()) {
+      f(apps::AppUpdate(iter->second, iter->second));
+      return true;
+    }
+    return false;
+  }
+
  private:
   base::ObserverList<Observer> observers_;
 

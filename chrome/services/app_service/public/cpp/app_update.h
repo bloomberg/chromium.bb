@@ -52,6 +52,9 @@ class AppUpdate {
   const std::string& Name() const;
   bool NameChanged() const;
 
+  apps::mojom::IconKeyPtr IconKey() const;
+  bool IconKeyChanged() const;
+
   apps::mojom::OptionalBool ShowInLauncher() const;
   bool ShowInLauncherChanged() const;
 
