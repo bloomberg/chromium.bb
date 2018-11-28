@@ -14,10 +14,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/test_message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/audio_parameters.h"
@@ -27,6 +29,8 @@
 #include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
@@ -40,18 +44,16 @@ using media_session::mojom::AudioFocusRequestStatePtr;
 // integer/string values.
 class MediaInternalsTestBase {
  public:
-  MediaInternalsTestBase() = default;
-  virtual ~MediaInternalsTestBase() = default;
-
-  void SetUpServiceManager() {
+  MediaInternalsTestBase() : media_internals_(nullptr) {
     scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
         media_session::switches::kEnableAudioFocus);
 
     service_manager_context_ =
         std::make_unique<content::TestServiceManagerContext>();
+    media_internals_ = content::MediaInternals::GetInstance();
   }
 
-  void TearDownServiceManager() { service_manager_context_.reset(); }
+  virtual ~MediaInternalsTestBase() {}
 
  protected:
   // Extracts and deserializes the JSON update data; merges into |update_data_|.
@@ -105,13 +107,14 @@ class MediaInternalsTestBase {
     }
   }
 
+  const content::TestBrowserThreadBundle thread_bundle_;
   base::DictionaryValue update_data_;
 
-  content::MediaInternals* media_internals() const {
-    return content::MediaInternals::GetInstance();
-  }
+  content::MediaInternals* media_internals() const { return media_internals_; }
 
  private:
+  content::MediaInternals* media_internals_;
+
   base::test::ScopedCommandLine scoped_command_line_;
   std::unique_ptr<content::TestServiceManagerContext> service_manager_context_;
 };
@@ -129,17 +132,14 @@ class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
       : update_cb_(base::Bind(
             &MediaInternalsVideoCaptureDeviceTest::UpdateCallbackImpl,
             base::Unretained(this))) {
-    SetUpServiceManager();
     media_internals()->AddUpdateCallback(update_cb_);
   }
 
   ~MediaInternalsVideoCaptureDeviceTest() override {
     media_internals()->RemoveUpdateCallback(update_cb_);
-    TearDownServiceManager();
   }
 
  protected:
-  const content::TestBrowserThreadBundle thread_bundle_;
   MediaInternals::UpdateCallback update_cb_;
 };
 
@@ -228,13 +228,11 @@ class MediaInternalsAudioLogTest
         test_component_(GetParam()),
         audio_log_(media_internals()->CreateAudioLog(test_component_,
                                                      kTestComponentID)) {
-    SetUpServiceManager();
     media_internals()->AddUpdateCallback(update_cb_);
   }
 
   virtual ~MediaInternalsAudioLogTest() {
     media_internals()->RemoveUpdateCallback(update_cb_);
-    TearDownServiceManager();
   }
 
  protected:
@@ -251,8 +249,6 @@ class MediaInternalsAudioLogTest
                        media::AudioParameters::DUCKING);
     return params;
   }
-
-  const content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_P(MediaInternalsAudioLogTest, AudioLogCreateStartStopErrorClose) {
@@ -323,19 +319,15 @@ const char kTestTitle2[] = "Test Title 2";
 
 }  // namespace
 
-class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
+class MediaInternalsAudioFocusTest : public testing::Test,
                                      public MediaInternalsTestBase {
  public:
-  MediaInternalsAudioFocusTest() = default;
-  ~MediaInternalsAudioFocusTest() override = default;
-
   void SetUp() override {
-    RenderViewHostTestHarness::SetUp();
-    SetUpServiceManager();
-
     update_cb_ =
         base::BindRepeating(&MediaInternalsAudioFocusTest::UpdateCallbackImpl,
                             base::Unretained(this));
+
+    browser_context_.reset(new TestBrowserContext());
     run_loop_ = std::make_unique<base::RunLoop>();
 
     content::ServiceManagerConnection::GetForProcess()
@@ -347,8 +339,7 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
 
   void TearDown() override {
     content::MediaInternals::GetInstance()->RemoveUpdateCallback(update_cb_);
-    TearDownServiceManager();
-    RenderViewHostTestHarness::TearDown();
+    browser_context_.reset();
   }
 
  protected:
@@ -381,6 +372,11 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
     update_data_.Clear();
     run_loop_ = std::make_unique<base::RunLoop>();
     call_count_ = 0;
+  }
+
+  std::unique_ptr<TestWebContents> CreateWebContents() {
+    return TestWebContents::Create(
+        browser_context_.get(), SiteInstance::Create(browser_context_.get()));
   }
 
   void RemoveAllPlayersForTest(MediaSessionImpl* session) {
@@ -421,15 +417,15 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
 
   base::Lock lock_;
   std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
 
   media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
 };
 
 TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   // Create a test media session and request audio focus.
-  std::unique_ptr<WebContents> web_contents1 = CreateTestWebContents();
-  static_cast<TestWebContents*>(web_contents1.get())
-      ->SetTitle(base::UTF8ToUTF16(kTestTitle1));
+  std::unique_ptr<TestWebContents> web_contents1 = CreateWebContents();
+  web_contents1->SetTitle(base::UTF8ToUTF16(kTestTitle1));
   MediaSessionImpl* media_session1 = MediaSessionImpl::Get(web_contents1.get());
   media_session1->RequestSystemAudioFocus(AudioFocusType::kGain);
   WaitForCallbackCount(1);
@@ -450,9 +446,8 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   }
 
   // Create another media session.
-  std::unique_ptr<WebContents> web_contents2 = CreateTestWebContents();
-  static_cast<TestWebContents*>(web_contents2.get())
-      ->SetTitle(base::UTF8ToUTF16(kTestTitle2));
+  std::unique_ptr<TestWebContents> web_contents2 = CreateWebContents();
+  web_contents2->SetTitle(base::UTF8ToUTF16(kTestTitle2));
   MediaSessionImpl* media_session2 = MediaSessionImpl::Get(web_contents2.get());
   media_session2->RequestSystemAudioFocus(
       AudioFocusType::kGainTransientMayDuck);

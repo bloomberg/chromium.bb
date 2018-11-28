@@ -15,13 +15,13 @@
 
 namespace ui {
 
-// Interface to query available input devices. The implementation, which is a
-// singleton, could be DeviceDataManager or something that mirrors the necessary
-// state if DeviceDataManager is in a different process.
+// Interface to query available input devices. Holds a thread-local pointer to
+// an implementation that provides this service. The implementation could be
+// DeviceDataManager or something that mirrors the necessary state if
+// DeviceDataManager is in a different process.
 class EVENTS_DEVICES_EXPORT InputDeviceManager {
  public:
-  InputDeviceManager() = default;
-  virtual ~InputDeviceManager() = default;
+  InputDeviceManager() {}
 
   static InputDeviceManager* GetInstance();
   static bool HasInstance();

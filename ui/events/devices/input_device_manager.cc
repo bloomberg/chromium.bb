@@ -3,35 +3,41 @@
 // found in the LICENSE file.
 
 #include "ui/events/devices/input_device_manager.h"
+#include "base/lazy_instance.h"
+#include "base/threading/thread_local.h"
 
 namespace ui {
 namespace {
 
-InputDeviceManager* g_instance = nullptr;
+// InputDeviceManager singleton is thread-local so that different instances can
+// be used on different threads (eg. UI Service thread vs. browser UI thread).
+base::LazyInstance<base::ThreadLocalPointer<InputDeviceManager>>::Leaky
+    lazy_tls_ptr = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 // static
 InputDeviceManager* InputDeviceManager::GetInstance() {
-  DCHECK(g_instance) << "InputDeviceManager::SetInstance must be called before "
-                        "getting the instance of InputDeviceManager.";
-  return g_instance;
+  InputDeviceManager* instance = lazy_tls_ptr.Pointer()->Get();
+  DCHECK(instance) << "InputDeviceManager::SetInstance must be called before "
+                      "getting the instance of InputDeviceManager.";
+  return instance;
 }
 
 // static
 bool InputDeviceManager::HasInstance() {
-  return g_instance;
+  return lazy_tls_ptr.Pointer()->Get() != nullptr;
 }
 
 // static
 void InputDeviceManager::SetInstance(InputDeviceManager* instance) {
-  DCHECK(!g_instance);
-  g_instance = instance;
+  DCHECK(!lazy_tls_ptr.Pointer()->Get());
+  lazy_tls_ptr.Pointer()->Set(instance);
 }
 
 // static
 void InputDeviceManager::ClearInstance() {
-  g_instance = nullptr;
+  lazy_tls_ptr.Pointer()->Set(nullptr);
 }
 
 }  // namespace ui
