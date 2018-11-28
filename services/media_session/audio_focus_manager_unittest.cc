@@ -99,6 +99,14 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
                                                  audio_focus_type);
   }
 
+  AudioFocusManager::RequestId RequestGroupedAudioFocus(
+      test::MockMediaSession* session,
+      mojom::AudioFocusType audio_focus_type,
+      const base::UnguessableToken& group_id) {
+    return session->RequestGroupedAudioFocusFromService(
+        audio_focus_ptr_, audio_focus_type, group_id);
+  }
+
   mojom::MediaSessionDebugInfoPtr GetDebugInfo(
       AudioFocusManager::RequestId request_id) {
     mojom::MediaSessionDebugInfoPtr result;
@@ -1032,6 +1040,130 @@ TEST_P(AudioFocusManagerTest, ObserverActiveSessionChanged) {
         observer->notifications().back());
     EXPECT_TRUE(observer->active_session_.is_null());
   }
+}
+
+TEST_P(AudioFocusManagerTest, AudioFocusGrouping_AllowDucking) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+  test::MockMediaSession media_session_3;
+
+  base::UnguessableToken group_id = base::UnguessableToken::Create();
+
+  RequestGroupedAudioFocus(&media_session_1, mojom::AudioFocusType::kGain,
+                           group_id);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestAudioFocus(&media_session_2,
+                    mojom::AudioFocusType::kGainTransientMayDuck);
+  EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking),
+            GetState(&media_session_1));
+
+  RequestGroupedAudioFocus(&media_session_3, mojom::AudioFocusType::kGain,
+                           group_id);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_3));
+  EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking),
+            GetState(&media_session_1));
+}
+
+TEST_P(AudioFocusManagerTest, AudioFocusGrouping_TransientResume) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+  test::MockMediaSession media_session_3;
+  test::MockMediaSession media_session_4;
+
+  base::UnguessableToken group_id = base::UnguessableToken::Create();
+
+  RequestGroupedAudioFocus(&media_session_1, mojom::AudioFocusType::kGain,
+                           group_id);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
+
+  RequestGroupedAudioFocus(&media_session_3, mojom::AudioFocusType::kGain,
+                           group_id);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_3));
+
+  RequestAudioFocus(&media_session_4, mojom::AudioFocusType::kGainTransient);
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_1));
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_2));
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_3));
+
+  media_session_4.AbandonAudioFocusFromClient();
+
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_2));
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_3));
+}
+
+TEST_P(AudioFocusManagerTest, AudioFocusGrouping_DoNotSuspendSameGroup) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  base::UnguessableToken group_id = base::UnguessableToken::Create();
+
+  RequestGroupedAudioFocus(&media_session_1, mojom::AudioFocusType::kGain,
+                           group_id);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestGroupedAudioFocus(&media_session_2, mojom::AudioFocusType::kGain,
+                           group_id);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
+}
+
+TEST_P(AudioFocusManagerTest, AudioFocusGrouping_DuckSameGroup) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  base::UnguessableToken group_id = base::UnguessableToken::Create();
+
+  RequestGroupedAudioFocus(&media_session_1, mojom::AudioFocusType::kGain,
+                           group_id);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestGroupedAudioFocus(
+      &media_session_2, mojom::AudioFocusType::kGainTransientMayDuck, group_id);
+  EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking),
+            GetState(&media_session_1));
+}
+
+TEST_P(AudioFocusManagerTest, AudioFocusGrouping_TransientSameGroup) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  base::UnguessableToken group_id = base::UnguessableToken::Create();
+
+  RequestGroupedAudioFocus(&media_session_1, mojom::AudioFocusType::kGain,
+                           group_id);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestGroupedAudioFocus(&media_session_2,
+                           mojom::AudioFocusType::kGainTransient, group_id);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
 }
 
 }  // namespace media_session

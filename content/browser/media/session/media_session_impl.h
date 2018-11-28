@@ -197,6 +197,12 @@ class MediaSessionImpl : public MediaSession,
   // Set the volume multiplier applied during ducking.
   CONTENT_EXPORT void SetDuckingVolumeMultiplier(double multiplier) override;
 
+  // Set the audio focus group id for this media session. Sessions in the same
+  // group can share audio focus. Setting this to null will use the browser
+  // default value.
+  CONTENT_EXPORT void SetAudioFocusGroupId(
+      const base::UnguessableToken& group_id);
+
   // Suspend the media session.
   // |type| represents the origin of the request.
   CONTENT_EXPORT void Suspend(MediaSession::SuspendType suspend_type) override;
@@ -231,6 +237,10 @@ class MediaSessionImpl : public MediaSession,
 
   // Skip to the next track.
   CONTENT_EXPORT void NextTrack() override;
+
+  const base::UnguessableToken& audio_focus_group_id() const {
+    return audio_focus_group_id_;
+  }
 
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
@@ -354,6 +364,8 @@ class MediaSessionImpl : public MediaSession,
   // is set to |true| after StartDucking(), and will be set to |false| after
   // StopDucking().
   bool is_ducking_;
+
+  base::UnguessableToken audio_focus_group_id_ = base::UnguessableToken::Null();
 
   double ducking_volume_multiplier_;
 

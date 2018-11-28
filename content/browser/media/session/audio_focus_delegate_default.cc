@@ -4,6 +4,8 @@
 
 #include "content/browser/media/session/audio_focus_delegate.h"
 
+#include "base/no_destructor.h"
+#include "base/unguessable_token.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
@@ -19,6 +21,12 @@ using media_session::mojom::AudioFocusType;
 namespace {
 
 const char kAudioFocusSourceName[] = "web";
+
+static const base::UnguessableToken& GetBrowserGroupId() {
+  static const base::NoDestructor<base::UnguessableToken> token(
+      base::UnguessableToken::Create());
+  return *token;
+}
 
 // AudioFocusDelegateDefault is the default implementation of
 // AudioFocusDelegate which only handles audio focus between WebContents.
@@ -91,9 +99,12 @@ AudioFocusDelegateDefault::RequestAudioFocus(AudioFocusType audio_focus_type) {
     media_session::mojom::MediaSessionPtr media_session;
     media_session_->BindToMojoRequest(mojo::MakeRequest(&media_session));
 
-    audio_focus_ptr_->RequestAudioFocus(
+    audio_focus_ptr_->RequestGroupedAudioFocus(
         mojo::MakeRequest(&request_client_ptr_), std::move(media_session),
         session_info_.Clone(), audio_focus_type,
+        media_session_->audio_focus_group_id() == base::UnguessableToken::Null()
+            ? GetBrowserGroupId()
+            : media_session_->audio_focus_group_id(),
         base::BindOnce(&AudioFocusDelegateDefault::FinishAudioFocusRequest,
                        base::Unretained(this), audio_focus_type));
   }
