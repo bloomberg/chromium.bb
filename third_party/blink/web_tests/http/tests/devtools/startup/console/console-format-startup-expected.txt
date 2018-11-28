@@ -10,35 +10,35 @@ console-format-startup.html:27 %ss self-escape3 dummy
 console-format-startup.html:28 %sdummy%s self-escape4
 console-format-startup.html:29 %%% self-escape5 dummy
 console-format-startup.html:30 %dummy self-escape6
-console-format-startup.html:153 
+console-format-startup.html:153 null
 console-format-startup.html:155 Array of arrays
-console-format-startup.html:156 
+console-format-startup.html:156 Array(2)
 console-format-startup.html:158 Large array of arrays
-console-format-startup.html:159 
+console-format-startup.html:159 Array(8)
 console-format-startup.html:161 Array or array and object
-console-format-startup.html:162 
+console-format-startup.html:162 Array(2)
 console-format-startup.html:164 Object table
-console-format-startup.html:165 
+console-format-startup.html:165 Object
 console-format-startup.html:167 Null as columns
-console-format-startup.html:168 
+console-format-startup.html:168 Array(2) null
 console-format-startup.html:170 Digit as columns
-console-format-startup.html:171 
+console-format-startup.html:171 Array(2) 0
 console-format-startup.html:173 String as columns
-console-format-startup.html:174 
+console-format-startup.html:174 Array(2) "0"
 console-format-startup.html:176 Random string as columns
-console-format-startup.html:177 
+console-format-startup.html:177 Array(2) "Foo"
 console-format-startup.html:179 Array of strings as columns
-console-format-startup.html:180 
+console-format-startup.html:180 Array(2) Array(2)
 console-format-startup.html:182 Good and bad column names
-console-format-startup.html:183 
+console-format-startup.html:183 Array(2) Array(3)
 console-format-startup.html:185 Missing column name
-console-format-startup.html:186 
+console-format-startup.html:186 Array(2) Array(1)
 console-format-startup.html:188 Shallow array
-console-format-startup.html:189 
+console-format-startup.html:189 Array(3)
 console-format-startup.html:191 Shallow array with 'Value' column
-console-format-startup.html:192 
+console-format-startup.html:192 Array(2)
 console-format-startup.html:194 Deep and shallow array
-console-format-startup.html:195 
+console-format-startup.html:195 Array(3)
 console-format-startup.html:206 HTMLCollection(1)
 console-format-startup.html:210 HTMLCollection(1)
 console-format-startup.html:214 HTMLOptionsCollection(2)
@@ -347,35 +347,110 @@ console-format-startup.html:27 %ss self-escape3 dummy
 console-format-startup.html:28 %sdummy%s self-escape4
 console-format-startup.html:29 %%% self-escape5 dummy
 console-format-startup.html:30 %dummy self-escape6
-console-format-startup.html:153 
+console-format-startup.html:153 null
 console-format-startup.html:155 Array of arrays
-console-format-startup.html:156 
+console-format-startup.html:156 Array(2)
+    0: (3) [1, 2, 3]
+    1: (3) [4, 5, 6]
+    length: 2
+    __proto__: Array(0)
 console-format-startup.html:158 Large array of arrays
-console-format-startup.html:159 
+console-format-startup.html:159 Array(8)
+    0: (3) [1, 2, 3]
+    1: (3) [4, 5, 6]
+    2: (3) [1, 2, 3]
+    3: (3) [4, 5, 6]
+    4: (3) [1, 2, 3]
+    5: (3) [4, 5, 6]
+    6: (3) [1, 2, 3]
+    7: (3) [4, 5, 6]
+    length: 8
+    __proto__: Array(0)
 console-format-startup.html:161 Array or array and object
-console-format-startup.html:162 
+console-format-startup.html:162 Array(2)
+    0: (3) [1, 2, 3]
+    1: {a: 1, b: 2, c: 3}
+    length: 2
+    __proto__: Array(0)
 console-format-startup.html:164 Object table
-console-format-startup.html:165 
+console-format-startup.html:165 Object
+    bar: {a: 3, b: 4}
+    foo: {a: 1, b: 2}
+    __proto__: Object
 console-format-startup.html:167 Null as columns
-console-format-startup.html:168 
+console-format-startup.html:168 Array(2)
+    0: (3) [1, 2, 3]
+    1: (3) [4, 5, 6]
+    length: 2
+    __proto__: Array(0) null
 console-format-startup.html:170 Digit as columns
-console-format-startup.html:171 
+console-format-startup.html:171 Array(2)
+    0: (3) [1, 2, 3]
+    1: (3) [4, 5, 6]
+    length: 2
+    __proto__: Array(0) 0
 console-format-startup.html:173 String as columns
-console-format-startup.html:174 
+console-format-startup.html:174 Array(2)
+    0: (3) [1, 2, 3]
+    1: (3) [4, 5, 6]
+    length: 2
+    __proto__: Array(0) "0"
 console-format-startup.html:176 Random string as columns
-console-format-startup.html:177 
+console-format-startup.html:177 Array(2)
+    0: (3) [1, 2, 3]
+    1: (3) [4, 5, 6]
+    length: 2
+    __proto__: Array(0) "Foo"
 console-format-startup.html:179 Array of strings as columns
-console-format-startup.html:180 
+console-format-startup.html:180 Array(2)
+    0: {a: 1, b: 2, c: 3}
+    1: {a: "foo", b: "bar"}
+    length: 2
+    __proto__: Array(0) Array(2)
+    0: "a"
+    1: "b"
+    length: 2
+    __proto__: Array(0)
 console-format-startup.html:182 Good and bad column names
-console-format-startup.html:183 
+console-format-startup.html:183 Array(2)
+    0: {a: 1, b: 2, c: 3}
+    1: {a: "foo"}
+    length: 2
+    __proto__: Array(0) Array(3)
+    0: "a"
+    1: "b"
+    2: "d"
+    length: 3
+    __proto__: Array(0)
 console-format-startup.html:185 Missing column name
-console-format-startup.html:186 
+console-format-startup.html:186 Array(2)
+    0: {a: 1, b: 2, c: 3}
+    1: {a: "foo"}
+    length: 2
+    __proto__: Array(0) Array(1)
+    0: "d"
+    length: 1
+    __proto__: Array(0)
 console-format-startup.html:188 Shallow array
-console-format-startup.html:189 
+console-format-startup.html:189 Array(3)
+    0: 1
+    1: "foo"
+    2: null
+    length: 3
+    __proto__: Array(0)
 console-format-startup.html:191 Shallow array with 'Value' column
-console-format-startup.html:192 
+console-format-startup.html:192 Array(2)
+    0: 1
+    1: {Value: 2}
+    length: 2
+    __proto__: Array(0)
 console-format-startup.html:194 Deep and shallow array
-console-format-startup.html:195 
+console-format-startup.html:195 Array(3)
+    0: 1
+    1: "foo"
+    2: [2]
+    length: 3
+    __proto__: Array(0)
 console-format-startup.html:206 HTMLCollection(1)
     0: select#sel
     length: 1
