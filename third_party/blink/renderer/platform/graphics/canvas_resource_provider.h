@@ -55,6 +55,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kSoftwareCompositedResourceUsage,
     kAcceleratedResourceUsage,
     kAcceleratedCompositedResourceUsage,
+    kAcceleratedDirectResourceUsage,
   };
 
   enum PresentationMode {

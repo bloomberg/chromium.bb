@@ -346,7 +346,97 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
   }
 };
 
+// * Renders to a GpuMemoryBuffer-backed texture used to create a SkSurface.
+// * Layers are overlay candidates
+class CanvasResourceProviderDirectGpuMemoryBuffer final
+    : public CanvasResourceProvider {
+ public:
+  CanvasResourceProviderDirectGpuMemoryBuffer(
+      const IntSize& size,
+      unsigned msaa_sample_count,
+      const CanvasColorParams color_params,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+          context_provider_wrapper,
+      base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
+      bool is_origin_top_left)
+      : CanvasResourceProvider(size,
+                               color_params,
+                               std::move(context_provider_wrapper),
+                               std::move(resource_dispatcher)),
+        msaa_sample_count_(msaa_sample_count),
+        is_origin_top_left_(is_origin_top_left) {
+    constexpr bool is_accelerated = true;
+    resource_ = CanvasResourceGpuMemoryBuffer::Create(
+        Size(), ColorParams(), ContextProviderWrapper(), CreateWeakPtr(),
+        FilterQuality(), is_accelerated);
+  }
+
+  ~CanvasResourceProviderDirectGpuMemoryBuffer() override = default;
+  bool IsValid() const final { return GetSkSurface() && !IsGpuContextLost(); }
+  bool IsAccelerated() const final { return true; }
+  bool SupportsDirectCompositing() const override { return true; }
+  bool SupportsSingleBuffering() const override { return true; }
+
+ private:
+  GLuint GetBackingTextureHandleForOverwrite() override {
+    return resource_->GetBackingTextureHandleForOverwrite();
+  }
+
+  scoped_refptr<CanvasResource> CreateResource() final {
+    TRACE_EVENT0("blink",
+                 "CanvasResourceProviderDirectGpuMemoryBuffer::CreateResource");
+    DCHECK(resource_);
+    return resource_;
+  }
+
+  scoped_refptr<CanvasResource> ProduceFrame() final {
+    TRACE_EVENT0("blink",
+                 "CanvasResourceProviderDirectGpuMemoryBuffer::ProduceFrame");
+    if (IsGpuContextLost())
+      return nullptr;
+    FlushSkia();
+
+    auto* gl = ContextGL();
+    DCHECK(gl);
+    gl->Flush();
+
+    return NewOrRecycledResource();
+  }
+
+  sk_sp<SkSurface> CreateSkSurface() const override {
+    if (IsGpuContextLost())
+      return nullptr;
+    auto* gr = GetGrContext();
+    DCHECK(gr);
+
+    GrGLTextureInfo texture_info = {};
+    texture_info.fID = resource_->GetBackingTextureHandleForOverwrite();
+    texture_info.fTarget = GL_TEXTURE_2D;
+    // Skia requires a sized internal format.
+    texture_info.fFormat = ColorParams().GLSizedInternalFormat();
+
+    const GrBackendTexture backend_texture(Size().Width(), Size().Height(),
+                                           GrMipMapped::kNo, texture_info);
+
+    const enum GrSurfaceOrigin surface_origin =
+        is_origin_top_left_ ? kTopLeft_GrSurfaceOrigin
+                            : kBottomLeft_GrSurfaceOrigin;
+
+    auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
+        gr, backend_texture, surface_origin, msaa_sample_count_,
+        ColorParams().GetSkColorType(),
+        ColorParams().GetSkColorSpaceForSkSurfaces(),
+        ColorParams().GetSkSurfaceProps());
+    return surface;
+  }
+
+  const unsigned msaa_sample_count_;
+  const bool is_origin_top_left_;
+  scoped_refptr<CanvasResource> resource_;
+};
+
 enum CanvasResourceType {
+  kDirectGpuMemoryBufferResourceType,
   kTextureGpuMemoryBufferResourceType,
   kRamGpuMemoryBufferResourceType,
   kSharedBitmapResourceType,
@@ -374,6 +464,18 @@ constexpr CanvasResourceType kAcceleratedCompositedFallbackList[] = {
     kTextureGpuMemoryBufferResourceType, kTextureResourceType,
     // Fallback to software composited
     kRamGpuMemoryBufferResourceType, kSharedBitmapResourceType,
+    // Fallback to no direct compositing support
+    kBitmapResourceType,
+};
+
+constexpr CanvasResourceType kAcceleratedDirectFallbackList[] = {
+    kDirectGpuMemoryBufferResourceType,
+    // The rest is equal to |kAcceleratedCompositedFallbackList|.
+    kTextureGpuMemoryBufferResourceType,
+    kTextureResourceType,
+    // Fallback to software composited
+    kRamGpuMemoryBufferResourceType,
+    kSharedBitmapResourceType,
     // Fallback to no direct compositing support
     kBitmapResourceType,
 };
@@ -407,15 +509,21 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
       resource_type_fallback_list = kAcceleratedCompositedFallbackList;
       list_length = arraysize(kAcceleratedCompositedFallbackList);
       break;
+    case kAcceleratedDirectResourceUsage:
+      resource_type_fallback_list = kAcceleratedDirectFallbackList;
+      list_length = arraysize(kAcceleratedDirectFallbackList);
+      break;
   }
 
   std::unique_ptr<CanvasResourceProvider> provider;
   for (size_t i = 0; i < list_length; ++i) {
     // Note: We are deliberately not using std::move() on
-    // context_provider_wrapper and resource_dispatcher to ensure that the
+    // |context_provider_wrapper| and |resource_dispatcher| to ensure that the
     // pointers remain valid for the next iteration of this loop if necessary.
     switch (resource_type_fallback_list[i]) {
       case kTextureGpuMemoryBufferResourceType:
+        FALLTHROUGH;
+      case kDirectGpuMemoryBufferResourceType:
         if (!SharedGpuContext::IsGpuCompositingEnabled())
           continue;
         if (presentation_mode != kAllowImageChromiumPresentationMode)
@@ -435,10 +543,20 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         DCHECK_EQ(color_params.GLUnsizedInternalFormat(),
                   gpu::InternalFormatForGpuMemoryBufferFormat(
                       color_params.GetBufferFormat()));
-        provider =
-            std::make_unique<CanvasResourceProviderTextureGpuMemoryBuffer>(
-                size, msaa_sample_count, color_params, context_provider_wrapper,
-                resource_dispatcher, is_origin_top_left);
+        if (resource_type_fallback_list[i] ==
+            kDirectGpuMemoryBufferResourceType) {
+          provider =
+              std::make_unique<CanvasResourceProviderDirectGpuMemoryBuffer>(
+                  size, msaa_sample_count, color_params,
+                  context_provider_wrapper, resource_dispatcher,
+                  is_origin_top_left);
+        } else {
+          provider =
+              std::make_unique<CanvasResourceProviderTextureGpuMemoryBuffer>(
+                  size, msaa_sample_count, color_params,
+                  context_provider_wrapper, resource_dispatcher,
+                  is_origin_top_left);
+        }
         break;
       case kRamGpuMemoryBufferResourceType:
         if (!SharedGpuContext::IsGpuCompositingEnabled())
@@ -476,11 +594,11 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             size, color_params, context_provider_wrapper, resource_dispatcher);
         break;
     }
-    if (provider && provider->IsValid()) {
-      base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
-                                provider->IsAccelerated());
-      return provider;
-    }
+    if (!provider->IsValid())
+      continue;
+    base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
+                              provider->IsAccelerated());
+    return provider;
   }
 
   return nullptr;

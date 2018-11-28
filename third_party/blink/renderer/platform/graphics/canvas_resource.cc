@@ -426,6 +426,10 @@ bool CanvasResourceGpuMemoryBuffer::HasGpuMailbox() const {
   return !gpu_mailbox_.IsZero();
 }
 
+GLuint CanvasResourceGpuMemoryBuffer::GetBackingTextureHandleForOverwrite() {
+  return texture_2d_id_for_copy_ ? texture_2d_id_for_copy_ : texture_id_;
+}
+
 const gpu::SyncToken CanvasResourceGpuMemoryBuffer::GetSyncToken() {
   if (mailbox_needs_new_sync_token_) {
     auto* gl = ContextGL();
@@ -467,8 +471,6 @@ void CanvasResourceGpuMemoryBuffer::CopyFromTexture(GLuint source_texture,
 }
 
 void CanvasResourceGpuMemoryBuffer::TakeSkImage(sk_sp<SkImage> image) {
-  TRACE_EVENT0("blink", "CanvasResourceGpuMemoryBuffer::CopyFromTexture");
-
   WillPaint();
   if (!surface_)
     return;
