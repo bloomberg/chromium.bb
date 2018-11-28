@@ -1046,7 +1046,7 @@ class ChromiumAndroidDriver(driver.Driver):
     def _command_from_driver_input(self, driver_input):
         command = super(ChromiumAndroidDriver, self)._command_from_driver_input(driver_input)
         if command.startswith('/'):
-            command = 'http://127.0.0.1:8000' + LAYOUT_TEST_PATH_PREFIX + \
+            command = 'http://127.0.0.1:8000' + WEB_TESTS_PATH_PREFIX + \
                 '/' + self._port.relative_test_filename(command)
         return command
 
