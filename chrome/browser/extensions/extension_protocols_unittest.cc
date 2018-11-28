@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/power_monitor_test_base.h"
 #include "base/test/test_file_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -287,6 +288,12 @@ class ExtensionProtocolsTest
 
   content::BrowserContext* browser_context() { return testing_profile_.get(); }
 
+  void SimulateSystemSuspendForRequests() {
+    power_monitor_source_ = new base::PowerMonitorTestSource();
+    power_monitor_ = std::make_unique<base::PowerMonitor>(
+        std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_));
+  }
+
  protected:
   scoped_refptr<ContentVerifier> content_verifier_;
 
@@ -303,6 +310,11 @@ class ExtensionProtocolsTest
         CreateResourceRequest("GET", resource_type, url),
         client.CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    if (power_monitor_source_) {
+      power_monitor_source_->GenerateSuspendEvent();
+      power_monitor_source_->GenerateResumeEvent();
+    }
 
     client.RunUntilComplete();
     return GetResult(client.response_head(),
@@ -325,7 +337,18 @@ class ExtensionProtocolsTest
         /*is_async=*/false, content::PREVIEWS_OFF,
         /*navigation_ui_data*/ nullptr);
     request->Start();
-    base::RunLoop().Run();
+
+    if (power_monitor_source_) {
+      power_monitor_source_->GenerateSuspendEvent();
+      power_monitor_source_->GenerateResumeEvent();
+
+      // PowerMonitorTestSource calls RunLoop().RunUntilIdle() which causes the
+      // request to be completed.
+      EXPECT_TRUE(test_delegate_.response_completed());
+    } else {
+      base::RunLoop().Run();
+    }
+
     return GetResult(std::move(request), test_delegate_.request_status());
   }
 
@@ -352,6 +375,11 @@ class ExtensionProtocolsTest
   std::unique_ptr<TestingProfile> testing_profile_;
   net::TestDelegate test_delegate_;
   std::unique_ptr<content::WebContents> contents_;
+
+  std::unique_ptr<base::PowerMonitor> power_monitor_;
+
+  // |power_monitor_source_| is owned by |power_monitor_|
+  base::PowerMonitorTestSource* power_monitor_source_ = nullptr;
 };
 
 // Tests that making a chrome-extension request in an incognito context is
@@ -757,6 +785,31 @@ TEST_P(ExtensionProtocolsTest, MimeTypesForKnownFiles) {
         test_case.expected_mime_type,
         result.GetResponseHeaderByName(net::HttpRequestHeaders::kContentType));
   }
+}
+
+// Tests that requests for extension resources (including the generated
+// background page) are not aborted on system suspend.
+TEST_P(ExtensionProtocolsTest, ExtensionRequestsNotAborted) {
+  // Register a non-incognito extension protocol handler.
+  SetProtocolHandler(false);
+
+  base::FilePath extension_dir =
+      GetTestPath("common").AppendASCII("background_script");
+  std::string error;
+  scoped_refptr<Extension> extension = file_util::LoadExtension(
+      extension_dir, Manifest::INTERNAL, Extension::NO_FLAGS, &error);
+  ASSERT_TRUE(extension.get()) << error;
+
+  SimulateSystemSuspendForRequests();
+
+  // Request the generated background page. Ensure the request completes
+  // successfully.
+  EXPECT_EQ(net::OK,
+            DoRequestOrLoad(extension.get(), kGeneratedBackgroundPageFilename)
+                .result());
+
+  // Request the background.js file. Ensure the request completes successfully.
+  EXPECT_EQ(net::OK, DoRequestOrLoad(extension.get(), "background.js").result());
 }
 
 INSTANTIATE_TEST_CASE_P(Extensions,
