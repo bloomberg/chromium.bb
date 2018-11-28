@@ -474,8 +474,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in natively and crashes.
         ChromeSigninController.get().setSignedInAccountName(mSignInState.mAccount.name);
-        AndroidSyncSettings.updateAccount(mSignInState.mAccount);
-        AndroidSyncSettings.enableChromeSync();
+        AndroidSyncSettings.get().updateAccount(mSignInState.mAccount);
+        AndroidSyncSettings.get().enableChromeSync();
 
         if (mSignInState.mCallback != null) {
             mSignInState.mCallback.onSignInComplete();
@@ -652,7 +652,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         assert mSignOutState != null;
 
         ChromeSigninController.get().setSignedInAccountName(null);
-        AndroidSyncSettings.updateAccount(null);
+        AndroidSyncSettings.get().updateAccount(null);
 
         if (mSignOutState.mManagementDomain != null) {
             wipeProfileData();

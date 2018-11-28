@@ -228,7 +228,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
                     @Override
                     public void run() {
                         // Ensure SyncController is registered with the new AndroidSyncSettings.
-                        AndroidSyncSettings.registerObserver(SyncController.get(mContext));
+                        AndroidSyncSettings.get().registerObserver(SyncController.get(mContext));
                         mFakeServerHelper = FakeServerHelper.get();
                     }
                 });

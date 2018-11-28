@@ -68,13 +68,17 @@ public class AndroidSyncSettings {
      */
     public interface AndroidSyncSettingsObserver { public void androidSyncSettingsChanged(); }
 
-    private static void ensureInitialized() {
+    /**
+      Singleton instance getter. Will initialize the singleton if it hasn't been initialized before.
+     */
+    public static AndroidSyncSettings get() {
         synchronized (CLASS_LOCK) {
             if (sInstance == null) {
                 SyncContentResolverDelegate contentResolver =
                         new SystemSyncContentResolverDelegate();
                 sInstance = new AndroidSyncSettings(contentResolver);
             }
+            return sInstance;
         }
     }
 
@@ -120,9 +124,8 @@ public class AndroidSyncSettings {
      *
      * @return true if sync is on, false otherwise
      */
-    public static boolean isSyncEnabled() {
-        ensureInitialized();
-        return sInstance.mMasterSyncEnabled && sInstance.mChromeSyncEnabled;
+    public boolean isSyncEnabled() {
+        return mMasterSyncEnabled && mChromeSyncEnabled;
     }
 
     /**
@@ -134,39 +137,35 @@ public class AndroidSyncSettings {
      * @return true if sync is on, false otherwise
      */
     @VisibleForTesting
-    public static boolean isChromeSyncEnabled() {
-        ensureInitialized();
-        return sInstance.mChromeSyncEnabled;
+    public boolean isChromeSyncEnabled() {
+        return mChromeSyncEnabled;
     }
 
     /**
      * Checks whether the master sync flag for Android is currently enabled.
      */
-    public static boolean isMasterSyncEnabled() {
-        ensureInitialized();
-        return sInstance.mMasterSyncEnabled;
+    public boolean isMasterSyncEnabled() {
+        return mMasterSyncEnabled;
     }
 
     /**
      * Make sure Chrome is syncable, and enable sync.
      */
-    public static void enableChromeSync() {
-        ensureInitialized();
-        sInstance.setChromeSyncEnabled(true);
+    public void enableChromeSync() {
+        setChromeSyncEnabled(true);
     }
 
     /**
      * Disables Android Chrome sync
      */
-    public static void disableChromeSync() {
-        ensureInitialized();
-        sInstance.setChromeSyncEnabled(false);
+    public void disableChromeSync() {
+        setChromeSyncEnabled(false);
     }
 
     /**
      * Must be called when a new account is signed in.
      */
-    public static void updateAccount(Account account) {
+    public void updateAccount(Account account) {
         updateAccount(account, null);
     }
 
@@ -176,42 +175,38 @@ public class AndroidSyncSettings {
      *                 passed to the callback indicates whether syncability was changed.
      */
     @VisibleForTesting
-    public static void updateAccount(Account account, @Nullable Callback<Boolean> callback) {
-        ensureInitialized();
-        synchronized (sInstance.mLock) {
-            sInstance.mAccount = account;
-            sInstance.updateSyncability(callback);
+    public void updateAccount(Account account, @Nullable Callback<Boolean> callback) {
+        synchronized (mLock) {
+            mAccount = account;
+            updateSyncability(callback);
         }
-        if (sInstance.updateCachedSettings()) {
-            sInstance.notifyObservers();
+        if (updateCachedSettings()) {
+            notifyObservers();
         }
     }
 
     /**
      * Returns the contract authority to use when requesting sync.
      */
-    public static String getContractAuthority() {
-        ensureInitialized();
-        return sInstance.mContractAuthority;
+    public String getContractAuthority() {
+        return mContractAuthority;
     }
 
     /**
      * Add a new AndroidSyncSettingsObserver.
      */
-    public static void registerObserver(AndroidSyncSettingsObserver observer) {
-        ensureInitialized();
-        synchronized (sInstance.mLock) {
-            sInstance.mObservers.addObserver(observer);
+    public void registerObserver(AndroidSyncSettingsObserver observer) {
+        synchronized (mLock) {
+            mObservers.addObserver(observer);
         }
     }
 
     /**
      * Remove an AndroidSyncSettingsObserver that was previously added.
      */
-    public static void unregisterObserver(AndroidSyncSettingsObserver observer) {
-        ensureInitialized();
-        synchronized (sInstance.mLock) {
-            sInstance.mObservers.removeObserver(observer);
+    public void unregisterObserver(AndroidSyncSettingsObserver observer) {
+        synchronized (mLock) {
+            mObservers.removeObserver(observer);
         }
     }
 

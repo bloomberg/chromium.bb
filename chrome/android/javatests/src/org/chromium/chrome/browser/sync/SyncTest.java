@@ -133,7 +133,7 @@ public class SyncTest {
                 // settings. This would normally be done by the
                 // SystemSyncTestRule.getSyncContentResolver().
                 mSyncTestRule.getSyncContentResolver().renameAccounts(
-                        oldAccount, newAccount, AndroidSyncSettings.getContractAuthority());
+                        oldAccount, newAccount, AndroidSyncSettings.get().getContractAuthority());
 
                 // Inform the AccountTracker, these would normally be done by account validation
                 // or signin. We will only be calling the testing versions of it.
@@ -180,7 +180,7 @@ public class SyncTest {
     public void testStopAndStartSyncThroughAndroid() {
         Account account = mSyncTestRule.setUpTestAccountAndSignIn();
 
-        String authority = AndroidSyncSettings.getContractAuthority();
+        String authority = AndroidSyncSettings.get().getContractAuthority();
 
         // Disabling Android sync should turn Chrome sync engine off.
         mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, false);

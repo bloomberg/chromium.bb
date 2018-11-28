@@ -87,8 +87,8 @@ public class ChromeBrowserSyncAdapterTest {
     }
 
     private void performSyncWithBundle(Bundle bundle) {
-        mSyncAdapter.onPerformSync(TEST_ACCOUNT, bundle, AndroidSyncSettings.getContractAuthority(),
-                null, new SyncResult());
+        mSyncAdapter.onPerformSync(TEST_ACCOUNT, bundle,
+                AndroidSyncSettings.get().getContractAuthority(), null, new SyncResult());
     }
 
     private void sendChromeToBackground(Activity activity) {

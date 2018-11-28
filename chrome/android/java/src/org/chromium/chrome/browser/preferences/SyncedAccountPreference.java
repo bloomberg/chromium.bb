@@ -42,7 +42,7 @@ public class SyncedAccountPreference extends ListPreference {
     }
 
     private void updateAccountsList() {
-        boolean syncEnabled = AndroidSyncSettings.isSyncEnabled();
+        boolean syncEnabled = AndroidSyncSettings.get().isSyncEnabled();
         if (!syncEnabled) {
             setEnabled(false);
             // Don't return at this point, we still want the preference to display the currently

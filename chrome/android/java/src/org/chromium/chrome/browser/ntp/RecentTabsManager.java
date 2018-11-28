@@ -124,7 +124,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void destroy() {
         mIsDestroyed = true;
-        AndroidSyncSettings.unregisterObserver(this);
+        AndroidSyncSettings.get().unregisterObserver(this);
 
         mSignInManager.removeSignInStateObserver(this);
         mSignInManager = null;
@@ -157,7 +157,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     }
 
     private void registerObservers() {
-        AndroidSyncSettings.registerObserver(this);
+        AndroidSyncSettings.get().registerObserver(this);
         mSignInManager.addSignInStateObserver(this);
 
         mProfileDataCache.addObserver(this);
@@ -351,8 +351,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
             return PromoState.PROMO_SIGNIN_PERSONALIZED;
         }
 
-        if (AndroidSyncSettings.isSyncEnabled() && AndroidSyncSettings.isChromeSyncEnabled()
-                && !mForeignSessions.isEmpty()) {
+        if (AndroidSyncSettings.get().isSyncEnabled()
+                && AndroidSyncSettings.get().isChromeSyncEnabled() && !mForeignSessions.isEmpty()) {
             return PromoState.PROMO_NONE;
         }
         return PromoState.PROMO_SYNC;
