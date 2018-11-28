@@ -640,7 +640,6 @@ public class ChromeTabbedActivity
 
     private boolean maybeShowPromo() {
         // Only one promo can be shown in one run to avoid nagging users too much.
-        if (SigninPromoUtil.launchConsentBumpIfNeeded(this)) return true;
         if (SigninPromoUtil.launchSigninPromoIfNeeded(this)) return true;
         if (DataReductionPromoScreen.launchDataReductionPromo(
                     this, mTabModelSelectorImpl.getCurrentModel().isIncognito())) {
