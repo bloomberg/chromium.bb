@@ -297,6 +297,12 @@ JSONTraceExporter::JSONTraceExporter(const std::string& config,
   auto* chrome_config = trace_event_config->mutable_chrome_config();
   chrome_config->set_trace_config(config_);
 
+  auto* system_trace_config = trace_config.add_data_sources()->mutable_config();
+  system_trace_config->set_name(mojom::kSystemTraceDataSourceName);
+  system_trace_config->set_target_buffer(0);
+  auto* system_chrome_config = system_trace_config->mutable_chrome_config();
+  system_chrome_config->set_trace_config(config_);
+
   auto* trace_metadata_config =
       trace_config.add_data_sources()->mutable_config();
   trace_metadata_config->set_name(mojom::kMetaDataSourceName);

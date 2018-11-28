@@ -121,9 +121,10 @@ void ProducerClient::AddDataSource(DataSourceBase* data_source) {
 void ProducerClient::AddDataSourceOnSequence(DataSourceBase* data_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  data_sources_.insert(data_source);
-  if (producer_host_) {
-    RegisterDataSourceWithHost(data_source);
+  if (data_sources_.insert(data_source).second) {
+    if (producer_host_) {
+      RegisterDataSourceWithHost(data_source);
+    }
   }
 }
 
