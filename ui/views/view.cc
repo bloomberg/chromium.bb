@@ -423,6 +423,9 @@ void View::SizeToPreferredSize() {
 }
 
 gfx::Size View::GetMinimumSize() const {
+  if (layout_manager_)
+    return layout_manager_->GetMinimumSize(this);
+
   return GetPreferredSize();
 }
 
@@ -431,7 +434,7 @@ gfx::Size View::GetMaximumSize() const {
 }
 
 int View::GetHeightForWidth(int w) const {
-  if (layout_manager_.get())
+  if (layout_manager_)
     return layout_manager_->GetPreferredHeightForWidth(this, w);
   return GetPreferredSize().height();
 }
@@ -586,7 +589,7 @@ void View::Layout() {
   needs_layout_ = false;
 
   // If we have a layout manager, let it handle the layout for us.
-  if (layout_manager_.get())
+  if (layout_manager_)
     layout_manager_->Layout(this);
 
   // Make sure to propagate the Layout() call to any children that haven't
@@ -609,6 +612,9 @@ void View::InvalidateLayout() {
   // Always invalidate up. This is needed to handle the case of us already being
   // valid, but not our parent.
   needs_layout_ = true;
+  if (layout_manager_)
+    layout_manager_->InvalidateLayout();
+
   if (parent_)
     parent_->InvalidateLayout();
 }
@@ -1496,7 +1502,7 @@ bool View::HasObserver(const ViewObserver* observer) const {
 // Size and disposition --------------------------------------------------------
 
 gfx::Size View::CalculatePreferredSize() const {
-  if (layout_manager_.get())
+  if (layout_manager_)
     return layout_manager_->GetPreferredSize(this);
   return gfx::Size();
 }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 
+#include <algorithm>
+
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -168,7 +170,7 @@ WebContentsModalDialogHost*
   return dialog_host_.get();
 }
 
-gfx::Size BrowserViewLayout::GetMinimumSize() {
+gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
   gfx::Size tabstrip_size(
       browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
       tab_strip_->GetMinimumSize() : gfx::Size());
@@ -184,7 +186,7 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
     bookmark_bar_size.Enlarge(0, -bookmark_bar_->GetToolbarOverlap());
   }
   gfx::Size infobar_container_size(infobar_container_->GetMinimumSize());
-  // TODO: Adjust the minimum height for the find bar.
+  // TODO(pkotwicz): Adjust the minimum height for the find bar.
 
   gfx::Size contents_size(contents_container_->GetMinimumSize());
   // Prevent having a 0x0 sized-contents as this can allow the window to be

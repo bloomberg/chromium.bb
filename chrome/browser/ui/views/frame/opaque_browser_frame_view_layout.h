@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_LAYOUT_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_LAYOUT_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/frame_button_display_types.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
@@ -51,8 +53,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   gfx::Rect GetBoundsForTabStrip(const gfx::Size& tabstrip_preferred_size,
                                  int total_width) const;
-
-  gfx::Size GetMinimumSize(int available_width) const;
 
   // Returns the bounds of the window required to display the content area at
   // the specified bounds.
@@ -127,6 +127,11 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   // Returns the extra thickness of the area above the tabs.
   int GetNonClientRestoredExtraThickness() const;
+
+  // views::LayoutManager:
+  // Called explicitly from OpaqueBrowserFrameView so we can't group it with
+  // the other overrides.
+  gfx::Size GetMinimumSize(const views::View* host) const override;
 
  protected:
   // Whether a specific button should be inserted on the leading or trailing

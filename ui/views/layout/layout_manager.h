@@ -34,15 +34,26 @@ class VIEWS_EXPORT LayoutManager {
   // Notification that this LayoutManager has been installed on |host|.
   virtual void Installed(View* host);
 
+  // For layout managers that can cache layout data, it's useful to let the
+  // layout manager know that its current layout might not be valid.
+  // TODO(dfried): consider if we should include some default behavior (like a
+  // rolling layout counter).
+  virtual void InvalidateLayout();
+
   // Called by View::Layout() to position and size the children of |host|.
   // Generally this queries |host| for its size and positions and sizes the
   // children in a LayoutManager specific way.
   virtual void Layout(View* host) = 0;
 
-  // Return the preferred size, which is typically the size needed to give each
+  // Returns the preferred size, which is typically the size needed to give each
   // child of |host| its preferred size. Generally this is calculated using the
   // View::CalculatePreferredSize() on each of the children of |host|.
   virtual gfx::Size GetPreferredSize(const View* host) const = 0;
+
+  // Returns the minimum size, which defaults to the preferred size. Layout
+  // managers with the ability to collapse or hide child views may override this
+  // behavior.
+  virtual gfx::Size GetMinimumSize(const View* host) const;
 
   // Return the preferred height for a particular width. Generally this is
   // calculated using View::GetHeightForWidth() or

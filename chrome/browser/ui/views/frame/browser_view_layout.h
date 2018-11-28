@@ -28,6 +28,7 @@ class Size;
 
 namespace views {
 class ClientView;
+class View;
 }
 
 namespace web_modal {
@@ -66,9 +67,6 @@ class BrowserViewLayout : public views::LayoutManager {
 
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost();
 
-  // Returns the minimum size of the browser view.
-  gfx::Size GetMinimumSize();
-
   // Returns the bounding box, in widget coordinates,  for the find bar.
   gfx::Rect GetFindBarBoundingBox() const;
 
@@ -80,6 +78,7 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // views::LayoutManager overrides:
   void Layout(views::View* host) override;
+  gfx::Size GetMinimumSize(const views::View* host) const override;
   gfx::Size GetPreferredSize(const views::View* host) const override;
 
   // Returns true if an infobar is showing.
@@ -92,6 +91,7 @@ class BrowserViewLayout : public views::LayoutManager {
   class WebContentsModalDialogHostViews;
 
   Browser* browser() { return browser_; }
+  const Browser* browser() const { return browser_; }
 
   // Layout the following controls, starting at |top|, returns the coordinate
   // of the bottom of the control, for laying out the next control.
