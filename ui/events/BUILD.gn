@@ -211,8 +211,10 @@ jumbo_component("events") {
     "system_input_injector.cc",
     "win/events_win.cc",
     "win/events_win_utils.cc",
-    "win/keyboard_hook_win.cc",
-    "win/keyboard_hook_win.h",
+    "win/keyboard_hook_win_base.cc",
+    "win/keyboard_hook_win_base.h",
+    "win/media_keyboard_hook_win.cc",
+    "win/modifier_keyboard_hook_win.cc",
     "win/system_event_state_lookup.cc",
   ]
 
@@ -509,7 +511,8 @@ if (!is_ios) {
       "platform/platform_event_source_unittest.cc",
       "scoped_target_handler_unittest.cc",
       "win/event_utils_win_unittest.cc",
-      "win/keyboard_hook_win_unittest.cc",
+      "win/media_keyboard_hook_win_unittest.cc",
+      "win/modifier_keyboard_hook_win_unittest.cc",
     ]
 
     deps = [
@@ -629,5 +632,23 @@ if (is_android) {
   generate_jar_jni("keyevent_jni_headers") {
     jni_package = "ui"
     classes = [ "android/view/KeyEvent.class" ]
+  }
+}
+
+# This target is added as a dependency of browser interactive_ui_tests. It must
+# be source_set, otherwise the linker will drop the tests as dead code.
+source_set("events_interactive_ui_tests") {
+  testonly = true
+  if (is_win) {
+    sources = [
+      "win/media_keyboard_hook_win_interactive_test.cc",
+    ]
+
+    deps = [
+      ":events",
+      ":test_support",
+      "//base/test:test_support",
+      "//testing/gtest",
+    ]
   }
 }

@@ -15,15 +15,15 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/keyboard_layout.h"
-#include "ui/events/win/keyboard_hook_win.h"
+#include "ui/events/win/keyboard_hook_win_base.h"
 #include "ui/events/win/system_event_state_lookup.h"
 
 namespace ui {
 
-class KeyboardHookWinTest : public testing::Test {
+class ModifierKeyboardHookWinTest : public testing::Test {
  public:
-  KeyboardHookWinTest();
-  ~KeyboardHookWinTest() override;
+  ModifierKeyboardHookWinTest();
+  ~ModifierKeyboardHookWinTest() override;
 
   // testing::Test overrides.
   void SetUp() override;
@@ -31,7 +31,7 @@ class KeyboardHookWinTest : public testing::Test {
   void HandleKeyPress(KeyEvent* key_event);
 
  protected:
-  KeyboardHookWin* keyboard_hook() { return keyboard_hook_.get(); }
+  KeyboardHookWinBase* keyboard_hook() { return keyboard_hook_.get(); }
 
   uint32_t next_time_stamp() { return time_stamp_++; }
 
@@ -47,34 +47,35 @@ class KeyboardHookWinTest : public testing::Test {
 
  private:
   uint32_t time_stamp_ = 0;
-  std::unique_ptr<KeyboardHookWin> keyboard_hook_;
+  std::unique_ptr<KeyboardHookWinBase> keyboard_hook_;
   std::vector<KeyEvent> key_events_;
   std::unique_ptr<ScopedKeyboardLayout> keyboard_layout_;
 
-  DISALLOW_COPY_AND_ASSIGN(KeyboardHookWinTest);
+  DISALLOW_COPY_AND_ASSIGN(ModifierKeyboardHookWinTest);
 };
 
-KeyboardHookWinTest::KeyboardHookWinTest() = default;
+ModifierKeyboardHookWinTest::ModifierKeyboardHookWinTest() = default;
 
-KeyboardHookWinTest::~KeyboardHookWinTest() = default;
+ModifierKeyboardHookWinTest::~ModifierKeyboardHookWinTest() = default;
 
-void KeyboardHookWinTest::SetUp() {
-  keyboard_hook_ = KeyboardHookWin::CreateForTesting(
+void ModifierKeyboardHookWinTest::SetUp() {
+  keyboard_hook_ = KeyboardHookWinBase::CreateModifierKeyboardHookForTesting(
       base::Optional<base::flat_set<DomCode>>(),
-      base::BindRepeating(&KeyboardHookWinTest::HandleKeyPress,
+      base::BindRepeating(&ModifierKeyboardHookWinTest::HandleKeyPress,
                           base::Unretained(this)));
 
   keyboard_layout_ = std::make_unique<ScopedKeyboardLayout>(
       KeyboardLayout::KEYBOARD_LAYOUT_ENGLISH_US);
 }
 
-void KeyboardHookWinTest::HandleKeyPress(KeyEvent* key_event) {
+void ModifierKeyboardHookWinTest::HandleKeyPress(KeyEvent* key_event) {
   key_events_.push_back(*key_event);
 }
 
-void KeyboardHookWinTest::SendModifierKeyDownEvent(KeyboardCode key_code,
-                                                   DomCode dom_code,
-                                                   int repeat_count /*=1*/) {
+void ModifierKeyboardHookWinTest::SendModifierKeyDownEvent(
+    KeyboardCode key_code,
+    DomCode dom_code,
+    int repeat_count /*=1*/) {
   // Ensure we have a valid repeat count and the modifer passed in contains
   // location information.
   DCHECK_GT(repeat_count, 0);
@@ -88,8 +89,8 @@ void KeyboardHookWinTest::SendModifierKeyDownEvent(KeyboardCode key_code,
   }
 }
 
-void KeyboardHookWinTest::SendModifierKeyUpEvent(KeyboardCode key_code,
-                                                 DomCode dom_code) {
+void ModifierKeyboardHookWinTest::SendModifierKeyUpEvent(KeyboardCode key_code,
+                                                         DomCode dom_code) {
   // Ensure we have a valid repeat count and the modifer passed in contains
   // location information.
   DCHECK_NE(key_code, KeyboardCode::VKEY_CONTROL);
@@ -116,7 +117,7 @@ void VerifyKeyEvent(KeyEvent* key_event,
   ASSERT_EQ(key_event->code(), dom_code);
 }
 
-TEST_F(KeyboardHookWinTest, SimpleLeftControlKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleLeftControlKeypressTest) {
   const KeyboardCode key_code = KeyboardCode::VKEY_LCONTROL;
   const DomCode dom_code = DomCode::CONTROL_LEFT;
   SendModifierKeyDownEvent(key_code, dom_code);
@@ -136,7 +137,7 @@ TEST_F(KeyboardHookWinTest, SimpleLeftControlKeypressTest) {
   ASSERT_FALSE(up_event.IsControlDown());
 }
 
-TEST_F(KeyboardHookWinTest, RepeatingLeftControlKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, RepeatingLeftControlKeypressTest) {
   const int repeat_count = 10;
   const KeyboardCode key_code = KeyboardCode::VKEY_LCONTROL;
   const DomCode dom_code = DomCode::CONTROL_LEFT;
@@ -161,7 +162,7 @@ TEST_F(KeyboardHookWinTest, RepeatingLeftControlKeypressTest) {
   ASSERT_FALSE(up_event.IsControlDown());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleRightControlKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleRightControlKeypressTest) {
   const KeyboardCode key_code = KeyboardCode::VKEY_RCONTROL;
   const DomCode dom_code = DomCode::CONTROL_RIGHT;
   SendModifierKeyDownEvent(key_code, dom_code);
@@ -181,7 +182,7 @@ TEST_F(KeyboardHookWinTest, SimpleRightControlKeypressTest) {
   ASSERT_FALSE(up_event.IsControlDown());
 }
 
-TEST_F(KeyboardHookWinTest, RepeatingRightControlKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, RepeatingRightControlKeypressTest) {
   const int repeat_count = 10;
   const KeyboardCode key_code = KeyboardCode::VKEY_RCONTROL;
   const DomCode dom_code = DomCode::CONTROL_RIGHT;
@@ -206,7 +207,7 @@ TEST_F(KeyboardHookWinTest, RepeatingRightControlKeypressTest) {
   ASSERT_FALSE(up_event.IsControlDown());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleLifoControlSequenceTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleLifoControlSequenceTest) {
   const KeyboardCode left_key_code = KeyboardCode::VKEY_LCONTROL;
   const DomCode left_dom_code = DomCode::CONTROL_LEFT;
   const KeyboardCode right_key_code = KeyboardCode::VKEY_RCONTROL;
@@ -253,7 +254,7 @@ TEST_F(KeyboardHookWinTest, SimpleLifoControlSequenceTest) {
   ASSERT_FALSE(event.IsControlDown());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleFifoControlSequenceTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleFifoControlSequenceTest) {
   const KeyboardCode left_key_code = KeyboardCode::VKEY_LCONTROL;
   const DomCode left_dom_code = DomCode::CONTROL_LEFT;
   const KeyboardCode right_key_code = KeyboardCode::VKEY_RCONTROL;
@@ -299,7 +300,7 @@ TEST_F(KeyboardHookWinTest, SimpleFifoControlSequenceTest) {
   ASSERT_FALSE(event.IsControlDown());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleLeftAltKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleLeftAltKeypressTest) {
   const KeyboardCode key_code = KeyboardCode::VKEY_LMENU;
   const DomCode dom_code = DomCode::ALT_LEFT;
   SendModifierKeyDownEvent(key_code, dom_code);
@@ -318,7 +319,7 @@ TEST_F(KeyboardHookWinTest, SimpleLeftAltKeypressTest) {
   ASSERT_FALSE(up_event.IsAltDown());
 }
 
-TEST_F(KeyboardHookWinTest, RepeatingLeftAltKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, RepeatingLeftAltKeypressTest) {
   const int repeat_count = 10;
   const KeyboardCode key_code = KeyboardCode::VKEY_LMENU;
   const DomCode dom_code = DomCode::ALT_LEFT;
@@ -343,7 +344,7 @@ TEST_F(KeyboardHookWinTest, RepeatingLeftAltKeypressTest) {
   ASSERT_FALSE(up_event.IsAltDown());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleRightAltKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleRightAltKeypressTest) {
   const KeyboardCode key_code = KeyboardCode::VKEY_RMENU;
   const DomCode dom_code = DomCode::ALT_LEFT;
   SendModifierKeyDownEvent(key_code, dom_code);
@@ -362,7 +363,7 @@ TEST_F(KeyboardHookWinTest, SimpleRightAltKeypressTest) {
   ASSERT_FALSE(up_event.IsAltDown());
 }
 
-TEST_F(KeyboardHookWinTest, RepeatingRightAltKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, RepeatingRightAltKeypressTest) {
   const int repeat_count = 10;
   const KeyboardCode key_code = KeyboardCode::VKEY_RMENU;
   const DomCode dom_code = DomCode::ALT_RIGHT;
@@ -387,7 +388,7 @@ TEST_F(KeyboardHookWinTest, RepeatingRightAltKeypressTest) {
   ASSERT_FALSE(up_event.IsAltDown());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleLifoAltSequenceTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleLifoAltSequenceTest) {
   const KeyboardCode left_key_code = KeyboardCode::VKEY_LMENU;
   const DomCode left_dom_code = DomCode::ALT_LEFT;
   const KeyboardCode right_key_code = KeyboardCode::VKEY_RMENU;
@@ -429,7 +430,7 @@ TEST_F(KeyboardHookWinTest, SimpleLifoAltSequenceTest) {
   ASSERT_FALSE(event.IsAltDown());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleFifoAltSequenceTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleFifoAltSequenceTest) {
   const KeyboardCode left_key_code = KeyboardCode::VKEY_LMENU;
   const DomCode left_dom_code = DomCode::ALT_LEFT;
   const KeyboardCode right_key_code = KeyboardCode::VKEY_RMENU;
@@ -471,7 +472,7 @@ TEST_F(KeyboardHookWinTest, SimpleFifoAltSequenceTest) {
   ASSERT_FALSE(event.IsAltDown());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleLeftWinKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleLeftWinKeypressTest) {
   const KeyboardCode key_code = KeyboardCode::VKEY_LWIN;
   const DomCode dom_code = DomCode::META_LEFT;
   SendModifierKeyDownEvent(key_code, dom_code);
@@ -491,7 +492,7 @@ TEST_F(KeyboardHookWinTest, SimpleLeftWinKeypressTest) {
   ASSERT_FALSE(up_event.IsCommandDown());
 }
 
-TEST_F(KeyboardHookWinTest, RepeatingLeftWinKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, RepeatingLeftWinKeypressTest) {
   const int repeat_count = 10;
   const KeyboardCode key_code = KeyboardCode::VKEY_LWIN;
   const DomCode dom_code = DomCode::META_LEFT;
@@ -517,7 +518,7 @@ TEST_F(KeyboardHookWinTest, RepeatingLeftWinKeypressTest) {
   ASSERT_FALSE(up_event.IsCommandDown());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleRightWinKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleRightWinKeypressTest) {
   const KeyboardCode key_code = KeyboardCode::VKEY_RWIN;
   const DomCode dom_code = DomCode::META_RIGHT;
   SendModifierKeyDownEvent(key_code, dom_code);
@@ -537,7 +538,7 @@ TEST_F(KeyboardHookWinTest, SimpleRightWinKeypressTest) {
   ASSERT_FALSE(up_event.IsCommandDown());
 }
 
-TEST_F(KeyboardHookWinTest, RepeatingRightWinKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, RepeatingRightWinKeypressTest) {
   const int repeat_count = 10;
   const KeyboardCode key_code = KeyboardCode::VKEY_RWIN;
   const DomCode dom_code = DomCode::META_RIGHT;
@@ -563,7 +564,7 @@ TEST_F(KeyboardHookWinTest, RepeatingRightWinKeypressTest) {
   ASSERT_FALSE(up_event.IsCommandDown());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleLifoWinSequenceTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleLifoWinSequenceTest) {
   const KeyboardCode left_key_code = KeyboardCode::VKEY_LWIN;
   const DomCode left_dom_code = DomCode::META_LEFT;
   const KeyboardCode right_key_code = KeyboardCode::VKEY_RWIN;
@@ -605,7 +606,7 @@ TEST_F(KeyboardHookWinTest, SimpleLifoWinSequenceTest) {
   ASSERT_FALSE(event.IsCommandDown());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleFifoWinSequenceTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleFifoWinSequenceTest) {
   const KeyboardCode left_key_code = KeyboardCode::VKEY_LWIN;
   const DomCode left_dom_code = DomCode::META_LEFT;
   const KeyboardCode right_key_code = KeyboardCode::VKEY_RWIN;
@@ -647,7 +648,7 @@ TEST_F(KeyboardHookWinTest, SimpleFifoWinSequenceTest) {
   ASSERT_FALSE(event.IsCommandDown());
 }
 
-TEST_F(KeyboardHookWinTest, CombinedModifierLifoSequenceKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, CombinedModifierLifoSequenceKeypressTest) {
   const KeyboardCode first_key_code = KeyboardCode::VKEY_LCONTROL;
   const DomCode first_dom_code = DomCode::CONTROL_LEFT;
   const KeyboardCode second_key_code = KeyboardCode::VKEY_RWIN;
@@ -730,7 +731,7 @@ TEST_F(KeyboardHookWinTest, CombinedModifierLifoSequenceKeypressTest) {
   ASSERT_FALSE(event.IsCommandDown());
 }
 
-TEST_F(KeyboardHookWinTest, CombinedModifierFifoSequenceKeypressTest) {
+TEST_F(ModifierKeyboardHookWinTest, CombinedModifierFifoSequenceKeypressTest) {
   const KeyboardCode first_key_code = KeyboardCode::VKEY_RCONTROL;
   const DomCode first_dom_code = DomCode::CONTROL_RIGHT;
   const KeyboardCode second_key_code = KeyboardCode::VKEY_LWIN;
@@ -813,7 +814,7 @@ TEST_F(KeyboardHookWinTest, CombinedModifierFifoSequenceKeypressTest) {
   ASSERT_FALSE(event.IsCommandDown());
 }
 
-TEST_F(KeyboardHookWinTest, VerifyPlatformModifierStateTest) {
+TEST_F(ModifierKeyboardHookWinTest, VerifyPlatformModifierStateTest) {
   SendModifierKeyDownEvent(KeyboardCode::VKEY_LCONTROL, DomCode::CONTROL_LEFT);
   ASSERT_TRUE(win::IsCtrlPressed());
   ASSERT_FALSE(win::IsAltPressed());
@@ -850,7 +851,7 @@ TEST_F(KeyboardHookWinTest, VerifyPlatformModifierStateTest) {
   ASSERT_TRUE(win::IsAltRightPressed());
 }
 
-TEST_F(KeyboardHookWinTest, SimpleAltGrKeyPressTest) {
+TEST_F(ModifierKeyboardHookWinTest, SimpleAltGrKeyPressTest) {
   ScopedKeyboardLayout keyboard_layout(KeyboardLayout::KEYBOARD_LAYOUT_GERMAN);
 
   // AltGr produces two events, an injected, modified scan code for VK_LCONTROL,
@@ -909,7 +910,7 @@ TEST_F(KeyboardHookWinTest, SimpleAltGrKeyPressTest) {
   ASSERT_FALSE(event.IsCommandDown());
 }
 
-TEST_F(KeyboardHookWinTest, RepeatingAltGrKeyPressTest) {
+TEST_F(ModifierKeyboardHookWinTest, RepeatingAltGrKeyPressTest) {
   ScopedKeyboardLayout keyboard_layout(KeyboardLayout::KEYBOARD_LAYOUT_GERMAN);
 
   // AltGr produces two events, an injected, modified scan code for VK_LCONTROL,
@@ -1010,7 +1011,7 @@ TEST_F(KeyboardHookWinTest, RepeatingAltGrKeyPressTest) {
   ASSERT_FALSE(event.IsCommandDown());
 }
 
-TEST_F(KeyboardHookWinTest, VerifyAltGrPlatformModifierStateTest) {
+TEST_F(ModifierKeyboardHookWinTest, VerifyAltGrPlatformModifierStateTest) {
   ScopedKeyboardLayout keyboard_layout(KeyboardLayout::KEYBOARD_LAYOUT_GERMAN);
 
   // AltGr produces two events, an injected, modified scan code for VK_LCONTROL,
@@ -1052,7 +1053,7 @@ TEST_F(KeyboardHookWinTest, VerifyAltGrPlatformModifierStateTest) {
   ASSERT_FALSE(win::IsWindowsKeyPressed());
 }
 
-TEST_F(KeyboardHookWinTest, NonInterceptedKeysTest) {
+TEST_F(ModifierKeyboardHookWinTest, NonInterceptedKeysTest) {
   // Here we try a few keys we do not expect to be intercepted / handled.
   ASSERT_FALSE(keyboard_hook()->ProcessKeyEventMessage(
       WM_KEYDOWN, KeyboardCode::VKEY_RSHIFT,
