@@ -15,7 +15,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     const String& user_agent,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,
-    ReferrerPolicy referrer_policy,
+    network::mojom::ReferrerPolicy referrer_policy,
     const SecurityOrigin* starter_origin,
     bool starter_secure_context,
     HttpsState starter_https_state,

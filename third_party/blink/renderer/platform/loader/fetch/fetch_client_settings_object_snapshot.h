@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CLIENT_SETTINGS_OBJECT_SNAPSHOT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CLIENT_SETTINGS_OBJECT_SNAPSHOT_H_
 
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -30,7 +30,7 @@ struct CrossThreadFetchClientSettingsObjectData {
   CrossThreadFetchClientSettingsObjectData(
       KURL base_url,
       scoped_refptr<const SecurityOrigin> security_origin,
-      ReferrerPolicy referrer_policy,
+      network::mojom::ReferrerPolicy referrer_policy,
       String outgoing_referrer,
       HttpsState https_state)
       : base_url(std::move(base_url)),
@@ -41,7 +41,7 @@ struct CrossThreadFetchClientSettingsObjectData {
 
   const KURL base_url;
   const scoped_refptr<const SecurityOrigin> security_origin;
-  const ReferrerPolicy referrer_policy;
+  const network::mojom::ReferrerPolicy referrer_policy;
   const String outgoing_referrer;
   const HttpsState https_state;
 };
@@ -64,7 +64,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   FetchClientSettingsObjectSnapshot(
       const KURL& base_url,
       const scoped_refptr<const SecurityOrigin> security_origin,
-      ReferrerPolicy referrer_policy,
+      network::mojom::ReferrerPolicy referrer_policy,
       const String& outgoing_referrer,
       HttpsState https_state);
 
@@ -74,7 +74,9 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   const SecurityOrigin* GetSecurityOrigin() const override {
     return security_origin_.get();
   }
-  ReferrerPolicy GetReferrerPolicy() const override { return referrer_policy_; }
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const override {
+    return referrer_policy_;
+  }
   const String GetOutgoingReferrer() const override {
     return outgoing_referrer_;
   }
@@ -90,7 +92,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
  private:
   const KURL base_url_;
   const scoped_refptr<const SecurityOrigin> security_origin_;
-  const ReferrerPolicy referrer_policy_;
+  const network::mojom::ReferrerPolicy referrer_policy_;
   const String outgoing_referrer_;
   const HttpsState https_state_;
 };

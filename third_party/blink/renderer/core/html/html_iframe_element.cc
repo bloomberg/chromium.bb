@@ -46,7 +46,7 @@ inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
     : HTMLFrameElementBase(kIFrameTag, document),
       collapsed_by_client_(false),
       sandbox_(HTMLIFrameElementSandbox::Create(this)),
-      referrer_policy_(kReferrerPolicyDefault) {}
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {}
 
 DEFINE_NODE_FACTORY(HTMLIFrameElement)
 
@@ -151,7 +151,7 @@ void HTMLIFrameElement::ParseAttribute(
     }
     UseCounter::Count(GetDocument(), WebFeature::kSandboxViaIFrame);
   } else if (name == kReferrerpolicyAttr) {
-    referrer_policy_ = kReferrerPolicyDefault;
+    referrer_policy_ = network::mojom::ReferrerPolicy::kDefault;
     if (!value.IsNull()) {
       SecurityPolicy::ReferrerPolicyFromString(
           value, kSupportReferrerPolicyLegacyKeywords, &referrer_policy_);
@@ -314,7 +314,7 @@ bool HTMLIFrameElement::IsInteractiveContent() const {
   return true;
 }
 
-ReferrerPolicy HTMLIFrameElement::ReferrerPolicyAttribute() {
+network::mojom::ReferrerPolicy HTMLIFrameElement::ReferrerPolicyAttribute() {
   return referrer_policy_;
 }
 

@@ -487,7 +487,8 @@ void CreateWindowForRequest(const FrameLoadRequest& request,
   if (!new_frame)
     return;
   if (request.GetShouldSendReferrer() == kMaybeSendReferrer) {
-    // TODO(japhet): Does ReferrerPolicy need to be proagated for RemoteFrames?
+    // TODO(japhet): Does network::mojom::ReferrerPolicy need to be proagated
+    // for RemoteFrames?
     if (new_frame->IsLocalFrame())
       ToLocalFrame(new_frame)->GetDocument()->SetReferrerPolicy(
           opener_frame.GetDocument()->GetReferrerPolicy());

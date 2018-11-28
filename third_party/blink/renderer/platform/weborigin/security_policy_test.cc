@@ -41,7 +41,8 @@ namespace blink {
 TEST(SecurityPolicyTest, EmptyReferrerForUnauthorizedScheme) {
   const KURL example_http_url = KURL("http://example.com/");
   EXPECT_TRUE(String() == SecurityPolicy::GenerateReferrer(
-                              kReferrerPolicyAlways, example_http_url,
+                              network::mojom::ReferrerPolicy::kAlways,
+                              example_http_url,
                               String::FromUTF8("chrome://somepage/"))
                               .referrer);
 }
@@ -52,11 +53,13 @@ TEST(SecurityPolicyTest, GenerateReferrerRespectsReferrerSchemesRegistry) {
   const String foobar_scheme = String::FromUTF8("foobar");
 
   EXPECT_EQ(String(), SecurityPolicy::GenerateReferrer(
-                          kReferrerPolicyAlways, example_http_url, foobar_url)
+                          network::mojom::ReferrerPolicy::kAlways,
+                          example_http_url, foobar_url)
                           .referrer);
   SchemeRegistry::RegisterURLSchemeAsAllowedForReferrer(foobar_scheme);
   EXPECT_EQ(foobar_url, SecurityPolicy::GenerateReferrer(
-                            kReferrerPolicyAlways, example_http_url, foobar_url)
+                            network::mojom::ReferrerPolicy::kAlways,
+                            example_http_url, foobar_url)
                             .referrer);
   SchemeRegistry::RemoveURLSchemeAsAllowedForReferrer(foobar_scheme);
 }
@@ -75,7 +78,7 @@ TEST(SecurityPolicyTest, ShouldHideReferrerRespectsReferrerSchemesRegistry) {
 
 TEST(SecurityPolicyTest, GenerateReferrer) {
   struct TestCase {
-    ReferrerPolicy policy;
+    network::mojom::ReferrerPolicy policy;
     const char* referrer;
     const char* destination;
     const char* expected;
@@ -95,97 +98,140 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
 
   TestCase inputs[] = {
       // HTTP -> HTTP: Same Origin
-      {kReferrerPolicyAlways, kInsecureURLA, kInsecureURLA, kInsecureURLA},
-      {kReferrerPolicyDefault, kInsecureURLA, kInsecureURLA, kInsecureURLA},
-      {kReferrerPolicyNoReferrerWhenDowngrade, kInsecureURLA, kInsecureURLA,
+      {network::mojom::ReferrerPolicy::kAlways, kInsecureURLA, kInsecureURLA,
        kInsecureURLA},
-      {kReferrerPolicyNever, kInsecureURLA, kInsecureURLA, nullptr},
-      {kReferrerPolicyOrigin, kInsecureURLA, kInsecureURLA, kInsecureOriginA},
-      {kReferrerPolicyOriginWhenCrossOrigin, kInsecureURLA, kInsecureURLA,
+      {network::mojom::ReferrerPolicy::kDefault, kInsecureURLA, kInsecureURLA,
        kInsecureURLA},
-      {kReferrerPolicySameOrigin, kInsecureURLA, kInsecureURLA, kInsecureURLA},
-      {kReferrerPolicyStrictOrigin, kInsecureURLA, kInsecureURLA,
+      {network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade, kInsecureURLA,
+       kInsecureURLA, kInsecureURLA},
+      {network::mojom::ReferrerPolicy::kNever, kInsecureURLA, kInsecureURLA,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kOrigin, kInsecureURLA, kInsecureURLA,
        kInsecureOriginA},
-      {kReferrerPolicyStrictOriginWhenCrossOrigin, kInsecureURLA, kInsecureURLA,
-       kInsecureURLA},
+      {network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, kInsecureURLA,
+       kInsecureURLA, kInsecureURLA},
+      {network::mojom::ReferrerPolicy::kSameOrigin, kInsecureURLA,
+       kInsecureURLA, kInsecureURLA},
+      {network::mojom::ReferrerPolicy::kStrictOrigin, kInsecureURLA,
+       kInsecureURLA, kInsecureOriginA},
+      {network::mojom::ReferrerPolicy::
+           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       kInsecureURLA, kInsecureURLA, kInsecureURLA},
 
       // HTTP -> HTTP: Cross Origin
-      {kReferrerPolicyAlways, kInsecureURLA, kInsecureURLB, kInsecureURLA},
-      {kReferrerPolicyDefault, kInsecureURLA, kInsecureURLB, kInsecureURLA},
-      {kReferrerPolicyNoReferrerWhenDowngrade, kInsecureURLA, kInsecureURLB,
+      {network::mojom::ReferrerPolicy::kAlways, kInsecureURLA, kInsecureURLB,
        kInsecureURLA},
-      {kReferrerPolicyNever, kInsecureURLA, kInsecureURLB, nullptr},
-      {kReferrerPolicyOrigin, kInsecureURLA, kInsecureURLB, kInsecureOriginA},
-      {kReferrerPolicyOriginWhenCrossOrigin, kInsecureURLA, kInsecureURLB,
+      {network::mojom::ReferrerPolicy::kDefault, kInsecureURLA, kInsecureURLB,
+       kInsecureURLA},
+      {network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade, kInsecureURLA,
+       kInsecureURLB, kInsecureURLA},
+      {network::mojom::ReferrerPolicy::kNever, kInsecureURLA, kInsecureURLB,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kOrigin, kInsecureURLA, kInsecureURLB,
        kInsecureOriginA},
-      {kReferrerPolicySameOrigin, kInsecureURLA, kInsecureURLB, nullptr},
-      {kReferrerPolicyStrictOrigin, kInsecureURLA, kInsecureURLB,
-       kInsecureOriginA},
-      {kReferrerPolicyStrictOriginWhenCrossOrigin, kInsecureURLA, kInsecureURLB,
-       kInsecureOriginA},
+      {network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, kInsecureURLA,
+       kInsecureURLB, kInsecureOriginA},
+      {network::mojom::ReferrerPolicy::kSameOrigin, kInsecureURLA,
+       kInsecureURLB, nullptr},
+      {network::mojom::ReferrerPolicy::kStrictOrigin, kInsecureURLA,
+       kInsecureURLB, kInsecureOriginA},
+      {network::mojom::ReferrerPolicy::
+           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       kInsecureURLA, kInsecureURLB, kInsecureOriginA},
 
       // HTTPS -> HTTPS: Same Origin
-      {kReferrerPolicyAlways, kSecureURLA, kSecureURLA, kSecureURLA},
-      {kReferrerPolicyDefault, kSecureURLA, kSecureURLA, kSecureURLA},
-      {kReferrerPolicyNoReferrerWhenDowngrade, kSecureURLA, kSecureURLA,
+      {network::mojom::ReferrerPolicy::kAlways, kSecureURLA, kSecureURLA,
        kSecureURLA},
-      {kReferrerPolicyNever, kSecureURLA, kSecureURLA, nullptr},
-      {kReferrerPolicyOrigin, kSecureURLA, kSecureURLA, kSecureOriginA},
-      {kReferrerPolicyOriginWhenCrossOrigin, kSecureURLA, kSecureURLA,
+      {network::mojom::ReferrerPolicy::kDefault, kSecureURLA, kSecureURLA,
        kSecureURLA},
-      {kReferrerPolicySameOrigin, kSecureURLA, kSecureURLA, kSecureURLA},
-      {kReferrerPolicyStrictOrigin, kSecureURLA, kSecureURLA, kSecureOriginA},
-      {kReferrerPolicyStrictOriginWhenCrossOrigin, kSecureURLA, kSecureURLA,
+      {network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade, kSecureURLA,
+       kSecureURLA, kSecureURLA},
+      {network::mojom::ReferrerPolicy::kNever, kSecureURLA, kSecureURLA,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kOrigin, kSecureURLA, kSecureURLA,
+       kSecureOriginA},
+      {network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, kSecureURLA,
+       kSecureURLA, kSecureURLA},
+      {network::mojom::ReferrerPolicy::kSameOrigin, kSecureURLA, kSecureURLA,
        kSecureURLA},
+      {network::mojom::ReferrerPolicy::kStrictOrigin, kSecureURLA, kSecureURLA,
+       kSecureOriginA},
+      {network::mojom::ReferrerPolicy::
+           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       kSecureURLA, kSecureURLA, kSecureURLA},
 
       // HTTPS -> HTTPS: Cross Origin
-      {kReferrerPolicyAlways, kSecureURLA, kSecureURLB, kSecureURLA},
-      {kReferrerPolicyDefault, kSecureURLA, kSecureURLB, kSecureURLA},
-      {kReferrerPolicyNoReferrerWhenDowngrade, kSecureURLA, kSecureURLB,
+      {network::mojom::ReferrerPolicy::kAlways, kSecureURLA, kSecureURLB,
        kSecureURLA},
-      {kReferrerPolicyNever, kSecureURLA, kSecureURLB, nullptr},
-      {kReferrerPolicyOrigin, kSecureURLA, kSecureURLB, kSecureOriginA},
-      {kReferrerPolicyOriginWhenCrossOrigin, kSecureURLA, kSecureURLB,
+      {network::mojom::ReferrerPolicy::kDefault, kSecureURLA, kSecureURLB,
+       kSecureURLA},
+      {network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade, kSecureURLA,
+       kSecureURLB, kSecureURLA},
+      {network::mojom::ReferrerPolicy::kNever, kSecureURLA, kSecureURLB,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kOrigin, kSecureURLA, kSecureURLB,
        kSecureOriginA},
-      {kReferrerPolicySameOrigin, kSecureURLA, kSecureURLB, nullptr},
-      {kReferrerPolicyStrictOrigin, kSecureURLA, kSecureURLB, kSecureOriginA},
-      {kReferrerPolicyStrictOriginWhenCrossOrigin, kSecureURLA, kSecureURLB,
+      {network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, kSecureURLA,
+       kSecureURLB, kSecureOriginA},
+      {network::mojom::ReferrerPolicy::kSameOrigin, kSecureURLA, kSecureURLB,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kStrictOrigin, kSecureURLA, kSecureURLB,
        kSecureOriginA},
+      {network::mojom::ReferrerPolicy::
+           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       kSecureURLA, kSecureURLB, kSecureOriginA},
 
       // HTTP -> HTTPS
-      {kReferrerPolicyAlways, kInsecureURLA, kSecureURLB, kInsecureURLA},
-      {kReferrerPolicyDefault, kInsecureURLA, kSecureURLB, kInsecureURLA},
-      {kReferrerPolicyNoReferrerWhenDowngrade, kInsecureURLA, kSecureURLB,
+      {network::mojom::ReferrerPolicy::kAlways, kInsecureURLA, kSecureURLB,
        kInsecureURLA},
-      {kReferrerPolicyNever, kInsecureURLA, kSecureURLB, nullptr},
-      {kReferrerPolicyOrigin, kInsecureURLA, kSecureURLB, kInsecureOriginA},
-      {kReferrerPolicyOriginWhenCrossOrigin, kInsecureURLA, kSecureURLB,
+      {network::mojom::ReferrerPolicy::kDefault, kInsecureURLA, kSecureURLB,
+       kInsecureURLA},
+      {network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade, kInsecureURLA,
+       kSecureURLB, kInsecureURLA},
+      {network::mojom::ReferrerPolicy::kNever, kInsecureURLA, kSecureURLB,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kOrigin, kInsecureURLA, kSecureURLB,
        kInsecureOriginA},
-      {kReferrerPolicySameOrigin, kInsecureURLA, kSecureURLB, nullptr},
-      {kReferrerPolicyStrictOrigin, kInsecureURLA, kSecureURLB,
-       kInsecureOriginA},
-      {kReferrerPolicyStrictOriginWhenCrossOrigin, kInsecureURLA, kSecureURLB,
-       kInsecureOriginA},
+      {network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, kInsecureURLA,
+       kSecureURLB, kInsecureOriginA},
+      {network::mojom::ReferrerPolicy::kSameOrigin, kInsecureURLA, kSecureURLB,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kStrictOrigin, kInsecureURLA,
+       kSecureURLB, kInsecureOriginA},
+      {network::mojom::ReferrerPolicy::
+           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       kInsecureURLA, kSecureURLB, kInsecureOriginA},
 
       // HTTPS -> HTTP
-      {kReferrerPolicyAlways, kSecureURLA, kInsecureURLB, kSecureURLA},
-      {kReferrerPolicyDefault, kSecureURLA, kInsecureURLB, nullptr},
-      {kReferrerPolicyNoReferrerWhenDowngrade, kSecureURLA, kInsecureURLB,
+      {network::mojom::ReferrerPolicy::kAlways, kSecureURLA, kInsecureURLB,
+       kSecureURLA},
+      {network::mojom::ReferrerPolicy::kDefault, kSecureURLA, kInsecureURLB,
        nullptr},
-      {kReferrerPolicyNever, kSecureURLA, kInsecureURLB, nullptr},
-      {kReferrerPolicyOrigin, kSecureURLA, kInsecureURLB, kSecureOriginA},
-      {kReferrerPolicyOriginWhenCrossOrigin, kSecureURLA, kSecureURLB,
+      {network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade, kSecureURLA,
+       kInsecureURLB, nullptr},
+      {network::mojom::ReferrerPolicy::kNever, kSecureURLA, kInsecureURLB,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kOrigin, kSecureURLA, kInsecureURLB,
        kSecureOriginA},
-      {kReferrerPolicySameOrigin, kSecureURLA, kInsecureURLB, nullptr},
-      {kReferrerPolicyStrictOrigin, kSecureURLA, kInsecureURLB, nullptr},
-      {kReferrerPolicyStrictOriginWhenCrossOrigin, kSecureURLA, kInsecureURLB,
+      {network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, kSecureURLA,
+       kSecureURLB, kSecureOriginA},
+      {network::mojom::ReferrerPolicy::kSameOrigin, kSecureURLA, kInsecureURLB,
        nullptr},
+      {network::mojom::ReferrerPolicy::kStrictOrigin, kSecureURLA,
+       kInsecureURLB, nullptr},
+      {network::mojom::ReferrerPolicy::
+           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       kSecureURLA, kInsecureURLB, nullptr},
 
       // blob and filesystem URL handling
-      {kReferrerPolicyAlways, kInsecureURLA, kBlobURL, nullptr},
-      {kReferrerPolicyAlways, kBlobURL, kInsecureURLA, nullptr},
-      {kReferrerPolicyAlways, kInsecureURLA, kFilesystemURL, nullptr},
-      {kReferrerPolicyAlways, kFilesystemURL, kInsecureURLA, nullptr},
+      {network::mojom::ReferrerPolicy::kAlways, kInsecureURLA, kBlobURL,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kAlways, kBlobURL, kInsecureURLA,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kAlways, kInsecureURLA, kFilesystemURL,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kAlways, kFilesystemURL, kInsecureURLA,
+       nullptr},
   };
 
   for (TestCase test : inputs) {
@@ -203,8 +249,8 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
           << "' should have been empty: was '" << result.referrer.Utf8().data()
           << "'.";
     }
-    EXPECT_EQ(test.policy == kReferrerPolicyDefault
-                  ? kReferrerPolicyNoReferrerWhenDowngrade
+    EXPECT_EQ(test.policy == network::mojom::ReferrerPolicy::kDefault
+                  ? network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade
                   : test.policy,
               result.referrer_policy);
   }
@@ -215,28 +261,29 @@ TEST(SecurityPolicyTest, ReferrerPolicyFromHeaderValue) {
     const char* header;
     bool is_valid;
     ReferrerPolicyLegacyKeywordsSupport keywords;
-    ReferrerPolicy expected_policy;
+    network::mojom::ReferrerPolicy expected_policy;
   };
 
   TestCase inputs[] = {
       {"origin", true, kDoNotSupportReferrerPolicyLegacyKeywords,
-       kReferrerPolicyOrigin},
+       network::mojom::ReferrerPolicy::kOrigin},
       {"none", true, kSupportReferrerPolicyLegacyKeywords,
-       kReferrerPolicyNever},
+       network::mojom::ReferrerPolicy::kNever},
       {"none", false, kDoNotSupportReferrerPolicyLegacyKeywords,
-       kReferrerPolicyDefault},
+       network::mojom::ReferrerPolicy::kDefault},
       {"foo", false, kDoNotSupportReferrerPolicyLegacyKeywords,
-       kReferrerPolicyDefault},
+       network::mojom::ReferrerPolicy::kDefault},
       {"origin, foo", true, kDoNotSupportReferrerPolicyLegacyKeywords,
-       kReferrerPolicyOrigin},
+       network::mojom::ReferrerPolicy::kOrigin},
       {"origin, foo-bar", true, kDoNotSupportReferrerPolicyLegacyKeywords,
-       kReferrerPolicyOrigin},
+       network::mojom::ReferrerPolicy::kOrigin},
       {"origin, foo bar", false, kDoNotSupportReferrerPolicyLegacyKeywords,
-       kReferrerPolicyDefault},
+       network::mojom::ReferrerPolicy::kDefault},
   };
 
   for (TestCase test : inputs) {
-    ReferrerPolicy actual_policy = kReferrerPolicyDefault;
+    network::mojom::ReferrerPolicy actual_policy =
+        network::mojom::ReferrerPolicy::kDefault;
     EXPECT_EQ(test.is_valid, SecurityPolicy::ReferrerPolicyFromHeaderValue(
                                  test.header, test.keywords, &actual_policy));
     if (test.is_valid)

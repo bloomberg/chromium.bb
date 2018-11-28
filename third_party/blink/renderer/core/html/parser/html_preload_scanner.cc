@@ -151,7 +151,7 @@ class TokenPreloadScanner::StartTagScanner {
         importance_mode_set_(false),
         media_values_(media_values),
         referrer_policy_set_(false),
-        referrer_policy_(kReferrerPolicyDefault),
+        referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
         integrity_attr_set_(false),
         integrity_features_(features),
         lazyload_attr_set_to_off_(false),
@@ -267,8 +267,8 @@ class TokenPreloadScanner::StartTagScanner {
 
     // The element's 'referrerpolicy' attribute (if present) takes precedence
     // over the document's referrer policy.
-    ReferrerPolicy referrer_policy =
-        (referrer_policy_ != kReferrerPolicyDefault)
+    network::mojom::ReferrerPolicy referrer_policy =
+        (referrer_policy_ != network::mojom::ReferrerPolicy::kDefault)
             ? referrer_policy_
             : document_parameters.referrer_policy;
     auto request = PreloadRequest::CreateIfNeeded(
@@ -665,7 +665,7 @@ class TokenPreloadScanner::StartTagScanner {
   String nonce_;
   Member<MediaValuesCached> media_values_;
   bool referrer_policy_set_;
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
   bool integrity_attr_set_;
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
@@ -762,7 +762,8 @@ static void HandleMetaViewport(
 static void HandleMetaReferrer(const String& attribute_value,
                                CachedDocumentParameters* document_parameters,
                                CSSPreloadScanner* css_scanner) {
-  ReferrerPolicy meta_referrer_policy = kReferrerPolicyDefault;
+  network::mojom::ReferrerPolicy meta_referrer_policy =
+      network::mojom::ReferrerPolicy::kDefault;
   if (!attribute_value.IsEmpty() && !attribute_value.IsNull() &&
       SecurityPolicy::ReferrerPolicyFromString(
           attribute_value, kSupportReferrerPolicyLegacyKeywords,

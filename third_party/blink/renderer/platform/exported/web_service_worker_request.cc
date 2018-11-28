@@ -155,8 +155,7 @@ void WebServiceWorkerRequest::SetReferrer(
   DCHECK_EQ(Referrer::NoReferrer(), String());
   String referrer =
       web_referrer.IsEmpty() ? Referrer::NoReferrer() : String(web_referrer);
-  private_->referrer_ =
-      Referrer(referrer, static_cast<ReferrerPolicy>(referrer_policy));
+  private_->referrer_ = Referrer(referrer, referrer_policy);
 }
 
 WebURL WebServiceWorkerRequest::ReferrerUrl() const {
@@ -165,8 +164,7 @@ WebURL WebServiceWorkerRequest::ReferrerUrl() const {
 
 network::mojom::ReferrerPolicy WebServiceWorkerRequest::GetReferrerPolicy()
     const {
-  return static_cast<network::mojom::ReferrerPolicy>(
-      private_->referrer_.referrer_policy);
+  return private_->referrer_.referrer_policy;
 }
 
 const Referrer& WebServiceWorkerRequest::GetReferrer() const {

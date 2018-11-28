@@ -564,7 +564,7 @@ bool ResourceLoader::WillFollowRedirect(
   std::unique_ptr<ResourceRequest> new_request =
       resource_->LastResourceRequest().CreateRedirectRequest(
           new_url, new_method, new_site_for_cookies, new_referrer,
-          static_cast<ReferrerPolicy>(new_referrer_policy),
+          new_referrer_policy,
           !passed_redirect_response.WasFetchedViaServiceWorker());
 
   ResourceType resource_type = resource_->GetType();

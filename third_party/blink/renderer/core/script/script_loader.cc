@@ -374,7 +374,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // <spec step="20">Let referrer policy be the current state of the element's
   // referrerpolicy content attribute.</spec>
   String referrerpolicy_attr = element_->ReferrerPolicyAttributeValue();
-  ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+  network::mojom::ReferrerPolicy referrer_policy =
+      network::mojom::ReferrerPolicy::kDefault;
   if (!referrerpolicy_attr.IsEmpty()) {
     SecurityPolicy::ReferrerPolicyFromString(
         referrerpolicy_attr, kDoNotSupportReferrerPolicyLegacyKeywords,

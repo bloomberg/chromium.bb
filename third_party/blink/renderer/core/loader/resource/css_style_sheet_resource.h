@@ -60,7 +60,7 @@ class CORE_EXPORT CSSStyleSheetResource final : public TextResource {
                          MIMETypeCheck = MIMETypeCheck::kStrict) const;
   StyleSheetContents* CreateParsedStyleSheetFromCache(const CSSParserContext*);
   void SaveParsedStyleSheet(StyleSheetContents*);
-  ReferrerPolicy GetReferrerPolicy() const;
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const;
 
  private:
   class CSSStyleSheetResourceFactory : public ResourceFactory {

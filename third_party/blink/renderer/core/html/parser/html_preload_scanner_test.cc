@@ -48,7 +48,7 @@ struct ReferrerPolicyTestCase {
   const char* output_base_url;
   ResourceType type;
   int resource_width;
-  ReferrerPolicy referrer_policy;
+  network::mojom::ReferrerPolicy referrer_policy;
   // Expected referrer header of the preload request, or nullptr if the header
   // shouldn't be checked (and no network request should be created).
   const char* expected_referrer;
@@ -118,23 +118,25 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
     }
   }
 
-  void PreloadRequestVerification(ResourceType type,
-                                  const char* url,
-                                  const char* base_url,
-                                  int width,
-                                  ReferrerPolicy referrer_policy) {
+  void PreloadRequestVerification(
+      ResourceType type,
+      const char* url,
+      const char* base_url,
+      int width,
+      network::mojom::ReferrerPolicy referrer_policy) {
     PreloadRequestVerification(type, url, base_url, width,
                                ClientHintsPreferences());
     EXPECT_EQ(referrer_policy, preload_request_->GetReferrerPolicy());
   }
 
-  void PreloadRequestVerification(ResourceType type,
-                                  const char* url,
-                                  const char* base_url,
-                                  int width,
-                                  ReferrerPolicy referrer_policy,
-                                  Document* document,
-                                  const char* expected_referrer) {
+  void PreloadRequestVerification(
+      ResourceType type,
+      const char* url,
+      const char* base_url,
+      int width,
+      network::mojom::ReferrerPolicy referrer_policy,
+      Document* document,
+      const char* expected_referrer) {
     PreloadRequestVerification(type, url, base_url, width, referrer_policy);
     Resource* resource = preload_request_->Start(document);
     ASSERT_TRUE(resource);
@@ -225,11 +227,11 @@ class HTMLPreloadScannerTest : public PageTestBase {
     return data;
   }
 
-  void RunSetUp(
-      ViewportState viewport_state,
-      PreloadState preload_state = kPreloadEnabled,
-      ReferrerPolicy document_referrer_policy = kReferrerPolicyDefault,
-      bool use_secure_document_url = false) {
+  void RunSetUp(ViewportState viewport_state,
+                PreloadState preload_state = kPreloadEnabled,
+                network::mojom::ReferrerPolicy document_referrer_policy =
+                    network::mojom::ReferrerPolicy::kDefault,
+                bool use_secure_document_url = false) {
     HTMLParserOptions options(&GetDocument());
     KURL document_url = KURL("http://whatever.test/");
     if (use_secure_document_url)
@@ -645,7 +647,8 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
   };
 
   for (const auto& test_case : test_cases) {
-    RunSetUp(kViewportDisabled, kPreloadEnabled, kReferrerPolicyDefault,
+    RunSetUp(kViewportDisabled, kPreloadEnabled,
+             network::mojom::ReferrerPolicy::kDefault,
              true /* use_secure_document_url */);
     Test(test_case);
   }
@@ -679,12 +682,14 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCHInsecureDocument) {
       all};
 
   // For an insecure document, client hint should not be attached.
-  RunSetUp(kViewportDisabled, kPreloadEnabled, kReferrerPolicyDefault,
+  RunSetUp(kViewportDisabled, kPreloadEnabled,
+           network::mojom::ReferrerPolicy::kDefault,
            false /* use_secure_document_url */);
   Test(expect_no_client_hint);
 
   // For a secure document, client hint should be attached.
-  RunSetUp(kViewportDisabled, kPreloadEnabled, kReferrerPolicyDefault,
+  RunSetUp(kViewportDisabled, kPreloadEnabled,
+           network::mojom::ReferrerPolicy::kDefault,
            true /* use_secure_document_url */);
   Test(expect_client_hint);
 }
@@ -806,73 +811,76 @@ TEST_F(HTMLPreloadScannerTest, testContext) {
 TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
   ReferrerPolicyTestCase test_cases[] = {
       {"http://example.test", "<img src='bla.gif'/>", "bla.gif",
-       "http://example.test/", ResourceType::kImage, 0, kReferrerPolicyDefault},
+       "http://example.test/", ResourceType::kImage, 0,
+       network::mojom::ReferrerPolicy::kDefault},
       {"http://example.test", "<img referrerpolicy='origin' src='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicyOrigin, nullptr},
+       network::mojom::ReferrerPolicy::kOrigin, nullptr},
       {"http://example.test",
        "<meta name='referrer' content='not-a-valid-policy'><img "
        "src='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicyDefault, nullptr},
+       network::mojom::ReferrerPolicy::kDefault, nullptr},
       {"http://example.test",
        "<img referrerpolicy='origin' referrerpolicy='origin-when-cross-origin' "
        "src='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicyOrigin, nullptr},
+       network::mojom::ReferrerPolicy::kOrigin, nullptr},
       {"http://example.test",
        "<img referrerpolicy='not-a-valid-policy' src='bla.gif'/>", "bla.gif",
-       "http://example.test/", ResourceType::kImage, 0, kReferrerPolicyDefault,
-       nullptr},
+       "http://example.test/", ResourceType::kImage, 0,
+       network::mojom::ReferrerPolicy::kDefault, nullptr},
       {"http://example.test",
        "<link rel=preload as=image referrerpolicy='origin-when-cross-origin' "
        "href='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicyOriginWhenCrossOrigin, nullptr},
+       network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, nullptr},
       {"http://example.test",
        "<link rel=preload as=image referrerpolicy='same-origin' "
        "href='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicySameOrigin, nullptr},
+       network::mojom::ReferrerPolicy::kSameOrigin, nullptr},
       {"http://example.test",
        "<link rel=preload as=image referrerpolicy='strict-origin' "
        "href='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicyStrictOrigin, nullptr},
+       network::mojom::ReferrerPolicy::kStrictOrigin, nullptr},
       {"http://example.test",
        "<link rel=preload as=image "
        "referrerpolicy='strict-origin-when-cross-origin' "
        "href='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicyStrictOriginWhenCrossOrigin, nullptr},
+       network::mojom::ReferrerPolicy::
+           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       nullptr},
       {"http://example.test",
        "<link rel='stylesheet' href='sheet.css' type='text/css'>", "sheet.css",
        "http://example.test/", ResourceType::kCSSStyleSheet, 0,
-       kReferrerPolicyDefault, nullptr},
+       network::mojom::ReferrerPolicy::kDefault, nullptr},
       {"http://example.test",
        "<link rel=preload as=image referrerpolicy='origin' "
        "referrerpolicy='origin-when-cross-origin' href='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicyOrigin, nullptr},
+       network::mojom::ReferrerPolicy::kOrigin, nullptr},
       {"http://example.test",
        "<meta name='referrer' content='no-referrer'><img "
        "referrerpolicy='origin' src='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicyOrigin, nullptr},
+       network::mojom::ReferrerPolicy::kOrigin, nullptr},
       // The scanner's state is not reset between test cases, so all subsequent
       // test cases have a document referrer policy of no-referrer.
       {"http://example.test",
        "<link rel=preload as=image referrerpolicy='not-a-valid-policy' "
        "href='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicyNever, nullptr},
+       network::mojom::ReferrerPolicy::kNever, nullptr},
       {"http://example.test",
        "<img referrerpolicy='not-a-valid-policy' src='bla.gif'/>", "bla.gif",
-       "http://example.test/", ResourceType::kImage, 0, kReferrerPolicyNever,
-       nullptr},
+       "http://example.test/", ResourceType::kImage, 0,
+       network::mojom::ReferrerPolicy::kNever, nullptr},
       {"http://example.test", "<img src='bla.gif'/>", "bla.gif",
-       "http://example.test/", ResourceType::kImage, 0, kReferrerPolicyNever,
-       nullptr}};
+       "http://example.test/", ResourceType::kImage, 0,
+       network::mojom::ReferrerPolicy::kNever, nullptr}};
 
   for (const auto& test_case : test_cases)
     Test(test_case);
@@ -958,27 +966,28 @@ TEST_F(HTMLPreloadScannerTest, testNonce) {
 // Tests that a document-level referrer policy (e.g. one set by HTTP header) is
 // applied for preload requests.
 TEST_F(HTMLPreloadScannerTest, testReferrerPolicyOnDocument) {
-  RunSetUp(kViewportEnabled, kPreloadEnabled, kReferrerPolicyOrigin);
+  RunSetUp(kViewportEnabled, kPreloadEnabled,
+           network::mojom::ReferrerPolicy::kOrigin);
   ReferrerPolicyTestCase test_cases[] = {
       {"http://example.test", "<img src='blah.gif'/>", "blah.gif",
-       "http://example.test/", ResourceType::kImage, 0, kReferrerPolicyOrigin,
-       nullptr},
+       "http://example.test/", ResourceType::kImage, 0,
+       network::mojom::ReferrerPolicy::kOrigin, nullptr},
       {"http://example.test", "<style>@import url('blah.css');</style>",
        "blah.css", "http://example.test/", ResourceType::kCSSStyleSheet, 0,
-       kReferrerPolicyOrigin, nullptr},
+       network::mojom::ReferrerPolicy::kOrigin, nullptr},
       // Tests that a meta-delivered referrer policy with an unrecognized policy
       // value does not override the document's referrer policy.
       {"http://example.test",
        "<meta name='referrer' content='not-a-valid-policy'><img "
        "src='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicyOrigin, nullptr},
+       network::mojom::ReferrerPolicy::kOrigin, nullptr},
       // Tests that a meta-delivered referrer policy with a valid policy value
       // does override the document's referrer policy.
       {"http://example.test",
        "<meta name='referrer' content='unsafe-url'><img src='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       kReferrerPolicyAlways, nullptr},
+       network::mojom::ReferrerPolicy::kAlways, nullptr},
   };
 
   for (const auto& test_case : test_cases)
@@ -1113,7 +1122,8 @@ TEST_F(HTMLPreloadScannerTest, testUppercaseAsValues) {
 }
 
 TEST_F(HTMLPreloadScannerTest, ReferrerHeader) {
-  RunSetUp(kViewportEnabled, kPreloadEnabled, kReferrerPolicyAlways);
+  RunSetUp(kViewportEnabled, kPreloadEnabled,
+           network::mojom::ReferrerPolicy::kAlways);
 
   KURL preload_url("http://example.test/sheet.css");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
@@ -1126,7 +1136,7 @@ TEST_F(HTMLPreloadScannerTest, ReferrerHeader) {
       "http://example.test/",
       ResourceType::kCSSStyleSheet,
       0,
-      kReferrerPolicyAlways,
+      network::mojom::ReferrerPolicy::kAlways,
       "http://whatever.test/"};
   Test(test_case);
 }

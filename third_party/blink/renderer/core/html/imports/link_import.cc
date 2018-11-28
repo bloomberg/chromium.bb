@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/imports/link_import.h"
 
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child.h"
@@ -41,7 +42,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -79,7 +79,7 @@ void LinkImport::Process() {
   }
 
   ResourceRequest resource_request(GetDocument().CompleteURL(url));
-  ReferrerPolicy referrer_policy = owner_->GetReferrerPolicy();
+  network::mojom::ReferrerPolicy referrer_policy = owner_->GetReferrerPolicy();
   resource_request.SetReferrerPolicy(referrer_policy);
 
   ResourceLoaderOptions options;

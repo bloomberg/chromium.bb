@@ -90,15 +90,18 @@ bool SecurityPolicy::ShouldHideReferrer(const KURL& url, const KURL& referrer) {
   return !url_is_secure_url;
 }
 
-Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
-                                          const KURL& url,
-                                          const String& referrer) {
-  ReferrerPolicy referrer_policy_no_default = referrer_policy;
-  if (referrer_policy_no_default == kReferrerPolicyDefault) {
+Referrer SecurityPolicy::GenerateReferrer(
+    network::mojom::ReferrerPolicy referrer_policy,
+    const KURL& url,
+    const String& referrer) {
+  network::mojom::ReferrerPolicy referrer_policy_no_default = referrer_policy;
+  if (referrer_policy_no_default == network::mojom::ReferrerPolicy::kDefault) {
     if (RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
-      referrer_policy_no_default = kReferrerPolicyStrictOriginWhenCrossOrigin;
+      referrer_policy_no_default = network::mojom::ReferrerPolicy::
+          kNoReferrerWhenDowngradeOriginWhenCrossOrigin;
     } else {
-      referrer_policy_no_default = kReferrerPolicyNoReferrerWhenDowngrade;
+      referrer_policy_no_default =
+          network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade;
     }
   }
   if (referrer == Referrer::NoReferrer())
@@ -114,17 +117,17 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
     return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
 
   switch (referrer_policy_no_default) {
-    case kReferrerPolicyNever:
+    case network::mojom::ReferrerPolicy::kNever:
       return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
-    case kReferrerPolicyAlways:
+    case network::mojom::ReferrerPolicy::kAlways:
       return Referrer(referrer, referrer_policy_no_default);
-    case kReferrerPolicyOrigin: {
+    case network::mojom::ReferrerPolicy::kOrigin: {
       String origin = SecurityOrigin::Create(referrer_url)->ToString();
       // A security origin is not a canonical URL as it lacks a path. Add /
       // to turn it into a canonical URL we can use as referrer.
       return Referrer(origin + "/", referrer_policy_no_default);
     }
-    case kReferrerPolicyOriginWhenCrossOrigin: {
+    case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin: {
       scoped_refptr<const SecurityOrigin> referrer_origin =
           SecurityOrigin::Create(referrer_url);
       scoped_refptr<const SecurityOrigin> url_origin =
@@ -135,7 +138,7 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
       }
       break;
     }
-    case kReferrerPolicySameOrigin: {
+    case network::mojom::ReferrerPolicy::kSameOrigin: {
       scoped_refptr<const SecurityOrigin> referrer_origin =
           SecurityOrigin::Create(referrer_url);
       scoped_refptr<const SecurityOrigin> url_origin =
@@ -145,14 +148,15 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
       }
       return Referrer(referrer, referrer_policy_no_default);
     }
-    case kReferrerPolicyStrictOrigin: {
+    case network::mojom::ReferrerPolicy::kStrictOrigin: {
       String origin = SecurityOrigin::Create(referrer_url)->ToString();
       return Referrer(ShouldHideReferrer(url, referrer_url)
                           ? Referrer::NoReferrer()
                           : origin + "/",
                       referrer_policy_no_default);
     }
-    case kReferrerPolicyStrictOriginWhenCrossOrigin: {
+    case network::mojom::ReferrerPolicy::
+        kNoReferrerWhenDowngradeOriginWhenCrossOrigin: {
       scoped_refptr<const SecurityOrigin> referrer_origin =
           SecurityOrigin::Create(referrer_url);
       scoped_refptr<const SecurityOrigin> url_origin =
@@ -166,9 +170,9 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
       }
       break;
     }
-    case kReferrerPolicyNoReferrerWhenDowngrade:
+    case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
       break;
-    case kReferrerPolicyDefault:
+    case network::mojom::ReferrerPolicy::kDefault:
       NOTREACHED();
       break;
   }
@@ -283,7 +287,7 @@ void SecurityPolicy::ClearOriginAccessList() {
 bool SecurityPolicy::ReferrerPolicyFromString(
     const String& policy,
     ReferrerPolicyLegacyKeywordsSupport legacy_keywords_support,
-    ReferrerPolicy* result) {
+    network::mojom::ReferrerPolicy* result) {
   DCHECK(!policy.IsNull());
   bool support_legacy_keywords =
       (legacy_keywords_support == kSupportReferrerPolicyLegacyKeywords);
@@ -291,39 +295,40 @@ bool SecurityPolicy::ReferrerPolicyFromString(
   if (EqualIgnoringASCIICase(policy, "no-referrer") ||
       (support_legacy_keywords && (EqualIgnoringASCIICase(policy, "never") ||
                                    EqualIgnoringASCIICase(policy, "none")))) {
-    *result = kReferrerPolicyNever;
+    *result = network::mojom::ReferrerPolicy::kNever;
     return true;
   }
   if (EqualIgnoringASCIICase(policy, "unsafe-url") ||
       (support_legacy_keywords && EqualIgnoringASCIICase(policy, "always"))) {
-    *result = kReferrerPolicyAlways;
+    *result = network::mojom::ReferrerPolicy::kAlways;
     return true;
   }
   if (EqualIgnoringASCIICase(policy, "origin")) {
-    *result = kReferrerPolicyOrigin;
+    *result = network::mojom::ReferrerPolicy::kOrigin;
     return true;
   }
   if (EqualIgnoringASCIICase(policy, "origin-when-cross-origin") ||
       (support_legacy_keywords &&
        EqualIgnoringASCIICase(policy, "origin-when-crossorigin"))) {
-    *result = kReferrerPolicyOriginWhenCrossOrigin;
+    *result = network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin;
     return true;
   }
   if (EqualIgnoringASCIICase(policy, "same-origin")) {
-    *result = kReferrerPolicySameOrigin;
+    *result = network::mojom::ReferrerPolicy::kSameOrigin;
     return true;
   }
   if (EqualIgnoringASCIICase(policy, "strict-origin")) {
-    *result = kReferrerPolicyStrictOrigin;
+    *result = network::mojom::ReferrerPolicy::kStrictOrigin;
     return true;
   }
   if (EqualIgnoringASCIICase(policy, "strict-origin-when-cross-origin")) {
-    *result = kReferrerPolicyStrictOriginWhenCrossOrigin;
+    *result = network::mojom::ReferrerPolicy::
+        kNoReferrerWhenDowngradeOriginWhenCrossOrigin;
     return true;
   }
   if (EqualIgnoringASCIICase(policy, "no-referrer-when-downgrade") ||
       (support_legacy_keywords && EqualIgnoringASCIICase(policy, "default"))) {
-    *result = kReferrerPolicyNoReferrerWhenDowngrade;
+    *result = network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade;
     return true;
   }
   return false;
@@ -341,13 +346,14 @@ inline bool IsASCIIAlphaOrHyphen(CharType c) {
 bool SecurityPolicy::ReferrerPolicyFromHeaderValue(
     const String& header_value,
     ReferrerPolicyLegacyKeywordsSupport legacy_keywords_support,
-    ReferrerPolicy* result) {
-  ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+    network::mojom::ReferrerPolicy* result) {
+  network::mojom::ReferrerPolicy referrer_policy =
+      network::mojom::ReferrerPolicy::kDefault;
 
   Vector<String> tokens;
   header_value.Split(',', true, tokens);
   for (const auto& token : tokens) {
-    ReferrerPolicy current_result;
+    network::mojom::ReferrerPolicy current_result;
     auto stripped_token = token.StripWhiteSpace();
     if (SecurityPolicy::ReferrerPolicyFromString(token.StripWhiteSpace(),
                                                  legacy_keywords_support,
@@ -364,7 +370,7 @@ bool SecurityPolicy::ReferrerPolicyFromHeaderValue(
     }
   }
 
-  if (referrer_policy == kReferrerPolicyDefault)
+  if (referrer_policy == network::mojom::ReferrerPolicy::kDefault)
     return false;
 
   *result = referrer_policy;
@@ -372,23 +378,24 @@ bool SecurityPolicy::ReferrerPolicyFromHeaderValue(
 }
 
 STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kAlways,
-                   kReferrerPolicyAlways);
+                   network::mojom::ReferrerPolicy::kAlways);
 STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kDefault,
-                   kReferrerPolicyDefault);
+                   network::mojom::ReferrerPolicy::kDefault);
 STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
-                   kReferrerPolicyNoReferrerWhenDowngrade);
+                   network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade);
 STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kNever,
-                   kReferrerPolicyNever);
+                   network::mojom::ReferrerPolicy::kNever);
 STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kOrigin,
-                   kReferrerPolicyOrigin);
+                   network::mojom::ReferrerPolicy::kOrigin);
 STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin,
-                   kReferrerPolicyOriginWhenCrossOrigin);
+                   network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin);
 STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kSameOrigin,
-                   kReferrerPolicySameOrigin);
+                   network::mojom::ReferrerPolicy::kSameOrigin);
 STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kStrictOrigin,
-                   kReferrerPolicyStrictOrigin);
+                   network::mojom::ReferrerPolicy::kStrictOrigin);
 STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::
                        kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-                   kReferrerPolicyStrictOriginWhenCrossOrigin);
+                   network::mojom::ReferrerPolicy::
+                       kNoReferrerWhenDowngradeOriginWhenCrossOrigin);
 
 }  // namespace blink

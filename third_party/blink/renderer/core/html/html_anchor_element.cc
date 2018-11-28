@@ -387,7 +387,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 
   ResourceRequest request(completed_url);
 
-  ReferrerPolicy policy;
+  network::mojom::ReferrerPolicy policy;
   if (hasAttribute(kReferrerpolicyAttr) &&
       SecurityPolicy::ReferrerPolicyFromString(
           FastGetAttribute(kReferrerpolicyAttr),

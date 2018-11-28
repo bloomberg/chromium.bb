@@ -391,7 +391,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
       std::make_unique<GlobalScopeCreationParams>(
           KURL("http://fake.url/"), mojom::ScriptType::kClassic,
           "fake user agent", nullptr /* web_worker_fetch_context */, headers,
-          kReferrerPolicyDefault, security_origin_.get(),
+          network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
           false /* starter_secure_context */,
           CalculateHttpsState(security_origin_.get()), WorkerClients::Create(),
           mojom::IPAddressSpace::kLocal, nullptr /* originTrialToken */,

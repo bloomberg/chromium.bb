@@ -78,7 +78,7 @@ class CORE_EXPORT HTMLIFrameElement final
 
   bool IsInteractiveContent() const override;
 
-  ReferrerPolicy ReferrerPolicyAttribute() override;
+  network::mojom::ReferrerPolicy ReferrerPolicyAttribute() override;
 
   // FrameOwner overrides:
   bool AllowFullscreen() const override { return allow_fullscreen_; }
@@ -94,7 +94,7 @@ class CORE_EXPORT HTMLIFrameElement final
   Member<HTMLIFrameElementSandbox> sandbox_;
   Member<Policy> policy_;
 
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
 };
 
 }  // namespace blink

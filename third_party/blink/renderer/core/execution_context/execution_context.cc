@@ -51,7 +51,7 @@ ExecutionContext::ExecutionContext()
       is_context_paused_(false),
       is_context_destroyed_(false),
       window_interaction_tokens_(0),
-      referrer_policy_(kReferrerPolicyDefault),
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       invalidator_(std::make_unique<InterfaceInvalidator>()) {}
 
 ExecutionContext::~ExecutionContext() = default;
@@ -212,7 +212,7 @@ ExecutionContext::CreateFetchClientSettingsObjectSnapshot() {
 
 void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
                                                  bool support_legacy_keywords) {
-  ReferrerPolicy referrer_policy;
+  network::mojom::ReferrerPolicy referrer_policy;
 
   if (!SecurityPolicy::ReferrerPolicyFromHeaderValue(
           policies,
@@ -237,11 +237,12 @@ void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
   SetReferrerPolicy(referrer_policy);
 }
 
-void ExecutionContext::SetReferrerPolicy(ReferrerPolicy referrer_policy) {
+void ExecutionContext::SetReferrerPolicy(
+    network::mojom::ReferrerPolicy referrer_policy) {
   // When a referrer policy has already been set, the latest value takes
   // precedence.
   UseCounter::Count(this, WebFeature::kSetReferrerPolicy);
-  if (referrer_policy_ != kReferrerPolicyDefault)
+  if (referrer_policy_ != network::mojom::ReferrerPolicy::kDefault)
     UseCounter::Count(this, WebFeature::kResetReferrerPolicy);
 
   referrer_policy_ = referrer_policy;

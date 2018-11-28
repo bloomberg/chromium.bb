@@ -1189,7 +1189,7 @@ TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(true);
   document->SetSecurityOrigin(SecurityOrigin::Create(KURL(origin)));
   document->SetURL(document_url);
-  document->SetReferrerPolicy(kReferrerPolicyOrigin);
+  document->SetReferrerPolicy(network::mojom::ReferrerPolicy::kOrigin);
   document->SetAddressSpace(mojom::IPAddressSpace::kPublic);
 
   dummy_page_holder = nullptr;

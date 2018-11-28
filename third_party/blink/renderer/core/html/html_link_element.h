@@ -67,7 +67,9 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String AsValue() const { return as_; }
   String IntegrityValue() const { return integrity_; }
   String ImportanceValue() const { return importance_; }
-  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const {
+    return referrer_policy_;
+  }
   const LinkRelAttribute& RelAttribute() const { return rel_attribute_; }
   DOMTokenList& relList() const {
     return static_cast<DOMTokenList&>(*rel_list_);
@@ -165,7 +167,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String media_;
   String integrity_;
   String importance_;
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
   Member<DOMTokenList> sizes_;
   Vector<IntSize> icon_sizes_;
   TraceWrapperMember<RelList> rel_list_;

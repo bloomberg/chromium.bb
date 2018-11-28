@@ -99,7 +99,7 @@ LinkLoadParameters::LinkLoadParameters(const LinkHeader& header,
       media(header.Media()),
       nonce(header.Nonce()),
       integrity(header.Integrity()),
-      referrer_policy(kReferrerPolicyDefault),
+      referrer_policy(network::mojom::ReferrerPolicy::kDefault),
       href(KURL(base_url, header.Url())),
       image_srcset(header.ImageSrcset()),
       image_sizes(header.ImageSizes()) {}

@@ -112,8 +112,7 @@ WebString WebSecurityPolicy::GenerateReferrerHeader(
     network::mojom::ReferrerPolicy referrer_policy,
     const WebURL& url,
     const WebString& referrer) {
-  return SecurityPolicy::GenerateReferrer(
-             static_cast<ReferrerPolicy>(referrer_policy), url, referrer)
+  return SecurityPolicy::GenerateReferrer(referrer_policy, url, referrer)
       .referrer;
 }
 

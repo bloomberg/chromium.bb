@@ -75,7 +75,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kInclude),
       fetch_redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
       referrer_string_(Referrer::ClientReferrerString()),
-      referrer_policy_(kReferrerPolicyDefault),
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       did_set_http_referrer_(false),
       was_discarded_(false),
       is_external_request_(false),
@@ -94,7 +94,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
     const AtomicString& new_method,
     const KURL& new_site_for_cookies,
     const String& new_referrer,
-    ReferrerPolicy new_referrer_policy,
+    network::mojom::ReferrerPolicy new_referrer_policy,
     bool skip_service_worker) const {
   std::unique_ptr<ResourceRequest> request =
       std::make_unique<ResourceRequest>(new_url);
@@ -105,8 +105,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
       new_referrer.IsEmpty() ? Referrer::NoReferrer() : String(new_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  request->SetHTTPReferrer(
-      Referrer(referrer, static_cast<ReferrerPolicy>(new_referrer_policy)));
+  request->SetHTTPReferrer(Referrer(referrer, new_referrer_policy));
   request->SetSkipServiceWorker(skip_service_worker);
   request->SetRedirectStatus(RedirectStatus::kFollowedRedirect);
 
@@ -215,7 +214,7 @@ void ResourceRequest::SetHTTPReferrer(const Referrer& referrer) {
 
 void ResourceRequest::ClearHTTPReferrer() {
   http_header_fields_.Remove(http_names::kReferer);
-  referrer_policy_ = kReferrerPolicyDefault;
+  referrer_policy_ = network::mojom::ReferrerPolicy::kDefault;
   did_set_http_referrer_ = false;
 }
 

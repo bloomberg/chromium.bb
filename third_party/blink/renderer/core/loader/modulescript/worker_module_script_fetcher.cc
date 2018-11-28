@@ -4,11 +4,11 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/worker_module_script_fetcher.h"
 
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -85,7 +85,8 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     const String referrer_policy_header =
         resource->GetResponse().HttpHeaderField(http_names::kReferrerPolicy);
     if (!referrer_policy_header.IsNull()) {
-      ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+      network::mojom::ReferrerPolicy referrer_policy =
+          network::mojom::ReferrerPolicy::kDefault;
       SecurityPolicy::ReferrerPolicyFromHeaderValue(
           referrer_policy_header, kDoNotSupportReferrerPolicyLegacyKeywords,
           &referrer_policy);

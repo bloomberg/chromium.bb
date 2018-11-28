@@ -85,7 +85,7 @@ class PLATFORM_EXPORT ResourceRequest final {
       const AtomicString& new_method,
       const KURL& new_site_for_cookies,
       const String& new_referrer,
-      ReferrerPolicy new_referrer_policy,
+      network::mojom::ReferrerPolicy new_referrer_policy,
       bool skip_service_worker) const;
 
   bool IsNull() const;
@@ -143,10 +143,12 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool DidSetHTTPReferrer() const { return did_set_http_referrer_; }
   void ClearHTTPReferrer();
 
-  void SetReferrerPolicy(ReferrerPolicy referrer_policy) {
+  void SetReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
     referrer_policy_ = referrer_policy;
   }
-  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const {
+    return referrer_policy_;
+  }
 
   void SetReferrerString(const String& referrer_string) {
     referrer_string_ = referrer_string;
@@ -473,7 +475,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   // off-main-thread fetch is fully implemented and ResourceRequest never gets
   // transferred between threads. See https://crbug.com/706331.
   String referrer_string_;
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;
   bool was_discarded_;
   bool is_external_request_;

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
@@ -18,7 +19,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -63,8 +63,12 @@ class FetchRequestData final
   }
   const AtomicString& ReferrerString() const { return referrer_string_; }
   void SetReferrerString(const AtomicString& s) { referrer_string_ = s; }
-  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
-  void SetReferrerPolicy(ReferrerPolicy p) { referrer_policy_ = p; }
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const {
+    return referrer_policy_;
+  }
+  void SetReferrerPolicy(network::mojom::ReferrerPolicy p) {
+    referrer_policy_ = p;
+  }
   void SetMode(network::mojom::FetchRequestMode mode) { mode_ = mode; }
   network::mojom::FetchRequestMode Mode() const { return mode_; }
   void SetCredentials(network::mojom::FetchCredentialsMode credentials) {
@@ -128,7 +132,7 @@ class FetchRequestData final
   // FIXME: Support m_forceOriginHeaderFlag;
   bool same_origin_data_url_flag_;
   AtomicString referrer_string_;
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
   // FIXME: Support m_authenticationFlag;
   // FIXME: Support m_synchronousFlag;
   network::mojom::FetchRequestMode mode_;

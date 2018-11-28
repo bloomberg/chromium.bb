@@ -47,7 +47,7 @@ class CORE_EXPORT PreloadRequest {
       const String& resource_url,
       const KURL& base_url,
       ResourceType resource_type,
-      const ReferrerPolicy referrer_policy,
+      const network::mojom::ReferrerPolicy referrer_policy,
       ReferrerSource referrer_source,
       ResourceFetcher::IsImageSet is_image_set,
       const FetchParameters::ResourceWidth& resource_width =
@@ -100,7 +100,9 @@ class CORE_EXPORT PreloadRequest {
   const ClientHintsPreferences& Preferences() const {
     return client_hints_preferences_;
   }
-  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const {
+    return referrer_policy_;
+  }
 
   void SetScriptType(mojom::ScriptType script_type) {
     script_type_ = script_type;
@@ -137,7 +139,7 @@ class CORE_EXPORT PreloadRequest {
                  const FetchParameters::ResourceWidth& resource_width,
                  const ClientHintsPreferences& client_hints_preferences,
                  RequestType request_type,
-                 const ReferrerPolicy referrer_policy,
+                 const network::mojom::ReferrerPolicy referrer_policy,
                  ReferrerSource referrer_source,
                  ResourceFetcher::IsImageSet is_image_set)
       : initiator_name_(initiator_name),
@@ -174,7 +176,7 @@ class CORE_EXPORT PreloadRequest {
   FetchParameters::ResourceWidth resource_width_;
   ClientHintsPreferences client_hints_preferences_;
   RequestType request_type_;
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
   ReferrerSource referrer_source_;
   IntegrityMetadataSet integrity_metadata_;
   bool from_insertion_scanner_;

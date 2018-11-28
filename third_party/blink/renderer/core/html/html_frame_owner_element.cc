@@ -387,7 +387,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     return false;
 
   ResourceRequest request(url.IsNull() ? BlankURL() : url);
-  ReferrerPolicy policy = ReferrerPolicyAttribute();
+  network::mojom::ReferrerPolicy policy = ReferrerPolicyAttribute();
   request.SetReferrerPolicy(policy);
 
   WebFrameLoadType child_load_type = WebFrameLoadType::kReplaceCurrentItem;

@@ -19,7 +19,7 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     const KURL& base_url,
     const scoped_refptr<const SecurityOrigin> security_origin,
-    ReferrerPolicy referrer_policy,
+    network::mojom::ReferrerPolicy referrer_policy,
     const String& outgoing_referrer,
     HttpsState https_state)
     : base_url_(base_url),

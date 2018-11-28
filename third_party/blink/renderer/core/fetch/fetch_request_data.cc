@@ -49,8 +49,7 @@ FetchRequestData* FetchRequestData::Create(
   }
   request->SetContext(web_request.GetRequestContext());
   request->SetReferrerString(web_request.ReferrerUrl().GetString());
-  request->SetReferrerPolicy(
-      static_cast<ReferrerPolicy>(web_request.GetReferrerPolicy()));
+  request->SetReferrerPolicy(web_request.GetReferrerPolicy());
   request->SetMode(web_request.Mode());
   request->SetCredentials(web_request.CredentialsMode());
   request->SetCacheMode(web_request.CacheMode());
@@ -90,8 +89,7 @@ FetchRequestData* FetchRequestData::Create(
   if (fetch_api_request.referrer) {
     if (!fetch_api_request.referrer->url.IsEmpty())
       request->SetReferrerString(AtomicString(fetch_api_request.referrer->url));
-    request->SetReferrerPolicy(
-        static_cast<ReferrerPolicy>(fetch_api_request.referrer->policy));
+    request->SetReferrerPolicy(fetch_api_request.referrer->policy);
   }
   request->SetMode(fetch_api_request.mode);
   request->SetCredentials(fetch_api_request.credentials_mode);
@@ -170,7 +168,7 @@ FetchRequestData::FetchRequestData()
       context_(mojom::RequestContextType::UNSPECIFIED),
       same_origin_data_url_flag_(false),
       referrer_string_(Referrer::ClientReferrerString()),
-      referrer_policy_(kReferrerPolicyDefault),
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       mode_(network::mojom::FetchRequestMode::kNoCors),
       credentials_(network::mojom::FetchCredentialsMode::kOmit),
       cache_mode_(mojom::FetchCacheMode::kDefault),

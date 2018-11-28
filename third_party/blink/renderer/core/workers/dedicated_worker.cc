@@ -174,8 +174,8 @@ void DedicatedWorker::Start() {
     auto* outside_settings_object =
         GetExecutionContext()->CreateFetchClientSettingsObjectSnapshot();
     context_proxy_->StartWorkerGlobalScope(
-        CreateGlobalScopeCreationParams(script_request_url_,
-                                        kReferrerPolicyDefault),
+        CreateGlobalScopeCreationParams(
+            script_request_url_, network::mojom::ReferrerPolicy::kDefault),
         options_, script_request_url_, outside_settings_object, stack_id,
         String() /* source_code */);
     return;
@@ -282,7 +282,8 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
   } else if (classic_script_loader_->Failed()) {
     DispatchEvent(*Event::CreateCancelable(event_type_names::kError));
   } else {
-    ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+    network::mojom::ReferrerPolicy referrer_policy =
+        network::mojom::ReferrerPolicy::kDefault;
     if (!classic_script_loader_->GetReferrerPolicy().IsNull()) {
       SecurityPolicy::ReferrerPolicyFromHeaderValue(
           classic_script_loader_->GetReferrerPolicy(),
@@ -308,7 +309,7 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
 std::unique_ptr<GlobalScopeCreationParams>
 DedicatedWorker::CreateGlobalScopeCreationParams(
     const KURL& script_url,
-    ReferrerPolicy referrer_policy) {
+    network::mojom::ReferrerPolicy referrer_policy) {
   base::UnguessableToken parent_devtools_token;
   std::unique_ptr<WorkerSettings> settings;
   if (auto* document = DynamicTo<Document>(GetExecutionContext())) {

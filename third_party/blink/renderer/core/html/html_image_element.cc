@@ -104,7 +104,7 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       is_fallback_image_(false),
       should_invert_color_(false),
       sizes_set_width_(false),
-      referrer_policy_(kReferrerPolicyDefault) {
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {
   SetHasCustomStyleCallbacks();
   if (media_element_parser_helpers::IsMediaElement(this) &&
       !document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kUnsizedMedia)) {
@@ -287,7 +287,7 @@ void HTMLImageElement::ParseAttribute(
   } else if (name == kUsemapAttr) {
     SetIsLink(!params.new_value.IsNull());
   } else if (name == kReferrerpolicyAttr) {
-    referrer_policy_ = kReferrerPolicyDefault;
+    referrer_policy_ = network::mojom::ReferrerPolicy::kDefault;
     if (!params.new_value.IsNull()) {
       SecurityPolicy::ReferrerPolicyFromString(
           params.new_value, kSupportReferrerPolicyLegacyKeywords,

@@ -36,6 +36,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -77,7 +78,6 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -375,11 +375,11 @@ WebConnectionType ToWebConnectionType(const String& connection_type) {
   return kWebConnectionTypeUnknown;
 }
 
-String GetReferrerPolicy(ReferrerPolicy policy) {
+String GetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
   switch (policy) {
-    case kReferrerPolicyAlways:
+    case network::mojom::ReferrerPolicy::kAlways:
       return protocol::Network::Request::ReferrerPolicyEnum::UnsafeUrl;
-    case kReferrerPolicyDefault:
+    case network::mojom::ReferrerPolicy::kDefault:
       if (RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
         return protocol::Network::Request::ReferrerPolicyEnum::
             StrictOriginWhenCrossOrigin;
@@ -387,21 +387,22 @@ String GetReferrerPolicy(ReferrerPolicy policy) {
         return protocol::Network::Request::ReferrerPolicyEnum::
             NoReferrerWhenDowngrade;
       }
-    case kReferrerPolicyNoReferrerWhenDowngrade:
+    case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
       return protocol::Network::Request::ReferrerPolicyEnum::
           NoReferrerWhenDowngrade;
-    case kReferrerPolicyNever:
+    case network::mojom::ReferrerPolicy::kNever:
       return protocol::Network::Request::ReferrerPolicyEnum::NoReferrer;
-    case kReferrerPolicyOrigin:
+    case network::mojom::ReferrerPolicy::kOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::Origin;
-    case kReferrerPolicyOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::
           OriginWhenCrossOrigin;
-    case kReferrerPolicySameOrigin:
+    case network::mojom::ReferrerPolicy::kSameOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::SameOrigin;
-    case kReferrerPolicyStrictOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::StrictOrigin;
-    case kReferrerPolicyStrictOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::
+        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::
           StrictOriginWhenCrossOrigin;
   }
@@ -836,10 +837,12 @@ void InspectorNetworkAgent::WillSendRequest(
       // use ResourceRequest::referrer_. See https://crbug.com/850813. This
       // seems to require storing the referrer info that is currently stored
       // inside state_'s kExtraRequestHeaders, somewhere else.
-      if (header_name.LowerASCII() == http_names::kReferer.LowerASCII())
-        request.SetHTTPReferrer(Referrer(value, kReferrerPolicyAlways));
-      else
+      if (header_name.LowerASCII() == http_names::kReferer.LowerASCII()) {
+        request.SetHTTPReferrer(
+            Referrer(value, network::mojom::ReferrerPolicy::kAlways));
+      } else {
         request.SetHTTPHeaderField(header_name, AtomicString(value));
+      }
     }
   }
 

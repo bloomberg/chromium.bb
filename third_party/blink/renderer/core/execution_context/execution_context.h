@@ -33,6 +33,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/unguessable_token.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
@@ -40,7 +41,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -238,8 +238,10 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // parsed as valid policies.
   void ParseAndSetReferrerPolicy(const String& policies,
                                  bool support_legacy_keywords = false);
-  void SetReferrerPolicy(ReferrerPolicy);
-  virtual ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+  void SetReferrerPolicy(network::mojom::ReferrerPolicy);
+  virtual network::mojom::ReferrerPolicy GetReferrerPolicy() const {
+    return referrer_policy_;
+  }
 
   virtual CoreProbeSink* GetProbeSink() { return nullptr; }
 
@@ -276,7 +278,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // increment and decrement the counter.
   int window_interaction_tokens_;
 
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
 
   std::unique_ptr<InterfaceInvalidator> invalidator_;
 

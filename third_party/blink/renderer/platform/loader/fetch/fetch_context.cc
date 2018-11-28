@@ -47,7 +47,7 @@ class NullFetchContext final : public FetchContext {
             MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
                 KURL(),
                 nullptr /* security_origin */,
-                kReferrerPolicyDefault,
+                network::mojom::ReferrerPolicy::kDefault,
                 String(),
                 HttpsState::kNone)) {}
 

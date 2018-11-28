@@ -136,7 +136,7 @@ class DedicatedWorkerMessagingProxyForTest
         std::make_unique<GlobalScopeCreationParams>(
             script_url, mojom::ScriptType::kClassic, "fake user agent",
             nullptr /* web_worker_fetch_context */, headers,
-            kReferrerPolicyDefault, security_origin_.get(),
+            network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
             false /* starter_secure_context */,
             CalculateHttpsState(security_origin_.get()),
             nullptr /* worker_clients */, mojom::IPAddressSpace::kLocal,

@@ -154,8 +154,9 @@ void ModuleScriptLoader::FetchInternal(
 
   // [SMSR] "... its referrer policy to options's referrer policy." [spec text]
   // Note: For now this is done below with SetHTTPReferrer()
-  ReferrerPolicy referrer_policy = module_request.Options().GetReferrerPolicy();
-  if (referrer_policy == kReferrerPolicyDefault)
+  network::mojom::ReferrerPolicy referrer_policy =
+      module_request.Options().GetReferrerPolicy();
+  if (referrer_policy == network::mojom::ReferrerPolicy::kDefault)
     referrer_policy = fetch_client_settings_object->GetReferrerPolicy();
 
   // Step 5. "... mode is "cors", ..."
