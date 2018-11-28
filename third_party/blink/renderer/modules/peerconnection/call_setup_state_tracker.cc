@@ -92,7 +92,7 @@ AnswererState CallSetupStateTracker::answerer_state() const {
   return answerer_state_;
 }
 
-CallSetupState CallSetupStateTracker::CallSetupState() const {
+CallSetupState CallSetupStateTracker::GetCallSetupState() const {
   if (offerer_state_ == OffererState::kNotStarted &&
       answerer_state_ == AnswererState::kNotStarted) {
     return CallSetupState::kNotStarted;
