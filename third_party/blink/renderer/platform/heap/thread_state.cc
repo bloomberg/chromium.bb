@@ -171,12 +171,6 @@ ThreadState::ThreadState()
       weak_persistent_region_(std::make_unique<PersistentRegion>()),
       start_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
       end_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
-#if HAS_FEATURE(safe_stack)
-      start_of_unsafe_stack_(
-          reinterpret_cast<intptr_t*>(__builtin___get_unsafe_stack_top())),
-      end_of_unsafe_stack_(
-          reinterpret_cast<intptr_t*>(__builtin___get_unsafe_stack_bottom())),
-#endif
       sweep_forbidden_(false),
       no_allocation_count_(0),
       gc_forbidden_count_(0),
@@ -347,19 +341,6 @@ void ThreadState::VisitStack(MarkingVisitor* visitor) {
     heap_->CheckAndMarkPointer(visitor, ptr);
     VisitAsanFakeStackForPointer(visitor, ptr);
   }
-
-#if HAS_FEATURE(safe_stack)
-  start = reinterpret_cast<Address*>(start_of_unsafe_stack_);
-  end = reinterpret_cast<Address*>(end_of_unsafe_stack_);
-  current = end;
-
-  for (; current < start; ++current) {
-    Address ptr = *current;
-    // SafeStack And MSan are not compatible
-    heap_->CheckAndMarkPointer(visitor, ptr);
-    VisitAsanFakeStackForPointer(visitor, ptr);
-  }
-#endif
 }
 
 void ThreadState::VisitDOMWrappers(Visitor* visitor) {
@@ -1309,10 +1290,6 @@ extern "C" void PushAllRegisters(void*, ThreadState*, PushAllRegistersCallback);
 
 static void DidPushRegisters(void*, ThreadState* state, intptr_t* stack_end) {
   state->RecordStackEnd(stack_end);
-#if HAS_FEATURE(safe_stack)
-  state->RecordUnsafeStackEnd(
-      reinterpret_cast<intptr_t*>(__builtin___get_unsafe_stack_ptr()));
-#endif
 }
 
 void ThreadState::PushRegistersAndVisitStack() {
