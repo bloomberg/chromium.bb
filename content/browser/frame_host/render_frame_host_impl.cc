@@ -5196,7 +5196,8 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   // bail out if the frame hasn't commited any yet.
   if (!has_committed_any_navigation_)
     return;
-  DCHECK(network_service_connection_error_handler_holder_.is_bound());
+  DCHECK(!IsOutOfProcessNetworkService() ||
+         network_service_connection_error_handler_holder_.is_bound());
 
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
   bool bypass_redirect_checks = false;
