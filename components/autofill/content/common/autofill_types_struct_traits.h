@@ -279,6 +279,11 @@ struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
     return r.unique_renderer_id;
   }
 
+  static autofill::SubmissionIndicatorEvent submission_event(
+      const autofill::FormData& r) {
+    return r.submission_event;
+  }
+
   static const std::vector<autofill::FormFieldData>& fields(
       const autofill::FormData& r) {
     return r.fields;

@@ -79,7 +79,7 @@ FormData::FormData(const FormData& data)
       is_form_tag(data.is_form_tag),
       is_formless_checkout(data.is_formless_checkout),
       unique_renderer_id(data.unique_renderer_id),
-      submission_event(SubmissionIndicatorEvent::NONE),
+      submission_event(data.submission_event),
       fields(data.fields),
       username_predictions(data.username_predictions) {}
 
@@ -125,6 +125,7 @@ bool FormData::DynamicallySameFormAs(const FormData& form) const {
 bool FormData::operator==(const FormData& form) const {
   return name == form.name && origin == form.origin && action == form.action &&
          unique_renderer_id == form.unique_renderer_id &&
+         submission_event == form.submission_event &&
          is_form_tag == form.is_form_tag &&
          is_formless_checkout == form.is_formless_checkout &&
          fields == form.fields &&

@@ -19,6 +19,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/submission_indicator_event.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -27,6 +28,7 @@ using autofill::FieldPropertiesFlags;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
+using autofill::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 
 namespace password_manager {
@@ -88,6 +90,7 @@ struct FormParsingTestCase {
   base::Optional<FormDataParser::ReadonlyPasswordFields> readonly_status;
   // If the result should be marked as only useful for fallbacks.
   bool fallback_only = false;
+  SubmissionIndicatorEvent submission_event = SubmissionIndicatorEvent::NONE;
 };
 
 // Returns numbers which are distinct from each other within the scope of one
@@ -154,15 +157,15 @@ void UpdateResultWithIdByRole(ParseResultIds* result,
 // described in |fields_description|. Generates |fill_result| and |save_result|
 // expectations about the result in FILLING and SAVING mode, respectively. Also
 // fills |predictions| with the predictions contained in FieldDataDescriptions.
-FormData GetFormDataAndExpectation(
-    const std::vector<FieldDataDescription>& fields_description,
-    FormPredictions* predictions,
-    ParseResultIds* fill_result,
-    ParseResultIds* save_result) {
+FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
+                                   FormPredictions* predictions,
+                                   ParseResultIds* fill_result,
+                                   ParseResultIds* save_result) {
   FormData form_data;
   form_data.action = GURL("http://example1.com");
   form_data.origin = GURL("http://example2.com");
-  for (const FieldDataDescription& field_description : fields_description) {
+  form_data.submission_event = test_case.submission_event;
+  for (const FieldDataDescription& field_description : test_case.fields) {
     FormFieldData field;
     const uint32_t unique_id = GetUniqueId();
     field.unique_renderer_id = unique_id;
@@ -315,7 +318,7 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
     ParseResultIds fill_result;
     ParseResultIds save_result;
     const FormData form_data = GetFormDataAndExpectation(
-        test_case.fields, &predictions, &fill_result, &save_result);
+        test_case, &predictions, &fill_result, &save_result);
     FormDataParser parser;
     parser.set_predictions(std::move(predictions));
     for (auto mode :
@@ -341,6 +344,7 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
         EXPECT_TRUE(parsed_form->has_renderer_ids);
         EXPECT_EQ(test_case.username_may_use_prefilled_placeholder,
                   parsed_form->username_may_use_prefilled_placeholder);
+        EXPECT_EQ(test_case.submission_event, parsed_form->submission_event);
         CheckPasswordFormFields(*parsed_form, form_data, expected_ids);
         CheckAllValuesUnique(parsed_form->all_possible_passwords);
         CheckAllValuesUnique(parsed_form->other_possible_usernames);
@@ -1792,6 +1796,18 @@ TEST(FormParserTest, HistogramsForUsernameDetectionMethod) {
                               histogram_test_case.expected_method,
                               2);
   }
+}
+
+TEST(FormParserTest, SubmissionEvent) {
+  CheckTestData({
+      {"Sign-in form, submission event is not None",
+       {
+           {.role = ElementRole::USERNAME, .form_control_type = "text"},
+           {.role = ElementRole::CURRENT_PASSWORD,
+            .form_control_type = "password"},
+       },
+       .submission_event = SubmissionIndicatorEvent::XHR_SUCCEEDED},
+  });
 }
 
 TEST(FormParserTest, GetSignonRealm) {

@@ -618,6 +618,9 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
   out->is_formless_checkout = data.is_formless_checkout();
   out->unique_renderer_id = data.unique_renderer_id();
 
+  if (!data.ReadSubmissionEvent(&out->submission_event))
+    return false;
+
   if (!data.ReadFields(&out->fields))
     return false;
 
