@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/shared_worker/mock_shared_worker.h"
+#include "content/browser/worker_host/mock_shared_worker.h"
 
 #include "content/common/url_loader_factory_bundle.h"
 #include "mojo/public/cpp/test_support/test_utils.h"

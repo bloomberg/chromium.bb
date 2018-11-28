@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/shared_worker/shared_worker_host.h"
+#include "content/browser/worker_host/shared_worker_host.h"
 
 #include <memory>
 #include <string>
@@ -12,10 +12,10 @@
 #include "base/run_loop.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
-#include "content/browser/shared_worker/mock_shared_worker.h"
-#include "content/browser/shared_worker/shared_worker_connector_impl.h"
-#include "content/browser/shared_worker/shared_worker_instance.h"
-#include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/browser/worker_host/mock_shared_worker.h"
+#include "content/browser/worker_host/shared_worker_connector_impl.h"
+#include "content/browser/worker_host/shared_worker_instance.h"
+#include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"

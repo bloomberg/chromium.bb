@@ -23,7 +23,7 @@
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/public/browser/storage_partition.h"

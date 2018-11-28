@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/shared_worker/worker_script_fetch_initiator.h"
+#include "content/browser/worker_host/worker_script_fetch_initiator.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -15,12 +15,12 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/shared_worker/worker_script_fetcher.h"
-#include "content/browser/shared_worker/worker_script_loader.h"
-#include "content/browser/shared_worker/worker_script_loader_factory.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/worker_host/worker_script_fetcher.h"
+#include "content/browser/worker_host/worker_script_loader.h"
+#include "content/browser/worker_host/worker_script_loader_factory.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"

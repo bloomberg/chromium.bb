@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SHARED_WORKER_WORKER_SCRIPT_LOADER_FACTORY_H_
-#define CONTENT_BROWSER_SHARED_WORKER_WORKER_SCRIPT_LOADER_FACTORY_H_
+#ifndef CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_LOADER_FACTORY_H_
+#define CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_LOADER_FACTORY_H_
 
 #include "base/macros.h"
 #include "content/common/navigation_subresource_loader_params.h"
@@ -74,4 +74,4 @@ class WorkerScriptLoaderFactory : public network::mojom::URLLoaderFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SHARED_WORKER_WORKER_SCRIPT_LOADER_FACTORY_H_
+#endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_LOADER_FACTORY_H_

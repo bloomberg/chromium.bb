@@ -24,7 +24,7 @@ enum class ServicifiedFeatures { kNone, kServiceWorker, kNetwork };
 }
 
 // Tests TLS + service workers. Inspired by
-// content/browser/shared_worker/worker_browsertest.cc.
+// content/browser/worker_host/worker_browsertest.cc.
 class ServiceWorkerTlsTest
     : public ContentBrowserTest,
       public ::testing::WithParamInterface<ServicifiedFeatures> {

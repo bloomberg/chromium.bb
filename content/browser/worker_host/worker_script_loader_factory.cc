@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/shared_worker/worker_script_loader_factory.h"
+#include "content/browser/worker_host/worker_script_loader_factory.h"
 
 #include <memory>
 #include "base/feature_list.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/shared_worker/worker_script_loader.h"
+#include "content/browser/worker_host/worker_script_loader.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/features.h"

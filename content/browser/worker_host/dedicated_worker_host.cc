@@ -5,7 +5,7 @@
 #include <string>
 #include <utility>
 
-#include "content/browser/dedicated_worker/dedicated_worker_host.h"
+#include "content/browser/worker_host/dedicated_worker_host.h"
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
