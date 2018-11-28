@@ -4153,10 +4153,6 @@ TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithoutRootRenderPass) {
       /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
 
   EXPECT_CALL(overlay_scheduler,
-              Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, kSurfaceOverlayTextureId,
-                       gfx::Rect(viewport_size), _, _, kGpuFenceId))
-      .Times(1);
-  EXPECT_CALL(overlay_scheduler,
               Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _,
                        gfx::Rect(viewport_size), _, _, kGpuFenceId))
       .Times(1);

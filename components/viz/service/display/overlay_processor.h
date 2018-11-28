@@ -79,6 +79,15 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       gfx::Rect* damage_rect,
       std::vector<gfx::Rect>* content_bounds);
 
+  // Determine if we can eliminate (all remaining quads are black or
+  // transparent) or crop (non-black content is a small sub-rectangle) the
+  // primary framebuffer.
+  static void EliminateOrCropPrimary(
+      const QuadList& quad_list,
+      const QuadList::Iterator& candidate_iterator,
+      OverlayCandidate* primary,
+      OverlayCandidateList* candidate_list);
+
  protected:
   StrategyList strategies_;
   OutputSurface* surface_;

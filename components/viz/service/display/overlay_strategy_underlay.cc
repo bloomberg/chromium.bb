@@ -57,11 +57,19 @@ bool OverlayStrategyUnderlay::Attempt(
       continue;
     }
 
+    OverlayCandidateList new_candidate_list;
+    if (candidate_list->size() == 1) {
+      OverlayCandidate primary(candidate_list->back());
+      primary.is_opaque = false;
+      OverlayProcessor::EliminateOrCropPrimary(quad_list, it, &primary,
+                                               &new_candidate_list);
+    } else {
+      new_candidate_list = *candidate_list;
+    }
+
     // Add the overlay.
-    OverlayCandidateList new_candidate_list = *candidate_list;
     new_candidate_list.push_back(candidate);
     new_candidate_list.back().plane_z_order = -1;
-    new_candidate_list.front().is_opaque = false;
 
     // Check for support.
     capability_checker_->CheckOverlaySupport(&new_candidate_list);
