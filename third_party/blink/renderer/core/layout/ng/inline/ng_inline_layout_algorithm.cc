@@ -497,48 +497,47 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
   TextDirection line_direction = line_info.BaseDirection();
 
   for (NGLineBoxFragmentBuilder::Child& child : line_box_) {
-    if (LayoutObject* box = child.out_of_flow_positioned_box) {
-      // The static position is at the line-top. Ignore the block_offset.
-      NGLogicalOffset static_offset(child.offset.inline_offset, LayoutUnit());
+    LayoutObject* box = child.out_of_flow_positioned_box;
+    if (!box)
+      continue;
 
-      // If a block-level box appears in the middle of a line, move the static
-      // position to where the next block will be placed.
-      if (!box->StyleRef().IsOriginalDisplayInlineType()) {
-        LayoutUnit inline_offset = container_builder_.BfcLineOffset() -
-                                   ConstraintSpace().BfcOffset().line_offset;
+    // The static position is at the line-top. Ignore the block_offset.
+    NGLogicalOffset static_offset(child.offset.inline_offset, LayoutUnit());
 
-        // Flip the inline_offset if we are in RTL.
-        if (IsRtl(line_direction)) {
-          LayoutUnit container_inline_size =
-              ConstraintSpace().AvailableSize().inline_size;
-          inline_offset = container_inline_size - inline_offset + inline_size;
-        }
+    // If a block-level box appears in the middle of a line, move the static
+    // position to where the next block will be placed.
+    if (!box->StyleRef().IsOriginalDisplayInlineType()) {
+      LayoutUnit inline_offset = container_builder_.BfcLineOffset() -
+                                 ConstraintSpace().BfcOffset().line_offset;
 
-        inline_offset += line_info.TextIndent();
-
-        // We need to subtract the line offset, in order to ignore
-        // floats and text-indent.
-        static_offset.inline_offset = -inline_offset;
-
-        if (child.offset.inline_offset && !line_box_metrics.IsEmpty())
-          static_offset.block_offset = line_box_metrics.LineHeight();
-      } else {
-        // Our child offset is line-relative, but the static offset is
-        // flow-relative, using the direction we give to
-        // |AddInlineOutOfFlowChildCandidate|.
-        if (IsRtl(line_direction)) {
-          static_offset.inline_offset =
-              inline_size - static_offset.inline_offset;
-        }
+      // Flip the inline_offset if we are in RTL.
+      if (IsRtl(line_direction)) {
+        LayoutUnit container_inline_size =
+            ConstraintSpace().AvailableSize().inline_size;
+        inline_offset = container_inline_size - inline_offset + inline_size;
       }
 
-      container_builder_.AddInlineOutOfFlowChildCandidate(
-          NGBlockNode(ToLayoutBox(box)), static_offset, line_direction,
-          child.out_of_flow_containing_box);
+      inline_offset += line_info.TextIndent();
 
-      child.out_of_flow_positioned_box = child.out_of_flow_containing_box =
-          nullptr;
+      // We need to subtract the line offset, in order to ignore floats and
+      // text-indent.
+      static_offset.inline_offset = -inline_offset;
+
+      if (child.offset.inline_offset && !line_box_metrics.IsEmpty())
+        static_offset.block_offset = line_box_metrics.LineHeight();
+    } else if (IsRtl(line_direction)) {
+      // Our child offset is line-relative, but the static offset is
+      // flow-relative, using the direction we give to
+      // |AddInlineOutOfFlowChildCandidate|.
+      static_offset.inline_offset = inline_size - static_offset.inline_offset;
     }
+
+    container_builder_.AddInlineOutOfFlowChildCandidate(
+        NGBlockNode(ToLayoutBox(box)), static_offset, line_direction,
+        child.out_of_flow_containing_box);
+
+    child.out_of_flow_positioned_box = nullptr;
+    child.out_of_flow_containing_box = nullptr;
   }
 }
 
