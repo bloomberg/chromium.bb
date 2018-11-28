@@ -51,7 +51,7 @@ static std::complex<double> EvaluatePolynomial(const double* coef,
 
 void IIRFilter::Process(const float* source_p,
                         float* dest_p,
-                        size_t frames_to_process) {
+                        uint32_t frames_to_process) {
   // Compute
   //
   //   y[n] = sum(b[k] * x[n - k], k = 0, M) - sum(a[k] * y[n - k], k = 1, N)

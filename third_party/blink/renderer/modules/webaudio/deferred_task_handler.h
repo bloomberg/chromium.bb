@@ -79,7 +79,7 @@ class MODULES_EXPORT DeferredTaskHandler final
 
   // Called right before handlePostRenderTasks() to handle nodes which need to
   // be pulled even when they are not connected to anything.
-  void ProcessAutomaticPullNodes(size_t frames_to_process);
+  void ProcessAutomaticPullNodes(uint32_t frames_to_process);
 
   // Keep track of AudioNode's that have their channel count mode changed. We
   // process the changes in the post rendering phase.

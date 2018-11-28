@@ -149,7 +149,7 @@ void MediaElementAudioSourceHandler::PrintCorsMessage(const String& message) {
   }
 }
 
-void MediaElementAudioSourceHandler::Process(size_t number_of_frames) {
+void MediaElementAudioSourceHandler::Process(uint32_t number_of_frames) {
   AudioBus* output_bus = Output(0).Bus();
 
   // Use a tryLock() to avoid contention in the real-time audio thread.

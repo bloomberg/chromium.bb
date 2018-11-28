@@ -71,11 +71,11 @@ class PannerHandler final : public AudioHandler {
   ~PannerHandler() override;
 
   // AudioHandler
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
   void ProcessSampleAccurateValues(AudioBus* destination,
                                    const AudioBus* source,
-                                   size_t frames_to_process);
-  void ProcessOnlyAudioParams(size_t frames_to_process) override;
+                                   uint32_t frames_to_process);
+  void ProcessOnlyAudioParams(uint32_t frames_to_process) override;
   void Initialize() override;
   void Uninitialize() override;
 

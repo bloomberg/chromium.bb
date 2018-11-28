@@ -16,7 +16,7 @@ class MockAudioProcessor final : public AudioProcessor {
   MockAudioProcessor() : AudioProcessor(48000, 2) {}
   void Initialize() override { initialized_ = true; }
   void Uninitialize() override { initialized_ = false; }
-  void Process(const AudioBus*, AudioBus*, size_t) override {}
+  void Process(const AudioBus*, AudioBus*, uint32_t) override {}
   void Reset() override {}
   void SetNumberOfChannels(unsigned) override {}
   unsigned NumberOfChannels() const override { return number_of_channels_; }

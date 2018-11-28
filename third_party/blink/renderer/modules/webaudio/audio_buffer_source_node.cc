@@ -93,7 +93,7 @@ AudioBufferSourceHandler::~AudioBufferSourceHandler() {
   Uninitialize();
 }
 
-void AudioBufferSourceHandler::Process(size_t frames_to_process) {
+void AudioBufferSourceHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
 
   if (!IsInitialized()) {
@@ -119,8 +119,8 @@ void AudioBufferSourceHandler::Process(size_t frames_to_process) {
       return;
     }
 
-    size_t quantum_frame_offset;
-    size_t buffer_frames_to_process;
+    uint32_t quantum_frame_offset;
+    uint32_t buffer_frames_to_process;
     double start_time_offset;
 
     std::tie(quantum_frame_offset, buffer_frames_to_process,
@@ -154,7 +154,7 @@ void AudioBufferSourceHandler::Process(size_t frames_to_process) {
 bool AudioBufferSourceHandler::RenderSilenceAndFinishIfNotLooping(
     AudioBus*,
     unsigned index,
-    size_t frames_to_process) {
+    uint32_t frames_to_process) {
   if (!Loop()) {
     // If we're not looping, then stop playing when we get to the end.
 
@@ -176,7 +176,7 @@ bool AudioBufferSourceHandler::RenderSilenceAndFinishIfNotLooping(
 bool AudioBufferSourceHandler::RenderFromBuffer(
     AudioBus* bus,
     unsigned destination_frame_offset,
-    size_t number_of_frames) {
+    uint32_t number_of_frames) {
   DCHECK(Context()->IsAudioThread());
 
   // Basic sanity checking
@@ -221,7 +221,7 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
   // Offset the pointers to the correct offset frame.
   unsigned write_index = destination_frame_offset;
 
-  size_t buffer_length = Buffer()->length();
+  uint32_t buffer_length = Buffer()->length();
   double buffer_sample_rate = Buffer()->sampleRate();
 
   // Avoid converting from time to sample-frames twice by computing

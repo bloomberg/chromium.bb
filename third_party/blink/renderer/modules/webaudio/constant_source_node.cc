@@ -38,7 +38,7 @@ ConstantSourceHandler::~ConstantSourceHandler() {
   Uninitialize();
 }
 
-void ConstantSourceHandler::Process(size_t frames_to_process) {
+void ConstantSourceHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
   DCHECK(output_bus);
 

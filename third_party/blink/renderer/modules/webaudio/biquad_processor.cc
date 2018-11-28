@@ -104,7 +104,7 @@ void BiquadProcessor::CheckForDirtyCoefficients() {
 
 void BiquadProcessor::Process(const AudioBus* source,
                               AudioBus* destination,
-                              size_t frames_to_process) {
+                              uint32_t frames_to_process) {
   if (!IsInitialized()) {
     destination->Zero();
     return;
@@ -128,7 +128,7 @@ void BiquadProcessor::Process(const AudioBus* source,
                          frames_to_process);
 }
 
-void BiquadProcessor::ProcessOnlyAudioParams(size_t frames_to_process) {
+void BiquadProcessor::ProcessOnlyAudioParams(uint32_t frames_to_process) {
   DCHECK_LE(frames_to_process, audio_utilities::kRenderQuantumFrames);
 
   float values[audio_utilities::kRenderQuantumFrames];

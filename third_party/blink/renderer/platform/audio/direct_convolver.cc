@@ -61,7 +61,7 @@ DirectConvolver::DirectConvolver(
 
 void DirectConvolver::Process(const float* source_p,
                               float* dest_p,
-                              size_t frames_to_process) {
+                              uint32_t frames_to_process) {
   DCHECK_EQ(frames_to_process, input_block_size_);
   if (frames_to_process != input_block_size_)
     return;

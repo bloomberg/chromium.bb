@@ -157,7 +157,8 @@ void DeferredTaskHandler::UpdateAutomaticPullNodes() {
   }
 }
 
-void DeferredTaskHandler::ProcessAutomaticPullNodes(size_t frames_to_process) {
+void DeferredTaskHandler::ProcessAutomaticPullNodes(
+    uint32_t frames_to_process) {
   DCHECK(IsAudioThread());
 
   for (unsigned i = 0; i < rendering_automatic_pull_handlers_.size(); ++i) {

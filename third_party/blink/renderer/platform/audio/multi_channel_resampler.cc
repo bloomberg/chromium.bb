@@ -50,7 +50,7 @@ class ChannelProvider final : public AudioSourceProvider {
   // provideInput() will be called once for each channel, starting with the
   // first channel.  Each time it's called, it will provide the next channel of
   // data.
-  void ProvideInput(AudioBus* bus, size_t frames_to_process) override {
+  void ProvideInput(AudioBus* bus, uint32_t frames_to_process) override {
     bool is_bus_good = bus && bus->NumberOfChannels() == 1;
     DCHECK(is_bus_good);
     if (!is_bus_good)
@@ -91,7 +91,7 @@ class ChannelProvider final : public AudioSourceProvider {
   unsigned number_of_channels_;
   unsigned current_channel_;
   // Used to verify that all channels ask for the same amount.
-  size_t frames_to_process_;
+  uint32_t frames_to_process_;
 };
 
 }  // namespace
@@ -107,7 +107,7 @@ MultiChannelResampler::MultiChannelResampler(double scale_factor,
 
 void MultiChannelResampler::Process(AudioSourceProvider* provider,
                                     AudioBus* destination,
-                                    size_t frames_to_process) {
+                                    uint32_t frames_to_process) {
   // The provider can provide us with multi-channel audio data. But each of our
   // single-channel resamplers (kernels) below requires a provider which
   // provides a single unique channel of data.  channelProvider wraps the

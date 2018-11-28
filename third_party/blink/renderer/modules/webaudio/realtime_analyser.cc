@@ -59,7 +59,7 @@ RealtimeAnalyser::RealtimeAnalyser()
   analysis_frame_ = std::make_unique<FFTFrame>(kDefaultFFTSize);
 }
 
-bool RealtimeAnalyser::SetFftSize(size_t size) {
+bool RealtimeAnalyser::SetFftSize(uint32_t size) {
   DCHECK(IsMainThread());
 
   // Only allow powers of two within the allowed range.
@@ -78,7 +78,7 @@ bool RealtimeAnalyser::SetFftSize(size_t size) {
   return true;
 }
 
-void RealtimeAnalyser::WriteInput(AudioBus* bus, size_t frames_to_process) {
+void RealtimeAnalyser::WriteInput(AudioBus* bus, uint32_t frames_to_process) {
   bool is_bus_good = bus && bus->NumberOfChannels() > 0 &&
                      bus->Channel(0)->length() >= frames_to_process;
   DCHECK(is_bus_good);
@@ -136,7 +136,7 @@ void RealtimeAnalyser::DoFFTAnalysis() {
 
   // Unroll the input buffer into a temporary buffer, where we'll apply an
   // analysis window followed by an FFT.
-  size_t fft_size = this->FftSize();
+  uint32_t fft_size = this->FftSize();
 
   AudioFloatArray temporary_buffer(fft_size);
   float* input_buffer = input_buffer_.Data();

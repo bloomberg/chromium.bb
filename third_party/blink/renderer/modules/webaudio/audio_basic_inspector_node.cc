@@ -44,7 +44,7 @@ AudioBasicInspectorHandler::AudioBasicInspectorHandler(
 // advantage of in-place processing, where the input is simply passed through
 // unprocessed to the output.
 // Note: this only applies if the input and output channel counts match.
-void AudioBasicInspectorHandler::PullInputs(size_t frames_to_process) {
+void AudioBasicInspectorHandler::PullInputs(uint32_t frames_to_process) {
   // Render input stream - try to render directly into output bus for
   // pass-through processing where process() doesn't need to do anything...
   Input(0).Pull(Output(0).Bus(), frames_to_process);

@@ -65,7 +65,7 @@ ConvolverHandler::~ConvolverHandler() {
   Uninitialize();
 }
 
-void ConvolverHandler::Process(size_t frames_to_process) {
+void ConvolverHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
   DCHECK(output_bus);
 

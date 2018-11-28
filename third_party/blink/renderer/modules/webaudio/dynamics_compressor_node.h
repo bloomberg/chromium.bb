@@ -52,8 +52,8 @@ class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
   ~DynamicsCompressorHandler() override;
 
   // AudioHandler
-  void Process(size_t frames_to_process) override;
-  void ProcessOnlyAudioParams(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
+  void ProcessOnlyAudioParams(uint32_t frames_to_process) override;
   void Initialize() override;
 
   float ReductionValue() const { return NoBarrierLoad(&reduction_); }

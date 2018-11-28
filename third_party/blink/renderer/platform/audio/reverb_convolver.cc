@@ -173,7 +173,7 @@ void ReverbConvolver::ProcessInBackground() {
 
 void ReverbConvolver::Process(const AudioChannel* source_channel,
                               AudioChannel* destination_channel,
-                              size_t frames_to_process) {
+                              uint32_t frames_to_process) {
   bool is_safe = source_channel && destination_channel &&
                  source_channel->length() >= frames_to_process &&
                  destination_channel->length() >= frames_to_process;

@@ -54,7 +54,7 @@ class MODULES_EXPORT AudioNodeOutput final {
   // quantum.  It returns the bus containing the processed audio for this
   // output, returning inPlaceBus if in-place processing was possible.  Called
   // from context's audio thread.
-  AudioBus* Pull(AudioBus* in_place_bus, size_t frames_to_process);
+  AudioBus* Pull(AudioBus* in_place_bus, uint32_t frames_to_process);
 
   // bus() will contain the rendered audio after pull() is called for each
   // rendering time quantum.

@@ -45,7 +45,7 @@ StereoPannerHandler::~StereoPannerHandler() {
   Uninitialize();
 }
 
-void StereoPannerHandler::Process(size_t frames_to_process) {
+void StereoPannerHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
 
   if (!IsInitialized() || !Input(0).IsConnected() || !stereo_panner_.get()) {
@@ -74,7 +74,7 @@ void StereoPannerHandler::Process(size_t frames_to_process) {
   }
 }
 
-void StereoPannerHandler::ProcessOnlyAudioParams(size_t frames_to_process) {
+void StereoPannerHandler::ProcessOnlyAudioParams(uint32_t frames_to_process) {
   float values[audio_utilities::kRenderQuantumFrames];
   DCHECK_LE(frames_to_process, audio_utilities::kRenderQuantumFrames);
 

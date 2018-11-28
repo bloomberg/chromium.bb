@@ -43,7 +43,7 @@ class ChannelMergerHandler final : public AudioHandler {
                                                     float sample_rate,
                                                     unsigned number_of_inputs);
 
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
   void SetChannelCount(unsigned, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;
 

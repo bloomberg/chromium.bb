@@ -43,9 +43,9 @@ class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
   ~AudioBasicProcessorHandler() override;
 
   // AudioHandler
-  void Process(size_t frames_to_process) final;
-  void ProcessOnlyAudioParams(size_t frames_to_process) final;
-  void PullInputs(size_t frames_to_process) final;
+  void Process(uint32_t frames_to_process) final;
+  void ProcessOnlyAudioParams(uint32_t frames_to_process) final;
+  void PullInputs(uint32_t frames_to_process) final;
   void Initialize() final;
   void Uninitialize() final;
 

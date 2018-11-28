@@ -43,8 +43,8 @@ class RealtimeAnalyser final {
  public:
   RealtimeAnalyser();
 
-  size_t FftSize() const { return fft_size_; }
-  bool SetFftSize(size_t);
+  uint32_t FftSize() const { return fft_size_; }
+  bool SetFftSize(uint32_t);
 
   unsigned FrequencyBinCount() const { return fft_size_ / 2; }
 
@@ -63,7 +63,7 @@ class RealtimeAnalyser final {
   void GetByteTimeDomainData(DOMUint8Array*);
 
   // The audio thread writes input data here.
-  void WriteInput(AudioBus*, size_t frames_to_process);
+  void WriteInput(AudioBus*, uint32_t frames_to_process);
 
   static const double kDefaultSmoothingTimeConstant;
   static const double kDefaultMinDecibels;
@@ -87,7 +87,7 @@ class RealtimeAnalyser final {
   // Input audio is downmixed to this bus before copying to m_inputBuffer.
   scoped_refptr<AudioBus> down_mix_bus_;
 
-  size_t fft_size_;
+  uint32_t fft_size_;
   std::unique_ptr<FFTFrame> analysis_frame_;
   void DoFFTAnalysis();
 

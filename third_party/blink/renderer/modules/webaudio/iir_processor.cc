@@ -66,7 +66,7 @@ std::unique_ptr<AudioDSPKernel> IIRProcessor::CreateKernel() {
 
 void IIRProcessor::Process(const AudioBus* source,
                            AudioBus* destination,
-                           size_t frames_to_process) {
+                           uint32_t frames_to_process) {
   if (!IsInitialized()) {
     destination->Zero();
     return;

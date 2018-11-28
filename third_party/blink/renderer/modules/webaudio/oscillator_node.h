@@ -57,7 +57,7 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
   ~OscillatorHandler() override;
 
   // AudioHandler
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
 
   String GetType() const;
   void SetType(const String&, ExceptionState&);
@@ -74,7 +74,7 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
   bool SetType(unsigned);  // Returns true on success.
 
   // Returns true if there are sample-accurate timeline parameter changes.
-  bool CalculateSampleAccuratePhaseIncrements(size_t frames_to_process);
+  bool CalculateSampleAccuratePhaseIncrements(uint32_t frames_to_process);
 
   bool PropagatesSilence() const override;
 

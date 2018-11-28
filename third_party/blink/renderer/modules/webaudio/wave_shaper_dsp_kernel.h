@@ -47,7 +47,7 @@ class WaveShaperDSPKernel final : public AudioDSPKernel {
   // AudioDSPKernel
   void Process(const float* source,
                float* dest,
-               size_t frames_to_process) override;
+               uint32_t frames_to_process) override;
   void Reset() override;
   double TailTime() const override;
   double LatencyTime() const override;
@@ -67,15 +67,17 @@ class WaveShaperDSPKernel final : public AudioDSPKernel {
 
  protected:
   // Apply the shaping curve.
-  void ProcessCurve(const float* source, float* dest, size_t frames_to_process);
+  void ProcessCurve(const float* source,
+                    float* dest,
+                    uint32_t frames_to_process);
 
   // Use up-sampling, process at the higher sample-rate, then down-sample.
   void ProcessCurve2x(const float* source,
                       float* dest,
-                      size_t frames_to_process);
+                      uint32_t frames_to_process);
   void ProcessCurve4x(const float* source,
                       float* dest,
-                      size_t frames_to_process);
+                      uint32_t frames_to_process);
 
   WaveShaperProcessor* GetWaveShaperProcessor() {
     return static_cast<WaveShaperProcessor*>(Processor());

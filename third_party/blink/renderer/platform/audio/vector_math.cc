@@ -82,7 +82,7 @@ void Conv(const float* source_p,
           int filter_stride,
           float* dest_p,
           int dest_stride,
-          size_t frames_to_process,
+          uint32_t frames_to_process,
           size_t filter_size,
           const AudioFloatArray* prepared_filter) {
   // Only contiguous convolution is implemented by all implementations.
@@ -101,7 +101,7 @@ void Vadd(const float* source1p,
           int source_stride2,
           float* dest_p,
           int dest_stride,
-          size_t frames_to_process) {
+          uint32_t frames_to_process) {
   impl::Vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
              dest_stride, frames_to_process);
 }
@@ -112,7 +112,7 @@ void Vclip(const float* source_p,
            const float* high_threshold_p,
            float* dest_p,
            int dest_stride,
-           size_t frames_to_process) {
+           uint32_t frames_to_process) {
   float low_threshold = *low_threshold_p;
   float high_threshold = *high_threshold_p;
 
@@ -132,7 +132,7 @@ void Vclip(const float* source_p,
 void Vmaxmgv(const float* source_p,
              int source_stride,
              float* max_p,
-             size_t frames_to_process) {
+             uint32_t frames_to_process) {
   float max = 0;
 
   impl::Vmaxmgv(source_p, source_stride, &max, frames_to_process);
@@ -147,7 +147,7 @@ void Vmul(const float* source1p,
           int source_stride2,
           float* dest_p,
           int dest_stride,
-          size_t frames_to_process) {
+          uint32_t frames_to_process) {
   impl::Vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
              dest_stride, frames_to_process);
 }
@@ -157,7 +157,7 @@ void Vsma(const float* source_p,
           const float* scale,
           float* dest_p,
           int dest_stride,
-          size_t frames_to_process) {
+          uint32_t frames_to_process) {
   const float k = *scale;
 
   impl::Vsma(source_p, source_stride, &k, dest_p, dest_stride,
@@ -169,7 +169,7 @@ void Vsmul(const float* source_p,
            const float* scale,
            float* dest_p,
            int dest_stride,
-           size_t frames_to_process) {
+           uint32_t frames_to_process) {
   const float k = *scale;
 
   impl::Vsmul(source_p, source_stride, &k, dest_p, dest_stride,
@@ -179,7 +179,7 @@ void Vsmul(const float* source_p,
 void Vsvesq(const float* source_p,
             int source_stride,
             float* sum_p,
-            size_t frames_to_process) {
+            uint32_t frames_to_process) {
   float sum = 0;
 
   impl::Vsvesq(source_p, source_stride, &sum, frames_to_process);
@@ -194,7 +194,7 @@ void Zvmul(const float* real1p,
            const float* imag2p,
            float* real_dest_p,
            float* imag_dest_p,
-           size_t frames_to_process) {
+           uint32_t frames_to_process) {
   impl::Zvmul(real1p, imag1p, real2p, imag2p, real_dest_p, imag_dest_p,
               frames_to_process);
 }

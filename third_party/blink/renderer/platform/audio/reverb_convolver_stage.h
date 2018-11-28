@@ -68,10 +68,10 @@ class PLATFORM_EXPORT ReverbConvolverStage {
 
   // WARNING: framesToProcess must be such that it evenly divides the delay
   // buffer size (stage_offset).
-  void Process(const float* source, size_t frames_to_process);
+  void Process(const float* source, uint32_t frames_to_process);
 
   void ProcessInBackground(ReverbConvolver* convolver,
-                           size_t frames_to_process);
+                           uint32_t frames_to_process);
 
   void Reset();
 

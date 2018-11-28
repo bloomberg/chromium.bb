@@ -177,7 +177,7 @@ static void ClampFrequency(float* frequency,
 }
 
 bool OscillatorHandler::CalculateSampleAccuratePhaseIncrements(
-    size_t frames_to_process) {
+    uint32_t frames_to_process) {
   bool is_good = frames_to_process <= phase_increments_.size() &&
                  frames_to_process <= detune_values_.size();
   DCHECK(is_good);
@@ -354,7 +354,7 @@ static float DoInterpolation(double virtual_read_index,
   return sample;
 }
 
-void OscillatorHandler::Process(size_t frames_to_process) {
+void OscillatorHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
 
   if (!IsInitialized() || !output_bus->NumberOfChannels()) {
@@ -382,7 +382,7 @@ void OscillatorHandler::Process(size_t frames_to_process) {
   }
 
   size_t quantum_frame_offset;
-  size_t non_silent_frames_to_process;
+  uint32_t non_silent_frames_to_process;
   double start_frame_offset;
 
   std::tie(quantum_frame_offset, non_silent_frames_to_process,

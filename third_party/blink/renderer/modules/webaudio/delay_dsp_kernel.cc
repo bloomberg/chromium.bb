@@ -53,7 +53,7 @@ bool DelayDSPKernel::HasSampleAccurateValues() {
 }
 
 void DelayDSPKernel::CalculateSampleAccurateValues(float* delay_times,
-                                                   size_t frames_to_process) {
+                                                   uint32_t frames_to_process) {
   GetDelayProcessor()->DelayTime().CalculateSampleAccurateValues(
       delay_times, frames_to_process);
 }
@@ -62,7 +62,7 @@ double DelayDSPKernel::DelayTime(float) {
   return GetDelayProcessor()->DelayTime().FinalValue();
 }
 
-void DelayDSPKernel::ProcessOnlyAudioParams(size_t frames_to_process) {
+void DelayDSPKernel::ProcessOnlyAudioParams(uint32_t frames_to_process) {
   DCHECK_LE(frames_to_process, audio_utilities::kRenderQuantumFrames);
 
   float values[audio_utilities::kRenderQuantumFrames];

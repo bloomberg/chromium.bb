@@ -81,7 +81,7 @@ MediaStreamAudioDestinationHandler::~MediaStreamAudioDestinationHandler() {
   Uninitialize();
 }
 
-void MediaStreamAudioDestinationHandler::Process(size_t number_of_frames) {
+void MediaStreamAudioDestinationHandler::Process(uint32_t number_of_frames) {
   // Conform the input bus into the internal mix bus, which represents
   // MediaStreamDestination's channel count.
 

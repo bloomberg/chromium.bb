@@ -138,7 +138,7 @@ class MODULES_EXPORT BaseAudioContext
   void ThrowExceptionForClosedState(ExceptionState&);
 
   AudioBuffer* createBuffer(unsigned number_of_channels,
-                            size_t number_of_frames,
+                            uint32_t number_of_frames,
                             float sample_rate,
                             ExceptionState&);
 

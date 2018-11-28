@@ -25,7 +25,7 @@ static ALWAYS_INLINE void Vadd(const float* source1p,
                                int source_stride2,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride1 == 1 && source_stride2 == 1 && dest_stride == 1) {
@@ -58,7 +58,7 @@ static ALWAYS_INLINE void Vclip(const float* source_p,
                                 const float* high_threshold_p,
                                 float* dest_p,
                                 int dest_stride,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride == 1 && dest_stride == 1) {
@@ -90,7 +90,7 @@ static ALWAYS_INLINE void Vclip(const float* source_p,
 static ALWAYS_INLINE void Vmaxmgv(const float* source_p,
                                   int source_stride,
                                   float* max_p,
-                                  size_t frames_to_process) {
+                                  uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride == 1) {
@@ -124,7 +124,7 @@ static ALWAYS_INLINE void Vmul(const float* source1p,
                                int source_stride2,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride1 == 1 && source_stride2 == 1 && dest_stride == 1) {
@@ -156,7 +156,7 @@ static ALWAYS_INLINE void Vsma(const float* source_p,
                                const float* scale,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride == 1 && dest_stride == 1) {
@@ -188,7 +188,7 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
                                 const float* scale,
                                 float* dest_p,
                                 int dest_stride,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride == 1 && dest_stride == 1) {

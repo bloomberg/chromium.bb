@@ -29,7 +29,9 @@ class PLATFORM_EXPORT SimpleFFTConvolver {
       size_t input_block_size,
       const std::unique_ptr<AudioFloatArray>& convolution_kernel);
 
-  void Process(const float* source_p, float* dest_p, size_t frames_to_process);
+  void Process(const float* source_p,
+               float* dest_p,
+               uint32_t frames_to_process);
 
   void Reset();
 

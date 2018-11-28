@@ -43,7 +43,7 @@ class AudioWorkletHandler final : public AudioHandler {
   ~AudioWorkletHandler() override;
 
   // Called from render thread.
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
 
   void CheckNumberOfChannelsForInput(AudioNodeInput*) override;
 

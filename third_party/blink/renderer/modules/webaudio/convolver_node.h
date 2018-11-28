@@ -47,7 +47,7 @@ class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
   ~ConvolverHandler() override;
 
   // AudioHandler
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
   // Called in the main thread when the number of channels for the input may
   // have changed.
   void CheckNumberOfChannelsForInput(AudioNodeInput*) override;
