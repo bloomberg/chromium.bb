@@ -19,6 +19,8 @@ import java.util.Set;
  * SharedPreferences so that Java classes can access them on next startup.
  */
 public class ServiceManagerStartupUtils {
+    public static final String TASK_TAG = "Servicification Startup Task";
+
     // List of features that supports starting ServiceManager on startup.
     private static final String[] SERVICE_MANAGER_FEATURES = {
             ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD};

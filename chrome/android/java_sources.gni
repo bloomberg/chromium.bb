@@ -1809,6 +1809,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/BluetoothChooserDialogTest.java",
   "javatests/src/org/chromium/chrome/browser/ChromeActivityTest.java",
   "javatests/src/org/chromium/chrome/browser/ChromeBackgroundServiceTest.java",
+  "javatests/src/org/chromium/chrome/browser/ServicificationBackgroundServiceTest.java",
   "javatests/src/org/chromium/chrome/browser/ChromeHttpAuthHandlerTest.java",
   "javatests/src/org/chromium/chrome/browser/ContentViewFocusTest.java",
   "javatests/src/org/chromium/chrome/browser/CopylessPasteTest.java",
