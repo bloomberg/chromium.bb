@@ -113,11 +113,12 @@ std::unique_ptr<WebNavigationParams> BuildDummyNavigationParams() {
 }  // namespace
 
 void LoadFrame(WebLocalFrame* frame, const std::string& url) {
+  WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
   WebURL web_url(url_test_helpers::ToKURL(url));
   if (web_url.ProtocolIs("javascript")) {
-    frame->LoadJavaScriptURL(web_url);
+    impl->LoadJavaScriptURL(web_url);
   } else {
-    frame->CommitNavigation(
+    impl->CommitNavigation(
         WebURLRequest(web_url), blink::WebFrameLoadType::kStandard,
         blink::WebHistoryItem(), false, base::UnguessableToken::Create(),
         BuildDummyNavigationParams(), nullptr /* extra_data */);
@@ -128,15 +129,17 @@ void LoadFrame(WebLocalFrame* frame, const std::string& url) {
 void LoadHTMLString(WebLocalFrame* frame,
                     const std::string& html,
                     const WebURL& base_url) {
-  frame->LoadHTMLString(WebData(html.data(), html.size()), base_url);
+  WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
+  impl->LoadHTMLString(WebData(html.data(), html.size()), base_url, WebURL());
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
 void LoadHistoryItem(WebLocalFrame* frame,
                      const WebHistoryItem& item,
                      mojom::FetchCacheMode cache_mode) {
+  WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
   HistoryItem* history_item = item;
-  frame->CommitNavigation(
+  impl->CommitNavigation(
       WrappedResourceRequest(history_item->GenerateResourceRequest(cache_mode)),
       WebFrameLoadType::kBackForward, item, false /* is_client_redirect */,
       base::UnguessableToken::Create(), BuildDummyNavigationParams(),
@@ -429,7 +432,7 @@ void TestWebFrameClient::Bind(WebLocalFrame* frame,
                               std::unique_ptr<TestWebFrameClient> self_owned) {
   DCHECK(!frame_);
   DCHECK(!self_owned || self_owned.get() == this);
-  frame_ = frame;
+  frame_ = ToWebLocalFrameImpl(frame);
   self_owned_ = std::move(self_owned);
 }
 

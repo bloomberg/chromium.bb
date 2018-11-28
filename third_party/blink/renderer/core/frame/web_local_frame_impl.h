@@ -41,6 +41,7 @@
 #include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_navigation_control.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/exported/web_input_method_controller_impl.h"
@@ -82,7 +83,7 @@ class WebVector;
 // Implementation of WebFrame, note that this is a reference counted object.
 class CORE_EXPORT WebLocalFrameImpl final
     : public GarbageCollectedFinalized<WebLocalFrameImpl>,
-      public WebLocalFrame {
+      public WebNavigationControl {
  public:
   // WebFrame methods:
   // TODO(dcheng): Fix sorting here; a number of method have been moved to
@@ -262,6 +263,48 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebLocalFrameImpl* LocalRoot() override;
   WebFrame* FindFrameByName(const WebString& name) override;
   void SendPings(const WebURL& destination_url) override;
+  void ReportContentSecurityPolicyViolation(
+      const blink::WebContentSecurityPolicyViolation&) override;
+  bool IsLoading() const override;
+  bool IsNavigationScheduledWithin(double interval) const override;
+  void NotifyUserActivation() override;
+  void BlinkFeatureUsageReport(const std::set<int>& features) override;
+  void MixedContentFound(const WebURL& main_resource_url,
+                         const WebURL& mixed_content_url,
+                         mojom::RequestContextType,
+                         bool was_allowed,
+                         bool had_redirect,
+                         const WebSourceLocation&) override;
+  void SendOrientationChangeEvent() override;
+  WebSandboxFlags EffectiveSandboxFlags() const override;
+  void DidCallAddSearchProvider() override;
+  void DidCallIsSearchProviderInstalled() override;
+  void ReplaceSelection(const WebString&) override;
+  bool FindForTesting(int identifier,
+                      const WebString& search_text,
+                      bool match_case,
+                      bool forward,
+                      bool force,
+                      bool find_next,
+                      bool wrap_within_frame) override;
+  void SetTickmarks(const WebVector<WebRect>&) override;
+  WebNode ContextMenuNode() const override;
+  WebFrameWidget* FrameWidget() const override;
+  void CopyImageAt(const WebPoint&) override;
+  void SaveImageAt(const WebPoint&) override;
+  void UsageCountChromeLoadTimes(const WebString& metric) override;
+  FrameScheduler* Scheduler() const override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
+  WebInputMethodController* GetInputMethodController() override;
+  void ExtractSmartClipData(WebRect rect_in_viewport,
+                            WebString& clip_text,
+                            WebString& clip_html,
+                            WebRect& clip_rect) override;
+  void AdvanceFocusInForm(WebFocusType) override;
+  void PerformMediaPlayerAction(const WebPoint&,
+                                const WebMediaPlayerAction&) override;
+
+  // WebNavigationControl methods:
   bool DispatchBeforeUnloadEvent(bool) override;
   void CommitNavigation(
       const WebURLRequest&,
@@ -292,19 +335,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   FallbackContentResult MaybeRenderFallbackContent(
       const WebURLError&) const override;
   void RenderFallbackContent() const override;
-  void ReportContentSecurityPolicyViolation(
-      const blink::WebContentSecurityPolicyViolation&) override;
-  bool IsLoading() const override;
-  bool IsNavigationScheduledWithin(double interval) const override;
   void SetCommittedFirstRealLoad() override;
-  void NotifyUserActivation() override;
-  void BlinkFeatureUsageReport(const std::set<int>& features) override;
-  void MixedContentFound(const WebURL& main_resource_url,
-                         const WebURL& mixed_content_url,
-                         mojom::RequestContextType,
-                         bool was_allowed,
-                         bool had_redirect,
-                         const WebSourceLocation&) override;
   void ClientDroppedNavigation() override;
   void MarkAsLoading() override;
   bool CreatePlaceholderDocumentLoader(
@@ -315,34 +346,6 @@ class CORE_EXPORT WebLocalFrameImpl final
       const base::UnguessableToken& devtools_navigation_token,
       std::unique_ptr<WebNavigationParams>,
       std::unique_ptr<WebDocumentLoader::ExtraData>) override;
-  void SendOrientationChangeEvent() override;
-  WebSandboxFlags EffectiveSandboxFlags() const override;
-  void DidCallAddSearchProvider() override;
-  void DidCallIsSearchProviderInstalled() override;
-  void ReplaceSelection(const WebString&) override;
-  bool FindForTesting(int identifier,
-                      const WebString& search_text,
-                      bool match_case,
-                      bool forward,
-                      bool force,
-                      bool find_next,
-                      bool wrap_within_frame) override;
-  void SetTickmarks(const WebVector<WebRect>&) override;
-  WebNode ContextMenuNode() const override;
-  WebFrameWidget* FrameWidget() const override;
-  void CopyImageAt(const WebPoint&) override;
-  void SaveImageAt(const WebPoint&) override;
-  void UsageCountChromeLoadTimes(const WebString& metric) override;
-  FrameScheduler* Scheduler() const override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
-  WebInputMethodController* GetInputMethodController() override;
-  void ExtractSmartClipData(WebRect rect_in_viewport,
-                            WebString& clip_text,
-                            WebString& clip_html,
-                            WebRect& clip_rect) override;
-  void AdvanceFocusInForm(WebFocusType) override;
-  void PerformMediaPlayerAction(const WebPoint&,
-                                const WebMediaPlayerAction&) override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
   LocalFrame* GetFrame() const { return frame_.Get(); }

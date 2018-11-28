@@ -25,6 +25,7 @@
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_navigation_control.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_view.h"
 
@@ -66,7 +67,7 @@ WebViewPlugin* WebViewPlugin::Create(content::RenderView* render_view,
                                      const GURL& url) {
   DCHECK(url.is_valid()) << "Blink requires the WebView to have a valid URL.";
   WebViewPlugin* plugin = new WebViewPlugin(render_view, delegate, preferences);
-  plugin->main_frame()->LoadHTMLString(html_data, url);
+  plugin->web_view_helper_.main_frame()->LoadHTMLString(html_data, url);
   return plugin;
 }
 
@@ -269,13 +270,6 @@ WebViewPlugin::WebViewHelper::~WebViewHelper() {
   web_view_->MainFrameWidget()->Close();
 }
 
-blink::WebLocalFrame* WebViewPlugin::WebViewHelper::main_frame() {
-  // WebViewHelper doesn't support OOPIFs so the main frame will
-  // always be local.
-  DCHECK(web_view_->MainFrame()->IsWebLocalFrame());
-  return static_cast<WebLocalFrame*>(web_view_->MainFrame());
-}
-
 bool WebViewPlugin::WebViewHelper::AcceptsLoadDrops() {
   return false;
 }
@@ -311,7 +305,7 @@ void WebViewPlugin::WebViewHelper::StartDragging(network::mojom::ReferrerPolicy,
                                                  const SkBitmap&,
                                                  const gfx::Point&) {
   // Immediately stop dragging.
-  main_frame()->FrameWidget()->DragSourceSystemDragEnded();
+  frame_->FrameWidget()->DragSourceSystemDragEnded();
 }
 
 bool WebViewPlugin::WebViewHelper::AllowsBrokenNullLayerTreeView() const {
@@ -353,13 +347,18 @@ WebViewPlugin::WebViewHelper::CreateURLLoaderFactory() {
       ->CreateURLLoaderFactory();
 }
 
+void WebViewPlugin::WebViewHelper::BindToFrame(
+    blink::WebNavigationControl* frame) {
+  frame_ = frame;
+}
+
 void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
   if (!plugin_->delegate_)
     return;
 
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = main_frame()->MainWorldScriptContext();
+  v8::Local<v8::Context> context = frame_->MainWorldScriptContext();
   DCHECK(!context.IsEmpty());
 
   v8::Context::Scope context_scope(context);
@@ -370,15 +369,16 @@ void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
 }
 
 void WebViewPlugin::WebViewHelper::FrameDetached(DetachType type) {
-  main_frame()->FrameWidget()->Close();
-  main_frame()->Close();
+  frame_->FrameWidget()->Close();
+  frame_->Close();
+  frame_ = nullptr;
 }
 
 void WebViewPlugin::WebViewHelper::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
   // TODO(dgozman): remove this method and effectively disallow
   // content-inititated navigations in WebViewPlugin.
-  main_frame()->CommitNavigation(
+  frame_->CommitNavigation(
       info->url_request, info->frame_load_type, blink::WebHistoryItem(),
       info->is_client_redirect, base::UnguessableToken::Create(),
       nullptr /* navigation_params */, nullptr /* extra_data */);

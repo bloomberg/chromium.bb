@@ -104,6 +104,7 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
 class WebMediaPlayerSource;
+class WebNavigationControl;
 class WebServiceWorkerProvider;
 class WebPlugin;
 class WebPushClient;
@@ -131,8 +132,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Initialization ------------------------------------------------------
   // Called exactly once during construction to notify the client about the
   // created WebLocalFrame. Guaranteed to be invoked before any other
-  // WebLocalFrameClient callbacks.
-  virtual void BindToFrame(WebLocalFrame*) {}
+  // WebLocalFrameClient callbacks. Note this takes WebNavigationControl
+  // to give the client full control over frame's navigation.
+  virtual void BindToFrame(WebNavigationControl*) {}
 
   // Factory methods -----------------------------------------------------
 
@@ -332,14 +334,15 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Requests the client to begin a navigation for this frame.
   //
-  // The client can just call CommitNavigation() on this frame in response.
-  // This will effectively commit a navigation the frame has asked about.
-  // This usually happens for navigations which do not require a network
-  // request, e.g. about:blank or mhtml archive.
+  // The client can just call CommitNavigation() on this frame's
+  // WebNavigationControl in response. This will effectively commit a navigation
+  // the frame has asked about. This usually happens for navigations which
+  // do not require a network request, e.g. about:blank or mhtml archive.
   //
   // In the case of a navigation which requires network request and goes
   // to the browser process, client calls CreatePlaceholderDocumentLoader
-  // (see it for more details) and commits/cancels the navigation later.
+  // (see WebNavigationControl for more details) and commits/cancels
+  // the navigation later.
   //
   // It is also totally valid to ignore the request and abandon the
   // navigation entirely.

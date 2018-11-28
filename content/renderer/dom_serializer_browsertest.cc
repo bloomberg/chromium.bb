@@ -131,19 +131,10 @@ class MAYBE_DomSerializerTests : public ContentBrowserTest,
                     const GURL& base_url,
                     const WebString encoding_info) {
     FrameLoadWaiter waiter(GetRenderView()->GetMainRenderFrame());
-    // If input encoding is empty, use UTF-8 as default encoding.
-    if (encoding_info.IsEmpty()) {
-      GetMainFrame()->LoadHTMLString(contents, base_url);
-    } else {
-      // Do not use WebFrame.LoadHTMLString because it assumes that input
-      // html contents use UTF-8 encoding.
-      WebData data(contents.data(), contents.length());
-      GetMainFrame()->CommitDataNavigation(
-          blink::WebURLRequest(base_url), data, "text/html", encoding_info,
-          WebURL(), blink::WebFrameLoadType::kStandard, blink::WebHistoryItem(),
-          false /* is_client_redirect */, nullptr /* navigation_params */,
-          nullptr /* navigation_data */);
-    }
+    GetRenderView()->GetMainRenderFrame()->LoadHTMLString(
+        contents, base_url,
+        encoding_info.IsEmpty() ? "UTF-8" : encoding_info.Utf8(), GURL(),
+        false /* replace_current_item */);
     base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     waiter.Wait();
   }

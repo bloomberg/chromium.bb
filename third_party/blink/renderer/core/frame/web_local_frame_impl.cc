@@ -1744,7 +1744,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
     WebTreeScopeType scope,
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry)
-    : WebLocalFrame(scope),
+    : WebNavigationControl(scope),
       client_(client),
       local_frame_client_(LocalFrameClientImpl::Create(this)),
       autofill_client_(nullptr),
@@ -2125,7 +2125,7 @@ void WebLocalFrameImpl::CommitDataNavigation(
       std::move(navigation_params), std::move(navigation_data));
 }
 
-WebLocalFrame::FallbackContentResult
+WebNavigationControl::FallbackContentResult
 WebLocalFrameImpl::MaybeRenderFallbackContent(const WebURLError& error) const {
   DCHECK(GetFrame());
 

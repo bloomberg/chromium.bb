@@ -53,6 +53,7 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/public/web/web_navigation_control.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/public/web/web_print_params.h"
@@ -670,7 +671,9 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   class HeaderAndFooterClient final : public blink::WebLocalFrameClient {
    public:
     // WebLocalFrameClient:
-    void BindToFrame(blink::WebLocalFrame* frame) override { frame_ = frame; }
+    void BindToFrame(blink::WebNavigationControl* frame) override {
+      frame_ = frame;
+    }
     void FrameDetached(DetachType detach_type) override {
       frame_->FrameWidget()->Close();
       frame_->Close();
@@ -685,7 +688,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
     }
 
    private:
-    blink::WebLocalFrame* frame_;
+    blink::WebNavigationControl* frame_ = nullptr;
   };
 
   class NonCompositingWebWidgetClient : public blink::WebWidgetClient {
@@ -788,6 +791,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   WebWidgetClient* WidgetClient() override { return this; }
 
   // blink::WebLocalFrameClient:
+  void BindToFrame(blink::WebNavigationControl* frame) override;
   blink::WebLocalFrame* CreateChildFrame(
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
@@ -807,6 +811,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   void CopySelection(const WebPreferences& preferences);
 
   FrameReference frame_;
+  blink::WebNavigationControl* navigation_control_ = nullptr;
   blink::WebNode node_to_print_;
   bool owns_web_view_ = false;
   blink::WebPrintParams web_print_params_;
@@ -939,8 +944,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
 
   // When loading is done this will call didStopLoading() and that will do the
   // actual printing.
-  frame()->LoadHTMLString(blink::WebData(html),
-                          blink::WebURL(GURL(url::kAboutBlankURL)));
+  navigation_control_->LoadHTMLString(blink::WebData(html),
+                                      blink::WebURL(GURL(url::kAboutBlankURL)));
 }
 
 bool PrepareFrameAndViewForPrint::AllowsBrokenNullLayerTreeView() const {
@@ -958,6 +963,11 @@ void PrepareFrameAndViewForPrint::DidStopLoading() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&PrepareFrameAndViewForPrint::CallOnReady,
                                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PrepareFrameAndViewForPrint::BindToFrame(
+    blink::WebNavigationControl* navigation_control) {
+  navigation_control_ = navigation_control;
 }
 
 blink::WebLocalFrame* PrepareFrameAndViewForPrint::CreateChildFrame(
@@ -981,6 +991,7 @@ void PrepareFrameAndViewForPrint::FrameDetached(DetachType detach_type) {
   DCHECK(frame);
   frame->FrameWidget()->Close();
   frame->Close();
+  navigation_control_ = nullptr;
   frame_.Reset(nullptr);
 }
 
@@ -988,7 +999,7 @@ void PrepareFrameAndViewForPrint::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
   // TODO(dgozman): We disable javascript through WebPreferences, so perhaps
   // we want to disallow any navigations here by just removing this method?
-  frame()->CommitNavigation(
+  navigation_control_->CommitNavigation(
       info->url_request, info->frame_load_type, blink::WebHistoryItem(),
       info->is_client_redirect, base::UnguessableToken::Create(),
       nullptr /* navigation_params */, nullptr /* extra_data */);
@@ -1039,6 +1050,7 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
       web_view->MainFrameWidget()->Close();
     }
   }
+  navigation_control_ = nullptr;
   frame_.Reset(nullptr);
   on_ready_.Reset();
 }

@@ -2228,8 +2228,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesScrolling) {
   EXPECT_EQ(0, child_document->FirstBodyElement()->GetIntegralAttribute(
                    html_names::kMarginheightAttr));
 
-  LocalFrameView* frame_view =
-      static_cast<WebLocalFrameImpl*>(local_frame)->GetFrameView();
+  LocalFrameView* frame_view = local_frame->GetFrameView();
   EXPECT_EQ(nullptr, frame_view->LayoutViewport()->HorizontalScrollbar());
   EXPECT_EQ(nullptr, frame_view->LayoutViewport()->VerticalScrollbar());
 }
@@ -5144,7 +5143,7 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5216,7 +5215,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5228,7 +5227,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
       mojom::StopFindAction::kStopFindActionClearSelection);
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5245,7 +5244,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(
         kFindIdentifier, search_text_new, *options);
   }
@@ -5293,7 +5292,7 @@ TEST_F(WebFrameTest, FindOnDetachedFrame) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5324,7 +5323,7 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings) {
   find_in_page_client.SetFrame(main_frame);
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
     EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
         kFindIdentifier, search_text, *options, false));
   }
@@ -5337,7 +5336,7 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5368,7 +5367,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   find_in_page_client.SetFrame(main_frame);
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
     EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
         kFindIdentifier, search_text, *options, false));
   }
@@ -5378,7 +5377,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5388,7 +5387,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   RemoveElementById(main_frame, "frame");
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5420,7 +5419,7 @@ TEST_F(WebFrameTest, ResetMatchCount) {
   EXPECT_TRUE(!!main_frame->TraverseNext());
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
     EXPECT_FALSE(frame->GetFindInPage()->FindInternal(
         kFindIdentifier, search_text, *options, false));
   }
@@ -9635,7 +9634,7 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterExistingRemoteToLocalSwap) {
   ASSERT_EQ(MainFrame()->FirstChild(), remote_frame);
 
   RemoteToLocalSwapWebFrameClient client(remote_frame);
-  WebLocalFrame* local_frame =
+  WebLocalFrameImpl* local_frame =
       frame_test_helpers::CreateProvisional(*remote_frame, &client);
   local_frame->SetCommittedFirstRealLoad();
   frame_test_helpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
@@ -12551,9 +12550,9 @@ TEST_F(WebFrameTest, FallbackForNonexistentProvisionalNavigation) {
   // content shouldn't crash. It should return NoLoadInProgress. This is so the
   // caller won't attempt to replace the correctly empty frame with an error
   // page.
-  EXPECT_EQ(
-      WebLocalFrame::NoLoadInProgress,
-      child->MaybeRenderFallbackContent(ResourceError::Failure(request.Url())));
+  EXPECT_EQ(WebNavigationControl::NoLoadInProgress,
+            ToWebLocalFrameImpl(child)->MaybeRenderFallbackContent(
+                ResourceError::Failure(request.Url())));
 }
 
 TEST_F(WebFrameTest, AltTextOnAboutBlankPage) {

@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/callback.h"
-#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
@@ -24,7 +23,6 @@
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
-#include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_text_direction.h"
@@ -37,7 +35,6 @@ class InterfaceRegistry;
 class WebAssociatedURLLoader;
 class WebAutofillClient;
 class WebContentSettingsClient;
-class WebData;
 class WebDocument;
 class WebDoubleSize;
 class WebDOMEvent;
@@ -58,8 +55,8 @@ enum class WebTreeScopeType;
 struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;
 struct WebContentSecurityPolicyViolation;
-struct WebNavigationParams;
 struct WebMediaPlayerAction;
+struct WebPoint;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebScriptSource;
@@ -193,11 +190,6 @@ class WebLocalFrame : public WebFrame {
 
   // Navigation ----------------------------------------------------------
 
-  // Runs beforeunload handlers for this frame and returns the value returned
-  // by handlers.
-  // Note: this may lead to the destruction of the frame.
-  virtual bool DispatchBeforeUnloadEvent(bool is_reload) = 0;
-
   // Start reloading the current document.
   // Note: StartReload() will be deprecated, use StartNavigation() instead.
   virtual void StartReload(WebFrameLoadType) = 0;
@@ -205,62 +197,8 @@ class WebLocalFrame : public WebFrame {
   // Start navigation to the given URL.
   virtual void StartNavigation(const WebURLRequest&) = 0;
 
-  // Commits a cross-document navigation in the frame. For history navigations,
-  // a valid WebHistoryItem should be provided.
-  // TODO(dgozman): return mojom::CommitResult.
-  virtual void CommitNavigation(
-      const WebURLRequest&,
-      WebFrameLoadType,
-      const WebHistoryItem&,
-      bool is_client_redirect,
-      const base::UnguessableToken& devtools_navigation_token,
-      std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
-
-  // Commits a same-document navigation in the frame. For history navigations, a
-  // valid WebHistoryItem should be provided. Returns CommitResult::Ok if the
-  // navigation has actually committed.
-  virtual mojom::CommitResult CommitSameDocumentNavigation(
-      const WebURL&,
-      WebFrameLoadType,
-      const WebHistoryItem&,
-      bool is_client_redirect,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
-
-  // Loads a JavaScript URL in the frame.
-  virtual void LoadJavaScriptURL(const WebURL&) = 0;
-
-  // This method is short-hand for calling CommitDataNavigation, where mime_type
-  // is "text/html" and text_encoding is "UTF-8".
-  // TODO(dgozman): rename to CommitHTMLStringNavigation.
-  virtual void LoadHTMLString(const WebData& html,
-                              const WebURL& base_url,
-                              const WebURL& unreachable_url = WebURL()) = 0;
-
-  // Navigates to the given |data| with specified |mime_type| and optional
-  // |text_encoding|.
-  //
-  // If specified, |unreachable_url| is reported via
-  // WebDocumentLoader::UnreachableURL.
-  //
-  // If |replace| is false, then this data will be loaded as a normal
-  // navigation.  Otherwise, the current history item will be replaced.
-  //
-  // Request's url indicates the security origin and is used as a base
-  // url to resolve links in the committed document.
-  virtual void CommitDataNavigation(
-      const WebURLRequest&,
-      const WebData&,
-      const WebString& mime_type,
-      const WebString& text_encoding,
-      const WebURL& unreachable_url,
-      WebFrameLoadType,
-      const WebHistoryItem&,
-      bool is_client_redirect,
-      std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) = 0;
-
   // Returns the document loader that is currently loading.  May be null.
+  // TODO(dgozman): move this to WebNavigationControl.
   virtual WebDocumentLoader* GetProvisionalDocumentLoader() const = 0;
 
   // View-source rendering mode.  Set this before loading an URL to cause
@@ -270,23 +208,6 @@ class WebLocalFrame : public WebFrame {
 
   // Returns the document loader that is currently loaded.
   virtual WebDocumentLoader* GetDocumentLoader() const = 0;
-
-  enum FallbackContentResult {
-    // An error page should be shown instead of fallback.
-    NoFallbackContent,
-    // Something else committed, no fallback content or error page needed.
-    NoLoadInProgress,
-    // Fallback content rendered, no error page needed.
-    FallbackRendered
-  };
-  // On load failure, attempts to make frame's parent render fallback content.
-  virtual FallbackContentResult MaybeRenderFallbackContent(
-      const WebURLError&) const = 0;
-
-  // When load failure is in a cross-process frame this notifies the frame here
-  // that its owner should render fallback content if any. Only called on owners
-  // that render their own content (i.e., <object>).
-  virtual void RenderFallbackContent() const = 0;
 
   // Called when a navigation is blocked because a Content Security Policy (CSP)
   // is infringed.
@@ -317,11 +238,6 @@ class WebLocalFrame : public WebFrame {
   virtual bool IsNavigationScheduledWithin(
       double interval_in_seconds) const = 0;
 
-  // Override the normal rules for whether a load has successfully committed
-  // in this frame. Used to propagate state when this frame has navigated
-  // cross process.
-  virtual void SetCommittedFirstRealLoad() = 0;
-
   // Reports a list of unique blink::WebFeature values representing
   // Blink features used, performed or encountered by the browser during the
   // current page load happening on the frame.
@@ -337,28 +253,6 @@ class WebLocalFrame : public WebFrame {
                                  bool was_allowed,
                                  bool had_redirect,
                                  const WebSourceLocation&) = 0;
-
-  // Informs the frame that the navigation it asked the client to do was
-  // dropped.
-  virtual void ClientDroppedNavigation() = 0;
-
-  // Marks the frame as loading, without performing any loading. Used for
-  // initial history navigations in child frames, which may actually happen
-  // in the other process.
-  virtual void MarkAsLoading() = 0;
-
-  // Marks the frame as loading and creates a placeholder document loader.
-  // This placeholder informs Blink that the navigation is ongoing, while it
-  // is actually being handled by the client.
-  // TODO(dgozman): remove this together with placeholder document loader.
-  virtual bool CreatePlaceholderDocumentLoader(
-      const WebURLRequest&,
-      WebFrameLoadType,
-      WebNavigationType,
-      bool is_client_redirect,
-      const base::UnguessableToken& devtools_navigation_token,
-      std::unique_ptr<WebNavigationParams>,
-      std::unique_ptr<WebDocumentLoader::ExtraData>) = 0;
 
   // Orientation Changes ----------------------------------------------------
 

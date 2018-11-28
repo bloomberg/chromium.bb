@@ -300,7 +300,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
 
   static bool IsLoading() { return loads_in_progress_ > 0; }
 
-  WebLocalFrame* Frame() const { return frame_; }
+  WebNavigationControl* Frame() const { return frame_; }
   // Pass ownership of the TestWebFrameClient to |self_owned| here if the
   // TestWebFrameClient should delete itself on frame detach.
   void Bind(WebLocalFrame*,
@@ -344,7 +344,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
 
   // This is null from when the client is created until it is initialized with
   // Bind().
-  WebLocalFrame* frame_ = nullptr;
+  WebNavigationControl* frame_ = nullptr;
 
   std::unique_ptr<WebWidgetClient> owned_widget_client_;
 };
