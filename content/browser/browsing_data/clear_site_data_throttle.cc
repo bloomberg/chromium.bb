@@ -13,19 +13,17 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "content/browser/browsing_data/clear_site_data_utils.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/browsing_data_filter_builder.h"
-#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_flags.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response_info.h"
@@ -76,138 +74,6 @@ void JumpFromUIToIOThread(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, std::move(callback));
 }
-
-// Finds the BrowserContext associated with the request and requests
-// the actual clearing of data for |origin|. The data types to be deleted
-// are determined by |clear_cookies|, |clear_storage|, and |clear_cache|.
-// |web_contents_getter| identifies the WebContents from which the request
-// originated. Must be run on the UI thread. The |callback| will be executed
-// on the IO thread.
-class UIThreadSiteDataClearer : public BrowsingDataRemover::Observer {
- public:
-  static void Run(
-      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-      const url::Origin& origin,
-      bool clear_cookies,
-      bool clear_storage,
-      bool clear_cache,
-      base::OnceClosure callback) {
-    WebContents* web_contents = web_contents_getter.Run();
-    // TODO(crbug.com/898465): Fix Clear-Site-Data for requests without
-    // WebContents. (E.g. service worker updates)
-    if (!web_contents) {
-      JumpFromUIToIOThread(std::move(callback));
-      return;
-    }
-
-    (new UIThreadSiteDataClearer(web_contents, origin, clear_cookies,
-                                 clear_storage, clear_cache,
-                                 std::move(callback)))
-        ->RunAndDestroySelfWhenDone();
-  }
-
- private:
-  UIThreadSiteDataClearer(const WebContents* web_contents,
-                          const url::Origin& origin,
-                          bool clear_cookies,
-                          bool clear_storage,
-                          bool clear_cache,
-                          base::OnceClosure callback)
-      : origin_(origin),
-        clear_cookies_(clear_cookies),
-        clear_storage_(clear_storage),
-        clear_cache_(clear_cache),
-        callback_(std::move(callback)),
-        pending_task_count_(0),
-        remover_(nullptr),
-        scoped_observer_(this) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    remover_ = BrowserContext::GetBrowsingDataRemover(
-        web_contents->GetBrowserContext());
-    DCHECK(remover_);
-    scoped_observer_.Add(remover_);
-  }
-
-  ~UIThreadSiteDataClearer() override {}
-
-  void RunAndDestroySelfWhenDone() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    // Cookies and channel IDs are scoped to
-    // a) eTLD+1 of |origin|'s host if |origin|'s host is a registrable domain
-    //    or a subdomain thereof
-    // b) |origin|'s host exactly if it is an IP address or an internal hostname
-    //    (e.g. "localhost" or "fileserver").
-    // TODO(msramek): What about plugin data?
-    if (clear_cookies_) {
-      std::string domain = GetDomainAndRegistry(
-          origin_.host(),
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-
-      if (domain.empty())
-        domain = origin_.host();  // IP address or internal hostname.
-
-      std::unique_ptr<BrowsingDataFilterBuilder> domain_filter_builder(
-          BrowsingDataFilterBuilder::Create(
-              BrowsingDataFilterBuilder::WHITELIST));
-      domain_filter_builder->AddRegisterableDomain(domain);
-
-      pending_task_count_++;
-      remover_->RemoveWithFilterAndReply(
-          base::Time(), base::Time::Max(),
-          BrowsingDataRemover::DATA_TYPE_COOKIES |
-              BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
-              BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS,
-          BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
-              BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
-          std::move(domain_filter_builder), this);
-    }
-
-    // Delete origin-scoped data.
-    int remove_mask = 0;
-    if (clear_storage_)
-      remove_mask |= BrowsingDataRemover::DATA_TYPE_DOM_STORAGE;
-    if (clear_cache_)
-      remove_mask |= BrowsingDataRemover::DATA_TYPE_CACHE;
-
-    if (remove_mask) {
-      std::unique_ptr<BrowsingDataFilterBuilder> origin_filter_builder(
-          BrowsingDataFilterBuilder::Create(
-              BrowsingDataFilterBuilder::WHITELIST));
-      origin_filter_builder->AddOrigin(origin_);
-
-      pending_task_count_++;
-      remover_->RemoveWithFilterAndReply(
-          base::Time(), base::Time::Max(), remove_mask,
-          BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
-              BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
-          std::move(origin_filter_builder), this);
-    }
-
-    DCHECK_GT(pending_task_count_, 0);
-  }
-
-  // BrowsingDataRemover::Observer:
-  void OnBrowsingDataRemoverDone() override {
-    DCHECK(pending_task_count_);
-    if (--pending_task_count_)
-      return;
-
-    JumpFromUIToIOThread(std::move(callback_));
-    delete this;
-  }
-
-  url::Origin origin_;
-  bool clear_cookies_;
-  bool clear_storage_;
-  bool clear_cache_;
-  base::OnceClosure callback_;
-  int pending_task_count_;
-  BrowsingDataRemover* remover_;
-  ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer>
-      scoped_observer_;
-};
 
 // Outputs a single |formatted_message| on the UI thread.
 void OutputFormattedMessage2(WebContents* web_contents,
@@ -531,11 +397,12 @@ void ClearSiteDataThrottle::ExecuteClearingTask(const url::Origin& origin,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&UIThreadSiteDataClearer::Run,
-                     ResourceRequestInfo::ForRequest(request_)
-                         ->GetWebContentsGetterForRequest(),
-                     origin, clear_cookies, clear_storage, clear_cache,
-                     std::move(callback)));
+      base::BindOnce(
+          &clear_site_data_utils::ClearSiteData,
+          ResourceRequestInfo::ForRequest(request_)
+              ->GetWebContentsGetterForRequest(),
+          origin, clear_cookies, clear_storage, clear_cache,
+          base::BindOnce(&JumpFromUIToIOThread, std::move(callback))));
 }
 
 void ClearSiteDataThrottle::TaskFinished() {

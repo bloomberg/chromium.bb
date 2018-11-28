@@ -543,6 +543,8 @@ jumbo_source_set("browser") {
     "browsing_data/clear_site_data_handler.h",
     "browsing_data/clear_site_data_throttle.cc",
     "browsing_data/clear_site_data_throttle.h",
+    "browsing_data/clear_site_data_utils.cc",
+    "browsing_data/clear_site_data_utils.h",
     "browsing_data/conditional_cache_deletion_helper.cc",
     "browsing_data/conditional_cache_deletion_helper.h",
     "browsing_data/storage_partition_code_cache_data_remover.cc",
