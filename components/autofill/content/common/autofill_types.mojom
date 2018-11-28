@@ -113,6 +113,8 @@ struct FormFieldData {
   string autocomplete_attribute;
   mojo_base.mojom.String16 placeholder;
   mojo_base.mojom.String16 css_classes;
+  mojo_base.mojom.String16 aria_label;
+  mojo_base.mojom.String16 aria_description;
   uint32 unique_renderer_id;
   uint32 properties_mask;
 

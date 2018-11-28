@@ -1546,6 +1546,9 @@ void WebFormControlElementToFormField(
         element.UniqueRendererFormControlId());
   }
 
+  field->aria_label = GetAriaLabel(element.GetDocument(), element);
+  field->aria_description = GetAriaDescription(element.GetDocument(), element);
+
   if (!IsAutofillableElement(element))
     return;
 

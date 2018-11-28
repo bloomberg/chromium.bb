@@ -160,6 +160,15 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
     return r.css_classes;
   }
 
+  static const base::string16& aria_label(const autofill::FormFieldData& r) {
+    return r.aria_label;
+  }
+
+  static const base::string16& aria_description(
+      const autofill::FormFieldData& r) {
+    return r.aria_description;
+  }
+
   static uint32_t unique_renderer_id(const autofill::FormFieldData& r) {
     return r.unique_renderer_id;
   }

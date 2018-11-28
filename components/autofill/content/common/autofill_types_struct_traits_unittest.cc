@@ -342,6 +342,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   input.autocomplete_attribute = "on";
   input.placeholder = base::ASCIIToUTF16("placeholder");
   input.css_classes = base::ASCIIToUTF16("class1");
+  input.aria_label = base::ASCIIToUTF16("aria label");
+  input.aria_description = base::ASCIIToUTF16("aria description");
   input.max_length = 12345;
   input.is_autofilled = true;
   input.check_status = FormFieldData::CHECKED;

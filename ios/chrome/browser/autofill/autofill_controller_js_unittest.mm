@@ -1603,6 +1603,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
     @"name" : @"TestForm",
     @"fields" : @[
       @{
+        @"aria_description" : @"",
+        @"aria_label" : @"",
         @"name" : @"firstname",
         @"name_attribute" : @"firstname",
         @"id_attribute" : @"firstname",
@@ -1616,6 +1618,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"label" : @"* First name:"
       },
       @{
+        @"aria_description" : @"",
+        @"aria_label" : @"",
         @"name" : @"vehicle",
         @"name_attribute" : @"vehicle",
         @"id_attribute" : @"vehicle1",
@@ -1628,6 +1632,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"label" : @"Bicycle"
       },
       @{
+        @"aria_description" : @"",
+        @"aria_label" : @"",
         @"name" : @"vehicle",
         @"name_attribute" : @"vehicle",
         @"id_attribute" : @"vehicle2",
@@ -1640,6 +1646,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"label" : @"Automobile"
       },
       @{
+        @"aria_description" : @"",
+        @"aria_label" : @"",
         @"name" : @"vehicle",
         @"name_attribute" : @"vehicle",
         @"id_attribute" : @"vehicle3",
@@ -1652,6 +1660,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"label" : @"Missile"
       },
       @{
+        @"aria_description" : @"",
+        @"aria_label" : @"",
         @"name" : @"nameintableth",
         @"name_attribute" : @"nameintableth",
         @"id_attribute" : @"nameintableth",
@@ -1665,6 +1675,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"label" : @"* First name:"
       },
       @{
+        @"aria_description" : @"",
+        @"aria_label" : @"",
         @"name" : @"emailtableth",
         @"name_attribute" : @"",
         @"id_attribute" : @"emailtableth",
@@ -1678,6 +1690,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"label" : @"Email:"
       },
       @{
+        @"aria_description" : @"",
+        @"aria_label" : @"",
         @"name" : @"pwd",
         @"name_attribute" : @"pwd",
         @"id_attribute" : @"pwd",
@@ -1692,6 +1706,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"label" : @"* Password:"
       },
       @{
+        @"aria_description" : @"",
+        @"aria_label" : @"",
         @"name" : @"state",
         @"name_attribute" : @"state",
         @"id_attribute" : @"state",
