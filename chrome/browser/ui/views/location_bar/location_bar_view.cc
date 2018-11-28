@@ -213,21 +213,19 @@ void LocationBarView::Init() {
   }
 
   std::vector<PageActionIconType> page_action_icon_types;
+  page_action_icon_types.push_back(PageActionIconType::kManagePasswords);
   // |browser_| may be null when LocationBarView is used for non-Browser windows
   // such as PresentationReceiverWindowView, which do not support page actions.
   if (browser_) {
-    page_action_icon_types = {PageActionIconType::kFind,
-                              PageActionIconType::kZoom};
+    page_action_icon_types.push_back(PageActionIconType::kFind);
+    page_action_icon_types.push_back(PageActionIconType::kZoom);
   }
+
   page_action_icon_container_view_ = new PageActionIconContainerView(
       page_action_icon_types, GetLayoutConstant(LOCATION_BAR_ICON_SIZE), 0,
-      browser_, this, delegate_);
+      browser_, command_updater(), this, delegate_);
   AddChildView(page_action_icon_container_view_);
   page_action_icon_container_view_->SetIconColor(icon_color);
-
-  manage_passwords_icon_view_ =
-      new ManagePasswordsIconViews(command_updater(), this);
-  page_action_icons_.push_back(manage_passwords_icon_view_);
 
   if (browser_) {
     save_credit_card_icon_view_ = new autofill::SaveCardIconView(
@@ -389,7 +387,6 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
   // Compute width of omnibox-trailing content.
   int trailing_width =
       IncrementalMinimumWidth(translate_icon_view_) +
-      IncrementalMinimumWidth(manage_passwords_icon_view_) +
       IncrementalMinimumWidth(page_action_icon_container_view_);
   if (star_view_)
     trailing_width += IncrementalMinimumWidth(star_view_);
@@ -518,7 +515,6 @@ void LocationBarView::Layout() {
     add_trailing_decoration(save_credit_card_icon_view_);
   if (local_card_migration_icon_view_)
     add_trailing_decoration(local_card_migration_icon_view_);
-  add_trailing_decoration(manage_passwords_icon_view_);
   for (ContentSettingViews::const_reverse_iterator i(
            content_setting_views_.rbegin());
        i != content_setting_views_.rend(); ++i) {
@@ -918,13 +914,6 @@ void LocationBarView::FocusSearch() {
 
 void LocationBarView::UpdateContentSettingsIcons() {
   if (RefreshContentSettingViews()) {
-    Layout();
-    SchedulePaint();
-  }
-}
-
-void LocationBarView::UpdateManagePasswordsIconAndBubble() {
-  if (manage_passwords_icon_view_->Update()) {
     Layout();
     SchedulePaint();
   }

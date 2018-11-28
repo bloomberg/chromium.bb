@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
+#include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -66,6 +67,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/account_id/account_id.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "content/public/browser/render_frame_host.h"
@@ -910,6 +912,31 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
   SetUpHostedApp();
   EXPECT_EQ(browser_view_->toolbar_button_provider(),
             hosted_app_button_container_);
+}
+
+// Test that the manage passwords icon appears in the title bar for hosted app
+// windows.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+                       ManagePasswordsIcon) {
+  SetUpHostedApp();
+  content::WebContents* web_contents =
+      app_browser_->tab_strip_model()->GetActiveWebContents();
+  PageActionIconView* manage_passwords_icon =
+      GetPageActionIcon(PageActionIconType::kManagePasswords);
+
+  EXPECT_TRUE(manage_passwords_icon);
+  EXPECT_FALSE(manage_passwords_icon->visible());
+
+  autofill::PasswordForm password_form;
+  password_form.username_value = base::ASCIIToUTF16("test");
+  password_form.origin = GetAppURL().GetOrigin();
+  PasswordsClientUIDelegateFromWebContents(web_contents)
+      ->OnPasswordAutofilled({{password_form.username_value, &password_form}},
+                             password_form.origin, nullptr);
+  chrome::ManagePasswordsForPage(app_browser_);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(manage_passwords_icon->visible());
 }
 
 // Test that the zoom icon appears in the title bar for hosted app windows.

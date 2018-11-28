@@ -137,7 +137,7 @@ LocationBar* TestBrowserWindow::GetLocationBar() const {
 }
 
 PageActionIconContainer* TestBrowserWindow::GetPageActionIconContainer() {
-  return nullptr;
+  return &page_action_icon_container_;
 }
 
 ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {

@@ -194,7 +194,6 @@ class TestBrowserWindow : public BrowserWindow {
     void FocusLocation(bool select_all) override {}
     void FocusSearch() override {}
     void UpdateContentSettingsIcons() override {}
-    void UpdateManagePasswordsIconAndBubble() override {}
     void UpdateSaveCreditCardIcon() override {}
     void UpdateLocalCardMigrationIcon() override {}
     void UpdateBookmarkStarVisibility() override {}
@@ -208,8 +207,21 @@ class TestBrowserWindow : public BrowserWindow {
     DISALLOW_COPY_AND_ASSIGN(TestLocationBar);
   };
 
+  class TestPageActionIconContainer : public PageActionIconContainer {
+   public:
+    TestPageActionIconContainer() {}
+    ~TestPageActionIconContainer() override {}
+
+    // PageActionIconContainer:
+    void UpdatePageActionIcon(PageActionIconType type) override {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TestPageActionIconContainer);
+  };
+
   TestDownloadShelf download_shelf_;
   TestLocationBar location_bar_;
+  TestPageActionIconContainer page_action_icon_container_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindow);
 };

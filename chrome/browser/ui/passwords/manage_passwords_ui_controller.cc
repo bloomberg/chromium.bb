@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller_impl.h"
@@ -531,9 +532,8 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
   if (!browser)
     return;
 
-  LocationBar* location_bar = browser->window()->GetLocationBar();
-  DCHECK(location_bar);
-  location_bar->UpdateManagePasswordsIconAndBubble();
+  browser->window()->GetPageActionIconContainer()->UpdatePageActionIcon(
+      PageActionIconType::kManagePasswords);
 }
 
 AccountChooserPrompt* ManagePasswordsUIController::CreateAccountChooser(

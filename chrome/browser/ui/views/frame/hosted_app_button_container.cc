@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
@@ -184,10 +185,12 @@ HostedAppButtonContainer::HostedAppButtonContainer(
       hosted_app_origin_text_(new HostedAppOriginText(browser_view->browser())),
       content_settings_container_(new ContentSettingsContainer(this)),
       page_action_icon_container_view_(new PageActionIconContainerView(
-          {PageActionIconType::kFind, PageActionIconType::kZoom},
+          {PageActionIconType::kManagePasswords, PageActionIconType::kFind,
+           PageActionIconType::kZoom},
           GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE),
           HorizontalPaddingBetweenItems(),
           browser_view->browser(),
+          browser_view->browser()->command_controller(),
           this,
           nullptr)),
       browser_actions_container_(
@@ -378,6 +381,10 @@ void HostedAppButtonContainer::FocusToolbar() {
 
 views::AccessiblePaneView* HostedAppButtonContainer::GetAsAccessiblePaneView() {
   return this;
+}
+
+views::View* HostedAppButtonContainer::GetAnchorView() {
+  return app_menu_button_;
 }
 
 void HostedAppButtonContainer::OnWidgetVisibilityChanged(views::Widget* widget,
