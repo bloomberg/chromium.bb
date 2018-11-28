@@ -757,7 +757,8 @@ TEST_P(SequenceManagerPerfTest, PostImmediateTasks_ThirtyTwoQueues) {
 
 TEST_P(SequenceManagerPerfTest, PostImmediateTasksFromTwoThreads_OneQueue) {
   TwoThreadTestCase task_source(delegate_.get(), CreateTaskRunners(1));
-  Benchmark("post immediate tasks with one queue", &task_source);
+  Benchmark("post immediate tasks with one queue from two threads",
+            &task_source);
 }
 
 TEST_P(SequenceManagerPerfTest, PostImmediateTasksFromTwoThreads_FourQueues) {
@@ -767,7 +768,8 @@ TEST_P(SequenceManagerPerfTest, PostImmediateTasksFromTwoThreads_FourQueues) {
   }
 
   TwoThreadTestCase task_source(delegate_.get(), CreateTaskRunners(4));
-  Benchmark("post immediate tasks with four queues", &task_source);
+  Benchmark("post immediate tasks with four queues from two threads",
+            &task_source);
 }
 
 TEST_P(SequenceManagerPerfTest, PostImmediateTasksFromTwoThreads_EightQueues) {
@@ -777,7 +779,8 @@ TEST_P(SequenceManagerPerfTest, PostImmediateTasksFromTwoThreads_EightQueues) {
   }
 
   TwoThreadTestCase task_source(delegate_.get(), CreateTaskRunners(8));
-  Benchmark("post immediate tasks with eight queues", &task_source);
+  Benchmark("post immediate tasks with eight queues from two threads",
+            &task_source);
 }
 
 TEST_P(SequenceManagerPerfTest,
@@ -788,7 +791,8 @@ TEST_P(SequenceManagerPerfTest,
   }
 
   TwoThreadTestCase task_source(delegate_.get(), CreateTaskRunners(32));
-  Benchmark("post immediate tasks with thirty two queues", &task_source);
+  Benchmark("post immediate tasks with thirty two queues from two threads",
+            &task_source);
 }
 
 // TODO(alexclarke): Add additional tests with different mixes of non-delayed vs
