@@ -22,7 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/files/file_descriptor_watcher_posix.h"
 #endif
 
@@ -117,12 +117,12 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
                     internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
                     slsm_for_mock_time_.get())
               : nullptr),
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
       file_descriptor_watcher_(main_thread_type == MainThreadType::IO
                                    ? std::make_unique<FileDescriptorWatcher>(
                                          message_loop_->task_runner())
                                    : nullptr),
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
       task_tracker_(new TestTaskTracker()) {
   CHECK(!TaskScheduler::GetInstance())
       << "Someone has already initialized TaskScheduler. If nothing in your "
