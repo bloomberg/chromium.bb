@@ -11,9 +11,9 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -171,7 +171,8 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     EXPECT_EQ(expected_header, header_value);
   }
 
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<TestDataReductionProxyRequestOptions> request_options_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   net::HttpRequestHeaders callback_headers_;

@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -21,6 +20,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
@@ -146,7 +146,8 @@ class DataReductionProxyProtocolEmbeddedServerTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   net::EmbeddedTestServer embedded_test_server_;
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
@@ -505,7 +506,8 @@ class DataReductionProxyProtocolTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   std::unique_ptr<net::URLRequestInterceptor> simple_interceptor_;
@@ -1139,7 +1141,8 @@ class DataReductionProxyBypassProtocolEndToEndTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForIO loop_;
+  base::test::ScopedTaskEnvironment task_environment{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<net::TestURLRequestContext> context_;
   std::unique_ptr<net::URLRequestContextStorage> storage_;
   std::unique_ptr<net::MockClientSocketFactory> mock_socket_factory_;

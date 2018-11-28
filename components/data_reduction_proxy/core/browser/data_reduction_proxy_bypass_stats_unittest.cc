@@ -16,9 +16,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
@@ -121,7 +121,8 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
   std::unique_ptr<net::URLRequest> mock_url_request_;
@@ -381,7 +382,8 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
   net::TestDelegate* delegate() { return &delegate_; }
 
  private:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   net::TestDelegate delegate_;
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;

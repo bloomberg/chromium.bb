@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -27,7 +27,8 @@ class DataReductionProxyDataTest : public testing::Test {
   DataReductionProxyDataTest() {}
 
  private:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
 };
 
 TEST_F(DataReductionProxyDataTest, BasicSettersAndGetters) {

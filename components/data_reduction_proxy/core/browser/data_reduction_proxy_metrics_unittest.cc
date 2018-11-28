@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -30,7 +30,8 @@ namespace data_reduction_proxy {
 
 TEST(ChromeNetworkDailyDataSavingMetricsTest,
      GetDataReductionProxyRequestType) {
-  base::MessageLoopForIO message_loop;
+  base::test::ScopedTaskEnvironment task_environment{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<DataReductionProxyTestContext> test_context =
       DataReductionProxyTestContext::Builder()
           .Build();
