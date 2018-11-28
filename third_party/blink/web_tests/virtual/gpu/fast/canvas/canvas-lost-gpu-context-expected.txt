@@ -17,4 +17,3 @@ PASS ctx.isContextLost() is true
 PASS Context restored event dispatched after context lost.
 PASS contextLostTest is false
 PASS ctx.isContextLost() is false
-

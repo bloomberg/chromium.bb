@@ -143,6 +143,10 @@ class CORE_EXPORT NGOffsetMapping {
   // only accepts ranges whose start and end have the same anchor node.
   NGMappingUnitRange GetMappingUnitsForDOMRange(const EphemeralRange&) const;
 
+  // Returns all NGOffsetMappingUnits associated to |node|. Note: |node| should
+  // have associated mapping.
+  NGMappingUnitRange GetMappingUnitsForNode(const Node& node) const;
+
   // Returns the text content offset corresponding to the given position.
   // Returns nullopt when the position is not laid out in this context.
   base::Optional<unsigned> GetTextContentOffset(const Position&) const;

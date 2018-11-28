@@ -3,7 +3,6 @@ To run manually, type enter in the input element below.
 
 
 
-
 SUCCESS
 
 Sending Enter to input element

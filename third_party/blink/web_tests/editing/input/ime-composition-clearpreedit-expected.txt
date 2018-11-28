@@ -2,6 +2,5 @@ This tests that clearing a text compose doesn't leave the composed text behild i
 
 To test manually, enable an IME, input characters, clear the compose and see if the input field only contains the initial value
 
-
 SUCCESS COMPOSE
 SUCCESS CLEAR

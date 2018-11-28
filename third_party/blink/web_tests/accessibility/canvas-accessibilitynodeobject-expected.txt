@@ -1,8 +1,7 @@
-Link Button    
+Link Button     
 1
 2
-ARIA button ARIA link
-
+ ARIA button ARIA link
 
 This test makes sure that AccessibilityNodeObjects are created for elements in a canvas subtree.
 

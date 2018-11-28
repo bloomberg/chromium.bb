@@ -2,10 +2,6 @@ Test for bug 17421: Lack of end tag of SELECT element causes inaccessible (blank
 
 There should be two green bars below.
 
-
-
 PASS
-
-
 
 PASS

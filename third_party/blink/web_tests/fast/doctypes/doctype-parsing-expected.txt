@@ -105,4 +105,3 @@ PASS: the Doctype was Quirks as expected.
 PASS: the Doctype was Quirks as expected.
 PASS: the Doctype was Standards as expected.
 
-

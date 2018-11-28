@@ -47,4 +47,3 @@ PASS testFrame.contentWindow.Audio !== storedConstructors.Audio is true
 PASS storedConstructors.Audio.testProperty is "property set successfully"
 PASS testFrame.contentWindow.Audio.testProperty is undefined.
 PASS testFrame.contentWindow.Audio.cachedOnOwnerDocument is true
-

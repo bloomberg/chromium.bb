@@ -7,4 +7,3 @@ PASS successfullyParsed is true
 TEST COMPLETE
 
 PASS Should have rendered blue.
-

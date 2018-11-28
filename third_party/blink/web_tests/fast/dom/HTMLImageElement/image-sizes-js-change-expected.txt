@@ -7,4 +7,3 @@ PASS internals.isLoadingFromMemoryCache("resources/image-set-4x.png") is true
 PASS internals.isLoadingFromMemoryCache("../../hidpi/resources/image-set-2x.png") is false
 PASS internals.isLoadingFromMemoryCache("../../hidpi/resources/image-set-1x.png") is false
 PASS internals.isLoadingFromMemoryCache("resources/blue-100-px-square.png") is false
-

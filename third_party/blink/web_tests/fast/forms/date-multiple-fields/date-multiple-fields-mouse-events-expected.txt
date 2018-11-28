@@ -7,7 +7,6 @@ Please run this with DRT or WTR.
 Test following mouse actions:
 Mouse click to focus each of sub-fields
 Mouse click on the spin button to update each of sub-fields
-
 PASS successfullyParsed is true
 
 TEST COMPLETE

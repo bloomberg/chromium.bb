@@ -8,4 +8,3 @@ TEST COMPLETE
 
 PASS input.valueAsNumber is 123456
 PASS input.value is "123456"
-

@@ -38,4 +38,3 @@ PASS: frames[0].eval("this") should be [object Window] and is.
 PASS: window.eval("this") should be undefined and is.
 PASS: frames[0].eval("this") should be undefined and is.
 
-

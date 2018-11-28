@@ -1,9 +1,10 @@
-Link Button Button Button      
+Link Button Button Button       
 1
 2
+ 
 1
 2
-
+ 
 Focusable
 Heading
 ARIA button
@@ -12,7 +13,6 @@ ARIA enabled button
 ARIA required button
 ARIA toggle button
 ARIA link
-
 
 This tests a number of different elements in canvas fallback content to make sure their accessible attributes are essentially identical to the corresponding elements outside of canvas fallback content.
 

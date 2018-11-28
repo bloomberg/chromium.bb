@@ -2,7 +2,7 @@ This test checks if reportValidity() returns correctly a true (meaning no error)
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
- lorem ipsum  
+ lorem ipsum   
 abc
 Elements valid from the begining
 PASS document.getElementsByTagName("fieldset")[0].reportValidity() is true

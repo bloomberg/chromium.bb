@@ -2,7 +2,6 @@ Bug 46950: Search field cancel button keeps event capturing if the value is clea
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS mouseDownCount is 2
 PASS successfullyParsed is true
 

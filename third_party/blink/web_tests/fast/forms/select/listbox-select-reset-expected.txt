@@ -1,10 +1,11 @@
 one
 two
 three
+ 
 one
 two
 three
-
+ 
 
 This test verifies that list-box-style select form controls with no "selected" attributes are properly cleared when reset.
 

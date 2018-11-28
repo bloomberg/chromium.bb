@@ -6,13 +6,16 @@ Implicit Item 2
 Implicit Item 3
 Explicit Option 1
 Explicit Option 2
+ 
 Implicit Option 1
 Implicit Option 2
+ 
 Explicit dropdown 1
 Explicit dropdown 2
+ 
 Implicit dropdown 1
 Implicit dropdown 2
-   
+    
 
 End of test
 

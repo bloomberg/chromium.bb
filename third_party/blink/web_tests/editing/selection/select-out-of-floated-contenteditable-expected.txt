@@ -1,4 +1,4 @@
-Some text before the floats.
+Some text before the floats. 
 Drag from the middle.
 Some floated text in a div.
 Some text after the floats.

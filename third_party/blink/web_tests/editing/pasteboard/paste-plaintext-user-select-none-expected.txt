@@ -10,5 +10,4 @@ TEST COMPLETE
 
 To test manually, copy "Test Passed" into clipboard, and paste in below box.
 
-
 Test Passed

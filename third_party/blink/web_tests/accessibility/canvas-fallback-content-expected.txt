@@ -1,10 +1,9 @@
-Link Button    
+Link Button     
 1
 2
 Focusable
 ARIA button
 ARIA link
-
 
 This test makes sure that focusable elements in canvas fallback content are accessible.
 

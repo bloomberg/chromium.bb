@@ -2,7 +2,7 @@ These two lines should look same as spaces after a list marker should be ignored
 XpX XpX
 	
 XpX XpX
-XpX XpX
+ XpX XpX
 	
 XpX XpX
 SUCCESS

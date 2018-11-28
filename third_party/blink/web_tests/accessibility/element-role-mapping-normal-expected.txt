@@ -39,9 +39,7 @@ This is an open dialog window
 
 Caption
 Cell1	Cell2
-
 Fig1. - Blue Box
-
 
 This is a footer.
 

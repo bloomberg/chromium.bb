@@ -12,8 +12,3 @@ PASS document.getElementById("source_in_div").clientWidth is 75
 PASS currentSrcFileName("source_in_div") is "blue_rect.jpg"
 PASS document.getElementById("not_in_picture").clientWidth is 75
 PASS currentSrcFileName("not_in_picture") is "blue_rect.jpg"
-
-
-
-
-

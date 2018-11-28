@@ -8,4 +8,4 @@ TEST COMPLETE
 
 PASS
  spans[spans.length - 1].offsetLeft is >= 400
-Item 1 Item 2 Item 3
+Item 1 Item 2 Item 3 

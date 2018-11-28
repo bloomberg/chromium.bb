@@ -1,5 +1,4 @@
 This tests that the 'autocomplete' attribute of form and input elements is bound to a JavaScript property.
-
 PASS ('autocomplete' in form) is true
 PASS ('autocomplete' in field) is true
 PASS form.getAttribute('autocomplete') is null

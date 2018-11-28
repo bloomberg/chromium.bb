@@ -1,6 +1,5 @@
 TEST
 
-
 Test whether focusin and focusout events are dispatched and seen in the focusin/focusout event handlers when using keyboard:
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

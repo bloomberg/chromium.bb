@@ -9,4 +9,3 @@ TEST COMPLETE
 PASS internals.nonFastScrollableRects(document).length is 1
 PASS internals.nonFastScrollableRects(document).length is 0
 PASS internals.nonFastScrollableRects(document).length is 1
-

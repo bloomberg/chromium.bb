@@ -1,8 +1,5 @@
 Test that when dirname attribute is specified then it is added in submission body.
 
-
-
-
 Post Comment
 
 Hello

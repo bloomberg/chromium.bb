@@ -3,6 +3,3 @@ This test attempts to access an HTMLObjectElement's form property. The first tes
 Passed
 
 Passed
-
-
-

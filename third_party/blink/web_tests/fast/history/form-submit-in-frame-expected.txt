@@ -1,7 +1,5 @@
 Tests that form submissions inside an iframe generate history entries.
 
-
-
 --------
 Frame: 'the-frame'
 --------

@@ -1,6 +1,5 @@
 This tests that onchange is not fired after a form field's type changes.
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE

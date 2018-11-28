@@ -5,5 +5,3 @@ PASS successfullyParsed is true
 TEST COMPLETE
 
 PASS document.getElementById("input2").value is ""
-
-
