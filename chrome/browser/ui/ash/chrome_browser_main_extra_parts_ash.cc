@@ -67,6 +67,7 @@
 #include "services/ws/public/mojom/user_activity_monitor.mojom.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/user_activity_forwarder.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -326,6 +327,10 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   // needs to be released before destroying the profile.
   app_list_client_.reset();
   ash_shell_init_.reset();
+
+  // WindowTreeClient needs to do some shutdown while the IO thread is alive.
+  if (mus_client_)
+    mus_client_->window_tree_client()->OnEarlyShutdown();
 
   chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();

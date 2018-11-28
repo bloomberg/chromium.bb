@@ -40,6 +40,7 @@ class GpuMemoryBufferManager;
 
 namespace viz {
 class ContextProvider;
+class RasterContextProvider;
 }
 
 namespace aura {
@@ -101,6 +102,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   std::unique_ptr<cc::mojo_embedder::AsyncLayerTreeFrameSink>
   RequestLayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,
+      scoped_refptr<viz::RasterContextProvider> raster_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   viz::FrameSinkId GenerateFrameSinkIdFromServerId() const;

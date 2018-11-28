@@ -906,6 +906,11 @@ gfx::Point WindowTreeClient::GetCursorScreenPoint() {
                     static_cast<int16_t>(location & 0xFFFF));
 }
 
+void WindowTreeClient::OnEarlyShutdown() {
+  if (compositor_context_factory_)
+    compositor_context_factory_->ResetSharedWorkerContextProvider();
+}
+
 void WindowTreeClient::OnEventObserverAdded(
     ui::EventObserver* observer,
     const std::set<ui::EventType>& types) {
