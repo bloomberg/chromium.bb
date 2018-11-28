@@ -652,6 +652,7 @@ modules_dictionary_idl_files =
           "push_messaging/push_event_init.idl",
           "push_messaging/push_subscription_options_init.idl",
           "quota/storage_estimate.idl",
+          "quota/storage_usage_details.idl",
           "sensor/sensor_error_event_init.idl",
           "sensor/sensor_options.idl",
           "sensor/spatial_sensor_options.idl",

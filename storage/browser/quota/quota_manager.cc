@@ -208,7 +208,7 @@ void DidGetUsageAndQuotaForWebApps(
     blink::mojom::QuotaStatusCode status,
     int64_t usage,
     int64_t quota,
-    base::flat_map<QuotaClient::ID, int64_t> usage_breakdown) {
+    blink::mojom::UsageBreakdownPtr usage_breakdown) {
   std::move(callback).Run(status, usage, quota);
 }
 
@@ -273,8 +273,11 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
 
   void Aborted() override {
     weak_factory_.InvalidateWeakPtrs();
-    std::move(callback_).Run(blink::mojom::QuotaStatusCode::kErrorAbort, 0, 0,
-                             base::flat_map<QuotaClient::ID, int64_t>());
+    std::move(callback_).Run(
+        blink::mojom::QuotaStatusCode::kErrorAbort, /*status*/
+        0,                                          /*usage*/
+        0,                                          /*quota*/
+        nullptr);                                   /*usage_breakdown*/
     DeleteSoon();
   }
 
@@ -327,10 +330,9 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
     barrier_closure.Run();
   }
 
-  void OnGotHostUsage(
-      const base::Closure& barrier_closure,
-      int64_t usage,
-      base::flat_map<QuotaClient::ID, int64_t> usage_breakdown) {
+  void OnGotHostUsage(const base::Closure& barrier_closure,
+                      int64_t usage,
+                      blink::mojom::UsageBreakdownPtr usage_breakdown) {
     host_usage_ = usage;
     host_usage_breakdown_ = std::move(usage_breakdown);
     barrier_closure.Run();
@@ -355,7 +357,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
   int64_t total_space_ = 0;
   int64_t desired_host_quota_ = 0;
   int64_t host_usage_ = 0;
-  base::flat_map<QuotaClient::ID, int64_t> host_usage_breakdown_;
+  blink::mojom::UsageBreakdownPtr host_usage_breakdown_;
   QuotaSettings settings_;
   base::WeakPtrFactory<UsageAndQuotaHelper> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaHelper);
@@ -866,8 +868,11 @@ void QuotaManager::GetUsageAndQuotaWithBreakdown(
     UsageAndQuotaWithBreakdownCallback callback) {
   if (!IsSupportedType(type) ||
       (is_incognito_ && !IsSupportedIncognitoType(type))) {
-    std::move(callback).Run(blink::mojom::QuotaStatusCode::kErrorNotSupported,
-                            0, 0, base::flat_map<QuotaClient::ID, int64_t>());
+    std::move(callback).Run(
+        blink::mojom::QuotaStatusCode::kErrorNotSupported, /*status*/
+        0,                                                 /*usage*/
+        0,                                                 /*quota*/
+        nullptr);                                          /*usage_breakdown*/
     return;
   }
   LazyInitialize();

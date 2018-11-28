@@ -26,32 +26,32 @@
 namespace content {
 namespace protocol {
 
-namespace {
-Storage::StorageType GetTypeName(storage::QuotaClient::ID id) {
-  switch (id) {
-    case storage::QuotaClient::kFileSystem:
-      return Storage::StorageTypeEnum::File_systems;
-    case storage::QuotaClient::kDatabase:
-      return Storage::StorageTypeEnum::Websql;
-    case storage::QuotaClient::kAppcache:
-      return Storage::StorageTypeEnum::Appcache;
-    case storage::QuotaClient::kIndexedDatabase:
-      return Storage::StorageTypeEnum::Indexeddb;
-    case storage::QuotaClient::kServiceWorkerCache:
-      return Storage::StorageTypeEnum::Cache_storage;
-    case storage::QuotaClient::kServiceWorker:
-      return Storage::StorageTypeEnum::Service_workers;
-    default:
-      return Storage::StorageTypeEnum::Other;
-  }
-}
+struct UsageListInitializer {
+  const char* type;
+  int64_t blink::mojom::UsageBreakdown::*usage_member;
+};
 
+UsageListInitializer initializers[] = {
+    {Storage::StorageTypeEnum::File_systems,
+     &blink::mojom::UsageBreakdown::fileSystem},
+    {Storage::StorageTypeEnum::Websql, &blink::mojom::UsageBreakdown::webSql},
+    {Storage::StorageTypeEnum::Appcache,
+     &blink::mojom::UsageBreakdown::appcache},
+    {Storage::StorageTypeEnum::Indexeddb,
+     &blink::mojom::UsageBreakdown::indexedDatabase},
+    {Storage::StorageTypeEnum::Cache_storage,
+     &blink::mojom::UsageBreakdown::serviceWorkerCache},
+    {Storage::StorageTypeEnum::Service_workers,
+     &blink::mojom::UsageBreakdown::serviceWorker},
+};
+
+namespace {
 void ReportUsageAndQuotaDataOnUIThread(
     std::unique_ptr<StorageHandler::GetUsageAndQuotaCallback> callback,
     blink::mojom::QuotaStatusCode code,
     int64_t usage,
     int64_t quota,
-    base::flat_map<storage::QuotaClient::ID, int64_t> usage_breakdown) {
+    blink::mojom::UsageBreakdownPtr usage_breakdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (code != blink::mojom::QuotaStatusCode::kOk) {
     return callback->sendFailure(
@@ -60,14 +60,17 @@ void ReportUsageAndQuotaDataOnUIThread(
 
   std::unique_ptr<Array<Storage::UsageForType>> usageList =
       Array<Storage::UsageForType>::create();
-  for (const auto& specific_usage : usage_breakdown) {
+
+  blink::mojom::UsageBreakdown* breakdown_ptr = usage_breakdown.get();
+  for (const auto initializer : initializers) {
     std::unique_ptr<Storage::UsageForType> entry =
         Storage::UsageForType::Create()
-            .SetStorageType(GetTypeName(specific_usage.first))
-            .SetUsage(specific_usage.second)
+            .SetStorageType(initializer.type)
+            .SetUsage(breakdown_ptr->*(initializer.usage_member))
             .Build();
     usageList->addItem(std::move(entry));
   }
+
   callback->sendSuccess(usage, quota, std::move(usageList));
 }
 
@@ -76,7 +79,7 @@ void GotUsageAndQuotaDataCallback(
     blink::mojom::QuotaStatusCode code,
     int64_t usage,
     int64_t quota,
-    base::flat_map<storage::QuotaClient::ID, int64_t> usage_breakdown) {
+    blink::mojom::UsageBreakdownPtr usage_breakdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},

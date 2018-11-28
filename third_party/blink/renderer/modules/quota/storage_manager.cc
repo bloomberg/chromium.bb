@@ -6,6 +6,7 @@
 
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_estimate.h"
@@ -25,6 +26,7 @@ namespace blink {
 using mojom::blink::PermissionName;
 using mojom::blink::PermissionService;
 using mojom::blink::PermissionStatus;
+using mojom::blink::UsageBreakdownPtr;
 
 namespace {
 
@@ -34,7 +36,8 @@ const char kUniqueOriginErrorMessage[] =
 void QueryStorageUsageAndQuotaCallback(ScriptPromiseResolver* resolver,
                                        mojom::QuotaStatusCode status_code,
                                        int64_t usage_in_bytes,
-                                       int64_t quota_in_bytes) {
+                                       int64_t quota_in_bytes,
+                                       UsageBreakdownPtr usage_breakdown) {
   if (status_code != mojom::QuotaStatusCode::kOk) {
     // TODO(sashab): Replace this with a switch statement, and remove the enum
     // values from QuotaStatusCode.
@@ -46,6 +49,27 @@ void QueryStorageUsageAndQuotaCallback(ScriptPromiseResolver* resolver,
   StorageEstimate* estimate = StorageEstimate::Create();
   estimate->setUsage(usage_in_bytes);
   estimate->setQuota(quota_in_bytes);
+
+  // We only want to show usage details for systems that are used by the app,
+  // this way we do not create any web compatibility issues by unecessarily
+  // exposing obsoleted/proprietary storage systems, but also report when
+  // those systems are in use.
+  StorageUsageDetails* details = StorageUsageDetails::Create();
+  if (usage_breakdown->appcache) {
+    details->setApplicationCache(usage_breakdown->appcache);
+  }
+  if (usage_breakdown->indexedDatabase) {
+    details->setIndexedDB(usage_breakdown->indexedDatabase);
+  }
+  if (usage_breakdown->serviceWorkerCache) {
+    details->setCaches(usage_breakdown->serviceWorkerCache);
+  }
+  if (usage_breakdown->serviceWorker) {
+    details->setServiceWorkerRegistrations(usage_breakdown->serviceWorker);
+  }
+
+  estimate->setUsageDetails(details);
+
   resolver->Resolve(estimate);
 }
 
@@ -115,7 +139,8 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
       .QueryStorageUsageAndQuota(
           WrapRefCounted(security_origin), mojom::StorageType::kTemporary,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-              std::move(callback), mojom::QuotaStatusCode::kErrorAbort, 0, 0));
+              std::move(callback), mojom::QuotaStatusCode::kErrorAbort, 0, 0,
+              nullptr));
   return promise;
 }
 

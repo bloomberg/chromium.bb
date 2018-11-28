@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "storage/browser/quota/quota_client.h"
@@ -38,7 +37,7 @@ using QuotaCallback =
 using UsageCallback = base::OnceCallback<void(int64_t usage)>;
 using UsageWithBreakdownCallback =
     base::OnceCallback<void(int64_t usage,
-                            base::flat_map<QuotaClient::ID, int64_t>)>;
+                            blink::mojom::UsageBreakdownPtr usage_breakdown)>;
 using AvailableSpaceCallback =
     base::OnceCallback<void(blink::mojom::QuotaStatusCode, int64_t)>;
 using StatusCallback = base::OnceCallback<void(blink::mojom::QuotaStatusCode)>;
@@ -59,9 +58,7 @@ class CallbackQueue {
     return (callbacks_.size() == 1);
   }
 
-  bool HasCallbacks() const {
-    return !callbacks_.empty();
-  }
+  bool HasCallbacks() const { return !callbacks_.empty(); }
 
   // Runs the callbacks added to the queue and clears the queue.
   void Run(Args... args) {
@@ -75,9 +72,7 @@ class CallbackQueue {
     callbacks_.swap(other->callbacks_);
   }
 
-  size_t size() const {
-    return callbacks_.size();
-  }
+  size_t size() const { return callbacks_.size(); }
 
  private:
   std::vector<CallbackType> callbacks_;
@@ -98,9 +93,7 @@ class CallbackQueueMap {
     return base::ContainsKey(callback_map_, key);
   }
 
-  bool HasAnyCallbacks() const {
-    return !callback_map_.empty();
-  }
+  bool HasAnyCallbacks() const { return !callback_map_.empty(); }
 
   iterator Begin() { return callback_map_.begin(); }
   iterator End() { return callback_map_.end(); }

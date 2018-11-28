@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/browser/quota/quota_client.h"
@@ -71,7 +70,8 @@ class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
     int pending_clients = 0;
     int64_t usage = 0;
     int64_t unlimited_usage = 0;
-    base::flat_map<QuotaClient::ID, int64_t> usage_breakdown;
+    blink::mojom::UsageBreakdownPtr usage_breakdown =
+        blink::mojom::UsageBreakdown::New();
   };
 
   friend class ClientUsageTracker;
