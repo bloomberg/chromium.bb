@@ -9,10 +9,10 @@ generate_token.py http://127.0.0.1:8000 RtcAudioJitterBufferMaxPackets --expire-
 <script src="/resources/testharnessreport.js"></script>
 <script>
 test(t => {
-  var peerconnection = new RTCPeerConnection({
+  let peerconnection = new RTCPeerConnection({
       rtcAudioJitterBufferMaxPackets: 79
   });
-  var configuration = peerconnection.getConfiguration();
+  let configuration = peerconnection.getConfiguration();
   assert_true(
       configuration.rtcAudioJitterBufferMaxPackets === 79,
       'rtcAudioJitterBufferMaxPackets equals passed values'
@@ -20,14 +20,25 @@ test(t => {
 }, 'rtcAudioJitterBufferMaxPackets property in Origin-Trial enabled document.');
 
 test(t => {
-  var peerconnection = new RTCPeerConnection({
+  let peerconnection = new RTCPeerConnection({
       rtcAudioJitterBufferFastAccelerate: true
   });
-  var configuration = peerconnection.getConfiguration();
+  let configuration = peerconnection.getConfiguration();
   assert_true(
       configuration.rtcAudioJitterBufferFastAccelerate,
       'rtcAudioJitterBufferFastAccelerate equals passed values'
   );
 }, 'rtcAudioJitterBufferFastAccelerate property in Origin-Trial enabled document.');
+
+test(t => {
+  let peerconnection = new RTCPeerConnection({
+      rtcAudioJitterBufferMinDelayMs: 20
+  });
+  let configuration = peerconnection.getConfiguration();
+  assert_true(
+      configuration.rtcAudioJitterBufferMinDelayMs === 20,
+      'rtcAudioJitterBufferMinDelayMs equals passed values'
+  );
+}, 'rtcAudioJitterBufferMinDelayMs property in Origin-Trial enabled document.');
 
 </script>
