@@ -230,7 +230,7 @@ class ProfileSyncService : public syncer::SyncService,
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;
   void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
   void RequestStop(SyncStopDataFate data_fate) override;
-  void RequestStart() override;
+  virtual void RequestStart();  // Virtual for testing.
   syncer::ModelTypeSet GetActiveDataTypes() const override;
   void AddObserver(syncer::SyncServiceObserver* observer) override;
   void RemoveObserver(syncer::SyncServiceObserver* observer) override;

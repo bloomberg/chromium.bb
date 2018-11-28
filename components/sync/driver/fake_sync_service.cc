@@ -69,8 +69,6 @@ void FakeSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
 
 void FakeSyncService::RequestStop(SyncService::SyncStopDataFate data_fate) {}
 
-void FakeSyncService::RequestStart() {}
-
 ModelTypeSet FakeSyncService::GetPreferredDataTypes() const {
   return ModelTypeSet();
 }

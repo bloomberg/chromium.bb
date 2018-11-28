@@ -85,7 +85,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     // yet. Note that during subsequent browser startups, Sync starts
     // automatically, i.e. no prod is necessary, but during the first start Sync
     // does need a kick. This usually happens via starting (not finishing!) the
-    // initial setup, or via an explicit call to RequestStart.
+    // initial setup, or via a call to SyncUserSettings::SetSyncRequested.
     // TODO(crbug.com/839834): Check whether this state is necessary, or if Sync
     // can just always start up if all conditions are fulfilled (that's what
     // happens in practice anyway).
@@ -265,12 +265,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   //////////////////////////////////////////////////////////////////////////////
   // ACTIONS / STATE CHANGE REQUESTS
   //////////////////////////////////////////////////////////////////////////////
-
-  // The user requests that sync start. This only actually starts sync if
-  // IsSyncAllowed is true and the user is signed in. Once sync starts,
-  // other things such as IsFirstSetupComplete being false can still prevent
-  // it from moving into the "active" state.
-  virtual void RequestStart() = 0;
 
   // Stops sync at the user's request. |data_fate| controls whether the sync
   // engine should clear its data directory when it shuts down. Generally

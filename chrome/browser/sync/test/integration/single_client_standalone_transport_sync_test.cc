@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
 
   // Turn off Sync-the-feature by user choice. The machinery should start up
   // again in transport-only mode.
-  GetSyncService(0)->RequestStop(syncer::SyncService::KEEP_DATA);
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
   EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
       /*skip_passphrase_verification=*/false));
 
@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_TRUE(bad_types.Empty()) << syncer::ModelTypeSetToString(bad_types);
 
   // Finally, turn Sync-the-feature on again.
-  GetSyncService(0)->RequestStart();
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
       /*skip_passphrase_verification=*/false));
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
