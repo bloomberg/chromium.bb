@@ -850,10 +850,18 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
     return;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  ScopedBatchChange batch(this);
-
   VLOG(1) << "MutablePO2TS::RevokeAllCredentials";
-  CancelWebTokenFetch();
+
+  ScopedBatchChange batch(this);
+  if (load_credentials_state() == LOAD_CREDENTIALS_IN_PROGRESS) {
+    VLOG(1) << "MutablePO2TS::RevokeAllCredentials before tokens are loaded.";
+    // If |RevokeAllCredentials| is called while credentials are being loaded,
+    // then the load must be cancelled and the load credentials state updated.
+    DCHECK_NE(0, web_data_service_request_);
+    CancelWebTokenFetch();
+    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
+    FinishLoadingCredentials();
+  }
 
   // Make a temporary copy of the account ids.
   std::vector<std::string> accounts;
@@ -864,7 +872,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
 
   DCHECK_EQ(0u, refresh_tokens_.size());
 
-  // Make sure all tokens are removed.
+  // Make sure all tokens are removed from storage.
   if (token_web_data_)
     token_web_data_->RemoveAllTokens();
 }
