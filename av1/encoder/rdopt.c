@@ -10522,6 +10522,7 @@ static void sf_refine_fast_tx_type_search(
         !is_inter_mode(best_mbmode->mode)))) {
     int skip_blk = 0;
     RD_STATS rd_stats_y, rd_stats_uv;
+    const int skip_ctx = av1_get_skip_context(xd);
 
     x->use_default_inter_tx_type = 0;
     x->use_default_intra_tx_type = 0;
@@ -10569,17 +10570,19 @@ static void sf_refine_fast_tx_type_search(
       }
     }
 
-    if (RDCOST(x->rdmult, rd_stats_y.rate + rd_stats_uv.rate,
+    if (RDCOST(x->rdmult,
+               x->skip_cost[skip_ctx][0] + rd_stats_y.rate + rd_stats_uv.rate,
                (rd_stats_y.dist + rd_stats_uv.dist)) >
-        RDCOST(x->rdmult, 0, (rd_stats_y.sse + rd_stats_uv.sse))) {
+        RDCOST(x->rdmult, x->skip_cost[skip_ctx][1],
+               (rd_stats_y.sse + rd_stats_uv.sse))) {
       skip_blk = 1;
-      rd_stats_y.rate = x->skip_cost[av1_get_skip_context(xd)][1];
+      rd_stats_y.rate = x->skip_cost[skip_ctx][1];
       rd_stats_uv.rate = 0;
       rd_stats_y.dist = rd_stats_y.sse;
       rd_stats_uv.dist = rd_stats_uv.sse;
     } else {
       skip_blk = 0;
-      rd_stats_y.rate += x->skip_cost[av1_get_skip_context(xd)][0];
+      rd_stats_y.rate += x->skip_cost[skip_ctx][0];
     }
 
     if (RDCOST(x->rdmult, best_rate_y + best_rate_uv, rd_cost->dist) >
