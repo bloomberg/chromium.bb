@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
 
 import dagger.Module;
 import dagger.Provides;
@@ -17,12 +16,9 @@ import dagger.Provides;
 @Module
 public class CustomTabActivityModule {
     private final CustomTabIntentDataProvider mIntentDataProvider;
-    private final TabObserverRegistrar mTabObserverRegistrar;
 
-    public CustomTabActivityModule(CustomTabIntentDataProvider intentDataProvider,
-            TabObserverRegistrar tabObserverRegistrar) {
+    public CustomTabActivityModule(CustomTabIntentDataProvider intentDataProvider) {
         mIntentDataProvider = intentDataProvider;
-        mTabObserverRegistrar = tabObserverRegistrar;
     }
 
     @Provides
@@ -33,10 +29,5 @@ public class CustomTabActivityModule {
     @Provides
     public ClientAppDataRegister provideClientAppDataRegister() {
         return new ClientAppDataRegister();
-    }
-
-    @Provides
-    public TabObserverRegistrar provideTabObserverRegistrar() {
-        return mTabObserverRegistrar;
     }
 }
