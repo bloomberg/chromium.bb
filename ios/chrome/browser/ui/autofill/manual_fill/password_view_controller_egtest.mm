@@ -340,6 +340,11 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is resumed after selecting other
 // password.
 - (void)testPasswordControllerResumes {
+  if (([UIDevice currentDevice].systemVersion.doubleValue < 11.3)) {
+    // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
+    return;
+  }
+
   // For this test one password is needed.
   SaveExamplePasswordForm();
 
@@ -382,6 +387,11 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is resumed after dismissing "Other
 // Passwords".
 - (void)testPasswordControllerResumesWhenOtherPasswordsDismiss {
+  if (([UIDevice currentDevice].systemVersion.doubleValue < 11.3)) {
+    // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
+    return;
+  }
+
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -510,6 +520,11 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that after switching fields the content size of the table view didn't
 // grow.
 - (void)testPasswordControllerKeepsRightSize {
+  if (([UIDevice currentDevice].systemVersion.doubleValue < 11.3)) {
+    // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
+    return;
+  }
+
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];

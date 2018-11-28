@@ -235,7 +235,13 @@ BOOL AreCredentialsAtIndexesConnected(
                }];
     managePasswordsItem.accessibilityIdentifier =
         manual_fill::ManagePasswordsAccessibilityIdentifier;
-    [self.consumer presentActions:@[ otherPasswordsItem, managePasswordsItem ]];
+    if (@available(iOS 11.3, *)) {
+      [self.consumer
+          presentActions:@[ otherPasswordsItem, managePasswordsItem ]];
+    } else {
+      // TODO(crbug.com/908776): fix or wait until iOS 11.2- is deprecated.
+      [self.consumer presentActions:@[ managePasswordsItem ]];
+    }
   } else {
     [self.consumer presentActions:@[]];
   }
