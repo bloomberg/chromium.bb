@@ -289,10 +289,6 @@ void OwnerSettingsServiceChromeOS::IsOwnerAsync(
 }
 
 bool OwnerSettingsServiceChromeOS::HandlesSetting(const std::string& setting) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStubCrosSettings)) {
-    return false;
-  }
   return DeviceSettingsProvider::IsDeviceSetting(setting);
 }
 

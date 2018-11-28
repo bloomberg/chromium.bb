@@ -543,8 +543,9 @@ const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
 
 // Indicates that a stub implementation of CrosSettings that stores settings in
 // memory without signing should be used, treating current user as the owner.
-// This also modifies OwnerSettingsServiceChromeOS::HandlesSetting such that no
-// settings are handled by OwnerSettingsServiceChromeOS.
+// The DeviceSettingsProvider class is replaced with StubCrosSettingsProvider
+// for reading the settings from memory, and OwnerSettingsServiceChromeOS is
+// replaced with FakeOwnerSettingsService for writing the settings to memory.
 // This option is for testing the chromeos build of chrome on the desktop only.
 const char kStubCrosSettings[] = "stub-cros-settings";
 
