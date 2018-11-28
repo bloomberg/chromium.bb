@@ -1640,12 +1640,11 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 // Each RenderWidgetHostViewCocoa has its own input context, but we return
-// nil when the caret is in non-editable content or password box to avoid
-// making input methods do their work.
+// nil when the caret is in non-editable content to avoid making input methods
+// do their work.
 - (NSTextInputContext*)inputContext {
   switch (textInputType_) {
     case ui::TEXT_INPUT_TYPE_NONE:
-    case ui::TEXT_INPUT_TYPE_PASSWORD:
       return nil;
     default:
       return [super inputContext];
