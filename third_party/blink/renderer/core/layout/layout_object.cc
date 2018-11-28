@@ -912,7 +912,7 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout,
     object->SetNeedsCollectInlines(true);
 
   while (object) {
-    if (object->SelfNeedsLayout())
+    if (object->SelfNeedsLayout() || object->LayoutBlockedByDisplayLock())
       return;
 
     // Don't mark the outermost object of an unrooted subtree. That object will
