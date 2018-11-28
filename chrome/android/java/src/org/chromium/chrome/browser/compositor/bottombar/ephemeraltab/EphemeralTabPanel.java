@@ -27,7 +27,9 @@ import org.chromium.ui.resources.ResourceManager;
 
 /**
  * The panel containing an ephemeral tab.
- * TODO(jinsukkim): Make panel height in peeked state bigger to show the progress indicator clearly.
+ * TODO(jinsukkim): Write tests.
+ *                  Add animation effect upon opening ephemeral tab.
+ *                  Bring back the bottom bar animation hidden behind ephemeral tab.
  */
 public class EphemeralTabPanel extends OverlayPanel {
     /** The compositor layer used for drawing the panel. */
@@ -74,9 +76,19 @@ public class EphemeralTabPanel extends OverlayPanel {
     }
 
     @Override
+    protected float getPeekedHeight() {
+        return getBarHeightPeeking() * 1.5f;
+    }
+
+    @Override
     protected float getMaximizedHeight() {
         // Max height does not cover the entire content screen.
         return getTabHeight() * 0.9f;
+    }
+
+    @Override
+    public boolean isPanelOpened() {
+        return getHeight() > getPeekedHeight();
     }
 
     @Override
