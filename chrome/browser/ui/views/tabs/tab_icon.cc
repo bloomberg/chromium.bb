@@ -29,7 +29,7 @@ namespace {
 
 constexpr int kLoadingProgressTimeMs = 400;
 constexpr int kLoadingProgressFadeOutMs = 200;
-constexpr int kFaviconFadeInMs = 200;
+constexpr int kFaviconFadeInMs = 500;
 
 bool UseNewLoadingAnimation() {
   return base::FeatureList::IsEnabled(features::kNewTabLoadingAnimation);
@@ -161,7 +161,7 @@ bool TabIcon::ShowingLoadingAnimation() const {
 
   // If the last frame painted still displays the loading indicator or favicon
   // in less than full opacity we need to paint the last frame.
-  if (animation_state_.favicon_alpha < SK_AlphaOPAQUE ||
+  if (animation_state_.favicon_fade_in_progress < 1.0 ||
       animation_state_.loading_progress_alpha > 0) {
     return true;
   }
@@ -257,16 +257,15 @@ TabIcon::LoadingAnimationState TabIcon::GetLoadingAnimationState() const {
   }
 
   // In the waiting/loading state we initially show no favicon.
-  state.favicon_alpha = (network_state_ == TabNetworkState::kWaiting ||
-                         network_state_ == TabNetworkState::kLoading)
-                            ? 0
-                            : SK_AlphaOPAQUE;
+  state.favicon_fade_in_progress =
+      (network_state_ == TabNetworkState::kWaiting ||
+       network_state_ == TabNetworkState::kLoading)
+          ? 0.0
+          : 1.0;
   if (favicon_fade_in_animation_) {
     base::TimeDelta favicon_fade_in_time = now - *favicon_fade_in_animation_;
-    state.favicon_alpha =
-        SK_AlphaOPAQUE *
-        std::min(favicon_fade_in_time.InMillisecondsF() / kFaviconFadeInMs,
-                 1.0);
+    state.favicon_fade_in_progress = std::min(
+        favicon_fade_in_time.InMillisecondsF() / kFaviconFadeInMs, 1.0);
   }
 
   return state;
@@ -285,7 +284,7 @@ bool TabIcon::LoadingAnimationNeedsRepaint() const {
   // Compare without |elapsed_time| as it's only used in the waiting state.
   auto tie = [](const LoadingAnimationState& state) {
     return std::tie(state.loading_progress, state.loading_progress_alpha,
-                    state.favicon_alpha);
+                    state.favicon_fade_in_progress);
   };
 
   return tie(new_state) != tie(animation_state_);
@@ -411,18 +410,21 @@ bool TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
                                 const gfx::Rect& bounds) {
   // While loading, the favicon (or placeholder) isn't drawn until it has
   // started fading in.
-  if (animation_state_.favicon_alpha == 0)
+  if (animation_state_.favicon_fade_in_progress == 0.0)
     return false;
 
   if (icon.isNull())
     return false;
 
   cc::PaintFlags flags;
-  flags.setAlpha(animation_state_.favicon_alpha);
+  flags.setAlpha(animation_state_.favicon_fade_in_progress * SK_AlphaOPAQUE);
+  // Drop in the new favicon from the top while it's fading in.
+  const int offset =
+      round((animation_state_.favicon_fade_in_progress - 1.0) * 4.0);
 
   canvas->DrawImageInt(icon, 0, 0, bounds.width(), bounds.height(), bounds.x(),
-                       bounds.y(), bounds.width(), bounds.height(), false,
-                       flags);
+                       bounds.y() + offset, bounds.width(), bounds.height(),
+                       false, flags);
   return true;
 }
 
