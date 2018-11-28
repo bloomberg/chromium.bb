@@ -23,18 +23,17 @@ namespace views {
 
 // An EventHandler that is guaranteed to be invoked and is not prone to
 // InkDropHostView descendents who do not call
-// InkDropHostView::OnGestureEvent().  Only one instance of this class can exist
-// at any given time for each ink drop host view.
-//
-// TODO(bruthig): Consider getting rid of this class.
-class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
+// InkDropHostView::OnGestureEvent() and InkDropHostView::OnMouseEvent().
+// Only one instance of this class can exist at any given time for each ink drop
+// host view.
+class InkDropHostView::InkDropEventHandler : public ui::EventHandler {
  public:
-  explicit InkDropGestureHandler(InkDropHostView* host_view)
+  explicit InkDropEventHandler(InkDropHostView* host_view)
       : target_handler_(
             std::make_unique<ui::ScopedTargetHandler>(host_view, this)),
         host_view_(host_view) {}
 
-  ~InkDropGestureHandler() override {}
+  ~InkDropEventHandler() override = default;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override {
@@ -51,8 +50,7 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
           return;
         ink_drop_state = InkDropState::ACTION_PENDING;
         // The ui::ET_GESTURE_TAP_DOWN event needs to be marked as handled so
-        // that
-        // subsequent events for the gesture are sent to |this|.
+        // that subsequent events for the gesture are sent to |this|.
         event->SetHandled();
         break;
       case ui::ET_GESTURE_LONG_PRESS:
@@ -87,6 +85,23 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
     host_view_->AnimateInkDrop(ink_drop_state, event);
   }
 
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    switch (event->type()) {
+      case ui::ET_MOUSE_ENTERED:
+        host_view_->GetInkDrop()->SetHovered(true);
+        break;
+      case ui::ET_MOUSE_EXITED:
+        host_view_->GetInkDrop()->SetHovered(false);
+        break;
+      case ui::ET_MOUSE_DRAGGED:
+        host_view_->GetInkDrop()->SetHovered(
+            host_view_->GetLocalBounds().Contains(event->location()));
+        break;
+      default:
+        break;
+    }
+  }
+
  private:
   // Allows |this| to handle all GestureEvents on |host_view_|.
   std::unique_ptr<ui::ScopedTargetHandler> target_handler_;
@@ -94,7 +109,7 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
   // The host view to cache ui::Events to when animating the ink drop.
   InkDropHostView* host_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(InkDropGestureHandler);
+  DISALLOW_COPY_AND_ASSIGN(InkDropEventHandler);
 };
 
 InkDropHostView::InkDropHostView() = default;
@@ -172,9 +187,9 @@ void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
   ink_drop_ = nullptr;
 
   if (ink_drop_mode_ != InkDropMode::ON)
-    gesture_handler_ = nullptr;
-  else if (!gesture_handler_)
-    gesture_handler_ = std::make_unique<InkDropGestureHandler>(this);
+    ink_drop_event_handler_ = nullptr;
+  else if (!ink_drop_event_handler_)
+    ink_drop_event_handler_ = std::make_unique<InkDropEventHandler>(this);
 }
 
 void InkDropHostView::AnimateInkDrop(InkDropState state,
@@ -227,28 +242,6 @@ void InkDropHostView::OnFocus() {
 void InkDropHostView::OnBlur() {
   views::View::OnBlur();
   GetInkDrop()->SetFocused(false);
-}
-
-void InkDropHostView::OnMouseEvent(ui::MouseEvent* event) {
-  auto weak_ptr = weak_factory_.GetWeakPtr();
-  View::OnMouseEvent(event);
-  if (!weak_ptr) {
-    // Calling View::OnMouseEvent() might destroy |this|.
-    return;
-  }
-  switch (event->type()) {
-    case ui::ET_MOUSE_ENTERED:
-      GetInkDrop()->SetHovered(true);
-      break;
-    case ui::ET_MOUSE_EXITED:
-      GetInkDrop()->SetHovered(false);
-      break;
-    case ui::ET_MOUSE_DRAGGED:
-      GetInkDrop()->SetHovered(GetLocalBounds().Contains(event->location()));
-      break;
-    default:
-      break;
-  }
 }
 
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {

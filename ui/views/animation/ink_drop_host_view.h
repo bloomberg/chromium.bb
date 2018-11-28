@@ -39,8 +39,9 @@ class VIEWS_EXPORT InkDropHostView : public View {
  public:
   // Used in SetInkDropMode() to specify whether the ink drop effect is enabled
   // or not for the view. In case of having an ink drop, it also specifies
-  // whether the default gesture event handler for the ink drop should be
-  // installed or the subclass will handle gesture events itself.
+  // whether the default event handler for the ink drop should be installed or
+  // the subclass will handle ink drop events itself.
+  // TODO (cyan): Update ON_NO_GESTURE_HANDLER name.
   enum class InkDropMode {
     OFF,
     ON,
@@ -129,7 +130,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
   void VisibilityChanged(View* starting_from, bool is_visible) override;
   void OnFocus() override;
   void OnBlur() override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // Returns an InkDropImpl with default configuration. The base implementation
   // of CreateInkDrop() delegates to this function.
@@ -174,8 +174,8 @@ class VIEWS_EXPORT InkDropHostView : public View {
   static gfx::Size CalculateLargeInkDropSize(const gfx::Size& small_size);
 
  private:
-  class InkDropGestureHandler;
-  friend class InkDropGestureHandler;
+  class InkDropEventHandler;
+  friend class InkDropEventHandler;
   friend class test::InkDropHostViewTestApi;
 
   // The last user Event to trigger an ink drop ripple animation.
@@ -189,7 +189,7 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
   // Intentionally declared after |ink_drop_| so that it doesn't access a
   // destroyed |ink_drop_| during destruction.
-  std::unique_ptr<InkDropGestureHandler> gesture_handler_;
+  std::unique_ptr<InkDropEventHandler> ink_drop_event_handler_;
 
   float ink_drop_visible_opacity_ = 0.175f;
 
@@ -204,8 +204,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
   bool destroying_ = false;
 
   std::unique_ptr<views::InkDropMask> ink_drop_mask_;
-
-  base::WeakPtrFactory<InkDropHostView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InkDropHostView);
 };

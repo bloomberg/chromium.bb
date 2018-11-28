@@ -40,7 +40,7 @@ class InkDropHostViewTestApi {
   // InkDropHostView::ink_drop_ use ink_drop() instead.
   InkDrop* GetInkDrop();
 
-  bool HasGestureHandler() const;
+  bool HasInkdropEventHandler() const;
 
   // Wrapper for InkDropHostView::GetInkDropCenterBasedOnLastEvent().
   gfx::Point GetInkDropCenterBasedOnLastEvent() const;

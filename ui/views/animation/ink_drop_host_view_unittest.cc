@@ -120,20 +120,20 @@ TEST_F(InkDropHostViewTest, OnInkDropCreatedOnlyNotfiedOnCreation) {
 
 // Verifies that SetInkDropMode() sets up gesture handling properly.
 TEST_F(InkDropHostViewTest, SetInkDropModeGestureHandler) {
-  EXPECT_FALSE(test_api_.HasGestureHandler());
+  EXPECT_FALSE(test_api_.HasInkdropEventHandler());
 
   test_api_.SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
-  EXPECT_FALSE(test_api_.HasGestureHandler());
+  EXPECT_FALSE(test_api_.HasInkdropEventHandler());
 
   test_api_.SetInkDropMode(InkDropMode::ON);
-  EXPECT_TRUE(test_api_.HasGestureHandler());
+  EXPECT_TRUE(test_api_.HasInkdropEventHandler());
 
   // Enabling gesture handler the second time should just work (no crash).
   test_api_.SetInkDropMode(InkDropMode::ON);
-  EXPECT_TRUE(test_api_.HasGestureHandler());
+  EXPECT_TRUE(test_api_.HasInkdropEventHandler());
 
   test_api_.SetInkDropMode(InkDropMode::OFF);
-  EXPECT_FALSE(test_api_.HasGestureHandler());
+  EXPECT_FALSE(test_api_.HasInkdropEventHandler());
 }
 
 // Verifies that ink drops are not shown when the host is disabled.
