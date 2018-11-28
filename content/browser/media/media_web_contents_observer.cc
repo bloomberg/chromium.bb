@@ -58,12 +58,13 @@ bool MediaPlayerEntryExists(
 
 MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
     : WebContentsObserver(web_contents),
+      audible_metrics_(GetAudibleMetrics()),
       session_controllers_manager_(this) {}
 
 MediaWebContentsObserver::~MediaWebContentsObserver() = default;
 
 void MediaWebContentsObserver::WebContentsDestroyed() {
-  GetAudibleMetrics()->UpdateAudibleWebContentsState(web_contents(), false);
+  audible_metrics_->UpdateAudibleWebContentsState(web_contents(), false);
 }
 
 void MediaWebContentsObserver::RenderFrameDeleted(
@@ -92,8 +93,9 @@ void MediaWebContentsObserver::MaybeUpdateAudibleState() {
   else
     CancelAudioLock();
 
-  GetAudibleMetrics()->UpdateAudibleWebContentsState(
-      web_contents(), audio_stream_monitor->IsCurrentlyAudible());
+  audible_metrics_->UpdateAudibleWebContentsState(
+      web_contents(), audio_stream_monitor->IsCurrentlyAudible() &&
+                          !web_contents()->IsAudioMuted());
 }
 
 bool MediaWebContentsObserver::HasActiveEffectivelyFullscreenVideo() const {
