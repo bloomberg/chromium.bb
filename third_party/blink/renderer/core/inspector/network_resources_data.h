@@ -152,11 +152,11 @@ class NetworkResourcesData final
     void SetCertificate(const Vector<AtomicString>& certificate) {
       certificate_ = certificate;
     }
-    int PendingEncodedDataLength() const {
+    int64_t PendingEncodedDataLength() const {
       return pending_encoded_data_length_;
     }
     void ClearPendingEncodedDataLength() { pending_encoded_data_length_ = 0; }
-    void AddPendingEncodedDataLength(int encoded_data_length) {
+    void AddPendingEncodedDataLength(size_t encoded_data_length) {
       pending_encoded_data_length_ += encoded_data_length;
     }
     void SetPostData(scoped_refptr<EncodedFormData> post_data) {
@@ -189,7 +189,7 @@ class NetworkResourcesData final
     String mime_type_;
     String text_encoding_name_;
     int64_t raw_header_size_;
-    int pending_encoded_data_length_;
+    int64_t pending_encoded_data_length_;
 
     scoped_refptr<SharedBuffer> buffer_;
     WeakMember<Resource> cached_resource_;
@@ -239,9 +239,9 @@ class NetworkResourcesData final
                       const Vector<AtomicString>& certificate);
   HeapVector<Member<ResourceData>> Resources();
 
-  int GetAndClearPendingEncodedDataLength(const String& request_id);
+  int64_t GetAndClearPendingEncodedDataLength(const String& request_id);
   void AddPendingEncodedDataLength(const String& request_id,
-                                   int encoded_data_length);
+                                   size_t encoded_data_length);
   void Trace(blink::Visitor*);
 
  private:

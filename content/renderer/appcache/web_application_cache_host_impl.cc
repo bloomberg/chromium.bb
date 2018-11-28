@@ -262,7 +262,7 @@ void WebApplicationCacheHostImpl::DidReceiveResponseForMainResource(
 
 void WebApplicationCacheHostImpl::DidReceiveDataForMainResource(
     const char* data,
-    unsigned len) {
+    size_t len) {
   if (is_new_master_entry_ == OLD_ENTRY)
     return;
   // TODO(michaeln): write me

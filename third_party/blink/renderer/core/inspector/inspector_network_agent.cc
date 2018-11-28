@@ -955,7 +955,7 @@ static bool IsErrorStatusCode(int status_code) {
 void InspectorNetworkAgent::DidReceiveData(unsigned long identifier,
                                            DocumentLoader* loader,
                                            const char* data,
-                                           int data_length) {
+                                           size_t data_length) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
 
   if (data) {
@@ -984,7 +984,7 @@ void InspectorNetworkAgent::DidReceiveBlob(unsigned long identifier,
 void InspectorNetworkAgent::DidReceiveEncodedDataLength(
     DocumentLoader* loader,
     unsigned long identifier,
-    int encoded_data_length) {
+    size_t encoded_data_length) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   resources_data_->AddPendingEncodedDataLength(request_id, encoded_data_length);
 }
