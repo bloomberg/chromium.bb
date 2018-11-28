@@ -84,6 +84,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void RegisterNotifySwapTime();
   void OnLargestImagePaintDetected(const ImageRecord&);
   void OnLastImagePaintDetected(const ImageRecord&);
+  void Deactivate();
 
   void Analyze();
 
@@ -102,7 +103,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
                       bool (*)(const base::WeakPtr<ImageRecord>&,
                                const base::WeakPtr<ImageRecord>&)>
       latest_image_heap_;
-  unsigned recorded_node_count_ = 0;
 
   // Node-ids of records pending swap time are stored in this queue until they
   // get a swap time.
@@ -119,6 +119,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
   unsigned frame_index_ = 1;
 
   unsigned last_frame_index_queued_for_timing_ = 0;
+  bool is_recording_ = true;
 
   base::TimeTicks largest_image_paint_;
   base::TimeTicks last_image_paint_;
