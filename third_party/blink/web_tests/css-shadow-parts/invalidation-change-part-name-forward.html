@@ -20,13 +20,13 @@
     <template id="custom-element-outer-template"><custom-element-inner id="c-e-inner" exportparts="partp: part-forwarded"></custom-element-inner></template>
     The following text should be green:
     <custom-element-outer id="c-e-outer"></custom-element-outer>
-    <script type="text/javascript">
+    <script>
       "use strict";
       test(function() {
-        var part = getElementByShadowIds(document, ["c-e-outer", "c-e-inner", "part"]);
-        var before = window.getComputedStyle(part).color;
+        const part = getElementByShadowIds(document, ["c-e-outer", "c-e-inner", "part"]);
+        const before = window.getComputedStyle(part).color;
         part.setAttribute("part", "new-partp");
-        var after = window.getComputedStyle(part).color;
+        const after = window.getComputedStyle(part).color;
         assert_not_equals(before, after);
       }, "Part in selected host changed color");
     </script>
