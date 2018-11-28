@@ -70,6 +70,8 @@ class CastToolbarButton : public ToolbarButton,
  private:
   const gfx::VectorIcon& GetCurrentIcon() const;
 
+  MediaRouterActionController* GetActionController() const;
+
   Browser* const browser_;
   Profile* const profile_;
 

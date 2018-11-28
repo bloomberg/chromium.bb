@@ -5,6 +5,8 @@
 #include "chrome/test/media_router/media_router_ui_for_test.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 #include "chrome/browser/ui/views/media_router/media_router_dialog_controller_views.h"
@@ -29,6 +31,24 @@ ui::MouseEvent CreateMouseReleasedEvent() {
                         gfx::Point(0, 0), ui::EventTimeForNow(),
                         ui::EF_LEFT_MOUSE_BUTTON, 0);
 }
+
+// Routes observer that calls a callback once there are no routes.
+class NoRoutesObserver : public MediaRoutesObserver {
+ public:
+  NoRoutesObserver(MediaRouter* router, base::OnceClosure callback)
+      : MediaRoutesObserver(router), callback_(std::move(callback)) {}
+  ~NoRoutesObserver() override = default;
+
+  void OnRoutesUpdated(
+      const std::vector<MediaRoute>& routes,
+      const std::vector<MediaRoute::Id>& joinable_route_ids) override {
+    if (callback_ && routes.empty())
+      std::move(callback_).Run();
+  }
+
+ private:
+  base::OnceClosure callback_;
+};
 
 }  // namespace
 
@@ -80,15 +100,15 @@ void MediaRouterUiForTest::ChooseSourceType(
   dialog_view->sources_menu_model_for_test()->ActivatedAt(source_index);
 }
 
-void MediaRouterUiForTest::StartCasting(const MediaSink::Id& sink_id) {
-  CastDialogSinkButton* sink_button = GetSinkButton(sink_id);
+void MediaRouterUiForTest::StartCasting(const std::string& sink_name) {
+  CastDialogSinkButton* sink_button = GetSinkButton(sink_name);
   sink_button->OnMousePressed(CreateMousePressedEvent());
   sink_button->OnMouseReleased(CreateMouseReleasedEvent());
   base::RunLoop().RunUntilIdle();
 }
 
-void MediaRouterUiForTest::StopCasting(const MediaSink::Id& sink_id) {
-  CastDialogSinkButton* sink_button = GetSinkButton(sink_id);
+void MediaRouterUiForTest::StopCasting(const std::string& sink_name) {
+  CastDialogSinkButton* sink_button = GetSinkButton(sink_name);
   sink_button->icon_view()->OnMousePressed(CreateMousePressedEvent());
   sink_button->icon_view()->OnMouseReleased(CreateMouseReleasedEvent());
   base::RunLoop().RunUntilIdle();
@@ -109,8 +129,12 @@ void MediaRouterUiForTest::StopCasting() {
   NOTREACHED() << "Sink was not found";
 }
 
-void MediaRouterUiForTest::WaitForSink(const MediaSink::Id& sink_id) {
-  ObserveDialog(WatchType::kSink, sink_id);
+void MediaRouterUiForTest::WaitForSink(const std::string& sink_name) {
+  ObserveDialog(WatchType::kSink, sink_name);
+}
+
+void MediaRouterUiForTest::WaitForSinkAvailable(const std::string& sink_name) {
+  ObserveDialog(WatchType::kSinkAvailable, sink_name);
 }
 
 void MediaRouterUiForTest::WaitForAnyIssue() {
@@ -121,37 +145,53 @@ void MediaRouterUiForTest::WaitForAnyRoute() {
   ObserveDialog(WatchType::kAnyRoute);
 }
 
-void MediaRouterUiForTest::WaitForDialogClosed() {
-  ObserveDialog(WatchType::kDialogClosed);
+void MediaRouterUiForTest::WaitForDialogShown() {
+  CHECK(!watch_sink_name_);
+  CHECK(!watch_callback_);
+  CHECK_EQ(watch_type_, WatchType::kNone);
+  if (IsDialogShown())
+    return;
+
+  base::RunLoop run_loop;
+  watch_callback_ = run_loop.QuitClosure();
+  watch_type_ = WatchType::kDialogShown;
+  run_loop.Run();
 }
 
-std::string MediaRouterUiForTest::GetSinkName(
-    const MediaSink::Id& sink_id) const {
-  CastDialogSinkButton* sink_button = GetSinkButton(sink_id);
-  return base::UTF16ToUTF8(sink_button->sink().friendly_name);
+void MediaRouterUiForTest::WaitForDialogHidden() {
+  ObserveDialog(WatchType::kDialogHidden);
+}
+
+void MediaRouterUiForTest::WaitUntilNoRoutes() {
+  base::RunLoop run_loop;
+  NoRoutesObserver no_routes_observer(
+      MediaRouterFactory::GetApiForBrowserContext(
+          web_contents_->GetBrowserContext()),
+      run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 MediaRoute::Id MediaRouterUiForTest::GetRouteIdForSink(
-    const MediaSink::Id& sink_id) const {
-  CastDialogSinkButton* sink_button = GetSinkButton(sink_id);
+    const std::string& sink_name) const {
+  CastDialogSinkButton* sink_button = GetSinkButton(sink_name);
   if (!sink_button->sink().route) {
-    NOTREACHED() << "Route not found for sink " << sink_id;
+    NOTREACHED() << "Route not found for sink " << sink_name;
     return "";
   }
   return sink_button->sink().route->media_route_id();
 }
 
 std::string MediaRouterUiForTest::GetStatusTextForSink(
-    const MediaSink::Id& sink_id) const {
-  CastDialogSinkButton* sink_button = GetSinkButton(sink_id);
+    const std::string& sink_name) const {
+  CastDialogSinkButton* sink_button = GetSinkButton(sink_name);
   return base::UTF16ToUTF8(sink_button->sink().status_text);
 }
 
 std::string MediaRouterUiForTest::GetIssueTextForSink(
-    const MediaSink::Id& sink_id) const {
-  CastDialogSinkButton* sink_button = GetSinkButton(sink_id);
+    const std::string& sink_name) const {
+  CastDialogSinkButton* sink_button = GetSinkButton(sink_name);
   if (!sink_button->sink().issue) {
-    NOTREACHED() << "Issue not found for sink " << sink_id;
+    NOTREACHED() << "Issue not found for sink " << sink_name;
     return "";
   }
   return sink_button->sink().issue->info().title;
@@ -161,11 +201,17 @@ MediaRouterUiForTest::MediaRouterUiForTest(content::WebContents* web_contents)
     : web_contents_(web_contents),
       dialog_controller_(
           MediaRouterDialogControllerViews::GetOrCreateForWebContents(
-              web_contents)) {}
+              web_contents)),
+      weak_factory_(this) {
+  dialog_controller_->SetDialogCreationCallbackForTesting(base::BindRepeating(
+      &MediaRouterUiForTest::OnDialogCreated, weak_factory_.GetWeakPtr()));
+}
 
 void MediaRouterUiForTest::OnDialogModelUpdated(CastDialogView* dialog_view) {
-  if (!watch_callback_ || watch_type_ == WatchType::kDialogClosed)
+  if (!watch_callback_ || watch_type_ == WatchType::kDialogShown ||
+      watch_type_ == WatchType::kDialogHidden) {
     return;
+  }
 
   const std::vector<CastDialogSinkButton*>& sink_buttons =
       dialog_view->sink_buttons_for_test();
@@ -173,27 +219,34 @@ void MediaRouterUiForTest::OnDialogModelUpdated(CastDialogView* dialog_view) {
                    [&, this](CastDialogSinkButton* sink_button) {
                      switch (watch_type_) {
                        case WatchType::kSink:
-                         return sink_button->sink().id == *watch_sink_id_;
+                         return sink_button->sink().friendly_name ==
+                                base::UTF8ToUTF16(*watch_sink_name_);
+                       case WatchType::kSinkAvailable:
+                         return sink_button->sink().friendly_name ==
+                                    base::UTF8ToUTF16(*watch_sink_name_) &&
+                                sink_button->sink().state ==
+                                    UIMediaSinkState::AVAILABLE;
                        case WatchType::kAnyIssue:
                          return sink_button->sink().issue.has_value();
                        case WatchType::kAnyRoute:
                          return sink_button->sink().route.has_value();
                        case WatchType::kNone:
-                       case WatchType::kDialogClosed:
+                       case WatchType::kDialogShown:
+                       case WatchType::kDialogHidden:
                          NOTREACHED() << "Invalid WatchType";
                          return false;
                      }
                    }) != sink_buttons.end()) {
     std::move(*watch_callback_).Run();
     watch_callback_.reset();
-    watch_sink_id_.reset();
+    watch_sink_name_.reset();
     watch_type_ = WatchType::kNone;
     dialog_view->RemoveObserver(this);
   }
 }
 
 void MediaRouterUiForTest::OnDialogWillClose(CastDialogView* dialog_view) {
-  if (watch_type_ == WatchType::kDialogClosed) {
+  if (watch_type_ == WatchType::kDialogHidden) {
     std::move(*watch_callback_).Run();
     watch_callback_.reset();
     watch_type_ = WatchType::kNone;
@@ -203,18 +256,28 @@ void MediaRouterUiForTest::OnDialogWillClose(CastDialogView* dialog_view) {
     dialog_view->RemoveObserver(this);
 }
 
+void MediaRouterUiForTest::OnDialogCreated() {
+  if (watch_type_ == WatchType::kDialogShown) {
+    std::move(*watch_callback_).Run();
+    watch_callback_.reset();
+    watch_type_ = WatchType::kNone;
+  }
+  CastDialogView::GetInstance()->KeepShownForTesting();
+}
+
 CastDialogSinkButton* MediaRouterUiForTest::GetSinkButton(
-    const MediaSink::Id& sink_id) const {
+    const std::string& sink_name) const {
   CastDialogView* dialog_view = CastDialogView::GetInstance();
   CHECK(dialog_view);
   const std::vector<CastDialogSinkButton*>& sink_buttons =
       dialog_view->sink_buttons_for_test();
   auto it = std::find_if(sink_buttons.begin(), sink_buttons.end(),
-                         [sink_id](CastDialogSinkButton* sink_button) {
-                           return sink_button->sink().id == sink_id;
+                         [sink_name](CastDialogSinkButton* sink_button) {
+                           return sink_button->sink().friendly_name ==
+                                  base::UTF8ToUTF16(sink_name);
                          });
   if (it == sink_buttons.end()) {
-    NOTREACHED() << "Sink button not found for sink ID: " << sink_id;
+    NOTREACHED() << "Sink button not found for sink: " << sink_name;
     return nullptr;
   } else {
     return *it;
@@ -223,12 +286,12 @@ CastDialogSinkButton* MediaRouterUiForTest::GetSinkButton(
 
 void MediaRouterUiForTest::ObserveDialog(
     WatchType watch_type,
-    base::Optional<MediaSink::Id> sink_id) {
-  CHECK(!watch_sink_id_);
+    base::Optional<std::string> sink_name) {
+  CHECK(!watch_sink_name_);
   CHECK(!watch_callback_);
   CHECK_EQ(watch_type_, WatchType::kNone);
   base::RunLoop run_loop;
-  watch_sink_id_ = std::move(sink_id);
+  watch_sink_name_ = std::move(sink_name);
   watch_callback_ = run_loop.QuitClosure();
   watch_type_ = watch_type;
 

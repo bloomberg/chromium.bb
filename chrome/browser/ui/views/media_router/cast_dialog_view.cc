@@ -225,6 +225,11 @@ void CastDialogView::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void CastDialogView::KeepShownForTesting() {
+  keep_shown_for_testing_ = true;
+  set_close_on_deactivate(false);
+}
+
 // static
 void CastDialogView::ShowDialog(views::View* anchor_view,
                                 views::BubbleBorder::Arrow anchor_position,
@@ -382,21 +387,22 @@ void CastDialogView::SinkPressed(size_t index) {
   selected_sink_index_ = index;
   const UIMediaSink& sink = sink_buttons_.at(index)->sink();
   if (sink.route) {
-    controller_->StopCasting(sink.route->media_route_id());
     metrics_.OnStopCasting(sink.route->is_local());
+    // StopCasting() may trigger a model update and invalidate |sink|.
+    controller_->StopCasting(sink.route->media_route_id());
   } else {
     base::Optional<MediaCastMode> cast_mode = GetCastModeToUse(sink);
     if (cast_mode) {
       // Starting local file casting may open a new tab synchronously on the UI
       // thread, which deactivates the dialog. So we must prevent it from
       // closing and getting destroyed.
-      if (cast_mode == LOCAL_FILE)
+      if (cast_mode.value() == LOCAL_FILE)
         set_close_on_deactivate(false);
       controller_->StartCasting(sink.id, cast_mode.value());
       // Re-enable close on deactivate so the user can click elsewhere to close
       // the dialog.
-      if (cast_mode == LOCAL_FILE)
-        set_close_on_deactivate(true);
+      if (cast_mode.value() == LOCAL_FILE)
+        set_close_on_deactivate(!keep_shown_for_testing_);
       metrics_.OnStartCasting(base::Time::Now(), index);
     }
   }
@@ -454,7 +460,7 @@ void CastDialogView::RecordSinkCount() {
 
 void CastDialogView::OnFilePickerClosed(const ui::SelectedFileInfo* file_info) {
   // Re-enable the setting to close the dialog when it loses focus.
-  set_close_on_deactivate(true);
+  set_close_on_deactivate(!keep_shown_for_testing_);
   if (file_info) {
 #if defined(OS_WIN)
     local_file_name_ = file_info->display_name;

@@ -70,25 +70,15 @@ CastToolbarButton::CastToolbarButton(
 
   ToolbarButton::Init();
   IssuesObserver::Init();
-  MediaRouterActionController* controller =
-      MediaRouterUIService::Get(profile_)->action_controller();
-  controller->AddObserver(this);
-  SetVisible(controller->ShouldEnableAction());
+
+  DCHECK(GetActionController());
+  GetActionController()->AddObserver(this);
+  SetVisible(GetActionController()->ShouldEnableAction());
 }
 
 CastToolbarButton::~CastToolbarButton() {
-  MediaRouterUIService::Get(profile_)->action_controller()->RemoveObserver(
-      this);
-}
-
-void CastToolbarButton::UpdateIcon() {
-  const gfx::VectorIcon& icon = GetCurrentIcon();
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, GetIconColor(&icon)));
-  // This icon is smaller than the touchable-UI expected 24dp, so we need to pad
-  // the insets to match.
-  SetLayoutInsetDelta(
-      gfx::Insets(ui::MaterialDesignController::touch_ui() ? 4 : 0));
+  if (GetActionController())
+    GetActionController()->RemoveObserver(this);
 }
 
 const gfx::VectorIcon& CastToolbarButton::GetCurrentIcon() const {
@@ -150,21 +140,15 @@ void CastToolbarButton::OnRoutesUpdated(
 }
 
 bool CastToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
-  if (event.IsRightMouseButton()) {
-    MediaRouterUIService::Get(profile_)
-        ->action_controller()
-        ->KeepIconOnRightMousePressed();
-  }
+  if (event.IsRightMouseButton() && GetActionController())
+    GetActionController()->KeepIconOnRightMousePressed();
   return ToolbarButton::OnMousePressed(event);
 }
 
 void CastToolbarButton::OnMouseReleased(const ui::MouseEvent& event) {
   ToolbarButton::OnMouseReleased(event);
-  if (event.IsRightMouseButton()) {
-    MediaRouterUIService::Get(profile_)
-        ->action_controller()
-        ->MaybeHideIconOnRightMouseReleased();
-  }
+  if (event.IsRightMouseButton() && GetActionController())
+    GetActionController()->MaybeHideIconOnRightMouseReleased();
 }
 
 void CastToolbarButton::ButtonPressed(views::Button* sender,
@@ -179,6 +163,20 @@ void CastToolbarButton::ButtonPressed(views::Button* sender,
     MediaRouterMetrics::RecordMediaRouterDialogOrigin(
         MediaRouterDialogOpenOrigin::TOOLBAR);
   }
+}
+
+void CastToolbarButton::UpdateIcon() {
+  const gfx::VectorIcon& icon = GetCurrentIcon();
+  SetImage(views::Button::STATE_NORMAL,
+           gfx::CreateVectorIcon(icon, GetIconColor(&icon)));
+  // This icon is smaller than the touchable-UI expected 24dp, so we need to pad
+  // the insets to match.
+  SetLayoutInsetDelta(
+      gfx::Insets(ui::MaterialDesignController::touch_ui() ? 4 : 0));
+}
+
+MediaRouterActionController* CastToolbarButton::GetActionController() const {
+  return MediaRouterUIService::Get(profile_)->action_controller();
 }
 
 }  // namespace media_router

@@ -253,7 +253,7 @@ bool MediaRouterUIBase::CreateRoute(const MediaSink::Id& sink_id,
     params = GetRouteParameters(sink_id, cast_mode);
   }
   if (!params) {
-    SendIssueForUnableToCast(cast_mode);
+    SendIssueForUnableToCast(cast_mode, sink_id);
     return false;
   }
 
@@ -406,6 +406,10 @@ void MediaRouterUIBase::OnRouteResponseReceived(
   }
 
   current_route_request_.reset();
+  if (result.result_code() == RouteRequestResult::TIMED_OUT) {
+    SendIssueForRouteTimeout(cast_mode, sink_id,
+                             presentation_request_source_name);
+  }
 }
 
 void MediaRouterUIBase::HandleCreateSessionRequestRouteResponse(
@@ -582,6 +586,7 @@ GURL MediaRouterUIBase::GetFrameURL() const {
 
 void MediaRouterUIBase::SendIssueForRouteTimeout(
     MediaCastMode cast_mode,
+    const MediaSink::Id& sink_id,
     const base::string16& presentation_request_source_name) {
   std::string issue_title;
   switch (cast_mode) {
@@ -606,11 +611,14 @@ void MediaRouterUIBase::SendIssueForRouteTimeout(
       break;
   }
 
-  AddIssue(IssueInfo(issue_title, IssueInfo::Action::DISMISS,
-                     IssueInfo::Severity::NOTIFICATION));
+  IssueInfo issue_info(issue_title, IssueInfo::Action::DISMISS,
+                       IssueInfo::Severity::NOTIFICATION);
+  issue_info.sink_id = sink_id;
+  AddIssue(issue_info);
 }
 
-void MediaRouterUIBase::SendIssueForUnableToCast(MediaCastMode cast_mode) {
+void MediaRouterUIBase::SendIssueForUnableToCast(MediaCastMode cast_mode,
+                                                 const MediaSink::Id& sink_id) {
   // For a generic error, claim a tab error unless it was specifically desktop
   // mirroring.
   std::string issue_title =
@@ -619,8 +627,10 @@ void MediaRouterUIBase::SendIssueForUnableToCast(MediaCastMode cast_mode) {
                 IDS_MEDIA_ROUTER_ISSUE_UNABLE_TO_CAST_DESKTOP)
           : l10n_util::GetStringUTF8(
                 IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
-  AddIssue(IssueInfo(issue_title, IssueInfo::Action::DISMISS,
-                     IssueInfo::Severity::WARNING));
+  IssueInfo issue_info(issue_title, IssueInfo::Action::DISMISS,
+                       IssueInfo::Severity::WARNING);
+  issue_info.sink_id = sink_id;
+  AddIssue(issue_info);
 }
 
 IssueManager* MediaRouterUIBase::GetIssueManager() {
