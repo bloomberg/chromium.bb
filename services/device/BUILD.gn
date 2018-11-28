@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//services/catalog/public/tools/catalog.gni")
+import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
 if (is_android) {
@@ -217,6 +219,17 @@ service_manifest("manifest") {
   source = "manifest.json"
 }
 
+service_manifest("unittest_manifest") {
+  name = "device_unittests"
+  source = "unittest_manifest.json"
+  packaged_services = [ ":manifest" ]
+}
+
+catalog("tests_catalog") {
+  testonly = true
+  embedded_services = [ ":unittest_manifest" ]
+}
+
 source_set("test_support") {
   testonly = true
 
@@ -236,8 +249,7 @@ source_set("test_support") {
     "//services/device/public/mojom:constants",
     "//services/network:test_support",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/test:test_support",
-    "//testing/gtest",
+    "//services/service_manager/public/cpp:service_test_support",
   ]
 }
 

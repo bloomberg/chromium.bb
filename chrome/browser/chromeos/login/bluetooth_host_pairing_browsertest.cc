@@ -20,7 +20,7 @@
 #include "services/device/public/cpp/hid/fake_input_service_linux.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/input_service.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace chromeos {
 
@@ -75,8 +75,8 @@ class BluetoothHostPairingNoInputTest : public OobeBaseTest {
     fake_input_service_manager_ =
         std::make_unique<device::FakeInputServiceLinux>();
 
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName, device::mojom::InputDeviceManager::Name_,
         base::Bind(&device::FakeInputServiceLinux::Bind,
                    base::Unretained(fake_input_service_manager_.get())));
 
@@ -95,8 +95,8 @@ class BluetoothHostPairingNoInputTest : public OobeBaseTest {
   }
 
   ~BluetoothHostPairingNoInputTest() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::InputDeviceManager>(device::mojom::kServiceName);
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
   }
 
   // OobeBaseTest override:

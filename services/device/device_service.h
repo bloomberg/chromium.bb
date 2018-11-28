@@ -34,8 +34,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -66,7 +64,6 @@ namespace device {
 class HidManagerImpl;
 #endif
 
-class DeviceService;
 class PowerMonitorMessageBroadcaster;
 class PublicIpAddressLocationNotifier;
 class TimeZoneMonitor;
@@ -75,7 +72,7 @@ class TimeZoneMonitor;
 // NOTE: See the comments on the definitions of PublicIpAddressLocationNotifier,
 // |WakeLockContextCallback|, |CustomLocationProviderCallback| and
 // NFCDelegate.java to understand the semantics and usage of these parameters.
-std::unique_ptr<DeviceService> CreateDeviceService(
+std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -83,16 +80,14 @@ std::unique_ptr<DeviceService> CreateDeviceService(
     bool use_gms_core_location_provider,
     const WakeLockContextCallback& wake_lock_context_callback,
     const CustomLocationProviderCallback& custom_location_provider_callback,
-    const base::android::JavaRef<jobject>& java_nfc_delegate,
-    service_manager::mojom::ServiceRequest request);
+    const base::android::JavaRef<jobject>& java_nfc_delegate);
 #else
-std::unique_ptr<DeviceService> CreateDeviceService(
+std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& geolocation_api_key,
-    const CustomLocationProviderCallback& custom_location_provider_callback,
-    service_manager::mojom::ServiceRequest request);
+    const CustomLocationProviderCallback& custom_location_provider_callback);
 #endif
 
 class DeviceService : public service_manager::Service {
@@ -104,15 +99,13 @@ class DeviceService : public service_manager::Service {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& geolocation_api_key,
       const WakeLockContextCallback& wake_lock_context_callback,
-      const base::android::JavaRef<jobject>& java_nfc_delegate,
-      service_manager::mojom::ServiceRequest request);
+      const base::android::JavaRef<jobject>& java_nfc_delegate);
 #else
   DeviceService(
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::string& geolocation_api_key,
-      service_manager::mojom::ServiceRequest request);
+      const std::string& geolocation_api_key);
 #endif
   ~DeviceService() override;
 
@@ -165,8 +158,6 @@ class DeviceService : public service_manager::Service {
   void BindSerialIoHandlerRequest(mojom::SerialIoHandlerRequest request);
 
   void BindUsbDeviceManagerRequest(mojom::UsbDeviceManagerRequest request);
-
-  service_manager::ServiceBinding service_binding_;
 
   std::unique_ptr<PowerMonitorMessageBroadcaster>
       power_monitor_message_broadcaster_;

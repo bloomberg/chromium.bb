@@ -28,7 +28,9 @@ class FakeInputServiceLinux : public mojom::InputDeviceManager {
       GetDevicesCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
 
-  void Bind(mojom::InputDeviceManagerRequest request);
+  void Bind(const std::string& interface_name,
+            mojo::ScopedMessagePipeHandle handle,
+            const service_manager::BindSourceInfo& source_info);
   void AddDevice(mojom::InputDeviceInfoPtr info);
   void RemoveDevice(const std::string& id);
 

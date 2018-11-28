@@ -26,7 +26,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/power_monitor.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace content {
 
@@ -98,19 +98,20 @@ class PowerMonitorTest : public ContentBrowserTest {
   PowerMonitorTest() {
     // Because Device Service also runs in this process(browser process), we can
     // set our binder to intercept requests for PowerMonitor interface to it.
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName, device::mojom::PowerMonitor::Name_,
         base::Bind(&PowerMonitorTest::BindPowerMonitor,
                    base::Unretained(this)));
   }
 
   ~PowerMonitorTest() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::PowerMonitor>(device::mojom::kServiceName);
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
   }
 
-  void BindPowerMonitor(const service_manager::BindSourceInfo& source_info,
-                        device::mojom::PowerMonitorRequest request) {
+  void BindPowerMonitor(const std::string& interface_name,
+                        mojo::ScopedMessagePipeHandle handle,
+                        const service_manager::BindSourceInfo& source_info) {
     if (source_info.identity.name() == mojom::kRendererServiceName) {
       // We can receive binding requests for the spare RenderProcessHost - this
       // might happen before the test has provided the
@@ -143,7 +144,8 @@ class PowerMonitorTest : public ContentBrowserTest {
         std::move(gpu_bound_closure_).Run();
     }
 
-    power_monitor_message_broadcaster_.Bind(std::move(request));
+    power_monitor_message_broadcaster_.Bind(
+        device::mojom::PowerMonitorRequest(std::move(handle)));
   }
 
  protected:
