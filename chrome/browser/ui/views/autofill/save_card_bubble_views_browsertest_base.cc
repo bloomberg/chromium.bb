@@ -10,10 +10,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/account_fetcher_service_factory.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
@@ -29,19 +30,14 @@
 #include "components/autofill/core/browser/credit_card_save_manager.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
-#include "components/sync/test/fake_server/fake_server.h"
-#include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
@@ -75,38 +71,21 @@ const double kFakeGeolocationLongitude = 4.56;
 
 SaveCardBubbleViewsBrowserTestBase::SaveCardBubbleViewsBrowserTestBase(
     const std::string& test_file_path)
-    : SyncTest(SINGLE_CLIENT), test_file_path_(test_file_path) {}
+    : test_file_path_(test_file_path) {}
 
 SaveCardBubbleViewsBrowserTestBase::~SaveCardBubbleViewsBrowserTestBase() {}
 
 void SaveCardBubbleViewsBrowserTestBase::SetUpOnMainThread() {
-  SyncTest::SetUpOnMainThread();
-
   // Set up the HTTPS server (uses the embedded_test_server).
   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
   embedded_test_server()->ServeFilesFromSourceDirectory(
       "components/test/data/autofill");
   embedded_test_server()->StartAcceptingConnections();
 
-  ProfileSyncServiceFactory::GetForProfile(browser()->profile())
-      ->OverrideNetworkResourcesForTest(
-          std::make_unique<fake_server::FakeServerNetworkResources>(
-              GetFakeServer()->AsWeakPtr()));
-
-  std::string username;
-#if defined(OS_CHROMEOS)
-  // In ChromeOS browser tests, the profile may already by authenticated with
-  // stub account |user_manager::kStubUserEmail|.
-  AccountInfo info = IdentityManagerFactory::GetForProfile(browser()->profile())
-                         ->GetPrimaryAccountInfo();
-  username = info.email;
-#endif
-  if (username.empty())
-    username = "user@gmail.com";
-
-  harness_ = ProfileSyncServiceHarness::Create(
-      browser()->profile(), username, "password",
-      ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
+  // Set up the URL fetcher. By providing an Impl, unexpected calls (sync, etc.)
+  // won't cause the test to crash.
+  url_fetcher_factory_ = std::make_unique<net::FakeURLFetcherFactory>(
+      new net::URLFetcherImplFactory());
 
   // Set up the URL loader factory for the payments client so we can intercept
   // those network requests too.
@@ -133,6 +112,8 @@ void SaveCardBubbleViewsBrowserTestBase::SetUpOnMainThread() {
   // Set up the fake geolocation data.
   geolocation_overrider_ = std::make_unique<device::ScopedGeolocationOverrider>(
       kFakeGeolocationLatitude, kFakeGeolocationLongitude);
+
+  NavigateTo(test_file_path_);
 }
 
 void SaveCardBubbleViewsBrowserTestBase::NavigateTo(
@@ -190,13 +171,54 @@ void SaveCardBubbleViewsBrowserTestBase::OnSCBCStrikeChangeComplete() {
     event_waiter_->OnEvent(DialogEvent::STRIKE_CHANGE_COMPLETE);
 }
 
-void SaveCardBubbleViewsBrowserTestBase::SetAccountFullName(
+void SaveCardBubbleViewsBrowserTestBase::SetUpInProcessBrowserTestFixture() {
+  will_create_browser_context_services_subscription_ =
+      BrowserContextDependencyManager::GetInstance()
+          ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+              base::BindRepeating(&SaveCardBubbleViewsBrowserTestBase::
+                                      OnWillCreateBrowserContextServices,
+                                  base::Unretained(this)));
+}
+
+void SaveCardBubbleViewsBrowserTestBase::OnWillCreateBrowserContextServices(
+    content::BrowserContext* context) {
+  // Replace the signin manager and account fetcher service with fakes.
+  SigninManagerFactory::GetInstance()->SetTestingFactory(
+      context, base::BindRepeating(&BuildFakeSigninManagerForTesting));
+  AccountFetcherServiceFactory::GetInstance()->SetTestingFactory(
+      context,
+      base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));
+}
+
+void SaveCardBubbleViewsBrowserTestBase::SignInWithFullName(
     const std::string& full_name) {
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(browser()->profile());
-  AccountInfo info = identity_manager->GetPrimaryAccountInfo();
-  info.full_name = full_name;
-  identity::UpdateAccountInfoForAccount(identity_manager, info);
+  // TODO(crbug.com/859761): Can this function be used to remove the
+  // observer_for_testing_ hack in
+  // CreditCardSaveManager::IsCreditCardUploadEnabled()?
+  FakeSigninManagerForTesting* signin_manager =
+      static_cast<FakeSigninManagerForTesting*>(
+          SigninManagerFactory::GetInstance()->GetForProfile(
+              browser()->profile()));
+
+  // Note: Chrome OS tests seem to rely on these specific login values, so
+  //       changing them is probably not recommended.
+  constexpr char kTestEmail[] = "stub-user@example.com";
+  constexpr char kTestGaiaId[] = "stub-user@example.com";
+#if !defined(OS_CHROMEOS)
+  signin_manager->SignIn(kTestGaiaId, kTestEmail, "password");
+#else
+  AccountTrackerService* account_tracker_service =
+      AccountTrackerServiceFactory::GetForProfile(browser()->profile());
+  signin_manager->SignIn(account_tracker_service->PickAccountIdForAccount(
+      kTestGaiaId, kTestEmail));
+#endif
+  FakeAccountFetcherService* account_fetcher_service =
+      static_cast<FakeAccountFetcherService*>(
+          AccountFetcherServiceFactory::GetForProfile(browser()->profile()));
+  account_fetcher_service->FakeUserInfoFetchSuccess(
+      signin_manager->GetAuthenticatedAccountId(), kTestEmail, kTestGaiaId,
+      AccountTrackerService::kNoHostedDomainFound, full_name,
+      /*given_name=*/std::string(), "locale", "avatar.jpg");
 }
 
 void SaveCardBubbleViewsBrowserTestBase::SubmitForm() {
