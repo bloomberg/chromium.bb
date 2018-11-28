@@ -271,6 +271,15 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
 
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
+
+    // server_lite_page_info does not exist on forward/back navigations.
+    if (!(entry->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK)) {
+      EXPECT_TRUE(previews_data->server_lite_page_info());
+      EXPECT_NE(
+          previews_data->server_lite_page_info()->original_navigation_start,
+          base::TimeTicks());
+    }
+
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
     const GURL virtual_url = entry->GetVirtualURL();
 
@@ -803,6 +812,19 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
 
   GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
   VerifyPreviewLoaded();
+
+  // Set the ECT so that a preview won't be triggered on the reload.
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_4G);
+
+  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  VerifyPreviewNotLoaded();
+
+  // Reset ECT for future tests.
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_2G);
 }
 
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,

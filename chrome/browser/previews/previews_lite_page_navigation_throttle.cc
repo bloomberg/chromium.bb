@@ -543,6 +543,31 @@ PreviewsLitePageNavigationThrottle::MaybeNavigateToPreview() const {
 
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::WillStartRequest() {
+  // Check if the user is trying to navigate to a valid previews URL in the form
+  // of a reload. In such a case, cancel the navigation and start a new one to
+  // the original URL instead. We might trigger this preview again, but if so
+  // there will be a server_lite_page_info associated with it.
+  std::string original_url;
+  if (previews::ExtractOriginalURLFromLitePageRedirectURL(
+          navigation_handle()->GetURL(), &original_url) &&
+      navigation_handle()->GetReloadType() == content::ReloadType::NORMAL) {
+    // Don't use |LoadAndBypass| because we might not want to bypass.
+    WebContentsLifetimeHelper::CreateForWebContents(
+        navigation_handle()->GetWebContents());
+    WebContentsLifetimeHelper* helper =
+        WebContentsLifetimeHelper::FromWebContents(
+            navigation_handle()->GetWebContents());
+
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&WebContentsLifetimeHelper::PostNewNavigation,
+                       helper->GetWeakPtr(),
+                       MakeOpenURLParams(navigation_handle(),
+                                         GURL(original_url), std::string()),
+                       GetOrCreateServerLitePageInfo(navigation_handle())));
+    return content::NavigationThrottle::CANCEL;
+  }
+
   MaybeReportNavigationRestartPenalty(navigation_handle());
   return MaybeNavigateToPreview();
 }
