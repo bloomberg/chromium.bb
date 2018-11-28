@@ -48,33 +48,6 @@ enum OptionalBool {
   kTrue,
 };
 
-// Whether an app is preferred by the user, e.g. for capturing links within
-// its scope. Multiple preferred apps with overlapping scope may be set, and
-// the best choice will be resolved via the most specific scope.
-enum AppPreferred {
-  // No preference currently saved.
-  kUnknown,
-
-  kPreferred,
-
-  kNotPreferred,
-};
-
-// A struct representing an app.
-//
-// Deprecated: use App instead. See chrome/services/app_service/README.md.
-struct AppInfo {
-  // The id of the app. For backwards compabitility, this should currently be
-  // the same as the extension ID that would have been generated for the app.
-  string id;
-
-  // The type of the app.
-  AppType type;
-
-  // The app's current preferred state.
-  AppPreferred preferred;
-};
-
 enum IconType {
   kUnknown,
   kExtension,

@@ -7,8 +7,6 @@ import("//services/service_manager/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
-    "app_registry/app_registry.cc",
-    "app_registry/app_registry.h",
     "app_service.cc",
     "app_service.h",
     "app_service_impl.cc",
@@ -17,8 +15,6 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/pref_registry",
-    "//components/prefs",
     "//mojo/public/cpp/bindings",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
@@ -33,13 +29,11 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "app_registry/app_registry_unittest.cc",
     "app_service_impl_unittest.cc",
   ]
 
   deps = [
     ":lib",
-    "//components/prefs:test_support",
     "//testing/gtest",
   ]
 }
