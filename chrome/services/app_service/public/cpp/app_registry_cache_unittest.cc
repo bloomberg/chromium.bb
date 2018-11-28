@@ -77,6 +77,22 @@ TEST_F(AppRegistryCacheTest, ForEachApp) {
   EXPECT_NE(updated_names_.end(), updated_names_.find("banana"));
   EXPECT_NE(updated_names_.end(), updated_names_.find("cherry"));
   EXPECT_NE(updated_names_.end(), updated_names_.find("durian"));
+
+  // Test that ForOneApp succeeds for "c" and fails for "e".
+
+  bool found_c = false;
+  EXPECT_TRUE(cache.ForOneApp("c", [&found_c](const apps::AppUpdate& update) {
+    found_c = true;
+    EXPECT_EQ("c", update.AppId());
+  }));
+  EXPECT_TRUE(found_c);
+
+  bool found_e = false;
+  EXPECT_FALSE(cache.ForOneApp("e", [&found_e](const apps::AppUpdate& update) {
+    found_e = true;
+    EXPECT_EQ("e", update.AppId());
+  }));
+  EXPECT_FALSE(found_e);
 }
 
 TEST_F(AppRegistryCacheTest, Observer) {

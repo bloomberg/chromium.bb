@@ -13,7 +13,6 @@ mojom("mojom") {
   public_deps = [
     ":constants",
     ":types",
-    "//mojo/public/mojom/base",
   ]
 }
 
@@ -26,5 +25,10 @@ mojom("constants") {
 mojom("types") {
   sources = [
     "types.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//ui/gfx/image/mojo:interfaces",
   ]
 }

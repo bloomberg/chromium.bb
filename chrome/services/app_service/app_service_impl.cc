@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace {
@@ -38,27 +39,46 @@ void AppServiceImpl::RegisterPublisher(apps::mojom::PublisherPtr publisher,
   });
 
   // Check that no previous publisher has registered for the same app_type.
-  CHECK(publishers_by_type_.find(app_type) == publishers_by_type_.end());
+  CHECK(publishers_.find(app_type) == publishers_.end());
 
   // Add the new publisher to the set.
-  //
-  // We also track publishers by their app_type, so that we can forward other
-  // App Service method calls on to one particular publisher, instead of
-  // broadcasting to all publishers.
-  publishers_by_type_[app_type] = publishers_.AddPtr(std::move(publisher));
+  publisher.set_connection_error_handler(
+      base::BindOnce(&AppServiceImpl::OnPublisherDisconnected,
+                     base::Unretained(this), app_type));
+  auto result = publishers_.emplace(app_type, std::move(publisher));
+  CHECK(result.second);
 }
 
 void AppServiceImpl::RegisterSubscriber(apps::mojom::SubscriberPtr subscriber,
                                         apps::mojom::ConnectOptionsPtr opts) {
   // Connect the new subscriber with every registered publisher.
-  publishers_.ForAllPtrs([&subscriber](auto* publisher) {
-    ::Connect(publisher, subscriber.get());
-  });
+  for (const auto& iter : publishers_) {
+    ::Connect(iter.second.get(), subscriber.get());
+  }
 
   // TODO: store the opts somewhere.
 
   // Add the new subscriber to the set.
   subscribers_.AddPtr(std::move(subscriber));
+}
+
+void AppServiceImpl::LoadIcon(apps::mojom::AppType app_type,
+                              const std::string& app_id,
+                              apps::mojom::IconKeyPtr icon_key,
+                              apps::mojom::IconCompression icon_compression,
+                              int32_t size_hint_in_dip,
+                              LoadIconCallback callback) {
+  auto iter = publishers_.find(app_type);
+  if (iter == publishers_.end()) {
+    std::move(callback).Run(apps::mojom::IconValue::New());
+    return;
+  }
+  iter->second->LoadIcon(app_id, std::move(icon_key), icon_compression,
+                         size_hint_in_dip, std::move(callback));
+}
+
+void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
+  publishers_.erase(app_type);
 }
 
 }  // namespace apps

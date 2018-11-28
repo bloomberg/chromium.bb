@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -34,6 +35,11 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
   ~AppServiceProxy() override;
 
   AppRegistryCache& Cache();
+
+  void LoadIcon(const std::string& app_id,
+                apps::mojom::IconCompression icon_compression,
+                int32_t size_hint_in_dip,
+                apps::mojom::Publisher::LoadIconCallback callback);
 
  private:
   // apps::mojom::Subscriber overrides.

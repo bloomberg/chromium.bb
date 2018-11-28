@@ -253,7 +253,7 @@ methods. An `AppUpdate` is a pair of `App` values: old state and delta.
 
 Icon data (even compressed as a PNG) is bulky, relative to the rest of the
 `App` type. `Publisher`s will generally serve icon data lazily, on demand,
-especially as the desired icon resolutions (e.g. 64px or 256px) aren't known
+especially as the desired icon resolutions (e.g. 64dip or 256dip) aren't known
 up-front. Instead of sending an icon at all possible resolutions, the
 `Publisher` sends an `IconKey`: enough information (when combined with the
 `AppType app_type` and `string app_id`) to load the icon at given resoultions.
@@ -278,15 +278,23 @@ statically built resource ID.
 
     interface AppService {
       // App Icon Factory methods.
-      LoadIcon(AppType app_type,
-          string app_id, IconKey icon_key, LoadIconOptions? opts) => (gfx.mojom.ImageSkia image);
+      LoadIcon(
+          AppType app_type,
+          string app_id,
+          IconKey icon_key,
+          IconCompression icon_compression,
+          int32 size_hint_in_dip) => (IconValue icon_value);
 
       // Some additional methods; not App Icon Factory related.
     };
 
     interface Publisher {
       // App Icon Factory methods.
-      LoadIcon(string app_id, IconKey icon_key, LoadIconOptions? opts) => (gfx.mojom.ImageSkia image);
+      LoadIcon(
+          string app_id,
+          IconKey icon_key,
+          IconCompression icon_compression,
+          int32 size_hint_in_dip) => (IconValue icon_value);
 
       // Some additional methods; not App Icon Factory related.
     };
@@ -304,9 +312,16 @@ statically built resource ID.
       string s_key;
     };
 
-    struct LoadIconOptions {
-      // TBD: desired resolutions (e.g. 64px or 256px). This could move out of
-      // LoadIconOptions to be a mandatory (not optional) LoadIcon arg.
+    enum IconCompression {
+      kUnknown,
+      kUncompressed,
+      kCompressed,
+    };
+
+    struct IconValue {
+      IconCompression icon_compression;
+      gfx.mojom.ImageSkia? uncompressed;
+      array<uint8>? compressed;
     };
 
 TBD: post-processing effects like rounded corners, badges or grayed out (for
@@ -368,4 +383,4 @@ TBD: details.
 
 ---
 
-Updated on 2018-11-16.
+Updated on 2018-11-22.

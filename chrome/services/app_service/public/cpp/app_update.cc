@@ -21,6 +21,9 @@ void AppUpdate::Merge(apps::mojom::App* state,
   if (delta->name.has_value()) {
     state->name = delta->name;
   }
+  if (!delta->icon_key.is_null()) {
+    state->icon_key = delta->icon_key.Clone();
+  }
   if (delta->show_in_launcher != apps::mojom::OptionalBool::kUnknown) {
     state->show_in_launcher = delta->show_in_launcher;
   }
@@ -66,6 +69,21 @@ const std::string& AppUpdate::Name() const {
 
 bool AppUpdate::NameChanged() const {
   return delta_->name.has_value() && (delta_->name != state_->name);
+}
+
+apps::mojom::IconKeyPtr AppUpdate::IconKey() const {
+  if (!delta_->icon_key.is_null()) {
+    return delta_->icon_key.Clone();
+  }
+  if (!state_->icon_key.is_null()) {
+    return state_->icon_key.Clone();
+  }
+  return apps::mojom::IconKeyPtr();
+}
+
+bool AppUpdate::IconKeyChanged() const {
+  return !delta_->icon_key.is_null() &&
+         !delta_->icon_key.Equals(state_->icon_key);
 }
 
 apps::mojom::OptionalBool AppUpdate::ShowInLauncher() const {

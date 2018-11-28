@@ -25,6 +25,11 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
   // apps::mojom::Publisher overrides.
   void Connect(apps::mojom::SubscriberPtr subscriber,
                apps::mojom::ConnectOptionsPtr opts) override;
+  void LoadIcon(const std::string& app_id,
+                apps::mojom::IconKeyPtr icon_key,
+                apps::mojom::IconCompression icon_compression,
+                int32_t size_hint_in_dip,
+                LoadIconCallback callback) override;
 
   mojo::Binding<apps::mojom::Publisher> binding_;
 

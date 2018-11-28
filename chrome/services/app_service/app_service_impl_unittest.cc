@@ -4,11 +4,14 @@
 
 #include <set>
 #include <sstream>
+#include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/services/app_service/app_service_impl.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace apps {
@@ -33,11 +36,22 @@ class FakePublisher : public apps::mojom::Publisher {
     }
   }
 
+  std::string load_icon_app_id_;
+
  private:
   void Connect(apps::mojom::SubscriberPtr subscriber,
                apps::mojom::ConnectOptionsPtr opts) override {
     CallOnApps(subscriber.get(), known_app_ids_);
     subscribers_.AddPtr(std::move(subscriber));
+  }
+
+  void LoadIcon(const std::string& app_id,
+                apps::mojom::IconKeyPtr icon_key,
+                apps::mojom::IconCompression icon_compression,
+                int32_t size_hint_in_dip,
+                LoadIconCallback callback) override {
+    load_icon_app_id_ = app_id;
+    std::move(callback).Run(apps::mojom::IconValue::New());
   }
 
   void CallOnApps(apps::mojom::Subscriber* subscriber,
@@ -98,6 +112,8 @@ class AppServiceImplTest : public testing::Test {
 };
 
 TEST_F(AppServiceImplTest, PubSub) {
+  const int size_hint_in_dip = 64;
+
   AppServiceImpl impl;
 
   // Start with one subscriber.
@@ -154,6 +170,34 @@ TEST_F(AppServiceImplTest, PubSub) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ("$&ABCDEFGmnopqr", sub0.AppIdsSeen());
   EXPECT_EQ("$&ABCDEFGmnopqr", sub1.AppIdsSeen());
+
+  // Call LoadIcon on the impl twice.
+  //
+  // The first time (i == 0), it should be forwarded onto the AppType::kBuiltIn
+  // publisher (which is pub1) and no other publisher.
+  //
+  // The second time (i == 1), passing AppType::kUnknown, none of the
+  // publishers' LoadIcon's should fire, but the callback should still be run.
+  for (int i = 0; i < 2; i++) {
+    auto app_type = i == 0 ? apps::mojom::AppType::kBuiltIn
+                           : apps::mojom::AppType::kUnknown;
+
+    bool callback_ran = false;
+    pub0.load_icon_app_id_ = "-";
+    pub1.load_icon_app_id_ = "-";
+    pub2.load_icon_app_id_ = "-";
+    impl.LoadIcon(
+        app_type, "o", apps::mojom::IconKey::New(),
+        apps::mojom::IconCompression::kUncompressed, size_hint_in_dip,
+        base::BindOnce(
+            [](bool* ran, apps::mojom::IconValuePtr iv) { *ran = true; },
+            &callback_ran));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(callback_ran);
+    EXPECT_EQ("-", pub0.load_icon_app_id_);
+    EXPECT_EQ(i == 0 ? "o" : "-", pub1.load_icon_app_id_);
+    EXPECT_EQ("-", pub2.load_icon_app_id_);
+  }
 }
 
 }  // namespace apps

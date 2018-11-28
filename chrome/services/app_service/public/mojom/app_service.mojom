@@ -17,11 +17,26 @@ interface AppService {
   // App Registry methods.
   RegisterPublisher(Publisher publisher, AppType app_type);
   RegisterSubscriber(Subscriber subscriber, ConnectOptions? opts);
+
+  // App Icon Factory methods.
+  LoadIcon(
+      AppType app_type,
+      string app_id,
+      IconKey icon_key,
+      IconCompression icon_compression,
+      int32 size_hint_in_dip) => (IconValue icon_value);
 };
 
 interface Publisher {
   // App Registry methods.
   Connect(Subscriber subscriber, ConnectOptions? opts);
+
+  // App Icon Factory methods.
+  LoadIcon(
+      string app_id,
+      IconKey icon_key,
+      IconCompression icon_compression,
+      int32 size_hint_in_dip) => (IconValue icon_value);
 };
 
 interface Subscriber {
