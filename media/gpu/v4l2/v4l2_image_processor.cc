@@ -186,7 +186,11 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
     return nullptr;
   }
   const uint32_t input_format_fourcc =
-      V4L2Device::VideoPixelFormatToV4L2PixFmt(input_layout.format());
+      V4L2Device::VideoFrameLayoutToV4L2PixFmt(input_layout);
+  if (!input_format_fourcc) {
+    VLOGF(1) << "Invalid VideoFrameLayout: " << input_layout;
+    return nullptr;
+  }
   if (!device->Open(V4L2Device::Type::kImageProcessor, input_format_fourcc)) {
     VLOGF(1) << "Failed to open device for input format: "
              << VideoPixelFormatToString(input_layout.format())
@@ -223,13 +227,19 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
     return nullptr;
   }
 
+  const uint32_t output_format_fourcc =
+      V4L2Device::VideoFrameLayoutToV4L2PixFmt(output_layout);
+  if (!output_format_fourcc) {
+    VLOGF(1) << "Invalid VideoFrameLayout: " << output_layout;
+    return nullptr;
+  }
+
   // Try to set output format.
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   format.fmt.pix_mp.width = output_layout.coded_size().width();
   format.fmt.pix_mp.height = output_layout.coded_size().height();
-  format.fmt.pix_mp.pixelformat =
-      V4L2Device::VideoPixelFormatToV4L2PixFmt(output_layout.format());
+  format.fmt.pix_mp.pixelformat = output_format_fourcc;
   if (device->Ioctl(VIDIOC_S_FMT, &format) != 0) {
     VLOGF(1) << "Failed to negotiate output format";
     return nullptr;

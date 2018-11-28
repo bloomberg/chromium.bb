@@ -287,7 +287,12 @@ class MEDIA_GPU_EXPORT V4L2Device
  public:
   // Utility format conversion functions
   static VideoPixelFormat V4L2PixFmtToVideoPixelFormat(uint32_t format);
-  static uint32_t VideoPixelFormatToV4L2PixFmt(VideoPixelFormat format);
+  static uint32_t VideoPixelFormatToV4L2PixFmt(VideoPixelFormat format,
+                                               bool single_planar);
+  // Returns v4l2 pixel format from |layout|. If there is no corresponding
+  // single- or multi-planar format or |layout| is invalid, returns 0.
+  static uint32_t VideoFrameLayoutToV4L2PixFmt(const VideoFrameLayout& layout);
+  // If there is no corresponding single- or multi-planar format, returns 0.
   static uint32_t VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
                                                 bool slice_based);
   static VideoCodecProfile V4L2VP9ProfileToVideoCodecProfile(uint32_t profile);
@@ -309,6 +314,9 @@ class MEDIA_GPU_EXPORT V4L2Device
   // If error occurs, it returns base::nullopt.
   static base::Optional<VideoFrameLayout> V4L2FormatToVideoFrameLayout(
       const struct v4l2_format& format);
+
+  // Returns whether |pix_fmt| is multi planar.
+  static bool IsMultiPlanarV4L2PixFmt(uint32_t pix_fmt);
 
   enum class Type {
     kDecoder,

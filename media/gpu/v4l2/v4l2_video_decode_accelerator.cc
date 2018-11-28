@@ -68,6 +68,18 @@
 
 namespace media {
 
+namespace {
+
+size_t GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt) {
+  if (V4L2Device::IsMultiPlanarV4L2PixFmt(pix_fmt)) {
+    return VideoFrame::NumPlanes(
+        V4L2Device::V4L2PixFmtToVideoPixelFormat(pix_fmt));
+  }
+  return 1u;
+}
+
+}  // namespace
+
 // static
 const uint32_t V4L2VideoDecodeAccelerator::supported_input_fourccs_[] = {
     V4L2_PIX_FMT_H264, V4L2_PIX_FMT_VP8, V4L2_PIX_FMT_VP9,
@@ -2357,17 +2369,24 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
       (output_mode_ == Config::OutputMode::ALLOCATE
            ? ImageProcessor::OutputMode::ALLOCATE
            : ImageProcessor::OutputMode::IMPORT);
-
-  auto input_layout = VideoFrameLayout::Create(
+  size_t num_planes = GetNumPlanesOfV4L2PixFmt(output_format_fourcc_);
+  // It is necessary to set strides and buffers even with dummy values,
+  // because VideoFrameLayout::num_buffers() specifies if
+  // |output_format_fourcc_| is single- or multi-planar.
+  auto input_layout = VideoFrameLayout::CreateWithStrides(
       V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
-      coded_size_);
+      coded_size_, std::vector<int32_t>(num_planes) /* strides */,
+      std::vector<size_t>(num_planes) /* buffers */);
   if (!input_layout) {
     VLOGF(1) << "Invalid input layout";
     return false;
   }
-  auto output_layout = VideoFrameLayout::Create(
+
+  num_planes = GetNumPlanesOfV4L2PixFmt(egl_image_format_fourcc_);
+  auto output_layout = VideoFrameLayout::CreateWithStrides(
       V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_),
-      egl_image_size_);
+      egl_image_size_, std::vector<int32_t>(num_planes) /* strides */,
+      std::vector<size_t>(num_planes) /* buffers */);
   if (!output_layout) {
     VLOGF(1) << "Invalid output layout";
     return false;
