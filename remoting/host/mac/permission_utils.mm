@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
@@ -22,7 +23,7 @@ constexpr int kMinDialogWidthPx = 650;
 constexpr NSString* kServiceScriptName = @"org.chromium.chromoting.me2me.sh";
 
 void ShowPermissionDialog() {
-  NSAlert* alert = [[NSAlert alloc] init];
+  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
   [alert setMessageText:l10n_util::GetNSString(
                             IDS_ACCESSIBILITY_PERMISSION_DIALOG_TITLE)];
   [alert setInformativeText:
