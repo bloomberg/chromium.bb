@@ -935,7 +935,8 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     }
   }
   request_time_tracker_->LogRequestStartTime(
-      request->id, base::TimeTicks::Now(), has_listener);
+      request->id, base::TimeTicks::Now(), has_listener,
+      HasExtraHeadersListener(browser_context, extension_info_map, request));
 
   const bool is_incognito_context = IsIncognitoBrowserContext(browser_context);
 

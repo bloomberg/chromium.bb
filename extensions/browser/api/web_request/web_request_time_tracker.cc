@@ -21,7 +21,8 @@ ExtensionWebRequestTimeTracker::~ExtensionWebRequestTimeTracker() = default;
 void ExtensionWebRequestTimeTracker::LogRequestStartTime(
     int64_t request_id,
     const base::TimeTicks& start_time,
-    bool has_listener) {
+    bool has_listener,
+    bool has_extra_headers_listener) {
   auto iter = request_time_logs_.find(request_id);
   if (iter != request_time_logs_.end())
     return;
@@ -29,6 +30,7 @@ void ExtensionWebRequestTimeTracker::LogRequestStartTime(
   RequestTimeLog& log = request_time_logs_[request_id];
   log.request_start_time = start_time;
   log.has_listener = has_listener;
+  log.has_extra_headers_listener = has_extra_headers_listener;
 }
 
 void ExtensionWebRequestTimeTracker::LogRequestEndTime(
@@ -50,6 +52,11 @@ void ExtensionWebRequestTimeTracker::AnalyzeLogRequest(
 
   if (log.has_listener) {
     UMA_HISTOGRAM_TIMES("Extensions.WebRequest.TotalRequestTime",
+                        request_duration);
+  }
+
+  if (log.has_extra_headers_listener) {
+    UMA_HISTOGRAM_TIMES("Extensions.WebRequest.TotalExtraHeadersRequestTime",
                         request_duration);
   }
 

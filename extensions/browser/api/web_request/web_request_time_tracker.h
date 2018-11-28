@@ -21,10 +21,14 @@ class ExtensionWebRequestTimeTracker {
   ExtensionWebRequestTimeTracker();
   ~ExtensionWebRequestTimeTracker();
 
-  // Records the time that a request was created.
+  // Records the time that a request was created.  |has_listener| will be true
+  // if there is at least one webRequest listener registered.
+  // |has_extra_headers_listener| will be true if there is at least one listener
+  // with 'extraHeaders' in the extraInfoSpec.
   void LogRequestStartTime(int64_t request_id,
                            const base::TimeTicks& start_time,
-                           bool has_listener);
+                           bool has_listener,
+                           bool has_extra_headers_listener);
 
   // Records the time that a request either completed or encountered an error.
   void LogRequestEndTime(int64_t request_id, const base::TimeTicks& end_time);
@@ -48,6 +52,7 @@ class ExtensionWebRequestTimeTracker {
     base::TimeTicks request_start_time;
     base::TimeDelta block_duration;
     bool has_listener = false;
+    bool has_extra_headers_listener = false;
 
     RequestTimeLog();
     ~RequestTimeLog();
