@@ -119,6 +119,7 @@ android_library("cast_shell_java") {
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsService.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsSurfaceHelper.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsScopes.java",
+    "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsView.java",
     "$java_src_dir/org/chromium/chromecast/shell/LogcatElision.java",
     "$java_src_dir/org/chromium/chromecast/shell/ElidedLogcatProvider.java",
   ]
