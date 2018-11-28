@@ -12,6 +12,7 @@
 #include "components/zoom/zoom_event_manager.h"
 #include "components/zoom/zoom_event_manager_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/view.h"
 
 class Browser;
@@ -24,14 +25,24 @@ class PageActionIconContainerView : public views::View,
                                     public PageActionIconContainer,
                                     public zoom::ZoomEventManagerObserver {
  public:
-  PageActionIconContainerView(
-      const std::vector<PageActionIconType>& types_enabled,
-      int icon_size,
-      int between_icon_spacing,
-      Browser* browser,
-      CommandUpdater* command_updater,
-      PageActionIconView::Delegate* page_action_icon_delegate,
-      LocationBarView::Delegate* location_bar_delegate);
+  struct Params {
+    Params();
+    ~Params();
+
+    std::vector<PageActionIconType> types_enabled;
+    int icon_size = 0;
+    SkColor icon_color = gfx::kPlaceholderColor;
+    int between_icon_spacing = 0;
+    Browser* browser = nullptr;
+    CommandUpdater* command_updater = nullptr;
+    PageActionIconView::Delegate* page_action_icon_delegate = nullptr;
+    LocationBarView::Delegate* location_bar_delegate = nullptr;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Params);
+  };
+
+  explicit PageActionIconContainerView(const Params& params);
   ~PageActionIconContainerView() override;
 
   PageActionIconView* GetPageActionIconView(PageActionIconType type);
@@ -43,7 +54,7 @@ class PageActionIconContainerView : public views::View,
   // whether any icons were activated.
   bool ActivateFirstInactiveBubbleForAccessibility();
 
-  // Update the icons color, must be called before painting.
+  // Update the icons color.
   void SetIconColor(SkColor icon_color);
 
   // See comment in browser_window.h for more info.
