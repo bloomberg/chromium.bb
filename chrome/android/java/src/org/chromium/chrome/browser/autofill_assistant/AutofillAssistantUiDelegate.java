@@ -315,6 +315,7 @@ class AutofillAssistantUiDelegate {
     public void showStatusMessage(@Nullable String message) {
         show();
         mStatusMessageView.setText(message);
+        mStatusMessageView.announceForAccessibility(message);
     }
 
     /**
@@ -434,6 +435,10 @@ class AutofillAssistantUiDelegate {
             mTouchEventFilter.init(mClient, mActivity.getFullscreenManager(),
                     mActivity.getActivityTab().getWebContents());
             mFullContainer.setVisibility(View.VISIBLE);
+
+            // Announce Autofill Assistant is available for accessibility.
+            mBottomBar.announceForAccessibility(
+                    mActivity.getString(R.string.autofill_assistant_available_accessibility));
 
             // Set the initial progress. It is OK to make multiple calls to this method as it will
             // have an effect only on the first one.
@@ -775,6 +780,8 @@ class AutofillAssistantUiDelegate {
         View initView = LayoutInflater.from(mActivity)
                                 .inflate(R.layout.init_screen, mCoordinatorView)
                                 .findViewById(R.id.init_screen);
+        // Set focusable for accessibility.
+        initView.findViewById(R.id.init).setFocusable(true);
 
         // Set default state to checked.
         ((CheckBox) initView.findViewById(R.id.checkbox_dont_show_init_again)).setChecked(true);
@@ -782,6 +789,8 @@ class AutofillAssistantUiDelegate {
                 .setOnClickListener(unusedView -> onInitClicked(true, initView));
         initView.findViewById(R.id.button_init_not_ok)
                 .setOnClickListener(unusedView -> onInitClicked(false, initView));
+        initView.announceForAccessibility(
+                mActivity.getString(R.string.autofill_assistant_first_run_accessibility));
     }
 
     private void onInitClicked(boolean accept, View initView) {

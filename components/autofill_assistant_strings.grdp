@@ -28,5 +28,11 @@
     <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER_GO_BACK" desc="Shown on a button allowing going back when details differ." formatter_data="android_java">
       Go back
     </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_FIRST_RUN_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant first run screen is shown." formatter_data="android_java">
+      Autofill assistant first run screen is shown
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_AVAILABLE_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant is available." formatter_data="android_java">
+      Autofill assistant is available near bottom of the screen
+    </message>
   </if>
 </grit-part>
