@@ -16,6 +16,8 @@ class ChromecastConfigAndroidDummy : public ChromecastConfigAndroid {
 
   bool CanSendUsageStats() override { return false; }
 
+  void SetSendUsageStats(bool enabled) override {}
+
   void SetSendUsageStatsChangedCallback(
       base::RepeatingCallback<void(bool)> callback) override {}
 

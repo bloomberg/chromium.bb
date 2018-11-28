@@ -18,7 +18,14 @@ class ChromecastConfigAndroid {
 
   // Returns whether or not the user has allowed sending usage stats and
   // crash reports.
+  // TODO(ziyangch): Remove CanSendUsageStats() and switch to pure callback
+  // style.
   virtual bool CanSendUsageStats() = 0;
+
+  // Set the the user's sending usage stats.
+  // TODO(ziyangch): Remove SetSendUsageStats() after switching to Crashpad on
+  // Android.(The CL which does this is at https://crrev.com/c/989401.)
+  virtual void SetSendUsageStats(bool enabled) = 0;
 
   // Registers a handler to be notified when SendUsageStats is changed.
   virtual void SetSendUsageStatsChangedCallback(
