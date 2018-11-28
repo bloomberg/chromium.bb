@@ -329,7 +329,7 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     public void onApplicationStateChange(int newState) {
         // The isSyncEnabled() check is used to check whether the InvalidationController would be
         // started if it did not stop itself when the application is paused.
-        if (AndroidSyncSettings.isSyncEnabled()) {
+        if (AndroidSyncSettings.get().isSyncEnabled()) {
             if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
                 start();
             } else if (newState == ApplicationState.HAS_PAUSED_ACTIVITIES) {

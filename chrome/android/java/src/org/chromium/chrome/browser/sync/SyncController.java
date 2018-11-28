@@ -69,14 +69,14 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
 
     private SyncController() {
         mChromeSigninController = ChromeSigninController.get();
-        AndroidSyncSettings.registerObserver(this);
+        AndroidSyncSettings.get().registerObserver(this);
         mProfileSyncService = ProfileSyncService.get();
         mProfileSyncService.addSyncStateChangedListener(this);
         mProfileSyncService.setMasterSyncEnabledProvider(
                 new ProfileSyncService.MasterSyncEnabledProvider() {
                     @Override
                     public boolean isMasterSyncEnabled() {
-                        return AndroidSyncSettings.isMasterSyncEnabled();
+                        return AndroidSyncSettings.get().isMasterSyncEnabled();
                     }
                 });
 
@@ -145,9 +145,10 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         // SyncAllowedByPlatform.
         // TODO(crbug.com/867901): Don't mix these two concepts.
 
-        mProfileSyncService.setSyncAllowedByPlatform(AndroidSyncSettings.isMasterSyncEnabled());
+        mProfileSyncService.setSyncAllowedByPlatform(
+                AndroidSyncSettings.get().isMasterSyncEnabled());
 
-        boolean isSyncEnabled = AndroidSyncSettings.isSyncEnabled();
+        boolean isSyncEnabled = AndroidSyncSettings.get().isSyncEnabled();
         if (isSyncEnabled == mProfileSyncService.isSyncRequested()) return;
         if (isSyncEnabled) {
             mProfileSyncService.requestStart();
@@ -156,9 +157,9 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
                 // For child accounts, Sync needs to stay enabled, so we reenable it in settings.
                 // TODO(bauerb): Remove the dependency on child account code and instead go through
                 // prefs (here and in the Sync customization UI).
-                AndroidSyncSettings.enableChromeSync();
+                AndroidSyncSettings.get().enableChromeSync();
             } else {
-                if (AndroidSyncSettings.isMasterSyncEnabled()) {
+                if (AndroidSyncSettings.get().isMasterSyncEnabled()) {
                     RecordHistogram.recordEnumeratedHistogram("Sync.StopSource",
                             StopSource.ANDROID_CHROME_SYNC, StopSource.STOP_SOURCE_LIMIT);
                 } else {
@@ -184,20 +185,20 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
             if (!invalidationController.isStarted()) {
                 invalidationController.ensureStartedAndUpdateRegisteredTypes();
             }
-            if (!AndroidSyncSettings.isSyncEnabled()) {
-                assert AndroidSyncSettings.isMasterSyncEnabled();
-                AndroidSyncSettings.enableChromeSync();
+            if (!AndroidSyncSettings.get().isSyncEnabled()) {
+                assert AndroidSyncSettings.get().isMasterSyncEnabled();
+                AndroidSyncSettings.get().enableChromeSync();
             }
         } else {
             if (invalidationController.isStarted()) {
                 invalidationController.stop();
             }
-            if (AndroidSyncSettings.isSyncEnabled()) {
+            if (AndroidSyncSettings.get().isSyncEnabled()) {
                 // Both Android's master and Chrome sync setting are enabled, so we want to disable
                 // the Chrome sync setting to match isSyncRequested. We have to be careful not to
                 // disable it when isSyncRequested becomes false due to master sync being disabled
                 // so that sync will turn back on if master sync is re-enabled.
-                AndroidSyncSettings.disableChromeSync();
+                AndroidSyncSettings.get().disableChromeSync();
             }
         }
     }

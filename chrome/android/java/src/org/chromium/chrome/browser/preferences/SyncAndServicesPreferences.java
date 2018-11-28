@@ -350,7 +350,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         if (getActivity().isChangingConfigurations()) return;
         // Only save state if internal and external state match. If a stop and clear comes
         // while the dialog is open, this will be false and settings won't be saved.
-        if (mIsSyncEnabled && AndroidSyncSettings.isSyncEnabled()) {
+        if (mIsSyncEnabled && AndroidSyncSettings.get().isSyncEnabled()) {
             // Save the new data type state.
             configureSyncDataTypes();
             // Inform sync that the user has finished setting up sync at least once.
@@ -464,7 +464,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
      * updateSyncPreferences, which uses that as its source of truth.
      */
     private void updateSyncStateFromAndroidSyncSettings() {
-        mIsSyncEnabled = AndroidSyncSettings.isSyncEnabled();
+        mIsSyncEnabled = AndroidSyncSettings.get().isSyncEnabled();
         updateSyncPreferences();
     }
 
@@ -737,7 +737,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
     @SyncError
     private int getSyncError() {
-        if (!AndroidSyncSettings.isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
             return SyncError.ANDROID_SYNC_DISABLED;
         }
 

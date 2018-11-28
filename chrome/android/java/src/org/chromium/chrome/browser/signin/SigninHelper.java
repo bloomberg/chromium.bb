@@ -184,7 +184,7 @@ public class SigninHelper {
             mOAuth2TokenService.validateAccounts(false);
         }
 
-        if (mProfileSyncService != null && AndroidSyncSettings.isSyncEnabled()) {
+        if (mProfileSyncService != null && AndroidSyncSettings.get().isSyncEnabled()) {
             if (mProfileSyncService.isFirstSetupComplete()) {
                 if (accountsChanged) {
                     // Nudge the syncer to ensure it does a full sync.

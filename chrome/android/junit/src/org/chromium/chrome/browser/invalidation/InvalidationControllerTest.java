@@ -135,8 +135,8 @@ public class InvalidationControllerTest {
         AndroidSyncSettings.overrideForTests(delegate, null);
 
         ChromeSigninController.get().setSignedInAccountName("test@example.com");
-        AndroidSyncSettings.updateAccount(ChromeSigninController.get().getSignedInUser());
-        AndroidSyncSettings.enableChromeSync();
+        AndroidSyncSettings.get().updateAccount(ChromeSigninController.get().getSignedInUser());
+        AndroidSyncSettings.get().enableChromeSync();
     }
 
     @After
@@ -194,7 +194,7 @@ public class InvalidationControllerTest {
     @Test
     @Feature({"Sync"})
     public void testPauseAndResumeMainActivityWithSyncDisabled() throws Exception {
-        AndroidSyncSettings.disableChromeSync();
+        AndroidSyncSettings.get().disableChromeSync();
 
         InvalidationController controller = new InvalidationController();
         controller.onApplicationStateChange(ApplicationState.HAS_PAUSED_ACTIVITIES);
