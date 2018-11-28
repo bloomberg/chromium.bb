@@ -1735,12 +1735,6 @@
       "models": [
         {
           "board_name": "fizz",
-          "name": "fizz",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "fizz",
           "name": "kench",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
@@ -1940,18 +1934,6 @@
         {
           "board_name": "nami",
           "name": "ekko",
-          "test_suites": [
-            "bvt-inline",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "nami",
-          "name": "nami",
           "test_suites": [
             "bvt-inline",
             "bvt-arc",
