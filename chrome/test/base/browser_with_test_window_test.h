@@ -20,6 +20,7 @@
 #include "ash/test/ash_test_views_delegate.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/test/base/ash_test_environment_chrome.h"
 #else
 #include "ui/views/test/scoped_views_test_helper.h"
 #endif
@@ -35,13 +36,6 @@ class GURL;
 namespace views {
 class TestViewsDelegate;
 }
-#if defined(OS_CHROMEOS)
-namespace ash {
-namespace test {
-class AshTestEnvironment;
-}
-}
-#endif
 #endif
 
 namespace content {
@@ -124,7 +118,7 @@ class BrowserWithTestWindowTest : public testing::Test {
   }
 
 #if defined(OS_CHROMEOS)
-  ash::AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
+  ash::AshTestHelper* ash_test_helper() { return &ash_test_helper_; }
 #endif
 
   // The context to help determine desktop type when creating new Widgets.
@@ -175,7 +169,7 @@ class BrowserWithTestWindowTest : public testing::Test {
 #if defined(TOOLKIT_VIEWS)
   views::TestViewsDelegate* test_views_delegate() {
 #if defined(OS_CHROMEOS)
-    return ash_test_helper_->test_views_delegate();
+    return ash_test_helper_.test_views_delegate();
 #else
     return views_test_helper_->test_views_delegate();
 #endif
@@ -197,16 +191,15 @@ class BrowserWithTestWindowTest : public testing::Test {
   std::unique_ptr<BrowserWindow> window_;  // Usually a TestBrowserWindow.
   std::unique_ptr<Browser> browser_;
 
-  // The existence of this object enables tests via
-  // RenderViewHostTester.
-  content::RenderViewHostTestEnabler rvh_test_enabler_;
-
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<ash::AshTestEnvironment> ash_test_environment_;
-  std::unique_ptr<ash::AshTestHelper> ash_test_helper_;
+  AshTestEnvironmentChrome ash_test_environment_;
+  ash::AshTestHelper ash_test_helper_;
 #elif defined(TOOLKIT_VIEWS)
   std::unique_ptr<views::ScopedViewsTestHelper> views_test_helper_;
 #endif
+
+  // The existence of this object enables tests via RenderViewHostTester.
+  std::unique_ptr<content::RenderViewHostTestEnabler> rvh_test_enabler_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;

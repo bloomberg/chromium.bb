@@ -14,7 +14,9 @@
 #include "content/public/test/test_web_ui.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/test/aura_test_utils.h"
 #include "ui/events/devices/input_device.h"
+#include "ui/events/devices/input_device_manager.h"
 
 namespace chromeos {
 namespace settings {
@@ -32,6 +34,8 @@ class TestKeyboardHandler : public KeyboardHandler {
 class KeyboardHandlerTest : public testing::Test {
  public:
   KeyboardHandlerTest() : handler_test_api_(&handler_) {
+    input_device_manager_ = aura::test::CreateTestInputDeviceManager();
+
     handler_.set_web_ui(&web_ui_);
     handler_.RegisterMessages();
     handler_.AllowJavascriptForTesting();
@@ -157,6 +161,7 @@ class KeyboardHandlerTest : public testing::Test {
     return has_internal_search_key;
   }
 
+  std::unique_ptr<ui::InputDeviceManager> input_device_manager_;
   ws::InputDeviceClientTestApi input_device_client_test_api_;
   content::TestWebUI web_ui_;
   TestKeyboardHandler handler_;

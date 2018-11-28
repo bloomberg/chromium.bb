@@ -39,6 +39,7 @@ class NetworkChangeNotifier;
 }
 
 namespace ui {
+class InputDeviceManager;
 class ScopedOleInitializer;
 }
 
@@ -179,6 +180,9 @@ class RenderViewHostTestEnabler {
 
 #if defined(OS_ANDROID)
   std::unique_ptr<display::Screen> screen_;
+#endif
+#if defined(USE_AURA)
+  std::unique_ptr<ui::InputDeviceManager> input_device_client_;
 #endif
   std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
   std::unique_ptr<MockRenderProcessHostFactory> rph_factory_;
