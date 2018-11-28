@@ -427,6 +427,7 @@ TEST_F(AdapterTest, UserBrightnessRequestBeforeAnyModelUpdate) {
 TEST_F(AdapterTest, BrightnessLuxThresholds) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        global_curve_, personal_curve_, default_params_);
+  EXPECT_EQ(Adapter::kNumberAmbientValuesToTrack, 5);
 
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
@@ -457,7 +458,8 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   // A 3rd ALS comes in, but still not enough to trigger brightness change.
   fake_als_reader_.ReportAmbientLightUpdate(15);
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(), (21 + 15) / 2.0);
+  EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(),
+                   (20 + 21 + 15) / 3.0);
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(), 22);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(), 16);
 
@@ -467,15 +469,26 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  EXPECT_EQ(Adapter::kNumberAmbientValuesToTrack, 2);
-  const double expected_average_ambient =
-      (15.0 + 7.0) / Adapter::kNumberAmbientValuesToTrack;
+  const double expected_average_ambient = (20 + 21 + 15 + 7) / 4.0;
   EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(),
                    expected_average_ambient);
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
                    expected_average_ambient * 1.1);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
                    expected_average_ambient * 0.8);
+
+  // Next check |ambient_light_values_| has capacity
+  // |Adapter::kNumberAmbientValuesToTrack|.
+  fake_als_reader_.ReportAmbientLightUpdate(8);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(),
+                   (20 + 21 + 15 + 7 + 8) / 5.0);
+
+  fake_als_reader_.ReportAmbientLightUpdate(9);
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(),
+                   (21 + 15 + 7 + 8 + 9) / 5.0);
 }
 
 TEST_F(AdapterTest, ImmediateBrightnessTransitionThresholds) {
@@ -530,7 +543,7 @@ TEST_F(AdapterTest, BrightnessNotUpdatedOnStartup) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 0);
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
   EXPECT_EQ(test_observer_.num_changes(), 0);
 
   // 2nd ALS comes in so that we have |kAmbientLightShortHorizonSeconds| of
