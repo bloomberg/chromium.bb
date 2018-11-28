@@ -2,5 +2,4 @@ This page ensures that the composition text of an input method does not insert i
 
 For manual test, input text into the following textarea by using an input method. The composition text which is not committed should not be inserted into the textarea.
 
-
 PASS expects = "second", actual = "second"

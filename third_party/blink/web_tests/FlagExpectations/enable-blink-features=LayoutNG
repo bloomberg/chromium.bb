@@ -22,11 +22,6 @@ crbug.com/450202 fast/multicol/span/overflow-on-multicol.html [ Skip ]
 # Superscript text off by 1px
 crbug.com/636993 external/wpt/css/css-text-decor/text-decoration-color.html [ Failure ]
 
-# text-overflow:ellipsis and paint fragment
-crbug.com/873957 accessibility/ellipsis-text.html [ Failure ]
-crbug.com/873957 fast/css/getComputedStyle/getComputedStyle-text-overflow.html [ Failure ]
-crbug.com/873957 http/tests/devtools/network/network-cookies-pane.js [ Failure ]
-
 # rightsizing-grid.html is truly flaky, show flakiness on reload
 
 # Needs rebaselining.

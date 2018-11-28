@@ -38,5 +38,3 @@ TEST COMPLETE
 
 
 Mutation records should be delivered for all parser mutations after the above script.
-
-

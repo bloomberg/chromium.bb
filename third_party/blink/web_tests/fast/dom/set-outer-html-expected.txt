@@ -1,5 +1,5 @@
 Replaced node using outerHTML.
-removing node using outerHTML.
+ removing node using outerHTML.
 Testing merging text nodes.
 Testing adding
 using outerHTML.

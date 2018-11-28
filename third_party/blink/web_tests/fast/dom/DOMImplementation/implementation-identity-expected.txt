@@ -4,5 +4,3 @@ If the test passes, you should see a few OK lines below.
 
 OK: Top-level document and iframe document have different DOMImplementation objects
 OK: DOMImplementation object is cached
-
-

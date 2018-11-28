@@ -7,7 +7,6 @@ SOURCE XML: &lt;&lt;&lt;&amp;тест&amp;&gt;&gt;&gt;</pre>
 
 
 
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------

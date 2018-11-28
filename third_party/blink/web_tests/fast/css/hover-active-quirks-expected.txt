@@ -54,4 +54,3 @@ Should be green when active and not hovered:
 Should be green when hovered:       
 
 Should be green when active:       
-

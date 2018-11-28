@@ -1,5 +1,4 @@
-Some text before the floats.
-
+Some text before the floats. 
 Some floated text in a div.
 Some text after the floats.
 

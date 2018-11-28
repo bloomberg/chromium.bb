@@ -1,7 +1,5 @@
 Before
 
-
-
 After
 
 Ensure that extending a selection beyond a textarea does not escape outside its shadow root.

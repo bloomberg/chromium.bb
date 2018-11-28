@@ -1,6 +1,5 @@
 ABC
 
-
 This is a test of the simple SVGNumberList API parts.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -4,7 +4,7 @@ If this test passes you should see 1 - 9 and a, b and c clicked or focussed.
 
      
 
-   
+    
 
 1 button focussed
 1 button clicked

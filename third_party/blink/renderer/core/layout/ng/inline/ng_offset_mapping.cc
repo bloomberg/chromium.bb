@@ -269,6 +269,16 @@ NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForDOMRange(
   return {result_begin, result_end};
 }
 
+NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForNode(
+    const Node& node) const {
+  const auto it = ranges_.find(&node);
+  if (it == ranges_.end()) {
+    NOTREACHED() << node;
+    return NGMappingUnitRange();
+  }
+  return {units_.begin() + it->value.first, units_.begin() + it->value.second};
+}
+
 NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForTextContentOffsetRange(
     unsigned start,
     unsigned end) const {

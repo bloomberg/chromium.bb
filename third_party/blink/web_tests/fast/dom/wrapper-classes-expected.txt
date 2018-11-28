@@ -632,4 +632,3 @@ PASS tagClassString('xmp') is "HTMLPreElement"
 FAIL tagPrototypeClassString('xmp') should be HTMLPreElementPrototype. Was HTMLPreElement.
 PASS tagConstructorClassString('xmp') is "Function"
 PASS tagConstructorName('xmp') is "HTMLPreElement"
-

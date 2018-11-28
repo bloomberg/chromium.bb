@@ -13,4 +13,3 @@ TEST COMPLETE
 PASS document.getElementById("foo").clientWidth==100 is false
 PASS document.getElementById("foo").clientWidth==200 is true
 This test passes if the image below says 2x with a greenish background even when the deviceScaleFactor is 1.
-

@@ -5,4 +5,3 @@ and a link.
 This is a text
 and a link.
 [SVG]
-

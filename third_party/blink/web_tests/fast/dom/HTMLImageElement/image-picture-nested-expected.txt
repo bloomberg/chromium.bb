@@ -21,6 +21,4 @@ PASS currentSrcFileName("picture_at_end") is "blue_rect.jpg?52"
 PASS document.getElementById("picture_no_source").clientWidth is 75
 PASS currentSrcFileName("picture_no_source") is "blue_rect.jpg?6"
  
-
-
     

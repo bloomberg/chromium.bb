@@ -18,7 +18,7 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
-< Background of 'X' should be green
-Background of 'X' should be green >
+ < Background of 'X' should be green
+Background of 'X' should be green > 
 Background should be green
 Background of first letter should be green

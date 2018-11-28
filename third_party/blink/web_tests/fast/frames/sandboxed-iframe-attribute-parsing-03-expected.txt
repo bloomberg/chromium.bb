@@ -2,5 +2,4 @@ CONSOLE ERROR: line 45: Error while parsing the 'sandbox' attribute: 'För', 'va
 CONSOLE ERROR: line 7: Blocked form submission to 'javascript:top.disallowedFormSubmitted();' because the form's frame is sandboxed and the 'allow-forms' permission is not set.
 Ridiculously long, invalid text (well, for these purposes at least) with non-ASCII characters surrounding attribute value
 
-
 PASS

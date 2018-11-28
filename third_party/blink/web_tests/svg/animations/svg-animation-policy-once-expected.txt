@@ -1,6 +1,5 @@
 SVG with animation policy, once
 
-
 This tests svg animation with animation policy once
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

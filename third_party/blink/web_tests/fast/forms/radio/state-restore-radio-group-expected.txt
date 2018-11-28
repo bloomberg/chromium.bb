@@ -6,5 +6,4 @@ TEST COMPLETE
 
 PASS document.getElementById("input1").checked is true
 PASS document.getElementById("input2").checked is false
-
  

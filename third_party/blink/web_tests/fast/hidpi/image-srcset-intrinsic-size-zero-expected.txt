@@ -4,4 +4,3 @@ TEST COMPLETE
 
 PASS imgWidth is 33554432
 This test passes if the image is displayed with infinite dimensions.
-

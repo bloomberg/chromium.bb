@@ -2,5 +2,5 @@ Test for http://bugs.webkit.org/show_bug.cgi?id=12746 REGRESSION (r13853): List 
 
 Text should not overflow the yellow box.
 
-Lorem ipsum dolor sit amet
+ Lorem ipsum dolor sit amet
 PASS

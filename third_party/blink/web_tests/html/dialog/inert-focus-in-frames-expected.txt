@@ -18,4 +18,3 @@ PASS "frame2-div"; focusedElement === theElement is true
 Closing the dialog in frame1. The modal dialog in the iframe does not block nodes in its parent.
 PASS "iframe-input"; focusedElement === theElement is false
 PASS "frame1-input"; focusedElement === theElement is true
-

@@ -1,7 +1,6 @@
 This test tabs between lots of elements, printing out the events you see along the way.
 
 anchor
-
 PARENT DOCUMENT:
 focus event: [to] BUTTON
 keydown event: [to] BUTTON

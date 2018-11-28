@@ -4,8 +4,10 @@ Test that DOM is updated before DOMNodeInserted is dispatched.
 
 1
 2
+ 
 1
 2
+ 
 1
 2
 

@@ -5,6 +5,4 @@ The number is treated by WebKit as quirks mode value and converts it to miliseco
 
 This simple test case checks if unit-less value for -webkit-marquee-speed in quirks mode is treated as miliseconds which is required for correctly working scrolldelay.
 
-
-
 PASS

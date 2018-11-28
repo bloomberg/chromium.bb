@@ -2,4 +2,3 @@ This tests adopting a parent iframe (i.e. the iframe contains the document into 
 
 Adopting parent frame: PASS
 Adopting grandparent frame: PASS
-

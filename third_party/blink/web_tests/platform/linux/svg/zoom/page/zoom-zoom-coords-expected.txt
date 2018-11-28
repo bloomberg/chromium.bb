@@ -2,7 +2,6 @@ Test
 Test
 Test
 
-
 This test checks getBoundingClientRect() on zoomed HTML and SVG elements
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
