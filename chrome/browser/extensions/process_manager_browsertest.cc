@@ -1308,8 +1308,16 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   }
 }
 
+#if defined(OS_MACOSX)
+#define MAYBE_NestedURLNavigationsViaNoOpenerPopupBlocked \
+  NestedURLNavigationsViaNoOpenerPopupBlocked
+#else
+#define MAYBE_NestedURLNavigationsViaNoOpenerPopupBlocked \
+  DISABLED_NestedURLNavigationsViaNoOpenerPopupBlocked
+#endif
+// TODO(crbug.com/909570): This test is flaky everywhere except Mac.
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
-                       NestedURLNavigationsViaNoOpenerPopupBlocked) {
+                       MAYBE_NestedURLNavigationsViaNoOpenerPopupBlocked) {
   // Create a simple extension without a background page.
   const Extension* extension = CreateExtension("Extension", false);
   embedded_test_server()->ServeFilesFromDirectory(extension->path());
