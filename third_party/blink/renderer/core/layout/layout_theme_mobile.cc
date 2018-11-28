@@ -30,7 +30,7 @@
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -51,7 +51,7 @@ String LayoutThemeMobile::ExtraFullscreenStyleSheet() {
 }
 
 void LayoutThemeMobile::AdjustInnerSpinButtonStyle(ComputedStyle& style) const {
-  if (LayoutTestSupport::IsRunningLayoutTest()) {
+  if (WebTestSupport::IsRunningWebTest()) {
     // Match Linux spin button style in layout tests.
     // FIXME: Consider removing the conditional if a future Android theme
     // matches this.

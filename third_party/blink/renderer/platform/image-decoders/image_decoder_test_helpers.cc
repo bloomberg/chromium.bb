@@ -15,7 +15,7 @@
 namespace blink {
 
 scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
-  String file_path = test::BlinkLayoutTestsDir();
+  String file_path = test::BlinkWebTestsDir();
   file_path.append(file_name);
   return test::ReadFromFile(file_path);
 }
@@ -23,7 +23,7 @@ scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
 scoped_refptr<SharedBuffer> ReadFile(const char* dir, const char* file_name) {
   StringBuilder file_path;
   if (strncmp(dir, "web_tests/", 10) == 0) {
-    file_path.Append(test::BlinkLayoutTestsDir());
+    file_path.Append(test::BlinkWebTestsDir());
     file_path.Append('/');
     file_path.Append(dir + 10);
   } else {

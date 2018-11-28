@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -44,7 +44,7 @@ namespace {
 const unsigned kDefaultButtonBackgroundColor = 0xffdddddd;
 
 bool UseMockTheme() {
-  return LayoutTestSupport::IsMockThemeEnabledForTest();
+  return WebTestSupport::IsMockThemeEnabledForTest();
 }
 
 WebThemeEngine::State GetWebThemeState(const Node* node) {

@@ -30,10 +30,10 @@
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 using testing::_;
 using testing::AtLeast;
@@ -298,8 +298,8 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
   void SetUp() override {
     // Unset this to fix ScreenOrientationControllerImpl::ComputeOrientation.
     // TODO(mlamouri): Refactor to avoid this (crbug.com/726817).
-    was_running_layout_test_ = LayoutTestSupport::IsRunningLayoutTest();
-    LayoutTestSupport::SetIsRunningLayoutTest(false);
+    was_running_layout_test_ = WebTestSupport::IsRunningWebTest();
+    WebTestSupport::SetIsRunningWebTest(false);
 
     MediaControlsOrientationLockDelegateTest::SetUp();
 
@@ -315,7 +315,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
 
   void TearDown() override {
     MediaControlsOrientationLockDelegateTest::TearDown();
-    LayoutTestSupport::SetIsRunningLayoutTest(was_running_layout_test_);
+    WebTestSupport::SetIsRunningWebTest(was_running_layout_test_);
   }
 
   void SetIsAutoRotateEnabledByUser(bool enabled) {

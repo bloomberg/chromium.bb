@@ -16,11 +16,11 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_test_info.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using testing::ElementsAre;
@@ -114,40 +114,40 @@ class HarfBuzzShaperTest : public testing::Test {
 class ScopedSubpixelOverride {
  public:
   ScopedSubpixelOverride(bool b) {
-    prev_layout_test_ = LayoutTestSupport::IsRunningLayoutTest();
+    prev_layout_test_ = WebTestSupport::IsRunningWebTest();
     prev_subpixel_allowed_ =
-        LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest();
-    prev_antialias_ = LayoutTestSupport::IsFontAntialiasingEnabledForTest();
+        WebTestSupport::IsTextSubpixelPositioningAllowedForTest();
+    prev_antialias_ = WebTestSupport::IsFontAntialiasingEnabledForTest();
     prev_fd_subpixel_ = FontDescription::SubpixelPositioning();
 
-    // This is required for all LayoutTestSupport settings to have effects.
-    LayoutTestSupport::SetIsRunningLayoutTest(true);
+    // This is required for all WebTestSupport settings to have effects.
+    WebTestSupport::SetIsRunningWebTest(true);
 
     if (b) {
       // Allow subpixel positioning.
-      LayoutTestSupport::SetTextSubpixelPositioningAllowedForTest(true);
+      WebTestSupport::SetTextSubpixelPositioningAllowedForTest(true);
 
       // Now, enable subpixel positioning in platform-specific ways.
 
       // Mac always enables subpixel positioning.
 
       // On Windows, subpixel positioning also requires antialiasing.
-      LayoutTestSupport::SetFontAntialiasingEnabledForTest(true);
+      WebTestSupport::SetFontAntialiasingEnabledForTest(true);
 
       // On platforms other than Windows and Mac this needs to be set as
       // well.
       FontDescription::SetSubpixelPositioning(true);
     } else {
       // Explicitly disallow all subpixel positioning.
-      LayoutTestSupport::SetTextSubpixelPositioningAllowedForTest(false);
+      WebTestSupport::SetTextSubpixelPositioningAllowedForTest(false);
     }
   }
   ~ScopedSubpixelOverride() {
     FontDescription::SetSubpixelPositioning(prev_fd_subpixel_);
-    LayoutTestSupport::SetFontAntialiasingEnabledForTest(prev_antialias_);
-    LayoutTestSupport::SetTextSubpixelPositioningAllowedForTest(
+    WebTestSupport::SetFontAntialiasingEnabledForTest(prev_antialias_);
+    WebTestSupport::SetTextSubpixelPositioningAllowedForTest(
         prev_subpixel_allowed_);
-    LayoutTestSupport::SetIsRunningLayoutTest(prev_layout_test_);
+    WebTestSupport::SetIsRunningWebTest(prev_layout_test_);
 
     // Fonts cached with a different subpixel positioning state are not
     // automatically invalidated and need to be cleared between test

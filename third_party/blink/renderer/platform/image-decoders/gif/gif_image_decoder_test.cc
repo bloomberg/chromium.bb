@@ -42,7 +42,7 @@ namespace blink {
 
 namespace {
 
-const char kLayoutTestResourcesDir[] = "web_tests/images/resources";
+const char kWebTestsResourcesDir[] = "web_tests/images/resources";
 
 std::unique_ptr<ImageDecoder> CreateDecoder() {
   return std::make_unique<GIFImageDecoder>(
@@ -66,7 +66,7 @@ TEST(GIFImageDecoderTest, decodeTwoFrames) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
   scoped_refptr<SharedBuffer> data =
-      ReadFile(kLayoutTestResourcesDir, "animated.gif");
+      ReadFile(kWebTestsResourcesDir, "animated.gif");
   ASSERT_TRUE(data.get());
   decoder->SetData(data.get(), true);
 
@@ -90,7 +90,7 @@ TEST(GIFImageDecoderTest, decodeTwoFrames) {
 TEST(GIFImageDecoderTest, crbug779261) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
   scoped_refptr<SharedBuffer> data =
-      ReadFile(kLayoutTestResourcesDir, "crbug779261.gif");
+      ReadFile(kWebTestsResourcesDir, "crbug779261.gif");
   ASSERT_TRUE(data.get());
   decoder->SetData(data.get(), true);
 
@@ -112,7 +112,7 @@ TEST(GIFImageDecoderTest, parseAndDecode) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
   scoped_refptr<SharedBuffer> data =
-      ReadFile(kLayoutTestResourcesDir, "animated.gif");
+      ReadFile(kWebTestsResourcesDir, "animated.gif");
   ASSERT_TRUE(data.get());
   decoder->SetData(data.get(), true);
 
@@ -135,7 +135,7 @@ TEST(GIFImageDecoderTest, parseByteByByte) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
   const Vector<char> data =
-      ReadFile(kLayoutTestResourcesDir, "animated.gif")->CopyAs<Vector<char>>();
+      ReadFile(kWebTestsResourcesDir, "animated.gif")->CopyAs<Vector<char>>();
 
   size_t frame_count = 0;
 
@@ -157,7 +157,7 @@ TEST(GIFImageDecoderTest, parseByteByByte) {
 }
 
 TEST(GIFImageDecoderTest, parseAndDecodeByteByByte) {
-  TestByteByByteDecode(&CreateDecoder, kLayoutTestResourcesDir,
+  TestByteByByteDecode(&CreateDecoder, kWebTestsResourcesDir,
                        "animated-gif-with-offsets.gif", 5u,
                        kAnimationLoopInfinite);
 }
@@ -184,7 +184,7 @@ TEST(GIFImageDecoderTest, allDataReceivedTruncation) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
   const Vector<char> data =
-      ReadFile(kLayoutTestResourcesDir, "animated.gif")->CopyAs<Vector<char>>();
+      ReadFile(kWebTestsResourcesDir, "animated.gif")->CopyAs<Vector<char>>();
 
   ASSERT_GE(data.size(), 10u);
   scoped_refptr<SharedBuffer> temp_data =
@@ -204,7 +204,7 @@ TEST(GIFImageDecoderTest, frameIsComplete) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
   scoped_refptr<SharedBuffer> data =
-      ReadFile(kLayoutTestResourcesDir, "animated.gif");
+      ReadFile(kWebTestsResourcesDir, "animated.gif");
   ASSERT_TRUE(data.get());
   decoder->SetData(data.get(), true);
 
@@ -219,7 +219,7 @@ TEST(GIFImageDecoderTest, frameIsCompleteLoading) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
   scoped_refptr<SharedBuffer> data_buffer =
-      ReadFile(kLayoutTestResourcesDir, "animated.gif");
+      ReadFile(kWebTestsResourcesDir, "animated.gif");
   ASSERT_TRUE(data_buffer.get());
   const Vector<char> data = data_buffer->CopyAs<Vector<char>>();
 
@@ -265,16 +265,16 @@ TEST(GIFImageDecoderTest, badTerminator) {
 
 TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode) {
   TestUpdateRequiredPreviousFrameAfterFirstDecode(
-      &CreateDecoder, kLayoutTestResourcesDir, "animated-10color.gif");
+      &CreateDecoder, kWebTestsResourcesDir, "animated-10color.gif");
 }
 
 TEST(GIFImageDecoderTest, randomFrameDecode) {
   // Single frame image.
   TestRandomFrameDecode(&CreateDecoder, kDecodersTestingDir, "radient.gif");
   // Multiple frame images.
-  TestRandomFrameDecode(&CreateDecoder, kLayoutTestResourcesDir,
+  TestRandomFrameDecode(&CreateDecoder, kWebTestsResourcesDir,
                         "animated-gif-with-offsets.gif");
-  TestRandomFrameDecode(&CreateDecoder, kLayoutTestResourcesDir,
+  TestRandomFrameDecode(&CreateDecoder, kWebTestsResourcesDir,
                         "animated-10color.gif");
 }
 
@@ -284,14 +284,14 @@ TEST(GIFImageDecoderTest, randomDecodeAfterClearFrameBufferCache) {
       &CreateDecoder, kDecodersTestingDir, "radient.gif");
   // Multiple frame images.
   TestRandomDecodeAfterClearFrameBufferCache(
-      &CreateDecoder, kLayoutTestResourcesDir, "animated-gif-with-offsets.gif");
+      &CreateDecoder, kWebTestsResourcesDir, "animated-gif-with-offsets.gif");
   TestRandomDecodeAfterClearFrameBufferCache(
-      &CreateDecoder, kLayoutTestResourcesDir, "animated-10color.gif");
+      &CreateDecoder, kWebTestsResourcesDir, "animated-10color.gif");
 }
 
 TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache) {
   TestResumePartialDecodeAfterClearFrameBufferCache(
-      &CreateDecoder, kLayoutTestResourcesDir, "animated-10color.gif");
+      &CreateDecoder, kWebTestsResourcesDir, "animated-10color.gif");
 }
 
 // The first LZW codes in the image are invalid values that try to create a loop
@@ -372,13 +372,13 @@ TEST(GIFImageDecoderTest, firstFrameHasGreaterSizeThanScreenSize) {
 }
 
 TEST(GIFImageDecoderTest, verifyRepetitionCount) {
-  TestRepetitionCount(kLayoutTestResourcesDir, "full2loop.gif", 2);
+  TestRepetitionCount(kWebTestsResourcesDir, "full2loop.gif", 2);
   TestRepetitionCount(kDecodersTestingDir, "radient.gif", kAnimationNone);
 }
 
 TEST(GIFImageDecoderTest, repetitionCountChangesWhenSeen) {
   scoped_refptr<SharedBuffer> full_data_buffer =
-      ReadFile(kLayoutTestResourcesDir, "animated-10color.gif");
+      ReadFile(kWebTestsResourcesDir, "animated-10color.gif");
   ASSERT_TRUE(full_data_buffer.get());
   const Vector<char> full_data = full_data_buffer->CopyAs<Vector<char>>();
 
@@ -462,7 +462,7 @@ class Allocator final : public SkBitmap::Allocator {
 // Ensure that calling SetMemoryAllocator does not short-circuit
 // InitializeNewFrame.
 TEST(GIFImageDecoderTest, externalAllocator) {
-  auto data = ReadFile(kLayoutTestResourcesDir, "boston.gif");
+  auto data = ReadFile(kWebTestsResourcesDir, "boston.gif");
   ASSERT_TRUE(data.get());
 
   auto decoder = CreateDecoder();
@@ -480,7 +480,7 @@ TEST(GIFImageDecoderTest, externalAllocator) {
 }
 
 TEST(GIFImageDecoderTest, recursiveDecodeFailure) {
-  auto data = ReadFile(kLayoutTestResourcesDir, "count-down-color-test.gif");
+  auto data = ReadFile(kWebTestsResourcesDir, "count-down-color-test.gif");
   ASSERT_TRUE(data.get());
 
   {

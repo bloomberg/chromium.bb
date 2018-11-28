@@ -39,9 +39,9 @@
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/mac/font_matcher_mac.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -87,9 +87,9 @@ static void FontCacheRegisteredFontsChangedNotificationCallback(
 }
 
 static bool UseHinting() {
-  // Enable hinting only when antialiasing is disabled in layout tests.
-  return (LayoutTestSupport::IsRunningLayoutTest() &&
-          !LayoutTestSupport::IsFontAntialiasingEnabledForTest());
+  // Enable hinting only when antialiasing is disabled in web tests.
+  return (WebTestSupport::IsRunningWebTest() &&
+          !WebTestSupport::IsFontAntialiasingEnabledForTest());
 }
 
 void FontCache::PlatformInit() {

@@ -29,8 +29,8 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -148,11 +148,11 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
   auto system_style =
       QuerySystemRenderStyle(family_, text_size_, typeface_->fontStyle());
 
-  // In layout tests, ignore system preference for subpixel positioning,
+  // In web tests, ignore system preference for subpixel positioning,
   // or explicitly disable if requested.
-  if (LayoutTestSupport::IsRunningLayoutTest()) {
+  if (WebTestSupport::IsRunningWebTest()) {
     system_style.use_subpixel_positioning =
-        LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest()
+        WebTestSupport::IsTextSubpixelPositioningAllowedForTest()
             ? WebFontRenderStyle::kNoPreference
             : 0;
   }

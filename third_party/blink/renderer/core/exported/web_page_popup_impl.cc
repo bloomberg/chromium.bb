@@ -65,7 +65,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -127,7 +127,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   void ScheduleAnimation(const LocalFrameView*) override {
     // Calling scheduleAnimation on m_webView so WebViewTestProxy will call
     // beginFrame.
-    if (LayoutTestSupport::IsRunningLayoutTest()) {
+    if (WebTestSupport::IsRunningWebTest()) {
       popup_->web_view_->MainFrameImpl()
           ->FrameWidgetImpl()
           ->ScheduleAnimation();

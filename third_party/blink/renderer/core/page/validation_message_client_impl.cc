@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/validation_message_overlay_delegate.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -94,7 +94,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
 }
 
 void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
-  if (LayoutTestSupport::IsRunningLayoutTest()) {
+  if (WebTestSupport::IsRunningWebTest()) {
     HideValidationMessageImmediately(anchor);
     return;
   }
@@ -140,7 +140,7 @@ void ValidationMessageClientImpl::DocumentDetached(const Document& document) {
 
 void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
   DCHECK(current_anchor_);
-  if ((!LayoutTestSupport::IsRunningLayoutTest() &&
+  if ((!WebTestSupport::IsRunningWebTest() &&
        CurrentTimeTicks() >= finish_time_) ||
       !CurrentView()) {
     HideValidationMessage(*current_anchor_);

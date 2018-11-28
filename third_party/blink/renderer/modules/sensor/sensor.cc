@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_error_event.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -130,7 +130,7 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
   DCHECK(sensor_proxy_);
   is_null = false;
 
-  if (LayoutTestSupport::IsRunningLayoutTest()) {
+  if (WebTestSupport::IsRunningWebTest()) {
     // In layout tests performance.now() * 0.001 is passed to the shared buffer.
     return sensor_proxy_->GetReading().timestamp() * 1000;
   }

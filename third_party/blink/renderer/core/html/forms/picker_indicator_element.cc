@@ -37,8 +37,8 @@
 #include "third_party/blink/renderer/core/layout/layout_details_marker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -161,10 +161,10 @@ Node::InsertionNotificationRequest PickerIndicatorElement::InsertedInto(
 void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
   if (!GetDocument().ExistingAXObjectCache())
     return;
-  // Don't make this focusable if we are in layout tests in order to avoid
+  // Don't make this focusable if we are in web tests in order to avoid
   // breaking existing tests.
-  // FIXME: We should have a way to disable accessibility in layout tests.
-  if (LayoutTestSupport::IsRunningLayoutTest())
+  // FIXME: We should have a way to disable accessibility in web tests.
+  if (WebTestSupport::IsRunningWebTest())
     return;
   setAttribute(kTabindexAttr, "0");
   setAttribute(kAriaHaspopupAttr, "menu");

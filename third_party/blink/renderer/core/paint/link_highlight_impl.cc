@@ -59,7 +59,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect.h"
@@ -310,11 +310,10 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
     curve->AddKeyframe(CompositorFloatKeyframe(
         extra_duration_required.InSecondsF(), kStartOpacity, timing_function));
   }
-  // For layout tests we don't fade out.
+  // For web tests we don't fade out.
   curve->AddKeyframe(CompositorFloatKeyframe(
       (kFadeDuration + extra_duration_required).InSecondsF(),
-      LayoutTestSupport::IsRunningLayoutTest() ? kStartOpacity : 0,
-      timing_function));
+      WebTestSupport::IsRunningWebTest() ? kStartOpacity : 0, timing_function));
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       CompositorKeyframeModel::Create(

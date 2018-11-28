@@ -35,7 +35,7 @@
 #include "SkFont.h"
 #include "SkTypeface.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -61,8 +61,8 @@ void FontPlatformData::SetupSkPaint(SkPaint* font, float, const Font*) const {
   if (text_flags & SkPaint::kAntiAlias_Flag)
     flags |= SkPaint::kSubpixelText_Flag;
 
-  if (LayoutTestSupport::IsRunningLayoutTest() &&
-      !LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest())
+  if (WebTestSupport::IsRunningWebTest() &&
+      !WebTestSupport::IsTextSubpixelPositioningAllowedForTest())
     flags &= ~SkPaint::kSubpixelText_Flag;
 
   SkASSERT(!(text_flags & ~kTextFlagsMask));
@@ -98,8 +98,8 @@ void FontPlatformData::SetupSkFont(SkFont* font, float, const Font*) const {
   if (text_flags & SkPaint::kAntiAlias_Flag)
     font->setSubpixel(true);
 
-  if (LayoutTestSupport::IsRunningLayoutTest() &&
-      !LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest())
+  if (WebTestSupport::IsRunningWebTest() &&
+      !WebTestSupport::IsTextSubpixelPositioningAllowedForTest())
     font->setSubpixel(false);
 
   font->setEmbeddedBitmaps(!avoid_embedded_bitmaps_);
@@ -114,8 +114,8 @@ static bool IsWebFont(const String& family_name) {
 }
 
 static int ComputePaintTextFlags(String font_family_name) {
-  if (LayoutTestSupport::IsRunningLayoutTest())
-    return LayoutTestSupport::IsFontAntialiasingEnabledForTest()
+  if (WebTestSupport::IsRunningWebTest())
+    return WebTestSupport::IsFontAntialiasingEnabledForTest()
                ? SkPaint::kAntiAlias_Flag
                : 0;
 

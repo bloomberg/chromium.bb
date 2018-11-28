@@ -42,11 +42,11 @@
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 // The MediaTimelineWidths histogram suffix expected to be encountered in these
 // tests. Depends on the OS, since Android sizes its timeline differently.
@@ -1290,7 +1290,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   SetHasAudio(true);
   SimulateLoadedMetadata();
 
-  LayoutTestSupport::SetIsRunningLayoutTest(false);
+  WebTestSupport::SetIsRunningWebTest(false);
 
   Element* volume_slider = GetElementByShadowPseudoId(
       MediaControls(), "-webkit-media-controls-volume-slider");

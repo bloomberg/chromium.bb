@@ -36,7 +36,6 @@
 #import "third_party/blink/renderer/platform/data_resource_helper.h"
 #import "third_party/blink/renderer/platform/fonts/string_truncator.h"
 #import "third_party/blink/renderer/platform/graphics/bitmap_image.h"
-#import "third_party/blink/renderer/platform/layout_test_support.h"
 #import "third_party/blink/renderer/platform/mac/color_mac.h"
 #import "third_party/blink/renderer/platform/mac/theme_mac.h"
 #import "third_party/blink/renderer/platform/mac/version_util_mac.h"
@@ -44,6 +43,7 @@
 #import "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #import "third_party/blink/renderer/platform/text/platform_locale.h"
 #import "third_party/blink/renderer/platform/theme.h"
+#import "third_party/blink/renderer/platform/web_test_support.h"
 
 // The methods in this file are specific to the Mac OS X platform.
 
@@ -970,7 +970,7 @@ scoped_refptr<LayoutTheme> LayoutThemeMac::Create() {
 }
 
 bool LayoutThemeMac::UsesTestModeFocusRingColor() const {
-  return LayoutTestSupport::IsRunningLayoutTest();
+  return WebTestSupport::IsRunningWebTest();
 }
 
 NSView* LayoutThemeMac::DocumentView() const {
