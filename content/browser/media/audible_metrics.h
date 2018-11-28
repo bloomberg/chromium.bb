@@ -31,6 +31,10 @@ class CONTENT_EXPORT AudibleMetrics {
 
   void SetClockForTest(const base::TickClock* test_clock);
 
+  int GetAudibleWebContentsSizeForTest() const {
+    return audible_web_contents_.size();
+  }
+
  private:
   void AddAudibleWebContents(const WebContents* web_contents);
   void RemoveAudibleWebContents(const WebContents* web_contents);

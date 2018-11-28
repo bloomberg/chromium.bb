@@ -40,6 +40,8 @@ class SurfaceId;
 
 namespace content {
 
+class AudibleMetrics;
+
 // This class manages all RenderFrame based media related managers at the
 // browser side. It receives IPC messages from media RenderFrameObservers and
 // forwards them to the corresponding managers. The managers are responsible
@@ -105,6 +107,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   }
 
   bool has_video_wake_lock_for_testing() const { return has_video_wake_lock_; }
+
+  void SetAudibleMetricsForTest(AudibleMetrics* audible_metrics) {
+    audible_metrics_ = audible_metrics;
+  }
 
  protected:
   MediaSessionControllersManager* session_controllers_manager() {
@@ -180,6 +186,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
 
   // Convenience method that casts web_contents() to a WebContentsImpl*.
   WebContentsImpl* web_contents_impl() const;
+
+  // Helper class for recording audible metrics.
+  AudibleMetrics* audible_metrics_;
 
   // Tracking variables and associated wake locks for media playback.
   ActiveMediaPlayerMap active_audio_players_;
