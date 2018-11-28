@@ -53,7 +53,10 @@ NSString* const kPageInfoWillHideNotification =
 @synthesize presentationProvider = _presentationProvider;
 @synthesize tabModel = _tabModel;
 
-- (void)disconnect {
+#pragma mark - ChromeCoordinator
+
+- (void)stop {
+  [super stop];
   // DCHECK that the Page Info UI is not displayed before disconnecting.
   DCHECK(!self.pageInfoViewController);
   [self.dispatcher stopDispatchingToTarget:self];
@@ -62,6 +65,8 @@ NSString* const kPageInfoWillHideNotification =
   self.presentationProvider = nil;
   self.tabModel = nil;
 }
+
+#pragma mark - Public
 
 - (void)setDispatcher:(CommandDispatcher*)dispatcher {
   if (dispatcher == self.dispatcher)

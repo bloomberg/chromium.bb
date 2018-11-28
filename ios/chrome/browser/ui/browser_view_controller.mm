@@ -157,8 +157,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_owning.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
-#import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
-#import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
@@ -414,7 +412,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     NetExportTabHelperDelegate,
                                     NewTabPageTabHelperDelegate,
                                     OverscrollActionsControllerDelegate,
-                                    PageInfoPresentation,
                                     PasswordControllerDelegate,
                                     PreloadControllerDelegate,
                                     SadTabCoordinatorDelegate,
@@ -520,9 +517,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Coordinator for displaying Sad Tab.
   id<SadTabTabHelperDelegate> _sadTabCoordinator;
-
-  // Coordinator for Page Info UI.
-  PageInfoLegacyCoordinator* _pageInfoCoordinator;
 
   ToolbarCoordinatorAdaptor* _toolbarCoordinatorAdaptor;
 
@@ -1288,7 +1282,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   // Disconnect child coordinators.
   [_activityServiceCoordinator disconnect];
   [self.popupMenuCoordinator stop];
-  [_pageInfoCoordinator disconnect];
   [self.tabStripCoordinator stop];
   self.tabStripCoordinator = nil;
   self.tabStripView = nil;
@@ -2294,14 +2287,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
       sadTabHelper->SetDelegate(_sadTabCoordinator);
     }
   }
-
-  _pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]
-      initWithBaseViewController:self
-                    browserState:_browserState];
-  _pageInfoCoordinator.dispatcher = self.commandDispatcher;
-  _pageInfoCoordinator.loader = self;
-  _pageInfoCoordinator.presentationProvider = self;
-  _pageInfoCoordinator.tabModel = self.tabModel;
 
   _paymentRequestManager = [[PaymentRequestManager alloc]
       initWithBaseViewController:self

@@ -342,7 +342,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",
     "//ios/chrome/browser/ui/overscroll_actions",
-    "//ios/chrome/browser/ui/page_info:coordinator",
     "//ios/chrome/browser/ui/page_info/requirements",
     "//ios/chrome/browser/ui/payments",
     "//ios/chrome/browser/ui/popup_menu",
