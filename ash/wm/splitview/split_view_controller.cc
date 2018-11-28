@@ -617,9 +617,6 @@ void SplitViewController::OnWindowDragEnded(
     aura::Window* dragged_window,
     SnapPosition desired_snap_position,
     const gfx::Point& last_location_in_screen) {
-  if (IsSplitViewModeActive())
-    split_view_divider_->OnWindowDragEnded();
-
   if (wm::IsDraggingTabs(dragged_window)) {
     dragged_window->SetProperty(
         kTabDroppedWindowStateTypeKey,
@@ -1513,6 +1510,9 @@ void SplitViewController::EndWindowDragImpl(
     aura::Window* window,
     SnapPosition desired_snap_position,
     const gfx::Point& last_location_in_screen) {
+  if (IsSplitViewModeActive())
+    split_view_divider_->OnWindowDragEnded();
+
   // If dragged window was in overview before or it has been added to overview
   // window by dropping on the new selector item, do nothing.
   if (GetWindowSelector() && GetWindowSelector()->IsWindowInOverview(window))
