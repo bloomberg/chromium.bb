@@ -19,7 +19,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace nux {
@@ -39,48 +38,24 @@ enum class GoogleApps {
 const char* kGoogleAppsInteractionHistogram =
     "FirstRun.NewUserExperience.GoogleAppsInteraction";
 
+// Strings in costants not translated because this is an experiment.
+// TODO(hcarmona): Translate before wide release.
+const BookmarkItem kGoogleApps[] = {
+    {static_cast<int>(GoogleApps::kYouTube), "YouTube", "youtube",
+     "https://youtube.com", IDR_NUX_GOOGLE_APPS_YOUTUBE_1X},
+    {static_cast<int>(GoogleApps::kMaps), "Maps", "maps",
+     "https://maps.google.com", IDR_NUX_GOOGLE_APPS_MAPS_1X},
+    {static_cast<int>(GoogleApps::kNews), "News", "news",
+     "https://news.google.com", IDR_NUX_GOOGLE_APPS_NEWS_1X},
+    {static_cast<int>(GoogleApps::kTranslate), "Translate", "translate",
+     "https://translate.google.com", IDR_NUX_GOOGLE_APPS_TRANSLATE_1X},
+    {static_cast<int>(GoogleApps::kChromeWebStore), "Web Store", "web-store",
+     "https://chrome.google.com/webstore", IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X},
+};
+
 constexpr const int kGoogleAppIconSize = 48;  // Pixels.
 
-GoogleAppsHandler::GoogleAppsHandler()
-    :  // Do not translate icon name as it is not human visible and needs to
-       // match CSS.
-      google_apps_{{
-          {static_cast<int>(GoogleApps::kYouTube),
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_YOUTUBE),
-           "youtube",
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_YOUTUBE_LINK),
-           IDR_NUX_GOOGLE_APPS_YOUTUBE_1X},
-          {static_cast<int>(GoogleApps::kMaps),
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_MAPS),
-           "maps",
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_MAPS_LINK),
-           IDR_NUX_GOOGLE_APPS_MAPS_1X},
-          {static_cast<int>(GoogleApps::kNews),
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_NEWS),
-           "news",
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_NEWS_LINK),
-           IDR_NUX_GOOGLE_APPS_NEWS_1X},
-          {static_cast<int>(GoogleApps::kTranslate),
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_TRANSLATE),
-           "translate",
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_TRANSLATE_LINK),
-           IDR_NUX_GOOGLE_APPS_TRANSLATE_1X},
-          {static_cast<int>(GoogleApps::kChromeWebStore),
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_WEB_STORE),
-           "web-store",
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_WEB_STORE_LINK),
-           IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X},
-      }} {}
+GoogleAppsHandler::GoogleAppsHandler() {}
 
 GoogleAppsHandler::~GoogleAppsHandler() {}
 
@@ -101,9 +76,9 @@ void GoogleAppsHandler::HandleCacheGoogleAppIcon(const base::ListValue* args) {
   args->GetInteger(0, &appId);
 
   const BookmarkItem* selectedApp = NULL;
-  for (size_t i = 0; i < kGoogleAppCount; i++) {
-    if (static_cast<int>(google_apps_[i].id) == appId) {
-      selectedApp = &google_apps_[i];
+  for (size_t i = 0; i < base::size(kGoogleApps); i++) {
+    if (static_cast<int>(kGoogleApps[i].id) == appId) {
+      selectedApp = &kGoogleApps[i];
       break;
     }
   }
@@ -129,7 +104,7 @@ void GoogleAppsHandler::HandleGetGoogleAppsList(const base::ListValue* args) {
   CHECK(args->Get(0, &callback_id));
   ResolveJavascriptCallback(
       *callback_id,
-      bookmarkItemsToListValue(google_apps_.data(), kGoogleAppCount));
+      bookmarkItemsToListValue(kGoogleApps, base::size(kGoogleApps)));
 }
 
 }  // namespace nux
