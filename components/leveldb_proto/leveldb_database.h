@@ -51,8 +51,13 @@ class LevelDB {
   virtual bool Save(const base::StringPairs& pairs_to_save,
                     const std::vector<std::string>& keys_to_remove,
                     leveldb::Status* status);
+
   virtual bool UpdateWithRemoveFilter(const base::StringPairs& entries_to_save,
                                       const KeyFilter& delete_key_filter,
+                                      leveldb::Status* status);
+  virtual bool UpdateWithRemoveFilter(const base::StringPairs& entries_to_save,
+                                      const KeyFilter& delete_key_filter,
+                                      const std::string& target_prefix,
                                       leveldb::Status* status);
 
   virtual bool Load(std::vector<std::string>* entries);
@@ -75,6 +80,9 @@ class LevelDB {
       const std::string& target_prefix);
 
   virtual bool LoadKeys(std::vector<std::string>* keys);
+  virtual bool LoadKeys(const std::string& target_prefix,
+                        std::vector<std::string>* keys);
+
   virtual bool Get(const std::string& key,
                    bool* found,
                    std::string* entry,

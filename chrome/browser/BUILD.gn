@@ -1794,6 +1794,7 @@ jumbo_split_static_library("browser") {
     "//components/keyed_service/content",
     "//components/language/content/browser",
     "//components/language/core/browser",
+    "//components/leveldb_proto/content:factory",
     "//components/live_tab_count_metrics",
     "//components/metrics:call_stack_profile_collector",
     "//components/metrics:component_metrics",

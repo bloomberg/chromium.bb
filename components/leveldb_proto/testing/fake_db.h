@@ -29,9 +29,10 @@ class FakeDB : public UniqueProtoDatabase<T> {
   using EntryMap = std::map<std::string, T>;
 
   explicit FakeDB(EntryMap* db);
-  ~FakeDB() override;
 
   // ProtoDatabase implementation.
+  void Init(const std::string& client_name,
+            typename ProtoDatabase<T>::InitCallback callback) override;
   void Init(const char* client_name,
             const base::FilePath& database_dir,
             const leveldb_env::Options& options,
@@ -128,7 +129,11 @@ FakeDB<T>::FakeDB(EntryMap* db)
 }
 
 template <typename T>
-FakeDB<T>::~FakeDB() {}
+void FakeDB<T>::Init(const std::string& client_name,
+                     typename ProtoDatabase<T>::InitCallback callback) {
+  Init(client_name.c_str(), base::FilePath(FILE_PATH_LITERAL("db_dir")),
+       leveldb_proto::CreateSimpleOptions(), std::move(callback));
+}
 
 template <typename T>
 void FakeDB<T>::Init(const char* client_name,

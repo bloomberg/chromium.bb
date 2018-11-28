@@ -146,8 +146,7 @@ void PersistentAvailabilityStore::LoadAndUpdateStore(
     PersistentAvailabilityStore::OnLoadedCallback on_loaded_callback,
     uint32_t current_day) {
   auto* db_ptr = db.get();
-  db_ptr->Init(kDatabaseUMAName, storage_dir,
-               leveldb_proto::CreateSimpleOptions(),
+  db_ptr->Init(kDatabaseUMAName,
                base::BindOnce(&OnDBInitComplete, std::move(db),
                               std::move(feature_filter),
                               std::move(on_loaded_callback), current_day));

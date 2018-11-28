@@ -138,6 +138,14 @@ bool LevelDB::Save(const base::StringPairs& entries_to_save,
 bool LevelDB::UpdateWithRemoveFilter(const base::StringPairs& entries_to_save,
                                      const KeyFilter& delete_key_filter,
                                      leveldb::Status* status) {
+  return UpdateWithRemoveFilter(entries_to_save, delete_key_filter,
+                                std::string(), status);
+}
+
+bool LevelDB::UpdateWithRemoveFilter(const base::StringPairs& entries_to_save,
+                                     const KeyFilter& delete_key_filter,
+                                     const std::string& target_prefix,
+                                     leveldb::Status* status) {
   DCHECK(status);
   DFAKE_SCOPED_LOCK(thread_checker_);
   if (!db_)
@@ -147,11 +155,13 @@ bool LevelDB::UpdateWithRemoveFilter(const base::StringPairs& entries_to_save,
   for (const auto& pair : entries_to_save)
     updates.Put(leveldb::Slice(pair.first), leveldb::Slice(pair.second));
 
+  leveldb::Slice target(target_prefix);
   if (!delete_key_filter.is_null()) {
     leveldb::ReadOptions read_options;
     std::unique_ptr<leveldb::Iterator> db_iterator(
         db_->NewIterator(read_options));
-    for (db_iterator->SeekToFirst(); db_iterator->Valid();
+    for (db_iterator->Seek(target);
+         db_iterator->Valid() && db_iterator->key().starts_with(target);
          db_iterator->Next()) {
       leveldb::Slice key_slice = db_iterator->key();
       std::string key(key_slice.data(), key_slice.size());
@@ -235,11 +245,16 @@ bool LevelDB::LoadKeysAndEntriesWithFilter(
 }
 
 bool LevelDB::LoadKeys(std::vector<std::string>* keys) {
+  return LoadKeys(std::string(), keys);
+}
+
+bool LevelDB::LoadKeys(const std::string& target_prefix,
+                       std::vector<std::string>* keys) {
   leveldb::ReadOptions options;
   options.fill_cache = false;
   std::map<std::string, std::string> keys_entries;
   bool result = LoadKeysAndEntriesWithFilter(KeyFilter(), &keys_entries,
-                                             options, std::string());
+                                             options, target_prefix);
   if (!result)
     return false;
 
