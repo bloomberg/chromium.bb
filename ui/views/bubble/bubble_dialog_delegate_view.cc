@@ -221,7 +221,7 @@ void BubbleDialogDelegateView::SetHighlightedButton(
   bool visible = GetWidget() && GetWidget()->IsVisible();
   // If the Widget is visible, ensure the old highlight (if any) is removed
   // when the highlighted view changes.
-  if (visible)
+  if (visible && highlighted_button != highlighted_button_tracker_.view())
     UpdateHighlightedButton(false);
   highlighted_button_tracker_.SetView(highlighted_button);
   if (visible)
