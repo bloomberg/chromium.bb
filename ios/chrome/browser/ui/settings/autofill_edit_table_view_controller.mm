@@ -31,9 +31,13 @@
   }
 
   _accessoryView = [[AutofillEditAccessoryView alloc] initWithDelegate:self];
+  return self;
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
   [self setShouldHideDoneButton:YES];
   [self updateEditButton];
-  return self;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
