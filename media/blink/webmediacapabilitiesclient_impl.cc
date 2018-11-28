@@ -10,16 +10,18 @@
 #include "base/bind_helpers.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/decode_capabilities.h"
+#include "media/base/key_system_names.h"
 #include "media/base/mime_util.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
+#include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
 #include "media/filters/stream_parser_factory.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_audio_configuration.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
-#include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_decoding_configuration.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_video_configuration.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scoped_web_callbacks.h"
@@ -145,7 +147,7 @@ namespace {
 void VideoPerfInfoCallback(
     blink::ScopedWebCallbacks<blink::WebMediaCapabilitiesDecodingInfoCallbacks>
         scoped_callbacks,
-    std::unique_ptr<blink::WebMediaCapabilitiesInfo> info,
+    std::unique_ptr<blink::WebMediaCapabilitiesDecodingInfo> info,
     bool is_smooth,
     bool is_power_efficient) {
   DCHECK(info->supported);
@@ -162,11 +164,11 @@ void OnGetPerfInfoError(
 }  // namespace
 
 void WebMediaCapabilitiesClientImpl::DecodingInfo(
-    const blink::WebMediaConfiguration& configuration,
+    const blink::WebMediaDecodingConfiguration& configuration,
     std::unique_ptr<blink::WebMediaCapabilitiesDecodingInfoCallbacks>
         callbacks) {
-  std::unique_ptr<blink::WebMediaCapabilitiesInfo> info(
-      new blink::WebMediaCapabilitiesInfo());
+  std::unique_ptr<blink::WebMediaCapabilitiesDecodingInfo> info(
+      new blink::WebMediaCapabilitiesDecodingInfo());
 
   // MSE support is cheap to check (regex matching). Do it first.
   if (configuration.type == blink::MediaConfigurationType::kMediaSource &&
@@ -203,6 +205,27 @@ void WebMediaCapabilitiesClientImpl::DecodingInfo(
   // Return early for unsupported configurations.
   if (!video_supported) {
     info->supported = info->smooth = info->power_efficient = video_supported;
+    callbacks->OnSuccess(std::move(info));
+    return;
+  }
+
+  // TODO(907909): this is a mock implementation of Encrypted Media support to
+  // have a form of end-to-end implementation.
+  if (configuration.key_system_configuration.has_value()) {
+    auto key_system_configuration = configuration.key_system_configuration;
+
+    if (!media::IsClearKey(key_system_configuration->key_system.Utf8())) {
+      info->supported = info->smooth = info->power_efficient = false;
+      callbacks->OnSuccess(std::move(info));
+      return;
+    }
+
+    info->supported = info->smooth = info->power_efficient = true;
+    info->content_decryption_module_access =
+        base::WrapUnique(WebContentDecryptionModuleAccessImpl::Create(
+            key_system_configuration->key_system, blink::WebSecurityOrigin(),
+            blink::WebMediaKeySystemConfiguration(), {}, nullptr));
+
     callbacks->OnSuccess(std::move(info));
     return;
   }

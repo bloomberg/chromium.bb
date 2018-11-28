@@ -19,7 +19,7 @@ class MediaCapabilitiesDecodingInfoCallbacks
 
   ~MediaCapabilitiesDecodingInfoCallbacks() override;
 
-  void OnSuccess(std::unique_ptr<WebMediaCapabilitiesInfo>) override;
+  void OnSuccess(std::unique_ptr<WebMediaCapabilitiesDecodingInfo>) override;
   void OnError() override;
 
  private:

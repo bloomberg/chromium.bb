@@ -21,6 +21,16 @@ enum class MediaConfigurationType {
 // It is created by Blink and passed to consumers that can assume that all
 // required fields are properly set.
 struct WebMediaConfiguration {
+  WebMediaConfiguration() = default;
+
+  WebMediaConfiguration(
+      MediaConfigurationType type,
+      base::Optional<WebAudioConfiguration> audio_configuration,
+      base::Optional<WebVideoConfiguration> video_configuration)
+      : type(type),
+        audio_configuration(audio_configuration),
+        video_configuration(video_configuration) {}
+
   MediaConfigurationType type;
 
   base::Optional<WebAudioConfiguration> audio_configuration;

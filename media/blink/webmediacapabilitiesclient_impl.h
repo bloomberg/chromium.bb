@@ -21,7 +21,7 @@ class MEDIA_BLINK_EXPORT WebMediaCapabilitiesClientImpl
 
   // Implementation of blink::WebMediaCapabilitiesClient.
   void DecodingInfo(
-      const blink::WebMediaConfiguration&,
+      const blink::WebMediaDecodingConfiguration&,
       std::unique_ptr<blink::WebMediaCapabilitiesDecodingInfoCallbacks>)
       override;
 

@@ -11,7 +11,7 @@
 
 namespace blink {
 
-struct WebMediaConfiguration;
+struct WebMediaDecodingConfiguration;
 
 // Interface between Blink and the Media layer.
 class WebMediaCapabilitiesClient {
@@ -19,7 +19,7 @@ class WebMediaCapabilitiesClient {
   virtual ~WebMediaCapabilitiesClient() = default;
 
   virtual void DecodingInfo(
-      const WebMediaConfiguration&,
+      const WebMediaDecodingConfiguration&,
       std::unique_ptr<WebMediaCapabilitiesDecodingInfoCallbacks>) = 0;
 };
 
