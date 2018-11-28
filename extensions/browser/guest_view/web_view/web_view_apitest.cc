@@ -42,6 +42,7 @@
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/test/shell_test.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/result_catcher.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -174,16 +175,26 @@ content::WebContents* WebViewAPITest::GetFirstAppWindowWebContents() {
 }
 
 void WebViewAPITest::RunTest(const std::string& test_name,
-                             const std::string& app_location) {
+                             const std::string& app_location,
+                             bool ad_hoc_framework) {
   LaunchApp(app_location);
 
-  ExtensionTestMessageListener done_listener("TEST_PASSED", false);
-  done_listener.set_failure_message("TEST_FAILED");
-  ASSERT_TRUE(content::ExecuteScript(
-      embedder_web_contents_,
-      base::StringPrintf("runTest('%s')", test_name.c_str())))
-      << "Unable to start test.";
-  ASSERT_TRUE(done_listener.WaitUntilSatisfied());
+  if (ad_hoc_framework) {
+    ExtensionTestMessageListener done_listener("TEST_PASSED", false);
+    done_listener.set_failure_message("TEST_FAILED");
+    ASSERT_TRUE(content::ExecuteScript(
+        embedder_web_contents_,
+        base::StringPrintf("runTest('%s')", test_name.c_str())))
+        << "Unable to start test.";
+    ASSERT_TRUE(done_listener.WaitUntilSatisfied());
+  } else {
+    ResultCatcher catcher;
+    ASSERT_TRUE(content::ExecuteScript(
+        embedder_web_contents_,
+        base::StringPrintf("runTest('%s')", test_name.c_str())))
+        << "Unable to start test.";
+    ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
 }
 
 void WebViewAPITest::SetUpCommandLine(base::CommandLine* command_line) {
@@ -797,6 +808,28 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebViewInsideFrame) {
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestCaptureVisibleRegion) {
   RunTest("testCaptureVisibleRegion", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNoUserCodeCreate) {
+  RunTest("testCreate", "web_view/no_internal_calls_to_user_code", false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNoUserCodeSetOnEventProperty) {
+  RunTest("testSetOnEventProperty", "web_view/no_internal_calls_to_user_code",
+          false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNoUserCodeGetSetAttributes) {
+  RunTest("testGetSetAttributes", "web_view/no_internal_calls_to_user_code",
+          false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNoUserCodeBackForward) {
+  RunTest("testBackForward", "web_view/no_internal_calls_to_user_code", false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNoUserCodeFocus) {
+  RunTest("testFocus", "web_view/no_internal_calls_to_user_code", false);
 }
 
 }  // namespace extensions

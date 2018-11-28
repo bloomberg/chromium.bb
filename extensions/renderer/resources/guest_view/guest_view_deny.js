@@ -6,6 +6,9 @@
 // permissions are not available. These elements exist only to provide a useful
 // error message when developers attempt to use them.
 
+var $CustomElementRegistry =
+    require('safeMethods').SafeMethods.$CustomElementRegistry;
+var $EventTarget = require('safeMethods').SafeMethods.$EventTarget;
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 
 var ERROR_MESSAGE = 'You do not have permission to use the %1 element.' +
@@ -30,9 +33,11 @@ function registerGuestViewElement(viewType) {
             ERROR_MESSAGE, /%1/g, $String.toLowerCase(viewType)));
       }
     }
-
-    window.customElements.define($String.toLowerCase(viewType), DeniedElement);
-    window[viewType] = DeniedElement;
+    $CustomElementRegistry.define(
+        window.customElements, $String.toLowerCase(viewType), DeniedElement);
+    $Object.defineProperty(window, viewType, {
+      value: DeniedElement,
+    });
   });
 }
 
@@ -46,9 +51,9 @@ window.addEventListener('readystatechange', function listener(event) {
     // that have not already been registered. Since this module is always loaded
     // last, all the view types that are available (i.e. have the proper
     // permissions) will have already been registered on |window|.
-    if (!window[viewType])
+    if (!$Object.hasOwnProperty(window, viewType))
       registerGuestViewElement(viewType);
   }
 
-  window.removeEventListener(event.type, listener, useCapture);
+  $EventTarget.removeEventListener(window, event.type, listener, useCapture);
 }, useCapture);

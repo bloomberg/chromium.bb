@@ -6,6 +6,7 @@
 // BrowserPlugin object element. The object element is hidden within
 // the shadow DOM of the WebView element.
 
+var $Element = require('safeMethods').SafeMethods.$Element;
 var GuestView = require('guestView').GuestView;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var GuestViewInternalNatives = requireNative('guest_view_internal');
@@ -163,10 +164,9 @@ WebViewImpl.prototype.onAttach = function(storagePartitionId) {
 };
 
 WebViewImpl.prototype.buildContainerParams = function() {
-  var params = {
-    'initialZoomFactor': this.pendingZoomFactor_,
-    'userAgentOverride': this.userAgentOverride
-  };
+  var params = $Object.create(null);
+  params.initialZoomFactor = this.pendingZoomFactor_;
+  params.userAgentOverride = this.userAgentOverride;
   for (var i in this.attributes) {
     var value = this.attributes[i].getValueIfDirty();
     if (value)
@@ -248,7 +248,7 @@ WebViewImpl.prototype.setZoom = function(zoomFactor, callback) {
 // Requests the <webview> element wihtin the embedder to enter fullscreen.
 WebViewImpl.prototype.makeElementFullscreen = function() {
   GuestViewInternalNatives.RunWithGesture($Function.bind(function() {
-    this.element.webkitRequestFullScreen();
+    $Element.webkitRequestFullScreen(this.element);
   }, this));
 };
 

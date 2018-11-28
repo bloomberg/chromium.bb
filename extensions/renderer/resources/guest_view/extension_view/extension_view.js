@@ -40,7 +40,7 @@ ExtensionViewImpl.prototype.createGuest = function(callback) {
 };
 
 ExtensionViewImpl.prototype.buildContainerParams = function() {
-  var params = {};
+  var params = $Object.create(null);
   for (var i in this.attributes) {
     params[i] = this.attributes[i].getValue();
   }

@@ -652,6 +652,7 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"guestViewContainerElement", IDR_GUEST_VIEW_CONTAINER_ELEMENT_JS},
       {"guestViewDeny", IDR_GUEST_VIEW_DENY_JS},
       {"guestViewEvents", IDR_GUEST_VIEW_EVENTS_JS},
+      {"safeMethods", IDR_SAFE_METHODS_JS},
       {"imageUtil", IDR_IMAGE_UTIL_JS},
       {"setIcon", IDR_SET_ICON_JS},
       {"test", IDR_TEST_CUSTOM_BINDINGS_JS},

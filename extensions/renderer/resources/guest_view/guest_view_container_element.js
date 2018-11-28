@@ -5,6 +5,11 @@
 // Common custom element registration code for the various guest view
 // containers.
 
+var $CustomElementRegistry =
+    require('safeMethods').SafeMethods.$CustomElementRegistry;
+var $Element = require('safeMethods').SafeMethods.$Element;
+var $EventTarget = require('safeMethods').SafeMethods.$EventTarget;
+var $HTMLElement = require('safeMethods').SafeMethods.$HTMLElement;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 var IdGenerator = requireNative('id_generator');
@@ -21,7 +26,8 @@ function registerElement(elementName, containerElementType) {
 
     registerInternalElement($String.toLowerCase(elementName));
     registerGuestViewElement(elementName, containerElementType);
-    window.removeEventListener(event.type, listener, useCapture);
+
+    $EventTarget.removeEventListener(window, event.type, listener, useCapture);
   }, useCapture);
 }
 
@@ -36,10 +42,12 @@ function registerInternalElement(viewType) {
 
       constructor() {
         super();
-        this.setAttribute('type', 'application/browser-plugin');
-        this.setAttribute('id', 'browser-plugin-' + IdGenerator.GetNextId());
-        this.style.width = '100%';
-        this.style.height = '100%';
+        $Element.setAttribute(this, 'type', 'application/browser-plugin');
+        $Element.setAttribute(
+            this, 'id', 'browser-plugin-' + IdGenerator.GetNextId());
+        var style = $HTMLElement.style.get(this);
+        $Object.defineProperty(style, 'width', {value: '100%'});
+        $Object.defineProperty(style, 'height', {value: '100%'});
       }
     }
 
@@ -57,9 +65,12 @@ function registerInternalElement(viewType) {
       internal.handleInternalElementAttributeMutation(name, oldValue, newValue);
     };
 
-    window.customElements.define(
-        viewType + 'browserplugin', InternalElement, {extends: 'object'});
-    GuestViewContainer[viewType + 'BrowserPlugin'] = InternalElement;
+    $CustomElementRegistry.define(
+        window.customElements, viewType + 'browserplugin', InternalElement,
+        {extends: 'object'});
+    $Object.defineProperty(GuestViewContainer, viewType + 'BrowserPlugin', {
+      value: InternalElement,
+    });
 
     delete InternalElement.prototype.connectedCallback;
     delete InternalElement.prototype.attributeChangedCallback;
@@ -116,9 +127,12 @@ function registerGuestViewElement(elementName, containerElementType) {
     GuestViewContainerElement.prototype.attributeChangedCallback =
         customElementCallbacks.attributeChangedCallback;
 
-    window.customElements.define(
-        $String.toLowerCase(elementName), containerElementType);
-    window[elementName] = containerElementType;
+    $CustomElementRegistry.define(
+        window.customElements, $String.toLowerCase(elementName),
+        containerElementType);
+    $Object.defineProperty(window, elementName, {
+      value: containerElementType,
+    });
 
     delete GuestViewContainerElement.prototype.connectedCallback;
     delete GuestViewContainerElement.prototype.disconnectedCallback;

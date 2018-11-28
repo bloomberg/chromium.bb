@@ -51,8 +51,8 @@ function GuestViewImpl(guestView, viewType, guestInstanceId) {
 
 // Prevent GuestViewImpl inadvertently inheriting code from the global Object,
 // allowing a pathway for executing unintended user code execution.
-// TODO(wjmaclean): Use utils.expose() here instead? Track down other issues
-// of Object inheritance. https://crbug.com/701034
+// TODO(wjmaclean): Track down other issues of Object inheritance.
+// https://crbug.com/701034
 GuestViewImpl.prototype.__proto__ = null;
 
 // Possible states.

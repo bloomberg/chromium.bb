@@ -4,14 +4,20 @@
 
 // GuestViewCrossProcessFrames overrides for guest_view_container.js
 
+var $Document = require('safeMethods').SafeMethods.$Document;
+var $HTMLElement = require('safeMethods').SafeMethods.$HTMLElement;
+var $Node = require('safeMethods').SafeMethods.$Node;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var IdGenerator = requireNative('id_generator');
 
 GuestViewContainer.prototype.createInternalElement$ = function() {
-  var iframeElement = document.createElement('iframe');
-  iframeElement.style.width = '100%';
-  iframeElement.style.height = '100%';
-  iframeElement.style.border = '0';
+  var iframeElement = $Document.createElement(document, 'iframe');
+
+  var style = $HTMLElement.style.get(iframeElement);
+  $Object.defineProperty(style, 'width', {value: '100%'});
+  $Object.defineProperty(style, 'height', {value: '100%'});
+  $Object.defineProperty(style, 'border', {value: '0px'});
+
   return iframeElement;
 };
 
@@ -21,7 +27,8 @@ GuestViewContainer.prototype.prepareForReattach$ = function() {
   var newFrame = this.createInternalElement$();
   var oldFrame = this.internalElement;
   this.internalElement = newFrame;
-  oldFrame.parentNode.replaceChild(newFrame, oldFrame);
+  var frameParent = $Node.parentNode.get(oldFrame);
+  $Node.replaceChild(frameParent, newFrame, oldFrame);
 };
 
 GuestViewContainer.prototype.attachWindow$ = function() {

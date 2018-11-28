@@ -30,7 +30,7 @@ ExtensionOptionsImpl.prototype.setupAttributes = function() {
 };
 
 ExtensionOptionsImpl.prototype.buildContainerParams = function() {
-  var params = {};
+  var params = $Object.create(null);
   for (var i in this.attributes) {
     params[i] = this.attributes[i].getValue();
   }

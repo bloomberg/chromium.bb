@@ -4,6 +4,9 @@
 
 // This module implements the base attributes of the GuestView tags.
 
+var $parseInt = require('safeMethods').SafeMethods.$parseInt;
+var $Element = require('safeMethods').SafeMethods.$Element;
+
 // -----------------------------------------------------------------------------
 // Attribute object.
 
@@ -19,13 +22,13 @@ function Attribute(name, view) {
 
 // Prevent GuestViewEvents inadvertently inheritng code from the global Object,
 // allowing a pathway for unintended execution of user code.
-// TODO(wjmaclean): Use utils.expose() here instead, track down other issues
-// of Object inheritance. https://crbug.com/701034
+// TODO(wjmaclean): Track down other issues of Object inheritance.
+// https://crbug.com/701034
 Attribute.prototype.__proto__ = null;
 
 // Retrieves and returns the attribute's value.
 Attribute.prototype.getValue = function() {
-  return this.view.element.getAttribute(this.name) || '';
+  return $Element.getAttribute(this.view.element, this.name) || '';
 };
 
 // Retrieves and returns the attribute's value if it has been dirtied since
@@ -39,7 +42,7 @@ Attribute.prototype.getValueIfDirty = function() {
 
 // Sets the attribute's value.
 Attribute.prototype.setValue = function(value) {
-  this.view.element.setAttribute(this.name, value || '');
+  $Element.setAttribute(this.view.element, this.name, value || '');
 };
 
 // Changes the attribute's value without triggering its mutation handler.
@@ -91,14 +94,14 @@ function BooleanAttribute(name, view) {
 BooleanAttribute.prototype.__proto__ = Attribute.prototype;
 
 BooleanAttribute.prototype.getValue = function() {
-  return this.view.element.hasAttribute(this.name);
+  return $Element.hasAttribute(this.view.element, this.name);
 };
 
 BooleanAttribute.prototype.setValue = function(value) {
   if (!value) {
-    this.view.element.removeAttribute(this.name);
+    $Element.removeAttribute(this.view.element, this.name);
   } else {
-    this.view.element.setAttribute(this.name, '');
+    $Element.setAttribute(this.view.element, this.name, '');
   }
 };
 
@@ -113,11 +116,11 @@ function IntegerAttribute(name, view) {
 IntegerAttribute.prototype.__proto__ = Attribute.prototype;
 
 IntegerAttribute.prototype.getValue = function() {
-  return parseInt(this.view.element.getAttribute(this.name)) || 0;
+  return $parseInt($Element.getAttribute(this.view.element, this.name)) || 0;
 };
 
 IntegerAttribute.prototype.setValue = function(value) {
-  this.view.element.setAttribute(this.name, parseInt(value) || 0);
+  $Element.setAttribute(this.view.element, this.name, $parseInt(value) || 0);
 };
 
 // -----------------------------------------------------------------------------
