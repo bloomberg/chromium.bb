@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_card_cell.h"
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_list_delegate.h"
@@ -227,6 +228,8 @@ static const CGFloat SideMargins = 16;
 }
 
 - (void)userDidTapCardNumber:(UIButton*)sender {
+  base::RecordAction(
+      base::UserMetricsAction("ManualFallback_CreditCard_SelectCardNumber"));
   NSString* number = self.card.number;
   if (!number.length) {
     [self.navigationDelegate requestFullCreditCard:self.card];
@@ -238,6 +241,17 @@ static const CGFloat SideMargins = 16;
 }
 
 - (void)userDidTapCardInfo:(UIButton*)sender {
+  const char* metricsAction = nullptr;
+  if (sender == self.cardholderButton) {
+    metricsAction = "ManualFallback_CreditCard_SelectCardholderName";
+  } else if (sender == self.expirationMonthButton) {
+    metricsAction = "ManualFallback_CreditCard_SelectExpirationMonth";
+  } else if (sender == self.expirationYearButton) {
+    metricsAction = "ManualFallback_CreditCard_SelectExpirationYear";
+  }
+  DCHECK(metricsAction);
+  base::RecordAction(base::UserMetricsAction(metricsAction));
+
   [self.contentDelegate userDidPickContent:sender.titleLabel.text
                            isPasswordField:NO
                              requiresHTTPS:NO];
