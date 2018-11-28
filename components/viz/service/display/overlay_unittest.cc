@@ -558,6 +558,7 @@ class OverlayTest : public testing::Test {
     overlay_processor_ =
         std::make_unique<OverlayProcessor>(output_surface_.get());
     overlay_processor_->Initialize();
+    overlay_processor_->SetDCHasHwOverlaySupportForTesting();
   }
 
   void TearDown() override {

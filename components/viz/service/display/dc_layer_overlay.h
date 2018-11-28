@@ -16,6 +16,7 @@
 
 namespace viz {
 class DisplayResourceProvider;
+class OutputSurface;
 
 class VIZ_SERVICE_EXPORT DCLayerOverlaySharedState
     : public base::RefCounted<DCLayerOverlaySharedState> {
@@ -99,10 +100,11 @@ class DCLayerOverlayProcessor {
     DC_LAYER_FAILED_TRANSPARENT,
     DC_LAYER_FAILED_NON_ROOT,
     DC_LAYER_FAILED_TOO_MANY_OVERLAYS,
-    DC_LAYER_FAILED_MAX,
+    DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,
+    kMaxValue = DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,
   };
 
-  DCLayerOverlayProcessor();
+  explicit DCLayerOverlayProcessor(OutputSurface* surface);
   ~DCLayerOverlayProcessor();
 
   void Process(DisplayResourceProvider* resource_provider,
@@ -115,6 +117,7 @@ class DCLayerOverlayProcessor {
     previous_frame_underlay_rect_ = gfx::Rect();
     previous_frame_underlay_occlusion_ = gfx::Rect();
   }
+  void SetHasHwOverlaySupport() { has_hw_overlay_support_ = true; }
 
  private:
   DCLayerResult FromDrawQuad(DisplayResourceProvider* resource_provider,
@@ -154,6 +157,7 @@ class DCLayerOverlayProcessor {
   gfx::Rect previous_frame_underlay_occlusion_;
   gfx::RectF previous_display_rect_;
   bool processed_overlay_in_frame_ = false;
+  bool has_hw_overlay_support_ = true;
 
   // Store information about clipped punch-through rects in target space for
   // non-root render passes. These rects are used to clear the corresponding

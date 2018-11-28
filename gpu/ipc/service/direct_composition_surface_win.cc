@@ -665,11 +665,20 @@ DCLayerTree::SwapChainPresenter::SwapChainPresenter(
 DCLayerTree::SwapChainPresenter::~SwapChainPresenter() {}
 
 bool DCLayerTree::SwapChainPresenter::ShouldUseYUVSwapChain() {
-  // Always prefer YUV swap chain for protected video for now.
   // TODO(crbug.com/850799): Assess power/perf impact when protected video
   // swap chain is composited by DWM.
-  if (IsProtectedVideo(protected_video_type_))
+
+  // Always prefer YUV swap chain for hardware protected video for now.
+  if (protected_video_type_ == ui::ProtectedVideoType::kHardwareProtected)
     return true;
+
+  // For software protected video, BGRA swap chain is preferred if hardware
+  // overlay is not supported for better power efficiency.
+  // Currently, software protected video is the only case that overlay swap
+  // chain is used when hardware overlay is not suppported.
+  if (protected_video_type_ == ui::ProtectedVideoType::kSoftwareProtected &&
+      !g_supports_overlays)
+    return false;
 
   if (failed_to_create_yuv_swapchain_)
     return false;
@@ -1469,6 +1478,13 @@ bool DirectCompositionSurfaceWin::IsDirectCompositionSupported() {
         gl::QueryD3D11DeviceObjectFromANGLE();
     if (!d3d11_device) {
       DLOG(ERROR) << "Failed to retrieve D3D11 device";
+      return false;
+    }
+
+    // This will fail if the D3D device is "Microsoft Basic Display Adapter".
+    Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device;
+    if (FAILED(d3d11_device.CopyTo(video_device.GetAddressOf()))) {
+      DLOG(ERROR) << "Failed to retrieve video device";
       return false;
     }
 

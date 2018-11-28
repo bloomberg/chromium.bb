@@ -51,7 +51,7 @@ OverlayProcessor::StrategyType OverlayProcessor::Strategy::GetUMAEnum() const {
 }
 
 OverlayProcessor::OverlayProcessor(OutputSurface* surface)
-    : surface_(surface) {}
+    : surface_(surface), dc_processor_(surface) {}
 
 void OverlayProcessor::Initialize() {
   DCHECK(surface_);
