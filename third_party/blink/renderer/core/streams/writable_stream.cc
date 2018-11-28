@@ -6,9 +6,11 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -207,6 +209,47 @@ base::Optional<bool> WritableStream::IsLocked(
     return base::nullopt;
   }
   return result;
+}
+
+void WritableStream::Serialize(ScriptState* script_state,
+                               MessagePort* port,
+                               ExceptionState& exception_state) {
+  DCHECK(port);
+  DCHECK(RuntimeEnabledFeatures::TransferableStreamsEnabled());
+  v8::TryCatch block(script_state->GetIsolate());
+  v8::Local<v8::Value> port_v8_value = ToV8(port, script_state);
+  DCHECK(!port_v8_value.IsEmpty());
+  v8::Local<v8::Value> args[] = {ToV8(this, script_state), port_v8_value};
+  V8ScriptRunner::CallExtra(script_state, "WritableStreamSerialize", args);
+  if (block.HasCaught()) {
+    exception_state.RethrowV8Exception(block.Exception());
+  }
+}
+
+// static
+WritableStream* WritableStream::Deserialize(ScriptState* script_state,
+                                            MessagePort* port,
+                                            ExceptionState& exception_state) {
+  // We need to execute V8 Extras JavaScript to create the new WritableStream.
+  // We will not run author code.
+  auto* isolate = script_state->GetIsolate();
+  v8::Isolate::AllowJavascriptExecutionScope allow_js(isolate);
+  DCHECK(port);
+  DCHECK(RuntimeEnabledFeatures::TransferableStreamsEnabled());
+  v8::TryCatch block(isolate);
+  v8::Local<v8::Value> port_v8 = ToV8(port, script_state);
+  DCHECK(!port_v8.IsEmpty());
+  v8::Local<v8::Value> args[] = {port_v8};
+  ScriptValue internal_stream(
+      script_state, V8ScriptRunner::CallExtra(
+                        script_state, "WritableStreamDeserialize", args));
+  if (block.HasCaught()) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return nullptr;
+  }
+  DCHECK(!internal_stream.IsEmpty());
+  return CreateFromInternalStream(script_state, internal_stream,
+                                  exception_state);
 }
 
 ScriptValue WritableStream::GetInternalStream(ScriptState* script_state) const {

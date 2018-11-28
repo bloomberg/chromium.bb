@@ -93,6 +93,8 @@
     PeekQueueValue,
     ResetQueue,
     ValidateAndNormalizeHighWaterMark,
+    CreateCrossRealmTransformReadable,
+    CreateCrossRealmTransformWritable,
     CallOrNoop1,
   } = binding.streamOperations;
 
@@ -464,6 +466,34 @@
     } else {
       stream[_stateAndFlags] &= ~BACKPRESSURE_FLAG;
     }
+  }
+
+  //
+  // Functions for transferable streams.
+  //
+
+  // The |port| which is passed to this function must be a MessagePort which is
+  // attached by a MessageChannel to the |port| that will be passed to
+  // WritableStreamDeserialize.
+  function WritableStreamSerialize(writable, port) {
+    // assert(IsWritableStream(writable),
+    //        `! IsWritableStream(_writable_) is true`);
+    if (IsWritableStreamLocked(writable)) {
+      throw new TypeError(streamErrors.cannotTransferLockedStream);
+    }
+
+    if (!binding.MessagePort_postMessage) {
+      throw new TypeError(streamErrors.cannotTransferContext);
+    }
+
+    const readable = CreateCrossRealmTransformReadable(port);
+    const promise =
+          binding.ReadableStreamPipeTo(readable, writable, false, false, false);
+    markPromiseAsHandled(promise);
+  }
+
+  function WritableStreamDeserialize(port) {
+    return CreateCrossRealmTransformWritable(port);
   }
 
   // Functions to expose internals for ReadableStream.pipeTo. These are not
@@ -1044,6 +1074,8 @@
     // Exports for blink
     createWritableStream,
     internalWritableStreamSymbol,
+    WritableStreamSerialize,
+    WritableStreamDeserialize,
 
     // Additional exports for TransformStream
     CreateWritableStream,

@@ -14,6 +14,8 @@
 
 namespace blink {
 
+class MessagePort;
+
 // This is an implementation of the corresponding IDL interface.
 // Use TraceWrapperMember to hold a reference to an instance of this class.
 class CORE_EXPORT WritableStream : public ScriptWrappable {
@@ -64,6 +66,17 @@ class CORE_EXPORT WritableStream : public ScriptWrappable {
   ScriptValue getWriter(ScriptState*, ExceptionState&);
 
   base::Optional<bool> IsLocked(ScriptState*, ExceptionState&) const;
+
+  // Serialize this stream to |port|. The stream will be locked by this
+  // operation.
+  void Serialize(ScriptState*, MessagePort* port, ExceptionState&);
+
+  // Given a |port| which is entangled with a MessagePort that was previously
+  // passed to Serialize(), returns a new WritableStream which behaves like it
+  // was the original.
+  static WritableStream* Deserialize(ScriptState*,
+                                     MessagePort* port,
+                                     ExceptionState&);
 
   ScriptValue GetInternalStream(ScriptState*) const;
 
