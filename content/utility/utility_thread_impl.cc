@@ -24,12 +24,6 @@
 #include "net/proxy_resolution/proxy_resolver_v8.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "content/common/font_loader_mac.mojom.h"
-#include "content/public/common/service_names.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-#endif
-
 namespace content {
 
 #if !defined(OS_ANDROID)
@@ -163,21 +157,6 @@ void UtilityThreadImpl::Init() {
 bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   return GetContentClient()->utility()->OnMessageReceived(msg);
 }
-
-#if defined(OS_MACOSX)
-mojom::FontLoaderMac* UtilityThreadImpl::GetFontLoaderMac() {
-  DCHECK(font_loader_mac_ptr_);
-  return font_loader_mac_ptr_.get();
-}
-
-void UtilityThreadImpl::InitializeFontLoaderMac(
-    service_manager::Connector* connector) {
-  if (!font_loader_mac_ptr_) {
-    connector->BindInterface(content::mojom::kBrowserServiceName,
-                             &font_loader_mac_ptr_);
-  }
-}
-#endif
 
 void UtilityThreadImpl::BindServiceFactoryRequest(
     service_manager::mojom::ServiceFactoryRequest request) {

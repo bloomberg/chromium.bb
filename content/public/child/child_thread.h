@@ -14,8 +14,6 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX)
-#include "mojo/public/cpp/system/buffer.h"
 #endif
 
 namespace base {
@@ -81,12 +79,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Sender {
 
   // Release cached font.
   virtual void ReleaseCachedFonts() = 0;
-#elif defined(OS_MACOSX)
-  // Load specified font into shared memory.
-  virtual bool LoadFont(const base::string16& font_name,
-                        float font_point_size,
-                        mojo::ScopedSharedBufferHandle* out_font_data,
-                        uint32_t* out_font_id) = 0;
 #endif
 };
 

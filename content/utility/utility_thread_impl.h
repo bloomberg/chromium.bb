@@ -19,10 +19,6 @@
 namespace content {
 class UtilityServiceFactory;
 
-namespace mojom {
-class FontLoaderMac;
-}
-
 #if defined(COMPILER_MSVC)
 // See explanation for other RenderViewHostImpl which is the same issue.
 #pragma warning(push)
@@ -45,9 +41,6 @@ class UtilityThreadImpl : public UtilityThread,
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
   void EnsureBlinkInitializedWithSandboxSupport() override;
 #endif
-#if defined(OS_MACOSX)
-  void InitializeFontLoaderMac(service_manager::Connector* connector) override;
-#endif
 
  private:
   void EnsureBlinkInitializedInternal(bool sandbox_support);
@@ -55,9 +48,6 @@ class UtilityThreadImpl : public UtilityThread,
 
   // ChildThreadImpl:
   bool OnControlMessageReceived(const IPC::Message& msg) override;
-#if defined(OS_MACOSX)
-  mojom::FontLoaderMac* GetFontLoaderMac() override;
-#endif
 
   // Binds requests to our |service factory_|.
   void BindServiceFactoryRequest(
@@ -73,10 +63,6 @@ class UtilityThreadImpl : public UtilityThread,
   // Bindings to the service_manager::mojom::ServiceFactory impl.
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
-
-#if defined(OS_MACOSX)
-  content::mojom::FontLoaderMacPtr font_loader_mac_ptr_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThreadImpl);
 };

@@ -115,8 +115,6 @@ source_set("common") {
     "font_list_fontconfig.cc",
     "font_list_mac.mm",
     "font_list_win.cc",
-    "font_loader_dispatcher_mac.cc",
-    "font_loader_dispatcher_mac.h",
     "frame_message_enums.h",
     "frame_message_structs.cc",
     "frame_message_structs.h",
@@ -545,7 +543,6 @@ mojom("mojo_bindings") {
 
   if (is_mac) {
     sources += [
-      "font_loader_mac.mojom",
       "render_widget_host_ns_view.mojom",
       "sandbox_support_mac.mojom",
     ]

@@ -28,8 +28,6 @@ WebSandboxSupportMac::WebSandboxSupportMac(
 
 WebSandboxSupportMac::~WebSandboxSupportMac() = default;
 
-// TODO(rsesek): Move font loading off the content.mojom.FontLoaderMac
-// interface and onto the SandboxSupportMac interface.
 bool WebSandboxSupportMac::LoadFont(CTFontRef font,
                                     CGFontRef* out,
                                     uint32_t* font_id) {
@@ -37,8 +35,8 @@ bool WebSandboxSupportMac::LoadFont(CTFontRef font,
   base::string16 font_name = SysCFStringRefToUTF16(name_ref);
   float font_point_size = CTFontGetSize(font);
   mojo::ScopedSharedBufferHandle font_data;
-  bool success = content::ChildThread::Get()->LoadFont(
-                     font_name, font_point_size, &font_data, font_id) &&
+  bool success = sandbox_support_->LoadFont(font_name, font_point_size,
+                                            &font_data, font_id) &&
                  *font_id > 0 && font_data.is_valid();
   if (!success) {
     DLOG(ERROR) << "Bad response from LoadFont() for " << font_name;
