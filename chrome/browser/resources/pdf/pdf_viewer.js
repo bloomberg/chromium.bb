@@ -140,12 +140,6 @@ function PDFViewer(browserApi) {
       (chrome.metricsPrivate ? new PDFMetricsImpl() : new PDFMetricsDummy());
   this.metrics.onDocumentOpened();
 
-  /**
-   * @private {!PDFCoordsTransformer}
-   */
-  this.coordsTransformer_ =
-      new PDFCoordsTransformer(this.postMessage_.bind(this));
-
   // Parse open pdf parameters.
   this.paramsParser_ = new OpenPDFParamsParser(this.postMessage_.bind(this));
   var toolbarEnabled =
@@ -267,11 +261,8 @@ function PDFViewer(browserApi) {
   });
 
   document.body.addEventListener('change-page-and-xy', e => {
-    // The coordinates received in |e| are in page coordinates and need to be
-    // transformed to screen coordinates.
-    this.coordsTransformer_.request(
-        this.goToPageAndXY_.bind(this, e.detail.origin, e.detail.page), {},
-        e.detail.page, e.detail.x, e.detail.y);
+    const point = this.viewport_.convertPageToScreen(e.detail.page, e.detail);
+    this.goToPageAndXY_(e.detail.origin, e.detail.page, point);
   });
 
   document.body.addEventListener('navigate', e => {
@@ -484,6 +475,7 @@ PDFViewer.prototype = {
    */
   rotateClockwise_: function() {
     this.metrics.onRotation();
+    this.viewport_.rotateClockwise(1);
     this.postMessage_({type: 'rotateClockwise'});
   },
 
@@ -494,6 +486,7 @@ PDFViewer.prototype = {
    */
   rotateCounterClockwise_: function() {
     this.metrics.onRotation();
+    this.viewport_.rotateClockwise(3);
     this.postMessage_({type: 'rotateCounterclockwise'});
   },
 
@@ -780,9 +773,6 @@ PDFViewer.prototype = {
         break;
       case 'formFocusChange':
         this.isFormFieldFocused_ = message.data.focused;
-        break;
-      case 'transformPagePointReply':
-        this.coordsTransformer_.onReplyReceived(message);
         break;
       case 'saveData':
         this.saveData_(message.data);
