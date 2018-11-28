@@ -50,5 +50,6 @@ dictionary RTCConfiguration {
     [RuntimeEnabled=RTCUnifiedPlan] SdpSemantics sdpSemantics;
     [OriginTrialEnabled=RtcAudioJitterBufferMaxPackets] long rtcAudioJitterBufferMaxPackets;
     [OriginTrialEnabled=RtcAudioJitterBufferMaxPackets] boolean rtcAudioJitterBufferFastAccelerate;
+    [OriginTrialEnabled=RtcAudioJitterBufferMaxPackets] long rtcAudioJitterBufferMinDelayMs;
 };
 
