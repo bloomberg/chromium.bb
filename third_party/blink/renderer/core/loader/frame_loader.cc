@@ -1695,6 +1695,7 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
     // correctly.
     if (context != mojom::RequestContextType::UNSPECIFIED &&
         resource_request.Url().ProtocolIs("http") &&
+        !origin_context->GetSecurityContext().GetMixedAutoUpgradeOptOut() &&
         MixedContentChecker::ShouldAutoupgrade(
             origin_context->Url(),
             WebMixedContent::ContextTypeFromRequestContext(context, false))) {
