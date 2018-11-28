@@ -127,9 +127,12 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void CommitResponseHeaders();
 
   // Calls url_loader_client_->OnStartLoadingResponseBody() with
-  // |response_body| or with an empty data pipe.
+  // |response_body|.
   void CommitResponseBody(mojo::ScopedDataPipeConsumerHandle response_body);
-  void CommitResponseBodyEmpty();
+
+  // Creates and sends an empty response's body with the net::OK status.
+  // Sends net::ERR_INSUFFICIENT_RESOURCES when it can't be created.
+  void CommitEmptyResponseAndComplete();
 
   // Calls url_loader_client_->OnComplete(). Expected to be called after
   // CommitResponseHeaders (i.e. status_ == kSentHeader).

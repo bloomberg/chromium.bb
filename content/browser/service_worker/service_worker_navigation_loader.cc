@@ -269,26 +269,19 @@ void ServiceWorkerNavigationLoader::CommitResponseBody(
   url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
 }
 
-void ServiceWorkerNavigationLoader::CommitResponseBodyEmpty() {
-  TransitionToStatus(Status::kSentBody);
-
-  // TODO(arthursonzogni): As soon as https://crbug.com/905779 is fixed, switch
-  // back to using mojo::DataPipe instead of creating it manually.
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
-  // Cannot use 0, because this means "default" in
-  // mojo::core::Core::CreateDataPipe.
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = 1;
+void ServiceWorkerNavigationLoader::CommitEmptyResponseAndComplete() {
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
-  MojoResult result =
-      CreateDataPipe(&options, &producer_handle, &consumer_handle);
-  CHECK_EQ(MOJO_RESULT_OK, result);
+  if (CreateDataPipe(nullptr, &producer_handle, &consumer_handle) !=
+      MOJO_RESULT_OK) {
+    CommitCompleted(net::ERR_INSUFFICIENT_RESOURCES,
+                    "Can't create empty data pipe");
+    return;
+  }
 
   producer_handle.reset();  // The data pipe is empty.
-  url_loader_client_->OnStartLoadingResponseBody(std::move(consumer_handle));
+  CommitResponseBody(std::move(consumer_handle));
+  CommitCompleted(net::OK, "No body exists.");
 }
 
 void ServiceWorkerNavigationLoader::CommitCompleted(int error_code,
@@ -474,7 +467,6 @@ void ServiceWorkerNavigationLoader::StartResponse(
                        weak_factory_.GetWeakPtr()),
         &data_pipe);
     if (error != net::OK) {
-      CommitResponseBodyEmpty();
       CommitCompleted(error, "Failed to read blob body");
       return;
     }
@@ -493,8 +485,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "result", "no body");
 
-  CommitResponseBodyEmpty();
-  CommitCompleted(net::OK, "No body exists.");
+  CommitEmptyResponseAndComplete();
 }
 
 // URLLoader implementation----------------------------------------
@@ -643,6 +634,8 @@ void ServiceWorkerNavigationLoader::TransitionToStatus(Status new_status) {
           status_ == Status::kNotStarted ||
           // Network fallback after interception.
           status_ == Status::kStarted ||
+          // Pipe creation failure for empty response.
+          status_ == Status::kSentHeader ||
           // Success case or error while sending the response's body.
           status_ == Status::kSentBody);
       break;

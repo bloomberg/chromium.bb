@@ -407,8 +407,7 @@ void ServiceWorkerSubresourceLoader::OnFallback(
     response_head_.was_fetched_via_service_worker = true;
     response_head_.was_fallback_required_by_service_worker = true;
     CommitResponseHeaders();
-    CommitResponseBodyEmpty();
-    CommitCompleted(net::OK);
+    CommitEmptyResponseAndComplete();
     return;
   }
   TRACE_EVENT_WITH_FLOW0(
@@ -512,7 +511,6 @@ void ServiceWorkerSubresourceLoader::StartResponse(
             blink::features::kServiceWorkerParallelSideDataReading)) {
       int error = StartBlobReading(&data_pipe);
       if (error != net::OK) {
-        CommitResponseBodyEmpty();
         CommitCompleted(error);
         return;
       }
@@ -524,8 +522,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     return;
   }
 
-  CommitResponseBodyEmpty();
-  CommitCompleted(net::OK);
+  CommitEmptyResponseAndComplete();
 }
 
 void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
@@ -541,26 +538,18 @@ void ServiceWorkerSubresourceLoader::CommitResponseBody(
   url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
 }
 
-void ServiceWorkerSubresourceLoader::CommitResponseBodyEmpty() {
-  TransitionToStatus(Status::kSentBody);
-
-  // TODO(arthursonzogni): As soon as https://crbug.com/905779 is fixed, switch
-  // back to using mojo::DataPipe instead of creating it manually.
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
-  // Cannot use 0, because this means "default" in
-  // mojo::core::Core::CreateDataPipe.
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = 1;
+void ServiceWorkerSubresourceLoader::CommitEmptyResponseAndComplete() {
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
-  MojoResult result =
-      CreateDataPipe(&options, &producer_handle, &consumer_handle);
-  CHECK_EQ(MOJO_RESULT_OK, result);
+  if (CreateDataPipe(nullptr, &producer_handle, &consumer_handle) !=
+      MOJO_RESULT_OK) {
+    CommitCompleted(net::ERR_INSUFFICIENT_RESOURCES);
+    return;
+  }
 
   producer_handle.reset();  // The data pipe is empty.
-  url_loader_client_->OnStartLoadingResponseBody(std::move(consumer_handle));
+  CommitResponseBody(std::move(consumer_handle));
+  CommitCompleted(net::OK);
 }
 
 void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
@@ -869,6 +858,8 @@ void ServiceWorkerSubresourceLoader::TransitionToStatus(Status new_status) {
           status_ == Status::kNotStarted ||
           // Network fallback after interception.
           status_ == Status::kStarted ||
+          // Pipe creation failure for empty response.
+          status_ == Status::kSentHeader ||
           // Success case or error while sending the response's body.
           status_ == Status::kSentBody);
       break;
