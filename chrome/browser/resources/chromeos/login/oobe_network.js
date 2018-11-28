@@ -46,6 +46,24 @@ Polymer({
 
   },
 
+  /** Called when dialog is shown. */
+  onBeforeShow: function() {
+    this.behaviors.forEach((behavior) => {
+      if (behavior.onBeforeShow)
+        behavior.onBeforeShow.call(this);
+    });
+    this.$.networkSelectLogin.onBeforeShow();
+  },
+
+  /** Called when dialog is hidden. */
+  onBeforeHide: function() {
+    this.behaviors.forEach((behavior) => {
+      if (behavior.onBeforeHide)
+        behavior.onBeforeHide.call(this);
+    });
+    this.$.networkSelectLogin.onBeforeHide();
+  },
+
   /** @override */
   ready: function() {
     this.updateLocalizedContent();

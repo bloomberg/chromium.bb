@@ -78,6 +78,7 @@ OobeTypes.TimezoneDsc;
  *   networkOfflineDemo: boolean|undefined,
  *   eulaAutoAccept: boolean|undefined,
  *   eulaSendStatistics: boolean|undefined,
+ *   networkUseConnected: boolean|undefined,
  *   updateSkipNonCritical: boolean|undefined,
  *   arcTosAutoAccept: boolean|undefined,
  * }}

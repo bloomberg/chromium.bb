@@ -133,6 +133,41 @@ Polymer({
   },
 
   /**
+   * Returns default network if it is present.
+   * @return {!CrOnc.NetworkStateProperties|undefined}
+   */
+  getDefaultNetwork: function() {
+    var defaultNetwork;
+    for (var i = 0; i < this.networkStateList_.length; ++i) {
+      var state = this.networkStateList_[i];
+      if (state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+        defaultNetwork = state;
+        break;
+      }
+      if (state.ConnectionState == CrOnc.ConnectionState.CONNECTING &&
+          !defaultNetwork) {
+        defaultNetwork = state;
+        // Do not break here in case a non WiFi network is connecting but a
+        // WiFi network is connected.
+      } else if (state.Type == CrOnc.Type.WI_FI) {
+        break;  // Non connecting or connected WiFI networks are always last.
+      }
+    }
+    return defaultNetwork;
+  },
+
+  /**
+   * Returns network with specified GUID if it is available.
+   * @param {string} guid of network.
+   * @return {!CrOnc.NetworkStateProperties|undefined}
+   */
+  getNetwork: function(guid) {
+    return this.networkStateList_.find(function(network) {
+      return network.GUID == guid;
+    });
+  },
+
+  /**
    * @param {!Array<!CrOnc.DeviceStateProperties>} deviceStates
    * @private
    */
@@ -161,22 +196,8 @@ Polymer({
     this.networkStateList_ = networkStates;
     this.fire('network-list-changed', networkStates);
 
-    var defaultNetwork;
-    for (var i = 0; i < networkStates.length; ++i) {
-      var state = networkStates[i];
-      if (state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
-        defaultNetwork = state;
-        break;
-      }
-      if (state.ConnectionState == CrOnc.ConnectionState.CONNECTING &&
-          !defaultNetwork) {
-        defaultNetwork = state;
-        // Do not break here in case a non WiFi network is connecting but a
-        // WiFi network is connected.
-      } else if (state.Type == CrOnc.Type.WI_FI) {
-        break;  // Non connecting or connected WiFI networks are always last.
-      }
-    }
+    var defaultNetwork = this.getDefaultNetwork();
+
     if ((!defaultNetwork && !this.defaultNetworkState_) ||
         (defaultNetwork && this.defaultNetworkState_ &&
          defaultNetwork.GUID == this.defaultNetworkState_.GUID &&

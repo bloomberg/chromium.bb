@@ -598,6 +598,8 @@ class EnterpriseEnrollmentConfigurationTest
 
     // WebUI exists now, finish the setup.
     InitializeWebContents();
+
+    base::RunLoop().RunUntilIdle();
   }
 
   void SimulateOfflineEnvironment() {
@@ -1043,6 +1045,25 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                        TestSelectNetwork) {
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+}
+
+// Check that configuration would proceed if there is a connected network.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestSelectConnectedNetwork) {
+  StartWizard();
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+}
+
+// Check that configuration would not proceed with connected network if
+// welcome screen is not automated.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestConnectedNetworkNoWelcome) {
+  StartWizard();
+  LoadConfiguration();
+
+  OobeUI* oobe_ui = LoginDisplayHost::default_host()->GetOobeUI();
+  ASSERT_EQ(OobeScreen::SCREEN_OOBE_WELCOME, oobe_ui->current_screen());
 }
 
 // Check that when configuration has ONC and EULA, we get to update screen.

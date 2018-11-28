@@ -21,6 +21,7 @@ extern const char kDemoModePreferencesNext[];
 
 extern const char kNetworkSelectGUID[];
 extern const char kNetworkOfflineDemo[];
+extern const char kNetworkUseConnected[];
 
 extern const char kDeviceRequisition[];
 

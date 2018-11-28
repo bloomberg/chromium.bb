@@ -44,6 +44,10 @@ const char kNetworkSelectGUID[] = "networkSelectGuid";
 // selected.
 const char kNetworkOfflineDemo[] = "networkOfflineDemo";
 
+// Boolean value specifying that the first connected network would be
+// selected automatically.
+const char kNetworkUseConnected[] = "networkUseConnected";
+
 // == EULA screen:
 
 // Boolean value indicating if device should send usage statistics.
@@ -105,6 +109,8 @@ constexpr struct {
     {kLanguage, ValueType::STRING, ConfigurationHandlerSide::HANDLER_JS},
     {kInputMethod, ValueType::STRING, ConfigurationHandlerSide::HANDLER_JS},
     {kNetworkSelectGUID, ValueType::STRING,
+     ConfigurationHandlerSide::HANDLER_JS},
+    {kNetworkUseConnected, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_JS},
     {kEULASendUsageStatistics, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_JS},
