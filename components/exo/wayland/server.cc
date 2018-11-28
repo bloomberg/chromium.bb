@@ -39,16 +39,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/display/screen_orientation_controller.h"
-#include "ash/ime/ime_controller.h"
-#include "ash/public/cpp/caption_buttons/caption_button_types.h"
-#include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
-#include "ash/session/session_controller.h"
-#include "ash/shell.h"
-#include "ash/wm/window_resizer.h"
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
@@ -64,7 +54,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/exo/buffer.h"
-#include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/data_device.h"
 #include "components/exo/data_device_delegate.h"
 #include "components/exo/data_offer.h"
@@ -75,49 +64,20 @@
 #include "components/exo/gamepad_delegate.h"
 #include "components/exo/gaming_seat.h"
 #include "components/exo/gaming_seat_delegate.h"
-#include "components/exo/input_method_surface.h"
-#include "components/exo/keyboard.h"
-#include "components/exo/keyboard_delegate.h"
-#include "components/exo/keyboard_device_configuration_delegate.h"
-#include "components/exo/keyboard_observer.h"
 #include "components/exo/notification.h"
-#include "components/exo/notification_surface.h"
-#include "components/exo/notification_surface_manager.h"
-#include "components/exo/pointer.h"
-#include "components/exo/pointer_delegate.h"
-#include "components/exo/pointer_gesture_pinch_delegate.h"
 #include "components/exo/shared_memory.h"
-#include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
-#include "components/exo/text_input.h"
 #include "components/exo/touch.h"
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_display_output.h"
 #include "components/exo/wayland/wayland_input_delegate.h"
-#include "components/exo/wayland/wayland_keyboard_delegate.h"
-#include "components/exo/wayland/wayland_pointer_delegate.h"
 #include "components/exo/wayland/wayland_touch_delegate.h"
 #include "components/exo/wayland/wl_output.h"
 #include "components/exo/wayland/wl_seat.h"
-#include "components/exo/wayland/wl_shell.h"
-#include "components/exo/wayland/zaura_shell.h"
-#include "components/exo/wayland/zcr_cursor_shapes.h"
-#include "components/exo/wayland/zcr_gaming_input.h"
-#include "components/exo/wayland/zcr_keyboard_configuration.h"
-#include "components/exo/wayland/zcr_keyboard_extension.h"
-#include "components/exo/wayland/zcr_notification_shell.h"
-#include "components/exo/wayland/zcr_remote_shell.h"
-#include "components/exo/wayland/zcr_stylus_tools.h"
-#include "components/exo/wayland/zwp_input_timestamps_manager.h"
-#include "components/exo/wayland/zwp_pointer_gestures.h"
-#include "components/exo/wayland/zwp_text_input_manager.h"
-#include "components/exo/wayland/zxdg_shell.h"
 #include "components/exo/wm_helper.h"
-#include "components/exo/wm_helper_chromeos.h"
-#include "components/exo/xdg_shell_surface.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/class_property.h"
@@ -137,6 +97,25 @@
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/activation_change_observer.h"
+
+#if defined(OS_CHROMEOS)
+#include "components/exo/wayland/wayland_keyboard_delegate.h"
+#include "components/exo/wayland/wayland_pointer_delegate.h"
+#include "components/exo/wayland/wl_shell.h"
+#include "components/exo/wayland/zaura_shell.h"
+#include "components/exo/wayland/zcr_cursor_shapes.h"
+#include "components/exo/wayland/zcr_gaming_input.h"
+#include "components/exo/wayland/zcr_keyboard_configuration.h"
+#include "components/exo/wayland/zcr_keyboard_extension.h"
+#include "components/exo/wayland/zcr_notification_shell.h"
+#include "components/exo/wayland/zcr_remote_shell.h"
+#include "components/exo/wayland/zcr_stylus_tools.h"
+#include "components/exo/wayland/zwp_input_timestamps_manager.h"
+#include "components/exo/wayland/zwp_pointer_gestures.h"
+#include "components/exo/wayland/zwp_text_input_manager.h"
+#include "components/exo/wayland/zxdg_shell.h"
+#include "components/exo/wm_helper_chromeos.h"
+#endif
 
 #if defined(USE_OZONE)
 #include <drm_fourcc.h>
@@ -1837,20 +1816,14 @@ Server::Server(Display* display)
 #endif
   wl_global_create(wl_display_.get(), &wl_subcompositor_interface, 1, display_,
                    bind_subcompositor);
-  wl_global_create(wl_display_.get(), &wl_shell_interface, 1, display_,
-                   bind_shell);
   display::Screen::GetScreen()->AddObserver(this);
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())
     OnDisplayAdded(display);
-  wl_global_create(wl_display_.get(), &zxdg_shell_v6_interface, 1, display_,
-                   bind_xdg_shell_v6);
   wl_global_create(wl_display_.get(), &zcr_vsync_feedback_v1_interface, 1,
                    display_, bind_vsync_feedback);
   wl_global_create(wl_display_.get(), &wl_data_device_manager_interface,
                    data_device_manager_version, display_,
                    bind_data_device_manager);
-  wl_global_create(wl_display_.get(), &wl_seat_interface, kWlSeatVersion,
-                   display_->seat(), bind_seat);
   wl_global_create(wl_display_.get(), &wp_viewporter_interface, 1, display_,
                    bind_viewporter);
   wl_global_create(wl_display_.get(), &wp_presentation_interface, 1, display_,
@@ -1859,32 +1832,40 @@ Server::Server(Display* display)
                    display_, bind_secure_output);
   wl_global_create(wl_display_.get(), &zcr_alpha_compositing_v1_interface, 1,
                    display_, bind_alpha_compositing);
-  wl_global_create(wl_display_.get(), &zcr_remote_shell_v1_interface,
-                   kZcrRemoteShellVersion, display_, bind_remote_shell);
-  wl_global_create(wl_display_.get(), &zaura_shell_interface,
-                   kZAuraShellVersion, display_, bind_aura_shell);
-  wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 1,
-                   display_, bind_gaming_input);
   wl_global_create(wl_display_.get(), &zcr_stylus_v2_interface, 1, display_,
                    bind_stylus_v2);
-  wl_global_create(wl_display_.get(), &zwp_pointer_gestures_v1_interface, 1,
-                   display_, bind_pointer_gestures);
+  wl_global_create(wl_display_.get(), &wl_seat_interface, kWlSeatVersion,
+                   display_->seat(), bind_seat);
+#if defined(OS_CHROMEOS)
+  wl_global_create(wl_display_.get(), &wl_shell_interface, 1, display_,
+                   bind_shell);
+  wl_global_create(wl_display_.get(), &zaura_shell_interface,
+                   kZAuraShellVersion, display_, bind_aura_shell);
+  wl_global_create(wl_display_.get(), &zcr_cursor_shapes_v1_interface, 1,
+                   display_, bind_cursor_shapes);
+  wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 1,
+                   display_, bind_gaming_input);
   wl_global_create(wl_display_.get(), &zcr_keyboard_configuration_v1_interface,
                    kZcrKeyboardConfigurationVersion, display_,
                    bind_keyboard_configuration);
-  wl_global_create(wl_display_.get(), &zcr_stylus_tools_v1_interface, 1,
-                   display_, bind_stylus_tools);
   wl_global_create(wl_display_.get(), &zcr_keyboard_extension_v1_interface, 1,
                    display_, bind_keyboard_extension);
-  wl_global_create(wl_display_.get(), &zcr_cursor_shapes_v1_interface, 1,
-                   display_, bind_cursor_shapes);
+  wl_global_create(wl_display_.get(), &zcr_notification_shell_v1_interface, 1,
+                   display_, bind_notification_shell);
+  wl_global_create(wl_display_.get(), &zcr_remote_shell_v1_interface,
+                   kZcrRemoteShellVersion, display_, bind_remote_shell);
+  wl_global_create(wl_display_.get(), &zcr_stylus_tools_v1_interface, 1,
+                   display_, bind_stylus_tools);
   wl_global_create(wl_display_.get(),
                    &zwp_input_timestamps_manager_v1_interface, 1, display_,
                    bind_input_timestamps_manager);
+  wl_global_create(wl_display_.get(), &zwp_pointer_gestures_v1_interface, 1,
+                   display_, bind_pointer_gestures);
   wl_global_create(wl_display_.get(), &zwp_text_input_manager_v1_interface, 1,
                    display_, bind_text_input_manager);
-  wl_global_create(wl_display_.get(), &zcr_notification_shell_v1_interface, 1,
-                   display_, bind_notification_shell);
+  wl_global_create(wl_display_.get(), &zxdg_shell_v6_interface, 1, display_,
+                   bind_xdg_shell_v6);
+#endif
 
 #if defined(USE_FULLSCREEN_SHELL)
   wl_global_create(wl_display_.get(), &zwp_fullscreen_shell_v1_interface, 1,
