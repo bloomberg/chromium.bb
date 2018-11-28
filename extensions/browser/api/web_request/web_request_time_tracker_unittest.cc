@@ -26,10 +26,10 @@ TEST(ExtensionWebRequestTimeTrackerTest, Histograms) {
   ExtensionWebRequestTimeTracker tracker;
   base::TimeTicks start;
 
-  tracker.LogRequestStartTime(1, start, false);
-  tracker.LogRequestStartTime(2, start, true);
-  tracker.LogRequestStartTime(3, start, true);
-  tracker.LogRequestStartTime(4, start, true);
+  tracker.LogRequestStartTime(1, start, false, false);
+  tracker.LogRequestStartTime(2, start, true, false);
+  tracker.LogRequestStartTime(3, start, true, false);
+  tracker.LogRequestStartTime(4, start, true, true);
   tracker.IncrementTotalBlockTime(1, kTinyDelay);
   tracker.IncrementTotalBlockTime(2, kModerateDelay);
   tracker.IncrementTotalBlockTime(2, kModerateDelay);
@@ -65,6 +65,12 @@ TEST(ExtensionWebRequestTimeTrackerTest, Histograms) {
       "Extensions.WebRequest.TotalBlockingRequestTime", kRequestDelta, 3);
   histogram_tester.ExpectTotalCount(
       "Extensions.WebRequest.TotalBlockingRequestTime", 3);
+
+  histogram_tester.ExpectTimeBucketCount(
+      "Extensions.WebRequest.TotalExtraHeadersRequestTime", kLongRequestDelta,
+      1);
+  histogram_tester.ExpectTotalCount(
+      "Extensions.WebRequest.TotalExtraHeadersRequestTime", 1);
 
   EXPECT_TRUE(tracker.request_time_logs_.empty());
 }
