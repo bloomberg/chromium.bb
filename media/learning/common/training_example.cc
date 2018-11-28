@@ -44,5 +44,26 @@ TrainingExample& TrainingExample::operator=(const TrainingExample& rhs) =
 
 TrainingExample& TrainingExample::operator=(TrainingExample&& rhs) = default;
 
+TrainingDataStorage::TrainingDataStorage() = default;
+
+TrainingDataStorage::~TrainingDataStorage() = default;
+
+TrainingData::TrainingData(scoped_refptr<TrainingDataStorage> backing_storage)
+    : backing_storage_(std::move(backing_storage)) {}
+
+TrainingData::TrainingData(scoped_refptr<TrainingDataStorage> backing_storage,
+                           TrainingDataStorage::const_iterator begin,
+                           TrainingDataStorage::const_iterator end)
+    : backing_storage_(std::move(backing_storage)) {
+  for (; begin != end; begin++)
+    examples_.push_back(&(*begin));
+}
+
+TrainingData::TrainingData(const TrainingData& rhs) = default;
+
+TrainingData::TrainingData(TrainingData&& rhs) = default;
+
+TrainingData::~TrainingData() = default;
+
 }  // namespace learning
 }  // namespace media

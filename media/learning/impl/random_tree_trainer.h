@@ -88,9 +88,13 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
 
     // Per-branch (i.e. per-child node) information about this split.
     struct BranchInfo {
-      explicit BranchInfo();
-      BranchInfo(const BranchInfo& rhs);
+      explicit BranchInfo(scoped_refptr<TrainingDataStorage> storage);
+      BranchInfo(const BranchInfo& rhs) = delete;
+      BranchInfo(BranchInfo&& rhs);
       ~BranchInfo();
+
+      BranchInfo& operator=(const BranchInfo& rhs) = delete;
+      BranchInfo& operator=(BranchInfo&& rhs) = delete;
 
       // Training set for this branch of the split.
       TrainingData training_data;
@@ -102,10 +106,6 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
 
     // [feature value at this split] = info about which examples take this
     // branch of the split.
-    // TODO(liberato): this complained about not having copy-assignment,
-    // which makes me worried that it does a lot of copy-assignment.  that
-    // was when it was a map <FeatureValue, TrainingData>.  consider just
-    // making it a unique_ptr<BranchInfo>.
     std::map<FeatureValue, BranchInfo> branch_infos;
 
     DISALLOW_COPY_AND_ASSIGN(Split);

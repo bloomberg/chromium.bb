@@ -27,16 +27,15 @@ class COMPONENT_EXPORT(LEARNING_IMPL) TargetDistribution {
 
   // Return the number of counts for |value|.
   int operator[](const TargetValue& value) const;
-
-  // It would be nice to have an int& variant of operator[], but then we can't
-  // keep |total_counts_| up to date.
-
-  // Include |counts| counts for |value|.
-  // TODO(liberato): operator+=(std::pair<value, int>)?
-  void Add(const TargetValue& value, int counts);
+  int& operator[](const TargetValue& value);
 
   // Return the total counts in the map.
-  int total_counts() const { return total_counts_; }
+  int total_counts() const {
+    size_t total = 0u;
+    for (auto& entry : counts_)
+      total += entry.second;
+    return total;
+  }
 
   // Find the singular value with the highest counts, and copy it into
   // |value_out| and (optionally) |counts_out|.  Returns true if there is a
@@ -52,9 +51,6 @@ class COMPONENT_EXPORT(LEARNING_IMPL) TargetDistribution {
 
   // [value] == counts
   distribution_map_t counts_;
-
-  // Sum of all entries in |counts_|.
-  int total_counts_ = 0;
 
   // Allow copy and assign.
 };

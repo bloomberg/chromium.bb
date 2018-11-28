@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "media/learning/common/value.h"
 
 namespace media {
@@ -49,11 +50,88 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) TrainingExample {
 };
 
 // Collection of training examples.  We use a vector since we allow duplicates.
-using TrainingDataStorage = std::vector<TrainingExample>;
+class COMPONENT_EXPORT(LEARNING_COMMON) TrainingDataStorage
+    : public base::RefCountedThreadSafe<TrainingDataStorage> {
+ public:
+  using StorageVector = std::vector<TrainingExample>;
+  using const_iterator = StorageVector::const_iterator;
+
+  TrainingDataStorage();
+
+  StorageVector::const_iterator begin() const { return examples_.begin(); }
+  StorageVector::const_iterator end() const { return examples_.end(); }
+
+  void push_back(const TrainingExample& example) {
+    examples_.push_back(example);
+  }
+
+  // Returns true if and only if |example| is included in our data.  Note that
+  // this checks that the pointer itself is included, so that one might tell if
+  // an example is backed by this storage or not.  It does not care if there is
+  // an example in our storage that would TrainingExample::operator==(*example).
+  bool contains(const TrainingExample* example) const {
+    return (example >= examples_.data()) &&
+           (example < examples_.data() + examples_.size());
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<TrainingDataStorage>;
+
+  ~TrainingDataStorage();
+
+  std::vector<TrainingExample> examples_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrainingDataStorage);
+};
 
 // Collection of pointers to training data.  References would be more convenient
 // but they're not allowed.
-using TrainingData = std::vector<const TrainingExample*>;
+class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
+ public:
+  using ExampleVector = std::vector<const TrainingExample*>;
+  using const_iterator = ExampleVector::const_iterator;
+
+  // Construct an empty set of examples, with |backing_storage| as the allowed
+  // underlying storage.
+  TrainingData(scoped_refptr<TrainingDataStorage> backing_storage);
+
+  // Construct a list of examples from |begin| to excluding |end|.
+  TrainingData(scoped_refptr<TrainingDataStorage> backing_storage,
+               TrainingDataStorage::const_iterator begin,
+               TrainingDataStorage::const_iterator end);
+
+  TrainingData(const TrainingData& rhs);
+  TrainingData(TrainingData&& rhs);
+
+  ~TrainingData();
+
+  void push_back(const TrainingExample* example) {
+    DCHECK(backing_storage_);
+    DCHECK(backing_storage_->contains(example));
+    examples_.push_back(example);
+  }
+
+  bool empty() const { return examples_.empty(); }
+
+  size_t size() const { return examples_.size(); }
+
+  const_iterator begin() const { return examples_.begin(); }
+  const_iterator end() const { return examples_.end(); }
+
+  const TrainingExample* operator[](size_t i) const { return examples_[i]; }
+
+  scoped_refptr<TrainingDataStorage> storage() const {
+    return backing_storage_;
+  }
+
+ private:
+  // It would be nice if we insisted that
+  scoped_refptr<TrainingDataStorage> backing_storage_;
+
+  ExampleVector examples_;
+
+  // Copy / assignment is allowed.
+};
 
 COMPONENT_EXPORT(LEARNING_COMMON)
 std::ostream& operator<<(std::ostream& out, const TrainingExample& example);
