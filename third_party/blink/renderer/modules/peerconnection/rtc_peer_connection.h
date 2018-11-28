@@ -315,11 +315,17 @@ class MODULES_EXPORT RTCPeerConnection final
   bool ShouldShowComplexPlanBSdpWarning(const RTCSessionDescriptionInit*) const;
 
   const CallSetupStateTracker& call_setup_state_tracker() const;
+  void NoteCallSetupStateEventPending(
+      RTCPeerConnection::SetSdpOperationType operation,
+      const RTCSessionDescriptionInit& description);
   void NoteSessionDescriptionRequestCompleted(
       RTCCreateSessionDescriptionOperation operation,
       bool success);
   void NoteVoidRequestCompleted(RTCSetSessionDescriptionOperation operation,
                                 bool success);
+  // Checks if the document that the peer connection lives in has ever executed
+  // getUserMedia().
+  bool HasDocumentMedia() const;
 
   void Trace(blink::Visitor*) override;
 

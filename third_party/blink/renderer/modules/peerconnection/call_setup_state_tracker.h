@@ -100,9 +100,18 @@ class MODULES_EXPORT CallSetupStateTracker {
   OffererState offerer_state() const;
   AnswererState answerer_state() const;
   CallSetupState GetCallSetupState() const;
+  bool document_uses_media() const;
 
-  bool NoteOffererStateEvent(OffererState event);
-  bool NoteAnswererStateEvent(AnswererState event);
+  // The |event| describes what event just happened, see enum definitions.
+  // The |document_uses_media| parameter is meant to reflect whether or not the
+  // document is using media, such as if getUserMedia() has ever been called
+  // (this is up to the caller). The tracker remembers if this has ever been
+  // true with document_uses_media() which allows the tracker to know about this
+  // even if it outlives the document. If it has ever been true,
+  // document_uses_media() stays true even if subsequent calls are made with the
+  // value false.
+  bool NoteOffererStateEvent(OffererState event, bool document_uses_media);
+  bool NoteAnswererStateEvent(AnswererState event, bool document_uses_media);
 
  private:
   const std::set<std::pair<OffererState, OffererState>>
@@ -115,6 +124,10 @@ class MODULES_EXPORT CallSetupStateTracker {
   // If the tracker has ever been in any of the "rejected" states. This remains
   // true even if the peer connection recovers to a non-"rejected" state.
   bool has_ever_failed_;
+  // If the document has ever been noted to use media based on
+  // Note[Offerer/Answerer]StateEvent() calls. Once true, this value will never
+  // be false again.
+  bool document_uses_media_;
 };
 
 }  // namespace blink
