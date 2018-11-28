@@ -1,24 +1,28 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_autofill_data_item.h"
 
-#import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
+#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-const CGFloat kDetailTextWidthMultiplier = 0.5;
-const CGFloat kCompressionResistanceAdditionalPriority = 1;
-}  // namespace
+// Padding used on the leading and trailing edges of the cell.
+const CGFloat kHorizontalPadding = 16;
+// Padding used on the top and bottom edges of the cell.
+const CGFloat kVerticalPadding = 16;
+}
 
-@implementation AutofillDataItem
+@implementation LegacyAutofillDataItem
 
 @synthesize deletable = _deletable;
 @synthesize GUID = _GUID;
@@ -30,31 +34,33 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [AutofillDataCell class];
+    self.cellClass = [LegacyAutofillDataCell class];
   }
   return self;
 }
 
-#pragma mark - TableViewItem
+#pragma mark - CollectionViewItem
 
-- (void)configureCell:(AutofillDataCell*)cell
-           withStyler:(ChromeTableViewStyler*)styler {
-  [super configureCell:cell withStyler:styler];
+- (void)configureCell:(LegacyAutofillDataCell*)cell {
+  [super configureCell:cell];
   cell.textLabel.text = self.text;
   cell.leadingDetailTextLabel.text = self.leadingDetailText;
   cell.trailingDetailTextLabel.text = self.trailingDetailText;
-  cell.accessoryType = self.accessoryType;
+  [cell cr_setAccessoryType:self.accessoryType];
 }
 
 @end
 
-@implementation AutofillDataCell
+@implementation LegacyAutofillDataCell {
+  NSLayoutConstraint* _textLabelWidthConstraint;
+}
 
 @synthesize textLabel = _textLabel;
+@synthesize leadingDetailTextLabel = _leadingDetailTextLabel;
+@synthesize trailingDetailTextLabel = _trailingDetailTextLabel;
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style
-              reuseIdentifier:(NSString*)reuseIdentifier {
-  self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+- (instancetype)initWithFrame:(CGRect)frame {
+  self = [super initWithFrame:frame];
   if (self) {
     self.isAccessibilityElement = YES;
     [self addSubviews];
@@ -78,10 +84,6 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
 
   _trailingDetailTextLabel = [[UILabel alloc] init];
   _trailingDetailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  [_trailingDetailTextLabel
-      setContentCompressionResistancePriority:
-          UILayoutPriorityDefaultHigh + kCompressionResistanceAdditionalPriority
-                                      forAxis:UILayoutConstraintAxisHorizontal];
   [contentView addSubview:_trailingDetailTextLabel];
 }
 
@@ -89,48 +91,44 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
 - (void)setDefaultViewStyling {
   _textLabel.numberOfLines = 0;
   _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
-  _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  _textLabel.adjustsFontForContentSizeCategory = YES;
-  _textLabel.textColor = UIColor.blackColor;
+  _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
+  _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
 
   _leadingDetailTextLabel.numberOfLines = 0;
   _leadingDetailTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
   _leadingDetailTextLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-  _leadingDetailTextLabel.adjustsFontForContentSizeCategory = YES;
+      [UIFont systemFontOfSize:kUIKitMultilineDetailFontSize];
   _leadingDetailTextLabel.textColor =
-      UIColorFromRGB(kSettingsCellsDetailTextColor);
+      UIColorFromRGB(kUIKitMultilineDetailTextColor);
 
   _trailingDetailTextLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  _trailingDetailTextLabel.textColor =
-      UIColorFromRGB(kSettingsCellsDetailTextColor);
+      [UIFont systemFontOfSize:kUIKitDetailFontSize];
+  _trailingDetailTextLabel.textColor = UIColorFromRGB(kUIKitDetailTextColor);
 }
 
 // Sets constraints on subviews.
 - (void)setViewConstraints {
   UIView* contentView = self.contentView;
 
+  // Set up the width constraint for the text label. It is activated here
+  // and updated in layoutSubviews.
+  _textLabelWidthConstraint =
+      [_textLabel.widthAnchor constraintEqualToConstant:0];
+
   [NSLayoutConstraint activateConstraints:@[
     // Set horizontal anchors.
-    [_textLabel.leadingAnchor
-        constraintEqualToAnchor:contentView.leadingAnchor
-                       constant:kTableViewHorizontalSpacing],
-    [_textLabel.trailingAnchor
-        constraintEqualToAnchor:_trailingDetailTextLabel.leadingAnchor
-                       constant:-kTableViewHorizontalSpacing],
+    [_textLabel.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor
+                                             constant:kHorizontalPadding],
     [_leadingDetailTextLabel.leadingAnchor
         constraintEqualToAnchor:_textLabel.leadingAnchor],
-    [_leadingDetailTextLabel.trailingAnchor
-        constraintEqualToAnchor:_textLabel.trailingAnchor],
     [_trailingDetailTextLabel.trailingAnchor
         constraintEqualToAnchor:contentView.trailingAnchor
-                       constant:-kTableViewHorizontalSpacing],
+                       constant:-kHorizontalPadding],
 
-    // Make sure that the detail text doesn't take too much space.
-    [_trailingDetailTextLabel.widthAnchor
-        constraintLessThanOrEqualToAnchor:contentView.widthAnchor
-                               multiplier:kDetailTextWidthMultiplier],
+    // Set width anchors.
+    [_leadingDetailTextLabel.widthAnchor
+        constraintEqualToAnchor:_textLabel.widthAnchor],
+    _textLabelWidthConstraint,
 
     // Set vertical anchors.
     [_leadingDetailTextLabel.topAnchor
@@ -140,19 +138,36 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
   ]];
 
   AddOptionalVerticalPadding(contentView, _textLabel, _leadingDetailTextLabel,
-                             kTableViewLargeVerticalSpacing);
-  AddOptionalVerticalPadding(contentView, _trailingDetailTextLabel,
-                             kTableViewLargeVerticalSpacing);
+                             kVerticalPadding);
 }
 
-#pragma mark - UITableViewCell
+// Implement -layoutSubviews as per instructions in documentation for
+// +[MDCCollectionViewCell cr_preferredHeightForWidth:forItem:].
+- (void)layoutSubviews {
+  [super layoutSubviews];
+
+  // Size the trailing detail label to determine how much width it wants.
+  [self.trailingDetailTextLabel sizeToFit];
+
+  // Update the text label's width constraint.
+  CGFloat availableWidth =
+      CGRectGetWidth(self.contentView.bounds) - (3 * kHorizontalPadding);
+  CGFloat trailingDetailLabelWidth =
+      CGRectGetWidth(self.trailingDetailTextLabel.frame);
+  _textLabelWidthConstraint.constant =
+      availableWidth - trailingDetailLabelWidth;
+
+  [super layoutSubviews];
+}
+
+#pragma mark - UICollectionReusableView
 
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.textLabel.text = nil;
   self.leadingDetailTextLabel.text = nil;
   self.trailingDetailTextLabel.text = nil;
-  self.accessoryType = UITableViewCellAccessoryNone;
+  self.accessoryType = MDCCollectionViewCellAccessoryNone;
 }
 
 #pragma mark - NSObject(Accessibility)
