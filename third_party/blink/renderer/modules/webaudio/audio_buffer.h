@@ -85,18 +85,18 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
                                             ExceptionState&);
   NotShared<DOMFloat32Array> getChannelData(unsigned channel_index);
   void copyFromChannel(NotShared<DOMFloat32Array>,
-                       long channel_number,
+                       int32_t channel_number,
                        ExceptionState&);
   void copyFromChannel(NotShared<DOMFloat32Array>,
-                       long channel_number,
-                       unsigned long start_in_channel,
+                       int32_t channel_number,
+                       uint32_t start_in_channel,
                        ExceptionState&);
   void copyToChannel(NotShared<DOMFloat32Array>,
-                     long channel_number,
+                     int32_t channel_number,
                      ExceptionState&);
   void copyToChannel(NotShared<DOMFloat32Array>,
-                     long channel_number,
-                     unsigned long start_in_channel,
+                     int32_t channel_number,
+                     uint32_t start_in_channel,
                      ExceptionState&);
 
   void Zero();

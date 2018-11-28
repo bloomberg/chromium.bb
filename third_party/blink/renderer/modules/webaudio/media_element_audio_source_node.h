@@ -61,7 +61,7 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
 
   // Helpers for AudioSourceProviderClient implementation of
   // MediaElementAudioSourceNode.
-  void SetFormat(size_t number_of_channels, float sample_rate);
+  void SetFormat(uint32_t number_of_channels, float sample_rate);
   void lock() EXCLUSIVE_LOCK_FUNCTION(GetProcessLock());
   void unlock() UNLOCK_FUNCTION(GetProcessLock());
 
@@ -129,7 +129,7 @@ class MediaElementAudioSourceNode final : public AudioNode,
   HTMLMediaElement* mediaElement() const;
 
   // AudioSourceProviderClient functions:
-  void SetFormat(size_t number_of_channels, float sample_rate) override;
+  void SetFormat(uint32_t number_of_channels, float sample_rate) override;
   void lock() override EXCLUSIVE_LOCK_FUNCTION(
       GetMediaElementAudioSourceHandler().GetProcessLock());
   void unlock() override

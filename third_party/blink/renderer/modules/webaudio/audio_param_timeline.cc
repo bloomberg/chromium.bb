@@ -675,7 +675,7 @@ void AudioParamTimeline::CancelScheduledValues(
   MutexLocker locker(events_lock_);
 
   // Remove all events starting at startTime.
-  for (unsigned i = 0; i < events_.size(); ++i) {
+  for (wtf_size_t i = 0; i < events_.size(); ++i) {
     if (events_[i]->Time() >= start_time) {
       RemoveCancelledEvents(i);
       break;
@@ -692,7 +692,7 @@ void AudioParamTimeline::CancelAndHoldAtTime(double cancel_time,
 
   MutexLocker locker(events_lock_);
 
-  unsigned i;
+  wtf_size_t i;
   // Find the first event at or just past cancelTime.
   for (i = 0; i < events_.size(); ++i) {
     if (events_[i]->Time() > cancel_time) {
@@ -702,7 +702,7 @@ void AudioParamTimeline::CancelAndHoldAtTime(double cancel_time,
 
   // The event that is being cancelled.  This is the event just past
   // cancelTime, if any.
-  unsigned cancelled_event_index = i;
+  wtf_size_t cancelled_event_index = i;
 
   // If the event just before cancelTime is a SetTarget or SetValueCurve
   // event, we need to handle that event specially instead of the event after.
@@ -1892,11 +1892,12 @@ unsigned AudioParamTimeline::FillWithDefault(float* values,
   return index;
 }
 
-void AudioParamTimeline::RemoveCancelledEvents(size_t first_event_to_remove) {
+void AudioParamTimeline::RemoveCancelledEvents(
+    wtf_size_t first_event_to_remove) {
   // For all the events that are being removed, also remove that event
   // from |new_events_|.
   if (new_events_.size() > 0) {
-    for (size_t k = first_event_to_remove; k < events_.size(); ++k) {
+    for (wtf_size_t k = first_event_to_remove; k < events_.size(); ++k) {
       new_events_.erase(events_[k].get());
     }
   }

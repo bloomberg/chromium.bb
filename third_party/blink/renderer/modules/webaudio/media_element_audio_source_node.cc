@@ -83,7 +83,7 @@ void MediaElementAudioSourceHandler::Dispose() {
   AudioHandler::Dispose();
 }
 
-void MediaElementAudioSourceHandler::SetFormat(size_t number_of_channels,
+void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
                                                float source_sample_rate) {
   bool is_tainted = WouldTaintOrigin();
 
@@ -269,7 +269,7 @@ HTMLMediaElement* MediaElementAudioSourceNode::mediaElement() const {
   return GetMediaElementAudioSourceHandler().MediaElement();
 }
 
-void MediaElementAudioSourceNode::SetFormat(size_t number_of_channels,
+void MediaElementAudioSourceNode::SetFormat(uint32_t number_of_channels,
                                             float sample_rate) {
   GetMediaElementAudioSourceHandler().SetFormat(number_of_channels,
                                                 sample_rate);

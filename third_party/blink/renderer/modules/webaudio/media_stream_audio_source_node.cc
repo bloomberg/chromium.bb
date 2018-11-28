@@ -61,7 +61,7 @@ MediaStreamAudioSourceHandler::~MediaStreamAudioSourceHandler() {
   Uninitialize();
 }
 
-void MediaStreamAudioSourceHandler::SetFormat(size_t number_of_channels,
+void MediaStreamAudioSourceHandler::SetFormat(uint32_t number_of_channels,
                                               float source_sample_rate) {
   if (number_of_channels != source_number_of_channels_ ||
       source_sample_rate != Context()->sampleRate()) {
@@ -192,7 +192,7 @@ MediaStream* MediaStreamAudioSourceNode::getMediaStream() const {
   return media_stream_;
 }
 
-void MediaStreamAudioSourceNode::SetFormat(size_t number_of_channels,
+void MediaStreamAudioSourceNode::SetFormat(uint32_t number_of_channels,
                                            float source_sample_rate) {
   GetMediaStreamAudioSourceHandler().SetFormat(number_of_channels,
                                                source_sample_rate);

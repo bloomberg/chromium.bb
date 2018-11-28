@@ -125,7 +125,7 @@ class WebAudioSourceProviderImplTest
   }
 
   // blink::WebAudioSourceProviderClient implementation.
-  MOCK_METHOD2(SetFormat, void(size_t numberOfChannels, float sampleRate));
+  MOCK_METHOD2(SetFormat, void(uint32_t numberOfChannels, float sampleRate));
 
   // CopyAudioCB. Added forwarder method due to GMock troubles with scoped_ptr.
   MOCK_METHOD3(DoCopyAudioCB,

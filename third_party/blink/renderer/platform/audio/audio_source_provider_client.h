@@ -33,7 +33,7 @@ namespace blink {
 
 class AudioSourceProviderClient : public GarbageCollectedMixin {
  public:
-  virtual void SetFormat(size_t number_of_channels, float sample_rate) = 0;
+  virtual void SetFormat(uint32_t number_of_channels, float sample_rate) = 0;
   // Oilpan: Callers should keep this object alive during lock() and unlock().
   virtual void lock() {}
   virtual void unlock() {}

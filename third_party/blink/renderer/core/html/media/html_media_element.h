@@ -692,7 +692,7 @@ class CORE_EXPORT HTMLMediaElement
     ~AudioClientImpl() override = default;
 
     // WebAudioSourceProviderClient
-    void SetFormat(size_t number_of_channels, float sample_rate) override;
+    void SetFormat(uint32_t number_of_channels, float sample_rate) override;
 
     void Trace(blink::Visitor*);
 
