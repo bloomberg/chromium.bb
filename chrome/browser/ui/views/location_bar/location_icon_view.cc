@@ -123,6 +123,10 @@ bool LocationIconView::ShouldShowText() const {
   return !location_bar_model->GetSecureDisplayText().empty();
 }
 
+const views::InkDrop* LocationIconView::get_ink_drop_for_testing() {
+  return GetInkDrop();
+}
+
 base::string16 LocationIconView::GetText() const {
   if (delegate_->GetLocationBarModel()->GetURL().SchemeIs(
           content::kChromeUIScheme))
@@ -201,26 +205,31 @@ void LocationIconView::Update(bool suppress_animations) {
                      ? base::string16()
                      : l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
 
-  // If the omnibox is empty or editing, the user should not be able to left
-  // click on the icon. As such, the icon should not show a highlight or be
-  // focusable. Note: using the middle mouse to copy-and-paste should still
-  // work on the icon.
-  if (is_editing_or_empty) {
-    SetInkDropMode(InkDropMode::OFF);
-    SetFocusBehavior(FocusBehavior::NEVER);
-    return;
-  }
-
-  SetInkDropMode(InkDropMode::ON);
+  // We should only enable/disable the InkDrop if the editing state has changed,
+  // as the drop gets recreated when SetInkDropMode is called. This can result
+  // in strange behaviour, like the the InkDrop disappearing mid animation.
+  if (is_editing_or_empty != was_editing_or_empty_) {
+    // If the omnibox is empty or editing, the user should not be able to left
+    // click on the icon. As such, the icon should not show a highlight or be
+    // focusable. Note: using the middle mouse to copy-and-paste should still
+    // work on the icon.
+    if (is_editing_or_empty) {
+      SetInkDropMode(InkDropMode::OFF);
+      SetFocusBehavior(FocusBehavior::NEVER);
+    } else {
+      SetInkDropMode(InkDropMode::ON);
 
 #if defined(OS_MACOSX)
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+      SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
-  SetFocusBehavior(FocusBehavior::ALWAYS);
+      SetFocusBehavior(FocusBehavior::ALWAYS);
 #endif
+    }
+  }
 
   last_update_security_level_ =
       delegate_->GetLocationBarModel()->GetSecurityLevel(false);
+  was_editing_or_empty_ = is_editing_or_empty;
 }
 
 bool LocationIconView::IsTriggerableEvent(const ui::Event& event) {
