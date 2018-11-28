@@ -33,6 +33,8 @@ jumbo_component("views_examples_lib") {
     "examples_window.h",
     "label_example.cc",
     "label_example.h",
+    "layout_example_base.cc",
+    "layout_example_base.h",
     "link_example.cc",
     "link_example.h",
     "menu_example.cc",
