@@ -22,6 +22,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -209,6 +210,7 @@ std::unique_ptr<SourceStream> URLRequestFileJob::SetUpSourceStream() {
   if (!base::LowerCaseEqualsASCII(file_path_.Extension(), ".svgz"))
     return source;
 
+  UMA_HISTOGRAM_BOOLEAN("Net.FileSVGZLoadCount", true);
   return GzipSourceStream::Create(std::move(source), SourceStream::TYPE_GZIP);
 }
 
