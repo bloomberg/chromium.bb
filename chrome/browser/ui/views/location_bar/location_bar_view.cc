@@ -212,20 +212,23 @@ void LocationBarView::Init() {
     AddChildView(image_view);
   }
 
-  std::vector<PageActionIconType> page_action_icon_types;
-  page_action_icon_types.push_back(PageActionIconType::kManagePasswords);
+  PageActionIconContainerView::Params params;
+  params.types_enabled.push_back(PageActionIconType::kManagePasswords);
   // |browser_| may be null when LocationBarView is used for non-Browser windows
   // such as PresentationReceiverWindowView, which do not support page actions.
   if (browser_) {
-    page_action_icon_types.push_back(PageActionIconType::kFind);
-    page_action_icon_types.push_back(PageActionIconType::kZoom);
+    params.types_enabled.push_back(PageActionIconType::kFind);
+    params.types_enabled.push_back(PageActionIconType::kZoom);
   }
-
-  page_action_icon_container_view_ = new PageActionIconContainerView(
-      page_action_icon_types, GetLayoutConstant(LOCATION_BAR_ICON_SIZE), 0,
-      browser_, command_updater(), this, delegate_);
+  params.icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
+  params.icon_color = icon_color;
+  params.between_icon_spacing = 0;
+  params.browser = browser_;
+  params.command_updater = command_updater();
+  params.page_action_icon_delegate = this;
+  params.location_bar_delegate = delegate_;
+  page_action_icon_container_view_ = new PageActionIconContainerView(params);
   AddChildView(page_action_icon_container_view_);
-  page_action_icon_container_view_->SetIconColor(icon_color);
 
   if (browser_) {
     save_credit_card_icon_view_ = new autofill::SaveCardIconView(

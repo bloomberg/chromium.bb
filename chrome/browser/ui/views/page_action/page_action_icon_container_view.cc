@@ -11,35 +11,38 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "ui/views/layout/box_layout.h"
 
-PageActionIconContainerView::PageActionIconContainerView(
-    const std::vector<PageActionIconType>& types_enabled,
-    int icon_size,
-    int between_icon_spacing,
-    Browser* browser,
-    CommandUpdater* command_updater,
-    PageActionIconView::Delegate* page_action_icon_delegate,
-    LocationBarView::Delegate* location_bar_delegate)
+PageActionIconContainerView::Params::Params() = default;
+PageActionIconContainerView::Params::~Params() = default;
+
+PageActionIconContainerView::PageActionIconContainerView(const Params& params)
     : zoom_observer_(this) {
+  DCHECK_GT(params.icon_size, 0);
+  DCHECK_NE(params.icon_color, gfx::kPlaceholderColor);
+  DCHECK(params.page_action_icon_delegate);
+
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(), between_icon_spacing));
+          views::BoxLayout::kHorizontal, gfx::Insets(),
+          params.between_icon_spacing));
   // Right align to clip the leftmost items first when not enough space.
   layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
 
-  for (PageActionIconType type : types_enabled) {
+  for (PageActionIconType type : params.types_enabled) {
     switch (type) {
       case PageActionIconType::kFind:
-        find_bar_icon_ = new FindBarIcon(browser, page_action_icon_delegate);
+        find_bar_icon_ =
+            new FindBarIcon(params.browser, params.page_action_icon_delegate);
         page_action_icons_.push_back(find_bar_icon_);
         break;
       case PageActionIconType::kManagePasswords:
+        DCHECK(params.command_updater);
         manage_passwords_icon_ = new ManagePasswordsIconViews(
-            command_updater, page_action_icon_delegate);
+            params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(manage_passwords_icon_);
         break;
       case PageActionIconType::kZoom:
-        zoom_view_ =
-            new ZoomView(location_bar_delegate, page_action_icon_delegate);
+        zoom_view_ = new ZoomView(params.location_bar_delegate,
+                                  params.page_action_icon_delegate);
         page_action_icons_.push_back(zoom_view_);
         break;
     }
@@ -47,14 +50,15 @@ PageActionIconContainerView::PageActionIconContainerView(
 
   for (PageActionIconView* icon : page_action_icons_) {
     icon->SetVisible(false);
-    icon->set_icon_size(icon_size);
+    icon->set_icon_size(params.icon_size);
     icon->Init();
+    icon->SetIconColor(params.icon_color);
     AddChildView(icon);
   }
 
-  if (browser) {
-    zoom_observer_.Add(
-        zoom::ZoomEventManager::GetForBrowserContext(browser->profile()));
+  if (params.browser) {
+    zoom_observer_.Add(zoom::ZoomEventManager::GetForBrowserContext(
+        params.browser->profile()));
   }
 }
 

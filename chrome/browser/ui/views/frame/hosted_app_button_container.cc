@@ -184,15 +184,6 @@ HostedAppButtonContainer::HostedAppButtonContainer(
       inactive_color_(inactive_color),
       hosted_app_origin_text_(new HostedAppOriginText(browser_view->browser())),
       content_settings_container_(new ContentSettingsContainer(this)),
-      page_action_icon_container_view_(new PageActionIconContainerView(
-          {PageActionIconType::kManagePasswords, PageActionIconType::kFind,
-           PageActionIconType::kZoom},
-          GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE),
-          HorizontalPaddingBetweenItems(),
-          browser_view->browser(),
-          browser_view->browser()->command_controller(),
-          this,
-          nullptr)),
       browser_actions_container_(
           new BrowserActionsContainer(browser_view->browser(),
                                       nullptr,
@@ -224,6 +215,17 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   AddChildView(content_settings_container_);
   UpdateContentSettingViewsVisibility();
 
+  PageActionIconContainerView::Params params;
+  params.types_enabled.push_back(PageActionIconType::kManagePasswords);
+  params.types_enabled.push_back(PageActionIconType::kFind);
+  params.types_enabled.push_back(PageActionIconType::kZoom);
+  params.icon_size = GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE);
+  params.icon_color = GetIconColor();
+  params.between_icon_spacing = HorizontalPaddingBetweenItems();
+  params.browser = browser_view_->browser();
+  params.command_updater = browser_view_->browser()->command_controller();
+  params.page_action_icon_delegate = this;
+  page_action_icon_container_view_ = new PageActionIconContainerView(params);
   views::SetHitTestComponent(page_action_icon_container_view_,
                              static_cast<int>(HTCLIENT));
   AddChildView(page_action_icon_container_view_);
