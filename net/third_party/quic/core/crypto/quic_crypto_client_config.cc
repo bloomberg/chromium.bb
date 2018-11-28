@@ -23,6 +23,7 @@
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_client_stats.h"
 #include "net/third_party/quic/platform/api/quic_endian.h"
 #include "net/third_party/quic/platform/api/quic_hostname_utils.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
@@ -40,17 +41,17 @@ namespace {
 // ClientHello to the server.
 void RecordInchoateClientHelloReason(
     QuicCryptoClientConfig::CachedState::ServerConfigState state) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Net.QuicInchoateClientHelloReason", state,
-      QuicCryptoClientConfig::CachedState::SERVER_CONFIG_COUNT);
+  QUIC_CLIENT_HISTOGRAM_ENUM(
+      "QuicInchoateClientHelloReason", state,
+      QuicCryptoClientConfig::CachedState::SERVER_CONFIG_COUNT, "");
 }
 
 // Tracks the state of the QUIC server information loaded from the disk cache.
 void RecordDiskCacheServerConfigState(
     QuicCryptoClientConfig::CachedState::ServerConfigState state) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Net.QuicServerInfo.DiskCacheState", state,
-      QuicCryptoClientConfig::CachedState::SERVER_CONFIG_COUNT);
+  QUIC_CLIENT_HISTOGRAM_ENUM(
+      "QuicServerInfo.DiskCacheState", state,
+      QuicCryptoClientConfig::CachedState::SERVER_CONFIG_COUNT, "");
 }
 
 }  // namespace
@@ -86,8 +87,8 @@ bool QuicCryptoClientConfig::CachedState::IsComplete(QuicWallTime now) const {
   const CryptoHandshakeMessage* scfg = GetServerConfig();
   if (!scfg) {
     // Should be impossible short of cache corruption.
-    DCHECK(false);
     RecordInchoateClientHelloReason(SERVER_CONFIG_CORRUPTED);
+    DCHECK(false);
     return false;
   }
 
@@ -95,11 +96,13 @@ bool QuicCryptoClientConfig::CachedState::IsComplete(QuicWallTime now) const {
     return true;
   }
 
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "Net.QuicClientHelloServerConfig.InvalidDuration",
-      base::TimeDelta::FromSeconds(now.ToUNIXSeconds() -
+  QUIC_CLIENT_HISTOGRAM_TIMES(
+      "QuicClientHelloServerConfig.InvalidDuration",
+      QuicTime::Delta::FromSeconds(now.ToUNIXSeconds() -
                                    expiration_time_.ToUNIXSeconds()),
-      base::TimeDelta::FromMinutes(1), base::TimeDelta::FromDays(20), 50);
+      QuicTime::Delta::FromSeconds(60),              // 1 min.
+      QuicTime::Delta::FromSeconds(20 * 24 * 3600),  // 20 days.
+      50, "");
   RecordInchoateClientHelloReason(SERVER_CONFIG_EXPIRED);
   return false;
 }
@@ -413,9 +416,9 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
   CachedState* cached = new CachedState;
   cached_states_.insert(std::make_pair(server_id, QuicWrapUnique(cached)));
   bool cache_populated = PopulateFromCanonicalConfig(server_id, cached);
-  UMA_HISTOGRAM_BOOLEAN(
-      "Net.QuicCryptoClientConfig.PopulatedFromCanonicalConfig",
-      cache_populated);
+  QUIC_CLIENT_HISTOGRAM_BOOL(
+      "QuicCryptoClientConfig.PopulatedFromCanonicalConfig", cache_populated,
+      "");
   return cached;
 }
 

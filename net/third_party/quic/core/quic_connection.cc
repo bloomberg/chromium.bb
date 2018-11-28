@@ -28,6 +28,7 @@
 #include "net/third_party/quic/core/quic_pending_retransmission.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_client_stats.h"
 #include "net/third_party/quic/platform/api/quic_exported_stats.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -1971,8 +1972,8 @@ void QuicConnection::WriteQueuedPackets() {
     SendVersionNegotiationPacket(send_ietf_version_negotiation_packet_);
   }
 
-  UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.NumQueuedPacketsBeforeWrite",
-                            queued_packets_.size());
+  QUIC_CLIENT_HISTOGRAM_COUNTS("QuicSession.NumQueuedPacketsBeforeWrite",
+                               queued_packets_.size(), 1, 1000, 50, "");
   while (!queued_packets_.empty()) {
     // WritePacket() can potentially clear all queued packets, so we need to
     // save the first queued packet to a local variable before calling it.
@@ -2126,8 +2127,8 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   if (packet->packet_number < sent_packet_manager_.GetLargestSentPacket()) {
     QUIC_BUG << "Attempt to write packet:" << packet->packet_number
              << " after:" << sent_packet_manager_.GetLargestSentPacket();
-    UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.NumQueuedPacketsAtOutOfOrder",
-                              queued_packets_.size());
+    QUIC_CLIENT_HISTOGRAM_COUNTS("QuicSession.NumQueuedPacketsAtOutOfOrder",
+                                 queued_packets_.size(), 1, 1000, 50, "");
     CloseConnection(QUIC_INTERNAL_ERROR, "Packet written out of order.",
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return true;
