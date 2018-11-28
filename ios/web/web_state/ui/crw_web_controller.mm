@@ -158,9 +158,6 @@ NSString* const kFrameBecameAvailableMessageName = @"FrameBecameAvailable";
 // Message command sent when a frame is unloading.
 NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 
-// Standard User Defaults key for "Log JS" debug setting.
-NSString* const kLogJavaScript = @"LogJavascript";
-
 // Values for the histogram that counts slow/fast back/forward navigations.
 enum class BackForwardNavigationType {
   // Fast back navigation through WKWebView back-forward list.
@@ -832,9 +829,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Handles 'chrome.send' message.
 - (BOOL)handleChromeSendMessage:(base::DictionaryValue*)message
                         context:(NSDictionary*)context;
-// Handles 'console' message.
-- (BOOL)handleConsoleMessage:(base::DictionaryValue*)message
-                     context:(NSDictionary*)context;
 // Handles 'document.favicons' message.
 - (BOOL)handleDocumentFaviconsMessage:(base::DictionaryValue*)message
                               context:(NSDictionary*)context;
@@ -2439,7 +2433,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   dispatch_once(&onceToken, ^{
     handlers = new std::map<std::string, SEL>();
     (*handlers)["chrome.send"] = @selector(handleChromeSendMessage:context:);
-    (*handlers)["console"] = @selector(handleConsoleMessage:context:);
     (*handlers)["document.favicons"] =
         @selector(handleDocumentFaviconsMessage:context:);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
@@ -2648,35 +2641,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   DLOG(WARNING)
       << "chrome.send message not handled because WebUI was not found.";
   return NO;
-}
-
-- (BOOL)handleConsoleMessage:(base::DictionaryValue*)message
-                     context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-  // Do not log if JS logging is off.
-  if (![[NSUserDefaults standardUserDefaults] boolForKey:kLogJavaScript]) {
-    return YES;
-  }
-
-  std::string method;
-  if (!message->GetString("method", &method)) {
-    DLOG(WARNING) << "JS message parameter not found: method";
-    return NO;
-  }
-  std::string consoleMessage;
-  if (!message->GetString("message", &consoleMessage)) {
-    DLOG(WARNING) << "JS message parameter not found: message";
-    return NO;
-  }
-  std::string origin;
-  if (!message->GetString("origin", &origin)) {
-    DLOG(WARNING) << "JS message parameter not found: origin";
-    return NO;
-  }
-
-  DVLOG(0) << origin << " [" << method << "] " << consoleMessage;
-  return YES;
 }
 
 - (BOOL)handleDocumentFaviconsMessage:(base::DictionaryValue*)message

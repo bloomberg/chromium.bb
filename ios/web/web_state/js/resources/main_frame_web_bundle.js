@@ -7,7 +7,6 @@ goog.provide('__crWeb.mainFrameWebBundle');
 
 // Requires __crWeb.form provided by __crWeb.allFramesWebBundle.
 
-goog.require('__crWeb.console');
 goog.require('__crWeb.error');
 goog.require('__crWeb.legacy');
 goog.require('__crWeb.mainFrameContextMenu');
