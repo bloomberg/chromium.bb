@@ -32,10 +32,6 @@ class TestSyncService : public syncer::TestSyncService {
   void AddObserver(syncer::SyncServiceObserver* observer) override {
     observer_ = observer;
   }
-  void OnUserChoseDatatypes(bool sync_everything,
-                            syncer::ModelTypeSet chosen_types) override {
-    SetPreferredDataTypes(chosen_types);
-  }
 
   void FireStateChanged() {
     if (observer_)

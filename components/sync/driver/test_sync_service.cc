@@ -152,9 +152,6 @@ void TestSyncService::RequestStop(SyncService::SyncStopDataFate data_fate) {}
 
 void TestSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
 
-void TestSyncService::OnUserChoseDatatypes(bool sync_everything,
-                                           ModelTypeSet chosen_types) {}
-
 void TestSyncService::TriggerRefresh(const ModelTypeSet& types) {}
 
 void TestSyncService::ReenableDatatype(ModelType type) {}
