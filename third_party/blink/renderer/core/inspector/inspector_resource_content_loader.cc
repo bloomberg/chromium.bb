@@ -88,6 +88,7 @@ void InspectorResourceContentLoader::Start() {
       resource_request.SetCacheMode(mojom::FetchCacheMode::kOnlyIfCached);
     }
     resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
+    resource_request.SetSkipServiceWorker(true);
 
     if (!resource_request.Url().GetString().IsEmpty()) {
       urls_to_fetch.insert(resource_request.Url().GetString());
