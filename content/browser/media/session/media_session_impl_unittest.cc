@@ -43,9 +43,12 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
   ~MockAudioFocusDelegate() override = default;
 
   void AbandonAudioFocus() override {}
+
   AudioFocusResult RequestAudioFocus(AudioFocusType type) override {
+    request_audio_focus_count_++;
     return AudioFocusResult::kSuccess;
   }
+
   base::Optional<AudioFocusType> GetCurrentFocusType() const override {
     return AudioFocusType::kGain;
   }
@@ -59,7 +62,11 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
     return session_info_->state;
   }
 
+  int request_audio_focus_count() const { return request_audio_focus_count_; }
+
  private:
+  int request_audio_focus_count_ = 0;
+
   MediaSessionInfoPtr session_info_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioFocusDelegate);
@@ -409,6 +416,60 @@ TEST_F(MediaSessionImplTest, WebContentsDestroyed_StopsDucking) {
   }
 }
 
+TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Active) {
+  std::unique_ptr<WebContents> web_contents(CreateWebContents());
+  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
+  MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
+  SetDelegateForTests(media_session, delegate);
+
+  {
+    MockMediaSessionMojoObserver observer(*media_session);
+    RequestAudioFocus(media_session, AudioFocusType::kGain);
+    FlushForTesting(media_session);
+    observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+  }
+
+  EXPECT_EQ(1, delegate->request_audio_focus_count());
+  media_session->OnWebContentsFocused(nullptr);
+  EXPECT_EQ(2, delegate->request_audio_focus_count());
+}
+
+TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Inactive) {
+  std::unique_ptr<WebContents> web_contents(CreateWebContents());
+  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
+  MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
+  SetDelegateForTests(media_session, delegate);
+  EXPECT_EQ(MediaSessionInfo::SessionState::kInactive, GetState(media_session));
+
+  EXPECT_EQ(0, delegate->request_audio_focus_count());
+  media_session->OnWebContentsFocused(nullptr);
+  EXPECT_EQ(0, delegate->request_audio_focus_count());
+}
+
+TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Suspended) {
+  std::unique_ptr<WebContents> web_contents(CreateWebContents());
+  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
+  MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
+  SetDelegateForTests(media_session, delegate);
+
+  {
+    MockMediaSessionMojoObserver observer(*media_session);
+    RequestAudioFocus(media_session, AudioFocusType::kGain);
+    FlushForTesting(media_session);
+    observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    MockMediaSessionMojoObserver observer(*media_session);
+    media_session->Suspend(MediaSession::SuspendType::kSystem);
+    observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
+  }
+
+  EXPECT_EQ(1, delegate->request_audio_focus_count());
+  media_session->OnWebContentsFocused(nullptr);
+  EXPECT_EQ(1, delegate->request_audio_focus_count());
+}
+  
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace content
