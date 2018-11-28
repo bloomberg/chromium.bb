@@ -50,6 +50,8 @@ RendererSettings CreateRendererSettings() {
 #elif defined(OS_MACOSX)
   renderer_settings.release_overlay_resources_after_gpu_query = true;
   renderer_settings.auto_resize_output_surface = false;
+#elif defined(OS_CHROMEOS)
+  renderer_settings.auto_resize_output_surface = false;
 #endif
   renderer_settings.tint_gl_composited_content =
       command_line->HasSwitch(switches::kTintGlCompositedContent);
