@@ -72,7 +72,7 @@ class TabIcon : public views::View {
     base::TimeDelta elapsed_time;
     double loading_progress;
     SkAlpha loading_progress_alpha;
-    SkAlpha favicon_alpha;
+    double favicon_fade_in_progress;
   };
 
   // views::View:
