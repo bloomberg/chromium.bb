@@ -30,7 +30,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/identity_utils.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace signin_util {
@@ -214,7 +216,9 @@ void EnsurePrimaryAccountAllowedForProfile(Profile* profile) {
 
   AccountInfo primary_account = signin_manager->GetAuthenticatedAccountInfo();
   if (signin_manager->IsSigninAllowed() &&
-      signin_manager->IsAllowedUsername(primary_account.email)) {
+      identity::LegacyIsUsernameAllowedByPatternFromPrefs(
+          g_browser_process->local_state(), primary_account.email,
+          prefs::kGoogleServicesUsernamePattern)) {
     return;
   }
 
