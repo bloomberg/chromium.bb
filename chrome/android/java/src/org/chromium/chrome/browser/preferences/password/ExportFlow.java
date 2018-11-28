@@ -420,10 +420,7 @@ public class ExportFlow {
             // Note: if the serialization is quicker than the user interacting with the
             // confirmation dialog, then there is no progress bar shown, in which case hide() is
             // just calling the callback synchronously.
-            // TODO(crbug.com/821377) -- remove clang-format pragmas
-            // clang-format off
             mProgressBarManager.hide(this::sendExportIntent);
-            // clang-format on
         }
     }
 
