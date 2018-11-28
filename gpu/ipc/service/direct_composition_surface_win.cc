@@ -470,7 +470,7 @@ class DCLayerTree::SwapChainPresenter {
 
   // Returns true if YUV swap chain should be preferred over BGRA swap chain.
   // This changes over time based on stats recorded in |presentation_history|.
-  bool ShouldUseYUVSwapChain();
+  bool ShouldUseYUVSwapChain(ui::ProtectedVideoType protected_video_type);
 
   // Perform a blit using video processor from given input texture to swap chain
   // backbuffer. |input_texture| is the input texture (array), and |input_level|
@@ -664,19 +664,20 @@ DCLayerTree::SwapChainPresenter::SwapChainPresenter(
 
 DCLayerTree::SwapChainPresenter::~SwapChainPresenter() {}
 
-bool DCLayerTree::SwapChainPresenter::ShouldUseYUVSwapChain() {
+bool DCLayerTree::SwapChainPresenter::ShouldUseYUVSwapChain(
+    ui::ProtectedVideoType protected_video_type) {
   // TODO(crbug.com/850799): Assess power/perf impact when protected video
   // swap chain is composited by DWM.
 
   // Always prefer YUV swap chain for hardware protected video for now.
-  if (protected_video_type_ == ui::ProtectedVideoType::kHardwareProtected)
+  if (protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
     return true;
 
   // For software protected video, BGRA swap chain is preferred if hardware
   // overlay is not supported for better power efficiency.
   // Currently, software protected video is the only case that overlay swap
   // chain is used when hardware overlay is not suppported.
-  if (protected_video_type_ == ui::ProtectedVideoType::kSoftwareProtected &&
+  if (protected_video_type == ui::ProtectedVideoType::kSoftwareProtected &&
       !g_supports_overlays)
     return false;
 
@@ -950,7 +951,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     *needs_commit = true;
 
   bool swap_chain_resized = swap_chain_size_ != swap_chain_size;
-  bool use_yuv_swap_chain = ShouldUseYUVSwapChain();
+  bool use_yuv_swap_chain = ShouldUseYUVSwapChain(params.protected_video_type);
   bool toggle_yuv_swapchain = use_yuv_swap_chain != is_yuv_swapchain_;
   bool toggle_protected_video =
       protected_video_type_ != params.protected_video_type;
