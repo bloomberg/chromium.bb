@@ -383,29 +383,31 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
             if (entryPoint == null) {
                 unregisterModuleNavigationEventObserver();
-                return;
-            }
-            mModuleEntryPoint = entryPoint;
-
-            long createActivityDelegateStartTime = ModuleMetrics.now();
-            mModuleActivityDelegate = entryPoint.createActivityDelegate(
-                    new ActivityHostImpl(CustomTabActivity.this));
-            ModuleMetrics.recordCreateActivityDelegateTime(createActivityDelegateStartTime);
-            mModuleActivityDelegate.onCreate(getSavedInstanceState());
-
-            if (mModuleOnStartPending) startModule();
-            if (mModuleOnResumePending) resumeModule();
-
-            if (mModuleEntryPoint.getModuleVersion() >=
-                    DynamicModuleConstants.ON_NAVIGATION_EVENT_MODULE_API_VERSION) {
-                mModuleNavigationEventObserver.setActivityDelegate(mModuleActivityDelegate);
             } else {
-                unregisterModuleNavigationEventObserver();
-            }
+                mModuleEntryPoint = entryPoint;
 
-            // Initialise the PostMessageHandler for the current web contents.
-            maybeInitialiseDynamicModulePostMessageHandler(
-                    new ActivityDelegatePostMessageBackend());
+                long createActivityDelegateStartTime = ModuleMetrics.now();
+                mModuleActivityDelegate = entryPoint.createActivityDelegate(
+                        new ActivityHostImpl(CustomTabActivity.this));
+                ModuleMetrics.recordCreateActivityDelegateTime(createActivityDelegateStartTime);
+                mModuleActivityDelegate.onCreate(getSavedInstanceState());
+
+                if (mModuleOnStartPending) startModule();
+                if (mModuleOnResumePending) resumeModule();
+
+                if (mModuleEntryPoint.getModuleVersion()
+                        >= DynamicModuleConstants.ON_NAVIGATION_EVENT_MODULE_API_VERSION) {
+                    mModuleNavigationEventObserver.setActivityDelegate(mModuleActivityDelegate);
+                } else {
+                    unregisterModuleNavigationEventObserver();
+                }
+
+                // Initialise the PostMessageHandler for the current web contents.
+                maybeInitialiseDynamicModulePostMessageHandler(
+                        new ActivityDelegatePostMessageBackend());
+            }
+            // Show CCT header (or top bar) if module fails (or succeeds) to load.
+            maybeUpdateCctHeaderVisibility(mIntentDataProvider.getUrlToLoad());
         }
     }
 
@@ -1690,12 +1692,12 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     private void maybeUpdateCctHeaderVisibility(String url) {
-        // TODO(crbug.com/882404) Show CCT top bar if module fails to load.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE) || !isModuleLoaded()) {
+            return;
+        }
         boolean isModuleManagedUrl = isModuleManagedUrl(url);
         mTopBarDelegate.showTopBarIfNecessary(isModuleManagedUrl);
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
                 && mIntentDataProvider.shouldHideCctHeaderOnModuleManagedUrls()) {
             getToolbarManager().setToolbarVisibility(
                     isModuleManagedUrl ? View.GONE : mDefaultToolbarVisibility);
