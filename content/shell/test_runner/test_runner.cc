@@ -1224,10 +1224,13 @@ std::string TestRunnerBindings::PathToLocalResource(const std::string& path) {
 void TestRunnerBindings::SetBackingScaleFactor(
     double value,
     v8::Local<v8::Function> callback) {
-  // Limit backing scale factor to something "reasonable" - 100x. Without
+  // Limit backing scale factor to something low - 15x. Without
   // this limit, arbitrarily large values can be used, which can lead to
-  // crashes and other problems: See https://crbug.com/899482.
-  double limited_value = fmin(100.0, value);
+  // crashes and other problems. Examples of problems: gfx::Size::GetCheckedArea
+  // crashes with a size which overflows int; GLES2DecoderImpl::TexStorageImpl
+  // fails with "dimensions out of range"; GL ERROR :GL_OUT_OF_MEMORY.
+  // See https://crbug.com/899482 or https://crbug.com/900271
+  double limited_value = fmin(15, value);
   if (view_runner_)
     view_runner_->SetBackingScaleFactor(limited_value, callback);
 }
