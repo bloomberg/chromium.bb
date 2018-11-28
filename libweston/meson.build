@@ -307,8 +307,8 @@ if get_option('backend-wayland')
 		fullscreen_shell_unstable_v1_protocol_c,
 		presentation_time_protocol_c,
 		presentation_time_server_protocol_h,
-		xdg_shell_unstable_v6_client_protocol_h,
-		xdg_shell_unstable_v6_protocol_c,
+		xdg_shell_server_protocol_h,
+		xdg_shell_protocol_c,
 	]
 
 	deps_wlwl = [
