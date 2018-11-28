@@ -226,6 +226,7 @@ External library support:
   --enable-libcelt         enable CELT decoding via libcelt [no]
   --enable-libcdio         enable audio CD grabbing with libcdio [no]
   --enable-libcodec2       enable codec2 en/decoding using libcodec2 [no]
+  --enable-libdav1d        enable AV1 decoding via libdav1d [no]
   --enable-libdavs2        enable AVS2 decoding via libdavs2 [no]
   --enable-libdc1394       enable IIDC-1394 grabbing using libdc1394
                            and libraw1394 [no]
@@ -1712,6 +1713,7 @@ EXTERNAL_LIBRARY_LIST="
     libcaca
     libcelt
     libcodec2
+    libdav1d
     libdc1394
     libdrm
     libflite
@@ -2335,6 +2337,7 @@ CONFIG_EXTRA="
     rtpdec
     rtpenc_chain
     rv34dsp
+    scene_sad
     sinewin
     snappy
     srtp
@@ -2812,6 +2815,7 @@ d3d11va_deps="dxva_h ID3D11VideoDecoder ID3D11VideoContext"
 dxva2_deps="dxva2api_h DXVA2_ConfigPictureDecode ole32 user32"
 ffnvcodec_deps_any="libdl LoadLibrary"
 nvdec_deps="ffnvcodec"
+vaapi_x11_deps="xlib"
 videotoolbox_hwaccel_deps="videotoolbox pthreads"
 videotoolbox_hwaccel_extralibs="-framework QuartzCore"
 xvmc_deps="X11_extensions_XvMClib_h"
@@ -2957,6 +2961,7 @@ h264_rkmpp_decoder_deps="rkmpp"
 h264_rkmpp_decoder_select="h264_mp4toannexb_bsf"
 h264_vaapi_encoder_select="cbs_h264 vaapi_encode"
 h264_v4l2m2m_decoder_deps="v4l2_m2m h264_v4l2_m2m"
+h264_v4l2m2m_decoder_select="h264_mp4toannexb_bsf"
 h264_v4l2m2m_encoder_deps="v4l2_m2m h264_v4l2_m2m"
 hevc_amf_encoder_deps="amf"
 hevc_cuvid_decoder_deps="cuvid"
@@ -2971,6 +2976,7 @@ hevc_rkmpp_decoder_select="hevc_mp4toannexb_bsf"
 hevc_vaapi_encoder_deps="VAEncPictureParameterBufferHEVC"
 hevc_vaapi_encoder_select="cbs_h265 vaapi_encode"
 hevc_v4l2m2m_decoder_deps="v4l2_m2m hevc_v4l2_m2m"
+hevc_v4l2m2m_decoder_select="hevc_mp4toannexb_bsf"
 hevc_v4l2m2m_encoder_deps="v4l2_m2m hevc_v4l2_m2m"
 mjpeg_cuvid_decoder_deps="cuvid"
 mjpeg_qsv_encoder_deps="libmfx"
@@ -3020,6 +3026,7 @@ wmv3_crystalhd_decoder_select="crystalhd"
 
 # parsers
 aac_parser_select="adts_header"
+av1_parser_select="cbs_av1"
 h264_parser_select="golomb h264dsp h264parse"
 hevc_parser_select="hevcparse"
 mpegaudio_parser_select="mpegaudioheader"
@@ -3039,6 +3046,7 @@ hevc_metadata_bsf_select="cbs_h265"
 mjpeg2jpeg_bsf_select="jpegtables"
 mpeg2_metadata_bsf_select="cbs_mpeg2"
 trace_headers_bsf_select="cbs"
+truehd_core_bsf_select="mlp_parser"
 vp9_metadata_bsf_select="cbs_vp9"
 
 # external libraries
@@ -3087,6 +3095,7 @@ libaom_av1_encoder_select="extract_extradata_bsf"
 libcelt_decoder_deps="libcelt"
 libcodec2_decoder_deps="libcodec2"
 libcodec2_encoder_deps="libcodec2"
+libdav1d_decoder_deps="libdav1d"
 libdavs2_decoder_deps="libdavs2"
 libfdk_aac_decoder_deps="libfdk_aac"
 libfdk_aac_encoder_deps="libfdk_aac"
@@ -3179,6 +3188,7 @@ image2_alias_pix_demuxer_select="image2_demuxer"
 image2_brender_pix_demuxer_select="image2_demuxer"
 ipod_muxer_select="mov_muxer"
 ismv_muxer_select="mov_muxer"
+ivf_muxer_select="av1_metadata_bsf vp9_superframe_bsf"
 matroska_audio_muxer_select="matroska_muxer"
 matroska_demuxer_select="iso_media riffdec"
 matroska_demuxer_suggest="bzlib lzo zlib"
@@ -3266,6 +3276,7 @@ libcdio_indev_deps="libcdio"
 libdc1394_indev_deps="libdc1394"
 openal_indev_deps="openal"
 opengl_outdev_deps="opengl"
+opengl_outdev_suggest="sdl2"
 oss_indev_deps_any="sys_soundcard_h"
 oss_outdev_deps_any="sys_soundcard_h"
 pulse_indev_deps="libpulse"
@@ -3392,7 +3403,8 @@ find_rect_filter_deps="avcodec avformat gpl"
 firequalizer_filter_deps="avcodec"
 firequalizer_filter_select="rdft"
 flite_filter_deps="libflite"
-framerate_filter_select="pixelutils"
+framerate_filter_select="scene_sad"
+freezedetect_filter_select="scene_sad"
 frei0r_filter_deps="frei0r libdl"
 frei0r_src_filter_deps="frei0r libdl"
 fspp_filter_deps="gpl"
@@ -3408,6 +3420,7 @@ mcdeint_filter_deps="avcodec gpl"
 movie_filter_deps="avcodec avformat"
 mpdecimate_filter_deps="gpl"
 mpdecimate_filter_select="pixelutils"
+minterpolate_filter_select="scene_sad"
 mptestsrc_filter_deps="gpl"
 negate_filter_deps="lut_filter"
 nnedi_filter_deps="gpl"
@@ -3436,7 +3449,7 @@ sab_filter_deps="gpl swscale"
 scale2ref_filter_deps="swscale"
 scale_filter_deps="swscale"
 scale_qsv_filter_deps="libmfx"
-select_filter_select="pixelutils"
+select_filter_select="scene_sad"
 sharpness_vaapi_filter_deps="vaapi"
 showcqt_filter_deps="avcodec avformat swscale"
 showcqt_filter_suggest="libfontconfig libfreetype"
@@ -3479,6 +3492,7 @@ zscale_filter_deps="libzimg const_nan"
 scale_vaapi_filter_deps="vaapi"
 vpp_qsv_filter_deps="libmfx"
 vpp_qsv_filter_select="qsvvpp"
+yadif_cuda_filter_deps="cuda_sdk"
 
 # examples
 avio_dir_cmd_deps="avformat avutil"
@@ -5129,6 +5143,7 @@ case $target_os in
             echo "hwcap_1 = OVERRIDE;" > mapfile &&
             add_ldflags -Wl,-M,mapfile
         nm_default='nm -P -g'
+        striptype=""
         version_script='-M'
         VERSION_SCRIPT_POSTPROCESS_CMD='perl $(SRC_PATH)/compat/solaris/make_sunver.pl - $(OBJS)'
         ;;
@@ -5282,7 +5297,6 @@ case $target_os in
         network_extralibs="-lsocket"
         objformat="coff"
         enable dos_paths
-        add_cppflags -U__STRICT_ANSI__
         ;;
     linux)
         enable section_data_rel_ro
@@ -5456,6 +5470,11 @@ EOF
     elif test_${pfx}cpp_condition sys/brand.h "defined LABELED_BRAND_NAME"; then
         eval ${pfx}libc_type=solaris
         add_${pfx}cppflags -D__EXTENSIONS__ -D_XOPEN_SOURCE=600
+    elif test_${pfx}cpp_condition sys/version.h "defined __DJGPP__"; then
+        eval ${pfx}libc_type=djgpp
+        add_cppflags -U__STRICT_ANSI__
+        add_cflags "-include $source_path/compat/djgpp/math.h"
+        add_compat djgpp/math.o
     fi
     test_${pfx}cc <<EOF
 #include <time.h>
@@ -6067,6 +6086,7 @@ enabled libcelt           && require libcelt celt/celt.h celt_decode -lcelt0 &&
                                die "ERROR: libcelt must be installed and version must be >= 0.11.0."; }
 enabled libcaca           && require_pkg_config libcaca caca caca.h caca_create_canvas
 enabled libcodec2         && require libcodec2 codec2/codec2.h codec2_create -lcodec2
+enabled libdav1d          && require_pkg_config libdav1d "dav1d >= 0.0.1" "dav1d/dav1d.h" dav1d_version
 enabled libdavs2          && require_pkg_config libdavs2 "davs2 >= 1.5.115" davs2.h davs2_decoder_open
 enabled libdc1394         && require_pkg_config libdc1394 libdc1394-2 dc1394/dc1394.h dc1394_new
 enabled libdrm            && require_pkg_config libdrm libdrm xf86drm.h drmGetVersion
@@ -6184,7 +6204,7 @@ enabled libx264           && { check_pkg_config libx264 x264 "stdint.h x264.h" x
 enabled libx265           && require_pkg_config libx265 x265 x265.h x265_api_get &&
                              require_cpp_condition libx265 x265.h "X265_BUILD >= 68"
 enabled libxavs           && require libxavs "stdint.h xavs.h" xavs_encoder_encode "-lxavs $pthreads_extralibs $libm_extralibs"
-enabled libxavs2          && require_pkg_config libxavs2 "xavs2 >= 1.2.77" "stdint.h xavs2.h" xavs2_api_get
+enabled libxavs2          && require_pkg_config libxavs2 "xavs2 >= 1.3.0" "stdint.h xavs2.h" xavs2_api_get
 enabled libxvid           && require libxvid xvid.h xvid_global -lxvidcore
 enabled libzimg           && require_pkg_config libzimg "zimg >= 2.7.0" zimg.h zimg_get_api_version
 enabled libzmq            && require_pkg_config libzmq libzmq zmq.h zmq_ctx_new
@@ -6503,6 +6523,7 @@ check_disable_warning -Wno-format-zero-length
 check_disable_warning -Wno-pointer-sign
 check_disable_warning -Wno-unused-const-variable
 check_disable_warning -Wno-bool-operation
+check_disable_warning -Wno-char-subscripts
 
 check_disable_warning_headers(){
     warning_flag=-W${1#-Wno-}
@@ -6785,10 +6806,17 @@ check_deps $CONFIG_LIST       \
 enabled threads && ! enabled pthreads && ! enabled atomics_native && die "non pthread threading without atomics not supported, try adding --enable-pthreads or --cpu=i486 or higher if you are on x86"
 enabled avresample && warn "Building with deprecated library libavresample"
 
-if test $target_os = "haiku"; then
+case $target_os in
+haiku)
     disable memalign
     disable posix_memalign
-fi
+    ;;
+*-dos|freedos|opendos)
+    if test_cpp_condition sys/version.h "defined(__DJGPP__) && __DJGPP__ == 2 && __DJGPP_MINOR__ == 5"; then
+        disable memalign
+    fi
+    ;;
+esac
 
 flatten_extralibs(){
     nested_entries=
@@ -6912,7 +6940,8 @@ enabled zoompan_filter      && prepend avfilter_deps "swscale"
 enabled lavfi_indev         && prepend avdevice_deps "avfilter"
 
 #FIXME
-enabled sdl2_outdev     && add_cflags $(filter_out '-Dmain=SDL_main' $sdl2_cflags)
+enabled_any sdl2_outdev opengl_outdev && enabled sdl2 &&
+    add_cflags $(filter_out '-Dmain=SDL_main' $sdl2_cflags)
 
 enabled opus_decoder    && prepend avcodec_deps "swresample"
 

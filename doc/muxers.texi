@@ -245,11 +245,11 @@ Enable (1) or disable (0) use of SegmentTimeline in SegmentTemplate.
 @item -single_file @var{single_file}
 Enable (1) or disable (0) storing all segments in one file, accessed using byte ranges.
 @item -single_file_name @var{file_name}
-DASH-templated name to be used for baseURL. Implies @var{single_file} set to "1".
+DASH-templated name to be used for baseURL. Implies @var{single_file} set to "1". In the template, "$ext$" is replaced with the file name extension specific for the segment format.
 @item -init_seg_name @var{init_name}
-DASH-templated name to used for the initialization segment. Default is "init-stream$RepresentationID$.m4s"
+DASH-templated name to used for the initialization segment. Default is "init-stream$RepresentationID$.$ext$". "$ext$" is replaced with the file name extension specific for the segment format.
 @item -media_seg_name @var{segment_name}
-DASH-templated name to used for the media segments. Default is "chunk-stream$RepresentationID$-$Number%05d$.m4s"
+DASH-templated name to used for the media segments. Default is "chunk-stream$RepresentationID$-$Number%05d$.$ext$". "$ext$" is replaced with the file name extension specific for the segment format.
 @item -utc_timing_url @var{utc_url}
 URL of the page that will return the UTC timestamp in ISO format. Example: "https://time.akamai.com/?iso"
 @item method @var{method}
@@ -289,10 +289,13 @@ Set container format (mp4/webm) options using a @code{:} separated list of
 key=value parameters. Values containing @code{:} special characters must be
 escaped.
 
-@item dash_segment_type @var{dash_segment_type}
+@item -dash_segment_type @var{dash_segment_type}
 Possible values:
+@item auto
+If this flag is set, the dash segment files format will be selected based on the stream codec. This is the default mode.
+
 @item mp4
-If this flag is set, the dash segment files will be in in ISOBMFF format. This is the default format.
+If this flag is set, the dash segment files will be in in ISOBMFF format.
 
 @item webm
 If this flag is set, the dash segment files will be in in WebM format.
@@ -764,17 +767,17 @@ Possible values:
 
 @table @samp
 @item mpegts
-If this flag is set, the hls segment files will format to mpegts.
-the mpegts files is used in all hls versions.
+Output segment files in MPEG-2 Transport Stream format. This is
+compatible with all HLS versions.
 
 @item fmp4
-If this flag is set, the hls segment files will format to fragment mp4 looks like dash.
-the fmp4 files is used in hls after version 7.
+Output segment files in fragmented MP4 format, similar to MPEG-DASH.
+fmp4 files may be used in HLS version 7 and above.
 
 @end table
 
 @item hls_fmp4_init_filename @var{filename}
-set filename to the fragment files header file, default filename is @file{init.mp4}.
+Set filename to the fragment files header file, default filename is @file{init.mp4}.
 
 When @code{var_stream_map} is set with two or more variant streams, the
 @var{filename} pattern must contain the string "%v", this string specifies

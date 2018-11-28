@@ -49,7 +49,8 @@
 #include "dash.h"
 
 typedef enum {
-    SEGMENT_TYPE_MP4 = 0,
+    SEGMENT_TYPE_AUTO = 0,
+    SEGMENT_TYPE_MP4,
     SEGMENT_TYPE_WEBM,
     SEGMENT_TYPE_NB
 } SegmentType;
@@ -59,7 +60,7 @@ typedef struct Segment {
     int64_t start_pos;
     int range_length, index_length;
     int64_t time;
-    int duration;
+    int64_t duration;
     int n;
 } Segment;
 
@@ -84,6 +85,11 @@ typedef struct OutputStream {
     int64_t first_pts, start_pts, max_pts;
     int64_t last_dts, last_pts;
     int bit_rate;
+    SegmentType segment_type;  /* segment type selected for this particular stream */
+    const char *format_name;
+    const char *single_file_name;  /* file names selected for this particular stream */
+    const char *init_seg_name;
+    const char *media_seg_name;
 
     char codec_str[100];
     int written_len;
@@ -116,7 +122,7 @@ typedef struct DASHContext {
     int64_t total_duration;
     char availability_start_time[100];
     char dirname[1024];
-    const char *single_file_name;
+    const char *single_file_name;  /* file names as specified in options */
     const char *init_seg_name;
     const char *media_seg_name;
     const char *utc_timing_url;
@@ -131,8 +137,7 @@ typedef struct DASHContext {
     int64_t timeout;
     int index_correction;
     char *format_options_str;
-    SegmentType segment_type;
-    const char *format_name;
+    SegmentType segment_type_option;  /* segment type as specified in options */
 } DASHContext;
 
 static struct codec_string {
@@ -143,6 +148,7 @@ static struct codec_string {
     { AV_CODEC_ID_VP9, "vp9" },
     { AV_CODEC_ID_VORBIS, "vorbis" },
     { AV_CODEC_ID_OPUS, "opus" },
+    { AV_CODEC_ID_FLAC, "flac" },
     { 0, NULL }
 };
 
@@ -150,6 +156,7 @@ static struct format_string {
     SegmentType segment_type;
     const char *str;
 } formats[] = {
+    { SEGMENT_TYPE_AUTO, "auto" },
     { SEGMENT_TYPE_MP4, "mp4" },
     { SEGMENT_TYPE_WEBM, "webm" },
     { 0, NULL }
@@ -167,6 +174,8 @@ static int dashenc_io_open(AVFormatContext *s, AVIOContext **pb, char *filename,
         URLContext *http_url_context = ffio_geturlcontext(*pb);
         av_assert0(http_url_context);
         err = ff_http_do_new_request(http_url_context, filename);
+        if (err < 0)
+            ff_format_io_close(s, pb);
 #endif
     }
     return err;
@@ -175,6 +184,9 @@ static int dashenc_io_open(AVFormatContext *s, AVIOContext **pb, char *filename,
 static void dashenc_io_close(AVFormatContext *s, AVIOContext **pb, char *filename) {
     DASHContext *c = s->priv_data;
     int http_base_proto = filename ? ff_is_http_proto(filename) : 0;
+
+    if (!*pb)
+        return;
 
     if (!http_base_proto || !c->http_persistent) {
         ff_format_io_close(s, pb);
@@ -194,6 +206,38 @@ static const char *get_format_str(SegmentType segment_type) {
         if (formats[i].segment_type == segment_type)
             return formats[i].str;
     return NULL;
+}
+
+static inline SegmentType select_segment_type(SegmentType segment_type, enum AVCodecID codec_id)
+{
+    if (segment_type == SEGMENT_TYPE_AUTO) {
+        if (codec_id == AV_CODEC_ID_OPUS || codec_id == AV_CODEC_ID_VORBIS ||
+            codec_id == AV_CODEC_ID_VP8 || codec_id == AV_CODEC_ID_VP9) {
+            segment_type = SEGMENT_TYPE_WEBM;
+        } else {
+            segment_type = SEGMENT_TYPE_MP4;
+        }
+    }
+
+    return segment_type;
+}
+
+static int init_segment_types(AVFormatContext *s)
+{
+    DASHContext *c = s->priv_data;
+    for (int i = 0; i < s->nb_streams; ++i) {
+        OutputStream *os = &c->streams[i];
+        SegmentType segment_type = select_segment_type(
+            c->segment_type_option, s->streams[i]->codecpar->codec_id);
+        os->segment_type = segment_type;
+        os->format_name = get_format_str(segment_type);
+        if (!os->format_name) {
+            av_log(s, AV_LOG_ERROR, "Could not select DASH segment type for stream %d\n", i);
+            return AVERROR_MUXER_NOT_FOUND;
+        }
+    }
+
+    return 0;
 }
 
 static int check_file_extension(const char *filename, const char *extension) {
@@ -247,7 +291,9 @@ static void set_codec_str(AVFormatContext *s, AVCodecParameters *par,
     else
         return;
 
-    tag = av_codec_get_tag(tags, par->codec_id);
+    tag = par->codec_tag;
+    if (!tag)
+        tag = av_codec_get_tag(tags, par->codec_id);
     if (!tag)
         return;
     if (size < 5)
@@ -315,7 +361,8 @@ static int flush_dynbuf(OutputStream *os, int *range_length)
     // write out to file
     *range_length = avio_close_dyn_buf(os->ctx->pb, &buffer);
     os->ctx->pb = NULL;
-    avio_write(os->out, buffer + os->written_len, *range_length - os->written_len);
+    if (os->out)
+        avio_write(os->out, buffer + os->written_len, *range_length - os->written_len);
     os->written_len = 0;
     av_free(buffer);
 
@@ -353,8 +400,11 @@ static int flush_init_segment(AVFormatContext *s, OutputStream *os)
         return ret;
 
     os->pos = os->init_range_length = range_length;
-    if (!c->single_file)
-        ff_format_io_close(s, &os->out);
+    if (!c->single_file) {
+        char filename[1024];
+        snprintf(filename, sizeof(filename), "%s%s", c->dirname, os->initfile);
+        dashenc_io_close(s, &os->out, filename);
+    }
     return 0;
 }
 
@@ -384,6 +434,9 @@ static void dash_free(AVFormatContext *s)
         for (j = 0; j < os->nb_segments; j++)
             av_free(os->segments[j]);
         av_free(os->segments);
+        av_freep(&os->single_file_name);
+        av_freep(&os->init_seg_name);
+        av_freep(&os->media_seg_name);
     }
     av_freep(&c->streams);
 
@@ -410,7 +463,7 @@ static void output_segment_list(OutputStream *os, AVIOContext *out, AVFormatCont
                 avio_printf(out, "availabilityTimeOffset=\"%.3f\" ",
                             os->availability_time_offset);
         }
-        avio_printf(out, "initialization=\"%s\" media=\"%s\" startNumber=\"%d\">\n", c->init_seg_name, c->media_seg_name, c->use_timeline ? start_number : 1);
+        avio_printf(out, "initialization=\"%s\" media=\"%s\" startNumber=\"%d\">\n", os->init_seg_name, os->media_seg_name, c->use_timeline ? start_number : 1);
         if (c->use_timeline) {
             int64_t cur_time = 0;
             avio_printf(out, "\t\t\t\t\t<SegmentTimeline>\n");
@@ -422,7 +475,7 @@ static void output_segment_list(OutputStream *os, AVIOContext *out, AVFormatCont
                     cur_time = seg->time;
                     avio_printf(out, "t=\"%"PRId64"\" ", seg->time);
                 }
-                avio_printf(out, "d=\"%d\" ", seg->duration);
+                avio_printf(out, "d=\"%"PRId64"\" ", seg->duration);
                 while (i + repeat + 1 < os->nb_segments &&
                        os->segments[i + repeat + 1]->duration == seg->duration &&
                        os->segments[i + repeat + 1]->time == os->segments[i + repeat]->time + os->segments[i + repeat]->duration)
@@ -616,13 +669,13 @@ static int write_adaptation_set(AVFormatContext *s, AVIOContext *out, int as_ind
         if (as->media_type == AVMEDIA_TYPE_VIDEO) {
             AVStream *st = s->streams[i];
             avio_printf(out, "\t\t\t<Representation id=\"%d\" mimeType=\"video/%s\" codecs=\"%s\"%s width=\"%d\" height=\"%d\"",
-                i, c->format_name, os->codec_str, bandwidth_str, s->streams[i]->codecpar->width, s->streams[i]->codecpar->height);
+                i, os->format_name, os->codec_str, bandwidth_str, s->streams[i]->codecpar->width, s->streams[i]->codecpar->height);
             if (st->avg_frame_rate.num)
                 avio_printf(out, " frameRate=\"%d/%d\"", st->avg_frame_rate.num, st->avg_frame_rate.den);
             avio_printf(out, ">\n");
         } else {
             avio_printf(out, "\t\t\t<Representation id=\"%d\" mimeType=\"audio/%s\" codecs=\"%s\"%s audioSamplingRate=\"%d\">\n",
-                i, c->format_name, os->codec_str, bandwidth_str, s->streams[i]->codecpar->sample_rate);
+                i, os->format_name, os->codec_str, bandwidth_str, s->streams[i]->codecpar->sample_rate);
             avio_printf(out, "\t\t\t\t<AudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"%d\" />\n",
                 s->streams[i]->codecpar->channels);
         }
@@ -786,12 +839,12 @@ static int write_manifest(AVFormatContext *s, int final)
     snprintf(temp_filename, sizeof(temp_filename), use_rename ? "%s.tmp" : "%s", s->url);
     set_http_options(&opts, c);
     ret = dashenc_io_open(s, &c->mpd_out, temp_filename, &opts);
+    av_dict_free(&opts);
     if (ret < 0) {
         av_log(s, AV_LOG_ERROR, "Unable to open %s for writing\n", temp_filename);
         return ret;
     }
     out = c->mpd_out;
-    av_dict_free(&opts);
     avio_printf(out, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
     avio_printf(out, "<MPD xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
                 "\txmlns=\"urn:mpeg:dash:schema:mpd:2011\"\n"
@@ -876,14 +929,14 @@ static int write_manifest(AVFormatContext *s, int final)
         snprintf(temp_filename, sizeof(temp_filename), use_rename ? "%s.tmp" : "%s", filename_hls);
 
         set_http_options(&opts, c);
-        ret = avio_open2(&out, temp_filename, AVIO_FLAG_WRITE, NULL, &opts);
+        ret = dashenc_io_open(s, &c->m3u8_out, temp_filename, &opts);
+        av_dict_free(&opts);
         if (ret < 0) {
             av_log(s, AV_LOG_ERROR, "Unable to open %s for writing\n", temp_filename);
             return ret;
         }
-        av_dict_free(&opts);
 
-        ff_hls_write_playlist_version(out, 7);
+        ff_hls_write_playlist_version(c->m3u8_out, 7);
 
         for (i = 0; i < s->nb_streams; i++) {
             char playlist_file[64];
@@ -892,7 +945,7 @@ static int write_manifest(AVFormatContext *s, int final)
             if (st->codecpar->codec_type != AVMEDIA_TYPE_AUDIO)
                 continue;
             get_hls_playlist_name(playlist_file, sizeof(playlist_file), NULL, i);
-            ff_hls_write_audio_rendition(out, (char *)audio_group,
+            ff_hls_write_audio_rendition(c->m3u8_out, (char *)audio_group,
                                          playlist_file, i, is_default);
             max_audio_bitrate = FFMAX(st->codecpar->bit_rate +
                                       os->muxer_overhead, max_audio_bitrate);
@@ -910,19 +963,26 @@ static int write_manifest(AVFormatContext *s, int final)
             AVStream *st = s->streams[i];
             OutputStream *os = &c->streams[i];
             char *agroup = NULL;
+            char *codec_str_ptr = NULL;
             int stream_bitrate = st->codecpar->bit_rate + os->muxer_overhead;
+            if (st->codecpar->codec_type != AVMEDIA_TYPE_VIDEO)
+                continue;
             av_strlcpy(codec_str, os->codec_str, sizeof(codec_str));
-            if ((st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) && max_audio_bitrate) {
+            if (max_audio_bitrate) {
                 agroup = (char *)audio_group;
                 stream_bitrate += max_audio_bitrate;
                 av_strlcat(codec_str, ",", sizeof(codec_str));
                 av_strlcat(codec_str, audio_codec_str, sizeof(codec_str));
             }
+            if (st->codecpar->codec_id != AV_CODEC_ID_HEVC) {
+                codec_str_ptr = codec_str;
+            }
             get_hls_playlist_name(playlist_file, sizeof(playlist_file), NULL, i);
-            ff_hls_write_stream_info(st, out, stream_bitrate, playlist_file, agroup,
-                                     codec_str, NULL);
+            ff_hls_write_stream_info(st, c->m3u8_out, stream_bitrate,
+                                     playlist_file, agroup,
+                                     codec_str_ptr, NULL);
         }
-        avio_close(out);
+        dashenc_io_close(s, &c->m3u8_out, temp_filename);
         if (use_rename)
             if ((ret = avpriv_io_move(temp_filename, filename_hls)) < 0)
                 return ret;
@@ -980,6 +1040,9 @@ static int dash_init(AVFormatContext *s)
     if ((ret = parse_adaptation_sets(s)) < 0)
         return ret;
 
+    if ((ret = init_segment_types(s)) < 0)
+        return ret;
+
     for (i = 0; i < s->nb_streams; i++) {
         OutputStream *os = &c->streams[i];
         AdaptationSet *as = &c->as[os->as_idx - 1];
@@ -1005,13 +1068,26 @@ static int dash_init(AVFormatContext *s)
         if (!ctx)
             return AVERROR(ENOMEM);
 
-        c->format_name = get_format_str(c->segment_type);
-        if (!c->format_name)
-            return AVERROR_MUXER_NOT_FOUND;
-        if (c->segment_type == SEGMENT_TYPE_WEBM) {
-            if ((!c->single_file && check_file_extension(c->init_seg_name, c->format_name) != 0) ||
-                (!c->single_file && check_file_extension(c->media_seg_name, c->format_name) != 0) ||
-                (c->single_file && check_file_extension(c->single_file_name, c->format_name) != 0)) {
+        if (c->init_seg_name) {
+            os->init_seg_name = av_strireplace(c->init_seg_name, "$ext$", os->format_name);
+            if (!os->init_seg_name)
+                return AVERROR(ENOMEM);
+        }
+        if (c->media_seg_name) {
+            os->media_seg_name = av_strireplace(c->media_seg_name, "$ext$", os->format_name);
+            if (!os->media_seg_name)
+                return AVERROR(ENOMEM);
+        }
+        if (c->single_file_name) {
+            os->single_file_name = av_strireplace(c->single_file_name, "$ext$", os->format_name);
+            if (!os->single_file_name)
+                return AVERROR(ENOMEM);
+        }
+
+        if (os->segment_type == SEGMENT_TYPE_WEBM) {
+            if ((!c->single_file && check_file_extension(os->init_seg_name, os->format_name) != 0) ||
+                (!c->single_file && check_file_extension(os->media_seg_name, os->format_name) != 0) ||
+                (c->single_file && check_file_extension(os->single_file_name, os->format_name) != 0)) {
                 av_log(s, AV_LOG_WARNING,
                        "One or many segment file names doesn't end with .webm. "
                        "Override -init_seg_name and/or -media_seg_name and/or "
@@ -1019,7 +1095,7 @@ static int dash_init(AVFormatContext *s)
             }
         }
 
-        ctx->oformat = av_guess_format(c->format_name, NULL, NULL);
+        ctx->oformat = av_guess_format(os->format_name, NULL, NULL);
         if (!ctx->oformat)
             return AVERROR_MUXER_NOT_FOUND;
         os->ctx = ctx;
@@ -1042,19 +1118,19 @@ static int dash_init(AVFormatContext *s)
             return ret;
 
         if (c->single_file) {
-            if (c->single_file_name)
-                ff_dash_fill_tmpl_params(os->initfile, sizeof(os->initfile), c->single_file_name, i, 0, os->bit_rate, 0);
+            if (os->single_file_name)
+                ff_dash_fill_tmpl_params(os->initfile, sizeof(os->initfile), os->single_file_name, i, 0, os->bit_rate, 0);
             else
-                snprintf(os->initfile, sizeof(os->initfile), "%s-stream%d.m4s", basename, i);
+                snprintf(os->initfile, sizeof(os->initfile), "%s-stream%d.%s", basename, i, os->format_name);
         } else {
-            ff_dash_fill_tmpl_params(os->initfile, sizeof(os->initfile), c->init_seg_name, i, 0, os->bit_rate, 0);
+            ff_dash_fill_tmpl_params(os->initfile, sizeof(os->initfile), os->init_seg_name, i, 0, os->bit_rate, 0);
         }
         snprintf(filename, sizeof(filename), "%s%s", c->dirname, os->initfile);
         set_http_options(&opts, c);
         ret = s->io_open(s, &os->out, filename, AVIO_FLAG_WRITE, &opts);
+        av_dict_free(&opts);
         if (ret < 0)
             return ret;
-        av_dict_free(&opts);
         os->init_start_pos = 0;
 
         if (c->format_options_str) {
@@ -1063,7 +1139,7 @@ static int dash_init(AVFormatContext *s)
                 return ret;
         }
 
-        if (c->segment_type == SEGMENT_TYPE_MP4) {
+        if (os->segment_type == SEGMENT_TYPE_MP4) {
             if (c->streaming)
                 av_dict_set(&opts, "movflags", "frag_every_frame+dash+delay_moov+global_sidx", 0);
             else
@@ -1075,11 +1151,12 @@ static int dash_init(AVFormatContext *s)
             av_dict_set_int(&opts, "dash_track_number", i + 1, 0);
             av_dict_set_int(&opts, "live", 1, 0);
         }
-        if ((ret = avformat_init_output(ctx, &opts)) < 0)
+        ret = avformat_init_output(ctx, &opts);
+        av_dict_free(&opts);
+        if (ret < 0)
             return ret;
         os->ctx_inited = 1;
         avio_flush(ctx->pb);
-        av_dict_free(&opts);
 
         av_log(s, AV_LOG_VERBOSE, "Representation %d init segment will be written to: %s\n", i, filename);
 
@@ -1128,7 +1205,7 @@ static int dash_write_header(AVFormatContext *s)
         // Flush init segment
         // Only for WebM segment, since for mp4 delay_moov is set and
         // the init segment is thus flushed after the first packets.
-        if (c->segment_type == SEGMENT_TYPE_WEBM &&
+        if (os->segment_type == SEGMENT_TYPE_WEBM &&
             (ret = flush_init_segment(s, os)) < 0)
             return ret;
     }
@@ -1136,7 +1213,7 @@ static int dash_write_header(AVFormatContext *s)
 }
 
 static int add_segment(OutputStream *os, const char *file,
-                       int64_t time, int duration,
+                       int64_t time, int64_t duration,
                        int64_t start_pos, int64_t range_length,
                        int64_t index_length, int next_exp_index)
 {
@@ -1248,7 +1325,7 @@ static void dashenc_delete_file(AVFormatContext *s, char *filename) {
         }
 
         av_dict_free(&http_opts);
-        dashenc_io_close(s, &out, filename);
+        ff_format_io_close(s, &out);
     } else if (unlink(filename) < 0) {
         av_log(s, AV_LOG_ERROR, "failed to delete %s: %s\n", filename, strerror(errno));
     }
@@ -1299,7 +1376,7 @@ static int dash_flush(AVFormatContext *s, int final, int stream)
         }
 
         if (!c->single_file) {
-            if (c->segment_type == SEGMENT_TYPE_MP4 && !os->written_len)
+            if (os->segment_type == SEGMENT_TYPE_MP4 && !os->written_len)
                 write_styp(os->ctx->pb);
         } else {
             snprintf(os->full_path, sizeof(os->full_path), "%s%s", c->dirname, os->initfile);
@@ -1475,7 +1552,7 @@ static int dash_write_packet(AVFormatContext *s, AVPacket *pkt)
         int use_rename = proto && !strcmp(proto, "file");
         os->filename[0] = os->full_path[0] = os->temp_path[0] = '\0';
         ff_dash_fill_tmpl_params(os->filename, sizeof(os->filename),
-                                 c->media_seg_name, pkt->stream_index,
+                                 os->media_seg_name, pkt->stream_index,
                                  os->segment_index, os->bit_rate, os->start_pts);
         snprintf(os->full_path, sizeof(os->full_path), "%s%s", c->dirname,
                  os->filename);
@@ -1483,13 +1560,13 @@ static int dash_write_packet(AVFormatContext *s, AVPacket *pkt)
                  use_rename ? "%s.tmp" : "%s", os->full_path);
         set_http_options(&opts, c);
         ret = dashenc_io_open(s, &os->out, os->temp_path, &opts);
+        av_dict_free(&opts);
         if (ret < 0)
             return ret;
-        av_dict_free(&opts);
     }
 
     //write out the data immediately in streaming mode
-    if (c->streaming && c->segment_type == SEGMENT_TYPE_MP4) {
+    if (c->streaming && os->segment_type == SEGMENT_TYPE_MP4) {
         int len = 0;
         uint8_t *buf = NULL;
         if (!os->written_len)
@@ -1574,8 +1651,8 @@ static const AVOption options[] = {
     { "use_timeline", "Use SegmentTimeline in SegmentTemplate", OFFSET(use_timeline), AV_OPT_TYPE_BOOL, { .i64 = 1 }, 0, 1, E },
     { "single_file", "Store all segments in one file, accessed using byte ranges", OFFSET(single_file), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, E },
     { "single_file_name", "DASH-templated name to be used for baseURL. Implies storing all segments in one file, accessed using byte ranges", OFFSET(single_file_name), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, E },
-    { "init_seg_name", "DASH-templated name to used for the initialization segment", OFFSET(init_seg_name), AV_OPT_TYPE_STRING, {.str = "init-stream$RepresentationID$.m4s"}, 0, 0, E },
-    { "media_seg_name", "DASH-templated name to used for the media segments", OFFSET(media_seg_name), AV_OPT_TYPE_STRING, {.str = "chunk-stream$RepresentationID$-$Number%05d$.m4s"}, 0, 0, E },
+    { "init_seg_name", "DASH-templated name to used for the initialization segment", OFFSET(init_seg_name), AV_OPT_TYPE_STRING, {.str = "init-stream$RepresentationID$.$ext$"}, 0, 0, E },
+    { "media_seg_name", "DASH-templated name to used for the media segments", OFFSET(media_seg_name), AV_OPT_TYPE_STRING, {.str = "chunk-stream$RepresentationID$-$Number%05d$.$ext$"}, 0, 0, E },
     { "utc_timing_url", "URL of the page that will return the UTC timestamp in ISO format", OFFSET(utc_timing_url), AV_OPT_TYPE_STRING, { 0 }, 0, 0, E },
     { "method", "set the HTTP method", OFFSET(method), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, E },
     { "http_user_agent", "override User-Agent field in HTTP header", OFFSET(user_agent), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, E},
@@ -1585,7 +1662,8 @@ static const AVOption options[] = {
     { "timeout", "set timeout for socket I/O operations", OFFSET(timeout), AV_OPT_TYPE_DURATION, { .i64 = -1 }, -1, INT_MAX, .flags = E },
     { "index_correction", "Enable/Disable segment index correction logic", OFFSET(index_correction), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, E },
     { "format_options","set list of options for the container format (mp4/webm) used for dash", OFFSET(format_options_str), AV_OPT_TYPE_STRING, {.str = NULL},  0, 0, E},
-    { "dash_segment_type", "set dash segment files type", OFFSET(segment_type), AV_OPT_TYPE_INT, {.i64 = SEGMENT_TYPE_MP4 }, 0, SEGMENT_TYPE_NB - 1, E, "segment_type"},
+    { "dash_segment_type", "set dash segment files type", OFFSET(segment_type_option), AV_OPT_TYPE_INT, {.i64 = SEGMENT_TYPE_AUTO }, 0, SEGMENT_TYPE_NB - 1, E, "segment_type"},
+    { "auto", "select segment file format based on codec", 0, AV_OPT_TYPE_CONST, {.i64 = SEGMENT_TYPE_AUTO }, 0, UINT_MAX,   E, "segment_type"},
     { "mp4", "make segment file in ISOBMFF format", 0, AV_OPT_TYPE_CONST, {.i64 = SEGMENT_TYPE_MP4 }, 0, UINT_MAX,   E, "segment_type"},
     { "webm", "make segment file in WebM format", 0, AV_OPT_TYPE_CONST, {.i64 = SEGMENT_TYPE_WEBM }, 0, UINT_MAX,   E, "segment_type"},
     { NULL },
