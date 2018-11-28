@@ -18,6 +18,7 @@ import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -124,6 +125,20 @@ public class TouchEventFilter
      */
     private int mOffsetY;
 
+    /**
+     * Current top margin of this view.
+     *
+     * <p>Margins are set when the top or bottom controller are fully shown. When they're shown
+     * partially, during a scroll, margins are always 0. The drawing takes care of adapting.
+     *
+     * <p>TODO(crbug.com/806868): Better integrate this filter with the view layout to make it
+     * automatic.
+     */
+    private int mMarginTop;
+
+    /** Current bottom margin of this view. */
+    private int mMarginBottom;
+
     public TouchEventFilter(Context context) {
         this(context, null, 0);
     }
@@ -178,6 +193,7 @@ public class TouchEventFilter
         mFullscreenManager.addListener(this);
         mGestureListenerManager = GestureListenerManager.fromWebContents(webContents);
         mGestureListenerManager.addListener(this);
+        maybeUpdateVerticalMargins();
     }
 
     public void deInit() {
@@ -364,6 +380,7 @@ public class TouchEventFilter
 
     @Override
     public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
+        maybeUpdateVerticalMargins();
         invalidate();
     }
 
@@ -441,26 +458,64 @@ public class TouchEventFilter
         return false;
     }
 
-    /** Top position within the view of the visual viewport. */
+    /** Gets the top position, within this view, of the visual viewport. */
     private int getVisualViewportTop() {
-        if (mFullscreenManager == null) {
-            return 0;
-        }
+        return getTopBarHeight() - mMarginTop;
+    }
+
+    /** Gets the bottom position, within this view, of the visual viewport. */
+    private int getVisualViewportBottom() {
+        return getHeight() - (getBottomBarHeight() - mMarginBottom);
+    }
+
+    /** Gets the height of the visual viewport. */
+    private int getVisualViewportHeight() {
+        return getVisualViewportBottom() - getVisualViewportTop();
+    }
+
+    /** Gets the current height of the bottom bar. */
+    private int getBottomBarHeight() {
+        if (mFullscreenManager == null) return 0;
+        return (int) (mFullscreenManager.getBottomControlsHeight()
+                - mFullscreenManager.getBottomControlOffset());
+    }
+
+    /** Gets the current height of the top bar. */
+    private int getTopBarHeight() {
+        if (mFullscreenManager == null) return 0;
         return (int) mFullscreenManager.getContentOffset();
     }
 
-    /** Bottom position within the view of the visual viewport. */
-    private int getVisualViewportBottom() {
-        int bottomBarHeight = 0;
-        if (mFullscreenManager != null) {
-            bottomBarHeight = (int) (mFullscreenManager.getBottomControlsHeight()
-                    - mFullscreenManager.getBottomControlOffset());
+    /**
+     * Updates the vertical margins of the view.
+     *
+     * <p>When the controls are fully visible, the view covers has just the right margins to cover
+     * only the web page.
+     *
+     * <p>When the controls are fully invisible, the view covers everything, which matches the web
+     * page.
+     *
+     * <p>When the controls are partially visible, when animating, the view covers everything,
+     * including parts of the controls. Drawing takes care of making this look good.
+     */
+    private void maybeUpdateVerticalMargins() {
+        if (mFullscreenManager == null) return;
+
+        if (mFullscreenManager.areBrowserControlsFullyVisible()) {
+            setVerticalMargins(getTopBarHeight(), getBottomBarHeight());
+        } else {
+            setVerticalMargins(0, 0);
         }
-        return getHeight() - bottomBarHeight;
     }
 
-    /** Height of the visual viewport. */
-    private int getVisualViewportHeight() {
-        return getVisualViewportBottom() - getVisualViewportTop();
+    /** Sets top and bottom margin of the view, if necessary */
+    private void setVerticalMargins(int top, int bottom) {
+        if (top == mMarginTop && bottom == mMarginBottom) return;
+
+        mMarginTop = top;
+        mMarginBottom = bottom;
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) getLayoutParams();
+        params.setMargins(/* left= */ 0, /* top= */ top, /* right= */ 0, /* bottom= */ bottom);
+        setLayoutParams(params);
     }
 }
