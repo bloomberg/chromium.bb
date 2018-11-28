@@ -87,6 +87,7 @@ bool Equals(const PP_Var& var,
   }
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   if (val->IsUndefined()) {
     return var.type == PP_VARTYPE_UNDEFINED;
   } else if (val->IsNull()) {
@@ -96,10 +97,10 @@ bool Equals(const PP_Var& var,
            PP_FromBool(val->ToBoolean(isolate)->Value()) == var.value.as_bool;
   } else if (val->IsInt32()) {
     return var.type == PP_VARTYPE_INT32 &&
-           val->ToInt32(isolate)->Value() == var.value.as_int;
+           val.As<v8::Int32>()->Value() == var.value.as_int;
   } else if (val->IsNumber() || val->IsNumberObject()) {
     return var.type == PP_VARTYPE_DOUBLE &&
-           fabs(val->ToNumber(isolate)->Value() - var.value.as_double) <=
+           fabs(val->NumberValue(context).ToChecked() - var.value.as_double) <=
                1.0e-4;
   } else if (val->IsString() || val->IsStringObject()) {
     if (var.type != PP_VARTYPE_STRING)
@@ -133,15 +134,18 @@ bool Equals(const PP_Var& var,
         return false;
       DictionaryVar* dict_var = DictionaryVar::FromPPVar(var);
       DCHECK(dict_var);
-      v8::Local<v8::Array> property_names(v8_object->GetOwnPropertyNames());
+      v8::Local<v8::Array> property_names(
+          v8_object->GetOwnPropertyNames(context).ToLocalChecked());
       if (property_names->Length() != dict_var->key_value_map().size())
         return false;
       for (uint32_t i = 0; i < property_names->Length(); ++i) {
-        v8::Local<v8::Value> key(property_names->Get(i));
+        v8::Local<v8::Value> key(
+            property_names->Get(context, i).ToLocalChecked());
 
         if (!key->IsString() && !key->IsNumber())
           return false;
-        v8::Local<v8::Value> child_v8 = v8_object->Get(key);
+        v8::Local<v8::Value> child_v8 =
+            v8_object->Get(context, key).ToLocalChecked();
 
         v8::String::Utf8Value name_utf8(isolate, key);
         ScopedPPVar release_key(ScopedPPVar::PassRef(),
@@ -375,12 +379,15 @@ TEST_F(V8VarConverterTest, Cycles) {
 
     // Array <-> dictionary cycle.
     std::string key = "1";
-    object->Set(
-        v8::String::NewFromUtf8(isolate_, key.c_str(),
-                                v8::NewStringType::kInternalized, key.length())
-            .ToLocalChecked(),
-        array);
-    array->Set(0, object);
+    object
+        ->Set(context,
+              v8::String::NewFromUtf8(isolate_, key.c_str(),
+                                      v8::NewStringType::kInternalized,
+                                      key.length())
+                  .ToLocalChecked(),
+              array)
+        .ToChecked();
+    array->Set(context, 0, object).ToChecked();
 
     ASSERT_FALSE(FromV8ValueSync(object, context, &var_result));
 
