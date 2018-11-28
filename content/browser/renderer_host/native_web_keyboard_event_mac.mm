@@ -84,6 +84,12 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
             charactersIgnoringModifiers:unmodified_text
                               isARepeat:NO
                                 keyCode:web_event.native_key_code] retain];
+  // The eventRef is necessary for MacOS code (like NSMenu) to work later in the
+  // pipeline. As per documentation:
+  // https://developer.apple.com/documentation/appkit/nsevent/1525143-eventref
+  // "Other NSEvent objects create an EventRef when this property is first
+  // accessed, if possible".
+  [os_event eventRef];
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
