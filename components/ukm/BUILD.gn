@@ -87,6 +87,7 @@ source_set("unit_tests") {
   sources = [
     "app_source_url_recorder_test.cc",
     "observers/sync_disable_observer_unittest.cc",
+    "ukm_recorder_impl_unittest.cc",
     "ukm_service_unittest.cc",
   ]
 

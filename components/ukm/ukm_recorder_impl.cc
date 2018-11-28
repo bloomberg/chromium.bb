@@ -218,6 +218,23 @@ void UkmRecorderImpl::CreateFallbackSamplingTrial(
 UkmRecorderImpl::EventAggregate::EventAggregate() = default;
 UkmRecorderImpl::EventAggregate::~EventAggregate() = default;
 
+UkmRecorderImpl::PageSampling::PageSampling() = default;
+UkmRecorderImpl::PageSampling::~PageSampling() = default;
+
+void UkmRecorderImpl::PageSampling::Set(uint64_t event_id, bool sampled_in) {
+  event_sampling_[event_id] = sampled_in;
+  modified_ = true;
+}
+
+bool UkmRecorderImpl::PageSampling::Find(uint64_t event_id,
+                                         bool* out_sampled_in) const {
+  auto found = event_sampling_.find(event_id);
+  if (found == event_sampling_.end())
+    return false;
+  *out_sampled_in = found->second;
+  return true;
+}
+
 UkmRecorderImpl::Recordings::Recordings() = default;
 UkmRecorderImpl::Recordings& UkmRecorderImpl::Recordings::operator=(
     Recordings&&) = default;
@@ -251,6 +268,7 @@ void UkmRecorderImpl::DisableSamplingForTesting() {
 
 void UkmRecorderImpl::Purge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  source_event_sampling_.clear();
   recordings_.Reset();
   recording_is_continuous_ = false;
 }
@@ -407,6 +425,30 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.KeptSourcesCount",
                             recordings_.sources.size());
   recordings_.source_counts.carryover_sources = recordings_.sources.size();
+
+  // Check all the event-sampling values and clear those for any sources
+  // not seen since the last data upload. This ensure that pages never
+  // visited again don't continue to use memory remembering what events
+  // were sampled-in the last time it was accessed. They can't simply be
+  // cleared here because this call could come in the middle of a page
+  // load.
+  auto iter = source_event_sampling_.begin();
+  auto next = iter;
+  while (iter != source_event_sampling_.end()) {
+    // Increment here (and copy later) because otherwise erasing |iter| would
+    // break iteration.
+    ++next;
+
+    // If the PageSampling has been modified since the last upload of data,
+    // clear that flag and continue. If it hasn't been modified, remove the
+    // entire object.
+    if (iter->second.modified())
+      iter->second.clear_modified();
+    else
+      source_event_sampling_.erase(iter);
+
+    iter = next;
+  }
 }
 
 bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
@@ -553,13 +595,22 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
   if (default_sampling_rate_ == 0)
     LoadExperimentSamplingInfo();
 
-  auto found = event_sampling_rates_.find(entry->event_hash);
-  int sampling_rate = (found != event_sampling_rates_.end())
-                          ? found->second
-                          : default_sampling_rate_;
-  if (sampling_enabled_ &&
-      (sampling_rate == 0 ||
-       (sampling_rate > 1 && base::RandInt(1, sampling_rate) != 1))) {
+  bool sampled_in = true;  // Overwritten by Find(...) if it returns True.
+  PageSampling* page_sampling = &source_event_sampling_[entry->source_id];
+  if (!page_sampling->Find(entry->event_hash, &sampled_in)) {
+    auto found = event_sampling_rates_.find(entry->event_hash);
+    int sampling_rate = (found != event_sampling_rates_.end())
+                            ? found->second
+                            : default_sampling_rate_;
+    sampled_in = IsSampledIn(sampling_rate);
+
+    // Remember the decision for this event for this page so all such events
+    // on this page are sampled-in or sampled-out together making it possible
+    // to correlate between events and within a page.
+    page_sampling->Set(entry->event_hash, sampled_in);
+  }
+
+  if (!sampled_in && sampling_enabled_) {
     RecordDroppedEntry(DroppedDataReason::SAMPLED_OUT);
     event_aggregate.dropped_due_to_sampling++;
     for (auto& metric : entry->metrics)
@@ -611,6 +662,13 @@ void UkmRecorderImpl::LoadExperimentSamplingInfo() {
   // Default rate must be >0 to indicate that load is complete.
   if (default_sampling_rate_ == 0)
     default_sampling_rate_ = 1;
+}
+
+bool UkmRecorderImpl::IsSampledIn(int sampling_rate) {
+  // A sampling rate of 0 is "never"; everything else is 1-in-N but skip
+  // the RandInt() call if N==1.
+  return sampling_rate > 0 &&
+         (sampling_rate == 1 || base::RandInt(1, sampling_rate) != 1);
 }
 
 void UkmRecorderImpl::StoreWhitelistedEntries() {
