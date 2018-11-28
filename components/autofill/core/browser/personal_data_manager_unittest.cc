@@ -493,6 +493,19 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   ExpectSameElements(profiles, personal_data_->GetProfiles());
 }
 
+// TODO(crbug.com/909730): If you add a profile and then remove it right away,
+// the profile will not be removed, but it should.
+TEST_F(PersonalDataManagerTest, AddRemoveProfile) {
+  AutofillProfile profile(test::GetFullProfile());
+
+  personal_data_->AddProfile(profile);
+  personal_data_->RemoveByGUID(profile.guid());
+
+  WaitForOnPersonalDataChanged();
+  auto profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, profiles.size());  // the correct size is 0.
+}
+
 // Test that a new profile has its basic information set.
 TEST_F(PersonalDataManagerTest, AddProfile_BasicInformation) {
   // Create the test clock and set the time to a specific value.
