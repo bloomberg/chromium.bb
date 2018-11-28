@@ -5840,5 +5840,87 @@ TEST_F(FormAutofillTest, WebFormElementNotFoundInForm) {
                                         EXTRACT_NONE, &form, &field));
 }
 
+TEST_F(FormAutofillTest, AriaLabelAndDescription) {
+  LoadHTML(
+      "<form id='form'>"
+      "  <div id='label'>aria label</div>"
+      "  <div id='description'>aria description</div>"
+      "  <input type='text' id='field0' aria-label='inline aria label'>"
+      "  <input type='text' id='field1' aria-labelledby='label'>"
+      "  <input type='text' id='field2' aria-describedby='description'>"
+      "</form>");
+
+  WebLocalFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  WebFormElement web_form =
+      frame->GetDocument().GetElementById("form").To<WebFormElement>();
+  ASSERT_FALSE(web_form.IsNull());
+
+  WebFormControlElement control_element =
+      frame->GetDocument().GetElementById("field0").To<WebFormControlElement>();
+  ASSERT_FALSE(control_element.IsNull());
+  FormData form;
+  FormFieldData field;
+  EXPECT_TRUE(WebFormElementToFormData(web_form, control_element, nullptr,
+                                       EXTRACT_NONE, &form, &field));
+
+  const std::vector<FormFieldData>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+
+  // Field 0
+  EXPECT_EQ(ASCIIToUTF16("inline aria label"), fields[0].aria_label);
+  EXPECT_EQ(ASCIIToUTF16(""), fields[0].aria_description);
+
+  // Field 1
+  EXPECT_EQ(ASCIIToUTF16("aria label"), fields[1].aria_label);
+  EXPECT_EQ(ASCIIToUTF16(""), fields[1].aria_description);
+
+  // Field 2
+  EXPECT_EQ(ASCIIToUTF16(""), fields[2].aria_label);
+  EXPECT_EQ(ASCIIToUTF16("aria description"), fields[2].aria_description);
+}
+
+TEST_F(FormAutofillTest, AriaLabelAndDescription2) {
+  LoadHTML(
+      "<form id='form'>"
+      "  <input type='text' id='field0' aria-label='inline aria label'>"
+      "  <input type='text' id='field1' aria-labelledby='label'>"
+      "  <input type='text' id='field2' aria-describedby='description'>"
+      "</form>"
+      "  <div id='label'>aria label</div>"
+      "  <div id='description'>aria description</div>");
+
+  WebLocalFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  WebFormElement web_form =
+      frame->GetDocument().GetElementById("form").To<WebFormElement>();
+  ASSERT_FALSE(web_form.IsNull());
+
+  WebFormControlElement control_element =
+      frame->GetDocument().GetElementById("field0").To<WebFormControlElement>();
+  ASSERT_FALSE(control_element.IsNull());
+  FormData form;
+  FormFieldData field;
+  EXPECT_TRUE(WebFormElementToFormData(web_form, control_element, nullptr,
+                                       EXTRACT_NONE, &form, &field));
+
+  const std::vector<FormFieldData>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+
+  // Field 0
+  EXPECT_EQ(ASCIIToUTF16("inline aria label"), fields[0].aria_label);
+  EXPECT_EQ(ASCIIToUTF16(""), fields[0].aria_description);
+
+  // Field 1
+  EXPECT_EQ(ASCIIToUTF16("aria label"), fields[1].aria_label);
+  EXPECT_EQ(ASCIIToUTF16(""), fields[1].aria_description);
+
+  // Field 2
+  EXPECT_EQ(ASCIIToUTF16(""), fields[2].aria_label);
+  EXPECT_EQ(ASCIIToUTF16("aria description"), fields[2].aria_description);
+}
+
 }  // namespace form_util
 }  // namespace autofill

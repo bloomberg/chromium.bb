@@ -1925,6 +1925,9 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
     field['role'] = __gCrWeb.fill.ROLE_ATTRIBUTE_PRESENTATION;
   }
 
+  field['aria_label'] = __gCrWeb.fill.getAriaLabel(element);
+  field['aria_description'] = __gCrWeb.fill.getAriaDescription(element);
+
   if (!__gCrWeb.fill.isAutofillableElement(element)) {
     return;
   }

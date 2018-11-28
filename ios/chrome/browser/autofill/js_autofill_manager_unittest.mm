@@ -91,17 +91,24 @@ TEST_F(JsAutofillManagerTest, InitAndInject) {
 // Tests forms extraction method
 // (fetchFormsWithRequirements:minimumRequiredFieldsCount:completionHandler:).
 TEST_F(JsAutofillManagerTest, ExtractForms) {
-  LoadHtml(
-      @"<html><body><form name='testform' method='post'>"
-       "<input type='text' id='firstname' name='firstname'/>"
-       "<input type='text' id='lastname' name='lastname'/>"
-       "<input type='email' id='email' name='email'/>"
-       "</form></body></html>");
+  LoadHtml(@"<html><body><form name='testform' method='post'>"
+            "<div id='div1'>Last Name</div>"
+            "<div id='div2'>Email Address</div>"
+            "<input type='text' id='firstname' name='firstname'/"
+            "    aria-label='First Name'>"
+            "<input type='text' id='lastname' name='lastname'"
+            "    aria-labelledby='div1'/>"
+            "<input type='email' id='email' name='email'"
+            "    aria-describedby='div2'/>"
+            "</form>"
+            "</body></html>");
 
   NSDictionary* expected = @{
     @"name" : @"testform",
     @"fields" : @[
       @{
+        @"aria_description" : @"",
+        @"aria_label" : @"First Name",
         @"name" : @"firstname",
         @"name_attribute" : @"firstname",
         @"id_attribute" : @"firstname",
@@ -112,9 +119,11 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
         @"is_checkable" : @false,
         @"is_focusable" : @true,
         @"value" : @"",
-        @"label" : @""
+        @"label" : @"First Name"
       },
       @{
+        @"aria_description" : @"",
+        @"aria_label" : @"Last Name",
         @"name" : @"lastname",
         @"name_attribute" : @"lastname",
         @"id_attribute" : @"lastname",
@@ -128,6 +137,100 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
         @"label" : @""
       },
       @{
+        @"aria_description" : @"Email Address",
+        @"aria_label" : @"",
+        @"name" : @"email",
+        @"name_attribute" : @"email",
+        @"id_attribute" : @"email",
+        @"identifier" : @"email",
+        @"form_control_type" : @"email",
+        @"max_length" : GetDefaultMaxLength(),
+        @"should_autocomplete" : @true,
+        @"is_checkable" : @false,
+        @"is_focusable" : @true,
+        @"value" : @"",
+        @"label" : @""
+      }
+    ]
+  };
+
+  __block BOOL block_was_called = NO;
+  __block NSString* result;
+  [manager_
+      fetchFormsWithMinimumRequiredFieldsCount:
+          autofill::MinRequiredFieldsForHeuristics()
+                                       inFrame:web::GetMainWebFrame(web_state())
+                             completionHandler:^(NSString* actualResult) {
+                               block_was_called = YES;
+                               result = [actualResult copy];
+                             }];
+  base::test::ios::WaitUntilCondition(^bool() {
+    return block_was_called;
+  });
+
+  NSArray* resultArray = [NSJSONSerialization
+      JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
+                 options:0
+                   error:nil];
+  EXPECT_NSNE(nil, resultArray);
+
+  NSDictionary* form = [resultArray firstObject];
+  [expected enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
+    EXPECT_NSEQ(form[key], obj);
+  }];
+}
+
+// Tests forms extraction method
+// (fetchFormsWithRequirements:minimumRequiredFieldsCount:completionHandler:).
+TEST_F(JsAutofillManagerTest, ExtractForms2) {
+  LoadHtml(@"<html><body><form name='testform' method='post'>"
+            "<input type='text' id='firstname' name='firstname'/"
+            "    aria-label='First Name'>"
+            "<input type='text' id='lastname' name='lastname'"
+            "    aria-labelledby='div1'/>"
+            "<input type='email' id='email' name='email'"
+            "    aria-describedby='div2'/>"
+            "</form>"
+            "<div id='div1'>Last Name</div>"
+            "<div id='div2'>Email Address</div>"
+            "</body></html>");
+
+  NSDictionary* expected = @{
+    @"name" : @"testform",
+    @"fields" : @[
+      @{
+        @"aria_description" : @"",
+        @"aria_label" : @"First Name",
+        @"name" : @"firstname",
+        @"name_attribute" : @"firstname",
+        @"id_attribute" : @"firstname",
+        @"identifier" : @"firstname",
+        @"form_control_type" : @"text",
+        @"max_length" : GetDefaultMaxLength(),
+        @"should_autocomplete" : @true,
+        @"is_checkable" : @false,
+        @"is_focusable" : @true,
+        @"value" : @"",
+        @"label" : @"First Name"
+      },
+      @{
+        @"aria_description" : @"",
+        @"aria_label" : @"Last Name",
+        @"name" : @"lastname",
+        @"name_attribute" : @"lastname",
+        @"id_attribute" : @"lastname",
+        @"identifier" : @"lastname",
+        @"form_control_type" : @"text",
+        @"max_length" : GetDefaultMaxLength(),
+        @"should_autocomplete" : @true,
+        @"is_checkable" : @false,
+        @"is_focusable" : @true,
+        @"value" : @"",
+        @"label" : @""
+      },
+      @{
+        @"aria_description" : @"Email Address",
+        @"aria_label" : @"",
         @"name" : @"email",
         @"name_attribute" : @"email",
         @"id_attribute" : @"email",

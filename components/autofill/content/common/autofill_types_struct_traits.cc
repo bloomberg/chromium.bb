@@ -553,6 +553,12 @@ bool StructTraits<
   if (!data.ReadCssClasses(&out->css_classes))
     return false;
 
+  if (!data.ReadAriaLabel(&out->aria_label))
+    return false;
+
+  if (!data.ReadAriaDescription(&out->aria_description))
+    return false;
+
   if (!data.ReadSection(&out->section))
     return false;
 
