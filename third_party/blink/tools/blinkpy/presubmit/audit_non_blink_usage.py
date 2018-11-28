@@ -253,6 +253,7 @@ _CONFIG = [
             'svg_path_parser::.+',
             'trace_event::.+',
             'touch_action_util::.+',
+            'unicode::.+',
             'vector_math::.+',
             'web_core_test_support::.+',
             'xpath::.+',

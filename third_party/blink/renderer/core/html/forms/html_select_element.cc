@@ -1730,7 +1730,7 @@ void HTMLSelectElement::DefaultEventHandler(Event& event) {
     auto& keyboard_event = ToKeyboardEvent(event);
     if (!keyboard_event.ctrlKey() && !keyboard_event.altKey() &&
         !keyboard_event.metaKey() &&
-        WTF::Unicode::IsPrintableChar(keyboard_event.charCode())) {
+        WTF::unicode::IsPrintableChar(keyboard_event.charCode())) {
       TypeAheadFind(keyboard_event);
       event.SetDefaultHandled();
       return;

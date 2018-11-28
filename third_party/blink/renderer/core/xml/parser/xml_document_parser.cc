@@ -1349,11 +1349,11 @@ static size_t ConvertUTF16EntityToUTF8(const UChar* utf16_entity,
                                        char* target,
                                        size_t target_size) {
   const char* original_target = target;
-  WTF::Unicode::ConversionResult conversion_result =
-      WTF::Unicode::ConvertUTF16ToUTF8(&utf16_entity,
+  WTF::unicode::ConversionResult conversion_result =
+      WTF::unicode::ConvertUTF16ToUTF8(&utf16_entity,
                                        utf16_entity + number_of_code_units,
                                        &target, target + target_size);
-  if (conversion_result != WTF::Unicode::kConversionOK)
+  if (conversion_result != WTF::unicode::kConversionOK)
     return 0;
 
   DCHECK_GT(target, original_target);

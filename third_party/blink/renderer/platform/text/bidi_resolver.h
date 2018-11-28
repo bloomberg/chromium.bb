@@ -124,25 +124,25 @@ class MidpointState final {
 struct BidiStatus final {
   DISALLOW_NEW();
   BidiStatus()
-      : eor(WTF::Unicode::kOtherNeutral),
-        last_strong(WTF::Unicode::kOtherNeutral),
-        last(WTF::Unicode::kOtherNeutral) {}
+      : eor(WTF::unicode::kOtherNeutral),
+        last_strong(WTF::unicode::kOtherNeutral),
+        last(WTF::unicode::kOtherNeutral) {}
 
   // Creates a BidiStatus representing a new paragraph root with a default
   // direction.  Uses TextDirection as it only has two possibilities instead of
-  // WTF::Unicode::Direction which has 19.
+  // WTF::unicode::Direction which has 19.
   BidiStatus(TextDirection text_direction, bool is_override) {
-    WTF::Unicode::CharDirection direction =
-        text_direction == TextDirection::kLtr ? WTF::Unicode::kLeftToRight
-                                              : WTF::Unicode::kRightToLeft;
+    WTF::unicode::CharDirection direction =
+        text_direction == TextDirection::kLtr ? WTF::unicode::kLeftToRight
+                                              : WTF::unicode::kRightToLeft;
     eor = last_strong = last = direction;
     context = BidiContext::Create(text_direction == TextDirection::kLtr ? 0 : 1,
                                   direction, is_override);
   }
 
-  BidiStatus(WTF::Unicode::CharDirection eor_dir,
-             WTF::Unicode::CharDirection last_strong_dir,
-             WTF::Unicode::CharDirection last_dir,
+  BidiStatus(WTF::unicode::CharDirection eor_dir,
+             WTF::unicode::CharDirection last_strong_dir,
+             WTF::unicode::CharDirection last_dir,
              scoped_refptr<BidiContext> bidi_context)
       : eor(eor_dir),
         last_strong(last_strong_dir),
@@ -154,13 +154,13 @@ struct BidiStatus final {
   static BidiStatus CreateForIsolate(TextDirection text_direction,
                                      bool is_override,
                                      unsigned char level) {
-    WTF::Unicode::CharDirection direction;
+    WTF::unicode::CharDirection direction;
     if (text_direction == TextDirection::kRtl) {
       level = NextGreaterOddLevel(level);
-      direction = WTF::Unicode::kRightToLeft;
+      direction = WTF::unicode::kRightToLeft;
     } else {
       level = NextGreaterEvenLevel(level);
-      direction = WTF::Unicode::kLeftToRight;
+      direction = WTF::unicode::kLeftToRight;
     }
     scoped_refptr<BidiContext> context =
         BidiContext::Create(level, direction, is_override, kFromStyleOrDOM);
@@ -170,9 +170,9 @@ struct BidiStatus final {
     return BidiStatus(direction, direction, direction, std::move(context));
   }
 
-  WTF::Unicode::CharDirection eor;
-  WTF::Unicode::CharDirection last_strong;
-  WTF::Unicode::CharDirection last;
+  WTF::unicode::CharDirection eor;
+  WTF::unicode::CharDirection last_strong;
+  WTF::unicode::CharDirection last;
   scoped_refptr<BidiContext> context;
 };
 
@@ -180,15 +180,15 @@ class BidiEmbedding final {
   DISALLOW_NEW();
 
  public:
-  BidiEmbedding(WTF::Unicode::CharDirection direction,
+  BidiEmbedding(WTF::unicode::CharDirection direction,
                 BidiEmbeddingSource source)
       : direction_(direction), source_(source) {}
 
-  WTF::Unicode::CharDirection Direction() const { return direction_; }
+  WTF::unicode::CharDirection Direction() const { return direction_; }
   BidiEmbeddingSource Source() const { return source_; }
 
  private:
-  WTF::Unicode::CharDirection direction_;
+  WTF::unicode::CharDirection direction_;
   BidiEmbeddingSource source_;
 };
 
@@ -218,7 +218,7 @@ class BidiResolver final {
 
  public:
   BidiResolver()
-      : direction_(WTF::Unicode::kOtherNeutral),
+      : direction_(WTF::unicode::kOtherNeutral),
         reached_end_of_line_(false),
         empty_run_(true),
         nested_isolate_count_(0),
@@ -244,22 +244,22 @@ class BidiResolver final {
     status_.context = std::move(c);
   }
 
-  void SetLastDir(WTF::Unicode::CharDirection last_dir) {
+  void SetLastDir(WTF::unicode::CharDirection last_dir) {
     status_.last = last_dir;
   }
-  void SetLastStrongDir(WTF::Unicode::CharDirection last_strong_dir) {
+  void SetLastStrongDir(WTF::unicode::CharDirection last_strong_dir) {
     status_.last_strong = last_strong_dir;
   }
-  void SetEorDir(WTF::Unicode::CharDirection eor_dir) { status_.eor = eor_dir; }
+  void SetEorDir(WTF::unicode::CharDirection eor_dir) { status_.eor = eor_dir; }
 
-  WTF::Unicode::CharDirection Dir() const { return direction_; }
-  void SetDir(WTF::Unicode::CharDirection d) { direction_ = d; }
+  WTF::unicode::CharDirection Dir() const { return direction_; }
+  void SetDir(WTF::unicode::CharDirection d) { direction_ = d; }
 
   const BidiStatus& Status() const { return status_; }
   void SetStatus(const BidiStatus s) {
     DCHECK(s.context);
     status_ = s;
-    paragraph_directionality_ = s.context->Dir() == WTF::Unicode::kLeftToRight
+    paragraph_directionality_ = s.context->Dir() == WTF::unicode::kLeftToRight
                                     ? TextDirection::kLtr
                                     : TextDirection::kRtl;
   }
@@ -276,7 +276,7 @@ class BidiResolver final {
   }
   bool InIsolate() const { return nested_isolate_count_; }
 
-  void Embed(WTF::Unicode::CharDirection, BidiEmbeddingSource);
+  void Embed(WTF::unicode::CharDirection, BidiEmbeddingSource);
   bool CommitExplicitEmbedding(BidiRunList<Run>&);
 
   void CreateBidiRunsForLine(const Iterator& end,
@@ -339,7 +339,7 @@ class BidiResolver final {
   Iterator eor_;  // Points to the last character in the current run.
   Iterator last_;
   BidiStatus status_;
-  WTF::Unicode::CharDirection direction_;
+  WTF::unicode::CharDirection direction_;
   // m_endOfRunAtEndOfLine is "the position last eor in the end of line"
   Iterator end_of_run_at_end_of_line_;
   Iterator end_of_line_;
@@ -361,13 +361,13 @@ class BidiResolver final {
 
  private:
   void RaiseExplicitEmbeddingLevel(BidiRunList<Run>&,
-                                   WTF::Unicode::CharDirection from,
-                                   WTF::Unicode::CharDirection to);
+                                   WTF::unicode::CharDirection from,
+                                   WTF::unicode::CharDirection to);
   void LowerExplicitEmbeddingLevel(BidiRunList<Run>&,
-                                   WTF::Unicode::CharDirection from);
+                                   WTF::unicode::CharDirection from);
   void CheckDirectionInLowerRaiseEmbeddingLevel();
 
-  void UpdateStatusLastFromCurrentDirection(WTF::Unicode::CharDirection);
+  void UpdateStatusLastFromCurrentDirection(WTF::unicode::CharDirection);
   void ReorderRunsFromLevels(BidiRunList<Run>&) const;
 
   bool NeedsTrailingSpace(BidiRunList<Run>&) { return needs_trailing_space_; }
@@ -428,71 +428,71 @@ void BidiResolver<Iterator, Run, IsolatedRun>::AppendRun(
     sor_ = eor_;
   }
 
-  direction_ = WTF::Unicode::kOtherNeutral;
-  status_.eor = WTF::Unicode::kOtherNeutral;
+  direction_ = WTF::unicode::kOtherNeutral;
+  status_.eor = WTF::unicode::kOtherNeutral;
 }
 
 template <class Iterator, class Run, class IsolatedRun>
 void BidiResolver<Iterator, Run, IsolatedRun>::Embed(
-    WTF::Unicode::CharDirection dir,
+    WTF::unicode::CharDirection dir,
     BidiEmbeddingSource source) {
   // Isolated spans compute base directionality during their own UBA run.
   // Do not insert fake embed characters once we enter an isolated span.
   DCHECK(!InIsolate());
 
-  DCHECK(dir == WTF::Unicode::kPopDirectionalFormat ||
-         dir == WTF::Unicode::kLeftToRightEmbedding ||
-         dir == WTF::Unicode::kLeftToRightOverride ||
-         dir == WTF::Unicode::kRightToLeftEmbedding ||
-         dir == WTF::Unicode::kRightToLeftOverride);
+  DCHECK(dir == WTF::unicode::kPopDirectionalFormat ||
+         dir == WTF::unicode::kLeftToRightEmbedding ||
+         dir == WTF::unicode::kLeftToRightOverride ||
+         dir == WTF::unicode::kRightToLeftEmbedding ||
+         dir == WTF::unicode::kRightToLeftOverride);
   current_explicit_embedding_sequence_.push_back(BidiEmbedding(dir, source));
 }
 
 template <class Iterator, class Run, class IsolatedRun>
 void BidiResolver<Iterator, Run, IsolatedRun>::
     CheckDirectionInLowerRaiseEmbeddingLevel() {
-  DCHECK(status_.eor != WTF::Unicode::kOtherNeutral || eor_.AtEnd());
-  DCHECK_NE(status_.last, WTF::Unicode::kNonSpacingMark);
-  DCHECK_NE(status_.last, WTF::Unicode::kBoundaryNeutral);
-  DCHECK_NE(status_.last, WTF::Unicode::kRightToLeftEmbedding);
-  DCHECK_NE(status_.last, WTF::Unicode::kLeftToRightEmbedding);
-  DCHECK_NE(status_.last, WTF::Unicode::kRightToLeftOverride);
-  DCHECK_NE(status_.last, WTF::Unicode::kLeftToRightOverride);
-  DCHECK_NE(status_.last, WTF::Unicode::kPopDirectionalFormat);
-  if (direction_ == WTF::Unicode::kOtherNeutral) {
-    direction_ = status_.last_strong == WTF::Unicode::kLeftToRight
-                     ? WTF::Unicode::kLeftToRight
-                     : WTF::Unicode::kRightToLeft;
+  DCHECK(status_.eor != WTF::unicode::kOtherNeutral || eor_.AtEnd());
+  DCHECK_NE(status_.last, WTF::unicode::kNonSpacingMark);
+  DCHECK_NE(status_.last, WTF::unicode::kBoundaryNeutral);
+  DCHECK_NE(status_.last, WTF::unicode::kRightToLeftEmbedding);
+  DCHECK_NE(status_.last, WTF::unicode::kLeftToRightEmbedding);
+  DCHECK_NE(status_.last, WTF::unicode::kRightToLeftOverride);
+  DCHECK_NE(status_.last, WTF::unicode::kLeftToRightOverride);
+  DCHECK_NE(status_.last, WTF::unicode::kPopDirectionalFormat);
+  if (direction_ == WTF::unicode::kOtherNeutral) {
+    direction_ = status_.last_strong == WTF::unicode::kLeftToRight
+                     ? WTF::unicode::kLeftToRight
+                     : WTF::unicode::kRightToLeft;
   }
 }
 
 template <class Iterator, class Run, class IsolatedRun>
 void BidiResolver<Iterator, Run, IsolatedRun>::LowerExplicitEmbeddingLevel(
     BidiRunList<Run>& runs,
-    WTF::Unicode::CharDirection from) {
+    WTF::unicode::CharDirection from) {
   if (!empty_run_ && eor_ != last_) {
     CheckDirectionInLowerRaiseEmbeddingLevel();
     // bidi.sor ... bidi.eor ... bidi.last eor; need to append the
     // bidi.sor-bidi.eor run or extend it through bidi.last
-    if (from == WTF::Unicode::kLeftToRight) {
+    if (from == WTF::unicode::kLeftToRight) {
       // bidi.sor ... bidi.eor ... bidi.last L
-      if (status_.eor == WTF::Unicode::kEuropeanNumber) {
-        if (status_.last_strong != WTF::Unicode::kLeftToRight) {
-          direction_ = WTF::Unicode::kEuropeanNumber;
+      if (status_.eor == WTF::unicode::kEuropeanNumber) {
+        if (status_.last_strong != WTF::unicode::kLeftToRight) {
+          direction_ = WTF::unicode::kEuropeanNumber;
           AppendRun(runs);
         }
-      } else if (status_.eor == WTF::Unicode::kArabicNumber) {
-        direction_ = WTF::Unicode::kArabicNumber;
+      } else if (status_.eor == WTF::unicode::kArabicNumber) {
+        direction_ = WTF::unicode::kArabicNumber;
         AppendRun(runs);
-      } else if (status_.last_strong != WTF::Unicode::kLeftToRight) {
+      } else if (status_.last_strong != WTF::unicode::kLeftToRight) {
         AppendRun(runs);
-        direction_ = WTF::Unicode::kLeftToRight;
+        direction_ = WTF::unicode::kLeftToRight;
       }
-    } else if (status_.eor == WTF::Unicode::kEuropeanNumber ||
-               status_.eor == WTF::Unicode::kArabicNumber ||
-               status_.last_strong == WTF::Unicode::kLeftToRight) {
+    } else if (status_.eor == WTF::unicode::kEuropeanNumber ||
+               status_.eor == WTF::unicode::kArabicNumber ||
+               status_.last_strong == WTF::unicode::kLeftToRight) {
       AppendRun(runs);
-      direction_ = WTF::Unicode::kRightToLeft;
+      direction_ = WTF::unicode::kRightToLeft;
     }
     eor_ = last_;
   }
@@ -509,36 +509,36 @@ void BidiResolver<Iterator, Run, IsolatedRun>::LowerExplicitEmbeddingLevel(
 template <class Iterator, class Run, class IsolatedRun>
 void BidiResolver<Iterator, Run, IsolatedRun>::RaiseExplicitEmbeddingLevel(
     BidiRunList<Run>& runs,
-    WTF::Unicode::CharDirection from,
-    WTF::Unicode::CharDirection to) {
+    WTF::unicode::CharDirection from,
+    WTF::unicode::CharDirection to) {
   if (!empty_run_ && eor_ != last_) {
     CheckDirectionInLowerRaiseEmbeddingLevel();
     // bidi.sor ... bidi.eor ... bidi.last eor; need to append the
     // bidi.sor-bidi.eor run or extend it through bidi.last
-    if (to == WTF::Unicode::kLeftToRight) {
+    if (to == WTF::unicode::kLeftToRight) {
       // bidi.sor ... bidi.eor ... bidi.last L
-      if (status_.eor == WTF::Unicode::kEuropeanNumber) {
-        if (status_.last_strong != WTF::Unicode::kLeftToRight) {
-          direction_ = WTF::Unicode::kEuropeanNumber;
+      if (status_.eor == WTF::unicode::kEuropeanNumber) {
+        if (status_.last_strong != WTF::unicode::kLeftToRight) {
+          direction_ = WTF::unicode::kEuropeanNumber;
           AppendRun(runs);
         }
-      } else if (status_.eor == WTF::Unicode::kArabicNumber) {
-        direction_ = WTF::Unicode::kArabicNumber;
+      } else if (status_.eor == WTF::unicode::kArabicNumber) {
+        direction_ = WTF::unicode::kArabicNumber;
         AppendRun(runs);
-      } else if (status_.last_strong != WTF::Unicode::kLeftToRight &&
-                 from == WTF::Unicode::kLeftToRight) {
+      } else if (status_.last_strong != WTF::unicode::kLeftToRight &&
+                 from == WTF::unicode::kLeftToRight) {
         AppendRun(runs);
-        direction_ = WTF::Unicode::kLeftToRight;
+        direction_ = WTF::unicode::kLeftToRight;
       }
-    } else if (status_.eor == WTF::Unicode::kArabicNumber ||
-               (status_.eor == WTF::Unicode::kEuropeanNumber &&
-                (status_.last_strong != WTF::Unicode::kLeftToRight ||
-                 from == WTF::Unicode::kRightToLeft)) ||
-               (status_.eor != WTF::Unicode::kEuropeanNumber &&
-                status_.last_strong == WTF::Unicode::kLeftToRight &&
-                from == WTF::Unicode::kRightToLeft)) {
+    } else if (status_.eor == WTF::unicode::kArabicNumber ||
+               (status_.eor == WTF::unicode::kEuropeanNumber &&
+                (status_.last_strong != WTF::unicode::kLeftToRight ||
+                 from == WTF::unicode::kRightToLeft)) ||
+               (status_.eor != WTF::unicode::kEuropeanNumber &&
+                status_.last_strong == WTF::unicode::kLeftToRight &&
+                from == WTF::unicode::kRightToLeft)) {
       AppendRun(runs);
-      direction_ = WTF::Unicode::kRightToLeft;
+      direction_ = WTF::unicode::kRightToLeft;
     }
     eor_ = last_;
   }
@@ -607,20 +607,20 @@ bool BidiResolver<Iterator, Run, IsolatedRun>::CommitExplicitEmbedding(
   scoped_refptr<BidiContext> to_context = Context();
 
   for (const BidiEmbedding& embedding : current_explicit_embedding_sequence_) {
-    if (embedding.Direction() == WTF::Unicode::kPopDirectionalFormat) {
+    if (embedding.Direction() == WTF::unicode::kPopDirectionalFormat) {
       if (BidiContext* parent_context = to_context->Parent())
         to_context = parent_context;
     } else {
-      WTF::Unicode::CharDirection direction =
-          (embedding.Direction() == WTF::Unicode::kRightToLeftEmbedding ||
-           embedding.Direction() == WTF::Unicode::kRightToLeftOverride)
-              ? WTF::Unicode::kRightToLeft
-              : WTF::Unicode::kLeftToRight;
+      WTF::unicode::CharDirection direction =
+          (embedding.Direction() == WTF::unicode::kRightToLeftEmbedding ||
+           embedding.Direction() == WTF::unicode::kRightToLeftOverride)
+              ? WTF::unicode::kRightToLeft
+              : WTF::unicode::kLeftToRight;
       bool override =
-          embedding.Direction() == WTF::Unicode::kLeftToRightOverride ||
-          embedding.Direction() == WTF::Unicode::kRightToLeftOverride;
+          embedding.Direction() == WTF::unicode::kLeftToRightOverride ||
+          embedding.Direction() == WTF::unicode::kRightToLeftOverride;
       unsigned char level = to_context->Level();
-      if (direction == WTF::Unicode::kRightToLeft)
+      if (direction == WTF::unicode::kRightToLeft)
         level = NextGreaterOddLevel(level);
       else
         level = NextGreaterEvenLevel(level);
@@ -636,13 +636,13 @@ bool BidiResolver<Iterator, Run, IsolatedRun>::CommitExplicitEmbedding(
   if (to_level > from_level) {
     RaiseExplicitEmbeddingLevel(
         runs,
-        from_level % 2 ? WTF::Unicode::kRightToLeft
-                       : WTF::Unicode::kLeftToRight,
-        to_level % 2 ? WTF::Unicode::kRightToLeft : WTF::Unicode::kLeftToRight);
+        from_level % 2 ? WTF::unicode::kRightToLeft
+                       : WTF::unicode::kLeftToRight,
+        to_level % 2 ? WTF::unicode::kRightToLeft : WTF::unicode::kLeftToRight);
   } else if (to_level < from_level) {
     LowerExplicitEmbeddingLevel(runs, from_level % 2
-                                          ? WTF::Unicode::kRightToLeft
-                                          : WTF::Unicode::kLeftToRight);
+                                          ? WTF::unicode::kRightToLeft
+                                          : WTF::unicode::kLeftToRight);
   }
 
   SetContext(to_context);
@@ -655,39 +655,39 @@ bool BidiResolver<Iterator, Run, IsolatedRun>::CommitExplicitEmbedding(
 template <class Iterator, class Run, class IsolatedRun>
 inline void
 BidiResolver<Iterator, Run, IsolatedRun>::UpdateStatusLastFromCurrentDirection(
-    WTF::Unicode::CharDirection dir_current) {
+    WTF::unicode::CharDirection dir_current) {
   switch (dir_current) {
-    case WTF::Unicode::kEuropeanNumberTerminator:
-      if (status_.last != WTF::Unicode::kEuropeanNumber)
-        status_.last = WTF::Unicode::kEuropeanNumberTerminator;
+    case WTF::unicode::kEuropeanNumberTerminator:
+      if (status_.last != WTF::unicode::kEuropeanNumber)
+        status_.last = WTF::unicode::kEuropeanNumberTerminator;
       break;
-    case WTF::Unicode::kEuropeanNumberSeparator:
-    case WTF::Unicode::kCommonNumberSeparator:
-    case WTF::Unicode::kSegmentSeparator:
-    case WTF::Unicode::kWhiteSpaceNeutral:
-    case WTF::Unicode::kOtherNeutral:
+    case WTF::unicode::kEuropeanNumberSeparator:
+    case WTF::unicode::kCommonNumberSeparator:
+    case WTF::unicode::kSegmentSeparator:
+    case WTF::unicode::kWhiteSpaceNeutral:
+    case WTF::unicode::kOtherNeutral:
       switch (status_.last) {
-        case WTF::Unicode::kLeftToRight:
-        case WTF::Unicode::kRightToLeft:
-        case WTF::Unicode::kRightToLeftArabic:
-        case WTF::Unicode::kEuropeanNumber:
-        case WTF::Unicode::kArabicNumber:
+        case WTF::unicode::kLeftToRight:
+        case WTF::unicode::kRightToLeft:
+        case WTF::unicode::kRightToLeftArabic:
+        case WTF::unicode::kEuropeanNumber:
+        case WTF::unicode::kArabicNumber:
           status_.last = dir_current;
           break;
         default:
-          status_.last = WTF::Unicode::kOtherNeutral;
+          status_.last = WTF::unicode::kOtherNeutral;
       }
       break;
-    case WTF::Unicode::kNonSpacingMark:
-    case WTF::Unicode::kBoundaryNeutral:
-    case WTF::Unicode::kRightToLeftEmbedding:
-    case WTF::Unicode::kLeftToRightEmbedding:
-    case WTF::Unicode::kRightToLeftOverride:
-    case WTF::Unicode::kLeftToRightOverride:
-    case WTF::Unicode::kPopDirectionalFormat:
+    case WTF::unicode::kNonSpacingMark:
+    case WTF::unicode::kBoundaryNeutral:
+    case WTF::unicode::kRightToLeftEmbedding:
+    case WTF::unicode::kLeftToRightEmbedding:
+    case WTF::unicode::kRightToLeftOverride:
+    case WTF::unicode::kLeftToRightOverride:
+    case WTF::unicode::kPopDirectionalFormat:
       // ignore these
       break;
-    case WTF::Unicode::kEuropeanNumber:
+    case WTF::unicode::kEuropeanNumber:
     // fall through
     default:
       status_.last = dir_current;
@@ -761,15 +761,15 @@ BidiResolver<Iterator, Run, IsolatedRun>::DetermineDirectionalityInternal(
         continue;
       current = U16_GET_SUPPLEMENTARY(high, low);
     }
-    WTF::Unicode::CharDirection char_direction =
-        WTF::Unicode::Direction(current);
-    if (char_direction == WTF::Unicode::kLeftToRight) {
+    WTF::unicode::CharDirection char_direction =
+        WTF::unicode::Direction(current);
+    if (char_direction == WTF::unicode::kLeftToRight) {
       if (has_strong_directionality)
         *has_strong_directionality = true;
       return TextDirection::kLtr;
     }
-    if (char_direction == WTF::Unicode::kRightToLeft ||
-        char_direction == WTF::Unicode::kRightToLeftArabic) {
+    if (char_direction == WTF::unicode::kRightToLeft ||
+        char_direction == WTF::unicode::kRightToLeftArabic) {
       if (has_strong_directionality)
         *has_strong_directionality = true;
       return TextDirection::kRtl;
@@ -782,10 +782,10 @@ BidiResolver<Iterator, Run, IsolatedRun>::DetermineDirectionalityInternal(
 }
 
 inline TextDirection DirectionForCharacter(UChar32 character) {
-  WTF::Unicode::CharDirection char_direction =
-      WTF::Unicode::Direction(character);
-  if (char_direction == WTF::Unicode::kRightToLeft ||
-      char_direction == WTF::Unicode::kRightToLeftArabic)
+  WTF::unicode::CharDirection char_direction =
+      WTF::unicode::Direction(character);
+  if (char_direction == WTF::unicode::kRightToLeft ||
+      char_direction == WTF::unicode::kRightToLeftArabic)
     return TextDirection::kRtl;
   return TextDirection::kLtr;
 }
@@ -796,7 +796,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
     VisualDirectionOverride override,
     bool hard_line_break,
     bool reorder_runs) {
-  DCHECK_EQ(direction_, WTF::Unicode::kOtherNeutral);
+  DCHECK_EQ(direction_, WTF::unicode::kOtherNeutral);
   trailing_space_run_ = nullptr;
 
   end_of_line_ = end;
@@ -810,8 +810,8 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
       Increment();
     }
     direction_ = override == kVisualLeftToRightOverride
-                     ? WTF::Unicode::kLeftToRight
-                     : WTF::Unicode::kRightToLeft;
+                     ? WTF::unicode::kLeftToRight
+                     : WTF::unicode::kRightToLeft;
     AppendRun(runs_);
     runs_.SetLogicallyLastRun(runs_.LastRun());
     if (override == kVisualRightToLeftOverride && runs_.RunCount())
@@ -847,7 +847,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
       end_of_run_at_end_of_line_ = last_;
       last_line_ended = true;
     }
-    WTF::Unicode::CharDirection dir_current;
+    WTF::unicode::CharDirection dir_current;
     if (last_line_ended && (hard_line_break || current_.AtEnd())) {
       BidiContext* c = Context();
       if (hard_line_break) {
@@ -869,83 +869,83 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
     } else {
       dir_current = current_.Direction();
       if (Context()->Override() &&
-          dir_current != WTF::Unicode::kRightToLeftEmbedding &&
-          dir_current != WTF::Unicode::kLeftToRightEmbedding &&
-          dir_current != WTF::Unicode::kRightToLeftOverride &&
-          dir_current != WTF::Unicode::kLeftToRightOverride &&
-          dir_current != WTF::Unicode::kPopDirectionalFormat)
+          dir_current != WTF::unicode::kRightToLeftEmbedding &&
+          dir_current != WTF::unicode::kLeftToRightEmbedding &&
+          dir_current != WTF::unicode::kRightToLeftOverride &&
+          dir_current != WTF::unicode::kLeftToRightOverride &&
+          dir_current != WTF::unicode::kPopDirectionalFormat)
         dir_current = Context()->Dir();
-      else if (dir_current == WTF::Unicode::kNonSpacingMark)
+      else if (dir_current == WTF::unicode::kNonSpacingMark)
         dir_current = status_.last;
     }
 
     // We ignore all character directionality while in unicode-bidi: isolate
     // spans.  We'll handle ordering the isolated characters in a second pass.
     if (InIsolate())
-      dir_current = WTF::Unicode::kOtherNeutral;
+      dir_current = WTF::unicode::kOtherNeutral;
 
-    DCHECK(status_.eor != WTF::Unicode::kOtherNeutral || eor_.AtEnd());
+    DCHECK(status_.eor != WTF::unicode::kOtherNeutral || eor_.AtEnd());
     switch (dir_current) {
       // embedding and overrides (X1-X9 in the Bidi specs)
-      case WTF::Unicode::kRightToLeftEmbedding:
-      case WTF::Unicode::kLeftToRightEmbedding:
-      case WTF::Unicode::kRightToLeftOverride:
-      case WTF::Unicode::kLeftToRightOverride:
-      case WTF::Unicode::kPopDirectionalFormat:
+      case WTF::unicode::kRightToLeftEmbedding:
+      case WTF::unicode::kLeftToRightEmbedding:
+      case WTF::unicode::kRightToLeftOverride:
+      case WTF::unicode::kLeftToRightOverride:
+      case WTF::unicode::kPopDirectionalFormat:
         Embed(dir_current, kFromUnicode);
         CommitExplicitEmbedding(runs_);
         break;
 
       // strong types
-      case WTF::Unicode::kLeftToRight:
+      case WTF::unicode::kLeftToRight:
         switch (status_.last) {
-          case WTF::Unicode::kRightToLeft:
-          case WTF::Unicode::kRightToLeftArabic:
-          case WTF::Unicode::kEuropeanNumber:
-          case WTF::Unicode::kArabicNumber:
-            if (status_.last != WTF::Unicode::kEuropeanNumber ||
-                status_.last_strong != WTF::Unicode::kLeftToRight)
+          case WTF::unicode::kRightToLeft:
+          case WTF::unicode::kRightToLeftArabic:
+          case WTF::unicode::kEuropeanNumber:
+          case WTF::unicode::kArabicNumber:
+            if (status_.last != WTF::unicode::kEuropeanNumber ||
+                status_.last_strong != WTF::unicode::kLeftToRight)
               AppendRun(runs_);
             break;
-          case WTF::Unicode::kLeftToRight:
+          case WTF::unicode::kLeftToRight:
             break;
-          case WTF::Unicode::kEuropeanNumberSeparator:
-          case WTF::Unicode::kEuropeanNumberTerminator:
-          case WTF::Unicode::kCommonNumberSeparator:
-          case WTF::Unicode::kBoundaryNeutral:
-          case WTF::Unicode::kBlockSeparator:
-          case WTF::Unicode::kSegmentSeparator:
-          case WTF::Unicode::kWhiteSpaceNeutral:
-          case WTF::Unicode::kOtherNeutral:
-            if (status_.eor == WTF::Unicode::kEuropeanNumber) {
-              if (status_.last_strong != WTF::Unicode::kLeftToRight) {
+          case WTF::unicode::kEuropeanNumberSeparator:
+          case WTF::unicode::kEuropeanNumberTerminator:
+          case WTF::unicode::kCommonNumberSeparator:
+          case WTF::unicode::kBoundaryNeutral:
+          case WTF::unicode::kBlockSeparator:
+          case WTF::unicode::kSegmentSeparator:
+          case WTF::unicode::kWhiteSpaceNeutral:
+          case WTF::unicode::kOtherNeutral:
+            if (status_.eor == WTF::unicode::kEuropeanNumber) {
+              if (status_.last_strong != WTF::unicode::kLeftToRight) {
                 // the numbers need to be on a higher embedding level, so let's
                 // close that run
-                direction_ = WTF::Unicode::kEuropeanNumber;
+                direction_ = WTF::unicode::kEuropeanNumber;
                 AppendRun(runs_);
-                if (Context()->Dir() != WTF::Unicode::kLeftToRight) {
+                if (Context()->Dir() != WTF::unicode::kLeftToRight) {
                   // the neutrals take the embedding direction, which is R
                   eor_ = last_;
-                  direction_ = WTF::Unicode::kRightToLeft;
+                  direction_ = WTF::unicode::kRightToLeft;
                   AppendRun(runs_);
                 }
               }
-            } else if (status_.eor == WTF::Unicode::kArabicNumber) {
+            } else if (status_.eor == WTF::unicode::kArabicNumber) {
               // Arabic numbers are always on a higher embedding level, so let's
               // close that run
-              direction_ = WTF::Unicode::kArabicNumber;
+              direction_ = WTF::unicode::kArabicNumber;
               AppendRun(runs_);
-              if (Context()->Dir() != WTF::Unicode::kLeftToRight) {
+              if (Context()->Dir() != WTF::unicode::kLeftToRight) {
                 // the neutrals take the embedding direction, which is R
                 eor_ = last_;
-                direction_ = WTF::Unicode::kRightToLeft;
+                direction_ = WTF::unicode::kRightToLeft;
                 AppendRun(runs_);
               }
-            } else if (status_.last_strong != WTF::Unicode::kLeftToRight) {
+            } else if (status_.last_strong != WTF::unicode::kLeftToRight) {
               // last stuff takes embedding dir
-              if (Context()->Dir() == WTF::Unicode::kRightToLeft) {
+              if (Context()->Dir() == WTF::unicode::kRightToLeft) {
                 eor_ = last_;
-                direction_ = WTF::Unicode::kRightToLeft;
+                direction_ = WTF::unicode::kRightToLeft;
               }
               AppendRun(runs_);
             }
@@ -954,38 +954,38 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
             break;
         }
         eor_ = current_;
-        status_.eor = WTF::Unicode::kLeftToRight;
-        status_.last_strong = WTF::Unicode::kLeftToRight;
-        direction_ = WTF::Unicode::kLeftToRight;
+        status_.eor = WTF::unicode::kLeftToRight;
+        status_.last_strong = WTF::unicode::kLeftToRight;
+        direction_ = WTF::unicode::kLeftToRight;
         break;
-      case WTF::Unicode::kRightToLeftArabic:
-      case WTF::Unicode::kRightToLeft:
+      case WTF::unicode::kRightToLeftArabic:
+      case WTF::unicode::kRightToLeft:
         switch (status_.last) {
-          case WTF::Unicode::kLeftToRight:
-          case WTF::Unicode::kEuropeanNumber:
-          case WTF::Unicode::kArabicNumber:
+          case WTF::unicode::kLeftToRight:
+          case WTF::unicode::kEuropeanNumber:
+          case WTF::unicode::kArabicNumber:
             AppendRun(runs_);
             break;
-          case WTF::Unicode::kRightToLeft:
-          case WTF::Unicode::kRightToLeftArabic:
+          case WTF::unicode::kRightToLeft:
+          case WTF::unicode::kRightToLeftArabic:
             break;
-          case WTF::Unicode::kEuropeanNumberSeparator:
-          case WTF::Unicode::kEuropeanNumberTerminator:
-          case WTF::Unicode::kCommonNumberSeparator:
-          case WTF::Unicode::kBoundaryNeutral:
-          case WTF::Unicode::kBlockSeparator:
-          case WTF::Unicode::kSegmentSeparator:
-          case WTF::Unicode::kWhiteSpaceNeutral:
-          case WTF::Unicode::kOtherNeutral:
-            if (status_.eor == WTF::Unicode::kEuropeanNumber) {
-              if (status_.last_strong == WTF::Unicode::kLeftToRight &&
-                  Context()->Dir() == WTF::Unicode::kLeftToRight)
+          case WTF::unicode::kEuropeanNumberSeparator:
+          case WTF::unicode::kEuropeanNumberTerminator:
+          case WTF::unicode::kCommonNumberSeparator:
+          case WTF::unicode::kBoundaryNeutral:
+          case WTF::unicode::kBlockSeparator:
+          case WTF::unicode::kSegmentSeparator:
+          case WTF::unicode::kWhiteSpaceNeutral:
+          case WTF::unicode::kOtherNeutral:
+            if (status_.eor == WTF::unicode::kEuropeanNumber) {
+              if (status_.last_strong == WTF::unicode::kLeftToRight &&
+                  Context()->Dir() == WTF::unicode::kLeftToRight)
                 eor_ = last_;
               AppendRun(runs_);
-            } else if (status_.eor == WTF::Unicode::kArabicNumber) {
+            } else if (status_.eor == WTF::unicode::kArabicNumber) {
               AppendRun(runs_);
-            } else if (status_.last_strong == WTF::Unicode::kLeftToRight) {
-              if (Context()->Dir() == WTF::Unicode::kLeftToRight)
+            } else if (status_.last_strong == WTF::unicode::kLeftToRight) {
+              if (Context()->Dir() == WTF::unicode::kLeftToRight)
                 eor_ = last_;
               AppendRun(runs_);
             }
@@ -994,129 +994,129 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
             break;
         }
         eor_ = current_;
-        status_.eor = WTF::Unicode::kRightToLeft;
+        status_.eor = WTF::unicode::kRightToLeft;
         status_.last_strong = dir_current;
-        direction_ = WTF::Unicode::kRightToLeft;
+        direction_ = WTF::unicode::kRightToLeft;
         break;
 
       // weak types:
 
-      case WTF::Unicode::kEuropeanNumber:
+      case WTF::unicode::kEuropeanNumber:
         // If last_strong is kRightToLeftArabic, change kEuropeanNumber to
         // kArabicNumber by falling through after this if.
-        if (status_.last_strong != WTF::Unicode::kRightToLeftArabic) {
+        if (status_.last_strong != WTF::unicode::kRightToLeftArabic) {
           switch (status_.last) {
-            case WTF::Unicode::kEuropeanNumber:
-            case WTF::Unicode::kLeftToRight:
+            case WTF::unicode::kEuropeanNumber:
+            case WTF::unicode::kLeftToRight:
               break;
-            case WTF::Unicode::kRightToLeft:
-            case WTF::Unicode::kRightToLeftArabic:
-            case WTF::Unicode::kArabicNumber:
+            case WTF::unicode::kRightToLeft:
+            case WTF::unicode::kRightToLeftArabic:
+            case WTF::unicode::kArabicNumber:
               eor_ = last_;
               AppendRun(runs_);
-              direction_ = WTF::Unicode::kEuropeanNumber;
+              direction_ = WTF::unicode::kEuropeanNumber;
               break;
-            case WTF::Unicode::kEuropeanNumberSeparator:
-            case WTF::Unicode::kCommonNumberSeparator:
-              if (status_.eor == WTF::Unicode::kEuropeanNumber)
+            case WTF::unicode::kEuropeanNumberSeparator:
+            case WTF::unicode::kCommonNumberSeparator:
+              if (status_.eor == WTF::unicode::kEuropeanNumber)
                 break;
               FALLTHROUGH;
-            case WTF::Unicode::kEuropeanNumberTerminator:
-            case WTF::Unicode::kBoundaryNeutral:
-            case WTF::Unicode::kBlockSeparator:
-            case WTF::Unicode::kSegmentSeparator:
-            case WTF::Unicode::kWhiteSpaceNeutral:
-            case WTF::Unicode::kOtherNeutral:
-              if (status_.eor == WTF::Unicode::kEuropeanNumber) {
-                if (status_.last_strong == WTF::Unicode::kRightToLeft) {
+            case WTF::unicode::kEuropeanNumberTerminator:
+            case WTF::unicode::kBoundaryNeutral:
+            case WTF::unicode::kBlockSeparator:
+            case WTF::unicode::kSegmentSeparator:
+            case WTF::unicode::kWhiteSpaceNeutral:
+            case WTF::unicode::kOtherNeutral:
+              if (status_.eor == WTF::unicode::kEuropeanNumber) {
+                if (status_.last_strong == WTF::unicode::kRightToLeft) {
                   // ENs on both sides behave like Rs, so the neutrals should be
                   // R.  Terminate the EN run.
                   AppendRun(runs_);
                   // Make an R run.
-                  eor_ = status_.last == WTF::Unicode::kEuropeanNumberTerminator
+                  eor_ = status_.last == WTF::unicode::kEuropeanNumberTerminator
                              ? last_before_et_
                              : last_;
-                  direction_ = WTF::Unicode::kRightToLeft;
+                  direction_ = WTF::unicode::kRightToLeft;
                   AppendRun(runs_);
                   // Begin a new EN run.
-                  direction_ = WTF::Unicode::kEuropeanNumber;
+                  direction_ = WTF::unicode::kEuropeanNumber;
                 }
-              } else if (status_.eor == WTF::Unicode::kArabicNumber) {
+              } else if (status_.eor == WTF::unicode::kArabicNumber) {
                 // Terminate the AN run.
                 AppendRun(runs_);
-                if (status_.last_strong == WTF::Unicode::kRightToLeft ||
-                    Context()->Dir() == WTF::Unicode::kRightToLeft) {
+                if (status_.last_strong == WTF::unicode::kRightToLeft ||
+                    Context()->Dir() == WTF::unicode::kRightToLeft) {
                   // Make an R run.
-                  eor_ = status_.last == WTF::Unicode::kEuropeanNumberTerminator
+                  eor_ = status_.last == WTF::unicode::kEuropeanNumberTerminator
                              ? last_before_et_
                              : last_;
-                  direction_ = WTF::Unicode::kRightToLeft;
+                  direction_ = WTF::unicode::kRightToLeft;
                   AppendRun(runs_);
                   // Begin a new EN run.
-                  direction_ = WTF::Unicode::kEuropeanNumber;
+                  direction_ = WTF::unicode::kEuropeanNumber;
                 }
-              } else if (status_.last_strong == WTF::Unicode::kRightToLeft) {
+              } else if (status_.last_strong == WTF::unicode::kRightToLeft) {
                 // Extend the R run to include the neutrals.
-                eor_ = status_.last == WTF::Unicode::kEuropeanNumberTerminator
+                eor_ = status_.last == WTF::unicode::kEuropeanNumberTerminator
                            ? last_before_et_
                            : last_;
-                direction_ = WTF::Unicode::kRightToLeft;
+                direction_ = WTF::unicode::kRightToLeft;
                 AppendRun(runs_);
                 // Begin a new EN run.
-                direction_ = WTF::Unicode::kEuropeanNumber;
+                direction_ = WTF::unicode::kEuropeanNumber;
               }
               break;
             default:
               break;
           }
           eor_ = current_;
-          status_.eor = WTF::Unicode::kEuropeanNumber;
-          if (direction_ == WTF::Unicode::kOtherNeutral)
-            direction_ = WTF::Unicode::kLeftToRight;
+          status_.eor = WTF::unicode::kEuropeanNumber;
+          if (direction_ == WTF::unicode::kOtherNeutral)
+            direction_ = WTF::unicode::kLeftToRight;
           break;
         }
         FALLTHROUGH;
-      case WTF::Unicode::kArabicNumber:
-        dir_current = WTF::Unicode::kArabicNumber;
+      case WTF::unicode::kArabicNumber:
+        dir_current = WTF::unicode::kArabicNumber;
         switch (status_.last) {
-          case WTF::Unicode::kLeftToRight:
-            if (Context()->Dir() == WTF::Unicode::kLeftToRight)
+          case WTF::unicode::kLeftToRight:
+            if (Context()->Dir() == WTF::unicode::kLeftToRight)
               AppendRun(runs_);
             break;
-          case WTF::Unicode::kArabicNumber:
+          case WTF::unicode::kArabicNumber:
             break;
-          case WTF::Unicode::kRightToLeft:
-          case WTF::Unicode::kRightToLeftArabic:
-          case WTF::Unicode::kEuropeanNumber:
+          case WTF::unicode::kRightToLeft:
+          case WTF::unicode::kRightToLeftArabic:
+          case WTF::unicode::kEuropeanNumber:
             eor_ = last_;
             AppendRun(runs_);
             break;
-          case WTF::Unicode::kCommonNumberSeparator:
-            if (status_.eor == WTF::Unicode::kArabicNumber)
+          case WTF::unicode::kCommonNumberSeparator:
+            if (status_.eor == WTF::unicode::kArabicNumber)
               break;
             FALLTHROUGH;
-          case WTF::Unicode::kEuropeanNumberSeparator:
-          case WTF::Unicode::kEuropeanNumberTerminator:
-          case WTF::Unicode::kBoundaryNeutral:
-          case WTF::Unicode::kBlockSeparator:
-          case WTF::Unicode::kSegmentSeparator:
-          case WTF::Unicode::kWhiteSpaceNeutral:
-          case WTF::Unicode::kOtherNeutral:
-            if (status_.eor == WTF::Unicode::kArabicNumber ||
-                (status_.eor == WTF::Unicode::kEuropeanNumber &&
-                 (status_.last_strong == WTF::Unicode::kRightToLeft ||
-                  Context()->Dir() == WTF::Unicode::kRightToLeft)) ||
-                (status_.eor != WTF::Unicode::kEuropeanNumber &&
-                 status_.last_strong == WTF::Unicode::kLeftToRight &&
-                 Context()->Dir() == WTF::Unicode::kRightToLeft)) {
+          case WTF::unicode::kEuropeanNumberSeparator:
+          case WTF::unicode::kEuropeanNumberTerminator:
+          case WTF::unicode::kBoundaryNeutral:
+          case WTF::unicode::kBlockSeparator:
+          case WTF::unicode::kSegmentSeparator:
+          case WTF::unicode::kWhiteSpaceNeutral:
+          case WTF::unicode::kOtherNeutral:
+            if (status_.eor == WTF::unicode::kArabicNumber ||
+                (status_.eor == WTF::unicode::kEuropeanNumber &&
+                 (status_.last_strong == WTF::unicode::kRightToLeft ||
+                  Context()->Dir() == WTF::unicode::kRightToLeft)) ||
+                (status_.eor != WTF::unicode::kEuropeanNumber &&
+                 status_.last_strong == WTF::unicode::kLeftToRight &&
+                 Context()->Dir() == WTF::unicode::kRightToLeft)) {
               // Terminate the run before the neutrals.
               AppendRun(runs_);
               // Begin an R run for the neutrals.
-              direction_ = WTF::Unicode::kRightToLeft;
-            } else if (direction_ == WTF::Unicode::kOtherNeutral) {
-              direction_ = status_.last_strong == WTF::Unicode::kLeftToRight
-                               ? WTF::Unicode::kLeftToRight
-                               : WTF::Unicode::kRightToLeft;
+              direction_ = WTF::unicode::kRightToLeft;
+            } else if (direction_ == WTF::unicode::kOtherNeutral) {
+              direction_ = status_.last_strong == WTF::unicode::kLeftToRight
+                               ? WTF::unicode::kLeftToRight
+                               : WTF::unicode::kRightToLeft;
             }
             eor_ = last_;
             AppendRun(runs_);
@@ -1125,39 +1125,39 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
             break;
         }
         eor_ = current_;
-        status_.eor = WTF::Unicode::kArabicNumber;
-        if (direction_ == WTF::Unicode::kOtherNeutral)
-          direction_ = WTF::Unicode::kArabicNumber;
+        status_.eor = WTF::unicode::kArabicNumber;
+        if (direction_ == WTF::unicode::kOtherNeutral)
+          direction_ = WTF::unicode::kArabicNumber;
         break;
-      case WTF::Unicode::kEuropeanNumberSeparator:
-      case WTF::Unicode::kCommonNumberSeparator:
+      case WTF::unicode::kEuropeanNumberSeparator:
+      case WTF::unicode::kCommonNumberSeparator:
         break;
-      case WTF::Unicode::kEuropeanNumberTerminator:
-        if (status_.last == WTF::Unicode::kEuropeanNumber) {
-          dir_current = WTF::Unicode::kEuropeanNumber;
+      case WTF::unicode::kEuropeanNumberTerminator:
+        if (status_.last == WTF::unicode::kEuropeanNumber) {
+          dir_current = WTF::unicode::kEuropeanNumber;
           eor_ = current_;
           status_.eor = dir_current;
-        } else if (status_.last != WTF::Unicode::kEuropeanNumberTerminator) {
+        } else if (status_.last != WTF::unicode::kEuropeanNumberTerminator) {
           last_before_et_ = empty_run_ ? eor_ : last_;
         }
         break;
 
       // boundary neutrals should be ignored
-      case WTF::Unicode::kBoundaryNeutral:
+      case WTF::unicode::kBoundaryNeutral:
         if (eor_ == last_)
           eor_ = current_;
         break;
       // neutrals
-      case WTF::Unicode::kBlockSeparator:
+      case WTF::unicode::kBlockSeparator:
         // ### what do we do with newline and paragraph seperators that come to
         // here?
         break;
-      case WTF::Unicode::kSegmentSeparator:
+      case WTF::unicode::kSegmentSeparator:
         // ### implement rule L1
         break;
-      case WTF::Unicode::kWhiteSpaceNeutral:
+      case WTF::unicode::kWhiteSpaceNeutral:
         break;
-      case WTF::Unicode::kOtherNeutral:
+      case WTF::unicode::kOtherNeutral:
         break;
       default:
         break;
@@ -1167,15 +1167,15 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
       if (!reached_end_of_line_) {
         eor_ = end_of_run_at_end_of_line_;
         switch (status_.eor) {
-          case WTF::Unicode::kLeftToRight:
-          case WTF::Unicode::kRightToLeft:
-          case WTF::Unicode::kArabicNumber:
+          case WTF::unicode::kLeftToRight:
+          case WTF::unicode::kRightToLeft:
+          case WTF::unicode::kArabicNumber:
             direction_ = status_.eor;
             break;
-          case WTF::Unicode::kEuropeanNumber:
-            direction_ = status_.last_strong == WTF::Unicode::kLeftToRight
-                             ? WTF::Unicode::kLeftToRight
-                             : WTF::Unicode::kEuropeanNumber;
+          case WTF::unicode::kEuropeanNumber:
+            direction_ = status_.last_strong == WTF::unicode::kLeftToRight
+                             ? WTF::unicode::kLeftToRight
+                             : WTF::unicode::kEuropeanNumber;
             break;
           default:
             NOTREACHED();
@@ -1190,7 +1190,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
       reached_end_of_line_ = state_at_end.reached_end_of_line_;
       last_before_et_ = state_at_end.last_before_et_;
       empty_run_ = state_at_end.empty_run_;
-      direction_ = WTF::Unicode::kOtherNeutral;
+      direction_ = WTF::unicode::kOtherNeutral;
       break;
     }
 
@@ -1214,7 +1214,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
         reached_end_of_line_ = state_at_end.reached_end_of_line_;
         last_before_et_ = state_at_end.last_before_et_;
         empty_run_ = state_at_end.empty_run_;
-        direction_ = WTF::Unicode::kOtherNeutral;
+        direction_ = WTF::unicode::kOtherNeutral;
         break;
       }
     }

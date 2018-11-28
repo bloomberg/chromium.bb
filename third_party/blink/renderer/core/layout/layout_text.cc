@@ -1262,7 +1262,7 @@ void LayoutText::ComputePreferredLogicalWidths(
 
     if (run) {
       // Treat adjacent runs with the same resolved directionality
-      // (TextDirection as opposed to WTF::Unicode::Direction) as belonging
+      // (TextDirection as opposed to WTF::unicode::Direction) as belonging
       // to the same run to avoid breaking unnecessarily.
       while (i >= run->Stop() ||
              (run->Next() && run->Next()->Direction() == run->Direction()))

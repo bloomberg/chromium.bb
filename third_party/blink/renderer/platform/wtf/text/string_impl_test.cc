@@ -38,7 +38,7 @@ TEST(StringImplTest, Create8Bit) {
 TEST(StringImplTest, Latin1CaseFoldTable) {
   LChar symbol = 0xff;
   while (symbol--) {
-    EXPECT_EQ(Unicode::FoldCase(symbol),
+    EXPECT_EQ(unicode::FoldCase(symbol),
               StringImpl::kLatin1CaseFoldTable[symbol]);
   }
 }

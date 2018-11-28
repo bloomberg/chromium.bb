@@ -44,16 +44,16 @@ namespace blink {
 // (Pe), "initial" (Pi). "final" (Pf) and "other" (Po) punctuation classes),
 // that precedes or follows the first letter should be included"
 static inline bool IsPunctuationForFirstLetter(UChar32 c) {
-  WTF::Unicode::CharCategory char_category = WTF::Unicode::Category(c);
-  return char_category == WTF::Unicode::kPunctuation_Open ||
-         char_category == WTF::Unicode::kPunctuation_Close ||
-         char_category == WTF::Unicode::kPunctuation_InitialQuote ||
-         char_category == WTF::Unicode::kPunctuation_FinalQuote ||
-         char_category == WTF::Unicode::kPunctuation_Other;
+  WTF::unicode::CharCategory char_category = WTF::unicode::Category(c);
+  return char_category == WTF::unicode::kPunctuation_Open ||
+         char_category == WTF::unicode::kPunctuation_Close ||
+         char_category == WTF::unicode::kPunctuation_InitialQuote ||
+         char_category == WTF::unicode::kPunctuation_FinalQuote ||
+         char_category == WTF::unicode::kPunctuation_Other;
 }
 
 static inline bool IsSpaceForFirstLetter(UChar c) {
-  return IsSpaceOrNewline(c) || c == WTF::Unicode::kNoBreakSpaceCharacter;
+  return IsSpaceOrNewline(c) || c == WTF::unicode::kNoBreakSpaceCharacter;
 }
 
 unsigned FirstLetterPseudoElement::FirstLetterLength(const String& text) {

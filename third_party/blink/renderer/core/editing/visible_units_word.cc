@@ -100,7 +100,7 @@ PositionInFlatTree NextWordPositionInternal(
         // We stop searching when the character preceding the break is
         // alphanumeric or underscore.
         if (static_cast<unsigned>(runner) < text.length() &&
-            (WTF::Unicode::IsAlphanumeric(text[runner - 1]) ||
+            (WTF::unicode::IsAlphanumeric(text[runner - 1]) ||
              text[runner - 1] == kLowLineCharacter))
           return Position::After(runner - 1);
       }
@@ -126,7 +126,7 @@ PositionInFlatTree PreviousWordPositionInternal(
            runner = it->preceding(runner)) {
         // We stop searching when the character following the break is
         // alphanumeric or underscore.
-        if (runner && (WTF::Unicode::IsAlphanumeric(text[runner]) ||
+        if (runner && (WTF::unicode::IsAlphanumeric(text[runner]) ||
                        text[runner] == kLowLineCharacter))
           return Position::Before(runner);
       }

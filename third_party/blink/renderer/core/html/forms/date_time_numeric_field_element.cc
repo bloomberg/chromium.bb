@@ -65,11 +65,11 @@ DateTimeNumericFieldElement::DateTimeNumericFieldElement(
   // We show a direction-neutral string such as "--" as a placeholder. It
   // should follow the direction of numeric values.
   if (LocaleForOwner().IsRTL()) {
-    WTF::Unicode::CharDirection dir =
-        WTF::Unicode::Direction(FormatValue(Maximum())[0]);
-    if (dir == WTF::Unicode::kLeftToRight ||
-        dir == WTF::Unicode::kEuropeanNumber ||
-        dir == WTF::Unicode::kArabicNumber) {
+    WTF::unicode::CharDirection dir =
+        WTF::unicode::Direction(FormatValue(Maximum())[0]);
+    if (dir == WTF::unicode::kLeftToRight ||
+        dir == WTF::unicode::kEuropeanNumber ||
+        dir == WTF::unicode::kArabicNumber) {
       SetInlineStyleProperty(CSSPropertyUnicodeBidi, CSSValueBidiOverride);
       SetInlineStyleProperty(CSSPropertyDirection, CSSValueLtr);
     }

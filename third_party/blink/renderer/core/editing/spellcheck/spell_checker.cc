@@ -62,7 +62,7 @@ namespace blink {
 namespace {
 
 static bool IsWhiteSpaceOrPunctuation(UChar c) {
-  return IsSpaceOrNewline(c) || WTF::Unicode::IsPunct(c);
+  return IsSpaceOrNewline(c) || WTF::unicode::IsPunct(c);
 }
 
 bool IsAmbiguousBoundaryCharacter(UChar character) {
