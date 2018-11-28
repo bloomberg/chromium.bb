@@ -375,6 +375,10 @@ class PersonalDataManager : public KeyedService,
     is_syncing_for_test_ = is_syncing_for_test;
   }
 
+  // Returns whether a row to give the option of showing cards from the user's
+  // account should be shown in the dropdown.
+  bool ShouldShowCardsFromAccountOption() const;
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
