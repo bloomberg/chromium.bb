@@ -3252,7 +3252,8 @@ error::Error GLES2DecoderImpl::HandleUniform2f(uint32_t immediate_data_size,
   GLfloat x = static_cast<GLfloat>(c.x);
   GLfloat y = static_cast<GLfloat>(c.y);
   GLfloat temp[2] = {
-      x, y,
+      x,
+      y,
   };
   DoUniform2fv(location, 1, &temp[0]);
   return error::kNoError;
@@ -3293,7 +3294,8 @@ error::Error GLES2DecoderImpl::HandleUniform2i(uint32_t immediate_data_size,
   GLint x = static_cast<GLint>(c.x);
   GLint y = static_cast<GLint>(c.y);
   GLint temp[2] = {
-      x, y,
+      x,
+      y,
   };
   DoUniform2iv(location, 1, &temp[0]);
   return error::kNoError;
@@ -3336,7 +3338,8 @@ error::Error GLES2DecoderImpl::HandleUniform2ui(uint32_t immediate_data_size,
   GLuint x = static_cast<GLuint>(c.x);
   GLuint y = static_cast<GLuint>(c.y);
   GLuint temp[2] = {
-      x, y,
+      x,
+      y,
   };
   DoUniform2uiv(location, 1, &temp[0]);
   return error::kNoError;
@@ -3380,7 +3383,9 @@ error::Error GLES2DecoderImpl::HandleUniform3f(uint32_t immediate_data_size,
   GLfloat y = static_cast<GLfloat>(c.y);
   GLfloat z = static_cast<GLfloat>(c.z);
   GLfloat temp[3] = {
-      x, y, z,
+      x,
+      y,
+      z,
   };
   DoUniform3fv(location, 1, &temp[0]);
   return error::kNoError;
@@ -3422,7 +3427,9 @@ error::Error GLES2DecoderImpl::HandleUniform3i(uint32_t immediate_data_size,
   GLint y = static_cast<GLint>(c.y);
   GLint z = static_cast<GLint>(c.z);
   GLint temp[3] = {
-      x, y, z,
+      x,
+      y,
+      z,
   };
   DoUniform3iv(location, 1, &temp[0]);
   return error::kNoError;
@@ -3466,7 +3473,9 @@ error::Error GLES2DecoderImpl::HandleUniform3ui(uint32_t immediate_data_size,
   GLuint y = static_cast<GLuint>(c.y);
   GLuint z = static_cast<GLuint>(c.z);
   GLuint temp[3] = {
-      x, y, z,
+      x,
+      y,
+      z,
   };
   DoUniform3uiv(location, 1, &temp[0]);
   return error::kNoError;
@@ -3511,7 +3520,10 @@ error::Error GLES2DecoderImpl::HandleUniform4f(uint32_t immediate_data_size,
   GLfloat z = static_cast<GLfloat>(c.z);
   GLfloat w = static_cast<GLfloat>(c.w);
   GLfloat temp[4] = {
-      x, y, z, w,
+      x,
+      y,
+      z,
+      w,
   };
   DoUniform4fv(location, 1, &temp[0]);
   return error::kNoError;
@@ -3554,7 +3566,10 @@ error::Error GLES2DecoderImpl::HandleUniform4i(uint32_t immediate_data_size,
   GLint z = static_cast<GLint>(c.z);
   GLint w = static_cast<GLint>(c.w);
   GLint temp[4] = {
-      x, y, z, w,
+      x,
+      y,
+      z,
+      w,
   };
   DoUniform4iv(location, 1, &temp[0]);
   return error::kNoError;
@@ -3599,7 +3614,10 @@ error::Error GLES2DecoderImpl::HandleUniform4ui(uint32_t immediate_data_size,
   GLuint z = static_cast<GLuint>(c.z);
   GLuint w = static_cast<GLuint>(c.w);
   GLuint temp[4] = {
-      x, y, z, w,
+      x,
+      y,
+      z,
+      w,
   };
   DoUniform4uiv(location, 1, &temp[0]);
   return error::kNoError;
