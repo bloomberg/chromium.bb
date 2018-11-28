@@ -235,9 +235,8 @@ void DisplayLockContext::RejectAndCleanUp() {
   // ancestor tree. Since we're now rejecting the promise and unlocking the
   // element, ensure that we can reach both style and layout subtrees if they
   // are dirty by propagating the bit.
-  if (element_->NeedsStyleRecalc() || element_->ChildNeedsStyleRecalc())
-    element_->MarkAncestorsWithChildNeedsStyleRecalc();
-  InvalidateElementLayout();
+  MarkAncestorsForStyleRecalcIfNeeded();
+  MarkAncestorsForLayoutIfNeeded();
 }
 
 void DisplayLockContext::Resume() {
@@ -317,8 +316,14 @@ void DisplayLockContext::DidStyle() {
     return;
   }
 
-  if (lifecycle_update_state_ <= kNeedsStyle)
-    lifecycle_update_state_ = kNeedsLayout;
+  if (lifecycle_update_state_ <= kNeedsStyle) {
+    // Normally we need to do layout next, but if it's not dirty then we can
+    // skip ahead to pre-paint.
+    if (MarkAncestorsForLayoutIfNeeded())
+      lifecycle_update_state_ = kNeedsLayout;
+    else
+      lifecycle_update_state_ = kNeedsPrePaint;
+  }
 }
 
 bool DisplayLockContext::ShouldLayout() const {
@@ -402,33 +407,35 @@ void DisplayLockContext::StartCommit() {
   state_ = kCommitting;
   lifecycle_update_state_ = kNeedsStyle;
 
-  // Ensure that we can reach this element for style if needed.
-  if (element_->NeedsStyleRecalc() || element_->ChildNeedsStyleRecalc())
-    element_->MarkAncestorsWithChildNeedsStyleRecalc();
-  else
+  if (!MarkAncestorsForStyleRecalcIfNeeded())
     DidStyle();
 
+  // The above DidStyle() may reject the promise since it checks that we have
+  // containment before proceeding.
   if (state_ != kCommitting)
     return;
-
-  // Also ensure we reach it for layout.
-  // TODO(vmpstr): This should just mark the ancestor chain if needed.
-  InvalidateElementLayout();
 
   // Schedule an animation to perform the lifecycle phases.
   element_->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
       element_->GetDocument().GetFrame());
 }
 
-void DisplayLockContext::InvalidateElementLayout() {
+bool DisplayLockContext::MarkAncestorsForStyleRecalcIfNeeded() {
+  if (element_->NeedsStyleRecalc() || element_->ChildNeedsStyleRecalc()) {
+    element_->MarkAncestorsWithChildNeedsStyleRecalc();
+    return true;
+  }
+  return false;
+}
+
+bool DisplayLockContext::MarkAncestorsForLayoutIfNeeded() {
   if (auto* layout_object = element_->GetLayoutObject()) {
-    layout_object->SetNeedsLayout(
-        layout_invalidation_reason::kDisplayLockCommitting);
-    if (auto* parent = layout_object->Parent()) {
-      parent->SetNeedsLayout(
-          layout_invalidation_reason::kDisplayLockCommitting);
+    if (layout_object->NeedsLayout()) {
+      layout_object->MarkContainerChainForLayout();
+      return true;
     }
   }
+  return false;
 }
 
 }  // namespace blink

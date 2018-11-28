@@ -132,9 +132,11 @@ class CORE_EXPORT DisplayLockContext final
   // Initiate a commit.
   void StartCommit();
 
-  // Invalidates the layout of the element, making sure that the layout code can
-  // reach it.
-  void InvalidateElementLayout();
+  // The following functions propagate dirty bits from the locked element up to
+  // the ancestors in order to be reached. They return true if the element or
+  // its subtree were dirty, and false otherwise.
+  bool MarkAncestorsForStyleRecalcIfNeeded();
+  bool MarkAncestorsForLayoutIfNeeded();
 
   HeapVector<Member<V8DisplayLockCallback>> callbacks_;
   Member<ScriptPromiseResolver> resolver_;
