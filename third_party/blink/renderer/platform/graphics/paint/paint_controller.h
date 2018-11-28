@@ -144,8 +144,6 @@ class PLATFORM_EXPORT PaintController {
   // BeginSubsequence().
   void EndSubsequence(const DisplayItemClient&, size_t start);
 
-  const DisplayItem* LastDisplayItem(unsigned offset);
-
   void BeginSkippingCache() {
     if (usage_ == kTransient)
       return;

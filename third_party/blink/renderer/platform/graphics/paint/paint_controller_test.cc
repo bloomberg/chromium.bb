@@ -1567,6 +1567,45 @@ TEST_P(PaintControllerTest, TransientPaintControllerIncompleteCycle) {
   paint_controller = nullptr;
 }
 
+TEST_P(PaintControllerTest, AllowDuplicatedIdForUncacheableItem) {
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+    return;
+
+  LayoutRect r(100, 100, 300, 300);
+  FakeDisplayItemClient cacheable("cacheable", r);
+  FakeDisplayItemClient uncacheable("uncacheable", r);
+  GraphicsContext context(GetPaintController());
+
+  uncacheable.Invalidate(PaintInvalidationReason::kUncacheable);
+  EXPECT_TRUE(cacheable.IsCacheable());
+  EXPECT_FALSE(uncacheable.IsCacheable());
+
+  InitRootChunk();
+  {
+    SubsequenceRecorder recorder(context, cacheable);
+    DrawRect(context, cacheable, kBackgroundType, FloatRect(r));
+    DrawRect(context, uncacheable, kBackgroundType, FloatRect(r));
+    // This should not trigger the duplicated id assert.
+    DrawRect(context, uncacheable, kBackgroundType, FloatRect(r));
+  }
+
+  CommitAndFinishCycle();
+  EXPECT_TRUE(GetPaintController().GetDisplayItemList()[0].IsCacheable());
+  EXPECT_FALSE(GetPaintController().GetDisplayItemList()[1].IsCacheable());
+  EXPECT_FALSE(GetPaintController().GetDisplayItemList()[2].IsCacheable());
+  EXPECT_TRUE(cacheable.IsCacheable());
+  EXPECT_FALSE(uncacheable.IsCacheable());
+
+  InitRootChunk();
+  EXPECT_TRUE(GetPaintController().UseCachedSubsequenceIfPossible(cacheable));
+  CommitAndFinishCycle();
+  EXPECT_TRUE(GetPaintController().GetDisplayItemList()[0].IsCacheable());
+  EXPECT_FALSE(GetPaintController().GetDisplayItemList()[1].IsCacheable());
+  EXPECT_FALSE(GetPaintController().GetDisplayItemList()[2].IsCacheable());
+  EXPECT_TRUE(cacheable.IsCacheable());
+  EXPECT_FALSE(uncacheable.IsCacheable());
+}
+
 // Death tests don't work properly on Android.
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 

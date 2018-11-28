@@ -200,17 +200,13 @@ void PaintController::EndSubsequence(const DisplayItemClient& client,
   new_cached_subsequences_.insert(&client, SubsequenceMarkers(start, end));
 }
 
-const DisplayItem* PaintController::LastDisplayItem(unsigned offset) {
-  if (offset < new_display_item_list_.size())
-    return &new_display_item_list_[new_display_item_list_.size() - offset - 1];
-  return nullptr;
-}
-
 void PaintController::ProcessNewItem(DisplayItem& display_item) {
   DCHECK(!construction_disabled_);
 
-  if (IsSkippingCache() && usage_ == kMultiplePaints)
+  if (IsSkippingCache() && usage_ == kMultiplePaints) {
     display_item.Client().Invalidate(PaintInvalidationReason::kUncacheable);
+    display_item.SetUncacheable();
+  }
 
   bool chunk_added = new_paint_chunks_.IncrementDisplayItemIndex(display_item);
 
@@ -221,7 +217,7 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
                             new_paint_chunk_indices_by_client_);
   }
 
-  if (usage_ == kMultiplePaints && !IsSkippingCache()) {
+  if (usage_ == kMultiplePaints && display_item.IsCacheable()) {
     size_t index = FindMatchingItemFromIndex(
         display_item.GetId(), new_display_item_indices_by_client_,
         new_display_item_list_);
