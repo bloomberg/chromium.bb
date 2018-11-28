@@ -76,6 +76,7 @@ void FormSaverImpl::Update(
 }
 
 void FormSaverImpl::PresaveGeneratedPassword(const PasswordForm& generated) {
+  DCHECK_NE(base::string16(), generated.password_value);
   auto form = std::make_unique<PasswordForm>(generated);
   SanitizeFormData(&form->form_data);
   if (presaved_)

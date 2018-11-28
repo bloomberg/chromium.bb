@@ -440,8 +440,10 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
     render_frame()->GetRenderView()->GetWebView()->AdvanceFocus(false);
   }
   std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
-  if (presaved_form)
+  if (presaved_form) {
+    DCHECK_NE(base::string16(), presaved_form->password_value);
     GetPasswordManagerClient()->PresaveGeneratedPassword(*presaved_form);
+  }
 
   // Call UpdateStateForTextChange after the corresponding PasswordFormManager
   // is notified that the password was generated.
@@ -612,6 +614,11 @@ bool PasswordGenerationAgent::SetUpUserTriggeredGeneration() {
               last_focused_password_element_.NameForAutofill().Utf16(),
               last_focused_password_element_.FormControlTypeForAutofill()
                   .Utf8())));
+  // TODO(crbug/866444): remove this once it's impossible that currently focused
+  // password field isn't found by FindPasswordElementsForGeneration.
+  if (!std::count(password_elements.begin(), password_elements.end(),
+                  last_focused_password_element_))
+    return false;
   current_generation_item_.reset(new GenerationItemInfo(
       last_focused_password_element_, std::move(*password_form),
       std::move(password_elements)));

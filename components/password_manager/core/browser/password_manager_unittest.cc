@@ -461,6 +461,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
     EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*store_, AddLogin(_));
+    form.password_value = form.new_password_value;
     manager()->OnPresaveGeneratedPassword(&driver_, form);
     OnPasswordFormSubmitted(form);
 
@@ -1715,6 +1716,7 @@ TEST_F(PasswordManagerTest, PasswordGeneration_FailedSubmission) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*store_, AddLogin(_));
+  form.password_value = form.new_password_value;
   manager()->OnPresaveGeneratedPassword(&driver_, form);
 
   // Do not save generated password when the password form reappears.
@@ -1743,11 +1745,12 @@ TEST_F(PasswordManagerTest, PasswordGenerationPasswordEdited_FailedSubmission) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*store_, AddLogin(_));
+  form.password_value = form.new_password_value;
   manager()->OnPresaveGeneratedPassword(&driver_, form);
 
   // Simulate user editing and submitting a different password. Verify that
   // the edited password is the one that is saved.
-  form.new_password_value = ASCIIToUTF16("different_password");
+  form.password_value = ASCIIToUTF16("different_password");
   OnPasswordFormSubmitted(form);
 
   // Do not save generated password when the password form reappears.
@@ -1777,10 +1780,11 @@ TEST_F(PasswordManagerTest,
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*store_, AddLogin(_));
+  form.password_value = form.new_password_value;
   manager()->OnPresaveGeneratedPassword(&driver_, form);
 
   // Simulate user removing generated password and adding a new one.
-  form.new_password_value = ASCIIToUTF16("different_password");
+  form.password_value = ASCIIToUTF16("different_password");
   EXPECT_CALL(*store_, RemoveLogin(_));
   manager()->OnPasswordNoLongerGenerated(&driver_, form);
 
@@ -1811,10 +1815,11 @@ TEST_F(PasswordManagerTest,
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*store_, AddLogin(_));
+  form.password_value = form.new_password_value;
   manager()->OnPresaveGeneratedPassword(&driver_, form);
 
   // Simulate user removing generated password and adding a new one.
-  form.new_password_value = ASCIIToUTF16("different_password");
+  form.password_value = ASCIIToUTF16("different_password");
   EXPECT_CALL(*store_, RemoveLogin(_));
   manager()->OnPasswordNoLongerGenerated(&driver_, form);
 
@@ -1844,6 +1849,7 @@ TEST_F(PasswordManagerTest, PasswordGenerationUsernameChanged) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*store_, AddLogin(_));
+  form.password_value = form.new_password_value;
   manager()->OnPresaveGeneratedPassword(&driver_, form);
 
   // Simulate user changing the password and username, without ever completely
@@ -1962,6 +1968,7 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
     manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
     // The user accepts generated password and makes successful login.
+    form.password_value = form.new_password_value;
     PasswordForm presaved_form(form);
     if (found_matched_logins_in_store)
       presaved_form.username_value.clear();
