@@ -180,7 +180,7 @@ AudioBus* AudioNodeInput::InternalSummingBus() {
 }
 
 void AudioNodeInput::SumAllConnections(AudioBus* summing_bus,
-                                       size_t frames_to_process) {
+                                       uint32_t frames_to_process) {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
 
   // We shouldn't be calling this method if there's only one connection, since
@@ -210,7 +210,7 @@ void AudioNodeInput::SumAllConnections(AudioBus* summing_bus,
 }
 
 AudioBus* AudioNodeInput::Pull(AudioBus* in_place_bus,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
 
   // Handle single connection case.

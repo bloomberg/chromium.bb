@@ -37,7 +37,7 @@ static size_t GetAVXAlignmentOffsetInNumberOfFloats(const float* source_p) {
 }
 
 static ALWAYS_INLINE FrameCounts
-SplitFramesToProcess(const float* source_p, size_t frames_to_process) {
+SplitFramesToProcess(const float* source_p, uint32_t frames_to_process) {
   FrameCounts counts = {0u, 0u, 0u, 0u, 0u};
 
   const size_t avx_alignment_offset =
@@ -111,7 +111,7 @@ static ALWAYS_INLINE void Conv(const float* source_p,
                                int filter_stride,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process,
+                               uint32_t frames_to_process,
                                size_t filter_size,
                                const AudioFloatArray* prepared_filter) {
   const float* prepared_filter_p =
@@ -144,7 +144,7 @@ static ALWAYS_INLINE void Vadd(const float* source1p,
                                int source_stride2,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
   if (source_stride1 == 1 && source_stride2 == 1 && dest_stride == 1) {
     const FrameCounts frame_counts =
         SplitFramesToProcess(source1p, frames_to_process);
@@ -180,7 +180,7 @@ static ALWAYS_INLINE void Vclip(const float* source_p,
                                 const float* high_threshold_p,
                                 float* dest_p,
                                 int dest_stride,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
   if (source_stride == 1 && dest_stride == 1) {
     const FrameCounts frame_counts =
         SplitFramesToProcess(source_p, frames_to_process);
@@ -215,7 +215,7 @@ static ALWAYS_INLINE void Vclip(const float* source_p,
 static ALWAYS_INLINE void Vmaxmgv(const float* source_p,
                                   int source_stride,
                                   float* max_p,
-                                  size_t frames_to_process) {
+                                  uint32_t frames_to_process) {
   if (source_stride == 1) {
     const FrameCounts frame_counts =
         SplitFramesToProcess(source_p, frames_to_process);
@@ -247,7 +247,7 @@ static ALWAYS_INLINE void Vmul(const float* source1p,
                                int source_stride2,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
   if (source_stride1 == 1 && source_stride2 == 1 && dest_stride == 1) {
     const FrameCounts frame_counts =
         SplitFramesToProcess(source1p, frames_to_process);
@@ -282,7 +282,7 @@ static ALWAYS_INLINE void Vsma(const float* source_p,
                                const float* scale,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
   if (source_stride == 1 && dest_stride == 1) {
     const FrameCounts frame_counts =
         SplitFramesToProcess(source_p, frames_to_process);
@@ -316,7 +316,7 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
                                 const float* scale,
                                 float* dest_p,
                                 int dest_stride,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
   if (source_stride == 1 && dest_stride == 1) {
     const FrameCounts frame_counts =
         SplitFramesToProcess(source_p, frames_to_process);
@@ -348,7 +348,7 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
 static ALWAYS_INLINE void Vsvesq(const float* source_p,
                                  int source_stride,
                                  float* sum_p,
-                                 size_t frames_to_process) {
+                                 uint32_t frames_to_process) {
   if (source_stride == 1) {
     const FrameCounts frame_counts =
         SplitFramesToProcess(source_p, frames_to_process);
@@ -380,7 +380,7 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
                                 const float* imag2p,
                                 float* real_dest_p,
                                 float* imag_dest_p,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
   FrameCounts frame_counts = SplitFramesToProcess(real1p, frames_to_process);
 
   scalar::Zvmul(real1p, imag1p, real2p, imag2p, real_dest_p, imag_dest_p,

@@ -1880,11 +1880,11 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessCancelValues(
   return std::make_tuple(current_frame, value, write_index);
 }
 
-unsigned AudioParamTimeline::FillWithDefault(float* values,
+uint32_t AudioParamTimeline::FillWithDefault(float* values,
                                              float default_value,
-                                             size_t end_frame,
-                                             unsigned write_index) {
-  size_t index = write_index;
+                                             uint32_t end_frame,
+                                             uint32_t write_index) {
+  uint32_t index = write_index;
 
   for (; index < end_frame; ++index)
     values[index] = default_value;

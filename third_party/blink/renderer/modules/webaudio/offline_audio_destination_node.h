@@ -44,7 +44,7 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   static scoped_refptr<OfflineAudioDestinationHandler> Create(
       AudioNode&,
       unsigned number_of_channels,
-      size_t frames_to_process,
+      uint32_t frames_to_process,
       float sample_rate);
   ~OfflineAudioDestinationHandler() override;
 
@@ -86,7 +86,7 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
  private:
   OfflineAudioDestinationHandler(AudioNode&,
                                  unsigned number_of_channels,
-                                 size_t frames_to_process,
+                                 uint32_t frames_to_process,
                                  float sample_rate);
 
   // Set up the rendering and start. After setting the context up, it will
@@ -113,7 +113,7 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   // Otherwise, it returns false after rendering one quantum.
   bool RenderIfNotSuspended(AudioBus* source_bus,
                             AudioBus* destination_bus,
-                            size_t number_of_frames);
+                            uint32_t number_of_frames);
 
   // Prepares a task runner for the rendering based on the operation mode
   // (i.e. non-AudioWorklet or AudioWorklet). This is called when the
@@ -133,7 +133,7 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   // These variables are for counting the number of frames for the current
   // progress and the remaining frames to be processed.
   size_t frames_processed_;
-  size_t frames_to_process_;
+  uint32_t frames_to_process_;
 
   // This flag is necessary to distinguish the state of the context between
   // 'created' and 'suspended'. If this flag is false and the current state
@@ -155,12 +155,12 @@ class OfflineAudioDestinationNode final : public AudioDestinationNode {
  public:
   static OfflineAudioDestinationNode* Create(BaseAudioContext*,
                                              unsigned number_of_channels,
-                                             size_t frames_to_process,
+                                             uint32_t frames_to_process,
                                              float sample_rate);
 
   OfflineAudioDestinationNode(BaseAudioContext&,
                               unsigned number_of_channels,
-                              size_t frames_to_process,
+                              uint32_t frames_to_process,
                               float sample_rate);
 };
 

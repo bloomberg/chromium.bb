@@ -27,7 +27,7 @@ class ConstantSourceHandler final : public AudioScheduledSourceHandler {
   ~ConstantSourceHandler() override;
 
   // AudioHandler
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
 
  private:
   ConstantSourceHandler(AudioNode&,

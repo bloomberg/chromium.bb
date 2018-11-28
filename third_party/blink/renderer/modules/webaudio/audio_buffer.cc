@@ -40,7 +40,7 @@
 namespace blink {
 
 AudioBuffer* AudioBuffer::Create(unsigned number_of_channels,
-                                 size_t number_of_frames,
+                                 uint32_t number_of_frames,
                                  float sample_rate) {
   if (!audio_utilities::IsValidAudioBufferSampleRate(sample_rate) ||
       number_of_channels > BaseAudioContext::MaxNumberOfChannels() ||
@@ -56,7 +56,7 @@ AudioBuffer* AudioBuffer::Create(unsigned number_of_channels,
 }
 
 AudioBuffer* AudioBuffer::Create(unsigned number_of_channels,
-                                 size_t number_of_frames,
+                                 uint32_t number_of_frames,
                                  float sample_rate,
                                  ExceptionState& exception_state) {
   if (!number_of_channels ||
@@ -86,8 +86,8 @@ AudioBuffer* AudioBuffer::Create(unsigned number_of_channels,
   if (!number_of_frames) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        ExceptionMessages::IndexExceedsMinimumBound(
-            "number of frames", number_of_frames, static_cast<size_t>(0)));
+        ExceptionMessages::IndexExceedsMinimumBound("number of frames",
+                                                    number_of_frames, 0u));
     return nullptr;
   }
 
@@ -112,7 +112,7 @@ AudioBuffer* AudioBuffer::Create(const AudioBufferOptions* options,
 }
 
 AudioBuffer* AudioBuffer::CreateUninitialized(unsigned number_of_channels,
-                                              size_t number_of_frames,
+                                              uint32_t number_of_frames,
                                               float sample_rate) {
   if (!audio_utilities::IsValidAudioBufferSampleRate(sample_rate) ||
       number_of_channels > BaseAudioContext::MaxNumberOfChannels() ||
@@ -157,7 +157,7 @@ bool AudioBuffer::CreatedSuccessfully(
 }
 
 DOMFloat32Array* AudioBuffer::CreateFloat32ArrayOrNull(
-    size_t length,
+    uint32_t length,
     InitializationPolicy policy) {
   scoped_refptr<WTF::Float32Array> buffer;
 
@@ -180,7 +180,7 @@ DOMFloat32Array* AudioBuffer::CreateFloat32ArrayOrNull(
 }
 
 AudioBuffer::AudioBuffer(unsigned number_of_channels,
-                         size_t number_of_frames,
+                         uint32_t number_of_frames,
                          float sample_rate,
                          InitializationPolicy policy)
     : sample_rate_(sample_rate), length_(number_of_frames) {

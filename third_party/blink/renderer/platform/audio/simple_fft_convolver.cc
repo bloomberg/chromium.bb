@@ -26,7 +26,7 @@ SimpleFFTConvolver::SimpleFFTConvolver(
 
 void SimpleFFTConvolver::Process(const float* source_p,
                                  float* dest_p,
-                                 size_t frames_to_process) {
+                                 uint32_t frames_to_process) {
   size_t half_size = FftSize() / 2;
 
   // frames_to_process must be exactly half_size.

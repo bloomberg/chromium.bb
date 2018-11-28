@@ -127,7 +127,7 @@ class PLATFORM_EXPORT MediaStreamComponent final
     void Wrap(WebAudioSourceProvider*);
 
     // blink::AudioSourceProvider
-    void ProvideInput(AudioBus*, size_t frames_to_process) override;
+    void ProvideInput(AudioBus*, uint32_t frames_to_process) override;
 
    private:
     WebAudioSourceProvider* web_audio_source_provider_;

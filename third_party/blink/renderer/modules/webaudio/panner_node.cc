@@ -99,7 +99,7 @@ PannerHandler::~PannerHandler() {
   Uninitialize();
 }
 
-void PannerHandler::Process(size_t frames_to_process) {
+void PannerHandler::Process(uint32_t frames_to_process) {
   AudioBus* destination = Output(0).Bus();
 
   if (!IsInitialized() || !panner_.get()) {
@@ -162,7 +162,7 @@ void PannerHandler::Process(size_t frames_to_process) {
 
 void PannerHandler::ProcessSampleAccurateValues(AudioBus* destination,
                                                 const AudioBus* source,
-                                                size_t frames_to_process) {
+                                                uint32_t frames_to_process) {
   CHECK_LE(frames_to_process, audio_utilities::kRenderQuantumFrames);
 
   // Get the sample accurate values from all of the AudioParams, including the
@@ -235,7 +235,7 @@ void PannerHandler::ProcessSampleAccurateValues(AudioBus* destination,
                                                     frames_to_process);
 }
 
-void PannerHandler::ProcessOnlyAudioParams(size_t frames_to_process) {
+void PannerHandler::ProcessOnlyAudioParams(uint32_t frames_to_process) {
   float values[audio_utilities::kRenderQuantumFrames];
 
   DCHECK_LE(frames_to_process, audio_utilities::kRenderQuantumFrames);

@@ -59,7 +59,7 @@ void PrepareFilterForConv(const float* filter_p,
 void Conv(const float* source_p,
           const float* prepared_filter_p,
           float* dest_p,
-          size_t frames_to_process,
+          uint32_t frames_to_process,
           size_t filter_size) {
   const float* const dest_end_p = dest_p + frames_to_process;
 
@@ -98,7 +98,7 @@ void Conv(const float* source_p,
 void Vadd(const float* source1p,
           const float* source2p,
           float* dest_p,
-          size_t frames_to_process) {
+          uint32_t frames_to_process) {
   const float* const source1_end_p = source1p + frames_to_process;
 
   DCHECK(IsAligned(source1p));
@@ -138,7 +138,7 @@ void Vclip(const float* source_p,
            const float* low_threshold_p,
            const float* high_threshold_p,
            float* dest_p,
-           size_t frames_to_process) {
+           uint32_t frames_to_process) {
   const float* const source_end_p = source_p + frames_to_process;
 
   DCHECK(IsAligned(source_p));
@@ -168,7 +168,7 @@ void Vclip(const float* source_p,
 
 // *max_p = max(*max_p, source_max) where
 // source_max = max(abs(source[k])) for all k
-void Vmaxmgv(const float* source_p, float* max_p, size_t frames_to_process) {
+void Vmaxmgv(const float* source_p, float* max_p, uint32_t frames_to_process) {
   constexpr uint32_t kMask = 0x7FFFFFFFu;
 
   const float* const source_end_p = source_p + frames_to_process;
@@ -198,7 +198,7 @@ void Vmaxmgv(const float* source_p, float* max_p, size_t frames_to_process) {
 void Vmul(const float* source1p,
           const float* source2p,
           float* dest_p,
-          size_t frames_to_process) {
+          uint32_t frames_to_process) {
   const float* const source1_end_p = source1p + frames_to_process;
 
   DCHECK(IsAligned(source1p));
@@ -236,7 +236,7 @@ void Vmul(const float* source1p,
 void Vsma(const float* source_p,
           const float* scale,
           float* dest_p,
-          size_t frames_to_process) {
+          uint32_t frames_to_process) {
   const float* const source_end_p = source_p + frames_to_process;
 
   DCHECK(IsAligned(source_p));
@@ -267,7 +267,7 @@ void Vsma(const float* source_p,
 void Vsmul(const float* source_p,
            const float* scale,
            float* dest_p,
-           size_t frames_to_process) {
+           uint32_t frames_to_process) {
   const float* const source_end_p = source_p + frames_to_process;
 
   DCHECK(IsAligned(source_p));
@@ -294,7 +294,7 @@ void Vsmul(const float* source_p,
 }
 
 // sum += sum(source[k]^2) for all k
-void Vsvesq(const float* source_p, float* sum_p, size_t frames_to_process) {
+void Vsvesq(const float* source_p, float* sum_p, uint32_t frames_to_process) {
   const float* const source_end_p = source_p + frames_to_process;
 
   DCHECK(IsAligned(source_p));
@@ -322,7 +322,7 @@ void Zvmul(const float* real1p,
            const float* imag2p,
            float* real_dest_p,
            float* imag_dest_p,
-           size_t frames_to_process) {
+           uint32_t frames_to_process) {
   DCHECK(IsAligned(real1p));
   DCHECK_EQ(0u, frames_to_process % kPackedFloatsPerRegister);
 

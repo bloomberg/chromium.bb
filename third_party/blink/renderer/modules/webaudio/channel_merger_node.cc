@@ -64,7 +64,7 @@ scoped_refptr<ChannelMergerHandler> ChannelMergerHandler::Create(
       new ChannelMergerHandler(node, sample_rate, number_of_inputs));
 }
 
-void ChannelMergerHandler::Process(size_t frames_to_process) {
+void ChannelMergerHandler::Process(uint32_t frames_to_process) {
   AudioNodeOutput& output = this->Output(0);
   DCHECK_EQ(frames_to_process, output.Bus()->length());
 

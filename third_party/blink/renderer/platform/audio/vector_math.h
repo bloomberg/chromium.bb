@@ -47,7 +47,7 @@ PLATFORM_EXPORT void Conv(const float* source_p,
                           int filter_stride,
                           float* dest_p,
                           int dest_stride,
-                          size_t frames_to_process,
+                          uint32_t frames_to_process,
                           size_t filter_size,
                           const AudioFloatArray* prepared_filter);
 
@@ -65,7 +65,7 @@ PLATFORM_EXPORT void Vsma(const float* source_p,
                           const float* scale,
                           float* dest_p,
                           int dest_stride,
-                          size_t frames_to_process);
+                          uint32_t frames_to_process);
 
 // Vector scalar multiply:
 //
@@ -75,7 +75,7 @@ PLATFORM_EXPORT void Vsmul(const float* source_p,
                            const float* scale,
                            float* dest_p,
                            int dest_stride,
-                           size_t frames_to_process);
+                           uint32_t frames_to_process);
 
 // Vector add:
 //
@@ -86,7 +86,7 @@ PLATFORM_EXPORT void Vadd(const float* source1p,
                           int source_stride2,
                           float* dest_p,
                           int dest_stride,
-                          size_t frames_to_process);
+                          uint32_t frames_to_process);
 
 // Finds the maximum magnitude of a float vector:
 //
@@ -94,7 +94,7 @@ PLATFORM_EXPORT void Vadd(const float* source1p,
 PLATFORM_EXPORT void Vmaxmgv(const float* source_p,
                              int source_stride,
                              float* max_p,
-                             size_t frames_to_process);
+                             uint32_t frames_to_process);
 
 // Sums the squares of a float vector's elements:
 //
@@ -102,7 +102,7 @@ PLATFORM_EXPORT void Vmaxmgv(const float* source_p,
 PLATFORM_EXPORT void Vsvesq(const float* source_p,
                             int source_stride,
                             float* sum_p,
-                            size_t frames_to_process);
+                            uint32_t frames_to_process);
 
 // For an element-by-element multiply of two float vectors:
 //
@@ -113,7 +113,7 @@ PLATFORM_EXPORT void Vmul(const float* source1p,
                           int source_stride2,
                           float* dest_p,
                           int dest_stride,
-                          size_t frames_to_process);
+                          uint32_t frames_to_process);
 
 // Multiplies two complex vectors.  Complex version of Vmul where |rea1p| and
 // |imag1p| forms the real and complex components of source1; |real2p| and
@@ -125,7 +125,7 @@ PLATFORM_EXPORT void Zvmul(const float* real1p,
                            const float* imag2p,
                            float* real_dest_p,
                            float* imag_dest_p,
-                           size_t frames_to_process);
+                           uint32_t frames_to_process);
 
 // Copies elements while clipping values to the threshold inputs.
 //
@@ -139,7 +139,7 @@ PLATFORM_EXPORT void Vclip(const float* source_p,
                            const float* high_threshold_p,
                            float* dest_p,
                            int dest_stride,
-                           size_t frames_to_process);
+                           uint32_t frames_to_process);
 
 }  // namespace vector_math
 }  // namespace blink

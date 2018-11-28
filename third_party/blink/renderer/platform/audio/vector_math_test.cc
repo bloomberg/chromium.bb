@@ -272,7 +272,7 @@ TEST_F(VectorMathTest, Conv) {
       // process only |source.size() - filter_size| frames here.
       if (filter_size >= source.size())
         break;
-      size_t frames_to_process = source.size() - filter_size;
+      uint32_t frames_to_process = source.size() - filter_size;
       // The stride of a convolution filter must be -1. Let's first create
       // a reversed filter whose stride is 1.
       TestVector<const float> reversed_filter(

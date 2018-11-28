@@ -54,7 +54,7 @@ scoped_refptr<GainHandler> GainHandler::Create(AudioNode& node,
   return base::AdoptRef(new GainHandler(node, sample_rate, gain));
 }
 
-void GainHandler::Process(size_t frames_to_process) {
+void GainHandler::Process(uint32_t frames_to_process) {
   // FIXME: for some cases there is a nice optimization to avoid processing
   // here, and let the gain change happen in the summing junction input of the
   // AudioNode we're connected to.  Then we can avoid all of the following:
@@ -89,7 +89,7 @@ void GainHandler::Process(size_t frames_to_process) {
   }
 }
 
-void GainHandler::ProcessOnlyAudioParams(size_t frames_to_process) {
+void GainHandler::ProcessOnlyAudioParams(uint32_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
   DCHECK_LE(frames_to_process, audio_utilities::kRenderQuantumFrames);
 

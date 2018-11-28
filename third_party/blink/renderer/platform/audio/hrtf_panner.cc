@@ -121,7 +121,7 @@ void HRTFPanner::Pan(double desired_azimuth,
                      double elevation,
                      const AudioBus* input_bus,
                      AudioBus* output_bus,
-                     size_t frames_to_process,
+                     uint32_t frames_to_process,
                      AudioBus::ChannelInterpretation channel_interpretation) {
   unsigned num_input_channels = input_bus ? input_bus->NumberOfChannels() : 0;
 
@@ -335,7 +335,7 @@ void HRTFPanner::PanWithSampleAccurateValues(
     double* elevation,
     const AudioBus* input_bus,
     AudioBus* output_bus,
-    size_t frames_to_process,
+    uint32_t frames_to_process,
     AudioBus::ChannelInterpretation channel_interpretation) {
   // Sample-accurate (a-rate) HRTF panner is not implemented, just k-rate.  Just
   // grab the current azimuth/elevation and use that.

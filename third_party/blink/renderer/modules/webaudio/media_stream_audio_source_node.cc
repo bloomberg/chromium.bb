@@ -91,7 +91,7 @@ void MediaStreamAudioSourceHandler::SetFormat(uint32_t number_of_channels,
   }
 }
 
-void MediaStreamAudioSourceHandler::Process(size_t number_of_frames) {
+void MediaStreamAudioSourceHandler::Process(uint32_t number_of_frames) {
   AudioBus* output_bus = Output(0).Bus();
 
   if (!GetAudioSourceProvider()) {

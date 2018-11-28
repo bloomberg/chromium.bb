@@ -68,7 +68,7 @@ bool AudioDelayDSPKernel::HasSampleAccurateValues() {
   return false;
 }
 
-void AudioDelayDSPKernel::CalculateSampleAccurateValues(float*, size_t) {
+void AudioDelayDSPKernel::CalculateSampleAccurateValues(float*, uint32_t) {
   NOTREACHED();
 }
 
@@ -78,7 +78,7 @@ double AudioDelayDSPKernel::DelayTime(float sample_rate) {
 
 void AudioDelayDSPKernel::Process(const float* source,
                                   float* destination,
-                                  size_t frames_to_process) {
+                                  uint32_t frames_to_process) {
   size_t buffer_length = buffer_.size();
   float* buffer = buffer_.Data();
 

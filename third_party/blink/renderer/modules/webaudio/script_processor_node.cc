@@ -125,7 +125,7 @@ void ScriptProcessorHandler::Initialize() {
   AudioHandler::Initialize();
 }
 
-void ScriptProcessorHandler::Process(size_t frames_to_process) {
+void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
   // Discussion about inputs and outputs:
   // As in other AudioNodes, ScriptProcessorNode uses an AudioBus for its input
   // and output (see inputBus and outputBus below).  Additionally, there is a

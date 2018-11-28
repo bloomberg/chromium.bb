@@ -40,7 +40,7 @@ void EqualPowerPanner::Pan(double azimuth,
                            double /*elevation*/,
                            const AudioBus* input_bus,
                            AudioBus* output_bus,
-                           size_t frames_to_process,
+                           uint32_t frames_to_process,
                            AudioBus::ChannelInterpretation) {
   bool is_input_safe = input_bus &&
                        (input_bus->NumberOfChannels() == 1 ||
@@ -179,7 +179,7 @@ void EqualPowerPanner::PanWithSampleAccurateValues(
     double* /*elevation*/,
     const AudioBus* input_bus,
     AudioBus* output_bus,
-    size_t frames_to_process,
+    uint32_t frames_to_process,
     AudioBus::ChannelInterpretation) {
   bool is_input_safe = input_bus &&
                        (input_bus->NumberOfChannels() == 1 ||

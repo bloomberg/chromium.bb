@@ -63,8 +63,8 @@ class PLATFORM_EXPORT AudioDSPKernelProcessor : public AudioProcessor {
   void Uninitialize() override;
   void Process(const AudioBus* source,
                AudioBus* destination,
-               size_t frames_to_process) override;
-  void ProcessOnlyAudioParams(size_t frames_to_process) override;
+               uint32_t frames_to_process) override;
+  void ProcessOnlyAudioParams(uint32_t frames_to_process) override;
   void Reset() override;
   void SetNumberOfChannels(unsigned) override;
   unsigned NumberOfChannels() const override { return number_of_channels_; }

@@ -66,7 +66,7 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
   // get the next render quantum into |destination_bus| and update
   // |output_position|.
   void Render(AudioBus* destination_bus,
-              size_t number_of_frames,
+              uint32_t number_of_frames,
               const AudioIOPosition& output_position) final;
 
   // Returns a hadrware callback buffer size from audio infra.

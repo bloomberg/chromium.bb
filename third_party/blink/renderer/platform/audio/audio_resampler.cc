@@ -62,7 +62,7 @@ void AudioResampler::ConfigureChannels(unsigned number_of_channels) {
 
 void AudioResampler::Process(AudioSourceProvider* provider,
                              AudioBus* destination_bus,
-                             size_t frames_to_process) {
+                             uint32_t frames_to_process) {
   DCHECK(provider);
   if (!provider)
     return;

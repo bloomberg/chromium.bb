@@ -146,7 +146,7 @@ double DefaultAudioDestinationHandler::SampleRate() const {
 
 void DefaultAudioDestinationHandler::Render(
     AudioBus* destination_bus,
-    size_t number_of_frames,
+    uint32_t number_of_frames,
     const AudioIOPosition& output_position) {
   TRACE_EVENT0("webaudio", "DefaultAudioDestinationHandler::Render");
 

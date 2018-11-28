@@ -51,7 +51,7 @@ class WaveShaperProcessor final : public AudioDSPKernelProcessor {
 
   void Process(const AudioBus* source,
                AudioBus* destination,
-               size_t frames_to_process) override;
+               uint32_t frames_to_process) override;
 
   void SetCurve(const float* curve_data, unsigned curve_length);
   Vector<float>* Curve() const { return curve_.get(); };

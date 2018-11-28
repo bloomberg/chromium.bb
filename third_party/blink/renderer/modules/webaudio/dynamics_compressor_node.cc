@@ -77,7 +77,7 @@ DynamicsCompressorHandler::~DynamicsCompressorHandler() {
   Uninitialize();
 }
 
-void DynamicsCompressorHandler::Process(size_t frames_to_process) {
+void DynamicsCompressorHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
   DCHECK(output_bus);
 
@@ -105,7 +105,7 @@ void DynamicsCompressorHandler::Process(size_t frames_to_process) {
 }
 
 void DynamicsCompressorHandler::ProcessOnlyAudioParams(
-    size_t frames_to_process) {
+    uint32_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
   DCHECK_LE(frames_to_process, audio_utilities::kRenderQuantumFrames);
 

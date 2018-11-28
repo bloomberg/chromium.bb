@@ -40,13 +40,13 @@ class PLATFORM_EXPORT EqualPowerPanner final : public Panner {
            double elevation,
            const AudioBus* input_bus,
            AudioBus* output_buf,
-           size_t frames_to_process,
+           uint32_t frames_to_process,
            AudioBus::ChannelInterpretation) override;
   void PanWithSampleAccurateValues(double* azimuth,
                                    double* elevation,
                                    const AudioBus* input_bus,
                                    AudioBus* output_bus,
-                                   size_t frames_to_process,
+                                   uint32_t frames_to_process,
                                    AudioBus::ChannelInterpretation) override;
 
   void Reset() override {}

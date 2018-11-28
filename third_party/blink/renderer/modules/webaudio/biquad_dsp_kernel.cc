@@ -164,7 +164,7 @@ void BiquadDSPKernel::UpdateTailTime(int coef_index) {
 
 void BiquadDSPKernel::Process(const float* source,
                               float* destination,
-                              size_t frames_to_process) {
+                              uint32_t frames_to_process) {
   DCHECK(source);
   DCHECK(destination);
   DCHECK(GetBiquadProcessor());

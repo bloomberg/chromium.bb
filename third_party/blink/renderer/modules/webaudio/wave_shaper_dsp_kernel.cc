@@ -58,7 +58,7 @@ void WaveShaperDSPKernel::LazyInitializeOversampling() {
 
 void WaveShaperDSPKernel::Process(const float* source,
                                   float* destination,
-                                  size_t frames_to_process) {
+                                  uint32_t frames_to_process) {
   switch (GetWaveShaperProcessor()->Oversample()) {
     case WaveShaperProcessor::kOverSampleNone:
       ProcessCurve(source, destination, frames_to_process);
@@ -110,7 +110,7 @@ double WaveShaperDSPKernel::WaveShaperCurveValue(float input,
 
 void WaveShaperDSPKernel::ProcessCurve(const float* source,
                                        float* destination,
-                                       size_t frames_to_process) {
+                                       uint32_t frames_to_process) {
   DCHECK(source);
   DCHECK(destination);
   DCHECK(GetWaveShaperProcessor());
@@ -142,7 +142,7 @@ void WaveShaperDSPKernel::ProcessCurve(const float* source,
 
 void WaveShaperDSPKernel::ProcessCurve2x(const float* source,
                                          float* destination,
-                                         size_t frames_to_process) {
+                                         uint32_t frames_to_process) {
   bool is_safe = frames_to_process == audio_utilities::kRenderQuantumFrames;
   DCHECK(is_safe);
   if (!is_safe)
@@ -160,7 +160,7 @@ void WaveShaperDSPKernel::ProcessCurve2x(const float* source,
 
 void WaveShaperDSPKernel::ProcessCurve4x(const float* source,
                                          float* destination,
-                                         size_t frames_to_process) {
+                                         uint32_t frames_to_process) {
   bool is_safe = frames_to_process == audio_utilities::kRenderQuantumFrames;
   DCHECK(is_safe);
   if (!is_safe)

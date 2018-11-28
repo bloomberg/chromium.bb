@@ -46,7 +46,7 @@ class MediaStreamAudioDestinationHandler final
   MediaStream* Stream() { return stream_.Get(); }
 
   // AudioHandler.
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
   void SetChannelCount(unsigned, ExceptionState&) override;
 
   uint32_t MaxChannelCount() const;

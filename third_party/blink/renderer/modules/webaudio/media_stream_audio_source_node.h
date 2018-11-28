@@ -47,7 +47,7 @@ class MediaStreamAudioSourceHandler final : public AudioHandler {
   ~MediaStreamAudioSourceHandler() override;
 
   // AudioHandler
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
 
   // AudioNode
   double TailTime() const override { return 0; }

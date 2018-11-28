@@ -74,7 +74,7 @@ class MODULES_EXPORT AudioNodeInput final : public AudioSummingJunction {
   // where possible using inPlaceBus.  It returns the bus which it rendered
   // into, returning inPlaceBus if in-place processing was performed.
   // Called from context's audio thread.
-  AudioBus* Pull(AudioBus* in_place_bus, size_t frames_to_process);
+  AudioBus* Pull(AudioBus* in_place_bus, uint32_t frames_to_process);
 
   // bus() contains the rendered audio after pull() has been called for each
   // time quantum.
@@ -109,7 +109,7 @@ class MODULES_EXPORT AudioNodeInput final : public AudioSummingJunction {
 
   // Called from context's audio thread.
   AudioBus* InternalSummingBus();
-  void SumAllConnections(AudioBus* summing_bus, size_t frames_to_process);
+  void SumAllConnections(AudioBus* summing_bus, uint32_t frames_to_process);
 
   scoped_refptr<AudioBus> internal_summing_bus_;
 };

@@ -68,7 +68,7 @@ void AudioBasicProcessorHandler::Uninitialize() {
   AudioHandler::Uninitialize();
 }
 
-void AudioBasicProcessorHandler::Process(size_t frames_to_process) {
+void AudioBasicProcessorHandler::Process(uint32_t frames_to_process) {
   AudioBus* destination_bus = Output(0).Bus();
 
   if (!IsInitialized() || !Processor() ||
@@ -87,7 +87,7 @@ void AudioBasicProcessorHandler::Process(size_t frames_to_process) {
 }
 
 void AudioBasicProcessorHandler::ProcessOnlyAudioParams(
-    size_t frames_to_process) {
+    uint32_t frames_to_process) {
   if (!IsInitialized() || !Processor())
     return;
 
@@ -95,7 +95,7 @@ void AudioBasicProcessorHandler::ProcessOnlyAudioParams(
 }
 
 // Nice optimization in the very common case allowing for "in-place" processing
-void AudioBasicProcessorHandler::PullInputs(size_t frames_to_process) {
+void AudioBasicProcessorHandler::PullInputs(uint32_t frames_to_process) {
   // Render input stream - suggest to the input to render directly into output
   // bus for in-place processing in process() if possible.
   Input(0).Pull(Output(0).Bus(), frames_to_process);

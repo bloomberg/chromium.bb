@@ -312,7 +312,7 @@ void AudioHandler::UpdateChannelsForInputs() {
     input->ChangedOutputs();
 }
 
-void AudioHandler::ProcessIfNecessary(size_t frames_to_process) {
+void AudioHandler::ProcessIfNecessary(uint32_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
 
   if (!IsInitialized())
@@ -374,7 +374,7 @@ bool AudioHandler::PropagatesSilence() const {
          Context()->currentTime();
 }
 
-void AudioHandler::PullInputs(size_t frames_to_process) {
+void AudioHandler::PullInputs(uint32_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
 
   // Process all of the AudioNodes connected to our inputs.

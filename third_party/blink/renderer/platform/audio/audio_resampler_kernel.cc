@@ -44,7 +44,7 @@ AudioResamplerKernel::AudioResamplerKernel(AudioResampler* resampler)
 }
 
 float* AudioResamplerKernel::GetSourcePointer(
-    size_t frames_to_process,
+    uint32_t frames_to_process,
     size_t* number_of_source_frames_needed_p) {
   DCHECK_LE(frames_to_process, kMaxFramesToProcess);
 
@@ -76,7 +76,7 @@ float* AudioResamplerKernel::GetSourcePointer(
 }
 
 void AudioResamplerKernel::Process(float* destination,
-                                   size_t frames_to_process) {
+                                   uint32_t frames_to_process) {
   DCHECK_LE(frames_to_process, kMaxFramesToProcess);
 
   float* source = source_buffer_.Data();

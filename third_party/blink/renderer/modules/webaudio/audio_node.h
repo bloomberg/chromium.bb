@@ -143,12 +143,12 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // when process() is called.  Subclasses will take this input data and put the
   // results in the AudioBus(s) of its AudioNodeOutput(s) (if any).
   // Called from context's audio thread.
-  virtual void Process(size_t frames_to_process) = 0;
+  virtual void Process(uint32_t frames_to_process) = 0;
 
   // Like process(), but only causes the automations to process; the
   // normal processing of the node is bypassed.  By default, we assume
   // no AudioParams need to be updated.
-  virtual void ProcessOnlyAudioParams(size_t frames_to_process){};
+  virtual void ProcessOnlyAudioParams(uint32_t frames_to_process){};
 
   // No significant resources should be allocated until initialize() is called.
   // Processing may not occur until a node is initialized.
@@ -173,7 +173,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // will only process once per rendering time quantum even if it's called
   // repeatedly.  This handles the case of "fanout" where an output is connected
   // to multiple AudioNode inputs.  Called from context's audio thread.
-  void ProcessIfNecessary(size_t frames_to_process);
+  void ProcessIfNecessary(uint32_t frames_to_process);
 
   // Called when a new connection has been made to one of our inputs or the
   // connection number of channels has changed.  This potentially gives us
@@ -255,7 +255,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // connected to us to process.  Each rendering quantum, the audio data for
   // each of the AudioNode's inputs will be available after this method is
   // called.  Called from context's audio thread.
-  virtual void PullInputs(size_t frames_to_process);
+  virtual void PullInputs(uint32_t frames_to_process);
 
   // Force all inputs to take any channel interpretation changes into account.
   void UpdateChannelsForInputs();

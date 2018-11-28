@@ -60,7 +60,7 @@ class ScriptProcessorHandler final : public AudioHandler {
   ~ScriptProcessorHandler() override;
 
   // AudioHandler
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
   void Initialize() override;
 
   uint32_t BufferSize() const { return static_cast<uint32_t>(buffer_size_); }

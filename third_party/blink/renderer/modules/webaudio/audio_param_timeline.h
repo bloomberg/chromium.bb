@@ -440,10 +440,10 @@ class AudioParamTimeline {
   // Fill the output vector |values| with the value |defaultValue|,
   // starting at |writeIndex| and continuing up to |endFrame|
   // (exclusive).  |writeIndex| is updated with the new index.
-  unsigned FillWithDefault(float* values,
+  uint32_t FillWithDefault(float* values,
                            float default_value,
-                           size_t end_frame,
-                           unsigned write_index);
+                           uint32_t end_frame,
+                           uint32_t write_index);
 
   // When cancelling events, remove the items from |events_| starting
   // at the given index.  Update |new_events_| too.

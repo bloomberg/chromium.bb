@@ -715,7 +715,7 @@ class CORE_EXPORT HTMLMediaElement
 
     // AudioSourceProvider
     void SetClient(AudioSourceProviderClient*) override;
-    void ProvideInput(AudioBus*, size_t frames_to_process) override;
+    void ProvideInput(AudioBus*, uint32_t frames_to_process) override;
 
     void Trace(blink::Visitor*);
 

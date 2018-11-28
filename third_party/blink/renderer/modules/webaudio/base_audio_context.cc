@@ -205,7 +205,7 @@ void BaseAudioContext::ThrowExceptionForClosedState(
 }
 
 AudioBuffer* BaseAudioContext::createBuffer(unsigned number_of_channels,
-                                            size_t number_of_frames,
+                                            uint32_t number_of_frames,
                                             float sample_rate,
                                             ExceptionState& exception_state) {
   // It's ok to call createBuffer, even if the context is closed because the
