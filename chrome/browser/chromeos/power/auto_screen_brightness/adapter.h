@@ -48,13 +48,13 @@ class Adapter : public AlsReader::Observer,
     kMaxValue = kLatest
   };
 
-  // TODO(jiameng): we currently use past 2 seconds of ambient values to
+  // TODO(jiameng): we currently use past 5 seconds of ambient values to
   // calculate average ambient when we predict optimal brightness. This is
   // shorter than the duration used for training data (10 seconds), because it's
   // important that we can quickly adjust the brightness when ambient value
   // changes. This duration should be revised.
   static constexpr base::TimeDelta kAmbientLightShortHorizon =
-      base::TimeDelta::FromSeconds(2);
+      base::TimeDelta::FromSeconds(5);
 
   // Size of |ambient_light_values_|.
   static constexpr int kNumberAmbientValuesToTrack =
@@ -69,16 +69,16 @@ class Adapter : public AlsReader::Observer,
     // from the current value before brightness could be changed: brightness
     // will actually be changed if |min_time_between_brightness_changes| has
     // passed from the previous change.
-    double brightening_lux_threshold_ratio = 0.1;
-    double darkening_lux_threshold_ratio = 0.2;
+    double brightening_lux_threshold_ratio = 0.3;
+    double darkening_lux_threshold_ratio = 0.4;
 
     // If average ambient value changes by more than the "immediate" thresholds
     // then brightness transition will happen immediately, without waiting for
     // |min_time_between_brightness_changes| to elapse. This value should be
     // greater than or equal to the max of brightening/darkening thresholds
     // above.
-    double immediate_brightening_lux_threshold_ratio = 0.3;
-    double immediate_darkening_lux_threshold_ratio = 0.4;
+    double immediate_brightening_lux_threshold_ratio = 0.4;
+    double immediate_darkening_lux_threshold_ratio = 0.5;
 
     // Whether brightness should be set to the predicted value when the first
     // ambient reading comes in. If false, we'll wait for

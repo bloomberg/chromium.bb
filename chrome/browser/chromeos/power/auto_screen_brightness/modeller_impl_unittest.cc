@@ -561,7 +561,13 @@ TEST_F(ModellerImplTest, GlobaCurveFromInvalidExperimentParam) {
       features::kAutoScreenBrightness, {{"global_curve", global_curve_spec}});
 
   // Defined by default values.
-  const MonotoneCubicSpline expected_global_curve({0, 100}, {50, 100});
+  const MonotoneCubicSpline expected_global_curve(
+      {
+          3.69, 4.83, 6.54, 7.68, 8.25, 8.82,
+      },
+      {
+          36.14, 47.62, 85.83, 93.27, 93.27, 100,
+      });
 
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
   EXPECT_EQ(modeller_->GetGlobalCurveForTesting(), expected_global_curve);

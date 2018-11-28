@@ -31,7 +31,8 @@ namespace auto_screen_brightness {
 namespace {
 
 // Creates a global/default brightness curve.
-// TODO(crbug.com/881215): add actual default curve and then add unit test too.
+// TODO(crbug.com/881215): default curve may be revised, if so, need to update
+// unit tests as well.
 MonotoneCubicSpline CreateGlobalCurve() {
   const std::string global_curve = GetFieldTrialParamValueByFeature(
       features::kAutoScreenBrightness, "global_curve");
@@ -43,8 +44,14 @@ MonotoneCubicSpline CreateGlobalCurve() {
     // TODO(jiameng): log error to UMA.
   }
 
-  const std::vector<double> default_log_lux = {0, 100};
-  const std::vector<double> default_brightness = {50, 100};
+  const std::vector<double> default_log_lux = {
+      3.69, 4.83, 6.54, 7.68, 8.25, 8.82,
+  };
+
+  const std::vector<double> default_brightness = {
+      36.14, 47.62, 85.83, 93.27, 93.27, 100,
+  };
+
   return MonotoneCubicSpline(default_log_lux, default_brightness);
 }
 
