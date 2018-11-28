@@ -47,6 +47,8 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
     use_lower_case_user_id_ = value;
   }
 
+  int request_sign_out_count() const { return request_sign_out_count_; }
+
   // Helpers to set SessionController state.
   void SetCanLockScreen(bool can_lock);
   void SetShouldLockScreenAutomatically(bool should_lock);
@@ -100,6 +102,7 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
   mojom::SessionInfoPtr session_info_;
 
   bool use_lower_case_user_id_ = true;
+  int request_sign_out_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionControllerClient);
 };
