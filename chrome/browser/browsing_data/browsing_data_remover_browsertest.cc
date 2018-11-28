@@ -36,9 +36,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -48,9 +47,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -71,6 +68,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -530,20 +529,20 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
 class DiceBrowsingDataRemoverBrowserTest
     : public BrowsingDataRemoverBrowserTest {
  public:
-  void AddAccountToProfile(const std::string& account_id,
-                           Profile* profile,
-                           bool is_primary) {
-    ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-    token_service->UpdateCredentials(account_id, "token");
-    ASSERT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
+  AccountInfo AddAccountToProfile(const std::string& account_id,
+                                  Profile* profile,
+                                  bool is_primary) {
+    auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
     if (is_primary) {
-      SigninManager* signin_manager =
-          SigninManagerFactory::GetForProfile(profile);
-      DCHECK(!signin_manager->IsAuthenticated());
-      signin_manager->SetAuthenticatedAccountInfo(account_id,
-                                                  account_id + "@gmail.com");
+      DCHECK(!identity_manager->HasPrimaryAccount());
+      return identity::MakePrimaryAccountAvailable(identity_manager,
+                                                   account_id + "@gmail.com");
     }
+    auto account_info =
+        identity::MakeAccountAvailable(identity_manager, account_id);
+    DCHECK(
+        identity_manager->HasAccountWithRefreshToken(account_info.account_id));
+    return account_info;
   }
 
  private:
@@ -574,21 +573,27 @@ IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest, SyncToken) {
   ASSERT_TRUE(SetGaiaCookieForProfile(profile));
   // Set a Sync account and a secondary account.
   const char kPrimaryAccountId[] = "primary_account_id";
-  AddAccountToProfile(kPrimaryAccountId, profile, /*is_primary=*/true);
+  AccountInfo primary_account =
+      AddAccountToProfile(kPrimaryAccountId, profile, /*is_primary=*/true);
   const char kSecondaryAccountId[] = "secondary_account_id";
-  AddAccountToProfile(kSecondaryAccountId, profile, /*is_primary=*/false);
+  AccountInfo secondary_account =
+      AddAccountToProfile(kSecondaryAccountId, profile, /*is_primary=*/false);
   // Clear cookies.
   RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
   // Check that the Sync account was not removed and Sync was paused.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kPrimaryAccountId));
-  EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                CREDENTIALS_REJECTED_BY_CLIENT,
-            token_service->GetAuthError(kPrimaryAccountId)
-                .GetInvalidGaiaCredentialsReason());
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  EXPECT_TRUE(
+      identity_manager->HasAccountWithRefreshToken(primary_account.account_id));
+  EXPECT_EQ(
+      GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+          CREDENTIALS_REJECTED_BY_CLIENT,
+      identity_manager
+          ->GetErrorStateOfRefreshTokenForAccount(primary_account.account_id)
+          .GetInvalidGaiaCredentialsReason());
   // Check that the secondary token was revoked.
-  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(kSecondaryAccountId));
+  EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(
+      secondary_account.account_id));
 }
 
 // Test that Sync is not paused when cookies are cleared, if synced data is
@@ -600,9 +605,11 @@ IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest,
   ASSERT_TRUE(SetGaiaCookieForProfile(profile));
   // Set a Sync account and a secondary account.
   const char kPrimaryAccountId[] = "primary_account_id";
-  AddAccountToProfile(kPrimaryAccountId, profile, /*is_primary=*/true);
+  AccountInfo primary_account =
+      AddAccountToProfile(kPrimaryAccountId, profile, /*is_primary=*/true);
   const char kSecondaryAccountId[] = "secondary_account_id";
-  AddAccountToProfile(kSecondaryAccountId, profile, /*is_primary=*/false);
+  AccountInfo secondary_account =
+      AddAccountToProfile(kSecondaryAccountId, profile, /*is_primary=*/false);
   // Sync data is being deleted.
   std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion =
       AccountReconcilorFactory::GetForProfile(profile)
@@ -610,12 +617,15 @@ IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest,
   // Clear cookies.
   RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
   // Check that the Sync token was not revoked.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kPrimaryAccountId));
-  EXPECT_FALSE(token_service->RefreshTokenHasError(kPrimaryAccountId));
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  EXPECT_TRUE(
+      identity_manager->HasAccountWithRefreshToken(primary_account.account_id));
+  EXPECT_FALSE(
+      identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account.account_id));
   // Check that the secondary token was revoked.
-  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(kSecondaryAccountId));
+  EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(
+      secondary_account.account_id));
 }
 
 // Test that Sync is paused when cookies are cleared if Sync was in error, even
@@ -626,13 +636,15 @@ IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest, SyncTokenError) {
   ASSERT_TRUE(SetGaiaCookieForProfile(profile));
   // Set a Sync account with authentication error.
   const char kAccountId[] = "account_id";
-  AddAccountToProfile(kAccountId, profile, /*is_primary=*/true);
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  token_service->GetDelegate()->UpdateAuthError(
-      kAccountId, GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-                      GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                          CREDENTIALS_REJECTED_BY_SERVER));
+  AccountInfo primary_account =
+      AddAccountToProfile(kAccountId, profile, /*is_primary=*/true);
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  identity::SetAccountWithRefreshTokenInPersistentErrorState(
+      identity_manager, primary_account.account_id,
+      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_SERVER));
+
   // Sync data is being deleted.
   std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion =
       AccountReconcilorFactory::GetForProfile(profile)
@@ -640,11 +652,14 @@ IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest, SyncTokenError) {
   // Clear cookies.
   RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
   // Check that the account was not removed and Sync was paused.
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kAccountId));
-  EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                CREDENTIALS_REJECTED_BY_CLIENT,
-            token_service->GetAuthError(kAccountId)
-                .GetInvalidGaiaCredentialsReason());
+  EXPECT_TRUE(
+      identity_manager->HasAccountWithRefreshToken(primary_account.account_id));
+  EXPECT_EQ(
+      GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+          CREDENTIALS_REJECTED_BY_CLIENT,
+      identity_manager
+          ->GetErrorStateOfRefreshTokenForAccount(primary_account.account_id)
+          .GetInvalidGaiaCredentialsReason());
 }
 
 // Test that the tokens are revoked when cookies are cleared when there is no
@@ -655,13 +670,14 @@ IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest, NoSync) {
   ASSERT_TRUE(SetGaiaCookieForProfile(profile));
   // Set a non-Sync account.
   const char kAccountId[] = "account_id";
-  AddAccountToProfile(kAccountId, profile, /*is_primary=*/false);
+  AccountInfo secondary_account =
+      AddAccountToProfile(kAccountId, profile, /*is_primary=*/false);
   // Clear cookies.
   RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
   // Check that the account was removed.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(kAccountId));
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(
+      secondary_account.account_id));
 }
 #endif
 

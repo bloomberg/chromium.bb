@@ -11,6 +11,7 @@
 #include "components/signin/core/browser/account_info.h"
 
 class FakeGaiaCookieManagerService;
+class GoogleServiceAuthError;
 
 // Test-related utilities that don't fit in either IdentityTestEnvironment or
 // IdentityManager itself. NOTE: Using these utilities directly is discouraged,
@@ -126,6 +127,11 @@ void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                  AccountInfo account_info);
 
 std::string GetTestGaiaIdForEmail(const std::string& email);
+
+void SetAccountWithRefreshTokenInPersistentErrorState(
+    IdentityManager* identity_manager,
+    const std::string& account_id,
+    const GoogleServiceAuthError& auth_error);
 
 }  // namespace identity
 

@@ -353,4 +353,14 @@ std::string GetTestGaiaIdForEmail(const std::string& email) {
   return gaia_id;
 }
 
+void SetAccountWithRefreshTokenInPersistentErrorState(
+    IdentityManager* identity_manager,
+    const std::string& account_id,
+    const GoogleServiceAuthError& auth_error) {
+  identity_manager->GetTokenService()->GetDelegate()->UpdateAuthError(
+      account_id, GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                      GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                          CREDENTIALS_REJECTED_BY_SERVER));
+}
+
 }  // namespace identity
