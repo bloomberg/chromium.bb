@@ -420,11 +420,6 @@ class PLATFORM_EXPORT ThreadState final
   void SafePoint(BlinkGC::StackState);
 
   void RecordStackEnd(intptr_t* end_of_stack) { end_of_stack_ = end_of_stack; }
-#if HAS_FEATURE(safe_stack)
-  void RecordUnsafeStackEnd(intptr_t* end_of_unsafe_stack) {
-    end_of_unsafe_stack_ = end_of_unsafe_stack;
-  }
-#endif
 
   void PushRegistersAndVisitStack();
 
@@ -699,11 +694,6 @@ class PLATFORM_EXPORT ThreadState final
   std::unique_ptr<PersistentRegion> weak_persistent_region_;
   intptr_t* start_of_stack_;
   intptr_t* end_of_stack_;
-
-#if HAS_FEATURE(safe_stack)
-  intptr_t* start_of_unsafe_stack_;
-  intptr_t* end_of_unsafe_stack_;
-#endif
 
   bool sweep_forbidden_;
   size_t no_allocation_count_;
