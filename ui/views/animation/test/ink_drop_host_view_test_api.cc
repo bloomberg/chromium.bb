@@ -36,8 +36,8 @@ InkDrop* InkDropHostViewTestApi::GetInkDrop() {
   return host_view_->GetInkDrop();
 }
 
-bool InkDropHostViewTestApi::HasGestureHandler() const {
-  return host_view_->gesture_handler_ != nullptr;
+bool InkDropHostViewTestApi::HasInkdropEventHandler() const {
+  return host_view_->ink_drop_event_handler_ != nullptr;
 }
 
 gfx::Point InkDropHostViewTestApi::GetInkDropCenterBasedOnLastEvent() const {

@@ -351,11 +351,6 @@ bool Button::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void Button::OnGestureEvent(ui::GestureEvent* event) {
-  if (state_ == STATE_DISABLED) {
-    InkDropHostView::OnGestureEvent(event);
-    return;
-  }
-
   if (event->type() == ui::ET_GESTURE_TAP && IsTriggerableEvent(*event)) {
     // Set the button state to hot and start the animation fully faded in. The
     // GESTURE_END event issued immediately after will set the state to
@@ -374,8 +369,6 @@ void Button::OnGestureEvent(ui::GestureEvent* event) {
              event->type() == ui::ET_GESTURE_END) {
     SetState(STATE_NORMAL);
   }
-  if (!event->handled())
-    InkDropHostView::OnGestureEvent(event);
 }
 
 bool Button::AcceleratorPressed(const ui::Accelerator& accelerator) {
