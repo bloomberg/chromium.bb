@@ -379,7 +379,7 @@ class StorageTest(TestCase):
       channel = threading_utils.TaskChannel()
       storage._async_push(channel, item, self.get_push_state(storage, item))
       # Wait for push to finish.
-      pushed_item = channel.pull()
+      pushed_item = channel.next()
       self.assertEqual(item, pushed_item)
       # StorageApi.push was called with correct arguments.
       self.assertEqual(
@@ -404,7 +404,7 @@ class StorageTest(TestCase):
       channel = threading_utils.TaskChannel()
       storage._async_push(channel, item, self.get_push_state(storage, item))
       with self.assertRaises(FakeException):
-        channel.pull()
+        channel.next()
       # StorageApi's push should never complete when data can not be read.
       self.assertEqual(0, len(storage_api.push_calls))
 
@@ -431,7 +431,7 @@ class StorageTest(TestCase):
         channel = threading_utils.TaskChannel()
         storage._async_push(channel, item, self.get_push_state(storage, item))
         with self.assertRaises(IOError):
-          channel.pull()
+          channel.next()
         # First initial attempt + all retries.
         attempts = 1 + storage.net_thread_pool.RETRIES
         # Single push attempt call arguments.

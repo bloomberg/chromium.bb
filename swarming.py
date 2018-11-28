@@ -652,7 +652,7 @@ def yield_results(
       while active_task_count:
         shard_index, result = None, None
         try:
-          shard_index, result = results_channel.pull(
+          shard_index, result = results_channel.next(
               timeout=STATUS_UPDATE_INTERVAL)
         except threading_utils.TaskChannel.Timeout:
           if print_status_updates:

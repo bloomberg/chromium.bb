@@ -530,14 +530,14 @@ class Storage(object):
           pending_contains += 1
           while pending_contains and not self._aborted:
             try:
-              v = channel.pull(timeout=0)
+              v = channel.next(timeout=0)
             except threading_utils.TaskChannel.Timeout:
               break
             pending_contains -= 1
             for missing_item, push_state in v.iteritems():
               missing.put((missing_item, push_state))
         while pending_contains and not self._aborted:
-          for missing_item, push_state in channel.pull().iteritems():
+          for missing_item, push_state in channel.next().iteritems():
             missing.put((missing_item, push_state))
           pending_contains -= 1
       finally:
@@ -565,7 +565,7 @@ class Storage(object):
           detector.ping()
           while not self._aborted and pending_upload:
             try:
-              item = channel.pull(timeout=0)
+              item = channel.next(timeout=0)
             except threading_utils.TaskChannel.Timeout:
               break
             uploaded.append(item)
@@ -574,7 +574,7 @@ class Storage(object):
                 'Uploaded %d; %d pending: %s (%d)',
                 len(uploaded), pending_upload, item.digest, item.size)
         while not self._aborted and pending_upload:
-          item = channel.pull()
+          item = channel.next()
           uploaded.append(item)
           pending_upload -= 1
           logging.debug(
@@ -688,7 +688,7 @@ class Storage(object):
     channel = threading_utils.TaskChannel()
     with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT):
       self._async_push(channel, item, push_state)
-      pushed = channel.pull()
+      pushed = channel.next()
       assert pushed is item
     return item
 
@@ -807,7 +807,7 @@ class FetchQueue(object):
 
     # Wait for one waited-on item to be fetched.
     while self._pending:
-      digest = self._channel.pull()
+      digest = self._channel.next()
       self._pending.remove(digest)
       self._fetched.add(digest)
       if digest in self._waiting_on:
@@ -1443,7 +1443,7 @@ def CMDdownload(parser, args):
             functools.partial(
                 local_caching.file_write, os.path.join(options.target, dest)))
       while pending:
-        fetched = channel.pull()
+        fetched = channel.next()
         dest = pending.pop(fetched)
         logging.info('%s: %s', fetched, dest)
 
