@@ -2061,7 +2061,7 @@ TEST_F(SplitViewTabDraggingTest, DividerIsBelowDraggedWindow) {
   resizer->Drag(gfx::Point(), 0);
   EXPECT_FALSE(split_divider_widget->IsAlwaysOnTop());
 
-  resizer->CompleteDrag();
+  CompleteDrag(std::move(resizer));
   EXPECT_TRUE(split_divider_widget->IsAlwaysOnTop());
 }
 
@@ -3384,6 +3384,51 @@ TEST_F(SplitViewTabDraggingTest, PressOverviewKeyDuringDrag) {
                    ->IsWindowInOverview(dragged_window.get()));
   EXPECT_TRUE(wm::GetWindowState(dragged_window.get())->is_dragged());
   resizer->CompleteDrag();
+}
+
+// Tests that if the dragged window is activated after the drag ends, but before
+// the dragged window gets snapped, the divider bar is placed correctly above
+// the snapped windows.
+TEST_F(SplitViewTabDraggingTest, DragActiveWindow) {
+  UpdateDisplay("600x600");
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  std::unique_ptr<aura::Window> window2(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  std::unique_ptr<aura::Window> window3(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  ToggleOverview();
+  EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+
+  std::unique_ptr<aura::Window> dragged_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(dragged_window.get(), window1.get());
+
+  // Drag window to the other side of the split screen.
+  DragWindowTo(resizer.get(), gfx::Point(400, 600));
+  resizer->CompleteDrag();
+
+  // To simulate what might happen in real situation, we activate the dragged
+  // window first before clearing the window's tab dragging properties.
+  wm::ActivateWindow(dragged_window.get());
+  SetIsInTabDragging(resizer->GetTarget(), /*is_dragging=*/false);
+
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
 }
 
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
