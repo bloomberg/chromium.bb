@@ -4415,10 +4415,6 @@ crbug.com/820334 external/wpt/fetch/api/request/request-cache-default-conditiona
 crbug.com/820334 virtual/outofblink-cors/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 crbug.com/820334 virtual/outofblink-cors-ns/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 
-crbug.com/765116 external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
-crbug.com/765116 virtual/outofblink-cors/external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
-crbug.com/765116 virtual/outofblink-cors-ns/external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
-
 # Link highlights currently paint under ancestor affects but this is being
 # changed with BlinkGenPropertyTrees. Until that launches, this test will fail.
 crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Failure ]

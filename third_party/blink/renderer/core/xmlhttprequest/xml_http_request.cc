@@ -390,8 +390,12 @@ Document* XMLHttpRequest::responseXML(ExceptionState& exception_state) {
       return nullptr;
 
     response_document_->SetContent(response_text_.Flatten(isolate_));
-    if (!response_document_->WellFormed())
+    if (!response_document_->WellFormed()) {
       response_document_ = nullptr;
+    } else {
+      response_document_->OverrideLastModified(
+          response_.HttpHeaderField(http_names::kLastModified));
+    }
 
     parsed_response_ = true;
   }

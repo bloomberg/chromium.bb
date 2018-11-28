@@ -947,6 +947,9 @@ class CORE_EXPORT Document : public ContainerNode,
   String domain() const;
   void setDomain(const String& new_domain, ExceptionState&);
 
+  void OverrideLastModified(const AtomicString& modified) {
+    override_last_modified_ = modified;
+  }
   String lastModified() const;
 
   // The cookieURL is used to query the cookie database for this document's
@@ -1947,6 +1950,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // Tracks which feature policies have already been parsed, so as not to count
   // them multiple times.
   BitVector parsed_feature_policies_;
+
+  AtomicString override_last_modified_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

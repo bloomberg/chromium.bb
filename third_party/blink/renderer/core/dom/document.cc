@@ -5502,19 +5502,18 @@ void Document::setDomain(const String& raw_domain,
 String Document::lastModified() const {
   DateComponents date;
   bool found_date = false;
-  if (frame_) {
+  AtomicString http_last_modified = override_last_modified_;
+  if (http_last_modified.IsEmpty() && frame_) {
     if (DocumentLoader* document_loader = Loader()) {
-      const AtomicString& http_last_modified =
-          document_loader->GetResponse().HttpHeaderField(
-              http_names::kLastModified);
-      if (!http_last_modified.IsEmpty()) {
-        double date_value = ParseDate(http_last_modified);
-        if (!std::isnan(date_value)) {
-          date.SetMillisecondsSinceEpochForDateTime(
-              ConvertToLocalTime(date_value));
-          found_date = true;
-        }
-      }
+      http_last_modified = document_loader->GetResponse().HttpHeaderField(
+          http_names::kLastModified);
+    }
+  }
+  if (!http_last_modified.IsEmpty()) {
+    double date_value = ParseDate(http_last_modified);
+    if (!std::isnan(date_value)) {
+      date.SetMillisecondsSinceEpochForDateTime(ConvertToLocalTime(date_value));
+      found_date = true;
     }
   }
   // FIXME: If this document came from the file system, the HTML5
