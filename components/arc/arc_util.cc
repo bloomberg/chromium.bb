@@ -4,6 +4,7 @@
 
 #include "components/arc/arc_util.h"
 
+#include <algorithm>
 #include <string>
 
 #include "ash/public/cpp/app_types.h"
