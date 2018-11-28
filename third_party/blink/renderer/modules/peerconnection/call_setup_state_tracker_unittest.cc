@@ -57,26 +57,11 @@ class CallSetupStateTrackerTest : public testing::Test {
   template <typename StateType>
   StateType current_state() const;
 
-  template <>
-  OffererState current_state() const {
-    return tracker_.offerer_state();
-  }
-
-  template <>
-  AnswererState current_state() const {
-    return tracker_.answerer_state();
-  }
-
-  template <typename StateType>
-  bool NoteStateEvent(CallSetupStateTracker* tracker, StateType event) const;
-
-  template <>
   bool NoteStateEvent(CallSetupStateTracker* tracker,
                       OffererState event) const {
     return tracker->NoteOffererStateEvent(event);
   }
 
-  template <>
   bool NoteStateEvent(CallSetupStateTracker* tracker,
                       AnswererState event) const {
     return tracker->NoteAnswererStateEvent(event);
@@ -94,7 +79,7 @@ class CallSetupStateTrackerTest : public testing::Test {
       } else {
         // Perform the test on a copy to avoid mutating |tracker_|.
         CallSetupStateTracker tracker_copy = tracker_;
-        did_reach_state = NoteStateEvent<StateType>(&tracker_copy, state);
+        did_reach_state = NoteStateEvent(&tracker_copy, state);
       }
       if (did_reach_state != expected_state_reached)
         return false;
@@ -123,6 +108,19 @@ class CallSetupStateTrackerTest : public testing::Test {
  protected:
   CallSetupStateTracker tracker_;
 };
+
+// The following two template specializations can be moved to the class
+// declaration once we officially switch to C++17 (we need C++ DR727 to be
+// implemented).
+template <>
+OffererState CallSetupStateTrackerTest::current_state() const {
+  return tracker_.offerer_state();
+}
+
+template <>
+AnswererState CallSetupStateTrackerTest::current_state() const {
+  return tracker_.answerer_state();
+}
 
 TEST_F(CallSetupStateTrackerTest, InitialState) {
   EXPECT_EQ(OffererState::kNotStarted, tracker_.offerer_state());
