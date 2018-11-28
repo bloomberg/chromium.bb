@@ -495,15 +495,26 @@ TEST_P(QuicChromiumClientSessionTest, CancelStreamRequestBeforeRelease) {
 
 TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
   MockQuicData quic_data;
+
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRstPacket(
                                       2, true, GetNthClientInitiatedStreamId(0),
                                       quic::QUIC_RST_ACKNOWLEDGEMENT));
+  if (version_ == quic::QUIC_VERSION_99) {
+    // The open stream limit is set to 50 by
+    // MockCryptoClientStream::SetConfigNegotiated() so when the 51st stream is
+    // requested, a STREAM_ID_BLOCKED will be sent.
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeStreamIdBlockedPacket(3, true, 102));
+    // After the STREAM_ID_BLOCKED is sent, receive a MAX_STREAM_ID to increase
+    // the limit.
+    quic_data.AddRead(ASYNC,
+                      server_maker_.MakeMaxStreamIdPacket(1, true, 102 + 2));
+  }
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
   quic_data.AddSocketDataToFactory(&socket_factory_);
-
   Initialize();
   CompleteCryptoHandshake();
 
@@ -529,6 +540,10 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
                                GetNthClientInitiatedStreamId(0),
                                quic::QUIC_STREAM_CANCELLED, 0);
   session_->OnRstStream(rst);
+
+  // Pump the message loop to read the max stream id packet.
+  base::RunLoop().RunUntilIdle();
+
   ASSERT_TRUE(callback.have_result());
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle->ReleaseStream() != nullptr);
@@ -595,6 +610,13 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRstPacket(
                                       2, true, GetNthClientInitiatedStreamId(0),
                                       quic::QUIC_RST_ACKNOWLEDGEMENT));
+  if (version_ == quic::QUIC_VERSION_99) {
+    // The open stream limit is set to 50 by
+    // MockCryptoClientStream::SetConfigNegotiated() so when the 51st stream is
+    // requested, a STREAM_ID_BLOCKED will be sent.
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeStreamIdBlockedPacket(3, true, 102));
+  }
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -737,16 +759,23 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseWithPendingStreamRequest) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<quic::QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  std::unique_ptr<quic::QuicEncryptedPacket> client_rst(
-      client_maker_.MakeRstPacket(2, true, GetNthClientInitiatedStreamId(0),
-                                  quic::QUIC_RST_ACKNOWLEDGEMENT));
-  MockWrite writes[] = {
-      MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
-      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
-  socket_data_.reset(new SequencedSocketData(reads, writes));
+  MockQuicData quic_data;
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRstPacket(
+                                      2, true, GetNthClientInitiatedStreamId(0),
+                                      quic::QUIC_RST_ACKNOWLEDGEMENT));
+  if (version_ == quic::QUIC_VERSION_99) {
+    // stream id blocked, stream id blocked on is #102, which is
+    // the 51st stream id...
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeStreamIdBlockedPacket(3, true, 102));
+    quic_data.AddRead(ASYNC,
+                      server_maker_.MakeMaxStreamIdPacket(1, true, 102 + 2));
+  }
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
 
   Initialize();
   CompleteCryptoHandshake();
@@ -774,6 +803,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
                                 quic::QUIC_STREAM_NO_ERROR, 0);
   session_->OnRstStream(rst1);
   EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumOpenOutgoingStreams());
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
       QuicChromiumClientSessionPeer::CreateOutgoingStream(session_.get()));
 }
@@ -1045,16 +1075,21 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<quic::QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  std::unique_ptr<quic::QuicEncryptedPacket> client_rst(
-      client_maker_.MakeRstPacket(2, true, GetNthClientInitiatedStreamId(0),
-                                  quic::QUIC_RST_ACKNOWLEDGEMENT));
-  MockWrite writes[] = {
-      MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
-      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
-  socket_data_.reset(new SequencedSocketData(reads, writes));
+  MockQuicData quic_data;
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRstPacket(
+                                      2, true, GetNthClientInitiatedStreamId(0),
+                                      quic::QUIC_RST_ACKNOWLEDGEMENT));
+  if (version_ == quic::QUIC_VERSION_99) {
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeStreamIdBlockedPacket(3, true, 102));
+    quic_data.AddRead(ASYNC,
+                      server_maker_.MakeMaxStreamIdPacket(1, true, 102 + 2));
+  }
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
 
   Initialize();
   CompleteCryptoHandshake();
@@ -1082,6 +1117,8 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   quic::QuicRstStreamFrame rst1(quic::kInvalidControlFrameId, stream_id,
                                 quic::QUIC_STREAM_NO_ERROR, 0);
   session_->OnRstStream(rst1);
+  // Pump data, bringing in the max-stream-id
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback.have_result());
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle->ReleaseStream() != nullptr);

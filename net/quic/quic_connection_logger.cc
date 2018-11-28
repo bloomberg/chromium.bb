@@ -391,6 +391,28 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
       break;
     case quic::MTU_DISCOVERY_FRAME:
       break;
+    case quic::APPLICATION_CLOSE_FRAME:
+      break;
+    case quic::NEW_CONNECTION_ID_FRAME:
+      break;
+    case quic::MAX_STREAM_ID_FRAME:
+      break;
+    case quic::STREAM_ID_BLOCKED_FRAME:
+      break;
+    case quic::PATH_RESPONSE_FRAME:
+      break;
+    case quic::PATH_CHALLENGE_FRAME:
+      break;
+    case quic::STOP_SENDING_FRAME:
+      break;
+    case quic::MESSAGE_FRAME:
+      break;
+    case quic::CRYPTO_FRAME:
+      break;
+    case quic::NEW_TOKEN_FRAME:
+      break;
+    case quic::RETIRE_CONNECTION_ID_FRAME:
+      break;
     default:
       DCHECK(false) << "Illegal frame type: " << frame.type;
   }
@@ -454,6 +476,28 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
     case quic::MTU_DISCOVERY_FRAME:
       // MtuDiscoveryFrame is PingFrame on wire, it does not have any payload.
       net_log_.AddEvent(NetLogEventType::QUIC_SESSION_MTU_DISCOVERY_FRAME_SENT);
+      break;
+    case quic::APPLICATION_CLOSE_FRAME:
+      break;
+    case quic::NEW_CONNECTION_ID_FRAME:
+      break;
+    case quic::MAX_STREAM_ID_FRAME:
+      break;
+    case quic::STREAM_ID_BLOCKED_FRAME:
+      break;
+    case quic::PATH_RESPONSE_FRAME:
+      break;
+    case quic::PATH_CHALLENGE_FRAME:
+      break;
+    case quic::STOP_SENDING_FRAME:
+      break;
+    case quic::MESSAGE_FRAME:
+      break;
+    case quic::CRYPTO_FRAME:
+      break;
+    case quic::NEW_TOKEN_FRAME:
+      break;
+    case quic::RETIRE_CONNECTION_ID_FRAME:
       break;
     default:
       DCHECK(false) << "Illegal frame type: " << frame.type;

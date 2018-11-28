@@ -20,7 +20,10 @@ typedef uint16_t QuicPacketLength;
 typedef uint32_t QuicControlFrameId;
 typedef uint32_t QuicHeaderId;
 typedef uint32_t QuicMessageId;
+
+// TODO(fkastenholz): Should update this to 64 bits for V99.
 typedef uint32_t QuicStreamId;
+
 typedef uint64_t QuicByteCount;
 typedef uint64_t QuicConnectionId;
 typedef uint64_t QuicPacketCount;

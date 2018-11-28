@@ -1417,7 +1417,6 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
       set_detailed_error("Unable to read packet number.");
       return RaiseError(QUIC_INVALID_PACKET_HEADER);
     }
-
     if (header->packet_number == 0u) {
       if (IsIetfStatelessResetPacket(*header)) {
         // This is a stateless reset packet.
@@ -2410,6 +2409,7 @@ bool QuicFramer::ProcessIetfFrameData(QuicDataReader* reader,
           if (!ProcessMaxStreamIdFrame(reader, &frame)) {
             return RaiseError(QUIC_MAX_STREAM_ID_DATA);
           }
+          QUIC_CODE_COUNT_N(max_stream_id_received, 1, 2);
           if (!visitor_->OnMaxStreamIdFrame(frame)) {
             QUIC_DVLOG(1) << "Visitor asked to stop further processing.";
             // Returning true since there was no parsing error.
@@ -2456,6 +2456,7 @@ bool QuicFramer::ProcessIetfFrameData(QuicDataReader* reader,
           if (!ProcessStreamIdBlockedFrame(reader, &frame)) {
             return RaiseError(QUIC_STREAM_ID_BLOCKED_DATA);
           }
+          QUIC_CODE_COUNT_N(stream_id_blocked_received, 1, 2);
           if (!visitor_->OnStreamIdBlockedFrame(frame)) {
             QUIC_DVLOG(1) << "Visitor asked to stop further processing.";
             // Returning true since there was no parsing error.

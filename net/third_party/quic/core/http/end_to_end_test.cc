@@ -46,6 +46,7 @@
 #include "net/third_party/quic/test_tools/quic_server_peer.h"
 #include "net/third_party/quic/test_tools/quic_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
+#include "net/third_party/quic/test_tools/quic_stream_id_manager_peer.h"
 #include "net/third_party/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_stream_sequencer_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_client.h"
@@ -1413,6 +1414,8 @@ TEST_P(EndToEndTestWithTls, MaxIncomingDynamicStreamsLimitRespected) {
       kServerMaxIncomingDynamicStreams);
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  QuicConnection* client_connection =
+      client_->client()->client_session()->connection();
 
   // Make the client misbehave after negotiation.
   const int kServerMaxStreams = kMaxStreamsMinimumIncrement + 1;
@@ -1432,10 +1435,16 @@ TEST_P(EndToEndTestWithTls, MaxIncomingDynamicStreamsLimitRespected) {
     client_->SendMessage(headers, "", /*fin=*/false);
   }
   client_->WaitForResponse();
-
-  EXPECT_TRUE(client_->connected());
-  EXPECT_EQ(QUIC_REFUSED_STREAM, client_->stream_error());
-  EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
+  if (client_connection->transport_version() != QUIC_VERSION_99) {
+    EXPECT_TRUE(client_->connected());
+    EXPECT_EQ(QUIC_REFUSED_STREAM, client_->stream_error());
+    EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
+  } else {
+    // Version 99 disconnects the connection if we exceed the stream limit.
+    EXPECT_FALSE(client_->connected());
+    EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
+    EXPECT_EQ(QUIC_INVALID_STREAM_ID, client_->connection_error());
+  }
 }
 
 TEST_P(EndToEndTest, SetIndependentMaxIncomingDynamicStreamsLimits) {

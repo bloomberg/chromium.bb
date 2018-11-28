@@ -224,6 +224,10 @@ const QuicPacketNumber kInvalidPacketNumber = 0;
 QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd;
 QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd0;
 
+// Maximum Stream ID value that the implementation supports
+// TODO(fkastenholz): Should update this to 64 bits for IETF Quic.
+const QuicStreamId kMaximumStreamIdSupported = 0xffffffff;
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CONSTANTS_H_

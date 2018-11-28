@@ -58,6 +58,7 @@ class QuicSessionPeer {
   static QuicStream* GetStream(QuicSession* session, QuicStreamId id);
   static bool IsStreamWriteBlocked(QuicSession* session, QuicStreamId id);
   static QuicAlarm* GetCleanUpClosedStreamsAlarm(QuicSession* session);
+  static QuicStreamIdManager* v99_streamid_manager(QuicSession* session);
 };
 
 }  // namespace test

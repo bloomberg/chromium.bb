@@ -107,6 +107,12 @@ class QuicEndpoint : public Endpoint,
   void SendPing() override {}
   bool AllowSelfAddressChange() const override;
   void OnForwardProgressConfirmed() override {}
+  bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override {
+    return true;
+  };
+  bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override {
+    return true;
+  };
   // End QuicConnectionVisitorInterface implementation.
 
   // Begin SessionNotifierInterface methods:

@@ -1336,9 +1336,9 @@ void QuicChromiumClientSession::SendRstStream(
 }
 
 void QuicChromiumClientSession::OnCanCreateNewOutgoingStream() {
-  if (GetNumOpenOutgoingStreams() < max_open_outgoing_streams() &&
-      !stream_requests_.empty() && crypto_stream_->encryption_established() &&
-      !goaway_received() && !going_away_ && connection()->connected()) {
+  if (CanOpenNextOutgoingStream() && !stream_requests_.empty() &&
+      crypto_stream_->encryption_established() && !goaway_received() &&
+      !going_away_ && connection()->connected()) {
     StreamRequest* request = stream_requests_.front();
     // TODO(ckrasic) - analyze data and then add logic to mark QUIC
     // broken if wait times are excessive.

@@ -62,6 +62,9 @@ QuicSession::QuicSession(QuicConnection* connection,
               ? QuicUtils::GetCryptoStreamId(connection_->transport_version())
               : QuicUtils::GetInvalidStreamId(
                     connection_->transport_version())),
+      v99_streamid_manager_(this,
+                            max_open_outgoing_streams_,
+                            max_open_incoming_streams_),
       num_dynamic_incoming_streams_(0),
       num_draining_incoming_streams_(0),
       num_locally_closed_incoming_streams_highest_offset_(0),
@@ -135,6 +138,9 @@ void QuicSession::RegisterStaticStream(QuicStreamId id, QuicStream* stream) {
         << " vs: " << largest_static_stream_id_;
     largest_static_stream_id_ = std::max(id, largest_static_stream_id_);
   }
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    v99_streamid_manager_.RegisterStaticStream(id);
+  }
 }
 
 void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
@@ -195,7 +201,6 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
     HandleRstOnValidNonexistentStream(frame);
     return;  // Errors are handled by GetOrCreateStream.
   }
-
   stream->OnStreamReset(frame);
 }
 
@@ -528,6 +533,14 @@ void QuicSession::SendWindowUpdate(QuicStreamId id,
   control_frame_manager_.WriteOrBufferWindowUpdate(id, byte_offset);
 }
 
+void QuicSession::SendMaxStreamId(QuicStreamId max_allowed_incoming_id) {
+  control_frame_manager_.WriteOrBufferMaxStreamId(max_allowed_incoming_id);
+}
+
+void QuicSession::SendStreamIdBlocked(QuicStreamId max_allowed_outgoing_id) {
+  control_frame_manager_.WriteOrBufferStreamIdBlocked(max_allowed_outgoing_id);
+}
+
 void QuicSession::CloseStream(QuicStreamId stream_id) {
   CloseStreamInner(stream_id, false);
 }
@@ -586,13 +599,19 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
     --num_dynamic_incoming_streams_;
   }
 
-  bool stream_was_draining = false;
-  if (draining_streams_.find(stream_id) != draining_streams_.end()) {
+  const bool stream_was_draining =
+      draining_streams_.find(stream_id) != draining_streams_.end();
+  if (stream_was_draining) {
     if (IsIncomingStream(stream_id)) {
       --num_draining_incoming_streams_;
     }
-    stream_was_draining = true;
     draining_streams_.erase(stream_id);
+  } else if (connection_->transport_version() == QUIC_VERSION_99) {
+    // Stream was not draining, but we did have a fin or rst, so we can now
+    // free the stream ID if version 99.
+    if (had_fin_or_rst) {
+      v99_streamid_manager_.OnStreamClosed(stream_id);
+    }
   }
 
   stream->OnClose();
@@ -633,6 +652,9 @@ void QuicSession::OnFinalByteOffsetReceived(
   locally_closed_streams_highest_offset_.erase(it);
   if (IsIncomingStream(stream_id)) {
     --num_locally_closed_incoming_streams_highest_offset_;
+    if (connection_->transport_version() == QUIC_VERSION_99) {
+      v99_streamid_manager_.OnStreamClosed(stream_id);
+    }
   } else {
     OnCanCreateNewOutgoingStream();
   }
@@ -689,6 +711,10 @@ void QuicSession::OnConfigNegotiated() {
   // whichever is larger.
   uint32_t max_incoming_streams_to_send =
       config_.GetMaxIncomingDynamicStreamsToSend();
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    v99_streamid_manager_.SetMaxOpenIncomingStreams(
+        max_incoming_streams_to_send);
+  }
   uint32_t max_incoming_streams =
       std::max(max_incoming_streams_to_send + kMaxStreamsMinimumIncrement,
                static_cast<uint32_t>(max_incoming_streams_to_send *
@@ -862,17 +888,24 @@ void QuicSession::ActivateStream(std::unique_ptr<QuicStream> stream) {
   if (IsIncomingStream(stream_id)) {
     ++num_dynamic_incoming_streams_;
   }
+
   // Increase the number of streams being emulated when a new one is opened.
   connection_->SetNumOpenStreams(dynamic_stream_map_.size());
 }
 
 QuicStreamId QuicSession::GetNextOutgoingStreamId() {
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    return v99_streamid_manager_.GetNextOutgoingStreamId();
+  }
   QuicStreamId id = next_outgoing_stream_id_;
   next_outgoing_stream_id_ += 2;
   return id;
 }
 
 bool QuicSession::CanOpenNextOutgoingStream() {
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    return v99_streamid_manager_.CanOpenNextOutgoingStream();
+  }
   if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
     QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
                     << "Already " << GetNumOpenOutgoingStreams() << " open.";
@@ -896,6 +929,9 @@ void QuicSession::StreamDraining(QuicStreamId stream_id) {
     if (IsIncomingStream(stream_id)) {
       ++num_draining_incoming_streams_;
     }
+    if (connection_->transport_version() == QUIC_VERSION_99) {
+      v99_streamid_manager_.OnStreamClosed(stream_id);
+    }
   }
   if (!IsIncomingStream(stream_id)) {
     // Inform application that a stream is available.
@@ -918,7 +954,8 @@ bool QuicSession::MaybeIncreaseLargestPeerStreamId(
       (stream_id - largest_peer_created_stream_id_) / 2 - 1;
   size_t new_num_available_streams =
       GetNumAvailableStreams() + additional_available_streams;
-  if (new_num_available_streams > MaxAvailableStreams()) {
+  if (new_num_available_streams > MaxAvailableStreams() &&
+      connection_->transport_version() != QUIC_VERSION_99) {
     QUIC_DLOG(INFO) << ENDPOINT
                     << "Failed to create a new incoming stream with id:"
                     << stream_id << ".  There are already "
@@ -972,6 +1009,13 @@ QuicStream* QuicSession::GetOrCreateDynamicStream(
   if (!MaybeIncreaseLargestPeerStreamId(stream_id)) {
     return nullptr;
   }
+
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    if (!v99_streamid_manager_.OnIncomingStreamOpened(stream_id)) {
+      return nullptr;
+    }
+    return CreateIncomingStream(stream_id);
+  }
   // Check if the new number of open streams would cause the number of
   // open streams to exceed the limit.
   if (GetNumOpenIncomingStreams() >= max_open_incoming_streams()) {
@@ -986,7 +1030,8 @@ QuicStream* QuicSession::GetOrCreateDynamicStream(
 void QuicSession::set_max_open_incoming_streams(
     size_t max_open_incoming_streams) {
   QUIC_DVLOG(1) << "Setting max_open_incoming_streams_ to "
-                << max_open_incoming_streams;
+                << max_open_incoming_streams << ", was "
+                << max_open_incoming_streams_;
   max_open_incoming_streams_ = max_open_incoming_streams;
   QUIC_DVLOG(1) << "MaxAvailableStreams() became " << MaxAvailableStreams();
 }
@@ -996,6 +1041,9 @@ void QuicSession::set_max_open_outgoing_streams(
   QUIC_DVLOG(1) << "Setting max_open_outgoing_streams_ to "
                 << max_open_outgoing_streams;
   max_open_outgoing_streams_ = max_open_outgoing_streams;
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    v99_streamid_manager_.SetMaxOpenOutgoingStreams(max_open_outgoing_streams);
+  }
 }
 
 bool QuicSession::IsClosedStream(QuicStreamId id) {
@@ -1424,6 +1472,15 @@ void QuicSession::SendStopSending(uint16_t code, QuicStreamId stream_id) {
 }
 
 void QuicSession::OnCanCreateNewOutgoingStream() {}
+
+bool QuicSession::OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) {
+  return v99_streamid_manager_.OnMaxStreamIdFrame(frame);
+}
+
+bool QuicSession::OnStreamIdBlockedFrame(
+    const QuicStreamIdBlockedFrame& frame) {
+  return v99_streamid_manager_.OnStreamIdBlockedFrame(frame);
+}
 
 #undef ENDPOINT  // undef for jumbo builds
 }  // namespace quic

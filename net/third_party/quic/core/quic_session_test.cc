@@ -148,8 +148,12 @@ class TestSession : public QuicSession {
   }
 
   TestStream* CreateOutgoingBidirectionalStream() {
-    TestStream* stream =
-        new TestStream(GetNextOutgoingStreamId(), this, BIDIRECTIONAL);
+    QuicStreamId id = GetNextOutgoingStreamId();
+    if (id ==
+        QuicUtils::GetInvalidStreamId(connection()->transport_version())) {
+      return nullptr;
+    }
+    TestStream* stream = new TestStream(id, this, BIDIRECTIONAL);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
   }
@@ -163,7 +167,10 @@ class TestSession : public QuicSession {
 
   TestStream* CreateIncomingStream(QuicStreamId id) override {
     // Enforce the limit on the number of open streams.
-    if (GetNumOpenIncomingStreams() + 1 > max_open_incoming_streams()) {
+    if (GetNumOpenIncomingStreams() + 1 > max_open_incoming_streams() &&
+        connection()->transport_version() != QUIC_VERSION_99) {
+      // No need to do this test for version 99; it's done by
+      // QuicSession::GetOrCreateDynamicStream.
       connection()->CloseConnection(
           QUIC_TOO_MANY_OPEN_STREAMS, "Too many streams!",
           ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
@@ -228,6 +235,14 @@ class TestSession : public QuicSession {
     return true;
   }
 
+  bool SaveFrame(const QuicFrame& frame) {
+    save_frame_ = frame;
+    DeleteFrame(&const_cast<QuicFrame&>(frame));
+    return true;
+  }
+
+  const QuicFrame& save_frame() { return save_frame_; }
+
   QuicConsumedData SendLargeFakeData(QuicStream* stream, int bytes) {
     DCHECK(writev_consumes_all_data_);
     return WritevData(stream, stream->id(), bytes, 0, FIN);
@@ -243,6 +258,7 @@ class TestSession : public QuicSession {
   StrictMock<TestCryptoStream> crypto_stream_;
 
   bool writev_consumes_all_data_;
+  QuicFrame save_frame_;
 };
 
 class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
@@ -423,8 +439,15 @@ TEST_P(QuicSessionTestServer, TooManyAvailableStreams) {
   EXPECT_NE(nullptr, session_.GetOrCreateDynamicStream(stream_id1));
   // A stream ID which is too large to create.
   stream_id2 = GetNthClientInitiatedId(2 * session_.MaxAvailableStreams() + 4);
-  EXPECT_CALL(*connection_,
-              CloseConnection(QUIC_TOO_MANY_AVAILABLE_STREAMS, _, _));
+  if (transport_version() == QUIC_VERSION_99) {
+    // V99 terminates the connection with invalid stream id
+    EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID, _, _));
+  } else {
+    // other versions terminate the connection with
+    // QUIC_TOO_MANY_AVAILABLE_STREAMS.
+    EXPECT_CALL(*connection_,
+                CloseConnection(QUIC_TOO_MANY_AVAILABLE_STREAMS, _, _));
+  }
   EXPECT_EQ(nullptr, session_.GetOrCreateDynamicStream(stream_id2));
 }
 
@@ -434,10 +457,13 @@ TEST_P(QuicSessionTestServer, ManyAvailableStreams) {
   QuicSessionPeer::SetMaxOpenIncomingStreams(&session_, 200);
   QuicStreamId stream_id = GetNthClientInitiatedId(0);
   // Create one stream.
-  session_.GetOrCreateDynamicStream(stream_id);
+  EXPECT_NE(nullptr, session_.GetOrCreateDynamicStream(stream_id));
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
+
   // Create the largest stream ID of a threatened total of 200 streams.
-  session_.GetOrCreateDynamicStream(stream_id + 2 * (200 - 1));
+  // GetNth... starts at 0, so for 200 streams, get the 199th.
+  EXPECT_NE(nullptr,
+            session_.GetOrCreateDynamicStream(GetNthClientInitiatedId(199)));
 }
 
 TEST_P(QuicSessionTestServer, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
@@ -1205,7 +1231,8 @@ TEST_P(QuicSessionTestServer, FlowControlWithInvalidFinalOffset) {
 
 TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseServerRejectStream) {
   // If a buggy/malicious peer creates too many streams that are not ended
-  // with a FIN or RST then we send an RST to refuse streams.
+  // with a FIN or RST then we send an RST to refuse streams. For V99 the
+  // connection is closed.
   const QuicStreamId kMaxStreams = 5;
   QuicSessionPeer::SetMaxOpenIncomingStreams(&session_, kMaxStreams);
   const QuicStreamId kFirstStreamId = GetNthClientInitiatedId(0);
@@ -1218,13 +1245,21 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseServerRejectStream) {
     // EXPECT_EQ(1u, session_.GetNumOpenStreams());
     EXPECT_CALL(*connection_, SendControlFrame(_))
         .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+    // Close stream. Should not make new streams available since
+    // the stream is not finished.
     EXPECT_CALL(*connection_, OnStreamReset(i, _));
     session_.CloseStream(i);
   }
 
-  EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
-  EXPECT_CALL(*connection_, OnStreamReset(kFinalStreamId, QUIC_REFUSED_STREAM))
-      .Times(1);
+  if (transport_version() == QUIC_VERSION_99) {
+    EXPECT_CALL(*connection_,
+                CloseConnection(QUIC_INVALID_STREAM_ID, "12 above 10", _));
+  } else {
+    EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
+    EXPECT_CALL(*connection_,
+                OnStreamReset(kFinalStreamId, QUIC_REFUSED_STREAM))
+        .Times(1);
+  }
   // Create one more data streams to exceed limit of open stream.
   QuicStreamFrame data1(kFinalStreamId, false, 0, QuicStringPiece("HT"));
   session_.OnStreamFrame(data1);
@@ -1252,7 +1287,13 @@ TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {
   // Verify that a draining stream (which has received a FIN but not consumed
   // it) does not count against the open quota (because it is closed from the
   // protocol point of view).
-  EXPECT_CALL(*connection_, SendControlFrame(_)).Times(0);
+  if (transport_version() == QUIC_VERSION_99) {
+    // On v99, we will expect to see a MAX_STREAM_ID go out when there are not
+    // enough streams to create the next one.
+    EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
+  } else {
+    EXPECT_CALL(*connection_, SendControlFrame(_)).Times(0);
+  }
   EXPECT_CALL(*connection_, OnStreamReset(_, QUIC_REFUSED_STREAM)).Times(0);
   const QuicStreamId kMaxStreams = 5;
   QuicSessionPeer::SetMaxOpenIncomingStreams(&session_, kMaxStreams);
@@ -1277,10 +1318,10 @@ TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {
 }
 
 TEST_P(QuicSessionTestServer, TestMaxIncomingAndOutgoingStreamsAllowed) {
-  // Tests that on server side, the value of max_open_incoming/outgoing streams
-  // are setup correctly during negotiation.
-  // The value for outgoing stream is limited to negotiated value and for
-  // incoming stream it is set to be larger than that.
+  // Tests that on server side, the value of max_open_incoming/outgoing
+  // streams are setup correctly during negotiation. The value for outgoing
+  // stream is limited to negotiated value and for incoming stream it is set to
+  // be larger than that.
   session_.OnConfigNegotiated();
   // The max number of open outgoing streams is less than that of incoming
   // streams, and it should be same as negotiated value.
@@ -1355,10 +1396,10 @@ TEST_P(QuicSessionTestClient, RecordFinAfterReadSideClosed) {
 }
 
 TEST_P(QuicSessionTestClient, TestMaxIncomingAndOutgoingStreamsAllowed) {
-  // Tests that on client side, the value of max_open_incoming/outgoing streams
-  // are setup correctly during negotiation.
-  // When flag is true, the value for outgoing stream is limited to negotiated
-  // value and for incoming stream it is set to be larger than that.
+  // Tests that on client side, the value of max_open_incoming/outgoing
+  // streams are setup correctly during negotiation. When flag is true, the
+  // value for outgoing stream is limited to negotiated value and for incoming
+  // stream it is set to be larger than that.
   session_.OnConfigNegotiated();
   EXPECT_LT(session_.max_open_outgoing_streams(),
             session_.max_open_incoming_streams());
@@ -1586,7 +1627,7 @@ TEST_P(QuicSessionTestServer, RetransmitLostDataCausesConnectionClose) {
   EXPECT_CALL(*stream, OnCanWrite())
       .WillOnce(Invoke(stream, &QuicStream::OnClose));
   EXPECT_CALL(*connection_, SendControlFrame(_))
-      .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+      .WillOnce(Invoke(&session_, &TestSession::SaveFrame));
   EXPECT_CALL(*connection_, OnStreamReset(stream->id(), _));
   session_.OnCanWrite();
 }
@@ -1774,6 +1815,54 @@ TEST_P(QuicSessionTestServer, WriteMemSlicesOnReadUnidirectionalStream) {
   buffers.push_back(std::make_pair(data, QUIC_ARRAYSIZE(data)));
   QuicTestMemSliceVector vector(buffers);
   stream4->WriteMemSlices(vector.span(), false);
+}
+
+// Test code that tests that an incoming stream frame with a new (not previously
+// seen) stream id is acceptable. The ID must not be larger than has been
+// advertised. It may be equal to what has been advertised.  These tests
+// invoke QuicStreamIdManager::OnIncomingStreamOpened by calling
+// QuicSession::OnStreamFrame in order to check that all the steps are connected
+// properly and that nothing in the call path interferes with the check.
+// First test make sure that streams with ids below the limit are accepted.
+TEST_P(QuicSessionTestServer, NewStreamIdBelowLimit) {
+  if (transport_version() != QUIC_VERSION_99) {
+    // Applicable only to V99
+    return;
+  }
+  QuicStreamId stream_id = QuicSessionPeer::v99_streamid_manager(&session_)
+                               ->advertised_max_allowed_incoming_stream_id() -
+                           kV99StreamIdIncrement;
+  QuicStreamFrame stream_frame(stream_id, false, 0, "Random String");
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
+  session_.OnStreamFrame(stream_frame);
+}
+
+// Accept a stream with an ID that equals the limit.
+TEST_P(QuicSessionTestServer, NewStreamIdAtLimit) {
+  if (transport_version() != QUIC_VERSION_99) {
+    // Applicable only to V99
+    return;
+  }
+  QuicStreamId stream_id = QuicSessionPeer::v99_streamid_manager(&session_)
+                               ->advertised_max_allowed_incoming_stream_id();
+  QuicStreamFrame stream_frame(stream_id, false, 0, "Random String");
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
+  session_.OnStreamFrame(stream_frame);
+}
+
+// Close the connection if the id exceeds the limit.
+TEST_P(QuicSessionTestServer, NewStreamIdAboveLimit) {
+  if (transport_version() != QUIC_VERSION_99) {
+    // Applicable only to V99
+    return;
+  }
+  QuicStreamId stream_id = QuicSessionPeer::v99_streamid_manager(&session_)
+                               ->advertised_max_allowed_incoming_stream_id() +
+                           kV99StreamIdIncrement;
+  QuicStreamFrame stream_frame(stream_id, false, 0, "Random String");
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_STREAM_ID, "202 above 200", _));
+  session_.OnStreamFrame(stream_frame);
 }
 
 }  // namespace

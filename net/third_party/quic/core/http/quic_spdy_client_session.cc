@@ -51,7 +51,8 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingStream() {
     QUIC_DLOG(INFO) << "Encryption not active so no outgoing stream created.";
     return false;
   }
-  if (!GetQuicReloadableFlag(quic_use_common_stream_check)) {
+  if (!GetQuicReloadableFlag(quic_use_common_stream_check) &&
+      connection()->transport_version() != QUIC_VERSION_99) {
     if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
       QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
                       << "Already " << GetNumOpenOutgoingStreams() << " open.";

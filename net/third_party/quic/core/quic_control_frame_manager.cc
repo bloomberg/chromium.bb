@@ -76,6 +76,20 @@ void QuicControlFrameManager::WriteOrBufferStopSending(uint16_t code,
       new QuicStopSendingFrame(++last_control_frame_id_, stream_id, code)));
 }
 
+void QuicControlFrameManager::WriteOrBufferStreamIdBlocked(QuicStreamId id) {
+  QUIC_DVLOG(1) << "Writing STREAM_ID_BLOCKED Frame";
+  QUIC_CODE_COUNT(stream_id_blocked_transmits);
+  WriteOrBufferQuicFrame(
+      QuicFrame(QuicStreamIdBlockedFrame(++last_control_frame_id_, id)));
+}
+
+void QuicControlFrameManager::WriteOrBufferMaxStreamId(QuicStreamId id) {
+  QUIC_DVLOG(1) << "Writing MAX_STREAM_ID Frame";
+  QUIC_CODE_COUNT(max_stream_id_transmits);
+  WriteOrBufferQuicFrame(
+      QuicFrame(QuicMaxStreamIdFrame(++last_control_frame_id_, id)));
+}
+
 void QuicControlFrameManager::WritePing() {
   QUIC_DVLOG(1) << "Writing PING_FRAME";
   if (HasBufferedFrames()) {

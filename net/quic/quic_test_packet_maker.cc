@@ -218,6 +218,46 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeStreamIdBlockedPacket(quic::QuicPacketNumber num,
+                                               bool include_version,
+                                               quic::QuicStreamId stream_id) {
+  quic::QuicPacketHeader header;
+  header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header.source_connection_id = connection_id_;
+  header.source_connection_id_length = GetSourceConnectionIdLength();
+  header.reset_flag = false;
+  header.version_flag = ShouldIncludeVersion(include_version);
+  header.long_packet_type = long_header_type_;
+  header.packet_number_length = GetPacketNumberLength();
+  header.packet_number = num;
+
+  quic::QuicStreamIdBlockedFrame frame(1, stream_id);
+  DVLOG(1) << "Adding frame: " << quic::QuicFrame(frame);
+  return MakePacket(header, quic::QuicFrame(frame));
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeMaxStreamIdPacket(quic::QuicPacketNumber num,
+                                           bool include_version,
+                                           quic::QuicStreamId stream_id) {
+  quic::QuicPacketHeader header;
+  header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header.source_connection_id = connection_id_;
+  header.source_connection_id_length = GetSourceConnectionIdLength();
+  header.reset_flag = false;
+  header.version_flag = ShouldIncludeVersion(include_version);
+  header.long_packet_type = long_header_type_;
+  header.packet_number_length = GetPacketNumberLength();
+  header.packet_number = num;
+
+  quic::QuicMaxStreamIdFrame frame(1, stream_id);
+  DVLOG(1) << "Adding frame: " << quic::QuicFrame(frame);
+  return MakePacket(header, quic::QuicFrame(frame));
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
 QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
     quic::QuicPacketNumber num,
     bool include_version,

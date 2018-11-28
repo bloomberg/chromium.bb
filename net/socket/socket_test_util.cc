@@ -397,8 +397,13 @@ SequencedSocketData::SequencedSocketData(base::span<const MockRead> reads,
       ++next_sequence_number;
       continue;
     }
-    CHECK(false) << "Sequence number not found where expected: "
-                 << next_sequence_number;
+    if (next_write != writes.end()) {
+      CHECK(false) << "Sequence number " << next_write->sequence_number
+                   << " not found where expected: " << next_sequence_number;
+    } else {
+      CHECK(false) << "Too few writes, next expected sequence number: "
+                   << next_sequence_number;
+    }
     return;
   }
 
