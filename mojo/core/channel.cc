@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
@@ -57,6 +58,8 @@ const size_t kMaxUnusedReadBufferCapacity = 4096;
 // Linux: The platform imposes a limit of 253 handles per sendmsg().
 // Fuchsia: The zx_channel_write() API supports up to 64 handles.
 const size_t kMaxAttachedHandles = 64;
+
+Channel::Message::Message() = default;
 
 Channel::Message::Message(size_t payload_size, size_t max_handles)
     : Message(payload_size, payload_size, max_handles) {}
@@ -159,6 +162,19 @@ Channel::Message::Message(size_t capacity,
 
 Channel::Message::~Message() {
   base::AlignedFree(data_);
+}
+
+// static
+Channel::MessagePtr Channel::Message::CreateRawForFuzzing(
+    base::span<const unsigned char> data) {
+  auto message = base::WrapUnique(new Message);
+  message->size_ = data.size();
+  if (data.size()) {
+    message->data_ = static_cast<char*>(
+        base::AlignedAlloc(data.size(), kChannelMessageAlignment));
+    std::copy(data.begin(), data.end(), message->data_);
+  }
+  return message;
 }
 
 // static

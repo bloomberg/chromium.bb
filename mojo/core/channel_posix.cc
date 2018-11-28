@@ -48,7 +48,7 @@ class MessageView {
       : message_(std::move(message)),
         offset_(offset),
         handles_(message_->TakeHandlesForTransport()) {
-    DCHECK_GT(message_->data_num_bytes(), offset_);
+    DCHECK(!message_->data_num_bytes() || message_->data_num_bytes() > offset_);
   }
 
   MessageView(MessageView&& other) { *this = std::move(other); }
@@ -70,8 +70,10 @@ class MessageView {
 
   size_t data_offset() const { return offset_; }
   void advance_data_offset(size_t num_bytes) {
-    DCHECK_GT(message_->data_num_bytes(), offset_ + num_bytes);
-    offset_ += num_bytes;
+    if (num_bytes) {
+      DCHECK_GT(message_->data_num_bytes(), offset_ + num_bytes);
+      offset_ += num_bytes;
+    }
   }
 
   std::vector<PlatformHandleInTransit> TakeHandles() {
