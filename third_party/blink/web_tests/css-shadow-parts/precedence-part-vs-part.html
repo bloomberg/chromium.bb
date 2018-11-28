@@ -23,11 +23,11 @@
     </template>
     The following text should be green:
     <custom-element-outer id="c-e-outer"></custom-element-outer>
-    <script type="text/javascript">
+    <script>
       "use strict";
       const colorGreen = "rgb(0, 128, 0)";
       test(function() {
-        var el = getElementByShadowIds(document, ["c-e-outer", "c-e-inner", "green_part"]);
+        const el = getElementByShadowIds(document, ["c-e-outer", "c-e-inner", "green_part"]);
         assert_equals(window.getComputedStyle(el).color, colorGreen);
       }, "Style from document overrides style from outer CE");
     </script>
