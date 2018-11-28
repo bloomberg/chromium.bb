@@ -421,11 +421,6 @@ int CastBrowserMainParts::PreCreateThreads() {
   crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
       std::make_unique<crash_reporter::ChildProcessCrashObserver>(
           crash_dumps_dir, kAndroidMinidumpDescriptor));
-#else
-  base::FilePath home_dir;
-  CHECK(base::PathService::Get(DIR_CAST_HOME, &home_dir));
-  if (!base::CreateDirectory(home_dir))
-    return 1;
 #endif
 
   cast_browser_process_->SetPrefService(

@@ -204,6 +204,14 @@ bool CastMainDelegate::ShouldCreateFeatureList() {
 void CastMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   DCHECK(cast_feature_list_creator_);
 
+#if !defined(OS_ANDROID)
+  // PrefService requires home directory to be created before the pref
+  // store can be initialized properly.
+  base::FilePath home_dir;
+  CHECK(base::PathService::Get(DIR_CAST_HOME, &home_dir));
+  CHECK(base::CreateDirectory(home_dir));
+#endif  // !defined(OS_ANDROID)
+
   // The |FieldTrialList| is a dependency of the feature list.
   field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
 
