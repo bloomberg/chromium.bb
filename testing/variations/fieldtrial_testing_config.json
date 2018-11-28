@@ -4751,25 +4751,6 @@
             ]
         }
     ],
-    "TokenBinding": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "TokenBinding",
-                    "enable_features": [
-                        "token-binding"
-                    ]
-                }
-            ]
-        }
-    ],
     "TranslateCompactUI": [
         {
             "platforms": [
