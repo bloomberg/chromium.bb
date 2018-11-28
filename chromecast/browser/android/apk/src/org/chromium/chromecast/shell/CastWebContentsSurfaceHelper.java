@@ -112,8 +112,10 @@ class CastWebContentsSurfaceHelper {
                 (WebContents webContents) -> MediaSessionImpl.fromWebContents(webContents);
 
         Observable<Uri> uriState = mStartParamsState.map(params -> params.uri);
-        Observable<WebContents> webContentsState =
-                mStartParamsState.map(params -> params.webContents);
+        Controller<WebContents> webContentsState = new Controller<>();
+        mStartParamsState.map(params -> params.webContents)
+                .subscribe(Observers.onEnter(webContentsState::set));
+        mCreatedState.subscribe(Observers.onExit(x -> webContentsState.reset()));
 
         // Receive broadcasts indicating the screen turned off while we have active WebContents.
         uriState.subscribe((Uri uri) -> {
@@ -121,6 +123,7 @@ class CastWebContentsSurfaceHelper {
             filter.addAction(CastIntents.ACTION_SCREEN_OFF);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
                 mStartParamsState.reset();
+                webContentsState.reset();
                 maybeFinishLater(handler, () -> finishCallback.accept(uri));
             });
         });
@@ -137,6 +140,7 @@ class CastWebContentsSurfaceHelper {
                     return;
                 }
                 mStartParamsState.reset();
+                webContentsState.reset();
                 maybeFinishLater(handler, () -> finishCallback.accept(uri));
             });
         });

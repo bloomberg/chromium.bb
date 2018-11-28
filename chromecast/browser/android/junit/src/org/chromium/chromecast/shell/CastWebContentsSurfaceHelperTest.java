@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -166,6 +167,28 @@ public class CastWebContentsSurfaceHelperTest {
         mSurfaceHelper.onNewStartParams(params2);
         verify(scope1).close();
         verify(mWebContentsView).open(webContents2);
+    }
+
+    @Test
+    public void testDoesNotRestartWebContentsIfNewStartParamsHasSameWebContents() {
+        WebContents webContents = mock(WebContents.class);
+        // Create two StartParams that have the same WebContents but different values.
+        StartParams params1 = new StartParamsBuilder()
+                                      .withId("1")
+                                      .withWebContents(webContents)
+                                      .enableTouchInput(false)
+                                      .build();
+        StartParams params2 = new StartParamsBuilder()
+                                      .withId("1")
+                                      .withWebContents(webContents)
+                                      .enableTouchInput(true)
+                                      .build();
+        Scope scope = mock(Scope.class);
+        when(mWebContentsView.open(webContents)).thenReturn(scope);
+        mSurfaceHelper.onNewStartParams(params1);
+        // The second StartParams has the same WebContents, so we shouldn't open the scopes again.
+        mSurfaceHelper.onNewStartParams(params2);
+        verify(mWebContentsView, times(1)).open(webContents);
     }
 
     @Test
