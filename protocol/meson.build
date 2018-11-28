@@ -36,6 +36,7 @@ generated_protocols = [
 	[ 'weston-touch-calibration', 'internal' ],
 	[ 'xdg-output', 'v1' ],
 	[ 'xdg-shell', 'v6' ],
+	[ 'xdg-shell', 'stable' ],
 ]
 
 foreach proto: generated_protocols

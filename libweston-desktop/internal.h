@@ -227,11 +227,15 @@ void
 weston_desktop_destroy_request(struct wl_client *client,
 			       struct wl_resource *resource);
 struct wl_global *
+weston_desktop_xdg_wm_base_create(struct weston_desktop *desktop,
+				  struct wl_display *display);
+struct wl_global *
 weston_desktop_xdg_shell_v6_create(struct weston_desktop *desktop,
 				   struct wl_display *display);
 struct wl_global *
 weston_desktop_wl_shell_create(struct weston_desktop *desktop,
 			       struct wl_display *display);
+
 void
 weston_desktop_xwayland_init(struct weston_desktop *desktop);
 

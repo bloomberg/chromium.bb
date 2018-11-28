@@ -132,15 +132,19 @@ libweston_desktop_@LIBWESTON_MAJOR@_la_SOURCES =	\
 	libweston-desktop/surface.c			\
 	libweston-desktop/wl-shell.c			\
 	libweston-desktop/xdg-shell-v6.c		\
+	libweston-desktop/xdg-shell.c			\
 	libweston-desktop/xwayland.c
 
 nodist_libweston_desktop_@LIBWESTON_MAJOR@_la_SOURCES =		\
 	protocol/xdg-shell-unstable-v6-protocol.c		\
-	protocol/xdg-shell-unstable-v6-server-protocol.h
+	protocol/xdg-shell-unstable-v6-server-protocol.h	\
+	protocol/xdg-shell-protocol.c				\
+	protocol/xdg-shell-server-protocol.h
 
 BUILT_SOURCES += $(nodist_libweston_desktop_@LIBWESTON_MAJOR@_la_SOURCES)
 
 libweston-desktop-@LIBWESTON_MAJOR@.la libweston-desktop/libweston_desktop_@LIBWESTON_MAJOR@_la-xdg-shell-v6.lo: protocol/xdg-shell-unstable-v6-server-protocol.h
+libweston-desktop-@LIBWESTON_MAJOR@.la libweston-desktop/libweston_desktop_@LIBWESTON_MAJOR@_la-xdg-wm-shell.lo: protocol/xdg-shell-server-protocol.h
 
 if SYSTEMD_NOTIFY_SUPPORT
 module_LTLIBRARIES += systemd-notify.la
