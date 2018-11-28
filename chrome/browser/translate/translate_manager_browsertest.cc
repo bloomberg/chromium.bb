@@ -9,11 +9,14 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_error_details.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -437,8 +440,13 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateSuccess) {
 
   // See that the page was translated automatically
   WaitUntilPageTranslated();
-  EXPECT_EQ("en",
+  EXPECT_EQ("ja",
             chrome_translate_client->GetLanguageState().current_language());
+
+  // The target shouldn't be added to accept languages.
+  EXPECT_FALSE(TranslateAcceptLanguagesFactory::GetForBrowserContext(
+                   browser()->profile())
+                   ->IsAcceptLanguage("ja"));
 }
 
 // Test that hrefTranslate with an unsupported language doesn't trigger.
