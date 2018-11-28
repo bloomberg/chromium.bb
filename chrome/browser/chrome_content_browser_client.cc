@@ -335,7 +335,6 @@
 #elif defined(OS_CHROMEOS)
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/ash_service_registry.h"
-#include "chrome/browser/badging/badge_service_impl.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -400,6 +399,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/badging/badge_service_impl.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
@@ -4340,7 +4340,7 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
   frame_interfaces_->AddInterface(base::Bind(&ShareServiceImpl::Create));
 #endif
 
-#if defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
   frame_interfaces_->AddInterface(
       base::BindRepeating(&BadgeServiceImpl::Create));
 #endif
