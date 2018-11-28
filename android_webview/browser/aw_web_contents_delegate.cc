@@ -59,6 +59,36 @@ AwWebContentsDelegate::AwWebContentsDelegate(JNIEnv* env, jobject obj)
 
 AwWebContentsDelegate::~AwWebContentsDelegate() {}
 
+void AwWebContentsDelegate::RendererUnresponsive(
+    content::WebContents* source,
+    content::RenderWidgetHost* render_widget_host,
+    base::RepeatingClosure hang_monitor_restarter) {
+  AwContents* aw_contents = AwContents::FromWebContents(source);
+  if (!aw_contents)
+    return;
+
+  content::RenderProcessHost* render_process_host =
+      render_widget_host->GetProcess();
+  if (render_process_host->IsInitializedAndNotDead()) {
+    aw_contents->RendererUnresponsive(render_widget_host->GetProcess());
+    hang_monitor_restarter.Run();
+  }
+}
+
+void AwWebContentsDelegate::RendererResponsive(
+    content::WebContents* source,
+    content::RenderWidgetHost* render_widget_host) {
+  AwContents* aw_contents = AwContents::FromWebContents(source);
+  if (!aw_contents)
+    return;
+
+  content::RenderProcessHost* render_process_host =
+      render_widget_host->GetProcess();
+  if (render_process_host->IsInitializedAndNotDead()) {
+    aw_contents->RendererResponsive(render_widget_host->GetProcess());
+  }
+}
+
 content::JavaScriptDialogManager*
 AwWebContentsDelegate::GetJavaScriptDialogManager(WebContents* source) {
   return g_javascript_dialog_manager.Pointer();

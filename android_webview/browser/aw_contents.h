@@ -339,6 +339,9 @@ class AwContents : public FindHelper::Listener,
   jlong GetAutofillProvider(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
 
+  void RendererUnresponsive(content::RenderProcessHost* render_process_host);
+  void RendererResponsive(content::RenderProcessHost* render_process_host);
+
   // content::WebContentsObserver overrides
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;

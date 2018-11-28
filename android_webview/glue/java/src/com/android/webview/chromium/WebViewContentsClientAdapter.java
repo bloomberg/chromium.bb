@@ -43,6 +43,7 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsClientBridge;
 import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwHttpAuthHandler;
+import org.chromium.android_webview.AwRenderProcess;
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
 import org.chromium.android_webview.AwSafeBrowsingResponse;
 import org.chromium.android_webview.AwWebResourceResponse;
@@ -1205,6 +1206,14 @@ class WebViewContentsClientAdapter extends AwContentsClient {
             TraceEvent.end("WebViewContentsClientAdapter.getDefaultVideoPoster");
         }
     }
+
+    // TODO(tobiasjs) connect to support app-settable callbacks.
+    @Override
+    public void onRendererUnresponsive(final AwRenderProcess renderProcess) {}
+
+    // TODO(tobiasjs) connect to support app-settable callbacks.
+    @Override
+    public void onRendererResponsive(final AwRenderProcess renderProcess) {}
 
     @Override
     public boolean onRenderProcessGone(final AwRenderProcessGoneDetail detail) {
