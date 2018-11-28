@@ -4,6 +4,7 @@
 
 #include "content/browser/accessibility/browser_accessibility.h"
 
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,6 +17,7 @@ class BrowserAccessibilityTest : public testing::Test {
   ~BrowserAccessibilityTest() override;
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
 };
 
