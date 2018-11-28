@@ -27,8 +27,7 @@
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
-#include "chrome/browser/unified_consent/unified_consent_test_util.h"
+#include "chrome/browser/unified_consent/chrome_unified_consent_service_client.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -41,7 +40,7 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/scoped_unified_consent.h"
-#include "components/unified_consent/unified_consent_service.h"
+#include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -51,6 +50,7 @@
 using ::testing::AtLeast;
 using ::testing::Return;
 using ::testing::ReturnRef;
+using namespace unified_consent;
 
 class DiceTurnSyncOnHelperTestBase;
 
@@ -201,9 +201,6 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     profile_builder.AddTestingFactory(
         policy::UserPolicySigninServiceFactory::GetInstance(),
         base::BindRepeating(&FakeUserPolicySigninService::Build));
-    profile_builder.AddTestingFactory(
-        UnifiedConsentServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildUnifiedConsentServiceForTesting));
     profile_ = profile_builder.Build();
     account_tracker_service_ =
         AccountTrackerServiceFactory::GetForProfile(profile());
@@ -417,13 +414,12 @@ class DiceTurnSyncOnHelperTestWithUnifiedConsent
     : public DiceTurnSyncOnHelperTestBase {
  public:
   DiceTurnSyncOnHelperTestWithUnifiedConsent()
-      : scoped_unified_consent_(
-            unified_consent::UnifiedConsentFeatureState::kEnabledNoBump) {}
+      : scoped_unified_consent_(UnifiedConsentFeatureState::kEnabledNoBump) {}
   ~DiceTurnSyncOnHelperTestWithUnifiedConsent() override {}
 
  private:
   ScopedAccountConsistencyDice scoped_dice_;
-  unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
+  ScopedUnifiedConsent scoped_unified_consent_;
 };
 
 // TestDiceTurnSyncOnHelperDelegate implementation.
@@ -704,13 +700,31 @@ TEST_F(DiceTurnSyncOnHelperTest, ShowSyncDialogForEndConsumerAccount) {
 // Tests that the user enabled unified consent,
 TEST_F(DiceTurnSyncOnHelperTestWithUnifiedConsent,
        ShowSyncDialogForEndConsumerAccount_UnifiedConsentEnabled) {
-  ASSERT_TRUE(unified_consent::IsUnifiedConsentFeatureEnabled());
+  ASSERT_TRUE(IsUnifiedConsentFeatureEnabled());
   // Set expectations.
   expected_sync_confirmation_shown_ = true;
   sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
       SYNC_WITH_DEFAULT_SETTINGS;
   SetExpectationsForSyncStartupCompleted();
   EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(1);
+  using Service = UnifiedConsentServiceClient::Service;
+  using ServiceState = UnifiedConsentServiceClient::ServiceState;
+  PrefService* pref_service = profile()->GetPrefs();
+  ChromeUnifiedConsentServiceClient consent_service_client(pref_service);
+  std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
+      url_keyed_collection_helper = UrlKeyedDataCollectionConsentHelper::
+          NewAnonymizedDataCollectionConsentHelper(
+              pref_service,
+              ProfileSyncServiceFactory::GetForProfile(profile()));
+  for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
+    Service service = static_cast<Service>(i);
+    if (consent_service_client.IsServiceSupported(service)) {
+      consent_service_client.SetServiceEnabled(service, false);
+      EXPECT_EQ(ServiceState::kDisabled,
+                consent_service_client.GetServiceState(service));
+    }
+  }
+  EXPECT_FALSE(url_keyed_collection_helper->IsEnabled());
 
   // Signin flow.
   EXPECT_FALSE(signin_manager()->IsAuthenticated());
@@ -721,7 +735,14 @@ TEST_F(DiceTurnSyncOnHelperTestWithUnifiedConsent,
   EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id()));
   EXPECT_EQ(account_id(), signin_manager()->GetAuthenticatedAccountId());
   CheckDelegateCalls();
-  // TODO(crbug.com/908111): Check if Google services are enabled.
+  for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
+    Service service = static_cast<Service>(i);
+    if (consent_service_client.IsServiceSupported(service)) {
+      EXPECT_EQ(ServiceState::kEnabled,
+                consent_service_client.GetServiceState(service));
+    }
+  }
+  EXPECT_TRUE(url_keyed_collection_helper->IsEnabled());
 }
 
 // For enterprise user, tests that the user is signed in only after Sync engine

@@ -95,6 +95,9 @@ ChromeUnifiedConsentServiceClient::GetServiceState(Service service) {
 
 void ChromeUnifiedConsentServiceClient::SetServiceEnabled(Service service,
                                                           bool enabled) {
+  if (GetServiceState(service) == ServiceState::kNotSupported)
+    return;
+
   switch (service) {
     case Service::kAlternateErrorPages:
       pref_service_->SetBoolean(prefs::kAlternateErrorPagesEnabled, enabled);

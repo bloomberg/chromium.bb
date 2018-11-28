@@ -62,6 +62,9 @@ class UnifiedConsentServiceClient {
   // Sets |service| enabled if it is supported on this platform.
   virtual void SetServiceEnabled(Service service, bool enabled) = 0;
 
+  // Returns whether |service| is supported on this platform.
+  bool IsServiceSupported(Service service);
+
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
