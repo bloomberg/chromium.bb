@@ -231,6 +231,9 @@ bool WebStateImpl::IsLoading() const {
 }
 
 double WebStateImpl::GetLoadingProgress() const {
+  if (navigation_manager_->IsRestoreSessionInProgress())
+    return 0.0;
+
   return [web_controller_ loadingProgress];
 }
 

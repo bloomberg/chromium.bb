@@ -143,6 +143,9 @@ class NavigationManagerImpl : public NavigationManager {
                                            NSString* state_object,
                                            ui::PageTransition transition) = 0;
 
+  // Returns true if session restoration is in progress.
+  virtual bool IsRestoreSessionInProgress() const = 0;
+
   // Resets the transient url rewriter list.
   void RemoveTransientURLRewriters();
 

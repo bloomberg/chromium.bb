@@ -296,6 +296,10 @@ void WKBasedNavigationManagerImpl::AddPushStateItemIfNecessary(
   // to do here.
 }
 
+bool WKBasedNavigationManagerImpl::IsRestoreSessionInProgress() const {
+  return is_restore_session_in_progress_;
+}
+
 BrowserState* WKBasedNavigationManagerImpl::GetBrowserState() const {
   return browser_state_;
 }

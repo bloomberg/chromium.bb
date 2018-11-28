@@ -1975,8 +1975,8 @@ TEST_P(NavigationManagerTest, Restore) {
 
   // Call Restore() and check that the NavigationItems are in the correct order
   // and that the last committed index is correct too.
+  ASSERT_FALSE(navigation_manager()->IsRestoreSessionInProgress());
   navigation_manager()->Restore(1, std::move(items));
-
   __block bool restore_done = false;
   navigation_manager()->AddRestoreCompletionCallback(base::BindOnce(^{
     restore_done = true;
@@ -1984,6 +1984,7 @@ TEST_P(NavigationManagerTest, Restore) {
 
   if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
     // Session restore is asynchronous for WKBasedNavigationManager.
+    ASSERT_TRUE(navigation_manager()->IsRestoreSessionInProgress());
     ASSERT_FALSE(restore_done);
 
     // Verify that restore session URL is pending.
@@ -2006,6 +2007,7 @@ TEST_P(NavigationManagerTest, Restore) {
     return restore_done;
   }));
 
+  EXPECT_FALSE(navigation_manager()->IsRestoreSessionInProgress());
   ASSERT_EQ(3, navigation_manager()->GetItemCount());
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   EXPECT_EQ(urls[1], navigation_manager()->GetLastCommittedItem()->GetURL());
