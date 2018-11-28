@@ -193,7 +193,7 @@ class PasswordGenerationAgentTestForHtmlAnnotation
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgentTestForHtmlAnnotation);
 };
 
-const char kSigninFormHTML[] =
+constexpr char kSigninFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'password'/> "
@@ -201,7 +201,7 @@ const char kSigninFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kAccountCreationFormHTML[] =
+constexpr char kAccountCreationFormHTML[] =
     "<FORM id = 'blah' action = 'http://www.random.com/pa/th?q=1&p=3#first'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' size = 5/>"
@@ -211,7 +211,7 @@ const char kAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kAccountCreationNoForm[] =
+constexpr char kAccountCreationNoForm[] =
     "<INPUT type = 'text' id = 'username'/> "
     "<INPUT type = 'password' id = 'first_password' size = 5/>"
     "<INPUT type = 'password' id = 'second_password' size = 5/> "
@@ -219,7 +219,17 @@ const char kAccountCreationNoForm[] =
     "<INPUT type = 'button' id = 'dummy'/> "
     "<INPUT type = 'submit' value = 'LOGIN' />";
 
-const char kDisabledElementAccountCreationFormHTML[] =
+constexpr char kAccountCreationNoIds[] =
+    "<FORM action = 'http://www.random.com/pa/th?q=1&p=3#first'> "
+    "  <INPUT type = 'text'/> "
+    "  <INPUT type = 'password' class='first_password'/>"
+    "  <INPUT type = 'password' class='second_password'/> "
+    "  <INPUT type = 'text'/> "
+    "  <INPUT type = 'button' id = 'dummy'/> "
+    "  <INPUT type = 'submit' value = 'LOGIN'/>"
+    "</FORM>";
+
+constexpr char kDisabledElementAccountCreationFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' "
@@ -231,7 +241,7 @@ const char kDisabledElementAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kHiddenPasswordAccountCreationFormHTML[] =
+constexpr char kHiddenPasswordAccountCreationFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password'/> "
@@ -240,7 +250,7 @@ const char kHiddenPasswordAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kInvalidActionAccountCreationFormHTML[] =
+constexpr char kInvalidActionAccountCreationFormHTML[] =
     "<FORM name = 'blah' action = 'invalid'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password'/> "
@@ -249,7 +259,7 @@ const char kInvalidActionAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kMultipleAccountCreationFormHTML[] =
+constexpr char kMultipleAccountCreationFormHTML[] =
     "<FORM name = 'login' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'random'/> "
     "  <INPUT type = 'text' id = 'username'/> "
@@ -266,7 +276,7 @@ const char kMultipleAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kBothAutocompleteAttributesFormHTML[] =
+constexpr char kBothAutocompleteAttributesFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' autocomplete='username' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' "
@@ -276,7 +286,7 @@ const char kBothAutocompleteAttributesFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kUsernameAutocompleteAttributeFormHTML[] =
+constexpr char kUsernameAutocompleteAttributeFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' autocomplete='username' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' size = 5/>"
@@ -285,7 +295,7 @@ const char kUsernameAutocompleteAttributeFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kNewPasswordAutocompleteAttributeFormHTML[] =
+constexpr char kNewPasswordAutocompleteAttributeFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' "
@@ -295,7 +305,7 @@ const char kNewPasswordAutocompleteAttributeFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kCurrentAndNewPasswordAutocompleteAttributeFormHTML[] =
+constexpr char kCurrentAndNewPasswordAutocompleteAttributeFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'password' id = 'old_password' "
     "         autocomplete='current-password'/>"
@@ -307,7 +317,7 @@ const char kCurrentAndNewPasswordAutocompleteAttributeFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kPasswordChangeFormHTML[] =
+constexpr char kPasswordChangeFormHTML[] =
     "<FORM name = 'ChangeWithUsernameForm' action = 'http://www.bidule.com'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'password'/> "
@@ -317,7 +327,7 @@ const char kPasswordChangeFormHTML[] =
     "  <INPUT type = 'submit' value = 'Login'/> "
     "</FORM>";
 
-const char kPasswordFormAndSpanHTML[] =
+constexpr char kPasswordFormAndSpanHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/pa/th?q=1&p=3#first'>"
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'password'/> "
@@ -859,6 +869,16 @@ TEST_F(PasswordGenerationAgentTest, ManualGenerationDoesntSuppressAutomatic) {
 
   // Moving the focus back should trigger the automatic generation again.
   ExpectAutomaticGenerationAvailable("first_password", true);
+}
+
+TEST_F(PasswordGenerationAgentTest, ManualGenerationNoIds) {
+  LoadHTMLWithUserGesture(kAccountCreationNoIds);
+  ExecuteJavaScriptForTests(
+      "document.getElementsByClassName('first_password')[0].focus();");
+  password_generation_->UserTriggeredGeneratePassword();
+  // TODO(crbug/866444): generation doesn't work properly on the password field
+  // without name and id. Temporarily it's disabled.
+  EXPECT_FALSE(GetCalledShowManualPasswordGenerationPopup());
 }
 
 TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
