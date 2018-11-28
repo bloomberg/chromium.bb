@@ -64,6 +64,9 @@ void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
   dict->SetKey("pdfFormSaveEnabled",
                base::Value(base::FeatureList::IsEnabled(
                    chrome_pdf::features::kSaveEditedPDFForm)));
+  dict->SetKey("pdfAnnotationsEnabled",
+               base::Value(base::FeatureList::IsEnabled(
+                   chrome_pdf::features::kPDFAnnotations)));
 #endif
 }
 

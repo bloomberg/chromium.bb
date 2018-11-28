@@ -73,6 +73,7 @@
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "pdf/pdf_features.h"
 #include "services/network/public/cpp/features.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_node.h"
@@ -385,6 +386,19 @@ class PDFExtensionHitTestTest : public PDFExtensionTest,
   base::test::ScopedFeatureList feature_list_;
 };
 
+class PDFAnnotationsTest : public PDFExtensionTest {
+ public:
+  PDFAnnotationsTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PDFExtensionTest::SetUpCommandLine(command_line);
+    feature_list_.InitAndEnableFeature(chrome_pdf::features::kPDFAnnotations);
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Disabled because it's flaky.
 // See the issue for details: https://crbug.com/826055.
 #if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
@@ -622,6 +636,13 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, WhitespaceTitle) {
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Beep) {
   RunTestsInFile("beep_test.js", "test-beep.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFAnnotationsTest, AnnotationsFeatureEnabled) {
+  RunTestsInFile("annotations_feature_enabled_test.js", "test.pdf");
+}
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, AnnotationsFeatureDisabled) {
+  RunTestsInFile("annotations_feature_disabled_test.js", "test.pdf");
 }
 
 // TODO(tsepez): See https://crbug.com/696650.

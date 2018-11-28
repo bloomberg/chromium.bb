@@ -654,6 +654,8 @@ PDFViewer.prototype = {
 
     loadTimeData.data = strings;
     $('toolbar').strings = strings;
+    $('toolbar').pdfAnnotationsEnabled =
+        loadTimeData.getBoolean('pdfAnnotationsEnabled');
     $('zoom-toolbar').strings = strings;
     $('password-screen').strings = strings;
     $('error-screen').strings = strings;
