@@ -1362,10 +1362,32 @@ TEST(FormParserTest, ComplementingResults) {
   });
 }
 
-// Until autofill server learns to provide CVC-related hints, the parser should
-// try to get the hint from the field names.
+// The parser should avoid identifying CVC fields as passwords.
 TEST(FormParserTest, CVC) {
   CheckTestData({
+      {
+          "Server hints: CREDIT_CARD_VERIFICATION_CODE.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.form_control_type = "password",
+               .prediction = {.type = autofill::CREDIT_CARD_VERIFICATION_CODE}},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+          // The result should be trusted for more than just fallback, because
+          // the chosen password was not a suspected CVC.
+          .fallback_only = false,
+      },
+      {
+          "Server hints: CREDIT_CARD_VERIFICATION_CODE on only password.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .prediction = {.type = autofill::CREDIT_CARD_VERIFICATION_CODE},
+               .form_control_type = "password"},
+          },
+          .fallback_only = true,
+      },
       {
           "Name of 'verification_type' matches the CVC pattern, ignore that "
           "one.",
