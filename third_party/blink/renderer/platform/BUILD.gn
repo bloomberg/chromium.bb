@@ -2113,6 +2113,7 @@ jumbo_source_set("unit_tests") {
     "graphics/test/fake_canvas_resource_host.h",
     "graphics/test/fake_gles2_interface.h",
     "graphics/test/fake_web_graphics_context_3d_provider.h",
+    "graphics/test/gpu_memory_buffer_test_platform.h",
     "graphics/test/mock_compositor_frame_sink.h",
     "graphics/test/mock_embedded_frame_sink_provider.h",
     "graphics/test/mock_image_decoder.h",

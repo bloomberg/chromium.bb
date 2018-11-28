@@ -53,11 +53,11 @@
 #include "third_party/blink/renderer/platform/graphics/test/fake_canvas_resource_host.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/test/gpu_memory_buffer_test_platform.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -89,20 +89,6 @@ class MockGLES2InterfaceWithImageSupport : public FakeGLES2Interface {
   void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) override {
     mailbox[0] = 1;  // Make non-zero mailbox names
   }
-};
-
-class FakePlatformSupport : public TestingPlatformSupport {
- public:
-  void RunUntilStop() const { base::RunLoop().Run(); }
-
-  void StopRunning() const { base::RunLoop().Quit(); }
-
- private:
-  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override {
-    return &test_gpu_memory_buffer_manager_;
-  }
-
-  viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
 };
 
 class ImageTrackingDecodeCache : public cc::StubDecodeCache {
@@ -421,7 +407,7 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationLifeCycle)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -467,7 +453,7 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationReEntry)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -517,7 +503,7 @@ TEST_F(Canvas2DLayerBridgeTest,
        DISABLED_HibernationLifeCycleWithDeferredRenderingDisabled)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
 
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
@@ -566,7 +552,7 @@ TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernating)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -619,7 +605,7 @@ TEST_F(
     DISABLED_BackgroundRenderingWhileHibernatingWithDeferredRenderingDisabled)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -677,7 +663,7 @@ TEST_F(Canvas2DLayerBridgeTest,
        DISABLED_DisableDeferredRenderingWhileHibernating)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -738,7 +724,7 @@ TEST_F(Canvas2DLayerBridgeTest, TeardownWhileHibernating)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -776,7 +762,7 @@ TEST_F(Canvas2DLayerBridgeTest, SnapshotWhileHibernating)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -825,7 +811,7 @@ TEST_F(Canvas2DLayerBridgeTest, TeardownWhileHibernationIsPending)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernationIsPending)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -859,7 +845,7 @@ TEST_F(Canvas2DLayerBridgeTest,
        DISABLED_HibernationAbortedDueToVisibilityChange)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -895,7 +881,7 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationAbortedDueToLostContext)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToLostContext)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -930,7 +916,7 @@ TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxWhileHibernating)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -973,7 +959,7 @@ TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxWhileBackgroundRendering)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
 #endif
 {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  CanvasColorParams());
@@ -1017,7 +1003,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
 TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
   InSequence s;
   ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(true);
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
                                      ->ContextProvider()
                                      ->GetCapabilities())
@@ -1095,7 +1081,7 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
 TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
   InSequence s;
   ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(true);
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
                                      ->ContextProvider()
                                      ->GetCapabilities())
@@ -1173,7 +1159,7 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
 TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
   InSequence s;
   ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(true);
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
                                      ->ContextProvider()
                                      ->GetCapabilities())

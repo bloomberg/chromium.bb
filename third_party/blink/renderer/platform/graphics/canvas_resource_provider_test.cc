@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/graphics/test/gpu_memory_buffer_test_platform.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using testing::_;
@@ -35,16 +35,6 @@ class FakeGLES2InterfaceWithImageSupport : public FakeGLES2Interface {
 
  private:
   GLuint image_id_ = 3;
-};
-
-class FakePlatformSupportWithGpuMemoryBufferManager
-    : public TestingPlatformSupport {
-  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override {
-    return &test_gpu_memory_buffer_manager_;
-  }
-
- private:
-  viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
 };
 
 class MockCanvasResourceDispatcherClient
@@ -92,8 +82,7 @@ class CanvasResourceProviderTest : public Test {
  protected:
   FakeGLES2InterfaceWithImageSupport gl_;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
-  ScopedTestingPlatformSupport<FakePlatformSupportWithGpuMemoryBufferManager>
-      platform_;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform_;
 };
 
 TEST_F(CanvasResourceProviderTest,
