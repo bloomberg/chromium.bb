@@ -24,7 +24,7 @@ class LocalFrameView;
 class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
  public:
   DOMNodeId node_id = kInvalidDOMNodeId;
-  double first_size = 0.0;
+  uint64_t first_size = 0;
   // LastImagePaint uses the order of the first paints to determine the last
   // image.
   unsigned first_paint_index = 0;

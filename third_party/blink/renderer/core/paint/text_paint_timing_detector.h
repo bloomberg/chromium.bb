@@ -20,7 +20,7 @@ class LocalFrameView;
 
 struct TextRecord {
   DOMNodeId node_id = kInvalidDOMNodeId;
-  double first_size = 0.0;
+  uint64_t first_size = 0;
   base::TimeTicks first_paint_time = base::TimeTicks();
   String text = "";
 };

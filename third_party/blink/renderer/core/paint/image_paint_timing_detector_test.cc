@@ -159,7 +159,7 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_OneImage) {
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   ImageRecord* record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_EQ(record->first_size, 25);
+  EXPECT_EQ(record->first_size, 25ul);
   EXPECT_TRUE(record->loaded);
 }
 
@@ -188,16 +188,16 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_Largest) {
   ImageRecord* record;
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_EQ(record->first_size, 25);
+  EXPECT_EQ(record->first_size, 25ul);
 
   SetImageAndPaint("larger", 9, 9);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
 #if defined(OS_MACOSX)
-  EXPECT_EQ(record->first_size, 90);
+  EXPECT_EQ(record->first_size, 90ul);
 #else
-  EXPECT_EQ(record->first_size, 81);
+  EXPECT_EQ(record->first_size, 81ul);
 #endif
   EXPECT_TRUE(record->loaded);
 
@@ -206,9 +206,9 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_Largest) {
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
 #if defined(OS_MACOSX)
-  EXPECT_EQ(record->first_size, 90);
+  EXPECT_EQ(record->first_size, 90ul);
 #else
-  EXPECT_EQ(record->first_size, 81);
+  EXPECT_EQ(record->first_size, 81ul);
 #endif
   EXPECT_TRUE(record->loaded);
 }
@@ -322,9 +322,9 @@ TEST_F(ImagePaintTimingDetectorTest, DiscardAnalysisWhenLargestIsLoading) {
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
 #if defined(OS_MACOSX)
-  EXPECT_EQ(record->first_size, 90);
+  EXPECT_EQ(record->first_size, 90ul);
 #else
-  EXPECT_EQ(record->first_size, 81);
+  EXPECT_EQ(record->first_size, 81ul);
 #endif
   EXPECT_FALSE(record->first_paint_time_after_loaded.is_null());
 }
@@ -400,7 +400,7 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_OneImage) {
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   ImageRecord* record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_GT(record->first_size, 0);
+  EXPECT_GT(record->first_size, 0ul);
   EXPECT_TRUE(record->loaded);
 }
 
@@ -422,7 +422,7 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_Last) {
   ImageRecord* record;
   record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_EQ(record->first_size, 100);
+  EXPECT_EQ(record->first_size, 100ul);
   EXPECT_EQ(record->first_paint_time_after_loaded,
             base::TimeTicks() + TimeDelta::FromSecondsD(1));
 
@@ -434,9 +434,9 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_Last) {
   record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
 #if defined(OS_MACOSX)
-  EXPECT_EQ(record->first_size, 30);
+  EXPECT_EQ(record->first_size, 30ul);
 #else
-  EXPECT_EQ(record->first_size, 25);
+  EXPECT_EQ(record->first_size, 25ul);
 #endif
   EXPECT_EQ(record->first_paint_time_after_loaded,
             base::TimeTicks() + TimeDelta::FromSecondsD(2));
@@ -479,7 +479,7 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_LastBasedOnLoadTime) {
   ImageRecord* record;
   record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_EQ(record->first_size, 25);
+  EXPECT_EQ(record->first_size, 25ul);
 }
 
 TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_IgnoreTheRemoved) {
@@ -536,9 +536,9 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_OneSwapPromiseForOneFrame) {
   record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
 #if defined(OS_MACOSX)
-  EXPECT_EQ(record->first_size, 90);
+  EXPECT_EQ(record->first_size, 90ul);
 #else
-  EXPECT_EQ(record->first_size, 81);
+  EXPECT_EQ(record->first_size, 81ul);
 #endif
   EXPECT_TRUE(record->first_paint_time_after_loaded.is_null());
 
@@ -546,9 +546,9 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_OneSwapPromiseForOneFrame) {
   record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
 #if defined(OS_MACOSX)
-  EXPECT_EQ(record->first_size, 90);
+  EXPECT_EQ(record->first_size, 90ul);
 #else
-  EXPECT_EQ(record->first_size, 81);
+  EXPECT_EQ(record->first_size, 81ul);
 #endif
   EXPECT_FALSE(record->first_paint_time_after_loaded.is_null());
 }
@@ -589,7 +589,7 @@ TEST_F(ImagePaintTimingDetectorTest, VideoImage) {
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   ImageRecord* record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_GT(record->first_size, 0);
+  EXPECT_GT(record->first_size, 0ul);
   EXPECT_TRUE(record->loaded);
 }
 
@@ -616,7 +616,7 @@ TEST_F(ImagePaintTimingDetectorTest, SVGImage) {
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   ImageRecord* record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_GT(record->first_size, 0);
+  EXPECT_GT(record->first_size, 0ul);
   EXPECT_TRUE(record->loaded);
 }
 

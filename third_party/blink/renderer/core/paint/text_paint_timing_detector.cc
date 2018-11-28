@@ -194,7 +194,7 @@ void TextPaintTimingDetector::RecordText(const LayoutObject& object,
                          recorded_node_count_);
     return;
   }
-  unsigned rect_size = 0;
+  uint64_t rect_size = 0;
   LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
   if (!invalidated_rect.IsEmpty()) {
     rect_size = frame_view_->GetPaintTimingDetector().CalculateVisualSize(
