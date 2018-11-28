@@ -17,9 +17,6 @@ crbug.com/862886 external/wpt/service-workers/service-worker/navigation-preload/
 crbug.com/896924 http/tests/inspector-protocol/network/interception-multiclient.js [ Pass ]
 crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-basic.js [ Pass ]
 
-# Flaky on non-NetworkService (disabled), consistent failing on NetworkService. Probably due to DCHECK.
-crbug.com/849670 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure ]
-
 # This passes in content_shell but not in chrome with network service disabled,
 # because content_shell does not add the about: handler. With network service
 # enabled this fails in both content_shell and chrome.
