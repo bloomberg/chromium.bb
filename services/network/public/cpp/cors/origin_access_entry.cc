@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom.h"
 #include "url/origin.h"
 #include "url/url_util.h"
 
@@ -123,6 +124,11 @@ OriginAccessEntry::MatchResult OriginAccessEntry::MatchesDomain(
     return kMatchesOriginButIsPublicSuffix;
 
   return kMatchesOrigin;
+}
+
+mojo::InlinedStructPtr<mojom::CorsOriginPattern>
+OriginAccessEntry::CreateCorsOriginPattern() const {
+  return mojom::CorsOriginPattern::New(protocol_, host_, mode_, priority_);
 }
 
 }  // namespace cors

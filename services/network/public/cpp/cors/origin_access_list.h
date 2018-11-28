@@ -12,10 +12,15 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "services/network/public/cpp/cors/origin_access_entry.h"
-#include "services/network/public/mojom/cors_origin_pattern.mojom.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom-shared.h"
 #include "url/origin.h"
 
 namespace network {
+
+namespace mojom {
+class CorsOriginPattern;
+class CorsOriginAccessPatterns;
+}  // namespace mojom
 
 namespace cors {
 
@@ -23,19 +28,28 @@ namespace cors {
 // blacklisting is respected. These lists are managed per source-origin basis.
 class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
  public:
+  using CorsOriginPatternPtr = mojo::InlinedStructPtr<mojom::CorsOriginPattern>;
+
   OriginAccessList();
   ~OriginAccessList();
 
   // Clears the old allow list for |source_origin|, and set |patterns| to the
   // allow list. When two or more patterns in a list match, the entry with the
   // higher |priority| takes precedence.
-  void SetAllowListForOrigin(
-      const url::Origin& source_origin,
-      const std::vector<mojom::CorsOriginPatternPtr>& patterns);
+  void SetAllowListForOrigin(const url::Origin& source_origin,
+                             const std::vector<CorsOriginPatternPtr>& patterns);
 
-  // Adds |pattern| to the allow list for |source_origin|.
-  void AddAllowListEntryForOrigin(const url::Origin& source_origin,
-                                  const mojom::CorsOriginPatternPtr& pattern);
+  // Adds an access pattern by |protocol|, |domain|, |mode|, and |priority|,
+  // to the allow list for |source_origin|.
+  void AddAllowListEntryForOrigin(
+      const url::Origin& source_origin,
+      const std::string& protocol,
+      const std::string& domain,
+      const mojom::CorsOriginAccessMatchMode mode,
+      const mojom::CorsOriginAccessMatchPriority priority);
+
+  // Clears the old allow list for |source_origin|.
+  void ClearAllowListForOrigin(const url::Origin& source_origin);
 
   // Clears the old allow list.
   void ClearAllowList();
@@ -43,13 +57,20 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
   // Clears the old block list for |source_origin| and set |patterns| to the
   // block list. When two or more patterns in a list match, the entry with the
   // higher |priority| takes precedence.
-  void SetBlockListForOrigin(
-      const url::Origin& source_origin,
-      const std::vector<mojom::CorsOriginPatternPtr>& patterns);
+  void SetBlockListForOrigin(const url::Origin& source_origin,
+                             const std::vector<CorsOriginPatternPtr>& patterns);
 
-  // Adds |pattern| to the block list for |source_origin|.
-  void AddBlockListEntryForOrigin(const url::Origin& source_origin,
-                                  const mojom::CorsOriginPatternPtr& pattern);
+  // Adds an access pattern by |protocol|, |domain|, |mode|, and |priority|,
+  // to the block list for |source_origin|.
+  void AddBlockListEntryForOrigin(
+      const url::Origin& source_origin,
+      const std::string& protocol,
+      const std::string& domain,
+      const mojom::CorsOriginAccessMatchMode mode,
+      const mojom::CorsOriginAccessMatchPriority priority);
+
+  // Clears the old block list for |source_origin|.
+  void ClearBlockListForOrigin(const url::Origin& source_origin);
 
   // Clears the old block list.
   void ClearBlockList();
@@ -59,22 +80,28 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
   bool IsAllowed(const url::Origin& source_origin,
                  const GURL& destination) const;
 
+  // Creates mojom::CorsPriginAccessPatterns instance vector that represents
+  // |this| OriginAccessList instance.
+  std::vector<mojo::StructPtr<mojom::CorsOriginAccessPatterns>>
+  CreateCorsOriginAccessPatternsList() const;
+
  private:
   using Patterns = std::vector<OriginAccessEntry>;
   using PatternMap = std::map<std::string, Patterns>;
 
-  static void SetForOrigin(
-      const url::Origin& source_origin,
-      const std::vector<mojom::CorsOriginPatternPtr>& patterns,
-      PatternMap* map);
-  static void AddForOrigin(const url::Origin& source_origin,
-                           const mojom::CorsOriginPatternPtr& pattern,
+  static void SetForOrigin(const url::Origin& source_origin,
+                           const std::vector<CorsOriginPatternPtr>& patterns,
                            PatternMap* map);
-  static network::mojom::CorsOriginAccessMatchPriority
-  GetHighestPriorityOfRuleForOrigin(const std::string& source,
-                                    const url::Origin& destination_origin,
-                                    const PatternMap& map);
+  static void AddForOrigin(const url::Origin& source_origin,
+                           const CorsOriginPatternPtr& pattern,
+                           PatternMap* map);
+  static mojom::CorsOriginAccessMatchPriority GetHighestPriorityOfRuleForOrigin(
+      const std::string& source,
+      const url::Origin& destination_origin,
+      const PatternMap& map);
 
+  // TODO(toyoshim): Redesign to have an unified map to be consistent with
+  // mojom::CorsOriginAccessPatterns. See https://crbug.com/908756.
   PatternMap allow_list_;
   PatternMap block_list_;
 

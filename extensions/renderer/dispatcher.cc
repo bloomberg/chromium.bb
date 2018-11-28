@@ -1238,14 +1238,18 @@ void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
   for (const auto& entry : allow_list) {
     WebSecurityPolicy::AddOriginAccessAllowListEntry(
         extension.url(), WebString::FromUTF8(entry->protocol),
-        WebString::FromUTF8(entry->domain), entry->allow_subdomains,
+        WebString::FromUTF8(entry->domain),
+        entry->mode ==
+            network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains,
         entry->priority);
   }
 
   for (const auto& entry : CreateCorsOriginAccessBlockList(extension)) {
     WebSecurityPolicy::AddOriginAccessBlockListEntry(
         extension.url(), WebString::FromUTF8(entry->protocol),
-        WebString::FromUTF8(entry->domain), entry->allow_subdomains,
+        WebString::FromUTF8(entry->domain),
+        entry->mode ==
+            network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains,
         entry->priority);
   }
 }

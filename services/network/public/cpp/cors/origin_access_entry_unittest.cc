@@ -4,6 +4,7 @@
 
 #include "services/network/public/cpp/cors/origin_access_entry.h"
 
+#include "services/network/public/mojom/cors_origin_pattern.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -313,6 +314,20 @@ TEST(OriginAccessEntryTest, IPAddressMatchingTest) {
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
     EXPECT_EQ(test.expected, entry2.MatchesOrigin(origin_to_test));
   }
+}
+
+TEST(OriginAccessEntryTest, CreateCorsOriginPattern) {
+  const std::string kProtocol = "https";
+  const std::string kDomain = "google.com";
+  const auto kMode = mojom::CorsOriginAccessMatchMode::kAllowSubdomains;
+  const auto kPriority = mojom::CorsOriginAccessMatchPriority::kDefaultPriority;
+
+  OriginAccessEntry entry(kProtocol, kDomain, kMode, kPriority);
+  mojom::CorsOriginPatternPtr pattern = entry.CreateCorsOriginPattern();
+  DCHECK_EQ(kProtocol, pattern->protocol);
+  DCHECK_EQ(kDomain, pattern->domain);
+  DCHECK_EQ(kMode, pattern->mode);
+  DCHECK_EQ(kPriority, pattern->priority);
 }
 
 }  // namespace

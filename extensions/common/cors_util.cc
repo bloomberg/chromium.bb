@@ -37,7 +37,11 @@ void AddURLPatternSetToList(
       if (!pattern.MatchesScheme(scheme))
         continue;
       list->push_back(network::mojom::CorsOriginPattern::New(
-          scheme, pattern.host(), pattern.match_subdomains(), priority));
+          scheme, pattern.host(),
+          pattern.match_subdomains()
+              ? network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains
+              : network::mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+          priority));
     }
   }
 }
@@ -80,7 +84,8 @@ CreateCorsOriginAccessBlockList(const Extension& extension) {
 
   GURL webstore_launch_url = extension_urls::GetWebstoreLaunchURL();
   block_list.push_back(network::mojom::CorsOriginPattern::New(
-      webstore_launch_url.scheme(), webstore_launch_url.host(), true,
+      webstore_launch_url.scheme(), webstore_launch_url.host(),
+      network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains,
       network::mojom::CorsOriginAccessMatchPriority::kHighPriority));
 
   // TODO(devlin): Should we also block the webstore update URL here? See
