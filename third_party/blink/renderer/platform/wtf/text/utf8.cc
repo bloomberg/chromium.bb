@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace WTF {
-namespace Unicode {
+namespace unicode {
 
 inline int InlineUTF8SequenceLengthNonASCII(char b0) {
   if ((b0 & 0xC0) != 0xC0)
@@ -472,5 +472,5 @@ bool EqualLatin1WithUTF8(const LChar* a,
   return EqualWithUTF8Internal(a, a_end, b, b_end);
 }
 
-}  // namespace Unicode
+}  // namespace unicode
 }  // namespace WTF

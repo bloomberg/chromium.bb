@@ -62,7 +62,7 @@ int FindNextWordForward(const UChar* chars, int len, int position) {
       // We stop searching when the character preceeding the break
       // is alphanumeric or underscore.
       if (position < len &&
-          (WTF::Unicode::IsAlphanumeric(chars[position - 1]) ||
+          (WTF::unicode::IsAlphanumeric(chars[position - 1]) ||
            chars[position - 1] == kLowLineCharacter))
         return position;
 
@@ -79,7 +79,7 @@ int FindNextWordBackward(const UChar* chars, int len, int position) {
   while (position != kTextBreakDone) {
     // We stop searching when the character following the break
     // is alphanumeric or underscore.
-    if (position > 0 && (WTF::Unicode::IsAlphanumeric(chars[position]) ||
+    if (position > 0 && (WTF::unicode::IsAlphanumeric(chars[position]) ||
                          chars[position] == kLowLineCharacter))
       return position;
 

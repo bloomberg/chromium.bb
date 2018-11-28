@@ -530,8 +530,8 @@ class VTTTextRunIterator : public TextRunIterator {
     // Within a cue, paragraph boundaries are only denoted by Type B characters,
     // such as U+000A LINE FEED (LF), U+0085 NEXT LINE (NEL),
     // and U+2029 PARAGRAPH SEPARATOR.
-    return WTF::Unicode::Category(Current()) &
-           WTF::Unicode::kSeparator_Paragraph;
+    return WTF::unicode::Category(Current()) &
+           WTF::unicode::kSeparator_Paragraph;
   }
 };
 

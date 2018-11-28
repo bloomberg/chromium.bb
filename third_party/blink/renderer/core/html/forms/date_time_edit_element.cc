@@ -467,10 +467,10 @@ void DateTimeEditBuilder::VisitLiteral(const String& text) {
   HTMLDivElement* element = HTMLDivElement::Create(EditElement().GetDocument());
   element->SetShadowPseudoId(text_pseudo_id);
   if (parameters_.locale.IsRTL() && text.length()) {
-    WTF::Unicode::CharDirection dir = WTF::Unicode::Direction(text[0]);
-    if (dir == WTF::Unicode::kSegmentSeparator ||
-        dir == WTF::Unicode::kWhiteSpaceNeutral ||
-        dir == WTF::Unicode::kOtherNeutral)
+    WTF::unicode::CharDirection dir = WTF::unicode::Direction(text[0]);
+    if (dir == WTF::unicode::kSegmentSeparator ||
+        dir == WTF::unicode::kWhiteSpaceNeutral ||
+        dir == WTF::unicode::kOtherNeutral)
       element->AppendChild(Text::Create(EditElement().GetDocument(),
                                         String(&kRightToLeftMarkCharacter, 1)));
   }

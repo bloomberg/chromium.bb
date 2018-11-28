@@ -712,9 +712,9 @@ inline float FirstPositiveWidth(const WordMeasurements& word_measurements) {
 }
 
 ALWAYS_INLINE TextDirection
-TextDirectionFromUnicode(WTF::Unicode::CharDirection direction) {
-  return direction == WTF::Unicode::kRightToLeft ||
-                 direction == WTF::Unicode::kRightToLeftArabic
+TextDirectionFromUnicode(WTF::unicode::CharDirection direction) {
+  return direction == WTF::unicode::kRightToLeft ||
+                 direction == WTF::unicode::kRightToLeftArabic
              ? TextDirection::kRtl
              : TextDirection::kLtr;
 }

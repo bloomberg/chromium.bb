@@ -351,15 +351,15 @@ void LayoutSVGInlineText::UpdateMetricsList(
   bool bidi_override = IsOverride(StyleRef().GetUnicodeBidi());
   BidiStatus status(TextDirection::kLtr, bidi_override);
   if (run.Is8Bit() || bidi_override) {
-    WTF::Unicode::CharDirection direction = WTF::Unicode::kLeftToRight;
+    WTF::unicode::CharDirection direction = WTF::unicode::kLeftToRight;
     // If BiDi override is in effect, use the specified direction.
     if (bidi_override && !StyleRef().IsLeftToRightDirection())
-      direction = WTF::Unicode::kRightToLeft;
+      direction = WTF::unicode::kRightToLeft;
     bidi_runs.AddRun(new BidiCharacterRun(
         status.context->Override(), status.context->Level(), 0,
         run.CharactersLength(), direction, status.context->Dir()));
   } else {
-    status.last = status.last_strong = WTF::Unicode::kOtherNeutral;
+    status.last = status.last_strong = WTF::unicode::kOtherNeutral;
     bidi_resolver.SetStatus(status);
     bidi_resolver.SetPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
     const bool kHardLineBreak = false;

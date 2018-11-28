@@ -411,10 +411,10 @@ static inline bool IsValidNameStart(UChar32 c) {
 
   // rules (a) and (f) above
   const uint32_t kNameStartMask =
-      WTF::Unicode::kLetter_Lowercase | WTF::Unicode::kLetter_Uppercase |
-      WTF::Unicode::kLetter_Other | WTF::Unicode::kLetter_Titlecase |
-      WTF::Unicode::kNumber_Letter;
-  if (!(WTF::Unicode::Category(c) & kNameStartMask))
+      WTF::unicode::kLetter_Lowercase | WTF::unicode::kLetter_Uppercase |
+      WTF::unicode::kLetter_Other | WTF::unicode::kLetter_Titlecase |
+      WTF::unicode::kNumber_Letter;
+  if (!(WTF::unicode::Category(c) & kNameStartMask))
     return false;
 
   // rule (c) above
@@ -422,10 +422,10 @@ static inline bool IsValidNameStart(UChar32 c) {
     return false;
 
   // rule (d) above
-  WTF::Unicode::CharDecompositionType decomp_type =
-      WTF::Unicode::DecompositionType(c);
-  if (decomp_type == WTF::Unicode::kDecompositionFont ||
-      decomp_type == WTF::Unicode::kDecompositionCompat)
+  WTF::unicode::CharDecompositionType decomp_type =
+      WTF::unicode::DecompositionType(c);
+  if (decomp_type == WTF::unicode::kDecompositionFont ||
+      decomp_type == WTF::unicode::kDecompositionCompat)
     return false;
 
   return true;
@@ -446,10 +446,10 @@ static inline bool IsValidNamePart(UChar32 c) {
 
   // rules (b) and (f) above
   const uint32_t kOtherNamePartMask =
-      WTF::Unicode::kMark_NonSpacing | WTF::Unicode::kMark_Enclosing |
-      WTF::Unicode::kMark_SpacingCombining | WTF::Unicode::kLetter_Modifier |
-      WTF::Unicode::kNumber_DecimalDigit;
-  if (!(WTF::Unicode::Category(c) & kOtherNamePartMask))
+      WTF::unicode::kMark_NonSpacing | WTF::unicode::kMark_Enclosing |
+      WTF::unicode::kMark_SpacingCombining | WTF::unicode::kLetter_Modifier |
+      WTF::unicode::kNumber_DecimalDigit;
+  if (!(WTF::unicode::Category(c) & kOtherNamePartMask))
     return false;
 
   // rule (c) above
@@ -457,10 +457,10 @@ static inline bool IsValidNamePart(UChar32 c) {
     return false;
 
   // rule (d) above
-  WTF::Unicode::CharDecompositionType decomp_type =
-      WTF::Unicode::DecompositionType(c);
-  if (decomp_type == WTF::Unicode::kDecompositionFont ||
-      decomp_type == WTF::Unicode::kDecompositionCompat)
+  WTF::unicode::CharDecompositionType decomp_type =
+      WTF::unicode::DecompositionType(c);
+  if (decomp_type == WTF::unicode::kDecompositionFont ||
+      decomp_type == WTF::unicode::kDecompositionCompat)
     return false;
 
   return true;
@@ -1635,9 +1635,9 @@ static inline String CanonicalizedTitle(Document* document,
   bool pending_whitespace = false;
   for (unsigned i = 0; i < length; ++i) {
     UChar32 c = characters[i];
-    if ((c <= WTF::Unicode::kSpaceCharacter &&
-         c != WTF::Unicode::kLineTabulationCharacter) ||
-        c == WTF::Unicode::kDeleteCharacter) {
+    if ((c <= WTF::unicode::kSpaceCharacter &&
+         c != WTF::unicode::kLineTabulationCharacter) ||
+        c == WTF::unicode::kDeleteCharacter) {
       if (builder_index != 0)
         pending_whitespace = true;
     } else {

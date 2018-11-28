@@ -418,7 +418,7 @@ scoped_refptr<StringImpl> StringImpl::LowerUnicode() {
 
     for (wtf_size_t i = first_index_to_be_lowered; i < length_; ++i) {
       LChar ch = Characters8()[i];
-      data8[i] = UNLIKELY(ch & ~0x7F) ? static_cast<LChar>(Unicode::ToLower(ch))
+      data8[i] = UNLIKELY(ch & ~0x7F) ? static_cast<LChar>(unicode::ToLower(ch))
                                       : ToASCIILower(ch);
     }
 
@@ -458,12 +458,12 @@ scoped_refptr<StringImpl> StringImpl::LowerUnicode() {
 
   bool error;
   int32_t real_length =
-      Unicode::ToLower(data16, length, Characters16(), length_, &error);
+      unicode::ToLower(data16, length, Characters16(), length_, &error);
   if (!error && real_length == length)
     return new_impl;
 
   new_impl = CreateUninitialized(real_length, data16);
-  Unicode::ToLower(data16, real_length, Characters16(), length_, &error);
+  unicode::ToLower(data16, real_length, Characters16(), length_, &error);
   if (error)
     return this;
   return new_impl;
@@ -503,7 +503,7 @@ scoped_refptr<StringImpl> StringImpl::UpperUnicode() {
       LChar c = Characters8()[i];
       if (UNLIKELY(c == kSmallLetterSharpSCharacter))
         ++number_sharp_s_characters;
-      UChar upper = static_cast<UChar>(Unicode::ToUpper(c));
+      UChar upper = static_cast<UChar>(unicode::ToUpper(c));
       if (UNLIKELY(upper > 0xff)) {
         // Since this upper-cased character does not fit in an 8-bit string, we
         // need to take the 16-bit path.
@@ -527,7 +527,7 @@ scoped_refptr<StringImpl> StringImpl::UpperUnicode() {
         *dest++ = 'S';
         *dest++ = 'S';
       } else {
-        *dest++ = static_cast<LChar>(Unicode::ToUpper(c));
+        *dest++ = static_cast<LChar>(unicode::ToUpper(c));
       }
     }
 
@@ -554,11 +554,11 @@ upconvert:
   // Do a slower implementation for cases that include non-ASCII characters.
   bool error;
   int32_t real_length =
-      Unicode::ToUpper(data16, length, source16, length_, &error);
+      unicode::ToUpper(data16, length, source16, length_, &error);
   if (!error && real_length == length)
     return new_impl;
   new_impl = CreateUninitialized(real_length, data16);
-  Unicode::ToUpper(data16, real_length, source16, length_, &error);
+  unicode::ToUpper(data16, real_length, source16, length_, &error);
   if (error)
     return this;
   return new_impl;
@@ -720,7 +720,7 @@ scoped_refptr<StringImpl> StringImpl::FoldCase() {
     // Do a slower implementation for cases that include non-ASCII Latin-1
     // characters.
     for (int32_t i = 0; i < length; ++i)
-      data[i] = static_cast<LChar>(Unicode::ToLower(Characters8()[i]));
+      data[i] = static_cast<LChar>(unicode::ToLower(Characters8()[i]));
 
     return new_impl;
   }
@@ -740,11 +740,11 @@ scoped_refptr<StringImpl> StringImpl::FoldCase() {
   // Do a slower implementation for cases that include non-ASCII characters.
   bool error;
   int32_t real_length =
-      Unicode::FoldCase(data, length, Characters16(), length_, &error);
+      unicode::FoldCase(data, length, Characters16(), length_, &error);
   if (!error && real_length == length)
     return new_impl;
   new_impl = CreateUninitialized(real_length, data);
-  Unicode::FoldCase(data, real_length, Characters16(), length_, &error);
+  unicode::FoldCase(data, real_length, Characters16(), length_, &error);
   if (error)
     return this;
   return new_impl;
@@ -1048,14 +1048,14 @@ bool DeprecatedEqualIgnoringCase(const UChar* a,
   DCHECK_GE(length, 0u);
   if (a == b)
     return true;
-  return !Unicode::Umemcasecmp(a, b, length);
+  return !unicode::Umemcasecmp(a, b, length);
 }
 
 bool DeprecatedEqualIgnoringCase(const UChar* a,
                                  const LChar* b,
                                  wtf_size_t length) {
   while (length--) {
-    if (Unicode::FoldCase(*a++) != StringImpl::kLatin1CaseFoldTable[*b++])
+    if (unicode::FoldCase(*a++) != StringImpl::kLatin1CaseFoldTable[*b++])
       return false;
   }
   return true;
@@ -2000,7 +2000,7 @@ UChar32 ToUpper(UChar32 c, const AtomicString& locale_identifier) {
     }
   }
 
-  return Unicode::ToUpper(c);
+  return unicode::ToUpper(c);
 }
 
 }  // namespace WTF

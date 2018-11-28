@@ -125,7 +125,7 @@ class InlineIterator {
   UChar PreviousInSameNode() const;
   UChar32 CodepointAt(unsigned) const;
   UChar32 CurrentCodepoint() const;
-  ALWAYS_INLINE WTF::Unicode::CharDirection Direction() const;
+  ALWAYS_INLINE WTF::unicode::CharDirection Direction() const;
 
  private:
   LineLayoutItem root_;
@@ -145,15 +145,15 @@ inline bool operator!=(const InlineIterator& it1, const InlineIterator& it2) {
          it1.GetLineLayoutItem() != it2.GetLineLayoutItem();
 }
 
-static inline WTF::Unicode::CharDirection EmbedCharFromDirection(
+static inline WTF::unicode::CharDirection EmbedCharFromDirection(
     TextDirection dir,
     UnicodeBidi unicode_bidi) {
   if (unicode_bidi == UnicodeBidi::kEmbed) {
-    return dir == TextDirection::kRtl ? WTF::Unicode::kRightToLeftEmbedding
-                                      : WTF::Unicode::kLeftToRightEmbedding;
+    return dir == TextDirection::kRtl ? WTF::unicode::kRightToLeftEmbedding
+                                      : WTF::unicode::kLeftToRightEmbedding;
   }
-  return dir == TextDirection::kRtl ? WTF::Unicode::kRightToLeftOverride
-                                    : WTF::Unicode::kLeftToRightOverride;
+  return dir == TextDirection::kRtl ? WTF::unicode::kRightToLeftOverride
+                                    : WTF::unicode::kLeftToRightOverride;
 }
 
 static inline bool TreatAsIsolated(const ComputedStyle& style) {
@@ -208,7 +208,7 @@ static inline void NotifyObserverWillExitObject(Observer* observer,
   // Otherwise we pop any embed/override character we added when we opened this
   // tag.
   if (!observer->InIsolate())
-    observer->Embed(WTF::Unicode::kPopDirectionalFormat, kFromStyleOrDOM);
+    observer->Embed(WTF::unicode::kPopDirectionalFormat, kFromStyleOrDOM);
 }
 
 static inline bool IsIteratorTarget(LineLayoutItem object) {
@@ -512,16 +512,17 @@ inline UChar32 InlineIterator::CurrentCodepoint() const {
   return CodepointAt(pos_);
 }
 
-ALWAYS_INLINE WTF::Unicode::CharDirection InlineIterator::Direction() const {
+ALWAYS_INLINE WTF::unicode::CharDirection InlineIterator::Direction() const {
   if (UChar32 c = CurrentCodepoint())
-    return WTF::Unicode::Direction(c);
+    return WTF::unicode::Direction(c);
 
-  if (line_layout_item_ && line_layout_item_.IsListMarker())
+  if (line_layout_item_ && line_layout_item_.IsListMarker()) {
     return line_layout_item_.StyleRef().IsLeftToRightDirection()
-               ? WTF::Unicode::kLeftToRight
-               : WTF::Unicode::kRightToLeft;
+               ? WTF::unicode::kLeftToRight
+               : WTF::unicode::kRightToLeft;
+  }
 
-  return WTF::Unicode::kOtherNeutral;
+  return WTF::unicode::kOtherNeutral;
 }
 
 template <>
@@ -538,7 +539,7 @@ inline bool InlineBidiResolver::IsEndOfLine(const InlineIterator& end) {
     current_.MoveTo(current_.GetLineLayoutItem(), end.Offset(),
                     current_.NextBreakablePosition());
     last_ = current_;
-    UpdateStatusLastFromCurrentDirection(WTF::Unicode::kOtherNeutral);
+    UpdateStatusLastFromCurrentDirection(WTF::unicode::kOtherNeutral);
   }
   return in_end_of_line;
 }
@@ -598,7 +599,7 @@ inline BidiRun* InlineBidiResolver::AddTrailingRun(
   DCHECK(context);
   BidiRun* new_trailing_run = new BidiRun(
       context->Override(), context->Level(), start, stop,
-      run->line_layout_item_, WTF::Unicode::kOtherNeutral, context->Dir());
+      run->line_layout_item_, WTF::unicode::kOtherNeutral, context->Dir());
   if (direction == TextDirection::kLtr)
     runs.AddRun(new_trailing_run);
   else
@@ -706,7 +707,7 @@ class IsolateTracker {
   bool InIsolate() const { return nested_isolate_count_; }
 
   // We don't care if we encounter bidi directional overrides.
-  void Embed(WTF::Unicode::CharDirection, BidiEmbeddingSource) {}
+  void Embed(WTF::unicode::CharDirection, BidiEmbeddingSource) {}
   void CommitExplicitEmbedding(BidiRunList<BidiRun>&) {}
   BidiRunList<BidiRun>& Runs() { return runs_; }
 
@@ -899,8 +900,8 @@ inline void InlineBidiResolver::AppendRun(BidiRunList<BidiRun>& runs) {
     sor_ = eor_;
   }
 
-  direction_ = WTF::Unicode::kOtherNeutral;
-  status_.eor = WTF::Unicode::kOtherNeutral;
+  direction_ = WTF::unicode::kOtherNeutral;
+  status_.eor = WTF::unicode::kOtherNeutral;
 }
 
 }  // namespace blink

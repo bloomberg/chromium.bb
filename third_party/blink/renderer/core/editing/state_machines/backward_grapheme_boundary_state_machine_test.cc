@@ -20,7 +20,7 @@ namespace backward_grapheme_boundary_state_machine_test {
 
 // kWatch kVS16, kEye kVS16 are valid standardized variants.
 const UChar32 kWatch = 0x231A;
-const UChar32 kEye = WTF::Unicode::kEyeCharacter;
+const UChar32 kEye = WTF::unicode::kEyeCharacter;
 const UChar32 kVS16 = 0xFE0F;
 
 // kHanBMP KVS17, kHanSIP kVS17 are valie IVD sequences.
@@ -317,10 +317,10 @@ TEST_F(BackwardGraphemeBoundaryStatemachineTest,
 }
 
 TEST_F(BackwardGraphemeBoundaryStatemachineTest, MuchLongerCase) {
-  const UChar32 kMan = WTF::Unicode::kManCharacter;
-  const UChar32 kZwj = WTF::Unicode::kZeroWidthJoinerCharacter;
-  const UChar32 kHeart = WTF::Unicode::kHeavyBlackHeartCharacter;
-  const UChar32 kKiss = WTF::Unicode::kKissMarkCharacter;
+  const UChar32 kMan = WTF::unicode::kManCharacter;
+  const UChar32 kZwj = WTF::unicode::kZeroWidthJoinerCharacter;
+  const UChar32 kHeart = WTF::unicode::kHeavyBlackHeartCharacter;
+  const UChar32 kKiss = WTF::unicode::kKissMarkCharacter;
 
   BackwardGraphemeBoundaryStateMachine machine;
 

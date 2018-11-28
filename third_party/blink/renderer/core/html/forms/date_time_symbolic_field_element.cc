@@ -78,7 +78,7 @@ void DateTimeSymbolicFieldElement::HandleKeyboardEvent(
   if (keyboard_event.type() != event_type_names::kKeypress)
     return;
 
-  const UChar char_code = WTF::Unicode::ToLower(keyboard_event.charCode());
+  const UChar char_code = WTF::unicode::ToLower(keyboard_event.charCode());
   if (char_code < ' ')
     return;
 

@@ -788,7 +788,7 @@ static inline bool IsSpaceOrNewline(UChar c) {
   // This will include newlines, which aren't included in Unicode DirWS.
   return c <= 0x7F
              ? WTF::IsASCIISpace(c)
-             : WTF::Unicode::Direction(c) == WTF::Unicode::kWhiteSpaceNeutral;
+             : WTF::unicode::Direction(c) == WTF::unicode::kWhiteSpaceNeutral;
 }
 
 inline scoped_refptr<StringImpl> StringImpl::IsolatedCopy() const {

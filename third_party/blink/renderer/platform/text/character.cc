@@ -236,11 +236,11 @@ bool Character::CanTextDecorationSkipInk(UChar32 codepoint) {
 }
 
 bool Character::CanReceiveTextEmphasis(UChar32 c) {
-  WTF::Unicode::CharCategory category = WTF::Unicode::Category(c);
+  WTF::unicode::CharCategory category = WTF::unicode::Category(c);
   if (category &
-      (WTF::Unicode::kSeparator_Space | WTF::Unicode::kSeparator_Line |
-       WTF::Unicode::kSeparator_Paragraph | WTF::Unicode::kOther_NotAssigned |
-       WTF::Unicode::kOther_Control | WTF::Unicode::kOther_Format))
+      (WTF::unicode::kSeparator_Space | WTF::unicode::kSeparator_Line |
+       WTF::unicode::kSeparator_Paragraph | WTF::unicode::kOther_NotAssigned |
+       WTF::unicode::kOther_Control | WTF::unicode::kOther_Format))
     return false;
 
   // Additional word-separator characters listed in CSS Text Level 3 Editor's
@@ -292,7 +292,7 @@ bool Character::IsCommonOrInheritedScript(UChar32 character) {
 }
 
 bool Character::IsPrivateUse(UChar32 character) {
-  return WTF::Unicode::Category(character) & WTF::Unicode::kOther_PrivateUse;
+  return WTF::unicode::Category(character) & WTF::unicode::kOther_PrivateUse;
 }
 
 bool Character::IsNonCharacter(UChar32 character) {

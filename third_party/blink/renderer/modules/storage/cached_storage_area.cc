@@ -600,13 +600,13 @@ Vector<uint8_t> CachedStorageArea::StringToUint8Vector(
         uint8_t* buffer = buffer_vector.data();
         const LChar* characters = input.Characters8();
 
-        WTF::Unicode::ConversionResult result =
-            WTF::Unicode::ConvertLatin1ToUTF8(
+        WTF::unicode::ConversionResult result =
+            WTF::unicode::ConvertLatin1ToUTF8(
                 &characters, characters + length,
                 reinterpret_cast<char**>(&buffer),
                 reinterpret_cast<char*>(buffer + buffer_vector.size()));
         // (length * 3) should be sufficient for any conversion
-        DCHECK_NE(result, WTF::Unicode::kTargetExhausted);
+        DCHECK_NE(result, WTF::unicode::kTargetExhausted);
         buffer_vector.Shrink(
             static_cast<wtf_size_t>(buffer - buffer_vector.data()));
         return buffer_vector;

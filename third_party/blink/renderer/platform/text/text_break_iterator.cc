@@ -284,9 +284,9 @@ static inline bool ShouldKeepAfterKeepAll(UChar last_ch,
                                           UChar next_ch) {
   UChar pre_ch = U_MASK(u_charType(ch)) & U_GC_M_MASK ? last_ch : ch;
   return U_MASK(u_charType(pre_ch)) & (U_GC_L_MASK | U_GC_N_MASK) &&
-         !WTF::Unicode::HasLineBreakingPropertyComplexContext(pre_ch) &&
+         !WTF::unicode::HasLineBreakingPropertyComplexContext(pre_ch) &&
          U_MASK(u_charType(next_ch)) & (U_GC_L_MASK | U_GC_N_MASK) &&
-         !WTF::Unicode::HasLineBreakingPropertyComplexContext(next_ch);
+         !WTF::unicode::HasLineBreakingPropertyComplexContext(next_ch);
 }
 
 inline bool NeedsLineBreakIterator(UChar ch) {

@@ -54,9 +54,9 @@ class InlineFlowBox : public InlineBox {
         baseline_type_(kAlphabeticBaseline),
         has_annotations_before_(false),
         has_annotations_after_(false),
-        line_break_bidi_status_eor_(WTF::Unicode::kLeftToRight),
-        line_break_bidi_status_last_strong_(WTF::Unicode::kLeftToRight),
-        line_break_bidi_status_last_(WTF::Unicode::kLeftToRight),
+        line_break_bidi_status_eor_(WTF::unicode::kLeftToRight),
+        line_break_bidi_status_last_strong_(WTF::unicode::kLeftToRight),
+        line_break_bidi_status_last_(WTF::unicode::kLeftToRight),
         is_first_after_page_break_(false)
 #if DCHECK_IS_ON()
         ,
@@ -471,9 +471,9 @@ class InlineFlowBox : public InlineBox {
   unsigned has_annotations_before_ : 1;
   unsigned has_annotations_after_ : 1;
 
-  unsigned line_break_bidi_status_eor_ : 5;          // WTF::Unicode::Direction
-  unsigned line_break_bidi_status_last_strong_ : 5;  // WTF::Unicode::Direction
-  unsigned line_break_bidi_status_last_ : 5;         // WTF::Unicode::Direction
+  unsigned line_break_bidi_status_eor_ : 5;          // WTF::unicode::Direction
+  unsigned line_break_bidi_status_last_strong_ : 5;  // WTF::unicode::Direction
+  unsigned line_break_bidi_status_last_ : 5;         // WTF::unicode::Direction
 
   unsigned is_first_after_page_break_ : 1;
 
