@@ -1172,6 +1172,9 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
               CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
+  // The exact ordering of delayed vs non-delayed tasks is not defined.
+  // Make sure we run all non-delayed tasks before testing state.
+  base::RunLoop().RunUntilIdle();
   if (!enable_surface_layer_for_video_) {
     ASSERT_TRUE(layer_ != nullptr);
     EXPECT_TRUE(layer_->contents_opaque());
@@ -1187,6 +1190,7 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
   }
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
+  base::RunLoop().RunUntilIdle();
   if (!enable_surface_layer_for_video_) {
     EXPECT_FALSE(layer_->contents_opaque());
   }
@@ -1201,6 +1205,7 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
   }
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
+  base::RunLoop().RunUntilIdle();
   if (!enable_surface_layer_for_video_)
     EXPECT_TRUE(layer_->contents_opaque());
 

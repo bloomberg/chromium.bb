@@ -181,6 +181,7 @@ void MessagePumpCFRunLoopBase::Run(Delegate* delegate) {
   Delegate* last_delegate = delegate_;
   SetDelegate(delegate);
 
+  ScheduleWork();
   DoRun(delegate);
 
   // Restore the previous state of the object.
