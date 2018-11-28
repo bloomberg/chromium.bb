@@ -49,11 +49,13 @@ using ui::test::uiimage_utils::UIImageWithSizeAndSolidColor;
 
 #pragma mark - SnapshotGeneratorDelegate
 
-- (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {
+- (BOOL)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    canTakeSnapshotForWebState:(web::WebState*)webState {
   return !_canTakeSnapshot;
 }
 
-- (void)willUpdateSnapshotForWebState:(web::WebState*)webState {
+- (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    willUpdateSnapshotForWebState:(web::WebState*)webState {
   ++_snapshotTakenCount;
 }
 
