@@ -355,6 +355,9 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
                 theme_info.custom_background_attribution_line_1);
     builder.Set("attribution2",
                 theme_info.custom_background_attribution_line_2);
+    // Clear the theme attribution url, as it shouldn't be shown when
+    // a custom background is set.
+    builder.Set("attributionUrl", std::string());
   }
 
   return builder.Build();
