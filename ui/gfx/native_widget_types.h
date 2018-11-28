@@ -36,9 +36,6 @@
 //     unless you're in the IPC layer, which will be translating between
 //     NativeViewIds from the renderer and NativeViews.
 //
-//   NativeImage: The platform-specific image type used for drawing UI elements
-//     in the browser.
-//
 // The name 'View' here meshes with OS X where the UI elements are called
 // 'views' and with our Chrome UI code where the elements are also called
 // 'views'.
@@ -220,15 +217,6 @@ const ui::CursorType kNullCursor = static_cast<ui::CursorType>(0);
 #else
 const gfx::NativeCursor kNullCursor = static_cast<gfx::NativeCursor>(NULL);
 #endif
-
-#if defined(OS_IOS)
-typedef UIImage NativeImageType;
-#elif defined(OS_MACOSX)
-typedef NSImage NativeImageType;
-#else
-typedef SkBitmap NativeImageType;
-#endif
-typedef NativeImageType* NativeImage;
 
 // Note: for test_shell we're packing a pointer into the NativeViewId. So, if
 // you make it a type which is smaller than a pointer, you have to fix
