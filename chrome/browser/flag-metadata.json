@@ -1239,6 +1239,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-gesture-navigation",
+    // "owners": [ "jinsukkim@chromium.org" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-google-branded-context-menu",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

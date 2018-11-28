@@ -1484,6 +1484,9 @@ extern const char kEphemeralTabDescription[];
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
 
+extern const char kGestureNavigationName[];
+extern const char kGestureNavigationDescription[];
+
 extern const char kGrantNotificationsToDSEName[];
 extern const char kGrantNotificationsToDSENameDescription[];
 
