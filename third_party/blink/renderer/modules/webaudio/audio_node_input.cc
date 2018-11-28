@@ -33,12 +33,24 @@
 
 namespace blink {
 
-inline AudioNodeInput::AudioNodeInput(AudioHandler& handler)
+AudioNodeInput::AudioNodeInput(AudioHandler& handler)
     : AudioSummingJunction(handler.Context()->GetDeferredTaskHandler()),
       handler_(handler) {
   // Set to mono by default.
   internal_summing_bus_ =
       AudioBus::Create(1, audio_utilities::kRenderQuantumFrames);
+}
+
+AudioNodeInput::~AudioNodeInput() {
+  GetDeferredTaskHandler().AssertGraphOwner();
+
+  for (AudioNodeOutput* output : outputs_)
+    output->RemoveInput(*this);
+  for (AudioNodeOutput* output : disabled_outputs_)
+    output->RemoveInput(*this);
+  outputs_.clear();
+  disabled_outputs_.clear();
+  ChangedOutputs();
 }
 
 std::unique_ptr<AudioNodeInput> AudioNodeInput::Create(AudioHandler& handler) {
