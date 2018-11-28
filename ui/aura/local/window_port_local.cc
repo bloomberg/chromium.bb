@@ -173,9 +173,11 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
        ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
       (window_->event_targeting_policy() ==
        ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
-  params.hit_test_data_provider =
-      std::make_unique<viz::HitTestDataProviderDrawQuad>(
-          true /* should_ask_for_child_region */, root_accepts_events);
+  if (features::IsVizHitTestingDrawQuadEnabled()) {
+    params.hit_test_data_provider =
+        std::make_unique<viz::HitTestDataProviderDrawQuad>(
+            true /* should_ask_for_child_region */, root_accepts_events);
+  }
   auto frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           nullptr /* context_provider */, nullptr /* worker_context_provider */,

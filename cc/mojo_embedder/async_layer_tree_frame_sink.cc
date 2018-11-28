@@ -16,6 +16,7 @@
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -97,6 +98,10 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
           "GraphicsPipeline.%s.SubmitCompositorFrameAfterBeginFrame",
           params->client_name)),
       weak_factory_(this) {
+  // We should not create hit test data provider if we want to use cc layer tree
+  // to generated data.
+  if (features::IsVizHitTestingSurfaceLayerEnabled())
+    DCHECK(!params->hit_test_data_provider);
   DETACH_FROM_THREAD(thread_checker_);
 }
 

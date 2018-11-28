@@ -12,6 +12,7 @@
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -196,9 +197,11 @@ WindowPortMus::RequestLayerTreeFrameSink(
        ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
       (window_->event_targeting_policy() ==
        ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
-  params.hit_test_data_provider =
-      std::make_unique<viz::HitTestDataProviderDrawQuad>(
-          /* should_ask_for_child_regions */ false, root_accepts_events);
+  if (features::IsVizHitTestingDrawQuadEnabled()) {
+    params.hit_test_data_provider =
+        std::make_unique<viz::HitTestDataProviderDrawQuad>(
+            /* should_ask_for_child_regions */ false, root_accepts_events);
+  }
   params.local_surface_id_provider =
       std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
