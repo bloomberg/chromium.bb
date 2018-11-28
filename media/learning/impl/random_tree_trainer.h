@@ -6,10 +6,12 @@
 #define MEDIA_LEARNING_IMPL_RANDOM_TREE_TRAINER_H_
 
 #include <limits>
+#include <map>
 #include <memory>
 #include <set>
 
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "media/learning/impl/training_algorithm.h"
 
@@ -101,7 +103,9 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
 
       // Number of occurances of each target value in |training_data| along this
       // branch of the split.
-      std::map<TargetValue, int> class_counts;
+      // This is a flat_map since we're likely to have a very small (e.g.,
+      // "true / "false") number of targets.
+      base::flat_map<TargetValue, int> class_counts;
     };
 
     // [feature value at this split] = info about which examples take this

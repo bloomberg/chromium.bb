@@ -5,11 +5,10 @@
 #ifndef MEDIA_LEARNING_IMPL_MODEL_H_
 #define MEDIA_LEARNING_IMPL_MODEL_H_
 
-#include <map>
-
 #include "base/component_export.h"
 #include "media/learning/common/training_example.h"
 #include "media/learning/impl/model.h"
+#include "media/learning/impl/target_distribution.h"
 
 namespace media {
 namespace learning {
@@ -19,11 +18,6 @@ namespace learning {
 // can support it.
 class COMPONENT_EXPORT(LEARNING_IMPL) Model {
  public:
-  // [target value] == counts
-  // This is classification-centric.  Not sure about the right interface for
-  // regressors.  Mostly for testing.
-  using TargetDistribution = std::map<TargetValue, int>;
-
   virtual ~Model() = default;
 
   virtual TargetDistribution PredictDistribution(

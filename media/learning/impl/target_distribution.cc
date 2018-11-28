@@ -8,7 +8,22 @@ namespace media {
 namespace learning {
 
 TargetDistribution::TargetDistribution() = default;
+
+TargetDistribution::TargetDistribution(const TargetDistribution& rhs) = default;
+
+TargetDistribution::TargetDistribution(TargetDistribution&& rhs) = default;
+
 TargetDistribution::~TargetDistribution() = default;
+
+TargetDistribution& TargetDistribution::operator=(
+    const TargetDistribution& rhs) = default;
+
+TargetDistribution& TargetDistribution::operator=(TargetDistribution&& rhs) =
+    default;
+
+bool TargetDistribution::operator==(const TargetDistribution& rhs) const {
+  return rhs.total_counts() == total_counts() && rhs.counts_ == counts_;
+}
 
 TargetDistribution& TargetDistribution::operator+=(
     const TargetDistribution& rhs) {
