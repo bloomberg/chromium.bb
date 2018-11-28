@@ -88,13 +88,19 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
           GetOrCreateResourceDispatcher()
               ? GetOrCreateResourceDispatcher()->GetWeakPtr()
               : nullptr;
-      if (Is3d()) {
-        const CanvasResourceProvider::ResourceUsage usage =
-            SharedGpuContext::IsGpuCompositingEnabled()
-                ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
-                : CanvasResourceProvider::kSoftwareCompositedResourceUsage;
 
-        CanvasResourceProvider::PresentationMode presentation_mode =
+      if (Is3d()) {
+        CanvasResourceProvider::ResourceUsage usage;
+        if (SharedGpuContext::IsGpuCompositingEnabled()) {
+          if (LowLatencyEnabled())
+            usage = CanvasResourceProvider::kAcceleratedDirectResourceUsage;
+          else
+            usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
+        } else {
+          usage = CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+        }
+
+        const CanvasResourceProvider::PresentationMode presentation_mode =
             RuntimeEnabledFeatures::WebGLImageChromiumEnabled()
                 ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
                 : CanvasResourceProvider::kDefaultPresentationMode;
@@ -111,10 +117,15 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         const bool want_acceleration =
             hint == kPreferAcceleration && ShouldAccelerate2dContext();
 
-        const CanvasResourceProvider::ResourceUsage usage =
-            want_acceleration
-                ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
-                : CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+        CanvasResourceProvider::ResourceUsage usage;
+        if (want_acceleration) {
+          if (LowLatencyEnabled())
+            usage = CanvasResourceProvider::kAcceleratedDirectResourceUsage;
+          else
+            usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
+        } else {
+          usage = CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+        }
 
         const CanvasResourceProvider::PresentationMode presentation_mode =
             (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled() ||
