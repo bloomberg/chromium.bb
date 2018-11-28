@@ -31,13 +31,10 @@
 #include "media/base/media_switches.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_types.h"
+#include "media/gpu/macros.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/scoped_binders.h"
-
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define VPLOGF(level) VPLOG(level) << __func__ << "(): "
 
 #define NOTIFY_ERROR(x)                       \
   do {                                        \
@@ -2586,13 +2583,6 @@ V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::CreateVP8Picture() {
   return new V4L2VP8Picture(dec_surface);
 }
 
-#define ARRAY_MEMCPY_CHECKED(to, from)                               \
-  do {                                                               \
-    static_assert(sizeof(to) == sizeof(from),                        \
-                  #from " and " #to " arrays must be of same size"); \
-    memcpy(to, from, sizeof(to));                                    \
-  } while (0)
-
 static void FillV4L2SegmentationHeader(
     const Vp8SegmentationHeader& vp8_sgmnt_hdr,
     struct v4l2_vp8_sgmnt_hdr* v4l2_sgmnt_hdr) {
@@ -2607,12 +2597,10 @@ static void FillV4L2SegmentationHeader(
 #undef SET_V4L2_SPARM_FLAG_IF
   v4l2_sgmnt_hdr->segment_feature_mode = vp8_sgmnt_hdr.segment_feature_mode;
 
-  ARRAY_MEMCPY_CHECKED(v4l2_sgmnt_hdr->quant_update,
-                       vp8_sgmnt_hdr.quantizer_update_value);
-  ARRAY_MEMCPY_CHECKED(v4l2_sgmnt_hdr->lf_update,
-                       vp8_sgmnt_hdr.lf_update_value);
-  ARRAY_MEMCPY_CHECKED(v4l2_sgmnt_hdr->segment_probs,
-                       vp8_sgmnt_hdr.segment_prob);
+  SafeArrayMemcpy(v4l2_sgmnt_hdr->quant_update,
+                  vp8_sgmnt_hdr.quantizer_update_value);
+  SafeArrayMemcpy(v4l2_sgmnt_hdr->lf_update, vp8_sgmnt_hdr.lf_update_value);
+  SafeArrayMemcpy(v4l2_sgmnt_hdr->segment_probs, vp8_sgmnt_hdr.segment_prob);
 }
 
 static void FillV4L2LoopfilterHeader(
@@ -2631,10 +2619,10 @@ static void FillV4L2LoopfilterHeader(
   LF_HDR_TO_V4L2_LF_HDR(sharpness_level);
 #undef LF_HDR_TO_V4L2_LF_HDR
 
-  ARRAY_MEMCPY_CHECKED(v4l2_lf_hdr->ref_frm_delta_magnitude,
-                       vp8_loopfilter_hdr.ref_frame_delta);
-  ARRAY_MEMCPY_CHECKED(v4l2_lf_hdr->mb_mode_delta_magnitude,
-                       vp8_loopfilter_hdr.mb_mode_delta);
+  SafeArrayMemcpy(v4l2_lf_hdr->ref_frm_delta_magnitude,
+                  vp8_loopfilter_hdr.ref_frame_delta);
+  SafeArrayMemcpy(v4l2_lf_hdr->mb_mode_delta_magnitude,
+                  vp8_loopfilter_hdr.mb_mode_delta);
 }
 
 static void FillV4L2QuantizationHeader(
@@ -2651,13 +2639,11 @@ static void FillV4L2QuantizationHeader(
 static void FillV4L2Vp8EntropyHeader(
     const Vp8EntropyHeader& vp8_entropy_hdr,
     struct v4l2_vp8_entropy_hdr* v4l2_entropy_hdr) {
-  ARRAY_MEMCPY_CHECKED(v4l2_entropy_hdr->coeff_probs,
-                       vp8_entropy_hdr.coeff_probs);
-  ARRAY_MEMCPY_CHECKED(v4l2_entropy_hdr->y_mode_probs,
-                       vp8_entropy_hdr.y_mode_probs);
-  ARRAY_MEMCPY_CHECKED(v4l2_entropy_hdr->uv_mode_probs,
-                       vp8_entropy_hdr.uv_mode_probs);
-  ARRAY_MEMCPY_CHECKED(v4l2_entropy_hdr->mv_probs, vp8_entropy_hdr.mv_probs);
+  SafeArrayMemcpy(v4l2_entropy_hdr->coeff_probs, vp8_entropy_hdr.coeff_probs);
+  SafeArrayMemcpy(v4l2_entropy_hdr->y_mode_probs, vp8_entropy_hdr.y_mode_probs);
+  SafeArrayMemcpy(v4l2_entropy_hdr->uv_mode_probs,
+                  vp8_entropy_hdr.uv_mode_probs);
+  SafeArrayMemcpy(v4l2_entropy_hdr->mv_probs, vp8_entropy_hdr.mv_probs);
 }
 
 bool V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::SubmitDecode(
@@ -2833,9 +2819,9 @@ static void FillV4L2VP9LoopFilterParams(
   v4l2_lf_params->level = vp9_lf_params.level;
   v4l2_lf_params->sharpness = vp9_lf_params.sharpness;
 
-  ARRAY_MEMCPY_CHECKED(v4l2_lf_params->deltas, vp9_lf_params.ref_deltas);
-  ARRAY_MEMCPY_CHECKED(v4l2_lf_params->mode_deltas, vp9_lf_params.mode_deltas);
-  ARRAY_MEMCPY_CHECKED(v4l2_lf_params->lvl_lookup, vp9_lf_params.lvl);
+  SafeArrayMemcpy(v4l2_lf_params->deltas, vp9_lf_params.ref_deltas);
+  SafeArrayMemcpy(v4l2_lf_params->mode_deltas, vp9_lf_params.mode_deltas);
+  SafeArrayMemcpy(v4l2_lf_params->lvl_lookup, vp9_lf_params.lvl);
 }
 
 static void FillV4L2VP9QuantizationParams(
@@ -2868,12 +2854,9 @@ static void FillV4L2VP9SegmentationParams(
                          V4L2_VP9_SGMNT_PARAM_FLAG_ABS_OR_DELTA_UPDATE);
 #undef SET_SEG_PARAMS_FLAG_IF
 
-  ARRAY_MEMCPY_CHECKED(v4l2_segm_params->tree_probs,
-                       vp9_segm_params.tree_probs);
-  ARRAY_MEMCPY_CHECKED(v4l2_segm_params->pred_probs,
-                       vp9_segm_params.pred_probs);
-  ARRAY_MEMCPY_CHECKED(v4l2_segm_params->feature_data,
-                       vp9_segm_params.feature_data);
+  SafeArrayMemcpy(v4l2_segm_params->tree_probs, vp9_segm_params.tree_probs);
+  SafeArrayMemcpy(v4l2_segm_params->pred_probs, vp9_segm_params.pred_probs);
+  SafeArrayMemcpy(v4l2_segm_params->feature_data, vp9_segm_params.feature_data);
 
   static_assert(arraysize(v4l2_segm_params->feature_enabled) ==
                         arraysize(vp9_segm_params.feature_enabled) &&
@@ -2893,7 +2876,7 @@ static void FillV4L2Vp9EntropyContext(
     const Vp9FrameContext& vp9_frame_ctx,
     struct v4l2_vp9_entropy_ctx* v4l2_entropy_ctx) {
 #define ARRAY_MEMCPY_CHECKED_FRM_CTX_TO_V4L2_ENTR(a) \
-  ARRAY_MEMCPY_CHECKED(v4l2_entropy_ctx->a, vp9_frame_ctx.a)
+  SafeArrayMemcpy(v4l2_entropy_ctx->a, vp9_frame_ctx.a)
   ARRAY_MEMCPY_CHECKED_FRM_CTX_TO_V4L2_ENTR(tx_probs_8x8);
   ARRAY_MEMCPY_CHECKED_FRM_CTX_TO_V4L2_ENTR(tx_probs_16x16);
   ARRAY_MEMCPY_CHECKED_FRM_CTX_TO_V4L2_ENTR(tx_probs_32x32);
@@ -3098,7 +3081,7 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2VP9Accelerator::OutputPicture(
 static void FillVp9FrameContext(struct v4l2_vp9_entropy_ctx& v4l2_entropy_ctx,
                                 Vp9FrameContext* vp9_frame_ctx) {
 #define ARRAY_MEMCPY_CHECKED_V4L2_ENTR_TO_FRM_CTX(a) \
-  ARRAY_MEMCPY_CHECKED(vp9_frame_ctx->a, v4l2_entropy_ctx.a)
+  SafeArrayMemcpy(vp9_frame_ctx->a, v4l2_entropy_ctx.a)
   ARRAY_MEMCPY_CHECKED_V4L2_ENTR_TO_FRM_CTX(tx_probs_8x8);
   ARRAY_MEMCPY_CHECKED_V4L2_ENTR_TO_FRM_CTX(tx_probs_16x16);
   ARRAY_MEMCPY_CHECKED_V4L2_ENTR_TO_FRM_CTX(tx_probs_32x32);

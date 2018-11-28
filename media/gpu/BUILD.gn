@@ -334,6 +334,7 @@ source_set("common") {
     "h264_decoder.h",
     "h264_dpb.cc",
     "h264_dpb.h",
+    "macros.h",
     "vp9_decoder.cc",
     "vp9_decoder.h",
     "vp9_picture.cc",

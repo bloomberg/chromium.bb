@@ -8,11 +8,9 @@
 
 #include "base/posix/eintr_wrapper.h"
 #include "base/trace_event/trace_event.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/v4l2/tegra_v4l2_device.h"
 #include "ui/gl/gl_bindings.h"
-
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
 
 namespace media {
 

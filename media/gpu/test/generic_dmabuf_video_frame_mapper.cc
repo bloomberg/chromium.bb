@@ -11,8 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
+#include "media/gpu/macros.h"
 
 namespace media {
 namespace test {

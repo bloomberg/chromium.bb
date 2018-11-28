@@ -5,16 +5,10 @@
 #include "media/gpu/vaapi/vaapi_vp9_accelerator.h"
 
 #include "media/gpu/decode_surface_handler.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/gpu/vp9_picture.h"
-
-#define ARRAY_MEMCPY_CHECKED(to, from)                               \
-  do {                                                               \
-    static_assert(sizeof(to) == sizeof(from),                        \
-                  #from " and " #to " arrays must be of same size"); \
-    memcpy(to, from, sizeof(to));                                    \
-  } while (0)
 
 namespace media {
 
@@ -108,8 +102,8 @@ bool VaapiVP9Accelerator::SubmitDecode(
   pic_param.frame_header_length_in_bytes = frame_hdr->uncompressed_header_size;
   pic_param.first_partition_size = frame_hdr->header_size_in_bytes;
 
-  ARRAY_MEMCPY_CHECKED(pic_param.mb_segment_tree_probs, seg.tree_probs);
-  ARRAY_MEMCPY_CHECKED(pic_param.segment_pred_probs, seg.pred_probs);
+  SafeArrayMemcpy(pic_param.mb_segment_tree_probs, seg.tree_probs);
+  SafeArrayMemcpy(pic_param.segment_pred_probs, seg.pred_probs);
 
   pic_param.profile = frame_hdr->profile;
   pic_param.bit_depth = frame_hdr->bit_depth;
@@ -140,7 +134,7 @@ bool VaapiVP9Accelerator::SubmitDecode(
                  seg.FeatureEnabled(i, Vp9SegmentationParams::SEG_LVL_SKIP));
 #undef SEG_TO_SP_SF
 
-    ARRAY_MEMCPY_CHECKED(seg_param.filter_level, lf.lvl[i]);
+    SafeArrayMemcpy(seg_param.filter_level, lf.lvl[i]);
 
     seg_param.luma_dc_quant_scale = seg.y_dequant[i][0];
     seg_param.luma_ac_quant_scale = seg.y_dequant[i][1];
