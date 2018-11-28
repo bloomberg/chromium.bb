@@ -44,6 +44,7 @@ jumbo_component("accessibility") {
     "ax_export.h",
     "ax_host_delegate.cc",
     "ax_host_delegate.h",
+    "ax_language_info.h",
     "ax_mode.h",
     "ax_mode_observer.h",
     "ax_node.cc",

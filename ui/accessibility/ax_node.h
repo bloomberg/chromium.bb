@@ -16,6 +16,7 @@
 namespace ui {
 
 class AXTableInfo;
+class AXLanguageInfo;
 
 // One node in an AXTree.
 class AX_EXPORT AXNode final {
@@ -190,6 +191,15 @@ class AX_EXPORT AXNode final {
   base::string16 GetInheritedString16Attribute(
       ax::mojom::StringAttribute attribute) const;
 
+  // Return a pointer to a string for the language code.
+  // This will consider the language declared in the DOM, and may eventually
+  // attempt to automatically detect the language from the text.
+  //
+  // This language code will be BCP 47.
+  //
+  // Returns empty string if no appropriate language was found.
+  std::string GetLanguage();
+
   //
   // Helper functions for tables, table rows, and table cells.
   // Most of these functions construct and cache an AXTableInfo behind
@@ -272,6 +282,17 @@ class AX_EXPORT AXNode final {
   AXNode* parent_;
   std::vector<AXNode*> children_;
   AXNodeData data_;
+
+  AXLanguageInfo* language_info_;
+
+  // Return an object containing information about the languages used.
+  // Will walk up tree if needed to determine language.
+  //
+  // Clients should not retain this pointer, instead they should request it
+  // every time it is needed.
+  //
+  // Returns nullptr if the node has no detectable language.
+  const AXLanguageInfo* GetLanguageInfo();
 };
 
 AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXNode& node);

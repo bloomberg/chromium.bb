@@ -1325,8 +1325,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSString*)language {
   if (![self instanceActive])
     return nil;
-  return base::SysUTF8ToNSString(owner_->GetInheritedStringAttribute(
-      ax::mojom::StringAttribute::kLanguage));
+  ui::AXNode* node = owner_->node();
+  DCHECK(node);
+  return base::SysUTF8ToNSString(node->GetLanguage());
 }
 
 // private

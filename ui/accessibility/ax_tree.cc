@@ -8,8 +8,10 @@
 
 #include <set>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_table_info.h"
 #include "ui/gfx/transform.h"
