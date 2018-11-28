@@ -10,6 +10,7 @@ Page reloaded.
         {
             _initiator : <object>
             _priority : <string>
+            _resourceType : "document"
             cache : {
             }
             connection : <string>
@@ -107,6 +108,7 @@ Page reloaded.
         {
             _initiator : <object>
             _priority : <string>
+            _resourceType : "xhr"
             cache : {
             }
             connection : <string>
