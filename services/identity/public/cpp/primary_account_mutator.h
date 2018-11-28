@@ -51,9 +51,10 @@ class PrimaryAccountMutator {
   //    - the account is known by the IdentityManager.
   virtual bool SetPrimaryAccount(const std::string& account_id) = 0;
 
-  // Clears the primary account. Depending on |action|, the other accounts
+  // Clears the primary account, and returns whether the operation
+  // succeeded or not. Depending on |action|, the other accounts
   // known to the IdentityManager may be deleted.
-  virtual void ClearPrimaryAccount(
+  virtual bool ClearPrimaryAccount(
       ClearAccountsAction action,
       signin_metrics::ProfileSignout source_metric,
       signin_metrics::SignoutDelete delete_metric) = 0;

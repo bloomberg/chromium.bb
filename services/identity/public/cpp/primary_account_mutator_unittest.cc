@@ -5,6 +5,7 @@
 #include "services/identity/public/cpp/primary_account_mutator.h"
 
 #include "base/test/scoped_task_environment.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/platform_test.h"
 
@@ -133,4 +134,112 @@ TEST_F(PrimaryAccountMutatorTest,
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
   EXPECT_FALSE(primary_account_mutator()->SetPrimaryAccount(
       primary_account_info.account_id));
+}
+
+TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_Default) {
+  if (!primary_account_mutator())
+    return;
+
+  // This test requires two accounts to be made available.
+  AccountInfo primary_account_info =
+      environment()->MakeAccountAvailable(kPrimaryAccountEmail);
+  AccountInfo other_account_info =
+      environment()->MakeAccountAvailable(kAnotherAccountEmail);
+
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      primary_account_info.account_id));
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      other_account_info.account_id));
+
+  // Sign in the primary account to check ClearPrimaryAccount() later on.
+  primary_account_mutator()->SetPrimaryAccount(primary_account_info.account_id);
+  EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
+  EXPECT_EQ(identity_manager()->GetPrimaryAccountId(),
+            primary_account_info.account_id);
+
+  EXPECT_TRUE(primary_account_mutator()->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin_metrics::SIGNOUT_TEST,
+      signin_metrics::SignoutDelete::IGNORE_METRIC));
+
+  // The underlying SigninManager in IdentityTestEnvironment (FakeSigninManager)
+  // will be created with signin::AccountConsistencyMethod::kDisabled, which
+  // should result in ClearPrimaryAccount() removing all the tokens.
+  // Other possible combinations are covered by IdentityManagerTests unit tests.
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
+      primary_account_info.account_id));
+  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
+      other_account_info.account_id));
+}
+
+TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_KeepAll) {
+  if (!primary_account_mutator())
+    return;
+
+  // This test requires two accounts to be made available.
+  AccountInfo primary_account_info =
+      environment()->MakeAccountAvailable(kPrimaryAccountEmail);
+  AccountInfo other_account_info =
+      environment()->MakeAccountAvailable(kAnotherAccountEmail);
+
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      primary_account_info.account_id));
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      other_account_info.account_id));
+
+  // Sign in the primary account to check ClearPrimaryAccount() later on.
+  primary_account_mutator()->SetPrimaryAccount(primary_account_info.account_id);
+  EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
+  EXPECT_EQ(identity_manager()->GetPrimaryAccountId(),
+            primary_account_info.account_id);
+
+  EXPECT_TRUE(primary_account_mutator()->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
+      signin_metrics::SIGNOUT_TEST,
+      signin_metrics::SignoutDelete::IGNORE_METRIC));
+
+  // ClearPrimaryAccount() should keep all the accounts available in this case.
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      primary_account_info.account_id));
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      other_account_info.account_id));
+}
+
+TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_RemoveAll) {
+  if (!primary_account_mutator())
+    return;
+
+  // This test requires two accounts to be made available.
+  AccountInfo primary_account_info =
+      environment()->MakeAccountAvailable(kPrimaryAccountEmail);
+  AccountInfo other_account_info =
+      environment()->MakeAccountAvailable(kAnotherAccountEmail);
+
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      primary_account_info.account_id));
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      other_account_info.account_id));
+
+  // Sign in the primary account to check ClearPrimaryAccount() later on.
+  primary_account_mutator()->SetPrimaryAccount(primary_account_info.account_id);
+  EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
+  EXPECT_EQ(identity_manager()->GetPrimaryAccountId(),
+            primary_account_info.account_id);
+
+  EXPECT_TRUE(primary_account_mutator()->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
+      signin_metrics::SIGNOUT_TEST,
+      signin_metrics::SignoutDelete::IGNORE_METRIC));
+
+  // ClearPrimaryAccount() should remove all the accounts in this case.
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
+      primary_account_info.account_id));
+  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
+      other_account_info.account_id));
 }

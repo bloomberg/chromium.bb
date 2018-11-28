@@ -22,7 +22,7 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
 
   // PrimaryAccountMutator implementation.
   bool SetPrimaryAccount(const std::string& account_id) override;
-  void ClearPrimaryAccount(
+  bool ClearPrimaryAccount(
       ClearAccountsAction action,
       signin_metrics::ProfileSignout source_metric,
       signin_metrics::SignoutDelete delete_metric) override;
