@@ -231,8 +231,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
             if (host.equals(other.getAddress().getHost())) {
                 for (@ContentSettingException.Type int type = 0;
                         type < ContentSettingException.Type.NUM_ENTRIES; type++) {
-                    if (type == ContentSettingException.Type.ADS
-                            || type == ContentSettingException.Type.COOKIE) {
+                    if (type == ContentSettingException.Type.ADS) {
                         continue;
                     }
                     if (merged.getContentSettingException(type) == null
