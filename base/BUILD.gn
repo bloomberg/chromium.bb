@@ -100,16 +100,6 @@ if (is_win) {
   }
 }
 
-if (is_nacl_nonsfi) {
-  # Must be in a config because of how GN orders flags (otherwise -Wall will
-  # appear after this, and turn it back on).
-  config("nacl_nonsfi_warnings") {
-    # file_util_posix.cc contains a function which is not
-    # being used by nacl_helper_nonsfi.
-    cflags = [ "-Wno-unused-function" ]
-  }
-}
-
 if (is_android) {
   config("android_system_libs") {
     libs = [
@@ -132,14 +122,6 @@ if (is_android) {
 # test code (test support and anything in the test directory) which should use
 # source_set as is recommended for GN targets).
 jumbo_component("base") {
-  if (is_nacl_nonsfi) {
-    # TODO(phosek) bug 570839: If field_trial.cc is in a static library,
-    # nacl_helper_nonsfi doesn't link properly on Linux in debug builds. The
-    # reasons for this seem to involve obscure toolchain bugs. This should be
-    # fixed and this target should always be a static_library in the
-    # non-component case.
-    static_component_type = "source_set"
-  }
   if (is_nacl || is_ios) {
     # Link errors related to malloc functions if libbase for nacl is
     # compiled with jumbo: https://crbug.com/775959.
@@ -1553,7 +1535,6 @@ jumbo_component("base") {
 
     if (is_nacl_nonsfi) {
       sources -= [ "rand_util_nacl.cc" ]
-      configs += [ ":nacl_nonsfi_warnings" ]
     } else {
       sources -= [
         "files/file_descriptor_watcher_posix.cc",
