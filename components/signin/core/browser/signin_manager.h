@@ -168,10 +168,6 @@ class SigninManager : public SigninManagerBase,
   // Sets whether sign-in is allowed or not.
   void SetSigninAllowed(bool allowed);
 
-  // Returns true if the passed username is allowed by policy. Virtual for
-  // mocking in tests.
-  virtual bool IsAllowedUsername(const std::string& username) const;
-
   // If an authentication is in progress, return the account id being
   // authenticated. Returns an empty string if no auth is in progress.
   const std::string& GetAccountIdForAuthInProgress() const;
@@ -202,9 +198,8 @@ class SigninManager : public SigninManagerBase,
   std::string SigninTypeToString(SigninType type);
   friend class FakeSigninManager;
   friend class identity::IdentityManager;
-  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ClearTransientSigninData);
-  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorSuccess);
-  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorFailure);
+  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, Prohibited);
+  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, TestAlternateWildcard);
 
   // Called to setup the transient signin data during one of the
   // StartSigninXXX methods.  |type| indicates which of the methods is being
@@ -255,6 +250,9 @@ class SigninManager : public SigninManagerBase,
 
   void OnSigninAllowedPrefChanged();
   void OnGoogleServicesUsernamePatternChanged();
+
+  // Returns true if the passed username is allowed by policy.
+  bool IsAllowedUsername(const std::string& username) const;
 
   std::string possibly_invalid_account_id_;
   std::string possibly_invalid_gaia_id_;
