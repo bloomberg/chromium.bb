@@ -470,7 +470,6 @@ test("browser_tests") {
       "//ui/file_manager/gallery/",
       "//ui/file_manager/image_loader/",
       "//ui/file_manager/integration_tests/",
-      "//third_party/analytics/",
       "//third_party/polymer/v1_0/components-chromium/polymer/",
       "$root_gen_dir/ui/file_manager/file_manager/",
       "$root_gen_dir/ui/login/login_resources.pak",

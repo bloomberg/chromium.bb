@@ -323,7 +323,6 @@ check_targets = [
   "//third_party/accessibility_test_framework/*",
   "//third_party/adobe/*",
   "//third_party/afl/*",
-  "//third_party/analytics/*",
   "//third_party/android_build_tools/*",
   "//third_party/android_crazy_linker/*",
   "//third_party/android_data_chart/*",

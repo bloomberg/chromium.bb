@@ -92,7 +92,6 @@ js_library("closure_compile_externs") {
     "../../../externs/file_operation_progress_event.js",
     "../../../externs/launcher_search_provider.js",
     "../../../externs/platform.js",
-    "//third_party/analytics/externs.js",
   ]
 }
 

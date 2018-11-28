@@ -87,7 +87,6 @@ js_library("importer_common") {
     "//ui/file_manager/base/js:volume_manager_types",
   ]
   externs_list = [
-    "//third_party/analytics/externs.js",
     "../../../externs/background_window.js",
     "../../../externs/background/file_browser_background.js",
   ]
