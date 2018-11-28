@@ -39,6 +39,10 @@ StrikeDatabase::StrikeDatabase(const base::FilePath& database_dir)
 
 StrikeDatabase::~StrikeDatabase() {}
 
+bool StrikeDatabase::IsMaxStrikesLimitReached(const std::string id) {
+  return GetStrikes(id) >= GetMaxStrikesLimit();
+}
+
 int StrikeDatabase::AddStrike(const std::string id) {
   std::string key = GetKey(id);
   int num_strikes = strike_map_cache_.count(key)  // Cache has entry for |key|.
@@ -50,6 +54,9 @@ int StrikeDatabase::AddStrike(const std::string id) {
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
   UpdateCache(key, data);
   SetProtoStrikeData(key, data, base::DoNothing());
+  base::UmaHistogramCounts1000(
+      "Autofill.StrikeDatabase.NthStrikeAdded." + GetProjectPrefix(),
+      num_strikes);
   return num_strikes;
 }
 
