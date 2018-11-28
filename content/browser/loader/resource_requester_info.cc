@@ -16,6 +16,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
@@ -25,11 +26,12 @@ namespace {
 
 void GetContextsCallbackForNavigationPreload(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    net::URLRequestContext* url_request_context,
     ResourceType resource_type,
     ResourceContext** resource_context_out,
     net::URLRequestContext** request_context_out) {
   *resource_context_out = service_worker_context->resource_context();
-  *request_context_out = (*resource_context_out)->GetRequestContext();
+  *request_context_out = url_request_context;
 }
 
 }  // namespace
@@ -106,7 +108,8 @@ ResourceRequesterInfo::CreateForDownloadOrPageSave(int child_id) {
 
 scoped_refptr<ResourceRequesterInfo>
 ResourceRequesterInfo::CreateForNavigationPreload(
-    ResourceRequesterInfo* original_request_info) {
+    ResourceRequesterInfo* original_request_info,
+    net::URLRequestContext* url_request_context) {
   DCHECK(original_request_info->IsBrowserSideNavigation());
   DCHECK(original_request_info->service_worker_context());
   DCHECK(!original_request_info->get_contexts_callback_);
@@ -116,7 +119,8 @@ ResourceRequesterInfo::CreateForNavigationPreload(
   auto get_contexts_callback =
       base::BindRepeating(&GetContextsCallbackForNavigationPreload,
                           scoped_refptr<ServiceWorkerContextWrapper>(
-                              original_request_info->service_worker_context()));
+                              original_request_info->service_worker_context()),
+                          url_request_context);
 
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
       RequesterType::NAVIGATION_PRELOAD, ChildProcessHost::kInvalidUniqueID,

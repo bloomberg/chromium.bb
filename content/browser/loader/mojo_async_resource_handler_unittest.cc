@@ -301,7 +301,7 @@ class MojoAsyncResourceHandlerTestBase {
     // Create and initialize |request_|.  None of this matters, for these tests,
     // just need something non-NULL.
     request_context_ =
-        browser_context_->GetResourceContext()->GetRequestContext();
+        browser_context_->GetRequestContext()->GetURLRequestContext();
     request_ = request_context_->CreateRequest(
         GURL("http://foo/"), net::DEFAULT_PRIORITY, &url_request_delegate_,
         TRAFFIC_ANNOTATION_FOR_TESTS);

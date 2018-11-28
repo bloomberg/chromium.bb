@@ -40,28 +40,6 @@ const char kProtectedManifest[] = "http://www.protected.com/cache.manifest";
 const char kNormalManifest[] = "http://www.normal.com/cache.manifest";
 const char kSessionOnlyManifest[] = "http://www.sessiononly.com/cache.manifest";
 
-class MockURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  MockURLRequestContextGetter(
-      net::URLRequestContext* context,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : context_(context), task_runner_(std::move(task_runner)) {}
-
-  net::URLRequestContext* GetURLRequestContext() override { return context_; }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override {
-    return task_runner_;
-  }
-
- protected:
-  ~MockURLRequestContextGetter() override {}
-
- private:
-  net::URLRequestContext* context_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-};
-
 }  // namespace
 
 class ChromeAppCacheServiceTest : public testing::Test {
@@ -101,16 +79,13 @@ ChromeAppCacheServiceTest::CreateAppCacheServiceImpl(
       new MockSpecialStoragePolicy;
   mock_policy->AddProtected(kProtectedManifestURL.GetOrigin());
   mock_policy->AddSessionOnly(kSessionOnlyManifestURL.GetOrigin());
-  scoped_refptr<MockURLRequestContextGetter> mock_request_context_getter =
-      new MockURLRequestContextGetter(
-          browser_context_.GetResourceContext()->GetRequestContext(),
-          base::ThreadTaskRunnerHandle::Get());
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &ChromeAppCacheService::InitializeOnIOThread, appcache_service,
           appcache_path, browser_context_.GetResourceContext(),
-          base::RetainedRef(mock_request_context_getter), mock_policy));
+          base::RetainedRef(browser_context_.GetRequestContext()),
+          mock_policy));
   // Steps needed to initialize the storage of AppCache data.
   scoped_task_environment_.RunUntilIdle();
   if (init_storage) {

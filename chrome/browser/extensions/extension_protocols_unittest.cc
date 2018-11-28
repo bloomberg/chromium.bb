@@ -190,14 +190,13 @@ class ExtensionProtocolsTest
   ExtensionProtocolsTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         rvh_test_enabler_(new content::RenderViewHostTestEnabler()),
-        old_factory_(NULL),
-        resource_context_(&test_url_request_context_) {}
+        old_factory_(NULL) {}
 
   void SetUp() override {
     testing::Test::SetUp();
     testing_profile_ = TestingProfile::Builder().Build();
     contents_ = CreateTestWebContents();
-    old_factory_ = resource_context_.GetRequestContext()->job_factory();
+    old_factory_ = test_url_request_context_.job_factory();
 
     // Set up content verification.
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -212,7 +211,7 @@ class ExtensionProtocolsTest
 
   void TearDown() override {
     loader_factory_.reset();
-    resource_context_.GetRequestContext()->set_job_factory(old_factory_);
+    test_url_request_context_.set_job_factory(old_factory_);
     content_verifier_->Shutdown();
   }
 
@@ -226,7 +225,7 @@ class ExtensionProtocolsTest
         job_factory_.SetProtocolHandler(
             kExtensionScheme,
             CreateExtensionProtocolHandler(is_incognito, info_map()));
-        resource_context_.GetRequestContext()->set_job_factory(&job_factory_);
+        test_url_request_context_.set_job_factory(&job_factory_);
         break;
     }
     testing_profile_->ForceIncognito(is_incognito);
@@ -312,12 +311,13 @@ class ExtensionProtocolsTest
   }
 
   GetResult RequestURL(const GURL& url, ResourceType resource_type) {
-    auto request = resource_context_.GetRequestContext()->CreateRequest(
+    auto request = test_url_request_context_.CreateRequest(
         url, net::DEFAULT_PRIORITY, &test_delegate_,
         TRAFFIC_ANNOTATION_FOR_TESTS);
 
     content::ResourceRequestInfo::AllocateForTesting(
-        request.get(), resource_type, &resource_context_,
+        request.get(), resource_type,
+        /* resource_context */nullptr,
         /*render_process_id=*/-1,
         /*render_view_id=*/-1,
         /*render_frame_id=*/-1,
@@ -350,7 +350,6 @@ class ExtensionProtocolsTest
   const net::URLRequestJobFactory* old_factory_;
   std::unique_ptr<network::mojom::URLLoaderFactory> loader_factory_;
   net::TestURLRequestContext test_url_request_context_;
-  content::MockResourceContext resource_context_;
   std::unique_ptr<TestingProfile> testing_profile_;
   net::TestDelegate test_delegate_;
   std::unique_ptr<content::WebContents> contents_;
