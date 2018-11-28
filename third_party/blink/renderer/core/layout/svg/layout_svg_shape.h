@@ -63,10 +63,6 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   void SetNeedsBoundariesUpdate() final { needs_boundaries_update_ = true; }
   void SetNeedsTransformUpdate() final { needs_transform_update_ = true; }
 
-  bool NodeAtPointInternal(const HitTestRequest&,
-                           const HitTestLocation&,
-                           PointerEventsHitRules);
-
   Path& GetPath() const {
     DCHECK(path_);
     return *path_;
@@ -167,6 +163,9 @@ class LayoutSVGShape : public LayoutSVGModelObject {
                    const HitTestLocation& location_in_parent,
                    const LayoutPoint& accumulated_offset,
                    HitTestAction) final;
+  bool HitTestShape(const HitTestRequest&,
+                    const HitTestLocation&,
+                    PointerEventsHitRules);
 
   FloatRect StrokeBoundingBox() const final { return stroke_bounding_box_; }
 

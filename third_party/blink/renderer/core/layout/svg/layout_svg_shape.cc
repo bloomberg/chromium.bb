@@ -352,6 +352,12 @@ bool LayoutSVGShape::NodeAtPoint(HitTestResult& result,
   // We only draw in the foreground phase, so we only hit-test then.
   if (hit_test_action != kHitTestForeground)
     return false;
+  const ComputedStyle& style = StyleRef();
+  const PointerEventsHitRules hit_rules(
+      PointerEventsHitRules::SVG_GEOMETRY_HITTESTING,
+      result.GetHitTestRequest(), style.PointerEvents());
+  if (hit_rules.require_visible && style.Visibility() != EVisibility::kVisible)
+    return false;
 
   TransformedHitTestLocation local_location(location_in_parent,
                                             LocalToSVGParentTransform());
@@ -360,11 +366,7 @@ bool LayoutSVGShape::NodeAtPoint(HitTestResult& result,
   if (!SVGLayoutSupport::IntersectsClipPath(*this, *local_location))
     return false;
 
-  PointerEventsHitRules hit_rules(
-      PointerEventsHitRules::SVG_GEOMETRY_HITTESTING,
-      result.GetHitTestRequest(), StyleRef().PointerEvents());
-  if (NodeAtPointInternal(result.GetHitTestRequest(), *local_location,
-                          hit_rules)) {
+  if (HitTestShape(result.GetHitTestRequest(), *local_location, hit_rules)) {
     const LayoutPoint local_layout_point(local_location->TransformedPoint());
     UpdateHitTestResult(result, local_layout_point);
     if (result.AddNodeToListBasedTestResult(GetElement(), *local_location) ==
@@ -375,18 +377,15 @@ bool LayoutSVGShape::NodeAtPoint(HitTestResult& result,
   return false;
 }
 
-bool LayoutSVGShape::NodeAtPointInternal(const HitTestRequest& request,
-                                         const HitTestLocation& local_location,
-                                         PointerEventsHitRules hit_rules) {
-  const ComputedStyle& style = StyleRef();
-  if (hit_rules.require_visible && style.Visibility() != EVisibility::kVisible)
-    return false;
+bool LayoutSVGShape::HitTestShape(const HitTestRequest& request,
+                                  const HitTestLocation& local_location,
+                                  PointerEventsHitRules hit_rules) {
   if (hit_rules.can_hit_bounding_box &&
       local_location.Intersects(ObjectBoundingBox()))
     return true;
 
   // TODO(chrishtr): support rect-based intersections in the cases below.
-  const SVGComputedStyle& svg_style = style.SvgStyle();
+  const SVGComputedStyle& svg_style = StyleRef().SvgStyle();
   if (hit_rules.can_hit_stroke &&
       (svg_style.HasStroke() || !hit_rules.require_stroke) &&
       StrokeContains(local_location, hit_rules.require_stroke))
