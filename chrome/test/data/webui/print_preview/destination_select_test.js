@@ -12,6 +12,7 @@ cr.define('destination_select_test', function() {
     DefaultDestinationSelectionRules: 'default destination selection rules',
     SystemDefaultPrinterPolicy: 'system default printer policy',
     KioskModeSelectsFirstPrinter: 'kiosk mode selects first printer',
+    NoPrintersShowsError: 'no printers shows error',
   };
 
   const suiteName = 'DestinationSelectTests';
@@ -42,10 +43,13 @@ cr.define('destination_select_test', function() {
 
     /*
      * Sets the initial settings to the stored value and creates the page.
-     * @return {!Promise} Promise that resolves when initial settings and
-     *     printer capabilities have been returned.
+     * @param {boolean=} opt_expectPrinterFailure Whether printer fetch is
+     *     expected to fail
+     * @return {!Promise} Promise that resolves when initial settings and,
+     *     if printer failure is not expected, printer capabilities have
+     *     been returned.
      */
-    function setInitialSettings() {
+    function setInitialSettings(opt_expectPrinterFailure) {
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinations(localDestinations);
       print_preview.NativeLayer.setInstance(nativeLayer);
@@ -53,10 +57,10 @@ cr.define('destination_select_test', function() {
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
 
-      return Promise.all([
-        nativeLayer.whenCalled('getInitialSettings'),
-        nativeLayer.whenCalled('getPrinterCapabilities')
-      ]);
+      const promises = [nativeLayer.whenCalled('getInitialSettings')];
+      if (!opt_expectPrinterFailure)
+        promises.push(nativeLayer.whenCalled('getPrinterCapabilities'));
+      return Promise.all(promises);
     }
 
     /**
@@ -246,6 +250,38 @@ cr.define('destination_select_test', function() {
         assertEquals(destinations[0].id, page.destination_.id);
         assertPrinterDisplay(destinations[0].displayName);
       });
+    });
+
+    /**
+     * Tests that if there is no system default destination, the default
+     * selection rules and recent destinations are empty, the preview
+     * is in app kiosk mode (so no PDF printer), and there are no
+     * destinations found, the no destinations found error is displayed.
+     */
+    test(assert(TestNames.NoPrintersShowsError), function() {
+      initialSettings.serializedDefaultDestinationSelectionRulesStr = '';
+      initialSettings.serializedAppStateStr = '';
+      initialSettings.isInAppKioskMode = true;
+      initialSettings.printerName = '';
+      localDestinations = [];
+
+      return Promise
+          .all([
+            setInitialSettings(true),
+            test_util.eventToPromise(
+                print_preview.DestinationStore.EventType.NO_DESTINATIONS_FOUND,
+                page.destinationStore_),
+          ])
+          .then(function() {
+            assertEquals(undefined, page.destination_);
+            const destinationSettings =
+                page.$$('print-preview-destination-settings');
+            assertTrue(destinationSettings.$$('.throbber-container').hidden);
+            assertTrue(
+                destinationSettings.$$('.destination-settings-box').hidden);
+            assertFalse(
+                destinationSettings.$$('.no-destinations-display').hidden);
+          });
     });
   });
 

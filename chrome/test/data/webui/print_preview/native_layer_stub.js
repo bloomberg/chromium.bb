@@ -87,7 +87,8 @@ cr.define('print_preview', function() {
     /** @override */
     getPrinters(type) {
       this.methodCalled('getPrinters', type);
-      if (type == print_preview.PrinterType.LOCAL_PRINTER) {
+      if (type == print_preview.PrinterType.LOCAL_PRINTER &&
+          this.localDestinationInfos_.length > 0) {
         cr.webUIListenerCallback(
             'printers-added', type, this.localDestinationInfos_);
       } else if (

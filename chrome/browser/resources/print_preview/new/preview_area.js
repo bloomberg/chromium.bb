@@ -22,6 +22,9 @@ print_preview_new.PreviewAreaState = {
   INVALID_SETTINGS: 'invalid-settings',
   PREVIEW_FAILED: 'preview-failed',
   UNSUPPORTED_CLOUD_PRINTER: 'unsupported-cloud-printer',
+  // <if expr="chromeos">
+  NO_DESTINATIONS_FOUND: 'no-destinations-found',
+  // </if>
 };
 
 Polymer({
@@ -260,15 +263,15 @@ Polymer({
   currentMessage_: function() {
     switch (this.previewState) {
       case print_preview_new.PreviewAreaState.NO_PLUGIN:
-        return this.i18nAdvanced('noPlugin');
+        return this.i18n('noPlugin');
       case print_preview_new.PreviewAreaState.LOADING:
-        return this.i18nAdvanced('loading');
+        return this.i18n('loading');
       case print_preview_new.PreviewAreaState.DISPLAY_PREVIEW:
         return '';
       // <if expr="is_macosx">
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADING:
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
-        return this.i18nAdvanced('openingPDFInPreview');
+        return this.i18n('openingPDFInPreview');
       // </if>
       case print_preview_new.PreviewAreaState.INVALID_SETTINGS:
         return this.i18nAdvanced('invalidPrinterSettings', {
@@ -276,12 +279,16 @@ Polymer({
           tags: ['BR'],
         });
       case print_preview_new.PreviewAreaState.PREVIEW_FAILED:
-        return this.i18nAdvanced('previewFailed');
+        return this.i18n('previewFailed');
       case print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER:
         return this.i18nAdvanced('unsupportedCloudPrinter', {
           substitutions: [],
           tags: ['BR'],
         });
+      // <if expr="chromeos">
+      case print_preview_new.PreviewAreaState.NO_DESTINATIONS_FOUND:
+        return this.i18n('noDestinationsMessage');
+      // </if>
       default:
         return '';
     }
@@ -316,6 +323,13 @@ Polymer({
       this.requestPreviewWhenReady_ = false;
     }
   },
+
+  // <if expr="chromeos">
+  setNoDestinationsFound: function() {
+    this.previewState =
+        print_preview_new.PreviewAreaState.NO_DESTINATIONS_FOUND;
+  },
+  // </if>
 
   // <if expr="is_macosx">
   /** Set the preview state to display the "opening in preview" message. */

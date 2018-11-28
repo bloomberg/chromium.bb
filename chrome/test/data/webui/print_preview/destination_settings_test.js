@@ -20,9 +20,10 @@ cr.define('destination_settings_test', function() {
       print_preview.NativeLayer.setInstance(nativeLayer);
       destinationSettings =
           document.createElement('print-preview-destination-settings');
-      destinationSettings.disabled = false;
       destinationSettings.destinationStore = null;
       destinationSettings.state = print_preview_new.State.NOT_READY;
+      // Disabled is true when state is NOT_READY.
+      destinationSettings.disabled = true;
       document.body.appendChild(destinationSettings);
     });
 
@@ -33,8 +34,8 @@ cr.define('destination_settings_test', function() {
       // Initial state: No destination store, button should be disabled.
       assertTrue(button.disabled);
 
-      // Set up the destination store, but no destination yet. Button is now
-      // enabled.
+      // Set up the destination store, but no destination yet. Button is
+      // disabled.
       const userInfo = new print_preview.UserInfo();
       const destinationStore = new print_preview.DestinationStore(
           userInfo, new WebUIListenerTracker());
@@ -44,7 +45,7 @@ cr.define('destination_settings_test', function() {
           [] /* recentDestinations */);
       destinationSettings.destinationStore = destinationStore;
       destinationSettings.state = print_preview_new.State.NOT_READY;
-      assertFalse(button.disabled);
+      assertTrue(button.disabled);
 
       // Simulate loading a destination and setting state to ready. The button
       // is still enabled.
@@ -53,6 +54,7 @@ cr.define('destination_settings_test', function() {
           print_preview.DestinationOrigin.LOCAL, 'FooName', true /* isRecent */,
           print_preview.DestinationConnectionStatus.ONLINE);
       destinationSettings.state = print_preview_new.State.READY;
+      destinationSettings.disabled = false;
       assertFalse(button.disabled);
 
       // Simulate setting a setting to an invalid value. Button is disabled due
@@ -68,6 +70,13 @@ cr.define('destination_settings_test', function() {
       destinationSettings.state = print_preview_new.State.INVALID_PRINTER;
       destinationSettings.disabled = true;
       assertFalse(button.disabled);
+
+      // Simulate the user having no printers.
+      destinationSettings.destination = null;
+      destinationSettings.state = print_preview_new.State.INVALID_PRINTER;
+      destinationSettings.disabled = true;
+      destinationSettings.noDestinationsFound = true;
+      assertTrue(button.disabled);
     });
   });
 

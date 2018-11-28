@@ -194,6 +194,12 @@ Polymer({
         this.destinationStore_,
         print_preview.DestinationStore.EventType.DESTINATION_SELECT,
         this.onDestinationSelect_.bind(this));
+    // <if expr="chromeos">
+    this.tracker_.add(
+        this.destinationStore_,
+        print_preview.DestinationStore.EventType.NO_DESTINATIONS_FOUND,
+        this.onNoDestinationsFound_.bind(this));
+    // </if>
     this.tracker_.add(
         this.destinationStore_,
         print_preview.DestinationStore.EventType
@@ -655,6 +661,15 @@ Polymer({
     // settings is not displayed (i.e. less than 6 total settings available).
     return this.settingsExpandedByUser_ || !this.shouldShowMoreSettings_;
   },
+
+  // <if expr="chromeos">
+  /** @private */
+  onNoDestinationsFound_: function() {
+    this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
+    this.$.previewArea.setNoDestinationsFound();
+    this.$.destinationSettings.noDestinationsFound = true;
+  },
+  // </if>
 
   /** @private */
   close_: function() {

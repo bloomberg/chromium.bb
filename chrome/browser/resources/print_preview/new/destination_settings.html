@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/event_tracker.html">
@@ -34,13 +35,15 @@
       }
 
       .destination-settings-box,
+      .no-destinations-display,
       .throbber-container {
         align-items: center;
         display: flex;
         overflow: hidden;
       }
 
-      .destination-settings-box iron-icon {
+      .destination-settings-box iron-icon,
+      .no-destinations-display iron-icon {
         fill: var(--google-grey-600);
         flex: 0;
         margin-inline-end: 8px;
@@ -63,7 +66,8 @@
       }
 
       .destination-info-wrapper > div,
-      .destination-throbber-name {
+      .destination-throbber-name,
+      .no-destinations-message {
         flex: 1;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -77,9 +81,17 @@
     <print-preview-settings-section>
       <span slot="title">$i18n{destinationLabel}</span>
       <div slot="controls">
-        <div class="throbber-container" hidden="[[!loadingDestination_]]">
+        <div class="throbber-container"
+            hidden="[[!shouldShowSpinner_(
+                loadingDestination_, noDestinationsFound)]]">
           <div class="throbber"></div>
           <div class="destination-throbber-name"></div>
+        </div>
+        <div class="no-destinations-display" hidden="[[!noDestinationsFound]]">
+          <iron-icon icon="cr:error"></iron-icon>
+          <div class="no-destinations-message">
+            $i18n{noDestinationsMessage}
+          </div>
         </div>
         <div class="destination-settings-box" hidden="[[loadingDestination_]]">
           <iron-icon icon$="[[destination.icon]]" hidden="[[!destination]]">
@@ -100,7 +112,7 @@
       <div slot="controls">
         <paper-button
           disabled$="[[shouldDisableButton_(destinationStore, disabled,
-                                            state)]]"
+                                            state, noDestinationsFound)]]"
           on-click="onChangeButtonClick_">
           $i18n{changeDestination}
         </paper-button>

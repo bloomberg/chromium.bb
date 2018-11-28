@@ -618,6 +618,7 @@ PrintPreviewDestinationSelectTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../settings/test_util.js',
       '../test_browser_proxy.js',
       'native_layer_stub.js',
       'print_preview_test_utils.js',
@@ -674,6 +675,12 @@ TEST_F(
       this.runMochaTest(
           destination_select_test.TestNames.KioskModeSelectsFirstPrinter);
     });
+
+GEN('#if defined(OS_CHROMEOS)');
+TEST_F('PrintPreviewDestinationSelectTest', 'NoPrintersShowsError', function() {
+  this.runMochaTest(destination_select_test.TestNames.NoPrintersShowsError);
+});
+GEN('#endif');
 
 PrintPreviewDestinationDialogTest = class extends NewPrintPreviewTest {
   /** @override */
