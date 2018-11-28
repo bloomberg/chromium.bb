@@ -52,7 +52,6 @@ class TestSyncService : public SyncService {
   const GoogleServiceAuthError& GetAuthError() const override;
 
   bool IsFirstSetupComplete() const override;
-  void SetFirstSetupComplete() override;
 
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;

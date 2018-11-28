@@ -131,10 +131,6 @@ bool TestSyncService::IsFirstSetupComplete() const {
   return first_setup_complete_;
 }
 
-void TestSyncService::SetFirstSetupComplete() {
-  first_setup_complete_ = true;
-}
-
 std::unique_ptr<SyncSetupInProgressHandle>
 TestSyncService::GetSetupInProgressHandle() {
   return nullptr;

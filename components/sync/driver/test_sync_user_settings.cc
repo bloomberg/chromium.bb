@@ -49,7 +49,7 @@ bool TestSyncUserSettings::IsFirstSetupComplete() const {
 }
 
 void TestSyncUserSettings::SetFirstSetupComplete() {
-  service_->SetFirstSetupComplete();
+  service_->SetFirstSetupComplete(true);
 }
 
 bool TestSyncUserSettings::IsSyncEverythingEnabled() const {

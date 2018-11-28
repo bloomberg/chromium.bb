@@ -76,8 +76,6 @@ ModelTypeSet FakeSyncService::GetPreferredDataTypes() const {
 void FakeSyncService::OnUserChoseDatatypes(bool sync_everything,
                                            ModelTypeSet chosen_types) {}
 
-void FakeSyncService::SetFirstSetupComplete() {}
-
 std::unique_ptr<SyncSetupInProgressHandle>
 FakeSyncService::GetSetupInProgressHandle() {
   return nullptr;
