@@ -10,6 +10,7 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "base/i18n/case_conversion.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -33,8 +34,9 @@ FeaturePodButton* LocaleFeaturePodController::CreateButton() {
     button->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCALE));
     button->ShowDetailedViewArrow();
     button->DisableLabelButtonFocus();
-    button->SetSubLabel(base::UTF8ToUTF16(
-        Shell::Get()->system_tray_model()->current_locale_iso_code()));
+    button->SetSubLabel(
+        base::i18n::ToUpper(base::UTF8ToUTF16(l10n_util::GetLanguage(
+            Shell::Get()->system_tray_model()->current_locale_iso_code()))));
   }
   return button;
 }

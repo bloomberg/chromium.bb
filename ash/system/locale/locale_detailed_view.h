@@ -20,11 +20,11 @@ class LocaleDetailedView : public TrayDetailedView {
   explicit LocaleDetailedView(DetailedViewDelegate* delegate);
   ~LocaleDetailedView() override;
 
- private:
-  void CreateItems();
-
   // TrayDetailedView:
   void HandleViewClicked(views::View* view) override;
+
+ private:
+  void CreateItems();
 
   // The map between the id of the view and the locale it corresponds to.
   base::flat_map<int, std::string> id_to_locale_;
