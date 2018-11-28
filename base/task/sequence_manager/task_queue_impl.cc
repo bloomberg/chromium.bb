@@ -868,9 +868,7 @@ TaskQueueImpl::CreateQueueEnabledVoter(scoped_refptr<TaskQueue> task_queue) {
 void TaskQueueImpl::SweepCanceledDelayedTasks(TimeTicks now) {
   if (main_thread_only().delayed_incoming_queue.empty())
     return;
-  const SequenceManagerImpl* sequence_manager = sequence_manager_;
-  main_thread_only().delayed_incoming_queue.SweepCancelledTasks(
-      sequence_manager);
+  main_thread_only().delayed_incoming_queue.SweepCancelledTasks();
 
   // Also consider shrinking the work queue if it's wasting memory.
   main_thread_only().delayed_work_queue->MaybeShrinkQueue();
@@ -1057,8 +1055,7 @@ void TaskQueueImpl::DelayedIncomingQueue::pop() {
   queue_.pop();
 }
 
-void TaskQueueImpl::DelayedIncomingQueue::SweepCancelledTasks(
-    const SequenceManagerImpl* sequence_manager) {
+void TaskQueueImpl::DelayedIncomingQueue::SweepCancelledTasks() {
   std::priority_queue<Task> remaining_tasks;
   while (!empty()) {
     if (!top().task.IsCancelled()) {
