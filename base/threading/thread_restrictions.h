@@ -345,7 +345,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class android_webview::AwFormDatabaseService;
   friend class android_webview::CookieManager;
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
-  friend class base::StackSamplingProfiler;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessSubThread;
   friend class content::ServiceWorkerSubresourceLoader;
@@ -392,9 +391,10 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
 
   // Allowed usage:
   friend class ::KeyStorageLinux;
-  friend class android::JavaHandlerThread;
   friend class Thread;
+  friend class android::JavaHandlerThread;
   friend class base::MessageLoopImpl;
+  friend class base::StackSamplingProfiler;
   friend class content::ScopedAllowWaitForDebugURL;
   friend class content::SynchronousCompositor;
   friend class content::SynchronousCompositorHost;
