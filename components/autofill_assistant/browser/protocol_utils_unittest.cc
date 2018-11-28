@@ -107,7 +107,7 @@ TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
           "script_path", GURL("http://example.com/"), parameters,
-          "server_payload", CreateClientContextProto())));
+          "global_payload", "script_payload", CreateClientContextProto())));
 
   AssertClientContext(request.client_context());
 
@@ -119,7 +119,8 @@ TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
   EXPECT_EQ("b", initial.script_parameters(0).value());
   EXPECT_EQ("c", initial.script_parameters(1).name());
   EXPECT_EQ("d", initial.script_parameters(1).value());
-  EXPECT_EQ("server_payload", request.server_payload());
+  EXPECT_EQ("global_payload", request.global_payload());
+  EXPECT_EQ("script_payload", request.script_payload());
 }
 
 TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {

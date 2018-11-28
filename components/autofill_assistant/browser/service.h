@@ -50,13 +50,15 @@ class Service {
   virtual void GetActions(const std::string& script_path,
                           const GURL& url,
                           const std::map<std::string, std::string>& parameters,
-                          const std::string& server_payload,
+                          const std::string& global_payload,
+                          const std::string& script_payload,
                           ResponseCallback callback);
 
-  // Get next sequence of actions according to server payload in previous
+  // Get next sequence of actions according to server payloads in previous
   // response.
   virtual void GetNextActions(
-      const std::string& previous_server_payload,
+      const std::string& previous_global_payload,
+      const std::string& previous_script_payload,
       const std::vector<ProcessedActionProto>& processed_actions,
       ResponseCallback callback);
 

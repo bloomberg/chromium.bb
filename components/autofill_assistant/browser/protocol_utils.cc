@@ -109,7 +109,8 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
     const std::string& script_path,
     const GURL& url,
     const std::map<std::string, std::string>& parameters,
-    const std::string& server_payload,
+    const std::string& global_payload,
+    const std::string& script_payload,
     const ClientContextProto& client_context) {
   ScriptActionRequestProto request_proto;
   InitialScriptActionsRequestProto* initial_request_proto =
@@ -123,8 +124,11 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
       parameters, initial_request_proto->mutable_script_parameters());
   request_proto.mutable_client_context()->CopyFrom(client_context);
 
-  if (!server_payload.empty()) {
-    request_proto.set_server_payload(server_payload);
+  if (!global_payload.empty()) {
+    request_proto.set_global_payload(global_payload);
+  }
+  if (!script_payload.empty()) {
+    request_proto.set_script_payload(script_payload);
   }
 
   std::string serialized_initial_request_proto;
@@ -136,11 +140,13 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
 
 // static
 std::string ProtocolUtils::CreateNextScriptActionsRequest(
-    const std::string& previous_server_payload,
+    const std::string& global_payload,
+    const std::string& script_payload,
     const std::vector<ProcessedActionProto>& processed_actions,
     const ClientContextProto& client_context) {
   ScriptActionRequestProto request_proto;
-  request_proto.set_server_payload(previous_server_payload);
+  request_proto.set_global_payload(global_payload);
+  request_proto.set_script_payload(script_payload);
   NextScriptActionsRequestProto* next_request =
       request_proto.mutable_next_request();
   for (const auto& processed_action : processed_actions) {
@@ -156,7 +162,8 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
 // static
 bool ProtocolUtils::ParseActions(
     const std::string& response,
-    std::string* return_server_payload,
+    std::string* return_global_payload,
+    std::string* return_script_payload,
     std::vector<std::unique_ptr<Action>>* actions) {
   DCHECK(actions);
 
@@ -166,8 +173,11 @@ bool ProtocolUtils::ParseActions(
     return false;
   }
 
-  if (return_server_payload && response_proto.has_server_payload()) {
-    *return_server_payload = response_proto.server_payload();
+  if (return_global_payload) {
+    *return_global_payload = response_proto.global_payload();
+  }
+  if (return_script_payload) {
+    *return_script_payload = response_proto.script_payload();
   }
 
   for (const auto& action : response_proto.actions()) {

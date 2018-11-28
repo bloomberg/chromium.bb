@@ -34,25 +34,31 @@ class MockService : public Service {
   void GetActions(const std::string& script_path,
                   const GURL& url,
                   const std::map<std::string, std::string>& parameters,
-                  const std::string& server_payload,
+                  const std::string& global_payload,
+                  const std::string& script_payload,
                   ResponseCallback callback) override {
-    OnGetActions(script_path, url, parameters, server_payload, callback);
+    OnGetActions(script_path, url, parameters, global_payload, script_payload,
+                 callback);
   }
-  MOCK_METHOD5(OnGetActions,
+  MOCK_METHOD6(OnGetActions,
                void(const std::string& script_path,
                     const GURL& url,
                     const std::map<std::string, std::string>& parameters,
-                    const std::string& server_payload,
+                    const std::string& global_payload,
+                    const std::string& script_payload,
                     ResponseCallback& callback));
 
   void GetNextActions(
-      const std::string& previous_server_payload,
+      const std::string& previous_global_payload,
+      const std::string& previous_script_payload,
       const std::vector<ProcessedActionProto>& processed_actions,
       ResponseCallback callback) override {
-    OnGetNextActions(previous_server_payload, processed_actions, callback);
+    OnGetNextActions(previous_global_payload, previous_script_payload,
+                     processed_actions, callback);
   }
-  MOCK_METHOD3(OnGetNextActions,
-               void(const std::string& previous_server_payload,
+  MOCK_METHOD4(OnGetNextActions,
+               void(const std::string& previous_global_payload,
+                    const std::string& previous_script_payload,
                     const std::vector<ProcessedActionProto>& processed_actions,
                     ResponseCallback& callback));
 };

@@ -101,8 +101,8 @@ class ControllerTest : public content::RenderViewHostTestHarness {
         .WillByDefault(RunOnceCallback<2>(true, ""));
 
     // Scripts run, but have no actions.
-    ON_CALL(*mock_service_, OnGetActions(_, _, _, _, _))
-        .WillByDefault(RunOnceCallback<4>(true, ""));
+    ON_CALL(*mock_service_, OnGetActions(_, _, _, _, _, _))
+        .WillByDefault(RunOnceCallback<5>(true, ""));
 
     // Make WebController::GetUrl accessible.
     ON_CALL(*mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
@@ -213,8 +213,8 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
       });
 
   // 5. script1 run successfully (no actions).
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script1"), _, _, _, _))
-      .WillOnce(RunOnceCallback<4>(true, ""));
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script1"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, ""));
 
   // 6. As nothing is selected the flow terminates.
 
@@ -256,10 +256,10 @@ TEST_F(ControllerTest, Stop) {
   actions_response.add_actions()->mutable_stop();
   std::string actions_response_str;
   actions_response.SerializeToString(&actions_response_str);
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _, _, _))
-      .WillOnce(RunOnceCallback<4>(true, actions_response_str));
-  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _))
-      .WillOnce(RunOnceCallback<2>(true, ""));
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, actions_response_str));
+  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _))
+      .WillOnce(RunOnceCallback<3>(true, ""));
 
   EXPECT_CALL(*mock_ui_controller_, Shutdown());
   GetUiDelegate()->OnScriptSelected("stop");
@@ -288,12 +288,12 @@ TEST_F(ControllerTest, Reset) {
     actions_response.add_actions()->mutable_reset();
     std::string actions_response_str;
     actions_response.SerializeToString(&actions_response_str);
-    EXPECT_CALL(*mock_service_, OnGetActions(StrEq("reset"), _, _, _, _))
-        .WillOnce(RunOnceCallback<4>(true, actions_response_str));
+    EXPECT_CALL(*mock_service_, OnGetActions(StrEq("reset"), _, _, _, _, _))
+        .WillOnce(RunOnceCallback<5>(true, actions_response_str));
 
     // 3. Report the result of running that action.
-    EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _))
-        .WillOnce(RunOnceCallback<2>(true, ""));
+    EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _))
+        .WillOnce(RunOnceCallback<3>(true, ""));
 
     // 4. The reset action forces a reload of the scripts, even though the URL
     // hasn't changed. The "reset" script is reported again to UpdateScripts.
@@ -346,8 +346,8 @@ TEST_F(ControllerTest, Autostart) {
   AddRunnableScript(&script_response, "alsorunnable");
   SetNextScriptResponse(script_response);
 
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("autostart"), _, _, _, _))
-      .WillOnce(RunOnceCallback<4>(true, ""));
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("autostart"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, ""));
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }
@@ -371,8 +371,8 @@ TEST_F(ControllerTest, AutostartFirstInterrupt) {
   SetNextScriptResponse(script_response);
 
   EXPECT_CALL(*mock_service_,
-              OnGetActions(StrEq("autostart interrupt 1"), _, _, _, _))
-      .WillOnce(RunOnceCallback<4>(false, ""));
+              OnGetActions(StrEq("autostart interrupt 1"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(false, ""));
   // The script fails, ending the flow. What matters is that the correct
   // expectation is met.
 
@@ -397,8 +397,9 @@ TEST_F(ControllerTest, InterruptThenAutostart) {
   {
     testing::InSequence seq;
     EXPECT_CALL(*mock_service_,
-                OnGetActions(StrEq("autostart interrupt"), _, _, _, _));
-    EXPECT_CALL(*mock_service_, OnGetActions(StrEq("autostart"), _, _, _, _));
+                OnGetActions(StrEq("autostart interrupt"), _, _, _, _, _));
+    EXPECT_CALL(*mock_service_,
+                OnGetActions(StrEq("autostart"), _, _, _, _, _));
   }
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));

@@ -61,6 +61,12 @@ ACTION_TEMPLATE(RunOnceCallback,
   return std::move(std::get<k>(args)).Run(p0, p1, p2, p3, p4);
 }
 
+ACTION_TEMPLATE(RunOnceCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_6_VALUE_PARAMS(p0, p1, p2, p3, p4, p5)) {
+  return std::move(std::get<k>(args)).Run(p0, p1, p2, p3, p4, p5);
+}
+
 // Template for capturing a base::OnceCallback passed to a mocked method
 //
 // This is useful to run the callback later on, at an appropriate time.

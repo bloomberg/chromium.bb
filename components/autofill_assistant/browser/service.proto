@@ -166,8 +166,14 @@ enum PolicyType {
 message ScriptActionRequestProto {
   optional ClientContextProto client_context = 7;
 
-  // The server payload received from the previous response.
-  optional bytes server_payload = 2;
+  // Global payload from the previous response, possibly for another script.
+  optional bytes global_payload = 8;
+
+  // Script payload from the previous response, for the same script.
+  //
+  // For backward compatibility, for initial requests, forward the last returned
+  // script_payload.
+  optional bytes script_payload = 2;
 
   oneof request {
     InitialScriptActionsRequestProto initial_request = 4;
@@ -200,9 +206,12 @@ message NextScriptActionsRequestProto {
 
 // Response of a script's actions.
 message ActionsResponseProto {
-  // Opaque data that should not be interpreted and must pass this back
-  // unchanged in the next request.
-  optional bytes server_payload = 2;
+  // Opaque data to send to the next ScriptActionRequestProto.
+  optional bytes global_payload = 4;
+
+  // Opaque data to send to the next ScriptActionRequestProto for the same
+  // script.
+  optional bytes script_payload = 2;
 
   // Actions to be performed in order.
   // Should stop processing as soon as an action fails.

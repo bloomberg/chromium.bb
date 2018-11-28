@@ -33,14 +33,16 @@ constexpr base::TimeDelta kShortWaitForElementDeadline =
 
 ScriptExecutor::ScriptExecutor(
     const std::string& script_path,
-    const std::string& server_payload,
+    const std::string& global_payload,
+    const std::string& script_payload,
     ScriptExecutor::Listener* listener,
     std::map<std::string, ScriptStatusProto>* scripts_state,
     const std::vector<Script*>* ordered_interrupts,
     ScriptExecutorDelegate* delegate)
     : script_path_(script_path),
-      initial_server_payload_(server_payload),
-      last_server_payload_(server_payload),
+      last_global_payload_(global_payload),
+      initial_script_payload_(script_payload),
+      last_script_payload_(script_payload),
       listener_(listener),
       delegate_(delegate),
       at_end_(CONTINUE),
@@ -67,7 +69,7 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
 
   delegate_->GetService()->GetActions(
       script_path_, delegate_->GetWebController()->GetUrl(),
-      delegate_->GetParameters(), last_server_payload_,
+      delegate_->GetParameters(), last_global_payload_, last_script_payload_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -310,15 +312,13 @@ void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   processed_actions_.clear();
   actions_.clear();
 
-  bool parse_result =
-      ProtocolUtils::ParseActions(response, &last_server_payload_, &actions_);
-  if (listener_) {
-    listener_->OnServerPayloadChanged(last_server_payload_);
-  }
+  bool parse_result = ProtocolUtils::ParseActions(
+      response, &last_global_payload_, &last_script_payload_, &actions_);
   if (!parse_result) {
     RunCallback(false);
     return;
   }
+  ReportPayloadsToListener();
 
   if (actions_.empty()) {
     // Finished executing the script if there are no more actions.
@@ -327,6 +327,13 @@ void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   }
 
   ProcessNextAction();
+}
+
+void ScriptExecutor::ReportPayloadsToListener() {
+  if (!listener_)
+    return;
+
+  listener_->OnServerPayloadChanged(last_global_payload_, last_script_payload_);
 }
 
 void ScriptExecutor::RunCallback(bool success) {
@@ -382,7 +389,7 @@ void ScriptExecutor::ProcessAction(Action* action) {
 
 void ScriptExecutor::GetNextActions() {
   delegate_->GetService()->GetNextActions(
-      last_server_payload_, processed_actions_,
+      last_global_payload_, last_script_payload_, processed_actions_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -447,7 +454,7 @@ void ScriptExecutor::OnWaitForElementVisible(
 }
 
 ScriptExecutor::WaitWithInterrupts::WaitWithInterrupts(
-    const ScriptExecutor* main_script,
+    ScriptExecutor* main_script,
     base::TimeDelta max_wait_time,
     ElementCheckType check_type,
     const Selector& selector,
@@ -491,6 +498,14 @@ void ScriptExecutor::WaitWithInterrupts::Run() {
   // to this.
 }
 
+void ScriptExecutor::WaitWithInterrupts::OnServerPayloadChanged(
+    const std::string& global_payload,
+    const std::string& script_payload) {
+  // Interrupts and main scripts share global payloads, but not script payloads.
+  main_script_->last_global_payload_ = global_payload;
+  main_script_->ReportPayloadsToListener();
+}
+
 void ScriptExecutor::WaitWithInterrupts::OnPreconditionCheckDone(
     const Script* interrupt,
     bool precondition_match) {
@@ -531,8 +546,9 @@ void ScriptExecutor::WaitWithInterrupts::RunInterrupt(const Script* interrupt) {
   batch_element_checker_.reset();
   SavePreInterruptState();
   interrupt_executor_ = std::make_unique<ScriptExecutor>(
-      interrupt->handle.path, main_script_->initial_server_payload_,
-      /* listener= */ nullptr, main_script_->scripts_state_, &no_interrupts_,
+      interrupt->handle.path, main_script_->last_global_payload_,
+      main_script_->initial_script_payload_,
+      /* listener= */ this, main_script_->scripts_state_, &no_interrupts_,
       main_script_->delegate_);
   interrupt_executor_->Run(
       base::BindOnce(&ScriptExecutor::WaitWithInterrupts::OnInterruptDone,
@@ -548,8 +564,6 @@ void ScriptExecutor::WaitWithInterrupts::OnInterruptDone(
     return;
   }
   RestorePreInterruptUiState();
-  // TODO(crbug.com/806868): Forward global state change from the server_payload
-  // of a successfully run interrupt to the main script.
 
   // Restart. We use the original wait time since the interruption could have
   // triggered any kind of actions, including actions that wait on the user. We
