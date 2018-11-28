@@ -6,6 +6,7 @@ module tracing.mojom;
 
 const string kTraceEventDataSourceName = "org.chromium.trace_event";
 const string kMetaDataSourceName = "org.chromium.trace_metadata";
+const string kSystemTraceDataSourceName = "org.chromium.trace_system";
 
 // Brief description of the flow: There's a per-process ProducerClient which
 // connects to the central PerfettoService and establishes a two-way connection
