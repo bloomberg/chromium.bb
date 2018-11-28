@@ -814,39 +814,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @end
 
 @implementation BrowserViewController
-// Public synthesized propeties.
-@synthesize typingShield = _typingShield;
-@synthesize active = _active;
-// Private synthesized properties
-@synthesize commandDispatcher = _commandDispatcher;
-@synthesize visible = _visible;
-@synthesize viewVisible = _viewVisible;
-@synthesize broadcasting = _broadcasting;
-@synthesize dismissingModal = _dismissingModal;
-@synthesize hideStatusBar = _hideStatusBar;
-@synthesize activityOverlayCoordinator = _activityOverlayCoordinator;
-@synthesize foregroundTabWasAddedCompletionBlock =
-    _foregroundTabWasAddedCompletionBlock;
-@synthesize tabStripCoordinator = _tabStripCoordinator;
-@synthesize tabStripView = _tabStripView;
-@synthesize popupMenuCoordinator = _popupMenuCoordinator;
-@synthesize bubblePresenter = _bubblePresenter;
-@synthesize primaryToolbarCoordinator = _primaryToolbarCoordinator;
-@synthesize secondaryToolbarCoordinator = _secondaryToolbarCoordinator;
-@synthesize secondaryToolbarContainerView = _secondaryToolbarContainerView;
-@synthesize secondaryToolbarContainerCoordinator =
-    _secondaryToolbarContainerCoordinator;
-@synthesize primaryToolbarOffsetConstraint = _primaryToolbarOffsetConstraint;
-@synthesize primaryToolbarHeightConstraint = _primaryToolbarHeightConstraint;
-@synthesize secondaryToolbarHeightConstraint =
-    _secondaryToolbarHeightConstraint;
-@synthesize secondaryToolbarNoFullscreenHeightConstraint =
-    _secondaryToolbarNoFullscreenHeightConstraint;
-@synthesize footerFullscreenProgress = _footerFullscreenProgress;
-@synthesize toolbarInterface = _toolbarInterface;
-@synthesize imageSaver = _imageSaver;
-@synthesize imageCopier = _imageCopier;
-@synthesize helper = _helper;
 // DialogPresenterDelegate property
 @synthesize dialogPresenterDelegateIsPresenting =
     _dialogPresenterDelegateIsPresenting;

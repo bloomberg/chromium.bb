@@ -83,17 +83,6 @@
       _scopedWebStateListObserver;
 }
 
-@synthesize dispatcher = _dispatcher;
-// Child coordinators
-@synthesize appLauncherCoordinator = _appLauncherCoordinator;
-@synthesize formInputAccessoryCoordinator = _formInputAccessoryCoordinator;
-@synthesize qrScannerCoordinator = _qrScannerCoordinator;
-@synthesize readingListCoordinator = _readingListCoordinator;
-@synthesize recentTabsCoordinator = _recentTabsCoordinator;
-@synthesize repostFormCoordinator = _repostFormCoordinator;
-@synthesize snackbarCoordinator = _snackbarCoordinator;
-@synthesize storeKitCoordinator = _storeKitCoordinator;
-
 #pragma mark - ChromeCoordinator
 
 - (void)start {
