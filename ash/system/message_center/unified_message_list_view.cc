@@ -485,6 +485,11 @@ void UnifiedMessageListView::UpdateClearAllAnimation() {
       DeleteRemovedNotifications();
       UpdateBounds();
       start_height_ = ideal_height_;
+      for (int i = 0; i < child_count(); ++i) {
+        auto* view = GetContainer(i);
+        view->set_start_bounds(view->ideal_bounds());
+      }
+
       PreferredSizeChanged();
 
       state_ = State::CLEAR_ALL_STACKED;

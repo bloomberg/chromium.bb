@@ -443,8 +443,10 @@ TEST_F(UnifiedMessageListViewTest, ClearAllWithStackingNotifications) {
 
   message_list_view()->set_stacked_notification_count(1);
   int previous_height = message_list_view()->GetPreferredSize().height();
+  gfx::Rect previous_bounds = GetMessageViewBounds(1);
   AnimateToMiddle();
   EXPECT_EQ(previous_height, message_list_view()->GetPreferredSize().height());
+  EXPECT_EQ(previous_bounds, GetMessageViewBounds(1));
   AnimateToEnd();
   EXPECT_EQ(1, message_list_view()->child_count());
 
@@ -455,7 +457,7 @@ TEST_F(UnifiedMessageListViewTest, ClearAllWithStackingNotifications) {
   AnimateToEnd();
   EXPECT_EQ(1, message_list_view()->child_count());
 
-  gfx::Rect previous_bounds = GetMessageViewBounds(0);
+  previous_bounds = GetMessageViewBounds(0);
   AnimateToMiddle();
   EXPECT_LT(previous_bounds.x(), GetMessageViewBounds(0).x());
   AnimateToEnd();
