@@ -205,6 +205,8 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
   std::unique_ptr<views::InkDropMask> ink_drop_mask_;
 
+  base::WeakPtrFactory<InkDropHostView> weak_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(InkDropHostView);
 };
 
