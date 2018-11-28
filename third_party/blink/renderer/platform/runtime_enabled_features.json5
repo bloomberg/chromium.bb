@@ -725,6 +725,10 @@
       status: "experimental",
     },
     {
+      name: "MediaCapabilitiesEncryptedMedia",
+      status: "experimental",
+    },
+    {
       name: "MediaCapture",
     },
     {

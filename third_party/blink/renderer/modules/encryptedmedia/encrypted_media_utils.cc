@@ -115,4 +115,34 @@ String EncryptedMediaUtils::ConvertKeyStatusToString(
   return "internal-error";
 }
 
+// static
+WebMediaKeySystemConfiguration::Requirement
+EncryptedMediaUtils::ConvertToMediaKeysRequirement(const String& requirement) {
+  if (requirement == "required")
+    return WebMediaKeySystemConfiguration::Requirement::kRequired;
+  if (requirement == "optional")
+    return WebMediaKeySystemConfiguration::Requirement::kOptional;
+  if (requirement == "not-allowed")
+    return WebMediaKeySystemConfiguration::Requirement::kNotAllowed;
+
+  NOTREACHED();
+  return WebMediaKeySystemConfiguration::Requirement::kOptional;
+}
+
+// static
+String EncryptedMediaUtils::ConvertMediaKeysRequirementToString(
+    WebMediaKeySystemConfiguration::Requirement requirement) {
+  switch (requirement) {
+    case WebMediaKeySystemConfiguration::Requirement::kRequired:
+      return "required";
+    case WebMediaKeySystemConfiguration::Requirement::kOptional:
+      return "optional";
+    case WebMediaKeySystemConfiguration::Requirement::kNotAllowed:
+      return "not-allowed";
+  }
+
+  NOTREACHED();
+  return "not-allowed";
+}
+
 }  // namespace blink
