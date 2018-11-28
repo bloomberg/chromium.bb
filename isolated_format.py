@@ -202,6 +202,9 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
   Note: this code doesn't properly handle recursive symlink like one created
   with:
     ln -s .. foo
+
+  Yields:
+    Relative file paths inside the directory.
   """
   if os.path.isabs(relfile):
     raise MappingError(u'Can\'t map absolute path %s' % relfile)
@@ -243,6 +246,8 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
       # The file doesn't exist, it will throw below.
       pass
 
+  for s in symlinks:
+    yield s
   if relfile.endswith(os.path.sep):
     if not fs.isdir(infile):
       raise MappingError(
@@ -251,7 +256,6 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
     # Special case './'.
     if relfile.startswith(u'.' + os.path.sep):
       relfile = relfile[2:]
-    outfiles = symlinks
     try:
       for filename in fs.listdir(infile):
         inner_relfile = os.path.join(relfile, filename)
@@ -259,10 +263,10 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
           continue
         if fs.isdir(os.path.join(indir, inner_relfile)):
           inner_relfile += os.path.sep
-        outfiles.extend(
-            expand_directory_and_symlink(indir, inner_relfile, blacklist,
-                                         follow_symlinks))
-      return outfiles
+        # Apply recursively.
+        for i in expand_directory_and_symlink(
+            indir, inner_relfile, blacklist, follow_symlinks):
+          yield i
     except OSError as e:
       raise MappingError(
           u'Unable to iterate over directory %s.\n%s' % (infile, e))
@@ -275,7 +279,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
     if not fs.isfile(infile):
       raise MappingError(u'Input file %s doesn\'t exist' % infile)
 
-    return symlinks + [relfile]
+    yield relfile
 
 
 def expand_directories_and_symlinks(
@@ -284,18 +288,19 @@ def expand_directories_and_symlinks(
   verifies files exist.
 
   Files are specified in os native path separator.
+
+  Yields:
+    Relative file path of each file inside every directory specified.
   """
-  outfiles = []
   for relfile in infiles:
     try:
-      outfiles.extend(
-          expand_directory_and_symlink(
-              indir, relfile, blacklist, follow_symlinks))
+      for i in expand_directory_and_symlink(
+          indir, relfile, blacklist, follow_symlinks):
+        yield i
     except MappingError as e:
       if not ignore_broken_items:
         raise
       logging.info('warning: %s', e)
-  return outfiles
 
 
 @tools.profile

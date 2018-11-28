@@ -110,7 +110,8 @@ class MockStorage(object):
 
   def upload_items(self, items):
     assert self.items is None, self.items
-    self.items = items
+    # Consume the generator.
+    self.items = list(items)
 
 
 class IsolateBase(auto_stub.TestCase):

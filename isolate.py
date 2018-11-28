@@ -569,12 +569,14 @@ class CompleteState(object):
       follow_symlinks = sys.platform != 'win32'
     # Expand the directories by listing each file inside. Up to now, trailing
     # os.path.sep must be kept.
-    infiles = isolated_format.expand_directories_and_symlinks(
+    # TODO(maruel): This code is not smart enough to leverage the generator, so
+    # materialize the list.
+    infiles = list(isolated_format.expand_directories_and_symlinks(
         self.saved_state.root_dir,
         infiles,
         tools.gen_blacklist(blacklist),
         follow_symlinks,
-        ignore_broken_items)
+        ignore_broken_items))
 
     # Finally, update the new data to be able to generate the foo.isolated file,
     # the file that is used by run_isolated.py.

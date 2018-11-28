@@ -1175,7 +1175,7 @@ def get_storage(server_ref):
     @staticmethod
     def upload_items(items):
       # Always returns the second item as not present.
-      return [items[1]]
+      return [list(items)[1]]
   return StorageFake()
 
 

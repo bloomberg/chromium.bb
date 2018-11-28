@@ -108,7 +108,7 @@ class StorageFake(object):
 
   def upload_items(self, items_to_upload):
     # Return all except the first one.
-    return items_to_upload[1:]
+    return list(items_to_upload)[1:]
 
 
 class RunIsolatedTestBase(auto_stub.TestCase):
