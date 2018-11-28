@@ -439,6 +439,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
     personal_data->UpdateCreditCard(credit_card);
   } else {
     personal_data->AddCreditCard(credit_card);
+    base::RecordAction(base::UserMetricsAction("AutofillCreditCardsAdded"));
   }
 
   return RespondNow(NoArguments());

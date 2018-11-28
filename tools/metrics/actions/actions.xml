@@ -2348,6 +2348,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="AutofillCreditCardsAdded">
+  <owner>nikunjb@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded when user adds card via chrome://settings/payments page.
+  </description>
+</action>
+
 <action name="AutofillCreditCardsViewed">
   <owner>nikunjb@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
