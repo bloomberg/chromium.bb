@@ -578,13 +578,16 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1xRounding) {
 }
 #endif
 
-#if defined(OS_IOS)
-// Fails on devices that have non-100P scaling. See crbug.com/298406
-#define MAYBE_FallbackToNone DISABLED_FallbackToNone
-#else
-#define MAYBE_FallbackToNone FallbackToNone
-#endif
-TEST_F(ResourceBundleImageTest, MAYBE_FallbackToNone) {
+TEST_F(ResourceBundleImageTest, FallbackToNone) {
+  std::vector<ScaleFactor> supported_factors;
+  supported_factors.push_back(SCALE_FACTOR_100P);
+  supported_factors.push_back(SCALE_FACTOR_200P);
+  supported_factors.push_back(SCALE_FACTOR_300P);
+
+  // Presents a consistent set of supported scale factors for all platforms.
+  // iOS does not include SCALE_FACTOR_100P, which breaks the test below.
+  test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
+
   base::FilePath data_default_path = dir_path().AppendASCII("sample.pak");
 
   // Create the pak files.
