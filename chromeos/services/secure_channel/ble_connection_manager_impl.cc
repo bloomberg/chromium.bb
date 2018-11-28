@@ -503,15 +503,6 @@ void BleConnectionManagerImpl::HandleSecureChannelDisconnection(
   // connection's latency should be reset and started anew.
   remote_device_id_to_timestamps_map_[remote_device_id]->Reset();
 
-  if (!DoesAuthenticatingChannelExist(remote_device_id)) {
-    PA_LOG(ERROR) << "BleConnectionManagerImpl::"
-                  << "HandleSecureChannelDisconnection(): Disconnected channel "
-                  << "not present in map. Remote device ID: "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                         remote_device_id);
-    NOTREACHED();
-  }
-
   for (const auto& details : GetDetailsForRemoteDevice(remote_device_id)) {
     switch (details.connection_role()) {
       // Initiator role devices are notified of authentication errors as well as
@@ -534,19 +525,10 @@ void BleConnectionManagerImpl::HandleSecureChannelDisconnection(
     }
   }
 
-  // It is possible that the NotifyBle*Failure() calls above resulted in
-  // observers responding to the failure by canceling the connection attempt.
-  // If all attempts to |remote_device_id| were cancelled, the disconnected
-  // channel will have already been cleaned up via
-  // ProcessPotentialLingeringChannel().
-  auto it = remote_device_id_to_secure_channel_map_.find(remote_device_id);
-  if (it == remote_device_id_to_secure_channel_map_.end())
-    return;
-
   // Stop observing the disconnected channel and remove it from the map.
-  SecureChannelWithRole& secure_channel_with_role = it->second;
-  secure_channel_with_role.first->RemoveObserver(this);
-  remote_device_id_to_secure_channel_map_.erase(it);
+  remote_device_id_to_secure_channel_map_[remote_device_id]
+      .first->RemoveObserver(this);
+  remote_device_id_to_secure_channel_map_.erase(remote_device_id);
 
   // Since the previous connection failed, the connection attempts that were
   // paused in SetAuthenticatingChannel() need to be started up again. Note
