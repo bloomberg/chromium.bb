@@ -230,6 +230,12 @@ void InkDropHostView::OnBlur() {
 }
 
 void InkDropHostView::OnMouseEvent(ui::MouseEvent* event) {
+  auto weak_ptr = weak_factory_.GetWeakPtr();
+  View::OnMouseEvent(event);
+  if (!weak_ptr) {
+    // Calling View::OnMouseEvent() might destroy |this|.
+    return;
+  }
   switch (event->type()) {
     case ui::ET_MOUSE_ENTERED:
       GetInkDrop()->SetHovered(true);
@@ -243,7 +249,6 @@ void InkDropHostView::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
-  View::OnMouseEvent(event);
 }
 
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
