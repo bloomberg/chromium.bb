@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "ios/chrome/browser/ui/settings/autofill_profile_edit_table_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
@@ -161,12 +162,16 @@ NSString* GetTextFieldForID(int categoryId) {
 
   // Check that all fields and values match the expectations.
   for (const DisplayStringIDToExpectedResult& expectation : kExpectedFields) {
-    [[EarlGrey selectElementWithMatcher:
-                   grey_accessibilityLabel([NSString
-                       stringWithFormat:@"%@, %@",
-                                        l10n_util::GetNSString(
-                                            expectation.display_string_id),
-                                        expectation.expected_result])]
+    id<GREYMatcher> elementMatcher = grey_accessibilityLabel([NSString
+        stringWithFormat:@"%@, %@",
+                         l10n_util::GetNSString(expectation.display_string_id),
+                         expectation.expected_result]);
+    [[[EarlGrey
+        selectElementWithMatcher:grey_allOf(elementMatcher,
+                                            grey_sufficientlyVisible(), nil)]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
+        onElementWithMatcher:grey_accessibilityID(
+                                 kAutofillProfileEditTableViewId)]
         assertWithMatcher:grey_notNil()];
   }
 
