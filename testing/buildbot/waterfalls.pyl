@@ -3180,6 +3180,21 @@
           '--test-launcher-print-test-stdio=always',
         ],
       },
+      'WebKit Linux Trusty ASAN': {
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'WebKit Linux Trusty Leak': {
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'WebKit Linux Trusty MSAN': {
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'win-asan': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
@@ -3265,6 +3280,8 @@
   {
     'name': 'chromium.webkit',
     'machines': {
+      # TODO(jchinlee): The below three builders are in chromium.memory on LUCI,
+      # see crbug.com/790309, crbug.com/790294, crbug.com/790286.
       'WebKit Linux Trusty ASAN': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
