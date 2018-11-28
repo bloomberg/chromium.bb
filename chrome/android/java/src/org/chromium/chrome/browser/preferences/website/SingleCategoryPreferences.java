@@ -447,18 +447,20 @@ public class SingleCategoryPreferences extends PreferenceFragment
             // This should only be used for settings that have host-pattern based exceptions.
             if (mCategory.showSites(SiteSettingsCategory.Type.AUTOPLAY)
                     || mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
+                    || (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
+                            && ChromeFeatureList.isEnabled(
+                                    ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH))
                     || mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)
                     || mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
                 if ((boolean) newValue) {
-                    Preference addException = getPreferenceScreen().findPreference(
-                            ADD_EXCEPTION_KEY);
-                    if (addException != null) {  // Can be null in testing.
+                    Preference addException =
+                            getPreferenceScreen().findPreference(ADD_EXCEPTION_KEY);
+                    if (addException != null) { // Can be null in testing.
                         getPreferenceScreen().removePreference(addException);
                     }
                 } else {
-                    getPreferenceScreen().addPreference(
-                            new AddExceptionPreference(getActivity(), ADD_EXCEPTION_KEY,
-                                    getAddExceptionDialogMessage(), this));
+                    getPreferenceScreen().addPreference(new AddExceptionPreference(getActivity(),
+                            ADD_EXCEPTION_KEY, getAddExceptionDialogMessage(), this));
                 }
             }
 
@@ -499,6 +501,11 @@ public class SingleCategoryPreferences extends PreferenceFragment
                                ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND)
                     ? R.string.website_settings_add_site_description_sound_block
                     : R.string.website_settings_add_site_description_sound_allow;
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
+            resource = PrefServiceBridge.getInstance().isCategoryEnabled(
+                               ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES)
+                    ? R.string.website_settings_add_site_description_cookies_block
+                    : R.string.website_settings_add_site_description_cookies_allow;
         }
         assert resource > 0;
         return getResources().getString(resource);
@@ -577,6 +584,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 && (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)
                         || !PrefServiceBridge.getInstance().isCategoryEnabled(
                                 ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT))) {
+            exception = true;
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
+                && ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
                 && !PrefServiceBridge.getInstance().isCategoryEnabled(
