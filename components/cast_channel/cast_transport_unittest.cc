@@ -11,8 +11,8 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "components/cast_channel/cast_framer.h"
 #include "components/cast_channel/cast_socket.h"
@@ -163,7 +163,7 @@ class CastTransportTest : public testing::Test {
     run_loop.RunUntilIdle();
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   MockCastTransportDelegate* delegate_;
   MockSocket mock_socket_;
   Logger* logger_;
