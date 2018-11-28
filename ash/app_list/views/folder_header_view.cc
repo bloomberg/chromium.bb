@@ -43,6 +43,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
   ~FolderNameView() override = default;
 
   void OnFocus() override {
+    SetText(base::UTF8ToUTF16(folder_header_view_->folder_item_->name()));
     SelectAll(false);
     Textfield::OnFocus();
   }

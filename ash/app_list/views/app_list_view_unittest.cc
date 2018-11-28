@@ -518,8 +518,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
               focused_view());
 
     // Clean up
-    textfield->SetText(base::UTF8ToUTF16(""));
     textfield->RequestFocus();
+    textfield->SetText(base::UTF8ToUTF16(""));
   }
 
   AppListView* app_list_view() { return view_; }
