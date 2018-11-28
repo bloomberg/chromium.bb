@@ -469,10 +469,15 @@ cr.define('omnibox_output', function() {
       OutputMatch.displayedProperties(showDetails)
           .map(property => {
             const value = this.properties[property.propertyName];
-            if (typeof value === 'object')
-              return OutputMatch.renderJsonProperty_(value);
             if (typeof value === 'boolean')
               return OutputMatch.renderBooleanProperty_(value);
+            if (typeof value === 'object') {
+              // We check if the first element has key and value properties.
+              if (value && value[0] && value[0].key && value[0].value)
+                return OutputMatch.renderKeyValueTuples_(value);
+              else
+                return OutputMatch.renderJsonProperty_(value);
+            }
             const LINK_REGEX = /^(http|https|ftp|chrome|file):\/\//;
             if (LINK_REGEX.test(value))
               return OutputMatch.renderLinkProperty_(value);
@@ -539,6 +544,21 @@ cr.define('omnibox_output', function() {
       link.textContent = propertyValue;
       link.href = propertyValue;
       cell.appendChild(link);
+      return cell;
+    }
+
+    /**
+     * @private
+     * @param {Array<{key: string, value: string}>} propertyValue
+     * @return {Element}
+     */
+    static renderKeyValueTuples_(propertyValue) {
+      const cell = document.createElement('td');
+      const pre = document.createElement('pre');
+      const text = propertyValue.reduce(
+          (prev, current) => `${prev}${current.key}: ${current.value}\n`, '');
+      pre.textContent = text;
+      cell.appendChild(pre);
       return cell;
     }
 
