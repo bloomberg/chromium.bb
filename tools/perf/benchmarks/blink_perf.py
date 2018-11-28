@@ -39,10 +39,18 @@ class _BlinkPerfPage(page_module.Page):
     action_runner.ExecuteJavaScript('testRunner.scheduleTestRun()')
     action_runner.WaitForJavaScriptCondition('testRunner.isDone', timeout=600)
 
+def StoryNameFromUrl(url, prefix):
+  filename = url[len(prefix):].strip('/')
+  baseName, extension = filename.split('.')
+  if extension.find('?') != -1:
+    query = extension.split('?')[1]
+    baseName += "_" + query # So that queried page-names don't collide
+  return "{b}.{e}".format(b=baseName, e=extension)
 
 def CreateStorySetFromPath(path, skipped_file,
                            shared_page_state_class=(
-                               shared_page_state.SharedPageState)):
+                               shared_page_state.SharedPageState),
+                           append_query=None):
   assert os.path.exists(path)
 
   page_urls = []
@@ -54,7 +62,11 @@ def CreateStorySetFromPath(path, skipped_file,
     if '../' in open(path, 'r').read():
       # If the page looks like it references its parent dir, include it.
       serving_dirs.add(os.path.dirname(os.path.dirname(path)))
-    page_urls.append('file://' + path.replace('\\', '/'))
+    page_url = 'file://' + path.replace('\\', '/')
+    if append_query:
+      page_url += '?' + append_query
+    page_urls.append(page_url)
+
 
   def _AddDir(dir_path, skipped):
     for candidate_path in os.listdir(dir_path):
@@ -85,7 +97,7 @@ def CreateStorySetFromPath(path, skipped_file,
   all_urls = [p.rstrip('/') for p in page_urls]
   common_prefix = os.path.dirname(os.path.commonprefix(all_urls))
   for url in sorted(page_urls):
-    name = url[len(common_prefix):].strip('/')
+    name = StoryNameFromUrl(url, common_prefix)
     ps.AddStory(_BlinkPerfPage(
         url, ps, ps.base_dir,
         shared_page_state_class=shared_page_state_class,
@@ -349,7 +361,7 @@ class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
   test = _BlinkPerfMeasurement
 
   def CreateStorySet(self, options):
-    path = os.path.join(BLINK_PERF_BASE_DIR, self.subdir)
+    path = os.path.join(BLINK_PERF_BASE_DIR, self.SUBDIR)
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
 
@@ -357,8 +369,7 @@ class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
                 component='Blink>Accessibility',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfAccessibility(_BlinkPerfBenchmark):
-  tag = 'accessibility'
-  subdir = 'accessibility'
+  SUBDIR = 'accessibility'
 
   @classmethod
   def Name(cls):
@@ -376,7 +387,7 @@ class BlinkPerfAccessibility(_BlinkPerfBenchmark):
             'haraken@chromium.org'],
     documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfBindings(_BlinkPerfBenchmark):
-  subdir = 'bindings'
+  SUBDIR = 'bindings'
 
   @classmethod
   def Name(cls):
@@ -387,43 +398,47 @@ class BlinkPerfBindings(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks',
                 component='Blink>CSS')
 class BlinkPerfCSS(_BlinkPerfBenchmark):
-  subdir = 'css'
+  SUBDIR = 'css'
 
   @classmethod
   def Name(cls):
     return 'blink_perf.css'
 
-
-
-@benchmark.Info(emails=['fserb@chromium.org'],
+@benchmark.Info(emails=['aaronhk@chromium.org', 'fserb@chromium.org'],
                 documentation_url='https://bit.ly/blink-perf-benchmarks',
                 component='Blink>Canvas')
 class BlinkPerfCanvas(_BlinkPerfBenchmark):
-  subdir = 'canvas'
+  SUBDIR = 'canvas'
 
   @classmethod
   def Name(cls):
     return 'blink_perf.canvas'
 
   def CreateStorySet(self, options):
-    path = os.path.join(BLINK_PERF_BASE_DIR, self.subdir)
+    path = os.path.join(BLINK_PERF_BASE_DIR, self.SUBDIR)
     story_set = CreateStorySetFromPath(
         path, SKIPPED_FILE,
         shared_page_state_class=(
             webgl_supported_shared_state.WebGLSupportedSharedState))
+    raf_story_set = CreateStorySetFromPath(
+        path, SKIPPED_FILE,
+        shared_page_state_class=(
+            webgl_supported_shared_state.WebGLSupportedSharedState),
+        append_query="RAF")
+    for raf_story in raf_story_set:
+      story_set.AddStory(raf_story)
     # WebGLSupportedSharedState requires the skipped_gpus property to
     # be set on each page.
     for page in story_set:
       page.skipped_gpus = []
     return story_set
 
-
 @benchmark.Info(emails=['hayato@chromium.org',
                         'tkent@chromium.org'],
                 component='Blink>DOM',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfDOM(_BlinkPerfBenchmark):
-  subdir = 'dom'
+  SUBDIR = 'dom'
 
   @classmethod
   def Name(cls):
@@ -434,7 +449,7 @@ class BlinkPerfDOM(_BlinkPerfBenchmark):
                 component='Blink>DOM',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfEvents(_BlinkPerfBenchmark):
-  subdir = 'events'
+  SUBDIR = 'events'
 
   @classmethod
   def Name(cls):
@@ -445,8 +460,7 @@ class BlinkPerfEvents(_BlinkPerfBenchmark):
                 component='Internals>Images>Codecs',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
-  tag = 'image_decoder'
-  subdir = 'image_decoder'
+  SUBDIR = 'image_decoder'
 
   @classmethod
   def Name(cls):
@@ -461,7 +475,7 @@ class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
 @benchmark.Info(emails=['eae@chromium.org'],
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfLayout(_BlinkPerfBenchmark):
-  subdir = 'layout'
+  SUBDIR = 'layout'
 
   @classmethod
   def Name(cls):
@@ -471,7 +485,7 @@ class BlinkPerfLayout(_BlinkPerfBenchmark):
 @benchmark.Info(emails=['dmurph@chromium.org'],
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
-  subdir = 'owp_storage'
+  SUBDIR = 'owp_storage'
 
   @classmethod
   def Name(cls):
@@ -491,7 +505,7 @@ class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
                 component='Blink>Paint',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfPaint(_BlinkPerfBenchmark):
-  subdir = 'paint'
+  SUBDIR = 'paint'
 
   @classmethod
   def Name(cls):
@@ -504,7 +518,7 @@ class BlinkPerfPaint(_BlinkPerfBenchmark):
                          'haraken@chromium.org'],
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfParser(_BlinkPerfBenchmark):
-  subdir = 'parser'
+  SUBDIR = 'parser'
 
   @classmethod
   def Name(cls):
@@ -515,7 +529,7 @@ class BlinkPerfParser(_BlinkPerfBenchmark):
                 component='Blink>SVG',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfSVG(_BlinkPerfBenchmark):
-  subdir = 'svg'
+  SUBDIR = 'svg'
 
   @classmethod
   def Name(cls):
@@ -526,7 +540,7 @@ class BlinkPerfSVG(_BlinkPerfBenchmark):
                 component='Blink>DOM>ShadowDOM',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
-  subdir = 'shadow_dom'
+  SUBDIR = 'shadow_dom'
 
   @classmethod
   def Name(cls):
