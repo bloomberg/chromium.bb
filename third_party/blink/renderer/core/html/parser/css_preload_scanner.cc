@@ -86,7 +86,8 @@ void CSSPreloadScanner::Scan(const String& tag_name,
              predicted_base_element_url);
 }
 
-void CSSPreloadScanner::SetReferrerPolicy(const ReferrerPolicy policy) {
+void CSSPreloadScanner::SetReferrerPolicy(
+    network::mojom::ReferrerPolicy policy) {
   referrer_policy_ = policy;
 }
 

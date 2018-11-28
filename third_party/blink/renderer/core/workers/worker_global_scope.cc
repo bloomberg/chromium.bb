@@ -414,7 +414,8 @@ void WorkerGlobalScope::DidImportClassicScript(
 
   // Step 12.5. "Set worker global scope's referrer policy to the result of
   // parsing the `Referrer-Policy` header of response."
-  ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+  network::mojom::ReferrerPolicy referrer_policy =
+      network::mojom::ReferrerPolicy::kDefault;
   if (!classic_script_loader->GetReferrerPolicy().IsNull()) {
     SecurityPolicy::ReferrerPolicyFromHeaderValue(
         classic_script_loader->GetReferrerPolicy(),

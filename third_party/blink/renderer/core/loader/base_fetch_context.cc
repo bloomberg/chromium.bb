@@ -118,12 +118,13 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
     // no matter what now.
     if (!request.DidSetHTTPReferrer()) {
       String referrer_to_use = request.ReferrerString();
-      ReferrerPolicy referrer_policy_to_use = request.GetReferrerPolicy();
+      network::mojom::ReferrerPolicy referrer_policy_to_use =
+          request.GetReferrerPolicy();
 
       if (referrer_to_use == Referrer::ClientReferrerString())
         referrer_to_use = GetFetchClientSettingsObject()->GetOutgoingReferrer();
 
-      if (referrer_policy_to_use == kReferrerPolicyDefault) {
+      if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault) {
         referrer_policy_to_use =
             GetFetchClientSettingsObject()->GetReferrerPolicy();
       }

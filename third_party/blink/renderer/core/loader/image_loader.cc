@@ -120,10 +120,11 @@ static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
 
 class ImageLoader::Task {
  public:
-  static std::unique_ptr<Task> Create(ImageLoader* loader,
-                                      const KURL& request_url,
-                                      UpdateFromElementBehavior update_behavior,
-                                      ReferrerPolicy referrer_policy) {
+  static std::unique_ptr<Task> Create(
+      ImageLoader* loader,
+      const KURL& request_url,
+      UpdateFromElementBehavior update_behavior,
+      network::mojom::ReferrerPolicy referrer_policy) {
     return std::make_unique<Task>(loader, request_url, update_behavior,
                                   referrer_policy);
   }
@@ -131,7 +132,7 @@ class ImageLoader::Task {
   Task(ImageLoader* loader,
        const KURL& request_url,
        UpdateFromElementBehavior update_behavior,
-       ReferrerPolicy referrer_policy)
+       network::mojom::ReferrerPolicy referrer_policy)
       : loader_(loader),
         should_bypass_main_world_csp_(ShouldBypassMainWorldCSP(loader)),
         update_behavior_(update_behavior),
@@ -183,7 +184,7 @@ class ImageLoader::Task {
   BypassMainWorldBehavior should_bypass_main_world_csp_;
   UpdateFromElementBehavior update_behavior_;
   WeakPersistent<ScriptState> script_state_;
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
   KURL request_url_;
   base::WeakPtrFactory<Task> weak_factory_;
 };
@@ -412,7 +413,7 @@ inline void ImageLoader::ClearFailedLoadURL() {
 inline void ImageLoader::EnqueueImageLoadingMicroTask(
     const KURL& request_url,
     UpdateFromElementBehavior update_behavior,
-    ReferrerPolicy referrer_policy) {
+    network::mojom::ReferrerPolicy referrer_policy) {
   std::unique_ptr<Task> task =
       Task::Create(this, request_url, update_behavior, referrer_policy);
   pending_task_ = task->GetWeakPtr();
@@ -439,11 +440,12 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
   delay_until_image_notify_finished_ = nullptr;
 }
 
-void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
-                                      UpdateFromElementBehavior update_behavior,
-                                      const KURL& url,
-                                      ReferrerPolicy referrer_policy,
-                                      UpdateType update_type) {
+void ImageLoader::DoUpdateFromElement(
+    BypassMainWorldBehavior bypass_behavior,
+    UpdateFromElementBehavior update_behavior,
+    const KURL& url,
+    network::mojom::ReferrerPolicy referrer_policy,
+    UpdateType update_type) {
   // FIXME: According to
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content.html#the-img-element:the-img-element-55
   // When "update image" is called due to environment changes and the load
@@ -578,8 +580,9 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
     image_resource->ResetAnimation();
 }
 
-void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
-                                    ReferrerPolicy referrer_policy) {
+void ImageLoader::UpdateFromElement(
+    UpdateFromElementBehavior update_behavior,
+    network::mojom::ReferrerPolicy referrer_policy) {
   AtomicString image_source_url = element_->ImageSourceURL();
   suppress_error_events_ = (update_behavior == kUpdateSizeChanged);
   last_base_element_url_ =
@@ -897,7 +900,8 @@ ScriptPromise ImageLoader::Decode(ScriptState* script_state,
   return request->promise();
 }
 
-void ImageLoader::LoadDeferredImage(ReferrerPolicy referrer_policy) {
+void ImageLoader::LoadDeferredImage(
+    network::mojom::ReferrerPolicy referrer_policy) {
   if (lazy_image_load_state_ != LazyImageLoadState::kDeferred)
     return;
   DCHECK(!image_complete_);

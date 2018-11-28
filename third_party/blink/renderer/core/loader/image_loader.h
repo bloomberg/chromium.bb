@@ -78,7 +78,8 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   };
 
   void UpdateFromElement(UpdateFromElementBehavior = kUpdateNormal,
-                         ReferrerPolicy = kReferrerPolicyDefault);
+                         network::mojom::ReferrerPolicy =
+                             network::mojom::ReferrerPolicy::kDefault);
 
   void ElementDidMoveToNewDocument();
 
@@ -125,7 +126,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
 
   ScriptPromise Decode(ScriptState*, ExceptionState&);
 
-  void LoadDeferredImage(ReferrerPolicy);
+  void LoadDeferredImage(network::mojom::ReferrerPolicy);
 
  protected:
   void ImageChanged(ImageResourceContent*, CanDeferInvalidation) override;
@@ -152,11 +153,12 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   };
 
   // Called from the task or from updateFromElement to initiate the load.
-  void DoUpdateFromElement(BypassMainWorldBehavior,
-                           UpdateFromElementBehavior,
-                           const KURL&,
-                           ReferrerPolicy = kReferrerPolicyDefault,
-                           UpdateType = UpdateType::kAsync);
+  void DoUpdateFromElement(
+      BypassMainWorldBehavior,
+      UpdateFromElementBehavior,
+      const KURL&,
+      network::mojom::ReferrerPolicy = network::mojom::ReferrerPolicy::kDefault,
+      UpdateType = UpdateType::kAsync);
 
   virtual void DispatchLoadEvent() = 0;
   virtual void NoImageResourceToLoad() {}
@@ -181,7 +183,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   void CrossSiteOrCSPViolationOccurred(AtomicString);
   void EnqueueImageLoadingMicroTask(const KURL&,
                                     UpdateFromElementBehavior,
-                                    ReferrerPolicy);
+                                    network::mojom::ReferrerPolicy);
 
   KURL ImageSourceToKURL(AtomicString) const;
 

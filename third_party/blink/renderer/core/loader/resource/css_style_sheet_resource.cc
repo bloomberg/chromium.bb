@@ -93,8 +93,10 @@ void CSSStyleSheetResource::Trace(blink::Visitor* visitor) {
   TextResource::Trace(visitor);
 }
 
-ReferrerPolicy CSSStyleSheetResource::GetReferrerPolicy() const {
-  ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+network::mojom::ReferrerPolicy CSSStyleSheetResource::GetReferrerPolicy()
+    const {
+  network::mojom::ReferrerPolicy referrer_policy =
+      network::mojom::ReferrerPolicy::kDefault;
   String referrer_policy_header =
       GetResponse().HttpHeaderField(http_names::kReferrerPolicy);
   if (!referrer_policy_header.IsNull()) {

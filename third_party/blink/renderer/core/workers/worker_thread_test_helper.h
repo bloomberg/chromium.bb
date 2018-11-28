@@ -92,8 +92,9 @@ class WorkerThreadForTest : public WorkerThread {
         {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         script_url, mojom::ScriptType::kClassic, "fake user agent",
-        nullptr /* web_worker_fetch_context */, headers, kReferrerPolicyDefault,
-        security_origin, false /* starter_secure_context */,
+        nullptr /* web_worker_fetch_context */, headers,
+        network::mojom::ReferrerPolicy::kDefault, security_origin,
+        false /* starter_secure_context */,
         CalculateHttpsState(security_origin), worker_clients,
         mojom::IPAddressSpace::kLocal, nullptr,
         base::UnguessableToken::Create(),

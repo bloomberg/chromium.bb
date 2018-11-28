@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -67,7 +68,6 @@
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -396,7 +396,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   if (main_script_loader_) {
     ContentSecurityPolicy* content_security_policy =
         main_script_loader_->GetContentSecurityPolicy();
-    ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+    network::mojom::ReferrerPolicy referrer_policy =
+        network::mojom::ReferrerPolicy::kDefault;
     if (!main_script_loader_->GetReferrerPolicy().IsNull()) {
       SecurityPolicy::ReferrerPolicyFromHeaderValue(
           main_script_loader_->GetReferrerPolicy(),
@@ -424,10 +425,11 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.script_type,
         worker_start_data_.user_agent, std::move(web_worker_fetch_context),
-        Vector<CSPHeaderAndType>(), kReferrerPolicyDefault, starter_origin,
-        starter_secure_context, starter_https_state, worker_clients,
-        worker_start_data_.address_space, nullptr /* OriginTrialTokens */,
-        devtools_worker_token_, std::move(worker_settings),
+        Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
+        starter_origin, starter_secure_context, starter_https_state,
+        worker_clients, worker_start_data_.address_space,
+        nullptr /* OriginTrialTokens */, devtools_worker_token_,
+        std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         nullptr /* worklet_module_respones_map */,
         std::move(interface_provider_info_));

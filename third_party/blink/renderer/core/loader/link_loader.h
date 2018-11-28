@@ -63,7 +63,7 @@ struct LinkLoadParameters {
                      const String& nonce,
                      const String& integrity,
                      const String& importance,
-                     const ReferrerPolicy& referrer_policy,
+                     network::mojom::ReferrerPolicy referrer_policy,
                      const KURL& href,
                      const String& image_srcset,
                      const String& image_sizes)
@@ -89,7 +89,7 @@ struct LinkLoadParameters {
   String nonce;
   String integrity;
   String importance;
-  ReferrerPolicy referrer_policy;
+  network::mojom::ReferrerPolicy referrer_policy;
   KURL href;
   String image_srcset;
   String image_sizes;

@@ -158,8 +158,7 @@ void WebURLRequest::SetHTTPReferrer(
       web_referrer.IsEmpty() ? Referrer::NoReferrer() : String(web_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  resource_request_->SetHTTPReferrer(
-      Referrer(referrer, static_cast<ReferrerPolicy>(referrer_policy)));
+  resource_request_->SetHTTPReferrer(Referrer(referrer, referrer_policy));
 }
 
 void WebURLRequest::AddHTTPHeaderField(const WebString& name,
@@ -210,8 +209,7 @@ network::mojom::RequestContextFrameType WebURLRequest::GetFrameType() const {
 }
 
 network::mojom::ReferrerPolicy WebURLRequest::GetReferrerPolicy() const {
-  return static_cast<network::mojom::ReferrerPolicy>(
-      resource_request_->GetReferrerPolicy());
+  return resource_request_->GetReferrerPolicy();
 }
 
 void WebURLRequest::SetHTTPOriginIfNeeded(const WebSecurityOrigin& origin) {

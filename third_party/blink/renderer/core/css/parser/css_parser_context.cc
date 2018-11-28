@@ -73,7 +73,7 @@ CSSParserContext* CSSParserContext::Create(
     const CSSParserContext* other,
     const KURL& base_url,
     bool is_opaque_response_from_service_worker,
-    ReferrerPolicy referrer_policy,
+    network::mojom::ReferrerPolicy referrer_policy,
     const WTF::TextEncoding& charset,
     const Document* use_counter_document) {
   return MakeGarbageCollected<CSSParserContext>(
@@ -112,7 +112,7 @@ CSSParserContext* CSSParserContext::Create(
     const Document& document,
     const KURL& base_url_override,
     bool is_opaque_response_from_service_worker,
-    ReferrerPolicy referrer_policy_override,
+    network::mojom::ReferrerPolicy referrer_policy_override,
     const WTF::TextEncoding& charset,
     SelectorProfile profile) {
   CSSParserMode mode =

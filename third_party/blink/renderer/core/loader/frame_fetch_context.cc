@@ -1462,8 +1462,8 @@ FetchContext* FrameFetchContext::Detach() {
         IsMainFrame(), IsSVGImageChromeClient());
     fetch_client_settings_object_ =
         MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            NullURL(), nullptr, kReferrerPolicyDefault, String(),
-            HttpsState::kNone);
+            NullURL(), nullptr, network::mojom::ReferrerPolicy::kDefault,
+            String(), HttpsState::kNone);
   }
 
   // This is needed to break a reference cycle in which off-heap

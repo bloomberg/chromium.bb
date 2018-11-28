@@ -432,8 +432,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         WebContextMenuData::kCheckableMenuItemChecked;
   }
 
-  data.referrer_policy = static_cast<network::mojom::ReferrerPolicy>(
-      selected_frame->GetDocument()->GetReferrerPolicy());
+  data.referrer_policy = selected_frame->GetDocument()->GetReferrerPolicy();
 
   if (menu_provider_) {
     // Filter out custom menu elements and add them into the data.

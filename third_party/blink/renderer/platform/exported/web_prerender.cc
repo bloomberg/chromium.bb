@@ -91,8 +91,7 @@ WebString WebPrerender::GetReferrer() const {
 }
 
 network::mojom::ReferrerPolicy WebPrerender::GetReferrerPolicy() const {
-  return static_cast<network::mojom::ReferrerPolicy>(
-      private_->GetReferrerPolicy());
+  return private_->GetReferrerPolicy();
 }
 
 void WebPrerender::SetExtraData(WebPrerender::ExtraData* extra_data) {

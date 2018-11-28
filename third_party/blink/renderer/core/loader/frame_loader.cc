@@ -628,15 +628,16 @@ void FrameLoader::SetReferrerForFrameRequest(FrameLoadRequest& frame_request) {
     return;
 
   // Always use the initiating document to generate the referrer. We need to
-  // generateReferrer(), because we haven't enforced ReferrerPolicy or
-  // https->http referrer suppression yet.
+  // generateReferrer(), because we haven't enforced
+  // network::mojom::ReferrerPolicy or https->http referrer suppression yet.
   String referrer_to_use = request.ReferrerString();
-  ReferrerPolicy referrer_policy_to_use = request.GetReferrerPolicy();
+  network::mojom::ReferrerPolicy referrer_policy_to_use =
+      request.GetReferrerPolicy();
 
   if (referrer_to_use == Referrer::ClientReferrerString())
     referrer_to_use = origin_document->OutgoingReferrer();
 
-  if (referrer_policy_to_use == kReferrerPolicyDefault)
+  if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
     referrer_policy_to_use = origin_document->GetReferrerPolicy();
 
   Referrer referrer = SecurityPolicy::GenerateReferrer(

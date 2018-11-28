@@ -4318,13 +4318,14 @@ String Document::OutgoingReferrer() const {
   return referrer_document->url_.StrippedForUseAsReferrer();
 }
 
-ReferrerPolicy Document::GetReferrerPolicy() const {
-  ReferrerPolicy policy = ExecutionContext::GetReferrerPolicy();
+network::mojom::ReferrerPolicy Document::GetReferrerPolicy() const {
+  network::mojom::ReferrerPolicy policy = ExecutionContext::GetReferrerPolicy();
   // For srcdoc documents without their own policy, walk up the frame
   // tree to find the document that is either not a srcdoc or doesn't
   // have its own policy. This algorithm is defined in
   // https://html.spec.whatwg.org/multipage/window-object.html#set-up-a-window-environment-settings-object.
-  if (!frame_ || policy != kReferrerPolicyDefault || !IsSrcdocDocument()) {
+  if (!frame_ || policy != network::mojom::ReferrerPolicy::kDefault ||
+      !IsSrcdocDocument()) {
     return policy;
   }
   LocalFrame* frame = ToLocalFrame(frame_->Tree().Parent());

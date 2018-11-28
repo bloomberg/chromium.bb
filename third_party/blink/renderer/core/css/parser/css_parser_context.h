@@ -42,12 +42,13 @@ class CORE_EXPORT CSSParserContext
   static CSSParserContext* Create(const CSSParserContext* other,
                                   const Document* use_counter_document);
 
-  static CSSParserContext* Create(const CSSParserContext* other,
-                                  const KURL& base_url_override,
-                                  bool is_opaque_response_from_service_worker,
-                                  ReferrerPolicy referrer_policy_override,
-                                  const WTF::TextEncoding& charset_override,
-                                  const Document* use_counter_document);
+  static CSSParserContext* Create(
+      const CSSParserContext* other,
+      const KURL& base_url_override,
+      bool is_opaque_response_from_service_worker,
+      network::mojom::ReferrerPolicy referrer_policy_override,
+      const WTF::TextEncoding& charset_override,
+      const Document* use_counter_document);
 
   static CSSParserContext* Create(
       CSSParserMode,
@@ -59,7 +60,7 @@ class CORE_EXPORT CSSParserContext
       const Document&,
       const KURL& base_url_override,
       bool is_opaque_response_from_service_worker,
-      ReferrerPolicy referrer_policy_override,
+      network::mojom::ReferrerPolicy referrer_policy_override,
       const WTF::TextEncoding& charset = WTF::TextEncoding(),
       SelectorProfile = kLiveProfile);
   // This is used for workers, where we don't have a document.

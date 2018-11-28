@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
@@ -56,7 +57,6 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -485,45 +485,55 @@ TEST_F(DocumentTest, LinkManifest) {
 }
 
 TEST_F(DocumentTest, referrerPolicyParsing) {
-  EXPECT_EQ(kReferrerPolicyDefault, GetDocument().GetReferrerPolicy());
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kDefault,
+            GetDocument().GetReferrerPolicy());
 
   struct TestCase {
     const char* policy;
-    ReferrerPolicy expected;
+    network::mojom::ReferrerPolicy expected;
     bool is_legacy;
   } tests[] = {
-      {"", kReferrerPolicyDefault, false},
+      {"", network::mojom::ReferrerPolicy::kDefault, false},
       // Test that invalid policy values are ignored.
-      {"not-a-real-policy", kReferrerPolicyDefault, false},
-      {"not-a-real-policy,also-not-a-real-policy", kReferrerPolicyDefault,
+      {"not-a-real-policy", network::mojom::ReferrerPolicy::kDefault, false},
+      {"not-a-real-policy,also-not-a-real-policy",
+       network::mojom::ReferrerPolicy::kDefault, false},
+      {"not-a-real-policy,unsafe-url", network::mojom::ReferrerPolicy::kAlways,
        false},
-      {"not-a-real-policy,unsafe-url", kReferrerPolicyAlways, false},
-      {"unsafe-url,not-a-real-policy", kReferrerPolicyAlways, false},
+      {"unsafe-url,not-a-real-policy", network::mojom::ReferrerPolicy::kAlways,
+       false},
       // Test parsing each of the policy values.
-      {"always", kReferrerPolicyAlways, true},
-      {"default", kReferrerPolicyNoReferrerWhenDowngrade, true},
-      {"never", kReferrerPolicyNever, true},
-      {"no-referrer", kReferrerPolicyNever, false},
-      {"default", kReferrerPolicyNoReferrerWhenDowngrade, true},
-      {"no-referrer-when-downgrade", kReferrerPolicyNoReferrerWhenDowngrade,
-       false},
-      {"origin", kReferrerPolicyOrigin, false},
-      {"origin-when-crossorigin", kReferrerPolicyOriginWhenCrossOrigin, true},
-      {"origin-when-cross-origin", kReferrerPolicyOriginWhenCrossOrigin, false},
-      {"same-origin", kReferrerPolicySameOrigin, false},
-      {"strict-origin", kReferrerPolicyStrictOrigin, false},
+      {"always", network::mojom::ReferrerPolicy::kAlways, true},
+      {"default", network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+       true},
+      {"never", network::mojom::ReferrerPolicy::kNever, true},
+      {"no-referrer", network::mojom::ReferrerPolicy::kNever, false},
+      {"default", network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+       true},
+      {"no-referrer-when-downgrade",
+       network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade, false},
+      {"origin", network::mojom::ReferrerPolicy::kOrigin, false},
+      {"origin-when-crossorigin",
+       network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, true},
+      {"origin-when-cross-origin",
+       network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, false},
+      {"same-origin", network::mojom::ReferrerPolicy::kSameOrigin, false},
+      {"strict-origin", network::mojom::ReferrerPolicy::kStrictOrigin, false},
       {"strict-origin-when-cross-origin",
-       kReferrerPolicyStrictOriginWhenCrossOrigin, false},
-      {"unsafe-url", kReferrerPolicyAlways},
+       network::mojom::ReferrerPolicy::
+           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       false},
+      {"unsafe-url", network::mojom::ReferrerPolicy::kAlways},
   };
 
   for (auto test : tests) {
-    GetDocument().SetReferrerPolicy(kReferrerPolicyDefault);
+    GetDocument().SetReferrerPolicy(network::mojom::ReferrerPolicy::kDefault);
     if (test.is_legacy) {
       // Legacy keyword support must be explicitly enabled for the policy to
       // parse successfully.
       GetDocument().ParseAndSetReferrerPolicy(test.policy);
-      EXPECT_EQ(kReferrerPolicyDefault, GetDocument().GetReferrerPolicy());
+      EXPECT_EQ(network::mojom::ReferrerPolicy::kDefault,
+                GetDocument().GetReferrerPolicy());
       GetDocument().ParseAndSetReferrerPolicy(test.policy, true);
     } else {
       GetDocument().ParseAndSetReferrerPolicy(test.policy);

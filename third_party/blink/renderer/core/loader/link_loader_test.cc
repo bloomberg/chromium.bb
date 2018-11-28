@@ -97,7 +97,7 @@ class LinkLoaderPreloadTestBase : public testing::Test {
     mojom::RequestContextType context;
     bool link_loader_should_load_value;
     KURL load_url;
-    ReferrerPolicy referrer_policy;
+    network::mojom::ReferrerPolicy referrer_policy;
   };
 
   LinkLoaderPreloadTestBase() {
@@ -132,7 +132,8 @@ class LinkLoaderPreloadTestBase : public testing::Test {
       EXPECT_EQ(expected.priority, resource->GetResourceRequest().Priority());
       EXPECT_EQ(expected.context,
                 resource->GetResourceRequest().GetRequestContext());
-      if (expected.referrer_policy != kReferrerPolicyDefault) {
+      if (expected.referrer_policy !=
+          network::mojom::ReferrerPolicy::kDefault) {
         EXPECT_EQ(expected.referrer_policy,
                   resource->GetResourceRequest().GetReferrerPolicy());
       }
@@ -188,12 +189,12 @@ TEST_P(LinkLoaderPreloadTest, Preload) {
   LinkLoadParameters params(
       LinkRelAttribute("preload"), kCrossOriginAttributeNotSet, String(),
       test_case.as, String(), String(), String(), String(),
-      kReferrerPolicyDefault, KURL(NullURL(), test_case.href), String(),
-      String());
+      network::mojom::ReferrerPolicy::kDefault, KURL(NullURL(), test_case.href),
+      String(), String());
   Expectations expectations = {
       test_case.priority, test_case.context, test_case.expecting_load,
       test_case.expecting_load ? params.href : NullURL(),
-      kReferrerPolicyDefault};
+      network::mojom::ReferrerPolicy::kDefault};
   TestPreload(params, expectations);
 }
 
@@ -263,12 +264,12 @@ TEST_P(LinkLoaderPreloadMimeTypeTest, Preload) {
   LinkLoadParameters params(
       LinkRelAttribute("preload"), kCrossOriginAttributeNotSet, test_case.type,
       test_case.as, String(), String(), String(), String(),
-      kReferrerPolicyDefault, KURL(NullURL(), test_case.href), String(),
-      String());
+      network::mojom::ReferrerPolicy::kDefault, KURL(NullURL(), test_case.href),
+      String(), String());
   Expectations expectations = {
       test_case.priority, test_case.context, test_case.expecting_load,
       test_case.expecting_load ? params.href : NullURL(),
-      kReferrerPolicyDefault};
+      network::mojom::ReferrerPolicy::kDefault};
   TestPreload(params, expectations);
 }
 
@@ -297,13 +298,13 @@ TEST_P(LinkLoaderPreloadMediaTest, Preload) {
   LinkLoadParameters params(
       LinkRelAttribute("preload"), kCrossOriginAttributeNotSet, "image/gif",
       "image", test_case.media, String(), String(), String(),
-      kReferrerPolicyDefault, KURL(NullURL(), "http://example.test/cat.gif"),
-      String(), String());
+      network::mojom::ReferrerPolicy::kDefault,
+      KURL(NullURL(), "http://example.test/cat.gif"), String(), String());
   Expectations expectations = {
       test_case.priority, mojom::RequestContextType::IMAGE,
       test_case.link_loader_should_load_value,
       test_case.expecting_load ? params.href : NullURL(),
-      kReferrerPolicyDefault};
+      network::mojom::ReferrerPolicy::kDefault};
   TestPreload(params, expectations);
 }
 
@@ -311,20 +312,21 @@ INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadMediaTest,
                         LinkLoaderPreloadMediaTest,
                         testing::ValuesIn(kPreloadMediaTestParams));
 
-constexpr ReferrerPolicy kPreloadReferrerPolicyTestParams[] = {
-    kReferrerPolicyOrigin,
-    kReferrerPolicyOriginWhenCrossOrigin,
-    kReferrerPolicySameOrigin,
-    kReferrerPolicyStrictOrigin,
-    kReferrerPolicyStrictOriginWhenCrossOrigin,
-    kReferrerPolicyNever};
+constexpr network::mojom::ReferrerPolicy kPreloadReferrerPolicyTestParams[] = {
+    network::mojom::ReferrerPolicy::kOrigin,
+    network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin,
+    network::mojom::ReferrerPolicy::kSameOrigin,
+    network::mojom::ReferrerPolicy::kStrictOrigin,
+    network::mojom::ReferrerPolicy::
+        kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+    network::mojom::ReferrerPolicy::kNever};
 
 class LinkLoaderPreloadReferrerPolicyTest
     : public LinkLoaderPreloadTestBase,
-      public testing::WithParamInterface<ReferrerPolicy> {};
+      public testing::WithParamInterface<network::mojom::ReferrerPolicy> {};
 
 TEST_P(LinkLoaderPreloadReferrerPolicyTest, Preload) {
-  const ReferrerPolicy referrer_policy = GetParam();
+  const network::mojom::ReferrerPolicy referrer_policy = GetParam();
   LinkLoadParameters params(
       LinkRelAttribute("preload"), kCrossOriginAttributeNotSet, "image/gif",
       "image", String(), String(), String(), String(), referrer_policy,
@@ -365,13 +367,13 @@ TEST_P(LinkLoaderPreloadNonceTest, Preload) {
   LinkLoadParameters params(
       LinkRelAttribute("preload"), kCrossOriginAttributeNotSet, String(),
       "script", String(), test_case.nonce, String(), String(),
-      kReferrerPolicyDefault, KURL(NullURL(), "http://example.test/cat.js"),
-      String(), String());
+      network::mojom::ReferrerPolicy::kDefault,
+      KURL(NullURL(), "http://example.test/cat.js"), String(), String());
   Expectations expectations = {
       ResourceLoadPriority::kHigh, mojom::RequestContextType::SCRIPT,
       test_case.expecting_load,
       test_case.expecting_load ? params.href : NullURL(),
-      kReferrerPolicyDefault};
+      network::mojom::ReferrerPolicy::kDefault};
   TestPreload(params, expectations);
 }
 
@@ -417,12 +419,13 @@ TEST_P(LinkLoaderPreloadImageSrcsetTest, Preload) {
       test_case.scale_factor);
   LinkLoadParameters params(
       LinkRelAttribute("preload"), kCrossOriginAttributeNotSet, "image/gif",
-      "image", String(), String(), String(), String(), kReferrerPolicyDefault,
-      KURL(NullURL(), test_case.href), test_case.image_srcset,
-      test_case.image_sizes);
-  Expectations expectations = {
-      ResourceLoadPriority::kLow, mojom::RequestContextType::IMAGE, true,
-      KURL(NullURL(), test_case.expected_url), kReferrerPolicyDefault};
+      "image", String(), String(), String(), String(),
+      network::mojom::ReferrerPolicy::kDefault, KURL(NullURL(), test_case.href),
+      test_case.image_srcset, test_case.image_sizes);
+  Expectations expectations = {ResourceLoadPriority::kLow,
+                               mojom::RequestContextType::IMAGE, true,
+                               KURL(NullURL(), test_case.expected_url),
+                               network::mojom::ReferrerPolicy::kDefault};
   TestPreload(params, expectations);
 }
 
@@ -435,26 +438,27 @@ struct ModulePreloadTestParams {
   const char* nonce;
   const char* integrity;
   CrossOriginAttributeValue cross_origin;
-  ReferrerPolicy referrer_policy;
+  network::mojom::ReferrerPolicy referrer_policy;
   bool expecting_load;
   network::mojom::FetchCredentialsMode expected_credentials_mode;
 };
 
 constexpr ModulePreloadTestParams kModulePreloadTestParams[] = {
-    {"", nullptr, nullptr, kCrossOriginAttributeNotSet, kReferrerPolicyDefault,
-     false, network::mojom::FetchCredentialsMode::kSameOrigin},
-    {"http://example.test/cat.js", nullptr, nullptr,
-     kCrossOriginAttributeNotSet, kReferrerPolicyDefault, true,
+    {"", nullptr, nullptr, kCrossOriginAttributeNotSet,
+     network::mojom::ReferrerPolicy::kDefault, false,
      network::mojom::FetchCredentialsMode::kSameOrigin},
     {"http://example.test/cat.js", nullptr, nullptr,
-     kCrossOriginAttributeAnonymous, kReferrerPolicyDefault, true,
-     network::mojom::FetchCredentialsMode::kSameOrigin},
+     kCrossOriginAttributeNotSet, network::mojom::ReferrerPolicy::kDefault,
+     true, network::mojom::FetchCredentialsMode::kSameOrigin},
+    {"http://example.test/cat.js", nullptr, nullptr,
+     kCrossOriginAttributeAnonymous, network::mojom::ReferrerPolicy::kDefault,
+     true, network::mojom::FetchCredentialsMode::kSameOrigin},
     {"http://example.test/cat.js", "nonce", nullptr,
-     kCrossOriginAttributeNotSet, kReferrerPolicyNever, true,
+     kCrossOriginAttributeNotSet, network::mojom::ReferrerPolicy::kNever, true,
      network::mojom::FetchCredentialsMode::kSameOrigin},
     {"http://example.test/cat.js", nullptr, "sha384-abc",
-     kCrossOriginAttributeNotSet, kReferrerPolicyDefault, true,
-     network::mojom::FetchCredentialsMode::kSameOrigin}};
+     kCrossOriginAttributeNotSet, network::mojom::ReferrerPolicy::kDefault,
+     true, network::mojom::FetchCredentialsMode::kSameOrigin}};
 
 class LinkLoaderModulePreloadTest
     : public testing::TestWithParam<ModulePreloadTestParams> {};
@@ -524,19 +528,21 @@ TEST(LinkLoaderTest, Prefetch) {
     // TODO(yoav): Add support for type and media crbug.com/662687
     const char* type;
     const char* media;
-    const ReferrerPolicy referrer_policy;
+    const network::mojom::ReferrerPolicy referrer_policy;
     const bool link_loader_should_load_value;
     const bool expecting_load;
-    const ReferrerPolicy expected_referrer_policy;
+    const network::mojom::ReferrerPolicy expected_referrer_policy;
   } cases[] = {
       // Referrer Policy
-      {"http://example.test/cat.jpg", "image/jpg", "", kReferrerPolicyOrigin,
-       true, true, kReferrerPolicyOrigin},
       {"http://example.test/cat.jpg", "image/jpg", "",
-       kReferrerPolicyOriginWhenCrossOrigin, true, true,
-       kReferrerPolicyOriginWhenCrossOrigin},
-      {"http://example.test/cat.jpg", "image/jpg", "", kReferrerPolicyNever,
-       true, true, kReferrerPolicyNever},
+       network::mojom::ReferrerPolicy::kOrigin, true, true,
+       network::mojom::ReferrerPolicy::kOrigin},
+      {"http://example.test/cat.jpg", "image/jpg", "",
+       network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, true, true,
+       network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin},
+      {"http://example.test/cat.jpg", "image/jpg", "",
+       network::mojom::ReferrerPolicy::kNever, true, true,
+       network::mojom::ReferrerPolicy::kNever},
   };
 
   // Test the cases with a single header
@@ -564,7 +570,8 @@ TEST(LinkLoaderTest, Prefetch) {
       EXPECT_FALSE(resource);
     }
     if (resource) {
-      if (test_case.expected_referrer_policy != kReferrerPolicyDefault) {
+      if (test_case.expected_referrer_policy !=
+          network::mojom::ReferrerPolicy::kDefault) {
         EXPECT_EQ(test_case.expected_referrer_policy,
                   resource->GetResourceRequest().GetReferrerPolicy());
       }
@@ -600,8 +607,8 @@ TEST(LinkLoaderTest, DNSPrefetch) {
     LinkLoadParameters params(
         LinkRelAttribute("dns-prefetch"), kCrossOriginAttributeNotSet, String(),
         String(), String(), String(), String(), String(),
-        kReferrerPolicyDefault, href_url, String() /* image_srcset */,
-        String() /* image_sizes */);
+        network::mojom::ReferrerPolicy::kDefault, href_url,
+        String() /* image_srcset */, String() /* image_sizes */);
     loader->LoadLink(params, dummy_page_holder->GetDocument(), network_hints);
     EXPECT_FALSE(network_hints.DidPreconnect());
     EXPECT_EQ(test_case.should_load, network_hints.DidDnsPrefetch());
@@ -636,8 +643,8 @@ TEST(LinkLoaderTest, Preconnect) {
     LinkLoadParameters params(
         LinkRelAttribute("preconnect"), test_case.cross_origin, String(),
         String(), String(), String(), String(), String(),
-        kReferrerPolicyDefault, href_url, String() /* image_srcset */,
-        String() /* image_sizes */);
+        network::mojom::ReferrerPolicy::kDefault, href_url,
+        String() /* image_srcset */, String() /* image_sizes */);
     loader->LoadLink(params, dummy_page_holder->GetDocument(), network_hints);
     EXPECT_EQ(test_case.should_load, network_hints.DidPreconnect());
     EXPECT_EQ(test_case.is_https, network_hints.IsHTTPS());
@@ -659,8 +666,8 @@ TEST(LinkLoaderTest, PreloadAndPrefetch) {
   LinkLoadParameters params(
       LinkRelAttribute("preload prefetch"), kCrossOriginAttributeNotSet,
       "application/javascript", "script", "", "", "", String(),
-      kReferrerPolicyDefault, href_url, String() /* image_srcset */,
-      String() /* image_sizes */);
+      network::mojom::ReferrerPolicy::kDefault, href_url,
+      String() /* image_srcset */, String() /* image_sizes */);
   loader->LoadLink(params, dummy_page_holder->GetDocument(),
                    NetworkHintsMock());
   ASSERT_EQ(1, fetcher->CountPreloads());

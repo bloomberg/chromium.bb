@@ -240,7 +240,7 @@ class CORE_EXPORT HTMLImageElement final
   bool sizes_set_width_;
   bool is_default_overridden_intrinsic_size_;
 
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
 
   IntSize overridden_intrinsic_size_;
 

@@ -71,8 +71,8 @@ class MockFetchContext : public FetchContext {
   const FetchClientSettingsObject* GetFetchClientSettingsObject()
       const override {
     return MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-        KURL(), security_origin_, kReferrerPolicyDefault, String(),
-        HttpsState::kNone);
+        KURL(), security_origin_, network::mojom::ReferrerPolicy::kDefault,
+        String(), HttpsState::kNone);
   }
 
   // The last ResourceRequest passed to DispatchWillSendRequest.

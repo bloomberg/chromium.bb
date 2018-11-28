@@ -72,7 +72,7 @@ struct CORE_EXPORT CachedDocumentParameters {
   Length default_viewport_min_width;
   bool viewport_meta_zero_values_quirk;
   bool viewport_meta_enabled;
-  ReferrerPolicy referrer_policy;
+  network::mojom::ReferrerPolicy referrer_policy;
   SubresourceIntegrity::IntegrityFeatures integrity_features;
   bool lazyload_policy_enforced;
 

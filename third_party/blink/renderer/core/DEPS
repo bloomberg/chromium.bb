@@ -38,7 +38,6 @@ include_rules = [
     "+services/network/public/cpp/cors/cors_error_status.h",
     "+services/network/public/cpp/features.h",
     "+services/network/public/cpp/shared_url_loader_factory.h",
-    "+services/network/public/mojom",
     "+services/resource_coordinator/public/cpp/resource_coordinator_features.h",
     "+services/service_manager/public",
     "+services/ws/public/mojom/ime/ime.mojom-shared.h",

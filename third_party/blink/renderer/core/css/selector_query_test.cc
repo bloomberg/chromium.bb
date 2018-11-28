@@ -71,7 +71,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
       CSSParserContext::Create(
           *document, NullURL(),
           false /* is_opaque_response_from_service_worker */,
-          kReferrerPolicyDefault, WTF::TextEncoding(),
+          network::mojom::ReferrerPolicy::kDefault, WTF::TextEncoding(),
           CSSParserContext::kSnapshotProfile),
       nullptr, "span::before");
   std::unique_ptr<SelectorQuery> query =
@@ -83,7 +83,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
       CSSParserContext::Create(
           *document, NullURL(),
           false /* is_opaque_response_from_service_worker */,
-          kReferrerPolicyDefault, WTF::TextEncoding(),
+          network::mojom::ReferrerPolicy::kDefault, WTF::TextEncoding(),
           CSSParserContext::kSnapshotProfile),
       nullptr, "span");
   query = SelectorQuery::Adopt(std::move(selector_list));
@@ -104,7 +104,7 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
       CSSParserContext::Create(
           *document, NullURL(),
           false /* is_opaque_response_from_service_worker */,
-          kReferrerPolicyDefault, WTF::TextEncoding(),
+          network::mojom::ReferrerPolicy::kDefault, WTF::TextEncoding(),
           CSSParserContext::kSnapshotProfile),
       nullptr, "p:last-of-type");
   std::unique_ptr<SelectorQuery> query =

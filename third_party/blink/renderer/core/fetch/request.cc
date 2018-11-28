@@ -290,7 +290,7 @@ Request* Request::CreateRequestWithRequestOrString(
     request->SetReferrerString(AtomicString(Referrer::ClientReferrerString()));
 
     // "Set |request|’s referrer policy to the empty string."
-    request->SetReferrerPolicy(kReferrerPolicyDefault);
+    request->SetReferrerPolicy(network::mojom::ReferrerPolicy::kDefault);
   }
 
   // "If init’s referrer member is present, then:"
@@ -342,13 +342,13 @@ Request* Request::CreateRequestWithRequestOrString(
   if (init->hasReferrerPolicy()) {
     // In case referrerPolicy = "", the SecurityPolicy method below will not
     // actually set referrer_policy, so we'll default to
-    // kReferrerPolicyDefault.
-    ReferrerPolicy referrer_policy;
+    // network::mojom::ReferrerPolicy::kDefault.
+    network::mojom::ReferrerPolicy referrer_policy;
     if (!SecurityPolicy::ReferrerPolicyFromString(
             init->referrerPolicy(), kDoNotSupportReferrerPolicyLegacyKeywords,
             &referrer_policy)) {
       DCHECK(init->referrerPolicy().IsEmpty());
-      referrer_policy = kReferrerPolicyDefault;
+      referrer_policy = network::mojom::ReferrerPolicy::kDefault;
     }
 
     request->SetReferrerPolicy(referrer_policy);
@@ -749,23 +749,24 @@ String Request::referrer() const {
 
 String Request::getReferrerPolicy() const {
   switch (request_->GetReferrerPolicy()) {
-    case kReferrerPolicyAlways:
+    case network::mojom::ReferrerPolicy::kAlways:
       return "unsafe-url";
-    case kReferrerPolicyDefault:
+    case network::mojom::ReferrerPolicy::kDefault:
       return "";
-    case kReferrerPolicyNoReferrerWhenDowngrade:
+    case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
       return "no-referrer-when-downgrade";
-    case kReferrerPolicyNever:
+    case network::mojom::ReferrerPolicy::kNever:
       return "no-referrer";
-    case kReferrerPolicyOrigin:
+    case network::mojom::ReferrerPolicy::kOrigin:
       return "origin";
-    case kReferrerPolicyOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
       return "origin-when-cross-origin";
-    case kReferrerPolicySameOrigin:
+    case network::mojom::ReferrerPolicy::kSameOrigin:
       return "same-origin";
-    case kReferrerPolicyStrictOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOrigin:
       return "strict-origin";
-    case kReferrerPolicyStrictOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::
+        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
       return "strict-origin-when-cross-origin";
   }
   NOTREACHED();
@@ -929,8 +930,7 @@ mojom::blink::FetchAPIRequestPtr Request::CreateFetchAPIRequest() const {
   if (!request_->ReferrerString().IsEmpty()) {
     fetch_api_request->referrer =
         mojom::blink::Referrer::New(KURL(NullURL(), request_->ReferrerString()),
-                                    static_cast<network::mojom::ReferrerPolicy>(
-                                        request_->GetReferrerPolicy()));
+                                    request_->GetReferrerPolicy());
     DCHECK(fetch_api_request->referrer->url.IsValid());
   }
   // FIXME: How can we set isReload properly? What is the correct place to load

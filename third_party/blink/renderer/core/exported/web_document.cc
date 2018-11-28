@@ -233,8 +233,7 @@ void WebDocument::WatchCSSSelectors(const WebVector<WebString>& web_selectors) {
 }
 
 network::mojom::ReferrerPolicy WebDocument::GetReferrerPolicy() const {
-  return static_cast<network::mojom::ReferrerPolicy>(
-      ConstUnwrap<Document>()->GetReferrerPolicy());
+  return ConstUnwrap<Document>()->GetReferrerPolicy();
 }
 
 WebString WebDocument::OutgoingReferrer() {

@@ -71,15 +71,13 @@ WebString WebHistoryItem::GetReferrer() const {
 }
 
 network::mojom::ReferrerPolicy WebHistoryItem::GetReferrerPolicy() const {
-  return static_cast<network::mojom::ReferrerPolicy>(
-      private_->GetReferrer().referrer_policy);
+  return private_->GetReferrer().referrer_policy;
 }
 
 void WebHistoryItem::SetReferrer(
     const WebString& referrer,
     network::mojom::ReferrerPolicy referrer_policy) {
-  private_->SetReferrer(
-      Referrer(referrer, static_cast<ReferrerPolicy>(referrer_policy)));
+  private_->SetReferrer(Referrer(referrer, referrer_policy));
 }
 
 const WebString& WebHistoryItem::Target() const {

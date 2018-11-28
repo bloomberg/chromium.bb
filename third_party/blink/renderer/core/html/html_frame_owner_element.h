@@ -169,8 +169,8 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   bool IsFrameOwnerElement() const final { return true; }
 
-  virtual ReferrerPolicy ReferrerPolicyAttribute() {
-    return kReferrerPolicyDefault;
+  virtual network::mojom::ReferrerPolicy ReferrerPolicyAttribute() {
+    return network::mojom::ReferrerPolicy::kDefault;
   }
 
   Member<Frame> content_frame_;

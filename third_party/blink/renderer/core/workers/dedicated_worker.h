@@ -89,7 +89,7 @@ class CORE_EXPORT DedicatedWorker final
 
   std::unique_ptr<GlobalScopeCreationParams> CreateGlobalScopeCreationParams(
       const KURL& script_url,
-      ReferrerPolicy);
+      network::mojom::ReferrerPolicy);
 
   WorkerClients* CreateWorkerClients();
 

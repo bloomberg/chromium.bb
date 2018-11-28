@@ -307,7 +307,7 @@ class CORE_EXPORT Document : public ContainerNode,
   ViewportData& GetViewportData() const { return *viewport_data_; }
 
   String OutgoingReferrer() const override;
-  ReferrerPolicy GetReferrerPolicy() const override;
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const override;
 
   void SetDoctype(DocumentType*);
   DocumentType* doctype() const { return doc_type_.Get(); }
