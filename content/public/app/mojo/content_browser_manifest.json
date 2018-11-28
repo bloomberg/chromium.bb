@@ -24,9 +24,6 @@
         "font_cache": [
           "content.mojom.FontCacheWin"
         ],
-        "font_loader": [
-          "content.mojom.FontLoaderMac"
-        ],
         "gpu": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
           "media.mojom.AndroidOverlayProvider"

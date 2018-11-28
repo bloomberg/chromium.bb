@@ -234,13 +234,6 @@ void MockRenderThread::PreCacheFont(const LOGFONT& log_font) {
 
 void MockRenderThread::ReleaseCachedFonts() {
 }
-#elif defined(OS_MACOSX)
-bool MockRenderThread::LoadFont(const base::string16& font_name,
-                                float font_point_size,
-                                mojo::ScopedSharedBufferHandle* out_font_data,
-                                uint32_t* out_font_id) {
-  return false;  // Not implemented.
-}
 #endif
 
 ServiceManagerConnection* MockRenderThread::GetServiceManagerConnection() {

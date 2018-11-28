@@ -34,7 +34,6 @@
 #include "content/public/common/font_cache_dispatcher_win.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/sandbox_support_mac_impl.h"
-#include "content/common/font_loader_dispatcher_mac.h"
 #endif
 
 namespace content {
@@ -51,7 +50,6 @@ class ConnectionFilterImpl : public ConnectionFilter {
         base::CreateSequencedTaskRunnerWithTraits(
             {base::TaskPriority::USER_BLOCKING, base::MayBlock()}));
 #elif defined(OS_MACOSX)
-    registry_.AddInterface(base::BindRepeating(&FontLoaderDispatcher::Create));
     registry_.AddInterface(
         base::BindRepeating(&SandboxSupportMacImpl::BindRequest,
                             base::Owned(new SandboxSupportMacImpl)));

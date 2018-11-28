@@ -12,7 +12,7 @@
        },
        "requires": {
          "*": [ "app" ],
-         "content_browser": [ "font_loader" ],
+         "content_browser": [ "sandbox_support" ],
          "ui": [ "discardable_memory" ]
        }
      }

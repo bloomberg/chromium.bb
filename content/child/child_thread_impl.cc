@@ -638,22 +638,6 @@ mojom::FontCacheWin* ChildThreadImpl::GetFontCacheWin() {
   }
   return font_cache_win_ptr_.get();
 }
-#elif defined(OS_MACOSX)
-bool ChildThreadImpl::LoadFont(const base::string16& font_name,
-                               float font_point_size,
-                               mojo::ScopedSharedBufferHandle* out_font_data,
-                               uint32_t* out_font_id) {
-  return GetFontLoaderMac()->LoadFont(font_name, font_point_size, out_font_data,
-                                      out_font_id);
-}
-
-mojom::FontLoaderMac* ChildThreadImpl::GetFontLoaderMac() {
-  if (!font_loader_mac_ptr_) {
-    GetConnector()->BindInterface(mojom::kBrowserServiceName,
-                                  &font_loader_mac_ptr_);
-  }
-  return font_loader_mac_ptr_.get();
-}
 #endif
 
 void ChildThreadImpl::RecordAction(const base::UserMetricsAction& action) {

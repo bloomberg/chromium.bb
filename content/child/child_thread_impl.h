@@ -35,8 +35,6 @@
 
 #if defined(OS_WIN)
 #include "content/public/common/font_cache_win.mojom.h"
-#elif defined(OS_MACOSX)
-#include "content/common/font_loader_mac.mojom.h"
 #endif
 
 namespace IPC {
@@ -89,11 +87,6 @@ class CONTENT_EXPORT ChildThreadImpl
 #if defined(OS_WIN)
   void PreCacheFont(const LOGFONT& log_font) override;
   void ReleaseCachedFonts() override;
-#elif defined(OS_MACOSX)
-  bool LoadFont(const base::string16& font_name,
-                float font_point_size,
-                mojo::ScopedSharedBufferHandle* out_font_data,
-                uint32_t* out_font_id) override;
 #endif
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
@@ -173,10 +166,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   bool IsInBrowserProcess() const;
 
-#if defined(OS_MACOSX)
-  virtual mojom::FontLoaderMac* GetFontLoaderMac();
-#endif
-
  private:
   class ChildThreadMessageRouter : public IPC::MessageRouter {
    public:
@@ -228,8 +217,6 @@ class CONTENT_EXPORT ChildThreadImpl
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
 #if defined(OS_WIN)
   mojom::FontCacheWinPtr font_cache_win_ptr_;
-#elif defined(OS_MACOSX)
-  mojom::FontLoaderMacPtr font_loader_mac_ptr_;
 #endif
 
   std::unique_ptr<IPC::SyncChannel> channel_;

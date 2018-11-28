@@ -107,11 +107,6 @@ void PdfCompositorService::OnStart() {
   // It is just a quick and simple check to catch things like improper sandbox
   // policy setup.
   DCHECK(SkFontMgr::RefDefault()->countFamilies());
-
-  // Initialize a connection to FontLoaderMac service so blink platform's web
-  // sandbox support can communicate with it to load font.
-  content::UtilityThread::Get()->InitializeFontLoaderMac(
-      binding_.GetConnector());
 #endif
 }
 

@@ -30,6 +30,9 @@ class SandboxSupportMacImpl : public mojom::SandboxSupportMac {
 
   // content::mojom::SandboxSupportMac:
   void GetSystemColors(GetSystemColorsCallback callback) override;
+  void LoadFont(const base::string16& font_name,
+                float font_point_size,
+                LoadFontCallback callback) override;
 
  private:
   mojo::BindingSet<mojom::SandboxSupportMac> bindings_;
