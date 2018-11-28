@@ -235,7 +235,6 @@ AwRenderProcessGoneDelegate* AwRenderProcessGoneDelegate::FromWebContents(
 
 AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
     : content::WebContentsObserver(web_contents.get()),
-      functor_(nullptr),
       browser_view_renderer_(
           this,
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})),
@@ -395,16 +394,8 @@ base::android::ScopedJavaLocalRef<jobject> AwContents::GetWebContents(
 }
 
 void AwContents::SetAwGLFunctor(AwGLFunctor* functor) {
-  if (functor == functor_) {
-    return;
-  }
-  functor_ = functor;
-  if (functor_) {
-    browser_view_renderer_.SetCurrentCompositorFrameConsumer(
-        functor_->GetCompositorFrameConsumer());
-  } else {
-    browser_view_renderer_.SetCurrentCompositorFrameConsumer(nullptr);
-  }
+  browser_view_renderer_.SetCurrentCompositorFrameConsumer(
+      functor ? functor->GetCompositorFrameConsumer() : nullptr);
 }
 
 void AwContents::SetAwGLFunctor(JNIEnv* env,

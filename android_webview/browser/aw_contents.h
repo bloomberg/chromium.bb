@@ -374,7 +374,6 @@ class AwContents : public FindHelper::Listener,
   void SetAwGLFunctor(AwGLFunctor* functor);
 
   JavaObjectWeakGlobalRef java_ref_;
-  AwGLFunctor* functor_;
   BrowserViewRenderer browser_view_renderer_;  // Must outlive |web_contents_|.
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<AwWebContentsDelegate> web_contents_delegate_;
