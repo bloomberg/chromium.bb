@@ -121,6 +121,7 @@
 -org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testLoadDataWithBaseUrlAccessingFile
 -org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testSetCookieInIframe
 -org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testThirdPartyCookieInIframe
+-org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testXhrForCustomSchemeUrl
 -org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testXhrForHttpSchemeUrl
 
 # https://crbug.com/893581
