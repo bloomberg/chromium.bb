@@ -5,8 +5,10 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 
 #include <map>
+#include <string>
 
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -64,6 +66,7 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
   ~NavigationPredictorTest() override = default;
 
   void SetUp() override {
+    SetupFieldTrial(base::nullopt /* prefetch_url_score_threshold */);
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
         mojo::MakeRequest(&predictor_service_), main_rfh());
@@ -93,9 +96,25 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     return predictor_service_helper_->prefetch_url();
   }
 
- private:
+ protected:
+  void SetupFieldTrial(base::Optional<int> prefetch_url_score_threshold) {
+    const std::string kTrialName = "TrialFoo2";
+    const std::string kGroupName = "GroupFoo2";  // Value not used
+
+    std::map<std::string, std::string> params;
+    if (prefetch_url_score_threshold.has_value()) {
+      params["prefetch_url_score_threshold"] =
+          base::IntToString(prefetch_url_score_threshold.value());
+    }
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        blink::features::kRecordAnchorMetricsVisible, params);
+  }
+
   blink::mojom::AnchorElementMetricsHostPtr predictor_service_;
   std::unique_ptr<TestNavigationPredictor> predictor_service_helper_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list;
 };
 
 }  // namespace
@@ -265,16 +284,17 @@ TEST_F(NavigationPredictorTest, ActionTaken_NoSameHost_Prefetch) {
   EXPECT_FALSE(prefetch_url().has_value());
 }
 
+// URL with highest prefetch score is from the same origin. Prefetch is done.
 TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch) {
   const std::string source = "https://example.com";
   const std::string same_origin_href_small = "https://example.com/small";
   const std::string same_origin_href_large = "https://example.com/large";
-  const std::string diff_origin_href_xlarge = "https://example2.com/xlarge";
+  const std::string diff_origin_href_xsmall = "https://example2.com/xsmall";
 
   std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
   metrics.push_back(CreateMetricsPtr(source, same_origin_href_large, 1));
   metrics.push_back(CreateMetricsPtr(source, same_origin_href_small, 0.01));
-  metrics.push_back(CreateMetricsPtr(source, diff_origin_href_xlarge, 1));
+  metrics.push_back(CreateMetricsPtr(source, diff_origin_href_xsmall, 0.01));
 
   base::HistogramTester histogram_tester;
   predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
@@ -297,6 +317,38 @@ TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch) {
       NavigationPredictor::ActionAccuracy::kPrefetchActionClickToSameOrigin, 1);
 }
 
+// URL with highest prefetch score is from a different origin. So, prefetch is
+// not done.
+TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch_NotSameOrigin) {
+  const std::string source = "https://example.com";
+  const std::string same_origin_href_small = "https://example.com/small";
+  const std::string same_origin_href_large = "https://example.com/large";
+  const std::string diff_origin_href_xlarge = "https://example2.com/xlarge";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_large, 1));
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_small, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, diff_origin_href_xlarge, 10));
+
+  base::HistogramTester histogram_tester;
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kNone, 1);
+  EXPECT_FALSE(prefetch_url().has_value());
+
+  auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
+  predictor_service()->ReportAnchorElementMetricsOnClick(
+      std::move(metrics_clicked));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
+      NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
+}
+
 TEST_F(NavigationPredictorTest,
        ActionTaken_SameOrigin_DifferentScheme_Prefetch) {
   const std::string source = "https://example.com";
@@ -315,4 +367,50 @@ TEST_F(NavigationPredictorTest,
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kNone, 1);
   EXPECT_FALSE(prefetch_url().has_value());
+}
+
+// Framework for testing cases where prefetch is effectively
+// disabled by setting |prefetch_url_score_threshold| to too high.
+class NavigationPredictorPrefetchDisabledTest : public NavigationPredictorTest {
+ public:
+  void SetUp() override {
+    SetupFieldTrial(101 /* prefetch_url_score_threshold */);
+
+    ChromeRenderViewHostTestHarness::SetUp();
+    predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
+        mojo::MakeRequest(&predictor_service_), main_rfh());
+  }
+};
+
+TEST_F(NavigationPredictorPrefetchDisabledTest,
+       ActionTaken_SameOrigin_Prefetch_BelowThreshold) {
+  const std::string source = "https://example.com";
+  const std::string same_origin_href_small = "https://example.com/small";
+  const std::string same_origin_href_large = "https://example.com/large";
+  const std::string diff_origin_href_xsmall = "https://example2.com/xsmall";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_large, 1));
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_small, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, diff_origin_href_xsmall, 0.0001));
+
+  base::HistogramTester histogram_tester;
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kNone, 1);
+  EXPECT_FALSE(prefetch_url().has_value());
+
+  auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
+  predictor_service()->ReportAnchorElementMetricsOnClick(
+      std::move(metrics_clicked));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
+      NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
 }
