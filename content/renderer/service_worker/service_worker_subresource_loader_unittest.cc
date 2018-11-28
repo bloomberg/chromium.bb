@@ -637,7 +637,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Basic) {
       "ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady",
       1);
   histogram_tester.ExpectTotalCount(
-      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted", 1);
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
@@ -665,7 +665,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
       "ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady",
       0);
   histogram_tester.ExpectTotalCount(
-      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted", 0);
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 0);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
@@ -766,7 +766,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
       "ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady",
       0);
   histogram_tester.ExpectTotalCount(
-      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted", 0);
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 0);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_RestartFetchEvent) {
@@ -829,7 +829,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_RestartFetchEvent) {
       "ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady",
       1);
   histogram_tester.ExpectTotalCount(
-      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted", 1);
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_TooManyRestart) {
@@ -863,7 +863,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_TooManyRestart) {
       "ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady",
       0);
   histogram_tester.ExpectTotalCount(
-      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted", 0);
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 0);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
@@ -917,7 +917,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
       "ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady",
       1);
   histogram_tester.ExpectTotalCount(
-      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted", 1);
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
@@ -971,7 +971,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
       "ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady",
       0);
   histogram_tester.ExpectTotalCount(
-      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted", 0);
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 0);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
@@ -1022,7 +1022,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
       "ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady",
       1);
   histogram_tester.ExpectTotalCount(
-      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted", 1);
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseWithoutMetadata) {
@@ -1065,7 +1065,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseWithoutMetadata) {
       "ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady",
       1);
   histogram_tester.ExpectTotalCount(
-      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted", 1);
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 1);
 }
 
 // Test when the service worker responds with network fallback.
@@ -1125,7 +1125,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, ErrorResponse) {
       "ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady",
       0);
   histogram_tester.ExpectTotalCount(
-      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted", 0);
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 0);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {

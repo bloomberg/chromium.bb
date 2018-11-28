@@ -580,9 +580,9 @@ void ServiceWorkerNavigationLoader::RecordTimingMetrics(bool handled) {
           response_head_.load_timing.request_start);
 
   // Time spent for service worker startup.
-  UMA_HISTOGRAM_TIMES(
+  UMA_HISTOGRAM_MEDIUM_TIMES(
       "ServiceWorker.LoadTiming.MainFrame.MainResource."
-      "ForwardServiceWorkerToWorkerReady",
+      "ForwardServiceWorkerToWorkerReady2",
       response_head_.service_worker_ready_time -
           response_head_.service_worker_start_time);
 
