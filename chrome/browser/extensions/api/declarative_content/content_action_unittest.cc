@@ -131,6 +131,7 @@ class ParameterizedDeclarativeContentActionTest
 
 TEST_P(ParameterizedDeclarativeContentActionTest, ShowPageAction) {
   TestExtensionEnvironment env;
+  content::RenderViewHostTestEnabler rvh_enabler;
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
@@ -198,6 +199,7 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST(DeclarativeContentActionTest, SetIcon) {
   TestExtensionEnvironment env;
+  content::RenderViewHostTestEnabler rvh_enabler;
 
   // Simulate the process of passing ImageData to SetIcon::Create.
   SkBitmap bitmap;

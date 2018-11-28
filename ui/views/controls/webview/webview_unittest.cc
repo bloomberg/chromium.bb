@@ -17,6 +17,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "content/test/test_content_browser_client.h"
 #include "ui/events/event.h"
@@ -187,6 +188,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::RenderViewHostTestEnabler rvh_enabler_;
   std::unique_ptr<content::TestBrowserContext> browser_context_;
   content::TestContentBrowserClient test_browser_client_;
   std::unique_ptr<views::WebView::ScopedWebContentsCreatorForTesting>

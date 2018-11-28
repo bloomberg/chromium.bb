@@ -10,11 +10,9 @@
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
-#include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_service_manager_context.h"
-#include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -74,7 +72,7 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
 
 }  // anonymous namespace
 
-class MediaSessionImplTest : public testing::Test {
+class MediaSessionImplTest : public RenderViewHostTestHarness {
  public:
   MediaSessionImplTest() = default;
 
@@ -82,10 +80,8 @@ class MediaSessionImplTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         media_session::switches::kEnableAudioFocus);
 
-    rph_factory_.reset(new MockRenderProcessHostFactory());
-    RenderProcessHostImpl::set_render_process_host_factory_for_testing(
-        rph_factory_.get());
-    browser_context_.reset(new TestBrowserContext());
+    RenderViewHostTestHarness::SetUp();
+
     player_observer_.reset(new MockMediaSessionPlayerObserver());
 
     // Connect to the Media Session service and bind |audio_focus_ptr_| to it.
@@ -98,9 +94,8 @@ class MediaSessionImplTest : public testing::Test {
 
   void TearDown() override {
     service_manager_context_.reset();
-    browser_context_.reset();
-    RenderProcessHostImpl::set_render_process_host_factory_for_testing(nullptr);
-    rph_factory_.reset();
+
+    RenderViewHostTestHarness::TearDown();
   }
 
   void RequestAudioFocus(MediaSessionImpl* session,
@@ -128,11 +123,6 @@ class MediaSessionImplTest : public testing::Test {
     session->FlushForTesting();
   }
 
-  std::unique_ptr<WebContents> CreateWebContents() {
-    return TestWebContents::Create(
-        browser_context_.get(), SiteInstance::Create(browser_context_.get()));
-  }
-
   std::unique_ptr<TestAudioFocusObserver> CreateAudioFocusObserver() {
     std::unique_ptr<TestAudioFocusObserver> observer =
         std::make_unique<TestAudioFocusObserver>();
@@ -153,17 +143,15 @@ class MediaSessionImplTest : public testing::Test {
   }
 
  private:
-  TestBrowserThreadBundle test_browser_thread_bundle_;
-
   media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
 
   std::unique_ptr<TestServiceManagerContext> service_manager_context_;
-  std::unique_ptr<MockRenderProcessHostFactory> rph_factory_;
-  std::unique_ptr<TestBrowserContext> browser_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaSessionImplTest);
 };
 
 TEST_F(MediaSessionImplTest, SessionInfoState) {
-  std::unique_ptr<WebContents> web_contents(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
   MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
   EXPECT_EQ(MediaSessionInfo::SessionState::kInactive, GetState(media_session));
 
@@ -229,7 +217,7 @@ TEST_F(MediaSessionImplTest, SessionInfoState) {
 }
 
 TEST_F(MediaSessionImplTest, NotifyDelegateOnStateChange) {
-  std::unique_ptr<WebContents> web_contents(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
   MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
   MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
   SetDelegateForTests(media_session, delegate);
@@ -260,7 +248,7 @@ TEST_F(MediaSessionImplTest, NotifyDelegateOnStateChange) {
 }
 
 TEST_F(MediaSessionImplTest, PepperForcesDuckAndRequestsFocus) {
-  std::unique_ptr<WebContents> web_contents(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
   MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
 
   int player_id = player_observer_->StartNewPlayer();
@@ -284,7 +272,7 @@ TEST_F(MediaSessionImplTest, PepperForcesDuckAndRequestsFocus) {
 }
 
 TEST_F(MediaSessionImplTest, RegisterMojoObserver) {
-  std::unique_ptr<WebContents> web_contents(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
   MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
 
   EXPECT_FALSE(HasMojoObservers(media_session));
@@ -296,7 +284,7 @@ TEST_F(MediaSessionImplTest, RegisterMojoObserver) {
 }
 
 TEST_F(MediaSessionImplTest, SessionInfo_PlaybackState) {
-  std::unique_ptr<WebContents> web_contents(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
   MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
 
   EXPECT_EQ(MediaPlaybackState::kPaused,
@@ -322,7 +310,7 @@ TEST_F(MediaSessionImplTest, SessionInfo_PlaybackState) {
 #if !defined(OS_ANDROID)
 
 TEST_F(MediaSessionImplTest, WebContentsDestroyed_ReleasesFocus) {
-  std::unique_ptr<WebContents> web_contents(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
   MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
 
   {
@@ -346,7 +334,7 @@ TEST_F(MediaSessionImplTest, WebContentsDestroyed_ReleasesFocus) {
 }
 
 TEST_F(MediaSessionImplTest, WebContentsDestroyed_ReleasesTransients) {
-  std::unique_ptr<WebContents> web_contents(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
   MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
 
   {
@@ -370,11 +358,11 @@ TEST_F(MediaSessionImplTest, WebContentsDestroyed_ReleasesTransients) {
 }
 
 TEST_F(MediaSessionImplTest, WebContentsDestroyed_StopsDucking) {
-  std::unique_ptr<WebContents> web_contents_1(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents_1(CreateTestWebContents());
   MediaSessionImpl* media_session_1 =
       MediaSessionImpl::Get(web_contents_1.get());
 
-  std::unique_ptr<WebContents> web_contents_2(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents_2(CreateTestWebContents());
   MediaSessionImpl* media_session_2 =
       MediaSessionImpl::Get(web_contents_2.get());
 
