@@ -722,7 +722,7 @@ group("gn_all") {
     }
   }
 
-  if ((is_linux && !is_chromeos && !is_chromecast) ||
+  if ((is_linux && !is_chromecast) ||
       (is_win && (use_drfuzz || use_libfuzzer)) || (use_libfuzzer && is_mac)) {
     deps += [
       "//testing/libfuzzer/fuzzers",
