@@ -584,11 +584,10 @@ def main(argv):
 
   java_file_paths = []
   for f in args.sources_files:
-    # java_file_paths stores each Java file path as a string.
-    java_file_paths += [
+    # Skip generated files, since the GN targets do not declare any deps.
+    java_file_paths.extend(
         p for p in build_utils.ReadSourcesList(f)
-        if p not in args.sources_blacklist
-    ]
+        if p.startswith('..') and p not in args.sources_blacklist)
   _Generate(
       java_file_paths,
       args.srcjar_path,
