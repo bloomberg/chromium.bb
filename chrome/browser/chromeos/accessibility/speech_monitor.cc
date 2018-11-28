@@ -16,12 +16,12 @@ const char kChromeVoxUpdate2[] = "n to learn more about chrome vox Next.";
 }  // namespace
 
 SpeechMonitor::SpeechMonitor() {
-  TtsControllerDelegateImpl::GetInstance()->SetPlatformImpl(this);
+  TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(this);
 }
 
 SpeechMonitor::~SpeechMonitor() {
-  TtsControllerDelegateImpl::GetInstance()->SetPlatformImpl(
-      TtsPlatformImpl::GetInstance());
+  TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(
+      TtsPlatform::GetInstance());
 }
 
 std::string SpeechMonitor::GetNextUtterance() {
@@ -99,10 +99,6 @@ void SpeechMonitor::GetVoices(std::vector<content::VoiceData>* out_voices) {
   voice.events.insert(content::TTS_EVENT_END);
 }
 
-std::string SpeechMonitor::error() {
-  return "";
-}
-
 void SpeechMonitor::WillSpeakUtteranceWithVoice(
     const content::Utterance* utterance,
     const content::VoiceData& voice_data) {
@@ -118,6 +114,23 @@ void SpeechMonitor::WillSpeakUtteranceWithVoice(
   utterance_queue_.push_back(utterance->text());
   if (loop_runner_.get())
     loop_runner_->Quit();
+}
+
+bool SpeechMonitor::LoadBuiltInTtsExtension(
+    content::BrowserContext* browser_context) {
+  return false;
+}
+
+std::string SpeechMonitor::GetError() {
+  return error_;
+}
+
+void SpeechMonitor::ClearError() {
+  error_ = std::string();
+}
+
+void SpeechMonitor::SetError(const std::string& error) {
+  error_ = error;
 }
 
 }  // namespace chromeos

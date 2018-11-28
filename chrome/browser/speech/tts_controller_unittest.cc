@@ -19,10 +19,10 @@ class TtsControllerTest : public testing::Test {
 };
 
 // Platform Tts implementation that does nothing.
-class DummyTtsPlatformImpl : public TtsPlatformImpl {
+class DummyTtsPlatformImpl : public TtsPlatform {
  public:
   DummyTtsPlatformImpl() {}
-  ~DummyTtsPlatformImpl() override {}
+  virtual ~DummyTtsPlatformImpl() {}
   bool PlatformImplAvailable() override { return true; }
   bool Speak(int utterance_id,
              const std::string& utterance,
@@ -36,9 +36,16 @@ class DummyTtsPlatformImpl : public TtsPlatformImpl {
   void Pause() override {}
   void Resume() override {}
   void GetVoices(std::vector<content::VoiceData>* out_voices) override {}
-  std::string error() override { return std::string(); }
-  void clear_error() override {}
-  void set_error(const std::string& error) override {}
+  bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context) override {
+    return false;
+  }
+  void WillSpeakUtteranceWithVoice(
+      const content::Utterance* utterance,
+      const content::VoiceData& voice_data) override {}
+  void SetError(const std::string& error) override {}
+  std::string GetError() override { return std::string(); }
+  void ClearError() override {}
 };
 
 // Subclass of TtsController with a public ctor and dtor.
@@ -61,7 +68,7 @@ TEST_F(TtsControllerTest, TestTtsControllerShutdown) {
   TestableTtsController* controller =
       new TestableTtsController();
 
-  controller->SetPlatformImpl(&platform_impl);
+  controller->SetTtsPlatform(&platform_impl);
 
   content::Utterance* utterance1 = new content::Utterance(nullptr);
   utterance1->set_can_enqueue(true);

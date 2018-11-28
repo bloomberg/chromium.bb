@@ -80,7 +80,7 @@ TtsControllerDelegateImpl* TtsControllerDelegateImpl::GetInstance() {
 TtsControllerDelegateImpl::TtsControllerDelegateImpl()
     : current_utterance_(nullptr),
       paused_(false),
-      platform_impl_(nullptr),
+      tts_platform_(nullptr),
       tts_engine_delegate_(nullptr) {}
 
 TtsControllerDelegateImpl::~TtsControllerDelegateImpl() {
@@ -115,7 +115,7 @@ void TtsControllerDelegateImpl::SpeakNow(content::Utterance* utterance) {
   // Ensure we have all built-in voices loaded. This is a no-op if already
   // loaded.
   bool loaded_built_in =
-      GetPlatformImpl()->LoadBuiltInTtsExtension(utterance->browser_context());
+      GetTtsPlatform()->LoadBuiltInTtsExtension(utterance->browser_context());
 
   // Get all available voices and try to find a matching voice.
   std::vector<content::VoiceData> voices;
@@ -132,7 +132,7 @@ void TtsControllerDelegateImpl::SpeakNow(content::Utterance* utterance) {
 
   UpdateUtteranceDefaults(utterance);
 
-  GetPlatformImpl()->WillSpeakUtteranceWithVoice(utterance, voice);
+  GetTtsPlatform()->WillSpeakUtteranceWithVoice(utterance, voice);
 
   base::RecordAction(base::UserMetricsAction("TextToSpeech.Speak"));
   UMA_HISTOGRAM_COUNTS_100000("TextToSpeech.Utterance.TextLength",
@@ -171,10 +171,10 @@ void TtsControllerDelegateImpl::SpeakNow(content::Utterance* utterance) {
     // It's possible for certain platforms to send start events immediately
     // during |speak|.
     current_utterance_ = utterance;
-    GetPlatformImpl()->clear_error();
-    bool success = GetPlatformImpl()->Speak(utterance->id(), utterance->text(),
-                                            utterance->lang(), voice,
-                                            utterance->continuous_parameters());
+    GetTtsPlatform()->ClearError();
+    bool success = GetTtsPlatform()->Speak(utterance->id(), utterance->text(),
+                                           utterance->lang(), voice,
+                                           utterance->continuous_parameters());
     if (!success)
       current_utterance_ = nullptr;
 
@@ -187,7 +187,7 @@ void TtsControllerDelegateImpl::SpeakNow(content::Utterance* utterance) {
 
     if (!success) {
       utterance->OnTtsEvent(content::TTS_EVENT_ERROR, kInvalidCharIndex,
-                            GetPlatformImpl()->error());
+                            GetTtsPlatform()->GetError());
       delete utterance;
       return;
     }
@@ -202,8 +202,8 @@ void TtsControllerDelegateImpl::Stop() {
     if (tts_engine_delegate_)
       tts_engine_delegate_->Stop(current_utterance_);
   } else {
-    GetPlatformImpl()->clear_error();
-    GetPlatformImpl()->StopSpeaking();
+    GetTtsPlatform()->ClearError();
+    GetTtsPlatform()->StopSpeaking();
   }
 
   if (current_utterance_)
@@ -221,8 +221,8 @@ void TtsControllerDelegateImpl::Pause() {
     if (tts_engine_delegate_)
       tts_engine_delegate_->Pause(current_utterance_);
   } else if (current_utterance_) {
-    GetPlatformImpl()->clear_error();
-    GetPlatformImpl()->Pause();
+    GetTtsPlatform()->ClearError();
+    GetTtsPlatform()->Pause();
   }
 }
 
@@ -234,8 +234,8 @@ void TtsControllerDelegateImpl::Resume() {
     if (tts_engine_delegate_)
       tts_engine_delegate_->Resume(current_utterance_);
   } else if (current_utterance_) {
-    GetPlatformImpl()->clear_error();
-    GetPlatformImpl()->Resume();
+    GetTtsPlatform()->ClearError();
+    GetTtsPlatform()->Resume();
   } else {
     SpeakNextUtterance();
   }
@@ -302,13 +302,13 @@ void TtsControllerDelegateImpl::OnTtsEvent(int utterance_id,
 void TtsControllerDelegateImpl::GetVoices(
     content::BrowserContext* browser_context,
     std::vector<content::VoiceData>* out_voices) {
-  TtsPlatformImpl* platform_impl = GetPlatformImpl();
-  if (platform_impl) {
+  TtsPlatform* tts_platform = GetTtsPlatform();
+  if (tts_platform) {
     // Ensure we have all built-in voices loaded. This is a no-op if already
     // loaded.
-    platform_impl->LoadBuiltInTtsExtension(browser_context);
-    if (platform_impl->PlatformImplAvailable())
-      platform_impl->GetVoices(out_voices);
+    tts_platform->LoadBuiltInTtsExtension(browser_context);
+    if (tts_platform->PlatformImplAvailable())
+      tts_platform->GetVoices(out_voices);
   }
 
   if (browser_context && tts_engine_delegate_)
@@ -316,7 +316,7 @@ void TtsControllerDelegateImpl::GetVoices(
 }
 
 bool TtsControllerDelegateImpl::IsSpeaking() {
-  return current_utterance_ != nullptr || GetPlatformImpl()->IsSpeaking();
+  return current_utterance_ != nullptr || GetTtsPlatform()->IsSpeaking();
 }
 
 void TtsControllerDelegateImpl::FinishCurrentUtterance() {
@@ -355,19 +355,18 @@ void TtsControllerDelegateImpl::ClearUtteranceQueue(bool send_events) {
   }
 }
 
-void TtsControllerDelegateImpl::SetPlatformImpl(
-    TtsPlatformImpl* platform_impl) {
-  platform_impl_ = platform_impl;
+void TtsControllerDelegateImpl::SetTtsPlatform(TtsPlatform* tts_platform) {
+  tts_platform_ = tts_platform;
 }
 
 int TtsControllerDelegateImpl::QueueSize() {
   return static_cast<int>(utterance_queue_.size());
 }
 
-TtsPlatformImpl* TtsControllerDelegateImpl::GetPlatformImpl() {
-  if (!platform_impl_)
-    platform_impl_ = TtsPlatformImpl::GetInstance();
-  return platform_impl_;
+TtsPlatform* TtsControllerDelegateImpl::GetTtsPlatform() {
+  if (!tts_platform_)
+    tts_platform_ = TtsPlatform::GetInstance();
+  return tts_platform_;
 }
 
 int TtsControllerDelegateImpl::GetMatchingVoice(
@@ -546,7 +545,7 @@ const PrefService* TtsControllerDelegateImpl::GetPrefService(
 void TtsControllerDelegateImpl::VoicesChanged() {
   // Existence of platform tts indicates explicit requests to tts. Since
   // |VoicesChanged| can occur implicitly, only send if needed.
-  if (!GetPlatformImpl())
+  if (!GetTtsPlatform())
     return;
 
   for (auto& delegate : voices_changed_delegates_)
@@ -583,8 +582,8 @@ void TtsControllerDelegateImpl::RemoveUtteranceEventDelegate(
       if (tts_engine_delegate_)
         tts_engine_delegate_->Stop(current_utterance_);
     } else {
-      GetPlatformImpl()->clear_error();
-      GetPlatformImpl()->StopSpeaking();
+      GetTtsPlatform()->ClearError();
+      GetTtsPlatform()->StopSpeaking();
     }
 
     FinishCurrentUtterance();

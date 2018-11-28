@@ -5792,12 +5792,13 @@ if (is_win) {
   fuzzer_test("tts_platform_fuzzer") {
     sources = [
       "../browser/speech/mock_tts_controller.cc",
-      "../browser/speech/tts_controller.h",
       "../browser/speech/tts_mac.mm",
-      "../browser/speech/tts_platform.cc",
       "../browser/speech/tts_platform.h",
       "../browser/speech/tts_platform_fuzzer.cc",
+      "../browser/speech/tts_platform_impl.cc",
+      "../browser/speech/tts_platform_impl.h",
       "../browser/speech/tts_win.cc",
+      "../content/public/browser/tts_controller.h",
     ]
 
     deps = [

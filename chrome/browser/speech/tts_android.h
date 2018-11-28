@@ -7,8 +7,9 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/speech/tts_platform.h"
+#include "chrome/browser/speech/tts_platform_impl.h"
 
+// TODO(katie): Move to content/browser/speech.
 class TtsPlatformImplAndroid : public TtsPlatformImpl {
  public:
   // TtsPlatformImpl implementation.

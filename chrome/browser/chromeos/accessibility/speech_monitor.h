@@ -18,10 +18,10 @@ namespace chromeos {
 // For testing purpose installs itself as the platform speech synthesis engine,
 // allowing it to intercept all speech calls, and then provides a method to
 // block until the next utterance is spoken.
-class SpeechMonitor : public TtsPlatformImpl {
+class SpeechMonitor : public TtsPlatform {
  public:
   SpeechMonitor();
-  ~SpeechMonitor() override;
+  virtual ~SpeechMonitor();
 
   // Blocks until the next utterance is spoken, and returns its text.
   std::string GetNextUtterance();
@@ -38,7 +38,7 @@ class SpeechMonitor : public TtsPlatformImpl {
   void BlockUntilStop();
 
  private:
-  // TtsPlatformImpl implementation.
+  // TtsPlatform implementation.
   bool PlatformImplAvailable() override;
   bool Speak(int utterance_id,
              const std::string& utterance,
@@ -50,16 +50,19 @@ class SpeechMonitor : public TtsPlatformImpl {
   void GetVoices(std::vector<content::VoiceData>* out_voices) override;
   void Pause() override {}
   void Resume() override {}
-  std::string error() override;
-  void clear_error() override {}
-  void set_error(const std::string& error) override {}
   void WillSpeakUtteranceWithVoice(
       const content::Utterance* utterance,
       const content::VoiceData& voice_data) override;
+  bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context) override;
+  std::string GetError() override;
+  void ClearError() override;
+  void SetError(const std::string& error) override;
 
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
   base::circular_deque<std::string> utterance_queue_;
   bool did_stop_ = false;
+  std::string error_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechMonitor);
 };
