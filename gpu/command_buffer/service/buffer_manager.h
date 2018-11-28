@@ -117,6 +117,10 @@ class GPU_GLES2_EXPORT Buffer : public base::RefCounted<Buffer> {
            non_transform_feedback_binding_count_ > 0;
   }
 
+  bool IsDoubleBoundForTransformFeedback() const {
+    return transform_feedback_indexed_binding_count_ > 1;
+  }
+
   void SetReadbackShadowAllocation(scoped_refptr<gpu::Buffer> shm,
                                    uint32_t shm_offset);
   scoped_refptr<gpu::Buffer> TakeReadbackShadowAllocation(void** data);

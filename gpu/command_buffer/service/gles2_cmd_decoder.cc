@@ -6456,6 +6456,13 @@ void GLES2DecoderImpl::DoBeginTransformFeedback(GLenum primitive_mode) {
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, msg.c_str());
       return;
     }
+    if (buffer->IsDoubleBoundForTransformFeedback()) {
+      std::string msg = base::StringPrintf(
+          "buffer at index %i is bound for multiple transform feedback outputs",
+          static_cast<int>(ii));
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, msg.c_str());
+      return;
+    }
   }
   transform_feedback->DoBeginTransformFeedback(primitive_mode);
   DCHECK(transform_feedback->active());
