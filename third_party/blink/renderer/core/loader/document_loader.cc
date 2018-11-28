@@ -653,6 +653,12 @@ void DocumentLoader::ResponseReceived(
 
   content_security_policy_ = ContentSecurityPolicy::Create();
   content_security_policy_->SetOverrideURLForSelf(response.Url());
+
+  AtomicString mixed_content_header = response.HttpHeaderField("mixed-content");
+  if (EqualIgnoringASCIICase(mixed_content_header, "noupgrade")) {
+    frame_->GetDocument()->SetMixedAutoupgradeOptOut(true);
+  }
+
   if (!frame_->GetSettings()->BypassCSP()) {
     content_security_policy_->DidReceiveHeaders(
         ContentSecurityPolicyResponseHeaders(response));
