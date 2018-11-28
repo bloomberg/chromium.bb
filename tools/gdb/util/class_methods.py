@@ -88,7 +88,7 @@ def Class(class_name, template_types):
       # Constructs a regular expression to match this type.
       self._class_regex = re.compile(
           '^' + re.escape(class_name) +
-          ('<.*>' if template_types > 0 else '') + '$')
+          ('<.*>' if len(template_types) > 0 else '') + '$')
 
       # Construct a dictionary and array of methods
       self.dict = {}
