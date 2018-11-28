@@ -17,10 +17,12 @@
 namespace ui {
 
 class ScenicWindowManager;
+class ScenicGpuService;
 
 class ScenicSurfaceFactory : public SurfaceFactoryOzone {
  public:
   explicit ScenicSurfaceFactory(ScenicWindowManager* window_manager);
+  explicit ScenicSurfaceFactory(ScenicGpuService* scenic_gpu_service);
   ~ScenicSurfaceFactory() override;
 
   // SurfaceFactoryOzone implementation.
@@ -41,7 +43,8 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
  private:
   fuchsia::ui::scenic::Scenic* GetScenic();
 
-  ScenicWindowManager* const window_manager_;
+  ScenicWindowManager* const window_manager_ = nullptr;
+  ScenicGpuService* scenic_gpu_service_ = nullptr;
   std::unique_ptr<GLOzone> egl_implementation_;
   fuchsia::ui::scenic::ScenicPtr scenic_;
 
