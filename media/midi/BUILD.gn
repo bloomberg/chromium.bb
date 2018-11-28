@@ -172,6 +172,10 @@ mojom("mojo") {
   sources = [
     "midi_service.mojom",
   ]
+
+  deps = [
+    "//mojo/public/mojom/base",
+  ]
 }
 
 test("midi_unittests") {

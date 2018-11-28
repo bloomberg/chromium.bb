@@ -2001,8 +2001,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
     AddFilter(resource_message_filter_.get());
   }
 
-  AddFilter(
-      new MidiHost(GetID(), BrowserMainLoop::GetInstance()->midi_service()));
   AddFilter(new DOMStorageMessageFilter(
       storage_partition_impl_->GetDOMStorageContext()));
 
@@ -2178,6 +2176,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(
       base::BindRepeating(&FileSystemManagerImpl::BindRequest,
                           base::Unretained(file_system_manager_impl_.get())));
+
+  registry->AddInterface(base::BindRepeating(
+      &MidiHost::BindRequest, GetID(),
+      base::Unretained(BrowserMainLoop::GetInstance()->midi_service())));
 
   if (gpu_client_) {
     // |gpu_client_| outlives the registry, because its destruction is posted to
