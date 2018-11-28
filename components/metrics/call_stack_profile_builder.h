@@ -45,11 +45,6 @@ class CallStackProfileBuilder
   void OnProfileCompleted(base::TimeDelta profile_duration,
                           base::TimeDelta sampling_period) override;
 
-  // The function is used by sampling heap profiler. Its samples already come
-  // with different counts.
-  void OnSampleCompleted(std::vector<base::StackSamplingProfiler::Frame> frames,
-                         size_t count);
-
   // Sets the callback to use for reporting browser process profiles. This
   // indirection is required to avoid a dependency on unnecessary metrics code
   // in child processes.

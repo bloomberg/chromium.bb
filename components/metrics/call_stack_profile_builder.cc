@@ -62,14 +62,6 @@ CallStackProfileBuilder::~CallStackProfileBuilder() = default;
 // static
 void CallStackProfileBuilder::OnSampleCompleted(
     std::vector<base::StackSamplingProfiler::Frame> frames) {
-  OnSampleCompleted(std::move(frames), 1);
-}
-
-// TODO(wittman): record |count| as per-Stacksample metadata in the new proto
-// format.
-void CallStackProfileBuilder::OnSampleCompleted(
-    std::vector<base::StackSamplingProfiler::Frame> frames,
-    size_t /*count*/) {
   // Write CallStackProfile::Stack protobuf message.
   CallStackProfile::Stack stack;
 
