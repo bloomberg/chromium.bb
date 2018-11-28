@@ -3648,6 +3648,10 @@ void LocalFrameView::SetLayoutSizeInternal(const IntSize& size) {
 }
 
 void LocalFrameView::ClipPaintRect(FloatRect* paint_rect) const {
+  // TODO(wangxianzhu): Support ChromeClient::VisibleContentRectForPainting()
+  // for SPv2.
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+
   // Paint the whole rect if "mainFrameClipsContent" is false, meaning that
   // WebPreferences::record_whole_document is true.
   if (!frame_->GetSettings()->GetMainFrameClipsContent())

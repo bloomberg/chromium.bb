@@ -6,6 +6,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
@@ -200,8 +201,7 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
 
 static bool ShouldRepaintSubsequence(
     PaintLayer& paint_layer,
-    const PaintLayerPaintingInfo& painting_info,
-    ShouldRespectOverflowClipType respect_overflow_clip) {
+    const PaintLayerPaintingInfo& painting_info) {
   // Repaint subsequence if the layer is marked for needing repaint.
   if (paint_layer.NeedsRepaint())
     return true;
@@ -240,12 +240,25 @@ static bool ShouldUseInfiniteCullRect(const GraphicsContext& context,
   //   2) Complexity: Difficulty updating clips when ancestor transforms
   //      change.
   // For these reasons, we use an infinite dirty rect here.
-  if (layer.PaintsWithTransform(painting_info.GetGlobalPaintFlags())) {
-    // The reasons don't apply for printing though, because when we enter and
-    // leaving printing mode, full invalidations occur.
-    return !context.Printing();
-  }
+  if (layer.PaintsWithTransform(painting_info.GetGlobalPaintFlags()) &&
+      // The reasons don't apply for printing though, because when we enter and
+      // leaving printing mode, full invalidations occur.
+      !context.Printing())
+    return true;
 
+  return false;
+}
+
+static bool IsMainFrameNotClippingContents(const PaintLayer& layer) {
+  // If MainFrameClipsContent is false which means that WebPreferences::
+  // record_whole_document is true, we should not cull the scrolling contents
+  // of the main frame.
+  if (layer.GetLayoutObject().IsLayoutView()) {
+    const auto* frame = layer.GetLayoutObject().GetFrame();
+    if (frame && frame->IsMainFrame() &&
+        !frame->GetSettings()->GetMainFrameClipsContent())
+      return true;
+  }
   return false;
 }
 
@@ -255,21 +268,22 @@ void PaintLayerPainter::AdjustForPaintProperties(
     PaintLayerFlags& paint_flags) {
   const auto& first_fragment = paint_layer_.GetLayoutObject().FirstFragment();
 
+  bool is_main_frame_not_clipping_contents =
+      IsMainFrameNotClippingContents(paint_layer_);
   bool should_use_infinite_cull_rect =
+      is_main_frame_not_clipping_contents ||
       ShouldUseInfiniteCullRect(context, paint_layer_, painting_info);
-  if (should_use_infinite_cull_rect)
+  if (should_use_infinite_cull_rect) {
     painting_info.cull_rect = CullRect::Infinite();
+    // Avoid clipping during CollectFragments.
+    if (is_main_frame_not_clipping_contents)
+      paint_flags |= kPaintLayerPaintingOverflowContents;
+  }
 
   if (painting_info.root_layer == &paint_layer_)
     return;
 
   if (!should_use_infinite_cull_rect) {
-    const auto& first_root_fragment =
-        painting_info.root_layer->GetLayoutObject().FirstFragment();
-    if (first_root_fragment.LocalBorderBoxProperties().Transform() ==
-        first_fragment.LocalBorderBoxProperties().Transform())
-      return;
-
     // painting_info.cull_rect is currently in |painting_info.root_layer|'s
     // pixel-snapped border box space. We need to adjust it into
     // |paint_layer_|'s space. This handles the following cases:
@@ -277,6 +291,21 @@ void PaintLayerPainter::AdjustForPaintProperties(
     // - The current layer's transform state escapes the root layers contents
     //   transform, e.g. a fixed-position layer;
     // - Scroll offsets.
+    const auto& first_root_fragment =
+        painting_info.root_layer->GetLayoutObject().FirstFragment();
+    const auto* source_transform =
+        first_root_fragment.LocalBorderBoxProperties().Transform();
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+        IsMainFrameNotClippingContents(*painting_info.root_layer)) {
+      // Use PostScrollTranslation as the source transform to avoid clipping of
+      // the scrolling contents in CullRect::ApplyTransforms().
+      source_transform = first_root_fragment.PostScrollTranslation();
+    }
+    const auto* destination_transform =
+        first_fragment.LocalBorderBoxProperties().Transform();
+    if (source_transform == destination_transform)
+      return;
+
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       auto& cull_rect = painting_info.cull_rect;
       // CullRect::ApplyTransforms() requires the cull rect in the source
@@ -288,9 +317,8 @@ void PaintLayerPainter::AdjustForPaintProperties(
         // Convert old_cull_rect into the layer's transform space.
         old_cull_rect->MoveBy(RoundedIntPoint(first_fragment.PaintOffset()));
       }
-      cull_rect.ApplyTransforms(
-          first_root_fragment.LocalBorderBoxProperties().Transform(),
-          first_fragment.LocalBorderBoxProperties().Transform(), old_cull_rect);
+      cull_rect.ApplyTransforms(source_transform, destination_transform,
+                                old_cull_rect);
       // Convert cull_rect from the layer's transform space to the layer's local
       // space.
       cull_rect.MoveBy(-RoundedIntPoint(first_fragment.PaintOffset()));
@@ -321,7 +349,9 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info_arg,
     PaintLayerFlags paint_flags_arg) {
-  PaintLayerFlags paint_flags = paint_flags_arg;
+  DCHECK(paint_layer_.IsSelfPaintingLayer() ||
+         paint_layer_.HasSelfPaintingLayerDescendant());
+
   PaintResult result = kFullyPainted;
 
   if (paint_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
@@ -339,8 +369,9 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     return kMayBeClippedByCullRect;
   }
 
-  DCHECK(paint_layer_.IsSelfPaintingLayer() ||
-         paint_layer_.HasSelfPaintingLayerDescendant());
+  PaintLayerFlags paint_flags = paint_flags_arg;
+  PaintLayerPaintingInfo painting_info = painting_info_arg;
+  AdjustForPaintProperties(context, painting_info, paint_flags);
 
   bool is_self_painting_layer = paint_layer_.IsSelfPaintingLayer();
   bool is_painting_overlay_scrollbars =
@@ -369,21 +400,17 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   LayoutSize subpixel_accumulation =
       paint_layer_.GetCompositingState() == kPaintsIntoOwnBacking
           ? paint_layer_.SubpixelAccumulation()
-          : painting_info_arg.sub_pixel_accumulation;
-
-  PaintLayerPaintingInfo painting_info = painting_info_arg;
-  AdjustForPaintProperties(context, painting_info, paint_flags);
+          : painting_info.sub_pixel_accumulation;
 
   ShouldRespectOverflowClipType respect_overflow_clip =
       ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
 
   bool should_create_subsequence = ShouldCreateSubsequence(
-      paint_layer_, context, painting_info_arg, paint_flags);
+      paint_layer_, context, painting_info, paint_flags);
 
   base::Optional<SubsequenceRecorder> subsequence_recorder;
   if (should_create_subsequence) {
-    if (!ShouldRepaintSubsequence(paint_layer_, painting_info,
-                                  respect_overflow_clip) &&
+    if (!ShouldRepaintSubsequence(paint_layer_, painting_info) &&
         SubsequenceRecorder::UseCachedSubsequenceIfPossible(context,
                                                             paint_layer_)) {
       return paint_layer_.PreviousPaintResult();
