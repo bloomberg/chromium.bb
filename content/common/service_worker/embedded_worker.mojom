@@ -43,6 +43,8 @@ struct EmbeddedWorkerStartParams {
   // This service worker's script type:
   // https://w3c.github.io/ServiceWorker/#dfn-type
   blink.mojom.ScriptType script_type;
+  // The string used for "user-agent" HTTP header.
+  string user_agent;
   // The id to talk with the DevTools agent for the worker.
   int32 worker_devtools_agent_route_id;
   // Unique token identifying this worker for DevTools.
