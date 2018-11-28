@@ -4,29 +4,17 @@
 
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 
-#include <stddef.h>
-
 #include <algorithm>
+#include <memory>
 
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/lifetime/browser_shutdown.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window.h"
-#include "chrome/test/base/testing_profile_manager.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/testing_pref_service.h"
-
-#if defined(OS_WIN)
-#include "components/metrics/metrics_pref_names.h"
-#endif
 
 typedef BrowserWithTestWindowTest BrowserListTest;
 
@@ -162,23 +150,3 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   browser3->tab_strip_model()->CloseAllTabs();
 }
 
-#if defined(OS_CHROMEOS)
-// Calling AttemptRestart on ChromeOS will exit the test.
-#define MAYBE_AttemptRestart DISABLED_AttemptRestart
-#else
-#define MAYBE_AttemptRestart AttemptRestart
-#endif
-
-TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
-  ASSERT_TRUE(g_browser_process);
-  TestingPrefServiceSimple* testing_pref_service =
-      profile_manager()->local_state()->Get();
-
-  EXPECT_FALSE(testing_pref_service->GetBoolean(prefs::kWasRestarted));
-  chrome::AttemptRestart();
-  EXPECT_TRUE(testing_pref_service->GetBoolean(prefs::kWasRestarted));
-
-  // Cancel the effects of us calling chrome::AttemptRestart. Otherwise tests
-  // ran after this one will fail.
-  browser_shutdown::SetTryingToQuit(false);
-}
