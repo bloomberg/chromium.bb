@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.feed;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -257,6 +256,8 @@ public class FeedNewTabPage extends NewTabPage {
         mMediator.destroy();
         if (mStreamLifecycleManager != null) mStreamLifecycleManager.destroy();
         mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
+        if (mImageLoader != null) mImageLoader.destroy();
+        mImageLoader = null;
     }
 
     @Override
@@ -301,10 +302,11 @@ public class FeedNewTabPage extends NewTabPage {
         FeedAppLifecycle appLifecycle = FeedProcessScopeFactory.getFeedAppLifecycle();
         appLifecycle.onNTPOpened();
 
-        Activity activity = mTab.getActivity();
+        ChromeActivity chromeActivity = mTab.getActivity();
         Profile profile = mTab.getProfile();
 
-        mImageLoader = new FeedImageLoader(profile, activity);
+        mImageLoader = new FeedImageLoader(
+                chromeActivity, chromeActivity.getChromeApplication().getReferencePool());
         FeedLoggingBridge loggingBridge = FeedProcessScopeFactory.getFeedLoggingBridge();
         FeedOfflineIndicator offlineIndicator = FeedProcessScopeFactory.getFeedOfflineIndicator();
         Runnable consumptionObserver =
@@ -315,17 +317,18 @@ public class FeedNewTabPage extends NewTabPage {
 
         FeedStreamScope streamScope =
                 feedProcessScope
-                        .createFeedStreamScopeBuilder(activity, mImageLoader, actionApi,
+                        .createFeedStreamScopeBuilder(chromeActivity, mImageLoader, actionApi,
                                 new BasicStreamConfiguration(),
-                                new BasicCardConfiguration(activity.getResources(), mUiConfig),
+                                new BasicCardConfiguration(
+                                        chromeActivity.getResources(), mUiConfig),
                                 new BasicSnackbarApi(mNewTabPageManager.getSnackbarManager()),
                                 loggingBridge, offlineIndicator)
                         .build();
 
         mStream = streamScope.getStream();
-        mStreamLifecycleManager = new StreamLifecycleManager(mStream, activity, mTab);
+        mStreamLifecycleManager = new StreamLifecycleManager(mStream, chromeActivity, mTab);
 
-        LayoutInflater inflater = LayoutInflater.from(activity);
+        LayoutInflater inflater = LayoutInflater.from(chromeActivity);
         mSectionHeaderView = (SectionHeaderView) inflater.inflate(
                 R.layout.new_tab_page_snippets_expandable_header, mRootView, false);
         mSectionHeaderViewMarginResizer = MarginResizer.createAndAttach(
@@ -363,13 +366,18 @@ public class FeedNewTabPage extends NewTabPage {
             mStreamLifecycleManager = null;
             // Do not call mStream.onDestroy(), the mStreamLifecycleManager has done that for us.
             mStream = null;
-            mImageLoader = null;
             mSectionHeaderView = null;
             mSectionHeaderViewMarginResizer.detach();
             mSectionHeaderViewMarginResizer = null;
             mSigninPromoView = null;
-            if (mSignInPromoViewMarginResizer != null) mSignInPromoViewMarginResizer.detach();
-            mSignInPromoViewMarginResizer = null;
+            if (mSignInPromoViewMarginResizer != null) {
+                mSignInPromoViewMarginResizer.detach();
+                mSignInPromoViewMarginResizer = null;
+            }
+            if (mImageLoader != null) {
+                mImageLoader.destroy();
+                mImageLoader = null;
+            }
         }
 
         mScrollViewForPolicy = new ScrollView(mTab.getActivity());

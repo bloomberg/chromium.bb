@@ -78,6 +78,18 @@ public class DiscardableReferencePool {
     }
 
     /**
+     * Remove this reference from the pool, allowing garbage collection to pick it up.
+     *
+     * @param ref The discardable reference to remove.
+     */
+    public void remove(DiscardableReference<?> ref) {
+        assert ref != null;
+        assert mPool.contains(ref);
+        mPool.remove(ref);
+        ref.discard();
+    }
+
+    /**
      * Drains the pool, removing all references to objects in the pool and therefore allowing them
      * to be garbage collected.
      */
