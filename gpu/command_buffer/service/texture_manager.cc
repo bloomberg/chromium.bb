@@ -876,6 +876,12 @@ bool Texture::CanGenerateMipmaps(const FeatureInfo* feature_info) const {
     return false;
   }
 
+  // WebGL forbids generating mipmaps on zero-size textures.
+  // See https://crbug.com/898351
+  if (feature_info->IsWebGLContext() && (base.width == 0 || base.height == 0)) {
+    return false;
+  }
+
   // According to the OpenGL extension spec EXT_sRGB.txt, EXT_SRGB is based on
   // ES 2.0 and generateMipmap is not allowed if texture format is SRGB_EXT or
   // SRGB_ALPHA_EXT.

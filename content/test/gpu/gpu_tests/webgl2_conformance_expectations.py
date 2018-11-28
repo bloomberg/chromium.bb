@@ -118,9 +118,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=739604)
     self.Fail('deqp/functional/gles3/lifetime.html', bug=898350)
 
-    # Need to forbid generation of mipmaps for zero-sized textures.
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html', bug=898351)
-
     # The following actually passes on gl_passthrough and also Mac Intel with
     # command buffer.
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
