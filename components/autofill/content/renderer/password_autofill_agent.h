@@ -386,6 +386,13 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // |form_data|.
   void MaybeStoreFallbackData(const PasswordFormFillData& form_data);
 
+  // Checks whether the form structure (amount of elements, element types etc)
+  // was changed.
+  bool WasFormStructureChanged(const FormData& form_data) const;
+  // Tries to restore |control_elements| values with cached values.
+  void TryFixAutofilledForm(
+      std::vector<blink::WebFormControlElement>* control_elements) const;
+
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;
   // A (sort-of) reverse map to |web_input_to_password_info_|.
@@ -455,6 +462,15 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   mojo::AssociatedBinding<mojom::PasswordAutofillAgent> binding_;
 
   bool prefilled_username_metrics_logged_ = false;
+
+  // Keeps autofilled values for the form elements.
+  std::map<unsigned /*unique renderer element id*/, blink::WebString>
+      autofilled_elements_cache_;
+  // Keeps forms structure (amount of elements, element types etc).
+  // TODO(crbug/898109): It's too expensive to keep the whole FormData
+  // structure. Replace FormData with a smaller structure.
+  std::map<unsigned /*unique renderer element id*/, FormData>
+      forms_structure_cache_;
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };
 

@@ -1116,6 +1116,8 @@ void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
 }
 
 void PasswordAutofillAgent::UserGestureObserved() {
+  autofilled_elements_cache_.clear();
+
   gatekeeper_.OnUserGesture();
 }
 
@@ -1175,17 +1177,34 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
 
     std::unique_ptr<PasswordForm> password_form(
         GetPasswordFormFromWebForm(form));
-    if (password_form) {
-      if (logger) {
-        logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD,
-                                *password_form);
-      }
-      password_forms.push_back(*password_form);
+    if (!password_form)
+      continue;
+
+    if (logger)
+      logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD, *password_form);
+
+    const FormData& form_data = password_form->form_data;
+    if (only_visible || WasFormStructureChanged(form_data)) {
+      forms_structure_cache_[form_data.unique_renderer_id] = form_data;
+
+      password_forms.push_back(std::move(*password_form));
+      continue;
     }
+
+    WebVector<WebFormControlElement> control_elements_vector;
+    form.GetFormControlElements(control_elements_vector);
+
+    std::vector<WebFormControlElement> control_elements =
+        control_elements_vector.ReleaseVector();
+    // Sometimes JS can change autofilled forms. In this case we try to restore
+    // values for the changed elements.
+    TryFixAutofilledForm(&control_elements);
   }
 
   // See if there are any unattached input elements that could be used for
   // password submission.
+  // TODO(crbug/898109): Consider using TryFixAutofilledForm for the cases when
+  // there is no form tag.
   bool add_unowned_inputs = true;
   if (only_visible) {
     std::vector<WebFormControlElement> control_elements =
@@ -1198,6 +1217,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
                          add_unowned_inputs);
     }
   }
+
   if (add_unowned_inputs) {
     std::unique_ptr<PasswordForm> password_form(
         GetPasswordFormFromUnownedInputElements());
@@ -1206,7 +1226,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
         logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD,
                                 *password_form);
       }
-      password_forms.push_back(*password_form);
+      password_forms.push_back(std::move(*password_form));
     }
   }
 
@@ -1654,6 +1674,8 @@ void PasswordAutofillAgent::FrameClosing() {
   username_query_prefix_.clear();
   form_predictions_.clear();
   username_detector_cache_.clear();
+  forms_structure_cache_.clear();
+  autofilled_elements_cache_.clear();
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   page_passwords_analyser_.Reset();
 #endif
@@ -1809,6 +1831,15 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
 
   if (logger)
     logger->LogElementName(Logger::STRING_PASSWORD_FILLED, *password_element);
+
+  if (!username.empty() && !username_element->IsNull()) {
+    autofilled_elements_cache_.emplace(
+        username_element->UniqueRendererFormControlId(),
+        WebString::FromUTF16(username));
+  }
+  autofilled_elements_cache_.emplace(
+      password_element->UniqueRendererFormControlId(),
+      WebString::FromUTF16(password));
   return true;
 }
 
@@ -1997,6 +2028,55 @@ void PasswordAutofillAgent::MaybeStoreFallbackData(
   password_info.fill_data = form_data;
   web_input_to_password_info_[WebInputElement()] = password_info;
   last_supplied_password_info_iter_ = web_input_to_password_info_.begin();
+}
+
+bool PasswordAutofillAgent::WasFormStructureChanged(
+    const FormData& form_data) const {
+  if (form_data.unique_renderer_id == FormData::kNotSetFormRendererId)
+    return true;
+
+  auto cached_form = forms_structure_cache_.find(form_data.unique_renderer_id);
+  if (cached_form == forms_structure_cache_.end())
+    return true;
+
+  const FormData& cached_form_data = cached_form->second;
+
+  if (form_data.fields.size() != cached_form_data.fields.size())
+    return true;
+
+  for (size_t i = 0; i < form_data.fields.size(); ++i) {
+    const FormFieldData& form_field = form_data.fields[i];
+    const FormFieldData& cached_form_field = cached_form_data.fields[i];
+
+    if (form_field.unique_renderer_id != cached_form_field.unique_renderer_id)
+      return true;
+
+    if (form_field.form_control_type != cached_form_field.form_control_type)
+      return true;
+
+    if (form_field.autocomplete_attribute !=
+        cached_form_field.autocomplete_attribute)
+      return true;
+
+    if (form_field.is_focusable != cached_form_field.is_focusable) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void PasswordAutofillAgent::TryFixAutofilledForm(
+    std::vector<WebFormControlElement>* control_elements) const {
+  for (auto& element : *control_elements) {
+    const unsigned element_id = element.UniqueRendererFormControlId();
+    auto cached_element = autofilled_elements_cache_.find(element_id);
+    if (cached_element == autofilled_elements_cache_.end())
+      continue;
+
+    const WebString& cached_value = cached_element->second;
+    if (cached_value != element.SuggestedValue())
+      element.SetSuggestedValue(cached_value);
+  }
 }
 
 }  // namespace autofill

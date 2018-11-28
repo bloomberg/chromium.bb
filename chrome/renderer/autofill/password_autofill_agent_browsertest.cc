@@ -3695,4 +3695,57 @@ TEST_F(PasswordAutofillAgentTest, NoMayUsePlaceholderAndPlaceholderOnForm) {
   CheckTextFieldsDOMState("placeholder", false, "", false);
 }
 
+TEST_F(PasswordAutofillAgentTest, AutofillsAfterUserGesture) {
+  UpdateRendererIDs();
+
+  SimulateOnFillPasswordForm(fill_data_);
+  CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
+
+  password_autofill_agent_->UserGestureObserved();
+  // It's a way to call PasswordValueGatekeeper::Reset().
+  password_autofill_agent_->DidStartProvisionalLoad(nullptr, false);
+
+  fill_data_.username_may_use_prefilled_placeholder = true;
+  fill_data_.password_field.value = ASCIIToUTF16(kBobPassword);
+
+  SimulateOnFillPasswordForm(fill_data_);
+  CheckTextFieldsSuggestedState(kAliceUsername, true, kBobPassword, true);
+}
+
+TEST_F(PasswordAutofillAgentTest, RestoresAfterJavaScriptModification) {
+  UpdateRendererIDs();
+  SimulateOnFillPasswordForm(fill_data_);
+  CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
+
+  fake_driver_.reset_password_forms_calls();
+
+  static const char script[] = "document.getElementById('username').value = ''";
+  ExecuteJavaScriptForTests(script);
+  CheckTextFieldsSuggestedState("", false, kAlicePassword, true);
+
+  password_autofill_agent_->OnDynamicFormsSeen();
+  CheckTextFieldsSuggestedState(kAliceUsername, false, kAlicePassword, true);
+
+  EXPECT_FALSE(fake_driver_.called_password_forms_parsed());
+  EXPECT_FALSE(fake_driver_.called_password_forms_rendered());
+}
+
+TEST_F(PasswordAutofillAgentTest, DoNotRestoreWhenFormStructureWasChanged) {
+  UpdateRendererIDs();
+  SimulateOnFillPasswordForm(fill_data_);
+  CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
+
+  static const char clear_username_script[] =
+      "document.getElementById('username').value = ''";
+  ExecuteJavaScriptForTests(clear_username_script);
+  static const char add_input_element_script[] =
+      "document.getElementById('LoginTestForm').appendChild(document."
+      "createElement('input'))";
+  ExecuteJavaScriptForTests(add_input_element_script);
+  CheckTextFieldsSuggestedState("", false, kAlicePassword, true);
+
+  password_autofill_agent_->OnDynamicFormsSeen();
+  CheckTextFieldsSuggestedState("", false, kAlicePassword, true);
+}
+
 }  // namespace autofill
