@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_GOOGLE_APPS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_GOOGLE_APPS_HANDLER_H_
 
+#include <array>
+
 #include "base/macros.h"
 #include "base/values.h"
+#include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace nux {
@@ -22,6 +25,8 @@ enum class GoogleAppsInteraction {
   kCount,
 };
 
+const size_t kGoogleAppCount = 5;
+
 class GoogleAppsHandler : public content::WebUIMessageHandler {
  public:
   GoogleAppsHandler();
@@ -33,6 +38,9 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
   // Callbacks for JS APIs.
   void HandleCacheGoogleAppIcon(const base::ListValue* args);
   void HandleGetGoogleAppsList(const base::ListValue* args);
+
+ private:
+  std::array<BookmarkItem, kGoogleAppCount> google_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAppsHandler);
 };
