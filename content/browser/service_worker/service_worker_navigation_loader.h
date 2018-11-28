@@ -140,9 +140,12 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   void CommitResponseHeaders();
 
   // Calls url_loader_client_->OnStartLoadingResponseBody() with
-  // |response_body| or with an empty data pipe.
+  // |response_body|.
   void CommitResponseBody(mojo::ScopedDataPipeConsumerHandle response_body);
-  void CommitResponseBodyEmpty();
+
+  // Creates and sends an empty response's body with the net::OK status.
+  // Sends net::ERR_INSUFFICIENT_RESOURCES when it can't be created.
+  void CommitEmptyResponseAndComplete();
 
   // Calls url_loader_client_->OnComplete(). |reason| will be recorded as an
   // argument of TRACE_EVENT.
