@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
@@ -127,7 +125,6 @@ leveldb::Status LevelDBTransaction::Commit() {
     return leveldb::Status::OK();
   }
 
-  base::TimeTicks begin_time = base::TimeTicks::Now();
   std::unique_ptr<LevelDBWriteBatch> write_batch = LevelDBWriteBatch::Create();
 
   auto it = data_.begin();
@@ -142,11 +139,8 @@ leveldb::Status LevelDBTransaction::Commit() {
   DCHECK(data_.empty());
 
   leveldb::Status s = db_->Write(*write_batch);
-  if (s.ok()) {
+  if (s.ok())
     finished_ = true;
-    UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.Transaction.CommitTime",
-                         base::TimeTicks::Now() - begin_time);
-  }
   return s;
 }
 
