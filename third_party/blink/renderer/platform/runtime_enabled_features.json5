@@ -1355,10 +1355,6 @@
       status: "test",
     },
     {
-      name: "WebLocksAPI",
-      status: "stable",
-    },
-    {
       name: "WebNFC",
       status: "experimental",
     },
