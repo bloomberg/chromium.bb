@@ -35,11 +35,19 @@ void AppRegistryCache::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
       iter = states_.insert(Pair(delta->app_id, std::move(state))).first;
     }
 
-    for (auto& obs : observers_) {
-      obs.OnAppUpdate(AppUpdate(iter->second, delta));
-    }
-
+    // Merge the delta, updating the internal states_ map. We do this before we
+    // notify the observers, so that if an observer calls back into the cache,
+    // it will see a consistent snapshot.
+    //
+    // We also keep (as the clone variable) the states_ value before the merge,
+    // so that the observers can know which fields (such as name, icon key or
+    // readiness) have changed.
+    apps::mojom::AppPtr clone = iter->second.Clone();
     AppUpdate::Merge(iter->second.get(), delta);
+
+    for (auto& obs : observers_) {
+      obs.OnAppUpdate(AppUpdate(clone, delta));
+    }
   }
 }
 
