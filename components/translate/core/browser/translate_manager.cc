@@ -713,7 +713,11 @@ void TranslateManager::AddTargetLanguageToAcceptLanguages(
   std::vector<std::string> languages;
   prefs->GetLanguageList(&languages);
 
-  if (std::none_of(languages.begin(), languages.end(), is_redundant)) {
+  // Only add the target language if it's not redundant with another already in
+  // the list, and if it's not an automatic target (such as when translation
+  // happens because of an hrefTranslate navigation).
+  if (std::none_of(languages.begin(), languages.end(), is_redundant) &&
+      language_state_.AutoTranslateTo() != target_language_code) {
     prefs->AddToLanguageList(target_language_code, /*force_blocked=*/false);
   }
 }
