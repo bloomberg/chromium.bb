@@ -4931,6 +4931,7 @@ if (!is_android) {
         "../browser/chromeos/accessibility/select_to_speak_browsertest.cc",
         "../browser/chromeos/accessibility/spoken_feedback_browsertest.cc",
         "../browser/chromeos/accessibility/sticky_keys_browsertest.cc",
+        "../browser/chromeos/accessibility/switch_access_browsertest.cc",
         "../browser/chromeos/input_method/textinput_browsertest.cc",
         "../browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc",
         "../browser/chromeos/input_method/textinput_test_helper.cc",
