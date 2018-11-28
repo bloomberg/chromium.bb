@@ -65,6 +65,7 @@
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/gtest_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -593,11 +594,9 @@ class NetworkContextConfigurationBrowserTest
     // instead of '/echo' to avoid a disk_cache bug.
     // See https://crbug.com/792255.
     int net_error = content::LoadBasicRequest(
-        network_context(), embedded_test_server()->GetURL("/echoheader"));
-    // The error code could be |net::ERR_PROXY_CONNECTION_FAILED| if the test is
-    // using 'bad_server.pac'.
-    EXPECT_TRUE(net_error == net::OK ||
-                net_error == net::ERR_PROXY_CONNECTION_FAILED);
+        network_context(), embedded_test_server()->GetURL("/echoheader"), 0, 0,
+        net::LOAD_BYPASS_PROXY);
+    EXPECT_THAT(net_error, net::test::IsOk());
 
     // Crash the NetworkService process. Existing interfaces should receive
     // error notifications at some point.
