@@ -177,6 +177,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[AutofillEditItem alloc] initWithType:ItemTypeAutofillEditItem];
   autofillEditItem.textFieldName = @"Autofill field";
   autofillEditItem.textFieldValue = @" with a value";
+  autofillEditItem.identifyingIcon =
+      [UIImage imageNamed:@"table_view_cell_check_mark"];
   [model addItem:autofillEditItem
       toSectionWithIdentifier:SectionIdentifierAutofill];
 

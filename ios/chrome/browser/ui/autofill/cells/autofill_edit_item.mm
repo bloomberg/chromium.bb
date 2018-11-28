@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -45,6 +46,13 @@ const CGFloat kLabelAndFieldGap = 5;
     cell.textField.accessibilityIdentifier =
         [NSString stringWithFormat:@"%@_textField", self.textFieldName];
   }
+  if (styler.cellBackgroundColor) {
+    cell.textLabel.backgroundColor = styler.cellBackgroundColor;
+    cell.textField.backgroundColor = styler.cellBackgroundColor;
+  } else {
+    cell.textLabel.backgroundColor = styler.tableViewBackgroundColor;
+    cell.textField.backgroundColor = styler.tableViewBackgroundColor;
+  }
   cell.textField.enabled = self.textFieldEnabled;
   cell.textField.textColor =
       self.textFieldEnabled
@@ -75,6 +83,15 @@ const CGFloat kLabelAndFieldGap = 5;
 @property(nonatomic, strong) NSLayoutConstraint* iconHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* iconWidthConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* textFieldTrailingConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* textLabelTrailingConstraint;
+
+// When they are activated, the label and the text field are on one line.
+// They conflict with the |accessibilityConstraints|.
+@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* standardConstraints;
+// When they are activated, the label is on one line, the text field is on
+// another line. They conflict with the |standardConstraints|.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* accessibilityConstraints;
 
 // UIImageView containing the icon identifying |textField| or its current value.
 @property(nonatomic, readonly, strong) UIImageView* identifyingIconView;
@@ -96,18 +113,24 @@ const CGFloat kLabelAndFieldGap = 5;
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [_textLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                   forAxis:UILayoutConstraintAxisHorizontal];
+    _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    _textLabel.adjustsFontForContentSizeCategory = YES;
     [contentView addSubview:_textLabel];
 
     _textField = [[UITextField alloc] init];
     _textField.translatesAutoresizingMaskIntoConstraints = NO;
+    _textField.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    _textField.adjustsFontForContentSizeCategory = YES;
+    [_textField
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
     [contentView addSubview:_textField];
 
     _textField.autocorrectionType = UITextAutocorrectionTypeNo;
     _textField.clearButtonMode = UITextFieldViewModeWhileEditing;
     _textField.contentVerticalAlignment =
         UIControlContentVerticalAlignmentCenter;
-    _textField.textAlignment =
-        UseRTLLayout() ? NSTextAlignmentLeft : NSTextAlignmentRight;
 
     // Card type icon.
     _identifyingIconView = [[UIImageView alloc] initWithFrame:CGRectZero];
@@ -123,6 +146,25 @@ const CGFloat kLabelAndFieldGap = 5;
 
     _textFieldTrailingConstraint = [_textField.trailingAnchor
         constraintEqualToAnchor:_identifyingIconView.leadingAnchor];
+    _textLabelTrailingConstraint = [_textLabel.trailingAnchor
+        constraintEqualToAnchor:_identifyingIconView.leadingAnchor];
+
+    _standardConstraints = @[
+      [_textField.firstBaselineAnchor
+          constraintEqualToAnchor:_textLabel.firstBaselineAnchor],
+      [_textField.leadingAnchor
+          constraintEqualToAnchor:_textLabel.trailingAnchor
+                         constant:kLabelAndFieldGap],
+    ];
+
+    _accessibilityConstraints = @[
+      [_textField.topAnchor constraintEqualToAnchor:_textLabel.bottomAnchor
+                                           constant:kTableViewVerticalSpacing],
+      [_textField.leadingAnchor
+          constraintEqualToAnchor:contentView.leadingAnchor
+                         constant:kTableViewHorizontalSpacing],
+      _textLabelTrailingConstraint,
+    ];
 
     // Set up the constraints.
     [NSLayoutConstraint activateConstraints:@[
@@ -130,11 +172,6 @@ const CGFloat kLabelAndFieldGap = 5;
           constraintEqualToAnchor:contentView.leadingAnchor
                          constant:kTableViewHorizontalSpacing],
       _textFieldTrailingConstraint,
-      [_textField.firstBaselineAnchor
-          constraintEqualToAnchor:_textLabel.firstBaselineAnchor],
-      [_textField.leadingAnchor
-          constraintEqualToAnchor:_textLabel.trailingAnchor
-                         constant:kLabelAndFieldGap],
       [_identifyingIconView.trailingAnchor
           constraintEqualToAnchor:contentView.trailingAnchor
                          constant:-kTableViewHorizontalSpacing],
@@ -145,6 +182,12 @@ const CGFloat kLabelAndFieldGap = 5;
     ]];
     AddOptionalVerticalPadding(contentView, _textLabel,
                                kTableViewLargeVerticalSpacing);
+    AddOptionalVerticalPadding(contentView, _textField,
+                               kTableViewLargeVerticalSpacing);
+
+    [self updateForAccessibilityContentSizeCategory:
+              UIContentSizeCategoryIsAccessibilityCategory(
+                  self.traitCollection.preferredContentSizeCategory)];
   }
   return self;
 }
@@ -155,14 +198,29 @@ const CGFloat kLabelAndFieldGap = 5;
   self.identifyingIconView.image = icon;
   if (icon) {
     self.textFieldTrailingConstraint.constant = -kLabelAndFieldGap;
+    self.textLabelTrailingConstraint.constant = -kLabelAndFieldGap;
 
     // Set the size constraints of the icon view to the dimensions of the image.
     self.iconHeightConstraint.constant = icon.size.height;
     self.iconWidthConstraint.constant = icon.size.width;
   } else {
     self.textFieldTrailingConstraint.constant = 0;
+    self.textLabelTrailingConstraint.constant = 0;
     self.iconHeightConstraint.constant = 0;
     self.iconWidthConstraint.constant = 0;
+  }
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  BOOL isCurrentCategoryAccessibility =
+      UIContentSizeCategoryIsAccessibilityCategory(
+          self.traitCollection.preferredContentSizeCategory);
+  if (isCurrentCategoryAccessibility !=
+      UIContentSizeCategoryIsAccessibilityCategory(
+          previousTraitCollection.preferredContentSizeCategory)) {
+    [self updateForAccessibilityContentSizeCategory:
+              isCurrentCategoryAccessibility];
   }
 }
 
@@ -191,6 +249,26 @@ const CGFloat kLabelAndFieldGap = 5;
 - (NSString*)accessibilityLabel {
   return [NSString
       stringWithFormat:@"%@, %@", self.textLabel.text, self.textField.text];
+}
+
+#pragma mark Private
+
+// Updates the cell such as it is layouted correctly with regard to the
+// preferred content size category, if it is an
+// |accessibilityContentSizeCategory| or not.
+- (void)updateForAccessibilityContentSizeCategory:
+    (BOOL)accessibilityContentSizeCategory {
+  if (accessibilityContentSizeCategory) {
+    [NSLayoutConstraint deactivateConstraints:_standardConstraints];
+    [NSLayoutConstraint activateConstraints:_accessibilityConstraints];
+    _textField.textAlignment =
+        UseRTLLayout() ? NSTextAlignmentRight : NSTextAlignmentLeft;
+  } else {
+    [NSLayoutConstraint deactivateConstraints:_accessibilityConstraints];
+    [NSLayoutConstraint activateConstraints:_standardConstraints];
+    _textField.textAlignment =
+        UseRTLLayout() ? NSTextAlignmentLeft : NSTextAlignmentRight;
+  }
 }
 
 @end
