@@ -8,12 +8,12 @@
     Exposed=Window,
     RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedTypePolicyFactory {
-    [RaisesException] TrustedTypePolicy createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions, optional boolean exposed = false);
-    TrustedTypePolicy getExposedPolicy(DOMString policyName);
+    [RaisesException, Unforgeable] TrustedTypePolicy createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions, optional boolean exposed = false);
+    [Unforgeable] TrustedTypePolicy getExposedPolicy(DOMString policyName);
     // All the policy object names that have been created
-    [Affects=Nothing] sequence<DOMString> getPolicyNames();
-    [CallWith=ScriptState] boolean isHTML(object? checkedObject);
-    [CallWith=ScriptState] boolean isScript(object? checkedObject);
-    [CallWith=ScriptState] boolean isScriptURL(object? checkedObject);
-    [CallWith=ScriptState] boolean isURL(object? checkedObject);
+    [Affects=Nothing, Unforgeable] sequence<DOMString> getPolicyNames();
+    [CallWith=ScriptState, Unforgeable] boolean isHTML(object? checkedObject);
+    [CallWith=ScriptState, Unforgeable] boolean isScript(object? checkedObject);
+    [CallWith=ScriptState, Unforgeable] boolean isScriptURL(object? checkedObject);
+    [CallWith=ScriptState, Unforgeable] boolean isURL(object? checkedObject);
 };
