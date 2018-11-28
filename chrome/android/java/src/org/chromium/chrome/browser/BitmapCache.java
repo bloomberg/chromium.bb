@@ -92,6 +92,16 @@ public class BitmapCache {
         mBitmapCache = referencePool.put(new RecentlyUsedCache(mCacheSize));
     }
 
+    /**
+     * Manually destroy the BitmapCache.
+     */
+    public void destroy() {
+        assert mReferencePool != null;
+        assert mBitmapCache != null;
+        mReferencePool.remove(mBitmapCache);
+        mBitmapCache = null;
+    }
+
     public Bitmap getBitmap(String key) {
         ThreadUtils.assertOnUiThread();
         Bitmap cachedBitmap = getBitmapCache().get(key);

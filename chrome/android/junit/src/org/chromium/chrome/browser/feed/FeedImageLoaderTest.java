@@ -35,7 +35,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
 
 import java.util.Arrays;
@@ -71,9 +71,9 @@ public class FeedImageLoaderTest {
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
 
     @Mock
-    private Consumer<Drawable> mConsumer;
+    CachedImageFetcher mCachedImageFetcher;
     @Mock
-    private Profile mProfile;
+    private Consumer<Drawable> mConsumer;
     @Mock
     private Bitmap mBitmap;
     @Captor
@@ -88,8 +88,8 @@ public class FeedImageLoaderTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        mImageLoader =
-                Mockito.spy(new FeedImageLoader(mProfile, ContextUtils.getApplicationContext()));
+        mImageLoader = Mockito.spy(
+                new FeedImageLoader(ContextUtils.getApplicationContext(), mCachedImageFetcher));
     }
 
     private void answerFetchImage(String url, Bitmap bitmap) {

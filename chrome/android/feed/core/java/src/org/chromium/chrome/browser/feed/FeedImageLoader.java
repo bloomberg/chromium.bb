@@ -18,11 +18,13 @@ import com.google.android.libraries.feed.host.imageloader.BundledAssets;
 import com.google.android.libraries.feed.host.imageloader.ImageLoaderApi;
 
 import org.chromium.base.Callback;
+import org.chromium.base.DiscardableReferencePool;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.cached_image_fetcher.InMemoryCachedImageFetcher;
 import org.chromium.chrome.browser.suggestions.ThumbnailGradient;
 
 import java.util.Iterator;
@@ -41,15 +43,24 @@ public class FeedImageLoader implements ImageLoaderApi {
     private static final String OVERLAY_IMAGE_DIRECTION_END = "end";
 
     private Context mActivityContext;
+    private CachedImageFetcher mCachedImageFetcher;
 
     /**
      * Creates a FeedImageLoader for fetching image for the current user.
      *
-     * @param profile Profile of the user we are rendering the Feed for.
      * @param activityContext Context of the user we are rendering the Feed for.
      */
-    public FeedImageLoader(Profile profile, Context activityContext) {
+    public FeedImageLoader(Context activityContext, DiscardableReferencePool referencePool) {
         mActivityContext = activityContext;
+        if (SysUtils.isLowEndDevice()) {
+            mCachedImageFetcher = CachedImageFetcher.getInstance();
+        } else {
+            mCachedImageFetcher = new InMemoryCachedImageFetcher(referencePool);
+        }
+    }
+
+    public void destroy() {
+        mCachedImageFetcher.destroy();
     }
 
     @Override
@@ -156,6 +167,12 @@ public class FeedImageLoader implements ImageLoaderApi {
 
     @VisibleForTesting
     protected void fetchImage(String url, int width, int height, Callback<Bitmap> callback) {
-        CachedImageFetcher.getInstance().fetchImage(url, width, height, callback);
+        mCachedImageFetcher.fetchImage(url, width, height, callback);
+    }
+
+    @VisibleForTesting
+    FeedImageLoader(Context activityContext, CachedImageFetcher cachedImageFetcher) {
+        mActivityContext = activityContext;
+        mCachedImageFetcher = cachedImageFetcher;
     }
 }
