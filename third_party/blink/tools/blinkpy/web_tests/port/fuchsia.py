@@ -280,7 +280,7 @@ class ChromiumFuchsiaDriver(driver.Driver):
         if command.startswith('/'):
             relative_test_filename = \
                 os.path.relpath(command, self._port.layout_tests_dir())
-            command = 'http://127.0.0.1:8000' + LAYOUT_TEST_PATH_PREFIX + \
+            command = 'http://127.0.0.1:8000' + WEB_TESTS_PATH_PREFIX + \
                 '/' + relative_test_filename
         return command
 
