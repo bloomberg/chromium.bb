@@ -4924,7 +4924,6 @@ crbug.com/798592 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-s
 
 # Sheriff failures 2018-01-03
 crbug.com/798680 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture-manual.html [ Pass Timeout ]
-crbug.com/804682 [ Mac ] external/wpt/service-workers/service-worker/navigation-preload/resource-timing.https.html [ Pass Failure ]
 
 # Sheriff failures 2018-01-25
 # Flaking on Linux Tests, WebKit Linux Trusty (also ASAN, Leak)
