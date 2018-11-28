@@ -463,8 +463,8 @@
   },
   {
     "name": "dcheck-is-fatal",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "wez" ],
+    "expiry_milestone": -1
   },
   {
     "name": "debug-packed-apps",
