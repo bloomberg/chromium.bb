@@ -372,13 +372,7 @@ class TracingControllerTest : public ContentBrowserTest {
   std::string last_data_;
 };
 
-// TODO(crbug.com/871770): Disabled for failing on ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_GetCategories DISABLED_GetCategories
-#else
-#define MAYBE_GetCategories GetCategories
-#endif
-IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_GetCategories) {
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, GetCategories) {
   Navigate(shell());
 
   TracingController* controller = TracingController::GetInstance();
@@ -392,13 +386,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_GetCategories) {
   EXPECT_EQ(get_categories_done_callback_count(), 1);
 }
 
-// TODO(crbug.com/871770): Disabled for failing on ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_EnableAndStopTracing DISABLED_EnableAndStopTracing
-#else
-#define MAYBE_EnableAndStopTracing EnableAndStopTracing
-#endif
-IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_EnableAndStopTracing) {
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, EnableAndStopTracing) {
   TestStartAndStopTracingString();
 }
 
@@ -476,15 +464,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, NotWhitelistedMetadataStripped) {
   // EXPECT_TRUE(KeyEquals(metadata_json, "not-whitelisted", "__stripped__"));
 }
 
-// TODO(crbug.com/871770): Disabled for failing on ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_EnableAndStopTracingWithFilePath \
-  DISABLED_EnableAndStopTracingWithFilePath
-#else
-#define MAYBE_EnableAndStopTracingWithFilePath EnableAndStopTracingWithFilePath
-#endif
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       MAYBE_EnableAndStopTracingWithFilePath) {
+                       EnableAndStopTracingWithFilePath) {
   base::FilePath file_path;
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
@@ -494,29 +475,13 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   EXPECT_EQ(file_path.value(), last_actual_recording_file_path().value());
 }
 
-// TODO(crbug.com/871770): Disabled for failing on ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_EnableAndStopTracingWithCompression \
-  DISABLED_EnableAndStopTracingWithCompression
-#else
-#define MAYBE_EnableAndStopTracingWithCompression \
-  EnableAndStopTracingWithCompression
-#endif
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       MAYBE_EnableAndStopTracingWithCompression) {
+                       EnableAndStopTracingWithCompression) {
   TestStartAndStopTracingCompressed();
 }
 
-// TODO(crbug.com/871770): Disabled for failing on ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_EnableAndStopTracingWithEmptyFile \
-  DISABLED_EnableAndStopTracingWithEmptyFile
-#else
-#define MAYBE_EnableAndStopTracingWithEmptyFile \
-  EnableAndStopTracingWithEmptyFile
-#endif
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       MAYBE_EnableAndStopTracingWithEmptyFile) {
+                       EnableAndStopTracingWithEmptyFile) {
   Navigate(shell());
 
   base::RunLoop run_loop;
@@ -535,13 +500,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   run_loop.Run();
 }
 
-// TODO(crbug.com/871770): Disabled for failing on ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DoubleStopTracing DISABLED_DoubleStopTracing
-#else
-#define MAYBE_DoubleStopTracing DoubleStopTracing
-#endif
-IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_DoubleStopTracing) {
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, DoubleStopTracing) {
   Navigate(shell());
 
   base::RunLoop run_loop;
@@ -560,11 +519,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_DoubleStopTracing) {
   run_loop.Run();
 }
 
-// TODO(crbug.com/871770): Disabled for failing on ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_SystemTraceEvents DISABLED_SystemTraceEvents
 // Only CrOS, and Cast support system tracing.
-#elif defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
+#if defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
 #define MAYBE_SystemTraceEvents SystemTraceEvents
 #else
 #define MAYBE_SystemTraceEvents DISABLED_SystemTraceEvents
