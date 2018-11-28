@@ -21,6 +21,8 @@ import sys
 import tempfile
 import time
 
+import chrome_helper
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.join(THIS_DIR, '..', '..', '..')
 WEBDRIVER_PATH = os.path.join(
@@ -106,6 +108,7 @@ def CreateChromedriver(args):
   finally:
     if driver:
       driver.quit()
+    chrome_helper.WaitForChromeExit()
     # To help with local crash analysis, change None to tempfile.gettempdir().
     # TODO(grt): Copy crash dumps into ${ISOLATED_OUTDIR}.
     CollectCrashReports(user_data_dir, None)
