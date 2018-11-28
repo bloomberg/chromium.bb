@@ -12,11 +12,11 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/md5.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -183,7 +183,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
       data_reduction_proxy::switches::kDataReductionProxyHttpProxies,
       kHttpsProxy.ToURI() + ";" + kHttpProxy.ToURI());
 
-  base::MessageLoopForIO message_loop;
+  base::test::ScopedTaskEnvironment task_environment{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   struct TestCase {
     const char* response_headers;
     const char* response_body;
@@ -252,7 +253,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
 }
 
 TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
-  base::MessageLoopForIO message_loop;
+  base::test::ScopedTaskEnvironment task_environment{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithMockConfig()
