@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+@class BrowserCoordinator;
 @class BrowserViewController;
 @class TabModel;
 
@@ -28,6 +29,8 @@ class ChromeBrowserState;
 // The BrowserViewController that is currently being used (one of mainBVC or
 // otrBVC). The other, if present, is in suspended mode.
 @property(nonatomic, weak) BrowserViewController* currentBVC;
+// The BrowserCoordinator corresponding to |currentBVC|.
+@property(nonatomic, readonly) BrowserCoordinator* currentBrowserCoordinator;
 
 // Halts all tabs from all TabModels.
 - (void)haltAllTabs;

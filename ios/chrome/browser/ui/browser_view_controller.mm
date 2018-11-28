@@ -57,7 +57,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
-#import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
@@ -132,7 +131,6 @@
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
-#import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/external_file_controller.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
@@ -549,9 +547,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for the language selection UI.
   LanguageSelectionCoordinator* _languageSelectionCoordinator;
 
-  // Coordinator for the PassKit UI presentation.
-  PassKitCoordinator* _passKitCoordinator;
-
   // Fake status bar view used to blend the toolbar into the status bar.
   UIView* _fakeStatusBarView;
 
@@ -908,9 +903,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
         [[LanguageSelectionCoordinator alloc] initWithBaseViewController:self];
     _languageSelectionCoordinator.presenter =
         [[VerticalAnimationContainer alloc] init];
-
-    _passKitCoordinator =
-        [[PassKitCoordinator alloc] initWithBaseViewController:self];
 
     // DownloadManagerCoordinator must be created before
     // DownloadManagerTabHelper.
@@ -1470,7 +1462,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   _printController = nil;
   [self.dispatcher dismissPopupMenuAnimated:NO];
   [_contextMenuCoordinator stop];
-  [_passKitCoordinator stop];
 
   if (self.presentedViewController) {
     // Dismisses any other modal controllers that may be present, e.g. Recent
@@ -2833,7 +2824,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   PrintTabHelper::CreateForWebState(tab.webState, self);
   NetExportTabHelper::CreateForWebState(tab.webState, self);
   CaptivePortalDetectorTabHelper::CreateForWebState(tab.webState, self);
-  PassKitTabHelper::CreateForWebState(tab.webState, _passKitCoordinator);
 
   // DownloadManagerTabHelper cannot function without delegate.
   DCHECK(_downloadManagerCoordinator);

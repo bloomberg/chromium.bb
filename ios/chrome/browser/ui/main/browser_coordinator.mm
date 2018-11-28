@@ -9,6 +9,7 @@
 #include "base/scoped_observer.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
+#import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
@@ -19,6 +20,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
@@ -50,6 +52,9 @@
 // keyboard.
 @property(nonatomic, strong)
     FormInputAccessoryCoordinator* formInputAccessoryCoordinator;
+
+// Coordinator for the PassKit UI presentation.
+@property(nonatomic, strong) PassKitCoordinator* passKitCoordinator;
 
 // Coordinator for the QR scanner.
 @property(nonatomic, strong) QRScannerLegacyCoordinator* qrScannerCoordinator;
@@ -115,6 +120,15 @@
   self.dispatcher = nil;
 }
 
+#pragma mark - Public
+
+- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
+                           dismissOmnibox:(BOOL)dismissOmnibox {
+  [self.passKitCoordinator stop];
+  [self.viewController clearPresentedStateWithCompletion:completion
+                                          dismissOmnibox:dismissOmnibox];
+}
+
 #pragma mark - Private
 
 // Instantiates a BrowserViewController.
@@ -153,6 +167,9 @@
   self.formInputAccessoryCoordinator.delegate = self;
   [self.formInputAccessoryCoordinator start];
 
+  self.passKitCoordinator = [[PassKitCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+
   self.qrScannerCoordinator = [[QRScannerLegacyCoordinator alloc]
       initWithBaseViewController:self.viewController];
   self.qrScannerCoordinator.dispatcher = self.dispatcher;
@@ -179,6 +196,9 @@
 
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
+
+  [self.passKitCoordinator stop];
+  self.passKitCoordinator = nil;
 
   [self.qrScannerCoordinator stop];
   self.qrScannerCoordinator = nil;
@@ -333,6 +353,8 @@
   AppLauncherTabHelper::CreateForWebState(
       webState, [[AppLauncherAbuseDetector alloc] init],
       self.appLauncherCoordinator);
+
+  PassKitTabHelper::CreateForWebState(webState, self.passKitCoordinator);
 
   RepostFormTabHelper::CreateForWebState(webState, self);
 
