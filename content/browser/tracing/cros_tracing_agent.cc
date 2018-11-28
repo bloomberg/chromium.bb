@@ -198,6 +198,7 @@ class CrOSDataSource : public tracing::ProducerClient::DataSourceBase {
     DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
     auto* producer_client = producer_client_;
     session_.reset();
+    session_started_ = false;
     producer_client_ = nullptr;
 
     producer_client->GetTaskRunner()->PostTask(
