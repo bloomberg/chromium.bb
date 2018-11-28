@@ -86,7 +86,7 @@ def EnsureASANDirWorks(robo_configuration):
 
     # Ask gn to generate build files.
     log("Running gn on %s" % directory_name)
-    if call(["gn", "gen", robo_configuration.local_asan_directory()]):
+    if call(["gn", "gen", robo_configuration.relative_asan_directory()]):
       raise Exception("Unable to gn gen %s" %
               robo_configuration.local_asan_directory())
 
