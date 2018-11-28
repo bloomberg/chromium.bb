@@ -49,7 +49,7 @@ static const int kWeekDefaultStep = 1;
 static const int kWeekStepScaleFactor = 604800000;
 
 InputType* WeekInputType::Create(HTMLInputElement& element) {
-  return new WeekInputType(element);
+  return MakeGarbageCollected<WeekInputType>(element);
 }
 
 void WeekInputType::CountUsage() {

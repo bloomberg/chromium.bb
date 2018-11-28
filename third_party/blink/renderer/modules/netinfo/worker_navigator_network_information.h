@@ -31,10 +31,11 @@ class WorkerNavigatorNetworkInformation final
 
   static NetworkInformation* connection(ScriptState*, WorkerNavigator&);
 
+  WorkerNavigatorNetworkInformation(WorkerNavigator&, ExecutionContext*);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  WorkerNavigatorNetworkInformation(WorkerNavigator&, ExecutionContext*);
   NetworkInformation* connection(ExecutionContext*);
 
   Member<NetworkInformation> connection_;

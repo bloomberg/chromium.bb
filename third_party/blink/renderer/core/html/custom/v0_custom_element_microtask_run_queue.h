@@ -18,8 +18,10 @@ class V0CustomElementMicrotaskRunQueue
     : public GarbageCollected<V0CustomElementMicrotaskRunQueue> {
  public:
   static V0CustomElementMicrotaskRunQueue* Create() {
-    return new V0CustomElementMicrotaskRunQueue;
+    return MakeGarbageCollected<V0CustomElementMicrotaskRunQueue>();
   }
+
+  V0CustomElementMicrotaskRunQueue();
 
   void Enqueue(HTMLImportLoader* parent_loader,
                V0CustomElementMicrotaskStep*,
@@ -30,8 +32,6 @@ class V0CustomElementMicrotaskRunQueue
   void Trace(blink::Visitor*);
 
  private:
-  V0CustomElementMicrotaskRunQueue();
-
   void Dispatch();
 
   Member<V0CustomElementSyncMicrotaskQueue> sync_queue_;

@@ -67,7 +67,8 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
     return promise;
   }
 
-  WorkletPendingTasks* pending_tasks =  new WorkletPendingTasks(this, resolver);
+  WorkletPendingTasks* pending_tasks =
+      MakeGarbageCollected<WorkletPendingTasks>(this, resolver);
   pending_tasks_set_.insert(pending_tasks);
 
   // Step 5: "Return promise, and then continue running this algorithm in

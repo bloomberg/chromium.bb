@@ -185,7 +185,8 @@ IntersectionObserver* IntersectionObserver::Create(
     const IntersectionObserverInit* observer_init,
     ExceptionState& exception_state) {
   V8IntersectionObserverDelegate* delegate =
-      new V8IntersectionObserverDelegate(callback, script_state);
+      MakeGarbageCollected<V8IntersectionObserverDelegate>(callback,
+                                                           script_state);
   return Create(observer_init, *delegate, exception_state);
 }
 

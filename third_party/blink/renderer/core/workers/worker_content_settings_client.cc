@@ -40,7 +40,7 @@ namespace blink {
 
 WorkerContentSettingsClient* WorkerContentSettingsClient::Create(
     std::unique_ptr<WebContentSettingsClient> client) {
-  return new WorkerContentSettingsClient(std::move(client));
+  return MakeGarbageCollected<WorkerContentSettingsClient>(std::move(client));
 }
 
 WorkerContentSettingsClient::~WorkerContentSettingsClient() = default;

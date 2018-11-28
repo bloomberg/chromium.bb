@@ -121,7 +121,8 @@ WebFrameWidget* WebFrameWidget::CreateForMainFrame(WebWidgetClient* client,
   // Note: this isn't a leak, as the object has a self-reference that the
   // caller needs to release by calling Close().
   // TODO(dcheng): Remove the special bridge class for main frame widgets.
-  WebFrameWidgetBase* widget = new WebViewFrameWidget(*client, web_view_impl);
+  WebFrameWidgetBase* widget =
+      MakeGarbageCollected<WebViewFrameWidget>(*client, web_view_impl);
   widget->BindLocalRoot(*main_frame);
   return widget;
 }
@@ -146,7 +147,7 @@ WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
 WebFrameWidgetImpl* WebFrameWidgetImpl::Create(WebWidgetClient& client) {
   // Pass the WebFrameWidgetImpl's self-reference from SelfKeepAlive to the
   // caller.
-  return new WebFrameWidgetImpl(client);
+  return MakeGarbageCollected<WebFrameWidgetImpl>(client);
 }
 
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)

@@ -53,7 +53,7 @@ PlatformSpeechSynthesizer::PlatformSpeechSynthesizer(
     PlatformSpeechSynthesizerClient* client)
     : speech_synthesizer_client_(client) {
   web_speech_synthesizer_client_ =
-      new WebSpeechSynthesizerClientImpl(this, client);
+      MakeGarbageCollected<WebSpeechSynthesizerClientImpl>(this, client);
   web_speech_synthesizer_ = Platform::Current()->CreateSpeechSynthesizer(
       web_speech_synthesizer_client_);
 }

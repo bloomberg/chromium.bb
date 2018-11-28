@@ -54,11 +54,11 @@ class WorkerNavigatorStorageQuota final
 
   StorageManager* storage() const;
 
+  explicit WorkerNavigatorStorageQuota();
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit WorkerNavigatorStorageQuota();
-
   mutable Member<StorageManager> storage_manager_;
 };
 

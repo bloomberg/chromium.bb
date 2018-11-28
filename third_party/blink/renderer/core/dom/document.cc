@@ -673,7 +673,8 @@ Document::Document(const DocumentInit& initializer,
           &Document::ElementDataCacheClearTimerFired),
       timeline_(DocumentTimeline::Create(this)),
       pending_animations_(new PendingAnimations(*this)),
-      worklet_animation_controller_(new WorkletAnimationController(this)),
+      worklet_animation_controller_(
+          MakeGarbageCollected<WorkletAnimationController>(this)),
       template_document_host_(nullptr),
       did_associate_form_controls_timer_(
           GetTaskRunner(TaskType::kInternalLoading),
@@ -691,7 +692,7 @@ Document::Document(const DocumentInit& initializer,
       slot_assignment_recalc_forbidden_recursion_depth_(0),
 #endif
       needs_to_record_ukm_outlive_time_(false),
-      viewport_data_(new ViewportData(*this)),
+      viewport_data_(MakeGarbageCollected<ViewportData>(*this)),
       agent_cluster_id_(base::UnguessableToken::Create()),
       parsed_feature_policies_(
           static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 1) {

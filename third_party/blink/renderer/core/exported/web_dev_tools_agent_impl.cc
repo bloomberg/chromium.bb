@@ -282,14 +282,15 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
 // static
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::CreateForFrame(
     WebLocalFrameImpl* frame) {
-  return new WebDevToolsAgentImpl(frame, IsMainFrame(frame), nullptr);
+  return MakeGarbageCollected<WebDevToolsAgentImpl>(frame, IsMainFrame(frame),
+                                                    nullptr);
 }
 
 // static
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::CreateForWorker(
     WebLocalFrameImpl* frame,
     WorkerClient* worker_client) {
-  return new WebDevToolsAgentImpl(frame, true, worker_client);
+  return MakeGarbageCollected<WebDevToolsAgentImpl>(frame, true, worker_client);
 }
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(

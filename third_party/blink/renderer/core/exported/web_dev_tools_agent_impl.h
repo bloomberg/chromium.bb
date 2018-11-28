@@ -70,6 +70,10 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   static WebDevToolsAgentImpl* CreateForFrame(WebLocalFrameImpl*);
   static WebDevToolsAgentImpl* CreateForWorker(WebLocalFrameImpl*,
                                                WorkerClient*);
+
+  WebDevToolsAgentImpl(WebLocalFrameImpl*,
+                       bool include_view_agents,
+                       WorkerClient*);
   ~WebDevToolsAgentImpl() override;
   virtual void Trace(blink::Visitor*);
   DevToolsAgent* GetDevToolsAgent() const { return agent_.Get(); }
@@ -90,10 +94,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
 
  private:
   friend class ClientMessageLoopAdapter;
-
-  WebDevToolsAgentImpl(WebLocalFrameImpl*,
-                       bool include_view_agents,
-                       WorkerClient*);
 
   // DevToolsAgent::Client implementation.
   void AttachSession(DevToolsSession*, bool restore) override;

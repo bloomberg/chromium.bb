@@ -10,7 +10,7 @@
 namespace blink {
 
 ModulatorImplBase* WorkletModulatorImpl::Create(ScriptState* script_state) {
-  return new WorkletModulatorImpl(script_state);
+  return MakeGarbageCollected<WorkletModulatorImpl>(script_state);
 }
 
 WorkletModulatorImpl::WorkletModulatorImpl(ScriptState* script_state)
@@ -21,8 +21,8 @@ ModuleScriptFetcher* WorkletModulatorImpl::CreateModuleScriptFetcher(
   DCHECK_EQ(ModuleScriptCustomFetchType::kWorkletAddModule, custom_fetch_type);
   WorkletGlobalScope* global_scope =
       To<WorkletGlobalScope>(GetExecutionContext());
-  return new WorkletModuleScriptFetcher(global_scope->EnsureFetcher(),
-                                        global_scope->GetModuleResponsesMap());
+  return MakeGarbageCollected<WorkletModuleScriptFetcher>(
+      global_scope->EnsureFetcher(), global_scope->GetModuleResponsesMap());
 }
 
 bool WorkletModulatorImpl::IsDynamicImportForbidden(String* reason) {

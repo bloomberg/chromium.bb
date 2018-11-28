@@ -61,7 +61,7 @@ WaveShaperNode* WaveShaperNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new WaveShaperNode(context);
+  return MakeGarbageCollected<WaveShaperNode>(context);
 }
 
 WaveShaperNode* WaveShaperNode::Create(BaseAudioContext* context,

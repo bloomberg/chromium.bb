@@ -14,7 +14,7 @@ VREyeParameters::VREyeParameters(
   offset_->Data()[1] = eye_parameters->offset[1];
   offset_->Data()[2] = eye_parameters->offset[2];
 
-  field_of_view_ = new VRFieldOfView();
+  field_of_view_ = MakeGarbageCollected<VRFieldOfView>();
   field_of_view_->SetUpDegrees(eye_parameters->fieldOfView->upDegrees);
   field_of_view_->SetDownDegrees(eye_parameters->fieldOfView->downDegrees);
   field_of_view_->SetLeftDegrees(eye_parameters->fieldOfView->leftDegrees);

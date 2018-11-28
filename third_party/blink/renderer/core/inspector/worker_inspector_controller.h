@@ -62,6 +62,11 @@ class WorkerInspectorController final
       WorkerThread*,
       scoped_refptr<InspectorTaskRunner>,
       std::unique_ptr<WorkerDevToolsParams>);
+
+  WorkerInspectorController(WorkerThread*,
+                            WorkerThreadDebugger*,
+                            scoped_refptr<InspectorTaskRunner>,
+                            std::unique_ptr<WorkerDevToolsParams>);
   ~WorkerInspectorController() override;
   void Trace(blink::Visitor*);
 
@@ -72,11 +77,6 @@ class WorkerInspectorController final
   void WaitForDebuggerIfNeeded();
 
  private:
-  WorkerInspectorController(WorkerThread*,
-                            WorkerThreadDebugger*,
-                            scoped_refptr<InspectorTaskRunner>,
-                            std::unique_ptr<WorkerDevToolsParams>);
-
   // Thread::TaskObserver implementation.
   void WillProcessTask(const base::PendingTask&) override;
   void DidProcessTask(const base::PendingTask&) override;

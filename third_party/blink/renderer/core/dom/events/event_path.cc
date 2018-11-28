@@ -398,9 +398,10 @@ NodeEventContext& EventPath::TopNodeEventContext() {
 
 void EventPath::EnsureWindowEventContext() {
   DCHECK(event_);
-  if (!window_event_context_)
-    window_event_context_ =
-        new WindowEventContext(*event_, TopNodeEventContext());
+  if (!window_event_context_) {
+    window_event_context_ = MakeGarbageCollected<WindowEventContext>(
+        *event_, TopNodeEventContext());
+  }
 }
 
 #if DCHECK_IS_ON()

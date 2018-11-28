@@ -45,7 +45,7 @@ WorkerNavigatorStorageQuota& WorkerNavigatorStorageQuota::From(
   WorkerNavigatorStorageQuota* supplement =
       Supplement<WorkerNavigator>::From<WorkerNavigatorStorageQuota>(navigator);
   if (!supplement) {
-    supplement = new WorkerNavigatorStorageQuota();
+    supplement = MakeGarbageCollected<WorkerNavigatorStorageQuota>();
     ProvideTo(navigator, supplement);
   }
   return *supplement;

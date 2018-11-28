@@ -62,14 +62,14 @@ struct VTTDisplayParameters {
 class VTTCueBox final : public HTMLDivElement {
  public:
   static VTTCueBox* Create(Document& document) {
-    return new VTTCueBox(document);
+    return MakeGarbageCollected<VTTCueBox>(document);
   }
+
+  explicit VTTCueBox(Document&);
 
   void ApplyCSSProperties(const VTTDisplayParameters&);
 
  private:
-  explicit VTTCueBox(Document&);
-
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
   // The computed line position for snap-to-lines layout, and NaN for
@@ -86,9 +86,10 @@ class VTTCue final : public TextTrackCue {
                         double start_time,
                         double end_time,
                         const String& text) {
-    return new VTTCue(document, start_time, end_time, text);
+    return MakeGarbageCollected<VTTCue>(document, start_time, end_time, text);
   }
 
+  VTTCue(Document&, double start_time, double end_time, const String& text);
   ~VTTCue() override;
 
   VTTRegion* region() const { return region_; }
@@ -157,8 +158,6 @@ class VTTCue final : public TextTrackCue {
   void Trace(blink::Visitor*) override;
 
  private:
-  VTTCue(Document&, double start_time, double end_time, const String& text);
-
   Document& GetDocument() const;
 
   VTTCueBox* GetDisplayTree();

@@ -1661,8 +1661,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::Create(
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
     WebFrame* opener) {
-  WebLocalFrameImpl* frame =
-      new WebLocalFrameImpl(scope, client, interface_registry);
+  WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
+      scope, client, interface_registry);
   frame->SetOpener(opener);
   return frame;
 }
@@ -1674,8 +1674,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     WebFrame* opener,
     const WebString& name,
     WebSandboxFlags sandbox_flags) {
-  WebLocalFrameImpl* frame = new WebLocalFrameImpl(WebTreeScopeType::kDocument,
-                                                   client, interface_registry);
+  WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
+      WebTreeScopeType::kDocument, client, interface_registry);
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
@@ -1693,8 +1693,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     WebSandboxFlags flags,
     ParsedFeaturePolicy container_policy) {
   DCHECK(client);
-  WebLocalFrameImpl* web_frame =
-      new WebLocalFrameImpl(old_web_frame, client, interface_registry);
+  WebLocalFrameImpl* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
+      old_web_frame, client, interface_registry);
   Frame* old_frame = ToWebRemoteFrameImpl(old_web_frame)->GetFrame();
   web_frame->SetParent(old_web_frame->Parent());
   web_frame->SetOpener(old_web_frame->Opener());
@@ -1734,8 +1734,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateLocalChild(
     WebTreeScopeType scope,
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry) {
-  WebLocalFrameImpl* frame =
-      new WebLocalFrameImpl(scope, client, interface_registry);
+  WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
+      scope, client, interface_registry);
   AppendChild(frame);
   return frame;
 }

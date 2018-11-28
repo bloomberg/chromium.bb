@@ -46,9 +46,10 @@ class V0CustomElementRegistrationContext final
     : public GarbageCollectedFinalized<V0CustomElementRegistrationContext> {
  public:
   static V0CustomElementRegistrationContext* Create() {
-    return new V0CustomElementRegistrationContext();
+    return MakeGarbageCollected<V0CustomElementRegistrationContext>();
   }
 
+  V0CustomElementRegistrationContext();
   ~V0CustomElementRegistrationContext() = default;
   void DocumentWasDetached() { registry_.DocumentWasDetached(); }
 
@@ -69,9 +70,6 @@ class V0CustomElementRegistrationContext final
   void SetV1(const CustomElementRegistry*);
 
   void Trace(blink::Visitor*);
-
- protected:
-  V0CustomElementRegistrationContext();
 
   // Instance creation
   void DidGiveTypeExtension(Element*, const AtomicString& type);

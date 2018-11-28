@@ -92,7 +92,11 @@ class CORE_EXPORT VisualViewport final
   USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
 
  public:
-  static VisualViewport* Create(Page& host) { return new VisualViewport(host); }
+  static VisualViewport* Create(Page& host) {
+    return MakeGarbageCollected<VisualViewport>(host);
+  }
+
+  explicit VisualViewport(Page&);
   ~VisualViewport() override;
 
   void Trace(blink::Visitor*) override;
@@ -272,8 +276,6 @@ class CORE_EXPORT VisualViewport final
   bool NeedsPaintPropertyUpdate() const { return needs_paint_property_update_; }
 
  private:
-  explicit VisualViewport(Page&);
-
   bool DidSetScaleOrLocation(float scale, const FloatPoint& location);
 
 

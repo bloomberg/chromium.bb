@@ -82,6 +82,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   USING_PRE_FINALIZER(VRDisplay, Dispose);
 
  public:
+  VRDisplay(NavigatorVR*, device::mojom::blink::XRDevicePtr);
   ~VRDisplay() override;
 
   // We hand out at most one VRDisplay, so hardcode displayId to 1.
@@ -147,8 +148,6 @@ class VRDisplay final : public EventTargetWithInlineData,
 
  protected:
   friend class VRController;
-
-  VRDisplay(NavigatorVR*, device::mojom::blink::XRDevicePtr);
 
   void Update(const device::mojom::blink::VRDisplayInfoPtr&);
 

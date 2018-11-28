@@ -44,7 +44,7 @@ ValidationMessageClientImpl::ValidationMessageClientImpl(Page& page)
     : page_(&page), current_anchor_(nullptr) {}
 
 ValidationMessageClientImpl* ValidationMessageClientImpl::Create(Page& page) {
-  return new ValidationMessageClientImpl(page);
+  return MakeGarbageCollected<ValidationMessageClientImpl>(page);
 }
 
 ValidationMessageClientImpl::~ValidationMessageClientImpl() = default;

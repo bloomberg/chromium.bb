@@ -36,6 +36,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                              WebRemoteFrameClient*,
                                              WebFrame* opener = nullptr);
 
+  WebRemoteFrameImpl(WebTreeScopeType, WebRemoteFrameClient*);
   ~WebRemoteFrameImpl() override;
 
   // WebFrame methods:
@@ -108,8 +109,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
 
  private:
   friend class RemoteFrameClientImpl;
-
-  WebRemoteFrameImpl(WebTreeScopeType, WebRemoteFrameClient*);
 
   void SetCoreFrame(RemoteFrame*);
   void ApplyReplicatedFeaturePolicyHeader();

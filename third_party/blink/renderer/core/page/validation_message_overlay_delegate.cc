@@ -132,7 +132,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   // InspectorOverlayAgent?
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
-  chrome_client_ = new ValidationMessageChromeClient(
+  chrome_client_ = MakeGarbageCollected<ValidationMessageChromeClient>(
       main_page_->GetChromeClient(), anchor_->GetDocument().View(),
       const_cast<PageOverlay&>(overlay));
   page_clients.chrome_client = chrome_client_;

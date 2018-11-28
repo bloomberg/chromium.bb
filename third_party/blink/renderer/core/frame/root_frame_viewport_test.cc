@@ -170,8 +170,12 @@ class VisualViewportStub : public ScrollableAreaStub {
  public:
   static VisualViewportStub* Create(const IntSize& viewport_size,
                                     const IntSize& contents_size) {
-    return new VisualViewportStub(viewport_size, contents_size);
+    return MakeGarbageCollected<VisualViewportStub>(viewport_size,
+                                                    contents_size);
   }
+
+  VisualViewportStub(const IntSize& viewport_size, const IntSize& contents_size)
+      : ScrollableAreaStub(viewport_size, contents_size), scale_(1) {}
 
   ScrollOffset MaximumScrollOffset() const override {
     ScrollOffset visible_viewport(ViewportSize());
@@ -184,9 +188,6 @@ class VisualViewportStub : public ScrollableAreaStub {
   void SetScale(float scale) { scale_ = scale; }
 
  private:
-  VisualViewportStub(const IntSize& viewport_size, const IntSize& contents_size)
-      : ScrollableAreaStub(viewport_size, contents_size), scale_(1) {}
-
   int VisibleWidth() const override { return viewport_size_.Width() / scale_; }
   int VisibleHeight() const override {
     return viewport_size_.Height() / scale_;

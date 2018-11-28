@@ -48,8 +48,10 @@ class CORE_EXPORT ViewportStyleResolver
     : public GarbageCollectedFinalized<ViewportStyleResolver> {
  public:
   static ViewportStyleResolver* Create(Document& document) {
-    return new ViewportStyleResolver(document);
+    return MakeGarbageCollected<ViewportStyleResolver>(document);
   }
+
+  explicit ViewportStyleResolver(Document&);
 
   void InitialStyleChanged();
   void InitialViewportChanged();
@@ -62,8 +64,6 @@ class CORE_EXPORT ViewportStyleResolver
   void Trace(blink::Visitor*);
 
  private:
-  explicit ViewportStyleResolver(Document&);
-
   void Reset();
   void Resolve();
 

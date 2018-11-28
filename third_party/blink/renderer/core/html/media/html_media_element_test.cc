@@ -46,7 +46,8 @@ class WebMediaStubLocalFrameClient : public EmptyLocalFrameClient {
  public:
   static WebMediaStubLocalFrameClient* Create(
       std::unique_ptr<WebMediaPlayer> player) {
-    return new WebMediaStubLocalFrameClient(std::move(player));
+    return MakeGarbageCollected<WebMediaStubLocalFrameClient>(
+        std::move(player));
   }
 
   WebMediaStubLocalFrameClient(std::unique_ptr<WebMediaPlayer> player)

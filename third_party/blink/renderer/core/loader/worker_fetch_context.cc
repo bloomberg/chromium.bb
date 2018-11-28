@@ -43,9 +43,9 @@ WorkerFetchContext* WorkerFetchContext::Create(
     FetchClientSettingsObject* fetch_client_settings_object) {
   if (!web_context)
     return nullptr;
-  return new WorkerFetchContext(global_scope, std::move(web_context),
-                                subresource_filter,
-                                fetch_client_settings_object);
+  return MakeGarbageCollected<WorkerFetchContext>(
+      global_scope, std::move(web_context), subresource_filter,
+      fetch_client_settings_object);
 }
 
 WorkerFetchContext::WorkerFetchContext(

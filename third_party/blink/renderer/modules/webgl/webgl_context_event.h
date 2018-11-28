@@ -35,7 +35,9 @@ class WebGLContextEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLContextEvent* Create() { return new WebGLContextEvent; }
+  static WebGLContextEvent* Create() {
+    return MakeGarbageCollected<WebGLContextEvent>();
+  }
   static WebGLContextEvent* Create(const AtomicString& type,
                                    const String& status_message) {
     return MakeGarbageCollected<WebGLContextEvent>(type, status_message);

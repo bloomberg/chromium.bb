@@ -73,6 +73,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
  public:
   static WebFrameWidgetImpl* Create(WebWidgetClient&);
 
+  explicit WebFrameWidgetImpl(WebWidgetClient&);
   ~WebFrameWidgetImpl() override;
 
   // WebWidget functions:
@@ -165,8 +166,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
  private:
   friend class WebFrameWidget;  // For WebFrameWidget::create.
-
-  explicit WebFrameWidgetImpl(WebWidgetClient&);
 
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult HitTestResultForRootFramePos(

@@ -29,7 +29,7 @@ class WorkletModuleResponsesMapTest : public testing::Test {
     auto* context =
         MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
     fetcher_ = ResourceFetcher::Create(context);
-    map_ = new WorkletModuleResponsesMap;
+    map_ = MakeGarbageCollected<WorkletModuleResponsesMap>();
   }
 
   void Fetch(const KURL& url, ClientImpl* client) {
@@ -39,7 +39,8 @@ class WorkletModuleResponsesMapTest : public testing::Test {
     resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
     FetchParameters fetch_params(resource_request);
     WorkletModuleScriptFetcher* module_fetcher =
-        new WorkletModuleScriptFetcher(fetcher_.Get(), map_.Get());
+        MakeGarbageCollected<WorkletModuleScriptFetcher>(fetcher_.Get(),
+                                                         map_.Get());
     module_fetcher->Fetch(fetch_params, ModuleGraphLevel::kTopLevelModuleFetch,
                           client);
   }

@@ -20,11 +20,11 @@
 namespace blink {
 
 WakeLock* WakeLock::CreateScreenWakeLock(ScriptState* script_state) {
-  return new WakeLock(script_state, LockType::kScreen);
+  return MakeGarbageCollected<WakeLock>(script_state, LockType::kScreen);
 }
 
 WakeLock* WakeLock::CreateSystemWakeLock(ScriptState* script_state) {
-  return new WakeLock(script_state, LockType::kSystem);
+  return MakeGarbageCollected<WakeLock>(script_state, LockType::kSystem);
 }
 
 WakeLock::~WakeLock() = default;
@@ -110,7 +110,7 @@ WakeLockRequest* WakeLock::createRequest() {
     ChangeActiveStatus(true);
 
   request_counter_++;
-  return new WakeLockRequest(this);
+  return MakeGarbageCollected<WakeLockRequest>(this);
 }
 
 void WakeLock::CancelRequest() {

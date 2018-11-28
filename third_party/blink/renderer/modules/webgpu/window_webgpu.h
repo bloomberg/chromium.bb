@@ -24,11 +24,11 @@ class WindowWebGPU final : public GarbageCollected<WindowWebGPU>,
   static WebGPU* webgpu(LocalDOMWindow&);
   WebGPU* webgpu() const;
 
+  explicit WindowWebGPU(LocalDOMWindow&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit WindowWebGPU(LocalDOMWindow&);
-
   mutable Member<WebGPU> webgpu_;
 };
 

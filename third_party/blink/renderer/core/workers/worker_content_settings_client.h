@@ -53,6 +53,9 @@ class CORE_EXPORT WorkerContentSettingsClient final
 
   static WorkerContentSettingsClient* Create(
       std::unique_ptr<WebContentSettingsClient>);
+
+  explicit WorkerContentSettingsClient(
+      std::unique_ptr<WebContentSettingsClient>);
   virtual ~WorkerContentSettingsClient();
 
   bool RequestFileSystemAccessSync();
@@ -73,9 +76,6 @@ class CORE_EXPORT WorkerContentSettingsClient final
   }
 
  private:
-  explicit WorkerContentSettingsClient(
-      std::unique_ptr<WebContentSettingsClient>);
-
   std::unique_ptr<WebContentSettingsClient> client_;
 };
 

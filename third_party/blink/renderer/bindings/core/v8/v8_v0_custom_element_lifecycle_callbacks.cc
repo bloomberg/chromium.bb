@@ -73,7 +73,7 @@ V8V0CustomElementLifecycleCallbacks::Create(
   CALLBACK_LIST(SET_PRIVATE_PROPERTY)
 #undef SET_PRIVATE_PROPERTY
 
-  return new V8V0CustomElementLifecycleCallbacks(
+  return MakeGarbageCollected<V8V0CustomElementLifecycleCallbacks>(
       script_state, prototype, created, attached, detached, attribute_changed);
 }
 

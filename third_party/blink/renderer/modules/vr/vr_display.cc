@@ -129,7 +129,7 @@ VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
                      device::mojom::blink::XRDevicePtr device)
     : PausableObject(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
-      capabilities_(new VRDisplayCapabilities()),
+      capabilities_(MakeGarbageCollected<VRDisplayCapabilities>()),
       device_ptr_(std::move(device)),
       display_client_binding_(this) {
   PauseIfNeeded();  // Initialize SuspendabaleObject.
@@ -180,9 +180,9 @@ void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
     DCHECK_GT(display->leftEye->renderWidth, 0u);
     is_valid = true;
 
-    eye_parameters_left_ = new VREyeParameters(
+    eye_parameters_left_ = MakeGarbageCollected<VREyeParameters>(
         display->leftEye, display->webvr_default_framebuffer_scale);
-    eye_parameters_right_ = new VREyeParameters(
+    eye_parameters_right_ = MakeGarbageCollected<VREyeParameters>(
         display->rightEye, display->webvr_default_framebuffer_scale);
   }
 
@@ -194,7 +194,7 @@ void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
 
   if (!display->stageParameters.is_null()) {
     if (!stage_parameters_)
-      stage_parameters_ = new VRStageParameters();
+      stage_parameters_ = MakeGarbageCollected<VRStageParameters>();
     stage_parameters_->Update(display->stageParameters);
   } else {
     stage_parameters_ = nullptr;

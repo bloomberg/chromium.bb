@@ -10,7 +10,7 @@
 namespace blink {
 
 VideoTrackList* VideoTrackList::Create(HTMLMediaElement& media_element) {
-  return new VideoTrackList(media_element);
+  return MakeGarbageCollected<VideoTrackList>(media_element);
 }
 
 VideoTrackList::~VideoTrackList() = default;

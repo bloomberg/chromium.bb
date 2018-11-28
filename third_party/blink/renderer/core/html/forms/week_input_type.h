@@ -39,10 +39,10 @@ class WeekInputType final : public BaseTemporalInputType {
  public:
   static InputType* Create(HTMLInputElement&);
 
- private:
   explicit WeekInputType(HTMLInputElement& element)
       : BaseTemporalInputType(element) {}
 
+ private:
   void CountUsage() override;
   const AtomicString& FormControlType() const override;
   StepRange CreateStepRange(AnyStepHandling) const override;

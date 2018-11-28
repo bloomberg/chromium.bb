@@ -229,7 +229,14 @@ class XMLHttpRequest::BlobLoader final
  public:
   static BlobLoader* Create(XMLHttpRequest* xhr,
                             scoped_refptr<BlobDataHandle> handle) {
-    return new BlobLoader(xhr, std::move(handle));
+    return MakeGarbageCollected<BlobLoader>(xhr, std::move(handle));
+  }
+
+  BlobLoader(XMLHttpRequest* xhr, scoped_refptr<BlobDataHandle> handle)
+      : xhr_(xhr),
+        loader_(
+            FileReaderLoader::Create(FileReaderLoader::kReadByClient, this)) {
+    loader_->Start(std::move(handle));
   }
 
   // FileReaderLoaderClient functions.
@@ -246,13 +253,6 @@ class XMLHttpRequest::BlobLoader final
   void Trace(blink::Visitor* visitor) { visitor->Trace(xhr_); }
 
  private:
-  BlobLoader(XMLHttpRequest* xhr, scoped_refptr<BlobDataHandle> handle)
-      : xhr_(xhr),
-        loader_(
-            FileReaderLoader::Create(FileReaderLoader::kReadByClient, this)) {
-    loader_->Start(std::move(handle));
-  }
-
   Member<XMLHttpRequest> xhr_;
   std::unique_ptr<FileReaderLoader> loader_;
 };

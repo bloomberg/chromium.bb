@@ -369,6 +369,12 @@ class CORE_EXPORT WebLocalFrameImpl final
                                               WebSandboxFlags,
                                               ParsedFeaturePolicy);
 
+  WebLocalFrameImpl(WebTreeScopeType,
+                    WebLocalFrameClient*,
+                    blink::InterfaceRegistry*);
+  WebLocalFrameImpl(WebRemoteFrame*,
+                    WebLocalFrameClient*,
+                    blink::InterfaceRegistry*);
   ~WebLocalFrameImpl() override;
 
   LocalFrame* CreateChildFrame(const AtomicString& name,
@@ -451,13 +457,6 @@ class CORE_EXPORT WebLocalFrameImpl final
 
  private:
   friend LocalFrameClientImpl;
-
-  WebLocalFrameImpl(WebTreeScopeType,
-                    WebLocalFrameClient*,
-                    blink::InterfaceRegistry*);
-  WebLocalFrameImpl(WebRemoteFrame*,
-                    WebLocalFrameClient*,
-                    blink::InterfaceRegistry*);
 
   // Sets the local core frame and registers destruction observers.
   void SetCoreFrame(LocalFrame*);

@@ -73,7 +73,7 @@ MouseEventInit* GetMouseEventInitForWheel(const WebMouseWheelEvent& event,
 
 WheelEvent* WheelEvent::Create(const WebMouseWheelEvent& event,
                                AbstractView* view) {
-  return new WheelEvent(event, view);
+  return MakeGarbageCollected<WheelEvent>(event, view);
 }
 
 WheelEvent::WheelEvent()
