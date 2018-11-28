@@ -292,45 +292,43 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   PaintLayer::AncestorDependentCompositingInputs properties;
   LayoutBoxModelObject& layout_object = layer->GetLayoutObject();
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // The final value for |unclipped_absolute_bounding_box| needs to be
-    // in absolute, unscrolled space, without any scroll applied.
-    properties.unclipped_absolute_bounding_box =
-        EnclosingIntRect(geometry_map_.AbsoluteRect(
-            FloatRect(layer->BoundingBoxForCompositingOverlapTest())));
+  // The final value for |unclipped_absolute_bounding_box| needs to be
+  // in absolute, unscrolled space, without any scroll applied.
+  properties.unclipped_absolute_bounding_box =
+      EnclosingIntRect(geometry_map_.AbsoluteRect(
+          FloatRect(layer->BoundingBoxForCompositingOverlapTest())));
 
-    bool affected_by_scroll = root_layer_->GetScrollableArea() &&
-                              layer->IsAffectedByScrollOf(root_layer_);
+  bool affected_by_scroll = root_layer_->GetScrollableArea() &&
+                            layer->IsAffectedByScrollOf(root_layer_);
 
-    // At ths point, |unclipped_absolute_bounding_box| is in viewport space.
-    // To convert to absolute space, add scroll offset for non-fixed layers.
-    if (affected_by_scroll) {
-      properties.unclipped_absolute_bounding_box.Move(
-          RoundedIntSize(root_layer_->GetScrollableArea()->GetScrollOffset()));
-    }
-
-    ClipRect clip_rect;
-    layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
-        .CalculateBackgroundClipRect(
-            ClipRectsContext(root_layer_,
-                             &root_layer_->GetLayoutObject().FirstFragment(),
-                             kAbsoluteClipRectsIgnoringViewportClip,
-                             kIgnorePlatformOverlayScrollbarSize,
-                             kIgnoreOverflowClipAndScroll),
-            clip_rect);
-    IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
-    // |snapped_clip_rect| is in absolute space space, but with scroll applied.
-    // To convert to absolute, unscrolled space, subtract scroll offsets for
-    // fixed layers.
-    if (root_layer_->GetScrollableArea() && !affected_by_scroll) {
-      snapped_clip_rect.Move(
-          RoundedIntSize(-root_layer_->GetScrollableArea()->GetScrollOffset()));
-    }
-
-    properties.clipped_absolute_bounding_box =
-        properties.unclipped_absolute_bounding_box;
-    properties.clipped_absolute_bounding_box.Intersect(snapped_clip_rect);
+  // At ths point, |unclipped_absolute_bounding_box| is in viewport space.
+  // To convert to absolute space, add scroll offset for non-fixed layers.
+  if (affected_by_scroll) {
+    properties.unclipped_absolute_bounding_box.Move(
+        RoundedIntSize(root_layer_->GetScrollableArea()->GetScrollOffset()));
   }
+
+  ClipRect clip_rect;
+  layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+      .CalculateBackgroundClipRect(
+          ClipRectsContext(root_layer_,
+                           &root_layer_->GetLayoutObject().FirstFragment(),
+                           kAbsoluteClipRectsIgnoringViewportClip,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           kIgnoreOverflowClipAndScroll),
+          clip_rect);
+  IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
+  // |snapped_clip_rect| is in absolute space space, but with scroll applied.
+  // To convert to absolute, unscrolled space, subtract scroll offsets for
+  // fixed layers.
+  if (root_layer_->GetScrollableArea() && !affected_by_scroll) {
+    snapped_clip_rect.Move(
+        RoundedIntSize(-root_layer_->GetScrollableArea()->GetScrollOffset()));
+  }
+
+  properties.clipped_absolute_bounding_box =
+      properties.unclipped_absolute_bounding_box;
+  properties.clipped_absolute_bounding_box.Intersect(snapped_clip_rect);
 
   const PaintLayer* parent = layer->Parent();
   properties.opacity_ancestor =
