@@ -23,6 +23,7 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
@@ -171,6 +172,12 @@ class OzonePlatformGbm : public OzonePlatform {
     return std::make_unique<DrmNativeDisplayDelegate>(display_manager_.get());
   }
 
+  bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
+                                     gfx::BufferUsage usage) const override {
+    return gfx::ClientNativePixmapDmaBuf::IsConfigurationSupported(format,
+                                                                   usage);
+  }
+
   void InitializeUI(const InitParams& args) override {
     // Ozone drm can operate in four modes configured at
     // runtime. Three process modes:
@@ -184,12 +191,13 @@ class OzonePlatformGbm : public OzonePlatform {
     //
     // and 2 connection modes
     //   a. Viz is launched via content::GpuProcessHost and it notifies the
-    //   ozone host when Viz becomes available. b. The ozone host uses a service
-    //   manager to launch and connect to Viz.
+    //   ozone host when Viz becomes available. b. The ozone host uses a
+    //   service manager to launch and connect to Viz.
     //
     // Combinations 1a, 2b, and 3a, and 3b are supported and expected to work.
     // Combination 1a will hopefully be deprecated and replaced with 3a.
-    // Combination 2b adds undesirable code-debt and the intent is to remove it.
+    // Combination 2b adds undesirable code-debt and the intent is to remove
+    // it.
 
     single_process_ = args.single_process;
     using_mojo_ = args.using_mojo || args.connector != nullptr;
@@ -198,6 +206,7 @@ class OzonePlatformGbm : public OzonePlatform {
     device_manager_ = CreateDeviceManager();
     window_manager_.reset(new DrmWindowHostManager());
     cursor_.reset(new DrmCursor(window_manager_.get()));
+
 #if BUILDFLAG(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_));

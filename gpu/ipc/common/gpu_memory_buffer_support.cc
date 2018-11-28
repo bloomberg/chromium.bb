@@ -20,6 +20,7 @@
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 #if defined(OS_WIN)
@@ -41,13 +42,6 @@ GpuMemoryBufferSupport::GpuMemoryBufferSupport() {
       gfx::CreateClientNativePixmapFactoryDmabuf());
 #endif
 }
-
-#if defined(OS_LINUX) || defined(USE_OZONE)
-GpuMemoryBufferSupport::GpuMemoryBufferSupport(
-    std::unique_ptr<gfx::ClientNativePixmapFactory>
-        client_native_pixmap_factory)
-    : client_native_pixmap_factory_(std::move(client_native_pixmap_factory)) {}
-#endif
 
 GpuMemoryBufferSupport::~GpuMemoryBufferSupport() {}
 
@@ -113,7 +107,8 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
   NOTREACHED();
   return false;
 #elif defined(USE_OZONE)
-  return client_native_pixmap_factory_->IsConfigurationSupported(format, usage);
+  return ui::OzonePlatform::EnsureInstance()->IsNativePixmapConfigSupported(
+      format, usage);
 #elif defined(OS_LINUX)
   return false;  // TODO(julian.isorce): Add linux support.
 #elif defined(OS_WIN)

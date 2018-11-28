@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"

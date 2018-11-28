@@ -10,6 +10,7 @@
 #include "ui/display/manager/fake_display_delegate.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/system_input_injector.h"
+#include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
@@ -41,21 +42,25 @@ namespace ui {
 
 namespace {
 
-class OzonePlatformWayland : public OzonePlatform {
- public:
-  OzonePlatformWayland() {
+constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
+    /*needs_view_token=*/false,
+
     // Supporting server-side decorations requires a support of xdg-decorations.
     // But this protocol has been accepted into the upstream recently, and it
     // will take time before it is taken by compositors. For now, always use
     // custom frames and disallow switching to server-side frames.
     // https://github.com/wayland-project/wayland-protocols/commit/76d1ae8c65739eff3434ef219c58a913ad34e988
-    properties_.custom_frame_pref_default = true;
-    properties_.use_system_title_bar = false;
+    /*custom_frame_pref_default=*/true,
+    /*use_system_title_bar=*/false,
+
     // Ozone/Wayland relies on the mojo communication when running in
     // !single_process.
     // TODO(msisov, rjkroege): Remove after http://crbug.com/806092.
-    properties_.requires_mojo = true;
-  }
+    /*requires_mojo=*/true};
+
+class OzonePlatformWayland : public OzonePlatform {
+ public:
+  OzonePlatformWayland() {}
   ~OzonePlatformWayland() override {}
 
   // OzonePlatform
@@ -113,6 +118,18 @@ class OzonePlatformWayland : public OzonePlatform {
     return connection_->wayland_output_manager()->CreateWaylandScreen();
   }
 
+  bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
+                                     gfx::BufferUsage usage) const override {
+    if (std::find(supported_buffer_formats_.begin(),
+                  supported_buffer_formats_.end(),
+                  format) == supported_buffer_formats_.end()) {
+      return false;
+    }
+
+    return gfx::ClientNativePixmapDmaBuf::IsConfigurationSupported(format,
+                                                                   usage);
+  }
+
   void InitializeUI(const InitParams& args) override {
 #if BUILDFLAG(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
@@ -135,6 +152,7 @@ class OzonePlatformWayland : public OzonePlatform {
     overlay_manager_.reset(new StubOverlayManager);
     input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
+    supported_buffer_formats_ = connection_->GetSupportedBufferFormats();
   }
 
   void InitializeGPU(const InitParams& args) override {
@@ -163,11 +181,7 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   const PlatformProperties& GetPlatformProperties() override {
-    if (connection_ && properties_.supported_buffer_formats.empty()) {
-      properties_.supported_buffer_formats =
-          connection_->GetSupportedBufferFormats();
-    }
-    return properties_;
+    return kWaylandPlatformProperties;
   }
 
   void AddInterfaces(service_manager::BinderRegistry* registry) override {
@@ -199,7 +213,7 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<WaylandConnectionProxy> proxy_;
   std::unique_ptr<WaylandConnectionConnector> connector_;
 
-  PlatformProperties properties_;
+  std::vector<gfx::BufferFormat> supported_buffer_formats_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformWayland);
 };

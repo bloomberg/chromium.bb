@@ -36,12 +36,6 @@ class ClientNativePixmapCast : public gfx::ClientNativePixmap {
 class ClientNativePixmapFactoryCast : public gfx::ClientNativePixmapFactory {
  public:
   // ClientNativePixmapFactoryCast implementation:
-  bool IsConfigurationSupported(gfx::BufferFormat format,
-                                gfx::BufferUsage usage) const override {
-    return format == gfx::BufferFormat::BGRA_8888 &&
-           usage == gfx::BufferUsage::SCANOUT;
-  }
-
   std::unique_ptr<gfx::ClientNativePixmap> ImportFromHandle(
       const gfx::NativePixmapHandle& handle,
       const gfx::Size& size,

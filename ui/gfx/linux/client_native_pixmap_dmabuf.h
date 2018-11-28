@@ -11,14 +11,19 @@
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/client_native_pixmap.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_pixmap_handle.h"
 
 namespace gfx {
 
 class ClientNativePixmapDmaBuf : public gfx::ClientNativePixmap {
  public:
+  static GFX_EXPORT bool IsConfigurationSupported(gfx::BufferFormat format,
+                                                  gfx::BufferUsage usage);
+
   static std::unique_ptr<gfx::ClientNativePixmap> ImportFromDmabuf(
       const gfx::NativePixmapHandle& handle,
       const gfx::Size& size);
