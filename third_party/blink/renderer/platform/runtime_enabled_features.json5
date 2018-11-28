@@ -1212,6 +1212,10 @@
       status: "experimental",
     },
     {
+      name: "StorageQuotaDetails",
+      status: "experimental",
+    },
+    {
       name: "TextUnderlinePositionLeftRight",
       status: "stable",
     },

@@ -76,7 +76,6 @@ std::tuple<int64_t, int64_t> GetVolumeInfoForTests(
 url::Origin ToOrigin(const std::string& url) {
   return url::Origin::Create(GURL(url));
 }
-
 }  // namespace
 
 class QuotaManagerTest : public testing::Test {
@@ -152,7 +151,7 @@ class QuotaManagerTest : public testing::Test {
     quota_status_ = QuotaStatusCode::kUnknown;
     usage_ = -1;
     quota_ = -1;
-    usage_breakdown_.clear();
+    usage_breakdown_ = nullptr;
     quota_manager_->GetUsageAndQuotaWithBreakdown(
         origin, type,
         base::BindOnce(&QuotaManagerTest::DidGetUsageAndQuotaWithBreakdown,
@@ -361,7 +360,7 @@ class QuotaManagerTest : public testing::Test {
       QuotaStatusCode status,
       int64_t usage,
       int64_t quota,
-      base::flat_map<QuotaClient::ID, int64_t> usage_breakdown) {
+      blink::mojom::UsageBreakdownPtr usage_breakdown) {
     quota_status_ = status;
     usage_ = usage;
     quota_ = quota;
@@ -397,7 +396,7 @@ class QuotaManagerTest : public testing::Test {
 
   void DidGetHostUsageBreakdown(
       int64_t usage,
-      base::flat_map<QuotaClient::ID, int64_t> usage_breakdown) {
+      blink::mojom::UsageBreakdownPtr usage_breakdown) {
     usage_ = usage;
     usage_breakdown_ = std::move(usage_breakdown);
   }
@@ -456,8 +455,8 @@ class QuotaManagerTest : public testing::Test {
   QuotaStatusCode status() const { return quota_status_; }
   const UsageInfoEntries& usage_info() const { return usage_info_; }
   int64_t usage() const { return usage_; }
-  const base::flat_map<QuotaClient::ID, int64_t>& usage_breakdown() const {
-    return usage_breakdown_;
+  const blink::mojom::UsageBreakdown& usage_breakdown() const {
+    return *usage_breakdown_;
   }
   int64_t limited_usage() const { return limited_usage_; }
   int64_t unlimited_usage() const { return unlimited_usage_; }
@@ -497,7 +496,7 @@ class QuotaManagerTest : public testing::Test {
   QuotaStatusCode quota_status_;
   UsageInfoEntries usage_info_;
   int64_t usage_;
-  base::flat_map<QuotaClient::ID, int64_t> usage_breakdown_;
+  blink::mojom::UsageBreakdownPtr usage_breakdown_;
   int64_t limited_usage_;
   int64_t unlimited_usage_;
   int64_t quota_;
@@ -741,7 +740,8 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
 }
 
 TEST_F(QuotaManagerTest, GetUsageWithBreakdown_Simple) {
-  base::flat_map<QuotaClient::ID, int64_t> usage_breakdown_expected;
+  blink::mojom::UsageBreakdown usage_breakdown_expected =
+      blink::mojom::UsageBreakdown();
   static const MockOriginData kData1[] = {
       {"http://foo.com/", kTemp, 1}, {"http://foo.com/", kPerm, 80},
   };
@@ -765,58 +765,60 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_Simple) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(80, usage());
-  usage_breakdown_expected[QuotaClient::kFileSystem] = 80;
-  usage_breakdown_expected[QuotaClient::kDatabase] = 0;
-  usage_breakdown_expected[QuotaClient::kAppcache] = 0;
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  usage_breakdown_expected.fileSystem = 80;
+  usage_breakdown_expected.webSql = 0;
+  usage_breakdown_expected.appcache = 0;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
   GetUsageAndQuotaWithBreakdown(ToOrigin("http://foo.com/"), kTemp);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(1 + 4 + 8, usage());
-  usage_breakdown_expected[QuotaClient::kFileSystem] = 1;
-  usage_breakdown_expected[QuotaClient::kDatabase] = 4;
-  usage_breakdown_expected[QuotaClient::kAppcache] = 8;
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  usage_breakdown_expected.fileSystem = 1;
+  usage_breakdown_expected.webSql = 4;
+  usage_breakdown_expected.appcache = 8;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
   GetUsageAndQuotaWithBreakdown(ToOrigin("http://bar.com/"), kTemp);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(0, usage());
-  usage_breakdown_expected[QuotaClient::kFileSystem] = 0;
-  usage_breakdown_expected[QuotaClient::kDatabase] = 0;
-  usage_breakdown_expected[QuotaClient::kAppcache] = 0;
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  usage_breakdown_expected.fileSystem = 0;
+  usage_breakdown_expected.webSql = 0;
+  usage_breakdown_expected.appcache = 0;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 }
 
 TEST_F(QuotaManagerTest, GetUsageWithBreakdown_NoClient) {
-  base::flat_map<QuotaClient::ID, int64_t> usage_breakdown_expected;
+  blink::mojom::UsageBreakdown usage_breakdown_expected =
+      blink::mojom::UsageBreakdown();
 
   GetUsageAndQuotaWithBreakdown(ToOrigin("http://foo.com/"), kTemp);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(0, usage());
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
   GetUsageAndQuotaWithBreakdown(ToOrigin("http://foo.com/"), kPerm);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(0, usage());
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
   GetHostUsageBreakdown("foo.com", kTemp);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
   GetHostUsageBreakdown("foo.com", kPerm);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 }
 
 TEST_F(QuotaManagerTest, GetUsageWithBreakdown_MultiOrigins) {
-  base::flat_map<QuotaClient::ID, int64_t> usage_breakdown_expected;
+  blink::mojom::UsageBreakdown usage_breakdown_expected =
+      blink::mojom::UsageBreakdown();
   static const MockOriginData kData[] = {
       {"http://foo.com/", kTemp, 10}, {"http://foo.com:8080/", kTemp, 20},
       {"http://bar.com/", kTemp, 5},  {"https://bar.com/", kTemp, 7},
@@ -829,19 +831,20 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_MultiOrigins) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(10 + 20, usage());
-  usage_breakdown_expected[QuotaClient::kFileSystem] = 10 + 20;
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  usage_breakdown_expected.fileSystem = 10 + 20;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
   GetUsageAndQuotaWithBreakdown(ToOrigin("http://bar.com/"), kTemp);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(5 + 7, usage());
-  usage_breakdown_expected[QuotaClient::kFileSystem] = 5 + 7;
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  usage_breakdown_expected.fileSystem = 5 + 7;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 }
 
 TEST_F(QuotaManagerTest, GetUsageWithBreakdown_MultipleClients) {
-  base::flat_map<QuotaClient::ID, int64_t> usage_breakdown_expected;
+  blink::mojom::UsageBreakdown usage_breakdown_expected =
+      blink::mojom::UsageBreakdown();
   static const MockOriginData kData1[] = {
       {"http://foo.com/", kTemp, 1},
       {"http://bar.com/", kTemp, 2},
@@ -863,33 +866,33 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_MultipleClients) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(1 + 128, usage());
-  usage_breakdown_expected[QuotaClient::kFileSystem] = 1;
-  usage_breakdown_expected[QuotaClient::kDatabase] = 128;
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  usage_breakdown_expected.fileSystem = 1;
+  usage_breakdown_expected.webSql = 128;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
   GetUsageAndQuotaWithBreakdown(ToOrigin("http://bar.com/"), kPerm);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(4, usage());
-  usage_breakdown_expected[QuotaClient::kFileSystem] = 4;
-  usage_breakdown_expected[QuotaClient::kDatabase] = 0;
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  usage_breakdown_expected.fileSystem = 4;
+  usage_breakdown_expected.webSql = 0;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
   GetUsageAndQuotaWithBreakdown(ToOrigin("http://unlimited/"), kTemp);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(512, usage());
-  usage_breakdown_expected[QuotaClient::kFileSystem] = 0;
-  usage_breakdown_expected[QuotaClient::kDatabase] = 512;
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  usage_breakdown_expected.fileSystem = 0;
+  usage_breakdown_expected.webSql = 512;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
   GetUsageAndQuotaWithBreakdown(ToOrigin("http://unlimited/"), kPerm);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(8, usage());
-  usage_breakdown_expected[QuotaClient::kFileSystem] = 8;
-  usage_breakdown_expected[QuotaClient::kDatabase] = 0;
-  EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
+  usage_breakdown_expected.fileSystem = 8;
+  usage_breakdown_expected.webSql = 0;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 }
 
 void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {

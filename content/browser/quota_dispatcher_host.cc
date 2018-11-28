@@ -94,7 +94,7 @@ void QuotaDispatcherHost::QueryStorageUsageAndQuota(
     const url::Origin& origin,
     StorageType storage_type,
     QueryStorageUsageAndQuotaCallback callback) {
-  quota_manager_->GetUsageAndQuotaForWebApps(
+  quota_manager_->GetUsageAndQuotaWithBreakdown(
       origin, storage_type,
       base::BindOnce(&QuotaDispatcherHost::DidQueryStorageUsageAndQuota,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -140,11 +140,12 @@ void QuotaDispatcherHost::RequestStorageQuota(
 }
 
 void QuotaDispatcherHost::DidQueryStorageUsageAndQuota(
-    RequestStorageQuotaCallback callback,
+    QueryStorageUsageAndQuotaCallback callback,
     blink::mojom::QuotaStatusCode status,
     int64_t usage,
-    int64_t quota) {
-  std::move(callback).Run(status, usage, quota);
+    int64_t quota,
+    blink::mojom::UsageBreakdownPtr usage_breakdown) {
+  std::move(callback).Run(status, usage, quota, std::move(usage_breakdown));
 }
 
 void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
