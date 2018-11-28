@@ -41,6 +41,31 @@ class AppRegistryCacheTest : public testing::Test,
   std::set<std::string> updated_names_;
 };
 
+// Responds to a cache's OnAppUpdate to call back into the cache, checking that
+// the cache presents a self-consistent snapshot. For example, the app names
+// should match for the outer and inner AppUpdate.
+class RecursiveObserver : public apps::AppRegistryCache::Observer {
+ public:
+  explicit RecursiveObserver(apps::AppRegistryCache* cache) : cache_(cache) {
+    cache_->AddObserver(this);
+  }
+
+  ~RecursiveObserver() override { cache_->RemoveObserver(this); }
+
+ protected:
+  // apps::AppRegistryCache::Observer overrides.
+  void OnAppUpdate(const apps::AppUpdate& outer) override {
+    cache_->ForOneApp(outer.AppId(), [&outer](const apps::AppUpdate& inner) {
+      EXPECT_EQ(outer.AppType(), inner.AppType());
+      EXPECT_EQ(outer.AppId(), inner.AppId());
+      EXPECT_EQ(outer.Readiness(), inner.Readiness());
+      EXPECT_EQ(outer.Name(), inner.Name());
+    });
+  }
+
+  apps::AppRegistryCache* cache_;
+};
+
 TEST_F(AppRegistryCacheTest, ForEachApp) {
   std::vector<apps::mojom::AppPtr> deltas;
   apps::AppRegistryCache cache;
@@ -137,4 +162,26 @@ TEST_F(AppRegistryCacheTest, Observer) {
 
   EXPECT_EQ(0, num_freshly_installed_);
   EXPECT_EQ(0u, updated_ids_.size());
+}
+
+TEST_F(AppRegistryCacheTest, Recursive) {
+  std::vector<apps::mojom::AppPtr> deltas;
+  apps::AppRegistryCache cache;
+  RecursiveObserver observer(&cache);
+
+  deltas.clear();
+  deltas.push_back(MakeApp("o", "orange"));
+  deltas.push_back(MakeApp("p", "peach"));
+  cache.OnApps(std::move(deltas));
+
+  deltas.clear();
+  deltas.push_back(MakeApp("p", "pear", apps::mojom::Readiness::kReady));
+  deltas.push_back(MakeApp("q", "quince"));
+  cache.OnApps(std::move(deltas));
+
+  deltas.clear();
+  deltas.push_back(MakeApp("p", "pear"));
+  deltas.push_back(MakeApp("p", "pear"));
+  deltas.push_back(MakeApp("p", "plum"));
+  cache.OnApps(std::move(deltas));
 }
