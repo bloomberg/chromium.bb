@@ -134,6 +134,7 @@ class MediaSessionImpl : public MediaSession,
   void WebContentsDestroyed() override;
   void RenderFrameDeleted(RenderFrameHost* rfh) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+  void OnWebContentsFocused(RenderWidgetHost* render_widget_host) override;
 
   // MediaSessionService-related methods
 
