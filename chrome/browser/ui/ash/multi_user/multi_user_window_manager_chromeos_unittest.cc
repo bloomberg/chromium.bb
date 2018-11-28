@@ -1589,6 +1589,20 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowBoundsAfterTabletMode) {
   EXPECT_EQ(bounds, window(1)->bounds());
 }
 
+TEST_F(MultiUserWindowManagerChromeOSTest, AccountIdChangesAfterSwitch) {
+  SetUpForThisManyWindows(1);
+
+  const AccountId account1(AccountId::FromUserEmail("A"));
+  const AccountId account2(AccountId::FromUserEmail("B"));
+  AddTestUser(account1);
+  AddTestUser(account2);
+  SwitchActiveUser(account1);
+  EXPECT_EQ(account1, multi_user_window_manager()->GetCurrentUserForTest());
+
+  SwitchActiveUser(account2);
+  EXPECT_EQ(account2, multi_user_window_manager()->GetCurrentUserForTest());
+}
+
 class MultiUserWindowManagerChromeOSMashTest
     : public MultiUserWindowManagerChromeOSTest {
  public:
