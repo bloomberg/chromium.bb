@@ -42,7 +42,7 @@ const base::Feature kAndroidSurfaceControl{"AndroidSurfaceControl",
 
 // Overrides preferred overlay format to NV12 instead of YUY2.
 const base::Feature kDirectCompositionPreferNV12Overlays{
-    "DirectCompositionPreferNV12Overlays", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DirectCompositionPreferNV12Overlays", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls the decode acceleration of JPEG images (as opposed to camera
 // captures) in Chrome OS using the VA-API.
