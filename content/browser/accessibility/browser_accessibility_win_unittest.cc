@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
@@ -36,7 +37,8 @@ class BrowserAccessibilityTest : public testing::Test {
 
  private:
   void SetUp() override;
-
+  
+  base::test::ScopedTaskEnvironment task_environment_;
   content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
