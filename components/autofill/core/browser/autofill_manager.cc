@@ -73,6 +73,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/channel.h"
+#include "google_apis/google_api_keys.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -168,6 +169,12 @@ void LogDeveloperEngagementUkm(ukm::UkmRecorder* ukm_recorder,
         form_structure->developer_engagement_metrics(),
         form_structure->form_signature());
   }
+}
+
+std::string GetAPIKeyForUrl(version_info::Channel channel) {
+  if (channel == version_info::Channel::STABLE)
+    return google_apis::GetAPIKey();
+  return google_apis::GetNonStableAPIKey();
 }
 
 }  // namespace
@@ -978,8 +985,15 @@ void AutofillManager::OnLoadedServerPredictions(
     return;
 
   // Parse and store the server predictions.
-  FormStructure::ParseQueryResponse(std::move(response), queried_forms,
-                                    form_interactions_ukm_logger_.get());
+  if (base::FeatureList::IsEnabled(features::kAutofillUseApi)) {
+    // Parse response from API.
+    FormStructure::ParseApiQueryResponse(std::move(response), queried_forms,
+                                         form_interactions_ukm_logger_.get());
+  } else {
+    // Parse response from legacy server.
+    FormStructure::ParseQueryResponse(std::move(response), queried_forms,
+                                      form_interactions_ukm_logger_.get());
+  }
 
   // Will log quality metrics for each FormStructure based on the presence of
   // autocomplete attributes, if available.
@@ -1176,7 +1190,9 @@ AutofillManager::AutofillManager(
   DCHECK(driver);
   DCHECK(client_);
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
-    download_manager_.reset(new AutofillDownloadManager(driver, this));
+    version_info::Channel channel = client_->GetChannel();
+    download_manager_.reset(
+        new AutofillDownloadManager(driver, this, GetAPIKeyForUrl(channel)));
   }
   CountryNames::SetLocaleString(app_locale_);
   if (personal_data_ && client_)

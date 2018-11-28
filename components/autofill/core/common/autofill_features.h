@@ -79,6 +79,7 @@ extern const base::Feature kAutofillUpstreamDisallowJcb;
 extern const base::Feature kAutofillUpstreamEditableCardholderName;
 extern const base::Feature kAutofillUpstreamEditableExpirationDate;
 extern const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile;
+extern const base::Feature kAutofillUseApi;
 extern const base::Feature kAutofillUsePaymentsCustomerData;
 extern const base::Feature kAutomaticPasswordGeneration;
 extern const base::Feature kSingleClickAutofill;

@@ -675,6 +675,8 @@ class AutofillManager : public AutofillHandler,
                            UserHappinessFormInteraction_CreditCardForm);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, OnLoadedServerPredictions);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           OnLoadedServerPredictionsFromApi);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            OnLoadedServerPredictions_ResetManager);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, DontOfferToSavePaymentsCard);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillInUpdatedExpirationDate);

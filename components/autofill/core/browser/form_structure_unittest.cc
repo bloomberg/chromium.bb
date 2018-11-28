@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
@@ -17,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
@@ -4941,6 +4943,163 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
   EXPECT_EQ(0, forms[1]->field(1)->server_type());
   ASSERT_EQ(1U, forms[1]->field(1)->server_predictions().size());
   EXPECT_EQ(0U, forms[1]->field(1)->server_predictions()[0].type());
+}
+
+TEST_F(FormStructureTest, ParseApiQueryResponse) {
+  // Make form 1 data.
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("fullname");
+  field.name = ASCIIToUTF16("fullname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  // Checkable fields should be ignored in parsing
+  FormFieldData checkable_field;
+  checkable_field.label = ASCIIToUTF16("radio_button");
+  checkable_field.form_control_type = "radio";
+  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  form.fields.push_back(checkable_field);
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  // Make form 2 data.
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+
+  FormStructure form_structure2(form);
+  forms.push_back(&form_structure2);
+
+  // Make serialized API response.
+  AutofillQueryResponse api_response;
+  // Make form 1 suggestions.
+  auto* form_suggestion = api_response.add_form_suggestions();
+  auto* field0 = form_suggestion->add_field_suggestions();
+  field0->set_primary_type_prediction(NAME_FULL);
+  auto* field_prediction0 = field0->add_predictions();
+  field_prediction0->set_type(NAME_FULL);
+  auto* field_prediction1 = field0->add_predictions();
+  field_prediction1->set_type(PHONE_FAX_COUNTRY_CODE);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      ADDRESS_HOME_LINE1);
+  // Make form 2 suggestions.
+  form_suggestion = api_response.add_form_suggestions();
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      EMAIL_ADDRESS);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      NO_SERVER_DATA);
+  // Serialize API response.
+  std::string response_string;
+  std::string encoded_response_string;
+  ASSERT_TRUE(api_response.SerializeToString(&response_string));
+  base::Base64Encode(response_string, &encoded_response_string);
+
+  FormStructure::ParseApiQueryResponse(std::move(encoded_response_string),
+                                       forms, nullptr);
+
+  // Verify that the form fields are properly filled with data retrieved from
+  // the query.
+  ASSERT_GE(forms[0]->field_count(), 2U);
+  ASSERT_GE(forms[1]->field_count(), 2U);
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_type());
+  ASSERT_EQ(2U, forms[0]->field(0)->server_predictions().size());
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_predictions()[0].type());
+  EXPECT_EQ(PHONE_FAX_COUNTRY_CODE,
+            forms[0]->field(0)->server_predictions()[1].type());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->server_type());
+  ASSERT_EQ(1U, forms[0]->field(1)->server_predictions().size());
+  EXPECT_EQ(ADDRESS_HOME_LINE1,
+            forms[0]->field(1)->server_predictions()[0].type());
+  EXPECT_EQ(EMAIL_ADDRESS, forms[1]->field(0)->server_type());
+  ASSERT_EQ(1U, forms[1]->field(0)->server_predictions().size());
+  EXPECT_EQ(EMAIL_ADDRESS, forms[1]->field(0)->server_predictions()[0].type());
+  EXPECT_EQ(NO_SERVER_DATA, forms[1]->field(1)->server_type());
+  ASSERT_EQ(1U, forms[1]->field(1)->server_predictions().size());
+  EXPECT_EQ(0U, forms[1]->field(1)->server_predictions()[0].type());
+}
+
+// Tests ParseApiQueryResponse when the payload cannot be parsed to an
+// AutofillQueryResponse where we expect an early return of the function.
+TEST_F(FormStructureTest, ParseApiQueryResponseWhenCannotParseProtoFromString) {
+  // Make form 1 data.
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "email";
+  field.label = ASCIIToUTF16("emailaddress");
+  field.name = ASCIIToUTF16("emailaddress");
+  form.fields.push_back(field);
+
+  // Add form to the vector needed by the response parsing function.
+  FormStructure form_structure(form);
+  form_structure.field(0)->set_server_type(NAME_FULL);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  std::string response_string = "invalid string that cannot be parsed";
+  FormStructure::ParseApiQueryResponse(std::move(response_string), forms,
+                                       nullptr);
+
+  // Verify that the form fields remain intact because ParseApiQueryResponse
+  // could not parse the server's response because it was badly serialized.
+  ASSERT_GE(forms[0]->field_count(), 1U);
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_type());
+}
+
+// Tests ParseApiQueryResponse when the payload is not base64 where we expect
+// an early return of the function.
+TEST_F(FormStructureTest, ParseApiQueryResponseWhenPayloadNotBase64) {
+  // Make form 1 data.
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "email";
+  field.label = ASCIIToUTF16("emailaddress");
+  field.name = ASCIIToUTF16("emailaddress");
+  form.fields.push_back(field);
+
+  // Add form to the vector needed by the response parsing function.
+  FormStructure form_structure(form);
+  form_structure.field(0)->set_server_type(NAME_FULL);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  // Make a really simple serialized API response. We don't encode it in base64.
+  AutofillQueryResponse api_response;
+  // Make form 1 server suggestions.
+  auto* form_suggestion = api_response.add_form_suggestions();
+  auto* field0 = form_suggestion->add_field_suggestions();
+  // Here the server gives EMAIL_ADDRESS for field of the form, which should
+  // override NAME_FULL that we originally put in the form field if there
+  // is no issue when parsing the query response. In this test case there is an
+  // issue with the encoding of the data, hence EMAIL_ADDRESS should not be
+  // applied because of early exit of the parsing function.
+  field0->set_primary_type_prediction(EMAIL_ADDRESS);
+
+  // Serialize API response.
+  std::string response_string;
+  ASSERT_TRUE(api_response.SerializeToString(&response_string));
+
+  FormStructure::ParseApiQueryResponse(response_string, forms, nullptr);
+
+  // Verify that the form fields remain intact because ParseApiQueryResponse
+  // could not parse the server's response that was badly encoded.
+  ASSERT_GE(forms[0]->field_count(), 1U);
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_type());
 }
 
 TEST_F(FormStructureTest, ParseQueryResponse_AuthorDefinedTypes) {

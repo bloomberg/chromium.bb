@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/base64url.h"
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -44,6 +45,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -72,6 +74,47 @@ std::vector<FormStructure*> ToRawPointerVector(
   for (const auto& item : list)
     result.push_back(item.get());
   return result;
+}
+
+// Puts all data elements within the response body together in a single
+// DataElement and return the buffered content as a string. This ensure all
+// the response body data is utilized.
+std::string GetStringFromDataElements(
+    const std::vector<network::DataElement>* data_elements) {
+  network::DataElement unified_data_element;
+  auto data_elements_it = data_elements->begin();
+  if (data_elements_it != data_elements->end()) {
+    unified_data_element.SetToBytes(data_elements_it->bytes(),
+                                    data_elements_it->length());
+  }
+  ++data_elements_it;
+  while (data_elements_it != data_elements->end()) {
+    unified_data_element.AppendBytes(data_elements_it->bytes(),
+                                     data_elements_it->length());
+    ++data_elements_it;
+  }
+  // Using the std::string constructor with length ensures that we don't rely
+  // on having a termination character to delimit the string. This is the
+  // safest approach.
+  return std::string(unified_data_element.bytes(),
+                     unified_data_element.length());
+}
+
+// Gets the AutofillUploadRequest proto from the HTTP loader request payload.
+// Will return false if failed to get the proto.
+bool GetUploadRequestProtoFromRequest(
+    network::TestURLLoaderFactory::PendingRequest* loader_request,
+    AutofillUploadRequest* upload_request) {
+  if (loader_request->request.request_body == nullptr) {
+    return false;
+  }
+
+  std::string request_body_content = GetStringFromDataElements(
+      loader_request->request.request_body->elements());
+  if (!upload_request->ParseFromString(request_body_content)) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -400,6 +443,147 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, responses[0]);
   histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 2);
+}
+
+TEST_F(AutofillDownloadManagerTest, QueryAPITest) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled
+      // We want to query the API rather than the legacy server.
+      {features::kAutofillUseApi},
+      // Disabled
+      {});
+
+  // Build the form structures that we want to query.
+  FormData form;
+  FormFieldData field;
+
+  field.label = UTF8ToUTF16("First Name");
+  field.name = UTF8ToUTF16("firstname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = UTF8ToUTF16("Last Name");
+  field.name = UTF8ToUTF16("lastname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  form_structures.push_back(std::make_unique<FormStructure>(form));
+
+  AutofillDownloadManager download_manager(&driver_, this, "dummykey");
+
+  // Start the query request and look if it is successful. No response was
+  // received yet.
+  base::HistogramTester histogram;
+  EXPECT_TRUE(
+      download_manager.StartQueryRequest(ToRawPointerVector(form_structures)));
+
+  // Verify if histograms are right.
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 1);
+  histogram.ExpectUniqueSample("Autofill.Query.Method", METHOD_GET, 1);
+
+  // Inspect the request that the test URL loader sent.
+  network::TestURLLoaderFactory::PendingRequest* request =
+      test_url_loader_factory_.GetPendingRequest(0);
+  // This is the URL we expect to query the API. The sub-path right after
+  // "/page" corresponds to the serialized AutofillPageQueryRequest proto (that
+  // we filled forms in) encoded in base64. The Autofill
+  // https://clients1.google.com/ domain URL corresponds to the default domain
+  // used by the download manager.
+  const std::string expected_url = {
+      "https://clients1.google.com/v1/pages/"
+      "Chc2LjEuMTcxNS4xNDQyL2VuIChHR0xMKRIWEgkNeuFP4BIAGgASCQ2cTkrQEgAaAA==?"
+      "alt=proto&key=dummykey"};
+  EXPECT_THAT(request->request.url, expected_url);
+
+  test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
+      request, "dummy response");
+  // Upon reception of a suggestions query, we expect OnLoadedServerPredictions
+  // to be called back from the observer and some histograms be incremented.
+  EXPECT_EQ(1U, responses_.size());
+  EXPECT_EQ(responses_.front().type_of_response,
+            AutofillDownloadManagerTest::QUERY_SUCCESSFULL);
+  histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
+  histogram.ExpectBucketCount("Autofill.Query.HttpResponseOrErrorCode",
+                              net::HTTP_OK, 1);
+}
+
+// Test whether uploading vote content to the API is done right. We only do some
+// spot checks. No thorough testing is done here. Using the API does not add new
+// upload logic.
+//
+// We expect the download manager to do the following things:
+//   * Use the right API canonical URL when uploading.
+//   * Serialize the upload proto content using the API upload request proto.
+TEST_F(AutofillDownloadManagerTest, UploadToAPITest) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled
+      // We want to query the API rather than the legacy server.
+      {features::kAutofillUseApi},
+      // Disabled
+      // We don't want upload throttling for testing purpose.
+      {features::kAutofillUploadThrottling});
+
+  // Build the form structures that we want to query.
+  FormData form;
+  FormFieldData field;
+
+  field.label = UTF8ToUTF16("First Name");
+  field.name = UTF8ToUTF16("firstname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = UTF8ToUTF16("Last Name");
+  field.name = UTF8ToUTF16("lastname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+  FormStructure form_structure(form);
+  form_structure.set_submission_source(SubmissionSource::FORM_SUBMISSION);
+
+  std::unique_ptr<PrefService> pref_service = test::PrefServiceForTesting();
+  AutofillDownloadManager download_manager(&driver_, this, "dummykey");
+  EXPECT_TRUE(download_manager.StartUploadRequest(form_structure, true,
+                                                  ServerFieldTypeSet(), "",
+                                                  true, pref_service.get()));
+
+  // Inspect the request that the test URL loader sent.
+  network::TestURLLoaderFactory::PendingRequest* request =
+      test_url_loader_factory_.GetPendingRequest(0);
+
+  // This is the URL we expect to upload votes to the API. The Autofill
+  // https://clients1.google.com/ domain URL corresponds to the
+  // default one used by the download manager. Request upload data is in the
+  // payload when uploading.
+  const std::string expected_url =
+      "https://clients1.google.com/v1/forms:vote?alt=proto&key=dummykey";
+  EXPECT_THAT(request->request.url, expected_url);
+
+  // Assert some of the fields within the uploaded proto to make sure it was
+  // filled with something else than default data.
+  base::HistogramTester histogram;
+  AutofillUploadRequest upload_request;
+  EXPECT_TRUE(GetUploadRequestProtoFromRequest(request, &upload_request));
+  EXPECT_GT(upload_request.upload().client_version().size(), 0U);
+  EXPECT_EQ(upload_request.upload().form_signature(),
+            form_structure.form_signature());
+
+  // Trigger an upload response from the API and assert upload response content.
+  test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
+      request, "");
+  // Upon reception of a suggestions query, we expect
+  // OnUploadedPossibleFieldTypes  to be called back from the observer and some
+  // histograms be incremented.
+  EXPECT_EQ(1U, responses_.size());
+  // Request should be upload and successful.
+  EXPECT_EQ(AutofillDownloadManagerTest::UPLOAD_SUCCESSFULL,
+            responses_.front().type_of_response);
+  // We expect the request to be OK and corresponding response code to be
+  // counted.
+  histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
+                              net::HTTP_OK, 1);
 }
 
 TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {

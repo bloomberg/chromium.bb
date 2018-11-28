@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/proto/legacy_proto_bridge.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -45,6 +46,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "url/gurl.h"
 
 namespace autofill {
 
@@ -82,6 +84,12 @@ const net::BackoffEntry::Policy kAutofillBackoffPolicy = {
 
 const char kDefaultAutofillServerURL[] =
     "https://clients1.google.com/tbproxy/af/";
+
+// Header to get base64 encoded serialized proto from API for safety.
+constexpr char kGoogEncodeResponseIfExecutable[] =
+    "X-Goog-Encode-Response-If-Executable";
+
+constexpr char kDefaultAPIKey[] = "";
 
 // Returns the base URL for the autofill server.
 GURL GetAutofillServerURL() {
@@ -385,6 +393,52 @@ bool IsUploadAllowed(const FormStructure& form, PrefService* pref_service) {
   return allow_upload;
 }
 
+// Determines whether to use the API instead of the legacy server.
+inline bool UseApi() {
+  return base::FeatureList::IsEnabled(features::kAutofillUseApi);
+}
+
+// Determines whether a HTTP request was successful based on its response code.
+bool IsHttpSuccess(int response_code) {
+  return (response_code >= 200 && response_code < 300);
+}
+
+// Gets an upload payload for requests to the legacy server.
+inline bool GetUploadPayloadForLegacy(const AutofillUploadContents& upload,
+                                      std::string* payload) {
+  return upload.SerializeToString(payload);
+}
+
+bool GetUploadPayloadForApi(const AutofillUploadContents& upload,
+                            std::string* payload) {
+  AutofillUploadRequest upload_request;
+  *upload_request.mutable_upload() = upload;
+  return upload_request.SerializeToString(payload);
+}
+
+// Gets an API method URL given its type (query or upload) and an optional
+// resource ID.
+// Example usage:
+//   * GetAPIMethodUrl(REQUEST_QUERY, "1234") will return "/v1/pages/1234".
+//   * GetAPIMethodUrl(REQUEST_UPLOAD, "") will return "/v1/forms:vote".
+std::string GetAPIMethodUrl(AutofillDownloadManager::RequestType type,
+                            base::StringPiece resource_id) {
+  const char* api_method_url;
+  if (type == AutofillDownloadManager::REQUEST_QUERY) {
+    api_method_url = "/v1/pages";
+  } else if (type == AutofillDownloadManager::REQUEST_UPLOAD) {
+    api_method_url = "/v1/forms:vote";
+  } else {
+    // This should not be reached, but we never know.
+    NOTREACHED() << "Request of type " << type << " is invalid";
+    return "";
+  }
+  if (resource_id.empty()) {
+    return std::string(api_method_url);
+  }
+  return base::StrCat({api_method_url, "/", resource_id});
+}
+
 }  // namespace
 
 struct AutofillDownloadManager::FormRequestData {
@@ -394,15 +448,21 @@ struct AutofillDownloadManager::FormRequestData {
 };
 
 AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
-                                                 Observer* observer)
+                                                 Observer* observer,
+                                                 const std::string& api_key)
     : driver_(driver),
       observer_(observer),
+      api_key_(api_key),
       autofill_server_url_(GetAutofillServerURL()),
       max_form_cache_size_(kAutofillDownloadManagerMaxFormCacheSize),
       loader_backoff_(&kAutofillBackoffPolicy),
       weak_factory_(this) {
   DCHECK(observer_);
 }
+
+AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
+                                                 Observer* observer)
+    : AutofillDownloadManager(driver, observer, kDefaultAPIKey) {}
 
 AutofillDownloadManager::~AutofillDownloadManager() = default;
 
@@ -423,9 +483,15 @@ bool AutofillDownloadManager::StartQueryRequest(
     return false;
   }
 
+  // Get the query request payload.
   std::string payload;
-  if (!query.SerializeToString(&payload))
+  bool is_payload_serialized =
+      UseApi()
+          ? CreateApiRequestFromLegacyRequest(query).SerializeToString(&payload)
+          : query.SerializeToString(&payload);
+  if (!is_payload_serialized) {
     return false;
+  }
 
   request_data.request_type = AutofillDownloadManager::REQUEST_QUERY;
   request_data.payload = std::move(payload);
@@ -462,12 +528,16 @@ bool AutofillDownloadManager::StartUploadRequest(
                                 &upload))
     return false;
 
+  // Get the POST payload that contains upload data.
   std::string payload;
-  if (!upload.SerializeToString(&payload))
+  bool is_payload = UseApi() ? GetUploadPayloadForApi(upload, &payload)
+                             : GetUploadPayloadForLegacy(upload, &payload);
+  // Indicate that we could not serialize upload in the payload.
+  if (!is_payload) {
     return false;
+  }
 
   if (form.upload_required() == UPLOAD_NOT_REQUIRED) {
-    DVLOG(1) << "AutofillDownloadManager: Upload request is ignored.";
     // If we ever need notification that upload was skipped, add it here.
     return false;
   }
@@ -517,6 +587,43 @@ std::tuple<GURL, std::string> AutofillDownloadManager::GetRequestURLAndMethod(
   return std::make_tuple(std::move(url), std::move(method));
 }
 
+std::tuple<GURL, std::string>
+AutofillDownloadManager::GetRequestURLAndMethodForApi(
+    const FormRequestData& request_data) const {
+  // ID of the resource to add to the API request URL. Nothing will be added if
+  // |resource_id| is empty.
+  std::string resource_id;
+
+  // Get the resource id of corresponding webpage when doing a query request.
+  if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY) {
+    if (request_data.payload.length() <= kMaxQueryGetSize) {
+      base::Base64UrlEncode(request_data.payload,
+                            base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                            &resource_id);
+    }
+    // Query method is always GET (represented by 0) with API.
+    UMA_HISTOGRAM_BOOLEAN("Autofill.Query.Method", 0);
+  }
+
+  // Make the canonical URL to query the API, e.g.,
+  // https://autofill.googleapis.com/v1/forms/1234?alt=proto.
+  GURL url = autofill_server_url_.Resolve(
+      GetAPIMethodUrl(request_data.request_type, resource_id));
+
+  // Add the query parameter to set the response format to a serialized proto.
+  url = net::AppendQueryParameter(url, "alt", "proto");
+  // Add the API key query parameter.
+  if (!api_key_.empty())
+    url = net::AppendQueryParameter(url, "key", api_key_);
+
+  // Determine the HTTP method that should be used.
+  std::string method =
+      (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY)
+          ? "GET"
+          : "POST";
+  return std::make_tuple(std::move(url), std::move(method));
+}
+
 bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       driver_->GetURLLoaderFactory();
@@ -525,7 +632,9 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   // Get the URL and method to use for this request.
   std::string method;
   GURL request_url;
-  std::tie(request_url, method) = GetRequestURLAndMethod(request_data);
+  std::tie(request_url, method) =
+      UseApi() ? GetRequestURLAndMethodForApi(request_data)
+               : GetRequestURLAndMethod(request_data);
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = request_url;
@@ -540,11 +649,28 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
                              : variations::InIncognito::kNo,
       &resource_request->headers);
 
+  // Set headers specific to the API if using it.
+  if (UseApi()) {
+    // Encode response serialized proto in base64 for safety.
+    resource_request->headers.SetHeader(kGoogEncodeResponseIfExecutable,
+                                        "base64");
+  }
+
   auto simple_loader = network::SimpleURLLoader::Create(
       std::move(resource_request),
       GetNetworkTrafficAnnotation(request_data.request_type));
-  if (method == "POST")
-    simple_loader->AttachStringForUpload(request_data.payload, "text/proto");
+
+  // This allows reading the error message within the API response when status
+  // is not 200 (e.g., 400). Otherwise, URL loader will not give any content in
+  // the response when there is a failure, which makes debugging hard.
+  simple_loader->SetAllowHttpErrorResults(true);
+
+  if (method == "POST") {
+    const std::string content_type =
+        UseApi() ? "application/x-protobuf" : "text/proto";
+    // Attach payload data and add data format header.
+    simple_loader->AttachStringForUpload(request_data.payload, content_type);
+  }
 
   // Transfer ownership of the loader into url_loaders_. Temporarily hang
   // onto the raw pointer to use it as a key and to kick off the request;
@@ -629,17 +755,26 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
     response_code = simple_loader->ResponseInfo()->headers->response_code();
   }
 
-  const bool success = !!response_body;
+  // We define success as getting 2XX response code and having a response body.
+  // Even if the server does not fill the response body when responding, the
+  // corresponding response string will be at least instantiated and empty.
+  // Having the response body a nullptr probably reflects a problem.
+  const bool success =
+      IsHttpSuccess(response_code) && (response_body != nullptr);
   loader_backoff_.InformOfRequest(success);
 
   LogHttpResponseData(request_data.request_type, response_code,
                       simple_loader->NetError(),
                       base::TimeTicks::Now() - request_start);
 
+  // Handle error if there is and return.
   if (!success) {
+    std::string error_message =
+        (response_body != nullptr) ? *response_body : "";
     DVLOG(1) << "AutofillDownloadManager: "
              << RequestTypeToString(request_data.request_type)
-             << " request has failed with response " << response_code;
+             << " request has failed with response code " << response_code
+             << " and error message from the server " << error_message;
 
     observer_->OnServerRequestError(request_data.form_signatures[0],
                                     request_data.request_type, response_code);
@@ -676,6 +811,7 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
 
   DCHECK_EQ(request_data.request_type, AutofillDownloadManager::REQUEST_UPLOAD);
   DVLOG(1) << "AutofillDownloadManager: upload request has succeeded.";
+
   observer_->OnUploadedPossibleFieldTypes();
 }
 

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -4239,6 +4240,116 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->Type().GetStorableType());
 
   // We expect the server types to have been applied to the second form.
+  EXPECT_EQ(NAME_LAST, form_structure2->field(0)->Type().GetStorableType());
+  EXPECT_EQ(NAME_MIDDLE, form_structure2->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_ZIP,
+            form_structure2->field(2)->Type().GetStorableType());
+}
+
+// Test that OnLoadedServerPredictions can obtain the FormStructure with the
+// signature of the queried form from the API and apply type predictions.
+// What we test here:
+//  * The API response parser is used.
+//  * The query can be processed with a response from the API.
+TEST_F(AutofillManagerTest, OnLoadedServerPredictionsFromApi) {
+  // Set features.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled
+      // We want to query the API rather than the legacy server.
+      {features::kAutofillUseApi},
+      // Disabled
+      {});
+
+  // First form on the page.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField(/*label=*/"City", /*name=*/"city",
+                            /*value=*/"", /*type=*/"text", /*field=*/&field);
+  form.fields.push_back(field);
+  test::CreateTestFormField(/*label=*/"State", /*name=*/"state",
+                            /*value=*/"", /*type=*/"text", /*field=*/&field);
+  form.fields.push_back(field);
+  test::CreateTestFormField(/*label=*/"Postal Code", /*name=*/"zipcode",
+                            /*value=*/"", /*type=*/"text", /*field=*/&field);
+  form.fields.push_back(field);
+  // Simulate having seen this form on page load.
+  // |form_structure_instance| will be owned by |autofill_manager_|.
+  auto form_structure_instance = std::make_unique<TestFormStructure>(form);
+  // This pointer is valid as long as autofill manager lives.
+  TestFormStructure* form_structure = form_structure_instance.get();
+  form_structure->DetermineHeuristicTypes();
+  autofill_manager_->AddSeenFormStructure(std::move(form_structure_instance));
+
+  // Second form on the page.
+  FormData form2;
+  form2.name = ASCIIToUTF16("MyForm2");
+  form2.origin = GURL("http://myform.com/form.html");
+  form2.action = GURL("http://myform.com/submit.html");
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField("Postal Code", "zipcode", "", "text", &field);
+  form2.fields.push_back(field);
+  auto form_structure_instance2 = std::make_unique<TestFormStructure>(form2);
+  // This pointer is valid as long as autofill manager lives.
+  TestFormStructure* form_structure2 = form_structure_instance2.get();
+  form_structure2->DetermineHeuristicTypes();
+  autofill_manager_->AddSeenFormStructure(std::move(form_structure_instance2));
+
+  // Make API response with suggestions.
+  AutofillQueryResponse response;
+  AutofillQueryResponse::FormSuggestion* form_suggestion;
+  // Set suggestions for form 1.
+  form_suggestion = response.add_form_suggestions();
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      ADDRESS_HOME_CITY);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      ADDRESS_HOME_STATE);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      ADDRESS_HOME_ZIP);
+  // Set suggestions for form 2.
+  form_suggestion = response.add_form_suggestions();
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      NAME_LAST);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      NAME_MIDDLE);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      ADDRESS_HOME_ZIP);
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+  std::string encoded_response_string;
+  base::Base64Encode(response_string, &encoded_response_string);
+
+  std::vector<std::string> signatures = {form_structure->FormSignatureAsStr(),
+                                         form_structure2->FormSignatureAsStr()};
+
+  // Run method under test.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnLoadedServerPredictions(encoded_response_string,
+                                               signatures);
+
+  // Verify whether the relevant histograms were updated.
+  histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                     AutofillMetrics::QUERY_RESPONSE_RECEIVED,
+                                     1);
+  histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                     AutofillMetrics::QUERY_RESPONSE_PARSED, 1);
+
+  // We expect the server suggestions to have been applied to the first field of
+  // the first form.
+  EXPECT_EQ(ADDRESS_HOME_CITY,
+            form_structure->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE,
+            form_structure->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_ZIP,
+            form_structure->field(2)->Type().GetStorableType());
+  // We expect the server suggestions to have been applied to the second form as
+  // well.
   EXPECT_EQ(NAME_LAST, form_structure2->field(0)->Type().GetStorableType());
   EXPECT_EQ(NAME_MIDDLE, form_structure2->field(1)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_ZIP,
