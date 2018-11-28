@@ -365,6 +365,19 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
+  // Set a Clear-Site-Data header that |HandleRequest| will use for every
+  // following request.
+  void SetClearSiteDataHeader(const std::string& header) {
+    clear_site_data_header_ = header;
+  }
+
+  bool RunScriptAndGetBool(const std::string& script) {
+    bool data;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(shell()->web_contents(),
+                                                     script, &data));
+    return data;
+  }
+
  private:
   // Handles all requests.
   //
@@ -393,6 +406,9 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
       const net::test_server::HttpRequest& request) {
     std::unique_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse());
+
+    if (!clear_site_data_header_.empty())
+      response->AddCustomHeader("Clear-Site-Data", clear_site_data_header_);
 
     std::string value;
     if (net::GetValueForKeyInQuery(request.GetURL(), "header", &value))
@@ -488,6 +504,9 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
   // We can only use |MockCertVerifier| when Network Service was enabled.
   bool is_network_service_enabled_ = false;
+
+  // If this is set, |HandleRequest| will always respond with Clear-Site-Data.
+  std::string clear_site_data_header_;
 
   // Only used when |is_network_service_enabled_| is false.
   std::unique_ptr<CacheTestUtil> cache_test_util_ = nullptr;
@@ -976,6 +995,42 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, ClosedTab) {
   AddQuery(&url, "header", kClearCookiesHeader);
   shell()->LoadURL(url);
   shell()->Close();
+}
+
+// Tests that sending Clear-Site-Data during a service worker installation
+// doesn't fail. (see crbug.com/898465)
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
+                       ClearSiteDataDuringServiceWorkerInstall) {
+  GURL url = embedded_test_server()->GetURL("127.0.0.1", "/");
+  AddQuery(&url, "file", "worker_test.html");
+  NavigateToURL(shell(), url);
+  // TODO(crbug.com/898465): Fix and enable expectation for storage deletion.
+  // delegate()->ExpectClearSiteDataCall(url::Origin::Create(url), false, true,
+  // false);
+  SetClearSiteDataHeader("\"storage\"");
+  EXPECT_TRUE(RunScriptAndGetBool("installServiceWorker()"));
+  delegate()->VerifyAndClearExpectations();
+  EXPECT_TRUE(RunScriptAndGetBool("hasServiceWorker()"));
+}
+
+// Tests that sending Clear-Site-Data during a service worker update
+// doesn't fail. (see crbug.com/898465)
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
+                       ClearSiteDataDuringServiceWorkerUpdate) {
+  GURL url = embedded_test_server()->GetURL("127.0.0.1", "/");
+  AddQuery(&url, "file", "worker_test.html");
+  NavigateToURL(shell(), url);
+  // Install a service worker.
+  EXPECT_TRUE(RunScriptAndGetBool("installServiceWorker()"));
+  delegate()->VerifyAndClearExpectations();
+  // Update the service worker and send C-S-D during update.
+  SetClearSiteDataHeader("\"storage\"");
+  EXPECT_TRUE(RunScriptAndGetBool("updateServiceWorker()"));
+  // TODO(crbug.com/898465): Fix and enable expectation for storage deletion.
+  // delegate()->ExpectClearSiteDataCall(url::Origin::Create(url), false, true,
+  // false);
+  delegate()->VerifyAndClearExpectations();
+  EXPECT_TRUE(RunScriptAndGetBool("hasServiceWorker()"));
 }
 
 }  // namespace content
