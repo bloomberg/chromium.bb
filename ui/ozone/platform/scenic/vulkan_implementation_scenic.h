@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_SCENIC_VULKAN_IMPLEMENTATION_SCENIC_H_
 #define UI_OZONE_PLATFORM_SCENIC_VULKAN_IMPLEMENTATION_SCENIC_H_
 
+#include <fuchsia/ui/scenic/cpp/fidl.h>
 #include <memory>
 
 #include "gpu/vulkan/vulkan_implementation.h"
@@ -16,7 +17,8 @@ class ScenicWindowManager;
 
 class VulkanImplementationScenic : public gpu::VulkanImplementation {
  public:
-  VulkanImplementationScenic(ScenicWindowManager* scenic_window_manager);
+  VulkanImplementationScenic(ScenicWindowManager* scenic_window_manager,
+                             fuchsia::ui::scenic::Scenic* scenic);
   ~VulkanImplementationScenic() override;
 
   // VulkanImplementation:
@@ -36,6 +38,7 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
 
  private:
   ScenicWindowManager* const scenic_window_manager_;
+  fuchsia::ui::scenic::Scenic* const scenic_;
   gpu::VulkanInstance vulkan_instance_;
 
   PFN_vkVoidFunction vkCreateMagmaSurfaceKHR_ = nullptr;

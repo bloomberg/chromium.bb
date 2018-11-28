@@ -40,11 +40,8 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   ~ScenicWindow() override;
 
   scenic::Session* scenic_session() { return &scenic_session_; }
-  const scenic::Node& node() const { return node_; }
 
-  // Sets texture of the window. |image| must be created in scenic_session().
-  void SetTexture(const scenic::Image& image);
-  void SetTexture(uint32_t image_id);
+  void ExportRenderingEntity(zx::eventpair export_token);
 
   // PlatformWindow implementation.
   gfx::Rect GetBounds() override;
@@ -106,17 +103,17 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   // Scenic session used for all drawing operations in this View.
   scenic::Session scenic_session_;
 
-  // Node ID in |scenic_session_| for the parent view.
+  // Node in |scenic_session_| for the parent view.
   scenic::ImportNode parent_node_;
 
-  // Node ID in |scenic_session_| for the view.
+  // Node in |scenic_session_| for the parent view.
   scenic::EntityNode node_;
 
-  // Shape and material resources for the view in the context of
-  // |scenic_session_|. They are used to set shape and texture for the view
-  // node.
-  scenic::ShapeNode shape_node_;
-  scenic::Material material_;
+  // Node in |scenic_session_| for receiving input that hits within our View.
+  scenic::ShapeNode input_node_;
+
+  // Node in |scenic_session_| for rendering (hit testing disabled).
+  scenic::EntityNode render_node_;
 
   // The ratio used for translating device-independent coordinates to absolute
   // pixel coordinates.

@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_SCENIC_SCENIC_SURFACE_FACTORY_H_
 #define UI_OZONE_PLATFORM_SCENIC_SCENIC_SURFACE_FACTORY_H_
 
+#include <fuchsia/ui/scenic/cpp/fidl.h>
 #include <memory>
 #include <vector>
 
@@ -38,8 +39,11 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
 #endif
 
  private:
+  fuchsia::ui::scenic::Scenic* GetScenic();
+
   ScenicWindowManager* const window_manager_;
   std::unique_ptr<GLOzone> egl_implementation_;
+  fuchsia::ui::scenic::ScenicPtr scenic_;
 
   DISALLOW_COPY_AND_ASSIGN(ScenicSurfaceFactory);
 };
