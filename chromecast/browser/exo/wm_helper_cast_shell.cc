@@ -131,7 +131,7 @@ aura::client::CursorClient* WMHelperCastShell::GetCursorClient() {
 }
 
 void WMHelperCastShell::AddPreTargetHandler(ui::EventHandler* handler) {
-  NOTIMPLEMENTED();
+  cast_window_manager_aura_->GetRootWindow()->AddPreTargetHandler(handler);
 }
 
 void WMHelperCastShell::PrependPreTargetHandler(ui::EventHandler* handler) {
@@ -139,15 +139,15 @@ void WMHelperCastShell::PrependPreTargetHandler(ui::EventHandler* handler) {
 }
 
 void WMHelperCastShell::RemovePreTargetHandler(ui::EventHandler* handler) {
-  NOTIMPLEMENTED();
+  cast_window_manager_aura_->GetRootWindow()->RemovePreTargetHandler(handler);
 }
 
 void WMHelperCastShell::AddPostTargetHandler(ui::EventHandler* handler) {
-  NOTIMPLEMENTED();
+  cast_window_manager_aura_->GetRootWindow()->AddPostTargetHandler(handler);
 }
 
 void WMHelperCastShell::RemovePostTargetHandler(ui::EventHandler* handler) {
-  NOTIMPLEMENTED();
+  cast_window_manager_aura_->GetRootWindow()->RemovePostTargetHandler(handler);
 }
 
 bool WMHelperCastShell::IsTabletModeWindowManagerEnabled() const {
@@ -183,6 +183,12 @@ void WMHelperCastShell::CastDisplayObserver::OnDisplayRemoved(
 void WMHelperCastShell::CastDisplayObserver::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
+  if (!base::ContainsValue(display_info_, display.id())) {
+    display::ManagedDisplayInfo md(display.id(), "CastDisplayInfo", true);
+    md.SetBounds(display.bounds());
+    display_info_.emplace(display.id(), md);
+  }
+
   // Currently only updates bounds
   if ((DISPLAY_METRIC_BOUNDS & changed_metrics) == DISPLAY_METRIC_BOUNDS)
     display_info_[display.id()].SetBounds(display.bounds());
