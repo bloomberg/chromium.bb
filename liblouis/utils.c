@@ -239,16 +239,16 @@ _lou_debugHook(void) {
 }
 #endif
 
-const int validTranslationModes[] = { 0, noContractions, compbrlAtCursor, dotsIO,
+const int validTranslationModes[] = { noContractions, compbrlAtCursor, dotsIO,
 	compbrlLeftCursor, ucBrl, noUndefinedDots, partialTrans };
 
 int EXPORT_CALL
 _lou_isValidMode(int mode) {
+	// mask out all valid mode bits. If you end up with some bits set
+	// then the input isn't valid. See
+	// https://en.wikipedia.org/wiki/Material_nonimplication
 	for (int i = 0; i < (sizeof(validTranslationModes) / sizeof(*validTranslationModes));
-			i++) {
-		if (validTranslationModes[i] == mode) {
-			return 1;
-		}
-	}
-	return 0;
+			i++)
+		mode &= ~validTranslationModes[i];
+	return !mode;
 }
