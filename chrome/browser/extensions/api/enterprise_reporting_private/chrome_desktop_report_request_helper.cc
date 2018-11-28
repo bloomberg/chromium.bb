@@ -80,14 +80,12 @@ void AppendAdditionalBrowserInformation(em::ChromeDesktopReportRequest* request,
                                         Profile* profile) {
   const PrefService* prefs = profile->GetPrefs();
 
-  if (prefs->GetBoolean(enterprise_reporting::kReportVersionData)) {
-    // Set Chrome version number
-    request->mutable_browser_report()->set_browser_version(
-        version_info::GetVersionNumber());
-    // Set Chrome channel
-    request->mutable_browser_report()->set_channel(
-        policy::ConvertToProtoChannel(chrome::GetChannel()));
-  }
+  // Set Chrome version number
+  request->mutable_browser_report()->set_browser_version(
+      version_info::GetVersionNumber());
+  // Set Chrome channel
+  request->mutable_browser_report()->set_channel(
+      policy::ConvertToProtoChannel(chrome::GetChannel()));
 
   // Add a new profile report if extension doesn't report any profile.
   if (request->browser_report().chrome_user_profile_reports_size() == 0)
@@ -95,20 +93,18 @@ void AppendAdditionalBrowserInformation(em::ChromeDesktopReportRequest* request,
 
   DCHECK_EQ(1, request->browser_report().chrome_user_profile_reports_size());
 
-  if (prefs->GetBoolean(enterprise_reporting::kReportUserIDData)) {
-    // Set Chrome executable path
-    request->mutable_browser_report()->set_executable_path(GetChromePath());
+  // Set Chrome executable path
+  request->mutable_browser_report()->set_executable_path(GetChromePath());
 
-    // Set profile ID for the first profile.
-    request->mutable_browser_report()
-        ->mutable_chrome_user_profile_reports(0)
-        ->set_id(GetProfileId(profile));
+  // Set profile ID for the first profile.
+  request->mutable_browser_report()
+      ->mutable_chrome_user_profile_reports(0)
+      ->set_id(GetProfileId(profile));
 
-    // Set the profile name
-    request->mutable_browser_report()
-        ->mutable_chrome_user_profile_reports(0)
-        ->set_name(prefs->GetString(prefs::kProfileName));
-  }
+  // Set the profile name
+  request->mutable_browser_report()
+      ->mutable_chrome_user_profile_reports(0)
+      ->set_name(prefs->GetString(prefs::kProfileName));
 
   if (prefs->GetBoolean(enterprise_reporting::kReportPolicyData)) {
     // Set policy data of the first profile. Extension will report this data in
@@ -149,27 +145,21 @@ bool UpdateJSONEncodedStringEntry(const base::Value& dict_value,
 
 void AppendPlatformInformation(em::ChromeDesktopReportRequest* request,
                                const PrefService* prefs) {
-  if (prefs->GetBoolean(enterprise_reporting::kReportVersionData)) {
-    base::Value os_info = base::Value(base::Value::Type::DICTIONARY);
-    os_info.SetKey(kOS, base::Value(policy::GetOSPlatform()));
-    os_info.SetKey(kOSVersion, base::Value(policy::GetOSVersion()));
-    os_info.SetKey(kOSArch, base::Value(policy::GetOSArchitecture()));
-    base::JSONWriter::Write(os_info, request->mutable_os_info());
-  }
+  base::Value os_info = base::Value(base::Value::Type::DICTIONARY);
+  os_info.SetKey(kOS, base::Value(policy::GetOSPlatform()));
+  os_info.SetKey(kOSVersion, base::Value(policy::GetOSVersion()));
+  os_info.SetKey(kOSArch, base::Value(policy::GetOSArchitecture()));
+  base::JSONWriter::Write(os_info, request->mutable_os_info());
 
-  if (prefs->GetBoolean(enterprise_reporting::kReportMachineIDData)) {
-    const char kComputerName[] = "computername";
-    base::Value machine_name = base::Value(base::Value::Type::DICTIONARY);
-    machine_name.SetKey(kComputerName, base::Value(policy::GetMachineName()));
-    base::JSONWriter::Write(machine_name, request->mutable_machine_name());
-  }
+  const char kComputerName[] = "computername";
+  base::Value machine_name = base::Value(base::Value::Type::DICTIONARY);
+  machine_name.SetKey(kComputerName, base::Value(policy::GetMachineName()));
+  base::JSONWriter::Write(machine_name, request->mutable_machine_name());
 
-  if (prefs->GetBoolean(enterprise_reporting::kReportUserIDData)) {
-    const char kUsername[] = "username";
-    base::Value os_user = base::Value(base::Value::Type::DICTIONARY);
-    os_user.SetKey(kUsername, base::Value(policy::GetOSUsername()));
-    base::JSONWriter::Write(os_user, request->mutable_os_user());
-  }
+  const char kUsername[] = "username";
+  base::Value os_user = base::Value(base::Value::Type::DICTIONARY);
+  os_user.SetKey(kUsername, base::Value(policy::GetOSUsername()));
+  base::JSONWriter::Write(os_user, request->mutable_os_user());
 }
 
 std::unique_ptr<em::ChromeUserProfileReport>
@@ -181,12 +171,10 @@ GenerateChromeUserProfileReportRequest(const base::Value& profile_report,
   std::unique_ptr<em::ChromeUserProfileReport> request =
       std::make_unique<em::ChromeUserProfileReport>();
 
-  if (prefs->GetBoolean(enterprise_reporting::kReportUserIDData)) {
-    if (!UpdateJSONEncodedStringEntry(profile_report, kChromeSignInUser,
-                                      request->mutable_chrome_signed_in_user(),
-                                      DICTIONARY)) {
-      return nullptr;
-    }
+  if (!UpdateJSONEncodedStringEntry(profile_report, kChromeSignInUser,
+                                    request->mutable_chrome_signed_in_user(),
+                                    DICTIONARY)) {
+    return nullptr;
   }
 
   if (prefs->GetBoolean(

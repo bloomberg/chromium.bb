@@ -20,20 +20,6 @@ namespace em = enterprise_management;
 
 namespace extensions {
 
-namespace {
-
-base::DictionaryValue CreateReport(base::Value profile_report) {
-  base::Value profile_reports(base::Value::Type::LIST);
-  profile_reports.GetList().push_back(std::move(profile_report));
-
-  base::DictionaryValue report;
-  report.SetPath({"browserReport", "chromeUserProfileReport"},
-                 std::move(profile_reports));
-  return report;
-}
-
-}  // namespace
-
 class ChromeDesktopReportRequestGeneratorTest : public ::testing::Test {
  protected:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
@@ -198,21 +184,6 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, SafeBrowsing) {
                     .safe_browsing_warnings_click_through());
 }
 
-TEST_F(ChromeDesktopReportRequestGeneratorTest, DontReportVersionData) {
-  PrefService* prefs = profile_.GetPrefs();
-  prefs->SetBoolean(enterprise_reporting::kReportVersionData, false);
-
-  std::unique_ptr<em::ChromeDesktopReportRequest> request;
-
-  request =
-      GenerateChromeDesktopReportRequest(base::DictionaryValue(), &profile_);
-
-  ASSERT_TRUE(request);
-  EXPECT_FALSE(request->has_os_info());
-  EXPECT_FALSE(request->browser_report().has_browser_version());
-  EXPECT_FALSE(request->browser_report().has_channel());
-}
-
 TEST_F(ChromeDesktopReportRequestGeneratorTest, DontReportPolicyData) {
   PrefService* prefs = profile_.GetPrefs();
   prefs->SetBoolean(enterprise_reporting::kReportPolicyData, false);
@@ -225,40 +196,6 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, DontReportPolicyData) {
       request->browser_report().chrome_user_profile_reports(0);
   EXPECT_FALSE(profile.has_policy_data());
   EXPECT_FALSE(profile.has_policy_fetched_timestamp());
-}
-
-TEST_F(ChromeDesktopReportRequestGeneratorTest, DontReportMachineIDData) {
-  PrefService* prefs = profile_.GetPrefs();
-  prefs->SetBoolean(enterprise_reporting::kReportMachineIDData, false);
-
-  std::unique_ptr<em::ChromeDesktopReportRequest> request =
-      GenerateChromeDesktopReportRequest(base::DictionaryValue(), &profile_);
-
-  ASSERT_TRUE(request);
-  EXPECT_FALSE(request->has_machine_name());
-}
-
-TEST_F(ChromeDesktopReportRequestGeneratorTest, DontReportUserIDData) {
-  PrefService* prefs = profile_.GetPrefs();
-  prefs->SetBoolean(enterprise_reporting::kReportUserIDData, false);
-
-  base::Value profile_report(base::Value::Type::DICTIONARY);
-  profile_report.SetPath({"chromeSignInUser", "email"},
-                         base::Value("john_doe@gmail.com"));
-  profile_report.SetPath({"chromeSignInUser", "id"}, base::Value("123456789"));
-
-  std::unique_ptr<em::ChromeDesktopReportRequest> request =
-      GenerateChromeDesktopReportRequest(
-          CreateReport(std::move(profile_report)), &profile_);
-
-  ASSERT_TRUE(request);
-  EXPECT_FALSE(request->has_os_user());
-  EXPECT_FALSE(request->browser_report().has_executable_path());
-  const em::ChromeUserProfileReport& profile =
-      request->browser_report().chrome_user_profile_reports(0);
-  EXPECT_FALSE(profile.has_id());
-  EXPECT_FALSE(profile.has_name());
-  EXPECT_FALSE(profile.has_chrome_signed_in_user());
 }
 
 TEST_F(ChromeDesktopReportRequestGeneratorTest,
