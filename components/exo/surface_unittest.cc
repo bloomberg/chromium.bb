@@ -896,5 +896,13 @@ TEST_P(SurfaceTest, DestroyAttachedBuffer) {
   EXPECT_FALSE(surface->content_size().IsEmpty());
 }
 
+TEST_P(SurfaceTest, SetClientSurfaceId) {
+  auto surface = std::make_unique<Surface>();
+  constexpr int kTestId = 42;
+
+  surface->SetClientSurfaceId(kTestId);
+  EXPECT_EQ(kTestId, surface->GetClientSurfaceId());
+}
+
 }  // namespace
 }  // namespace exo
