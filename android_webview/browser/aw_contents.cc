@@ -1470,6 +1470,34 @@ void AwContents::EvaluateJavaScriptOnInterstitialForTesting(
       ConvertJavaStringToUTF16(env, script), js_callback);
 }
 
+void AwContents::RendererUnresponsive(
+    content::RenderProcessHost* render_process_host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  AwRenderProcess* aw_render_process =
+      AwRenderProcess::GetInstanceForRenderProcessHost(render_process_host);
+  Java_AwContents_onRendererUnresponsive(env, obj,
+                                         aw_render_process->GetJavaObject());
+}
+
+void AwContents::RendererResponsive(
+    content::RenderProcessHost* render_process_host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  AwRenderProcess* aw_render_process =
+      AwRenderProcess::GetInstanceForRenderProcessHost(render_process_host);
+  Java_AwContents_onRendererResponsive(env, obj,
+                                       aw_render_process->GetJavaObject());
+}
+
 void AwContents::OnRenderProcessGone(int child_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();

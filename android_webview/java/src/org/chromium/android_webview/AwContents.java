@@ -1313,6 +1313,18 @@ public class AwContents implements SmartClipProvider {
         return mJavascriptInjector;
     }
 
+    @CalledByNative
+    private void onRendererResponsive(AwRenderProcess renderProcess) {
+        if (isDestroyed(NO_WARN)) return;
+        mContentsClient.onRendererResponsive(renderProcess);
+    }
+
+    @CalledByNative
+    private void onRendererUnresponsive(AwRenderProcess renderProcess) {
+        if (isDestroyed(NO_WARN)) return;
+        mContentsClient.onRendererUnresponsive(renderProcess);
+    }
+
     @VisibleForTesting
     @CalledByNative
     protected void onRenderProcessGone(int childProcessID) {
