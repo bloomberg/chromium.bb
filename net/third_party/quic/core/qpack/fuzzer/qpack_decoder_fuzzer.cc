@@ -38,8 +38,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Process up to 64 kB fragments at a time.  Too small upper bound might not
   // provide enough coverage, too large would make fuzzing less efficient.
-  auto fragment_size_generator = std::bind(
-      &QuicFuzzedDataProvider::ConsumeUint32InRange, &provider, 1, 64 * 1024);
+  auto fragment_size_generator =
+      std::bind(&QuicFuzzedDataProvider::ConsumeIntegralInRange<uint32_t>,
+                &provider, 1, 64 * 1024);
 
   QpackDecode(
       &handler, fragment_size_generator,

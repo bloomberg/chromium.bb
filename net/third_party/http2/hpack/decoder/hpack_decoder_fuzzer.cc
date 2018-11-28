@@ -18,12 +18,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   base::FuzzedDataProvider fuzzed_data_provider(data, size);
   size_t max_string_size =
-      fuzzed_data_provider.ConsumeUint32InRange(1, 10 * size);
+      fuzzed_data_provider.ConsumeIntegralInRange<size_t>(1, 10 * size);
   http2::HpackDecoder decoder(http2::HpackDecoderNoOpListener::NoOpListener(),
                               max_string_size);
   decoder.StartDecodingBlock();
   while (fuzzed_data_provider.remaining_bytes() > 0) {
-    size_t chunk_size = fuzzed_data_provider.ConsumeUint32InRange(1, 32);
+    size_t chunk_size = fuzzed_data_provider.ConsumeIntegralInRange(1, 32);
     std::vector<char> chunk =
         fuzzed_data_provider.ConsumeBytes<char>(chunk_size);
 

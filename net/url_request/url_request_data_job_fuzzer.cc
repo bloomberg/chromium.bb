@@ -47,7 +47,7 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
     read_lengths_.clear();
 
     // Allocate an IOBuffer with fuzzed size.
-    int buf_size = provider.ConsumeUint32InRange(1, 127);  // 7 bits.
+    int buf_size = provider.ConsumeIntegralInRange(1, 127);  // 7 bits.
     buf_ = base::MakeRefCounted<net::IOBufferWithSize>(buf_size);
 
     // Generate a range header, and a bool determining whether to use it.
@@ -63,7 +63,7 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
     size_t simulated_bytes_read = 0;
     while (simulated_bytes_read < provider.remaining_bytes() &&
            read_lengths_.size() < 20000u) {
-      size_t read_length = provider.ConsumeUint32InRange(1, buf_size);
+      size_t read_length = provider.ConsumeIntegralInRange(1, buf_size);
       read_lengths_.push_back(read_length);
       simulated_bytes_read += read_length;
     }

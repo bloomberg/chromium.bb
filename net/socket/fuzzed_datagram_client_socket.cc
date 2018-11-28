@@ -140,7 +140,7 @@ int FuzzedDatagramClientSocket::Read(IOBuffer* buf,
 
   // Get contents of response.
   std::string data = data_provider_->ConsumeRandomLengthString(
-      data_provider_->ConsumeUint32InRange(0, buf_len));
+      data_provider_->ConsumeIntegralInRange(0, buf_len));
 
   int result;
   if (data.size() > 0) {

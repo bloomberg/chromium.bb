@@ -15,7 +15,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider fuzzed_data_provider(data, size);
   http2::Http2FrameDecoder decoder;
   while (fuzzed_data_provider.remaining_bytes() > 0) {
-    size_t chunk_size = fuzzed_data_provider.ConsumeUint32InRange(1, 32);
+    size_t chunk_size = fuzzed_data_provider.ConsumeIntegralInRange(1, 32);
     std::vector<char> chunk =
         fuzzed_data_provider.ConsumeBytes<char>(chunk_size);
 

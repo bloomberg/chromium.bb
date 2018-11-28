@@ -28,19 +28,22 @@ class FuzzedDataProvider {
   CString ConsumeRemainingBytes();
 
   // Returns a bool, or false when no data remains.
-  bool ConsumeBool();
+  bool ConsumeBool() { return provider_.ConsumeBool(); }
 
   // Returns a number in the range [min, max] by consuming bytes from the input
   // data. The value might not be uniformly distributed in the given range. If
   // there's no input data left, always returns |min|. |min| must be less than
   // or equal to |max|.
-  int ConsumeInt32InRange(int min, int max);
+  template <typename T>
+  T ConsumeIntegralInRange(T min, T max) {
+    return provider_.ConsumeIntegralInRange<T>(min, max);
+  }
 
   // Returns a value from |array|, consuming as many bytes as needed to do so.
   // |array| must be a fixed-size array.
-  template <typename Type, size_t size>
-  Type PickValueInArray(Type (&array)[size]) {
-    return array[provider_.ConsumeUint32InRange(0, size - 1)];
+  template <typename T, size_t size>
+  T PickValueInArray(T (&array)[size]) {
+    return array[provider_.ConsumeIntegralInRange<size_t>(0, size - 1)];
   }
 
   // Reports the remaining bytes available for fuzzed input.

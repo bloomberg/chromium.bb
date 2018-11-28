@@ -21,11 +21,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   CompactEncDet::TextCorpusType corpus =
       static_cast<CompactEncDet::TextCorpusType>(
-          data_provider.ConsumeInt32InRange(0, CompactEncDet::NUM_CORPA));
+          data_provider.ConsumeIntegralInRange<int32_t>(
+              0, CompactEncDet::NUM_CORPA));
   Encoding encoding_hint = static_cast<Encoding>(
-      data_provider.ConsumeInt32InRange(0, NUM_ENCODINGS));
+      data_provider.ConsumeIntegralInRange<int32_t>(0, NUM_ENCODINGS));
   Language langauge_hint = static_cast<Language>(
-      data_provider.ConsumeInt32InRange(0, NUM_LANGUAGES));
+      data_provider.ConsumeIntegralInRange<int32_t>(0, NUM_LANGUAGES));
   bool ignore_7bit_mail_encodings = data_provider.ConsumeBool();
 
   std::vector<char> text = data_provider.ConsumeRemainingBytes<char>();

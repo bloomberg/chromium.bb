@@ -40,7 +40,7 @@ int FuzzedSourceStream::Read(IOBuffer* buf,
   DCHECK_LE(0, buf_len);
 
   bool sync = data_provider_->ConsumeBool();
-  int result = data_provider_->ConsumeUint32InRange(0, buf_len);
+  int result = data_provider_->ConsumeIntegralInRange(0, buf_len);
   std::string data = data_provider_->ConsumeBytesAsString(result);
   result = data.size();
 
