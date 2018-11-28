@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -34,6 +35,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -172,8 +174,9 @@ void DedicatedWorker::Start() {
     auto* outside_settings_object =
         GetExecutionContext()->CreateFetchClientSettingsObjectSnapshot();
     context_proxy_->StartWorkerGlobalScope(
-        CreateGlobalScopeCreationParams(script_request_url_), options_,
-        script_request_url_, outside_settings_object, stack_id,
+        CreateGlobalScopeCreationParams(script_request_url_,
+                                        kReferrerPolicyDefault),
+        options_, script_request_url_, outside_settings_object, stack_id,
         String() /* source_code */);
     return;
   }
@@ -181,15 +184,12 @@ void DedicatedWorker::Start() {
     // Legacy code path (to be deprecated, see https://crbug.com/835717):
     // A worker thread will start after scripts are fetched on the current
     // thread.
-    network::mojom::FetchRequestMode fetch_request_mode =
-        network::mojom::FetchRequestMode::kSameOrigin;
-    network::mojom::FetchCredentialsMode fetch_credentials_mode =
-        network::mojom::FetchCredentialsMode::kSameOrigin;
     classic_script_loader_ = MakeGarbageCollected<WorkerClassicScriptLoader>();
     classic_script_loader_->LoadTopLevelScriptAsynchronously(
         *GetExecutionContext(), script_request_url_,
-        mojom::RequestContextType::WORKER, fetch_request_mode,
-        fetch_credentials_mode,
+        mojom::RequestContextType::WORKER,
+        network::mojom::FetchRequestMode::kSameOrigin,
+        network::mojom::FetchCredentialsMode::kSameOrigin,
         GetExecutionContext()->GetSecurityContext().AddressSpace(),
         GetExecutionContext()->IsWorkerGlobalScope(),
         WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),
@@ -292,14 +292,11 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
     DCHECK(script_request_url_ == script_response_url ||
            SecurityOrigin::AreSameSchemeHostPort(script_request_url_,
                                                  script_response_url));
-    std::unique_ptr<GlobalScopeCreationParams> creation_params =
-        CreateGlobalScopeCreationParams(script_response_url);
-    creation_params->referrer_policy = referrer_policy;
     auto* outside_settings_object =
         GetExecutionContext()->CreateFetchClientSettingsObjectSnapshot();
     context_proxy_->StartWorkerGlobalScope(
-        std::move(creation_params), options_, script_response_url,
-        outside_settings_object, stack_id,
+        CreateGlobalScopeCreationParams(script_response_url, referrer_policy),
+        options_, script_response_url, outside_settings_object, stack_id,
         classic_script_loader_->SourceText());
     probe::scriptImported(GetExecutionContext(),
                           classic_script_loader_->Identifier(),
@@ -309,7 +306,9 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
 }
 
 std::unique_ptr<GlobalScopeCreationParams>
-DedicatedWorker::CreateGlobalScopeCreationParams(const KURL& script_url) {
+DedicatedWorker::CreateGlobalScopeCreationParams(
+    const KURL& script_url,
+    ReferrerPolicy referrer_policy) {
   base::UnguessableToken parent_devtools_token;
   std::unique_ptr<WorkerSettings> settings;
   if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
@@ -328,13 +327,26 @@ DedicatedWorker::CreateGlobalScopeCreationParams(const KURL& script_url) {
                                       ? mojom::ScriptType::kClassic
                                       : mojom::ScriptType::kModule;
 
-  // WebWorkerFetchContext is provided later in
-  // ThreadedMessagingProxyBase::InitializeWorkerThread().
+  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
+  if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
+    LocalFrame* frame = document->GetFrame();
+    web_worker_fetch_context = frame->Client()->CreateWorkerFetchContext();
+    web_worker_fetch_context->SetApplicationCacheHostID(
+        GetExecutionContext()->Fetcher()->Context().ApplicationCacheHostID());
+    web_worker_fetch_context->SetIsOnSubframe(!frame->IsMainFrame());
+  } else if (auto* scope =
+                 DynamicTo<WorkerGlobalScope>(GetExecutionContext())) {
+    web_worker_fetch_context =
+        static_cast<WorkerFetchContext&>(scope->Fetcher()->Context())
+            .GetWebWorkerFetchContext()
+            ->CloneForNestedWorker();
+  }
+
   return std::make_unique<GlobalScopeCreationParams>(
       script_url, script_type, GetExecutionContext()->UserAgent(),
-      nullptr /* web_worker_fetch_context */,
+      std::move(web_worker_fetch_context),
       GetExecutionContext()->GetContentSecurityPolicy()->Headers(),
-      kReferrerPolicyDefault, GetExecutionContext()->GetSecurityOrigin(),
+      referrer_policy, GetExecutionContext()->GetSecurityOrigin(),
       GetExecutionContext()->IsSecureContext(),
       GetExecutionContext()->GetHttpsState(), CreateWorkerClients(),
       GetExecutionContext()->GetSecurityContext().AddressSpace(),

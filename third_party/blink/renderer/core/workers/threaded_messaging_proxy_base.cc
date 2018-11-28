@@ -10,13 +10,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/devtools_agent.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -63,33 +60,9 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
 
   KURL script_url = global_scope_creation_params->script_url.Copy();
 
-  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
-  if (auto* document = DynamicTo<Document>(execution_context_.Get())) {
-    LocalFrame* frame = document->GetFrame();
-    web_worker_fetch_context = frame->Client()->CreateWorkerFetchContext();
-    // |web_worker_fetch_context| is null in some unit tests.
-    if (web_worker_fetch_context) {
-      web_worker_fetch_context->SetApplicationCacheHostID(
-          GetExecutionContext()->Fetcher()->Context().ApplicationCacheHostID());
-      web_worker_fetch_context->SetIsOnSubframe(!frame->IsMainFrame());
-    }
-  } else if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_)) {
-    web_worker_fetch_context =
-        static_cast<WorkerFetchContext&>(scope->Fetcher()->Context())
-            .GetWebWorkerFetchContext()
-            ->CloneForNestedWorker();
-  }
-
-  if (web_worker_fetch_context) {
-    web_worker_fetch_context->SetTerminateSyncLoadEvent(
-        &terminate_sync_load_event_);
-
-    // In some cases |web_worker_fetch_context| has already been provided and is
-    // overwritten here, and in other cases |web_worker_fetch_context| has been
-    // nullptr and is set here.
-    // TODO(hiroshige): Clean up this.
-    global_scope_creation_params->web_worker_fetch_context =
-        std::move(web_worker_fetch_context);
+  if (global_scope_creation_params->web_worker_fetch_context) {
+    global_scope_creation_params->web_worker_fetch_context
+        ->SetTerminateSyncLoadEvent(&terminate_sync_load_event_);
   }
 
   worker_thread_ = CreateWorkerThread();

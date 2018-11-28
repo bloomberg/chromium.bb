@@ -88,7 +88,8 @@ class CORE_EXPORT DedicatedWorker final
   void Start();
 
   std::unique_ptr<GlobalScopeCreationParams> CreateGlobalScopeCreationParams(
-      const KURL& script_url);
+      const KURL& script_url,
+      ReferrerPolicy);
 
   WorkerClients* CreateWorkerClients();
 
