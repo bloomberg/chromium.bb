@@ -22,7 +22,7 @@
         android:layout_height="match_parent"
         android:orientation="horizontal" >
 
-        <org.chromium.chrome.browser.toolbar.HomePageButton
+        <org.chromium.chrome.browser.toolbar.HomeButton
             android:id="@+id/home_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_toolbar_home"
