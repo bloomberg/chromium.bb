@@ -113,6 +113,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kEphemeralTab,
     &kExploreSites,
     &kFullscreenActivity,
+    &kGestureNavigation,
     &kHandleMediaIntents,
     &kHideUserDataFromIncognitoNotifications,
     &kHomePageButtonForceEnabled,
@@ -312,6 +313,9 @@ const base::Feature kExploreSites{"ExploreSites",
 
 const base::Feature kFullscreenActivity{"FullscreenActivity",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kGestureNavigation{"GestureNavigation",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHandleMediaIntents{"HandleMediaIntents",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

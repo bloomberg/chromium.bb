@@ -4379,9 +4379,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-ephemeral-tab", flag_descriptions::kEphemeralTabName,
      flag_descriptions::kEphemeralTabDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kEphemeralTab)},
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
+    {"enable-gesture-navigation", flag_descriptions::kGestureNavigationName,
+     flag_descriptions::kGestureNavigationDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kGestureNavigation)},
     {"safe-browsing-use-local-blacklists-v2",
      flag_descriptions::kSafeBrowsingUseLocalBlacklistsV2Name,
      flag_descriptions::kSafeBrowsingUseLocalBlacklistsV2Description,

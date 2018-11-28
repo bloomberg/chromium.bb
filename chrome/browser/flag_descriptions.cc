@@ -2485,6 +2485,10 @@ const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
 
+const char kGestureNavigationName[] = "History navigation with gesture";
+const char kGestureNavigationDescription[] =
+    "Enable history navigation with horizontal gesture.";
+
 const char kGrantNotificationsToDSEName[] =
     "Grant notifications to the Default Search Engine";
 const char kGrantNotificationsToDSENameDescription[] =
