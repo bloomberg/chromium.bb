@@ -45,10 +45,6 @@
 #include "components/policy/core/browser/android/android_combined_policy_provider.h"
 #endif
 
-#if !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/api/enterprise_reporting_private/enterprise_reporting_policy_migrator.h"
-#endif  // !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
-
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
@@ -58,14 +54,7 @@ namespace policy {
 
 namespace {
 
-void AddMigrators(ConfigurationPolicyProvider* provider) {
-  DCHECK(provider);
-#if !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
-  provider->AddMigrator(
-      std::make_unique<extensions::enterprise_reporting::
-                           EnterpriseReportingPolicyMigrator>());
-#endif  // !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
-}
+void AddMigrators(ConfigurationPolicyProvider* provider) {}
 
 bool ProviderHasPolicies(const ConfigurationPolicyProvider* provider) {
   if (!provider)
