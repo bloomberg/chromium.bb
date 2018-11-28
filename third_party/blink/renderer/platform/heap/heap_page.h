@@ -148,7 +148,7 @@ uint32_t ComputeRandomMagic();
 //
 // | random magic value (32 bits) | Only present on 64-bit platforms.
 // | gc_info_index (14 bits)      |
-// | unused (1 bit)               |
+// | in construction (1 bit)      |
 // | size (14 bits)               | Actually 17 bits because sizes are aligned.
 // | wrapper mark bit (1 bit)     |
 // | unused (1 bit)               |
@@ -166,7 +166,7 @@ constexpr uint32_t kHeaderMarkBitMask = 1;
 constexpr uint32_t kHeaderUnusedBit1Mask = 2;
 constexpr uint32_t kHeaderWrapperMarkBitMask = 4;
 constexpr uint32_t kHeaderSizeMask = ((uint32_t{1} << 14) - 1) << 3;
-constexpr uint32_t kHeaderUnusedBit2Mask = uint32_t{1} << 17;
+constexpr uint32_t kHeaderIsInConstructionMask = uint32_t{1} << 17;
 constexpr uint32_t kHeaderGCInfoIndexShift = 18;
 constexpr uint32_t kHeaderGCInfoSize = uint32_t{1} << 14;
 constexpr uint32_t kHeaderGCInfoIndexMask = (kHeaderGCInfoSize - 1)
@@ -224,6 +224,10 @@ class PLATFORM_EXPORT HeapObjectHeader {
   void Mark();
   void Unmark();
   bool TryMark();
+
+  void MarkIsInConstruction();
+  void UnmarkIsInConstruction();
+  bool IsInConstruction() const;
 
   // The payload starts directly after the HeapObjectHeader, and the payload
   // size does not include the sizeof(HeapObjectHeader).
@@ -915,6 +919,20 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::SetSize(size_t size) {
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
   CheckHeader();
   encoded_ = static_cast<uint32_t>(size) | (encoded_ & ~kHeaderSizeMask);
+}
+
+NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsInConstruction() const {
+  return encoded_ & kHeaderIsInConstructionMask;
+}
+
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::MarkIsInConstruction() {
+  DCHECK(!IsInConstruction());
+  encoded_ = encoded_ | kHeaderIsInConstructionMask;
+}
+
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::UnmarkIsInConstruction() {
+  DCHECK(IsInConstruction());
+  encoded_ = encoded_ & ~kHeaderIsInConstructionMask;
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValid() const {
