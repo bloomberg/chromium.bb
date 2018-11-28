@@ -55,7 +55,6 @@ promise_test(function(test) {
           return new Promise(function(resolve) {
               performance.onresourcetimingbufferfull = resolve;
               performance.setResourceTimingBufferSize(expectedResources.length);
-              fetch('../../resources/dummy.txt');
             });
         })
       .then(function() {

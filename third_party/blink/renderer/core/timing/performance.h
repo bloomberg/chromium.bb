@@ -73,7 +73,6 @@ class PerformanceEventTiming;
 class StringOrDoubleOrPerformanceMeasureOptions;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
-using PerformanceEntryDeque = HeapDeque<Member<PerformanceEntry>>;
 
 class CORE_EXPORT Performance : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
@@ -270,8 +269,6 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                                         const ScriptValue& detail,
                                         ExceptionState&);
 
-  void CopySecondaryBuffer();
-
  protected:
   Performance(TimeTicks time_origin,
               scoped_refptr<base::SingleThreadTaskRunner>);
@@ -282,8 +279,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
     return nullptr;
   }
 
-  bool CanAddResourceTimingEntry();
-  void FireResourceTimingBufferFull(TimerBase*);
+  bool IsResourceTimingBufferFull();
+  void AddResourceTimingBuffer(PerformanceEntry&);
 
   void NotifyObserversOfEntry(PerformanceEntry&) const;
   void NotifyObserversOfEntries(PerformanceEntryVector&);
@@ -293,13 +290,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   virtual void BuildJSONValue(V8ObjectBuilder&) const;
 
   PerformanceEntryVector resource_timing_buffer_;
-  // The secondary RT buffer, used to store incoming entries after the main
-  // buffer is full, until the resourcetimingbufferfull event fires.
-  PerformanceEntryDeque resource_timing_secondary_buffer_;
-  unsigned resource_timing_buffer_size_limit_;
-  // A flag indicating that the buffer became full, the appropriate event was
-  // queued, but haven't yet fired.
-  bool resource_timing_buffer_full_event_pending_ = false;
+  unsigned resource_timing_buffer_size_;
   PerformanceEntryVector event_timing_buffer_;
   unsigned event_timing_buffer_max_size_;
   Member<PerformanceEntry> navigation_timing_;
@@ -314,9 +305,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   HeapLinkedHashSet<TraceWrapperMember<PerformanceObserver>> observers_;
   HeapLinkedHashSet<Member<PerformanceObserver>> active_observers_;
   HeapLinkedHashSet<Member<PerformanceObserver>> suspended_observers_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TaskRunnerTimer<Performance> deliver_observations_timer_;
-  TaskRunnerTimer<Performance> resource_timing_buffer_full_timer_;
 };
 
 }  // namespace blink
