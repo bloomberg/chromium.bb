@@ -67,4 +67,10 @@ NSArray<NSLayoutConstraint*>* SyncBaselinesForViewsOnView(
 // Creates a blank label with autoresize mask off and adjustable font size.
 UILabel* CreateLabel();
 
+// Creates a gray horizontal line separator, with the same margin as the other
+// components here. The gray line is added to the given |container| and proper
+// constraints are enabled to keep the line at the bottom of the container and
+// within the horizontal safe area.
+UIView* CreateGraySeparatorForContainer(UIView* container);
+
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_CELL_UTILS_H_

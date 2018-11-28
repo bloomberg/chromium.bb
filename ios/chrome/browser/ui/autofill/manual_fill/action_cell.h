@@ -20,6 +20,9 @@
 // Set enable to NO to create a message line cell.
 @property(nonatomic, assign) BOOL enabled;
 
+// Wheter to show a gray, separator line, at the bottom of a cell, or not.
+@property(nonatomic, assign) BOOL showSeparator;
+
 @end
 
 // A table view cell which contains a button and holds an action block, which
@@ -29,7 +32,8 @@
 - (void)setUpWithTitle:(NSString*)title
        accessibilityID:(NSString*)accessibilityID
                 action:(void (^)(void))action
-               enabled:(BOOL)enabled;
+               enabled:(BOOL)enabled
+         showSeparator:(BOOL)showSeparator;
 
 @end
 

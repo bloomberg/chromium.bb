@@ -64,13 +64,6 @@
 
 @end
 
-namespace {
-
-// Left and right margins of the cell content.
-static const CGFloat SideMargins = 16;
-
-}  // namespace
-
 @interface ManualFillCardCell ()
 
 // The label with the site name and host.
@@ -160,17 +153,13 @@ static const CGFloat SideMargins = 16;
 - (void)createViewHierarchy {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  UIView* grayLine = [[UIView alloc] init];
-  grayLine.backgroundColor = UIColor.cr_manualFillGrayLineColor;
-  grayLine.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.contentView addSubview:grayLine];
-
   UIView* guide = self.contentView;
+  CreateGraySeparatorForContainer(guide);
 
   self.cardLabel = CreateLabel();
   [self.contentView addSubview:self.cardLabel];
   HorizontalConstraintsForViewsOnGuideWithShift(@[ self.cardLabel ], guide,
-                                                SideMargins);
+                                                ButtonHorizontalMargin);
 
   self.cardNumberButton =
       CreateButtonWithSelectorAndTarget(@selector(userDidTapCardNumber:), self);
@@ -210,21 +199,6 @@ static const CGFloat SideMargins = 16;
         self.cardholderButton
       ],
       self.contentView);
-
-  id<LayoutGuideProvider> safeArea = self.contentView.safeAreaLayoutGuide;
-
-  [NSLayoutConstraint activateConstraints:@[
-    // Common vertical constraints.
-    [grayLine.bottomAnchor
-        constraintEqualToAnchor:self.contentView.bottomAnchor],
-    [grayLine.heightAnchor constraintEqualToConstant:1],
-
-    // Horizontal constraints.
-    [grayLine.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor
-                                           constant:SideMargins],
-    [safeArea.trailingAnchor constraintEqualToAnchor:grayLine.trailingAnchor
-                                            constant:SideMargins],
-  ]];
 }
 
 - (void)userDidTapCardNumber:(UIButton*)sender {

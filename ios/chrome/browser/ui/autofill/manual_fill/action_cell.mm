@@ -53,16 +53,26 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
   [cell setUpWithTitle:self.title
        accessibilityID:self.accessibilityIdentifier
                 action:self.action
-               enabled:self.enabled];
+               enabled:self.enabled
+         showSeparator:self.showSeparator];
 }
 
 @end
 
 @interface ManualFillActionCell ()
+
 // The action block to be called when the user taps the title button.
 @property(nonatomic, copy) void (^action)(void);
+
+// The vertical constraints for all the lines.
+@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* verticalConstraints;
+
 // The title button of this cell.
 @property(nonatomic, strong) UIButton* titleButton;
+
+// Separator line after cell, if needed.
+@property(nonatomic, strong) UIView* grayLine;
+
 @end
 
 @implementation ManualFillActionCell
@@ -71,6 +81,8 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
+  [NSLayoutConstraint deactivateConstraints:self.verticalConstraints];
+  self.verticalConstraints = @[];
   self.action = nil;
   [self.titleButton setTitle:nil forState:UIControlStateNormal];
   self.titleButton.accessibilityIdentifier = nil;
@@ -82,10 +94,13 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
 - (void)setUpWithTitle:(NSString*)title
        accessibilityID:(NSString*)accessibilityID
                 action:(void (^)(void))action
-               enabled:(BOOL)enabled {
+               enabled:(BOOL)enabled
+         showSeparator:(BOOL)showSeparator {
   if (self.contentView.subviews.count == 0) {
     [self createView];
   }
+
+  NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
 
   [self.titleButton setTitle:title forState:UIControlStateNormal];
   self.titleButton.accessibilityIdentifier = accessibilityID;
@@ -95,6 +110,19 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
                            forState:UIControlStateNormal];
   }
   self.action = action;
+  [verticalLeadViews addObject:self.titleButton];
+
+  if (showSeparator) {
+    [verticalLeadViews addObject:self.grayLine];
+    self.grayLine.hidden = NO;
+  } else {
+    self.grayLine.hidden = YES;
+  }
+
+  self.verticalConstraints =
+      VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
+          verticalLeadViews, self.contentView, TopBaseSystemSpacingMultiplier,
+          BottomBaseSystemSpacingMultiplier, BottomBaseSystemSpacingMultiplier);
 }
 
 #pragma mark - Private
@@ -103,6 +131,7 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
   UIView* guide = self.contentView;
+  self.grayLine = CreateGraySeparatorForContainer(guide);
 
   self.titleButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapTitleButton:), self);
@@ -110,9 +139,8 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
   [self.contentView addSubview:self.titleButton];
   HorizontalConstraintsForViewsOnGuideWithShift(@[ self.titleButton ], guide,
                                                 0);
-  VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
-      @[ self.titleButton ], self.contentView, TopBaseSystemSpacingMultiplier,
-      0, BottomBaseSystemSpacingMultiplier);
+
+  self.verticalConstraints = @[];
 }
 
 - (void)userDidTapTitleButton:(UIButton*)sender {

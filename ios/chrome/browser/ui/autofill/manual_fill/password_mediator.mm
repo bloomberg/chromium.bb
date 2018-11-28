@@ -193,6 +193,15 @@ BOOL AreCredentialsAtIndexesConnected(
                          delegate:self];
     [items addObject:item];
   }
+  if (credentials.count == 0) {
+    auto noItemsItem = [[ManualFillActionItem alloc]
+        initWithTitle:l10n_util::GetNSString(
+                          IDS_IOS_MANUAL_FALLBACK_NO_PASSWORDS_FOR_SITE)
+               action:nil];
+    noItemsItem.enabled = NO;
+    noItemsItem.showSeparator = YES;
+    [items addObject:noItemsItem];
+  }
   return items;
 }
 
