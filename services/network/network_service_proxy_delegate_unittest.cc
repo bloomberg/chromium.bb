@@ -50,6 +50,16 @@ class NetworkServiceProxyDelegateTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
+TEST_F(NetworkServiceProxyDelegateTest, NullConfigDoesNotCrash) {
+  mojom::CustomProxyConfigClientPtr client;
+  auto delegate = std::make_unique<NetworkServiceProxyDelegate>(
+      nullptr, mojo::MakeRequest(&client));
+
+  net::HttpRequestHeaders headers;
+  auto request = CreateRequest(GURL(kHttpUrl));
+  delegate->OnBeforeStartTransaction(request.get(), &headers);
+}
+
 TEST_F(NetworkServiceProxyDelegateTest, AddsHeadersBeforeCache) {
   auto config = mojom::CustomProxyConfig::New();
   config->rules.ParseFromString("http=proxy");
