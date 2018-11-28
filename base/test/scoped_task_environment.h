@@ -174,7 +174,7 @@ class ScopedTaskEnvironment {
       internal::ScopedSetSequenceLocalStorageMapForCurrentThread>
       slsm_registration_for_mock_time_;
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   // Enables the FileDescriptorWatcher API iff running a MainThreadType::IO.
   const std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher_;
 #endif
