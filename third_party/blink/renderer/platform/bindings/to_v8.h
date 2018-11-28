@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -292,7 +293,7 @@ inline v8::Local<v8::Value> ToV8SequenceInternal(
   v8::Local<v8::Array> array;
   {
     v8::Context::Scope context_scope(creation_context->CreationContext());
-    array = v8::Array::New(isolate, sequence.size());
+    array = v8::Array::New(isolate, SafeCast<int>(sequence.size()));
   }
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   uint32_t index = 0;

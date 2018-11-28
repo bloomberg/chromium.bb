@@ -1121,7 +1121,8 @@ NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
   DCHECK(gc_info_index < GCInfoTable::kMaxIndex);
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
   DCHECK(!(size & kAllocationMask));
-  encoded_ = uint32_t{(gc_info_index << kHeaderGCInfoIndexShift) | size};
+  encoded_ =
+      static_cast<uint32_t>((gc_info_index << kHeaderGCInfoIndexShift) | size);
   if (header_location == kNormalPage) {
     DCHECK(!PageFromObject(this)->IsLargeObjectPage());
     static_cast<NormalPage*>(PageFromObject(this))
