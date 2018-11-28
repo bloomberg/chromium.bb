@@ -15,7 +15,9 @@
 #include "ui/views/view.h"
 
 class Browser;
+class CommandUpdater;
 class FindBarIcon;
+class ManagePasswordsIconViews;
 class ZoomView;
 
 class PageActionIconContainerView : public views::View,
@@ -27,6 +29,7 @@ class PageActionIconContainerView : public views::View,
       int icon_size,
       int between_icon_spacing,
       Browser* browser,
+      CommandUpdater* command_updater,
       PageActionIconView::Delegate* page_action_icon_delegate,
       LocationBarView::Delegate* location_bar_delegate);
   ~PageActionIconContainerView() override;
@@ -60,6 +63,7 @@ class PageActionIconContainerView : public views::View,
 
   ZoomView* zoom_view_ = nullptr;
   FindBarIcon* find_bar_icon_ = nullptr;
+  ManagePasswordsIconViews* manage_passwords_icon_ = nullptr;
   std::vector<PageActionIconView*> page_action_icons_;
 
   ScopedObserver<zoom::ZoomEventManager, zoom::ZoomEventManagerObserver>

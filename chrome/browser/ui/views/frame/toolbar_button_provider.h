@@ -15,6 +15,7 @@ class Rect;
 
 namespace views {
 class AccessiblePaneView;
+class View;
 }
 
 // An interface implemented by a view contains and provides access to toolbar
@@ -40,6 +41,9 @@ class ToolbarButtonProvider {
 
   // Returns the toolbar as an AccessiblePaneView.
   virtual views::AccessiblePaneView* GetAsAccessiblePaneView() = 0;
+
+  // Returns the toolbar as an anchor point.
+  virtual views::View* GetAnchorView() = 0;
 
   // TODO(calamity): Move other buttons and button actions into here.
  protected:

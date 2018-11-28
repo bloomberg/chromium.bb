@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "ui/views/layout/box_layout.h"
 
 PageActionIconContainerView::PageActionIconContainerView(
@@ -15,6 +16,7 @@ PageActionIconContainerView::PageActionIconContainerView(
     int icon_size,
     int between_icon_spacing,
     Browser* browser,
+    CommandUpdater* command_updater,
     PageActionIconView::Delegate* page_action_icon_delegate,
     LocationBarView::Delegate* location_bar_delegate)
     : zoom_observer_(this) {
@@ -29,6 +31,11 @@ PageActionIconContainerView::PageActionIconContainerView(
       case PageActionIconType::kFind:
         find_bar_icon_ = new FindBarIcon(browser, page_action_icon_delegate);
         page_action_icons_.push_back(find_bar_icon_);
+        break;
+      case PageActionIconType::kManagePasswords:
+        manage_passwords_icon_ = new ManagePasswordsIconViews(
+            command_updater, page_action_icon_delegate);
+        page_action_icons_.push_back(manage_passwords_icon_);
         break;
       case PageActionIconType::kZoom:
         zoom_view_ =
@@ -61,6 +68,8 @@ PageActionIconView* PageActionIconContainerView::GetPageActionIconView(
   switch (type) {
     case PageActionIconType::kFind:
       return find_bar_icon_;
+    case PageActionIconType::kManagePasswords:
+      return manage_passwords_icon_;
     case PageActionIconType::kZoom:
       return zoom_view_;
   }
