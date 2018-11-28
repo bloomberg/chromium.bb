@@ -2035,6 +2035,25 @@ bool PersonalDataManager::IsServerCard(const CreditCard* credit_card) const {
   return false;
 }
 
+bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
+  // This option should only be shown for users that have not enabled the Sync
+  // Feature and that have server credit cards available.
+  if (!sync_service_ || sync_service_->IsSyncFeatureEnabled() ||
+      GetServerCreditCards().empty()) {
+    return false;
+  }
+
+  // If we have not returned yet, it should mean that the user is in Sync
+  // Transport mode for Wallet data (Sync Feature disabled but has server
+  // cards). This should only happen if that feature is enabled.
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kAutofillEnableAccountWalletStorage));
+
+  // The option should only be shown if the user has not already accepted it.
+  return !::autofill::prefs::IsUserOptedInWalletSyncTransport(
+      pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id);
+}
+
 std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
     const AutofillType& type,
     const base::string16& field_contents,
