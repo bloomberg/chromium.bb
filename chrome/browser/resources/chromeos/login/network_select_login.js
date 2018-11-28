@@ -55,6 +55,12 @@ Polymer({
    */
   configuration_applied_: false,
 
+  /**
+   * Flag that reflects if this element is currently shown.
+   * @private {boolean}
+   */
+  is_shown_: false,
+
   /** Refreshes the list of the networks. */
   refresh: function() {
     this.$.networkSelect.refreshNetworks();
@@ -65,7 +71,20 @@ Polymer({
     this.$.networkSelect.focus();
   },
 
-  /** Call after strings are loaded to set CrOncStrings for cr-network-select */
+  /** Called when dialog is shown. */
+  onBeforeShow: function() {
+    this.is_shown_ = true;
+    this.attemptApplyConfiguration_();
+  },
+
+  /** Called when dialog is hidden. */
+  onBeforeHide: function() {
+    this.is_shown_ = false;
+  },
+
+  /**
+   * Call after strings are loaded to set CrOncStrings for cr-network-select.
+   */
   setCrOncStrings: function() {
     CrOncStrings = {
       OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
@@ -184,6 +203,9 @@ Polymer({
     var state = event.detail;
     this.isConnected =
         state && state.ConnectionState == CrOnc.ConnectionState.CONNECTED;
+    if (!this.isConnected || !this.is_shown_)
+      return;
+    this.attemptApplyConfiguration_();
   },
 
   /**
@@ -205,24 +227,43 @@ Polymer({
    * @private
    */
   onNetworkListChanged_: function(event) {
+    if (!this.is_shown_)
+      return;
+    this.attemptApplyConfiguration_();
+  },
+
+  /**
+   * Tries to apply OOBE configuration on current list of networks.
+   * @private
+   */
+  attemptApplyConfiguration_: function() {
     if (this.configuration_applied_)
       return;
-    var networks = event.detail;
     var configuration = Oobe.getInstance().getOobeConfiguration();
     if (!configuration)
       return;
+    if (configuration.networkOfflineDemo && this.isOfflineDemoModeSetup) {
+      window.setTimeout(this.onOfflineDemoSetupClicked_.bind(this), 0);
+      this.configuration_applied_ = true;
+      return;
+    }
+    var defaultNetwork = this.$.networkSelect.getDefaultNetwork();
+    if (configuration.networkUseConnected && defaultNetwork) {
+      if (defaultNetwork.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+        window.setTimeout(
+            this.handleNetworkSelection_.bind(this, defaultNetwork), 0);
+        this.configuration_applied_ = true;
+        return;
+      }
+    }
     if (configuration.networkSelectGuid) {
       var network =
-          networks.find(state => state.GUID == configuration.networkSelectGuid);
+          this.$.networkSelect.getNetwork(configuration.networkSelectGuid);
       if (network) {
         window.setTimeout(this.handleNetworkSelection_.bind(this, network), 0);
         this.configuration_applied_ = true;
         return;
       }
-    }
-    if (configuration.networkOfflineDemo && this.isOfflineDemoModeSetup) {
-      window.setTimeout(this.onOfflineDemoSetupClicked_.bind(this), 0);
-      this.configuration_applied_ = true;
     }
   },
 
