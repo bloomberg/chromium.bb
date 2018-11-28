@@ -43,6 +43,8 @@ FeedSchedulerBridge::FeedSchedulerBridge(const JavaRef<jobject>& j_this,
       base::BindRepeating(&FeedSchedulerBridge::TriggerRefresh,
                           weak_factory_.GetWeakPtr()),
       base::BindRepeating(&FeedSchedulerBridge::ScheduleWakeUp,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&FeedSchedulerBridge::CancelWakeUp,
                           weak_factory_.GetWeakPtr()));
 }
 

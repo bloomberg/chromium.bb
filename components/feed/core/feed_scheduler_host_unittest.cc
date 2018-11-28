@@ -54,6 +54,8 @@ class FeedSchedulerHostTest : public ::testing::Test {
     UserClassifier::RegisterProfilePrefs(profile_prefs_.registry());
     local_state()->registry()->RegisterBooleanPref(::prefs::kEulaAccepted,
                                                    true);
+    profile_prefs()->registry()->RegisterBooleanPref(
+        prefs::kArticlesListVisible, true);
 
     Time now;
     EXPECT_TRUE(Time::FromUTCString(kNowString, &now));
@@ -67,6 +69,8 @@ class FeedSchedulerHostTest : public ::testing::Test {
         base::BindRepeating(&FeedSchedulerHostTest::TriggerRefresh,
                             base::Unretained(this)),
         base::BindRepeating(&FeedSchedulerHostTest::ScheduleWakeUp,
+                            base::Unretained(this)),
+        base::BindRepeating(&FeedSchedulerHostTest::CancelWakeUp,
                             base::Unretained(this)));
   }
 
@@ -599,6 +603,13 @@ TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveRareNtpUser) {
   EXPECT_EQ(3, refresh_call_count());
 }
 
+TEST_F(FeedSchedulerHostTest, OnFixedTimerWhileHidden) {
+  profile_prefs()->SetBoolean(prefs::kArticlesListVisible, false);
+  scheduler()->OnFixedTimer(base::OnceClosure());
+  EXPECT_EQ(0, refresh_call_count());
+  EXPECT_EQ(1, cancel_wake_up_call_count());
+}
+
 TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveSuggestionsConsumer) {
   ClassifyAsActiveSuggestionsConsumer();
 
@@ -638,10 +649,54 @@ TEST_F(FeedSchedulerHostTest, ScheduleFixedTimerWakeUpOnSuccess) {
 
   // Make another scheduler to initialize, make sure it doesn't schedule a
   // wake up.
-  FeedSchedulerHost second_scheduler(profile_prefs(), local_state(),
-                                     test_clock());
-  InitializeScheduler(&second_scheduler);
+  NewScheduler();
   EXPECT_EQ(2U, schedule_wake_up_times().size());
+}
+
+TEST_F(FeedSchedulerHostTest, InitializedIntoHidden) {
+  // First wake up scheduled during Initialize().
+  EXPECT_EQ(1U, schedule_wake_up_times().size());
+
+  profile_prefs()->SetBoolean(prefs::kArticlesListVisible, false);
+  profile_prefs()->ClearPref(prefs::kBackgroundRefreshPeriod);
+  NewScheduler();
+  EXPECT_EQ(1U, schedule_wake_up_times().size());
+  EXPECT_EQ(0, cancel_wake_up_call_count());
+}
+
+TEST_F(FeedSchedulerHostTest, InitializedIntoHiddenWithPrevious) {
+  // First wake up scheduled during Initialize().
+  EXPECT_EQ(1U, schedule_wake_up_times().size());
+
+  profile_prefs()->SetBoolean(prefs::kArticlesListVisible, false);
+  profile_prefs()->SetTimeDelta(prefs::kBackgroundRefreshPeriod,
+                                base::TimeDelta::FromDays(12345));
+  NewScheduler();
+  EXPECT_EQ(1U, schedule_wake_up_times().size());
+  EXPECT_EQ(1, cancel_wake_up_call_count());
+}
+
+TEST_F(FeedSchedulerHostTest, InitializedIntoVisible) {
+  // First wake up scheduled during Initialize().
+  EXPECT_EQ(1U, schedule_wake_up_times().size());
+
+  profile_prefs()->SetBoolean(prefs::kArticlesListVisible, true);
+  profile_prefs()->ClearPref(prefs::kBackgroundRefreshPeriod);
+  NewScheduler();
+  EXPECT_EQ(2U, schedule_wake_up_times().size());
+  EXPECT_EQ(0, cancel_wake_up_call_count());
+}
+
+TEST_F(FeedSchedulerHostTest, InitializedIntoVisibleWithPrevious) {
+  // First wake up scheduled during Initialize().
+  EXPECT_EQ(1U, schedule_wake_up_times().size());
+
+  profile_prefs()->SetBoolean(prefs::kArticlesListVisible, true);
+  profile_prefs()->SetTimeDelta(prefs::kBackgroundRefreshPeriod,
+                                base::TimeDelta::FromDays(12345));
+  NewScheduler();
+  EXPECT_EQ(2U, schedule_wake_up_times().size());
+  EXPECT_EQ(0, cancel_wake_up_call_count());
 }
 
 TEST_F(FeedSchedulerHostTest, ShouldRefreshOffline) {
