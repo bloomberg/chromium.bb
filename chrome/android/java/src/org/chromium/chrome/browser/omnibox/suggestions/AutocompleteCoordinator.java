@@ -146,6 +146,12 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
                 list.setAdapter(adapter);
                 list.setClipToPadding(false);
 
+                // Register a view type for a default omnibox suggestion.
+                adapter.registerType(
+                        OmniboxSuggestionUiType.DEFAULT,
+                        () -> new SuggestionView(mListView.getContext()),
+                        SuggestionViewViewBinder::bind);
+
                 mHolder = new SuggestionListViewHolder(container, list, adapter);
 
                 for (int i = 0; i < mCallbacks.size(); i++) {

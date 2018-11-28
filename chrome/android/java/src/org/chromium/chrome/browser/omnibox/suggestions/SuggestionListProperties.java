@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
+import android.util.Pair;
+
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
@@ -24,8 +26,8 @@ public class SuggestionListProperties {
             new WritableObjectPropertyKey<>();
 
     /** The list of models controlling the state of the suggestion items. */
-    public static final WritableObjectPropertyKey<List<PropertyModel>> SUGGESTION_MODELS =
-            new WritableObjectPropertyKey<>(true);
+    public static final WritableObjectPropertyKey<List<Pair<Integer, PropertyModel>>>
+            SUGGESTION_MODELS = new WritableObjectPropertyKey<>(true);
 
     /** Whether the suggestion list should have a dark background. */
     public static final WritableBooleanPropertyKey USE_DARK_BACKGROUND =

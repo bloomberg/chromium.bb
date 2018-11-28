@@ -83,6 +83,15 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         this(buildData(keys));
     }
 
+    /**
+     * Constructs a model with a generic collection of existing keys.
+     *
+     * @param keys The key types supported by this model.
+     */
+    public PropertyModel(Collection<PropertyKey> keys) {
+        this(buildData(keys.toArray(new PropertyKey[keys.size()])));
+    }
+
     private PropertyModel(Map<PropertyKey, ValueContainer> startingValues) {
         mData = startingValues;
     }
@@ -205,6 +214,15 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         List<PropertyKey> properties = new ArrayList<>();
         for (Map.Entry<PropertyKey, ValueContainer> entry : mData.entrySet()) {
             if (entry.getValue() != null) properties.add(entry.getKey());
+        }
+        return properties;
+    }
+
+    @Override
+    public Collection<PropertyKey> getAllProperties() {
+        List<PropertyKey> properties = new ArrayList<>();
+        for (Map.Entry<PropertyKey, ValueContainer> entry : mData.entrySet()) {
+            properties.add(entry.getKey());
         }
         return properties;
     }
