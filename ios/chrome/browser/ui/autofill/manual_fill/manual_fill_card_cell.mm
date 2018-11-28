@@ -202,14 +202,18 @@
 }
 
 - (void)userDidTapCardNumber:(UIButton*)sender {
+  NSString* number = self.card.number;
+  if (![self.contentDelegate canUserInjectInPasswordField:NO
+                                            requiresHTTPS:YES]) {
+    return;
+  }
   base::RecordAction(
       base::UserMetricsAction("ManualFallback_CreditCard_SelectCardNumber"));
-  NSString* number = self.card.number;
   if (!number.length) {
     [self.navigationDelegate requestFullCreditCard:self.card];
   } else {
     [self.contentDelegate userDidPickContent:number
-                             isPasswordField:NO
+                               passwordField:NO
                                requiresHTTPS:YES];
   }
 }
@@ -227,7 +231,7 @@
   base::RecordAction(base::UserMetricsAction(metricsAction));
 
   [self.contentDelegate userDidPickContent:sender.titleLabel.text
-                           isPasswordField:NO
+                             passwordField:NO
                              requiresHTTPS:NO];
 }
 

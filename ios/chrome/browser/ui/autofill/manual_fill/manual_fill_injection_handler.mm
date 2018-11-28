@@ -94,22 +94,30 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
 
 #pragma mark - ManualFillContentDelegate
 
-- (void)userDidPickContent:(NSString*)content
-           isPasswordField:(BOOL)isPasswordField
-             requiresHTTPS:(BOOL)requiresHTTPS {
-  if (isPasswordField && ![self isLastFocusedElementPasswordField]) {
+- (BOOL)canUserInjectInPasswordField:(BOOL)passwordField
+                       requiresHTTPS:(BOOL)requiresHTTPS {
+  if (passwordField && ![self isLastFocusedElementPasswordField]) {
     NSString* alertBody = l10n_util::GetNSString(
         IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_PASSWORD_BODY);
     [self.alertPresenter presentSecurityWarningAlertWithText:alertBody];
-    return;
+    return NO;
   }
   if (requiresHTTPS && ![self isLastFocusedElementSecure]) {
     NSString* alertBody =
         l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_GENERIC_BODY);
     [self.alertPresenter presentSecurityWarningAlertWithText:alertBody];
-    return;
+    return NO;
   }
-  [self fillLastSelectedFieldWithString:content];
+  return YES;
+}
+
+- (void)userDidPickContent:(NSString*)content
+             passwordField:(BOOL)passwordField
+             requiresHTTPS:(BOOL)requiresHTTPS {
+  if ([self canUserInjectInPasswordField:passwordField
+                           requiresHTTPS:requiresHTTPS]) {
+    [self fillLastSelectedFieldWithString:content];
+  }
 }
 
 #pragma mark - FormActivityObserver

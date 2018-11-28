@@ -492,7 +492,7 @@
   base::RecordAction(base::UserMetricsAction(metricsAction));
 
   [self.delegate userDidPickContent:sender.titleLabel.text
-                    isPasswordField:NO
+                      passwordField:NO
                       requiresHTTPS:NO];
 }
 

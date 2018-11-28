@@ -235,15 +235,18 @@ static const CGFloat NoMultiplier = 1.0;
   base::RecordAction(
       base::UserMetricsAction("ManualFallback_Password_SelectUsername"));
   [self.delegate userDidPickContent:self.manualFillCredential.username
-                    isPasswordField:NO
+                      passwordField:NO
                       requiresHTTPS:NO];
 }
 
 - (void)userDidTapPasswordButton:(UIButton*)button {
+  if (![self.delegate canUserInjectInPasswordField:YES requiresHTTPS:YES]) {
+    return;
+  }
   base::RecordAction(
       base::UserMetricsAction("ManualFallback_Password_SelectPassword"));
   [self.delegate userDidPickContent:self.manualFillCredential.password
-                    isPasswordField:YES
+                      passwordField:YES
                       requiresHTTPS:YES];
 }
 

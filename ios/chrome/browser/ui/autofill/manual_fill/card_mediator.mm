@@ -137,7 +137,7 @@ NSString* const ManageCardsAccessibilityIdentifier =
   // Don't replace the locked card with the unlocked one, so the user will
   // have to unlock it again, if needed.
   [self.contentDelegate userDidPickContent:manualFillCreditCard.number
-                           isPasswordField:NO
+                             passwordField:NO
                              requiresHTTPS:YES];
 }
 
