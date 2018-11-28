@@ -255,11 +255,11 @@ public class AwContents implements SmartClipProvider {
      * calling back into Chromium code to render the the contents of a Chromium frame into
      * an Android view.
      */
-    public interface NativeDrawGLFunctorFactory {
+    public interface NativeDrawFunctorFactory {
         /**
-         * Create a functor associated with native context |context|.
+         * Create a GL functor associated with native context |context|.
          */
-        NativeDrawGLFunctor createFunctor(long context);
+        NativeDrawGLFunctor createGLFunctor(long context);
     }
 
     /**
@@ -360,7 +360,7 @@ public class AwContents implements SmartClipProvider {
     private final AwContentsIoThreadClient mIoThreadClient;
     private final InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private InternalAccessDelegate mInternalAccessAdapter;
-    private final NativeDrawGLFunctorFactory mNativeDrawGLFunctorFactory;
+    private final NativeDrawFunctorFactory mNativeDrawFunctorFactory;
     private final AwLayoutSizer mLayoutSizer;
     private final AwZoomControls mZoomControls;
     private final AwScrollOffsetManager mScrollOffsetManager;
@@ -816,7 +816,7 @@ public class AwContents implements SmartClipProvider {
      * @param containerView the view-hierarchy item this object will be bound to.
      * @param context the context to use, usually containerView.getContext().
      * @param internalAccessAdapter to access private methods on containerView.
-     * @param nativeGLDelegate to access the GL functor provided by the WebView.
+     * @param nativeDrawFunctorFactory to access the functor provided by the WebView.
      * @param contentsClient will receive API callbacks from this WebView Contents.
      * @param awSettings AwSettings instance used to configure the AwContents.
      *
@@ -824,10 +824,10 @@ public class AwContents implements SmartClipProvider {
      */
     public AwContents(AwBrowserContext browserContext, ViewGroup containerView, Context context,
             InternalAccessDelegate internalAccessAdapter,
-            NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory, AwContentsClient contentsClient,
+            NativeDrawFunctorFactory nativeDrawFunctorFactory, AwContentsClient contentsClient,
             AwSettings awSettings) {
         this(browserContext, containerView, context, internalAccessAdapter,
-                nativeDrawGLFunctorFactory, contentsClient, awSettings, new DependencyFactory());
+                nativeDrawFunctorFactory, contentsClient, awSettings, new DependencyFactory());
     }
 
     /**
@@ -839,7 +839,7 @@ public class AwContents implements SmartClipProvider {
      */
     public AwContents(AwBrowserContext browserContext, ViewGroup containerView, Context context,
             InternalAccessDelegate internalAccessAdapter,
-            NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory, AwContentsClient contentsClient,
+            NativeDrawFunctorFactory nativeDrawFunctorFactory, AwContentsClient contentsClient,
             AwSettings settings, DependencyFactory dependencyFactory) {
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwContents.constructor")) {
             mRendererPriority = RendererPriority.HIGH;
@@ -859,7 +859,7 @@ public class AwContents implements SmartClipProvider {
             mAutofillProvider = dependencyFactory.createAutofillProvider(context, mContainerView);
             mAppTargetSdkVersion = mContext.getApplicationInfo().targetSdkVersion;
             mInternalAccessAdapter = internalAccessAdapter;
-            mNativeDrawGLFunctorFactory = nativeDrawGLFunctorFactory;
+            mNativeDrawFunctorFactory = nativeDrawFunctorFactory;
             mContentsClient = contentsClient;
             mContentsClient.getCallbackHelper().setCancelCallbackPoller(
                     () -> AwContents.this.isDestroyedOrNoOperation(NO_WARN));
@@ -3381,7 +3381,7 @@ public class AwContents implements SmartClipProvider {
             }
 
             if (canvas.isHardwareAccelerated() && mDrawFunctor == null) {
-                setFunctor(new AwGLFunctor(mNativeDrawGLFunctorFactory, mContainerView));
+                setFunctor(new AwGLFunctor(mNativeDrawFunctorFactory, mContainerView));
             }
 
             mScrollOffsetManager.syncScrollOffsetFromOnDraw();

@@ -27,7 +27,7 @@ import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContents.DependencyFactory;
 import org.chromium.android_webview.AwContents.InternalAccessDelegate;
-import org.chromium.android_webview.AwContents.NativeDrawGLFunctorFactory;
+import org.chromium.android_webview.AwContents.NativeDrawFunctorFactory;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwSafeBrowsingConfigHelper;
@@ -233,11 +233,10 @@ public class SafeBrowsingTest {
 
         public MockAwContents(AwBrowserContext browserContext, ViewGroup containerView,
                 Context context, InternalAccessDelegate internalAccessAdapter,
-                NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory,
-                AwContentsClient contentsClient, AwSettings settings,
-                DependencyFactory dependencyFactory) {
+                NativeDrawFunctorFactory nativeDrawFunctorFactory, AwContentsClient contentsClient,
+                AwSettings settings, DependencyFactory dependencyFactory) {
             super(browserContext, containerView, context, internalAccessAdapter,
-                    nativeDrawGLFunctorFactory, contentsClient, settings, dependencyFactory);
+                    nativeDrawFunctorFactory, contentsClient, settings, dependencyFactory);
             mCanShowInterstitial = true;
             mCanShowBigInterstitial = true;
         }
@@ -300,11 +299,10 @@ public class SafeBrowsingTest {
         @Override
         public AwContents createAwContents(AwBrowserContext browserContext, ViewGroup containerView,
                 Context context, InternalAccessDelegate internalAccessAdapter,
-                NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory,
-                AwContentsClient contentsClient, AwSettings settings,
-                DependencyFactory dependencyFactory) {
+                NativeDrawFunctorFactory nativeDrawFunctorFactory, AwContentsClient contentsClient,
+                AwSettings settings, DependencyFactory dependencyFactory) {
             return new MockAwContents(browserContext, containerView, context, internalAccessAdapter,
-                    nativeDrawGLFunctorFactory, contentsClient, settings, dependencyFactory);
+                    nativeDrawFunctorFactory, contentsClient, settings, dependencyFactory);
         }
     }
 

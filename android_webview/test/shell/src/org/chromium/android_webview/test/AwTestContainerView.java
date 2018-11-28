@@ -277,8 +277,8 @@ public class AwTestContainerView extends FrameLayout {
         return mAwContents;
     }
 
-    public AwContents.NativeDrawGLFunctorFactory getNativeDrawGLFunctorFactory() {
-        return new NativeDrawGLFunctorFactory();
+    public AwContents.NativeDrawFunctorFactory getNativeDrawFunctorFactory() {
+        return new NativeDrawFunctorFactory();
     }
 
     public AwContents.InternalAccessDelegate getInternalAccessDelegate() {
@@ -436,9 +436,9 @@ public class AwTestContainerView extends FrameLayout {
         return mAwContents.performAccessibilityAction(action, arguments);
     }
 
-    private class NativeDrawGLFunctorFactory implements AwContents.NativeDrawGLFunctorFactory {
+    private class NativeDrawFunctorFactory implements AwContents.NativeDrawFunctorFactory {
         @Override
-        public NativeDrawGLFunctor createFunctor(long context) {
+        public NativeDrawGLFunctor createGLFunctor(long context) {
             return new NativeDrawGLFunctor(context);
         }
     }

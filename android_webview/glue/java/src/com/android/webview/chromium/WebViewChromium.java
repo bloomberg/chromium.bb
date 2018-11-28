@@ -265,7 +265,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
                     || mAppTargetSdkVersion < Build.VERSION_CODES.LOLLIPOP);
 
             mAwContents = new AwContents(mFactory.getBrowserContextOnUiThread(), mWebView, mContext,
-                    new InternalAccessAdapter(), new WebViewNativeDrawGLFunctorFactory(),
+                    new InternalAccessAdapter(), new WebViewNativeDrawFunctorFactory(),
                     mContentsClientAdapter, mWebSettings.getAwSettings(),
                     new AwContents.DependencyFactory() {
                         @Override
@@ -2275,11 +2275,10 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         checkThread();
         return new AwPrintDocumentAdapter(mAwContents.getPdfExporter(), documentName);
     }
-    // AwContents.NativeDrawGLFunctorFactory implementation ----------------------------------
-    private class WebViewNativeDrawGLFunctorFactory
-            implements AwContents.NativeDrawGLFunctorFactory {
+    // AwContents.NativeDrawFunctorFactory implementation ----------------------------------
+    private class WebViewNativeDrawFunctorFactory implements AwContents.NativeDrawFunctorFactory {
         @Override
-        public AwContents.NativeDrawGLFunctor createFunctor(long context) {
+        public AwContents.NativeDrawGLFunctor createGLFunctor(long context) {
             return new DrawGLFunctor(context, mFactory.getWebViewDelegate());
         }
     }

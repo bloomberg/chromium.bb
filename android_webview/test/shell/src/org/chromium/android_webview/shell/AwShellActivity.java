@@ -219,7 +219,7 @@ public class AwShellActivity extends Activity {
 
         testContainerView.initialize(new AwContents(mBrowserContext, testContainerView,
                 testContainerView.getContext(), testContainerView.getInternalAccessDelegate(),
-                testContainerView.getNativeDrawGLFunctorFactory(), awContentsClient, awSettings));
+                testContainerView.getNativeDrawFunctorFactory(), awContentsClient, awSettings));
         testContainerView.getAwContents().getSettings().setJavaScriptEnabled(true);
         if (mDevToolsServer == null) {
             mDevToolsServer = new AwDevToolsServer();
