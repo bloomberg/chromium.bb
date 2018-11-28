@@ -14,10 +14,12 @@ class DesktopLinuxBrowserFrameViewLayout : public OpaqueBrowserFrameViewLayout {
   DesktopLinuxBrowserFrameViewLayout(
       views::NavButtonProvider* nav_button_provider);
 
+ protected:
   // OpaqueBrowserFrameViewLayout:
   int CaptionButtonY(chrome::FrameButtonDisplayType button_id,
                      bool restored) const override;
-  int TopAreaPadding() const override;
+  TopAreaPadding GetTopAreaPadding(bool has_leading_buttons,
+                                   bool has_trailing_buttons) const override;
   int GetWindowCaptionSpacing(views::FrameButton button_id,
                               bool leading_spacing,
                               bool is_leading_button) const override;
@@ -25,8 +27,6 @@ class DesktopLinuxBrowserFrameViewLayout : public OpaqueBrowserFrameViewLayout {
                                ButtonAlignment alignment) const override;
 
  private:
-  int TitlebarTopThickness() const;
-
   views::NavButtonProvider* nav_button_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopLinuxBrowserFrameViewLayout);

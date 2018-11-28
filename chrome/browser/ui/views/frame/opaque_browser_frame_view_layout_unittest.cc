@@ -176,7 +176,7 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
     const int unavailable_px_at_top =
         delegate_->IsMaximized()
             ? 0
-            : OpaqueBrowserFrameViewLayout::kTitlebarTopEdgeThickness;
+            : OpaqueBrowserFrameViewLayout::kTopFrameEdgeThickness;
     return (unavailable_px_at_top + CaptionY() + kCaptionButtonHeight +
             OpaqueBrowserFrameViewLayout::kCaptionButtonBottomPadding -
             delegate_->GetIconSize()) /
