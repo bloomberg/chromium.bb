@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_BOOKMARK_ITEM_H_
 
 #include <stddef.h>
-#include <string>
 
 namespace base {
 class ListValue;
@@ -16,9 +15,9 @@ namespace nux {
 
 struct BookmarkItem {
   const int id;
-  const std::string name;
+  const char* name;
   const char* webui_icon;
-  const std::string url;
+  const char* url;
   const int icon;  // Corresponds with resource ID, used for bookmark cache.
 };
 
