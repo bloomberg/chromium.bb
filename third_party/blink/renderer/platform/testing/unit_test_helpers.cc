@@ -51,8 +51,7 @@ base::FilePath BlinkRootFilePath() {
       path.Append(FILE_PATH_LITERAL("third_party/blink")));
 }
 
-// TODO(tkent): Rename this function.  crbug.com/843412.
-base::FilePath LayoutTestsFilePath() {
+base::FilePath WebTestsFilePath() {
   base::FilePath path;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   return base::MakeAbsoluteFilePath(
@@ -94,8 +93,8 @@ String BlinkRootDir() {
   return FilePathToWebString(BlinkRootFilePath());
 }
 
-String BlinkLayoutTestsDir() {
-  return FilePathToWebString(LayoutTestsFilePath());
+String BlinkWebTestsDir() {
+  return FilePathToWebString(WebTestsFilePath());
 }
 
 String ExecutableDir() {

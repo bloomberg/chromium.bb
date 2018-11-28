@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_dispatcher.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -55,10 +55,10 @@ ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
 WebScreenOrientationType ScreenOrientationControllerImpl::ComputeOrientation(
     const IntRect& rect,
     uint16_t rotation) {
-  // Bypass orientation detection in layout tests to get consistent results.
-  // FIXME: The screen dimension should be fixed when running the layout tests
+  // Bypass orientation detection in web tests to get consistent results.
+  // FIXME: The screen dimension should be fixed when running the web tests
   // to avoid such issues.
-  if (LayoutTestSupport::IsRunningLayoutTest())
+  if (WebTestSupport::IsRunningWebTest())
     return kWebScreenOrientationPortraitPrimary;
 
   bool is_tall_display = rotation % 180 ? rect.Height() < rect.Width()

@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
 
@@ -28,7 +28,7 @@ const unsigned kWindowInteractionTimeout = 10;
 const unsigned kWindowInteractionTimeoutForTest = 1;
 
 TimeDelta WindowInteractionTimeout() {
-  return TimeDelta::FromSeconds(LayoutTestSupport::IsRunningLayoutTest()
+  return TimeDelta::FromSeconds(WebTestSupport::IsRunningWebTest()
                                     ? kWindowInteractionTimeoutForTest
                                     : kWindowInteractionTimeout);
 }

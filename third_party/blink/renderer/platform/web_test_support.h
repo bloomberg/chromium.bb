@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LAYOUT_TEST_SUPPORT_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LAYOUT_TEST_SUPPORT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEB_TEST_SUPPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEB_TEST_SUPPORT_H_
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
-class LayoutTestSupport {
-  STATIC_ONLY(LayoutTestSupport);
+class WebTestSupport {
+  STATIC_ONLY(WebTestSupport);
 
  public:
-  PLATFORM_EXPORT static bool IsRunningLayoutTest();
-  PLATFORM_EXPORT static void SetIsRunningLayoutTest(bool);
+  PLATFORM_EXPORT static bool IsRunningWebTest();
+  PLATFORM_EXPORT static void SetIsRunningWebTest(bool);
   PLATFORM_EXPORT static bool IsMockThemeEnabledForTest();
   PLATFORM_EXPORT static void SetMockThemeEnabledForTest(bool);
   PLATFORM_EXPORT static bool IsFontAntialiasingEnabledForTest();
@@ -52,4 +52,4 @@ class LayoutTestSupport {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LAYOUT_TEST_SUPPORT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEB_TEST_SUPPORT_H_

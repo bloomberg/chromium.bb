@@ -28,28 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
-// Wrapper functions defined in WebKit.h
+// Wrapper functions defined in blink.h
 void SetLayoutTestMode(bool value) {
-  LayoutTestSupport::SetIsRunningLayoutTest(value);
+  WebTestSupport::SetIsRunningWebTest(value);
 }
 
 bool LayoutTestMode() {
-  return LayoutTestSupport::IsRunningLayoutTest();
+  return WebTestSupport::IsRunningWebTest();
 }
 
 void SetFontAntialiasingEnabledForTest(bool value) {
-  LayoutTestSupport::SetFontAntialiasingEnabledForTest(value);
+  WebTestSupport::SetFontAntialiasingEnabledForTest(value);
 }
 
 bool FontAntialiasingEnabledForTest() {
-  return LayoutTestSupport::IsFontAntialiasingEnabledForTest();
+  return WebTestSupport::IsFontAntialiasingEnabledForTest();
 }
 
 static bool g_is_running_layout_test = false;
@@ -57,36 +57,36 @@ static bool g_is_mock_theme_enabled = false;
 static bool g_is_font_antialiasing_enabled = false;
 static bool g_is_subpixel_positioning_allowed = true;
 
-bool LayoutTestSupport::IsRunningLayoutTest() {
+bool WebTestSupport::IsRunningWebTest() {
   return g_is_running_layout_test;
 }
 
-void LayoutTestSupport::SetIsRunningLayoutTest(bool value) {
+void WebTestSupport::SetIsRunningWebTest(bool value) {
   g_is_running_layout_test = value;
 }
 
-bool LayoutTestSupport::IsMockThemeEnabledForTest() {
+bool WebTestSupport::IsMockThemeEnabledForTest() {
   return g_is_mock_theme_enabled;
 }
 
-void LayoutTestSupport::SetMockThemeEnabledForTest(bool value) {
+void WebTestSupport::SetMockThemeEnabledForTest(bool value) {
   DCHECK(g_is_running_layout_test);
   g_is_mock_theme_enabled = value;
 }
 
-bool LayoutTestSupport::IsFontAntialiasingEnabledForTest() {
+bool WebTestSupport::IsFontAntialiasingEnabledForTest() {
   return g_is_font_antialiasing_enabled;
 }
 
-void LayoutTestSupport::SetFontAntialiasingEnabledForTest(bool value) {
+void WebTestSupport::SetFontAntialiasingEnabledForTest(bool value) {
   g_is_font_antialiasing_enabled = value;
 }
 
-bool LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest() {
+bool WebTestSupport::IsTextSubpixelPositioningAllowedForTest() {
   return g_is_subpixel_positioning_allowed;
 }
 
-void LayoutTestSupport::SetTextSubpixelPositioningAllowedForTest(bool value) {
+void WebTestSupport::SetTextSubpixelPositioningAllowedForTest(bool value) {
   g_is_subpixel_positioning_allowed = value;
 }
 

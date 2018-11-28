@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -20,12 +20,12 @@ class PaintLayerClipperTest : public RenderingTest {
   PaintLayerClipperTest() : RenderingTest(EmptyLocalFrameClient::Create()) {}
 
   void SetUp() override {
-    LayoutTestSupport::SetMockThemeEnabledForTest(true);
+    WebTestSupport::SetMockThemeEnabledForTest(true);
     RenderingTest::SetUp();
   }
 
   void TearDown() override {
-    LayoutTestSupport::SetMockThemeEnabledForTest(false);
+    WebTestSupport::SetMockThemeEnabledForTest(false);
     RenderingTest::TearDown();
   }
 };

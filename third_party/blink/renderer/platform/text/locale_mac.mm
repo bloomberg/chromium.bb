@@ -35,7 +35,7 @@
 #include <memory>
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/language.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -52,7 +52,7 @@ static inline String LanguageFromLocale(const String& locale) {
 }
 
 static RetainPtr<NSLocale> DetermineLocale(const String& locale) {
-  if (!LayoutTestSupport::IsRunningLayoutTest()) {
+  if (!WebTestSupport::IsRunningWebTest()) {
     RetainPtr<NSLocale> current_locale = [NSLocale currentLocale];
     String current_locale_language =
         LanguageFromLocale(String([current_locale.Get() localeIdentifier]));

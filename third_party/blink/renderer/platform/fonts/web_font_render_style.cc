@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 #include <SkFont.h>
 
@@ -108,9 +108,9 @@ void WebFontRenderStyle::ApplyToSkPaint(SkPaint& font,
     font.setLCDRenderText(use_subpixel_rendering);
 
   // Force-enable subpixel positioning, except when full hinting is requested on
-  // low-dpi screen or when running layout tests.
+  // low-dpi screen or when running web tests.
   bool force_subpixel_positioning =
-      !LayoutTestSupport::IsRunningLayoutTest() &&
+      !WebTestSupport::IsRunningWebTest() &&
       (sk_hint_style != SkFontHinting::kFull || device_scale_factor > 1.0f);
 
   font.setSubpixelText(force_subpixel_positioning || use_subpixel_positioning);
@@ -131,9 +131,9 @@ void WebFontRenderStyle::ApplyToSkFont(SkFont* font,
   }
 
   // Force-enable subpixel positioning, except when full hinting is requested on
-  // low-dpi screen or when running layout tests.
+  // low-dpi screen or when running web tests.
   bool force_subpixel_positioning =
-      !LayoutTestSupport::IsRunningLayoutTest() &&
+      !WebTestSupport::IsRunningWebTest() &&
       (sk_hint_style != SkFontHinting::kFull || device_scale_factor > 1.0f);
 
   font->setSubpixel(force_subpixel_positioning || use_subpixel_positioning);

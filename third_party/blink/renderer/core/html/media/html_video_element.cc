@@ -56,8 +56,8 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -489,8 +489,8 @@ void HTMLVideoElement::DidEnterFullscreen() {
     exitPictureInPicture(base::DoNothing());
 
   if (GetWebMediaPlayer()) {
-    // FIXME: There is no embedder-side handling in layout test mode.
-    if (!LayoutTestSupport::IsRunningLayoutTest())
+    // FIXME: There is no embedder-side handling in web test mode.
+    if (!WebTestSupport::IsRunningWebTest())
       GetWebMediaPlayer()->EnteredFullscreen();
     GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
   }

@@ -58,10 +58,10 @@
 #include "third_party/blink/renderer/platform/fonts/string_truncator.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/theme.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "ui/native_theme/native_theme.h"
 
@@ -101,7 +101,7 @@ void GetAutofillPreviewColorsFromFieldTrial(std::string* color,
 
 // Wrapper function defined in WebKit.h
 void SetMockThemeEnabledForTest(bool value) {
-  LayoutTestSupport::SetMockThemeEnabledForTest(value);
+  WebTestSupport::SetMockThemeEnabledForTest(value);
   LayoutTheme::GetTheme().DidChangeThemeEngine();
 }
 
@@ -682,8 +682,8 @@ void LayoutTheme::SetCaretBlinkInterval(TimeDelta interval) {
 TimeDelta LayoutTheme::CaretBlinkInterval() const {
   // Disable the blinking caret in layout test mode, as it introduces
   // a race condition for the pixel tests. http://b/1198440
-  return LayoutTestSupport::IsRunningLayoutTest() ? TimeDelta()
-                                                  : caret_blink_interval_;
+  return WebTestSupport::IsRunningWebTest() ? TimeDelta()
+                                            : caret_blink_interval_;
 }
 
 static FontDescription& GetCachedFontDescription(CSSValueID system_font_id) {

@@ -36,8 +36,8 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/date_components.h"
 #include "third_party/blink/renderer/platform/language.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/text/date_time_format.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
@@ -93,7 +93,7 @@ static LCID LCIDFromLocale(const String& locale, bool defaults_for_locale) {
 std::unique_ptr<Locale> Locale::Create(const String& locale) {
   // Whether the default settings for the locale should be used, ignoring user
   // overrides.
-  bool defaults_for_locale = LayoutTestSupport::IsRunningLayoutTest();
+  bool defaults_for_locale = WebTestSupport::IsRunningWebTest();
   return LocaleWin::Create(LCIDFromLocale(locale, defaults_for_locale),
                            defaults_for_locale);
 }

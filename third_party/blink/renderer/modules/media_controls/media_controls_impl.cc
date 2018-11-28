@@ -85,9 +85,9 @@
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -2213,10 +2213,10 @@ void MediaControlsImpl::VolumeSliderWantedTimerFired(TimerBase*) {
 
 void MediaControlsImpl::OpenVolumeSliderIfNecessary() {
   if (ShouldOpenVolumeSlider()) {
-    volume_slider_wanted_timer_.StartOneShot(
-        LayoutTestSupport::IsRunningLayoutTest() ? kTimeToShowVolumeSliderTest
+    volume_slider_wanted_timer_.StartOneShot(WebTestSupport::IsRunningWebTest()
+                                                 ? kTimeToShowVolumeSliderTest
                                                  : kTimeToShowVolumeSlider,
-        FROM_HERE);
+                                             FROM_HERE);
   }
 }
 

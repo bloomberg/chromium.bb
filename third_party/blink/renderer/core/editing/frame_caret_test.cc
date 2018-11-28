@@ -11,21 +11,21 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
 class FrameCaretTest : public EditingTestBase {
  public:
   FrameCaretTest()
-      : was_running_layout_test_(LayoutTestSupport::IsRunningLayoutTest()) {
-    // The caret blink timer doesn't work if isRunningLayoutTest() because
-    // LayoutTheme::caretBlinkInterval() returns 0.
-    LayoutTestSupport::SetIsRunningLayoutTest(false);
+      : was_running_layout_test_(WebTestSupport::IsRunningWebTest()) {
+    // The caret blink timer doesn't work if IsRunningWebTest() because
+    // LayoutTheme::CaretBlinkInterval() returns 0.
+    WebTestSupport::SetIsRunningWebTest(false);
   }
   ~FrameCaretTest() override {
-    LayoutTestSupport::SetIsRunningLayoutTest(was_running_layout_test_);
+    WebTestSupport::SetIsRunningWebTest(was_running_layout_test_);
   }
 
   static bool ShouldBlinkCaret(const FrameCaret& caret) {

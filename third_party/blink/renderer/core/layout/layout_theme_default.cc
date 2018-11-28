@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -44,7 +44,7 @@ static const float kMinCancelButtonSize = 5;
 static const float kMaxCancelButtonSize = 21;
 
 static bool UseMockTheme() {
-  return LayoutTestSupport::IsMockThemeEnabledForTest();
+  return WebTestSupport::IsMockThemeEnabledForTest();
 }
 
 unsigned LayoutThemeDefault::active_selection_background_color_ = 0xff1e90ff;

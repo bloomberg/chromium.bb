@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -437,10 +437,10 @@ void InspectorHighlight::AppendNodeHighlight(
 
   // Just for testing, invert the content color for nodes rendered by LayoutNG.
   // TODO(layout-dev): Stop munging the color before NG ships. crbug.com/869866
-  Color content_color = layout_object->IsLayoutNGObject() &&
-                                !LayoutTestSupport::IsRunningLayoutTest()
-                            ? Color(highlight_config.content.Rgb() ^ 0x00ffffff)
-                            : highlight_config.content;
+  Color content_color =
+      layout_object->IsLayoutNGObject() && !WebTestSupport::IsRunningWebTest()
+          ? Color(highlight_config.content.Rgb() ^ 0x00ffffff)
+          : highlight_config.content;
 
   Vector<FloatQuad> svg_quads;
   if (BuildSVGQuads(node, svg_quads)) {
