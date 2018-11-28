@@ -843,8 +843,13 @@ class CORE_EXPORT Element : public ContainerNode {
   const SpaceSplitString& ClassNames() const;
   bool HasClassName(const AtomicString& class_name) const;
 
-  bool HasPartName() const;
-  const SpaceSplitString* PartNames() const;
+  // Returns true if the element has 1 or more part names.
+  bool HasPart() const;
+  // Returns the list of part names if it has ever been created.
+  DOMTokenList* GetPart() const;
+  // IDL method.
+  // Returns the list of part names, creating it if it doesn't exist.
+  DOMTokenList& part();
 
   bool HasPartNamesMap() const;
   const NamesMap* PartNamesMap() const;

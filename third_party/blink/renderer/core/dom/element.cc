@@ -1612,7 +1612,7 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     SetHasName(!params.new_value.IsNull());
   } else if (name == html_names::kPartAttr) {
     if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled()) {
-      EnsureElementRareData().SetPart(params.new_value);
+      part().DidUpdateAttributeValue(params.old_value, params.new_value);
       GetDocument().GetStyleEngine().PartChangedForElement(*this);
     }
   } else if (name == html_names::kExportpartsAttr) {
@@ -5088,21 +5088,31 @@ void Element::Trace(blink::Visitor* visitor) {
   ContainerNode::Trace(visitor);
 }
 
-bool Element::HasPartName() const {
+bool Element::HasPart() const {
   if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
     return false;
   if (HasRareData()) {
-    if (auto* part_names = GetElementRareData()->PartNames()) {
-      return part_names->size() > 0;
+    if (auto* part = GetElementRareData()->GetPart()) {
+      return part->length() > 0;
     }
   }
   return false;
 }
 
-const SpaceSplitString* Element::PartNames() const {
+DOMTokenList* Element::GetPart() const {
   return RuntimeEnabledFeatures::CSSPartPseudoElementEnabled() && HasRareData()
-             ? GetElementRareData()->PartNames()
+             ? GetElementRareData()->GetPart()
              : nullptr;
+}
+
+DOMTokenList& Element::part() {
+  ElementRareData& rare_data = EnsureElementRareData();
+  DOMTokenList* part = rare_data.GetPart();
+  if (!part) {
+    part = DOMTokenList::Create(*this, kPartAttr);
+    rare_data.SetPart(part);
+  }
+  return *part;
 }
 
 bool Element::HasPartNamesMap() const {

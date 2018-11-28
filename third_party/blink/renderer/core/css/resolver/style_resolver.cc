@@ -326,11 +326,11 @@ void StyleResolver::MatchPseudoPartRules(const Element& element,
   if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
     return;
 
-  const SpaceSplitString* part_names = element.PartNames();
-  if (!part_names)
+  DOMTokenList* part = element.GetPart();
+  if (!part)
     return;
 
-  PartNames current_names(*part_names);
+  PartNames current_names(part->TokenSet());
 
   // ::part selectors in the shadow host's scope and above can match this
   // element.

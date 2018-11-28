@@ -7,6 +7,7 @@
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -365,32 +366,34 @@ TEST_F(ElementTest, PartAttribute) {
   ASSERT_TRUE(has_two_parts);
 
   {
-    EXPECT_TRUE(has_one_part->HasPartName());
-    const SpaceSplitString* part_names = has_one_part->PartNames();
-    ASSERT_TRUE(part_names);
-    ASSERT_EQ(1UL, part_names->size());
-    ASSERT_EQ("partname", (*part_names)[0].Ascii());
+    EXPECT_TRUE(has_one_part->HasPart());
+    const DOMTokenList* part = has_one_part->GetPart();
+    ASSERT_TRUE(part);
+    ASSERT_EQ(1UL, part->length());
+    ASSERT_EQ("partname", part->value());
   }
 
   {
-    EXPECT_TRUE(has_two_parts->HasPartName());
-    const SpaceSplitString* part_names = has_two_parts->PartNames();
-    ASSERT_TRUE(part_names);
-    ASSERT_EQ(2UL, part_names->size());
-    ASSERT_EQ("partname1", (*part_names)[0].Ascii());
-    ASSERT_EQ("partname2", (*part_names)[1].Ascii());
+    EXPECT_TRUE(has_two_parts->HasPart());
+    const DOMTokenList* part = has_two_parts->GetPart();
+    ASSERT_TRUE(part);
+    ASSERT_EQ(2UL, part->length());
+    ASSERT_EQ("partname1 partname2", part->value());
   }
 
   {
-    EXPECT_FALSE(has_no_part->HasPartName());
-    EXPECT_FALSE(has_no_part->PartNames());
+    EXPECT_FALSE(has_no_part->HasPart());
+    EXPECT_FALSE(has_no_part->GetPart());
+
+    // Calling the DOM API should force creation of an empty DOMTokenList.
+    const DOMTokenList& part = has_no_part->part();
+    EXPECT_FALSE(has_no_part->HasPart());
+    EXPECT_EQ(&part, has_no_part->GetPart());
 
     // Now update the attribute value and make sure it's reflected.
     has_no_part->setAttribute("part", "partname");
-    const SpaceSplitString* part_names = has_no_part->PartNames();
-    ASSERT_TRUE(part_names);
-    ASSERT_EQ(1UL, part_names->size());
-    ASSERT_EQ("partname", (*part_names)[0].Ascii());
+    ASSERT_EQ(1UL, part.length());
+    ASSERT_EQ("partname", part.value());
   }
 }
 

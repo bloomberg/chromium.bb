@@ -100,15 +100,12 @@ class ElementRareData : public NodeRareData {
     class_list_ = class_list;
   }
 
-  void SetPart(const AtomicString part_names) {
+  void SetPart(DOMTokenList* part) {
     if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
       return;
-    if (!part_names_) {
-      part_names_.reset(new SpaceSplitString());
-    }
-    part_names_->Set(part_names);
+    part_ = part;
   }
-  const SpaceSplitString* PartNames() const { return part_names_.get(); }
+  DOMTokenList* GetPart() const { return part_.Get(); }
 
   void SetPartNamesMap(const AtomicString part_names) {
     if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
@@ -218,7 +215,7 @@ class ElementRareData : public NodeRareData {
   TraceWrapperMember<DatasetDOMStringMap> dataset_;
   TraceWrapperMember<ShadowRoot> shadow_root_;
   TraceWrapperMember<DOMTokenList> class_list_;
-  std::unique_ptr<SpaceSplitString> part_names_;
+  TraceWrapperMember<DOMTokenList> part_;
   std::unique_ptr<NamesMap> part_names_map_;
   TraceWrapperMember<NamedNodeMap> attribute_map_;
   TraceWrapperMember<AttrNodeList> attr_node_list_;
