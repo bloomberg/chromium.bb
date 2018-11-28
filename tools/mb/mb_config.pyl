@@ -622,7 +622,7 @@
 
     'tryserver.chromium.chromiumos': {
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
-      'chromeos-daisy-rel': 'cros_chrome_sdk',
+      'chromeos-daisy-rel': 'cros_chrome_sdk_dchecks_always_on',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
@@ -1243,6 +1243,10 @@
     # wrapper and need to be looked at specially.
     'cros_chrome_sdk': [
       'cros_chrome_sdk',
+    ],
+
+    'cros_chrome_sdk_dchecks_always_on': [
+      'cros_chrome_sdk', 'dcheck_always_on',
     ],
 
     'cros_chrome_sdk_headless_ozone': [
