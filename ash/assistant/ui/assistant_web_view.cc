@@ -182,7 +182,7 @@ void AssistantWebView::OnDeepLinkReceived(
   contents_->AddObserver(this);
 
   // Navigate to the url associated with the received deep link.
-  contents_->Navigate(assistant::util::GetWebUrl(type).value());
+  contents_->Navigate(assistant::util::GetWebUrl(type, params).value());
 }
 
 void AssistantWebView::DidAutoResizeView(const gfx::Size& new_size) {

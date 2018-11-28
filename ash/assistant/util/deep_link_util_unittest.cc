@@ -262,6 +262,22 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
     ASSERT_EQ(test_case.second, IsDeepLinkUrl(GURL(test_case.first)));
 }
 
+TEST_F(DeepLinkUnitTest, GetAssistantRemindersUrl) {
+  const std::map<base::Optional<std::string>, std::string> test_cases = {
+      // OK: Absent/empty id.
+      {base::nullopt,
+       "https://assistant.google.com/reminders/mainview?hl=en-US"},
+      {base::Optional<std::string>(std::string()),
+       "https://assistant.google.com/reminders/mainview?hl=en-US"},
+
+      // OK: Specified id.
+      {base::Optional<std::string>("123456"),
+       "https://assistant.google.com/reminders/id/123456?hl=en-US"}};
+
+  for (const auto& test_case : test_cases)
+    ASSERT_EQ(test_case.second, GetAssistantRemindersUrl(test_case.first));
+}
+
 TEST_F(DeepLinkUnitTest, GetChromeSettingsUrl) {
   const std::map<base::Optional<std::string>, std::string> test_cases = {
       // OK: Absent/empty page.
@@ -293,8 +309,8 @@ TEST_F(DeepLinkUnitTest, GetWebUrl) {
        GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
       // OK: Parameterized deep links.
-      {"googleassistant://reminders?param=true",
-       GURL("https://assistant.google.com/reminders/mainview?hl=en-US")},
+      {"googleassistant://reminders?id=123456",
+       GURL("https://assistant.google.com/reminders/id/123456?hl=en-US")},
       {"googleassistant://settings?param=true",
        GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
@@ -329,28 +345,51 @@ TEST_F(DeepLinkUnitTest, GetWebUrl) {
 }
 
 TEST_F(DeepLinkUnitTest, GetWebUrlByType) {
-  const std::map<DeepLinkType, base::Optional<GURL>> test_cases = {
+  using DeepLinkParams = std::map<std::string, std::string>;
+  using TestCase = std::pair<DeepLinkType, DeepLinkParams>;
+
+  // Creates a test case with a single parameter.
+  auto CreateTestCaseWithParam =
+      [](DeepLinkType type,
+         base::Optional<std::pair<std::string, std::string>> param =
+             base::nullopt) {
+        DeepLinkParams params;
+        if (param)
+          params.insert(param.value());
+        return std::make_pair(type, params);
+      };
+
+  // Creates a test case with no parameters.
+  auto CreateTestCase = [&CreateTestCaseWithParam](DeepLinkType type) {
+    return CreateTestCaseWithParam(type);
+  };
+
+  const std::map<TestCase, base::Optional<GURL>> test_cases = {
       // OK: Supported web deep link types.
-      {DeepLinkType::kReminders,
+      {CreateTestCase(DeepLinkType::kReminders),
        GURL("https://assistant.google.com/reminders/mainview?hl=en-US")},
-      {DeepLinkType::kSettings,
+      {CreateTestCaseWithParam(DeepLinkType::kReminders,
+                               std::make_pair("id", "123456")),
+       GURL("https://assistant.google.com/reminders/id/123456?hl=en-US")},
+      {CreateTestCase(DeepLinkType::kSettings),
        GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
       // FAIL: Non-web deep link types.
-      {DeepLinkType::kChromeSettings, base::nullopt},
-      {DeepLinkType::kFeedback, base::nullopt},
-      {DeepLinkType::kOnboarding, base::nullopt},
-      {DeepLinkType::kQuery, base::nullopt},
-      {DeepLinkType::kScreenshot, base::nullopt},
-      {DeepLinkType::kTaskManager, base::nullopt},
-      {DeepLinkType::kWhatsOnMyScreen, base::nullopt},
+      {CreateTestCase(DeepLinkType::kChromeSettings), base::nullopt},
+      {CreateTestCase(DeepLinkType::kFeedback), base::nullopt},
+      {CreateTestCase(DeepLinkType::kOnboarding), base::nullopt},
+      {CreateTestCase(DeepLinkType::kQuery), base::nullopt},
+      {CreateTestCase(DeepLinkType::kScreenshot), base::nullopt},
+      {CreateTestCase(DeepLinkType::kTaskManager), base::nullopt},
+      {CreateTestCase(DeepLinkType::kWhatsOnMyScreen), base::nullopt},
 
       // FAIL: Unsupported deep link types.
-      {DeepLinkType::kUnsupported, base::nullopt}};
+      {CreateTestCase(DeepLinkType::kUnsupported), base::nullopt}};
 
   for (const auto& test_case : test_cases) {
     const base::Optional<GURL>& expected = test_case.second;
-    const base::Optional<GURL> actual = GetWebUrl(test_case.first);
+    const base::Optional<GURL> actual = GetWebUrl(
+        /*type=*/test_case.first.first, /*params=*/test_case.first.second);
 
     // Assert |has_value| equivalence.
     ASSERT_EQ(expected, actual);
