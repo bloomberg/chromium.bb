@@ -56,9 +56,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'conformance2/glsl3/const-struct-from-array-as-function-parameter.html',
         ['win', 'nvidia', 'opengl'], bug=874620)
 
-    # Failing test updated in https://github.com/KhronosGroup/WebGL/pull/2226
-    self.Fail('conformance2/textures/misc/copy-texture-image.html', bug=905531)
-
     # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2665
     self.Fail('conformance2/textures/misc/tex-subimage3d-canvas-bug.html',
               ['linux'], bug=859400)
