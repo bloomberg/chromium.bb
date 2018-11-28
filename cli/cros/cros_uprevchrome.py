@@ -309,9 +309,9 @@ class UprevChromeCommand(command.CliCommand):
     logging.info('git checkout %s', local_branch)
 
     priv_commit_body = self.ParseGitLog(priv_overlay)
-    # Add CQ-DEPEND
+    # Add CQ-DEPEND (using 'CL:' prefix so cross-site links work).
     commit_message = self.CommitMessage(
-        priv_commit_body, pfq_build, build_number, pub_cid)
+        priv_commit_body, pfq_build, build_number, 'CL:' + pub_cid)
 
     # Update the commit message and reset author
     priv_cid = git.Commit(priv_overlay, commit_message, amend=True,
@@ -319,9 +319,9 @@ class UprevChromeCommand(command.CliCommand):
     if not priv_cid:
       raise Exception("Don't know the commit ID of the private overlay CL.")
 
-    # Add CQ-DEPEND
+    # Add CQ-DEPEND (using 'CL:' prefix so cross-site links work).
     commit_message = self.CommitMessage(
-        pub_commit_body, pfq_build, build_number, '*' + priv_cid, pub_cid)
+        pub_commit_body, pfq_build, build_number, 'CL:*' + priv_cid, pub_cid)
 
     git.Commit(pub_overlay, commit_message, amend=True)
 
