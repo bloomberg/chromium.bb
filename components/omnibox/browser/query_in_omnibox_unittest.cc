@@ -4,9 +4,9 @@
 
 #include "components/omnibox/browser/query_in_omnibox.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,7 +28,7 @@ class QueryInOmniboxTest : public testing::Test {
   QueryInOmnibox* model() { return model_.get(); }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<TestOmniboxClient> omnibox_client_;
   std::unique_ptr<QueryInOmnibox> model_;
 };
