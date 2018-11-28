@@ -21,7 +21,7 @@ import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContents.DependencyFactory;
 import org.chromium.android_webview.AwContents.InternalAccessDelegate;
-import org.chromium.android_webview.AwContents.NativeDrawGLFunctorFactory;
+import org.chromium.android_webview.AwContents.NativeDrawFunctorFactory;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
@@ -360,7 +360,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         AwContents awContents = testDependencyFactory.createAwContents(mBrowserContext,
                 testContainerView, testContainerView.getContext(),
                 testContainerView.getInternalAccessDelegate(),
-                testContainerView.getNativeDrawGLFunctorFactory(), awContentsClient, awSettings,
+                testContainerView.getNativeDrawFunctorFactory(), awContentsClient, awSettings,
                 testDependencyFactory);
         testContainerView.initialize(awContents);
         return testContainerView;
@@ -608,11 +608,10 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
 
         public AwContents createAwContents(AwBrowserContext browserContext, ViewGroup containerView,
                 Context context, InternalAccessDelegate internalAccessAdapter,
-                NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory,
-                AwContentsClient contentsClient, AwSettings settings,
-                DependencyFactory dependencyFactory) {
+                NativeDrawFunctorFactory nativeDrawFunctorFactory, AwContentsClient contentsClient,
+                AwSettings settings, DependencyFactory dependencyFactory) {
             return new AwContents(browserContext, containerView, context, internalAccessAdapter,
-                    nativeDrawGLFunctorFactory, contentsClient, settings, dependencyFactory);
+                    nativeDrawFunctorFactory, contentsClient, settings, dependencyFactory);
         }
     }
 

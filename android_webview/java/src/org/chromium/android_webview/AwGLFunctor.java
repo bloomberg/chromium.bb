@@ -27,10 +27,10 @@ public class AwGLFunctor {
     // Counts outstanding requestDrawGL calls as well as window attach count.
     private int mRefCount;
 
-    public AwGLFunctor(AwContents.NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory,
-            ViewGroup containerView) {
+    public AwGLFunctor(
+            AwContents.NativeDrawFunctorFactory nativeDrawFunctorFactory, ViewGroup containerView) {
         mNativeAwGLFunctor = nativeCreate(this);
-        mNativeDrawGLFunctor = nativeDrawGLFunctorFactory.createFunctor(
+        mNativeDrawGLFunctor = nativeDrawFunctorFactory.createGLFunctor(
                 nativeGetAwDrawGLViewContext(mNativeAwGLFunctor));
         mContainerView = containerView;
         if (mNativeDrawGLFunctor.supportsDrawGLFunctorReleasedCallback()) {

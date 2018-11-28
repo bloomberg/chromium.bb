@@ -45,10 +45,10 @@ public class TestAwContents extends AwContents {
 
     public TestAwContents(AwBrowserContext browserContext, ViewGroup containerView, Context context,
             InternalAccessDelegate internalAccessAdapter,
-            NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory, AwContentsClient contentsClient,
+            NativeDrawFunctorFactory nativeDrawFunctorFactory, AwContentsClient contentsClient,
             AwSettings settings, DependencyFactory dependencyFactory) {
         super(browserContext, containerView, context, internalAccessAdapter,
-                nativeDrawGLFunctorFactory, contentsClient, settings, dependencyFactory);
+                nativeDrawFunctorFactory, contentsClient, settings, dependencyFactory);
 
         mRenderProcessGoneHelper = new RenderProcessGoneHelper();
         mRenderProcessGoneObservers = new ArrayList<RenderProcessGoneObserver>();
