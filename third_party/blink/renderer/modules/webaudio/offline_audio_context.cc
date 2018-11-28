@@ -134,7 +134,7 @@ OfflineAudioContext* OfflineAudioContext::Create(
 
 OfflineAudioContext::OfflineAudioContext(Document* document,
                                          unsigned number_of_channels,
-                                         size_t number_of_frames,
+                                         uint32_t number_of_frames,
                                          float sample_rate,
                                          ExceptionState& exception_state)
     : BaseAudioContext(document, kOfflineContext),

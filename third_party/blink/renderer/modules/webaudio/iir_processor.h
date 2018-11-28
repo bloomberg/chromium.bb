@@ -18,7 +18,7 @@ class IIRDSPKernel;
 class IIRProcessor final : public AudioDSPKernelProcessor {
  public:
   IIRProcessor(float sample_rate,
-               size_t number_of_channels,
+               uint32_t number_of_channels,
                const Vector<double>& feedforward_coef,
                const Vector<double>& feedback_coef,
                bool is_filter_stable);

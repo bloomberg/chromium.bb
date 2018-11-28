@@ -55,7 +55,7 @@ class MediaStreamAudioSourceHandler final : public AudioHandler {
 
   // A helper for AudioSourceProviderClient implementation of
   // MediaStreamAudioSourceNode.
-  void SetFormat(size_t number_of_channels, float sample_rate);
+  void SetFormat(uint32_t number_of_channels, float sample_rate);
 
   bool RequiresTailProcessing() const final { return false; }
 
@@ -99,7 +99,7 @@ class MediaStreamAudioSourceNode final : public AudioNode,
   MediaStream* getMediaStream() const;
 
   // AudioSourceProviderClient functions:
-  void SetFormat(size_t number_of_channels, float sample_rate) override;
+  void SetFormat(uint32_t number_of_channels, float sample_rate) override;
 
  private:
   MediaStreamAudioSourceHandler& GetMediaStreamAudioSourceHandler() const;

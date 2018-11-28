@@ -104,7 +104,7 @@ void AudioWorkletHandler::Process(size_t frames_to_process) {
       AudioFloatArray* param_values = param_value_map_.at(param_name);
       if (param_handler->HasSampleAccurateValues()) {
         param_handler->CalculateSampleAccurateValues(
-            param_values->Data(), frames_to_process);
+            param_values->Data(), static_cast<uint32_t>(frames_to_process));
       } else {
         std::fill(param_values->Data(),
                   param_values->Data() + frames_to_process,

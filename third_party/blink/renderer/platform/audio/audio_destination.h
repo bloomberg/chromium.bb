@@ -109,7 +109,7 @@ class PLATFORM_EXPORT AudioDestination
 
   // The information from the actual audio hardware. (via Platform::current)
   static float HardwareSampleRate();
-  static unsigned long MaxChannelCount();
+  static uint32_t MaxChannelCount();
 
  private:
   // Check if the buffer size chosen by the WebAudioDevice is too large.

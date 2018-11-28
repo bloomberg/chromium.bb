@@ -253,9 +253,8 @@ float AudioDestination::HardwareSampleRate() {
   return static_cast<float>(Platform::Current()->AudioHardwareSampleRate());
 }
 
-unsigned long AudioDestination::MaxChannelCount() {
-  return static_cast<unsigned long>(
-      Platform::Current()->AudioHardwareOutputChannels());
+uint32_t AudioDestination::MaxChannelCount() {
+  return Platform::Current()->AudioHardwareOutputChannels();
 }
 
 bool AudioDestination::CheckBufferSize() {

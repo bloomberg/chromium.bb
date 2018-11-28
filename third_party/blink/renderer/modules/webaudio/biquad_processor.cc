@@ -31,7 +31,7 @@
 namespace blink {
 
 BiquadProcessor::BiquadProcessor(float sample_rate,
-                                 size_t number_of_channels,
+                                 uint32_t number_of_channels,
                                  AudioParamHandler& frequency,
                                  AudioParamHandler& q,
                                  AudioParamHandler& gain,

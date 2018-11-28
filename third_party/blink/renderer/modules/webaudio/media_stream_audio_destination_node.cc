@@ -40,11 +40,11 @@ namespace blink {
 
 // WebAudioCapturerSource ignores the channel count beyond 8, so we set the
 // block here to avoid anything can cause the crash.
-static const unsigned long kMaxChannelCount = 8;
+static const uint32_t kMaxChannelCount = 8;
 
 MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(
     AudioNode& node,
-    size_t number_of_channels)
+    uint32_t number_of_channels)
     : AudioBasicInspectorHandler(kNodeTypeMediaStreamAudioDestination,
                                  node,
                                  node.context()->sampleRate(),
@@ -72,7 +72,7 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(
 
 scoped_refptr<MediaStreamAudioDestinationHandler>
 MediaStreamAudioDestinationHandler::Create(AudioNode& node,
-                                           size_t number_of_channels) {
+                                           uint32_t number_of_channels) {
   return base::AdoptRef(
       new MediaStreamAudioDestinationHandler(node, number_of_channels));
 }
@@ -135,7 +135,7 @@ void MediaStreamAudioDestinationHandler::SetChannelCount(
   AudioHandler::SetChannelCount(channel_count, exception_state);
 }
 
-unsigned long MediaStreamAudioDestinationHandler::MaxChannelCount() const {
+uint32_t MediaStreamAudioDestinationHandler::MaxChannelCount() const {
   return kMaxChannelCount;
 }
 
@@ -143,7 +143,7 @@ unsigned long MediaStreamAudioDestinationHandler::MaxChannelCount() const {
 
 MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(
     AudioContext& context,
-    size_t number_of_channels)
+    uint32_t number_of_channels)
     : AudioBasicInspectorNode(context) {
   SetHandler(
       MediaStreamAudioDestinationHandler::Create(*this, number_of_channels));
@@ -151,7 +151,7 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(
 
 MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     AudioContext& context,
-    size_t number_of_channels,
+    uint32_t number_of_channels,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 

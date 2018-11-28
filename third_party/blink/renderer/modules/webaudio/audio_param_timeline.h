@@ -447,7 +447,7 @@ class AudioParamTimeline {
 
   // When cancelling events, remove the items from |events_| starting
   // at the given index.  Update |new_events_| too.
-  void RemoveCancelledEvents(size_t first_event_to_remove);
+  void RemoveCancelledEvents(wtf_size_t first_event_to_remove);
 
   // Vector of all automation events for the AudioParam.  Access must
   // be locked via m_eventsLock.

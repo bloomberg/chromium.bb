@@ -243,23 +243,23 @@ NotShared<DOMFloat32Array> AudioBuffer::getChannelData(unsigned channel_index) {
 }
 
 void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
-                                  long channel_number,
+                                  int32_t channel_number,
                                   ExceptionState& exception_state) {
   return copyFromChannel(destination, channel_number, 0, exception_state);
 }
 
 void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
-                                  long channel_number,
-                                  unsigned long start_in_channel,
+                                  int32_t channel_number,
+                                  uint32_t start_in_channel,
                                   ExceptionState& exception_state) {
   if (channel_number < 0 ||
-      channel_number >= static_cast<long>(channels_.size())) {
+      static_cast<uint32_t>(channel_number) >= channels_.size()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
         ExceptionMessages::IndexOutsideRange(
-            "channelNumber", channel_number, 0L,
+            "channelNumber", channel_number, 0,
             ExceptionMessages::kInclusiveBound,
-            static_cast<long>(channels_.size() - 1),
+            static_cast<int32_t>(channels_.size() - 1),
             ExceptionMessages::kInclusiveBound));
 
     return;
@@ -271,9 +271,8 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
         ExceptionMessages::IndexOutsideRange(
-            "startInChannel", start_in_channel, 0UL,
-            ExceptionMessages::kInclusiveBound,
-            static_cast<unsigned long>(channel_data->length()),
+            "startInChannel", start_in_channel, 0U,
+            ExceptionMessages::kInclusiveBound, channel_data->length(),
             ExceptionMessages::kExclusiveBound));
 
     return;
@@ -292,23 +291,23 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
 }
 
 void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
-                                long channel_number,
+                                int32_t channel_number,
                                 ExceptionState& exception_state) {
   return copyToChannel(source, channel_number, 0, exception_state);
 }
 
 void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
-                                long channel_number,
-                                unsigned long start_in_channel,
+                                int32_t channel_number,
+                                uint32_t start_in_channel,
                                 ExceptionState& exception_state) {
   if (channel_number < 0 ||
-      channel_number >= static_cast<long>(channels_.size())) {
+      static_cast<uint32_t>(channel_number) >= channels_.size()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
         ExceptionMessages::IndexOutsideRange(
-            "channelNumber", channel_number, 0L,
+            "channelNumber", channel_number, 0,
             ExceptionMessages::kInclusiveBound,
-            static_cast<long>(channels_.size() - 1),
+            static_cast<int32_t>(channels_.size() - 1),
             ExceptionMessages::kInclusiveBound));
     return;
   }
@@ -319,9 +318,8 @@ void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
         ExceptionMessages::IndexOutsideRange(
-            "startInChannel", start_in_channel, 0UL,
-            ExceptionMessages::kInclusiveBound,
-            static_cast<unsigned long>(channel_data->length()),
+            "startInChannel", start_in_channel, 0U,
+            ExceptionMessages::kInclusiveBound, channel_data->length(),
             ExceptionMessages::kExclusiveBound));
 
     return;
