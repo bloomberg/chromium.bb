@@ -9,8 +9,7 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "content/browser/media/media_web_contents_observer.h"
-#include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,13 +29,13 @@ static const char* MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM =
 static const char* CONCURRENT_TABS_TIME_HISTOGRAM =
     "Media.Audible.ConcurrentTabsTime";
 
-class AudibleMetricsTest : public testing::Test {
+class AudibleMetricsTest : public RenderViewHostTestHarness {
  public:
   AudibleMetricsTest() = default;
 
   void SetUp() override {
+    RenderViewHostTestHarness::SetUp();
     audible_metrics_ = std::make_unique<AudibleMetrics>();
-    browser_context_ = std::make_unique<TestBrowserContext>();
 
     // Set the clock to a value different than 0 so the time it gives is
     // recognized as initialized.
@@ -46,7 +45,7 @@ class AudibleMetricsTest : public testing::Test {
 
   void TearDown() override {
     audible_metrics_.reset();
-    browser_context_.reset();
+    RenderViewHostTestHarness::TearDown();
   }
 
   base::SimpleTestTickClock* clock() { return &clock_; }
@@ -62,16 +61,12 @@ class AudibleMetricsTest : public testing::Test {
     return histogram_tester_.GetHistogramSamplesSinceCreation(name);
   }
 
-  std::unique_ptr<WebContentsImpl> CreateWebContents() {
-    return TestWebContents::Create(
-        browser_context_.get(), SiteInstance::Create(browser_context_.get()));
+  TestWebContents* test_web_contents() {
+    return static_cast<TestWebContents*>(web_contents());
   }
 
  private:
-  TestBrowserThreadBundle test_browser_thread_bundle_;
-
   std::unique_ptr<AudibleMetrics> audible_metrics_;
-  std::unique_ptr<TestBrowserContext> browser_context_;
 
   base::SimpleTestTickClock clock_;
   base::HistogramTester histogram_tester_;
@@ -372,16 +367,17 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsTimeRunsAsLongAsTwoAudibleTabs) {
 }
 
 TEST_F(AudibleMetricsTest, MediaWebContentsObserver_Audible_Muted) {
-  std::unique_ptr<WebContentsImpl> web_contents(CreateWebContents());
-  MediaWebContentsObserver media_observer(web_contents.get());
+  MediaWebContentsObserver media_observer(test_web_contents());
   media_observer.SetAudibleMetricsForTest(audible_metrics());
 
-  web_contents->SetAudioMuted(true);
-  web_contents->audio_stream_monitor()->set_is_currently_audible_for_testing(
-      true);
+  test_web_contents()->SetAudioMuted(true);
+  test_web_contents()
+      ->audio_stream_monitor()
+      ->set_is_currently_audible_for_testing(true);
 
-  EXPECT_TRUE(web_contents->audio_stream_monitor()->IsCurrentlyAudible());
-  EXPECT_TRUE(web_contents->IsAudioMuted());
+  EXPECT_TRUE(
+      test_web_contents()->audio_stream_monitor()->IsCurrentlyAudible());
+  EXPECT_TRUE(test_web_contents()->IsAudioMuted());
 
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
   media_observer.MaybeUpdateAudibleState();
@@ -389,15 +385,16 @@ TEST_F(AudibleMetricsTest, MediaWebContentsObserver_Audible_Muted) {
 }
 
 TEST_F(AudibleMetricsTest, MediaWebContentsObserver_Audible_NotMuted) {
-  std::unique_ptr<WebContentsImpl> web_contents(CreateWebContents());
-  MediaWebContentsObserver media_observer(web_contents.get());
+  MediaWebContentsObserver media_observer(test_web_contents());
   media_observer.SetAudibleMetricsForTest(audible_metrics());
 
-  web_contents->audio_stream_monitor()->set_is_currently_audible_for_testing(
-      true);
+  test_web_contents()
+      ->audio_stream_monitor()
+      ->set_is_currently_audible_for_testing(true);
 
-  EXPECT_TRUE(web_contents->audio_stream_monitor()->IsCurrentlyAudible());
-  EXPECT_FALSE(web_contents->IsAudioMuted());
+  EXPECT_TRUE(
+      test_web_contents()->audio_stream_monitor()->IsCurrentlyAudible());
+  EXPECT_FALSE(test_web_contents()->IsAudioMuted());
 
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
   media_observer.MaybeUpdateAudibleState();
@@ -405,14 +402,14 @@ TEST_F(AudibleMetricsTest, MediaWebContentsObserver_Audible_NotMuted) {
 }
 
 TEST_F(AudibleMetricsTest, MediaWebContentsObserver_NotAudible_Muted) {
-  std::unique_ptr<WebContentsImpl> web_contents(CreateWebContents());
-  MediaWebContentsObserver media_observer(web_contents.get());
+  MediaWebContentsObserver media_observer(test_web_contents());
   media_observer.SetAudibleMetricsForTest(audible_metrics());
 
-  web_contents->SetAudioMuted(true);
+  test_web_contents()->SetAudioMuted(true);
 
-  EXPECT_FALSE(web_contents->audio_stream_monitor()->IsCurrentlyAudible());
-  EXPECT_TRUE(web_contents->IsAudioMuted());
+  EXPECT_FALSE(
+      test_web_contents()->audio_stream_monitor()->IsCurrentlyAudible());
+  EXPECT_TRUE(test_web_contents()->IsAudioMuted());
 
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
   media_observer.MaybeUpdateAudibleState();
@@ -420,12 +417,12 @@ TEST_F(AudibleMetricsTest, MediaWebContentsObserver_NotAudible_Muted) {
 }
 
 TEST_F(AudibleMetricsTest, MediaWebContentsObserver_NotAudible_NotMuted) {
-  std::unique_ptr<WebContentsImpl> web_contents(CreateWebContents());
-  MediaWebContentsObserver media_observer(web_contents.get());
+  MediaWebContentsObserver media_observer(test_web_contents());
   media_observer.SetAudibleMetricsForTest(audible_metrics());
 
-  EXPECT_FALSE(web_contents->audio_stream_monitor()->IsCurrentlyAudible());
-  EXPECT_FALSE(web_contents->IsAudioMuted());
+  EXPECT_FALSE(
+      test_web_contents()->audio_stream_monitor()->IsCurrentlyAudible());
+  EXPECT_FALSE(test_web_contents()->IsAudioMuted());
 
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
   media_observer.MaybeUpdateAudibleState();
