@@ -100,6 +100,8 @@ class LocationIconView : public IconLabelBubbleView {
   // - the current page URL is a chrome-extension:// URL.
   bool ShouldShowText() const;
 
+  const views::InkDrop* get_ink_drop_for_testing();
+
  protected:
   // IconLabelBubbleView:
   bool IsTriggerableEvent(const ui::Event& event) override;
@@ -110,6 +112,10 @@ class LocationIconView : public IconLabelBubbleView {
   // whether to animate security level transitions.
   security_state::SecurityLevel last_update_security_level_ =
       security_state::NONE;
+
+  // Whether the delegate's editing or empty flag was set the last time the
+  // location icon was updated.
+  bool was_editing_or_empty_ = false;
 
   // Returns what the minimum size would be if the preferred size were |size|.
   gfx::Size GetMinimumSizeForPreferredSize(gfx::Size size) const;
