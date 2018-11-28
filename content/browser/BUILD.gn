@@ -582,7 +582,7 @@ jumbo_source_set("browser") {
     "cache_storage/cache_storage_ref.h",
     "cache_storage/cache_storage_scheduler.cc",
     "cache_storage/cache_storage_scheduler.h",
-    "cache_storage/cache_storage_scheduler_client.h",
+    "cache_storage/cache_storage_scheduler_types.h",
     "child_process_launcher.cc",
     "child_process_launcher.h",
     "child_process_launcher_helper.cc",

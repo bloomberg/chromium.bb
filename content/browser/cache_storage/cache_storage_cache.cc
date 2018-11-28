@@ -544,10 +544,12 @@ void CacheStorageCache::Match(
     return;
   }
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorageCache::MatchImpl, weak_ptr_factory_.GetWeakPtr(),
-      std::move(request), std::move(match_params),
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kMatch,
+      base::BindOnce(&CacheStorageCache::MatchImpl,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(request),
+                     std::move(match_params),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorageCache::MatchAll(
@@ -561,10 +563,12 @@ void CacheStorageCache::MatchAll(
     return;
   }
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorageCache::MatchAllImpl, weak_ptr_factory_.GetWeakPtr(),
-      std::move(request), std::move(match_params),
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kMatchAll,
+      base::BindOnce(&CacheStorageCache::MatchAllImpl,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(request),
+                     std::move(match_params),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorageCache::WriteSideData(ErrorCallback callback,
@@ -817,19 +821,23 @@ void CacheStorageCache::Keys(std::unique_ptr<ServiceWorkerFetchRequest> request,
     return;
   }
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorageCache::KeysImpl, weak_ptr_factory_.GetWeakPtr(),
-      std::move(request), std::move(options),
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kKeys,
+      base::BindOnce(&CacheStorageCache::KeysImpl,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(request),
+                     std::move(options),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorageCache::Close(base::OnceClosure callback) {
   DCHECK_NE(BACKEND_CLOSED, backend_state_)
       << "Was CacheStorageCache::Close() called twice?";
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorageCache::CloseImpl, weak_ptr_factory_.GetWeakPtr(),
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kClose,
+      base::BindOnce(&CacheStorageCache::CloseImpl,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorageCache::Size(SizeCallback callback) {
@@ -840,9 +848,11 @@ void CacheStorageCache::Size(SizeCallback callback) {
     return;
   }
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorageCache::SizeImpl, weak_ptr_factory_.GetWeakPtr(),
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kSize,
+      base::BindOnce(&CacheStorageCache::SizeImpl,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorageCache::GetSizeThenClose(SizeCallback callback) {
@@ -852,11 +862,14 @@ void CacheStorageCache::GetSizeThenClose(SizeCallback callback) {
     return;
   }
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorageCache::SizeImpl, weak_ptr_factory_.GetWeakPtr(),
-      base::BindOnce(&CacheStorageCache::GetSizeThenCloseDidGetSize,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     scheduler_->WrapCallbackToRunNext(std::move(callback)))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kSizeThenClose,
+      base::BindOnce(
+          &CacheStorageCache::SizeImpl, weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(
+              &CacheStorageCache::GetSizeThenCloseDidGetSize,
+              weak_ptr_factory_.GetWeakPtr(),
+              scheduler_->WrapCallbackToRunNext(std::move(callback)))));
 }
 
 void CacheStorageCache::SetObserver(CacheStorageCacheObserver* observer) {
@@ -887,7 +900,7 @@ CacheStorageCache::CacheStorageCache(
       quota_manager_proxy_(std::move(quota_manager_proxy)),
       blob_storage_context_(blob_context),
       scheduler_(
-          new CacheStorageScheduler(CacheStorageSchedulerClient::CLIENT_CACHE)),
+          new CacheStorageScheduler(CacheStorageSchedulerClient::kCache)),
       cache_size_(cache_size),
       cache_padding_(cache_padding),
       cache_padding_key_(std::move(cache_padding_key)),
@@ -1257,10 +1270,12 @@ void CacheStorageCache::WriteSideDataDidGetQuota(
     return;
   }
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorageCache::WriteSideDataImpl, weak_ptr_factory_.GetWeakPtr(),
-      scheduler_->WrapCallbackToRunNext(std::move(callback)), url,
-      expected_response_time, buffer, buf_len));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kWriteSideData,
+      base::BindOnce(&CacheStorageCache::WriteSideDataImpl,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback)),
+                     url, expected_response_time, buffer, buf_len));
 }
 
 void CacheStorageCache::WriteSideDataImpl(ErrorCallback callback,
@@ -1402,9 +1417,10 @@ void CacheStorageCache::Put(std::unique_ptr<ServiceWorkerFetchRequest> request,
   put_context->callback =
       scheduler_->WrapCallbackToRunNext(std::move(callback));
 
-  scheduler_->ScheduleOperation(base::BindOnce(&CacheStorageCache::PutImpl,
-                                               weak_ptr_factory_.GetWeakPtr(),
-                                               std::move(put_context)));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kPut,
+      base::BindOnce(&CacheStorageCache::PutImpl,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(put_context)));
 }
 
 void CacheStorageCache::PutImpl(std::unique_ptr<PutContext> put_context) {
@@ -1725,10 +1741,12 @@ void CacheStorageCache::GetAllMatchedEntries(
     return;
   }
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorageCache::GetAllMatchedEntriesImpl,
-      weak_ptr_factory_.GetWeakPtr(), std::move(request), std::move(options),
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kGetAllMatched,
+      base::BindOnce(&CacheStorageCache::GetAllMatchedEntriesImpl,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(request),
+                     std::move(options),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorageCache::GetAllMatchedEntriesImpl(
@@ -1783,10 +1801,12 @@ void CacheStorageCache::Delete(blink::mojom::BatchOperationPtr operation,
           operation->request->referrer.To<Referrer>(),
           operation->request->is_reload));
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorageCache::DeleteImpl, weak_ptr_factory_.GetWeakPtr(),
-      std::move(request), std::move(operation->match_params),
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kDelete,
+      base::BindOnce(&CacheStorageCache::DeleteImpl,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(request),
+                     std::move(operation->match_params),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorageCache::DeleteImpl(
@@ -1958,12 +1978,14 @@ void CacheStorageCache::InitBackend() {
   DCHECK(!scheduler_->ScheduledOperations());
   initializing_ = true;
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorageCache::CreateBackend, weak_ptr_factory_.GetWeakPtr(),
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kInit,
       base::BindOnce(
-          &CacheStorageCache::InitDidCreateBackend,
-          weak_ptr_factory_.GetWeakPtr(),
-          scheduler_->WrapCallbackToRunNext(base::DoNothing::Once()))));
+          &CacheStorageCache::CreateBackend, weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(
+              &CacheStorageCache::InitDidCreateBackend,
+              weak_ptr_factory_.GetWeakPtr(),
+              scheduler_->WrapCallbackToRunNext(base::DoNothing::Once()))));
 }
 
 void CacheStorageCache::InitDidCreateBackend(

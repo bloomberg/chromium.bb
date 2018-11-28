@@ -513,8 +513,19 @@ class CacheStorageCacheTest : public testing::Test {
     return callback_error_;
   }
 
+  void CheckOpHistograms(base::HistogramTester& histogram_tester,
+                         const char* op_name) {
+    std::string base("ServiceWorkerCache.Cache.Scheduler.");
+    histogram_tester.ExpectTotalCount(base + "IsOperationSlow." + op_name, 1);
+    histogram_tester.ExpectTotalCount(base + "OperationDuration2." + op_name,
+                                      1);
+    histogram_tester.ExpectTotalCount(base + "QueueDuration2." + op_name, 1);
+    histogram_tester.ExpectTotalCount(base + "QueueLength." + op_name, 1);
+  }
+
   bool Put(const ServiceWorkerFetchRequest& request,
            blink::mojom::FetchAPIResponsePtr response) {
+    base::HistogramTester histogram_tester;
     blink::mojom::BatchOperationPtr operation =
         blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kPut;
@@ -525,11 +536,14 @@ class CacheStorageCacheTest : public testing::Test {
     std::vector<blink::mojom::BatchOperationPtr> operations;
     operations.emplace_back(std::move(operation));
     CacheStorageError error = BatchOperation(std::move(operations));
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "Put");
     return error == CacheStorageError::kSuccess;
   }
 
   bool Match(const ServiceWorkerFetchRequest& request,
              blink::mojom::QueryParamsPtr match_params = nullptr) {
+    base::HistogramTester histogram_tester;
     std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
 
     cache_->Match(
@@ -537,19 +551,23 @@ class CacheStorageCacheTest : public testing::Test {
         base::BindOnce(&CacheStorageCacheTest::ResponseAndErrorCallback,
                        base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
-
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "Match");
     return callback_error_ == CacheStorageError::kSuccess;
   }
 
   bool MatchAll(const ServiceWorkerFetchRequest& request,
                 blink::mojom::QueryParamsPtr match_params,
                 std::vector<blink::mojom::FetchAPIResponsePtr>* responses) {
+    base::HistogramTester histogram_tester;
     base::RunLoop loop;
     cache_->MatchAll(
         CopyFetchRequest(request), std::move(match_params),
         base::BindOnce(&CacheStorageCacheTest::ResponsesAndErrorCallback,
                        base::Unretained(this), loop.QuitClosure(), responses));
     loop.Run();
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "MatchAll");
     return callback_error_ == CacheStorageError::kSuccess;
   }
 
@@ -571,6 +589,7 @@ class CacheStorageCacheTest : public testing::Test {
 
   bool Delete(const ServiceWorkerFetchRequest& request,
               blink::mojom::QueryParamsPtr match_params = nullptr) {
+    base::HistogramTester histogram_tester;
     blink::mojom::BatchOperationPtr operation =
         blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kDelete;
@@ -581,12 +600,15 @@ class CacheStorageCacheTest : public testing::Test {
     std::vector<blink::mojom::BatchOperationPtr> operations;
     operations.emplace_back(std::move(operation));
     CacheStorageError error = BatchOperation(std::move(operations));
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "Delete");
     return error == CacheStorageError::kSuccess;
   }
 
   bool Keys(
       const ServiceWorkerFetchRequest& request = ServiceWorkerFetchRequest(),
       blink::mojom::QueryParamsPtr match_params = nullptr) {
+    base::HistogramTester histogram_tester;
     std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
 
     cache_->Keys(
@@ -594,17 +616,21 @@ class CacheStorageCacheTest : public testing::Test {
         base::BindOnce(&CacheStorageCacheTest::RequestsCallback,
                        base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
-
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "Keys");
     return callback_error_ == CacheStorageError::kSuccess;
   }
 
   bool Close() {
+    base::HistogramTester histogram_tester;
     std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
 
     cache_->Close(base::BindOnce(&CacheStorageCacheTest::CloseCallback,
                                  base::Unretained(this),
                                  base::Unretained(loop.get())));
     loop->Run();
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "Close");
     return callback_closed_;
   }
 
@@ -612,17 +638,20 @@ class CacheStorageCacheTest : public testing::Test {
                      base::Time expected_response_time,
                      scoped_refptr<net::IOBuffer> buffer,
                      int buf_len) {
+    base::HistogramTester histogram_tester;
     base::RunLoop run_loop;
     cache_->WriteSideData(
         base::BindOnce(&CacheStorageCacheTest::ErrorTypeCallback,
                        base::Unretained(this), base::Unretained(&run_loop)),
         url, expected_response_time, buffer, buf_len);
     run_loop.Run();
-
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "WriteSideData");
     return callback_error_ == CacheStorageError::kSuccess;
   }
 
   int64_t Size() {
+    base::HistogramTester histogram_tester;
     // Storage notification happens after an operation completes. Let the any
     // notifications complete before calling Size.
     base::RunLoop().RunUntilIdle();
@@ -634,10 +663,13 @@ class CacheStorageCacheTest : public testing::Test {
         base::BindOnce(&SizeCallback, &run_loop, &callback_called, &result));
     run_loop.Run();
     EXPECT_TRUE(callback_called);
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "Size");
     return result;
   }
 
   int64_t GetSizeThenClose() {
+    base::HistogramTester histogram_tester;
     base::RunLoop run_loop;
     bool callback_called = false;
     int64_t result = 0;
@@ -645,6 +677,8 @@ class CacheStorageCacheTest : public testing::Test {
         base::BindOnce(&SizeCallback, &run_loop, &callback_called, &result));
     run_loop.Run();
     EXPECT_TRUE(callback_called);
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "SizeThenClose");
     return result;
   }
 

@@ -581,8 +581,8 @@ CacheStorage::CacheStorage(
     : initialized_(false),
       initializing_(false),
       memory_only_(memory_only),
-      scheduler_(new CacheStorageScheduler(
-          CacheStorageSchedulerClient::CLIENT_STORAGE)),
+      scheduler_(
+          new CacheStorageScheduler(CacheStorageSchedulerClient::kStorage)),
       origin_path_(path),
       cache_task_runner_(cache_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
@@ -614,9 +614,11 @@ void CacheStorage::OpenCache(const std::string& cache_name,
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorage::OpenCacheImpl, weak_factory_.GetWeakPtr(), cache_name,
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kOpen,
+      base::BindOnce(&CacheStorage::OpenCacheImpl, weak_factory_.GetWeakPtr(),
+                     cache_name,
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::HasCache(const std::string& cache_name,
@@ -630,9 +632,11 @@ void CacheStorage::HasCache(const std::string& cache_name,
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorage::HasCacheImpl, weak_factory_.GetWeakPtr(), cache_name,
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kHas,
+      base::BindOnce(&CacheStorage::HasCacheImpl, weak_factory_.GetWeakPtr(),
+                     cache_name,
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::DoomCache(const std::string& cache_name,
@@ -646,9 +650,11 @@ void CacheStorage::DoomCache(const std::string& cache_name,
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorage::DoomCacheImpl, weak_factory_.GetWeakPtr(), cache_name,
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kDelete,
+      base::BindOnce(&CacheStorage::DoomCacheImpl, weak_factory_.GetWeakPtr(),
+                     cache_name,
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::EnumerateCaches(IndexCallback callback) {
@@ -661,9 +667,11 @@ void CacheStorage::EnumerateCaches(IndexCallback callback) {
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorage::EnumerateCachesImpl, weak_factory_.GetWeakPtr(),
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kKeys,
+      base::BindOnce(&CacheStorage::EnumerateCachesImpl,
+                     weak_factory_.GetWeakPtr(),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::MatchCache(
@@ -681,6 +689,7 @@ void CacheStorage::MatchCache(
       StorageType::kTemporary);
 
   scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kMatch,
       base::BindOnce(&CacheStorage::MatchCacheImpl, weak_factory_.GetWeakPtr(),
                      cache_name, std::move(request), std::move(match_params),
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
@@ -699,10 +708,12 @@ void CacheStorage::MatchAllCaches(
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorage::MatchAllCachesImpl, weak_factory_.GetWeakPtr(),
-      std::move(request), std::move(match_params),
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kMatchAll,
+      base::BindOnce(&CacheStorage::MatchAllCachesImpl,
+                     weak_factory_.GetWeakPtr(), std::move(request),
+                     std::move(match_params),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::WriteToCache(
@@ -719,10 +730,12 @@ void CacheStorage::WriteToCache(
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorage::WriteToCacheImpl, weak_factory_.GetWeakPtr(), cache_name,
-      std::move(request), std::move(response),
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kPut,
+      base::BindOnce(&CacheStorage::WriteToCacheImpl,
+                     weak_factory_.GetWeakPtr(), cache_name, std::move(request),
+                     std::move(response),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::GetSizeThenCloseAllCaches(SizeCallback callback) {
@@ -731,9 +744,11 @@ void CacheStorage::GetSizeThenCloseAllCaches(SizeCallback callback) {
   if (!initialized_)
     LazyInit();
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorage::GetSizeThenCloseAllCachesImpl, weak_factory_.GetWeakPtr(),
-      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+  scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kSizeThenClose,
+      base::BindOnce(&CacheStorage::GetSizeThenCloseAllCachesImpl,
+                     weak_factory_.GetWeakPtr(),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::Size(CacheStorage::SizeCallback callback) {
@@ -743,6 +758,7 @@ void CacheStorage::Size(CacheStorage::SizeCallback callback) {
     LazyInit();
 
   scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kSize,
       base::BindOnce(&CacheStorage::SizeImpl, weak_factory_.GetWeakPtr(),
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
@@ -770,6 +786,7 @@ void CacheStorage::ScheduleWriteIndex() {
 void CacheStorage::WriteIndex(base::OnceCallback<void(bool)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kWriteIndex,
       base::BindOnce(&CacheStorage::WriteIndexImpl, weak_factory_.GetWeakPtr(),
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
@@ -802,7 +819,8 @@ void CacheStorage::CacheSizeUpdated(const CacheStorageCache* cache) {
 }
 
 void CacheStorage::StartAsyncOperationForTesting() {
-  scheduler_->ScheduleOperation(base::DoNothing());
+  scheduler_->ScheduleOperation(CacheStorageSchedulerOp::kTest,
+                                base::DoNothing());
 }
 
 void CacheStorage::CompleteAsyncOperationForTesting() {
@@ -826,6 +844,7 @@ void CacheStorage::LazyInit() {
 
   initializing_ = true;
   scheduler_->ScheduleOperation(
+      CacheStorageSchedulerOp::kInit,
       base::BindOnce(&CacheStorage::LazyInitImpl, weak_factory_.GetWeakPtr()));
 }
 
