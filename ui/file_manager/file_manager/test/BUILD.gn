@@ -63,7 +63,6 @@ js_library("closure_compile_externs") {
     "//ui/file_manager/externs/volume_info.js",
     "//ui/file_manager/externs/volume_info_list.js",
     "//ui/file_manager/externs/volume_manager.js",
-    "//third_party/analytics/externs.js",
   ]
 }
 

@@ -73,7 +73,6 @@ js_library("closure_compile_externs") {
     "../../../../externs/paper_elements.js",
     "../../../../externs/platform.js",
     "../../../../externs/search_item.js",
-    "//third_party/analytics/externs.js",
   ]
 }
 
@@ -185,9 +184,7 @@ js_library("file_grid") {
     "../metadata:metadata_model",
     "//ui/webui/resources/js/cr/ui:grid",
   ]
-  externs_list = [
-    "../../../../externs/background/import_history.js",
-  ]
+  externs_list = [ "../../../../externs/background/import_history.js" ]
 }
 
 js_library("file_list_selection_model") {
@@ -266,9 +263,7 @@ js_library("file_table") {
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr/ui:table",
   ]
-  externs_list = [
-    "../../../../externs/background/import_history.js",
-  ]
+  externs_list = [ "../../../../externs/background/import_history.js" ]
 }
 
 js_unittest("file_table_unittest") {
