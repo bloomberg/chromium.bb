@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_ANDROID_ANDROID_SURFACE_COMPOSER_COMPAT_H_
-#define UI_GL_ANDROID_ANDROID_SURFACE_COMPOSER_COMPAT_H_
+#ifndef UI_GL_ANDROID_ANDROID_SURFACE_CONTROL_COMPAT_H_
+#define UI_GL_ANDROID_ANDROID_SURFACE_CONTROL_COMPAT_H_
 
 #include <memory>
 
@@ -11,30 +11,27 @@
 #include <android/native_window.h>
 
 #include "base/files/scoped_file.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_export.h"
 
 extern "C" {
 typedef struct ASurface ASurface;
-typedef struct ASurfaceComposer ASurfaceComposer;
 typedef struct ASurfaceTransaction ASurfaceTransaction;
+typedef void (*TransactionCompletedFunc)(void* context,
+                                         int64_t present_time_ns);
 }
 
 namespace gl {
 
-class GL_EXPORT SurfaceComposer {
+class GL_EXPORT SurfaceControl {
  public:
-  enum class SurfaceContentType : int32_t {
-    kNone = 0,
-    kAHardwareBuffer = 1,
-  };
+  static bool IsSupported();
 
   class GL_EXPORT Surface {
    public:
     Surface();
-    Surface(SurfaceComposer* composer,
-            SurfaceContentType content_type,
-            const char* name,
-            Surface* parent = nullptr);
+    Surface(const Surface& parent, const char* name);
+    Surface(ANativeWindow* parent, const char* name);
     ~Surface();
 
     Surface(Surface&& other);
@@ -52,35 +49,21 @@ class GL_EXPORT SurfaceComposer {
     ~Transaction();
 
     void SetVisibility(const Surface& surface, bool show);
-    void SetPosition(const Surface& surface, float x, float y);
     void SetZOrder(const Surface& surface, int32_t z);
     void SetBuffer(const Surface& surface,
                    AHardwareBuffer* buffer,
                    base::ScopedFD fence_fd);
-    void SetSize(const Surface& surface, uint32_t width, uint32_t height);
-    void SetCropRect(const Surface& surface,
-                     int32_t left,
-                     int32_t top,
-                     int32_t right,
-                     int32_t bottom);
+    void SetCropRect(const Surface& surface, const gfx::Rect& rect);
+    void SetDisplayFrame(const Surface& surface, const gfx::Rect& rect);
     void SetOpaque(const Surface& surface, bool opaque);
+    void SetDamageRect(const Surface& surface, const gfx::Rect& rect);
+    void SetCompletedFunc(TransactionCompletedFunc func, void* ctx);
     void Apply();
 
    private:
     ASurfaceTransaction* transaction_;
   };
-
-  static bool IsSupported();
-
-  static std::unique_ptr<SurfaceComposer> Create(ANativeWindow* window);
-  ~SurfaceComposer();
-
- private:
-  explicit SurfaceComposer(ASurfaceComposer* composer);
-
-  ASurfaceComposer* composer_;
 };
-
 };  // namespace gl
 
-#endif  // UI_GL_ANDROID_ANDROID_SURFACE_COMPOSER_COMPAT_H_
+#endif  // UI_GL_ANDROID_ANDROID_SURFACE_CONTROL_COMPAT_H_

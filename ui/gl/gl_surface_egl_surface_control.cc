@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_surface_egl_surface_control.h"
 
+#include "base/android/android_hardware_buffer_compat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
@@ -12,15 +13,45 @@
 namespace gl {
 namespace {
 
-constexpr char kSurfaceName[] = "ChromeSurface";
+constexpr char kRootSurfaceName[] = "ChromeNativeWindowSurface";
+constexpr char kChildSurfaceName[] = "ChromeChildSurface";
+
+gfx::Size GetBufferSize(const AHardwareBuffer* buffer) {
+  AHardwareBuffer_Desc desc;
+  base::AndroidHardwareBufferCompat::GetInstance().Describe(buffer, &desc);
+  return gfx::Size(desc.width, desc.height);
+}
+
+struct TransactionAckCtx {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
+  base::OnceCallback<void(int64_t)> callback;
+};
+
+// Note that the framework API states that this callback can be dispatched on
+// any thread (in practice it should be the binder thread), so we need to post
+// a task back to the GPU thread.
+void OnTransactionCompletedOnAnyThread(void* ctx, int64_t present_time_ns) {
+  auto* ack_ctx = static_cast<TransactionAckCtx*>(ctx);
+  ack_ctx->task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(ack_ctx->callback), present_time_ns));
+  delete ack_ctx;
+}
 
 }  // namespace
 
-GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(ANativeWindow* window) {
-  surface_composer_ = SurfaceComposer::Create(window);
-}
+GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
+    ANativeWindow* window,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : root_surface_(window, kRootSurfaceName),
+      gpu_task_runner_(std::move(task_runner)),
+      weak_factory_(this) {}
 
 GLSurfaceEGLSurfaceControl::~GLSurfaceEGLSurfaceControl() = default;
+
+int GLSurfaceEGLSurfaceControl::GetBufferCount() const {
+  // Triple buffering to match framework's BufferQueue.
+  return 3;
+}
 
 bool GLSurfaceEGLSurfaceControl::Initialize(GLSurfaceFormat format) {
   format_ = format;
@@ -30,7 +61,7 @@ bool GLSurfaceEGLSurfaceControl::Initialize(GLSurfaceFormat format) {
 void GLSurfaceEGLSurfaceControl::Destroy() {
   pending_transaction_.reset();
   surface_list_.clear();
-  surface_composer_.reset();
+  root_surface_ = SurfaceControl::Surface();
 }
 
 bool GLSurfaceEGLSurfaceControl::Resize(const gfx::Size& size,
@@ -83,25 +114,25 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
   current_frame_resources_.swap(pending_frame_resources_);
   pending_frame_resources_.clear();
 
+  // Set up the callback to be notified when the frame is presented by the
+  // framework. Note that it is assumed that all GPU/display work for this frame
+  // is finished when the callback is dispatched, and all resources from the
+  // previous frame can be reused.
+  TransactionAckCtx* ack_ctx = new TransactionAckCtx;
+  ack_ctx->task_runner = gpu_task_runner_;
+  ack_ctx->callback =
+      base::BindOnce(&GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread,
+                     weak_factory_.GetWeakPtr(), completion_callback,
+                     present_callback, std::move(resources_to_release));
+  pending_transaction_->SetCompletedFunc(&OnTransactionCompletedOnAnyThread,
+                                         ack_ctx);
+
   pending_transaction_->Apply();
   pending_transaction_.reset();
 
   DCHECK_GE(surface_list_.size(), pending_surfaces_count_);
   surface_list_.resize(pending_surfaces_count_);
   pending_surfaces_count_ = 0u;
-
-  // TODO(khushalsagar): Send the legit timestamp when hooking up transaction
-  // acks.
-  constexpr int64_t kRefreshIntervalInMicroseconds =
-      base::Time::kMicrosecondsPerSecond / 60;
-  gfx::PresentationFeedback feedback(
-      base::TimeTicks::Now(),
-      base::TimeDelta::FromMicroseconds(kRefreshIntervalInMicroseconds),
-      0 /* flags */);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(OnTransactionAck, feedback, present_callback,
-                     completion_callback, std::move(resources_to_release)));
 }
 
 gfx::Size GLSurfaceEGLSurfaceControl::GetSize() {
@@ -120,13 +151,15 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     const gfx::RectF& crop_rect,
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
+
   if (!pending_transaction_)
     pending_transaction_.emplace();
 
   bool uninitialized = false;
   if (pending_surfaces_count_ == surface_list_.size()) {
     uninitialized = true;
-    surface_list_.emplace_back(surface_composer_.get());
+    surface_list_.emplace_back(root_surface_);
   }
   pending_surfaces_count_++;
   auto& surface_state = surface_list_.at(pending_surfaces_count_ - 1);
@@ -134,11 +167,6 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   if (uninitialized || surface_state.z_order != z_order) {
     surface_state.z_order = z_order;
     pending_transaction_->SetZOrder(surface_state.surface, z_order);
-  }
-
-  if (uninitialized || surface_state.transform != transform) {
-    surface_state.transform = transform;
-    // TODO(khushalsagar): Forward the transform once the NDK API is in place.
   }
 
   AHardwareBuffer* hardware_buffer = nullptr;
@@ -167,21 +195,24 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
 
   if (uninitialized || surface_state.bounds_rect != bounds_rect) {
     surface_state.bounds_rect = bounds_rect;
-    pending_transaction_->SetPosition(surface_state.surface, bounds_rect.x(),
-                                      bounds_rect.y());
-    pending_transaction_->SetSize(surface_state.surface, bounds_rect.width(),
-                                  bounds_rect.height());
+    pending_transaction_->SetDisplayFrame(surface_state.surface, bounds_rect);
   }
 
-  // TODO(khushalsagar): Currently the framework refuses to the draw the buffer
-  // if the crop rect doesn't exactly match the buffer size. Update when fixed.
-  /*gfx::Rect enclosed_crop_rect = gfx::ToEnclosedRect(crop_rect);
-  if (uninitialized || surface_state.crop_rect != enclosed_crop_rect) {
-    surface_state.crop_rect = enclosed_crop_rect;
-    pending_transaction_->SetCropRect(
-        surface_state.surface, enclosed_crop_rect.x(), enclosed_crop_rect.y(),
-        enclosed_crop_rect.right(), enclosed_crop_rect.bottom());
-  }*/
+  gfx::Rect enclosed_crop_rect;
+  if (hardware_buffer) {
+    gfx::Size buffer_size = GetBufferSize(hardware_buffer);
+    gfx::RectF scaled_rect =
+        gfx::RectF(crop_rect.x() * buffer_size.width(),
+                   crop_rect.y() * buffer_size.height(),
+                   crop_rect.width() * buffer_size.width(),
+                   crop_rect.height() * buffer_size.height());
+    enclosed_crop_rect = gfx::ToEnclosedRect(scaled_rect);
+    if (uninitialized || surface_state.crop_rect != enclosed_crop_rect) {
+      surface_state.crop_rect = enclosed_crop_rect;
+      pending_transaction_->SetCropRect(surface_state.surface,
+                                        enclosed_crop_rect);
+    }
+  }
 
   bool opaque = !enable_blend;
   if (uninitialized || surface_state.opaque != opaque) {
@@ -221,22 +252,25 @@ bool GLSurfaceEGLSurfaceControl::SupportsCommitOverlayPlanes() {
   return true;
 }
 
-// static
-void GLSurfaceEGLSurfaceControl::OnTransactionAck(
-    const gfx::PresentationFeedback& feedback,
-    const PresentationCallback& present_callback,
-    const SwapCompletionCallback& completion_callback,
-    ResourceRefs resources) {
+void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
+    SwapCompletionCallback completion_callback,
+    PresentationCallback presentation_callback,
+    ResourceRefs released_resources,
+    int64_t present_time_ns) {
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
+
+  // The presentation feedback callback must run after swap completion.
   completion_callback.Run(gfx::SwapResult::SWAP_ACK, nullptr);
-  present_callback.Run(feedback);
-  resources.clear();
+  gfx::PresentationFeedback feedback(
+      base::TimeTicks::FromInternalValue(present_time_ns), base::TimeDelta(),
+      0 /* flags */);
+  presentation_callback.Run(feedback);
+  released_resources.clear();
 }
 
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState(
-    SurfaceComposer* composer)
-    : surface(composer,
-              SurfaceComposer::SurfaceContentType::kAHardwareBuffer,
-              kSurfaceName) {}
+    const SurfaceControl::Surface& parent)
+    : surface(parent, kChildSurfaceName) {}
 
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState() = default;
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState(SurfaceState&& other) =
