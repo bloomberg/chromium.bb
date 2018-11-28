@@ -67,6 +67,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
+#include <lib/fdio/namespace.h>
 #include <lib/zx/job.h>
 #include "base/atomic_sequence_num.h"
 #include "base/base_paths_fuchsia.h"
@@ -328,29 +329,41 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   // Set the clone policy, deliberately omitting FDIO_SPAWN_CLONE_NAMESPACE so
   // that we can install a different /data.
   new_options.spawn_flags = FDIO_SPAWN_CLONE_STDIO | FDIO_SPAWN_CLONE_JOB;
-  new_options.paths_to_clone.push_back(base::FilePath("/config/ssl"));
-  new_options.paths_to_clone.push_back(base::FilePath("/dev/null"));
-  new_options.paths_to_clone.push_back(base::FilePath("/dev/zero"));
-  new_options.paths_to_clone.push_back(base::FilePath("/pkg"));
-  new_options.paths_to_clone.push_back(base::FilePath("/svc"));
-  new_options.paths_to_clone.push_back(base::FilePath("/tmp"));
+
+  const base::FilePath kDataPath("/data");
+
+  // Clone all namespace entries from the current process, except /data, which
+  // is overridden below.
+  fdio_flat_namespace_t* flat_namespace = nullptr;
+  zx_status_t result = fdio_ns_export_root(&flat_namespace);
+  ZX_CHECK(ZX_OK == result, result) << "fdio_ns_export_root";
+  for (size_t i = 0; i < flat_namespace->count; ++i) {
+    base::FilePath path(flat_namespace->path[i]);
+    if (path == kDataPath) {
+      result = zx_handle_close(flat_namespace->handle[i]);
+      ZX_CHECK(ZX_OK == result, result) << "zx_handle_close";
+    } else {
+      new_options.paths_to_transfer.push_back(
+          {path, flat_namespace->handle[i]});
+    }
+  }
+  free(flat_namespace);
 
   zx::job job_handle;
-  zx_status_t result = zx::job::create(*GetDefaultJob(), 0, &job_handle);
+  result = zx::job::create(*GetDefaultJob(), 0, &job_handle);
   ZX_CHECK(ZX_OK == result, result) << "zx_job_create";
   new_options.job_handle = job_handle.get();
 
   // Give this test its own isolated /data directory by creating a new temporary
   // subdirectory under data (/data/test-$PID) and binding that to /data on the
   // child process.
-  base::FilePath data_path("/data");
-  CHECK(base::PathExists(data_path));
+  CHECK(base::PathExists(kDataPath));
 
   // Create the test subdirectory with a name that is unique to the child test
   // process (qualified by parent PID and an autoincrementing test process
   // index).
   static base::AtomicSequenceNumber child_launch_index;
-  base::FilePath nested_data_path = data_path.AppendASCII(
+  base::FilePath nested_data_path = kDataPath.AppendASCII(
       base::StringPrintf("test-%" PRIuS "-%d", base::Process::Current().Pid(),
                          child_launch_index.GetNext()));
   CHECK(!base::DirectoryExists(nested_data_path));
@@ -359,7 +372,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 
   // Bind the new test subdirectory to /data in the child process' namespace.
   new_options.paths_to_transfer.push_back(
-      {data_path, base::fuchsia::GetHandleFromFile(
+      {kDataPath, base::fuchsia::GetHandleFromFile(
                       base::File(nested_data_path,
                                  base::File::FLAG_OPEN | base::File::FLAG_READ |
                                      base::File::FLAG_DELETE_ON_CLOSE))
