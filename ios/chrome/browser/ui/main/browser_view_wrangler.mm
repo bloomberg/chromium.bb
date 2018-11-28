@@ -197,6 +197,13 @@
   [self updateDeviceSharingManager];
 }
 
+- (BrowserCoordinator*)currentBrowserCoordinator {
+  if (self.currentBVC == self.otrBVC) {
+    return self.incognitoCoordinator;
+  }
+  return self.mainCoordinator;
+}
+
 #pragma mark - BrowserViewInformation methods
 
 - (TabModel*)currentTabModel {

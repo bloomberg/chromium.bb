@@ -118,6 +118,7 @@
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
+#import "ios/chrome/browser/ui/main/browser_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/tab_switcher.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
@@ -1817,6 +1818,11 @@ enum class ShowTabSwitcherSnapshotResult {
   [self activateBVCAndMakeCurrentBVCPrimary];
 }
 
+- (BrowserCoordinator*)currentBrowserCoordinator {
+  DCHECK(_browserViewWrangler);
+  return _browserViewWrangler.currentBrowserCoordinator;
+}
+
 #pragma mark - Tab closure handlers
 
 - (void)lastIncognitoTabClosed {
@@ -2410,8 +2416,9 @@ enum class ShowTabSwitcherSnapshotResult {
     DCHECK(self.currentBVC);
     DCHECK(![self isTabSwitcherActive]);
     // This will dismiss the SSO view controller.
-    [self.currentBVC clearPresentedStateWithCompletion:completion
-                                        dismissOmnibox:dismissOmnibox];
+    [self.currentBrowserCoordinator
+        clearPresentedStateWithCompletion:completion
+                           dismissOmnibox:dismissOmnibox];
   };
   ProceduralBlock completionWithoutBVC = ^{
     // |self.currentBVC| may exist but tab switcher should be active.

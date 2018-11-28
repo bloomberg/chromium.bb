@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_MAIN_BROWSER_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_MAIN_BROWSER_COORDINATOR_H_
 
+#include "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @protocol ApplicationCommands;
@@ -22,6 +23,10 @@
 
 // The model.
 @property(nonatomic, weak) TabModel* tabModel;
+
+// Clears any presented state on BVC.
+- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
+                           dismissOmnibox:(BOOL)dismissOmnibox;
 
 @end
 
