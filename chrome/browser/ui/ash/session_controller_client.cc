@@ -474,8 +474,7 @@ void SessionControllerClient::OnSessionStateChanged() {
     // Assistant is initialized only once when primary user logs in.
     if (chromeos::switches::IsAssistantEnabled()) {
       AssistantClient::Get()->MaybeInit(
-          content::BrowserContext::GetConnectorFor(
-              ProfileManager::GetPrimaryUserProfile()));
+          ProfileManager::GetPrimaryUserProfile());
     }
 #endif
   }

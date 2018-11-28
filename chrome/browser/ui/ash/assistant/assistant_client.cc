@@ -38,9 +38,8 @@ AssistantClient::~AssistantClient() {
   g_instance = nullptr;
 }
 
-void AssistantClient::MaybeInit(service_manager::Connector* connector) {
-  if (arc::IsAssistantAllowedForProfile(
-          ProfileManager::GetActiveUserProfile()) !=
+void AssistantClient::MaybeInit(Profile* profile) {
+  if (arc::IsAssistantAllowedForProfile(profile) !=
       ash::mojom::AssistantAllowedState::ALLOWED) {
     return;
   }
@@ -49,6 +48,7 @@ void AssistantClient::MaybeInit(service_manager::Connector* connector) {
     return;
 
   initialized_ = true;
+  auto* connector = content::BrowserContext::GetConnectorFor(profile);
   connector->BindInterface(chromeos::assistant::mojom::kServiceName,
                            &assistant_connection_);
 

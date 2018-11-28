@@ -1645,10 +1645,8 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   if (start_session_type_ == PRIMARY_USER_SESSION) {
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
     // Initialize Assistant early to be used in post login Oobe steps.
-    if (chromeos::switches::IsAssistantEnabled()) {
-      AssistantClient::Get()->MaybeInit(
-          content::BrowserContext::GetConnectorFor(profile));
-    }
+    if (chromeos::switches::IsAssistantEnabled())
+      AssistantClient::Get()->MaybeInit(profile);
 #endif
     UserFlow* user_flow = ChromeUserManager::Get()->GetCurrentUserFlow();
     WizardController* oobe_controller = WizardController::default_controller();
