@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
@@ -45,6 +46,7 @@ public class CastStartStopTest {
      * Test that we can cast a video, and that we get the ExpandedControllerActivity when we do.
      */
     @Test
+    @DisabledTest // crbug.com/907307
     @Feature({"VideoFling"})
     @LargeTest
     @RetryOnFailure
@@ -58,6 +60,7 @@ public class CastStartStopTest {
      * Test that we can disconnect a cast session from the expanded controller activity overlay.
      */
     @Test
+    @DisabledTest // crbug.com/907307
     @Feature({"VideoFling"})
     @LargeTest
     @RetryOnFailure
@@ -76,6 +79,7 @@ public class CastStartStopTest {
      * Test that we can stop a cast session from the notification.
      */
     @Test
+    @DisabledTest // crbug.com/907307
     @Feature({"VideoFling"})
     @LargeTest
     @RetryOnFailure
