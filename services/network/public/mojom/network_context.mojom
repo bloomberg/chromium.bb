@@ -420,6 +420,11 @@ interface NetworkContext {
   CreateURLLoaderFactory(URLLoaderFactory& url_loader_factory,
                          URLLoaderFactoryParams params);
 
+  // Destroys all URLLoaderFactory bindings, which should then be regenerated.
+  // This should be called if there is a change to the proxies which should be
+  // used on URLLoaders.
+  ResetURLLoaderFactories();
+
   // Gets the CookieManager associated with this network context.
   //
   // The CookieManager must only be passed to trusted processes. Whenever
@@ -466,6 +471,12 @@ interface NetworkContext {
                        mojo_base.mojom.Time end_time)
       => (bool is_upper_bound, int64 size_or_error);
 
+  // Caches |data| associated with |url| and |expected_response_time| in the
+  // HttpCache related to this NetworkContext.
+  WriteCacheMetadata(url.mojom.Url url,
+                     RequestPriority priority,
+                     mojo_base.mojom.Time expected_response_time,
+                     array<uint8> data);
 
   // Clears channel IDs. A specific range of time can be specified with
   // |start_time| and |end_time|. This supports unbounded deletes in either
@@ -662,13 +673,6 @@ interface NetworkContext {
   // when NetworkContext goes away.
   CreateProxyResolvingSocketFactory(ProxyResolvingSocketFactory& factory);
 
-  // Creates a WebSocket connection.
-  CreateWebSocket(WebSocket& request,
-                  int32 process_id,
-                  int32 render_frame_id,
-                  url.mojom.Origin origin,
-                  AuthenticationHandler? auth_handler);
-
   // Looks up what proxy to use for a particular URL.
   LookUpProxyForURL(url.mojom.Url url,
                     ProxyLookupClient proxy_lookup_client);
@@ -678,6 +682,13 @@ interface NetworkContext {
 
   // Clears the list of bad proxy servers that has been cached.
   ClearBadProxiesCache() => ();
+
+  // Creates a WebSocket connection.
+  CreateWebSocket(WebSocket& request,
+                  int32 process_id,
+                  int32 render_frame_id,
+                  url.mojom.Origin origin,
+                  AuthenticationHandler? auth_handler);
 
   // Create a NetLogExporter, which helps export NetLog to an existing file.
   // Note that the log is generally global, including all NetworkContexts
@@ -705,11 +716,6 @@ interface NetworkContext {
 
   // Creates an MdnsResponder instance.
   CreateMdnsResponder(MdnsResponder& responder_request);
-
-  // Destroys all URLLoaderFactory bindings, which should then be regenerated.
-  // This should be called if there is a change to the proxies which should be
-  // used on URLLoaders.
-  ResetURLLoaderFactories();
 
   // Resolves the given hostname (or IP address literal). See documentation at
   // HostResolver::ResolveHost.
@@ -741,13 +747,6 @@ interface NetworkContext {
   CreateHostResolver(DnsConfigOverrides? config_overrides,
                      HostResolver& host_resolver);
 
-  // Caches |data| associated with |url| and |expected_response_time| in the
-  // HttpCache related to this NetworkContext.
-  WriteCacheMetadata(url.mojom.Url url,
-                     RequestPriority priority,
-                     mojo_base.mojom.Time expected_response_time,
-                     array<uint8> data);
-
   // Checks the given certificate against the CertVerifier and CTVerifier. This
   // implementation is currently specific for use by Signed Exchange.
   VerifyCertForSignedExchange(X509Certificate certificate,
@@ -757,9 +756,18 @@ interface NetworkContext {
                                                    CertVerifyResult cv_result,
                                                    CTVerifyResult ct_result);
 
+  // Adds explicitly-specified data as if it was processed from an
+  // HSTS header. Used by tests and implementation of chrome://net-internals.
+  AddHSTS(string host, mojo_base.mojom.Time expiry,
+          bool include_subdomains) => ();
+
   // Returns true if it is known that |host| has requested to always be
   // accessed via HTTPS.
   IsHSTSActiveForHost(string host) => (bool result);
+
+  // Retrieve values from the HSTS state from the associated contexts
+  // transport security state.
+  GetHSTSState(string domain) => (mojo_base.mojom.DictionaryValue state);
 
   // Sets allowed and blocked origins respectively for the URLLoaderFactory
   // consumers to access beyond the same-origin policy. The list is managed per
@@ -770,15 +778,6 @@ interface NetworkContext {
   SetCorsOriginAccessListsForOrigin(
       url.mojom.Origin source_origin, array<CorsOriginPattern> allow_patterns,
       array<CorsOriginPattern> block_patterns) => ();
-
-  // Adds explicitly-specified data as if it was processed from an
-  // HSTS header. Used by tests and implementation of chrome://net-internals.
-  AddHSTS(string host, mojo_base.mojom.Time expiry,
-          bool include_subdomains) => ();
-
-  // Retrieve values from the HSTS state from the associated contexts
-  // transport security state.
-  GetHSTSState(string domain) => (mojo_base.mojom.DictionaryValue state);
 
   // Deletes any dynamic data stored for |host| from the transport
   // security state. Returns true iff an entry was deleted.
