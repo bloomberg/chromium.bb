@@ -92,7 +92,10 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
       // Not kDecoding, so we need a resume point (a keyframe), as we are after
       // reset or at the beginning of the stream. Drop anything that is not
       // a keyframe in such case, and continue looking for a keyframe.
-      if (curr_frame_hdr_->IsKeyframe()) {
+      // Only exception is when the stream/sequence starts with an Intra only
+      // frame.
+      if (curr_frame_hdr_->IsKeyframe() ||
+          (curr_frame_hdr_->IsIntra() && pic_size_.IsEmpty())) {
         state_ = kDecoding;
       } else {
         curr_frame_hdr_.reset();
@@ -136,11 +139,14 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
     if (new_pic_size != pic_size_) {
       DVLOG(1) << "New resolution: " << new_pic_size.ToString();
 
-      if (!curr_frame_hdr_->IsKeyframe()) {
+      if (!curr_frame_hdr_->IsKeyframe() &&
+          (curr_frame_hdr_->IsIntra() && pic_size_.IsEmpty())) {
         // TODO(posciak): This is doable, but requires a few modifications to
         // VDA implementations to allow multiple picture buffer sets in flight.
         // http://crbug.com/832264
-        DVLOG(1) << "Resolution change currently supported for keyframes only";
+        DVLOG(1) << "Resolution change currently supported for keyframes and "
+                    "sequence begins with Intra only when there is no prior "
+                    "frames in the context";
         if (++size_change_failure_counter_ > kVPxMaxNumOfSizeChangeFailures) {
           SetError();
           return kDecodeError;
