@@ -432,21 +432,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-stencil-renderbuffer-initialization.html',
         ['linux', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
-    # TODO(kbr): re-enable after crbug.com/898351 is fixed
-    # self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-    #     ['linux', 'passthrough', 'opengl', 'intel'], bug=2761) # ANGLE bug
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['linux', 'passthrough', 'opengl', 'intel'], bug=2761) # ANGLE bug
 
     # Regressions in 10.12.4.
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['sierra', 'intel'], bug=705865)
-    # TODO(kbr): re-enable after crbug.com/898351 is fixed
-    # self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-    #     ['sierra', 'intel'], bug=705865)
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['sierra', 'intel'], bug=705865)
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['sierra', 'amd'], bug=870856)
-    # TODO(kbr): re-enable after crbug.com/898351 is fixed
-    # self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-    #     ['sierra', 'amd'], bug=870856)
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['sierra', 'amd'], bug=870856)
 
     # Regressions in 10.13
     self.Fail('deqp/functional/gles3/fbocolorbuffer/tex2d_00.html',
@@ -663,9 +660,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # OpenGL driver on 10.13.6 specifically. Unfortunately when the
     # tests fail, they fail three times in a row, so we must mark them
     # failing rather than flaky.
-    # TODO(kbr): re-enable after crbug.com/898351 is fixed
-    # self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-    #     ['highsierra', 'amd'], bug=870856)
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['highsierra', 'amd'], bug=870856)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
@@ -1048,9 +1042,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=662644) # WebGL 2.0.1
     self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
         ['linux', 'amd'], bug=295792)
-    # TODO(kbr): re-enable after crbug.com/898351 is fixed
-    # self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-    #     ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/vertex_arrays/' +
