@@ -12,6 +12,17 @@
 
 namespace blink {
 
+{# We use forward declaration instead of include for faster compile time here. #}
+{% for interface in interfaces %}
+{% if interface.has_constructor_callback %}
+
+namespace {{interface.internal_namespace}} {
+{{interface.exported}}void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+}  // namespace {{interface.internal_namespace}}
+
+{% endif %}
+{% endfor %}
+
 const intptr_t* {{class}}::GetTable() {
   static const intptr_t reference_table[] = {
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
@@ -73,7 +84,7 @@ const intptr_t* {{class}}::GetTable() {
     {%  endif %}
     {# Other properties #}
     {%  if interface.has_constructor_callback %}
-    reinterpret_cast<intptr_t>({{v8_class}}::ConstructorCallback),
+    reinterpret_cast<intptr_t>({{interface.internal_namespace}}::ConstructorCallback),
     {%  endif %}
     {%  if interface.named_property_getter %}
     reinterpret_cast<intptr_t>({{v8_class}}::NamedPropertyGetterCallback),

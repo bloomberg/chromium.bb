@@ -111,6 +111,22 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8SetReturnValue(info, wrapper);
 }
 
+CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_Constructor");
+
+  if (!info.IsConstructCall()) {
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestInterfaceEventInitConstructor"));
+    return;
+  }
+
+  if (ConstructorMode::Current(info.GetIsolate()) == ConstructorMode::kWrapExistingObject) {
+    V8SetReturnValue(info, info.Holder());
+    return;
+  }
+
+  test_interface_event_init_constructor_v8_internal::Constructor(info);
+}
+
 }  // namespace test_interface_event_init_constructor_v8_internal
 
 void V8TestInterfaceEventInitConstructor::ReadonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -130,29 +146,13 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceEventInitC
     { "isTrusted", V8TestInterfaceEventInitConstructor::IsTrustedAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
-void V8TestInterfaceEventInitConstructor::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_Constructor");
-
-  if (!info.IsConstructCall()) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestInterfaceEventInitConstructor"));
-    return;
-  }
-
-  if (ConstructorMode::Current(info.GetIsolate()) == ConstructorMode::kWrapExistingObject) {
-    V8SetReturnValue(info, info.Holder());
-    return;
-  }
-
-  test_interface_event_init_constructor_v8_internal::Constructor(info);
-}
-
 static void InstallV8TestInterfaceEventInitConstructorTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEventInitConstructor::wrapperTypeInfo.interface_name, V8Event::DomTemplate(isolate, world), V8TestInterfaceEventInitConstructor::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestInterfaceEventInitConstructor::ConstructorCallback);
+  interfaceTemplate->SetCallHandler(test_interface_event_init_constructor_v8_internal::ConstructorCallback);
   interfaceTemplate->SetLength(2);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);

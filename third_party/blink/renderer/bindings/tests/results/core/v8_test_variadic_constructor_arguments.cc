@@ -79,9 +79,7 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8SetReturnValue(info, wrapper);
 }
 
-}  // namespace test_variadic_constructor_arguments_v8_internal
-
-void V8TestVariadicConstructorArguments::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestVariadicConstructorArguments_Constructor");
 
   if (!info.IsConstructCall()) {
@@ -97,13 +95,15 @@ void V8TestVariadicConstructorArguments::ConstructorCallback(const v8::FunctionC
   test_variadic_constructor_arguments_v8_internal::Constructor(info);
 }
 
+}  // namespace test_variadic_constructor_arguments_v8_internal
+
 static void InstallV8TestVariadicConstructorArgumentsTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestVariadicConstructorArguments::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestVariadicConstructorArguments::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestVariadicConstructorArguments::ConstructorCallback);
+  interfaceTemplate->SetCallHandler(test_variadic_constructor_arguments_v8_internal::ConstructorCallback);
   interfaceTemplate->SetLength(0);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);

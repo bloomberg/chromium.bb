@@ -837,7 +837,7 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 {##############################################################################}
 {% block constructor_callback %}
 {% if constructors or has_custom_constructor or has_html_constructor %}
-void {{v8_class}}::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+{{exported}}void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.constructor_counter) }}
   {% if measure_as %}
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{measure_as('Constructor')}});

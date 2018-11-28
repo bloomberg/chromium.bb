@@ -61,9 +61,7 @@ static_assert(
 
 namespace test_interface_custom_constructor_v8_internal {
 
-}  // namespace test_interface_custom_constructor_v8_internal
-
-void V8TestInterfaceCustomConstructor::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCustomConstructor_Constructor");
 
   if (!info.IsConstructCall()) {
@@ -79,13 +77,15 @@ void V8TestInterfaceCustomConstructor::ConstructorCallback(const v8::FunctionCal
   V8TestInterfaceCustomConstructor::ConstructorCustom(info);
 }
 
+}  // namespace test_interface_custom_constructor_v8_internal
+
 static void InstallV8TestInterfaceCustomConstructorTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceCustomConstructor::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCustomConstructor::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestInterfaceCustomConstructor::ConstructorCallback);
+  interfaceTemplate->SetCallHandler(test_interface_custom_constructor_v8_internal::ConstructorCallback);
   interfaceTemplate->SetLength(0);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
