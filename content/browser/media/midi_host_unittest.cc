@@ -11,8 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
-#include "content/common/media/midi_messages.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/midi_service.h"
@@ -24,7 +24,6 @@ namespace {
 using midi::mojom::PortState;
 
 const uint8_t kNoteOn[] = {0x90, 0x3c, 0x7f};
-const int kRenderProcessId = 0;
 
 enum MidiEventType {
   DISPATCH_SEND_MIDI_DATA,
@@ -60,10 +59,8 @@ class FakeMidiManager : public midi::MidiManager {
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,
                             base::TimeTicks timestamp) override {
-    events_.push_back(MidiEvent(DISPATCH_SEND_MIDI_DATA,
-                                port_index,
-                                data,
-                                timestamp));
+    events_.push_back(
+        MidiEvent(DISPATCH_SEND_MIDI_DATA, port_index, data, timestamp));
   }
   std::vector<MidiEvent> events_;
 
@@ -102,31 +99,30 @@ class MidiHostForTesting : public MidiHost {
  public:
   MidiHostForTesting(int renderer_process_id, midi::MidiService* midi_service)
       : MidiHost(renderer_process_id, midi_service) {}
-
- private:
   ~MidiHostForTesting() override {}
 
-  // BrowserMessageFilter implementation.
-  // Override ShutdownForBadMessage() to do nothing since the original
-  // implementation to kill a malicious renderer process causes a check failure
-  // in unit tests.
-  void ShutdownForBadMessage() override {}
-
+ private:
   DISALLOW_COPY_AND_ASSIGN(MidiHostForTesting);
 };
 
 class MidiHostTest : public testing::Test {
  public:
   MidiHostTest() : data_(kNoteOn, kNoteOn + base::size(kNoteOn)), port_id_(0) {
+    browser_context_ = std::make_unique<TestBrowserContext>();
+    rph_ = std::make_unique<MockRenderProcessHost>(browser_context_.get());
     std::unique_ptr<FakeMidiManagerFactory> factory =
         std::make_unique<FakeMidiManagerFactory>();
     factory_ = factory->GetWeakPtr();
     service_ = std::make_unique<midi::MidiService>(std::move(factory));
-    host_ = new MidiHostForTesting(kRenderProcessId, service_.get());
-    host_->OnStartSession();
+    host_ = std::make_unique<MidiHostForTesting>(rph_->GetID(), service_.get());
+    midi::mojom::MidiSessionClientPtr ptr;
+    midi::mojom::MidiSessionClientRequest request = mojo::MakeRequest(&ptr);
+    midi::mojom::MidiSessionRequest session_request =
+        mojo::MakeRequest(&session_);
+    host_->StartSession(std::move(session_request), std::move(ptr));
   }
   ~MidiHostTest() override {
-    host_->OnEndSession();
+    session_.reset();
     service_->Shutdown();
     RunLoopUntilIdle();
   }
@@ -144,9 +140,7 @@ class MidiHostTest : public testing::Test {
   }
 
   void OnSendData(uint32_t port) {
-    std::unique_ptr<IPC::Message> message(
-        new MidiHostMsg_SendData(port, data_, base::TimeTicks()));
-    host_->OnMessageReceived(*message.get());
+    host_->SendData(port, data_, base::TimeTicks());
   }
 
   size_t GetEventSize() const {
@@ -169,14 +163,19 @@ class MidiHostTest : public testing::Test {
     run_loop.RunUntilIdle();
   }
 
+  int GetNumberOfBadMessages() { return rph_->bad_msg_count(); }
+
  private:
   TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<BrowserContext> browser_context_;
+  std::unique_ptr<MockRenderProcessHost> rph_;
 
   std::vector<uint8_t> data_;
   int32_t port_id_;
   base::WeakPtr<FakeMidiManagerFactory> factory_;
   std::unique_ptr<midi::MidiService> service_;
-  scoped_refptr<MidiHostForTesting> host_;
+  std::unique_ptr<MidiHostForTesting> host_;
+  midi::mojom::MidiSessionPtr session_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiHostTest);
 };
@@ -200,6 +199,7 @@ TEST_F(MidiHostTest, OutputPortCheck) {
   OnSendData(port1);
   RunLoopUntilIdle();
   EXPECT_EQ(1U, GetEventSize());
+  EXPECT_EQ(1, GetNumberOfBadMessages());
 
   // Two output ports are available from now on.
   AddOutputPort();
@@ -213,4 +213,4 @@ TEST_F(MidiHostTest, OutputPortCheck) {
   CheckSendEventAt(2, port1);
 }
 
-}  // namespace conent
+}  // namespace content

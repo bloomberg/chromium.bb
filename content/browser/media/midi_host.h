@@ -15,11 +15,16 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
+#include "base/thread_annotations.h"
+#include "base/tuple.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/midi_service.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace midi {
 class MidiService;
@@ -28,18 +33,22 @@ class MidiMessageQueue;
 
 namespace content {
 
-class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
-                                public midi::MidiManagerClient {
+class CONTENT_EXPORT MidiHost : public midi::MidiManagerClient,
+                                public midi::mojom::MidiSessionProvider,
+                                public midi::mojom::MidiSession,
+                                public base::SupportsWeakPtr<MidiHost> {
  public:
-  // Called from UI thread from the owner of this object.
-  MidiHost(int renderer_process_id, midi::MidiService* midi_service);
+  ~MidiHost() override;
 
-  // BrowserMessageFilter implementation.
-  void OnChannelClosing() override;
-  void OnDestruct() const override;
-  bool OnMessageReceived(const IPC::Message& message) override;
+  // Creates an instance of MidiHost and binds |request| to the instance using
+  // a strong binding. Should be called on the IO thread.
+  static void BindRequest(int render_process_id,
+                          midi::MidiService* midi_service,
+                          midi::mojom::MidiSessionProviderRequest request);
 
-  // MidiManagerClient implementation.
+  // MidiManagerClient implementation. These methods can be called on any thread
+  // by platform specific implementations of MidiManager, so use locks
+  // appropriately.
   void CompleteStartSession(midi::mojom::Result result) override;
   void AddInputPort(const midi::mojom::PortInfo& info) override;
   void AddOutputPort(const midi::mojom::PortInfo& info) override;
@@ -52,22 +61,25 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   void AccumulateMidiBytesSent(size_t n) override;
   void Detach() override;
 
-  // Start session to access MIDI hardware.
-  void OnStartSession();
+  // midi::mojom::MidiSessionProvider implementation.
+  void StartSession(midi::mojom::MidiSessionRequest session_request,
+                    midi::mojom::MidiSessionClientPtr client) override;
 
-  // Data to be sent to a MIDI output port.
-  void OnSendData(uint32_t port,
-                  const std::vector<uint8_t>& data,
-                  base::TimeTicks timestamp);
-
-  void OnEndSession();
+  // midi::mojom::MidiSession implementation.
+  void SendData(uint32_t port,
+                const std::vector<uint8_t>& data,
+                base::TimeTicks timestamp) override;
 
  protected:
-  ~MidiHost() override;
+  MidiHost(int renderer_process_id, midi::MidiService* midi_service);
 
  private:
-  friend class base::DeleteHelper<MidiHost>;
-  friend class BrowserThread;
+  // Use this to call methods on |midi_client_|. It makes sure that midi_client_
+  // is only accessed on the IO thread.
+  template <typename Method, typename... Params>
+  void CallClient(Method method, Params... params);
+
+  void EndSession();
 
   int renderer_process_id_;
 
@@ -75,23 +87,20 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   // messages.
   bool has_sys_ex_permission_;
 
-  // Represents if a session is requested to start.
-  bool is_session_requested_;
-
   // |midi_service_| manages a MidiManager instance that talks to
   // platform-specific MIDI APIs.  It can be nullptr after detached.
   midi::MidiService* midi_service_;
 
   // Buffers where data sent from each MIDI input port is stored.
-  std::vector<std::unique_ptr<midi::MidiMessageQueue>>
-      received_messages_queues_;
+  std::vector<std::unique_ptr<midi::MidiMessageQueue>> received_messages_queues_
+      GUARDED_BY(messages_queues_lock_);
 
   // Protects access to |received_messages_queues_|;
   base::Lock messages_queues_lock_;
 
   // The number of bytes sent to the platform-specific MIDI sending
   // system, but not yet completed.
-  size_t sent_bytes_in_flight_;
+  size_t sent_bytes_in_flight_ GUARDED_BY(in_flight_lock_);
 
   // The number of bytes successfully sent since the last time
   // we've acknowledged back to the renderer.
@@ -101,10 +110,21 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   base::Lock in_flight_lock_;
 
   // How many output port exists.
-  uint32_t output_port_count_;
+  uint32_t output_port_count_ GUARDED_BY(output_port_count_lock_);
 
   // Protects access to |output_port_count_|.
   base::Lock output_port_count_lock_;
+
+  // Stores a session request sent from the renderer until CompleteStartSession
+  // is called.
+  midi::mojom::MidiSessionRequest pending_session_request_;
+
+  // Bound on the IO thread if a session is successfully started by MidiService.
+  mojo::Binding<midi::mojom::MidiSession> midi_session_;
+
+  // Bound on the IO thread and should only be called there. Use CallClient to
+  // call midi::mojom::MidiSessionClient methods.
+  midi::mojom::MidiSessionClientPtr midi_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiHost);
 };

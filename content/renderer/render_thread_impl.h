@@ -126,7 +126,7 @@ class DomStorageDispatcher;
 class FrameSwapMessageQueue;
 class GpuVideoAcceleratorFactoriesImpl;
 class LowMemoryModeController;
-class MidiMessageFilter;
+class MidiSessionClientImpl;
 class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
@@ -325,8 +325,8 @@ class CONTENT_EXPORT RenderThreadImpl
     return dom_storage_dispatcher_.get();
   }
 
-  MidiMessageFilter* midi_message_filter() {
-    return midi_message_filter_.get();
+  MidiSessionClientImpl* midi_session_client_impl() {
+    return midi_session_client_impl_.get();
   }
 
   ResourceDispatcher* resource_dispatcher() const {
@@ -602,7 +602,7 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<URLLoaderThrottleProvider> url_loader_throttle_provider_;
 
   // Used on the renderer and IPC threads.
-  scoped_refptr<MidiMessageFilter> midi_message_filter_;
+  std::unique_ptr<MidiSessionClientImpl> midi_session_client_impl_;
 
   std::unique_ptr<BrowserPluginManager> browser_plugin_manager_;
 

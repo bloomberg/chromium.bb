@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("features.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
@@ -11,6 +10,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//sandbox/features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
+import("features.gni")
 if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
@@ -191,7 +191,6 @@ source_set("common") {
     "media/media_player_messages_android.h",
     "media/media_stream_controls.cc",
     "media/media_stream_controls.h",
-    "media/midi_messages.h",
     "media/peer_connection_tracker_messages.h",
     "media/video_capture.h",
     "mime_sniffing_throttle.cc",

@@ -75,6 +75,7 @@
           "media.mojom.VideoDecodePerfHistory",
           "memory_coordinator.mojom.MemoryCoordinatorHandle",
           "metrics.mojom.SingleSampleMetricsProvider",
+          "midi.mojom.MidiSessionProvider",
           "network.mojom.P2PSocketManager",
           "network.mojom.MdnsResponder",
           "network.mojom.URLLoaderFactory",

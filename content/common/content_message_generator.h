@@ -52,11 +52,6 @@
 #ifndef CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_
 #error "Failed to include content/common/media/media_player_delegate_messages.h"
 #endif
-#undef CONTENT_COMMON_MEDIA_MIDI_MESSAGES_H_
-#include "content/common/media/midi_messages.h"
-#ifndef CONTENT_COMMON_MEDIA_MIDI_MESSAGES_H_
-#error "Failed to include content/common/media/midi_messages.h"
-#endif
 #undef CONTENT_COMMON_MEDIA_PEER_CONNECTION_TRACKER_MESSAGES_H_
 #include "content/common/media/peer_connection_tracker_messages.h"
 #ifndef CONTENT_COMMON_MEDIA_PEER_CONNECTION_TRACKER_MESSAGES_H_
