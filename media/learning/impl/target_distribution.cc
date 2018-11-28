@@ -12,17 +12,14 @@ TargetDistribution::~TargetDistribution() = default;
 
 TargetDistribution& TargetDistribution::operator+=(
     const TargetDistribution& rhs) {
-  for (auto& rhs_pair : rhs.counts()) {
+  for (auto& rhs_pair : rhs.counts())
     counts_[rhs_pair.first] += rhs_pair.second;
-    total_counts_ += rhs_pair.second;
-  }
 
   return *this;
 }
 
 TargetDistribution& TargetDistribution::operator+=(const TargetValue& rhs) {
   counts_[rhs]++;
-  total_counts_++;
   return *this;
 }
 
@@ -34,9 +31,8 @@ int TargetDistribution::operator[](const TargetValue& value) const {
   return iter->second;
 }
 
-void TargetDistribution::Add(const TargetValue& value, int counts) {
-  counts_[value] += counts;
-  total_counts_ += counts;
+int& TargetDistribution::operator[](const TargetValue& value) {
+  return counts_[value];
 }
 
 bool TargetDistribution::FindSingularMax(TargetValue* value_out,

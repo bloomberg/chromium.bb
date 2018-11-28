@@ -15,20 +15,28 @@ namespace learning {
 // static
 TrainingAlgorithmCB RandomTreeTrainer::GetTrainingAlgorithmCB() {
   return base::BindRepeating(
-      [](const TrainingData& training_data) -> std::unique_ptr<Model> {
-        return RandomTreeTrainer().Train(training_data);
+      [](TrainingData training_data, TrainedModelCB model_cb) {
+        std::move(model_cb).Run(RandomTreeTrainer().Train(training_data));
       });
 }
 
 RandomTreeTrainer::Split::Split() = default;
+
 RandomTreeTrainer::Split::Split(int index) : split_index(index) {}
+
 RandomTreeTrainer::Split::Split(Split&& rhs) = default;
+
 RandomTreeTrainer::Split::~Split() = default;
+
 RandomTreeTrainer::Split& RandomTreeTrainer::Split::operator=(Split&& rhs) =
     default;
-RandomTreeTrainer::Split::BranchInfo::BranchInfo() = default;
-RandomTreeTrainer::Split::BranchInfo::BranchInfo(const BranchInfo& rhs) =
-    default;
+
+RandomTreeTrainer::Split::BranchInfo::BranchInfo(
+    scoped_refptr<TrainingDataStorage> storage)
+    : training_data(std::move(storage)) {}
+
+RandomTreeTrainer::Split::BranchInfo::BranchInfo(BranchInfo&& rhs) = default;
+
 RandomTreeTrainer::Split::BranchInfo::~BranchInfo() = default;
 
 struct InteriorNode : public Model {
@@ -149,8 +157,13 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
     // Get the value of the |index|-th feature for
     FeatureValue v_i = example->features[split.split_index];
 
-    // Add |v_i| to the right training set.
-    Split::BranchInfo& branch_info = split.branch_infos[v_i];
+    // Add |v_i| to the right training set.  Remember that emplace will do
+    // nothing if the key already exists.
+    auto result = split.branch_infos.emplace(
+        v_i, Split::BranchInfo(training_data.storage()));
+    auto iter = result.first;
+
+    Split::BranchInfo& branch_info = iter->second;
     branch_info.training_data.push_back(example);
     branch_info.class_counts[example->target_value]++;
   }

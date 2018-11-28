@@ -79,5 +79,56 @@ TEST_F(LearnerTrainingExampleTest, UnequalTargetsCompareAsUnequal) {
   EXPECT_FALSE(example_1 == example_2);
 }
 
+TEST_F(LearnerTrainingExampleTest, StoragePushBack) {
+  TrainingExample example({FeatureValue(123)}, TargetValue(789));
+  scoped_refptr<TrainingDataStorage> storage =
+      base::MakeRefCounted<TrainingDataStorage>();
+  EXPECT_EQ(storage->begin(), storage->end());
+  storage->push_back(example);
+  EXPECT_NE(storage->begin(), storage->end());
+  EXPECT_EQ(++storage->begin(), storage->end());
+  EXPECT_EQ(*storage->begin(), example);
+}
+
+TEST_F(LearnerTrainingExampleTest, StorageCheckWorks) {
+  // Verify that TrainingDataStorage can tell if an example is in its storage.
+  TrainingExample example({FeatureValue(123)}, TargetValue(789));
+  scoped_refptr<TrainingDataStorage> storage =
+      base::MakeRefCounted<TrainingDataStorage>();
+  storage->push_back(example);
+
+  EXPECT_TRUE(storage->contains(&(*storage->begin())));
+  EXPECT_FALSE(storage->contains(&example));
+}
+
+TEST_F(LearnerTrainingExampleTest, TrainingDataPushBack) {
+  TrainingExample example({FeatureValue(123)}, TargetValue(789));
+  scoped_refptr<TrainingDataStorage> storage =
+      base::MakeRefCounted<TrainingDataStorage>();
+  storage->push_back(example);
+
+  TrainingData training_data(storage);
+  EXPECT_EQ(training_data.size(), 0u);
+  EXPECT_TRUE(training_data.empty());
+  training_data.push_back(&(*storage->begin()));
+  EXPECT_EQ(training_data.size(), 1u);
+  EXPECT_FALSE(training_data.empty());
+  EXPECT_EQ(*training_data.begin(), &(*storage->begin()));
+  EXPECT_EQ(training_data[0], &(*storage->begin()));
+}
+
+TEST_F(LearnerTrainingExampleTest, TrainingDataConstructWithRange) {
+  TrainingExample example({FeatureValue(123)}, TargetValue(789));
+  scoped_refptr<TrainingDataStorage> storage =
+      base::MakeRefCounted<TrainingDataStorage>();
+  storage->push_back(example);
+
+  TrainingData training_data(storage, storage->begin(), storage->end());
+  EXPECT_EQ(training_data.size(), 1u);
+  EXPECT_FALSE(training_data.empty());
+  EXPECT_EQ(*training_data.begin(), &(*storage->begin()));
+  EXPECT_EQ(training_data[0], &(*storage->begin()));
+}
+
 }  // namespace learning
 }  // namespace media
