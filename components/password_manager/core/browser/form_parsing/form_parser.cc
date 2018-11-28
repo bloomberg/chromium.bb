@@ -106,6 +106,10 @@ struct ProcessedField {
   // True iff field->form_control_type == "password".
   bool is_password = false;
 
+  // True if this field was marked CREDIT_CARD_VERIFICATION_CODE in server
+  // predictions.
+  bool server_hints_CVC = false;
+
   Interactability interactability = Interactability::kUnlikely;
 };
 
@@ -119,10 +123,11 @@ bool StringMatchesCVC(const base::string16& str) {
 
 // TODO(crbug.com/860700): Remove once server-side provides hints for CVC
 // fields.
-// Returns true if the |field|'s name or id hint at the field being a CVC field.
-bool IsFieldCVC(const FormFieldData& field) {
-  return StringMatchesCVC(field.name_attribute) ||
-         StringMatchesCVC(field.id_attribute);
+// Returns true if the |field| is suspected to be a CVC field.
+bool IsFieldCVC(const ProcessedField& field) {
+  return field.server_hints_CVC ||
+         StringMatchesCVC(field.field->name_attribute) ||
+         StringMatchesCVC(field.field->id_attribute);
 }
 
 // Returns true iff |processed_field| matches the |interactability_bar|. That is
@@ -173,12 +178,12 @@ struct SignificantFields {
 
 // Returns the first element of |fields| which has the specified
 // |unique_renderer_id|, or null if there is no such element.
-const FormFieldData* FindFieldWithUniqueRendererId(
-    const std::vector<ProcessedField>& processed_fields,
+ProcessedField* FindFieldWithUniqueRendererId(
+    std::vector<ProcessedField>* processed_fields,
     uint32_t unique_renderer_id) {
-  for (const ProcessedField& processed_field : processed_fields) {
+  for (ProcessedField& processed_field : *processed_fields) {
     if (processed_field.field->unique_renderer_id == unique_renderer_id)
-      return processed_field.field;
+      return &processed_field;
   }
   return nullptr;
 }
@@ -186,7 +191,7 @@ const FormFieldData* FindFieldWithUniqueRendererId(
 // Tries to parse |processed_fields| based on server |predictions|. Uses |mode|
 // to decide which of two username hints are relevant, if present.
 std::unique_ptr<SignificantFields> ParseUsingPredictions(
-    const std::vector<ProcessedField>& processed_fields,
+    std::vector<ProcessedField>* processed_fields,
     const FormPredictions& predictions,
     FormDataParser::Mode mode) {
   auto result = std::make_unique<SignificantFields>();
@@ -204,14 +209,21 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
   // First username is stored in |result->username|.
   const FormFieldData* second_username = nullptr;
   for (const auto& prediction : predictions) {
+    ProcessedField* processed_field = nullptr;
     switch (DeriveFromServerFieldType(prediction.second.type)) {
       case CredentialFieldType::kUsername:
         if (!result->username) {
-          result->username =
+          processed_field =
               FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+          if (processed_field) {
+            result->username = processed_field->field;
+          }
         } else if (!second_username) {
-          second_username =
+          processed_field =
               FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+          if (processed_field) {
+            second_username = processed_field->field;
+          }
         } else {
           prevent_handling_two_usernames = true;
         }
@@ -220,8 +232,11 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
         if (result->password) {
           prevent_handling_two_usernames = true;
         } else {
-          result->password =
+          processed_field =
               FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+          if (processed_field) {
+            result->password = processed_field->field;
+          }
         }
         break;
       case CredentialFieldType::kNewPassword:
@@ -236,13 +251,19 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
         // before the user has thought of and typed their new password
         // elsewhere. See https://crbug.com/902700 for more details.
         if (!result->new_password) {
-          result->new_password =
+          processed_field =
               FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+          if (processed_field) {
+            result->new_password = processed_field->field;
+          }
         }
         break;
       case CredentialFieldType::kConfirmationPassword:
-        result->confirmation_password =
+        processed_field =
             FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+        if (processed_field) {
+          result->confirmation_password = processed_field->field;
+        }
         break;
       case CredentialFieldType::kNone:
         break;
@@ -271,6 +292,16 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
   // something went wrong. Sanitize the result.
   if (result->confirmation_password && !result->new_password)
     result->confirmation_password = nullptr;
+
+  // For the use of basic heuristics, also mark CVC fields as such.
+  for (const auto& prediction : predictions) {
+    if (prediction.second.type == autofill::CREDIT_CARD_VERIFICATION_CODE) {
+      ProcessedField* processed_field =
+          FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+      if (processed_field)
+        processed_field->server_hints_CVC = true;
+    }
+  }
 
   return result->HasPasswords() ? std::move(result) : nullptr;
 }
@@ -327,15 +358,15 @@ std::unique_ptr<SignificantFields> ParseUsingAutocomplete(
 // The |field| is likely to be a password if it is not a CVC field, not
 // readonly, etc. |*ignored_readonly| is incremented specifically if this
 // function returns false because of the |field| being readonly.
-bool IsLikelyPassword(const FormFieldData& field, size_t* ignored_readonly) {
+bool IsLikelyPassword(const ProcessedField& field, size_t* ignored_readonly) {
   // Readonly fields can be an indication that filling is useless (e.g., the
   // page might use a virtual keyboard). However, if the field was readonly
   // only temporarily, that makes it still interesting for saving. The fact
   // that a user typed or Chrome filled into that field in the past is an
   // indicator that the readonly was only temporary.
-  if (field.is_readonly &&
-      !(field.properties_mask & (FieldPropertiesFlags::USER_TYPED |
-                                 FieldPropertiesFlags::AUTOFILLED))) {
+  if (field.field->is_readonly &&
+      !(field.field->properties_mask & (FieldPropertiesFlags::USER_TYPED |
+                                        FieldPropertiesFlags::AUTOFILLED))) {
     ++*ignored_readonly;
     return false;
   }
@@ -396,8 +427,7 @@ std::vector<const FormFieldData*> GetRelevantPasswords(
   filtered.reserve(passwords.size());
   std::copy_if(passwords.begin(), passwords.end(), std::back_inserter(filtered),
                [&ignored_readonly](const ProcessedField* processed_field) {
-                 return IsLikelyPassword(*processed_field->field,
-                                         &ignored_readonly);
+                 return IsLikelyPassword(*processed_field, &ignored_readonly);
                });
   // Compute the readonly statistic for metrics.
   DCHECK_LE(ignored_readonly, all_passwords_seen);
@@ -517,7 +547,7 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
       continue;
     if (consider_only_non_empty && it->field->value.empty())
       continue;
-    if (IsFieldCVC(*it->field))
+    if (IsFieldCVC(*it))
       continue;
     if (!username)
       username = it->field;
@@ -840,7 +870,7 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(
   // (1) First, try to parse with server predictions.
   if (predictions_) {
     significant_fields =
-        ParseUsingPredictions(processed_fields, *predictions_, mode);
+        ParseUsingPredictions(&processed_fields, *predictions_, mode);
     if (significant_fields && significant_fields->username) {
       username_detection_method =
           UsernameDetectionMethod::kServerSidePrediction;
