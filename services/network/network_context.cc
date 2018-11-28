@@ -683,6 +683,11 @@ void NetworkContext::CreateURLLoaderFactory(
                          std::move(resource_scheduler_client));
 }
 
+void NetworkContext::ResetURLLoaderFactories() {
+  for (const auto& factory : url_loader_factories_)
+    factory->ClearBindings();
+}
+
 void NetworkContext::GetCookieManager(mojom::CookieManagerRequest request) {
   cookie_manager_->AddRequest(std::move(request));
 }
@@ -1188,6 +1193,30 @@ void NetworkContext::CreateProxyResolvingSocketFactory(
       std::move(request));
 }
 
+void NetworkContext::LookUpProxyForURL(
+    const GURL& url,
+    mojom::ProxyLookupClientPtr proxy_lookup_client) {
+  DCHECK(proxy_lookup_client);
+  std::unique_ptr<ProxyLookupRequest> proxy_lookup_request(
+      std::make_unique<ProxyLookupRequest>(std::move(proxy_lookup_client),
+                                           this));
+  ProxyLookupRequest* proxy_lookup_request_ptr = proxy_lookup_request.get();
+  proxy_lookup_requests_.insert(std::move(proxy_lookup_request));
+  proxy_lookup_request_ptr->Start(url);
+}
+
+void NetworkContext::ForceReloadProxyConfig(
+    ForceReloadProxyConfigCallback callback) {
+  url_request_context()->proxy_resolution_service()->ForceReloadProxyConfig();
+  std::move(callback).Run();
+}
+
+void NetworkContext::ClearBadProxiesCache(
+    ClearBadProxiesCacheCallback callback) {
+  url_request_context()->proxy_resolution_service()->ClearBadProxiesCache();
+  std::move(callback).Run();
+}
+
 void NetworkContext::CreateWebSocket(
     mojom::WebSocketRequest request,
     int32_t process_id,
@@ -1201,18 +1230,6 @@ void NetworkContext::CreateWebSocket(
                                       std::move(auth_handler), process_id,
                                       render_frame_id, origin);
 #endif  // !defined(OS_IOS)
-}
-
-void NetworkContext::LookUpProxyForURL(
-    const GURL& url,
-    mojom::ProxyLookupClientPtr proxy_lookup_client) {
-  DCHECK(proxy_lookup_client);
-  std::unique_ptr<ProxyLookupRequest> proxy_lookup_request(
-      std::make_unique<ProxyLookupRequest>(std::move(proxy_lookup_client),
-                                           this));
-  ProxyLookupRequest* proxy_lookup_request_ptr = proxy_lookup_request.get();
-  proxy_lookup_requests_.insert(std::move(proxy_lookup_request));
-  proxy_lookup_request_ptr->Start(url);
 }
 
 void NetworkContext::CreateNetLogExporter(
@@ -1317,19 +1334,6 @@ void NetworkContext::WriteCacheMetadata(const GURL& url,
                        data.size());
 }
 
-void NetworkContext::IsHSTSActiveForHost(const std::string& host,
-                                         IsHSTSActiveForHostCallback callback) {
-  net::TransportSecurityState* security_state =
-      url_request_context_->transport_security_state();
-
-  if (!security_state) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  std::move(callback).Run(security_state->ShouldUpgradeToSSL(host));
-}
-
 void NetworkContext::SetCorsOriginAccessListsForOrigin(
     const url::Origin& source_origin,
     std::vector<mojom::CorsOriginPatternPtr> allow_patterns,
@@ -1348,6 +1352,19 @@ void NetworkContext::AddHSTS(const std::string& host,
       url_request_context_->transport_security_state();
   state->AddHSTS(host, expiry, include_subdomains);
   std::move(callback).Run();
+}
+
+void NetworkContext::IsHSTSActiveForHost(const std::string& host,
+                                         IsHSTSActiveForHostCallback callback) {
+  net::TransportSecurityState* security_state =
+      url_request_context_->transport_security_state();
+
+  if (!security_state) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  std::move(callback).Run(security_state->ShouldUpgradeToSSL(host));
 }
 
 void NetworkContext::GetHSTSState(const std::string& domain,
@@ -1541,11 +1558,6 @@ void NetworkContext::CreateMdnsResponder(
 #else
   NOTREACHED();
 #endif  // BUILDFLAG(ENABLE_MDNS)
-}
-
-void NetworkContext::ResetURLLoaderFactories() {
-  for (const auto& factory : url_loader_factories_)
-    factory->ClearBindings();
 }
 
 void NetworkContext::AddDomainReliabilityContextForTesting(
@@ -2159,17 +2171,5 @@ void NetworkContext::TrustAnchorUsed() {
   network_service_->client()->OnTrustAnchorUsed(params_->username_hash);
 }
 #endif
-
-void NetworkContext::ForceReloadProxyConfig(
-    ForceReloadProxyConfigCallback callback) {
-  url_request_context()->proxy_resolution_service()->ForceReloadProxyConfig();
-  std::move(callback).Run();
-}
-
-void NetworkContext::ClearBadProxiesCache(
-    ClearBadProxiesCacheCallback callback) {
-  url_request_context()->proxy_resolution_service()->ClearBadProxiesCache();
-  std::move(callback).Run();
-}
 
 }  // namespace network
