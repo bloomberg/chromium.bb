@@ -53,8 +53,8 @@ jumbo_component("gl") {
   output_name = "gl_wrapper"  # Avoid colliding with OS X"s libGL.dylib.
 
   sources = [
-    "android/android_surface_composer_compat.cc",
-    "android/android_surface_composer_compat.h",
+    "android/android_surface_control_compat.cc",
+    "android/android_surface_control_compat.h",
     "android/scoped_java_surface.cc",
     "android/scoped_java_surface.h",
     "android/surface_texture.cc",

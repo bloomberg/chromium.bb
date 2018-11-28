@@ -31,7 +31,7 @@
 #if defined(OS_ANDROID)
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
-#include "ui/gl/android/android_surface_composer_compat.h"
+#include "ui/gl/android/android_surface_control_compat.h"
 #include "ui/gl/init/gl_factory.h"
 #endif  // OS_ANDROID
 
@@ -51,7 +51,7 @@ GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
   if (!gpu_preferences.enable_android_surface_control)
     return kGpuFeatureStatusDisabled;
 
-  if (!gl::SurfaceComposer::IsSupported())
+  if (!gl::SurfaceControl::IsSupported())
     return kGpuFeatureStatusDisabled;
 
   return kGpuFeatureStatusEnabled;

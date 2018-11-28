@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
@@ -38,7 +39,8 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
 
   if (delegate &&
       delegate->GetFeatureInfo()->feature_flags().android_surface_control) {
-    surface = new gl::GLSurfaceEGLSurfaceControl(window);
+    surface = new gl::GLSurfaceEGLSurfaceControl(
+        window, base::ThreadTaskRunnerHandle::Get());
   } else {
     surface = new gl::NativeViewGLSurfaceEGL(window, nullptr);
   }

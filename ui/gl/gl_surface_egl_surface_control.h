@@ -10,17 +10,24 @@
 #include "base/android/scoped_hardware_buffer_handle.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "ui/gl/android/android_surface_composer_compat.h"
+#include "ui/gl/android/android_surface_control_compat.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace gl {
 
 class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
  public:
-  explicit GLSurfaceEGLSurfaceControl(ANativeWindow* window);
+  explicit GLSurfaceEGLSurfaceControl(
+      ANativeWindow* window,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // GLSurface implementation.
+  int GetBufferCount() const override;
   bool Initialize(gl::GLSurfaceFormat format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
@@ -60,20 +67,19 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
 
   struct SurfaceState {
     SurfaceState();
-    explicit SurfaceState(gl::SurfaceComposer* composer);
+    explicit SurfaceState(const SurfaceControl::Surface& parent);
     ~SurfaceState();
 
     SurfaceState(SurfaceState&& other);
     SurfaceState& operator=(SurfaceState&& other);
 
     int z_order = 0;
-    gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_INVALID;
     AHardwareBuffer* hardware_buffer = nullptr;
     gfx::Rect bounds_rect;
     gfx::Rect crop_rect;
     bool opaque = true;
 
-    gl::SurfaceComposer::Surface surface;
+    gl::SurfaceControl::Surface surface;
   };
 
   using ResourceRefs =
@@ -83,14 +89,15 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
       const SwapCompletionCallback& completion_callback,
       const PresentationCallback& callback);
 
-  static void OnTransactionAck(
-      const gfx::PresentationFeedback& feedback,
-      const PresentationCallback& present_callback,
-      const SwapCompletionCallback& completion_callback,
-      ResourceRefs resources);
+  // Called on the |gpu_task_runner_| when a transaction is acked by the
+  // framework.
+  void OnTransactionAckOnGpuThread(SwapCompletionCallback completion_callback,
+                                   PresentationCallback presentation_callback,
+                                   ResourceRefs released_resources,
+                                   int64_t present_time_ns);
 
   // Holds the surface state changes made since the last call to SwapBuffers.
-  base::Optional<gl::SurfaceComposer::Transaction> pending_transaction_;
+  base::Optional<gl::SurfaceControl::Transaction> pending_transaction_;
 
   // The list of Surfaces and the corresponding state. The initial
   // |pending_surfaces_count_| surfaces in this list are surfaces with state
@@ -113,7 +120,12 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
   // frame update.
   ResourceRefs current_frame_resources_;
 
-  std::unique_ptr<gl::SurfaceComposer> surface_composer_;
+  // The root surface tied to the ANativeWindow that places the content of this
+  // GLSurface in the java view tree.
+  gl::SurfaceControl::Surface root_surface_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
+  base::WeakPtrFactory<GLSurfaceEGLSurfaceControl> weak_factory_;
 };
 
 }  // namespace gl
