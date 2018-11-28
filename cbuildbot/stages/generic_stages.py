@@ -303,8 +303,6 @@ class BuilderStage(object):
     if manifest_branch is None:
       manifest_branch = self._run.manifest_branch
 
-    kwargs.setdefault('manifest_repo_url', manifest_url)
-    kwargs.setdefault('directory', self._build_root)
     kwargs.setdefault('referenced_repo', self._run.options.reference_repo)
     kwargs.setdefault('branch', manifest_branch)
     kwargs.setdefault('manifest', self._run.config.manifest)
@@ -315,7 +313,7 @@ class BuilderStage(object):
     if hasattr(self._run.options, 'preserve_paths'):
       kwargs.setdefault('preserve_paths', self._run.options.preserve_paths)
 
-    return repository.RepoRepository(**kwargs)
+    return repository.RepoRepository(manifest_url, self._build_root, **kwargs)
 
   def GetBuildbucketClient(self):
     """Build a buildbucket_client instance for Buildbucket related operations.
