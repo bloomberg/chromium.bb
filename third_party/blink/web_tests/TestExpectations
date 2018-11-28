@@ -5295,17 +5295,6 @@ crbug.com/864887 [ Linux ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html
 crbug.com/864888 [ Mac ] editing/selection/offset-from-point-complex-scripts.html [ Failure Pass ]
 crbug.com/864891 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scroll-customization-property.html [ Timeout Pass ]
 
-crbug.com/595206 http/tests/devtools/console/console-dir.js [ Skip ]
-crbug.com/595206 http/tests/devtools/console/console-format-classes.js [ Skip ]
-crbug.com/595206 http/tests/devtools/console/console-format-es6.js [ Skip ]
-crbug.com/595206 http/tests/devtools/console/console-format-es6-symbols-error.js [ Skip ]
-crbug.com/595206 http/tests/devtools/console/console-format.js [ Skip ]
-crbug.com/595206 http/tests/devtools/console/console-log-object-with-getter.js [ Skip ]
-crbug.com/595206 http/tests/devtools/console/console-tainted-globals.js [ Skip ]
-crbug.com/595206 http/tests/devtools/runtime/runtime-getProperties-isOwnProperty.js [ Skip ]
-crbug.com/595206 http/tests/devtools/sources/debugger-ui/function-generator-details.js [ Skip ]
-crbug.com/595206 http/tests/devtools/startup/console/console-format-startup.js [ Skip ]
-
 # Sheriff 2018-07-18
 crbug.com/864994 [ Mac ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-decode-ksc_5601.html [ Timeout Failure Pass ]
 
