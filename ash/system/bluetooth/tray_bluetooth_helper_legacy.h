@@ -68,6 +68,15 @@ class ASH_EXPORT TrayBluetoothHelperLegacy
   scoped_refptr<device::BluetoothAdapter> adapter_;
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
 
+  // AdapterPoweredChanged gets called right after AdapterPresentChanged when an
+  // adapter is added or removed. This causes us to call
+  // Observer::OnBluetoothStateChanged() a second time without the state
+  // actually changing. To avoid this, we cache the state whenever
+  // AdapterPresentChanged and AdapterPoweredChanged get called and only notify
+  // if the new state is different than the cached state.
+  device::mojom::BluetoothSystem::State last_state_ =
+      device::mojom::BluetoothSystem::State::kUnavailable;
+
   // Object could be deleted during a prolonged Bluetooth operation.
   base::WeakPtrFactory<TrayBluetoothHelperLegacy> weak_ptr_factory_;
 

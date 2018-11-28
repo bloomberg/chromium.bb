@@ -114,6 +114,7 @@ void TrayBluetoothHelperLegacy::InitializeOnAdapterReady(
   adapter_ = adapter;
   CHECK(adapter_);
   adapter_->AddObserver(this);
+  last_state_ = GetBluetoothState();
 }
 
 void TrayBluetoothHelperLegacy::Initialize() {
@@ -215,12 +216,20 @@ bool TrayBluetoothHelperLegacy::HasBluetoothDiscoverySession() {
 void TrayBluetoothHelperLegacy::AdapterPresentChanged(
     device::BluetoothAdapter* adapter,
     bool present) {
+  if (last_state_ == GetBluetoothState())
+    return;
+
+  last_state_ = GetBluetoothState();
   NotifyBluetoothSystemStateChanged();
 }
 
 void TrayBluetoothHelperLegacy::AdapterPoweredChanged(
     device::BluetoothAdapter* adapter,
     bool powered) {
+  if (last_state_ == GetBluetoothState())
+    return;
+
+  last_state_ = GetBluetoothState();
   NotifyBluetoothSystemStateChanged();
 }
 
