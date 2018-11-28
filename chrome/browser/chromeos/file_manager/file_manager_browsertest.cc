@@ -580,6 +580,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("shareFileTeamDrive"),
                       TestCase("shareDirectoryTeamDrive"),
                       TestCase("shareHostedFileTeamDrive"),
+                      TestCase("shareTeamDrive"),
                       TestCase("manageHostedFileTeamDrive"),
                       TestCase("manageFileTeamDrive"),
                       TestCase("manageDirectoryTeamDrive"),
