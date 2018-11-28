@@ -8,14 +8,18 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_position.h"
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_selection_test.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace test {
@@ -24,16 +28,180 @@ namespace test {
 // Basic tests.
 //
 
-TEST_F(AccessibilitySelectionTest, SetSelectionInText) {
-  SetBodyInnerHTML(R"HTML(<p id='paragraph'>Hello</p>)HTML");
+TEST_F(AccessibilitySelectionTest, FromCurrentSelection) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  SetBodyInnerHTML(R"HTML(
+      <p id="paragraph1">Hello.</p>
+      <p id="paragraph2">How are you?</p>
+      )HTML");
 
-  const Node* text = GetElementById("paragraph")->firstChild();
+  ASSERT_FALSE(AXSelection::FromCurrentSelection(GetDocument()).IsValid());
+
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      let text1 = document.querySelectorAll('p')[0].firstChild;
+      let paragraph2 = document.querySelectorAll('p')[1];
+      let range = document.createRange();
+      range.setStart(text1, 3);
+      range.setEnd(paragraph2, 1);
+      let selection = getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  const AXObject* ax_static_text_1 =
+      GetAXObjectByElementId("paragraph1")->FirstChild();
+  ASSERT_NE(nullptr, ax_static_text_1);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text_1->RoleValue());
+  const AXObject* ax_paragraph_2 = GetAXObjectByElementId("paragraph2");
+  ASSERT_NE(nullptr, ax_paragraph_2);
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_paragraph_2->RoleValue());
+
+  const auto ax_selection = AXSelection::FromCurrentSelection(GetDocument());
+  ASSERT_TRUE(ax_selection.IsValid());
+
+  EXPECT_TRUE(ax_selection.Base().IsTextPosition());
+  EXPECT_EQ(ax_static_text_1, ax_selection.Base().ContainerObject());
+  EXPECT_EQ(3, ax_selection.Base().TextOffset());
+
+  EXPECT_FALSE(ax_selection.Extent().IsTextPosition());
+  EXPECT_EQ(ax_paragraph_2, ax_selection.Extent().ContainerObject());
+  EXPECT_EQ(1, ax_selection.Extent().ChildIndex());
+
+  EXPECT_EQ(
+      "++<Paragraph>\n"
+      "++++<StaticText: Hel^lo.>\n"
+      "++<Paragraph>\n"
+      "++++<StaticText: How are you?>\n|",
+      GetSelectionText(ax_selection));
+}
+
+TEST_F(AccessibilitySelectionTest, ClearCurrentSelection) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  SetBodyInnerHTML(R"HTML(
+      <p>Hello.</p>
+      <p>How are you?</p>
+      )HTML");
+
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      let text1 = document.querySelectorAll('p')[0].firstChild;
+      let paragraph2 = document.querySelectorAll('p')[1];
+      let range = document.createRange();
+      range.setStart(text1, 3);
+      range.setEnd(paragraph2, 1);
+      let selection = getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  SelectionInDOMTree selection = Selection().GetSelectionInDOMTree();
+  ASSERT_FALSE(selection.IsNone());
+
+  AXSelection::ClearCurrentSelection(GetDocument());
+  selection = Selection().GetSelectionInDOMTree();
+  EXPECT_TRUE(selection.IsNone());
+
+  const auto ax_selection = AXSelection::FromCurrentSelection(GetDocument());
+  EXPECT_FALSE(ax_selection.IsValid());
+  EXPECT_EQ("", GetSelectionText(ax_selection));
+}
+
+TEST_F(AccessibilitySelectionTest, CancelSelect) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  SetBodyInnerHTML(R"HTML(
+      <p id="paragraph1">Hello.</p>
+      <p id="paragraph2">How are you?</p>
+      )HTML");
+
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      document.addEventListener("selectstart", (e) => {
+        e.preventDefault();
+      }, false);
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  const AXObject* ax_static_text_1 =
+      GetAXObjectByElementId("paragraph1")->FirstChild();
+  ASSERT_NE(nullptr, ax_static_text_1);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text_1->RoleValue());
+  const AXObject* ax_paragraph_2 = GetAXObjectByElementId("paragraph2");
+  ASSERT_NE(nullptr, ax_paragraph_2);
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_paragraph_2->RoleValue());
+
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder
+          .SetBase(AXPosition::CreatePositionInTextObject(*ax_static_text_1, 3))
+          .SetExtent(AXPosition::CreateLastPositionInObject(*ax_paragraph_2))
+          .Build();
+
+  EXPECT_FALSE(ax_selection.Select()) << "The operation has been cancelled.";
+  EXPECT_TRUE(Selection().GetSelectionInDOMTree().IsNone());
+  EXPECT_FALSE(AXSelection::FromCurrentSelection(GetDocument()).IsValid());
+
+  GetDocument().RemoveAllEventListeners();
+
+  EXPECT_TRUE(ax_selection.Select()) << "The operation should now go through.";
+  EXPECT_FALSE(Selection().GetSelectionInDOMTree().IsNone());
+  EXPECT_EQ(
+      "++<Paragraph>\n"
+      "++++<StaticText: Hel^lo.>\n"
+      "++<Paragraph>\n"
+      "++++<StaticText: How are you?>\n|",
+      GetSelectionText(AXSelection::FromCurrentSelection(GetDocument())));
+}
+
+TEST_F(AccessibilitySelectionTest, DocumentRangeMatchesSelection) {
+  SetBodyInnerHTML(R"HTML(
+      <p id="paragraph1">Hello.</p>
+      <p id="paragraph2">How are you?</p>
+      )HTML");
+
+  const AXObject* ax_static_text_1 =
+      GetAXObjectByElementId("paragraph1")->FirstChild();
+  ASSERT_NE(nullptr, ax_static_text_1);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text_1->RoleValue());
+  const AXObject* ax_paragraph_2 = GetAXObjectByElementId("paragraph2");
+  ASSERT_NE(nullptr, ax_paragraph_2);
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_paragraph_2->RoleValue());
+
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder
+          .SetBase(AXPosition::CreatePositionInTextObject(*ax_static_text_1, 3))
+          .SetExtent(AXPosition::CreateLastPositionInObject(*ax_paragraph_2))
+          .Build();
+  EXPECT_TRUE(ax_selection.Select());
+  ASSERT_FALSE(Selection().GetSelectionInDOMTree().IsNone());
+  ASSERT_NE(nullptr, Selection().DocumentCachedRange());
+  EXPECT_EQ(String("lo.\n      How are you?"),
+            Selection().DocumentCachedRange()->toString());
+}
+
+TEST_F(AccessibilitySelectionTest, SetSelectionInText) {
+  SetBodyInnerHTML(R"HTML(<p id="paragraph">Hello</p>)HTML");
+
+  const Node* text = GetDocument().QuerySelector("p")->firstChild();
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
 
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_base =
       AXPosition::CreatePositionInTextObject(*ax_static_text, 3);
@@ -54,15 +222,16 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInText) {
 }
 
 TEST_F(AccessibilitySelectionTest, SetSelectionInTextWithWhiteSpace) {
-  SetBodyInnerHTML(R"HTML(<p id='paragraph'>     Hello</p>)HTML");
+  SetBodyInnerHTML(R"HTML(<p id="paragraph">     Hello</p>)HTML");
 
-  const Node* text = GetElementById("paragraph")->firstChild();
+  const Node* text = GetDocument().QuerySelector("p")->firstChild();
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
 
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_base =
       AXPosition::CreatePositionInTextObject(*ax_static_text, 3);
@@ -226,7 +395,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAroundListBullet) {
   // first <li>.
   ax_selection.Select(AXSelectionBehavior::kShrinkToValidDOMRange);
   const SelectionInDOMTree shrunk_selection =
-      GetFrame().Selection().GetSelectionInDOMTree();
+      Selection().GetSelectionInDOMTree();
 
   EXPECT_EQ(item_1, shrunk_selection.Base().AnchorNode());
   EXPECT_TRUE(shrunk_selection.Base().IsBeforeChildren());
@@ -238,7 +407,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAroundListBullet) {
   // |AXSelection| should move the anchor to before the first <li>.
   ax_selection.Select(AXSelectionBehavior::kExtendToValidDOMRange);
   const SelectionInDOMTree extended_selection =
-      GetFrame().Selection().GetSelectionInDOMTree();
+      Selection().GetSelectionInDOMTree();
 
   ASSERT_TRUE(extended_selection.Base().IsOffsetInAnchor());
   EXPECT_EQ(item_1->parentNode(), extended_selection.Base().AnchorNode());
