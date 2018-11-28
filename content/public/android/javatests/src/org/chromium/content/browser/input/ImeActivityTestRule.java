@@ -280,10 +280,11 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
             }
         });
         Pair<Range, Range> selection = states.get(index);
-        Assert.assertEquals(selectionStart, selection.first.start());
-        Assert.assertEquals(selectionEnd, selection.first.end());
-        Assert.assertEquals(compositionStart, selection.second.start());
-        Assert.assertEquals(compositionEnd, selection.second.end());
+        Assert.assertEquals("Mismatched selection start", selectionStart, selection.first.start());
+        Assert.assertEquals("Mismatched selection end", selectionEnd, selection.first.end());
+        Assert.assertEquals(
+                "Mismatched composition start", compositionStart, selection.second.start());
+        Assert.assertEquals("Mismatched composition end", compositionEnd, selection.second.end());
     }
 
     void resetUpdateSelectionList() {
