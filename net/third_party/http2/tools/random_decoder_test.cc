@@ -13,7 +13,7 @@
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/decoder/decode_status.h"
 #include "net/third_party/http2/http2_constants.h"
-#include "net/third_party/http2/tools/failure.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AssertionFailure;

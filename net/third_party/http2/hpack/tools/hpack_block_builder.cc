@@ -5,7 +5,7 @@
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
 
 #include "net/third_party/http2/hpack/varint/hpack_varint_encoder.h"
-#include "net/third_party/http2/tools/http2_bug_tracker.h"
+#include "net/third_party/http2/platform/api/http2_bug_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace http2 {

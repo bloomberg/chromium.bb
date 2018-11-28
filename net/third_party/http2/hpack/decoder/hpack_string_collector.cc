@@ -10,7 +10,7 @@
 #include <ostream>
 
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/http2/tools/failure.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace http2 {

@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "net/third_party/http2/platform/api/http2_bug_tracker.h"
 #include "net/third_party/http2/platform/api/http2_estimate_memory_usage.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
-#include "net/third_party/http2/tools/http2_bug_tracker.h"
 
 namespace http2 {
 

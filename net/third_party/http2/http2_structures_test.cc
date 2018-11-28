@@ -20,8 +20,8 @@
 
 #include "net/third_party/http2/http2_structures_test_util.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
 #include "net/third_party/http2/test_tools/http2_random.h"
-#include "net/third_party/http2/tools/failure.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

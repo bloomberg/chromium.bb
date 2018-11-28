@@ -12,8 +12,8 @@
 #include "net/third_party/http2/decoder/http2_frame_decoder_listener.h"
 #include "net/third_party/http2/http2_constants.h"
 #include "net/third_party/http2/http2_structures.h"
+#include "net/third_party/http2/platform/api/http2_bug_tracker.h"
 #include "net/third_party/http2/platform/api/http2_macros.h"
-#include "net/third_party/http2/tools/http2_bug_tracker.h"
 
 namespace http2 {
 

@@ -10,8 +10,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "net/third_party/http2/platform/api/http2_bug_tracker.h"
 #include "net/third_party/http2/platform/api/http2_macros.h"
-#include "net/third_party/http2/tools/http2_bug_tracker.h"
 
 namespace http2 {
 namespace {

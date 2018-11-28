@@ -7,8 +7,8 @@
 #include "net/third_party/http2/decoder/decode_status.h"
 #include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
 #include "net/third_party/http2/http2_constants.h"
+#include "net/third_party/http2/platform/api/http2_bug_tracker.h"
 #include "net/third_party/http2/platform/api/http2_macros.h"
-#include "net/third_party/http2/tools/http2_bug_tracker.h"
 
 namespace http2 {
 
