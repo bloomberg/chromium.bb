@@ -13768,17 +13768,6 @@
     },
     {
       "board": {
-        "public_codename": "slippy",
-        "is_active": false,
-        "builder_name": "slippy"
-      },
-      "delta_type": "NO_DELTA",
-      "generate_delta": false,
-      "delta_payload_tests": false,
-      "full_payload_tests": false
-    },
-    {
-      "board": {
         "public_codename": "smaug",
         "is_active": false,
         "builder_name": "smaug"

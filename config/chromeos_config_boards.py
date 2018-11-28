@@ -154,7 +154,6 @@ x86_internal_release_boards = frozenset([
     'sand',
     'sentry',
     'setzer',
-    'slippy',
     'snappy',
     'soraka',
     'squawks',
