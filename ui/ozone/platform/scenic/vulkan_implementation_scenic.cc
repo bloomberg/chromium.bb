@@ -16,6 +16,7 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
@@ -28,11 +29,15 @@ namespace {
 // Holds resources necessary for presenting to a View using a VkSurfaceKHR.
 class ScenicSurface {
  public:
-  ScenicSurface(fuchsia::ui::scenic::Scenic* scenic)
+  ScenicSurface(fuchsia::ui::scenic::Scenic* scenic,
+                mojom::ScenicGpuHost* gpu_host,
+                gfx::AcceleratedWidget window)
       : scenic_(scenic),
         parent_(&scenic_),
         shape_(&scenic_),
-        material_(&scenic_) {
+        material_(&scenic_),
+        gpu_host_(gpu_host),
+        window_(window) {
     shape_.SetShape(scenic::Rectangle(&scenic_, 1.f, 1.f));
     shape_.SetMaterial(material_);
   }
@@ -47,15 +52,17 @@ class ScenicSurface {
     scenic_.ReleaseResource(image_pipe_id);
   }
 
-  // Imports a node to attach the surface to and returns its export token.
+  // Links the surface to the window in the browser process.
   //
   // Scenic does not care about order here; it's totally fine for imports to
   // cause exports, and that's what's done here.
-  zx::eventpair Import() {
+  void LinkToParent() {
     zx::eventpair export_token;
     parent_.BindAsRequest(&export_token);
     parent_.AddChild(shape_);
-    return export_token;
+    gpu_host_->ExportParent(window_,
+                            mojo::WrapPlatformHandle(
+                                mojo::PlatformHandle(std::move(export_token))));
   }
 
   // Flushes commands to scenic & executes them.
@@ -70,15 +77,18 @@ class ScenicSurface {
   scenic::ShapeNode shape_;
   scenic::Material material_;
 
+  mojom::ScenicGpuHost* gpu_host_ = nullptr;
+  gfx::AcceleratedWidget window_ = gfx::kNullAcceleratedWidget;
+
   DISALLOW_COPY_AND_ASSIGN(ScenicSurface);
 };
 
 }  // namespace
 
 VulkanImplementationScenic::VulkanImplementationScenic(
-    ScenicWindowManager* scenic_window_manager,
+    mojom::ScenicGpuHost* scenic_gpu_host,
     fuchsia::ui::scenic::Scenic* scenic)
-    : scenic_window_manager_(scenic_window_manager), scenic_(scenic) {}
+    : scenic_gpu_host_(scenic_gpu_host), scenic_(scenic) {}
 
 VulkanImplementationScenic::~VulkanImplementationScenic() = default;
 
@@ -129,15 +139,11 @@ VkInstance VulkanImplementationScenic::GetVulkanInstance() {
 
 std::unique_ptr<gpu::VulkanSurface>
 VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
-  std::unique_ptr<ScenicSurface> scenic_surface =
-      std::make_unique<ScenicSurface>(scenic_);
+  auto scenic_surface =
+      std::make_unique<ScenicSurface>(scenic_, scenic_gpu_host_, window);
 
   // Attach the surface to the window.
-  // TODO(spang): Use IPC rather than direct call for this step so that it will
-  // work from the GPU process.
-  ScenicWindow* scenic_window = scenic_window_manager_->GetWindow(window);
-  if (scenic_window)
-    scenic_window->ExportRenderingEntity(scenic_surface->Import());
+  scenic_surface->LinkToParent();
 
   fuchsia::images::ImagePipePtr image_pipe;
   scenic_surface->SetTextureToNewImagePipe(image_pipe.NewRequest());

@@ -16,6 +16,7 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
+#include "ui/ozone/platform/scenic/scenic_gpu_service.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_canvas.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
@@ -108,6 +109,10 @@ ScenicSurfaceFactory::ScenicSurfaceFactory(ScenicWindowManager* window_manager)
     : window_manager_(window_manager),
       egl_implementation_(std::make_unique<GLOzoneEGLScenic>()) {}
 
+ScenicSurfaceFactory::ScenicSurfaceFactory(ScenicGpuService* scenic_gpu_service)
+    : scenic_gpu_service_(scenic_gpu_service),
+      egl_implementation_(std::make_unique<GLOzoneEGLScenic>()) {}
+
 ScenicSurfaceFactory::~ScenicSurfaceFactory() = default;
 
 fuchsia::ui::scenic::Scenic* ScenicSurfaceFactory::GetScenic() {
@@ -138,6 +143,8 @@ GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
 
 std::unique_ptr<SurfaceOzoneCanvas> ScenicSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
+  if (!window_manager_)
+    LOG(FATAL) << "Software output not supported from GPU process";
   ScenicWindow* window = window_manager_->GetWindow(widget);
   if (!window)
     return nullptr;
@@ -155,8 +162,11 @@ scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
 ScenicSurfaceFactory::CreateVulkanImplementation() {
-  return std::make_unique<ui::VulkanImplementationScenic>(window_manager_,
-                                                          GetScenic());
+  if (!scenic_gpu_service_)
+    LOG(FATAL) << "Vulkan implementation requires InitializeForGPU";
+
+  return std::make_unique<ui::VulkanImplementationScenic>(
+      scenic_gpu_service_->gpu_host(), GetScenic());
 }
 #endif
 

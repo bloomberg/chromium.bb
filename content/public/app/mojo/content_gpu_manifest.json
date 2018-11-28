@@ -15,6 +15,7 @@
           "ui.ozone.mojom.DeviceCursor",
           "ui.ozone.mojom.DrmDevice",
           "ui.ozone.mojom.WaylandConnectionClient",
+          "ui.mojom.ScenicGpuService",
           "viz.mojom.CompositingModeReporter",
           "viz.mojom.VizMain"
         ],

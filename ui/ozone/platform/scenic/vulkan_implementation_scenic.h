@@ -10,14 +10,13 @@
 
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_instance.h"
+#include "ui/ozone/public/interfaces/scenic_gpu_host.mojom.h"
 
 namespace ui {
 
-class ScenicWindowManager;
-
 class VulkanImplementationScenic : public gpu::VulkanImplementation {
  public:
-  VulkanImplementationScenic(ScenicWindowManager* scenic_window_manager,
+  VulkanImplementationScenic(mojom::ScenicGpuHost* scenic_gpu_host,
                              fuchsia::ui::scenic::Scenic* scenic);
   ~VulkanImplementationScenic() override;
 
@@ -37,7 +36,7 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
       VkFence vk_fence) override;
 
  private:
-  ScenicWindowManager* const scenic_window_manager_;
+  mojom::ScenicGpuHost* const scenic_gpu_host_;
   fuchsia::ui::scenic::Scenic* const scenic_;
   gpu::VulkanInstance vulkan_instance_;
 

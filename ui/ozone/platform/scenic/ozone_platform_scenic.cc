@@ -19,6 +19,8 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/system_input_injector.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/platform/scenic/scenic_gpu_host.h"
+#include "ui/ozone/platform/scenic/scenic_gpu_service.h"
 #include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
@@ -26,6 +28,7 @@
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
+#include "ui/ozone/public/interfaces/scenic_gpu_service.mojom.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -54,14 +57,12 @@ class OzonePlatformScenic
     : public OzonePlatform,
       public base::MessageLoopCurrent::DestructionObserver {
  public:
-  OzonePlatformScenic()
-      : window_manager_(std::make_unique<ScenicWindowManager>()),
-        surface_factory_(window_manager_.get()) {}
+  OzonePlatformScenic() {}
   ~OzonePlatformScenic() override = default;
 
   // OzonePlatform implementation.
   ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
-    return &surface_factory_;
+    return surface_factory_.get();
   }
 
   OverlayManagerOzone* GetOverlayManager() override {
@@ -77,7 +78,7 @@ class OzonePlatformScenic
   }
 
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
-    return gpu_platform_support_host_.get();
+    return scenic_gpu_host_.get();
   }
 
   std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
@@ -116,19 +117,36 @@ class OzonePlatformScenic
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         std::make_unique<StubKeyboardLayoutEngine>());
 
+    window_manager_ = std::make_unique<ScenicWindowManager>();
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
     cursor_factory_ozone_ = std::make_unique<BitmapCursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
     base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
+
+    surface_factory_ =
+        std::make_unique<ScenicSurfaceFactory>(window_manager_.get());
+
+    scenic_gpu_host_ = std::make_unique<ScenicGpuHost>(window_manager_.get());
   }
 
-  void InitializeGPU(const InitParams& params) override {}
+  void InitializeGPU(const InitParams& params) override {
+    scenic_gpu_service_ = std::make_unique<ScenicGpuService>();
+    DCHECK(!surface_factory_);
+    surface_factory_ =
+        std::make_unique<ScenicSurfaceFactory>(scenic_gpu_service_.get());
+  }
 
   base::MessageLoop::Type GetMessageLoopTypeForGpu() override {
     // Scenic FIDL calls require async dispatcher.
     return base::MessageLoop::TYPE_IO;
+  }
+
+  void AddInterfaces(service_manager::BinderRegistry* registry) override {
+    registry->AddInterface<mojom::ScenicGpuService>(
+        scenic_gpu_service_->GetBinderCallback(),
+        base::ThreadTaskRunnerHandle::Get());
   }
 
  private:
@@ -139,13 +157,15 @@ class OzonePlatformScenic
   void WillDestroyCurrentMessageLoop() override { Shutdown(); }
 
   std::unique_ptr<ScenicWindowManager> window_manager_;
-  ScenicSurfaceFactory surface_factory_;
 
   std::unique_ptr<PlatformEventSource> platform_event_source_;
   std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
+  std::unique_ptr<ScenicGpuHost> scenic_gpu_host_;
+  std::unique_ptr<ScenicGpuService> scenic_gpu_service_;
+  std::unique_ptr<ScenicSurfaceFactory> surface_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformScenic);
 };
