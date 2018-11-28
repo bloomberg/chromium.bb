@@ -2212,8 +2212,8 @@ TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
 // recorded at an appropriate time and is passed in the corresponding message.
 TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
   base::TimeTicks lower_bound_navigation_start(base::TimeTicks::Now());
-  frame()->GetWebFrame()->LoadHTMLString(
-      "hello world", blink::WebURL(GURL("data:text/html,")));
+  frame()->LoadHTMLString("hello world", GURL("data:text/html,"), "UTF-8",
+                          GURL(), false /* replace_current_item */);
 
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetProvisionalDocumentLoader());

@@ -204,6 +204,7 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_navigation_control.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_timings.h"
 #include "third_party/blink/public/web/web_plugin.h"
@@ -1298,7 +1299,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       WebString::FromUTF8(replicated_state.name),
       replicated_state.frame_policy.sandbox_flags);
   if (has_committed_real_load)
-    web_frame->SetCommittedFirstRealLoad();
+    render_frame->frame_->SetCommittedFirstRealLoad();
 
   // The RenderViewImpl and its RenderWidget already exist by the time we get
   // here.
@@ -1531,7 +1532,7 @@ void RenderFrameImpl::CreateFrame(
   }
 
   if (has_committed_real_load)
-    web_frame->SetCommittedFirstRealLoad();
+    render_frame->frame_->SetCommittedFirstRealLoad();
 
   render_frame->Initialize();
 }
@@ -2914,14 +2915,14 @@ void RenderFrameImpl::CancelContextMenu(int request_id) {
   pending_context_menus_.Remove(request_id);
 }
 
-void RenderFrameImpl::BindToFrame(WebLocalFrame* web_frame) {
+void RenderFrameImpl::BindToFrame(blink::WebNavigationControl* frame) {
   DCHECK(!frame_);
 
   std::pair<FrameMap::iterator, bool> result =
-      g_frame_map.Get().emplace(web_frame, this);
+      g_frame_map.Get().emplace(frame, this);
   CHECK(result.second) << "Inserting a duplicate item.";
 
-  frame_ = web_frame;
+  frame_ = frame;
 }
 
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
@@ -3383,10 +3384,10 @@ void RenderFrameImpl::CommitFailedNavigation(
 
   // On load failure, a frame can ask its owner to render fallback content.
   // When that happens, don't load an error page.
-  WebLocalFrame::FallbackContentResult fallback_result =
+  blink::WebNavigationControl::FallbackContentResult fallback_result =
       frame_->MaybeRenderFallbackContent(error);
-  if (fallback_result != WebLocalFrame::NoFallbackContent) {
-    if (fallback_result == WebLocalFrame::NoLoadInProgress) {
+  if (fallback_result != blink::WebNavigationControl::NoFallbackContent) {
+    if (fallback_result == blink::WebNavigationControl::NoLoadInProgress) {
       // If the frame wasn't loading but was fallback-eligible, the fallback
       // content won't be shown. However, showing an error page isn't right
       // either, as the frame has already been populated with something
@@ -7083,6 +7084,20 @@ blink::mojom::PageVisibilityState RenderFrameImpl::GetVisibilityState() const {
 
 bool RenderFrameImpl::IsBrowserSideNavigationPending() {
   return browser_side_navigation_pending_;
+}
+
+void RenderFrameImpl::LoadHTMLString(const std::string& html,
+                                     const GURL& base_url,
+                                     const std::string& text_encoding,
+                                     const GURL& unreachable_url,
+                                     bool replace_current_item) {
+  frame_->CommitDataNavigation(
+      blink::WebURLRequest(base_url), WebData(html.data(), html.length()),
+      "text/html", WebString::FromUTF8(text_encoding), unreachable_url,
+      replace_current_item ? blink::WebFrameLoadType::kReplaceCurrentItem
+                           : blink::WebFrameLoadType::kStandard,
+      blink::WebHistoryItem(), false /* is_client_redirect */,
+      nullptr /* navigation_params */, nullptr /* navigation_data */);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> RenderFrameImpl::GetTaskRunner(

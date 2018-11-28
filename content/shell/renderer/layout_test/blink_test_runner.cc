@@ -849,12 +849,9 @@ void BlinkTestRunner::OnReset() {
   LayoutTestRenderThreadObserver::GetInstance()->test_interfaces()->ResetAll();
   Reset(true /* for_new_test */);
   // Navigating to about:blank will make sure that no new loads are initiated
-  // by the renderer.
-  main_frame->CommitNavigation(
-      WebURLRequest(GURL(url::kAboutBlankURL)),
-      blink::WebFrameLoadType::kStandard, blink::WebHistoryItem(), false,
-      base::UnguessableToken::Create(), nullptr /* navigation_params */,
-      nullptr /* extra_data */);
+  // by the renderer. We know that about:blank navigation will finish
+  // without going to the network.
+  main_frame->StartNavigation(WebURLRequest(GURL(url::kAboutBlankURL)));
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 

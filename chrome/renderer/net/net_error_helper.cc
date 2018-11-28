@@ -424,12 +424,8 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
 
 void NetErrorHelper::LoadErrorPage(const std::string& html,
                                    const GURL& failed_url) {
-  render_frame()->GetWebFrame()->CommitDataNavigation(
-      blink::WebURLRequest(GURL(kUnreachableWebDataURL)), blink::WebData(html),
-      blink::WebString::FromUTF8("text/html"),
-      blink::WebString::FromUTF8("UTF-8"), failed_url,
-      blink::WebFrameLoadType::kReplaceCurrentItem, blink::WebHistoryItem(),
-      false /* is_client_redirect */, nullptr, nullptr);
+  render_frame()->LoadHTMLString(html, GURL(kUnreachableWebDataURL), "UTF-8",
+                                 failed_url, true /* replace_current_item */);
 }
 
 void NetErrorHelper::EnablePageHelperFunctions(net::Error net_error) {

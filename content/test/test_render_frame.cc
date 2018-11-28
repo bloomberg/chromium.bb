@@ -20,6 +20,7 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_navigation_control.h"
 
 namespace content {
 
@@ -215,7 +216,7 @@ void TestRenderFrame::BeginNavigation(
     // frame. However if the loaded html has a subframe,
     // BeginNavigation will be called from Blink and we should avoid
     // going through browser process in this case.
-    GetWebFrame()->CommitNavigation(
+    frame_->CommitNavigation(
         info->url_request, info->frame_load_type, blink::WebHistoryItem(),
         info->is_client_redirect, base::UnguessableToken::Create(),
         nullptr /* navigation_params */, nullptr /* extra_data */);
