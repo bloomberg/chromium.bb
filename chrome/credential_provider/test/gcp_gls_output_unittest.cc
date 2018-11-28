@@ -68,11 +68,14 @@ class GcpUsingChromeTest : public ::testing::Test {
       const base::CommandLine& command_line) const;
 
   bool ShouldRunTestOnThisOS() const {
+    // TODO(crbug.com/909722) Enable tests again once they are all passing. Currently, all tests are
+    // flaky on all bots except win-asan.
+    return false;
     // TODO(crbug.com/906793). For some reason handle inheritance does not work
     // correctly on Windows7 and causes all the tests to stall indefinetely.
     // Since GCPW is only targeted for Windows 10 currently, disable these
     // unit tests for now until the problem can be resolved.
-    return base::win::GetVersion() >= base::win::VERSION_WIN10;
+    // return base::win::GetVersion() >= base::win::VERSION_WIN10;
   }
   std::unique_ptr<net::test_server::HttpResponse> GaiaHtmlResponseHandler(
       const net::test_server::HttpRequest& request);
