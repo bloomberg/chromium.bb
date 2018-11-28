@@ -180,12 +180,12 @@ class TabSpecificContentSettings
   // information which are needed for navigation: CONTENT_SETTINGS_TYPE_COOKIES
   // for cookies and service workers, and CONTENT_SETTINGS_TYPE_JAVASCRIPT for
   // service workers.
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   void ClearContentSettingsExceptForNavigationRelatedSettings();
 
   // Resets navigation related information (CONTENT_SETTINGS_TYPE_COOKIES and
   // CONTENT_SETTINGS_TYPE_JAVASCRIPT).
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   void ClearNavigationRelatedContentSettings();
 
   // Notifies that a Flash download has been blocked.
@@ -217,12 +217,12 @@ class TabSpecificContentSettings
     return media_stream_requested_video_device_;
   }
 
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   const std::string& media_stream_selected_audio_device() const {
     return media_stream_selected_audio_device_;
   }
 
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   const std::string& media_stream_selected_video_device() const {
     return media_stream_selected_video_device_;
   }
@@ -302,14 +302,14 @@ class TabSpecificContentSettings
   void SetPepperBrokerAllowed(bool allowed);
 
   // Message handlers.
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   void OnContentBlocked(ContentSettingsType type);
   void OnContentBlockedWithDetail(ContentSettingsType type,
                                   const base::string16& details);
   void OnContentAllowed(ContentSettingsType type);
 
   // These methods are invoked on the UI thread by the static functions above.
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   void OnCookiesRead(const GURL& url,
                      const GURL& first_party_url,
                      const net::CookieList& cookie_list,
