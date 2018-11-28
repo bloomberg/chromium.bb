@@ -1089,16 +1089,12 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 };
 
 class ChromeLauncherControllerWithArcTest
-    : public ChromeLauncherControllerTest,
-      public ::testing::WithParamInterface<bool> {
+    : public ChromeLauncherControllerTest {
  protected:
   ChromeLauncherControllerWithArcTest() { auto_start_arc_test_ = true; }
   ~ChromeLauncherControllerWithArcTest() override {}
 
   void SetUp() override {
-    if (GetParam())
-      arc::SetArcAlwaysStartForTesting(true);
-
     // To prevent crash on test exit and pending decode request.
     ArcAppIcon::DisableSafeDecodingForTesting();
 
@@ -1108,10 +1104,6 @@ class ChromeLauncherControllerWithArcTest
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerWithArcTest);
 };
-
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeLauncherControllerWithArcTest,
-                        ::testing::Bool());
 
 // Watches WebContents and blocks until it is destroyed. This is needed for
 // the destruction of a V2 application.
@@ -1339,27 +1331,16 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 };
 
 class ChromeLauncherControllerMultiProfileWithArcTest
-    : public MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
-      public ::testing::WithParamInterface<bool> {
+    : public MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest {
  protected:
   ChromeLauncherControllerMultiProfileWithArcTest() {
     auto_start_arc_test_ = true;
   }
   ~ChromeLauncherControllerMultiProfileWithArcTest() override {}
 
-  void SetUp() override {
-    if (GetParam())
-      arc::SetArcAlwaysStartForTesting(true);
-    MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest::SetUp();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerMultiProfileWithArcTest);
 };
-
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeLauncherControllerMultiProfileWithArcTest,
-                        ::testing::Bool());
 
 TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   InitLauncherController();
@@ -1378,7 +1359,7 @@ TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
   // Work on ARC disabled platform first.
   const std::string arc_app_id1 =
       ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -1455,9 +1436,6 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
   EXPECT_EQ(0U, app_service_->sync_items().size());
 
   // Move back to ARC disabled platform.
-  // TODO(victorhsieh): Implement opt-out.
-  if (arc::ShouldArcAlwaysStart())
-    return;
   EnablePlayStore(false);
   StartAppSyncService(copy_sync_list);
   RecreateLauncherController()->Init();
@@ -1931,7 +1909,7 @@ TEST_F(ChromeLauncherControllerTest, CheckRunningV1AppOrder) {
   EXPECT_EQ("Back, AppList, Chrome", GetPinnedAppStatus());
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
   InitLauncherController();
 
   const arc::mojom::AppInfo& app1 = arc_test_.fake_apps()[0];
@@ -2013,7 +1991,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
 }
 
 // Launch is canceled in case app becomes suspended.
-TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
   InitLauncherController();
 
   arc::mojom::AppInfo app = arc_test_.fake_apps()[0];
@@ -2047,7 +2025,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
 
 // Ensure the spinner controller does not override the active app controller
 // (crbug.com/701152).
-TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
   InitLauncherController();
   SendListOfArcApps();
   arc_test_.StopArcInstance();
@@ -2090,7 +2068,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
       launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
 }
 
-TEST_P(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
+TEST_F(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
   SendListOfArcApps();
 
   InitLauncherController();
@@ -2155,7 +2133,7 @@ TEST_P(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
   arc_window3->CloseNow();
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcRunningApp) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcRunningApp) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2191,7 +2169,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcRunningApp) {
 
 // Test race creation/deletion of ARC app.
 // TODO(khmel): Remove after moving everything to wayland protocol.
-TEST_P(ChromeLauncherControllerWithArcTest, ArcRaceCreateClose) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcRaceCreateClose) {
   InitLauncherController();
 
   const std::string arc_app_id1 =
@@ -2230,7 +2208,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcRaceCreateClose) {
   EXPECT_FALSE(launcher_controller_->GetItem(ash::ShelfID(arc_app_id2)));
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcWindowRecreation) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcWindowRecreation) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2260,7 +2238,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcWindowRecreation) {
 // but in case of ARC boot failure this may lead to such situation. This test
 // verifies that dynamic change of app launcher controllers is safe.
 // See more crbug.com/770005.
-TEST_P(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
+TEST_F(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
   extension_service_->AddExtension(arc_support_host_.get());
 
   InitLauncherController();
@@ -2361,7 +2339,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
 
 // Validate that ARC app is pinned correctly and pin is removed automatically
 // once app is uninstalled.
-TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPin) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPin) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2384,10 +2362,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPin) {
 
   EXPECT_EQ("Back, AppList, Chrome, App1, Fake App 0, App2",
             GetPinnedAppStatus());
-  // In opt-out mode, only system apps are available and can't be uninstalled.
-  // Skip the rest of the test.
-  if (arc::ShouldArcAlwaysStart())
-    return;
+
   UninstallArcApps();
   EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
   EXPECT_EQ("Back, AppList, Chrome, App1, App2", GetPinnedAppStatus());
@@ -2409,7 +2384,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPin) {
 }
 
 // Validates that ARC app pins persist across OptOut/OptIn.
-TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
   InitLauncherController();
 
   const std::string arc_app_id1 =
@@ -2433,9 +2408,6 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
   EXPECT_EQ("Back, AppList, Chrome, App1, Fake App 1, App2, Fake App 0",
             GetPinnedAppStatus());
 
-  // TODO(victorhsieh): Implement opt-out.
-  if (arc::ShouldArcAlwaysStart())
-    return;
   EnablePlayStore(false);
 
   EXPECT_EQ("Back, AppList, Chrome, App1, App2", GetPinnedAppStatus());
@@ -2457,7 +2429,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
             GetPinnedAppStatus());
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   InitLauncherController();
 
   TestShelfController* shelf_controller =
@@ -2551,7 +2523,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
                                          shelf_controller->GetLastItemImage()));
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcWindowPackageName) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcWindowPackageName) {
   InitLauncherController();
   SendListOfArcApps();
 
@@ -3945,7 +3917,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
   EXPECT_EQ(1, app_icon_loader2->clear_count());
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinPolicy) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinPolicy) {
   InitLauncherControllerWithBrowser();
   arc::mojom::AppInfo appinfo =
       CreateAppInfo("Some App", "SomeActivity", "com.example.app");
@@ -3964,11 +3936,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinPolicy) {
             GetPinnableForAppID(app_id, profile()));
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcManaged) {
-  // TODO(victorhsieh): Implement opt-in and opt-out.
-  if (arc::ShouldArcAlwaysStart())
-    return;
-
+TEST_F(ChromeLauncherControllerWithArcTest, ArcManaged) {
   extension_service_->AddExtension(arc_support_host_.get());
   // Test enables ARC, so turn it off for initial values.
   EnablePlayStore(false);
@@ -4027,7 +3995,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcManaged) {
 }
 
 // Test the application menu of a shelf item with multiple ARC windows.
-TEST_P(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
+TEST_F(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
   InitLauncherControllerWithBrowser();
 
   arc::mojom::AppInfo appinfo =
@@ -4086,16 +4054,13 @@ TEST_P(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
 
 namespace {
 class ChromeLauncherControllerArcDefaultAppsTest
-    : public ChromeLauncherControllerTest,
-      public ::testing::WithParamInterface<bool> {
+    : public ChromeLauncherControllerTest {
  public:
   ChromeLauncherControllerArcDefaultAppsTest() {}
   ~ChromeLauncherControllerArcDefaultAppsTest() override {}
 
  protected:
   void SetUp() override {
-    if (GetParam())
-      arc::SetArcAlwaysStartForTesting(true);
     ArcAppIcon::DisableSafeDecodingForTesting();
     ArcDefaultAppList::UseTestAppsDirectory();
     ChromeLauncherControllerTest::SetUp();
@@ -4104,10 +4069,6 @@ class ChromeLauncherControllerArcDefaultAppsTest
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerArcDefaultAppsTest);
 };
-
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeLauncherControllerArcDefaultAppsTest,
-                        ::testing::Bool());
 
 class ChromeLauncherControllerPlayStoreAvailabilityTest
     : public ChromeLauncherControllerTest,
@@ -4119,7 +4080,7 @@ class ChromeLauncherControllerPlayStoreAvailabilityTest
  protected:
   void SetUp() override {
     if (GetParam())
-      arc::SetArcAlwaysStartForTesting(false);
+      arc::SetArcAlwaysStartWithoutPlayStoreForTesting();
     ArcDefaultAppList::UseTestAppsDirectory();
     ChromeLauncherControllerTest::SetUp();
   }
@@ -4134,7 +4095,7 @@ INSTANTIATE_TEST_CASE_P(,
 
 }  // namespace
 
-TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
+TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
   InitLauncherController();
 
@@ -4205,7 +4166,7 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
       shelf_controller->updated_count());
 }
 
-TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
+TEST_F(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
   // Add ARC host app to enable Play Store default app.
   extension_service_->AddExtension(arc_support_host_.get());
   arc_test_.SetUp(profile());
@@ -4542,8 +4503,6 @@ class ChromeLauncherControllerDemoModeTest
   ~ChromeLauncherControllerDemoModeTest() override {}
 
   void SetUp() override {
-    arc::SetArcAlwaysStartForTesting(true);
-
     // To prevent crash on test exit and pending decode request.
     ArcAppIcon::DisableSafeDecodingForTesting();
 

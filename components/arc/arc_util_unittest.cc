@@ -242,14 +242,6 @@ TEST_F(ArcUtilTest, ArcStartModeDefault) {
   EXPECT_FALSE(ShouldArcAlwaysStartWithNoPlayStore());
 }
 
-TEST_F(ArcUtilTest, ArcStartModeAlwaysStart) {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->InitFromArgv(
-      {"", "--arc-availability=installed", "--arc-start-mode=always-start"});
-  EXPECT_TRUE(ShouldArcAlwaysStart());
-  EXPECT_FALSE(ShouldArcAlwaysStartWithNoPlayStore());
-}
-
 TEST_F(ArcUtilTest, ArcStartModeWithoutPlayStore) {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->InitFromArgv(
