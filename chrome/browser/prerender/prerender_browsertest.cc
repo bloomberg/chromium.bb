@@ -3466,20 +3466,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // When instantiated, mocks out the global text-to-speech engine with something
 // that emulates speaking any phrase for the duration of 0ms.
-class TtsPlatformMock : public TtsPlatformImpl {
+class TtsPlatformMock : public TtsPlatform {
  public:
   TtsPlatformMock() : speaking_requested_(false) {
-    TtsControllerDelegateImpl::GetInstance()->SetPlatformImpl(this);
+    TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(this);
   }
 
-  ~TtsPlatformMock() override {
-    TtsControllerDelegateImpl::GetInstance()->SetPlatformImpl(
-        TtsPlatformImpl::GetInstance());
+  virtual ~TtsPlatformMock() {
+    TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(
+        TtsPlatform::GetInstance());
   }
 
   bool speaking_requested() { return speaking_requested_; }
 
-  // TtsPlatformImpl:
+  // TtsPlatform:
 
   bool PlatformImplAvailable() override { return true; }
 
@@ -3511,6 +3511,21 @@ class TtsPlatformMock : public TtsPlatformImpl {
   void Pause() override {}
 
   void Resume() override {}
+
+  bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context) override {
+    return false;
+  }
+
+  void WillSpeakUtteranceWithVoice(
+      const content::Utterance* utterance,
+      const content::VoiceData& voice_data) override {}
+
+  void SetError(const std::string& error) override {}
+
+  std::string GetError() override { return std::string(); }
+
+  void ClearError() override {}
 
  private:
   bool speaking_requested_;

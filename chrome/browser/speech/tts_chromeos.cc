@@ -11,9 +11,9 @@
 
 // This class includes extension-based tts through LoadBuiltInTtsExtension and
 // native tts through ARC.
-class TtsPlatformImplChromeOs : public TtsPlatformImpl {
+class TtsPlatformImplChromeOs : public TtsPlatform {
  public:
-  // TtsPlatformImpl overrides:
+  // TtsPlatform overrides:
   bool PlatformImplAvailable() override {
     return arc::ArcServiceManager::Get() && arc::ArcServiceManager::Get()
                                                 ->arc_bridge_service()
@@ -76,25 +76,36 @@ class TtsPlatformImplChromeOs : public TtsPlatformImpl {
     voice.events.insert(content::TTS_EVENT_END);
   }
 
+  std::string GetError() override { return error_; }
+
+  void ClearError() override { error_ = std::string(); }
+
+  void SetError(const std::string& error) override { error_ = error; }
+
   // Unimplemented.
   void Pause() override {}
   void Resume() override {}
   bool IsSpeaking() override { return false; }
+  void WillSpeakUtteranceWithVoice(
+      const content::Utterance* utterance,
+      const content::VoiceData& voice_data) override {}
 
   // Get the single instance of this class.
   static TtsPlatformImplChromeOs* GetInstance();
 
  private:
   TtsPlatformImplChromeOs() {}
-  ~TtsPlatformImplChromeOs() override {}
+  virtual ~TtsPlatformImplChromeOs() {}
 
   friend struct base::DefaultSingletonTraits<TtsPlatformImplChromeOs>;
+
+  std::string error_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplChromeOs);
 };
 
 // static
-TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
+TtsPlatform* TtsPlatform::GetInstance() {
   return TtsPlatformImplChromeOs::GetInstance();
 }
 

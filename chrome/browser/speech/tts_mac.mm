@@ -9,7 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/speech/tts_platform.h"
+#include "chrome/browser/speech/tts_platform_impl.h"
 #include "content/public/browser/tts_controller.h"
 
 #import <Cocoa/Cocoa.h>
@@ -48,6 +48,7 @@ class TtsPlatformImplMac;
 
 @end
 
+// TODO(katie): Move to content/browser/speech.
 class TtsPlatformImplMac : public TtsPlatformImpl {
  public:
   bool PlatformImplAvailable() override { return true; }
@@ -95,7 +96,7 @@ class TtsPlatformImplMac : public TtsPlatformImpl {
 };
 
 // static
-TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
+TtsPlatform* TtsPlatform::GetInstance() {
   return TtsPlatformImplMac::GetInstance();
 }
 

@@ -49,7 +49,7 @@ class TtsControllerDelegateImpl : public content::TtsControllerDelegate {
   void SetTtsEngineDelegate(content::TtsEngineDelegate* delegate) override;
   content::TtsEngineDelegate* GetTtsEngineDelegate() override;
 
-  void SetPlatformImpl(TtsPlatformImpl* platform_impl);
+  void SetTtsPlatform(TtsPlatform* tts_platform);
   int QueueSize();
 
  protected:
@@ -63,7 +63,7 @@ class TtsControllerDelegateImpl : public content::TtsControllerDelegate {
                            TestTtsControllerUtteranceDefaults);
 
   // Get the platform TTS implementation (or injected mock).
-  TtsPlatformImpl* GetPlatformImpl();
+  TtsPlatform* GetTtsPlatform();
 
   // Start speaking the given utterance. Will either take ownership of
   // |utterance| or delete it if there's an error. Returns true on success.
@@ -108,7 +108,7 @@ class TtsControllerDelegateImpl : public content::TtsControllerDelegate {
 
   // A pointer to the platform implementation of text-to-speech, for
   // dependency injection.
-  TtsPlatformImpl* platform_impl_;
+  TtsPlatform* tts_platform_;
 
   // The delegate that processes TTS requests with user-installed extensions.
   content::TtsEngineDelegate* tts_engine_delegate_;

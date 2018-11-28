@@ -88,7 +88,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   while (i < size)
     utterance.append(1, data[i++]);
 
-  TtsPlatformImpl* tts = TtsPlatformImpl::GetInstance();
+  TtsPlatform* tts = TtsPlatform::GetInstance();
   CHECK(tts->PlatformImplAvailable());
 
   VLOG(1) << "id=" << utterance_id << " lang='" << lang << "'"

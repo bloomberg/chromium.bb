@@ -48,13 +48,28 @@ int g_saved_utterance_id;
 
 namespace extensions {
 
-class MockTtsPlatformImpl : public TtsPlatformImpl {
+class MockTtsPlatformImpl : public TtsPlatform {
  public:
   MockTtsPlatformImpl()
       : should_fake_get_voices_(false),
         ptr_factory_(this) {}
 
   bool PlatformImplAvailable() override { return true; }
+
+  void WillSpeakUtteranceWithVoice(
+      const content::Utterance* utterance,
+      const content::VoiceData& voice_data) override {}
+
+  bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context) override {
+    return false;
+  }
+
+  void ClearError() override { error_ = ""; }
+
+  void SetError(const std::string& error) override { error_ = error; }
+
+  std::string GetError() override { return error_; }
 
   MOCK_METHOD5(Speak,
                bool(int utterance_id,
@@ -87,9 +102,7 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
 
   void set_should_fake_get_voices(bool val) { should_fake_get_voices_ = val; }
 
-  void SetErrorToEpicFail() {
-    set_error("epic fail");
-  }
+  void SetErrorToEpicFail() { SetError("epic fail"); }
 
   void SendEndEventOnSavedUtteranceId() {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -166,6 +179,7 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
 
  private:
   bool should_fake_get_voices_;
+  std::string error_;
   base::WeakPtrFactory<MockTtsPlatformImpl> ptr_factory_;
 };
 
@@ -215,7 +229,7 @@ class TtsApiTest : public ExtensionApiTest {
  public:
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    TtsControllerDelegateImpl::GetInstance()->SetPlatformImpl(
+    TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(
         &mock_platform_impl_);
   }
 

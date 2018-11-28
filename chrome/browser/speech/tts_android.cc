@@ -17,7 +17,7 @@ using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 
 // static
-TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
+TtsPlatform* TtsPlatform::GetInstance() {
   return TtsPlatformImplAndroid::GetInstance();
 }
 

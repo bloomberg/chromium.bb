@@ -15,9 +15,9 @@
 // TODO(katie): Move to content/public/browser and most implementations into
 // content/browser/speech. The tts_chromeos.cc implementation may need to remain
 // in chrome/ due to ARC++ dependencies.
-class TtsPlatformImpl {
+class TtsPlatform {
  public:
-  static TtsPlatformImpl* GetInstance();
+  static TtsPlatform* GetInstance();
 
   // Returns true if this platform implementation is supported and available.
   virtual bool PlatformImplAvailable() = 0;
@@ -28,7 +28,7 @@ class TtsPlatformImpl {
   // Will call TtsController::RetrySpeakingQueuedUtterances when
   // the extension finishes loading.
   virtual bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context);
+      content::BrowserContext* browser_context) = 0;
 
   // Speak the given utterance with the given parameters if possible,
   // and return true on success. Utterance will always be nonempty.
@@ -64,22 +64,11 @@ class TtsPlatformImpl {
   // for each one.
   virtual void WillSpeakUtteranceWithVoice(
       const content::Utterance* utterance,
-      const content::VoiceData& voice_data);
+      const content::VoiceData& voice_data) = 0;
 
-  virtual std::string error();
-  virtual void clear_error();
-  virtual void set_error(const std::string& error);
-
- protected:
-  TtsPlatformImpl() {}
-
-  // On some platforms this may be a leaky singleton - do not rely on the
-  // destructor being called!  http://crbug.com/122026
-  virtual ~TtsPlatformImpl() {}
-
-  std::string error_;
-
-  DISALLOW_COPY_AND_ASSIGN(TtsPlatformImpl);
+  virtual std::string GetError() = 0;
+  virtual void ClearError() = 0;
+  virtual void SetError(const std::string& error) = 0;
 };
 
 #endif  // CHROME_BROWSER_SPEECH_TTS_PLATFORM_H_

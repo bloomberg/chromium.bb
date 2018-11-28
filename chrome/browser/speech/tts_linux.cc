@@ -14,7 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/speech/tts_platform.h"
+#include "chrome/browser/speech/tts_platform_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -34,6 +34,7 @@ struct SPDChromeVoice {
 
 }  // namespace
 
+// TODO(katie): Move to content/browser/speech.
 class TtsPlatformImplLinux : public TtsPlatformImpl {
  public:
   bool PlatformImplAvailable() override;
@@ -355,6 +356,6 @@ TtsPlatformImplLinux* TtsPlatformImplLinux::GetInstance() {
 }
 
 // static
-TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
+TtsPlatform* TtsPlatform::GetInstance() {
   return TtsPlatformImplLinux::GetInstance();
 }
