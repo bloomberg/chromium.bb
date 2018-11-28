@@ -389,6 +389,9 @@ class UserSessionManager
   // Called on UI thread once Cryptohome operation completes.
   void OnCryptohomeOperationCompleted(Profile* profile, bool result);
 
+  // Clears the sign-in profile, and initiates the user profile finalization.
+  void ClearSigninProfileAndFinalizePrepareProfile(Profile* profile);
+
   // Finalized profile preparation.
   void FinalizePrepareProfile(Profile* profile);
 
