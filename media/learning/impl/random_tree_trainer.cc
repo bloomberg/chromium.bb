@@ -43,7 +43,7 @@ struct InteriorNode : public Model {
   InteriorNode(int split_index) : split_index_(split_index) {}
 
   // Model
-  Model::TargetDistribution PredictDistribution(
+  TargetDistribution PredictDistribution(
       const FeatureVector& features) override {
     auto iter = children_.find(features[split_index_]);
     // If we've never seen this feature value, then make no prediction.
@@ -62,22 +62,22 @@ struct InteriorNode : public Model {
  private:
   // Feature value that we split on.
   int split_index_ = -1;
-  std::map<FeatureValue, std::unique_ptr<Model>> children_;
+  base::flat_map<FeatureValue, std::unique_ptr<Model>> children_;
 };
 
 struct LeafNode : public Model {
   LeafNode(const TrainingData& training_data) {
     for (const TrainingExample* example : training_data)
-      distribution_[example->target_value]++;
+      distribution_ += example->target_value;
   }
 
   // TreeNode
-  Model::TargetDistribution PredictDistribution(const FeatureVector&) override {
+  TargetDistribution PredictDistribution(const FeatureVector&) override {
     return distribution_;
   }
 
  private:
-  Model::TargetDistribution distribution_;
+  TargetDistribution distribution_;
 };
 
 RandomTreeTrainer::RandomTreeTrainer() = default;

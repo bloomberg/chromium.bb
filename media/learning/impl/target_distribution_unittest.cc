@@ -132,5 +132,21 @@ TEST_F(TargetDistributionTest, FindSingularMaxDoesntRequireCounts) {
   EXPECT_EQ(max_value, value_1);
 }
 
+TEST_F(TargetDistributionTest, EqualDistributionsCompareAsEqual) {
+  distribution_[value_1] = counts_1;
+  TargetDistribution distribution_2;
+  distribution_2[value_1] = counts_1;
+
+  EXPECT_TRUE(distribution_ == distribution_2);
+}
+
+TEST_F(TargetDistributionTest, UnequalDistributionsCompareAsNotEqual) {
+  distribution_[value_1] = counts_1;
+  TargetDistribution distribution_2;
+  distribution_2[value_2] = counts_2;
+
+  EXPECT_FALSE(distribution_ == distribution_2);
+}
+
 }  // namespace learning
 }  // namespace media

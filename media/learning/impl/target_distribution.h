@@ -17,7 +17,14 @@ namespace learning {
 class COMPONENT_EXPORT(LEARNING_IMPL) TargetDistribution {
  public:
   TargetDistribution();
+  TargetDistribution(const TargetDistribution& rhs);
+  TargetDistribution(TargetDistribution&& rhs);
   ~TargetDistribution();
+
+  TargetDistribution& operator=(const TargetDistribution& rhs);
+  TargetDistribution& operator=(TargetDistribution&& rhs);
+
+  bool operator==(const TargetDistribution& rhs) const;
 
   // Add |rhs| to our counts.
   TargetDistribution& operator+=(const TargetDistribution& rhs);
@@ -36,6 +43,10 @@ class COMPONENT_EXPORT(LEARNING_IMPL) TargetDistribution {
       total += entry.second;
     return total;
   }
+
+  // Return the number of buckets in the distribution.
+  // TODO(liberato): Do we want this?
+  size_t size() const { return counts_.size(); }
 
   // Find the singular value with the highest counts, and copy it into
   // |value_out| and (optionally) |counts_out|.  Returns true if there is a
