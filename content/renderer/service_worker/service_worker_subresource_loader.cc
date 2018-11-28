@@ -631,9 +631,9 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
             fetch_event_timing_->respond_with_settled_time);
 
     // Time spent reading response body.
-    UMA_HISTOGRAM_TIMES(
+    UMA_HISTOGRAM_MEDIUM_TIMES(
         "ServiceWorker.LoadTiming.Subresource."
-        "ResponseReceivedToCompleted",
+        "ResponseReceivedToCompleted2",
         completion_time - response_head_.load_timing.receive_headers_end);
   } else {
     // Mojo message delay (network fallback case). See above for the detail.
