@@ -37,29 +37,22 @@ class ProtoDatabase {
   // A list of key-value (string, T) tuples.
   using KeyEntryVector = std::vector<std::pair<std::string, T>>;
 
-  explicit ProtoDatabase(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-      : db_wrapper_(std::make_unique<ProtoLevelDBWrapper>(task_runner)) {}
-  virtual ~ProtoDatabase() {}
+  virtual ~ProtoDatabase() = default;
 
   // Asynchronously initializes the object with the specified |options|.
   // |callback| will be invoked on the calling thread when complete.
-  virtual void Init(const std::string& client_name,
-                    typename ProtoDatabase<T>::InitCallback callback) = 0;
+  virtual void Init(const std::string& client_name, InitCallback callback) = 0;
   // This version of Init is for compatibility, since many of the current
   // proto database clients still use this.
   virtual void Init(const char* client_name,
                     const base::FilePath& database_dir,
                     const leveldb_env::Options& options,
-                    typename ProtoDatabase<T>::InitCallback callback) = 0;
+                    InitCallback callback) = 0;
 
   virtual void InitWithDatabase(LevelDB* database,
                                 const base::FilePath& database_dir,
                                 const leveldb_env::Options& options,
-                                InitCallback callback) {
-    db_wrapper_->InitWithDatabase(database, database_dir, options,
-                                  std::move(callback));
-  }
+                                InitCallback callback) = 0;
 
   // Asynchronously saves |entries_to_save| and deletes entries from
   // |keys_to_remove| from the database. |callback| will be invoked on the
@@ -67,11 +60,7 @@ class ProtoDatabase {
   virtual void UpdateEntries(
       std::unique_ptr<KeyEntryVector> entries_to_save,
       std::unique_ptr<std::vector<std::string>> keys_to_remove,
-      UpdateCallback callback) {
-    db_wrapper_->template UpdateEntries<T>(std::move(entries_to_save),
-                                           std::move(keys_to_remove),
-                                           std::move(callback));
-  }
+      UpdateCallback callback) = 0;
 
   // Asynchronously saves |entries_to_save| and deletes entries that satisfies
   // the |delete_key_filter| from the database. |callback| will be invoked on
@@ -80,76 +69,54 @@ class ProtoDatabase {
   virtual void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<KeyEntryVector> entries_to_save,
       const LevelDB::KeyFilter& delete_key_filter,
-      UpdateCallback callback) {
-    db_wrapper_->template UpdateEntriesWithRemoveFilter<T>(
-        std::move(entries_to_save), delete_key_filter, std::move(callback));
-  }
+      UpdateCallback callback) = 0;
+  virtual void UpdateEntriesWithRemoveFilter(
+      std::unique_ptr<KeyEntryVector> entries_to_save,
+      const LevelDB::KeyFilter& delete_key_filter,
+      const std::string& target_prefix,
+      UpdateCallback callback) = 0;
 
   // Asynchronously loads all entries from the database and invokes |callback|
   // when complete.
-  virtual void LoadEntries(LoadCallback callback) {
-    db_wrapper_->template LoadEntries<T>(std::move(callback));
-  }
+  virtual void LoadEntries(LoadCallback callback) = 0;
 
   // Asynchronously loads entries that satisfies the |filter| from the database
   // and invokes |callback| when complete. The filter will be called on
   // ProtoDatabase's taskrunner.
   virtual void LoadEntriesWithFilter(const LevelDB::KeyFilter& filter,
-                                     LoadCallback callback) {
-    db_wrapper_->template LoadEntriesWithFilter<T>(filter, std::move(callback));
-  }
-
+                                     LoadCallback callback) = 0;
   virtual void LoadEntriesWithFilter(const LevelDB::KeyFilter& key_filter,
                                      const leveldb::ReadOptions& options,
                                      const std::string& target_prefix,
-                                     LoadCallback callback) {
-    db_wrapper_->template LoadEntriesWithFilter<T>(
-        key_filter, options, target_prefix, std::move(callback));
-  }
+                                     LoadCallback callback) = 0;
 
-  virtual void LoadKeysAndEntries(LoadKeysAndEntriesCallback callback) {
-    db_wrapper_->template LoadKeysAndEntries<T>(std::move(callback));
-  }
+  virtual void LoadKeysAndEntries(LoadKeysAndEntriesCallback callback) = 0;
 
   virtual void LoadKeysAndEntriesWithFilter(
       const LevelDB::KeyFilter& filter,
-      typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) {
-    db_wrapper_->template LoadKeysAndEntriesWithFilter<T>(filter,
-                                                          std::move(callback));
-  }
+      LoadKeysAndEntriesCallback callback) = 0;
   virtual void LoadKeysAndEntriesWithFilter(
       const LevelDB::KeyFilter& filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
-      typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) {
-    db_wrapper_->template LoadKeysAndEntriesWithFilter<T>(
-        filter, options, target_prefix, std::move(callback));
-  }
+      LoadKeysAndEntriesCallback callback) = 0;
 
   // Asynchronously loads all keys from the database and invokes |callback| with
   // those keys when complete.
-  virtual void LoadKeys(LoadKeysCallback callback) {
-    db_wrapper_->LoadKeys(std::move(callback));
-  }
+  virtual void LoadKeys(LoadKeysCallback callback) = 0;
+  virtual void LoadKeys(const std::string& target_prefix,
+                        LoadKeysCallback callback) = 0;
 
   // Asynchronously loads a single entry, identified by |key|, from the database
   // and invokes |callback| when complete. If no entry with |key| is found,
   // a nullptr is passed to the callback, but the success flag is still true.
-  virtual void GetEntry(const std::string& key, GetCallback callback) {
-    db_wrapper_->template GetEntry<T>(key, std::move(callback));
-  }
+  virtual void GetEntry(const std::string& key, GetCallback callback) = 0;
 
   // Asynchronously destroys the database.
-  virtual void Destroy(DestroyCallback callback) {
-    db_wrapper_->Destroy(std::move(callback));
-  }
-
-  bool GetApproximateMemoryUse(uint64_t* approx_mem_use) {
-    return db_wrapper_->GetApproximateMemoryUse(approx_mem_use);
-  }
+  virtual void Destroy(DestroyCallback callback) = 0;
 
  protected:
-  std::unique_ptr<ProtoLevelDBWrapper> db_wrapper_;
+  ProtoDatabase() = default;
 };
 
 // Return a new instance of Options, but with two additions:

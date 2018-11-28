@@ -9,6 +9,9 @@ static_library("leveldb_proto") {
     "proto_database.cc",
     "proto_database.h",
     "proto_database_impl.h",
+    "proto_database_provider.cc",
+    "proto_database_provider.h",
+    "proto_database_wrapper.h",
     "proto_leveldb_wrapper.cc",
     "proto_leveldb_wrapper.h",
     "proto_leveldb_wrapper_metrics.cc",
@@ -18,6 +21,7 @@ static_library("leveldb_proto") {
 
   public_deps = [
     "//base",
+    "//components/keyed_service/core",
     "//third_party/leveldatabase",
   ]
 }

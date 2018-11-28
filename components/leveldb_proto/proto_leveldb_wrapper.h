@@ -60,6 +60,10 @@ class ProtoLevelDBWrapper {
   ProtoLevelDBWrapper(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
+  ProtoLevelDBWrapper(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      LevelDB* db);
+
   virtual ~ProtoLevelDBWrapper();
 
   template <typename T>
@@ -74,6 +78,14 @@ class ProtoLevelDBWrapper {
       std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
           entries_to_save,
       const LevelDB::KeyFilter& delete_key_filter,
+      UpdateCallback callback);
+
+  template <typename T>
+  void UpdateEntriesWithRemoveFilter(
+      std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
+          entries_to_save,
+      const LevelDB::KeyFilter& delete_key_filter,
+      const std::string& target_prefix,
       UpdateCallback callback);
 
   template <typename T>
@@ -112,6 +124,7 @@ class ProtoLevelDBWrapper {
           callback);
 
   void LoadKeys(LoadKeysCallback callback);
+  void LoadKeys(const std::string& target_prefix, LoadKeysCallback callback);
 
   template <typename T>
   void GetEntry(
@@ -124,6 +137,7 @@ class ProtoLevelDBWrapper {
   void InitWithDatabase(LevelDB* database,
                         const base::FilePath& database_dir,
                         const leveldb_env::Options& options,
+                        bool destroy_on_corruption,
                         InitCallback callback);
 
   void SetMetricsId(const std::string& id);
@@ -333,6 +347,18 @@ void ProtoLevelDBWrapper::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
         entries_to_save,
     const LevelDB::KeyFilter& delete_key_filter,
+    typename ProtoLevelDBWrapper::UpdateCallback callback) {
+  UpdateEntriesWithRemoveFilter<T>(std::move(entries_to_save),
+                                   delete_key_filter, std::string(),
+                                   std::move(callback));
+}
+
+template <typename T>
+void ProtoLevelDBWrapper::UpdateEntriesWithRemoveFilter(
+    std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
+        entries_to_save,
+    const LevelDB::KeyFilter& delete_key_filter,
+    const std::string& target_prefix,
     typename ProtoLevelDBWrapper::UpdateCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bool* success = new bool(false);

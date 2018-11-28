@@ -51,6 +51,7 @@ void RunLoadKeysCallback(
 }
 
 inline void LoadKeysFromTaskRunner(LevelDB* database,
+                                   const std::string& target_prefix,
                                    std::vector<std::string>* keys,
                                    bool* success,
                                    const std::string& client_id) {
@@ -67,25 +68,28 @@ ProtoLevelDBWrapper::ProtoLevelDBWrapper(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : task_runner_(task_runner) {}
 
+ProtoLevelDBWrapper::ProtoLevelDBWrapper(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    LevelDB* db)
+    : task_runner_(task_runner), db_(db) {}
+
 ProtoLevelDBWrapper::~ProtoLevelDBWrapper() = default;
 
 void ProtoLevelDBWrapper::InitWithDatabase(
     LevelDB* database,
     const base::FilePath& database_dir,
     const leveldb_env::Options& options,
+    bool destroy_on_corruption,
     typename ProtoLevelDBWrapper::InitCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!db_);
   DCHECK(database);
   db_ = database;
   leveldb::Status* status = new leveldb::Status();
-  // Sets |destroy_on_corruption| to true to mimic the original behaviour for
-  // now.
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(InitFromTaskRunner, base::Unretained(db_), database_dir,
-                     options, true /* destroy_on_corruption */, status,
-                     metrics_id_),
+                     options, destroy_on_corruption, status, metrics_id_),
       base::BindOnce(RunInitCallback, std::move(callback),
                      base::Owned(status)));
 }
@@ -106,13 +110,22 @@ void ProtoLevelDBWrapper::Destroy(
 
 void ProtoLevelDBWrapper::LoadKeys(
     typename ProtoLevelDBWrapper::LoadKeysCallback callback) {
+  LoadKeys(std::string(), std::move(callback));
+}
+
+void ProtoLevelDBWrapper::LoadKeys(
+    const std::string& target_prefix,
+    typename ProtoLevelDBWrapper::LoadKeysCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto success = std::make_unique<bool>(false);
   auto keys = std::make_unique<std::vector<std::string>>();
-  auto load_task = base::BindOnce(LoadKeysFromTaskRunner, base::Unretained(db_),
-                                  keys.get(), success.get(), metrics_id_);
+  bool* success_ptr = success.get();
+  std::vector<std::string>* keys_ptr = keys.get();
   task_runner_->PostTaskAndReply(
-      FROM_HERE, std::move(load_task),
+      FROM_HERE,
+      base::BindOnce(LoadKeysFromTaskRunner, base::Unretained(db_),
+                     target_prefix, base::Unretained(keys_ptr),
+                     base::Unretained(success_ptr), metrics_id_),
       base::BindOnce(RunLoadKeysCallback, std::move(callback),
                      std::move(success), std::move(keys)));
 }
