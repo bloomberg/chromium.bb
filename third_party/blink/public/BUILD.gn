@@ -145,6 +145,7 @@ source_set("blink_headers") {
     "platform/modules/media_capabilities/web_audio_configuration.h",
     "platform/modules/media_capabilities/web_media_capabilities_callbacks.h",
     "platform/modules/media_capabilities/web_media_capabilities_client.h",
+    "platform/modules/media_capabilities/web_media_capabilities_decoding_info.h",
     "platform/modules/media_capabilities/web_media_capabilities_info.h",
     "platform/modules/media_capabilities/web_media_capabilities_key_system_configuration.h",
     "platform/modules/media_capabilities/web_media_configuration.h",

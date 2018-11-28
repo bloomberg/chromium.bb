@@ -7,13 +7,14 @@
 
 #include <memory>
 
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_decoding_info.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
 
 namespace blink {
 
 using WebMediaCapabilitiesDecodingInfoCallbacks =
-    WebCallbacks<std::unique_ptr<WebMediaCapabilitiesInfo>, void>;
+    WebCallbacks<std::unique_ptr<WebMediaCapabilitiesDecodingInfo>, void>;
 
 using WebMediaCapabilitiesEncodingInfoCallbacks =
     WebCallbacks<std::unique_ptr<WebMediaCapabilitiesInfo>, void>;

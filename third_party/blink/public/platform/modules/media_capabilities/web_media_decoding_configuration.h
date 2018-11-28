@@ -15,6 +15,17 @@ namespace blink {
 // Blink. The added `key_system_configuration` is optional and, if set, can be
 // assumed to match the requirements set by the specification.
 struct WebMediaDecodingConfiguration : public WebMediaConfiguration {
+  WebMediaDecodingConfiguration() = default;
+
+  WebMediaDecodingConfiguration(
+      MediaConfigurationType type,
+      base::Optional<WebAudioConfiguration> audio_configuration,
+      base::Optional<WebVideoConfiguration> video_configuration,
+      base::Optional<WebMediaCapabilitiesKeySystemConfiguration>
+          key_system_configuration)
+      : WebMediaConfiguration(type, audio_configuration, video_configuration),
+        key_system_configuration(key_system_configuration) {}
+
   base::Optional<WebMediaCapabilitiesKeySystemConfiguration>
       key_system_configuration;
 };
