@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/common/previews_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,7 +80,7 @@ class PreviewsContentUtilTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
  private:
   PreviewEnabledPreviewsDecider enabled_previews_decider_;
