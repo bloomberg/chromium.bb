@@ -301,7 +301,9 @@ LocalCardMigrationDialogView::~LocalCardMigrationDialogView() {}
 
 void LocalCardMigrationDialogView::ShowDialog() {
   Init();
-  constrained_window::ShowWebModalDialogViews(this, web_contents_);
+  constrained_window::CreateBrowserModalDialogViews(
+      this, web_contents_->GetTopLevelNativeWindow())
+      ->Show();
 }
 
 void LocalCardMigrationDialogView::CloseDialog() {
@@ -317,9 +319,9 @@ gfx::Size LocalCardMigrationDialogView::CalculatePreferredSize() const {
 }
 
 ui::ModalType LocalCardMigrationDialogView::GetModalType() const {
-  // This should be a modal dialog since we don't want users to lose progress
-  // in the migration workflow until they are done.
-  return ui::MODAL_TYPE_CHILD;
+  // This should be a modal dialog blocking the browser since we don't want
+  // users to lose progress in the migration workflow until they are done.
+  return ui::MODAL_TYPE_WINDOW;
 }
 
 bool LocalCardMigrationDialogView::ShouldShowCloseButton() const {
