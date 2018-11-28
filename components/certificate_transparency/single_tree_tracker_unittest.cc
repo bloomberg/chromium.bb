@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/base32/base32.h"
 #include "components/certificate_transparency/log_dns_client.h"
 #include "components/certificate_transparency/mock_log_dns_traffic.h"
@@ -265,7 +265,8 @@ class SingleTreeTrackerTest : public ::testing::Test {
     return logged_success == expected_success;
   }
 
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   MockLogDnsTraffic mock_dns_;
   scoped_refptr<const net::CTLogVerifier> log_;
   std::unique_ptr<net::NetworkChangeNotifier> net_change_notifier_;
