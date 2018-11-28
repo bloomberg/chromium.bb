@@ -2073,6 +2073,7 @@ test("base_perftests") {
     "message_loop/message_loop_task_runner_perftest.cc",
     "message_loop/message_pump_perftest.cc",
     "observer_list_perftest.cc",
+    "strings/string_util_perftest.cc",
     "task/sequence_manager/sequence_manager_perftest.cc",
     "task/task_scheduler/task_scheduler_perftest.cc",
 
