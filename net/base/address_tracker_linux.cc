@@ -16,7 +16,6 @@
 #include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/thread_restrictions.h"
 #include "net/base/network_interfaces_linux.h"
 
 namespace net {
@@ -297,7 +296,6 @@ void AddressTrackerLinux::ReadMessages(bool* address_changed,
     if (tracking_) {
       // If the loop below takes a long time to run, a new thread should added
       // to the current thread pool to ensure forward progress of all tasks.
-      base::AssertBlockingAllowedDeprecated();
       blocking_call.emplace(base::BlockingType::MAY_BLOCK);
     }
 

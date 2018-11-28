@@ -18,7 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -214,7 +214,7 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
     return false;
 
   // getifaddrs() may require IO operations.
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   ifaddrs* interfaces;
   if (getifaddrs(&interfaces) < 0) {

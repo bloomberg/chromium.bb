@@ -25,7 +25,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_checker.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
@@ -122,7 +121,7 @@ class RegistryReader {
 // Wrapper for GetAdaptersAddresses. Returns NULL if failed.
 std::unique_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> ReadIpHelper(
     ULONG flags) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   std::unique_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> out;
   ULONG len = 15000;  // As recommended by MSDN for GetAdaptersAddresses.

@@ -14,7 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/scoped_handle.h"
 #include "net/base/escape.h"
 #include "net/base/ip_endpoint.h"
@@ -213,31 +213,34 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   // Dynamic buffer in case initial buffer isn't large enough.
   std::unique_ptr<char[]> buf;
 
-  // GetAdaptersAddresses() may require IO operations.
-  base::AssertBlockingAllowedDeprecated();
+  IP_ADAPTER_ADDRESSES* adapters = nullptr;
+  {
+    // GetAdaptersAddresses() may require IO operations.
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
 
-  IP_ADAPTER_ADDRESSES* adapters =
-      reinterpret_cast<IP_ADAPTER_ADDRESSES*>(&initial_buf);
-  ULONG result =
-      GetAdaptersAddresses(AF_UNSPEC, flags, nullptr, adapters, &len);
+    adapters = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(&initial_buf);
+    ULONG result =
+        GetAdaptersAddresses(AF_UNSPEC, flags, nullptr, adapters, &len);
 
-  // If we get ERROR_BUFFER_OVERFLOW, call GetAdaptersAddresses in a loop,
-  // because the required size may increase between successive calls, resulting
-  // in ERROR_BUFFER_OVERFLOW multiple times.
-  for (int tries = 1; result == ERROR_BUFFER_OVERFLOW &&
-                      tries < MAX_GETADAPTERSADDRESSES_TRIES;
-       ++tries) {
-    buf.reset(new char[len]);
-    adapters = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(buf.get());
-    result = GetAdaptersAddresses(AF_UNSPEC, flags, nullptr, adapters, &len);
-  }
+    // If we get ERROR_BUFFER_OVERFLOW, call GetAdaptersAddresses in a loop,
+    // because the required size may increase between successive calls,
+    // resulting in ERROR_BUFFER_OVERFLOW multiple times.
+    for (int tries = 1; result == ERROR_BUFFER_OVERFLOW &&
+                        tries < MAX_GETADAPTERSADDRESSES_TRIES;
+         ++tries) {
+      buf.reset(new char[len]);
+      adapters = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(buf.get());
+      result = GetAdaptersAddresses(AF_UNSPEC, flags, nullptr, adapters, &len);
+    }
 
-  if (result == ERROR_NO_DATA) {
-    // There are 0 networks.
-    return true;
-  } else if (result != NO_ERROR) {
-    LOG(ERROR) << "GetAdaptersAddresses failed: " << result;
-    return false;
+    if (result == ERROR_NO_DATA) {
+      // There are 0 networks.
+      return true;
+    } else if (result != NO_ERROR) {
+      LOG(ERROR) << "GetAdaptersAddresses failed: " << result;
+      return false;
+    }
   }
 
   return internal::GetNetworkListImpl(networks, policy, adapters);
