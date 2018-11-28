@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
@@ -27,6 +28,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -142,12 +144,17 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
 
   DCHECK(!browser_context->IsOffTheRecord());
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  pref_service_ = profile->GetPrefs();
-  DCHECK(pref_service_);
-
+  pref_service_ = Profile::FromBrowserContext(browser_context)->GetPrefs();
   host_blacklist_ =
       pref_service_->GetDictionary(kHostBlacklist)->CreateDeepCopy();
+
+  // Note: This switch has no effect if |drp_settings| was null since
+  // |host_blacklist_| would be empty anyways.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          previews::switches::kClearLitePageRedirectLocalBlacklist)) {
+    host_blacklist_->Clear();
+    pref_service_->Set(kHostBlacklist, *host_blacklist_);
+  }
 
   // Add |this| as an observer to DRP, but if DRP is already initialized, check
   // the prefs now.

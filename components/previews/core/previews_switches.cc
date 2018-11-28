@@ -17,5 +17,9 @@ const char kLitePageServerPreviewHost[] = "litepage-server-previews-host";
 const char kIgnoreLitePageRedirectOptimizationBlacklist[] =
     "ignore-litepage-redirect-optimization-blacklist";
 
+// Clears the local Lite Page Redirect blacklist on startup.
+const char kClearLitePageRedirectLocalBlacklist[] =
+    "clear-litepage-redirect-local-blacklist-on-startup";
+
 }  // namespace switches
 }  // namespace previews
