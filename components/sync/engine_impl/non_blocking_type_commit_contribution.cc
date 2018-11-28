@@ -5,11 +5,13 @@
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/guid.h"
 #include "base/values.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine_impl/model_type_worker.h"
 #include "components/sync/protocol/proto_value_conversions.h"
@@ -229,14 +231,37 @@ void NonBlockingTypeCommitContribution::AdjustCommitProto(
 
   // Encrypt the specifics and hide the title if necessary.
   if (commit_proto->specifics().has_password()) {
-    // If explicit encryption is enabled, password metadata fields must be
-    // cleared. See documentation in password_specifics.proto.
-    if (IsExplicitPassphrase(passphrase_type_)) {
-      commit_proto->mutable_specifics()
-          ->mutable_password()
-          ->clear_unencrypted_metadata();
+    if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+      DCHECK(cryptographer_);
+      const sync_pb::PasswordSpecifics& password_specifics =
+          commit_proto->specifics().password();
+      const sync_pb::PasswordSpecificsData& password_data =
+          password_specifics.client_only_encrypted_data();
+      sync_pb::EntitySpecifics encrypted_password;
+      if (!IsExplicitPassphrase(passphrase_type_) &&
+          password_specifics.unencrypted_metadata().url() !=
+              password_data.signon_realm()) {
+        encrypted_password.mutable_password()
+            ->mutable_unencrypted_metadata()
+            ->set_url(password_data.signon_realm());
+      }
+
+      bool result = cryptographer_->Encrypt(
+          password_data,
+          encrypted_password.mutable_password()->mutable_encrypted());
+      DCHECK(result);
+      *commit_proto->mutable_specifics() = std::move(encrypted_password);
+      commit_proto->set_name("encrypted");
+    } else {
+      // If explicit encryption is enabled, password metadata fields must be
+      // cleared. See documentation in password_specifics.proto.
+      if (IsExplicitPassphrase(passphrase_type_)) {
+        commit_proto->mutable_specifics()
+            ->mutable_password()
+            ->clear_unencrypted_metadata();
+      }
+      commit_proto->set_name("encrypted");
     }
-    commit_proto->set_name("encrypted");
   } else if (cryptographer_) {
     if (commit_proto->has_specifics()) {
       sync_pb::EntitySpecifics encrypted_specifics;

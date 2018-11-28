@@ -53,7 +53,7 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
                                   sync_pb::SyncEntity* commit_proto);
 
  private:
-  // Generates id for new entites and encrypts entity if needed.
+  // Generates id for new entities and encrypts entity if needed.
   void AdjustCommitProto(sync_pb::SyncEntity* commit_proto);
 
   const ModelType type_;
