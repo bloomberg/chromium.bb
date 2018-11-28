@@ -1224,12 +1224,12 @@ bool QuicConnection::OnConnectionCloseFrame(
 }
 
 bool QuicConnection::OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) {
-  return true;
+  return visitor_->OnMaxStreamIdFrame(frame);
 }
 
 bool QuicConnection::OnStreamIdBlockedFrame(
     const QuicStreamIdBlockedFrame& frame) {
-  return true;
+  return visitor_->OnStreamIdBlockedFrame(frame);
 }
 
 bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {

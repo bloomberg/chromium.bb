@@ -24,6 +24,7 @@
 #include "net/third_party/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quic/test_tools/quic_framer_peer.h"
 #include "net/third_party/quic/test_tools/quic_packet_creator_peer.h"
+#include "net/third_party/quic/test_tools/quic_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
@@ -110,11 +111,40 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
         QuicSpdySessionPeer::GetNthClientInitiatedStreamId(*session_, 0);
   }
 
+  // The function ensures that A) the max stream id frames get properly deleted
+  // (since the test uses a 'did we leak memory' check ... if we just lose the
+  // frame, the test fails) and B) returns true (instead of the default, false)
+  // which ensures that the rest of the system thinks that the frame actually
+  // was transmitted.
+  bool ClearMaxStreamIdControlFrame(const QuicFrame& frame) {
+    if (frame.type == MAX_STREAM_ID_FRAME) {
+      DeleteFrame(&const_cast<QuicFrame&>(frame));
+      return true;
+    }
+    return false;
+  }
+
+ public:
+  bool ClearStreamIdBlockedControlFrame(const QuicFrame& frame) {
+    if (frame.type == STREAM_ID_BLOCKED_FRAME) {
+      DeleteFrame(&const_cast<QuicFrame&>(frame));
+      return true;
+    }
+    return false;
+  }
+
+ protected:
   void CompleteCryptoHandshake() {
     CompleteCryptoHandshake(kDefaultMaxStreamsPerConnection);
   }
 
   void CompleteCryptoHandshake(uint32_t server_max_incoming_streams) {
+    if (connection_->transport_version() == QUIC_VERSION_99) {
+      EXPECT_CALL(*connection_, SendControlFrame(_))
+          .Times(testing::AnyNumber())
+          .WillRepeatedly(Invoke(
+              this, &QuicSpdyClientSessionTest::ClearMaxStreamIdControlFrame));
+    }
     session_->CryptoConnect();
     QuicCryptoClientStream* stream = static_cast<QuicCryptoClientStream*>(
         session_->GetMutableCryptoStream());
@@ -209,7 +239,7 @@ TEST_P(QuicSpdyClientSessionTest, MaxNumStreamsWithNoFinOrRst) {
   EXPECT_FALSE(session_->CreateOutgoingBidirectionalStream());
 
   // Close the stream, but without having received a FIN or a RST_STREAM
-  // and check that a new one can not be created.
+  // or MAX_STREAM_ID (V99) and check that a new one can not be created.
   session_->CloseStream(stream->id());
   EXPECT_EQ(1u, session_->GetNumOpenOutgoingStreams());
 
@@ -240,6 +270,16 @@ TEST_P(QuicSpdyClientSessionTest, MaxNumStreamsWithRst) {
                                            QUIC_RST_ACKNOWLEDGEMENT, 0));
   // Check that a new one can be created.
   EXPECT_EQ(0u, session_->GetNumOpenOutgoingStreams());
+  if (GetParam().transport_version == QUIC_VERSION_99) {
+    // In V99 the stream limit increases only if we get a MAX_STREAM_ID
+    // frame; pretend we got one.
+
+    // Note that this is to be the second stream created, but GetNth... starts
+    // numbering at 0 (the first stream is 0, second is 1...)
+    QuicMaxStreamIdFrame frame(
+        0, QuicSpdySessionPeer::GetNthClientInitiatedStreamId(*session_, 1));
+    session_->OnMaxStreamIdFrame(frame);
+  }
   stream = session_->CreateOutgoingBidirectionalStream();
   EXPECT_NE(nullptr, stream);
 }
@@ -260,9 +300,25 @@ TEST_P(QuicSpdyClientSessionTest, ResetAndTrailers) {
 
   QuicSpdyClientStream* stream = session_->CreateOutgoingBidirectionalStream();
   ASSERT_NE(nullptr, stream);
-  EXPECT_FALSE(session_->CreateOutgoingBidirectionalStream());
+
+  if (GetParam().transport_version == QUIC_VERSION_99) {
+    // For v99, trying to open a stream and failing due to lack
+    // of stream ids will result in a STREAM_ID_BLOCKED. Make
+    // sure we get one. Also clear out the frame because if it's
+    // left sitting, the later SendRstStream will not actually
+    // transmit the RST_STREAM because the connection will be in write-blocked
+    // state. This means that the SendControlFrame that is expected w.r.t. the
+    // RST_STREAM, below, will not be satisfied.
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .WillOnce(Invoke(
+            this,
+            &QuicSpdyClientSessionTest::ClearStreamIdBlockedControlFrame));
+  }
+
+  EXPECT_EQ(nullptr, session_->CreateOutgoingBidirectionalStream());
 
   QuicStreamId stream_id = stream->id();
+
   EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
   EXPECT_CALL(*connection_, OnStreamReset(_, _)).Times(1);
   session_->SendRstStream(stream_id, QUIC_STREAM_PEER_GOING_AWAY, 0);
@@ -285,6 +341,13 @@ TEST_P(QuicSpdyClientSessionTest, ResetAndTrailers) {
   // The stream is now complete from the client's perspective, and it should
   // be able to create a new outgoing stream.
   EXPECT_EQ(0u, session_->GetNumOpenOutgoingStreams());
+  if (GetParam().transport_version == QUIC_VERSION_99) {
+    // Note that this is to be the second stream created, but GetNth... starts
+    // numbering at 0 (the first stream is 0, second is 1...)
+    QuicMaxStreamIdFrame frame(
+        0, QuicSpdySessionPeer::GetNthClientInitiatedStreamId(*session_, 1));
+    session_->OnMaxStreamIdFrame(frame);
+  }
   stream = session_->CreateOutgoingBidirectionalStream();
   EXPECT_NE(nullptr, stream);
 }

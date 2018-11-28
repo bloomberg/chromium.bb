@@ -1672,6 +1672,12 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   socket_data.AddRead(ASYNC,
                       server_maker_.MakeRstPacket(1, false, stream_id,
                                                   quic::QUIC_STREAM_CANCELLED));
+  if (version_ == quic::QUIC_VERSION_99) {
+    socket_data.AddWrite(SYNCHRONOUS,
+                         client_maker_.MakeStreamIdBlockedPacket(3, true, 102));
+    socket_data.AddRead(ASYNC,
+                        server_maker_.MakeMaxStreamIdPacket(4, true, 102 + 2));
+  }
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1719,6 +1725,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   streams.front()->Close(false);
   // Trigger exchange of RSTs that in turn allow progress for the last
   // stream.
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());

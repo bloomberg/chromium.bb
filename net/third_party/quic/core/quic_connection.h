@@ -113,6 +113,13 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when |message| has been received.
   virtual void OnMessageReceived(QuicStringPiece message) = 0;
 
+  // Called when a MAX_STREAM_ID frame has been received from the peer.
+  virtual bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) = 0;
+
+  // Called when a STREAM_ID_BLOCKED frame has been received from the peer.
+  virtual bool OnStreamIdBlockedFrame(
+      const QuicStreamIdBlockedFrame& frame) = 0;
+
   // Called when the connection is closed either locally by the framer, or
   // remotely by the peer.
   virtual void OnConnectionClosed(QuicErrorCode error,

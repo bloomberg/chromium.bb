@@ -26,12 +26,14 @@ void QuicSessionPeer::SetNextOutgoingStreamId(QuicSession* session,
 void QuicSessionPeer::SetMaxOpenIncomingStreams(QuicSession* session,
                                                 uint32_t max_streams) {
   session->max_open_incoming_streams_ = max_streams;
+  session->v99_streamid_manager_.SetMaxOpenIncomingStreams(max_streams);
 }
 
 // static
 void QuicSessionPeer::SetMaxOpenOutgoingStreams(QuicSession* session,
                                                 uint32_t max_streams) {
   session->max_open_outgoing_streams_ = max_streams;
+  session->v99_streamid_manager_.SetMaxOpenOutgoingStreams(max_streams);
 }
 
 // static
@@ -138,6 +140,12 @@ bool QuicSessionPeer::IsStreamWriteBlocked(QuicSession* session,
 // static
 QuicAlarm* QuicSessionPeer::GetCleanUpClosedStreamsAlarm(QuicSession* session) {
   return session->closed_streams_clean_up_alarm_.get();
+}
+
+// static
+QuicStreamIdManager* QuicSessionPeer::v99_streamid_manager(
+    QuicSession* session) {
+  return &session->v99_streamid_manager_;
 }
 
 }  // namespace test

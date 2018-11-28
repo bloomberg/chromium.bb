@@ -291,9 +291,9 @@ enum QuicErrorCode {
   QUIC_INVALID_MAX_DATA_FRAME_DATA = 102,
   // Received a MAX STREAM DATA frame with errors.
   QUIC_INVALID_MAX_STREAM_DATA_FRAME_DATA = 103,
-  // Received a MAX STREAM ID frame with bad data
+  // Received a MAX_STREAM_ID frame with bad data
   QUIC_MAX_STREAM_ID_DATA = 104,
-  // Received a STREAM ID BLOCKED frame with bad data
+  // Received a STREAM_ID_BLOCKED frame with bad data
   QUIC_STREAM_ID_BLOCKED_DATA = 105,
   // Error deframing a STREAM BLOCKED frame.
   QUIC_INVALID_STREAM_BLOCKED_DATA = 106,
@@ -316,9 +316,16 @@ enum QuicErrorCode {
 
   // RETIRE CONNECTION ID frame data is malformed.
   QUIC_INVALID_RETIRE_CONNECTION_ID_DATA = 117,
+  //
+  // Error in a received STREAM ID BLOCKED frame. -- the stream ID is not
+  // consistent with the state of the endpoint.
+  QUIC_STREAM_ID_BLOCKED_ERROR = 118,
+  // Error in a received MAX STREAM ID frame -- the stream ID is not
+  // consistent with the state of the endpoint.
+  QUIC_MAX_STREAM_ID_ERROR = 119,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 118,
+  QUIC_LAST_ERROR = 120,
 };
 // QuicErrorCodes is encoded as a single octet on-the-wire.
 static_assert(static_cast<int>(QUIC_LAST_ERROR) <=

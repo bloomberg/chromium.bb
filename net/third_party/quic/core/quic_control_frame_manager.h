@@ -57,6 +57,14 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // can not be sent immediately.
   void WriteOrBufferStopSending(uint16_t code, QuicStreamId stream_id);
 
+  // Tries to send a STREAM_ID_BLOCKED Frame. Buffers the frame if it cannot be
+  // sent immediately.
+  void WriteOrBufferStreamIdBlocked(QuicStreamId id);
+
+  // Tries to send a MAX_STREAM_ID Frame. Buffers the frame if it cannot be sent
+  // immediately.
+  void WriteOrBufferMaxStreamId(QuicStreamId id);
+
   // Sends a PING_FRAME. Do not send PING if there is buffered frames.
   void WritePing();
 

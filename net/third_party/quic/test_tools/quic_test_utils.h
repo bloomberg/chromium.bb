@@ -377,6 +377,9 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD0(SendPing, void());
   MOCK_CONST_METHOD0(AllowSelfAddressChange, bool());
   MOCK_METHOD0(OnForwardProgressConfirmed, void());
+  MOCK_METHOD1(OnMaxStreamIdFrame, bool(const QuicMaxStreamIdFrame& frame));
+  MOCK_METHOD1(OnStreamIdBlockedFrame,
+               bool(const QuicStreamIdBlockedFrame& frame));
 };
 
 class MockQuicConnectionHelper : public QuicConnectionHelperInterface {
@@ -500,6 +503,10 @@ class MockQuicConnection : public QuicConnection {
   MOCK_METHOD2(OnStreamReset, void(QuicStreamId, QuicRstStreamErrorCode));
   MOCK_METHOD1(SendControlFrame, bool(const QuicFrame& frame));
   MOCK_METHOD2(SendMessage, MessageStatus(QuicMessageId, QuicStringPiece));
+  MOCK_METHOD3(OnConnectionClosed,
+               void(QuicErrorCode error,
+                    const QuicString& error_details,
+                    ConnectionCloseSource source));
 
   MOCK_METHOD1(OnError, void(QuicFramer* framer));
   void QuicConnection_OnError(QuicFramer* framer) {
