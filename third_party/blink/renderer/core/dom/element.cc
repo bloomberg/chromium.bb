@@ -3566,7 +3566,16 @@ ScriptPromise Element::acquireDisplayLock(ScriptState* script_state,
   auto* context = EnsureElementRareData().EnsureDisplayLockContext(
       this, GetExecutionContext());
   context->RequestLock(callback, script_state);
-  return context->Promise();
+  auto lock_promise = context->Promise();
+
+  // Only support "mode 2" display locking, which requires that the lock is
+  // acquired before the element is connected. Note that we need to call this
+  // after actually getting the promise to avoid ScriptPromiseResolver asserts.
+  // TODO(vmpstr): Implement mode 1.
+  if (isConnected())
+    context->RejectAndCleanUp();
+
+  return lock_promise;
 }
 
 DisplayLockContext* Element::GetDisplayLockContext() const {

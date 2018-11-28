@@ -78,6 +78,10 @@ class CORE_EXPORT DisplayLockContext final
   // Called when the connected state may have changed.
   void NotifyConnectedMayHaveChanged();
 
+  // Rejects the associated promise if one exists, and clears the current queue.
+  // This effectively makes the context finalized.
+  void RejectAndCleanUp();
+
   // JavaScript interface implementation.
   void schedule(V8DisplayLockCallback*);
   DisplayLockSuspendedHandle* suspend();
@@ -105,10 +109,6 @@ class CORE_EXPORT DisplayLockContext final
 
   // Processes the current queue of callbacks.
   void ProcessQueue();
-
-  // Rejects the associated promise if one exists, and clears the current queue.
-  // This effectively makes the context finalized.
-  void RejectAndCleanUp();
 
   // Called by the suspended handle in order to resume context operations.
   void Resume();
