@@ -172,11 +172,15 @@ void TextPaintTimingDetector::ReportSwapTime(
 
 void TextPaintTimingDetector::RecordText(const LayoutObject& object,
                                          const PaintLayer& painting_layer) {
+  if (!is_recording_)
+    return;
   Node* node = object.GetNode();
   if (!node)
     return;
   DOMNodeId node_id = DOMNodeIds::IdForNode(node);
 
+  // This metric defines the size of a text by its first size. So it
+  // early-returns if the text has been recorded.
   if (size_zero_node_ids_.find(node_id) != size_zero_node_ids_.end())
     return;
   if (recorded_text_node_ids_.find(node_id) != recorded_text_node_ids_.end())
@@ -184,16 +188,6 @@ void TextPaintTimingDetector::RecordText(const LayoutObject& object,
   // When node_id is not found in recorded_text_node_ids_, this invalidation is
   // the text's first invalidation.
 
-  // We deactivate the algorithm if the number of nodes exceeds limitation.
-  recorded_node_count_++;
-  if (recorded_node_count_ > kTextNodeNumberLimit) {
-    // for assessing whether kTextNodeNumberLimit is large enough for all
-    // normal cases
-    TRACE_EVENT_INSTANT1("loading", "TextPaintTimingDetector::OverNodeLimit",
-                         TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",
-                         recorded_node_count_);
-    return;
-  }
   uint64_t rect_size = 0;
   LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
   if (!invalidated_rect.IsEmpty()) {
@@ -201,16 +195,31 @@ void TextPaintTimingDetector::RecordText(const LayoutObject& object,
         invalidated_rect, painting_layer);
   }
 
-  // When rect_size == 0, it either means invalidated_rect.IsEmpty() or
-  // the text is size 0 or the text is out of viewport. Either way, we don't
-  // record their time, to reduce computation.
+  // When rect_size == 0, it either means the text size is 0 or the text is out
+  // of viewport. In either case, we don't record their time for efficiency.
   if (rect_size == 0) {
     size_zero_node_ids_.insert(node_id);
   } else {
+    // Non-trivial text is found.
     TextRecord record = {node_id, rect_size, base::TimeTicks(),
                          ToLayoutText(&object)->GetText()};
     texts_to_record_swap_time_.push_back(record);
   }
+
+  if (recorded_text_node_ids_.size() + size_zero_node_ids_.size() +
+          texts_to_record_swap_time_.size() >=
+      kTextNodeNumberLimit) {
+    Deactivate();
+  }
+}
+
+void TextPaintTimingDetector::Deactivate() {
+  TRACE_EVENT_INSTANT2("loading", "TextPaintTimingDetector::OverNodeLimit",
+                       TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",
+                       recorded_text_node_ids_.size(), "size_zero_node_count",
+                       size_zero_node_ids_.size());
+  timer_.Stop();
+  is_recording_ = false;
 }
 
 TextRecord* TextPaintTimingDetector::FindLargestPaintCandidate() {

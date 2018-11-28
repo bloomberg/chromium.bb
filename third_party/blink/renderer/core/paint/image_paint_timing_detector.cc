@@ -326,44 +326,39 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
   if (size_zero_ids_.Contains(node_id))
     return;
 
-  if (!id_record_map_.Contains(node_id)) {
-    recorded_node_count_++;
-    if (recorded_node_count_ < kImageNodeNumberLimit) {
-      LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
-      // Before the image resource is loaded, <img> has size 0, so we do not
-      // record the first size until the invalidated rect's size becomes
-      // non-empty.
-      if (invalidated_rect.IsEmpty())
-        return;
-      uint64_t rect_size =
-          frame_view_->GetPaintTimingDetector().CalculateVisualSize(
-              invalidated_rect, painting_layer);
-      if (rect_size == 0) {
-        // When rect_size == 0, it either means the image is size 0 or the image
-        // is out of viewport. Either way, we don't track this image anymore, to
-        // reduce computation.
-        size_zero_ids_.insert(node_id);
-        return;
-      }
-      std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
-      record->node_id = node_id;
-      record->image_url = GetImageUrl(object);
-      // Mind that first_size has to be assigned at the push of
-      // largest_image_heap_ since it's the sorting key.
-      record->first_size = rect_size;
-      largest_image_heap_.push(record->AsWeakPtr());
-      id_record_map_.insert(node_id, std::move(record));
-    } else {
-      // for assessing whether kImageNodeNumberLimit is large enough for all
-      // normal cases
-      TRACE_EVENT_INSTANT1("loading", "ImagePaintTimingDetector::OverNodeLimit",
-                           TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",
-                           recorded_node_count_);
+  if (!id_record_map_.Contains(node_id) && is_recording_) {
+    LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
+    // Before the image resource is loaded, <img> has size 0, so we do not
+    // record the first size until the invalidated rect's size becomes
+    // non-empty.
+    if (invalidated_rect.IsEmpty())
+      return;
+    uint64_t rect_size =
+        frame_view_->GetPaintTimingDetector().CalculateVisualSize(
+            invalidated_rect, painting_layer);
+    if (rect_size == 0) {
+      // When rect_size == 0, it either means the image is size 0 or the image
+      // is out of viewport. Either way, we don't track this image anymore, to
+      // reduce computation.
+      size_zero_ids_.insert(node_id);
+      return;
     }
+    // Non-trivial image is found.
+    std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
+    record->node_id = node_id;
+    record->image_url = GetImageUrl(object);
+    // Mind that first_size has to be assigned at the push of
+    // largest_image_heap_ since it's the sorting key.
+    record->first_size = rect_size;
+    largest_image_heap_.push(record->AsWeakPtr());
+    id_record_map_.insert(node_id, std::move(record));
+    if (id_record_map_.size() + size_zero_ids_.size() > kImageNodeNumberLimit)
+      Deactivate();
   }
 
   if (id_record_map_.Contains(node_id) && !id_record_map_.at(node_id)->loaded &&
       IsLoaded(object)) {
+    // The image is just loaded.
     records_pending_timing_.push(node_id);
     ImageRecord* record = id_record_map_.at(node_id);
     record->frame_index = frame_index_;
@@ -377,6 +372,14 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
     record->first_paint_index = ++first_paint_index_max_;
     latest_image_heap_.push(record->AsWeakPtr());
   }
+}
+
+void ImagePaintTimingDetector::Deactivate() {
+  TRACE_EVENT_INSTANT2("loading", "ImagePaintTimingDetector::OverNodeLimit",
+                       TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",
+                       id_record_map_.size(), "size_zero_node_count",
+                       size_zero_ids_.size());
+  is_recording_ = false;
 }
 
 ImageRecord* ImagePaintTimingDetector::FindLargestPaintCandidate() {
