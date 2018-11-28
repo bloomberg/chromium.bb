@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/autofill_profile_edit_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_profile_edit_table_view_controller.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/stl_util.h"
@@ -14,10 +14,10 @@
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
-#import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -26,8 +26,8 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kAutofillProfileEditCollectionViewId =
-    @"kAutofillProfileEditCollectionViewId";
+NSString* const kAutofillProfileEditTableViewId =
+    @"kAutofillProfileEditTableViewId";
 
 namespace {
 using ::AutofillTypeFromAutofillUIType;
@@ -73,9 +73,9 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
 
 }  // namespace
 
-@interface AutofillProfileEditCollectionViewController ()
+@interface AutofillProfileEditTableViewController ()
 
-// Initializes a AutofillProfileEditCollectionViewController with |profile| and
+// Initializes a AutofillProfileEditTableViewController with |profile| and
 // |dataManager|.
 - (instancetype)initWithProfile:(const autofill::AutofillProfile&)profile
             personalDataManager:(autofill::PersonalDataManager*)dataManager
@@ -83,7 +83,7 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
 
 @end
 
-@implementation AutofillProfileEditCollectionViewController {
+@implementation AutofillProfileEditTableViewController {
   autofill::PersonalDataManager* _personalDataManager;  // weak
   autofill::AutofillProfile _autofillProfile;
 }
@@ -94,19 +94,14 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
             personalDataManager:(autofill::PersonalDataManager*)dataManager {
   DCHECK(dataManager);
 
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     _personalDataManager = dataManager;
     _autofillProfile = profile;
 
-    [self setCollectionViewAccessibilityIdentifier:
-              kAutofillProfileEditCollectionViewId];
     [self setTitle:l10n_util::GetNSString(IDS_IOS_AUTOFILL_EDIT_ADDRESS)];
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
 
   return self;
@@ -118,7 +113,15 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   return [[self alloc] initWithProfile:profile personalDataManager:dataManager];
 }
 
-#pragma mark - SettingsRootCollectionViewController
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
+  self.tableView.allowsSelectionDuringEditing = YES;
+  self.tableView.accessibilityIdentifier = kAutofillProfileEditTableViewId;
+  [self loadModel];
+}
+
+#pragma mark - SettingsRootTableViewController
 
 - (void)editButtonPressed {
   // In the case of server profiles, open the Payments editing page instead.
@@ -136,8 +139,8 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
 
   [super editButtonPressed];
 
-  if (!self.editor.editing) {
-    CollectionViewModel* model = self.collectionViewModel;
+  if (!self.tableView.editing) {
+    TableViewModel* model = self.tableViewModel;
     NSInteger itemCount =
         [model numberOfItemsInSection:
                    [model sectionForSectionIdentifier:SectionIdentifierFields]];
@@ -147,11 +150,10 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
     NSInteger section =
         [model sectionForSectionIdentifier:SectionIdentifierFields];
     for (NSInteger itemIndex = 0; itemIndex < itemCount; ++itemIndex) {
-      NSIndexPath* path =
-          [NSIndexPath indexPathForItem:itemIndex inSection:section];
-      LegacyAutofillEditItem* item =
-          base::mac::ObjCCastStrict<LegacyAutofillEditItem>(
-              [model itemAtIndexPath:path]);
+      NSIndexPath* path = [NSIndexPath indexPathForItem:itemIndex
+                                              inSection:section];
+      AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
+          [model itemAtIndexPath:path]);
       autofill::ServerFieldType serverFieldType =
           AutofillTypeFromAutofillUIType(item.autofillUIType);
       if (item.autofillUIType == AutofillUITypeProfileHomeAddressCountry) {
@@ -172,26 +174,25 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   [self loadModel];
   // Update the cells.
   [self reconfigureCellsForItems:
-            [self.collectionViewModel
+            [self.tableViewModel
                 itemsInSectionWithIdentifier:SectionIdentifierFields]];
 }
 
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
 
   std::string locale = GetApplicationContext()->GetApplicationLocale();
   [model addSectionWithIdentifier:SectionIdentifierFields];
   for (size_t i = 0; i < base::size(kFieldsToDisplay); ++i) {
     const AutofillFieldDisplayInfo& field = kFieldsToDisplay[i];
-    LegacyAutofillEditItem* item =
-        [[LegacyAutofillEditItem alloc] initWithType:ItemTypeField];
-    item.cellStyle = CollectionViewCellStyle::kUIKit;
+    AutofillEditItem* item =
+        [[AutofillEditItem alloc] initWithType:ItemTypeField];
     item.textFieldName = l10n_util::GetNSString(field.displayStringID);
     item.textFieldValue = base::SysUTF16ToNSString(_autofillProfile.GetInfo(
         autofill::AutofillType(field.autofillType), locale));
     item.autofillUIType = AutofillUITypeFromAutofillType(field.autofillType);
-    item.textFieldEnabled = self.editor.editing;
+    item.textFieldEnabled = self.tableView.editing;
     item.autoCapitalizationType = field.autoCapitalizationType;
     item.returnKeyType = field.returnKeyType;
     item.keyboardType = field.keyboardType;
@@ -199,48 +200,37 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   }
 }
 
-#pragma mark - MDCCollectionViewEditingDelegate
+#pragma mark - UITableViewDataSource
 
-- (BOOL)collectionViewAllowsEditing:(UICollectionView*)collectionView {
-  // The collection view needs to allow editing in order to respond to the Edit
-  // button.
-  return YES;
-}
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
 
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    canEditItemAtIndexPath:(NSIndexPath*)indexPath {
-  // Items in this collection view are not deletable, so should not be seen
-  // as editable by the collection view.
-  return NO;
-}
+  cell.selectionStyle = UITableViewCellSelectionStyleNone;
 
-#pragma mark - UICollectionViewDataSource
-
-- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
-                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell =
-      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
-
-  LegacyAutofillEditCell* textFieldCell =
-      base::mac::ObjCCastStrict<LegacyAutofillEditCell>(cell);
+  AutofillEditCell* textFieldCell =
+      base::mac::ObjCCastStrict<AutofillEditCell>(cell);
   textFieldCell.accessibilityIdentifier = textFieldCell.textLabel.text;
   textFieldCell.textField.delegate = self;
   return textFieldCell;
 }
 
-#pragma mark - UICollectionViewDelegate
-
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    shouldSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  if (self.editor.editing) {
-    UICollectionViewCell* cell =
-        [self.collectionView cellForItemAtIndexPath:indexPath];
-    LegacyAutofillEditCell* textFieldCell =
-        base::mac::ObjCCastStrict<LegacyAutofillEditCell>(cell);
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.tableView.editing) {
+    UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    AutofillEditCell* textFieldCell =
+        base::mac::ObjCCastStrict<AutofillEditCell>(cell);
     [textFieldCell.textField becomeFirstResponder];
   }
-  return [super collectionView:collectionView
-      shouldSelectItemAtIndexPath:indexPath];
+}
+
+- (BOOL)tableView:(UITableView*)tableView
+    canEditRowAtIndexPath:(NSIndexPath*)indexPath {
+  // Items in this collection view are not deletable, so should not be seen
+  // as editable by the table view.
+  return NO;
 }
 
 @end

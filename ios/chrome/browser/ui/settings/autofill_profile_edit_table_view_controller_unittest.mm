@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/autofill_profile_edit_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_profile_edit_table_view_controller.h"
 
 #include <memory>
 
@@ -14,8 +14,8 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/platform_test.h"
 
@@ -46,9 +46,9 @@ static NSArray* FindTextFieldDescendants(UIView* root) {
   return textFields;
 }
 
-class AutofillProfileEditCollectionViewControllerTest : public PlatformTest {
+class AutofillProfileEditTableViewControllerTest : public PlatformTest {
  protected:
-  AutofillProfileEditCollectionViewControllerTest() {
+  AutofillProfileEditTableViewControllerTest() {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
     chrome_browser_state_->CreateWebDataService();
@@ -70,44 +70,40 @@ class AutofillProfileEditCollectionViewControllerTest : public PlatformTest {
     personal_data_manager_->SaveImportedProfile(autofill_profile);
     observer.Wait();  // Wait for the completion of the asynchronous operation.
 
-    autofill_profile_edit_controller_ =
-        [AutofillProfileEditCollectionViewController
-            controllerWithProfile:autofill_profile
-              personalDataManager:personal_data_manager_];
+    autofill_profile_edit_controller_ = [AutofillProfileEditTableViewController
+        controllerWithProfile:autofill_profile
+          personalDataManager:personal_data_manager_];
+
+    // Load the view to force the loading of the model.
+    [autofill_profile_edit_controller_ loadViewIfNeeded];
   }
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   autofill::PersonalDataManager* personal_data_manager_;
-  AutofillProfileEditCollectionViewController*
-      autofill_profile_edit_controller_;
+  AutofillProfileEditTableViewController* autofill_profile_edit_controller_;
 };
 
 // Default test case of no addresses or credit cards.
-TEST_F(AutofillProfileEditCollectionViewControllerTest, TestInitialization) {
-  CollectionViewModel* model =
-      [autofill_profile_edit_controller_ collectionViewModel];
+TEST_F(AutofillProfileEditTableViewControllerTest, TestInitialization) {
+  TableViewModel* model = [autofill_profile_edit_controller_ tableViewModel];
 
   EXPECT_EQ(1, [model numberOfSections]);
   EXPECT_EQ(10, [model numberOfItemsInSection:0]);
 }
 
 // Adding a single address results in an address section.
-TEST_F(AutofillProfileEditCollectionViewControllerTest, TestOneProfile) {
-  CollectionViewModel* model =
-      [autofill_profile_edit_controller_ collectionViewModel];
-  UICollectionView* collectionView =
-      [autofill_profile_edit_controller_ collectionView];
+TEST_F(AutofillProfileEditTableViewControllerTest, TestOneProfile) {
+  TableViewModel* model = [autofill_profile_edit_controller_ tableViewModel];
+  UITableView* tableView = [autofill_profile_edit_controller_ tableView];
 
   EXPECT_EQ(1, [model numberOfSections]);
   EXPECT_EQ(10, [model numberOfItemsInSection:0]);
 
   NSIndexPath* path = [NSIndexPath indexPathForRow:0 inSection:0];
 
-  UIView* cell =
-      [autofill_profile_edit_controller_ collectionView:collectionView
-                                 cellForItemAtIndexPath:path];
-  EXPECT_TRUE([cell isKindOfClass:[MDCCollectionViewCell class]]);
+  UIView* cell = [autofill_profile_edit_controller_ tableView:tableView
+                                        cellForRowAtIndexPath:path];
 
   NSArray* textFields = FindTextFieldDescendants(cell);
   EXPECT_TRUE([textFields count] > 0);
@@ -117,9 +113,8 @@ TEST_F(AutofillProfileEditCollectionViewControllerTest, TestOneProfile) {
       [[field text] isEqualToString:base::SysUTF8ToNSString(kTestFullName)]);
 
   path = [NSIndexPath indexPathForRow:2 inSection:0];
-  cell = [autofill_profile_edit_controller_ collectionView:collectionView
-                                    cellForItemAtIndexPath:path];
-  EXPECT_TRUE([cell isKindOfClass:[MDCCollectionViewCell class]]);
+  cell = [autofill_profile_edit_controller_ tableView:tableView
+                                cellForRowAtIndexPath:path];
   textFields = FindTextFieldDescendants(cell);
   EXPECT_TRUE([textFields count] > 0);
   field = [textFields objectAtIndex:0];
