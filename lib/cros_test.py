@@ -14,6 +14,7 @@ import re
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import device
 from chromite.lib import vm
 
 
@@ -55,7 +56,7 @@ class CrOSTest(object):
     self.results_src = opts.results_src
     self.results_dest_dir = opts.results_dest_dir
 
-    self._device = vm.Device.Create(opts)
+    self._device = device.Device.Create(opts)
 
   def __del__(self):
     self._StopVM()
