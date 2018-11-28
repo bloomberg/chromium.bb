@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1899 tests; 711 PASS, 1188 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1905 tests; 711 PASS, 1194 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS text/html;charset=gbk (Blob/File)
 PASS text/html;charset=gbk (Request/Response)
@@ -147,6 +147,12 @@ FAIL {/} (Blob/File) assert_equals: Blob expected "" but got "{/}"
 FAIL {/} (Request/Response) assert_equals: expected "" but got "{/}"
 PASS Ā/Ā (Blob/File)
 PASS Ā/Ā (Request/Response)
+FAIL text /html (Blob/File) assert_equals: Blob expected "" but got "text /html"
+FAIL text /html (Request/Response) assert_equals: expected "" but got "text /html"
+FAIL text/ html (Blob/File) assert_equals: Blob expected "" but got "text/ html"
+FAIL text/ html (Request/Response) assert_equals: expected "" but got "text/ html"
+FAIL "text/html" (Blob/File) assert_equals: Blob expected "" but got "\"text/html\""
+FAIL "text/html" (Request/Response) assert_equals: expected "" but got "\"text/html\""
 PASS \0/x (Blob/File)
 PASS \0/x (Request/Response)
 PASS x/\0 (Blob/File)

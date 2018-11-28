@@ -2890,7 +2890,6 @@ crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Timeo
 crbug.com/800898 external/wpt/workers/shared-worker-from-blob-url.window.html [ Skip ]
 crbug.com/800898 virtual/omt-worker-fetch/external/wpt/workers/shared-worker-from-blob-url.window.html [ Skip ]
 
-crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/sandboxed-iframe.html [ Pass Timeout ]
 crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.html [ Pass Timeout ]
 crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.worker.html [ Pass Timeout ]
 
@@ -3002,6 +3001,20 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.ht
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-capitalize-033.html [ Failure ]
+crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/content-type/response.window.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/fetch/content-type/response.window.html [ Timeout ]
+crbug.com/626703 [ Mac10.10 ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.11 ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Failure Timeout ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-layout-suppress-baseline-002.html [ Failure ]
+crbug.com/626703 [ Mac10.10 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
+crbug.com/626703 [ Win ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.11 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
+crbug.com/626703 external/wpt/css/css-ui/text-overflow-ruby.html [ Failure ]
+crbug.com/626703 external/wpt/fetch/content-type/response.window.html [ Timeout ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-module.html [ Timeout ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-classic.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-classic.html [ Timeout ]

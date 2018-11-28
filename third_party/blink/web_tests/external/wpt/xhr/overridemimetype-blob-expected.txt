@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 71 tests; 21 PASS, 50 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 74 tests; 22 PASS, 52 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Use text/xml as fallback MIME type
 PASS Use text/xml as fallback MIME type, 2
 PASS Loading data…
@@ -76,5 +76,8 @@ PASS 65) MIME types need to be parsed and serialized: ÿ/ÿ
 PASS 66) MIME types need to be parsed and serialized: text/html(;doesnot=matter
 FAIL 67) MIME types need to be parsed and serialized: {/} assert_equals: expected "application/octet-stream" but got "{/}"
 PASS 68) MIME types need to be parsed and serialized: Ā/Ā
+FAIL 69) MIME types need to be parsed and serialized: text /html assert_equals: expected "application/octet-stream" but got "text /html"
+FAIL 70) MIME types need to be parsed and serialized: text/ html assert_equals: expected "application/octet-stream" but got "text/ html"
+PASS 71) MIME types need to be parsed and serialized: "text/html"
 Harness: the test ran to completion.
 
