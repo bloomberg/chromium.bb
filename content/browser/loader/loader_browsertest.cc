@@ -309,6 +309,12 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
 // URLRequest, which passes the error on ResourceLoader teardown, rather than in
 // response to call to AsyncResourceHandler::OnResponseComplete.
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Cancelled) {
+  // If network service is running in-process, we can't simulate a crash.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      IsNetworkServiceRunningInProcess()) {
+    return;
+  }
+
   embedded_test_server()->RegisterRequestHandler(base::Bind(
       &CancelOnRequest, "/hung",
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),

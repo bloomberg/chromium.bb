@@ -28,6 +28,7 @@
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
@@ -172,7 +173,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     if (base::FeatureList::IsEnabled(network::features::kNetworkService))
       is_network_service_enabled_ = true;
 
-    if (is_network_service_enabled_) {
+    if (IsOutOfProcessNetworkService()) {
       // |MockCertVerifier| only seems to work when Network Service was enabled.
       command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
     } else {
@@ -191,7 +192,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     // Set up HTTP and HTTPS test servers that handle all hosts.
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    if (is_network_service_enabled_)
+    if (IsOutOfProcessNetworkService())
       SetUpMockCertVerifier(net::OK);
 
     embedded_test_server()->RegisterRequestHandler(
