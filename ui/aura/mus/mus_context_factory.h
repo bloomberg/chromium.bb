@@ -23,6 +23,7 @@ class GpuChannelHost;
 
 namespace ws {
 class Gpu;
+class SharedWorkerContextProviderFactory;
 }
 
 namespace aura {
@@ -32,6 +33,10 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
  public:
   explicit MusContextFactory(ws::Gpu* gpu);
   ~MusContextFactory() override;
+
+  // Drops the references to the RasterContextProvider. This may be called to
+  // ensure a particular shutdown ordering.
+  void ResetSharedWorkerContextProvider();
 
  private:
   // Callback function for Gpu::EstablishGpuChannel().
@@ -53,6 +58,8 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
   ws::RasterThreadHelper raster_thread_helper_;
   ws::Gpu* gpu_;
   scoped_refptr<viz::ContextProvider> shared_main_thread_context_provider_;
+  std::unique_ptr<ws::SharedWorkerContextProviderFactory>
+      shared_worker_context_provider_factory_;
 
   base::WeakPtrFactory<MusContextFactory> weak_ptr_factory_;
 

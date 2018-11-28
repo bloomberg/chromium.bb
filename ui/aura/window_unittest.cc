@@ -3259,6 +3259,8 @@ TEST_P(WindowTest, LocalSurfaceIdChanges) {
   window.Init(ui::LAYER_NOT_DRAWN);
   window.SetBounds(gfx::Rect(300, 300));
 
+  root_window()->AddChild(&window);
+
   std::unique_ptr<cc::LayerTreeFrameSink> frame_sink(
       window.CreateLayerTreeFrameSink());
   viz::LocalSurfaceId local_surface_id1 =

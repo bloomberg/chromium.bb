@@ -92,9 +92,9 @@ void StagingBuffer::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
   if (!gpu_memory_buffer)
     return;
 
-  gfx::GpuMemoryBufferId buffer_id = gpu_memory_buffer->GetId();
+  // Use |this| as the id, which works with multiple StagingBuffers.
   std::string buffer_dump_name =
-      base::StringPrintf("cc/one_copy/staging_memory/buffer_%d", buffer_id.id);
+      base::StringPrintf("cc/one_copy/staging_memory/buffer_%p", this);
   MemoryAllocatorDump* buffer_dump = pmd->CreateAllocatorDump(buffer_dump_name);
 
   uint64_t buffer_size_in_bytes =

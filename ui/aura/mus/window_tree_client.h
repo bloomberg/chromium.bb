@@ -198,6 +198,9 @@ class AURA_EXPORT WindowTreeClient
   // race the asynchronous initialization; but in that case we return (0, 0).
   gfx::Point GetCursorScreenPoint();
 
+  // May be called to do early shutdown.
+  void OnEarlyShutdown();
+
   // Called when the local aura::Env adds or removes EventObservers.
   void OnEventObserverAdded(ui::EventObserver* observer,
                             const std::set<ui::EventType>& types);

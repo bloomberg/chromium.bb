@@ -24,6 +24,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/vulkan/buildflags.h"
 #include "services/ws/public/cpp/gpu/command_buffer_metrics.h"
+#include "services/ws/public/cpp/gpu/shared_worker_context_provider_factory.h"
 #include "ui/compositor/compositor.h"
 
 namespace base {
@@ -43,10 +44,10 @@ class VulkanImplementation;
 namespace viz {
 class CompositingModeReporterImpl;
 class OutputDeviceBacking;
+class RasterContextProvider;
 class ServerSharedBitmapManager;
 class SoftwareOutputDevice;
 class VulkanInProcessContextProvider;
-class RasterContextProvider;
 }
 
 namespace ws {
@@ -112,6 +113,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
  private:
   struct PerCompositorData;
 
+  scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider();
+
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor);
   std::unique_ptr<viz::SoftwareOutputDevice> CreateSoftwareOutputDevice(
       gfx::AcceleratedWidget widget,
@@ -165,7 +168,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   base::ObserverList<ui::ContextFactoryObserver>::Unchecked observer_list_;
   scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
-  scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider_;
+  ws::SharedWorkerContextProviderFactory
+      shared_worker_context_provider_factory_;
 
   bool is_gpu_compositing_disabled_ = false;
   bool disable_frame_rate_limit_ = false;

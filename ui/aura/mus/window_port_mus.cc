@@ -175,6 +175,7 @@ void WindowPortMus::EmbedUsingToken(
 std::unique_ptr<cc::mojo_embedder::AsyncLayerTreeFrameSink>
 WindowPortMus::RequestLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
+    scoped_refptr<viz::RasterContextProvider> raster_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   viz::mojom::CompositorFrameSinkPtrInfo sink_info;
   viz::mojom::CompositorFrameSinkRequest sink_request =
@@ -184,6 +185,9 @@ WindowPortMus::RequestLayerTreeFrameSink(
       mojo::MakeRequest(&client);
 
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
+  ui::Compositor* compositor = window_->layer()->GetCompositor();
+  DCHECK(compositor);
+  params.compositor_task_runner = compositor->task_runner();
   params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
@@ -202,7 +206,7 @@ WindowPortMus::RequestLayerTreeFrameSink(
 
   auto layer_tree_frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-          std::move(context_provider), nullptr /* worker_context_provider */,
+          std::move(context_provider), std::move(raster_context_provider),
           &params);
   window_tree_client_->AttachCompositorFrameSink(
       server_id(), std::move(sink_request), std::move(client));
@@ -687,8 +691,10 @@ WindowPortMus::CreateLayerTreeFrameSink() {
   DCHECK_EQ(window_mus_type(), WindowMusType::LOCAL);
   DCHECK(!local_layer_tree_frame_sink_);
 
+  // TODO(sky): this needs to supply a RasterContextProvider.
   auto client_layer_tree_frame_sink = RequestLayerTreeFrameSink(
-      nullptr, window_->env()->context_factory()->GetGpuMemoryBufferManager());
+      nullptr, nullptr,
+      window_->env()->context_factory()->GetGpuMemoryBufferManager());
   local_layer_tree_frame_sink_ = client_layer_tree_frame_sink->GetWeakPtr();
   embed_frame_sink_id_ = GenerateFrameSinkIdFromServerId();
   window_->SetEmbedFrameSinkId(embed_frame_sink_id_);
