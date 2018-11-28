@@ -62,8 +62,6 @@ class TestSyncService : public SyncService {
 
   void RequestStop(SyncStopDataFate data_fate) override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
-  void OnUserChoseDatatypes(bool sync_everything,
-                            ModelTypeSet chosen_types) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   void ReenableDatatype(ModelType type) override;
   void ReadyForStartChanged(syncer::ModelType type) override;

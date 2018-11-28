@@ -5,6 +5,7 @@
 #include "components/sync/driver/test_sync_user_settings.h"
 
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/test_sync_service.h"
 
@@ -65,7 +66,14 @@ ModelTypeSet TestSyncUserSettings::GetChosenDataTypes() const {
 void TestSyncUserSettings::SetChosenDataTypes(bool sync_everything,
                                               ModelTypeSet types) {
   sync_everything_enabled_ = sync_everything;
-  service_->OnUserChoseDatatypes(sync_everything, types);
+  syncer::ModelTypeSet preferred_types;
+  if (sync_everything_enabled_) {
+    preferred_types = syncer::ModelTypeSet::All();
+  } else {
+    preferred_types = syncer::SyncPrefs::ResolvePrefGroups(
+        /*registered_types=*/syncer::ModelTypeSet::All(), types);
+  }
+  service_->SetPreferredDataTypes(preferred_types);
 }
 
 bool TestSyncUserSettings::IsEncryptEverythingAllowed() const {

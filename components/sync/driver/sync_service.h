@@ -275,14 +275,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // told to MergeDataAndStartSyncing yet.
   virtual void OnDataTypeRequestsSyncStartup(ModelType type) = 0;
 
-  // Called when a user chooses which data types to sync. |sync_everything|
-  // represents whether they chose the "keep everything synced" option; if
-  // true, |chosen_types| will be ignored and all data types will be synced.
-  // |sync_everything| means "sync all current and future data types."
-  // |chosen_types| must be a subset of UserSelectableTypes().
-  virtual void OnUserChoseDatatypes(bool sync_everything,
-                                    ModelTypeSet chosen_types) = 0;
-
   // Triggers a GetUpdates call for the specified |types|, pulling any new data
   // from the sync server. Used by tests and debug UI (sync-internals).
   virtual void TriggerRefresh(const ModelTypeSet& types) = 0;

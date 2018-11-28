@@ -236,8 +236,9 @@ class ProfileSyncService : public syncer::SyncService,
   void RemoveObserver(syncer::SyncServiceObserver* observer) override;
   bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
-  void OnUserChoseDatatypes(bool sync_everything,
-                            syncer::ModelTypeSet chosen_types) override;
+  // Virtual for testing.
+  virtual void OnUserChoseDatatypes(bool sync_everything,
+                                    syncer::ModelTypeSet chosen_types);
   virtual void SetFirstSetupComplete();  // Virtual for testing.
   std::unique_ptr<syncer::SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
