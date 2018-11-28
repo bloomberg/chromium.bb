@@ -101,8 +101,8 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
       network::mojom::FetchCredentialsMode::kInclude);
   resource_request.SetSkipServiceWorker(true);
 
-  threadable_loader_ =
-      new ThreadableLoader(*execution_context, this, resource_loader_options);
+  threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
+      *execution_context, this, resource_loader_options);
   threadable_loader_->SetTimeout(
       TimeDelta::FromMilliseconds(kIconFetchTimeoutInMs));
   threadable_loader_->Start(resource_request);

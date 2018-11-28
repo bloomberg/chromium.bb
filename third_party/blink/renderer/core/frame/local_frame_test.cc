@@ -44,7 +44,7 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesSpecifiedRequestValue) {
   FetchParameters params1(request1);
   auto page_holder = DummyPageHolder::Create(
       IntSize(800, 600), nullptr,
-      new TestLocalFrameClient(WebURLRequest::kPreviewsOff));
+      MakeGarbageCollected<TestLocalFrameClient>(WebURLRequest::kPreviewsOff));
   MaybeAllowImagePlaceholder(page_holder.get(), params1);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
             params1.GetImageRequestOptimization());
@@ -55,7 +55,7 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesSpecifiedRequestValue) {
   FetchParameters params2(request2);
   auto page_holder2 = DummyPageHolder::Create(
       IntSize(800, 600), nullptr,
-      new TestLocalFrameClient(WebURLRequest::kClientLoFiOn));
+      MakeGarbageCollected<TestLocalFrameClient>(WebURLRequest::kClientLoFiOn));
   MaybeAllowImagePlaceholder(page_holder2.get(), params2);
   EXPECT_EQ(FetchParameters::kNone, params2.GetImageRequestOptimization());
 }
@@ -67,7 +67,7 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesFramePreviewsState) {
   FetchParameters params1(request1);
   std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create(
       IntSize(800, 600), nullptr,
-      new TestLocalFrameClient(WebURLRequest::kClientLoFiOn));
+      MakeGarbageCollected<TestLocalFrameClient>(WebURLRequest::kClientLoFiOn));
   MaybeAllowImagePlaceholder(page_holder.get(), params1);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
             params1.GetImageRequestOptimization());
@@ -77,9 +77,10 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesFramePreviewsState) {
   request2.SetURL(KURL("http://insecure.com"));
   request2.SetPreviewsState(WebURLRequest::kPreviewsUnspecified);
   FetchParameters params2(request2);
-  std::unique_ptr<DummyPageHolder> page_holder2 = DummyPageHolder::Create(
-      IntSize(800, 600), nullptr,
-      new TestLocalFrameClient(WebURLRequest::kServerLitePageOn));
+  std::unique_ptr<DummyPageHolder> page_holder2 =
+      DummyPageHolder::Create(IntSize(800, 600), nullptr,
+                              MakeGarbageCollected<TestLocalFrameClient>(
+                                  WebURLRequest::kServerLitePageOn));
   MaybeAllowImagePlaceholder(page_holder2.get(), params2);
   EXPECT_EQ(FetchParameters::kNone, params2.GetImageRequestOptimization());
   EXPECT_FALSE(page_holder2->GetFrame().IsUsingDataSavingPreview());
@@ -93,8 +94,8 @@ TEST(LocalFrameTest,
   FetchParameters params1(request1);
   auto page_holder = DummyPageHolder::Create(
       IntSize(800, 600), nullptr,
-      new TestLocalFrameClient(WebURLRequest::kServerLoFiOn |
-                               WebURLRequest::kClientLoFiOn));
+      MakeGarbageCollected<TestLocalFrameClient>(WebURLRequest::kServerLoFiOn |
+                                                 WebURLRequest::kClientLoFiOn));
   MaybeAllowImagePlaceholder(page_holder.get(), params1);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
             params1.GetImageRequestOptimization());
@@ -105,49 +106,56 @@ TEST(LocalFrameTest,
   FetchParameters params2(request2);
   auto page_holder2 = DummyPageHolder::Create(
       IntSize(800, 600), nullptr,
-      new TestLocalFrameClient(WebURLRequest::kServerLoFiOn |
-                               WebURLRequest::kClientLoFiOn));
+      MakeGarbageCollected<TestLocalFrameClient>(WebURLRequest::kServerLoFiOn |
+                                                 WebURLRequest::kClientLoFiOn));
   MaybeAllowImagePlaceholder(page_holder2.get(), params2);
   EXPECT_EQ(FetchParameters::kNone, params2.GetImageRequestOptimization());
 }
 
 TEST(LocalFrameTest, IsUsingDataSavingPreview) {
-  EXPECT_TRUE(DummyPageHolder::Create(
-                  IntSize(800, 600), nullptr,
-                  new TestLocalFrameClient(WebURLRequest::kClientLoFiOn))
-                  ->GetFrame()
-                  .IsUsingDataSavingPreview());
-  EXPECT_TRUE(DummyPageHolder::Create(
-                  IntSize(800, 600), nullptr,
-                  new TestLocalFrameClient(WebURLRequest::kServerLoFiOn))
-                  ->GetFrame()
-                  .IsUsingDataSavingPreview());
-  EXPECT_TRUE(DummyPageHolder::Create(
-                  IntSize(800, 600), nullptr,
-                  new TestLocalFrameClient(WebURLRequest::kNoScriptOn))
-                  ->GetFrame()
-                  .IsUsingDataSavingPreview());
+  EXPECT_TRUE(
+      DummyPageHolder::Create(IntSize(800, 600), nullptr,
+                              MakeGarbageCollected<TestLocalFrameClient>(
+                                  WebURLRequest::kClientLoFiOn))
+          ->GetFrame()
+          .IsUsingDataSavingPreview());
+  EXPECT_TRUE(
+      DummyPageHolder::Create(IntSize(800, 600), nullptr,
+                              MakeGarbageCollected<TestLocalFrameClient>(
+                                  WebURLRequest::kServerLoFiOn))
+          ->GetFrame()
+          .IsUsingDataSavingPreview());
+  EXPECT_TRUE(
+      DummyPageHolder::Create(IntSize(800, 600), nullptr,
+                              MakeGarbageCollected<TestLocalFrameClient>(
+                                  WebURLRequest::kNoScriptOn))
+          ->GetFrame()
+          .IsUsingDataSavingPreview());
 
-  EXPECT_FALSE(DummyPageHolder::Create(IntSize(800, 600), nullptr,
-                                       new TestLocalFrameClient(
-                                           WebURLRequest::kPreviewsUnspecified))
-                   ->GetFrame()
-                   .IsUsingDataSavingPreview());
-  EXPECT_FALSE(DummyPageHolder::Create(
-                   IntSize(800, 600), nullptr,
-                   new TestLocalFrameClient(WebURLRequest::kPreviewsOff))
-                   ->GetFrame()
-                   .IsUsingDataSavingPreview());
-  EXPECT_FALSE(DummyPageHolder::Create(IntSize(800, 600), nullptr,
-                                       new TestLocalFrameClient(
-                                           WebURLRequest::kPreviewsNoTransform))
-                   ->GetFrame()
-                   .IsUsingDataSavingPreview());
-  EXPECT_FALSE(DummyPageHolder::Create(
-                   IntSize(800, 600), nullptr,
-                   new TestLocalFrameClient(WebURLRequest::kServerLitePageOn))
-                   ->GetFrame()
-                   .IsUsingDataSavingPreview());
+  EXPECT_FALSE(
+      DummyPageHolder::Create(IntSize(800, 600), nullptr,
+                              MakeGarbageCollected<TestLocalFrameClient>(
+                                  WebURLRequest::kPreviewsUnspecified))
+          ->GetFrame()
+          .IsUsingDataSavingPreview());
+  EXPECT_FALSE(
+      DummyPageHolder::Create(IntSize(800, 600), nullptr,
+                              MakeGarbageCollected<TestLocalFrameClient>(
+                                  WebURLRequest::kPreviewsOff))
+          ->GetFrame()
+          .IsUsingDataSavingPreview());
+  EXPECT_FALSE(
+      DummyPageHolder::Create(IntSize(800, 600), nullptr,
+                              MakeGarbageCollected<TestLocalFrameClient>(
+                                  WebURLRequest::kPreviewsNoTransform))
+          ->GetFrame()
+          .IsUsingDataSavingPreview());
+  EXPECT_FALSE(
+      DummyPageHolder::Create(IntSize(800, 600), nullptr,
+                              MakeGarbageCollected<TestLocalFrameClient>(
+                                  WebURLRequest::kServerLitePageOn))
+          ->GetFrame()
+          .IsUsingDataSavingPreview());
 }
 
 }  // namespace blink

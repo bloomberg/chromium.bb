@@ -60,9 +60,11 @@ class SubtreeLayoutScope;
 class CORE_EXPORT TextAutosizer final
     : public GarbageCollectedFinalized<TextAutosizer> {
  public:
+  explicit TextAutosizer(const Document*);
   ~TextAutosizer();
+
   static TextAutosizer* Create(const Document* document) {
-    return new TextAutosizer(document);
+    return MakeGarbageCollected<TextAutosizer>(document);
   }
 
   // computed_size should include zoom.
@@ -295,8 +297,6 @@ class CORE_EXPORT TextAutosizer final
     bool has_autosized_;
     bool setting_enabled_;
   };
-
-  explicit TextAutosizer(const Document*);
 
   void BeginLayout(LayoutBlock*, SubtreeLayoutScope*);
   void EndLayout(LayoutBlock*);

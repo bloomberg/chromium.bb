@@ -39,7 +39,7 @@
 namespace blink {
 
 InputType* URLInputType::Create(HTMLInputElement& element) {
-  return new URLInputType(element);
+  return MakeGarbageCollected<URLInputType>(element);
 }
 
 void URLInputType::CountUsage() {

@@ -115,6 +115,8 @@ class TextContentData final : public ContentData {
   friend class ContentData;
 
  public:
+  TextContentData(const String& text) : text_(text) {}
+
   const String& GetText() const { return text_; }
   void SetText(const String& text) { text_ = text; }
 
@@ -129,8 +131,6 @@ class TextContentData final : public ContentData {
   }
 
  private:
-  TextContentData(const String& text) : text_(text) {}
-
   ContentData* CloneInternal() const override { return Create(GetText()); }
 
   String text_;

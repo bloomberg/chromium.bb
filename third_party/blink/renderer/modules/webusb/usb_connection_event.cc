@@ -12,12 +12,12 @@ namespace blink {
 USBConnectionEvent* USBConnectionEvent::Create(
     const AtomicString& type,
     const USBConnectionEventInit* initializer) {
-  return new USBConnectionEvent(type, initializer);
+  return MakeGarbageCollected<USBConnectionEvent>(type, initializer);
 }
 
 USBConnectionEvent* USBConnectionEvent::Create(const AtomicString& type,
                                                USBDevice* device) {
-  return new USBConnectionEvent(type, device);
+  return MakeGarbageCollected<USBConnectionEvent>(type, device);
 }
 
 USBConnectionEvent::USBConnectionEvent(

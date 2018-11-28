@@ -38,17 +38,20 @@ class CORE_EXPORT TouchList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TouchList* Create() { return new TouchList; }
+  static TouchList* Create() { return MakeGarbageCollected<TouchList>(); }
 
   static TouchList* Create(const HeapVector<Member<Touch>>& touches) {
-    TouchList* list = new TouchList;
+    TouchList* list = MakeGarbageCollected<TouchList>();
     list->values_.AppendVector(touches);
     return list;
   }
 
   static TouchList* Adopt(HeapVector<Member<Touch>>& touches) {
-    return new TouchList(touches);
+    return MakeGarbageCollected<TouchList>(touches);
   }
+
+  TouchList() = default;
+  TouchList(HeapVector<Member<Touch>>& touches) { values_.swap(touches); }
 
   unsigned length() const { return values_.size(); }
 
@@ -60,10 +63,6 @@ class CORE_EXPORT TouchList final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  TouchList() = default;
-
-  TouchList(HeapVector<Member<Touch>>& touches) { values_.swap(touches); }
-
   HeapVector<Member<Touch>> values_;
 };
 

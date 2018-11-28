@@ -39,8 +39,9 @@ class TextInputType final : public BaseTextInputType {
  public:
   static InputType* Create(HTMLInputElement&);
 
- private:
   TextInputType(HTMLInputElement& element) : BaseTextInputType(element) {}
+
+ private:
   void CountUsage() override;
   const AtomicString& FormControlType() const override;
   bool SupportsInputModeAttribute() const override;

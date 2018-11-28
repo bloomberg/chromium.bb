@@ -87,7 +87,7 @@ TouchEventContext& TreeScopeEventContext::EnsureTouchEventContext() {
 }
 
 TreeScopeEventContext* TreeScopeEventContext::Create(TreeScope& tree_scope) {
-  return new TreeScopeEventContext(tree_scope);
+  return MakeGarbageCollected<TreeScopeEventContext>(tree_scope);
 }
 
 TreeScopeEventContext::TreeScopeEventContext(TreeScope& tree_scope)

@@ -38,17 +38,21 @@ class CORE_EXPORT TrackEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  TrackEvent();
+  TrackEvent(const AtomicString& type, const TrackEventInit* initializer);
+  TrackEvent(const AtomicString& type, TrackBase* track)
+      : Event(type, Bubbles::kNo, Cancelable::kNo), track_(track) {}
   ~TrackEvent() override;
 
-  static TrackEvent* Create() { return new TrackEvent; }
+  static TrackEvent* Create() { return MakeGarbageCollected<TrackEvent>(); }
 
   static TrackEvent* Create(const AtomicString& type,
                             const TrackEventInit* initializer) {
-    return new TrackEvent(type, initializer);
+    return MakeGarbageCollected<TrackEvent>(type, initializer);
   }
 
   static TrackEvent* Create(const AtomicString& type, TrackBase* track) {
-    return new TrackEvent(type, track);
+    return MakeGarbageCollected<TrackEvent>(type, track);
   }
 
   const AtomicString& InterfaceName() const override;
@@ -58,11 +62,6 @@ class CORE_EXPORT TrackEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  TrackEvent();
-  TrackEvent(const AtomicString& type, const TrackEventInit* initializer);
-  TrackEvent(const AtomicString& type, TrackBase* track)
-      : Event(type, Bubbles::kNo, Cancelable::kNo), track_(track) {}
-
   Member<TrackBase> track_;
 };
 

@@ -41,8 +41,10 @@ class TreeWalker final : public ScriptWrappable, public NodeIteratorBase {
   static TreeWalker* Create(Node* root_node,
                             unsigned what_to_show,
                             V8NodeFilter* filter) {
-    return new TreeWalker(root_node, what_to_show, filter);
+    return MakeGarbageCollected<TreeWalker>(root_node, what_to_show, filter);
   }
+
+  TreeWalker(Node*, unsigned what_to_show, V8NodeFilter*);
 
   Node* currentNode() const { return current_.Get(); }
   void setCurrentNode(Node*);
@@ -58,8 +60,6 @@ class TreeWalker final : public ScriptWrappable, public NodeIteratorBase {
   void Trace(blink::Visitor*) override;
 
  private:
-  TreeWalker(Node*, unsigned what_to_show, V8NodeFilter*);
-
   Node* SetCurrent(Node*);
   template <typename Strategy>
   Node* TraverseSiblings(ExceptionState&);

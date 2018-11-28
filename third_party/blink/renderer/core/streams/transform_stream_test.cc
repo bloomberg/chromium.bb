@@ -87,7 +87,7 @@ class TransformStreamTest : public ::testing::Test {
         : GarbageCollectedScriptWrappable("Holder"),
           this_as_v8_value_(
               ScriptValue(script_state, ToV8(this, script_state))),
-          stream_(new TransformStream()) {}
+          stream_(MakeGarbageCollected<TransformStream>()) {}
 
     // Destroy() must be called to break the reference cycle.
     void Destroy() {

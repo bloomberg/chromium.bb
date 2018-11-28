@@ -29,7 +29,8 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   static USBDevice* Create(device::mojom::blink::UsbDeviceInfoPtr device_info,
                            device::mojom::blink::UsbDevicePtr device,
                            ExecutionContext* context) {
-    return new USBDevice(std::move(device_info), std::move(device), context);
+    return MakeGarbageCollected<USBDevice>(std::move(device_info),
+                                           std::move(device), context);
   }
 
   explicit USBDevice(device::mojom::blink::UsbDeviceInfoPtr,

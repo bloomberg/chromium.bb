@@ -70,7 +70,7 @@ class WebDataConsumerHandle;
 class XMLHttpRequestUpload;
 
 class XMLHttpRequest final : public XMLHttpRequestEventTarget,
-                             private ThreadableLoaderClient,
+                             public ThreadableLoaderClient,
                              public DocumentParserClient,
                              public ActiveScriptWrappable<XMLHttpRequest>,
                              public PausableObject {

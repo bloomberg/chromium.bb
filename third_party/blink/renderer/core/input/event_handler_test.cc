@@ -854,7 +854,7 @@ class EventHandlerTooltipTest : public EventHandlerTest {
   EventHandlerTooltipTest() = default;
 
   void SetUp() override {
-    chrome_client_ = new TooltipCapturingChromeClient();
+    chrome_client_ = MakeGarbageCollected<TooltipCapturingChromeClient>();
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
@@ -917,7 +917,8 @@ class UnbufferedInputEventsTrackingChromeClient : public EmptyChromeClient {
 class EventHandlerLatencyTest : public PageTestBase {
  protected:
   void SetUp() override {
-    chrome_client_ = new UnbufferedInputEventsTrackingChromeClient();
+    chrome_client_ =
+        MakeGarbageCollected<UnbufferedInputEventsTrackingChromeClient>();
     Page::PageClients page_clients;
     FillWithEmptyClients(page_clients);
     page_clients.chrome_client = chrome_client_.Get();

@@ -43,8 +43,10 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
 
  public:
   static TextTrackList* Create(HTMLMediaElement* owner) {
-    return new TextTrackList(owner);
+    return MakeGarbageCollected<TextTrackList>(owner);
   }
+
+  explicit TextTrackList(HTMLMediaElement*);
   ~TextTrackList() override;
 
   unsigned length() const;
@@ -75,8 +77,6 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit TextTrackList(HTMLMediaElement*);
-
   void ScheduleTrackEvent(const AtomicString& event_name, TextTrack*);
 
   void ScheduleAddTrackEvent(TextTrack*);

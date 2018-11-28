@@ -58,8 +58,11 @@ class TestingObserver final
 
  public:
   static TestingObserver* Create(DummyContext* context) {
-    return new TestingObserver(context);
+    return MakeGarbageCollected<TestingObserver>(context);
   }
+
+  explicit TestingObserver(DummyContext* context)
+      : LifecycleObserver(context), context_destroyed_called_(false) {}
 
   void ContextDestroyed(DummyContext* destroyed_context) {
     if (observer_to_remove_on_destruct_) {
@@ -88,9 +91,6 @@ class TestingObserver final
   bool ContextDestroyedCalled() const { return context_destroyed_called_; }
 
  private:
-  explicit TestingObserver(DummyContext* context)
-      : LifecycleObserver(context), context_destroyed_called_(false) {}
-
   Member<TestingObserver> observer_to_remove_on_destruct_;
   bool context_destroyed_called_;
 };

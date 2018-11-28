@@ -76,7 +76,7 @@ void WorkerClassicScriptLoader::LoadSynchronously(
       ParserDisposition::kNotParserInserted;
   resource_loader_options.synchronous_policy = kRequestSynchronously;
 
-  threadable_loader_ = new ThreadableLoader(
+  threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
       execution_context, this, resource_loader_options);
   threadable_loader_->Start(request);
 }
@@ -131,8 +131,8 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   request.SetFetchCredentialsMode(fetch_credentials_mode);
 
   need_to_cancel_ = true;
-  threadable_loader_ =
-      new ThreadableLoader(execution_context, this, ResourceLoaderOptions());
+  threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
+      execution_context, this, ResourceLoaderOptions());
   threadable_loader_->Start(request);
   if (failed_)
     NotifyFinished();

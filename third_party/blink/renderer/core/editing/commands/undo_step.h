@@ -46,6 +46,11 @@ class UndoStep : public GarbageCollectedFinalized<UndoStep> {
                           const SelectionForUndoStep&,
                           InputEvent::InputType);
 
+  UndoStep(Document*,
+           const SelectionForUndoStep& starting_selection,
+           const SelectionForUndoStep& ending_selection,
+           InputEvent::InputType);
+
   void Unapply();
   void Reapply();
   InputEvent::InputType GetInputType() const;
@@ -76,11 +81,6 @@ class UndoStep : public GarbageCollectedFinalized<UndoStep> {
   void Trace(blink::Visitor*);
 
  private:
-  UndoStep(Document*,
-           const SelectionForUndoStep& starting_selection,
-           const SelectionForUndoStep& ending_selection,
-           InputEvent::InputType);
-
   Member<Document> document_;
   SelectionForUndoStep starting_selection_;
   SelectionForUndoStep ending_selection_;

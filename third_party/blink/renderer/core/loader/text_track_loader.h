@@ -52,8 +52,10 @@ class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
  public:
   static TextTrackLoader* Create(TextTrackLoaderClient& client,
                                  Document& document) {
-    return new TextTrackLoader(client, document);
+    return MakeGarbageCollected<TextTrackLoader>(client, document);
   }
+
+  TextTrackLoader(TextTrackLoaderClient&, Document&);
   ~TextTrackLoader() override;
 
   bool Load(const KURL&, CrossOriginAttributeValue);
@@ -75,8 +77,6 @@ class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
   // VTTParserClient
   void NewCuesParsed() override;
   void FileFailedToParse() override;
-
-  TextTrackLoader(TextTrackLoaderClient&, Document&);
 
   void CueLoadTimerFired(TimerBase*);
   void CorsPolicyPreventedLoad(const SecurityOrigin*, const KURL&);

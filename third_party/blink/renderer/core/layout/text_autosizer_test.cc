@@ -14,7 +14,9 @@
 namespace blink {
 class TextAutosizerClient : public EmptyChromeClient {
  public:
-  static TextAutosizerClient* Create() { return new TextAutosizerClient; }
+  static TextAutosizerClient* Create() {
+    return MakeGarbageCollected<TextAutosizerClient>();
+  }
   float WindowToViewportScalar(const float value) const override {
     return value * device_scale_factor_;
   }

@@ -515,7 +515,8 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
   // some tests that take advantage of it. There may also be edge
   // cases in the browser where this happens.
   // See http://crbug.com/345372.
-  touch_attribute_map_.Set(event.id, new TouchPointAttributes(event));
+  touch_attribute_map_.Set(event.id,
+                           MakeGarbageCollected<TouchPointAttributes>(event));
 
   Node* touch_node = pointer_event_target.target_node;
   String region = pointer_event_target.region;
@@ -635,7 +636,8 @@ void TouchEventManager::HandleTouchPoint(
   // them. For those just keep them in the map with a null target. Later they
   // will be targeted at the |touch_sequence_document_|.
   if (!touch_attribute_map_.Contains(event.id)) {
-    touch_attribute_map_.insert(event.id, new TouchPointAttributes(event));
+    touch_attribute_map_.insert(
+        event.id, MakeGarbageCollected<TouchPointAttributes>(event));
   }
 
   TouchPointAttributes* attributes = touch_attribute_map_.at(event.id);

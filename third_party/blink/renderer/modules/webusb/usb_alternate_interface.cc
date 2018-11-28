@@ -13,7 +13,8 @@ namespace blink {
 USBAlternateInterface* USBAlternateInterface::Create(
     const USBInterface* interface,
     wtf_size_t alternate_index) {
-  return new USBAlternateInterface(interface, alternate_index);
+  return MakeGarbageCollected<USBAlternateInterface>(interface,
+                                                     alternate_index);
 }
 
 USBAlternateInterface* USBAlternateInterface::Create(

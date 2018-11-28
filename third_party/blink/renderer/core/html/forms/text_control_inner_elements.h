@@ -36,8 +36,9 @@ class TextControlInnerContainer final : public HTMLDivElement {
  public:
   static TextControlInnerContainer* Create(Document&);
 
- protected:
   explicit TextControlInnerContainer(Document&);
+
+ protected:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 
@@ -58,13 +59,14 @@ class TextControlInnerEditorElement final : public HTMLDivElement {
  public:
   static TextControlInnerEditorElement* Create(Document&);
 
+  explicit TextControlInnerEditorElement(Document&);
+
   void DefaultEventHandler(Event&) override;
 
   void SetVisibility(bool is_visible);
   scoped_refptr<ComputedStyle> CreateInnerEditorStyle() const;
 
  private:
-  explicit TextControlInnerEditorElement(Document&);
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
   bool SupportsFocus() const override { return false; }

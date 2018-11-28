@@ -13,7 +13,7 @@ namespace blink {
 
 USBConfiguration* USBConfiguration::Create(const USBDevice* device,
                                            wtf_size_t configuration_index) {
-  return new USBConfiguration(device, configuration_index);
+  return MakeGarbageCollected<USBConfiguration>(device, configuration_index);
 }
 
 USBConfiguration* USBConfiguration::Create(const USBDevice* device,
@@ -22,7 +22,7 @@ USBConfiguration* USBConfiguration::Create(const USBDevice* device,
   const auto& configurations = device->Info().configurations;
   for (wtf_size_t i = 0; i < configurations.size(); ++i) {
     if (configurations[i]->configuration_value == configuration_value)
-      return new USBConfiguration(device, i);
+      return MakeGarbageCollected<USBConfiguration>(device, i);
   }
   exception_state.ThrowRangeError("Invalid configuration value.");
   return nullptr;

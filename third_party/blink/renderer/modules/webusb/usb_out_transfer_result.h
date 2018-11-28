@@ -16,12 +16,12 @@ class USBOutTransferResult final : public ScriptWrappable {
 
  public:
   static USBOutTransferResult* Create(const String& status) {
-    return new USBOutTransferResult(status, 0);
+    return MakeGarbageCollected<USBOutTransferResult>(status, 0);
   }
 
   static USBOutTransferResult* Create(const String& status,
                                       unsigned bytes_written) {
-    return new USBOutTransferResult(status, bytes_written);
+    return MakeGarbageCollected<USBOutTransferResult>(status, bytes_written);
   }
 
   USBOutTransferResult(const String& status, unsigned bytes_written)

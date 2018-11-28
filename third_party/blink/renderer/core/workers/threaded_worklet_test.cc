@@ -231,7 +231,8 @@ class ThreadedWorkletTest : public testing::Test {
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
     messaging_proxy_ =
-        new ThreadedWorkletMessagingProxyForTest(&page_->GetDocument());
+        MakeGarbageCollected<ThreadedWorkletMessagingProxyForTest>(
+            &page_->GetDocument());
     ThreadedWorkletThreadForTest::EnsureSharedBackingThread();
   }
 

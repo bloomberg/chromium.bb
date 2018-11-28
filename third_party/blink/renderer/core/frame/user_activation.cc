@@ -10,12 +10,13 @@ namespace blink {
 
 UserActivation* UserActivation::CreateSnapshot(LocalDOMWindow* window) {
   LocalFrame* frame = window->GetFrame();
-  return new UserActivation(frame ? frame->HasBeenActivated() : false,
-                            LocalFrame::HasTransientUserActivation(frame));
+  return MakeGarbageCollected<UserActivation>(
+      frame ? frame->HasBeenActivated() : false,
+      LocalFrame::HasTransientUserActivation(frame));
 }
 
 UserActivation* UserActivation::CreateLive(LocalDOMWindow* window) {
-  return new UserActivation(window);
+  return MakeGarbageCollected<UserActivation>(window);
 }
 
 UserActivation::UserActivation(bool has_been_active, bool is_active)

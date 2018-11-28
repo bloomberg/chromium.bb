@@ -53,8 +53,17 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   static TextTrack* Create(const AtomicString& kind,
                            const AtomicString& label,
                            const AtomicString& language) {
-    return new TextTrack(kind, label, language, g_empty_atom, kAddTrack);
+    return MakeGarbageCollected<TextTrack>(kind, label, language, g_empty_atom,
+                                           kAddTrack);
   }
+
+  enum TextTrackType { kTrackElement, kAddTrack, kInBand };
+
+  TextTrack(const AtomicString& kind,
+            const AtomicString& label,
+            const AtomicString& language,
+            const AtomicString& id,
+            TextTrackType);
   ~TextTrack() override;
 
   virtual void SetTrackList(TextTrackList*);
@@ -104,7 +113,6 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(cuechange, kCuechange);
 
-  enum TextTrackType { kTrackElement, kAddTrack, kInBand };
   TextTrackType TrackType() const { return track_type_; }
 
   int TrackIndex();
@@ -128,12 +136,6 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  protected:
-  TextTrack(const AtomicString& kind,
-            const AtomicString& label,
-            const AtomicString& language,
-            const AtomicString& id,
-            TextTrackType);
-
   void AddListOfCues(HeapVector<Member<TextTrackCue>>&);
 
  private:

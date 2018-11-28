@@ -56,7 +56,7 @@ TimeInputType::TimeInputType(HTMLInputElement& element)
     : BaseTemporalInputType(element) {}
 
 InputType* TimeInputType::Create(HTMLInputElement& element) {
-  return new TimeInputType(element);
+  return MakeGarbageCollected<TimeInputType>(element);
 }
 
 void TimeInputType::CountUsage() {

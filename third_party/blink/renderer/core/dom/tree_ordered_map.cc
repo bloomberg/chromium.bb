@@ -42,7 +42,7 @@
 namespace blink {
 
 TreeOrderedMap* TreeOrderedMap::Create() {
-  return new TreeOrderedMap;
+  return MakeGarbageCollected<TreeOrderedMap>();
 }
 
 TreeOrderedMap::TreeOrderedMap() = default;

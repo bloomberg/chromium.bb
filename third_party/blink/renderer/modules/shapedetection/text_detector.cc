@@ -16,7 +16,7 @@
 namespace blink {
 
 TextDetector* TextDetector::Create(ExecutionContext* context) {
-  return new TextDetector(context);
+  return MakeGarbageCollected<TextDetector>(context);
 }
 
 TextDetector::TextDetector(ExecutionContext* context) : ShapeDetector() {

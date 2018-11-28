@@ -97,7 +97,7 @@ DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
     case DocumentMarker::kSuggestion:
       return MakeGarbageCollected<SuggestionMarkerListImpl>();
     case DocumentMarker::kTextMatch:
-      return new TextMatchMarkerListImpl();
+      return MakeGarbageCollected<TextMatchMarkerListImpl>();
   }
 
   NOTREACHED();
@@ -172,7 +172,8 @@ void DocumentMarkerController::AddTextMatchMarker(
     TextMatchMarker::MatchStatus match_status) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
   AddMarkerInternal(range, [match_status](int start_offset, int end_offset) {
-    return new TextMatchMarker(start_offset, end_offset, match_status);
+    return MakeGarbageCollected<TextMatchMarker>(start_offset, end_offset,
+                                                 match_status);
   });
   // Don't invalidate tickmarks here. TextFinder invalidates tickmarks using a
   // throttling algorithm. crbug.com/6819.

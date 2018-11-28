@@ -184,7 +184,7 @@ TextDecoderStream::TextDecoderStream(ScriptState* script_state,
                                      const WTF::TextEncoding& encoding,
                                      const TextDecoderOptions* options,
                                      ExceptionState& exception_state)
-    : transform_(new TransformStream()),
+    : transform_(MakeGarbageCollected<TransformStream>()),
       encoding_(encoding),
       fatal_(options->fatal()),
       ignore_bom_(options->ignoreBOM()) {

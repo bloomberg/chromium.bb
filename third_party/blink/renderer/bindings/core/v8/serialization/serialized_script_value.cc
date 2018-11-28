@@ -436,7 +436,7 @@ UnpackedSerializedScriptValue* SerializedScriptValue::Unpack(
   DCHECK(!value->was_unpacked_);
   value->was_unpacked_ = true;
 #endif
-  return new UnpackedSerializedScriptValue(std::move(value));
+  return MakeGarbageCollected<UnpackedSerializedScriptValue>(std::move(value));
 }
 
 bool SerializedScriptValue::HasPackedContents() const {

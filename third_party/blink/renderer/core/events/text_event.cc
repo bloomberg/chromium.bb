@@ -31,31 +31,32 @@
 namespace blink {
 
 TextEvent* TextEvent::Create() {
-  return new TextEvent;
+  return MakeGarbageCollected<TextEvent>();
 }
 
 TextEvent* TextEvent::Create(AbstractView* view,
                              const String& data,
                              TextEventInputType input_type) {
-  return new TextEvent(view, data, input_type);
+  return MakeGarbageCollected<TextEvent>(view, data, input_type);
 }
 
 TextEvent* TextEvent::CreateForPlainTextPaste(AbstractView* view,
                                               const String& data,
                                               bool should_smart_replace) {
-  return new TextEvent(view, data, nullptr, should_smart_replace, false);
+  return MakeGarbageCollected<TextEvent>(view, data, nullptr,
+                                         should_smart_replace, false);
 }
 
 TextEvent* TextEvent::CreateForFragmentPaste(AbstractView* view,
                                              DocumentFragment* data,
                                              bool should_smart_replace,
                                              bool should_match_style) {
-  return new TextEvent(view, "", data, should_smart_replace,
-                       should_match_style);
+  return MakeGarbageCollected<TextEvent>(view, "", data, should_smart_replace,
+                                         should_match_style);
 }
 
 TextEvent* TextEvent::CreateForDrop(AbstractView* view, const String& data) {
-  return new TextEvent(view, data, kTextEventInputDrop);
+  return MakeGarbageCollected<TextEvent>(view, data, kTextEventInputDrop);
 }
 
 TextEvent::TextEvent()

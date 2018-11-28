@@ -317,9 +317,13 @@ class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
   static V8Callbacks* Create(
       V8NavigatorUserMediaSuccessCallback* success_callback,
       V8NavigatorUserMediaErrorCallback* error_callback) {
-    return new V8Callbacks(success_callback, error_callback);
+    return MakeGarbageCollected<V8Callbacks>(success_callback, error_callback);
   }
 
+  V8Callbacks(V8NavigatorUserMediaSuccessCallback* success_callback,
+              V8NavigatorUserMediaErrorCallback* error_callback)
+      : success_callback_(ToV8PersistentCallbackFunction(success_callback)),
+        error_callback_(ToV8PersistentCallbackFunction(error_callback)) {}
   ~V8Callbacks() override = default;
 
   void Trace(blink::Visitor* visitor) override {
@@ -338,11 +342,6 @@ class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
   }
 
  private:
-  V8Callbacks(V8NavigatorUserMediaSuccessCallback* success_callback,
-              V8NavigatorUserMediaErrorCallback* error_callback)
-      : success_callback_(ToV8PersistentCallbackFunction(success_callback)),
-        error_callback_(ToV8PersistentCallbackFunction(error_callback)) {}
-
   // As Blink does not hold a UserMediaRequest and lets content/ hold it,
   // we cannot use wrapper-tracing to keep the underlying callback functions.
   // Plus, it's guaranteed that the callbacks are one-shot type (not repeated
@@ -428,8 +427,8 @@ UserMediaRequest* UserMediaRequest::Create(
   if (!video.IsNull())
     CountVideoConstraintUses(context, video);
 
-  return new UserMediaRequest(context, controller, media_type, audio, video,
-                              callbacks);
+  return MakeGarbageCollected<UserMediaRequest>(context, controller, media_type,
+                                                audio, video, callbacks);
 }
 
 UserMediaRequest* UserMediaRequest::Create(
@@ -447,9 +446,9 @@ UserMediaRequest* UserMediaRequest::Create(
 UserMediaRequest* UserMediaRequest::CreateForTesting(
     const WebMediaConstraints& audio,
     const WebMediaConstraints& video) {
-  return new UserMediaRequest(nullptr, nullptr,
-                              WebUserMediaRequest::MediaType::kUserMedia, audio,
-                              video, nullptr);
+  return MakeGarbageCollected<UserMediaRequest>(
+      nullptr, nullptr, WebUserMediaRequest::MediaType::kUserMedia, audio,
+      video, nullptr);
 }
 
 UserMediaRequest::UserMediaRequest(ExecutionContext* context,

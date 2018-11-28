@@ -16,15 +16,15 @@ class CORE_EXPORT TrustedScript final : public ScriptWrappable {
 
  public:
   static TrustedScript* Create(const String& script) {
-    return new TrustedScript(script);
+    return MakeGarbageCollected<TrustedScript>(script);
   }
+
+  TrustedScript(const String& script);
 
   // TrustedScript.idl
   String toString() const;
 
  private:
-  TrustedScript(const String& script);
-
   const String script_;
 };
 

@@ -1129,8 +1129,8 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     resource_loader_options.synchronous_policy = kRequestSynchronously;
   }
 
-  loader_ = new ThreadableLoader(execution_context, this,
-                                 resource_loader_options);
+  loader_ = MakeGarbageCollected<ThreadableLoader>(execution_context, this,
+                                                   resource_loader_options);
   loader_->SetTimeout(timeout_);
   loader_->Start(request);
 

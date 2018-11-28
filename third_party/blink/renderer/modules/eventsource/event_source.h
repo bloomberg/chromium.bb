@@ -53,7 +53,7 @@ class ResourceResponse;
 
 class MODULES_EXPORT EventSource final
     : public EventTargetWithInlineData,
-      private ThreadableLoaderClient,
+      public ThreadableLoaderClient,
       public ActiveScriptWrappable<EventSource>,
       public ContextLifecycleObserver,
       public EventSourceParser::Client {
