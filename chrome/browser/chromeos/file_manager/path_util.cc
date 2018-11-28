@@ -115,8 +115,12 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
   storage::ExternalMountPoints* const mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   base::FilePath path;
-  if (mount_points->GetRegisteredPath(mount_point_name, &path))
+  if (mount_points->GetRegisteredPath(mount_point_name, &path)) {
+    if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume))
+      return path.AppendASCII(kFolderNameDownloads);
+
     return path;
+  }
 
   // Return $HOME/Downloads as Download folder.
   if (ShouldMountPrimaryUserDownloads(profile))
