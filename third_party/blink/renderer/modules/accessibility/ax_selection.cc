@@ -248,7 +248,7 @@ bool AXSelection::Select(const AXSelectionBehavior selection_behavior) {
   DCHECK(selection.AssertValid());
   Document* document = selection.Base().GetDocument();
   if (!document) {
-    NOTREACHED();
+    NOTREACHED() << "Valid DOM selections should have an attached document.";
     return false;
   }
 
