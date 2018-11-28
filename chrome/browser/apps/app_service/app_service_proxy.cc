@@ -34,7 +34,7 @@ AppServiceProxy::AppServiceProxy(Profile* profile) {
   // The AppServiceProxy is also a publisher, of built-in apps. That
   // responsibility isn't intrinsically part of the AppServiceProxy, but doing
   // that here is as good a place as any.
-  built_in_chrome_os_apps_.Register(app_service_);
+  built_in_chrome_os_apps_.Initialize(app_service_, profile);
 #endif  // OS_CHROMEOS
 }
 
