@@ -74,6 +74,8 @@ These builders must pass before a CL may land.
 
 * [win_chromium_compile_dbg_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win_chromium_compile_dbg_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win_chromium_compile_dbg_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win_chromium_compile_dbg_ng))
 
+* [win-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win-libfuzzer-asan-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win-libfuzzer-asan-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win-libfuzzer-asan-rel))
+
 
 ## Optional builders
 
@@ -256,10 +258,6 @@ as required builders.
   https://crbug.com/855319
 
   * Experimental percentage: 50
-
-* [win-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win-libfuzzer-asan-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win-libfuzzer-asan-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win-libfuzzer-asan-rel))
-
-  * Experimental percentage: 100
 
 * [win7_chromium_rel_loc_exp](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_loc_exp) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win7_chromium_rel_loc_exp)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win7_chromium_rel_loc_exp))
 
