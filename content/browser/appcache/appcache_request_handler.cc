@@ -134,8 +134,12 @@ AppCacheJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
     return nullptr;
   if (is_main_resource())
     return nullptr;
-  // TODO(vabr) This is a temporary fix (see crbug/141114). We should get rid of
-  // it once a more general solution to crbug/121325 is in place.
+  // If MaybeLoadResourceExecuted did not run, this might be, e.g., a redirect
+  // caused by the Web Request API late in the loading progress. AppCache might
+  // misinterpret the rules for the new target and cause unnecessary
+  // fallbacks/errors, therefore it is better to give up on app-caching in this
+  // case. More information in https://crbug.com/141114 and the discussion at
+  // https://chromiumcodereview.appspot.com/10829356.
   if (!maybe_load_resource_executed_)
     return nullptr;
   if (request_->GetURL().GetOrigin() == location.GetOrigin())
