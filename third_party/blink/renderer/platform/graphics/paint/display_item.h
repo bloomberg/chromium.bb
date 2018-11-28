@@ -255,6 +255,7 @@ class PLATFORM_EXPORT DisplayItem {
   bool IsScrollHitTest() const { return type_ == kScrollHitTest; }
 
   bool IsCacheable() const { return is_cacheable_; }
+  void SetUncacheable() { is_cacheable_ = false; }
 
   virtual bool Equals(const DisplayItem& other) const {
     // Failure of this DCHECK would cause bad casts in subclasses.
