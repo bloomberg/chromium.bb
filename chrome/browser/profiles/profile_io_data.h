@@ -431,15 +431,10 @@ class ProfileIOData {
     explicit ResourceContext(ProfileIOData* io_data);
     ~ResourceContext() override;
 
-    // ResourceContext implementation:
-    net::URLRequestContext* GetRequestContext() override;
-
    private:
     friend class ProfileIOData;
 
     ProfileIOData* const io_data_;
-
-    net::URLRequestContext* request_context_;
   };
 
   typedef std::map<StoragePartitionDescriptor,

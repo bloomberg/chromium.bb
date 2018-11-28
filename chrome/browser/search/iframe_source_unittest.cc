@@ -74,7 +74,6 @@ class IframeSourceTest : public testing::Test {
   // those constraints.
   IframeSourceTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        resource_context_(&test_url_request_context_),
         instant_io_context_(NULL),
         response_(NULL) {
   }

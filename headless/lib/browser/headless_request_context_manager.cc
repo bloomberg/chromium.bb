@@ -93,23 +93,7 @@ class HeadlessResourceContext : public content::ResourceContext {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   }
 
-  // ResourceContext implementation:
-  net::URLRequestContext* GetRequestContext() override {
-    CHECK(url_request_context_getter_);
-    return url_request_context_getter_->GetURLRequestContext();
-  }
-
-  // Configure the URL request context getter to be used for resource fetching.
-  // Must be called before any of the other methods of this class are used.
-  void set_url_request_context_getter(
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    url_request_context_getter_ = std::move(url_request_context_getter);
-  }
-
  private:
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-
   DISALLOW_COPY_AND_ASSIGN(HeadlessResourceContext);
 };
 
@@ -337,8 +321,6 @@ HeadlessRequestContextManager::url_request_context_getter() {
 void HeadlessRequestContextManager::Initialize() {
   url_request_context_getter_ =
       base::MakeRefCounted<HeadlessURLRequestContextGetter>(io_task_runner_);
-  resource_context_->set_url_request_context_getter(
-      url_request_context_getter_);
   if (!network_context_) {
     DCHECK(!network_context_request_);
     network_context_request_ = mojo::MakeRequest(&network_context_);
