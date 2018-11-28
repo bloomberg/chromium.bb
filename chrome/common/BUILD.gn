@@ -716,6 +716,7 @@ mojom("mojo_bindings") {
     "navigation_corrector.mojom",
     "net_benchmarking.mojom",
     "network_diagnostics.mojom",
+    "network_easter_egg.mojom",
     "open_search_description_document_handler.mojom",
     "plugin.mojom",
     "prerender.mojom",

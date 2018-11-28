@@ -802,6 +802,15 @@ void NetErrorHelperCore::OnSetNavigationCorrectionInfo(
   navigation_correction_params_.search_url = search_url;
 }
 
+void NetErrorHelperCore::OnEasterEggHighScoreReceived(int high_score) {
+  if (!committed_error_page_info_ ||
+      !committed_error_page_info_->is_finished_loading) {
+    return;
+  }
+
+  delegate_->InitializeErrorPageEasterEggHighScore(high_score);
+}
+
 void NetErrorHelperCore::PrepareErrorPageForMainFrame(
     ErrorPageInfo* pending_error_page_info,
     std::string* error_html) {
@@ -1061,6 +1070,7 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
       return;
     case EASTER_EGG:
       RecordEvent(error_page::NETWORK_ERROR_EASTER_EGG_ACTIVATED);
+      delegate_->RequestEasterEggHighScore();
       return;
     case SHOW_CACHED_COPY_BUTTON:
       RecordEvent(error_page::NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_CLICKED);

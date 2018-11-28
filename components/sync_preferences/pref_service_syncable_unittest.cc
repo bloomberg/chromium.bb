@@ -304,6 +304,13 @@ class TestPrefModelAssociatorClient : public PrefModelAssociatorClient {
     return true;
   }
 
+  std::unique_ptr<base::Value> MaybeMergePreferenceValues(
+      const std::string& pref_name,
+      const base::Value& local_value,
+      const base::Value& server_value) const override {
+    return nullptr;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestPrefModelAssociatorClient);
 };

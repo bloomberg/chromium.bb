@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/common/navigation_corrector.mojom.h"
 #include "chrome/common/network_diagnostics.mojom.h"
+#include "chrome/common/network_easter_egg.mojom.h"
 #include "chrome/common/supervised_user_commands.mojom.h"
 #include "chrome/renderer/net/net_error_helper_core.h"
 #include "chrome/renderer/net/net_error_page_controller.h"
@@ -71,6 +72,7 @@ class NetErrorHelper
   void SavePageForLater() override;
   void CancelSavePage() override;
   void ListVisibilityChanged(bool is_visible) override;
+  void UpdateEasterEggHighScore(int high_score) override;
 
   // SSLCertificateErrorPageController::Delegate implementation
   void SendCommand(
@@ -110,6 +112,7 @@ class NetErrorHelper
 
  private:
   chrome::mojom::NetworkDiagnostics* GetRemoteNetworkDiagnostics();
+  chrome::mojom::NetworkEasterEgg* GetRemoteNetworkEasterEgg();
 
   // NetErrorHelperCore::Delegate implementation:
   void GenerateLocalizedErrorPage(
@@ -130,6 +133,8 @@ class NetErrorHelper
   void UpdateErrorPage(const error_page::Error& error,
                        bool is_failed_post,
                        bool can_use_local_diagnostics_service) override;
+  void InitializeErrorPageEasterEggHighScore(int high_score) override;
+  void RequestEasterEggHighScore() override;
   void FetchNavigationCorrections(
       const GURL& navigation_correction_url,
       const std::string& navigation_correction_request_body) override;
@@ -191,6 +196,7 @@ class NetErrorHelper
   chrome::mojom::NetworkDiagnosticsAssociatedPtr remote_network_diagnostics_;
   mojo::AssociatedBindingSet<chrome::mojom::NavigationCorrector>
       navigation_corrector_bindings_;
+  chrome::mojom::NetworkEasterEggAssociatedPtr remote_network_easter_egg_;
 
   supervised_user::mojom::SupervisedUserCommandsAssociatedPtr
       supervised_user_interface_;

@@ -376,6 +376,14 @@ NetErrorHelper::GetRemoteNetworkDiagnostics() {
   return remote_network_diagnostics_.get();
 }
 
+chrome::mojom::NetworkEasterEgg* NetErrorHelper::GetRemoteNetworkEasterEgg() {
+  if (!remote_network_easter_egg_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &remote_network_easter_egg_);
+  }
+  return remote_network_easter_egg_.get();
+}
+
 void NetErrorHelper::GenerateLocalizedErrorPage(
     const error_page::Error& error,
     bool is_failed_post,
@@ -469,6 +477,32 @@ void NetErrorHelper::UpdateErrorPage(const error_page::Error& error,
   }
 
   render_frame()->ExecuteJavaScript(js16);
+}
+
+void NetErrorHelper::InitializeErrorPageEasterEggHighScore(int high_score) {
+  std::string js = base::StringPrintf(
+      "if (window.initializeEasterEggHighScore) "
+      "initializeEasterEggHighScore(%i);",
+      high_score);
+  base::string16 js16;
+  if (!base::UTF8ToUTF16(js.c_str(), js.length(), &js16)) {
+    NOTREACHED();
+    return;
+  }
+
+  render_frame()->ExecuteJavaScript(js16);
+}
+
+void NetErrorHelper::RequestEasterEggHighScore() {
+  GetRemoteNetworkEasterEgg()->GetHighScore(base::BindOnce(
+      [](NetErrorHelper* helper, uint32_t high_score) {
+        helper->core_->OnEasterEggHighScoreReceived(high_score);
+      },
+      base::Unretained(this)));
+}
+
+void NetErrorHelper::UpdateEasterEggHighScore(int high_score) {
+  GetRemoteNetworkEasterEgg()->UpdateHighScore(high_score);
 }
 
 void NetErrorHelper::FetchNavigationCorrections(

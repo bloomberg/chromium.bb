@@ -177,6 +177,7 @@ extern const char kPromptForDownload[];
 extern const char kAlternateErrorPagesEnabled[];
 extern const char kQuicAllowed[];
 extern const char kNetworkQualities[];
+extern const char kNetworkEasterEggHighScore[];
 #if defined(OS_ANDROID)
 extern const char kLastPolicyCheckTime[];
 #endif

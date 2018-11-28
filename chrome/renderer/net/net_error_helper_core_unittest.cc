@@ -410,6 +410,9 @@ class NetErrorHelperCoreTest : public testing::Test,
     last_error_html_ = ErrorToString(error, is_failed_post);
   }
 
+  void InitializeErrorPageEasterEggHighScore(int high_score) override {}
+  void RequestEasterEggHighScore() override {}
+
   void FetchNavigationCorrections(
       const GURL& navigation_correction_url,
       const std::string& navigation_correction_request_body) override {
