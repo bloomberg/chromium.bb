@@ -74,7 +74,7 @@ class WebSocketFuzzedStream final : public WebSocketStream {
     auto frame = std::make_unique<WebSocketFrame>(opcode);
     // Bad news: ConsumeBool actually consumes a whole byte per call, so do
     // something hacky to conserve precious bits.
-    uint8_t flags = fuzzed_data_provider_->ConsumeUint8();
+    uint8_t flags = fuzzed_data_provider_->ConsumeIntegral<uint8_t>();
     frame->header.final = flags & 0x1;
     frame->header.reserved1 = (flags >> 1) & 0x1;
     frame->header.reserved2 = (flags >> 2) & 0x1;
@@ -95,10 +95,10 @@ class WebSocketFuzzedStream final : public WebSocketStream {
 
 void WebSocketDeflateStreamFuzz(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider fuzzed_data_provider(data, size);
-  uint8_t flags = fuzzed_data_provider.ConsumeUint8();
+  uint8_t flags = fuzzed_data_provider.ConsumeIntegral<uint8_t>();
   bool server_no_context_takeover = flags & 0x1;
   bool client_no_context_takeover = (flags >> 1) & 0x1;
-  uint8_t window_bits = fuzzed_data_provider.ConsumeUint8();
+  uint8_t window_bits = fuzzed_data_provider.ConsumeIntegral<uint8_t>();
   int server_max_window_bits = (window_bits & 0x7) + 8;
   int client_max_window_bits = ((window_bits >> 3) & 0x7) + 8;
   // WebSocketDeflateStream needs to be constructed on each call because it
