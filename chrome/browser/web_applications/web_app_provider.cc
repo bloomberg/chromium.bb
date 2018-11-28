@@ -17,10 +17,12 @@
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/external_web_apps.h"
+#include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
@@ -62,9 +64,11 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
   registrar_ = std::make_unique<WebAppRegistrar>(database_.get());
+  icon_manager_ = std::make_unique<WebAppIconManager>(
+      profile, std::make_unique<FileUtilsWrapper>());
 
-  auto install_finalizer =
-      std::make_unique<WebAppInstallFinalizer>(registrar_.get());
+  auto install_finalizer = std::make_unique<WebAppInstallFinalizer>(
+      registrar_.get(), icon_manager_.get());
   install_manager_ = std::make_unique<WebAppInstallManager>(
       profile, std::move(install_finalizer));
 
@@ -132,6 +136,7 @@ void WebAppProvider::Reset() {
   pending_app_manager_.reset();
 
   install_manager_.reset();
+  icon_manager_.reset();
   registrar_.reset();
   database_.reset();
   database_factory_.reset();

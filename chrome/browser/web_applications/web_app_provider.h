@@ -34,6 +34,7 @@ class InstallManager;
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabase;
 class WebAppDatabaseFactory;
+class WebAppIconManager;
 class WebAppRegistrar;
 
 // Forward declarations for legacy extension-based subsystems.
@@ -87,6 +88,7 @@ class WebAppProvider : public KeyedService,
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;
   std::unique_ptr<WebAppRegistrar> registrar_;
+  std::unique_ptr<WebAppIconManager> icon_manager_;
 
   // New generalized subsystems:
   std::unique_ptr<InstallManager> install_manager_;

@@ -4,19 +4,15 @@
 
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 
-#include "base/files/file_path.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/sync/model_impl/model_type_store_service_impl.h"
 
 namespace web_app {
 
-constexpr base::FilePath::CharType kWebAppsFolderName[] =
-    FILE_PATH_LITERAL("WebApps");
-
 WebAppDatabaseFactory::WebAppDatabaseFactory(Profile* profile)
     : model_type_store_service_(
           std::make_unique<syncer::ModelTypeStoreServiceImpl>(
-              profile->GetPath().Append(base::FilePath(kWebAppsFolderName)))) {}
+              GetWebAppsDirectory(profile))) {}
 
 WebAppDatabaseFactory::~WebAppDatabaseFactory() {}
 
