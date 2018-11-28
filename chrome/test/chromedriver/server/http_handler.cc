@@ -316,7 +316,7 @@ HttpHandler::HttpHandler(
       CommandMapping(
           kPost, "session/:sessionId/actions",
           WrapToCommand("PerformActions",
-                        base::BindRepeating(&ExecuteUnimplementedCommand))),
+                        base::BindRepeating(&ExecutePerformActions))),
       CommandMapping(
           kDelete, "session/:sessionId/actions",
           WrapToCommand("DeleteActions",

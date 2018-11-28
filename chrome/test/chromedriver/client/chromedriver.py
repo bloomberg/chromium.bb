@@ -451,6 +451,12 @@ class ChromeDriver(object):
     params = {'x': x, 'y': y, 'scale': scale}
     self.ExecuteCommand(Command.TOUCH_PINCH, params)
 
+  def PerformActions(self, actions):
+    """
+    actions: a dictionary containing the specified actions users wish to perform
+    """
+    self.ExecuteCommand(Command.PERFORM_ACTIONS, actions)
+
   def GetCookies(self):
     return self.ExecuteCommand(Command.GET_COOKIES)
 

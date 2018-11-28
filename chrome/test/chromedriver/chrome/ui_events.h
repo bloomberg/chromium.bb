@@ -23,6 +23,8 @@ enum MouseButton {
   kLeftMouseButton = 0,
   kMiddleMouseButton,
   kRightMouseButton,
+  kBackMouseButton,
+  kForwardMouseButton,
   kNoneMouseButton
 };
 
