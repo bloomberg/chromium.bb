@@ -4621,43 +4621,46 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   web::WebState* webStateBeingActivated =
       webStateList->GetWebStateAt(newWebStateIndex);
 
-  UIView* snapshotView = [self.view snapshotViewAfterScreenUpdates:NO];
+  if (![self canShowTabStrip]) {
+    // Add animations only if the tab strip isn't shown.
+    UIView* snapshotView = [self.view snapshotViewAfterScreenUpdates:NO];
 
-  SwipeView* swipeView = [[SwipeView alloc]
-      initWithFrame:self.contentArea.frame
-          topMargin:[self snapshotEdgeInsetsForWebState:webStateBeingActivated]
-                        .top];
+    SwipeView* swipeView = [[SwipeView alloc]
+        initWithFrame:self.contentArea.frame
+            topMargin:[self
+                          snapshotEdgeInsetsForWebState:webStateBeingActivated]
+                          .top];
 
-  [swipeView setTopToolbarImage:[self.primaryToolbarCoordinator
-                                    toolbarSideSwipeSnapshotForWebState:
-                                        webStateBeingActivated]];
-  [swipeView setBottomToolbarImage:[self.secondaryToolbarCoordinator
-                                       toolbarSideSwipeSnapshotForWebState:
-                                           webStateBeingActivated]];
+    [swipeView setTopToolbarImage:[self.primaryToolbarCoordinator
+                                      toolbarSideSwipeSnapshotForWebState:
+                                          webStateBeingActivated]];
+    [swipeView setBottomToolbarImage:[self.secondaryToolbarCoordinator
+                                         toolbarSideSwipeSnapshotForWebState:
+                                             webStateBeingActivated]];
 
-  SnapshotTabHelper::FromWebState(webStateBeingActivated)
-      ->RetrieveColorSnapshot(^(UIImage* image) {
-        if (PagePlaceholderTabHelper::FromWebState(webStateBeingActivated)
-                ->will_add_placeholder_for_next_navigation()) {
-          [swipeView setImage:SnapshotTabHelper::GetDefaultSnapshotImage()];
-        } else {
-          [swipeView setImage:image];
-        }
-      });
+    SnapshotTabHelper::FromWebState(webStateBeingActivated)
+        ->RetrieveColorSnapshot(^(UIImage* image) {
+          if (PagePlaceholderTabHelper::FromWebState(webStateBeingActivated)
+                  ->will_add_placeholder_for_next_navigation()) {
+            [swipeView setImage:SnapshotTabHelper::GetDefaultSnapshotImage()];
+          } else {
+            [swipeView setImage:image];
+          }
+        });
 
-  SwitchToTabAnimationView* animationView =
-      [[SwitchToTabAnimationView alloc] initWithFrame:self.view.bounds];
+    SwitchToTabAnimationView* animationView =
+        [[SwitchToTabAnimationView alloc] initWithFrame:self.view.bounds];
 
-  [self.view addSubview:animationView];
+    [self.view addSubview:animationView];
 
-  SwitchToTabAnimationPosition position =
-      newWebStateIndex > webStateList->active_index()
-          ? SwitchToTabAnimationPositionAfter
-          : SwitchToTabAnimationPositionBefore;
-  [animationView animateFromCurrentView:snapshotView
-                              toNewView:swipeView
-                             inPosition:position];
-
+    SwitchToTabAnimationPosition position =
+        newWebStateIndex > webStateList->active_index()
+            ? SwitchToTabAnimationPositionAfter
+            : SwitchToTabAnimationPositionBefore;
+    [animationView animateFromCurrentView:snapshotView
+                                toNewView:swipeView
+                               inPosition:position];
+  }
   webStateList->ActivateWebStateAt(newWebStateIndex);
 
   // Close the tab if it is NTP with no back/forward history to avoid having
