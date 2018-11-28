@@ -113,23 +113,6 @@ echo "Update the test signatures in "
 echo "signed_exchange_signature_verifier_unittest.cc with the followings:"
 echo "===="
 
-sed -ne '/-BEGIN PRIVATE KEY-/,/-END PRIVATE KEY-/p' \
-  ../../../../net/data/ssl/certificates/wildcard.pem \
-  > $tmpdir/wildcard_example.org.private.pem
-sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' \
-  ../../../../net/data/ssl/certificates/wildcard.pem \
-  > $tmpdir/wildcard_example.org.public.pem
-gen-signedexchange \
-  -version 1b2 \
-  -uri https://test.example.org/test/ \
-  -content test.html \
-  -certificate $tmpdir/wildcard_example.org.public.pem \
-  -privateKey $tmpdir/wildcard_example.org.private.pem \
-  -date 2018-02-06T04:45:41Z \
-  -o $tmpdir/out.htxg
-
-dumpSignature kSignatureHeaderRSA $tmpdir/out.htxg
-
 gen-signedexchange \
   -version 1b2 \
   -uri https://test.example.org/test/ \

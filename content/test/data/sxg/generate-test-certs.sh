@@ -43,10 +43,6 @@ echo "Update the test certs in signed_exchange_signature_verifier_unittest.cc"
 echo "with the followings:"
 echo "===="
 
-echo 'constexpr char kCertPEMRSA[] = R"('
-sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' \
-  ../../../../net/data/ssl/certificates/wildcard.pem
-echo ')";'
 echo 'constexpr char kCertPEMECDSAP256[] = R"('
 cat ./prime256v1-sha256.public.pem
 echo ')";'
