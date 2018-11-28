@@ -148,39 +148,26 @@ void WaitForIconUpdates(Profile* profile,
 enum class ArcState {
   // By default, ARC is non-persistent and Play Store is unmanaged.
   ARC_PLAY_STORE_UNMANAGED,
-  // ARC is persistent and Play Store is unmanaged
-  ARC_PERSISTENT_PLAY_STORE_UNMANAGED,
   // ARC is non-persistent and Play Store is managed and enabled.
   ARC_PLAY_STORE_MANAGED_AND_ENABLED,
   // ARC is non-persistent and Play Store is managed and disabled.
   ARC_PLAY_STORE_MANAGED_AND_DISABLED,
-  // ARC is persistent and Play Store is managed and enabled.
-  ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED,
-  // ARC is persistent and Play Store is managed and disabled.
-  ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED,
   // ARC is persistent but without Play Store UI support.
-  ARC_PERSISTENT_WITHOUT_PLAY_STORE,
-  // ARC is persistent, Play Store is managed, enabled, but hidden.
-  ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN,
+  ARC_WITHOUT_PLAY_STORE,
 };
 
 constexpr ArcState kManagedArcStates[] = {
     ArcState::ARC_PLAY_STORE_MANAGED_AND_ENABLED,
     ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED,
-    ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED,
-    ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED,
-    ArcState::ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN,
 };
 
 constexpr ArcState kUnmanagedArcStates[] = {
     ArcState::ARC_PLAY_STORE_UNMANAGED,
-    ArcState::ARC_PERSISTENT_PLAY_STORE_UNMANAGED,
-    ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE,
+    ArcState::ARC_WITHOUT_PLAY_STORE,
 };
 
 constexpr ArcState kUnmanagedArcStatesWithPlayStore[] = {
     ArcState::ARC_PLAY_STORE_UNMANAGED,
-    ArcState::ARC_PERSISTENT_PLAY_STORE_UNMANAGED,
 };
 
 void OnPaiStartedCallback(bool* started_flag) {
@@ -211,18 +198,8 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   }
 
   void SetUp() override {
-    switch (GetParam()) {
-      case ArcState::ARC_PERSISTENT_PLAY_STORE_UNMANAGED:
-      case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED:
-      case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED:
-      case ArcState::ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN:
-        arc::SetArcAlwaysStartForTesting(true);
-        break;
-      case ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE:
-        arc::SetArcAlwaysStartForTesting(false);
-        break;
-      default:
-        break;
+    if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE) {
+      arc::SetArcAlwaysStartWithoutPlayStoreForTesting();
     }
 
     extensions::ExtensionServiceTestBase::SetUp();
@@ -598,7 +575,7 @@ class ArcPlayStoreAppTest : public ArcDefaulAppTest {
     app.name = "Play Store";
     app.package_name = arc::kPlayStorePackage;
     app.activity = arc::kPlayStoreActivity;
-    app.sticky = GetParam() != ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE;
+    app.sticky = GetParam() != ArcState::ARC_WITHOUT_PLAY_STORE;
 
     app_instance()->RefreshAppList();
     app_instance()->SendRefreshAppList({app});
@@ -619,12 +596,8 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
   bool IsEnabledByPolicy() const {
     switch (GetParam()) {
       case ArcState::ARC_PLAY_STORE_MANAGED_AND_ENABLED:
-      case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED:
-      case ArcState::ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN:
-        return true;
       case ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED:
-      case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED:
-      case ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE:
+      case ArcState::ARC_WITHOUT_PLAY_STORE:
         return false;
       default:
         NOTREACHED();
@@ -634,13 +607,6 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
 
   // ArcPlayStoreAppTest:
   void OnBeforeArcTestSetup() override {
-    if (GetParam() ==
-        ArcState::ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN) {
-      const AccountId account_id(
-          AccountId::FromUserEmail(profile_->GetProfileUserName()));
-      arc_test()->GetUserManager()->AddPublicAccountUser(account_id);
-      arc_test()->GetUserManager()->LoginUser(account_id);
-    }
     policy::ProfilePolicyConnector* const connector =
         policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile());
     connector->OverrideIsManagedForTesting(true);
@@ -1339,7 +1305,7 @@ TEST_P(ArcPlayStoreAppTest, PlayStore) {
 
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       prefs->GetApp(arc::kPlayStoreAppId);
-  if (GetParam() != ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE) {
+  if (GetParam() != ArcState::ARC_WITHOUT_PLAY_STORE) {
     // Make sure PlayStore is available.
     ASSERT_TRUE(app_info);
     EXPECT_FALSE(app_info->ready);
@@ -1392,7 +1358,7 @@ TEST_P(ArcPlayStoreAppTest, PaiStarter) {
   ASSERT_TRUE(session_manager);
 
   // PAI starter is not expected for ARC without the Play Store.
-  if (GetParam() == ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE) {
+  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE) {
     EXPECT_FALSE(session_manager->pai_starter());
     return;
   }
@@ -1429,7 +1395,7 @@ TEST_P(ArcPlayStoreAppTest, PaiStarter) {
 // Validates that PAI is started on the next session start if it was not started
 // during the previous sessions for some reason.
 TEST_P(ArcPlayStoreAppTest, StartPaiOnNextRun) {
-  if (GetParam() == ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE)
+  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE)
     return;
 
   arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
@@ -1520,7 +1486,7 @@ TEST_P(ArcPlayStoreAppTest,
   ASSERT_TRUE(session_manager);
 
   // Fast App Reinstall starter is not expected for ARC without the Play Store.
-  if (GetParam() == ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE) {
+  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE) {
     EXPECT_FALSE(session_manager->fast_app_resintall_starter());
     return;
   }
@@ -1566,7 +1532,7 @@ TEST_P(ArcPlayStoreAppTest,
   ASSERT_TRUE(session_manager);
 
   // Fast App Reinstall starter is not expected for ARC without the Play Store.
-  if (GetParam() == ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE) {
+  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE) {
     EXPECT_FALSE(session_manager->fast_app_resintall_starter());
     return;
   }
@@ -2379,7 +2345,7 @@ TEST_P(ArcDefaulAppTest, DefaultAppsNotAvailable) {
   std::vector<arc::mojom::AppInfo> expected_apps(fake_default_apps());
   ValidateHaveApps(expected_apps);
 
-  if (GetParam() == ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE) {
+  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE) {
     prefs->SimulateDefaultAppAvailabilityTimeoutForTesting();
     ValidateHaveApps(std::vector<arc::mojom::AppInfo>());
     return;
@@ -2472,9 +2438,7 @@ TEST_P(ArcDefaulAppForManagedUserTest, DefaultAppsForManagedUser) {
   // PlayStor exists for managed and enabled state.
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       prefs->GetApp(arc::kPlayStoreAppId);
-  if (IsEnabledByPolicy() &&
-      GetParam() !=
-          ArcState::ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN) {
+  if (IsEnabledByPolicy()) {
     ASSERT_TRUE(app_info);
     EXPECT_FALSE(app_info->ready);
   } else {

@@ -49,10 +49,9 @@ bool ShouldArcAlwaysStartWithNoPlayStore();
 // Returns true if ARC OptIn ui needs to be shown for testing.
 bool ShouldShowOptInForTesting();
 
-// Enables to always start ARC for testing, by appending the command line flag.
-// If |bool play_store_available| is not set then flag that disables ARC Play
-// Store UI is added.
-void SetArcAlwaysStartForTesting(bool play_store_available);
+// Enables to always start ARC without Play Store for testing, by appending the
+// command line flag.
+void SetArcAlwaysStartWithoutPlayStoreForTesting();
 
 // Returns true if ARC is installed and running ARC kiosk apps on the current
 // device is officially supported.
