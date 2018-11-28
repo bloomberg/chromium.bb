@@ -335,7 +335,7 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
       // non-empty.
       if (invalidated_rect.IsEmpty())
         return;
-      unsigned rect_size =
+      uint64_t rect_size =
           frame_view_->GetPaintTimingDetector().CalculateVisualSize(
               invalidated_rect, painting_layer);
       if (rect_size == 0) {
