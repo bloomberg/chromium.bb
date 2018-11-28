@@ -10,6 +10,7 @@ namespace switches {
 
 extern const char kIgnorePreviewsBlacklist[];
 extern const char kLitePageServerPreviewHost[];
+extern const char kIgnoreLitePageRedirectOptimizationBlacklist[];
 
 }  // namespace switches
 }  // namespace previews
