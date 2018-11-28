@@ -102,20 +102,27 @@ void RecordCompleteEncodingTimeHistogram(ImageEncodingMimeType mime_type,
 
 void RecordScaledDurationHistogram(ImageEncodingMimeType mime_type,
                                    TimeDelta elapsed_time,
-                                   int width,
-                                   int height) {
-  float sqrt_pixels = std::sqrt(width * height);
-  int scaled_time =
-      elapsed_time.InMicrosecondsF() / (sqrt_pixels == 0 ? 1 : sqrt_pixels);
+                                   float width,
+                                   float height) {
+  float sqrt_pixels = std::sqrt(width) * std::sqrt(height);
+  float scaled_time_float =
+      elapsed_time.InMicrosecondsF() / (sqrt_pixels == 0 ? 1.0f : sqrt_pixels);
+
+  // If scaled_time_float overflows as integer, CheckedNumeric will store it
+  // as invalid, then ValueOrDefault will return the maximum int.
+  base::CheckedNumeric<int> checked_scaled_time = scaled_time_float;
+  int scaled_time_int =
+      checked_scaled_time.ValueOrDefault(std::numeric_limits<int>::max());
+
   if (mime_type == kMimeTypePng) {
     UMA_HISTOGRAM_COUNTS_100000("Blink.Canvas.ToBlob.ScaledDuration.PNG",
-                                scaled_time);
+                                scaled_time_int);
   } else if (mime_type == kMimeTypeJpeg) {
     UMA_HISTOGRAM_COUNTS_100000("Blink.Canvas.ToBlob.ScaledDuration.JPEG",
-                                scaled_time);
+                                scaled_time_int);
   } else if (mime_type == kMimeTypeWebp) {
     UMA_HISTOGRAM_COUNTS_100000("Blink.Canvas.ToBlob.ScaledDuration.WEBP",
-                                scaled_time);
+                                scaled_time_int);
   }
 }
 

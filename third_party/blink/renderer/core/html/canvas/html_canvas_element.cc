@@ -832,18 +832,25 @@ String HTMLCanvasElement::ToDataURLInternal(
     String data_url = data_buffer->ToDataURL(encoding_mime_type, quality);
     base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
     float sqrt_pixels =
-        std::sqrt(image_bitmap->width() * image_bitmap->height());
-    int scaled_time =
-        elapsed_time.InMicrosecondsF() / (sqrt_pixels == 0 ? 1 : sqrt_pixels);
+        std::sqrt(image_bitmap->width()) * std::sqrt(image_bitmap->height());
+    float scaled_time_float = elapsed_time.InMicrosecondsF() /
+                              (sqrt_pixels == 0 ? 1.0f : sqrt_pixels);
+
+    // If scaled_time_float overflows as integer, CheckedNumeric will store it
+    // as invalid, then ValueOrDefault will return the maximum int.
+    base::CheckedNumeric<int> checked_scaled_time = scaled_time_float;
+    int scaled_time_int =
+        checked_scaled_time.ValueOrDefault(std::numeric_limits<int>::max());
+
     if (encoding_mime_type == kMimeTypePng) {
       UMA_HISTOGRAM_COUNTS_100000("Blink.Canvas.ToDataURLScaledDuration.PNG",
-                                  scaled_time);
+                                  scaled_time_int);
     } else if (encoding_mime_type == kMimeTypeJpeg) {
       UMA_HISTOGRAM_COUNTS_100000("Blink.Canvas.ToDataURLScaledDuration.JPEG",
-                                  scaled_time);
+                                  scaled_time_int);
     } else if (encoding_mime_type == kMimeTypeWebp) {
       UMA_HISTOGRAM_COUNTS_100000("Blink.Canvas.ToDataURLScaledDuration.WEBP",
-                                  scaled_time);
+                                  scaled_time_int);
     } else {
       // Currently we only support three encoding types.
       NOTREACHED();
