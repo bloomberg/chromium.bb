@@ -162,7 +162,7 @@ void ServiceBinding::OnBindInterface(
   auto override =
       GetBinderOverrides().GetOverride(identity_.name(), interface_name);
   if (override) {
-    override.Run(source_info, std::move(interface_pipe));
+    override.Run(std::move(interface_pipe));
     return;
   }
 

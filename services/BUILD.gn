@@ -95,6 +95,7 @@ catalog("services_unittests_catalog") {
 
   if (!is_ios) {
     catalog_deps += [
+      "//services/device:tests_catalog",
       "//services/preferences:tests_catalog",
       "//services/resource_coordinator:tests_catalog",
       "//services/tracing:tests_catalog",

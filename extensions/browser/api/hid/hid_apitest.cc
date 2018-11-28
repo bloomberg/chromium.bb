@@ -21,7 +21,7 @@
 #include "services/device/public/cpp/hid/hid_report_descriptor.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 using base::ThreadTaskRunnerHandle;
 using device::HidReportDescriptor;
@@ -132,8 +132,11 @@ class FakeHidManager : public device::mojom::HidManager {
   FakeHidManager() {}
   ~FakeHidManager() override = default;
 
-  void Bind(device::mojom::HidManagerRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void Bind(const std::string& interface_name,
+            mojo::ScopedMessagePipeHandle handle,
+            const service_manager::BindSourceInfo& source_info) {
+    bindings_.AddBinding(this,
+                         device::mojom::HidManagerRequest(std::move(handle)));
   }
 
   // device::mojom::HidManager implementation:
@@ -254,15 +257,15 @@ class HidApiTest : public ShellApiTest {
     // Because Device Service also runs in this process (browser process), we
     // can set our binder to intercept requests for HidManager interface to it.
     fake_hid_manager_ = std::make_unique<FakeHidManager>();
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName, device::mojom::HidManager::Name_,
         base::Bind(&FakeHidManager::Bind,
                    base::Unretained(fake_hid_manager_.get())));
   }
 
   ~HidApiTest() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::HidManager>(device::mojom::kServiceName);
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
   }
 
   void SetUpOnMainThread() override {

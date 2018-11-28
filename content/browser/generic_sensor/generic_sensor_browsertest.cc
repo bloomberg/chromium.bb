@@ -31,7 +31,7 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/sensor.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace content {
 
@@ -48,16 +48,16 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
     // Because Device Service also runs in this process (browser process), here
     // we can directly set our binder to intercept interface requests against
     // it.
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName, device::mojom::SensorProvider::Name_,
         base::BindRepeating(
             &GenericSensorBrowserTest::BindSensorProviderRequest,
             base::Unretained(this)));
   }
 
   ~GenericSensorBrowserTest() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::SensorProvider>(device::mojom::kServiceName);
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
   }
 
   void SetUpOnMainThread() override {
@@ -78,7 +78,10 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
-  void BindSensorProviderRequest(device::mojom::SensorProviderRequest request) {
+  void BindSensorProviderRequest(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle handle,
+      const service_manager::BindSourceInfo& source_info) {
     if (!sensor_provider_available_)
       return;
 
@@ -87,7 +90,8 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
       fake_sensor_provider_->SetAmbientLightSensorData(50);
     }
 
-    fake_sensor_provider_->Bind(std::move(request));
+    fake_sensor_provider_->Bind(
+        device::mojom::SensorProviderRequest(std::move(handle)));
   }
 
   void set_sensor_provider_available(bool sensor_provider_available) {

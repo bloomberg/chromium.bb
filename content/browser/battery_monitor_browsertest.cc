@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace content {
 
@@ -27,9 +27,11 @@ class MockBatteryMonitor : public device::mojom::BatteryMonitor {
   MockBatteryMonitor() : binding_(this) {}
   ~MockBatteryMonitor() override = default;
 
-  void Bind(device::mojom::BatteryMonitorRequest request) {
+  void Bind(const std::string& interface_name,
+            mojo::ScopedMessagePipeHandle handle,
+            const service_manager::BindSourceInfo& source_info) {
     DCHECK(!binding_.is_bound());
-    binding_.Bind(std::move(request));
+    binding_.Bind(device::mojom::BatteryMonitorRequest(std::move(handle)));
   }
 
   void DidChange(const device::mojom::BatteryStatus& battery_status) {
@@ -74,15 +76,15 @@ class BatteryMonitorTest : public ContentBrowserTest {
     // Because Device Service also runs in this process(browser process), here
     // we can directly set our binder to intercept interface requests against
     // it.
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName, device::mojom::BatteryMonitor::Name_,
         base::Bind(&MockBatteryMonitor::Bind,
                    base::Unretained(mock_battery_monitor_.get())));
   }
 
   ~BatteryMonitorTest() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::BatteryMonitor>(device::mojom::kServiceName);
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
   }
 
  protected:
