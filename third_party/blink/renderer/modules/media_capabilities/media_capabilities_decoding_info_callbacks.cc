@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info_callbacks.h"
 
-#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_info.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info.h"
 
 namespace blink {
 
@@ -22,7 +22,8 @@ void MediaCapabilitiesDecodingInfoCallbacks::OnSuccess(
     return;
   }
 
-  Persistent<MediaCapabilitiesInfo> info(MediaCapabilitiesInfo::Create());
+  Persistent<MediaCapabilitiesDecodingInfo> info(
+      MediaCapabilitiesDecodingInfo::Create());
   info->setSupported(result->supported);
   info->setSmooth(result->smooth);
   info->setPowerEfficient(result->power_efficient);
