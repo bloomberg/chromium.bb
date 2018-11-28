@@ -83,6 +83,11 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
       mojom::AudioFocusManagerPtr&,
       mojom::AudioFocusType);
 
+  base::UnguessableToken RequestGroupedAudioFocusFromService(
+      mojom::AudioFocusManagerPtr& service,
+      mojom::AudioFocusType audio_focus_type,
+      const base::UnguessableToken& group_id);
+
   mojom::MediaSessionInfo::SessionState GetState() const;
 
   mojom::AudioFocusRequestClient* audio_focus_request() const {

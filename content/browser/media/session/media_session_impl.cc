@@ -499,6 +499,11 @@ void MediaSessionImpl::SetDuckingVolumeMultiplier(double multiplier) {
   ducking_volume_multiplier_ = base::ClampToRange(multiplier, 0.0, 1.0);
 }
 
+void MediaSessionImpl::SetAudioFocusGroupId(
+    const base::UnguessableToken& group_id) {
+  audio_focus_group_id_ = group_id;
+}
+
 void MediaSessionImpl::StartDucking() {
   if (is_ducking_)
     return;

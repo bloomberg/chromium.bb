@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/unguessable_token.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/public/common/service_manager_connection.h"
@@ -93,7 +94,9 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
     audio_focus_ptr_.FlushForTesting();
   }
 
-  void Run(WebContents* start_contents, WebContents* interrupt_contents) {
+  void Run(WebContents* start_contents,
+           WebContents* interrupt_contents,
+           bool use_separate_group_id) {
     std::unique_ptr<MockMediaSessionPlayerObserver>
         player_observer(new MockMediaSessionPlayerObserver);
 
@@ -103,6 +106,10 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
     MediaSessionImpl* other_media_session =
         MediaSessionImpl::Get(interrupt_contents);
     EXPECT_TRUE(other_media_session);
+
+    if (use_separate_group_id)
+      other_media_session->SetAudioFocusGroupId(
+          base::UnguessableToken::Create());
 
     player_observer->StartNewPlayer();
 
@@ -139,7 +146,9 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
     {
       MediaSessionStateObserver state_observer(media_session);
       state_observer.WaitForState(
-          media_session::mojom::MediaSessionInfo::SessionState::kSuspended);
+          use_separate_group_id
+              ? media_session::mojom::MediaSessionInfo::SessionState::kSuspended
+              : media_session::mojom::MediaSessionInfo::SessionState::kActive);
     }
 
     {
@@ -186,20 +195,28 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
 
 // Two windows from the same BrowserContext.
 IN_PROC_BROWSER_TEST_F(AudioFocusDelegateDefaultBrowserTest,
-                       ActiveWebContentsPauseOthers) {
-  Run(shell()->web_contents(), CreateBrowser()->web_contents());
+                       ActiveWebContentsPausesOthers) {
+  Run(shell()->web_contents(), CreateBrowser()->web_contents(), false);
+}
+
+// Two windows with different group ids.
+IN_PROC_BROWSER_TEST_F(AudioFocusDelegateDefaultBrowserTest,
+                       ActiveWebContentsPausesOtherWithGroupId) {
+  Run(shell()->web_contents(), CreateBrowser()->web_contents(), true);
 }
 
 // Regular BrowserContext is interrupted by OffTheRecord one.
 IN_PROC_BROWSER_TEST_F(AudioFocusDelegateDefaultBrowserTest,
                        RegularBrowserInterruptsOffTheRecord) {
-  Run(shell()->web_contents(), CreateOffTheRecordBrowser()->web_contents());
+  Run(shell()->web_contents(), CreateOffTheRecordBrowser()->web_contents(),
+      false);
 }
 
 // OffTheRecord BrowserContext is interrupted by regular one.
 IN_PROC_BROWSER_TEST_F(AudioFocusDelegateDefaultBrowserTest,
                        OffTheRecordInterruptsRegular) {
-  Run(CreateOffTheRecordBrowser()->web_contents(), shell()->web_contents());
+  Run(CreateOffTheRecordBrowser()->web_contents(), shell()->web_contents(),
+      false);
 }
 
 }  // namespace content
