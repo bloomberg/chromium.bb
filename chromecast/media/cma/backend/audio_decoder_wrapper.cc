@@ -14,7 +14,44 @@
 namespace chromecast {
 namespace media {
 
-AudioDecoderWrapper::AudioDecoderWrapper(
+namespace {
+
+// This revoked AudioDecoder would behave as one with buffer filled up and
+// doesn't advance |statistics| and doesn't change RenderingDelay.
+class RevokedAudioDecoderWrapper : public DestructableAudioDecoder {
+ public:
+  RevokedAudioDecoderWrapper(RenderingDelay rendering_delay,
+                             Statistics statistics,
+                             bool requires_decryption)
+      : rendering_delay_(rendering_delay),
+        statistics_(statistics),
+        requires_decryption_(requires_decryption) {}
+  ~RevokedAudioDecoderWrapper() override = default;
+
+ private:
+  // CmaBackend::AudioDecoder implementation:
+  void SetDelegate(Delegate* delegate) override {}
+  BufferStatus PushBuffer(scoped_refptr<DecoderBufferBase> buffer) override {
+    return MediaPipelineBackend::kBufferPending;
+  }
+  bool SetConfig(const AudioConfig& config) override { return true; }
+  bool SetVolume(float multiplier) override { return true; }
+  RenderingDelay GetRenderingDelay() override { return rendering_delay_; }
+  void GetStatistics(Statistics* statistics) override {
+    *statistics = statistics_;
+  }
+  bool RequiresDecryption() override { return requires_decryption_; }
+
+  const RenderingDelay rendering_delay_;
+  const Statistics statistics_;
+  const bool requires_decryption_;
+
+  DISALLOW_COPY_AND_ASSIGN(RevokedAudioDecoderWrapper);
+};
+
+}  // namespace
+
+ActiveAudioDecoderWrapper::ActiveAudioDecoderWrapper(
     MediaPipelineBackendManager* backend_manager,
     MediaPipelineBackend::AudioDecoder* backend_decoder,
     AudioContentType type,
@@ -34,14 +71,14 @@ AudioDecoderWrapper::AudioDecoderWrapper(
   }
 }
 
-AudioDecoderWrapper::~AudioDecoderWrapper() {
+ActiveAudioDecoderWrapper::~ActiveAudioDecoderWrapper() {
   if (buffer_delegate_) {
     buffer_delegate_->OnStreamStopped();
   }
   backend_manager_->RemoveAudioDecoder(this);
 }
 
-void AudioDecoderWrapper::SetGlobalVolumeMultiplier(float multiplier) {
+void ActiveAudioDecoderWrapper::SetGlobalVolumeMultiplier(float multiplier) {
   global_volume_multiplier_ = multiplier;
   if (!delegate_active_) {
     float volume = stream_volume_multiplier_ * global_volume_multiplier_;
@@ -52,11 +89,11 @@ void AudioDecoderWrapper::SetGlobalVolumeMultiplier(float multiplier) {
   }
 }
 
-void AudioDecoderWrapper::SetDelegate(Delegate* delegate) {
+void ActiveAudioDecoderWrapper::SetDelegate(Delegate* delegate) {
   decoder_.SetDelegate(delegate);
 }
 
-CmaBackend::BufferStatus AudioDecoderWrapper::PushBuffer(
+CmaBackend::BufferStatus ActiveAudioDecoderWrapper::PushBuffer(
     scoped_refptr<DecoderBufferBase> buffer) {
   if (buffer_delegate_ && buffer_delegate_->IsActive()) {
     // Mute the decoder, we are sending audio to delegate.
@@ -78,14 +115,14 @@ CmaBackend::BufferStatus AudioDecoderWrapper::PushBuffer(
   return decoder_.PushBuffer(buffer.get());
 }
 
-bool AudioDecoderWrapper::SetConfig(const AudioConfig& config) {
+bool ActiveAudioDecoderWrapper::SetConfig(const AudioConfig& config) {
   if (buffer_delegate_) {
     buffer_delegate_->OnSetConfig(config);
   }
   return decoder_.SetConfig(config);
 }
 
-bool AudioDecoderWrapper::SetVolume(float multiplier) {
+bool ActiveAudioDecoderWrapper::SetVolume(float multiplier) {
   stream_volume_multiplier_ = std::max(0.0f, std::min(multiplier, 1.0f));
   float volume = stream_volume_multiplier_ * global_volume_multiplier_;
   if (buffer_delegate_) {
@@ -98,18 +135,79 @@ bool AudioDecoderWrapper::SetVolume(float multiplier) {
   return decoder_.SetVolume(volume);
 }
 
-AudioDecoderWrapper::RenderingDelay AudioDecoderWrapper::GetRenderingDelay() {
+ActiveAudioDecoderWrapper::RenderingDelay
+ActiveAudioDecoderWrapper::GetRenderingDelay() {
   return decoder_.GetRenderingDelay();
 }
 
-void AudioDecoderWrapper::GetStatistics(Statistics* statistics) {
+void ActiveAudioDecoderWrapper::GetStatistics(Statistics* statistics) {
   decoder_.GetStatistics(statistics);
 }
 
-bool AudioDecoderWrapper::RequiresDecryption() {
+bool ActiveAudioDecoderWrapper::RequiresDecryption() {
   return (MediaPipelineBackend::AudioDecoder::RequiresDecryption &&
           MediaPipelineBackend::AudioDecoder::RequiresDecryption()) ||
          decoder_.IsUsingSoftwareDecoder();
+}
+
+AudioDecoderWrapper::AudioDecoderWrapper(
+    MediaPipelineBackendManager* backend_manager,
+    MediaPipelineBackend::AudioDecoder* backend_decoder,
+    AudioContentType type,
+    MediaPipelineBackendManager::BufferDelegate* buffer_delegate)
+    : decoder_revoked_(false) {
+  audio_decoder_ = std::make_unique<ActiveAudioDecoderWrapper>(
+      backend_manager, backend_decoder, type, buffer_delegate);
+}
+
+AudioDecoderWrapper::AudioDecoderWrapper(AudioContentType type)
+    : decoder_revoked_(true) {
+  audio_decoder_ = std::make_unique<RevokedAudioDecoderWrapper>(
+      RenderingDelay(), Statistics(), false);
+}
+
+AudioDecoderWrapper::~AudioDecoderWrapper() = default;
+
+void AudioDecoderWrapper::Revoke() {
+  if (!decoder_revoked_) {
+    decoder_revoked_ = true;
+    // Get some current values from audio_decoder_(ActiveAudioDecoderWrapper),
+    // then replace the audio_decoder_ with a revoked one.
+    Statistics statistics;
+    audio_decoder_->GetStatistics(&statistics);
+    audio_decoder_ = std::make_unique<RevokedAudioDecoderWrapper>(
+        audio_decoder_->GetRenderingDelay(), statistics,
+        audio_decoder_->RequiresDecryption());
+  }
+}
+
+void AudioDecoderWrapper::SetDelegate(Delegate* delegate) {
+  audio_decoder_->SetDelegate(delegate);
+}
+
+AudioDecoderWrapper::BufferStatus AudioDecoderWrapper::PushBuffer(
+    scoped_refptr<DecoderBufferBase> buffer) {
+  return audio_decoder_->PushBuffer(buffer);
+}
+
+bool AudioDecoderWrapper::SetConfig(const AudioConfig& config) {
+  return audio_decoder_->SetConfig(config);
+}
+
+bool AudioDecoderWrapper::SetVolume(float multiplier) {
+  return audio_decoder_->SetVolume(multiplier);
+}
+
+AudioDecoderWrapper::RenderingDelay AudioDecoderWrapper::GetRenderingDelay() {
+  return audio_decoder_->GetRenderingDelay();
+}
+
+void AudioDecoderWrapper::GetStatistics(Statistics* statistics) {
+  audio_decoder_->GetStatistics(statistics);
+}
+
+bool AudioDecoderWrapper::RequiresDecryption() {
+  return audio_decoder_->RequiresDecryption();
 }
 
 }  // namespace media
