@@ -139,6 +139,9 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   ~TileManager() override;
 
   // Assigns tile memory and schedules work to prepare tiles for drawing.
+  // This step occurs after Commit and at most once per BeginFrame. It can be
+  // called on its own, that is, outside of Commit.
+  //
   // - Runs client_->NotifyReadyToActivate() when all tiles required for
   // activation are prepared, or failed to prepare due to OOM.
   // - Runs client_->NotifyReadyToDraw() when all tiles required draw are
