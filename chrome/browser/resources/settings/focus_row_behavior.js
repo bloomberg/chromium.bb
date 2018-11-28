@@ -221,15 +221,24 @@ const FocusRowBehavior = {
 
   /**
    * This function gets called when the row itself receives the focus event.
+   * @param {!Event} e The focus event
    * @private
    */
-  onFocus_: function() {
+  onFocus_: function(e) {
     if (this.mouseFocused_) {
       this.mouseFocused_ = false;  // Consume and reset flag.
       return;
     }
 
-    if (this.lastFocused && !this.blurred_) {
+    // If focus is being restored from outside the item and the event is fired
+    // by the list item itself, focus the first control so that the user can tab
+    // through all the controls. When the user shift-tabs back to the row, or
+    // focus is restored to the row from a dropdown on the last item, the last
+    // child item will be focused before the row itself. Since this is the
+    // desired behavior, do not shift focus to the first item in these cases.
+    const restoreFocusToFirst = this.blurred_ && e.composedPath()[0] === this;
+
+    if (this.lastFocused && !restoreFocusToFirst) {
       this.row_.getEquivalentElement(this.lastFocused).focus();
     } else {
       const firstFocusable = assert(this.firstControl_);
