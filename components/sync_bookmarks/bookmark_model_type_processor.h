@@ -97,6 +97,9 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // entities.
   void NudgeForCommitIfNeeded();
 
+  // Performs the required clean up when bookmark model is being deleted.
+  void OnBookmarkModelBeingDeleted();
+
   // Instantiates the required objects to track metadata and starts observing
   // changes from the bookmark model.
   void StartTrackingMetadata(

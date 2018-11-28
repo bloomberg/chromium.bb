@@ -579,12 +579,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   // We use the following checker to simply wait for an non-empty snapshot.
   EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
-  // TODO(mamir): The expectation below should pass but doesn't with USS.
-  // Investigate the cause and fix the underlying issue.
-  // EXPECT_EQ(
-  //    0,
-  //    histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
-  //                                       /*REMOTE_INITIAL_UPDATE=*/5));
+  EXPECT_EQ(
+      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
+                                         /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
 INSTANTIATE_TEST_CASE_P(USS,

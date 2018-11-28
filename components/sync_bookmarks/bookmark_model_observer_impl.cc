@@ -20,9 +20,12 @@ namespace sync_bookmarks {
 
 BookmarkModelObserverImpl::BookmarkModelObserverImpl(
     const base::RepeatingClosure& nudge_for_commit_closure,
+    base::OnceClosure on_bookmark_model_being_deleted_closure,
     SyncedBookmarkTracker* bookmark_tracker)
     : bookmark_tracker_(bookmark_tracker),
-      nudge_for_commit_closure_(nudge_for_commit_closure) {
+      nudge_for_commit_closure_(nudge_for_commit_closure),
+      on_bookmark_model_being_deleted_closure_(
+          std::move(on_bookmark_model_being_deleted_closure)) {
   DCHECK(bookmark_tracker_);
 }
 
@@ -36,7 +39,7 @@ void BookmarkModelObserverImpl::BookmarkModelLoaded(
 
 void BookmarkModelObserverImpl::BookmarkModelBeingDeleted(
     bookmarks::BookmarkModel* model) {
-  // This class isn't responsible for any deletion-related logic.
+  std::move(on_bookmark_model_being_deleted_closure_).Run();
 }
 
 void BookmarkModelObserverImpl::BookmarkNodeMoved(
@@ -87,7 +90,7 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
     DLOG(WARNING) << "Bookmark parent lookup failed";
     return;
   }
-  // Similar to the diectory implementation here:
+  // Similar to the directory implementation here:
   // https://cs.chromium.org/chromium/src/components/sync/syncable/mutable_entry.cc?l=237&gsn=CreateEntryKernel
   // Assign a temp server id for the entity. Will be overriden by the actual
   // server id upon receiving commit response.
