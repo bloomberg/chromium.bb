@@ -285,6 +285,10 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
       NOTREACHED();
       return gfx::kPlaceholderColor;
 #endif
+    case COLOR_FEATURE_PROMO_BUBBLE_TEXT:
+      return SK_ColorWHITE;
+    case COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND:
+      return gfx::kGoogleBlue700;
 
     case COLOR_FRAME_INCOGNITO:
     case COLOR_FRAME_INCOGNITO_INACTIVE:

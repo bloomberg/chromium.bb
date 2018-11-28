@@ -7,8 +7,10 @@
 #include <memory>
 
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "components/variations/variations_associated_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/controls/label.h"
@@ -60,6 +62,16 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
   if (!anchor_view)
     SetAnchorRect(anchor_rect);
 
+  // We get the theme provider from the anchor view since our widget hasn't been
+  // created yet.
+  const ui::ThemeProvider* theme_provider = anchor_view->GetThemeProvider();
+  DCHECK(theme_provider);
+
+  const SkColor background_color = theme_provider->GetColor(
+      ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND);
+  const SkColor text_color = theme_provider->GetColor(
+      ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_TEXT);
+
   auto box_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), 0);
   box_layout->set_main_axis_alignment(
@@ -68,11 +80,18 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(std::move(box_layout));
 
-  AddChildView(new views::Label(l10n_util::GetStringUTF16(string_specifier)));
+  auto* label = new views::Label(l10n_util::GetStringUTF16(string_specifier));
+  label->SetBackgroundColor(background_color);
+  label->SetEnabledColor(text_color);
+  AddChildView(label);
+
   if (activation_action == ActivationAction::DO_NOT_ACTIVATE) {
     set_can_activate(activation_action == ActivationAction::ACTIVATE);
     set_shadow(views::BubbleBorder::BIG_SHADOW);
   }
+
+  set_color(background_color);
+
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
 
   widget->Show();
