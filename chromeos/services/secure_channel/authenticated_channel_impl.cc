@@ -97,11 +97,14 @@ void AuthenticatedChannelImpl::OnSecureChannelStatusChanged(
     const cryptauth::SecureChannel::Status& new_status) {
   DCHECK_EQ(secure_channel_.get(), secure_channel);
 
-  // The only expected status changes are AUTHENTICATED => DISCONNECTING,
-  // AUTHENTICATED => DISCONNECTED, and DISCONNECTING => DISCONNECTED.
-  DCHECK(old_status == cryptauth::SecureChannel::Status::AUTHENTICATED ||
+  // The only expected status changes are AUTHENTICATING => AUTHENTICATED,
+  // AUTHENTICATED => DISCONNECTING, AUTHENTICATED => DISCONNECTED, and
+  // DISCONNECTING => DISCONNECTED.
+  DCHECK(old_status == cryptauth::SecureChannel::Status::AUTHENTICATING ||
+         old_status == cryptauth::SecureChannel::Status::AUTHENTICATED ||
          old_status == cryptauth::SecureChannel::Status::DISCONNECTING);
-  DCHECK(new_status == cryptauth::SecureChannel::Status::DISCONNECTING ||
+  DCHECK(new_status == cryptauth::SecureChannel::Status::AUTHENTICATED ||
+         new_status == cryptauth::SecureChannel::Status::DISCONNECTING ||
          new_status == cryptauth::SecureChannel::Status::DISCONNECTED);
 
   if (new_status == cryptauth::SecureChannel::Status::DISCONNECTED)
