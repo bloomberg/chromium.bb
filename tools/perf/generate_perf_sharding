@@ -7,16 +7,34 @@ import argparse
 import json
 import multiprocessing
 import sys
+import textwrap
 
 from core import benchmark_utils
 from core import bot_platforms
 from core import retrieve_story_timing
 from core import sharding_map_generator
 
+_SCRIPT_USAGE = """
+Generate sharding maps for Telemetry benchmarks.
+
+Every performance benchmark should be run on a same machine as long as possible
+to preserve high fidelity of data monitoring. Hence in order to shard the
+Telemetry benchmarks on multiple machines, we generate a JSON map that
+specifies how benchmarks should be distributed on machines. There is one
+sharding JSON map for every builder in the perf & perf.fyi waterfalls which are
+specified by PerfPlatform classes in //tools/perf/core/bot_platforms.py.
+
+Generating these JSON maps depends on how many Telemetry benchmarks
+actually exist at the time. Because of this, CLs to generate the JSON maps
+should never be automatically reverted, since the reverted state of the JSON map
+files may not match with the true state of world.
+
+"""
+
 
 def GetParser():
   parser = argparse.ArgumentParser(
-      description='Generate perf test sharding map.')
+      description=_SCRIPT_USAGE, formatter_class=argparse.RawTextHelpFormatter)
   subparsers = parser.add_subparsers()
 
   parser_update = subparsers.add_parser('update')
@@ -35,7 +53,7 @@ def GetParser():
             'specified, use all perf builders by default'))
   parser.add_argument(
       '--debug', action='store_true',
-      help=('Whether to include detailed debug info of the sharding map in the'
+      help=('Whether to include detailed debug info of the sharding map in the '
             'shard maps.'), default=False)
 
   parser_update.set_defaults(func=_UpdateShardsForBuilders)
@@ -117,16 +135,38 @@ def _GenerateShardMap(
     json.dump(sharding_map, output_file, indent=4, separators=(',', ': '))
 
 
+def _PromptWarning():
+  message = ('This will regenerate the sharding maps for all perf benchmarks. '
+             'Note that this will shuffle all the benchmarks on the shards, '
+             'which can cause false regressions. In general this operation '
+             'should only be done when the shards are too unbalanced or when '
+             'benchmarks are added/removed. '
+             'In addition, this a tricky operation and should '
+             'only be done by Telemetry or Chrome Client Infrastructure '
+             'team members. Upon landing the CL to update the shards maps, '
+             'please notify Chromium perf sheriffs in '
+             'perf-sheriffs@chromium.org and put a warning about expected '
+             'false regressions in your CL '
+             'description')
+  print textwrap.fill(message, 70), '\n'
+  answer = raw_input("Enter 'y' to continue: ")
+  if answer != 'y':
+    print 'Abort updating shard maps for benchmarks on perf waterfall'
+    sys.exit(0)
+
+
 def _UpdateShardsForBuilders(args):
   if args.builders:
     builders = {b for b in bot_platforms.ALL_PLATFORMS if b.name in
                 args.builders}
   elif args.waterfall == 'perf':
     builders = bot_platforms.ALL_PERF_PLATFORMS
+    _PromptWarning()
   elif args.waterfall == 'perf-fyi':
     builders = bot_platforms.ALL_PERF_FYI_PLATFORMS
   else:
     builders = bot_platforms.ALL_PLATFORMS
+    _PromptWarning()
 
   if args.regenerate_timing_data:
     print 'Update shards timing data. May take a while...'
