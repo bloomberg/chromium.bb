@@ -64,8 +64,12 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
       bool clear_cache,
       base::OnceClosure callback) {
     WebContents* web_contents = web_contents_getter.Run();
-    if (!web_contents)
+    // TODO(crbug.com/898465): Fix Clear-Site-Data for requests without
+    // WebContents. (E.g. service worker updates)
+    if (!web_contents) {
+      std::move(callback).Run();
       return;
+    }
 
     (new SiteDataClearer(web_contents, origin, clear_cookies, clear_storage,
                          clear_cache, std::move(callback)))
