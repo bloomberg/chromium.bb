@@ -64,7 +64,7 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
                                    unsigned number_of_output_channels,
                                    const WebAudioLatencyHint& latency_hint)
     : number_of_output_channels_(number_of_output_channels),
-      is_playing_(false),
+      play_state_(PlayState::kStopped),
       fifo_(
           std::make_unique<PushPullFIFO>(number_of_output_channels, kFIFOSize)),
       output_bus_(AudioBus::Create(number_of_output_channels,
@@ -198,10 +198,10 @@ void AudioDestination::Start() {
   DCHECK(IsMainThread());
 
   // Start the "audio device" after the rendering thread is ready.
-  if (web_audio_device_ && !is_playing_) {
+  if (web_audio_device_ && play_state_ == PlayState::kStopped) {
     TRACE_EVENT0("webaudio", "AudioDestination::Start");
     web_audio_device_->Start();
-    is_playing_ = true;
+    play_state_ = PlayState::kPlaying;
   }
 }
 
@@ -209,11 +209,11 @@ void AudioDestination::StartWithWorkletTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> worklet_task_runner) {
   DCHECK(IsMainThread());
 
-  if (web_audio_device_ && !is_playing_) {
+  if (web_audio_device_ && play_state_ == PlayState::kStopped) {
     TRACE_EVENT0("webaudio", "AudioDestination::Start");
     worklet_task_runner_ = std::move(worklet_task_runner);
     web_audio_device_->Start();
-    is_playing_ = true;
+    play_state_ = PlayState::kPlaying;
   }
 }
 
@@ -222,11 +222,27 @@ void AudioDestination::Stop() {
 
   // This assumes stopping the "audio device" is synchronous and dumping the
   // rendering thread is safe after that.
-  if (web_audio_device_ && is_playing_) {
+  if (web_audio_device_ && play_state_ != PlayState::kStopped) {
     TRACE_EVENT0("webaudio", "AudioDestination::Stop");
     web_audio_device_->Stop();
     worklet_task_runner_ = nullptr;
-    is_playing_ = false;
+    play_state_ = PlayState::kStopped;
+  }
+}
+
+void AudioDestination::Pause() {
+  DCHECK(IsMainThread());
+  if (web_audio_device_ && play_state_ == PlayState::kPlaying) {
+    web_audio_device_->Pause();
+    play_state_ = PlayState::kPaused;
+  }
+}
+
+void AudioDestination::Resume() {
+  DCHECK(IsMainThread());
+  if (web_audio_device_ && play_state_ == PlayState::kPaused) {
+    web_audio_device_->Resume();
+    play_state_ = PlayState::kPlaying;
   }
 }
 
@@ -237,7 +253,7 @@ size_t AudioDestination::CallbackBufferSize() const {
 
 bool AudioDestination::IsPlaying() {
   DCHECK(IsMainThread());
-  return is_playing_;
+  return play_state_ == PlayState::kPlaying;
 }
 
 int AudioDestination::FramesPerBuffer() const {

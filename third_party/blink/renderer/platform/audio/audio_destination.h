@@ -91,6 +91,8 @@ class PLATFORM_EXPORT AudioDestination
 
   virtual void Start();
   virtual void Stop();
+  virtual void Pause();
+  virtual void Resume();
 
   // Starts the destination with the AudioWorklet support.
   void StartWithWorkletTaskRunner(
@@ -112,6 +114,8 @@ class PLATFORM_EXPORT AudioDestination
   static uint32_t MaxChannelCount();
 
  private:
+  enum class PlayState { kStopped, kPlaying, kPaused };
+
   // Check if the buffer size chosen by the WebAudioDevice is too large.
   bool CheckBufferSize();
 
@@ -121,7 +125,7 @@ class PLATFORM_EXPORT AudioDestination
   std::unique_ptr<WebAudioDevice> web_audio_device_;
   const unsigned number_of_output_channels_;
   size_t callback_buffer_size_;
-  bool is_playing_;
+  PlayState play_state_;
 
   // The task runner for AudioWorklet operation. This is only valid when
   // the AudioWorklet is activated.

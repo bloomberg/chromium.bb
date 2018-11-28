@@ -188,6 +188,18 @@ void RendererWebAudioDeviceImpl::Start() {
   sink_->Play();
 }
 
+void RendererWebAudioDeviceImpl::Pause() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (sink_)
+    sink_->Pause();
+}
+
+void RendererWebAudioDeviceImpl::Resume() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (sink_)
+    sink_->Play();
+}
+
 void RendererWebAudioDeviceImpl::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (sink_) {

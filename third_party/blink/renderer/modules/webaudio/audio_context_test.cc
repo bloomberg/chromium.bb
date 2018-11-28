@@ -27,6 +27,8 @@ class MockWebAudioDeviceForAudioContext : public WebAudioDevice {
 
   void Start() override {}
   void Stop() override {}
+  void Pause() override {}
+  void Resume() override {}
   double SampleRate() override { return sample_rate_; }
   int FramesPerBuffer() override { return frames_per_buffer_; }
 
