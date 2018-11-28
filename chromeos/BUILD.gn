@@ -18,7 +18,7 @@ config("chromeos_implementation") {
 component("chromeos") {
   configs += [
     ":chromeos_implementation",
-    "//build/config/linux/nss:system_nss_no_ssl_config"
+    "//build/config/linux/nss:system_nss_no_ssl_config",
   ]
   public_deps = [
     ":chromeos_constants",
@@ -418,8 +418,13 @@ if (is_chromeos_chrome) {
     ]
   }
 
+  # Tast test sources live in the Chromium OS repository.
+  # To diagnose tast failures or disable tests, see go/tast-failures
   tast_test("chrome_all_tast_tests") {
-    tast_conditional = "(!disabled && !\"group:*\" && !informational && (\"dep:chrome\" || \"dep:chrome_login\"))"
+    tast_conditional = "(!disabled && !\"group:*\" && !informational" +
+                       " && (\"dep:chrome\" || \"dep:chrome_login\")" +
+                       # Disabled due to flake. https://crbug.com/909736
+                       " && !\"name:ui.MashLogin\")"
   }
 
   group("cros_chrome_deploy") {
