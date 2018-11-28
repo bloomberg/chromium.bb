@@ -59,6 +59,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kSurfaceKey, nullptr);
 // stylus input events.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kStylusOnlyKey, false);
 
+// Surface Id set by the client.
+DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0);
+
 // Helper function that returns an iterator to the first entry in |list|
 // with |key|.
 template <typename T, typename U>
@@ -465,6 +468,17 @@ void Surface::SetParent(Surface* parent, const gfx::Point& position) {
 
   if (delegate_)
     delegate_->OnSetParent(parent, position);
+}
+
+void Surface::SetClientSurfaceId(int32_t client_surface_id) {
+  if (client_surface_id)
+    window_->SetProperty(kClientSurfaceIdKey, client_surface_id);
+  else
+    window_->ClearProperty(kClientSurfaceIdKey);
+}
+
+int32_t Surface::GetClientSurfaceId() const {
+  return window_->GetProperty(kClientSurfaceIdKey);
 }
 
 void Surface::Commit() {

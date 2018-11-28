@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="6">
+  <interface name="zaura_shell" version="7">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -68,7 +68,7 @@
     </request>
   </interface>
 
-  <interface name="zaura_surface" version="5">
+  <interface name="zaura_surface" version="7">
     <description summary="aura shell interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to access aura shell specific functionality for surface.
@@ -128,6 +128,15 @@
 	Set the application ID.
       </description>
       <arg name="application_id" type="string" allow-null="true"/>
+    </request>
+
+    <!-- Version 7 additions -->
+
+    <request name="set_client_surface_id" since="7">
+      <description summary="set the client surface ID of this surface">
+	Set the identifier of the surface assigned by the client.
+      </description>
+      <arg name="client_surface_id" type="int" />
     </request>
   </interface>
 

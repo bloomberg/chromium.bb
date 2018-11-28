@@ -152,6 +152,10 @@ class Surface final : public ui::PropertyHandler {
   // Request "parent" for surface.
   void SetParent(Surface* parent, const gfx::Point& position);
 
+  // Request that surface should have a specific ID assigned by client.
+  void SetClientSurfaceId(int32_t client_surface_id);
+  int32_t GetClientSurfaceId() const;
+
   // Surface state (damage regions, attached buffers, etc.) is double-buffered.
   // A Commit() call atomically applies all pending state, replacing the
   // current state. Commit() is not guaranteed to be synchronous. See

@@ -67,6 +67,11 @@ class AuraSurface : public SurfaceObserver {
       surface_->SetApplicationId(application_id);
   }
 
+  void SetClientSurfaceId(int client_surface_id) {
+    if (surface_)
+      surface_->SetClientSurfaceId(client_surface_id);
+  }
+
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override {
     surface->RemoveSurfaceObserver(this);
@@ -129,10 +134,16 @@ void aura_surface_set_application_id(wl_client* client,
   GetUserDataAs<AuraSurface>(resource)->SetApplicationId(application_id);
 }
 
+void aura_surface_set_client_surface_id(wl_client* client,
+                                        wl_resource* resource,
+                                        int client_surface_id) {
+  GetUserDataAs<AuraSurface>(resource)->SetClientSurfaceId(client_surface_id);
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
-    aura_surface_set_frame, aura_surface_set_parent,
-    aura_surface_set_frame_colors, aura_surface_set_startup_id,
-    aura_surface_set_application_id};
+    aura_surface_set_frame,          aura_surface_set_parent,
+    aura_surface_set_frame_colors,   aura_surface_set_startup_id,
+    aura_surface_set_application_id, aura_surface_set_client_surface_id};
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura_output_interface:
