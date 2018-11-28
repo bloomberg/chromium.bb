@@ -1032,7 +1032,10 @@
                   'chrome/browser/search/|'\
                   'chrome/browser/ui/search/|'\
                   'chrome/browser/resources/local_ntp/|'\
-                  'chrome/common/search_types.*',
+                  'chrome/common/search/|'\
+                  'chrome/test/data/local_ntp/|'\
+                  'components/search_provider_logos/|'\
+                  'components/test/data/search_provider_logos/',
     },
     'ios': {
       'filepath': 'ios/',
@@ -2207,15 +2210,10 @@
                         'raphael.kubo.da.costa@intel.com'],
     'installer_win': ['grt+watch@chromium.org',
                       'wfh+watch@chromium.org'],
-    'instant': ['dcblack@chromium.org',
-                'donnd+watch@chromium.org',
-                'jered+watch@chromium.org',
-                'jfweitz+watch@chromium.org',
-                'kmadhusu+watch@chromium.org',
-                'melevin+watch@chromium.org',
-                'samarth+watch@chromium.org',
-                'skanuj+watch@chromium.org',
-                'chrome-custom-fit+reviews@google.com'],
+    'instant': ['gayane+watch@chromium.org',
+                'kristipark+watch@chromium.org',
+                'kmilka+watch@chromium.org',
+                'ramyan+watch@chromium.org'],
     'ios': ['ios-reviews@chromium.org'],
     'ios_chrome': ['ios-reviews+chrome@chromium.org',
                    'noyau+watch@chromium.org',
