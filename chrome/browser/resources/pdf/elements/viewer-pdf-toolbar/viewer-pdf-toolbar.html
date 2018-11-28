@@ -123,6 +123,13 @@
         </div>
 
         <div id="buttons" class="invisible">
+          <template is="dom-if" if="[[pdfAnnotationsEnabled]]">
+            <paper-icon-button id="annotate" icon="pdf:create"
+                aria-label$="{{strings.tooltipAnnotate}}"
+                title$="{{strings.tooltipAnnotate}}">
+            </paper-icon-button>
+          </template>
+
           <paper-icon-button id="rotate-right" icon="pdf:rotate-right"
               on-click="rotateRight"
               aria-label$="{{strings.tooltipRotateCW}}"

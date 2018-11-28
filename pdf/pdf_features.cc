@@ -10,5 +10,8 @@ namespace features {
 const base::Feature kSaveEditedPDFForm{"SaveEditedPDFForm",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPDFAnnotations{"PDFAnnotations",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace chrome_pdf

@@ -36,6 +36,11 @@ Polymer({
      */
     opened: {type: Boolean, value: true},
 
+    /**
+     * Whether the PDF Annotations feature is enabled.
+     */
+    pdfAnnotationsEnabled: Boolean,
+
     strings: Object,
   },
 
