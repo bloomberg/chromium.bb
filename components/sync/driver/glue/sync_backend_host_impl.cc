@@ -12,6 +12,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task_runner_util.h"
+#include "build/build_config.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/experiments.h"
@@ -37,6 +39,23 @@
 #define SLOG(severity) LOG(severity) << name_ << ": "
 
 #define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
+
+namespace {
+
+syncer::ModelTypeSet GetInvalidationsEnabledTypes(
+    const syncer::ModelTypeSet& sync_enabled_types) {
+  syncer::ModelTypeSet invalidation_enabled_types(sync_enabled_types);
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
+    invalidation_enabled_types.Remove(syncer::SESSIONS);
+    invalidation_enabled_types.Remove(syncer::FAVICON_IMAGES);
+    invalidation_enabled_types.Remove(syncer::FAVICON_TRACKING);
+  }
+#endif
+  return invalidation_enabled_types;
+}
+
+}  // namespace
 
 namespace syncer {
 
@@ -292,8 +311,10 @@ void SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop(
     const ModelTypeSet failed_configuration_types,
     const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task) {
   if (invalidator_) {
+    ModelTypeSet invalidation_enabled_types =
+        GetInvalidationsEnabledTypes(enabled_types);
     bool success = invalidator_->UpdateRegisteredInvalidationIds(
-        this, ModelTypeSetToObjectIdSet(enabled_types));
+        this, ModelTypeSetToObjectIdSet(invalidation_enabled_types));
     DCHECK(success);
   }
 

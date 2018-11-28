@@ -571,6 +571,7 @@ jumbo_static_library("sync") {
   deps = [
     "//base:i18n",
     "//components/data_use_measurement/core",
+    "//components/invalidation/impl:feature_list",
     "//components/invalidation/public",
     "//components/keyed_service/core",
     "//components/metrics",
