@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+  <input width="300px" height="300px" id="testElt"/>
+  <textarea width="300px" height="300px" id="testElt2"></textarea>
+  <script>
+    // may need to attach tests separately in the console
+    document.addEventListener("bbContextMenu", e => console.log("bbContextMenu"));
+    document.addEventListener("contextmenu", e => console.log("regular contextmenu"));
+  </script>
+</body>
+</html>
