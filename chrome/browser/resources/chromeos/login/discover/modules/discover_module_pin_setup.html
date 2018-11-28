@@ -122,7 +122,12 @@
         [[i18nDynamic(locale, 'discoverPinSetupSubtitle1')]]
       </div>
       <div slot="subtitle" hidden="[[isStepHidden_(step_, 'done')]]">
-        [[i18nDynamic(locale, 'discoverPinSetupSubtitle3')]]<BR>
+        <div hidden="[[hasLoginSupport_]]">
+          [[i18nDynamic(locale, 'discoverPinSetupSubtitle3NoLogin')]]<br>
+        </div>
+        <div hidden="[[!hasLoginSupport_]]">
+          [[i18nDynamic(locale, 'discoverPinSetupSubtitle3WithLogin')]]<br>
+        </div>
       </div>
       <div slot="footer" class="flex layout horizontal center-justified">
           <setup-pin-keyboard id="pinKeyboard"
