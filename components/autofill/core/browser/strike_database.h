@@ -43,7 +43,7 @@ class StrikeDatabase : public KeyedService {
   explicit StrikeDatabase(const base::FilePath& database_dir);
   ~StrikeDatabase() override;
 
-  bool IsMaxStrikesLimitReached();
+  bool IsMaxStrikesLimitReached(const std::string id);
 
   // Increments in-memory cache and updates underlying ProtoDatabase.
   int AddStrike(const std::string id);
@@ -78,6 +78,8 @@ class StrikeDatabase : public KeyedService {
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeBrowsingDataRemoverDelegateTest,
                            StrikeDatabaseEmptyOnAutofillRemoveEverything);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardSaveStrikeDatabaseTest,
+                           GetKeyForCreditCardSaveTest);
   friend class StrikeDatabaseTest;
   friend class StrikeDatabaseTester;
 
