@@ -164,8 +164,8 @@ typedef struct {
 } PALETTE_MODE_INFO;
 
 typedef struct {
-  uint8_t use_filter_intra;
   FILTER_INTRA_MODE filter_intra_mode;
+  uint8_t use_filter_intra;
 } FILTER_INTRA_MODE_INFO;
 
 static const PREDICTION_MODE fimode_to_intradir[FILTER_INTRA_MODES] = {
@@ -208,8 +208,8 @@ typedef struct {
   int wedge_index;
   int wedge_sign;
   DIFFWTD_MASK_TYPE mask_type;
-  uint8_t *seg_mask;
   COMPOUND_TYPE type;
+  uint8_t *seg_mask;
 } INTERINTER_COMPOUND_DATA;
 
 #define INTER_TX_SIZE_BUF_LEN 16
@@ -219,29 +219,15 @@ typedef struct MB_MODE_INFO {
   // Common for both INTER and INTRA blocks
   BLOCK_SIZE sb_type;
   PREDICTION_MODE mode;
-  TX_SIZE tx_size;
-  uint8_t inter_tx_size[INTER_TX_SIZE_BUF_LEN];
-  int8_t skip;
-  int8_t skip_mode;
-  int8_t segment_id;
-  int8_t seg_id_predicted;  // valid only when temporal_update is enabled
-
   // Only for INTRA blocks
   UV_PREDICTION_MODE uv_mode;
 
-  PALETTE_MODE_INFO palette_mode_info;
-  uint8_t use_intrabc;
-
   // Only for INTER blocks
   InterpFilters interp_filters;
-  MV_REFERENCE_FRAME ref_frame[2];
 
   TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
 
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
-
-  // The actual prediction angle is the base angle + (angle_delta * step).
-  int8_t angle_delta[PLANE_TYPES];
 
   // interintra members
   INTERINTRA_MODE interintra_mode;
@@ -254,10 +240,7 @@ typedef struct MB_MODE_INFO {
   MOTION_MODE motion_mode;
   int overlappable_neighbors[2];
   int_mv mv[2];
-  uint8_t ref_mv_idx;
   PARTITION_TYPE partition;
-  /* deringing gain *per-superblock* */
-  int8_t cdef_strength;
   int current_qindex;
   int delta_lf_from_base;
   int delta_lf[FRAME_LF_COUNT];
@@ -276,6 +259,20 @@ typedef struct MB_MODE_INFO {
 
   int compound_idx;
   int comp_group_idx;
+  PALETTE_MODE_INFO palette_mode_info;
+  MV_REFERENCE_FRAME ref_frame[2];
+  int8_t skip;
+  int8_t skip_mode;
+  uint8_t inter_tx_size[INTER_TX_SIZE_BUF_LEN];
+  TX_SIZE tx_size;
+  int8_t segment_id;
+  int8_t seg_id_predicted;  // valid only when temporal_update is enabled
+  uint8_t use_intrabc;
+  // The actual prediction angle is the base angle + (angle_delta * step).
+  int8_t angle_delta[PLANE_TYPES];
+  /* deringing gain *per-superblock* */
+  int8_t cdef_strength;
+  uint8_t ref_mv_idx;
 } MB_MODE_INFO;
 
 static INLINE int is_intrabc_block(const MB_MODE_INFO *mbmi) {
