@@ -99,9 +99,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, ObjectSpecifier) {
 }
 
 // Bookmark folders at the root level.
-// http://code.google.com/p/chromium/issues/detail?id=84299
-IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest,
-                       DISABLED_BookmarkFolders) {
+IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, BookmarkFolders) {
   NSArray* bookmarkFolders = [NSApp bookmarkFolders];
   EXPECT_EQ(2U, [bookmarkFolders count]);
 
