@@ -8,6 +8,10 @@ namespace feed {
 
 namespace prefs {
 
+const char kEnableSnippets[] = "ntp_snippets.enable";
+
+const char kArticlesListVisible[] = "ntp_snippets.list_visible";
+
 const char kBackgroundRefreshPeriod[] = "feed.background_refresh_period";
 
 const char kLastFetchAttemptTime[] = "feed.last_fetch_attempt";

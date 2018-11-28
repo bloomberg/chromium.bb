@@ -77,7 +77,8 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // specific place that the FeedHostService does not know of.
   void Initialize(
       base::RepeatingClosure refresh_callback,
-      ScheduleBackgroundTaskCallback schedule_background_task_callback);
+      ScheduleBackgroundTaskCallback schedule_background_task_callback,
+      base::RepeatingClosure cancel_background_task_callback);
 
   // Called when the NTP is opened to decide how to handle displaying and
   // refreshing content.
@@ -132,9 +133,12 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // considered old enough for a given trigger to warrant a refresh.
   base::TimeDelta GetTriggerThreshold(TriggerType trigger);
 
-  // Schedules a task to wakeup and try to refresh. Overrides previously
+  // Schedules a task to wake up and try to refresh. Overrides previously
   // scheduled tasks.
   void ScheduleFixedTimerWakeUp(base::TimeDelta period);
+
+  // Clears the task to wake up and try to refresh.
+  void CancelFixedTimerWakeUp();
 
   // Non-owning reference to pref service providing durable storage.
   PrefService* profile_prefs_;
@@ -148,9 +152,12 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // Callback to request that an async refresh be started.
   base::RepeatingClosure refresh_callback_;
 
-  // Provides ability to schedule and cancel persistent background fixed timer
-  // wake ups that will call into OnFixedTimer().
+  // Provides ability to schedule persistent background fixed timer wake ups
+  // that will call into OnFixedTimer().
   ScheduleBackgroundTaskCallback schedule_background_task_callback_;
+
+  // Provides ability to cancel the persistent background fixed timer wake ups.
+  base::RepeatingClosure cancel_background_task_callback_;
 
   // When a background wake up has caused a fixed timer refresh, this callback
   // will be valid and holds a way to inform the task driving this wake up that

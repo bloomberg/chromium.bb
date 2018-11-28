@@ -149,6 +149,7 @@ public class FeedSchedulerBridge implements FeedScheduler {
     private void cancelWakeUp() {
         FeedRefreshTask.cancelWakeUp();
     }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedSchedulerBridge);
     private native int nativeShouldSessionRequestData(long nativeFeedSchedulerBridge,

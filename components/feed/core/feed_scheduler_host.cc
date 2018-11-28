@@ -179,16 +179,24 @@ void FeedSchedulerHost::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 void FeedSchedulerHost::Initialize(
     base::RepeatingClosure refresh_callback,
-    ScheduleBackgroundTaskCallback schedule_background_task_callback) {
+    ScheduleBackgroundTaskCallback schedule_background_task_callback,
+    base::RepeatingClosure cancel_background_task_callback) {
   // There should only ever be one scheduler host and bridge created. Neither
   // are ever destroyed before shutdown, and this method should only be called
   // once as the bridge is constructed.
   DCHECK(!refresh_callback_);
   DCHECK(!schedule_background_task_callback_);
+  DCHECK(!cancel_background_task_callback_);
 
   refresh_callback_ = std::move(refresh_callback);
   schedule_background_task_callback_ =
       std::move(schedule_background_task_callback);
+  cancel_background_task_callback_ = std::move(cancel_background_task_callback);
+
+  if (!profile_prefs_->GetBoolean(prefs::kArticlesListVisible)) {
+    CancelFixedTimerWakeUp();
+    return;
+  }
 
   base::TimeDelta old_period =
       profile_prefs_->GetTimeDelta(prefs::kBackgroundRefreshPeriod);
@@ -277,6 +285,15 @@ void FeedSchedulerHost::OnForegrounded() {
 
 void FeedSchedulerHost::OnFixedTimer(base::OnceClosure on_completion) {
   DCHECK(refresh_callback_);
+  DCHECK(cancel_background_task_callback_);
+
+  // While the check and cancel isn't strictly necessary, a long lived session
+  // could be issuing refreshes due to the background trigger while articles are
+  // not visible. So check and cancel.
+  if (!profile_prefs_->GetBoolean(prefs::kArticlesListVisible)) {
+    CancelFixedTimerWakeUp();
+  }
+
   if (ShouldRefresh(TriggerType::kFixedTimer)) {
     // There shouldn't typically be anything in |fixed_timer_completion_| right
     // now, but if there was, run it before we replace it.
@@ -339,10 +356,15 @@ bool FeedSchedulerHost::ShouldRefresh(TriggerType trigger) {
     return false;
   }
 
+  if (!profile_prefs_->GetBoolean(prefs::kArticlesListVisible)) {
+    DVLOG(2) << "Articles being hidden stopped refresh from trigger "
+             << static_cast<int>(trigger);
+    return false;
+  }
+
   base::TimeDelta attempt_age =
       clock_->Now() - profile_prefs_->GetTime(prefs::kLastFetchAttemptTime);
   UserClassifier::UserClass user_class = user_classifier_.GetUserClass();
-
   if (trigger == TriggerType::kNtpShown &&
       !time_until_first_shown_trigger_reported_) {
     time_until_first_shown_trigger_reported_ = true;
@@ -392,6 +414,7 @@ bool FeedSchedulerHost::ShouldRefresh(TriggerType trigger) {
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.Scheduler.RefreshTrigger",
                             trigger);
   tracking_oustanding_request_ = true;
+
   return true;
 }
 
@@ -412,7 +435,23 @@ base::TimeDelta FeedSchedulerHost::GetTriggerThreshold(TriggerType trigger) {
 
 void FeedSchedulerHost::ScheduleFixedTimerWakeUp(base::TimeDelta period) {
   profile_prefs_->SetTimeDelta(prefs::kBackgroundRefreshPeriod, period);
+
+  // CancelFixedTimerWakeUp() uses Preference::IsDefaultValue() to check if the
+  // cancellation logic needs to be run. We should therefor never schedule and
+  // set the preference to the default value. This DCHECK after SetTimeDelta
+  // verifies that this isn't happening.
+  DCHECK(!profile_prefs_->FindPreference(prefs::kBackgroundRefreshPeriod)
+              ->IsDefaultValue());
+
   schedule_background_task_callback_.Run(period);
+}
+
+void FeedSchedulerHost::CancelFixedTimerWakeUp() {
+  if (!profile_prefs_->FindPreference(prefs::kBackgroundRefreshPeriod)
+           ->IsDefaultValue()) {
+    profile_prefs_->ClearPref(prefs::kBackgroundRefreshPeriod);
+    cancel_background_task_callback_.Run();
+  }
 }
 
 }  // namespace feed
