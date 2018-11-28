@@ -349,8 +349,9 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
   // This test makes sure that rules are restored from the rule store
   // on registry (in particular, browser) restart.
 
-  // TODO(vabr): Once some API using declarative rules enters the stable
-  // channel, make sure to use that API here, and remove |channel|.
+  // The Declarative Web Request API used below to interact with the rule
+  // registry is not in stable, threfore set the channel to something where that
+  // API is available.
   ScopedCurrentChannel channel(version_info::Channel::UNKNOWN);
 
   ExtensionService* extension_service = env_.GetExtensionService();

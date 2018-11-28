@@ -741,7 +741,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   RunPermissionTest("split", false, false, "redirected1", "");
 }
 
-// TODO(vabr): Cure these flaky tests, http://crbug.com/238179.
+// TODO(crbug.com/238179): Cure these flaky tests.
 #if !defined(NDEBUG)
 #define MAYBE_PostData1 DISABLED_PostData1
 #define MAYBE_PostData2 DISABLED_PostData2
