@@ -4,12 +4,14 @@
 
 #include "components/previews/content/previews_hints.h"
 
+#include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -174,6 +176,22 @@ TEST_F(PreviewsHintsTest, IsBlacklisted) {
                                              PreviewsType::LOFI));
   EXPECT_TRUE(previews_hints->IsBlacklisted(GURL("https://black.com/path"),
                                             PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_FALSE(previews_hints->IsBlacklisted(GURL("https://nonblack.com"),
+                                             PreviewsType::LITE_PAGE_REDIRECT));
+}
+
+TEST_F(PreviewsHintsTest, IgnoreLitePageRedirectBlacklist) {
+  std::unique_ptr<PreviewsHints> previews_hints =
+      PreviewsHints::CreateForTesting(
+          std::make_unique<TestHostFilter>("black.com"));
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kIgnoreLitePageRedirectOptimizationBlacklist);
+
+  EXPECT_FALSE(previews_hints->IsBlacklisted(GURL("https://black.com/path"),
+                                             PreviewsType::LOFI));
+  EXPECT_FALSE(previews_hints->IsBlacklisted(GURL("https://black.com/path"),
+                                             PreviewsType::LITE_PAGE_REDIRECT));
   EXPECT_FALSE(previews_hints->IsBlacklisted(GURL("https://nonblack.com"),
                                              PreviewsType::LITE_PAGE_REDIRECT));
 }

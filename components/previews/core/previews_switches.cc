@@ -13,5 +13,9 @@ const char kIgnorePreviewsBlacklist[] = "ignore-previews-blacklist";
 // Override the Lite Page Preview Host.
 const char kLitePageServerPreviewHost[] = "litepage-server-previews-host";
 
+// Ignore the optimization hints blacklist for Lite Page Redirect previews.
+const char kIgnoreLitePageRedirectOptimizationBlacklist[] =
+    "ignore-litepage-redirect-optimization-blacklist";
+
 }  // namespace switches
 }  // namespace previews

@@ -7,6 +7,7 @@
 #include <array>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial_params.h"
@@ -18,6 +19,7 @@
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_switches.h"
 #include "url/gurl.h"
 
 namespace previews {
@@ -615,6 +617,11 @@ bool PreviewsHints::IsBlacklisted(const GURL& url, PreviewsType type) const {
   // Check large scale blacklists received from the server.
   // (At some point, we may have blacklisting to check in HintCache as well.)
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
+      return false;
+    }
+
     if (lite_page_redirect_blacklist_)
       return lite_page_redirect_blacklist_->ContainsHostSuffix(url);
   }
