@@ -375,4 +375,22 @@ TEST(MimeUtilTest, TestAddMultipartValueForUpload) {
   EXPECT_STREQ(ref_output, post_data.c_str());
 }
 
+TEST(MimeUtilTest, TestAddMultipartValueForUploadWithFileName) {
+  const char ref_output[] =
+      "--boundary\r\nContent-Disposition: form-data;"
+      " name=\"value name\"; filename=\"file name\"\r\nContent-Type: content "
+      "type"
+      "\r\n\r\nvalue\r\n"
+      "--boundary\r\nContent-Disposition: form-data;"
+      " name=\"value name\"; filename=\"file name\"\r\n\r\nvalue\r\n"
+      "--boundary--\r\n";
+  std::string post_data;
+  AddMultipartValueForUploadWithFileName("value name", "file name", "value",
+                                         "boundary", "content type",
+                                         &post_data);
+  AddMultipartValueForUploadWithFileName("value name", "file name", "value",
+                                         "boundary", "", &post_data);
+  AddMultipartFinalDelimiterForUpload("boundary", &post_data);
+  EXPECT_STREQ(ref_output, post_data.c_str());
+}
 }  // namespace net

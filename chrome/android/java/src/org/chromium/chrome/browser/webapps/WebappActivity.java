@@ -135,12 +135,6 @@ public class WebappActivity extends SingleTabActivity {
         mNotificationManager = new WebappActionsNotificationManager(this);
     }
 
-    private static LoadUrlParams createLoadUrlParams(WebappInfo info, Intent intent) {
-        LoadUrlParams params =
-                new LoadUrlParams(info.uri().toString(), PageTransition.AUTO_TOPLEVEL);
-        return params;
-    }
-
     @Override
     protected void onNewIntent(Intent intent) {
         if (intent == null) return;
@@ -156,10 +150,23 @@ public class WebappActivity extends SingleTabActivity {
             Log.e(TAG, "Failed to parse new Intent: " + intent);
             ApiCompatibilityUtils.finishAndRemoveTask(this);
         } else if (newWebappInfo.shouldForceNavigation() && mIsInitialized) {
-            LoadUrlParams params = createLoadUrlParams(newWebappInfo, intent);
-            params.setShouldClearHistoryList(true);
-            getActivityTab().loadUrl(params);
+            loadUrl(newWebappInfo, getActivityTab());
         }
+    }
+
+    protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
+        return false;
+    }
+
+    protected void loadUrl(WebappInfo webappInfo, Tab tab) {
+        if (loadUrlIfPostShareTarget(webappInfo)) {
+            // Web Share Target Post was successful, so don't load anything.
+            return;
+        }
+        LoadUrlParams params =
+                new LoadUrlParams(webappInfo.uri().toString(), PageTransition.AUTO_TOPLEVEL);
+        params.setShouldClearHistoryList(true);
+        tab.loadUrl(params);
     }
 
     protected boolean isInitialized() {
@@ -223,8 +230,7 @@ public class WebappActivity extends SingleTabActivity {
         // we saved instance state before loading a URL, so even after restoring from
         // SavedInstanceState we might not have a URL and should initialize from the intent.
         if (tab.getUrl().isEmpty()) {
-            LoadUrlParams params = createLoadUrlParams(mWebappInfo, getIntent());
-            tab.loadUrl(params);
+            loadUrl(mWebappInfo, tab);
         } else {
             if (getActivityType() != ActivityType.WEBAPK && NetworkChangeNotifier.isOnline()) {
                 tab.reloadIgnoringCache();

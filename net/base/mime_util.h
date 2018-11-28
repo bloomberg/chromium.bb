@@ -104,6 +104,16 @@ NET_EXPORT void AddMultipartValueForUpload(const std::string& value_name,
                                            const std::string& content_type,
                                            std::string* post_data);
 
+// Prepares one value as part of a multi-part upload request, with file name as
+// an additional parameter.
+NET_EXPORT void AddMultipartValueForUploadWithFileName(
+    const std::string& value_name,
+    const std::string& file_name,
+    const std::string& value,
+    const std::string& mime_boundary,
+    const std::string& content_type,
+    std::string* post_data);
+
 // Adds the final delimiter to a multi-part upload request.
 NET_EXPORT void AddMultipartFinalDelimiterForUpload(
     const std::string& mime_boundary,
