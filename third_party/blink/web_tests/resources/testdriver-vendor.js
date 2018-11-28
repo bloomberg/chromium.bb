@@ -138,4 +138,7 @@
     });
   };
 
+  // Enable automation so we don't wait for user input on unimplemented APIs
+  window.test_driver_internal.in_automation = true;
+
 })();
