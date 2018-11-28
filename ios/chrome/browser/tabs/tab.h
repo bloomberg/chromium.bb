@@ -91,9 +91,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Delegate used to show HTTP Authentication dialogs.
 @property(nonatomic, weak) id<TabDialogDelegate> dialogDelegate;
 
-// Whether this tab is displaying a voice search result.
-@property(nonatomic, readonly) BOOL isVoiceSearchResultsTab;
-
 // |YES| if the tab has finished loading.
 @property(nonatomic, readonly) BOOL loadFinished;
 
