@@ -349,4 +349,8 @@ void LegacyNavigationManagerImpl::AddPushStateItemIfNecessary(
                                transition:transition];
 }
 
+bool LegacyNavigationManagerImpl::IsRestoreSessionInProgress() const {
+  return false;  // Session restoration is synchronous.
+}
+
 }  // namespace web

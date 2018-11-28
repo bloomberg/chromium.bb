@@ -609,7 +609,9 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
   items.push_back(std::move(item0));
   items.push_back(std::move(item1));
 
+  ASSERT_FALSE(manager_->IsRestoreSessionInProgress());
   manager_->Restore(1 /* last_committed_item_index */, std::move(items));
+  EXPECT_TRUE(manager_->IsRestoreSessionInProgress());
 
   NavigationItem* pending_item = manager_->GetPendingItem();
   ASSERT_TRUE(pending_item != nullptr);
@@ -673,7 +675,9 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionResetsHistory) {
   restored_item->SetURL(GURL("http://restored.com"));
   std::vector<std::unique_ptr<NavigationItem>> items;
   items.push_back(std::move(restored_item));
+  ASSERT_FALSE(manager_->IsRestoreSessionInProgress());
   manager_->Restore(0 /* last_committed_item_index */, std::move(items));
+  EXPECT_TRUE(manager_->IsRestoreSessionInProgress());
 
   // Check that last_committed_index, previous_item_index and pending_item_index
   // are all reset to -1. Note that last_committed_item_index will change to the

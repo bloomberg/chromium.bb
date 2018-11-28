@@ -353,6 +353,7 @@ TEST_P(WebStateTest, RestoreLargeSession) {
                     navigation_manager->CanGoForward();
     if (!restored) {
       EXPECT_FALSE(navigation_manager->CanGoForward());
+      DCHECK_EQ(0.0, web_state_ptr->GetLoadingProgress());
       // TODO(crbug.com/877671): Ensure that the following API work correctly:
       //  - WebState::GetLastCommittedURL
       //  - NavigationManager::GetBackwardItems
@@ -375,7 +376,6 @@ TEST_P(WebStateTest, RestoreLargeSession) {
     }
     // TODO(crbug.com/877671): Ensure that the following API work correctly:
     //  - WebState::GetTitle
-    //  - WebState::GetLoadingProgress
     EXPECT_FALSE(web_state_ptr->IsCrashed());
     EXPECT_FALSE(web_state_ptr->IsEvicted());
     EXPECT_EQ("http://www.0.com/", web_state_ptr->GetVisibleURL());
@@ -401,7 +401,9 @@ TEST_P(WebStateTest, RestoreLargeSession) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     EXPECT_FALSE(IsWKInternalUrl(web_state_ptr->GetVisibleURL()));
 
-    return !navigation_manager->GetPendingItem() && !web_state_ptr->IsLoading();
+    return !navigation_manager->GetPendingItem() &&
+           !web_state_ptr->IsLoading() &&
+           web_state_ptr->GetLoadingProgress() == 1.0;
   }));
 }
 

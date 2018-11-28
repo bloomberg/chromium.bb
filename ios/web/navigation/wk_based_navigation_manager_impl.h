@@ -112,6 +112,7 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   void AddPushStateItemIfNecessary(const GURL& url,
                                    NSString* state_object,
                                    ui::PageTransition transition) override;
+  bool IsRestoreSessionInProgress() const override;
 
   // NavigationManager:
   BrowserState* GetBrowserState() const override;
