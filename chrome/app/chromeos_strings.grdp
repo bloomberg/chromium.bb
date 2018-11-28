@@ -816,8 +816,11 @@
   <message name="IDS_DISCOVER_PIN_SETUP_TITLE3" desc="A title of the dialog that finishes 'PIN-unlock' setup process suggesting that it was successful.">
     Your PIN is added
   </message>
-  <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up.">
-    You can use PIN to unlock your device when you signed out.
+  <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3_NO_LOGIN" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up.">
+    You can use your PIN to unlock your device.
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3_WITH_LOGIN" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up.">
+    You can use your PIN to sign in to or unlock your device.
   </message>
   <message name="IDS_DISCOVER_PIN_SETUP" desc="A label on the button that leads to Pin Unlock feature set up.">
     Pin setup

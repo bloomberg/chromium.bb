@@ -118,6 +118,15 @@ Polymer({
         type: Boolean,
         value: false,
       },
+
+      /**
+       * Should be true when device has support for PIN login.
+       * @private
+       */
+      hasLoginSupport_: {
+        type: Boolean,
+        value: false,
+      },
     },
 
     /**
@@ -191,6 +200,11 @@ Polymer({
 
     /** @override */
     show: function() {
+      this.discoverCallWithReply(
+          'discover.pinSetup.getHasLoginSupport', [], (is_available) => {
+            this.hasLoginSupport_ = is_available;
+          });
+
       if (this.firstRun) {
         this.getFirstRunUserPassword_();
       } else {
