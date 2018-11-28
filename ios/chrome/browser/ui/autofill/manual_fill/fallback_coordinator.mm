@@ -70,6 +70,7 @@ initWithBaseViewController:(UIViewController*)viewController
   popoverPresentationController.permittedArrowDirections =
       UIPopoverArrowDirectionUp | UIMenuControllerArrowDown;
   popoverPresentationController.delegate = self;
+  popoverPresentationController.backgroundColor = UIColor.whiteColor;
 }
 
 #pragma mark - ChromeCoordinator

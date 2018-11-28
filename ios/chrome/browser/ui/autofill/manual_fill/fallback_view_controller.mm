@@ -27,7 +27,7 @@ namespace {
 constexpr float PopoverPreferredWidth = 320;
 
 // This is the maximum height used for |self.preferredContentSize|.
-constexpr float PopoverMaxHeight = 250;
+constexpr float PopoverMaxHeight = 360;
 
 }  // namespace
 
