@@ -234,8 +234,8 @@ calculate_pixman_format(struct fb_var_screeninfo *vinfo,
 	    vinfo->blue.msb_right != 0)
 		return 0;
 
-	/* Work out the format type from the offsets. We only support RGBA and
-	 * ARGB at the moment. */
+	/* Work out the format type from the offsets. We only support RGBA, ARGB
+	 * and ABGR at the moment. */
 	type = PIXMAN_TYPE_OTHER;
 
 	if ((vinfo->transp.offset >= vinfo->red.offset ||
@@ -247,6 +247,10 @@ calculate_pixman_format(struct fb_var_screeninfo *vinfo,
 	         vinfo->green.offset >= vinfo->blue.offset &&
 	         vinfo->blue.offset >= vinfo->transp.offset)
 		type = PIXMAN_TYPE_RGBA;
+	else if (vinfo->transp.offset >= vinfo->blue.offset &&
+	         vinfo->blue.offset >= vinfo->green.offset &&
+	         vinfo->green.offset >= vinfo->red.offset)
+		type = PIXMAN_TYPE_ABGR;
 
 	if (type == PIXMAN_TYPE_OTHER)
 		return 0;
