@@ -99,7 +99,7 @@ class MODULES_EXPORT CallSetupStateTracker {
 
   OffererState offerer_state() const;
   AnswererState answerer_state() const;
-  CallSetupState CallSetupState() const;
+  CallSetupState GetCallSetupState() const;
 
   bool NoteOffererStateEvent(OffererState event);
   bool NoteAnswererStateEvent(AnswererState event);

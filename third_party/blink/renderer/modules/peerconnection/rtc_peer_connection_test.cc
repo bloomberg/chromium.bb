@@ -839,7 +839,7 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, InitialState) {
   Initialize(scope);
   EXPECT_EQ(OffererState::kNotStarted, tracker_->offerer_state());
   EXPECT_EQ(AnswererState::kNotStarted, tracker_->answerer_state());
-  EXPECT_EQ(CallSetupState::kNotStarted, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kNotStarted, tracker_->GetCallSetupState());
 }
 
 TEST_F(RTCPeerConnectionCallSetupStateTest, OffererSucceeded) {
@@ -848,7 +848,7 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, OffererSucceeded) {
   // createOffer()
   pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create());
   EXPECT_EQ(OffererState::kCreateOfferPending, tracker_->offerer_state());
-  EXPECT_EQ(CallSetupState::kStarted, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kCreateOfferResolved, tracker_->offerer_state());
   // setLocalDescription(offer)
@@ -859,10 +859,10 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, OffererSucceeded) {
   // setRemoteDescription(answer)
   pc->setRemoteDescription(scope.GetScriptState(), EmptyAnswer());
   EXPECT_EQ(OffererState::kSetRemoteAnswerPending, tracker_->offerer_state());
-  EXPECT_EQ(CallSetupState::kStarted, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kSetRemoteAnswerResolved, tracker_->offerer_state());
-  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->GetCallSetupState());
 }
 
 TEST_F(RTCPeerConnectionCallSetupStateTest, OffererFailedAtCreateOffer) {
@@ -873,7 +873,7 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, OffererFailedAtCreateOffer) {
   pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kCreateOfferRejected, tracker_->offerer_state());
-  EXPECT_EQ(CallSetupState::kFailed, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
 }
 
 TEST_F(RTCPeerConnectionCallSetupStateTest,
@@ -888,7 +888,7 @@ TEST_F(RTCPeerConnectionCallSetupStateTest,
   pc->setLocalDescription(scope.GetScriptState(), EmptyOffer());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kSetLocalOfferRejected, tracker_->offerer_state());
-  EXPECT_EQ(CallSetupState::kFailed, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
 }
 
 TEST_F(RTCPeerConnectionCallSetupStateTest,
@@ -906,7 +906,7 @@ TEST_F(RTCPeerConnectionCallSetupStateTest,
   pc->setRemoteDescription(scope.GetScriptState(), EmptyAnswer());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kSetRemoteAnswerRejected, tracker_->offerer_state());
-  EXPECT_EQ(CallSetupState::kFailed, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
 }
 
 TEST_F(RTCPeerConnectionCallSetupStateTest, OffererLegacyApiPath) {
@@ -919,7 +919,7 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, OffererLegacyApiPath) {
                   ToDictionary(scope, RTCOfferOptions::Create()),
                   scope.GetExceptionState());
   EXPECT_EQ(OffererState::kCreateOfferPending, tracker_->offerer_state());
-  EXPECT_EQ(CallSetupState::kStarted, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kCreateOfferResolved, tracker_->offerer_state());
   // Legacy setLocalDescription(offer) with callbacks
@@ -936,10 +936,10 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, OffererLegacyApiPath) {
       CreateEmptyCallback<V8VoidFunction>(scope),
       CreateEmptyCallback<V8RTCPeerConnectionErrorCallback>(scope));
   EXPECT_EQ(OffererState::kSetRemoteAnswerPending, tracker_->offerer_state());
-  EXPECT_EQ(CallSetupState::kStarted, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kSetRemoteAnswerResolved, tracker_->offerer_state());
-  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->GetCallSetupState());
 }
 
 TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererSucceeded) {
@@ -948,7 +948,7 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererSucceeded) {
   // setRemoteDescription(offer)
   pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer());
   EXPECT_EQ(AnswererState::kSetRemoteOfferPending, tracker_->answerer_state());
-  EXPECT_EQ(CallSetupState::kStarted, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kSetRemoteOfferResolved, tracker_->answerer_state());
   // createAnswer()
@@ -959,10 +959,10 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererSucceeded) {
   // setLocalDescription(answer)
   pc->setLocalDescription(scope.GetScriptState(), EmptyAnswer());
   EXPECT_EQ(AnswererState::kSetLocalAnswerPending, tracker_->answerer_state());
-  EXPECT_EQ(CallSetupState::kStarted, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kSetLocalAnswerResolved, tracker_->answerer_state());
-  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->GetCallSetupState());
 }
 
 TEST_F(RTCPeerConnectionCallSetupStateTest,
@@ -974,7 +974,7 @@ TEST_F(RTCPeerConnectionCallSetupStateTest,
   pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kSetRemoteOfferRejected, tracker_->answerer_state());
-  EXPECT_EQ(CallSetupState::kFailed, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
 }
 
 TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererFailedAtCreateAnswer) {
@@ -988,7 +988,7 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererFailedAtCreateAnswer) {
   pc->createAnswer(scope.GetScriptState(), RTCAnswerOptions::Create());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kCreateAnswerRejected, tracker_->answerer_state());
-  EXPECT_EQ(CallSetupState::kFailed, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
 }
 
 TEST_F(RTCPeerConnectionCallSetupStateTest,
@@ -1006,7 +1006,7 @@ TEST_F(RTCPeerConnectionCallSetupStateTest,
   pc->setLocalDescription(scope.GetScriptState(), EmptyAnswer());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kSetLocalAnswerRejected, tracker_->answerer_state());
-  EXPECT_EQ(CallSetupState::kFailed, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
 }
 
 TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererLegacyApiPath) {
@@ -1018,7 +1018,7 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererLegacyApiPath) {
       CreateEmptyCallback<V8VoidFunction>(scope),
       CreateEmptyCallback<V8RTCPeerConnectionErrorCallback>(scope));
   EXPECT_EQ(AnswererState::kSetRemoteOfferPending, tracker_->answerer_state());
-  EXPECT_EQ(CallSetupState::kStarted, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kSetRemoteOfferResolved, tracker_->answerer_state());
   // Legacy createAnswer() with callbacks
@@ -1035,10 +1035,10 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererLegacyApiPath) {
       CreateEmptyCallback<V8VoidFunction>(scope),
       CreateEmptyCallback<V8RTCPeerConnectionErrorCallback>(scope));
   EXPECT_EQ(AnswererState::kSetLocalAnswerPending, tracker_->answerer_state());
-  EXPECT_EQ(CallSetupState::kStarted, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kSetLocalAnswerResolved, tracker_->answerer_state());
-  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->CallSetupState());
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->GetCallSetupState());
 }
 
 // Test that simple Plan B is considered safe regardless of configurations.
