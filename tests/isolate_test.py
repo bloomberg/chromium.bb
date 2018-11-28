@@ -97,6 +97,22 @@ TOUCH_ROOT_ISOLATE = {
 }
 
 
+class MockStorage(object):
+  def __init__(self):
+    self.server_ref = None
+    self.items = None
+
+  def __enter__(self):
+    return self
+
+  def __exit__(self, _exc_type, _exc_value, _traceback):
+    return False
+
+  def upload_items(self, items):
+    assert self.items is None, self.items
+    self.items = items
+
+
 class IsolateBase(auto_stub.TestCase):
   def setUp(self):
     super(IsolateBase, self).setUp()
@@ -1241,16 +1257,11 @@ class IsolateCommand(IsolateBase):
     return out
 
   def test_CMDarchive(self):
-    actual = []
-
-    def mocked_upload_tree(server_ref, infiles):
-      # |infiles| may be a generator of pair, materialize it into a list.
-      actual.append({
-        'base_url': server_ref.url,
-        'infiles': dict(infiles),
-        'namespace': server_ref.namespace,
-      })
-    self.mock(isolateserver, 'upload_tree', mocked_upload_tree)
+    storage = MockStorage()
+    def mocked_get_storage(server_ref):
+      storage.server_ref = server_ref
+      return storage
+    self.mock(isolateserver, 'get_storage', mocked_get_storage)
 
     def join(*path):
       return os.path.join(self.cwd, *path)
@@ -1281,40 +1292,24 @@ class IsolateCommand(IsolateBase):
     ]
     self.assertEqual(0, isolate.CMDarchive(optparse.OptionParser(), cmd))
     expected = [
-        {
-          'base_url': 'http://localhost:1',
-          'infiles': {
-            join(isolated_file): {
-              'priority': '0',
-            },
-            join('foo'): {
-              'h': '520d41b29f891bbaccf31d9fcfa72e82ea20fcf0',
-              's': 4,
-            },
-          },
-          'namespace': 'default-gzip',
-        },
+      (join(isolated_file), 'non_deterministic'),
+      (join('foo'), '520d41b29f891bbaccf31d9fcfa72e82ea20fcf0'),
     ]
-    # These always change.
-    actual[0]['infiles'][join(isolated_file)].pop('h')
-    actual[0]['infiles'][join(isolated_file)].pop('s')
-    # 'm' is not set on Windows.
-    actual[0]['infiles'][join('foo')].pop('m', None)
-    actual[0]['infiles'][join('foo')].pop('t')
-    self.assertEqual(expected, actual)
+    actual = []
+    for f in storage.items:
+      h = f.digest
+      if f.path.endswith('.isolated'):
+        h = 'non_deterministic'
+      actual.append((f.path, h))
+    self.assertEqual(sorted(expected), sorted(actual))
 
   def test_CMDbatcharchive(self):
     # Same as test_CMDarchive but via code path that parses *.gen.json files.
-    actual = []
-
-    def mocked_upload_tree(server_ref, infiles):
-      # |infiles| may be a generator of pair, materialize it into a list.
-      actual.append({
-        'base_url': server_ref.url,
-        'infiles': dict(infiles),
-        'namespace': server_ref.namespace,
-      })
-    self.mock(isolateserver, 'upload_tree', mocked_upload_tree)
+    storage = MockStorage()
+    def mocked_get_storage(server_ref):
+      storage.server_ref = server_ref
+      return storage
+    self.mock(isolateserver, 'get_storage', mocked_get_storage)
 
     def join(*path):
       return os.path.join(self.cwd, *path)
@@ -1385,38 +1380,17 @@ class IsolateCommand(IsolateBase):
     self.assertEqual(
         0,
         isolate.CMDbatcharchive(logging_utils.OptionParserWithLogging(), cmd))
+
     expected = [
-        {
-          'base_url': 'http://localhost:1',
-          'infiles': {
-            join(isolated_file_x): {
-              'priority': '0',
-            },
-            join('foo'): {
-              'h': '520d41b29f891bbaccf31d9fcfa72e82ea20fcf0',
-              's': 4,
-            },
-            join(isolated_file_y): {
-              'priority': '0',
-            },
-            join('bar'): {
-              'h': 'e918b3a3f9597e3cfdc62ce20ecf5756191cb3ec',
-              's': 4,
-            },
-          },
-          'namespace': 'default-gzip',
-        },
+      (join('bar'), 'e918b3a3f9597e3cfdc62ce20ecf5756191cb3ec'),
+      (join('foo'), '520d41b29f891bbaccf31d9fcfa72e82ea20fcf0'),
     ]
-    # These always change.
-    actual[0]['infiles'][join(isolated_file_x)].pop('h')
-    actual[0]['infiles'][join(isolated_file_x)].pop('s')
-    actual[0]['infiles'][join('foo')].pop('m', None)
-    actual[0]['infiles'][join('foo')].pop('t')
-    actual[0]['infiles'][join(isolated_file_y)].pop('h')
-    actual[0]['infiles'][join(isolated_file_y)].pop('s')
-    actual[0]['infiles'][join('bar')].pop('m', None)
-    actual[0]['infiles'][join('bar')].pop('t')
-    self.assertEqual(expected, actual)
+    with open(isolated_file_x, 'rb') as f:
+      expected.append((isolated_file_x, hashlib.sha1(f.read()).hexdigest()))
+    with open(isolated_file_y, 'rb') as f:
+      expected.append((isolated_file_y, hashlib.sha1(f.read()).hexdigest()))
+    actual = [(f.path, f.digest) for f in storage.items]
+    self.assertEqual(sorted(expected), sorted(actual))
 
     expected_json = {
       'x': isolated_format.hash_file(

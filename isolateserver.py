@@ -7,6 +7,7 @@
 
 __version__ = '0.8.6'
 
+import collections
 import errno
 import functools
 import logging
@@ -443,6 +444,7 @@ class Storage(object):
     Returns:
       List of items that were uploaded. All other items are already there.
     """
+    # TODO(maruel): Stop serializing the list.
     logging.info('upload_items(items=%d)', len(items))
 
     # Ensure all digests are calculated.
@@ -1032,36 +1034,6 @@ def get_storage(server_ref):
   return Storage(isolate_storage.get_storage_api(server_ref))
 
 
-def upload_tree(server_ref, infiles):
-  """Uploads the given tree to the given url.
-
-  Arguments:
-    server_ref: isolate_storage.ServerRef instance.
-    infiles:   iterable of pairs (absolute path, metadata dict) of files.
-  """
-  # Convert |infiles| into a list of FileItem objects, skip duplicates.
-  # Filter out symlinks, since they are not represented by items on isolate
-  # server side.
-  items = []
-  seen = set()
-  skipped = 0
-  for filepath, metadata in infiles:
-    if 'l' not in metadata and filepath not in seen:
-      seen.add(filepath)
-      item = FileItem(
-          path=filepath,
-          digest=metadata['h'],
-          size=metadata['s'],
-          high_priority=metadata.get('priority') == '0')
-      items.append(item)
-    else:
-      skipped += 1
-
-  logging.info('Skipped %d duplicated entries', skipped)
-  with get_storage(server_ref) as storage:
-    return storage.upload_items(items)
-
-
 def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
                    filter_cb=None):
   """Aggressively downloads the .isolated file(s), then download all the files.
@@ -1225,98 +1197,93 @@ def directory_to_metadata(root, algo, blacklist):
   return items, metadata
 
 
+def _enqueue_dir(dirpath, blacklist, tempdir, hash_algo, hash_algo_name):
+  """Called by archive_files_to_storage for a directory.
+
+  Create an .isolated file.
+  """
+  items, metadata = directory_to_metadata(dirpath, hash_algo, blacklist)
+  # TODO(maruel): Stop putting to disk.
+  handle, isolated = tempfile.mkstemp(dir=tempdir, suffix=u'.isolated')
+  os.close(handle)
+  data = {
+      'algo': hash_algo_name,
+      'files': metadata,
+      'version': isolated_format.ISOLATED_FILE_VERSION,
+  }
+  isolated_format.save_isolated(isolated, data)
+  h = isolated_format.hash_file(isolated, hash_algo)
+  items.append(
+      FileItem(
+          path=isolated,
+          digest=h,
+          size=fs.stat(isolated).st_size,
+          high_priority=True))
+  return items, h
+
+
 def archive_files_to_storage(storage, files, blacklist):
-  """Stores every entries and returns the relevant data.
+  """Stores every entries into remote storage and returns stats.
 
   Arguments:
     storage: a Storage object that communicates with the remote object store.
-    files: list of file paths to upload. If a directory is specified, a
-           .isolated file is created and its hash is returned.
+    files: iterable of files to upload. If a directory is specified (with a
+          trailing slash), a .isolated file is created and its hash is returned.
+          Duplicates are skipped.
     blacklist: function that returns True if a file should be omitted.
 
   Returns:
-    tuple(list(tuple(hash, path)), list(FileItem cold), list(FileItem hot)).
+    tuple(OrderedDict(path: hash), list(FileItem cold), list(FileItem hot)).
     The first file in the first item is always the isolated file.
   """
-  assert all(isinstance(i, unicode) for i in files), files
-  if len(files) != len(set(map(os.path.abspath, files))):
-    raise AlreadyExists('Duplicate entries found.')
-
-  # List of tuple(hash, path).
-  results = []
-  # The temporary directory is only created as needed.
-  tempdir = None
+  # Dict of path to hash.
+  results = collections.OrderedDict()
+  # TODO(maruel): Stop needing a temporary directory.
+  tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
   try:
-    # TODO(maruel): Yield the files to a worker thread.
     items_to_upload = []
     hash_algo = storage.server_ref.hash_algo
     hash_algo_name = storage.server_ref.hash_algo_name
     for f in files:
+      assert isinstance(f, unicode), repr(f)
+      if f in results:
+        # Duplicate
+        continue
       try:
         filepath = os.path.abspath(f)
         if fs.isdir(filepath):
           # Uploading a whole directory.
-          items, metadata = directory_to_metadata(
-              filepath, hash_algo, blacklist)
-
-          # Create the .isolated file.
-          if not tempdir:
-            tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
-          handle, isolated = tempfile.mkstemp(
-              dir=tempdir, suffix=u'.isolated')
-          os.close(handle)
-          data = {
-              'algo': hash_algo_name,
-              'files': metadata,
-              'version': isolated_format.ISOLATED_FILE_VERSION,
-          }
-          isolated_format.save_isolated(isolated, data)
-          h = isolated_format.hash_file(isolated, hash_algo)
+          items, h = _enqueue_dir(
+              filepath, blacklist, tempdir, hash_algo, hash_algo_name)
           items_to_upload.extend(items)
-          items_to_upload.append(
-              FileItem(
-                  path=isolated,
-                  digest=h,
-                  size=fs.stat(isolated).st_size,
-                  high_priority=True))
-          results.append((h, f))
-
         elif fs.isfile(filepath):
           h = isolated_format.hash_file(filepath, hash_algo)
+          logging.info('- %s: %s', f, h)
           items_to_upload.append(
             FileItem(
                 path=filepath,
                 digest=h,
                 size=fs.stat(filepath).st_size,
                 high_priority=f.endswith('.isolated')))
-          results.append((h, f))
         else:
           raise Error('%s is neither a file or directory.' % f)
+        results[f] = h
       except OSError:
         raise Error('Failed to process %s.' % f)
 
-    # Essentially upload_tree().
     uploaded = storage.upload_items(items_to_upload)
-    cold = [i for i in items_to_upload if i in uploaded]
-    hot = [i for i in items_to_upload if i not in uploaded]
+    cold = []
+    hot = []
+    uploaded = [f.digest for f in uploaded]
+    for i in items_to_upload:
+      if i.digest in uploaded:
+        cold.append(i)
+      else:
+        hot.append(i)
     return results, cold, hot
   finally:
     if tempdir and fs.isdir(tempdir):
       file_path.rmtree(tempdir)
-
-
-def archive(server_ref, files, blacklist):
-  if files == ['-']:
-    files = sys.stdin.readlines()
-
-  if not files:
-    raise Error('Nothing to upload')
-
-  files = [f.decode('utf-8') for f in files]
-  blacklist = tools.gen_blacklist(blacklist)
-  with get_storage(server_ref) as storage:
-    results, _cold, _hot = archive_files_to_storage(storage, files, blacklist)
-  print('\n'.join('%s %s' % (r[0], r[1]) for r in results))
 
 
 @subcommand.usage('<file1..fileN> or - to read from stdin')
@@ -1337,10 +1304,18 @@ def CMDarchive(parser, args):
   process_isolate_server_options(parser, options, True, True)
   server_ref = isolate_storage.ServerRef(
       options.isolate_server, options.namespace)
+  if files == ['-']:
+    files = (l.rstrip('\n\r') for l in sys.stdin)
+  if not files:
+    parser.error('Nothing to upload')
+  files = (f.decode('utf-8') for f in files)
+  blacklist = tools.gen_blacklist(options.blacklist)
   try:
-    archive(server_ref, files, options.blacklist)
+    with get_storage(server_ref) as storage:
+      results, _cold, _hot = archive_files_to_storage(storage, files, blacklist)
   except (Error, local_caching.NoMoreSpace) as e:
     parser.error(e.args[0])
+  print('\n'.join('%s %s' % (h, f) for f, h in results.iteritems()))
   return 0
 
 

@@ -129,6 +129,7 @@ class FakeItem(isolate_storage.Item):
 class MockedStorageApi(isolate_storage.StorageApi):
   def __init__(
       self, server_ref, missing_hashes, push_side_effect=None):
+    # TODO(maruel): 'missing_hashes' is an anti-pattern.
     self.missing_hashes = missing_hashes
     self.push_side_effect = push_side_effect
     self.push_calls = []
@@ -440,74 +441,62 @@ class StorageTest(TestCase):
         self.assertEqual(
             [expected_push] * attempts, storage_api.push_calls)
 
-  def test_upload_tree(self):
-    files = {
-      u'/a': {
-        's': 100,
-        'h': 'hash_a',
-      },
-      u'/some/dir/b': {
-        's': 200,
-        'h': 'hash_b',
-      },
-      u'/another/dir/c': {
-        's': 300,
-        'h': 'hash_c',
-      },
-      u'/a_copy': {
-        's': 100,
-        'h': 'hash_a',
-      },
+  def test_archive_files_to_storage(self):
+    # Mocked
+    files_content = {}
+    def add(p, c):
+      with open(os.path.join(self.tempdir, p), 'wb') as f:
+        f.write(c)
+      files_content[p] = c
+    add(u'a', 'a'*100)
+    add(u'b', 'b'*200)
+    os.mkdir(os.path.join(self.tempdir, 'sub'))
+    add(os.path.join(u'sub', u'c'), 'c'*300)
+    add(os.path.join(u'sub', u'a_copy'), 'a'*100)
+
+    files_hash = {
+      p: hashlib.sha1(c).hexdigest() for p, c in files_content.iteritems()
     }
-    files_data = {k: 'x' * files[k]['s'] for k in files}
-    all_hashes = set(f['h'] for f in files.itervalues())
-    missing_hashes = {'hash_a': 'push a', 'hash_b': 'push b'}
-
-    # Files read by mocked_file_read.
-    read_calls = []
-
-    def mocked_file_read(filepath, chunk_size=0, offset=0):
-      self.assertIn(filepath, files_data)
-      read_calls.append(filepath)
-      return files_data[filepath]
-    self.mock(isolateserver, 'file_read', mocked_file_read)
-
+    # 'a' and 'sub/c' are missing.
+    missing = {
+      files_hash[u'a']: u'a',
+      files_hash[os.path.join(u'sub', u'c')]: os.path.join(u'sub', u'c'),
+    }
     server_ref = isolate_storage.ServerRef(
         'http://localhost:1', 'some-namespace')
-    storage_api = MockedStorageApi(server_ref, missing_hashes)
+    storage_api = MockedStorageApi(server_ref, missing)
     storage = isolateserver.Storage(storage_api)
-    def mock_get_storage(server_ref):
-      self.assertEqual('http://localhost:1', server_ref.url)
-      self.assertEqual('some-namespace', server_ref.namespace)
-      return storage
-    self.mock(isolateserver, 'get_storage', mock_get_storage)
+    with storage:
+      results, cold, hot = isolateserver.archive_files_to_storage(
+          storage, [os.path.join(self.tempdir, p) for p in files_content], None)
+    self.assertEqual(
+        {os.path.join(self.tempdir, f): h for f, h in files_hash.iteritems()},
+        dict(results))
 
-    isolateserver.upload_tree(server_ref, files.iteritems())
-
-    # Was reading only missing files.
-    self.assertEqualIgnoringOrder(
-        missing_hashes,
-        [files[path]['h'] for path in read_calls])
+    expected = [
+      (os.path.join(self.tempdir, u'a'), files_hash['a']),
+      (os.path.join(self.tempdir, u'sub', u'c'),
+        files_hash[os.path.join(u'sub', u'c')]),
+      (os.path.join(self.tempdir, u'sub', u'a_copy'),
+        files_hash[os.path.join(u'sub', u'a_copy')]),
+    ]
+    self.assertEqual(expected, [(f.path, f.digest) for f in cold])
+    self.assertEqual(
+        [(os.path.join(self.tempdir, u'b'), files_hash['b'])],
+        [(f.path, f.digest) for f in hot])
     # 'contains' checked for existence of all files.
     self.assertEqualIgnoringOrder(
-        all_hashes,
+        set(files_hash.itervalues()),
         [i.digest for i in sum(storage_api.contains_calls, [])])
     # Pushed only missing files.
     self.assertEqualIgnoringOrder(
-        missing_hashes,
+        list(missing),
         [call[0].digest for call in storage_api.push_calls])
     # Pushing with correct data, size and push state.
-    for pushed_item, push_state, pushed_content in storage_api.push_calls:
-      filenames = [
-          name for name, metadata in files.iteritems()
-          if metadata['h'] == pushed_item.digest
-      ]
-      # If there are multiple files that map to same hash, upload_tree chooses
-      # a first one.
-      filename = filenames[0]
-      self.assertEqual(filename, pushed_item.path)
-      self.assertEqual(files_data[filename], pushed_content)
-      self.assertEqual(missing_hashes[pushed_item.digest], push_state)
+    for pushed_item, _push_state, pushed_content in storage_api.push_calls:
+      filename = missing[pushed_item.digest]
+      self.assertEqual(os.path.join(self.tempdir, filename), pushed_item.path)
+      self.assertEqual(files_content[filename], pushed_content)
 
 
 class IsolateServerStorageApiTest(TestCase):
@@ -894,41 +883,52 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
   def test_push_and_fetch_gzip(self):
     self.run_push_and_fetch_test('default-gzip')
 
-  if sys.maxsize == (2**31) - 1:
-    def test_archive_multiple_huge_file(self):
-      self.server.discard_content()
-      # Create multiple files over 2.5gb. This test exists to stress the virtual
-      # address space on 32 bits systems. Make real files since it wouldn't fit
-      # memory by definition.
-      # Sadly, this makes this test very slow so it's only run on 32 bits
-      # platform, since it's known to work on 64 bits platforms anyway.
-      #
-      # It's a fairly slow test, well over 15 seconds.
-      files = {}
-      size = 512 * 1024 * 1024
-      for i in xrange(5):
-        name = '512mb_%d.%s' % (i, isolateserver.ALREADY_COMPRESSED_TYPES[0])
-        p = os.path.join(self.tempdir, name)
-        with open(p, 'wb') as f:
-          # Write 512mb.
-          h = hashlib.sha1()
-          data = os.urandom(1024)
-          for _ in xrange(size / 1024):
-            f.write(data)
-            h.update(data)
-          os.chmod(p, 0600)
-          files[p] = {
-            'h': h.hexdigest(),
-            'm': 0600,
-            's': size,
-          }
-          if sys.platform == 'win32':
-            files[p].pop('m')
+  def _archive_smoke(self, size):
+    self.server.store_hash_instead()
+    files = {}
+    for i in xrange(5):
+      name = '512mb_%d.%s' % (i, isolateserver.ALREADY_COMPRESSED_TYPES[0])
+      logging.info('Writing %s', name)
+      p = os.path.join(self.tempdir, name)
+      h = hashlib.sha1()
+      data = os.urandom(1024)
+      with open(p, 'wb') as f:
+        # Write 512MiB.
+        for _ in xrange(size / len(data)):
+          f.write(data)
+          h.update(data)
+      os.chmod(p, 0600)
+      files[p] = h.hexdigest()
 
-      # upload_tree() is a thin wrapper around Storage.
-      isolateserver.upload_tree(self.server.url, files.items(), 'testing')
-      expected = {'testing': {f['h']: '<skipped>' for f in files.itervalues()}}
-      self.assertEqual(expected, self.server.contents)
+    server_ref = isolate_storage.ServerRef(self.server.url, 'default')
+    with isolateserver.get_storage(server_ref) as storage:
+      logging.info('Archiving')
+      results, cold, hot = isolateserver.archive_files_to_storage(
+          storage, list(files), None)
+      logging.info('Done')
+
+    expected = {'default': {h: h for h in files.itervalues()}}
+    self.assertEqual(expected, self.server.contents)
+    self.assertEqual(files, dict(results))
+    # Everything is cold.
+    f = os.path.join(self.tempdir, '512mb_3.7z')
+    self.assertEqual(
+        sorted(files.iteritems()), sorted((f.path, f.digest) for f in cold))
+    self.assertEqual([], [(f.path, f.digest) for f in hot])
+
+  def test_archive_multiple_files(self):
+    self._archive_smoke(512*1024)
+
+  @unittest.skipIf(sys.maxsize > (2**31), 'Only running on 32 bits')
+  def test_archive_multiple_huge_files(self):
+    # Create multiple files over 2.5GiB. This test exists to stress the virtual
+    # address space on 32 bits systems. Make real files since it wouldn't fit
+    # memory by definition.
+    # Sadly, this makes this test very slow so it's only run on 32-bit
+    # platforms, since it's known to work on 64-bit platforms anyway.
+    #
+    # It's a fairly slow test, well over 15 seconds.
+    self._archive_smoke(512*1024*1024)
 
 
 class IsolateServerDownloadTest(TestCase):
@@ -1226,21 +1226,6 @@ class TestArchive(TestCase):
         'Usage: %(prog)s archive [options] <file1..fileN> or - to read '
         'from stdin\n\n'
         '%(prog)s: error: --isolate-server is required.\n' % {'prog': prog})
-
-  def test_archive_duplicates(self):
-    with self.assertRaises(SystemExit):
-      isolateserver.main(
-          [
-            'archive', '--isolate-server', 'https://localhost:1',
-            # Effective dupes.
-            '.', os.getcwd(),
-          ])
-    prog = self.get_isolateserver_prog()
-    self.checkOutput(
-        '',
-        'Usage: %(prog)s archive [options] <file1..fileN> or - to read '
-        'from stdin\n\n'
-        '%(prog)s: error: Duplicate entries found.\n' % {'prog': prog})
 
   def test_archive_files(self):
     self.mock(isolateserver, 'get_storage', get_storage)

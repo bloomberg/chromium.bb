@@ -613,7 +613,7 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
         results, f_cold, f_hot = isolateserver.archive_files_to_storage(
             storage, [out_dir], None)
         outputs_ref = {
-          'isolated': results[0][0],
+          'isolated': results.values()[0],
           'isolatedserver': storage.server_ref.url,
           'namespace': storage.server_ref.namespace,
         }
