@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
@@ -31,6 +32,7 @@
 #include "components/autofill/core/browser/field_candidates.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_field.h"
+#include "components/autofill/core/browser/proto/legacy_proto_bridge.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/rationalization_util.h"
 #include "components/autofill/core/browser/validation.h"
@@ -50,6 +52,7 @@
 namespace autofill {
 namespace {
 
+// Version of the client sent to the server.
 const char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
 const char kBillingMode[] = "billing";
 const char kShippingMode[] = "shipping";
@@ -630,6 +633,31 @@ void FormStructure::ParseQueryResponse(
   VLOG(1) << "Autofill query response was successfully parsed:\n" << response;
 
   ProcessQueryResponse(response, forms, form_interactions_ukm_logger);
+}
+
+void FormStructure::ParseApiQueryResponse(
+    base::StringPiece payload,
+    const std::vector<FormStructure*>& forms,
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
+  AutofillMetrics::LogServerQueryMetric(
+      AutofillMetrics::QUERY_RESPONSE_RECEIVED);
+
+  std::string decoded_payload;
+  if (!base::Base64Decode(payload, &decoded_payload)) {
+    VLOG(1) << "Could not decode payload from base64 to bytes";
+    return;
+  }
+
+  // Parse the response.
+  AutofillQueryResponse response;
+  if (!response.ParseFromString(decoded_payload))
+    return;
+
+  // TODO(vincb): Make an ostream overloaded function for this.
+  VLOG(1) << "Autofill query response from API was successfully parsed";
+
+  ProcessQueryResponse(CreateLegacyResponseFromApiResponse(response), forms,
+                       form_interactions_ukm_logger);
 }
 
 // static

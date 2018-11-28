@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
+#include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/submission_source.h"
@@ -83,6 +84,11 @@ class FormStructure {
   static void ParseQueryResponse(std::string response,
                                  const std::vector<FormStructure*>& forms,
                                  AutofillMetrics::FormInteractionsUkmLogger*);
+
+  static void ParseApiQueryResponse(
+      base::StringPiece payload,
+      const std::vector<FormStructure*>& forms,
+      AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Parses the field types from the server query response. |forms| must be the
   // same as the one passed to EncodeQueryRequest when constructing the query.

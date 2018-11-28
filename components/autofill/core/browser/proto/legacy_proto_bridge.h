@@ -10,11 +10,11 @@
 
 namespace autofill {
 
-// Creates a new API request from a legacy request.
+// Creates an API request from a legacy request.
 autofill::AutofillPageQueryRequest CreateApiRequestFromLegacyRequest(
     const AutofillQueryContents& legacy_request);
 
-// Creates a new API response from a legacy response.
+// Creates a legacy response from an API response.
 AutofillQueryResponseContents CreateLegacyResponseFromApiResponse(
     const autofill::AutofillQueryResponse& api_response);
 

@@ -11,6 +11,7 @@ option optimize_for = LITE_RUNTIME;
 package autofill;
 
 import "password_requirements.proto";
+import "server.proto";
 
 // Request to retrieve field suggestions from Autofill API for forms in a page
 // that can be used as a resource ID in a RESTful interface.
@@ -63,12 +64,12 @@ message AutofillQueryResponse {
       // Prediction made on a field.
       message FieldPrediction {
         // The predicted field type.
-        optional fixed32 type = 1;
+        optional int32 type = 1;
       }
       // Signature identifying the field that is the same as in the request.
       optional fixed32 field_signature = 1;
       // The predicted field type.
-      optional fixed32 primary_type_prediction = 2;
+      optional int32 primary_type_prediction = 2;
       // Detailed list of all possible predictions (including
       // |primary_type_prediction| as the first item).
       repeated FieldPrediction predictions = 3;
@@ -85,3 +86,9 @@ message AutofillQueryResponse {
   // Suggestions for forms in the same page.
   repeated FormSuggestion form_suggestions = 1;
 };
+
+// Next ID: 2
+message AutofillUploadRequest {
+  // Content of the upload for voting.
+  optional AutofillUploadContents upload = 1;
+}

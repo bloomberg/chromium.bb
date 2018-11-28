@@ -277,6 +277,7 @@ jumbo_static_library("browser") {
   deps = [
     ":password_generator",
     ":password_generator_fips181",
+    "proto:legacy_proto_bridge",
     "//base",
     "//base:i18n",
     "//components/data_use_measurement/core",
