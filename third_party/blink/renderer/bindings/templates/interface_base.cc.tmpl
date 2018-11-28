@@ -132,6 +132,7 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {{generate_constructor(constructor)}}
 {% endfor %}
 {% block overloaded_constructor %}{% endblock %}
+{% block constructor_callback %}{% endblock %}
 {# Special operations (methods) #}
 {% block named_property_getter %}{% endblock %}
 {% block named_property_setter %}{% endblock %}
@@ -396,7 +397,6 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {% endif %}{# not is_array_buffer_or_view #}
 {##############################################################################}
 {% block named_constructor %}{% endblock %}
-{% block constructor_callback %}{% endblock %}
 {##############################################################################}
 {% block install_dom_template %}
 {% if not is_array_buffer_or_view %}
@@ -430,7 +430,7 @@ static void Install{{v8_class}}Template(
          'v8::Local<v8::FunctionTemplate>()' %}
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, {{v8_class}}::wrapperTypeInfo.interface_name, {{parent_interface_template}}, {{v8_class}}::internalFieldCount);
   {% if constructors or has_custom_constructor or has_html_constructor %}
-  interfaceTemplate->SetCallHandler({{v8_class}}::ConstructorCallback);
+  interfaceTemplate->SetCallHandler({{internal_namespace}}::ConstructorCallback);
   interfaceTemplate->SetLength({{interface_length}});
   {% endif %}
   {% endif %}{# is_partial #}

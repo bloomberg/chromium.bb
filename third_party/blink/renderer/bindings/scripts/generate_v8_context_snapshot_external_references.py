@@ -66,8 +66,10 @@ class InterfaceTemplateContextBuilder(object):
         self._opts = opts
         self._info_provider = info_provider
 
-    def create_interface_context(self, interface, interfaces):
+    def create_interface_context(self, interface, component, interfaces):
         '''Creates a Jinja context which is based on an interface.'''
+
+        assert component in ['core', 'modules']
 
         name = '%s%s' % (v8_utilities.cpp_name(interface), 'Partial' if interface.is_partial else '')
 
@@ -117,6 +119,7 @@ class InterfaceTemplateContextBuilder(object):
 
         return {
             'attributes': attributes,
+            'exported': '%s_EXPORT ' % component.upper(),
             'has_origin_safe_method_setter': has_origin_safe_method_setter,
             'has_constructor_callback': has_constructor_callback,
             'has_cross_origin_named_getter': has_cross_origin_named_getter,
@@ -127,6 +130,7 @@ class InterfaceTemplateContextBuilder(object):
             'indexed_property_getter': indexed_property_getter,
             'indexed_property_setter': v8_interface.property_setter(interface.indexed_property_setter, interface),
             'indexed_property_deleter': v8_interface.property_deleter(interface.indexed_property_deleter),
+            'internal_namespace': v8_interface.internal_namespace(interface),
             'is_array_buffer_or_view': interface.idl_type.is_array_buffer_or_view,
             'is_callback': interface.is_callback,
             'is_partial': interface.is_partial,
@@ -180,9 +184,14 @@ class ExternalReferenceTableGenerator(object):
             return
 
         context_builder = InterfaceTemplateContextBuilder(self._opts, self._info_provider)
-        context = context_builder.create_interface_context(interface, interfaces)
+        context = context_builder.create_interface_context(interface, component, interfaces)
         name = '%s%s' % (interface.name, 'Partial' if interface.is_partial else '')
         self._interface_contexts[name] = context
+
+        # Do not include unnecessary header files.
+        if not context['attributes'] and not context['named_property_setter']:
+            return
+
         include_file = 'third_party/blink/renderer/bindings/%s/v8/%s.h' % (
             component, utilities.to_snake_case(context['v8_name']))
         self._include_files.add(include_file)

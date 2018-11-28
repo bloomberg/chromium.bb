@@ -240,9 +240,7 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   exceptionState.ThrowTypeError("No matching constructor signature.");
 }
 
-}  // namespace test_interface_constructor_2_v8_internal
-
-void V8TestInterfaceConstructor2::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor2_Constructor");
 
   if (!info.IsConstructCall()) {
@@ -258,13 +256,15 @@ void V8TestInterfaceConstructor2::ConstructorCallback(const v8::FunctionCallback
   test_interface_constructor_2_v8_internal::Constructor(info);
 }
 
+}  // namespace test_interface_constructor_2_v8_internal
+
 static void InstallV8TestInterfaceConstructor2Template(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceConstructor2::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor2::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestInterfaceConstructor2::ConstructorCallback);
+  interfaceTemplate->SetCallHandler(test_interface_constructor_2_v8_internal::ConstructorCallback);
   interfaceTemplate->SetLength(1);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);

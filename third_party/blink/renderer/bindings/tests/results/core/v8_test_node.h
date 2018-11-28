@@ -39,7 +39,6 @@ class V8TestNode {
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
-  CORE_EXPORT static void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   CORE_EXPORT static void HrefAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void HrefAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);

@@ -39,7 +39,6 @@ class V8TestInterfaceEventInitConstructor {
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
-  CORE_EXPORT static void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   CORE_EXPORT static void ReadonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void IsTrustedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);

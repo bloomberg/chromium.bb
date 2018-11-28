@@ -179,6 +179,22 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8SetReturnValue(info, wrapper);
 }
 
+CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_Constructor");
+
+  if (!info.IsConstructCall()) {
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestNode"));
+    return;
+  }
+
+  if (ConstructorMode::Current(info.GetIsolate()) == ConstructorMode::kWrapExistingObject) {
+    V8SetReturnValue(info, info.Holder());
+    return;
+  }
+
+  test_node_v8_internal::Constructor(info);
+}
+
 }  // namespace test_node_v8_internal
 
 void V8TestNode::HrefAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -244,29 +260,13 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestNodeAccessors[] = {
     { "hrefByteString", V8TestNode::HrefByteStringAttributeGetterCallback, V8TestNode::HrefByteStringAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
-void V8TestNode::ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_Constructor");
-
-  if (!info.IsConstructCall()) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestNode"));
-    return;
-  }
-
-  if (ConstructorMode::Current(info.GetIsolate()) == ConstructorMode::kWrapExistingObject) {
-    V8SetReturnValue(info, info.Holder());
-    return;
-  }
-
-  test_node_v8_internal::Constructor(info);
-}
-
 static void InstallV8TestNodeTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestNode::wrapperTypeInfo.interface_name, V8Node::DomTemplate(isolate, world), V8TestNode::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestNode::ConstructorCallback);
+  interfaceTemplate->SetCallHandler(test_node_v8_internal::ConstructorCallback);
   interfaceTemplate->SetLength(0);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);

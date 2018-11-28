@@ -43,7 +43,6 @@ class V8TestTypedefs {
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
-  CORE_EXPORT static void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   CORE_EXPORT static void ULongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void ULongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
