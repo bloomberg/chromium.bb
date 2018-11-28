@@ -101,9 +101,6 @@ extern const char kCloudPrintLearnMoreURL[];
 // "Learn more" URL for the Cloud Print Preview certificate error.
 extern const char kCloudPrintCertificateErrorLearnMoreURL[];
 
-// "Learn more" URL for the Cloud Print Preview No Destinations Promotion.
-extern const char kCloudPrintNoDestinationsLearnMoreURL[];
-
 extern const char kContentSettingsExceptionsLearnMoreURL[];
 
 // "Learn more" URL for "Aw snap" page when showing "Reload" button.

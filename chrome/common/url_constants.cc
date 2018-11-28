@@ -103,9 +103,6 @@ const char kCloudPrintCertificateErrorLearnMoreURL[] =
         "cloudprint?p=cloudprint_error_offline_linux";
 #endif
 
-const char kCloudPrintNoDestinationsLearnMoreURL[] =
-    "https://www.google.com/cloudprint/learn/";
-
 const char kContentSettingsExceptionsLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_manage_exceptions";
 

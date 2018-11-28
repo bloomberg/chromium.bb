@@ -214,10 +214,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("optionTwoSided",
                              IDS_PRINT_PREVIEW_OPTION_TWO_SIDED);
   source->AddLocalizedString("pagesLabel", IDS_PRINT_PREVIEW_PAGES_LABEL);
-  source->AddLocalizedString("pageRangeTextBox",
-                             IDS_PRINT_PREVIEW_PAGE_RANGE_TEXT);
-  source->AddLocalizedString("pageRangeRadio",
-                             IDS_PRINT_PREVIEW_PAGE_RANGE_RADIO);
   source->AddLocalizedString("printToPDF", IDS_PRINT_PREVIEW_PRINT_TO_PDF);
   source->AddLocalizedString("printPreviewSummaryFormatShort",
                              IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT);
@@ -244,14 +240,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString(
       "resolveExtensionUSBErrorMessage",
       IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_ERROR_MESSAGE);
-  source->AddString(
-      "printWithCloudPrintWait",
-      l10n_util::GetStringFUTF16(
-          IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT,
-          l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
-  source->AddString(
-      "noDestsPromoLearnMoreUrl",
-      chrome::kCloudPrintNoDestinationsLearnMoreURL);
   source->AddString(
       "settingsPrintingPage",
       chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage).spec());
