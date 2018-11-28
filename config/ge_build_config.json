@@ -950,6 +950,18 @@
       ]
     },
     {
+      "name": "nocturne",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "novato",
       "configs": [
         {
@@ -2025,30 +2037,6 @@
             "bvt-perbuild"
           ],
           "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        }
-      ]
-    },
-    {
-      "name": "nocturne",
-      "reference_board_name": "nocturne",
-      "arch": "X86_INTERNAL",
-      "builder": "RELEASE",
-      "experimental": true,
-      "models": [
-        {
-          "board_name": "nocturne",
-          "name": "Nocturne",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-installer",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
-          "cq_test_enabled": true,
           "release_builder_test_pool": "bvt"
         }
       ]
