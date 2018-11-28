@@ -352,6 +352,8 @@ bool LayoutSVGShape::NodeAtPoint(HitTestResult& result,
   // We only draw in the foreground phase, so we only hit-test then.
   if (hit_test_action != kHitTestForeground)
     return false;
+  if (IsShapeEmpty())
+    return false;
   const ComputedStyle& style = StyleRef();
   const PointerEventsHitRules hit_rules(
       PointerEventsHitRules::SVG_GEOMETRY_HITTESTING,
