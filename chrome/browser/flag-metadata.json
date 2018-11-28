@@ -1751,9 +1751,13 @@
     "expiry_milestone": 76
   },
   {
+    "_comment1": "No expiry - even after shipping some form of Site Isolation",
+    "_comment2": "on Android, we want to give users ability to opt into a",
+    "_comment3": "stricter, more secure Site Isolation via",
+    "_comment4": "chrome://flags#enable-site-per-process.",
     "name": "enable-site-per-process",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "site-isolation-dev", "creis", "lukasza" ],
+    "expiry_milestone": -1
   },
   {
     "name": "enable-sole-integration",
@@ -2991,9 +2995,11 @@
     "expiry_milestone": 76
   },
   {
+    "_comment1": "Shipping some form of Site Isolation to Android is tracked",
+    "_comment2": "in https://crbug.com/849815.",
     "name": "site-isolation-trial-opt-out",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "site-isolation-dev", "alexmos", "creis", "lukasza" ],
+    "expiry_milestone": 77
   },
   {
     "name": "site-settings",
