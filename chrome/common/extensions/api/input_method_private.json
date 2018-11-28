@@ -336,6 +336,62 @@
             ]
           }
         ]
+      }, {
+        "name": "getSetting",
+        "type": "function",
+        "description": "Gets the current value of a setting for a particular input method",
+        "parameters": [
+          {
+            "name": "engineID",
+            "type": "string",
+            "description": "The ID of the engine (e.g. 'zh-t-i0-pinyin', 'xkb:us::eng')"
+          },
+          {
+            "name": "key",
+            "type": "string",
+            "description": "The setting to get"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Callback to receive the setting",
+            "parameters": [
+              {
+                "name": "setting",
+                "type": "any",
+                "optional": true,
+                "description": "The value for the requested setting, or null if there's no value"
+              }
+            ]
+          }
+        ]
+      }, {
+        "name": "setSetting",
+        "type": "function",
+        "description": "Sets the value of a setting for a particular input method",
+        "parameters": [
+          {
+            "name": "engineID",
+            "type": "string",
+            "description": "The ID of the engine (e.g. 'zh-t-i0-pinyin', 'xkb:us::eng')"
+          },
+          {
+            "name": "key",
+            "type": "string",
+            "description": "The setting to set"
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "description": "The new value of the setting"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Callback to notify that the new value has been set",
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [

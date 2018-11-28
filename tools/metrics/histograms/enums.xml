@@ -17338,6 +17338,8 @@ Called by update_net_error_codes.py.-->
   <int value="1292" label="AUTOTESTPRIVATE_SETASSISTANTENABLED"/>
   <int value="1293" label="AUTOTESTPRIVATE_ISARCPROVISIONED"/>
   <int value="1294" label="CRYPTOTOKENPRIVATE_CANPROXYTOWEBAUTHN"/>
+  <int value="1295" label="INPUTMETHODPRIVATE_GETSETTING"/>
+  <int value="1296" label="INPUTMETHODPRIVATE_SETSETTING"/>
 </enum>
 
 <enum name="ExtensionIconState">
