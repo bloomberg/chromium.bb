@@ -402,7 +402,6 @@ static void setup_frame(AV1_COMP *cpi) {
     cpi->refresh_alt_ref_frame = 1;
     av1_zero(cpi->interp_filter_selected);
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
-    set_use_reference_buffer(cm, 0);
   } else if (frame_is_sframe(cm)) {
     cpi->refresh_golden_frame = 1;
     cpi->refresh_alt_ref_frame = 1;
@@ -1082,10 +1081,11 @@ static void init_seq_coding_tools(SequenceHeader *seq, AV1_COMMON *cm,
   seq->force_screen_content_tools = 2;
   seq->force_integer_mv = 2;
   seq->order_hint_info.enable_order_hint = oxcf->enable_order_hint;
-  seq->frame_id_numbers_present_flag = oxcf->large_scale_tile;
+  seq->frame_id_numbers_present_flag =
+      !(seq->still_picture && seq->reduced_still_picture_hdr) &&
+      !oxcf->large_scale_tile && oxcf->error_resilient_mode;
   if (seq->still_picture && seq->reduced_still_picture_hdr) {
     seq->order_hint_info.enable_order_hint = 0;
-    seq->frame_id_numbers_present_flag = 0;
     seq->force_screen_content_tools = 2;
     seq->force_integer_mv = 2;
   }
@@ -5038,7 +5038,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
   cm->large_scale_tile = cpi->oxcf.large_scale_tile;
   cm->single_tile_decoding = cpi->oxcf.single_tile_decoding;
-  if (cm->large_scale_tile) seq_params->frame_id_numbers_present_flag = 0;
 
   cm->allow_ref_frame_mvs &= frame_might_allow_ref_frame_mvs(cm);
   // cm->allow_ref_frame_mvs needs to be written into the frame header while
@@ -6838,10 +6837,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cm->min_qmlevel = cpi->oxcf.qm_minlevel;
   cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
 
-  if (cm->seq_params.frame_id_numbers_present_flag) {
-    if (*time_stamp == 0) {
-      cpi->common.current_frame_id = -1;
-    }
+  if (cm->seq_params.frame_id_numbers_present_flag && *time_stamp == 0) {
+    cpi->common.current_frame_id = -1;
   }
 
   cpi->cur_poc++;

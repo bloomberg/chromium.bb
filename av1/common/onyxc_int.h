@@ -1332,10 +1332,6 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
   return base_partitions[split_idx];
 }
 
-static INLINE void set_use_reference_buffer(AV1_COMMON *const cm, int use) {
-  cm->seq_params.frame_id_numbers_present_flag = use;
-}
-
 static INLINE void set_sb_size(SequenceHeader *const seq_params,
                                BLOCK_SIZE sb_size) {
   seq_params->sb_size = sb_size;

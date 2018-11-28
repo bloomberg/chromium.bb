@@ -2694,8 +2694,6 @@ static void write_sequence_header(AV1_COMP *cpi,
 
   /* Placeholder for actually writing to the bitstream */
   if (!seq_params->reduced_still_picture_hdr) {
-    seq_params->frame_id_numbers_present_flag =
-        cm->large_scale_tile ? 0 : cm->error_resilient_mode;
     seq_params->frame_id_length = FRAME_ID_LENGTH;
     seq_params->delta_frame_id_length = DELTA_FRAME_ID_LENGTH;
 
