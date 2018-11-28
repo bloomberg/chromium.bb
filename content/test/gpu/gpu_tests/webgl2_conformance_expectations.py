@@ -65,10 +65,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-subimage3d-canvas-bug.html',
               ['win', 'opengl', 'passthrough'], bug=859400)
 
-    # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2658
-    self.Fail('conformance2/transform_feedback/' +
-              'same-buffer-two-binding-points.html', bug=866089)
-
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
