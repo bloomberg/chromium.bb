@@ -242,6 +242,7 @@ js_library("mock_file_operation_manager") {
   testonly = true
   deps = [
     ":file_operation_manager",
+    "//ui/webui/resources/js/cr:event_target",
   ]
   externs_list = [ "../../../externs/background/file_operation_manager.js" ]
 }
@@ -252,6 +253,17 @@ js_library("file_operation_manager") {
     ":volume_manager_factory",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr:event_target",
+  ]
+  externs_list = [ "../../../externs/background/file_operation_manager.js" ]
+}
+
+js_unittest("file_operation_manager_unittest") {
+  deps = [
+    ":file_operation_manager",
+    ":metadata_proxy",
+    "//ui/file_manager/base/js:mock_chrome",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/file_manager/common/js:mock_entry",
   ]
 }
 
@@ -476,6 +488,7 @@ js_unit_tests("unit_tests") {
     ":device_handler_unittest",
     ":drive_sync_handler_unittest",
     ":duplicate_finder_unittest",
+    ":file_operation_manager_unittest",
     ":import_history_unittest",
     ":media_scanner_unittest",
     ":task_queue_unittest",
