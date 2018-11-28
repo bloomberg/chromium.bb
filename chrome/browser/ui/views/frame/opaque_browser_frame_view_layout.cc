@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/stl_util.h"
@@ -93,7 +97,7 @@ gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
 }
 
 gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
-    int available_width) const {
+    const views::View* host) const {
   gfx::Size min_size = delegate_->GetBrowserViewMinimumSize();
   int border_thickness = FrameBorderThickness(false);
   min_size.Enlarge(2 * border_thickness,

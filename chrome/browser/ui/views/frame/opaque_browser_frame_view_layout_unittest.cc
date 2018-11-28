@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -266,7 +270,7 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
     gfx::Size browser_view_min_size(delegate_->GetBrowserViewMinimumSize());
     const int min_width =
         browser_view_min_size.width() + tabstrip_min_size.width() + spacing;
-    gfx::Size min_size(layout_manager_->GetMinimumSize(kWindowWidth));
+    gfx::Size min_size(layout_manager_->GetMinimumSize(root_view_));
     EXPECT_EQ(min_width, min_size.width());
     int restored_border_height =
         2 * OpaqueBrowserFrameViewLayout::kFrameBorderThickness +

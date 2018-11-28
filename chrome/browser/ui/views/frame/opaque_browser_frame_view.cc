@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -213,7 +216,7 @@ void OpaqueBrowserFrameView::UpdateThrobber(bool running) {
 }
 
 gfx::Size OpaqueBrowserFrameView::GetMinimumSize() const {
-  return layout_->GetMinimumSize(width());
+  return layout_->GetMinimumSize(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
