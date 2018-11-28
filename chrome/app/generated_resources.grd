@@ -6650,36 +6650,6 @@ the Bookmarks menu.">
       <message name="IDS_SYNC_CONFIRMATION_UNITY_TITLE" desc="Title of the sync confirmation dialog in the tab modal signin flow when Unity is enabled">
         Get Google smarts in Chrome
       </message>
-      <message name="IDS_SYNC_CONFIRMATION_UNITY_CONSENT_BUMP_TITLE" desc="Title of the sync consent bump in the tab modal signin flow when Unity is enabled">
-        Get more Google smarts
-      </message>
-      <message name="IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_BUTTON_LABEL" desc="Label of the sync confirmation button to show more options">
-        More options
-      </message>
-      <message name="IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_TITLE" desc="Title of the sync confirmation more options dialog">
-        Control sync, personalization, and more
-      </message>
-      <message name="IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_SUBTITLE" desc="Subitle of the sync confirmation more options dialog">
-        The settings that control sync, personalization, and other Google services in Chrome have changed. This may affect your current settings.
-      </message>
-      <message name="IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_REVIEW_SETTINGS_TITLE" desc="Title of the sync confirmation option to review settings">
-        Review your settings on the next screen
-      </message>
-      <message name="IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_MAKE_NO_CHANGES_TITLE" desc="Title of the sync confirmation option to make no changes">
-        Make no changes
-      </message>
-      <message name="IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_MAKE_NO_CHANGES_SUBTITLE" desc="Subtitle of the sync confirmation option to make no changes">
-        The data you sync to Google and the features you use will not change
-      </message>
-      <message name="IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_TITLE" desc="Title of the sync confirmation option to use the default settings">
-        Turn on sync, personalization, and other Google services
-      </message>
-      <message name="IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_SUBTITLE" desc="Subtitle of the sync confirmation option to use the default settings">
-        You can customize this anytime in Chrome Settings
-      </message>
-      <message name="IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_BACK_BUTTON_LABEL" desc="Label of the sync confirmation options button to go to the previous screen">
-        Back
-      </message>
 
       <!-- "Chrome sync" is the Google Cloud Based service used for sync. Thus this string resource is set to "Chrome sync" even for Chromium builds. -->
       <message name="IDS_SYNC_CONFIRMATION_CHROME_SYNC_TITLE" desc="Title of the chrome sync section of the sync confirmation dialog in the tab modal signin flow" formatter_data="android_java">

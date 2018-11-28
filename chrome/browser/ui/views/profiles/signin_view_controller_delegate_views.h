@@ -42,8 +42,7 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
       signin_metrics::AccessPoint access_point);
 
   static std::unique_ptr<views::WebView> CreateSyncConfirmationWebView(
-      Browser* browser,
-      bool is_consent_bump = false);
+      Browser* browser);
 
   static std::unique_ptr<views::WebView> CreateSigninErrorWebView(
       Browser* browser);

@@ -1,7 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -145,36 +143,6 @@
                                             url(./images/ic_google_2x.png) 2x);
       }
 
-      #options-container {
-        background: white;
-        bottom: 0;
-        left: 0;
-        margin-inline-start: 16px;
-        position: absolute;
-        right: 0;
-        top: 0;
-      }
-
-      #options-heading {
-        color: var(--paper-grey-800);
-        font-weight: normal;
-        margin-top: 0;
-      }
-
-      #options-description {
-        padding-bottom: 25px;
-        padding-inline-end: 24px;
-      }
-
-      cr-radio-button {
-        line-height: 1.25rem;
-      }
-
-      .subtitle-text {
-        color: var(--paper-grey-600);
-        line-height: 1.25rem;
-      }
-
       #grey-banner {
         background: var(--paper-grey-50);
         height: 128px;
@@ -206,12 +174,8 @@
       <img src="[[accountImageSrc_]]">
     </div>
     <div id="content-container">
-      <h1 id="syncConfirmationHeading" class="heading" consent-description
-          hidden="[[isConsentBump_]]">
+      <h1 id="syncConfirmationHeading" class="heading" consent-description>
         $i18n{syncConfirmationTitle}
-      </h1>
-      <h1 class="heading" consent-description hidden="[[!isConsentBump_]]">
-        $i18n{syncConsentBumpTitle}
       </h1>
       <div class="message-container">
         <!-- Container needed to contain the icon in a green circle. -->
@@ -244,59 +208,16 @@
               on-click="onConfirm_" consent-confirmation>
             $i18n{syncConfirmationConfirmLabel}
           </paper-button>
-          <paper-button on-click="onUndo_" hidden="[[isConsentBump_]]">
+          <paper-button on-click="onUndo_">
             $i18n{syncConfirmationUndoLabel}
           </paper-button>
           <paper-button id="settingsButton" on-click="onGoToSettings_"
-              hidden="[[isConsentBump_]]" consent-confirmation>
+              consent-confirmation>
             $i18n{syncConfirmationSettingsLabel}
-          </paper-button>
-          <paper-button on-click="onMoreOptions_" hidden="[[!isConsentBump_]]">
-            $i18n{syncConfirmationMoreOptionsLabel}
           </paper-button>
         </div>
       </div>
 
-      <!-- More options dialog for the consent bump -->
-      <template is="dom-if" if="[[showMoreOptions_]]">
-        <div id="options-container">
-          <h3 id="options-heading" consent-description>
-            $i18n{syncConfirmationOptionsTitle}
-          </h3>
-          <div id="options-description" class="subtitle-text"
-               consent-description>
-            $i18n{syncConfirmationOptionsSubtitle}
-          </div>
-          <cr-radio-group selected="noChanges">
-            <cr-radio-button name="noChanges">
-              $i18n{syncConfirmationOptionsMakeNoChangesTitle}
-              <div class="subtitle-text">
-                $i18n{syncConfirmationOptionsMakeNoChangesSubtitle}
-              </div>
-            </cr-radio-button>
-            <cr-radio-button name="reviewSettings">
-              $i18n{syncConfirmationOptionsReviewSettingsTitle}
-            </cr-radio-button>
-            <cr-radio-button name="defaultSettings">
-              <div consent-description>
-                $i18n{syncConfirmationOptionsUseDefaultTitle}
-              </div>
-              <div class="subtitle-text" consent-description>
-                $i18n{syncConfirmationOptionsUseDefaultSubtitle}
-              </div>
-            </cr-radio-button>
-          </cr-radio-group>
-          <div class="action-container">
-            <paper-button class="action-button" on-click="onOK_"
-                          consent-confirmation>
-              $i18n{syncConfirmationOptionsConfirmLabel}
-            </paper-button>
-            <paper-button on-click="onBack_">
-              $i18n{syncConfirmationOptionsBackLabel}
-            </paper-button>
-          </div>
-        </div>
-      </template>
     </div>
   </template>
   <script src="sync_confirmation_app.js"></script>

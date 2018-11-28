@@ -69,31 +69,6 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     AddStringResource(source, "syncConfirmationSettingsLabel",
                       IDS_SYNC_CONFIRMATION_DICE_SETTINGS_BUTTON_LABEL);
 
-    AddStringResource(source, "syncConfirmationMoreOptionsLabel",
-                      IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_BUTTON_LABEL);
-    AddStringResource(source, "syncConfirmationOptionsTitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_TITLE);
-    AddStringResource(source, "syncConfirmationOptionsSubtitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_SUBTITLE);
-    AddStringResource(
-        source, "syncConfirmationOptionsReviewSettingsTitle",
-        IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_REVIEW_SETTINGS_TITLE);
-    AddStringResource(
-        source, "syncConfirmationOptionsMakeNoChangesTitle",
-        IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_MAKE_NO_CHANGES_TITLE);
-    AddStringResource(
-        source, "syncConfirmationOptionsMakeNoChangesSubtitle",
-        IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_MAKE_NO_CHANGES_SUBTITLE);
-    AddStringResource(source, "syncConfirmationOptionsUseDefaultTitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_TITLE);
-    AddStringResource(source, "syncConfirmationOptionsUseDefaultSubtitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_SUBTITLE);
-    AddStringResource(source, "syncConfirmationOptionsConfirmLabel", IDS_OK);
-    AddStringResource(source, "syncConfirmationOptionsBackLabel",
-                      IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_BACK_BUTTON_LABEL);
-    AddStringResource(source, "syncConsentBumpTitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_CONSENT_BUMP_TITLE);
-
     constexpr int kAccountPictureSize = 68;
     std::string custom_picture_url = profiles::GetPlaceholderAvatarIconUrl();
     GURL account_picture_url(IdentityManagerFactory::GetForProfile(profile)

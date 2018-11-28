@@ -30,19 +30,6 @@
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
 
-namespace {
-// Used for UMA. Do not reorder, append new values at the end.
-enum class UnifiedConsentBumpAction {
-  kOptIn = 0,
-  kMoreOptionsOptIn = 1,
-  kMoreOptionsSettings = 2,
-  kMoreOptionsNoChanges = 3,
-  kAbort = 4,
-
-  kMaxValue = kAbort
-};
-}  // namespace
-
 const int kProfileImageSize = 128;
 
 SyncConfirmationHandler::SyncConfirmationHandler(
@@ -67,12 +54,7 @@ SyncConfirmationHandler::~SyncConfirmationHandler() {
   // sync confirmation dialog are taken by the user.
   if (!did_user_explicitly_interact) {
     HandleUndo(nullptr);
-    if (IsUnifiedConsentBumpDialog()) {
-      UMA_HISTOGRAM_ENUMERATION("UnifiedConsent.ConsentBump.Action",
-                                UnifiedConsentBumpAction::kAbort);
-    } else {
-      base::RecordAction(base::UserMetricsAction("Signin_Abort_Signin"));
-    }
+    base::RecordAction(base::UserMetricsAction("Signin_Abort_Signin"));
   }
 }
 
@@ -221,22 +203,18 @@ void SyncConfirmationHandler::OnAccountUpdated(const AccountInfo& info) {
 
 void SyncConfirmationHandler::CloseModalSigninWindow(
     LoginUIService::SyncConfirmationUIClosedResult result) {
-  if (!IsUnifiedConsentBumpDialog()) {
-    // Metrics for the unified consent bump are recorded directly from
-    // javascript.
-    switch (result) {
-      case LoginUIService::CONFIGURE_SYNC_FIRST:
-        base::RecordAction(
-            base::UserMetricsAction("Signin_Signin_WithAdvancedSyncSettings"));
-        break;
-      case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS:
-        base::RecordAction(
-            base::UserMetricsAction("Signin_Signin_WithDefaultSyncSettings"));
-        break;
-      case LoginUIService::ABORT_SIGNIN:
-        base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
-        break;
-    }
+  switch (result) {
+    case LoginUIService::CONFIGURE_SYNC_FIRST:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_WithAdvancedSyncSettings"));
+      break;
+    case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_WithDefaultSyncSettings"));
+      break;
+    case LoginUIService::ABORT_SIGNIN:
+      base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
+      break;
   }
   LoginUIServiceFactory::GetForProfile(profile_)->SyncConfirmationUIClosed(
       result);
@@ -275,9 +253,4 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
   // platforms and if there's a way to start unfocused while avoiding this
   // workaround.
   web_ui()->CallJavascriptFunctionUnsafe("sync.confirmation.clearFocus");
-}
-
-bool SyncConfirmationHandler::IsUnifiedConsentBumpDialog() {
-  return web_ui()->GetWebContents()->GetVisibleURL() ==
-         chrome::kChromeUISyncConsentBumpURL;
 }
