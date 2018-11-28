@@ -652,14 +652,15 @@ class VM(Device):
         if e.errno == errno.EADDRINUSE:
           logging.info('SSH port %d in use...', self.ssh_port)
           raise _SSHPortInUseError()
-      sock.close()
+      finally:
+        sock.close()
 
     try:
       retry_util.RetryException(
           exception=_SSHPortInUseError,
-          max_retry=7,
+          max_retry=10,
           functor=lambda: _CheckSSHPortBusy(self.ssh_port),
-          sleep=1)
+          sleep=5)
     except _SSHPortInUseError:
       raise VMError('SSH port %d in use' % self.ssh_port)
 
@@ -681,13 +682,11 @@ class VM(Device):
     """Start the VM."""
 
     self.Stop()
-    self._WaitForSSHPort()
 
     logging.debug('Start VM')
     self._SetQemuPath()
     self._SetVMImagePath()
 
-    self._RmVMDir()
     self._CreateVMDir()
     if self.copy_on_write:
       self._CreateQcow2Image()
@@ -761,13 +760,18 @@ class VM(Device):
     # Make sure the process actually exists.
     return os.path.isdir('/proc/%i' % pid)
 
+  def _KillVM(self):
+    """Kill the VM process."""
+    pid = self._GetVMPid()
+    if pid:
+      self.RunCommand(['kill', '-9', str(pid)], error_code_ok=True)
+
   def Stop(self):
     """Stop the VM."""
     logging.debug('Stop VM')
 
-    pid = self._GetVMPid()
-    if pid:
-      self.RunCommand(['kill', '-9', str(pid)], error_code_ok=True)
+    self._KillVM()
+    self._WaitForSSHPort()
     self._RmVMDir()
 
   def _WaitForProcs(self):
