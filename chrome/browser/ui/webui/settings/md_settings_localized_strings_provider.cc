@@ -2707,10 +2707,6 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 
-  html_source->AddBoolean(
-      "enableMultideviceSettings",
-      base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSettings));
   html_source->AddString(
       "multideviceVerificationText",
       l10n_util::GetStringFUTF16(

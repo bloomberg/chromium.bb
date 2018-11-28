@@ -277,6 +277,8 @@ Polymer({
     if (this.category === settings.ContentSettingsTypes.NOTIFICATIONS &&
         loadTimeData.valueExists('enableMultideviceSettings') &&
         loadTimeData.getBoolean('enableMultideviceSettings') &&
+        loadTimeData.valueExists('multideviceAllowedByPolicy') &&
+        loadTimeData.getBoolean('multideviceAllowedByPolicy') &&
         !this.androidSmsInfo_) {
       const multideviceSetupProxy =
           settings.MultiDeviceBrowserProxyImpl.getInstance();

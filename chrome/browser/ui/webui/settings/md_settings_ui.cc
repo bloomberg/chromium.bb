@@ -104,6 +104,7 @@
 #include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/arc/arc_util.h"
 #include "ui/base/ui_base_features.h"
 #else  // !defined(OS_CHROMEOS)
@@ -218,21 +219,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::KeyboardHandler>());
-  if (!profile->IsGuestSession() &&
-      base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
-      base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSettings) &&
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    AddSettingsPageUIHandler(
-        std::make_unique<chromeos::settings::MultideviceHandler>(
-            profile->GetPrefs(),
-            chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
-                GetForProfile(profile),
-            std::make_unique<
-                chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(
-                profile)));
-  }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::PointerHandler>());
   AddSettingsPageUIHandler(
@@ -296,6 +282,30 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                           password_protection_available);
 
 #if defined(OS_CHROMEOS)
+  if (!profile->IsGuestSession() &&
+      base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
+      base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSettings) &&
+      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    AddSettingsPageUIHandler(
+        std::make_unique<chromeos::settings::MultideviceHandler>(
+            profile->GetPrefs(),
+            chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
+                GetForProfile(profile),
+            std::make_unique<
+                chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(
+                profile)));
+  }
+  html_source->AddBoolean(
+      "enableMultideviceSettings",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSettings));
+  html_source->AddBoolean(
+      "multideviceAllowedByPolicy",
+      chromeos::multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(
+          profile->GetPrefs()));
+
   AddSettingsPageUIHandler(base::WrapUnique(
       chromeos::settings::DateTimeHandler::Create(html_source)));
 

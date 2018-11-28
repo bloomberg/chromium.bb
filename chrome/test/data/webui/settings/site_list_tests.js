@@ -272,6 +272,11 @@ suite('SiteList', function() {
    */
   let browserProxy = null;
 
+  /**
+   * Mock MultiDeviceBrowserProxy to use during test.
+   * @type {TestMultideviceBrowserProxy}
+   */
+  let multiDeviceBrowserProxy = null;
 
   suiteSetup(function() {
     CrSettingsPrefs.setInitialized();
@@ -292,8 +297,8 @@ suite('SiteList', function() {
     document.body.appendChild(testElement);
 
     if (cr.isChromeOS) {
-      settings.MultiDeviceBrowserProxyImpl.instance_ =
-          new multidevice.TestMultideviceBrowserProxy();
+      multiDeviceBrowserProxy = new multidevice.TestMultideviceBrowserProxy();
+      settings.MultiDeviceBrowserProxyImpl.instance_ = multiDeviceBrowserProxy;
     }
   });
 
@@ -305,7 +310,10 @@ suite('SiteList', function() {
 
     if (cr.isChromeOS) {
       // Reset multidevice enabled flag.
-      loadTimeData.overrideValues({enableMultideviceSettings: false});
+      loadTimeData.overrideValues({
+        enableMultideviceSettings: false,
+        multideviceAllowedByPolicy: false
+      });
     }
   });
 
@@ -395,8 +403,17 @@ suite('SiteList', function() {
       setUpCategory(
           settings.ContentSettingsTypes.NOTIFICATIONS,
           settings.ContentSetting.ALLOW, prefsAndroidSms);
-      const multiDeviceBrowserProxy =
-          settings.MultiDeviceBrowserProxyImpl.getInstance();
+      assertEquals(
+          0, multiDeviceBrowserProxy.getCallCount('getAndroidSmsInfo'));
+
+      loadTimeData.overrideValues({multideviceAllowedByPolicy: true});
+      setUpCategory(
+          settings.ContentSettingsTypes.NOTIFICATIONS,
+          settings.ContentSetting.ALLOW, prefsAndroidSms);
+      // Assert 2 calls since the observer observes 2 properties.
+      assertEquals(
+          2, multiDeviceBrowserProxy.getCallCount('getAndroidSmsInfo'));
+
       return multiDeviceBrowserProxy.whenCalled('getAndroidSmsInfo')
           .then(() => browserProxy.whenCalled('getExceptionList'))
           .then((contentType) => {
