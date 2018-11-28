@@ -26,6 +26,7 @@
     request.resourceSize = 1000;
     request._transferSize = 539;  // 39 = header size at the end of the day
     request.setPriority('VeryHigh');
+    request.setResourceType(Common.resourceTypes.Fetch);
 
     // sample timing values used here are copied from a real request
     request.setIssueTime(357904.060558);

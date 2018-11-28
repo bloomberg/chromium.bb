@@ -4,6 +4,7 @@ http://[::1]:8000/devtools/resources/post-target.cgi?queryParam1=queryValue1&que
 {
     _initiator : <object>
     _priority : <string>
+    _resourceType : "document"
     cache : {
     }
     connection : <string>

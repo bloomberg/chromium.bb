@@ -31,6 +31,7 @@ HAR:{
         url : "http://example.com/inspector-test.js"
     }
     _priority : "VeryHigh"
+    _resourceType : "fetch"
     cache : {
     }
     request : {
