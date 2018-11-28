@@ -1934,24 +1934,12 @@
         {
           "board_name": "nami",
           "name": "bard",
-          "test_suites": [
-            "bvt-inline",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "nami",
           "name": "ekko",
-          "test_suites": [
-            "bvt-inline",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -1982,12 +1970,6 @@
         {
           "board_name": "nami",
           "name": "syndra",
-          "test_suites": [
-            "bvt-inline",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -2063,6 +2045,24 @@
         {
           "board_name": "octopus",
           "name": "bip",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "bobba",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "bobba360",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "fleex",
           "test_suites": [
             "sanity",
             "bvt-inline",
@@ -2072,36 +2072,6 @@
             "bvt-cq",
             "bvt-perbuild"
           ],
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "octopus",
-          "name": "bobba",
-          "test_suites": [
-            "bvt-inline",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "octopus",
-          "name": "bobba360",
-          "test_suites": [
-            "bvt-inline",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "octopus",
-          "name": "fleex",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -2132,12 +2102,6 @@
         {
           "board_name": "mimrock",
           "name": "mimrock",
-          "test_suites": [
-            "bvt-inline",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -2150,12 +2114,6 @@
         {
           "board_name": "octopus",
           "name": "phaser",
-          "test_suites": [
-            "bvt-inline",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
