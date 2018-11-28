@@ -506,9 +506,11 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     CGRect frame = [[swipeDelegate_ sideSwipeContentView] frame];
 
     // Add horizontal stack view controller.
+    // TODO(crbug.com/904992): Do not use SnapshotGeneratorDelegate from
+    // SideSwipeController.
     CGFloat headerHeight =
-        [self.snapshotDelegate
-            snapshotEdgeInsetsForWebState:currentTab.webState]
+        [self.snapshotDelegate snapshotGenerator:nil
+                   snapshotEdgeInsetsForWebState:currentTab.webState]
             .top;
 
     if (tabSideSwipeView_) {

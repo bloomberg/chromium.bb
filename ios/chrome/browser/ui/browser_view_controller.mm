@@ -2939,7 +2939,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 #pragma mark - SnapshotGeneratorDelegate methods
 
-- (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {
+- (BOOL)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    canTakeSnapshotForWebState:(web::WebState*)webState {
   DCHECK(webState);
   PagePlaceholderTabHelper* pagePlaceholderTabHelper =
       PagePlaceholderTabHelper::FromWebState(webState);
@@ -2947,7 +2948,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
          !pagePlaceholderTabHelper->will_add_placeholder_for_next_navigation();
 }
 
-- (UIEdgeInsets)snapshotEdgeInsetsForWebState:(web::WebState*)webState {
+- (UIEdgeInsets)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    snapshotEdgeInsetsForWebState:(web::WebState*)webState {
   DCHECK(webState);
   // The NTP's snapshot should be inset |headerHeight| from the top to remove
   // the fake NTP toolbar from the snapshot.
@@ -2974,8 +2976,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   return insets;
 }
 
-- (NSArray<SnapshotOverlay*>*)snapshotOverlaysForWebState:
-    (web::WebState*)webState {
+- (NSArray<SnapshotOverlay*>*)snapshotGenerator:
+                                  (SnapshotGenerator*)snapshotGenerator
+                    snapshotOverlaysForWebState:(web::WebState*)webState {
   DCHECK(webState);
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
@@ -3017,7 +3020,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   return overlays;
 }
 
-- (void)willUpdateSnapshotForWebState:(web::WebState*)webState {
+- (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    willUpdateSnapshotForWebState:(web::WebState*)webState {
   DCHECK(webState);
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
@@ -3028,15 +3032,17 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   [tab willUpdateSnapshot];
 }
 
-- (void)didUpdateSnapshotForWebState:(web::WebState*)webState
-                           withImage:(UIImage*)snapshot {
+- (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    didUpdateSnapshotForWebState:(web::WebState*)webState
+                       withImage:(UIImage*)snapshot {
   DCHECK(webState);
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
   [self.tabModel notifyTabSnapshotChanged:tab withImage:snapshot];
 }
 
-- (UIView*)viewForWebState:(web::WebState*)webState {
+- (UIView*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+         baseViewForWebState:(web::WebState*)webState {
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (NTPHelper && NTPHelper->IsActive()) {
     return _ntpCoordinatorsForWebStates[webState].viewController.view;
@@ -4577,9 +4583,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     // Add animations only if the tab strip isn't shown.
     UIView* snapshotView = [self.view snapshotViewAfterScreenUpdates:NO];
 
+    // TODO(crbug.com/904992): Do not repurpose SnapshotGeneratorDelegate.
     SwipeView* swipeView = [[SwipeView alloc]
         initWithFrame:self.contentArea.frame
-            topMargin:[self
+            topMargin:[self snapshotGenerator:nil
                           snapshotEdgeInsetsForWebState:webStateBeingActivated]
                           .top];
 
