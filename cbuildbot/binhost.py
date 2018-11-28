@@ -66,7 +66,9 @@ def GetAllImportantBoardKeys(site_config):
   """
   boards = set()
   for config in site_config.values():
-    if config.important:
+    if (config.important
+        and (not config.branch or config.branch == 'master')
+        and not config.workspace_branch):
       for board in config.boards:
         boards.add(GetBoardKey(config, board))
   return boards
