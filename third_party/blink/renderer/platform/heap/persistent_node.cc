@@ -182,7 +182,7 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
           reinterpret_cast<CrossThreadPersistent<DummyGCBase>*>(
               slots->slot_[i].Self());
       DCHECK(persistent);
-      void* raw_object = persistent->AtomicGet();
+      void* raw_object = persistent->Get();
       if (!raw_object)
         continue;
       BasePage* page = PageFromObject(raw_object);

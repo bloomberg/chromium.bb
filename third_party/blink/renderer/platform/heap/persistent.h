@@ -197,13 +197,6 @@ class PersistentBase {
     region.FreePersistentNode(persistent_node_);
   }
 
- protected:
-  NO_SANITIZE_ADDRESS
-  T* AtomicGet() {
-    return reinterpret_cast<T*>(AcquireLoad(reinterpret_cast<void* volatile*>(
-        const_cast<typename std::remove_const<T>::type**>(&raw_))));
-  }
-
  private:
   NO_SANITIZE_ADDRESS
   void Assign(T* ptr) {
@@ -510,8 +503,6 @@ class CrossThreadPersistent
   template <typename U>
   CrossThreadPersistent(const Member<U>& other) : Parent(other) {}
   CrossThreadPersistent(WTF::HashTableDeletedValueType x) : Parent(x) {}
-
-  T* AtomicGet() { return Parent::AtomicGet(); }
 
   // Instead of using release(), assign then clear() instead.
   // Using release() with per thread heap enabled can cause the object to be
