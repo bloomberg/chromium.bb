@@ -73,7 +73,7 @@ void TopIconAnimationView::TransformView() {
   // Transform used for scaling down the icon and move it back inside to the
   // original folder icon. The transform's origin is this view's origin.
   gfx::Transform transform;
-  transform.Translate(scaled_rect_.x() - bounds().x(),
+  transform.Translate(scaled_rect_.x() - GetMirroredX(),
                       scaled_rect_.y() - bounds().y());
   transform.Scale(
       static_cast<double>(scaled_rect_.width()) / bounds().width(),

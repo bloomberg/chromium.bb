@@ -3027,7 +3027,7 @@ void AppsGridView::StartFolderDroppingAnimation(
     const gfx::Rect& source_bounds) {
   // Calculate target bounds of dragged item.
   gfx::Rect target_bounds =
-      GetTargetIconRectInFolder(drag_item, folder_item_view);
+      GetMirroredRect(GetTargetIconRectInFolder(drag_item, folder_item_view));
 
   // Update folder icon.
   AppListFolderItem* folder_item =
