@@ -236,7 +236,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'cf714a81c86e56827563e20c1b2750e674aec322',
+  'dawn_revision': '596d6fe00db768f9d723219f98a3f626f333caf8',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
