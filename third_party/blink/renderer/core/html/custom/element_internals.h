@@ -36,6 +36,7 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   bool IsElementInternals() const override;
   bool IsEnumeratable() const override;
   void AppendToFormData(FormData& form_data) override;
+  void DidChangeForm() override;
 
   Member<HTMLElement> target_;
 

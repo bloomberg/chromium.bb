@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -92,6 +93,11 @@ void ElementInternals::AppendToFormData(FormData& form_data) {
     else
       form_data.append(entry->name(), entry->Value());
   }
+}
+
+void ElementInternals::DidChangeForm() {
+  ListedElement::DidChangeForm();
+  CustomElement::EnqueueFormAssociatedCallback(Target(), form());
 }
 
 }  // namespace blink

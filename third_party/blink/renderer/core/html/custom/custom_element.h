@@ -18,6 +18,7 @@ namespace blink {
 class Document;
 class Element;
 class HTMLElement;
+class HTMLFormElement;
 class QualifiedName;
 class CustomElementDefinition;
 class CustomElementReaction;
@@ -103,6 +104,8 @@ class CORE_EXPORT CustomElement {
                                               const QualifiedName&,
                                               const AtomicString& old_value,
                                               const AtomicString& new_value);
+  static void EnqueueFormAssociatedCallback(Element& element,
+                                            HTMLFormElement* nullable_form);
 
   static void TryToUpgrade(Element*, bool upgrade_invisible_elements = false);
 
