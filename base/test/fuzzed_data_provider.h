@@ -152,39 +152,17 @@ class FuzzedDataProvider {
     return ConsumeBytesAsString(remaining_bytes_);
   }
 
+  // Returns a number in the range [Type's min, Type's max]. The value might
+  // not be uniformly distributed in the given range. If there's no input data
+  // left, always returns |min|.
+  template <typename T>
+  T ConsumeIntegral() {
+    return ConsumeIntegralInRange(std::numeric_limits<T>::min(),
+                                  std::numeric_limits<T>::max());
+  }
+
   // Reads one byte and returns a bool, or false when no data remains.
-  bool ConsumeBool() { return 1 & ConsumeUint8(); }
-
-  // Returns a uint8_t from the input or 0 if nothing remains. This is
-  // equivalent to ConsumeIntegralInRange<uint8_t>(0, 0xFF).
-  uint8_t ConsumeUint8() {
-    return ConsumeIntegralInRange(std::numeric_limits<uint8_t>::min(),
-                                  std::numeric_limits<uint8_t>::max());
-  }
-
-  // Returns a uint16_t from the input. If fewer than 2 bytes of data remain
-  // will fill the most significant bytes with 0. This is equivalent to
-  // ConsumeIntegralInRange<uint16_t>(0, 0xFFFF).
-  uint16_t ConsumeUint16() {
-    return ConsumeIntegralInRange(std::numeric_limits<uint16_t>::min(),
-                                  std::numeric_limits<uint16_t>::max());
-  }
-
-  // Returns a uint32_t from the input. If fewer than 4 bytes of data remain
-  // will fill the most significant bytes with 0. This is equivalent to
-  // ConsumeIntegralInRange<uint32_t>(0, 0xFFFFFFFF).
-  uint16_t ConsumeUint32() {
-    return ConsumeIntegralInRange(std::numeric_limits<uint32_t>::min(),
-                                  std::numeric_limits<uint32_t>::max());
-  }
-
-  // Returns a uint64_t from the input. If fewer than 8 bytes of data remain
-  // will fill the most significant bytes with 0. This is equivalent to
-  // ConsumeIntegralInRange<uint64_t>(0, 0xFFFFFFFFFFFFFFFF).
-  uint16_t ConsumeUint64() {
-    return ConsumeIntegralInRange(std::numeric_limits<uint64_t>::min(),
-                                  std::numeric_limits<uint64_t>::max());
-  }
+  bool ConsumeBool() { return 1 & ConsumeIntegral<uint8_t>(); }
 
   // Returns a value from |array|, consuming as many bytes as needed to do so.
   // |array| must be a fixed-size array.

@@ -27,7 +27,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::Pickle pickle(reinterpret_cast<const char*>(data), size);
   base::PickleIterator iter(pickle);
   for (int i = 0; i < kIterations; i++) {
-    uint8_t read_type = data_provider.ConsumeUint8();
+    uint8_t read_type = data_provider.ConsumeIntegral<uint8_t>();
     switch (read_type % kReadDataTypes) {
       case 0: {
         bool result = 0;

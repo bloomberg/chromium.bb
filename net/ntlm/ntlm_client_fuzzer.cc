@@ -24,7 +24,7 @@ base::string16 ConsumeRandomLengthString16(
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider fdp(data, size);
   bool is_v2 = fdp.ConsumeBool();
-  uint64_t client_time = fdp.ConsumeUint64();
+  uint64_t client_time = fdp.ConsumeIntegral<uint64_t>();
   net::ntlm::NtlmClient client((net::ntlm::NtlmFeatures(is_v2)));
 
   // Generate the input strings and challenge message. The strings will have a

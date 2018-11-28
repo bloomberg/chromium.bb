@@ -30,27 +30,35 @@ namespace {
 
 // Returns a fuzzed non-zero port number.
 uint16_t FuzzPort(base::FuzzedDataProvider* data_provider) {
-  return data_provider->ConsumeUint16();
+  return data_provider->ConsumeIntegral<uint16_t>();
 }
 
 // Returns a fuzzed IPv4 address.  Can return invalid / reserved addresses.
 IPAddress FuzzIPv4Address(base::FuzzedDataProvider* data_provider) {
-  return IPAddress(data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8());
+  return IPAddress(data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>());
 }
 
 // Returns a fuzzed IPv6 address.  Can return invalid / reserved addresses.
 IPAddress FuzzIPv6Address(base::FuzzedDataProvider* data_provider) {
-  return IPAddress(data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8());
+  return IPAddress(data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>());
 }
 
 // Returns a fuzzed address, which can be either IPv4 or IPv6.  Can return
@@ -96,8 +104,8 @@ class FuzzedHostResolverProc : public HostResolverProc {
     // generally before IPv4 ones.
     if (address_family == ADDRESS_FAMILY_UNSPECIFIED ||
         address_family == ADDRESS_FAMILY_IPV6) {
-      size_t num_ipv6_addresses = data_provider_->ConsumeUint8();
-      for (size_t i = 0; i < num_ipv6_addresses; ++i) {
+      uint8_t num_ipv6_addresses = data_provider_->ConsumeIntegral<uint8_t>();
+      for (uint8_t i = 0; i < num_ipv6_addresses; ++i) {
         result.push_back(
             net::IPEndPoint(FuzzIPv6Address(data_provider_.get()), 0));
       }
@@ -105,8 +113,8 @@ class FuzzedHostResolverProc : public HostResolverProc {
 
     if (address_family == ADDRESS_FAMILY_UNSPECIFIED ||
         address_family == ADDRESS_FAMILY_IPV4) {
-      size_t num_ipv4_addresses = data_provider_->ConsumeUint8();
-      for (size_t i = 0; i < num_ipv4_addresses; ++i) {
+      uint8_t num_ipv4_addresses = data_provider_->ConsumeIntegral<uint8_t>();
+      for (uint8_t i = 0; i < num_ipv4_addresses; ++i) {
         result.push_back(
             net::IPEndPoint(FuzzIPv4Address(data_provider_.get()), 0));
       }
@@ -191,7 +199,7 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
 
   net::DnsHosts hosts;
   // Fuzz hosts file.
-  uint8_t num_hosts_entries = data_provider_->ConsumeUint8();
+  uint8_t num_hosts_entries = data_provider_->ConsumeIntegral<uint8_t>();
   for (uint8_t i = 0; i < num_hosts_entries; ++i) {
     const char* kHostnames[] = {"foo", "foo.com",   "a.foo.com",
                                 "bar", "localhost", "localhost6"};

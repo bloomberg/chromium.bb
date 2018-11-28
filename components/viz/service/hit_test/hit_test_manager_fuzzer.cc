@@ -62,14 +62,14 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
     return;
 
   viz::HitTestRegion hit_test_region;
-  hit_test_region.flags = fuzz->ConsumeUint16();
+  hit_test_region.flags = fuzz->ConsumeIntegral<uint32_t>();
   if (fuzz->ConsumeBool())
     hit_test_region.flags |= viz::HitTestRegionFlags::kHitTestChildSurface;
-  hit_test_region.frame_sink_id =
-      viz::FrameSinkId(fuzz->ConsumeUint8(), fuzz->ConsumeUint8());
+  hit_test_region.frame_sink_id = viz::FrameSinkId(
+      fuzz->ConsumeIntegral<uint32_t>(), fuzz->ConsumeIntegral<uint32_t>());
   hit_test_region.rect =
-      gfx::Rect(fuzz->ConsumeUint8(), fuzz->ConsumeUint8(),
-                fuzz->ConsumeUint16(), fuzz->ConsumeUint16());
+      gfx::Rect(fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>(),
+                fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>());
   hit_test_region.transform = GetNextTransform(fuzz);
 
   if (fuzz->ConsumeBool() &&
@@ -112,16 +112,16 @@ void SubmitHitTestRegionList(
   base::Optional<viz::HitTestRegionList> hit_test_region_list;
   if (fuzz->ConsumeBool()) {
     hit_test_region_list.emplace();
-    hit_test_region_list->flags = fuzz->ConsumeUint16();
+    hit_test_region_list->flags = fuzz->ConsumeIntegral<uint32_t>();
     if (fuzz->ConsumeBool())
       hit_test_region_list->flags |=
           viz::HitTestRegionFlags::kHitTestChildSurface;
     hit_test_region_list->bounds =
-        gfx::Rect(fuzz->ConsumeUint8(), fuzz->ConsumeUint8(),
-                  fuzz->ConsumeUint16(), fuzz->ConsumeUint16());
+        gfx::Rect(fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>(),
+                  fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>());
     hit_test_region_list->transform = GetNextTransform(fuzz);
 
-    uint32_t child_count = fuzz->ConsumeUint16();
+    uint32_t child_count = fuzz->ConsumeIntegral<uint32_t>();
     AddHitTestRegion(fuzz, &hit_test_region_list->regions, child_count,
                      delegate, frame_sink_manager, surface_id, depth + 1);
   }

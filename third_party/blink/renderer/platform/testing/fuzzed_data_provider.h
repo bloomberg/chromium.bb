@@ -39,6 +39,14 @@ class FuzzedDataProvider {
     return provider_.ConsumeIntegralInRange<T>(min, max);
   }
 
+  // Returns a number in the range [Type's min, Type's max]. The value might
+  // not be uniformly distributed in the given range. If there's no input data
+  // left, always returns |min|.
+  template <typename T>
+  T ConsumeIntegral() {
+    return provider_.ConsumeIntegral<T>();
+  }
+
   // Returns a value from |array|, consuming as many bytes as needed to do so.
   // |array| must be a fixed-size array.
   template <typename T, size_t size>

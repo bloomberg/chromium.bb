@@ -15,7 +15,9 @@
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider fuzzed_data(data, size);
-  size_t first_part_size = fuzzed_data.ConsumeUint16();
+
+  // Intentionally using uint16_t here to avoid empty |second_part|.
+  size_t first_part_size = fuzzed_data.ConsumeIntegral<uint16_t>();
   std::vector<uint8_t> first_part = fuzzed_data.ConsumeBytes(first_part_size);
   std::vector<uint8_t> second_part = fuzzed_data.ConsumeRemainingBytes();
 
