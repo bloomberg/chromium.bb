@@ -486,4 +486,61 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
       &result));
   ASSERT_TRUE(result);
 }
+
+IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
+                       CustomBackgroundOverridesThemeAttribution) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestThemeInfoObserver observer(
+      InstantServiceFactory::GetForProfile(profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  // Switch to waiting for the theme to get applied.
+  observer.SwitchCheck();
+  ASSERT_NO_FATAL_FAILURE(
+      InstallThemeAndVerify("theme_with_attribution", "attribution theme"));
+  observer.WaitForThemeApplied(true);
+  EXPECT_FALSE(observer.IsUsingDefaultTheme());
+  bool result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab,
+      "window.chrome.embeddedSearch.newTabPage.themeBackgroundInfo."
+      "attributionUrl !== ''",
+      &result));
+  EXPECT_TRUE(result);
+
+  // Set a custom background image via the EmbeddedSearch API.
+  observer.SwitchCheck();
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile());
+  instant_service->AddValidBackdropUrlForTesting(
+      GURL("chrome-search://local-ntp/background1.jpg"));
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab,
+      "window.chrome.embeddedSearch.newTabPage."
+      "setBackgroundURL('chrome-search://local-ntp/background1.jpg"
+      "')"));
+  observer.WaitForThemeInfoUpdated("chrome-search://local-ntp/background1.jpg",
+                                   "", "", "");
+
+  // Check that the custom background element has the correct attribution with
+  // the scrim applied.
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab,
+      "$('custom-bg').style.backgroundImage === 'linear-gradient(rgba(0, 0, 0, "
+      "0), rgba(0, 0, 0, 0.3)), "
+      "url(\"chrome-search://local-ntp/background1.jpg\")'",
+      &result));
+  EXPECT_TRUE(result);
+  // Applying a custom background still counts as using the default theme.
+  EXPECT_FALSE(observer.IsUsingDefaultTheme());
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab,
+      "window.chrome.embeddedSearch.newTabPage.themeBackgroundInfo."
+      "attributionUrl === ''",
+      &result));
+  EXPECT_TRUE(result);
+}
 }  // namespace
