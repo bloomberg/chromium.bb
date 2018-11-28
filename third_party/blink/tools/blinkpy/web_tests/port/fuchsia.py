@@ -35,6 +35,7 @@ import sys
 import threading
 
 from blinkpy.common import exit_codes
+from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
 from blinkpy.common.path_finder import get_chromium_src_dir
 from blinkpy.web_tests.port import base
 from blinkpy.web_tests.port import driver
@@ -70,9 +71,12 @@ def _import_fuchsia_runner():
 # Path to the content shell package relative to the build directory.
 CONTENT_SHELL_PACKAGE_PATH = 'gen/content/shell/content_shell/content_shell.far'
 
-# HTTP path prefix for the HTTP server.
+# HTTP path prefixes for the HTTP server.
+# WEB_TEST_PATH_PREFIX should be matched to the local directory name of
+# web_tests because some tests and test_runner find test root directory
+# with it.
 PERF_TEST_PATH_PREFIX = '/PerformanceTests'
-LAYOUT_TEST_PATH_PREFIX = '/LayoutTests'
+WEB_TESTS_PATH_PREFIX = '/' + WEB_TESTS_LAST_COMPONENT
 
 # Paths to the directory where the fonts are copied to. Must match the path in
 # content/shell/app/blink_test_platform_support_fuchsia.cc .
@@ -245,7 +249,7 @@ class FuchsiaPort(base.Port):
 
     def start_http_server(self, additional_dirs, number_of_drivers):
         additional_dirs[PERF_TEST_PATH_PREFIX] = self._perf_tests_dir()
-        additional_dirs[LAYOUT_TEST_PATH_PREFIX] = self.layout_tests_dir()
+        additional_dirs[WEB_TESTS_PATH_PREFIX] = self.layout_tests_dir()
         super(FuchsiaPort, self).start_http_server(
             additional_dirs, number_of_drivers)
 
