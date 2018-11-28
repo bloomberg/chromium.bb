@@ -167,8 +167,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
 
     private void notifyPropertyModelsChanged() {
         if (mPreventSuggestionListPropertyChanges) return;
-        List<PropertyModel> models = new ArrayList<>(mCurrentModels.size());
-        for (int i = 0; i < mCurrentModels.size(); i++) models.add(mCurrentModels.get(i).second);
+        List<Pair<Integer, PropertyModel>> models = new ArrayList<>(mCurrentModels.size());
+        for (int i = 0; i < mCurrentModels.size(); i++) {
+            models.add(new Pair<>(OmniboxSuggestionUiType.DEFAULT, mCurrentModels.get(i).second));
+        }
         mListPropertyModel.set(SuggestionListProperties.SUGGESTION_MODELS, models);
     }
 

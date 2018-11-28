@@ -48,6 +48,13 @@ class ContextualSuggestionsModel
                 PropertyKey.MENU_BUTTON_DELEGATE, PropertyKey.TITLE);
     }
 
+    @Override
+    public Collection<PropertyKey> getAllProperties() {
+        return Arrays.asList(PropertyKey.CLOSE_BUTTON_ON_CLICK_LISTENER,
+                PropertyKey.MENU_BUTTON_DELEGATE, PropertyKey.TITLE,
+                PropertyKey.TOOLBAR_SHADOW_VISIBILITY);
+    }
+
     /** @param clusters The current list of clusters. */
     void setClusterList(List<ContextualSuggestionsCluster> clusters) {
         mClusterList.setClusters(clusters);
