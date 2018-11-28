@@ -199,11 +199,14 @@ void CorsURLLoader::OnReceiveResponse(
   DCHECK(forwarding_client_);
   DCHECK(!deferred_redirect_url_);
 
+  int response_status_code =
+      response_head.headers ? response_head.headers->response_code() : 0;
+
   const bool is_304_for_revalidation =
-      request_.is_revalidating && response_head.headers->response_code() == 304;
+      request_.is_revalidating && response_status_code == 304;
   if (fetch_cors_flag_ && !is_304_for_revalidation) {
     const auto error_status = CheckAccess(
-        request_.url, response_head.headers->response_code(),
+        request_.url, response_status_code,
         GetHeaderString(response_head, header_names::kAccessControlAllowOrigin),
         GetHeaderString(response_head,
                         header_names::kAccessControlAllowCredentials),
