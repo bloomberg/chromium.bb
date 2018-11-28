@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/cache_storage/cache_storage_scheduler_client.h"
+#include "content/browser/cache_storage/cache_storage_scheduler_types.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -34,7 +34,8 @@ class CONTENT_EXPORT CacheStorageScheduler {
 
   // Adds the operation to the tail of the queue and starts it if the scheduler
   // is idle.
-  void ScheduleOperation(base::OnceClosure closure);
+  void ScheduleOperation(CacheStorageSchedulerOp op_type,
+                         base::OnceClosure closure);
 
   // Call this after each operation completes. It cleans up the current
   // operation and starts the next.

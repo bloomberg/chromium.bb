@@ -24,6 +24,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage.h"
@@ -312,9 +313,20 @@ class CacheStorageManagerTest : public testing::Test {
     cache_manager_ = nullptr;
   }
 
+  void CheckOpHistograms(base::HistogramTester& histogram_tester,
+                         const char* op_name) {
+    std::string base("ServiceWorkerCache.CacheStorage.Scheduler.");
+    histogram_tester.ExpectTotalCount(base + "IsOperationSlow." + op_name, 1);
+    histogram_tester.ExpectTotalCount(base + "OperationDuration2." + op_name,
+                                      1);
+    histogram_tester.ExpectTotalCount(base + "QueueDuration2." + op_name, 1);
+    histogram_tester.ExpectTotalCount(base + "QueueLength." + op_name, 1);
+  }
+
   bool Open(const url::Origin& origin,
             const std::string& cache_name,
             CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     base::RunLoop loop;
     cache_manager_->OpenCache(
         origin, owner, cache_name,
@@ -323,47 +335,53 @@ class CacheStorageManagerTest : public testing::Test {
     loop.Run();
 
     bool error = callback_error_ != CacheStorageError::kSuccess;
-    if (error)
+    if (error) {
       EXPECT_FALSE(callback_cache_handle_.value());
-    else
+    } else {
       EXPECT_TRUE(callback_cache_handle_.value());
+      CheckOpHistograms(histogram_tester, "Open");
+    }
     return !error;
   }
 
   bool Has(const url::Origin& origin,
            const std::string& cache_name,
            CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     base::RunLoop loop;
     cache_manager_->HasCache(
         origin, owner, cache_name,
         base::BindOnce(&CacheStorageManagerTest::BoolAndErrorCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
-
+    CheckOpHistograms(histogram_tester, "Has");
     return callback_bool_;
   }
 
   bool Delete(const url::Origin& origin,
               const std::string& cache_name,
               CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     base::RunLoop loop;
     cache_manager_->DeleteCache(
         origin, owner, cache_name,
         base::BindOnce(&CacheStorageManagerTest::ErrorCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
-
+    CheckOpHistograms(histogram_tester, "Delete");
     return callback_bool_;
   }
 
   size_t Keys(const url::Origin& origin,
               CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     base::RunLoop loop;
     cache_manager_->EnumerateCaches(
         origin, owner,
         base::BindOnce(&CacheStorageManagerTest::CacheMetadataCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
+    CheckOpHistograms(histogram_tester, "Keys");
     return callback_cache_index_.num_entries();
   }
 
@@ -384,6 +402,7 @@ class CacheStorageManagerTest : public testing::Test {
       const ServiceWorkerFetchRequest& request,
       blink::mojom::QueryParamsPtr match_params = nullptr,
       CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     std::unique_ptr<ServiceWorkerFetchRequest> unique_request =
         std::make_unique<ServiceWorkerFetchRequest>(request);
 
@@ -394,7 +413,8 @@ class CacheStorageManagerTest : public testing::Test {
         base::BindOnce(&CacheStorageManagerTest::CacheMatchCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
-
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "Match");
     return callback_error_ == CacheStorageError::kSuccess;
   }
 
@@ -411,6 +431,7 @@ class CacheStorageManagerTest : public testing::Test {
       const ServiceWorkerFetchRequest& request,
       blink::mojom::QueryParamsPtr match_params = nullptr,
       CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     std::unique_ptr<ServiceWorkerFetchRequest> unique_request =
         std::make_unique<ServiceWorkerFetchRequest>(request);
     base::RunLoop loop;
@@ -419,7 +440,8 @@ class CacheStorageManagerTest : public testing::Test {
         base::BindOnce(&CacheStorageManagerTest::CacheMatchCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
-
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "MatchAll");
     return callback_error_ == CacheStorageError::kSuccess;
   }
 

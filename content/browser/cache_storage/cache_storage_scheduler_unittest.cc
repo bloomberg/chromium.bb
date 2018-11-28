@@ -32,7 +32,7 @@ class CacheStorageSchedulerTest : public testing::Test {
  protected:
   CacheStorageSchedulerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        scheduler_(CacheStorageSchedulerClient::CLIENT_STORAGE),
+        scheduler_(CacheStorageSchedulerClient::kStorage),
         task1_(TestTask(&scheduler_)),
         task2_(TestTask(&scheduler_)) {}
 
@@ -44,6 +44,7 @@ class CacheStorageSchedulerTest : public testing::Test {
 
 TEST_F(CacheStorageSchedulerTest, ScheduleOne) {
   scheduler_.ScheduleOperation(
+      CacheStorageSchedulerOp::kTest,
       base::BindOnce(&TestTask::Run, base::Unretained(&task1_)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, task1_.callback_count());
@@ -51,8 +52,10 @@ TEST_F(CacheStorageSchedulerTest, ScheduleOne) {
 
 TEST_F(CacheStorageSchedulerTest, ScheduleTwo) {
   scheduler_.ScheduleOperation(
+      CacheStorageSchedulerOp::kTest,
       base::BindOnce(&TestTask::Run, base::Unretained(&task1_)));
   scheduler_.ScheduleOperation(
+      CacheStorageSchedulerOp::kTest,
       base::BindOnce(&TestTask::Run, base::Unretained(&task2_)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, task1_.callback_count());
@@ -67,6 +70,7 @@ TEST_F(CacheStorageSchedulerTest, ScheduleTwo) {
 
 TEST_F(CacheStorageSchedulerTest, ScheduledOperations) {
   scheduler_.ScheduleOperation(
+      CacheStorageSchedulerOp::kTest,
       base::BindOnce(&TestTask::Run, base::Unretained(&task1_)));
   EXPECT_TRUE(scheduler_.ScheduledOperations());
   base::RunLoop().RunUntilIdle();
