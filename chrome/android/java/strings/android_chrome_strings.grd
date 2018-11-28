@@ -242,9 +242,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_TRY_AGAIN" desc="The label for a button allowing the user to try an action again. [CHAR-LIMIT=20]">
         Try again
       </message>
-      <message name="IDS_BACK" desc="Generic label for button to return to the previous screen. [CHAR-LIMIT=20]">
-        Back
-      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
@@ -2749,34 +2746,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_SIGNIN_ACCOUNT_PICKER_DIALOG_TITLE" desc="The title for the dialog that shows the list of accounts on the device and asks the user to select one of these accounts. [CHAR-LIMIT=27]">
         Choose an account
-      </message>
-      <!-- Consent bump screen strings -->
-      <message name="IDS_CONSENT_BUMP_TITLE" desc="Text for the title of the basic consent bump screen. This screen describes the user personalized and non-personalized features that depend on Unified Consent.">
-        Get more Google smarts
-      </message>
-      <message name="IDS_CONSENT_BUMP_MORE_OPTIONS" desc="Text for the button in the basic consent bump screen that opens the advanced consent bump screen. The advanced consent bump screen lets the user select from several options to enable or customize personalized and non-personalized services. [CHAR-LIMIT=20]">
-        More options
-      </message>
-      <message name="IDS_CONSENT_BUMP_MORE_OPTIONS_TITLE" desc="Text for the title of the consent bump screen with advanced options. This screen lets user select from several options to enable or customize personalized and non-personalized services.">
-        Control sync, personalization, and more
-      </message>
-      <message name="IDS_CONSENT_BUMP_DESCRIPTION" desc="Text that explains why the consent bump screen has been shown.">
-        The settings that control sync, personalization, and other Google services in Chrome have changed. This may affect your current settings.
-      </message>
-      <message name="IDS_CONSENT_BUMP_NO_CHANGES_TITLE" desc="Title for the radio button in the consent bump screen with advanced options. This radio button allows the user to keep the current settings.">
-        Make no changes
-      </message>
-      <message name="IDS_CONSENT_BUMP_NO_CHANGES_DESCRIPTION" desc="Description for the radio button in the consent bump screen with advanced autocompletions. This radio button allows the user to keep the current settings.">
-        The data you sync to Google and the features you use will not change
-      </message>
-      <message name="IDS_CONSENT_BUMP_REVIEW_SETTINGS_TITLE" desc="Title for the radio button in the consent bump screen with advanced options. This radio button allows the user to open sync and personalization settings.">
-        Review your settings on the next screen
-      </message>
-      <message name="IDS_CONSENT_BUMP_TURN_ON_TITLE" desc="Title for the radio button in the consent bump screen with advanced options. This radio button allows the user to enable sync, personalization and all non-personalized services.">
-        Turn on sync, personalization, and other Google services
-      </message>
-      <message name="IDS_CONSENT_BUMP_TURN_ON_DESCRIPTION" desc="Description for the radio button in the consent bump screen with advanced autocompletions. This radio button allows the user to enable sync, personalization and all non-personalized services.">
-        You can customize this anytime in Chrome Settings
       </message>
 
       <!-- Personalized Signin Promos Strings -->

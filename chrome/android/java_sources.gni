@@ -1435,8 +1435,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/signin/ConfirmManagedSyncDataDialog.java",
   "java/src/org/chromium/chrome/browser/signin/ConfirmSyncDataStateMachine.java",
   "java/src/org/chromium/chrome/browser/signin/ConfirmSyncDataStateMachineDelegate.java",
-  "java/src/org/chromium/chrome/browser/signin/ConsentBumpFragment.java",
-  "java/src/org/chromium/chrome/browser/signin/ConsentBumpMoreOptionsFragment.java",
   "java/src/org/chromium/chrome/browser/signin/ConsentTextTracker.java",
   "java/src/org/chromium/chrome/browser/signin/DisplayableProfileData.java",
   "java/src/org/chromium/chrome/browser/signin/GoogleActivityController.java",
