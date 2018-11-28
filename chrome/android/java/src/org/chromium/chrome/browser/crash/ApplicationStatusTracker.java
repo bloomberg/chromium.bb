@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.crash;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
+import org.chromium.components.crash.CrashKeyIndex;
+import org.chromium.components.crash.CrashKeys;
 
 /**
  * This class updates crash keys when the application state changes.

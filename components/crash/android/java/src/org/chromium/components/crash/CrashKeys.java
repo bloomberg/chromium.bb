@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.crash;
+package org.chromium.components.crash;
 
 import android.support.annotation.Nullable;
 
@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  *     <li>The CrashKeyString array in {@code crash_keys_android.cc}</li>
  *     <li>The {@link #KEYS} array in this class.</li>
  * </ol>
+ * The crash keys will only be included in browser process crash reports.
  */
 public class CrashKeys {
     private static final String[] KEYS =
@@ -47,7 +48,7 @@ public class CrashKeys {
      * @param keyIndex The index of a crash key.
      * @return The key for the given index.
      */
-    static String getKey(@CrashKeyIndex int keyIndex) {
+    public static String getKey(@CrashKeyIndex int keyIndex) {
         return KEYS[keyIndex];
     }
 
@@ -56,7 +57,7 @@ public class CrashKeys {
      *         the values have been flushed to the native side.
      * @see #flushToNative
      */
-    AtomicReferenceArray<String> getValues() {
+    public AtomicReferenceArray<String> getValues() {
         assert !mFlushed;
         return mValues;
     }
@@ -75,7 +76,6 @@ public class CrashKeys {
             nativeSet(keyIndex, value);
             return;
         }
-
         mValues.set(keyIndex, value);
     }
 
@@ -84,7 +84,7 @@ public class CrashKeys {
      * pure-Java exception handling is disabled in favor of native crash reporting.
      */
     @CalledByNative
-    void flushToNative() {
+    public void flushToNative() {
         ThreadUtils.assertOnUiThread();
 
         assert !mFlushed;
