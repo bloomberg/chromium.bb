@@ -237,6 +237,8 @@ bool IsCertificateCleared() {
     [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
         performAction:grey_tap()];
   }
+
+  [super tearDown];
 }
 
 // Closes a sub-settings menu, and then the general Settings menu.
