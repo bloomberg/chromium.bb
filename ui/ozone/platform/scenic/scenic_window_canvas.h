@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace scenic {
@@ -28,7 +29,8 @@ class ScenicWindowCanvas : public SurfaceOzoneCanvas {
  public:
   // |window| must outlive the surface. ScenicWindow owns the scenic::Session
   // used in this class for all drawing operations.
-  explicit ScenicWindowCanvas(ScenicWindow* window);
+  explicit ScenicWindowCanvas(fuchsia::ui::scenic::Scenic* scenic,
+                              ScenicWindow* window);
   ~ScenicWindowCanvas() override;
 
   // SurfaceOzoneCanvas implementation.
@@ -80,6 +82,10 @@ class ScenicWindowCanvas : public SurfaceOzoneCanvas {
 
   // View size in device pixels.
   gfx::Size viewport_size_;
+
+  scenic::Session scenic_session_;
+  scenic::ImportNode parent_;
+  scenic::Material material_;
 
   DISALLOW_COPY_AND_ASSIGN(ScenicWindowCanvas);
 };

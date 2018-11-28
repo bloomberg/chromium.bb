@@ -4,6 +4,7 @@
 
 #include "gpu/vulkan/x/vulkan_implementation_x11.h"
 
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -82,7 +83,8 @@ std::unique_ptr<VulkanSurface> VulkanImplementationX11::CreateViewSurface(
     return nullptr;
   }
 
-  return std::make_unique<VulkanSurface>(GetVulkanInstance(), surface);
+  return std::make_unique<VulkanSurface>(GetVulkanInstance(), surface,
+                                         base::DoNothing());
 }
 
 bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(

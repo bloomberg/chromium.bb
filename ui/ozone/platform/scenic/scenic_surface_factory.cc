@@ -6,6 +6,8 @@
 
 #include <lib/zx/event.h>
 
+#include "base/fuchsia/component_context.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/native_pixmap.h"
@@ -108,6 +110,17 @@ ScenicSurfaceFactory::ScenicSurfaceFactory(ScenicWindowManager* window_manager)
 
 ScenicSurfaceFactory::~ScenicSurfaceFactory() = default;
 
+fuchsia::ui::scenic::Scenic* ScenicSurfaceFactory::GetScenic() {
+  if (!scenic_) {
+    scenic_ = base::fuchsia::ComponentContext::GetDefault()
+                  ->ConnectToService<fuchsia::ui::scenic::Scenic>();
+    scenic_.set_error_handler([](zx_status_t status) {
+      ZX_LOG(FATAL, status) << "Scenic connection failed";
+    });
+  }
+  return scenic_.get();
+}
+
 std::vector<gl::GLImplementation>
 ScenicSurfaceFactory::GetAllowedGLImplementations() {
   // TODO(spang): Remove this after crbug.com/897208 is fixed.
@@ -128,7 +141,7 @@ std::unique_ptr<SurfaceOzoneCanvas> ScenicSurfaceFactory::CreateCanvasForWidget(
   ScenicWindow* window = window_manager_->GetWindow(widget);
   if (!window)
     return nullptr;
-  return std::make_unique<ScenicWindowCanvas>(window);
+  return std::make_unique<ScenicWindowCanvas>(GetScenic(), window);
 }
 
 scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
@@ -142,7 +155,8 @@ scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
 ScenicSurfaceFactory::CreateVulkanImplementation() {
-  return std::make_unique<ui::VulkanImplementationScenic>(window_manager_);
+  return std::make_unique<ui::VulkanImplementationScenic>(window_manager_,
+                                                          GetScenic());
 }
 #endif
 

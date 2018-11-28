@@ -4,6 +4,7 @@
 
 #include "gpu/vulkan/android/vulkan_implementation_android.h"
 
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -69,7 +70,8 @@ std::unique_ptr<VulkanSurface> VulkanImplementationAndroid::CreateViewSurface(
     return nullptr;
   }
 
-  return std::make_unique<VulkanSurface>(GetVulkanInstance(), surface);
+  return std::make_unique<VulkanSurface>(GetVulkanInstance(), surface,
+                                         base::DoNothing());
 }
 
 bool VulkanImplementationAndroid::GetPhysicalDevicePresentationSupport(
