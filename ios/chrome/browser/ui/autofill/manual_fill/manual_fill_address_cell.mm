@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_address_cell.h"
 
+#include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
@@ -487,6 +488,35 @@ static const CGFloat SideMargins = 16;
 }
 
 - (void)userDidTapAddressInfo:(UIButton*)sender {
+  const char* metricsAction = nullptr;
+  if (sender == self.firstNameButton) {
+    metricsAction = "ManualFallback_Profiles_SelectFirstName";
+  } else if (sender == self.middleNameButton) {
+    metricsAction = "ManualFallback_Profiles_SelectMiddleName";
+  } else if (sender == self.lastNameButton) {
+    metricsAction = "ManualFallback_Profiles_SelectLastName";
+  } else if (sender == self.companyButton) {
+    metricsAction = "ManualFallback_Profiles_Company";
+  } else if (sender == self.line1Button) {
+    metricsAction = "ManualFallback_Profiles_Address1";
+  } else if (sender == self.line2Button) {
+    metricsAction = "ManualFallback_Profiles_Address2";
+  } else if (sender == self.zipButton) {
+    metricsAction = "ManualFallback_Profiles_Zip";
+  } else if (sender == self.cityButton) {
+    metricsAction = "ManualFallback_Profiles_City";
+  } else if (sender == self.stateButton) {
+    metricsAction = "ManualFallback_Profiles_State";
+  } else if (sender == self.countryButton) {
+    metricsAction = "ManualFallback_Profiles_Country";
+  } else if (sender == self.phoneNumberButton) {
+    metricsAction = "ManualFallback_Profiles_PhoneNumber";
+  } else if (sender == self.emailAddressButton) {
+    metricsAction = "ManualFallback_Profiles_EmailAddress";
+  }
+  DCHECK(metricsAction);
+  base::RecordAction(base::UserMetricsAction(metricsAction));
+
   [self.delegate userDidPickContent:sender.titleLabel.text
                     isPasswordField:NO
                       requiresHTTPS:NO];

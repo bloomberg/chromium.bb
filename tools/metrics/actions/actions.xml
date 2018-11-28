@@ -10144,6 +10144,34 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ManualFallback_CreditCard_SelectCardholderName">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a cardholder name in the Credit Card Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_CreditCard_SelectCardNumber">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a credit card number in the Credit Card Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_CreditCard_SelectExpirationMonth">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on an expiration month in the Credit Card Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_CreditCard_SelectExpirationYear">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on an expiration year in the Credit Card Fallback view.
+  </description>
+</action>
+
 <action name="ManualFallback_OpenCreditCard">
   <owner>javierrobles@chromium.org</owner>
   <description>The user opened Credit Card Manual Fallback view.</description>
@@ -10189,11 +10217,95 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ManualFallback_Profiles_Address1">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on line 1 in the Address Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_Address2">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on line 2 in the Address Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_City">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a city in the Address Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_Company">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a company name in the Address Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_Country">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a country in the Address Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_EmailAddress">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on an email address in the Address Manual Fallback view.
+  </description>
+</action>
+
 <action name="ManualFallback_Profiles_OpenManageProfiles">
   <owner>javierrobles@chromium.org</owner>
   <description>
     The user tapped on &quot;Manage addresses&quot; on the Password Manual
     Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_PhoneNumber">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a phone number in the Address Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_SelectFirstName">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a first name in the Address Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_SelectLastName">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a last name in the Address Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_SelectMiddleName">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a middle name in the Address Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_State">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a state / province in the Address Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_Zip">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a zip code in the Address Manual Fallback view.
   </description>
 </action>
 
