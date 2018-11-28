@@ -87,10 +87,6 @@ TEST(FileManagerPathUtilTest, GetMyFilesFolderForProfile) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(chromeos::features::kMyFilesVolume);
 
-    base::FilePath myfiles_path = profile_path.AppendASCII("MyFiles");
-    base::FilePath myfiles_downloads_path =
-        myfiles_path.AppendASCII("Downloads");
-
     EXPECT_EQ("/home/chronos/u-0123456789abcdef/MyFiles",
               GetMyFilesFolderForProfile(&profile).value());
     EXPECT_EQ("/home/chronos/u-0123456789abcdef/MyFiles/Downloads",
@@ -102,9 +98,38 @@ TEST(FileManagerPathUtilTest, GetMyFilesFolderForProfile) {
         storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
         profile_path.Append("MyFiles"));
 
+    // When returning from the mount_point Downloads should still point to
+    // MyFiles/Downloads.
+    EXPECT_EQ("/home/chronos/u-0123456789abcdef/MyFiles/Downloads",
+              GetDownloadsFolderForProfile(&profile).value());
+
     // Still the same: /home/u-{hash}/MyFiles.
     EXPECT_EQ("/home/chronos/u-0123456789abcdef/MyFiles",
               GetMyFilesFolderForProfile(&profile).value());
+  }
+  {
+    // Remove mount configured to MyFiles in the previous test.
+    storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+        GetDownloadsMountPointName(&profile));
+
+    // Add mount point for Downloads instead of MyFiles.
+    storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+        GetDownloadsMountPointName(&profile),
+        storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
+        profile_path.Append("Downloads"));
+
+    // Disable MyFilesVolume again to test returning from the mount_point.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(chromeos::features::kMyFilesVolume);
+    // When MyFilesVolume feature is disabled it will return the same as
+    // Downloads.
+    EXPECT_EQ(GetDownloadsFolderForProfile(&profile),
+              GetMyFilesFolderForProfile(&profile));
+    EXPECT_EQ("/home/chronos/u-0123456789abcdef/Downloads",
+              GetDownloadsFolderForProfile(&profile).value());
+    // Unmount Downloads because it was interfering with other tests.
+    storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+        GetDownloadsMountPointName(&profile));
   }
 }
 
