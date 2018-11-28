@@ -67,6 +67,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="ScrolledMainFrameWithUnacceleratedFixedRootBackground"/>
 </enum>
 
+<enum name="AccessibilityAndroidAnimationsEnabled">
+  <int value="0"
+      label="ANIMATOR_DURATION_SCALE flag not defined or not a float"/>
+  <int value="1" label="Animations disabled"/>
+  <int value="2" label="Animations enabled"/>
+</enum>
+
 <enum name="AccessibilityAndroidServiceInfoEnum">
   <summary>
     Track flags and capabilities of enabled accessibility services on Android.
