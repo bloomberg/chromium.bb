@@ -121,7 +121,6 @@ class OzonePlatformScenic
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
     cursor_factory_ozone_ = std::make_unique<BitmapCursorFactoryOzone>();
-    gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
     base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
 
@@ -161,7 +160,6 @@ class OzonePlatformScenic
   std::unique_ptr<PlatformEventSource> platform_event_source_;
   std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   std::unique_ptr<InputController> input_controller_;
-  std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   std::unique_ptr<ScenicGpuHost> scenic_gpu_host_;
   std::unique_ptr<ScenicGpuService> scenic_gpu_service_;
