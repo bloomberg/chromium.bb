@@ -718,17 +718,22 @@ TEST_F(TabTest, LoadingProgressMonotonicallyIncreases) {
   data.network_state = TabNetworkState::kLoading;
   data.load_progress = 0.2;
   tab.SetData(data);
-  EXPECT_FLOAT_EQ(0.2, GetLoadingProgress(icon));
+  float initial_reported_progress = GetLoadingProgress(icon);
+  // Reported progress should interpolate to something between itself and 1.0.
+  EXPECT_GE(initial_reported_progress, 0.2);
+  EXPECT_LT(initial_reported_progress, 1.0);
 
   // Decrease load progress, icon's load progress should not change.
   data.load_progress = 0.1;
   tab.SetData(data);
-  EXPECT_FLOAT_EQ(0.2, GetLoadingProgress(icon));
+  EXPECT_FLOAT_EQ(initial_reported_progress, GetLoadingProgress(icon));
 
   // Though increasing it should be respected.
   data.load_progress = 0.5;
   tab.SetData(data);
-  EXPECT_FLOAT_EQ(0.5, GetLoadingProgress(icon));
+  // A higher load progress should be interpolate to larger value (less than 1).
+  EXPECT_GT(GetLoadingProgress(icon), initial_reported_progress);
+  EXPECT_LT(GetLoadingProgress(icon), 1.0);
 }
 
 TEST_F(TabTest, LoadingProgressGoesTo100PercentAfterLoadingIsDone) {
@@ -745,7 +750,9 @@ TEST_F(TabTest, LoadingProgressGoesTo100PercentAfterLoadingIsDone) {
   data.network_state = TabNetworkState::kLoading;
   data.load_progress = 0.2;
   tab.SetData(data);
-  EXPECT_FLOAT_EQ(0.2, GetLoadingProgress(icon));
+  // Reported progress should interpolate to something between itself and 1.0.
+  EXPECT_GE(GetLoadingProgress(icon), 0.2);
+  EXPECT_LT(GetLoadingProgress(icon), 1.0);
 
   // Finish loading. Regardless of reported |data.load_progress|, load_progress
   // should be drawn at 100%.

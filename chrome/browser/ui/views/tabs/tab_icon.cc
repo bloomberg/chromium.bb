@@ -463,15 +463,14 @@ void TabIcon::SetNetworkState(TabNetworkState network_state,
     }
 
     if (old_state == TabNetworkState::kLoading) {
+      // Rewind the progress timer back to currently displayed progress bar so
+      // we don't miss the end of the animation.
+      RewindLoadingProgressTimerIfNecessary(target_loading_progress_);
       target_loading_progress_ = 1.0;
       // Start fading in placeholder favicon if no favicon has loaded so far.
       const base::TimeTicks now = clock_->NowTicks();
       if (!favicon_fade_in_animation_)
         favicon_fade_in_animation_ = now;
-
-      // Rewind the progress timer back to 100% if necessary. This prevents
-      // parts of the fade-out animation to be skipped.
-      RewindLoadingProgressTimerIfNecessary(1.0f);
     }
 
     if (network_state_ == TabNetworkState::kWaiting) {
@@ -482,15 +481,23 @@ void TabIcon::SetNetworkState(TabNetworkState network_state,
     SchedulePaint();
   }
 
-  // The loading progress looks really weird if it ever jumps backwards, so make
-  // sure it only increases.
-  if (network_state_ == TabNetworkState::kLoading &&
-      target_loading_progress_ < load_progress) {
-    DCHECK(loading_progress_timer_);
+  if (network_state_ == TabNetworkState::kLoading) {
+    // Interpolate loading progress to a narrower range to prevent us from
+    // looking stuck doing nothing at 0% or at 100% but still not finishing.
+    constexpr float kLoadingProgressStart = 0.3;
+    constexpr float kLoadingProgressEnd = 0.7;
+    load_progress =
+        kLoadingProgressStart +
+        load_progress * (kLoadingProgressEnd - kLoadingProgressStart);
 
-    RewindLoadingProgressTimerIfNecessary(target_loading_progress_);
+    // The loading progress looks really weird if it ever jumps backwards, so
+    // make sure it only increases.
+    if (target_loading_progress_ < load_progress) {
+      DCHECK(loading_progress_timer_);
 
-    target_loading_progress_ = load_progress;
+      RewindLoadingProgressTimerIfNecessary(target_loading_progress_);
+      target_loading_progress_ = load_progress;
+    }
   }
 }
 
