@@ -1310,12 +1310,18 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
       duration_histogram_name.append(".CPU");
     }
 
-    int sqrt_pixels = std::sqrt(dst_rect.Width() * dst_rect.Height());
     base::TimeDelta elapsed = TimeTicks::Now() - start_time;
-
     base::UmaHistogramMicrosecondsTimes(duration_histogram_name, elapsed);
-    base::UmaHistogramCustomCounts(size_histogram_name, sqrt_pixels, 1, 5000,
-                                   50);
+
+    float sqrt_pixels_float =
+        std::sqrt(dst_rect.Width()) * std::sqrt(dst_rect.Height());
+    // If sqrt_pixels_float overflows as int CheckedNumeric will store it
+    // as invalid, then ValueOrDefault will return the maximum int.
+    base::CheckedNumeric<int> sqrt_pixels = sqrt_pixels_float;
+    base::UmaHistogramCustomCounts(
+        size_histogram_name,
+        sqrt_pixels.ValueOrDefault(std::numeric_limits<int>::max()), 1, 5000,
+        50);
   }
 }
 
@@ -1678,13 +1684,18 @@ ImageData* BaseRenderingContext2D::getImageData(
   return imageData;
 }
 
-int BaseRenderingContext2D::getScaledElapsedTime(int width,
-                                                 int height,
+int BaseRenderingContext2D::getScaledElapsedTime(float width,
+                                                 float height,
                                                  base::TimeTicks start_time) {
   base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
-  float sqrt_pixels = std::sqrt(width * height);
-  return elapsed_time.InMicrosecondsF() * 10.0f /
-         (sqrt_pixels == 0 ? 1 : sqrt_pixels);
+  float sqrt_pixels = std::sqrt(width) * std::sqrt(height);
+  float scaled_time_float = elapsed_time.InMicrosecondsF() * 10.0f /
+                            (sqrt_pixels == 0 ? 1.0f : sqrt_pixels);
+
+  // If scaled_time_float overflows as integer, CheckedNumeric will store it
+  // as invalid, then ValueOrDefault will return the maximum int.
+  base::CheckedNumeric<int> checked_scaled_time = scaled_time_float;
+  return checked_scaled_time.ValueOrDefault(std::numeric_limits<int>::max());
 }
 
 void BaseRenderingContext2D::putImageData(ImageData* data,
