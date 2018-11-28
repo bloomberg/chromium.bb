@@ -69,7 +69,6 @@
 -org.chromium.android_webview.test.AwSettingsTest.testAssetUrl
 -org.chromium.android_webview.test.AwSettingsTest.testBlockNetworkLoadsWithAudio
 -org.chromium.android_webview.test.AwSettingsTest.testBlockNetworkLoadsWithHttpResources
--org.chromium.android_webview.test.AwSettingsTest.testCacheMode
 -org.chromium.android_webview.test.AwSettingsTest.testCacheModeWithBlockedNetworkLoads
 -org.chromium.android_webview.test.AwSettingsTest.testContentUrlAccessWithTwoViews
 -org.chromium.android_webview.test.AwSettingsTest.testContentUrlFromFileWithTwoViews
