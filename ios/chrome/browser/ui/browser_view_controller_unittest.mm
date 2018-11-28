@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/ui/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
@@ -218,6 +219,10 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     tab_ = currentTab;
     dependencyFactory_ = factory;
     command_dispatcher_ = [[CommandDispatcher alloc] init];
+    id mockPageInfoCommandHandler =
+        OCMProtocolMock(@protocol(PageInfoCommands));
+    [command_dispatcher_ startDispatchingToTarget:mockPageInfoCommandHandler
+                                      forProtocol:@protocol(PageInfoCommands)];
     bvc_ = [[BrowserViewController alloc]
                   initWithTabModel:tabModel_
                       browserState:chrome_browser_state_.get()

@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
+#import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
@@ -52,6 +53,9 @@
 // keyboard.
 @property(nonatomic, strong)
     FormInputAccessoryCoordinator* formInputAccessoryCoordinator;
+
+// Coordinator for Page Info UI.
+@property(nonatomic, strong) PageInfoLegacyCoordinator* pageInfoCoordinator;
 
 // Coordinator for the PassKit UI presentation.
 @property(nonatomic, strong) PassKitCoordinator* passKitCoordinator;
@@ -156,6 +160,14 @@
   self.formInputAccessoryCoordinator.delegate = self;
   [self.formInputAccessoryCoordinator start];
 
+  self.pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                    browserState:self.browserState];
+  self.pageInfoCoordinator.dispatcher = self.dispatcher;
+  self.pageInfoCoordinator.loader = self.viewController;
+  self.pageInfoCoordinator.presentationProvider = self.viewController;
+  self.pageInfoCoordinator.tabModel = self.tabModel;
+
   self.passKitCoordinator = [[PassKitCoordinator alloc]
       initWithBaseViewController:self.viewController];
 
@@ -185,6 +197,9 @@
 
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
+
+  [self.pageInfoCoordinator stop];
+  self.pageInfoCoordinator = nil;
 
   [self.passKitCoordinator stop];
   self.passKitCoordinator = nil;
