@@ -62,6 +62,12 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
       scoped_refptr<SerializedScriptValue>,
       ExceptionState&);
 
+  WorkletAnimation(WorkletAnimationId id,
+                   const String& animator_name,
+                   Document&,
+                   const HeapVector<Member<KeyframeEffect>>&,
+                   AnimationTimeline*,
+                   scoped_refptr<SerializedScriptValue>);
   ~WorkletAnimation() override = default;
 
   AnimationTimeline* timeline() { return timeline_; }
@@ -119,12 +125,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void Trace(blink::Visitor*) override;
 
  private:
-  WorkletAnimation(WorkletAnimationId id,
-                   const String& animator_name,
-                   Document&,
-                   const HeapVector<Member<KeyframeEffect>>&,
-                   AnimationTimeline*,
-                   scoped_refptr<SerializedScriptValue>);
   void DestroyCompositorAnimation();
 
   // Attempts to start the animation on the compositor side, returning true if

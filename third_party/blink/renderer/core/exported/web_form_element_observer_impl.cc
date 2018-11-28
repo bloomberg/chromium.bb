@@ -111,22 +111,23 @@ void WebFormElementObserverImpl::ObserverCallback::Trace(
 WebFormElementObserver* WebFormElementObserver::Create(
     WebFormElement& element,
     std::unique_ptr<WebFormElementObserverCallback> callback) {
-  return new WebFormElementObserverImpl(*element.Unwrap<HTMLFormElement>(),
-                                        std::move(callback));
+  return MakeGarbageCollected<WebFormElementObserverImpl>(
+      *element.Unwrap<HTMLFormElement>(), std::move(callback));
 }
 
 WebFormElementObserver* WebFormElementObserver::Create(
     WebFormControlElement& element,
     std::unique_ptr<WebFormElementObserverCallback> callback) {
-  return new WebFormElementObserverImpl(*element.Unwrap<HTMLElement>(),
-                                        std::move(callback));
+  return MakeGarbageCollected<WebFormElementObserverImpl>(
+      *element.Unwrap<HTMLElement>(), std::move(callback));
 }
 
 WebFormElementObserverImpl::WebFormElementObserverImpl(
     HTMLElement& element,
     std::unique_ptr<WebFormElementObserverCallback> callback)
     : self_keep_alive_(this) {
-  mutation_callback_ = new ObserverCallback(element, std::move(callback));
+  mutation_callback_ =
+      MakeGarbageCollected<ObserverCallback>(element, std::move(callback));
 }
 
 WebFormElementObserverImpl::~WebFormElementObserverImpl() = default;

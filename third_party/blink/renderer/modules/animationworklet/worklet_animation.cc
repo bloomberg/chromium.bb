@@ -309,9 +309,9 @@ WorkletAnimation* WorkletAnimation::Create(
   AnimationTimeline* animation_timeline =
       ConvertAnimationTimeline(document, timeline);
 
-  WorkletAnimation* animation =
-      new WorkletAnimation(id, animator_name, document, keyframe_effects,
-                           animation_timeline, std::move(options));
+  WorkletAnimation* animation = MakeGarbageCollected<WorkletAnimation>(
+      id, animator_name, document, keyframe_effects, animation_timeline,
+      std::move(options));
 
   return animation;
 }

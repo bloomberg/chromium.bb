@@ -36,7 +36,7 @@ namespace blink {
 
 V0CustomElementCallbackQueue* V0CustomElementCallbackQueue::Create(
     Element* element) {
-  return new V0CustomElementCallbackQueue(element);
+  return MakeGarbageCollected<V0CustomElementCallbackQueue>(element);
 }
 
 V0CustomElementCallbackQueue::V0CustomElementCallbackQueue(Element* element)

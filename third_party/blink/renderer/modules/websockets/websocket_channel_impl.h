@@ -81,6 +81,10 @@ class MODULES_EXPORT WebSocketChannelImpl final
       WebSocketHandle*,
       std::unique_ptr<WebSocketHandshakeThrottle>);
 
+  WebSocketChannelImpl(ExecutionContext*,
+                       WebSocketChannelClient*,
+                       std::unique_ptr<SourceLocation>,
+                       std::unique_ptr<WebSocketHandle>);
   ~WebSocketChannelImpl() override;
 
   // Allows the caller to provide the Mojo pipe through which the socket is
@@ -126,11 +130,6 @@ class MODULES_EXPORT WebSocketChannelImpl final
     bool is_message_text;
     Vector<char> data;
   };
-
-  WebSocketChannelImpl(ExecutionContext*,
-                       WebSocketChannelClient*,
-                       std::unique_ptr<SourceLocation>,
-                       std::unique_ptr<WebSocketHandle>);
 
   void SendInternal(WebSocketHandle::MessageType,
                     const char* data,

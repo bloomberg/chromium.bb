@@ -47,6 +47,8 @@ class MODULES_EXPORT WaitUntilObserver final
 
   static WaitUntilObserver* Create(ExecutionContext*, EventType, int event_id);
 
+  WaitUntilObserver(ExecutionContext*, EventType, int event_id);
+
   // Must be called before dispatching the event.
   void WillDispatchEvent();
   // Must be called after dispatching the event. If |event_dispatch_failed| is
@@ -91,8 +93,6 @@ class MODULES_EXPORT WaitUntilObserver final
     // Event dispatch failed. Any outstanding waitUntil promises are ignored.
     kFailed
   };
-
-  WaitUntilObserver(ExecutionContext*, EventType, int event_id);
 
   void IncrementPendingPromiseCount();
   void DecrementPendingPromiseCount();

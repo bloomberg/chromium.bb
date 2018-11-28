@@ -205,8 +205,9 @@ void WorkletGlobalScope::FetchAndInvokeScript(
 
   // Step 3 to 5 are implemented in
   // WorkletModuleTreeClient::NotifyModuleTreeLoadFinished.
-  WorkletModuleTreeClient* client = new WorkletModuleTreeClient(
-      modulator, std::move(outside_settings_task_runner), pending_tasks);
+  WorkletModuleTreeClient* client =
+      MakeGarbageCollected<WorkletModuleTreeClient>(
+          modulator, std::move(outside_settings_task_runner), pending_tasks);
 
   // TODO(nhiroki): Specify an appropriate destination defined in each worklet
   // spec (e.g., "paint worklet", "audio worklet").

@@ -22,7 +22,7 @@ WorkerNavigatorPermissions& WorkerNavigatorPermissions::From(
       Supplement<WorkerNavigator>::From<WorkerNavigatorPermissions>(
           worker_navigator);
   if (!supplement) {
-    supplement = new WorkerNavigatorPermissions();
+    supplement = MakeGarbageCollected<WorkerNavigatorPermissions>();
     ProvideTo(worker_navigator, supplement);
   }
   return *supplement;

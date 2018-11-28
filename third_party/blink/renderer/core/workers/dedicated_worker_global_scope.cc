@@ -86,7 +86,7 @@ void DedicatedWorkerGlobalScope::ImportModuleScript(
   FetchModuleScript(module_url_record, outside_settings_object, destination,
                     credentials_mode,
                     ModuleScriptCustomFetchType::kWorkerConstructor,
-                    new WorkerModuleTreeClient(modulator));
+                    MakeGarbageCollected<WorkerModuleTreeClient>(modulator));
 }
 
 const String DedicatedWorkerGlobalScope::name() const {

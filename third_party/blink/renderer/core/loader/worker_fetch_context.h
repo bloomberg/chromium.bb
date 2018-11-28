@@ -32,6 +32,11 @@ class WorkerFetchContext final : public BaseFetchContext {
                                     scoped_refptr<WebWorkerFetchContext>,
                                     SubresourceFilter*,
                                     FetchClientSettingsObject*);
+
+  WorkerFetchContext(WorkerOrWorkletGlobalScope&,
+                     scoped_refptr<WebWorkerFetchContext>,
+                     SubresourceFilter*,
+                     FetchClientSettingsObject*);
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:
@@ -127,11 +132,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   void Trace(blink::Visitor*) override;
 
  private:
-  WorkerFetchContext(WorkerOrWorkletGlobalScope&,
-                     scoped_refptr<WebWorkerFetchContext>,
-                     SubresourceFilter*,
-                     FetchClientSettingsObject*);
-
   void SetFirstPartyCookie(ResourceRequest&);
 
   const Member<WorkerOrWorkletGlobalScope> global_scope_;

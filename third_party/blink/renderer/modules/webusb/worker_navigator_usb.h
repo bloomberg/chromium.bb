@@ -29,11 +29,11 @@ class WorkerNavigatorUSB final : public GarbageCollected<WorkerNavigatorUSB>,
   static USB* usb(ScriptState*, WorkerNavigator&);
   USB* usb(ScriptState*);
 
+  explicit WorkerNavigatorUSB(WorkerNavigator&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit WorkerNavigatorUSB(WorkerNavigator&);
-
   Member<USB> usb_;
 };
 

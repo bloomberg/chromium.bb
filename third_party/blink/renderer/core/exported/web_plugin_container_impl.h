@@ -78,11 +78,12 @@ class CORE_EXPORT WebPluginContainerImpl final
  public:
   static WebPluginContainerImpl* Create(HTMLPlugInElement& element,
                                         WebPlugin* web_plugin) {
-    return new WebPluginContainerImpl(element, web_plugin);
+    return MakeGarbageCollected<WebPluginContainerImpl>(element, web_plugin);
   }
   // Check if plugins support a given command |name|.
   static bool SupportsCommand(const WebString& name);
 
+  WebPluginContainerImpl(HTMLPlugInElement&, WebPlugin*);
   ~WebPluginContainerImpl() override;
 
   // EmbeddedContentView methods
@@ -214,8 +215,6 @@ class CORE_EXPORT WebPluginContainerImpl final
       IntRect& window_rect,
       IntRect& clipped_local_rect,
       IntRect& unclipped_int_local_rect) const;
-
-  WebPluginContainerImpl(HTMLPlugInElement&, WebPlugin*);
 
   WebTouchEvent TransformTouchEvent(const WebInputEvent&);
   WebCoalescedInputEvent TransformCoalescedTouchEvent(

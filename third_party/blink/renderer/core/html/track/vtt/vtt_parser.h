@@ -71,8 +71,10 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
   };
 
   static VTTParser* Create(VTTParserClient* client, Document& document) {
-    return new VTTParser(client, document);
+    return MakeGarbageCollected<VTTParser>(client, document);
   }
+
+  VTTParser(VTTParserClient*, Document&);
   ~VTTParser() = default;
 
   static inline bool IsRecognizedTag(const AtomicString& tag_name) {
@@ -113,8 +115,6 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
   void Trace(blink::Visitor*);
 
  private:
-  VTTParser(VTTParserClient*, Document&);
-
   Member<Document> document_;
   ParseState state_;
 

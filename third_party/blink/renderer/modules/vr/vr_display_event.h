@@ -15,11 +15,13 @@ class VRDisplayEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static VRDisplayEvent* Create() { return new VRDisplayEvent; }
+  static VRDisplayEvent* Create() {
+    return MakeGarbageCollected<VRDisplayEvent>();
+  }
   static VRDisplayEvent* Create(const AtomicString& type,
                                 VRDisplay* display,
                                 String reason) {
-    return new VRDisplayEvent(type, display, reason);
+    return MakeGarbageCollected<VRDisplayEvent>(type, display, reason);
   }
   static VRDisplayEvent* Create(const AtomicString& type,
                                 VRDisplay*,
@@ -27,9 +29,12 @@ class VRDisplayEvent final : public Event {
 
   static VRDisplayEvent* Create(const AtomicString& type,
                                 const VRDisplayEventInit* initializer) {
-    return new VRDisplayEvent(type, initializer);
+    return MakeGarbageCollected<VRDisplayEvent>(type, initializer);
   }
 
+  VRDisplayEvent();
+  VRDisplayEvent(const AtomicString& type, VRDisplay*, String);
+  VRDisplayEvent(const AtomicString&, const VRDisplayEventInit*);
   ~VRDisplayEvent() override;
 
   VRDisplay* display() const { return display_.Get(); }
@@ -40,12 +45,6 @@ class VRDisplayEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  VRDisplayEvent();
-  VRDisplayEvent(const AtomicString& type,
-                 VRDisplay*,
-                 String);
-  VRDisplayEvent(const AtomicString&, const VRDisplayEventInit*);
-
   Member<VRDisplay> display_;
   String reason_;
 };

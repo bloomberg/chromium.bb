@@ -160,7 +160,7 @@ WebSocketChannelImpl* WebSocketChannelImpl::CreateForTesting(
     std::unique_ptr<SourceLocation> location,
     WebSocketHandle* handle,
     std::unique_ptr<WebSocketHandshakeThrottle> handshake_throttle) {
-  auto* channel = new WebSocketChannelImpl(
+  auto* channel = MakeGarbageCollected<WebSocketChannelImpl>(
       document, client, std::move(location), base::WrapUnique(handle));
   channel->handshake_throttle_ = std::move(handshake_throttle);
   return channel;
@@ -171,9 +171,9 @@ WebSocketChannelImpl* WebSocketChannelImpl::Create(
     ExecutionContext* execution_context,
     WebSocketChannelClient* client,
     std::unique_ptr<SourceLocation> location) {
-  auto* channel =
-      new WebSocketChannelImpl(execution_context, client, std::move(location),
-                               std::make_unique<WebSocketHandleImpl>());
+  auto* channel = MakeGarbageCollected<WebSocketChannelImpl>(
+      execution_context, client, std::move(location),
+      std::make_unique<WebSocketHandleImpl>());
   channel->handshake_throttle_ =
       channel->GetBaseFetchContext()->CreateWebSocketHandshakeThrottle();
   return channel;
@@ -283,7 +283,7 @@ void WebSocketChannelImpl::Send(const CString& message) {
   probe::didSendWebSocketFrame(execution_context_, identifier_,
                                WebSocketOpCode::kOpCodeText, true,
                                message.data(), message.length());
-  messages_.push_back(new Message(message));
+  messages_.push_back(MakeGarbageCollected<Message>(message));
   ProcessSendQueue();
 }
 
@@ -300,7 +300,8 @@ void WebSocketChannelImpl::Send(
   // affect actual behavior.
   probe::didSendWebSocketFrame(execution_context_, identifier_,
                                WebSocketOpCode::kOpCodeBinary, true, "", 0);
-  messages_.push_back(new Message(std::move(blob_data_handle)));
+  messages_.push_back(
+      MakeGarbageCollected<Message>(std::move(blob_data_handle)));
   ProcessSendQueue();
 }
 
@@ -318,8 +319,8 @@ void WebSocketChannelImpl::Send(const DOMArrayBuffer& buffer,
   // buffer.slice copies its contents.
   // FIXME: Reduce copy by sending the data immediately when we don't need to
   // queue the data.
-  messages_.push_back(
-      new Message(buffer.Slice(byte_offset, byte_offset + byte_length)));
+  messages_.push_back(MakeGarbageCollected<Message>(
+      buffer.Slice(byte_offset, byte_offset + byte_length)));
   ProcessSendQueue();
 }
 
@@ -333,8 +334,8 @@ void WebSocketChannelImpl::SendTextAsCharVector(
   probe::didSendWebSocketFrame(execution_context_, identifier_,
                                WebSocketOpCode::kOpCodeText, true, data->data(),
                                data->size());
-  messages_.push_back(
-      new Message(std::move(data), kMessageTypeTextAsCharVector));
+  messages_.push_back(MakeGarbageCollected<Message>(
+      std::move(data), kMessageTypeTextAsCharVector));
   ProcessSendQueue();
 }
 
@@ -348,8 +349,8 @@ void WebSocketChannelImpl::SendBinaryAsCharVector(
   probe::didSendWebSocketFrame(execution_context_, identifier_,
                                WebSocketOpCode::kOpCodeBinary, true,
                                data->data(), data->size());
-  messages_.push_back(
-      new Message(std::move(data), kMessageTypeBinaryAsCharVector));
+  messages_.push_back(MakeGarbageCollected<Message>(
+      std::move(data), kMessageTypeBinaryAsCharVector));
   ProcessSendQueue();
 }
 
@@ -358,7 +359,7 @@ void WebSocketChannelImpl::Close(int code, const String& reason) {
   DCHECK(handle_);
   unsigned short code_to_send = static_cast<unsigned short>(
       code == kCloseEventCodeNotSpecified ? kCloseEventCodeNoStatusRcvd : code);
-  messages_.push_back(new Message(code_to_send, reason));
+  messages_.push_back(MakeGarbageCollected<Message>(code_to_send, reason));
   ProcessSendQueue();
 }
 
@@ -472,7 +473,8 @@ void WebSocketChannelImpl::ProcessSendQueue() {
         CHECK(!blob_loader_);
         CHECK(message);
         CHECK(message->blob_data_handle);
-        blob_loader_ = new BlobLoader(message->blob_data_handle, this);
+        blob_loader_ =
+            MakeGarbageCollected<BlobLoader>(message->blob_data_handle, this);
         break;
       case kMessageTypeArrayBuffer:
         CHECK(message->array_buffer);
@@ -762,7 +764,7 @@ void WebSocketChannelImpl::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
   DCHECK_GT(messages_.size(), 0u);
   DCHECK_EQ(messages_.front()->type, kMessageTypeBlob);
   // We replace it with the loaded blob.
-  messages_.front() = new Message(buffer);
+  messages_.front() = MakeGarbageCollected<Message>(buffer);
   ProcessSendQueue();
 }
 

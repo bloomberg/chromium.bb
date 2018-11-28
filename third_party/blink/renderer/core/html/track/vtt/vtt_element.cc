@@ -71,7 +71,7 @@ VTTElement::VTTElement(VTTNodeType node_type, Document* document)
       web_vtt_node_type_(node_type) {}
 
 VTTElement* VTTElement::Create(VTTNodeType node_type, Document* document) {
-  return new VTTElement(node_type, document);
+  return MakeGarbageCollected<VTTElement>(node_type, document);
 }
 
 Element* VTTElement::CloneWithoutAttributesAndChildren(

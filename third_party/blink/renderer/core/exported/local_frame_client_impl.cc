@@ -750,9 +750,11 @@ DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(frame);
-  WebDocumentLoaderImpl* document_loader = new WebDocumentLoaderImpl(
-      frame, request, data, client_redirect_policy, devtools_navigation_token,
-      load_type, navigation_type, std::move(navigation_params));
+  WebDocumentLoaderImpl* document_loader =
+      MakeGarbageCollected<WebDocumentLoaderImpl>(
+          frame, request, data, client_redirect_policy,
+          devtools_navigation_token, load_type, navigation_type,
+          std::move(navigation_params));
   document_loader->SetExtraData(std::move(extra_data));
   if (web_frame_->Client())
     web_frame_->Client()->DidCreateDocumentLoader(document_loader);

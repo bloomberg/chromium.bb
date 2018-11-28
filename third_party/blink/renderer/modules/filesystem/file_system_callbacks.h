@@ -462,15 +462,17 @@ class VoidCallbacks final : public FileSystemCallbacksBase {
   class OnDidSucceedV8Impl : public OnDidSucceedCallback {
    public:
     static OnDidSucceedV8Impl* Create(V8VoidCallback* callback) {
-      return callback ? new OnDidSucceedV8Impl(callback) : nullptr;
+      return callback ? MakeGarbageCollected<OnDidSucceedV8Impl>(callback)
+                      : nullptr;
     }
+
+    OnDidSucceedV8Impl(V8VoidCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
+
     void Trace(blink::Visitor*) override;
     void OnSuccess(ExecutionContext* dummy_arg_for_sync_helper) override;
 
    private:
-    OnDidSucceedV8Impl(V8VoidCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
     Member<V8PersistentCallbackInterface<V8VoidCallback>> callback_;
   };
 

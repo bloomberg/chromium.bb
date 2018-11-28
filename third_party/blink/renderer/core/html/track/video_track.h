@@ -21,10 +21,16 @@ class CORE_EXPORT VideoTrack final : public ScriptWrappable, public TrackBase {
                             const AtomicString& label,
                             const AtomicString& language,
                             bool selected) {
-    return new VideoTrack(id, IsValidKindKeyword(kind) ? kind : g_empty_atom,
-                          label, language, selected);
+    return MakeGarbageCollected<VideoTrack>(
+        id, IsValidKindKeyword(kind) ? kind : g_empty_atom, label, language,
+        selected);
   }
 
+  VideoTrack(const String& id,
+             const AtomicString& kind,
+             const AtomicString& label,
+             const AtomicString& language,
+             bool selected);
   ~VideoTrack() override;
   void Trace(blink::Visitor*) override;
 
@@ -46,12 +52,6 @@ class CORE_EXPORT VideoTrack final : public ScriptWrappable, public TrackBase {
   static bool IsValidKindKeyword(const String&);
 
  private:
-  VideoTrack(const String& id,
-             const AtomicString& kind,
-             const AtomicString& label,
-             const AtomicString& language,
-             bool selected);
-
   bool selected_;
 };
 

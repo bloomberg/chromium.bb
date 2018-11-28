@@ -64,7 +64,8 @@ WebRemoteFrame* WebRemoteFrame::CreateMainFrame(WebView* web_view,
 
 WebRemoteFrameImpl* WebRemoteFrameImpl::Create(WebTreeScopeType scope,
                                                WebRemoteFrameClient* client) {
-  WebRemoteFrameImpl* frame = new WebRemoteFrameImpl(scope, client);
+  WebRemoteFrameImpl* frame =
+      MakeGarbageCollected<WebRemoteFrameImpl>(scope, client);
   return frame;
 }
 
@@ -72,8 +73,8 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
     WebView* web_view,
     WebRemoteFrameClient* client,
     WebFrame* opener) {
-  WebRemoteFrameImpl* frame =
-      new WebRemoteFrameImpl(WebTreeScopeType::kDocument, client);
+  WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
+      WebTreeScopeType::kDocument, client);
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   // It would be nice to DCHECK that the main frame is not set yet here.

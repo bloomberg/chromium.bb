@@ -46,6 +46,8 @@ class V0CustomElementCallbackQueue
  public:
   static V0CustomElementCallbackQueue* Create(Element*);
 
+  explicit V0CustomElementCallbackQueue(Element*);
+
   typedef int ElementQueueId;
   ElementQueueId Owner() const { return owner_; }
 
@@ -66,8 +68,6 @@ class V0CustomElementCallbackQueue
   void Trace(blink::Visitor*);
 
  private:
-  explicit V0CustomElementCallbackQueue(Element*);
-
   Member<Element> element_;
   HeapVector<Member<V0CustomElementProcessingStep>> queue_;
   ElementQueueId owner_;

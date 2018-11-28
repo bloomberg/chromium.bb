@@ -49,9 +49,10 @@ class V0CustomElementMicrotaskImportStep final
     : public V0CustomElementMicrotaskStep {
  public:
   static V0CustomElementMicrotaskImportStep* Create(HTMLImportChild* import) {
-    return new V0CustomElementMicrotaskImportStep(import);
+    return MakeGarbageCollected<V0CustomElementMicrotaskImportStep>(import);
   }
 
+  explicit V0CustomElementMicrotaskImportStep(HTMLImportChild*);
   ~V0CustomElementMicrotaskImportStep() override;
 
   // API for HTML Imports
@@ -61,8 +62,6 @@ class V0CustomElementMicrotaskImportStep final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit V0CustomElementMicrotaskImportStep(HTMLImportChild*);
-
   void DidUpgradeAllCustomElements();
   bool ShouldWaitForImport() const;
 

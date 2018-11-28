@@ -36,7 +36,7 @@ namespace blink {
 
 V0CustomElementUpgradeCandidateMap*
 V0CustomElementUpgradeCandidateMap::Create() {
-  return new V0CustomElementUpgradeCandidateMap();
+  return MakeGarbageCollected<V0CustomElementUpgradeCandidateMap>();
 }
 
 V0CustomElementUpgradeCandidateMap::~V0CustomElementUpgradeCandidateMap() =

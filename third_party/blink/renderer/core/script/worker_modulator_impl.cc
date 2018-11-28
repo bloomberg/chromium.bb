@@ -15,7 +15,7 @@
 namespace blink {
 
 ModulatorImplBase* WorkerModulatorImpl::Create(ScriptState* script_state) {
-  return new WorkerModulatorImpl(script_state);
+  return MakeGarbageCollected<WorkerModulatorImpl>(script_state);
 }
 
 WorkerModulatorImpl::WorkerModulatorImpl(ScriptState* script_state)
@@ -29,7 +29,7 @@ ModuleScriptFetcher* WorkerModulatorImpl::CreateModuleScriptFetcher(
       return MakeGarbageCollected<DocumentModuleScriptFetcher>(
           global_scope->EnsureFetcher());
     case ModuleScriptCustomFetchType::kWorkerConstructor:
-      return new WorkerModuleScriptFetcher(global_scope);
+      return MakeGarbageCollected<WorkerModuleScriptFetcher>(global_scope);
     case ModuleScriptCustomFetchType::kWorkletAddModule:
       break;
     case ModuleScriptCustomFetchType::kInstalledServiceWorker:

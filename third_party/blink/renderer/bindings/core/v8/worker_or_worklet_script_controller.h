@@ -55,6 +55,8 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
  public:
   static WorkerOrWorkletScriptController* Create(WorkerOrWorkletGlobalScope*,
                                                  v8::Isolate*);
+
+  WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope*, v8::Isolate*);
   virtual ~WorkerOrWorkletScriptController();
   void Dispose();
 
@@ -104,7 +106,6 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
   ScriptValue EvaluateAndReturnValueForTest(const ScriptSourceCode&);
 
  private:
-  WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope*, v8::Isolate*);
   class ExecutionState;
 
   // Evaluate a script file in the current execution environment.

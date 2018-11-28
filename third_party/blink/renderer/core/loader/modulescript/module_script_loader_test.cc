@@ -100,8 +100,8 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
     if (auto* scope = DynamicTo<WorkletGlobalScope>(execution_context)) {
       EXPECT_EQ(ModuleScriptCustomFetchType::kWorkletAddModule,
                 custom_fetch_type);
-      return new WorkletModuleScriptFetcher(Fetcher(),
-                                            scope->GetModuleResponsesMap());
+      return MakeGarbageCollected<WorkletModuleScriptFetcher>(
+          Fetcher(), scope->GetModuleResponsesMap());
     }
     EXPECT_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
     return MakeGarbageCollected<DocumentModuleScriptFetcher>(Fetcher());
@@ -191,8 +191,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       OriginTrialContext::GetTokens(&GetDocument()).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, new WorkletModuleResponsesMap);
-  global_scope_ = new WorkletGlobalScope(std::move(creation_params),
-                                         *reporting_proxy_, &GetFrame());
+  global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
+      std::move(creation_params), *reporting_proxy_, &GetFrame());
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context",
                                                                NullURL());
   modulator_ = new ModuleScriptLoaderTestModulator(

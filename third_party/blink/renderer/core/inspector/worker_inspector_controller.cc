@@ -57,7 +57,7 @@ WorkerInspectorController* WorkerInspectorController::Create(
     std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   WorkerThreadDebugger* debugger =
       WorkerThreadDebugger::From(thread->GetIsolate());
-  return debugger ? new WorkerInspectorController(
+  return debugger ? MakeGarbageCollected<WorkerInspectorController>(
                         thread, debugger, std::move(inspector_task_runner),
                         std::move(devtools_params))
                   : nullptr;

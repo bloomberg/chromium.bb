@@ -48,12 +48,13 @@ class ValidationMessageClientImpl final
 
  public:
   static ValidationMessageClientImpl* Create(Page&);
+
+  ValidationMessageClientImpl(Page&);
   ~ValidationMessageClientImpl() override;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  ValidationMessageClientImpl(Page&);
   void CheckAnchorStatus(TimerBase*);
   LocalFrameView* CurrentView();
   void HideValidationMessageImmediately(const Element& anchor);

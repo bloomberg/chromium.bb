@@ -37,10 +37,15 @@ class ViewportScrollCallback : public ScrollStateCallback {
       BrowserControls* browser_controls,
       OverscrollController* overscroll_controller,
       RootFrameViewport& root_frame_viewport) {
-    return new ViewportScrollCallback(browser_controls, overscroll_controller,
-                                      root_frame_viewport);
+    return MakeGarbageCollected<ViewportScrollCallback>(
+        browser_controls, overscroll_controller, root_frame_viewport);
   }
 
+  // ViewportScrollCallback does not assume ownership of BrowserControls or of
+  // OverscrollController.
+  ViewportScrollCallback(BrowserControls*,
+                         OverscrollController*,
+                         RootFrameViewport&);
   ~ViewportScrollCallback() override;
 
   void Invoke(ScrollState*) override;
@@ -49,12 +54,6 @@ class ViewportScrollCallback : public ScrollStateCallback {
   void Trace(blink::Visitor*) override;
 
  private:
-  // ViewportScrollCallback does not assume ownership of BrowserControls or of
-  // OverscrollController.
-  ViewportScrollCallback(BrowserControls*,
-                         OverscrollController*,
-                         RootFrameViewport&);
-
   bool ShouldScrollBrowserControls(const ScrollOffset&,
                                    ScrollGranularity) const;
   bool ScrollBrowserControls(ScrollState&);

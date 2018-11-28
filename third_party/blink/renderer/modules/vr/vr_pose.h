@@ -17,7 +17,9 @@ class VRPose final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static VRPose* Create() { return new VRPose(); }
+  static VRPose* Create() { return MakeGarbageCollected<VRPose>(); }
+
+  VRPose();
 
   DOMFloat32Array* orientation() const { return orientation_; }
   DOMFloat32Array* position() const { return position_; }
@@ -31,8 +33,6 @@ class VRPose final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  VRPose();
-
   Member<DOMFloat32Array> orientation_;
   Member<DOMFloat32Array> position_;
   Member<DOMFloat32Array> angular_velocity_;

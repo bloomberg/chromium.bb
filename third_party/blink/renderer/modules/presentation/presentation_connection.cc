@@ -420,7 +420,7 @@ void PresentationConnection::send(const String& message,
   if (!CanSendMessage(exception_state))
     return;
 
-  messages_.push_back(new Message(message));
+  messages_.push_back(MakeGarbageCollected<Message>(message));
   HandleMessageQueue();
 }
 
@@ -431,7 +431,7 @@ void PresentationConnection::send(DOMArrayBuffer* array_buffer,
   if (!CanSendMessage(exception_state))
     return;
 
-  messages_.push_back(new Message(array_buffer));
+  messages_.push_back(MakeGarbageCollected<Message>(array_buffer));
   HandleMessageQueue();
 }
 
@@ -442,7 +442,8 @@ void PresentationConnection::send(
   if (!CanSendMessage(exception_state))
     return;
 
-  messages_.push_back(new Message(array_buffer_view.View()->buffer()));
+  messages_.push_back(
+      MakeGarbageCollected<Message>(array_buffer_view.View()->buffer()));
   HandleMessageQueue();
 }
 
@@ -451,7 +452,7 @@ void PresentationConnection::send(Blob* data, ExceptionState& exception_state) {
   if (!CanSendMessage(exception_state))
     return;
 
-  messages_.push_back(new Message(data->GetBlobDataHandle()));
+  messages_.push_back(MakeGarbageCollected<Message>(data->GetBlobDataHandle()));
   HandleMessageQueue();
 }
 
@@ -496,7 +497,8 @@ void PresentationConnection::HandleMessageQueue() {
         break;
       case kMessageTypeBlob:
         DCHECK(!blob_loader_);
-        blob_loader_ = new BlobLoader(message->blob_data_handle, this);
+        blob_loader_ =
+            MakeGarbageCollected<BlobLoader>(message->blob_data_handle, this);
         break;
     }
   }

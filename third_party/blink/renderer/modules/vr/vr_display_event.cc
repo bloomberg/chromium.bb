@@ -31,8 +31,8 @@ VRDisplayEvent* VRDisplayEvent::Create(
     const AtomicString& type,
     VRDisplay* display,
     device::mojom::blink::VRDisplayEventReason reason) {
-  return new VRDisplayEvent(type, display,
-                            VRDisplayEventReasonToString(reason));
+  return MakeGarbageCollected<VRDisplayEvent>(
+      type, display, VRDisplayEventReasonToString(reason));
 }
 
 VRDisplayEvent::VRDisplayEvent() = default;

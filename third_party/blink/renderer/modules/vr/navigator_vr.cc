@@ -179,7 +179,7 @@ VRController* NavigatorVR::Controller() {
     return nullptr;
 
   if (!controller_) {
-    controller_ = new VRController(this);
+    controller_ = MakeGarbageCollected<VRController>(this);
     controller_->SetListeningForActivate(focused_ && listening_for_activate_);
     controller_->FocusChanged();
   }
