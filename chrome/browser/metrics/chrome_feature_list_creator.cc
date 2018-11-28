@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -26,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/language/core/browser/pref_names.h"
@@ -147,6 +149,23 @@ void ChromeFeatureListCreator::CreatePrefService() {
       local_state_file, browser_policy_connector_->GetPolicyService(),
       std::move(pref_registry), false, std::move(delegate),
       browser_policy_connector_.get());
+
+// TODO(asvitkine): This is done here so that the pref is set before
+// VariationsService queries the locale. This should potentially be moved to
+// somewhere better, e.g. as a helper in first_run namespace.
+#if defined(OS_WIN)
+  if (first_run::IsChromeFirstRun()) {
+    // During first run we read the google_update registry key to find what
+    // language the user selected when downloading the installer. This
+    // becomes our default language in the prefs.
+    // Other platforms obey the system locale.
+    base::string16 install_lang;
+    if (GoogleUpdateSettings::GetLanguage(&install_lang)) {
+      local_state_->SetString(language::prefs::kApplicationLocale,
+                              base::UTF16ToASCII(install_lang));
+    }
+  }
+#endif  // defined(OS_WIN)
 }
 
 void ChromeFeatureListCreator::ConvertFlagsToSwitches() {
