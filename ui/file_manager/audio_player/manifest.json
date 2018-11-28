@@ -59,6 +59,9 @@
         "js/background_scripts.js"
       ]
     },
-    "content_security_policy": "default-src 'none'; script-src 'self' blob: filesystem: chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj chrome-extension://enhhojjnijigcajfphajepfemndkmdlo; style-src 'self' blob: filesystem: chrome://resources 'unsafe-inline'; img-src 'self' blob: filesystem: chrome://theme chrome://resources data: https://www.googledrive.com; media-src 'self' blob: filesystem:; object-src 'self' blob: filesystem:; font-src chrome://resources;"
+    // enhhojjnijigcajfphajepfemndkmdlo is the Dev Media Router component extension ID.
+    // pkedcjkdefgpdelpbcmbmeomcjbeemfm is the Stable Media Router component extension ID.
+    "content_security_policy": "default-src 'none'; script-src 'self' blob: filesystem: chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj chrome-extension://enhhojjnijigcajfphajepfemndkmdlo chrome-extension://pkedcjkdefgpdelpbcmbmeomcjbeemfm; style-src 'self' blob: filesystem: chrome://resources 'unsafe-inline'; img-src 'self' blob: filesystem: chrome://theme chrome://resources data: https://www.googledrive.com; media-src 'self' blob: filesystem:; object-src 'self' blob: filesystem:; font-src chrome://resources;"
   }
 }
+
