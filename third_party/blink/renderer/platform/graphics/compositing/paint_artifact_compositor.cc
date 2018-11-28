@@ -289,6 +289,36 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   return cc_layer;
 }
 
+void PaintArtifactCompositor::UpdateTouchActionRects(
+    cc::Layer* layer,
+    const gfx::Vector2dF& layer_offset,
+    const PropertyTreeState& layer_state,
+    const PaintChunkSubset& paint_chunks) {
+  Vector<HitTestRect> touch_action_rects_in_layer_space;
+  for (const auto& chunk : paint_chunks) {
+    const auto* hit_test_data = chunk.hit_test_data.get();
+    if (!hit_test_data || hit_test_data->touch_action_rects.IsEmpty())
+      continue;
+
+    const auto& chunk_state = chunk.properties.GetPropertyTreeState();
+    for (auto touch_action_rect : hit_test_data->touch_action_rects) {
+      auto rect =
+          FloatClipRect(FloatRect(PixelSnappedIntRect(touch_action_rect.rect)));
+      if (!GeometryMapper::LocalToAncestorVisualRect(chunk_state, layer_state,
+                                                     rect)) {
+        continue;
+      }
+      LayoutRect layout_rect = LayoutRect(rect.Rect());
+      layout_rect.MoveBy(
+          LayoutPoint(FloatPoint(-layer_offset.x(), -layer_offset.y())));
+      touch_action_rects_in_layer_space.emplace_back(
+          HitTestRect(layout_rect, touch_action_rect.whitelisted_touch_action));
+    }
+  }
+  layer->SetTouchActionRegion(
+      HitTestRect::BuildRegion(touch_action_rects_in_layer_space));
+}
+
 bool PaintArtifactCompositor::PropertyTreeStateChanged(
     const PropertyTreeState& state) const {
   const PropertyTreeState root = PropertyTreeState::Root();
@@ -790,6 +820,15 @@ void PaintArtifactCompositor::Update(
     scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
         paint_artifact, pending_layer, layer_offset, new_content_layer_clients,
         new_scroll_hit_test_layers);
+
+    // Pre-SPV2, touch action rects are updated through
+    // ScrollingCoordinator::UpdateLayerTouchActionRects.
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      auto paint_chunks = paint_artifact->GetPaintChunkSubset(
+          pending_layer.paint_chunk_indices);
+      UpdateTouchActionRects(layer.get(), layer_offset, property_state,
+                             paint_chunks);
+    }
 
     layer->SetLayerTreeHost(root_layer_->layer_tree_host());
 

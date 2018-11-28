@@ -112,6 +112,13 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     return content_layer_clients_;
   }
 
+  // Update the cc::Layer's touch action region from the touch action rects of
+  // the paint chunks.
+  static void UpdateTouchActionRects(cc::Layer*,
+                                     const gfx::Vector2dF& layer_offset,
+                                     const PropertyTreeState& layer_state,
+                                     const PaintChunkSubset& paint_chunks);
+
  private:
   // A pending layer is a collection of paint chunks that will end up in
   // the same cc::Layer.
