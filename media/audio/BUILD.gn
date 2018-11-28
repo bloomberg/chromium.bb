@@ -4,18 +4,42 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//media/media_options.gni")
-import("//tools/generate_stubs/rules.gni")
 
 # When libpulse is not directly linked, use stubs to allow for dlopening of the
 # binary.
-if (use_pulseaudio && !link_pulseaudio) {
-  generate_stubs("libpulse_stubs") {
+if (!link_pulseaudio) {
+  action("pulse_generate_stubs") {
     extra_header = "pulse/pulse_stub_header.fragment"
-    sigs = [ "pulse/pulse.sigs" ]
-    output_name = "pulse/pulse_stubs"
-    deps = [
-      "//base",
+
+    script = "../../tools/generate_stubs/generate_stubs.py"
+    sources = [
+      "pulse/pulse.sigs",
     ]
+    inputs = [
+      extra_header,
+    ]
+    stubs_filename_root = "pulse_stubs"
+
+    outputs = [
+      "$target_gen_dir/pulse/$stubs_filename_root.cc",
+      "$target_gen_dir/pulse/$stubs_filename_root.h",
+    ]
+    args = [
+      "-i",
+      rebase_path("$target_gen_dir/pulse", root_build_dir),
+      "-o",
+      rebase_path("$target_gen_dir/pulse", root_build_dir),
+      "-t",
+      "posix_stubs",
+      "-e",
+      rebase_path(extra_header, root_build_dir),
+      "-s",
+      stubs_filename_root,
+      "-p",
+      "media/audio/pulse",
+    ]
+
+    args += rebase_path(sources, root_build_dir)
   }
 }
 
@@ -282,7 +306,9 @@ source_set("audio") {
     if (link_pulseaudio) {
       configs += [ ":libpulse" ]
     } else {
-      deps += [ ":libpulse_stubs" ]
+      libs += [ "dl" ]
+      deps += [ ":pulse_generate_stubs" ]
+      sources += get_target_outputs(":pulse_generate_stubs")
     }
   }
 

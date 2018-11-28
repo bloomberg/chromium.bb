@@ -8,7 +8,6 @@ import("//build/config/ui.gni")
 import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
-import("//tools/generate_stubs/rules.gni")
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
@@ -25,13 +24,38 @@ if (is_mac) {
 }
 
 if (is_chromeos && use_v4lplugin) {
-  generate_stubs("libv4l2_stubs") {
+  action("libv4l2_generate_stubs") {
     extra_header = "v4l2/v4l2_stub_header.fragment"
-    sigs = [ "v4l2/v4l2.sig" ]
-    output_name = "v4l2_stubs"
-    deps = [
-      "//base",
+
+    script = "../../tools/generate_stubs/generate_stubs.py"
+    sources = [
+      "v4l2/v4l2.sig",
     ]
+    inputs = [
+      extra_header,
+    ]
+    stubs_filename_root = "v4l2_stubs"
+
+    outputs = [
+      "$target_gen_dir/v4l2/$stubs_filename_root.cc",
+      "$target_gen_dir/v4l2/$stubs_filename_root.h",
+    ]
+    args = [
+      "-i",
+      rebase_path("$target_gen_dir/v4l2", root_build_dir),
+      "-o",
+      rebase_path("$target_gen_dir/v4l2", root_build_dir),
+      "-t",
+      "posix_stubs",
+      "-e",
+      rebase_path(extra_header, root_build_dir),
+      "-s",
+      stubs_filename_root,
+      "-p",
+      "media/gpu/v4l2",
+    ]
+
+    args += rebase_path(sources, root_build_dir)
   }
 }
 
@@ -192,7 +216,8 @@ component("gpu") {
   }
 
   if (use_v4lplugin) {
-    deps += [ ":libv4l2_stubs" ]
+    sources += get_target_outputs(":libv4l2_generate_stubs")
+    deps += [ ":libv4l2_generate_stubs" ]
   }
 
   if (use_v4l2_codec) {

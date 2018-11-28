@@ -5,25 +5,49 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//media/gpu/args.gni")
-import("//tools/generate_stubs/rules.gni")
 import("//ui/gl/features.gni")
 import("//ui/ozone/ozone.gni")
 
 assert(use_vaapi)
 
-generate_stubs("libva_stubs") {
+action("libva_generate_stubs") {
   extra_header = "va_stub_header.fragment"
-  sigs = [ "va.sigs" ]
+
+  script = "//tools/generate_stubs/generate_stubs.py"
+  sources = [
+    "va.sigs",
+  ]
+  inputs = [
+    extra_header,
+  ]
   if (use_x11) {
-    sigs += [ "va_x11.sigs" ]
+    sources += [ "va_x11.sigs" ]
   }
   if (is_linux) {
-    sigs += [ "va_drm.sigs" ]
+    sources += [ "va_drm.sigs" ]
   }
-  output_name = "va_stubs"
-  deps = [
-    "//base",
+  stubs_filename_root = "va_stubs"
+
+  outputs = [
+    "$target_gen_dir/$stubs_filename_root.cc",
+    "$target_gen_dir/$stubs_filename_root.h",
   ]
+  args = [
+    "-i",
+    rebase_path("$target_gen_dir", root_build_dir),
+    "-o",
+    rebase_path("$target_gen_dir", root_build_dir),
+    "-t",
+    "posix_stubs",
+    "-e",
+    rebase_path(extra_header, root_build_dir),
+    "-s",
+    stubs_filename_root,
+    "-p",
+    "media/gpu/vaapi",
+  ]
+
+  args += rebase_path(sources, root_build_dir)
 }
 
 source_set("vaapi") {
@@ -64,11 +88,12 @@ source_set("vaapi") {
     "vp8_encoder.cc",
     "vp8_encoder.h",
   ]
+  sources += get_target_outputs(":libva_generate_stubs")
 
   configs += [ "//third_party/libyuv:libyuv_config" ]
 
   deps = [
-    ":libva_stubs",
+    ":libva_generate_stubs",
     "//gpu/ipc/service",
     "//media",
     "//media/gpu:common",
