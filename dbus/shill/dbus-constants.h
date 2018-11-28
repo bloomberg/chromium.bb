@@ -681,6 +681,7 @@ const char kLastReceiveSignalDbmProperty[] = "LastReceiveSignalDbm";
 const char kPacketReceiveSuccessesProperty[] = "PacketReceiveSuccesses";
 const char kPacketTransmitFailuresProperty[] = "PacketTransmitFailures";
 const char kPacketTransmitSuccessesProperty[] = "PacketTrasmitSuccesses";
+const char kReceiveBitrateProperty[] = "ReceiveBitrate";
 const char kTransmitBitrateProperty[] = "TransmitBitrate";
 const char kTransmitRetriesProperty[] = "TransmitRetries";
 
