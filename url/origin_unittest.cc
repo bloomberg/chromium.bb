@@ -654,4 +654,18 @@ TEST_F(OriginTest, DebugAlias) {
   EXPECT_STREQ("https://foo.com", origin1_debug_alias);
 }
 
+TEST_F(OriginTest, NonStandardScheme) {
+  Origin origin = Origin::Create(GURL("cow://"));
+  EXPECT_TRUE(origin.opaque());
+}
+TEST_F(OriginTest, NonStandardSchemeWithAndroidWebViewHack) {
+  EnableNonStandardSchemesForAndroidWebView();
+  Origin origin = Origin::Create(GURL("cow://"));
+  EXPECT_FALSE(origin.opaque());
+  EXPECT_EQ("cow", origin.scheme());
+  EXPECT_EQ("", origin.host());
+  EXPECT_EQ(0, origin.port());
+  Shutdown();
+}
+
 }  // namespace url
