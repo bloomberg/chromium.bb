@@ -40170,6 +40170,26 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Foreground XFA (XFAF)"/>
 </enum>
 
+<enum name="PeerConnectionAnswererState">
+  <int value="0" label="NotStarted"/>
+  <int value="1" label="SetRemoteOfferPending"/>
+  <int value="2" label="SetRemoteOfferRejected"/>
+  <int value="3" label="SetRemoteOfferResolved"/>
+  <int value="4" label="CreateAnswerPending"/>
+  <int value="5" label="CreateAnswerRejected"/>
+  <int value="6" label="CreateAnswerResolved"/>
+  <int value="7" label="SetLocalAnswerPending"/>
+  <int value="8" label="SetLocalAnswerRejected"/>
+  <int value="9" label="SetLocalAnswerResolved"/>
+</enum>
+
+<enum name="PeerConnectionCallSetupState">
+  <int value="0" label="NotStarted"/>
+  <int value="1" label="Started"/>
+  <int value="2" label="Failed"/>
+  <int value="3" label="Succeeded"/>
+</enum>
+
 <enum name="PeerConnectionCounters">
   <int value="0" label="PeerConnection enabled with IPv4."/>
   <int value="1" label="PeerConnection enabled with Ipv6."/>
@@ -40189,6 +40209,19 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="SDES Audio"/>
   <int value="4" label="SDES Video"/>
   <int value="5" label="SDES Data"/>
+</enum>
+
+<enum name="PeerConnectionOffererState">
+  <int value="0" label="NotStarted"/>
+  <int value="1" label="CreateOfferPending"/>
+  <int value="2" label="CreateOfferRejected"/>
+  <int value="3" label="CreateOfferResolved"/>
+  <int value="4" label="SetLocalOfferPending"/>
+  <int value="5" label="SetLocalOfferRejected"/>
+  <int value="6" label="SetLocalOfferResolved"/>
+  <int value="7" label="SetRemoteAnswerPending"/>
+  <int value="8" label="SetRemoteAnswerRejected"/>
+  <int value="9" label="SetRemoteAnswerResolved"/>
 </enum>
 
 <enum name="PeerConnectionRtcpMux">

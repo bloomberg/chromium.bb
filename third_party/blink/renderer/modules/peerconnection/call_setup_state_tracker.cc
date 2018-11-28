@@ -82,7 +82,8 @@ CallSetupStateTracker::CallSetupStateTracker()
       }),
       offerer_state_(OffererState::kNotStarted),
       answerer_state_(AnswererState::kNotStarted),
-      has_ever_failed_(false) {}
+      has_ever_failed_(false),
+      document_uses_media_(false) {}
 
 OffererState CallSetupStateTracker::offerer_state() const {
   return offerer_state_;
@@ -90,6 +91,10 @@ OffererState CallSetupStateTracker::offerer_state() const {
 
 AnswererState CallSetupStateTracker::answerer_state() const {
   return answerer_state_;
+}
+
+bool CallSetupStateTracker::document_uses_media() const {
+  return document_uses_media_;
 }
 
 CallSetupState CallSetupStateTracker::GetCallSetupState() const {
@@ -106,7 +111,10 @@ CallSetupState CallSetupStateTracker::GetCallSetupState() const {
   return CallSetupState::kStarted;
 }
 
-bool CallSetupStateTracker::NoteOffererStateEvent(OffererState event) {
+bool CallSetupStateTracker::NoteOffererStateEvent(OffererState event,
+                                                  bool document_uses_media) {
+  if (document_uses_media)
+    document_uses_media_ = true;
   auto transition = std::make_pair(offerer_state_, event);
   if (valid_offerer_transitions_.find(transition) ==
       valid_offerer_transitions_.end()) {
@@ -118,7 +126,10 @@ bool CallSetupStateTracker::NoteOffererStateEvent(OffererState event) {
   return true;
 }
 
-bool CallSetupStateTracker::NoteAnswererStateEvent(AnswererState event) {
+bool CallSetupStateTracker::NoteAnswererStateEvent(AnswererState event,
+                                                   bool document_uses_media) {
+  if (document_uses_media)
+    document_uses_media_ = true;
   auto transition = std::make_pair(answerer_state_, event);
   if (valid_answerer_transitions_.find(transition) ==
       valid_answerer_transitions_.end()) {
