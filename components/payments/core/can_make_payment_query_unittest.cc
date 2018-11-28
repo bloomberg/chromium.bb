@@ -4,8 +4,8 @@
 
 #include "components/payments/core/can_make_payment_query.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/payments/core/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -18,7 +18,7 @@ class CanMakePaymentQueryTest : public ::testing::Test {
   CanMakePaymentQuery guard_;
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 };
 
 // An HTTPS website is not allowed to query all of the networks of the cards in
