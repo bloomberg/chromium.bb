@@ -2372,6 +2372,7 @@ test("unit_tests") {
     "../browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc",
     "../browser/android/webapk/webapk_icon_hasher_unittest.cc",
     "../browser/android/webapk/webapk_installer_unittest.cc",
+    "../browser/android/webapk/webapk_post_share_target_navigator_unittest.cc",
     "../browser/android/webapk/webapk_web_manifest_checker_unittest.cc",
     "../browser/android/webapps/add_to_homescreen_data_fetcher_unittest.cc",
     "../browser/app_controller_mac_unittest.mm",

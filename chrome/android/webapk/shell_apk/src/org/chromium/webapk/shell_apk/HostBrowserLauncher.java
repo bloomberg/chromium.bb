@@ -13,6 +13,8 @@ import android.util.Log;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
 
+import java.util.ArrayList;
+
 /** Contains methods for launching host browser. */
 public class HostBrowserLauncher {
     private static final String TAG = "cr_HostBrowserLauncher";
@@ -28,6 +30,22 @@ public class HostBrowserLauncher {
     private static final String REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB =
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
 
+    private static void grantUriPermissionToHostBrowser(
+            Context context, Intent launchIntent, String hostBrowserPackageName) {
+        ArrayList<Uri> uris = launchIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+        if (uris == null) {
+            uris = new ArrayList<>();
+            Uri uri = launchIntent.getParcelableExtra(Intent.EXTRA_STREAM);
+            if (uri != null) {
+                uris.add(uri);
+            }
+        }
+        for (Uri uri : uris) {
+            context.grantUriPermission(
+                    hostBrowserPackageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+    }
+
     /**
      * Launches host browser in WebAPK mode if the browser is WebAPK-compatible.
      * Otherwise, launches the host browser in tabbed mode.
@@ -42,6 +60,10 @@ public class HostBrowserLauncher {
         }
 
         Intent launchIntent = createLaunchInWebApkModeIntent(context, params);
+        if (params.getSelectedShareTargetActivityClassName() != null) {
+            grantUriPermissionToHostBrowser(
+                    context, launchIntent, params.getHostBrowserPackageName());
+        }
         try {
             context.startActivity(launchIntent);
         } catch (ActivityNotFoundException e) {

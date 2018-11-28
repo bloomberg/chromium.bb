@@ -165,4 +165,11 @@ public class WebApkActivity extends WebappActivity {
         mWebApkSplashscreenMetrics = new WebApkSplashscreenMetrics();
         addSplashscreenObserver(mWebApkSplashscreenMetrics);
     }
+
+    @Override
+    protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
+        WebApkInfo webApkInfo = (WebApkInfo) webappInfo;
+        return WebApkPostShareTargetNavigator.navigateIfPostShareTarget(
+                webApkInfo, getActivityTab().getWebContents());
+    }
 }

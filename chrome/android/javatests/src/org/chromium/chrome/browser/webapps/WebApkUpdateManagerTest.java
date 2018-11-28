@@ -160,7 +160,7 @@ public class WebApkUpdateManagerTest {
                         WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION,
                         creationData.manifestUrl, creationData.startUrl,
                         WebApkInfo.WebApkDistributor.BROWSER, creationData.iconUrlToMurmur2HashMap,
-                        null, false /* forceNavigation */, false /* useTransparentSplash */);
+                        null, false /* forceNavigation */, false /* useTransparentSplash */, null /* shareData */);
                 updateManager.updateIfNeeded(mTab, info);
             }
         });

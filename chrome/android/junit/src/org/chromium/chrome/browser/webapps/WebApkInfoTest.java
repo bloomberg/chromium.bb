@@ -114,6 +114,7 @@ public class WebApkInfoTest {
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
         bundle.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES,
                 ICON_URL + " " + ICON_MURMUR2_HASH);
+        bundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "GET");
         WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
 
         Intent intent = new Intent();
@@ -416,5 +417,15 @@ public class WebApkInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         info = WebApkInfo.create(intent);
         Assert.assertEquals(WebApkInfo.WebApkDistributor.OTHER, info.distributor());
+    }
+
+    // Test whether getSerializedShareTarget can handle special characters
+    @Test
+    public void testGetSerializedShareTarget() {
+        String serializedShareTarget =
+                WebApkInfo.getSerializedShareTarget("\n", "\\", "", "", "", "", "", "");
+        Assert.assertEquals("action: \"\n\", method: \"\\\", enctype: \"\", title: \"\""
+                        + "text: \"\", url: \"\", names: \"\", accepts: \"\"",
+                serializedShareTarget);
     }
 }
