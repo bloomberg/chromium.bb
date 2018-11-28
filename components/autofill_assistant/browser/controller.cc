@@ -142,40 +142,7 @@ Controller::~Controller() {
   }
 }
 
-void Controller::Start(const GURL& initialUrl) {
-  DCHECK(initialUrl.is_valid());
-  GetOrCheckScripts(initialUrl);
-  if (allow_autostart_) {
-    auto iter = parameters_->find(kCallerScriptParameterName);
-    // TODO(crbug.com/806868): Put back an explicit AUTOSTART parameter so we
-    // don't need to know who calls us.
-    if (iter != parameters_->end() && iter->second == "1") {
-      should_fail_after_checking_scripts_ = true;
-      GetUiController()->ShowOverlay();
-      GetUiController()->ShowStatusMessage(l10n_util::GetStringFUTF8(
-          IDS_AUTOFILL_ASSISTANT_LOADING,
-          base::UTF8ToUTF16(web_contents()->GetVisibleURL().host())));
-    }
-  }
-
-  touchable_element_area_.SetOnUpdate(base::BindRepeating(
-      &UiController::UpdateTouchableArea,
-      // Unretained is safe, since touchable_element_area_ is guaranteed to be
-      // deleted before the UI controller.
-      base::Unretained(GetUiController())));
-}
-
 void Controller::GetOrCheckScripts(const GURL& url) {
-  if (IsCookieExperimentEnabled() && !started_) {
-    GetWebController()->HasCookie(
-        base::BindOnce(&Controller::OnGetCookie,
-                       // WebController is owned by Controller.
-                       base::Unretained(this), url));
-    return;
-  } else {
-    started_ = true;
-  }
-
   if (!started_ || script_tracker_->running()) {
     return;
   }
@@ -364,11 +331,6 @@ bool Controller::MaybeAutostartScript(
   return false;
 }
 
-void Controller::OnClickOverlay() {
-  GetUiController()->HideOverlay();
-  // TODO(crbug.com/806868): Stop executing scripts.
-}
-
 void Controller::OnGetCookie(const GURL& initial_url, bool has_cookie) {
   if (has_cookie) {
     // This code is only active with the experiment parameter.
@@ -386,12 +348,56 @@ void Controller::OnGetCookie(const GURL& initial_url, bool has_cookie) {
 
 void Controller::OnSetCookie(const GURL& initial_url, bool result) {
   DCHECK(result) << "Setting cookie failed";
-  // Failing to set the cookie should not be fatal since it would prevent
-  // checking for available scripts.
-  started_ = true;
+  FinishStart(initial_url);
+}
 
-  // Kick off another check scripts run since we may have blocked the first one.
+void Controller::FinishStart(const GURL& initial_url) {
+  started_ = true;
   GetOrCheckScripts(initial_url);
+  if (allow_autostart_) {
+    auto iter = parameters_->find(kCallerScriptParameterName);
+    // TODO(crbug.com/806868): Put back an explicit AUTOSTART parameter so we
+    // don't need to know who calls us.
+    if (iter != parameters_->end() && iter->second == "1") {
+      should_fail_after_checking_scripts_ = true;
+      GetUiController()->ShowOverlay();
+      GetUiController()->ShowStatusMessage(l10n_util::GetStringFUTF8(
+          IDS_AUTOFILL_ASSISTANT_LOADING,
+          base::UTF8ToUTF16(web_contents()->GetVisibleURL().host())));
+    }
+  }
+
+  touchable_element_area_.SetOnUpdate(base::BindRepeating(
+      &UiController::UpdateTouchableArea,
+      // Unretained is safe, since touchable_element_area_ is guaranteed to be
+      // deleted before the UI controller.
+      base::Unretained(GetUiController())));
+}
+
+void Controller::Start(const GURL& initialUrl) {
+  DCHECK(initialUrl.is_valid());
+  if (IsCookieExperimentEnabled()) {
+    GetWebController()->HasCookie(
+        base::BindOnce(&Controller::OnGetCookie,
+                       // WebController is owned by Controller.
+                       base::Unretained(this), initialUrl));
+  } else {
+    FinishStart(initialUrl);
+  }
+}
+
+void Controller::OnClickOverlay() {
+  GetUiController()->HideOverlay();
+  // TODO(crbug.com/806868): Stop executing scripts.
+}
+
+void Controller::OnDestroy() {
+  delete this;
+}
+
+bool Controller::Terminate() {
+  StopPeriodicScriptChecks();
+  return script_tracker_->Terminate();
 }
 
 void Controller::OnScriptSelected(const std::string& script_path) {
@@ -401,6 +407,15 @@ void Controller::OnScriptSelected(const std::string& script_path) {
   allow_autostart_ = false;
 
   ExecuteScript(script_path);
+}
+
+void Controller::ScrollBy(float distanceXRatio, float distanceYRatio) {
+  GetWebController()->ScrollBy(distanceXRatio, distanceYRatio);
+  touchable_element_area_.UpdatePositions();
+}
+
+void Controller::UpdateTouchableArea() {
+  touchable_element_area_.UpdatePositions();
 }
 
 std::string Controller::GetDebugContext() {
@@ -418,43 +433,6 @@ std::string Controller::GetDebugContext() {
   std::string output_js;
   base::JSONWriter::Write(dict, &output_js);
   return output_js;
-}
-
-void Controller::OnDestroy() {
-  delete this;
-}
-
-bool Controller::Terminate() {
-  StopPeriodicScriptChecks();
-  return script_tracker_->Terminate();
-}
-
-void Controller::ScrollBy(float distanceXRatio, float distanceYRatio) {
-  GetWebController()->ScrollBy(distanceXRatio, distanceYRatio);
-  touchable_element_area_.UpdatePositions();
-}
-
-void Controller::UpdateTouchableArea() {
-  touchable_element_area_.UpdatePositions();
-}
-
-void Controller::DidAttachInterstitialPage() {
-  GetUiController()->Shutdown();
-}
-
-void Controller::DidGetUserInteraction(const blink::WebInputEvent::Type type) {
-  switch (type) {
-    case blink::WebInputEvent::kTouchStart:
-    case blink::WebInputEvent::kGestureTapDown:
-      if (!script_tracker_->running()) {
-        script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
-        StartPeriodicScriptChecks();
-      }
-      break;
-
-    default:
-      break;
-  }
 }
 
 void Controller::OnNoRunnableScriptsAnymore() {
@@ -502,8 +480,23 @@ void Controller::OnRunnableScriptsChanged(
   GetUiController()->UpdateScripts(scripts_to_update);
 }
 
-void Controller::DocumentAvailableInMainFrame() {
-  GetOrCheckScripts(web_contents()->GetLastCommittedURL());
+void Controller::DidAttachInterstitialPage() {
+  GetUiController()->Shutdown();
+}
+
+void Controller::DidGetUserInteraction(const blink::WebInputEvent::Type type) {
+  switch (type) {
+    case blink::WebInputEvent::kTouchStart:
+    case blink::WebInputEvent::kGestureTapDown:
+      if (!script_tracker_->running()) {
+        script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
+        StartPeriodicScriptChecks();
+      }
+      break;
+
+    default:
+      break;
+  }
 }
 
 void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -548,6 +541,10 @@ void Controller::DidStartNavigation(
     GiveUp();
     return;
   }
+}
+
+void Controller::DocumentAvailableInMainFrame() {
+  GetOrCheckScripts(web_contents()->GetLastCommittedURL());
 }
 
 void Controller::RenderProcessGone(base::TerminationStatus status) {

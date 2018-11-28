@@ -97,8 +97,9 @@ class Controller : public ScriptExecutorDelegate,
   // a script terminated with a Stop action.
   void OnGetCookie(const GURL& initial_url, bool has_cookie);
   void OnSetCookie(const GURL& initial_url, bool result);
+  void FinishStart(const GURL& initial_url);
 
-  // Overrides content::UiDelegate:
+  // Overrides autofill_assistant::UiDelegate:
   void Start(const GURL& initialUrl) override;
   void OnClickOverlay() override;
   void OnDestroy() override;
@@ -158,6 +159,7 @@ class Controller : public ScriptExecutorDelegate,
   // elements.
   ElementArea touchable_element_area_;
 
+  // Flag indicates whether it is ready to fetch and execute scripts.
   bool started_ = false;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_;

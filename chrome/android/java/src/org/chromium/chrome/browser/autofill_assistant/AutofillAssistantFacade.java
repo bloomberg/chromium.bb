@@ -40,15 +40,11 @@ public class AutofillAssistantFacade {
 
         AutofillAssistantUiController controller =
                 new AutofillAssistantUiController(activity, parameters);
-        AutofillAssistantUiDelegate uiDelegate =
-                new AutofillAssistantUiDelegate(activity, controller);
-        UiDelegateHolder delegateHolder = new UiDelegateHolder(controller, uiDelegate);
-        controller.setUiDelegateHolder(delegateHolder);
+        UiDelegateHolder delegateHolder = new UiDelegateHolder(
+                controller, new AutofillAssistantUiDelegate(activity, controller));
         initTabObservers(activity, delegateHolder);
 
-        controller.maybeUpdateDetails(Details.makeFromParameters(parameters));
-
-        uiDelegate.startOrSkipInitScreen();
+        controller.start(delegateHolder, Details.makeFromParameters(parameters));
     }
 
     private static void initTabObservers(ChromeActivity activity, UiDelegateHolder delegateHolder) {

@@ -89,13 +89,17 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                 parameters.get(PARAMETER_USER_EMAIL), activity.getInitialIntent().getExtras());
     }
 
-    void setUiDelegateHolder(UiDelegateHolder uiDelegateHolder) {
+    void start(UiDelegateHolder uiDelegateHolder, Details details) {
         mUiDelegateHolder = uiDelegateHolder;
+        // Do not show details until 'onInitOk'.
+        mCurrentDetails = details;
+        mUiDelegateHolder.startOrSkipInitScreen();
     }
 
     @Override
     public void onInitOk() {
         assert mUiDelegateHolder != null;
+        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.showDetails(mCurrentDetails));
         nativeStart(mUiControllerAndroid, mInitialUrl);
     }
 
