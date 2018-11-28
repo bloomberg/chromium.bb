@@ -16,6 +16,7 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "content/browser/sandbox_parameters_mac.h"
+#include "crypto/openssl_util.h"
 #include "sandbox/mac/seatbelt.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/sandbox/mac/audio.sb.h"
@@ -30,6 +31,7 @@
 #include "services/service_manager/sandbox/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
+#include "third_party/boringssl/src/include/openssl/rand.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 
 namespace content {
@@ -141,7 +143,9 @@ class SandboxMacTest : public base::MultiProcessTest {
 
     for (ExecuteFuncT execute_func : kExecuteFuncs) {
       (this->*execute_func)(multiprocess_main);
-      after_each.Run();
+      if (!after_each.is_null()) {
+        after_each.Run();
+      }
     }
   }
 
@@ -220,6 +224,20 @@ TEST_F(SandboxMacClipboardTest, ClipboardAccess) {
                                  ASSERT_EQ([[pb->get() types] count], 0U);
                                },
                                pb));
+}
+
+MULTIPROCESS_TEST_MAIN(SSLProcess) {
+  CheckCreateSeatbeltServer();
+
+  crypto::EnsureOpenSSLInit();
+  // Ensure that RAND_bytes is functional within the sandbox.
+  uint8_t byte;
+  CHECK(RAND_bytes(&byte, 1) == 1);
+  return 0;
+}
+
+TEST_F(SandboxMacTest, SSLInitTest) {
+  ExecuteInAllSandboxTypes("SSLProcess", base::RepeatingClosure());
 }
 
 }  // namespace content
