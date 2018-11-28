@@ -46,13 +46,6 @@
 
 @end
 
-namespace {
-
-// Left and right margins of the cell content.
-static const CGFloat SideMargins = 16;
-
-}  // namespace
-
 @interface ManualFillAddressCell ()
 
 // The label with the line1 -- line2.
@@ -367,17 +360,13 @@ static const CGFloat SideMargins = 16;
 - (void)createViewHierarchy {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  UIView* grayLine = [[UIView alloc] init];
-  grayLine.backgroundColor = [UIColor colorWithWhite:0.88 alpha:1];
-  grayLine.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.contentView addSubview:grayLine];
-
   UIView* guide = self.contentView;
+  CreateGraySeparatorForContainer(guide);
 
   self.addressLabel = CreateLabel();
   [self.contentView addSubview:self.addressLabel];
   HorizontalConstraintsForViewsOnGuideWithShift(@[ self.addressLabel ], guide,
-                                                SideMargins);
+                                                ButtonHorizontalMargin);
 
   self.firstNameButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
@@ -470,21 +459,6 @@ static const CGFloat SideMargins = 16;
   self.zipCityLineConstraints = @[];
   self.stateCountryLineConstraints = @[];
   self.verticalConstraints = @[];
-
-  id<LayoutGuideProvider> safeArea = self.contentView.safeAreaLayoutGuide;
-
-  [NSLayoutConstraint activateConstraints:@[
-    // Common vertical constraints.
-    [grayLine.bottomAnchor
-        constraintEqualToAnchor:self.contentView.bottomAnchor],
-    [grayLine.heightAnchor constraintEqualToConstant:1],
-
-    // Horizontal constraints.
-    [grayLine.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor
-                                           constant:SideMargins],
-    [safeArea.trailingAnchor constraintEqualToAnchor:grayLine.trailingAnchor
-                                            constant:SideMargins],
-  ]];
 }
 
 - (void)userDidTapAddressInfo:(UIButton*)sender {

@@ -478,7 +478,9 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the Password View Controller is dismissed when tapping the
 // keyboard.
-- (void)testTappingKeyboardDismissPasswordControllerPopOver {
+// TODO(crbug.com/909629): started to be flaky and sometimes opens full list
+// when typing text.
+- (void)DISABLED_testTappingKeyboardDismissPasswordControllerPopOver {
   if (!IsIPadIdiom()) {
     return;
   }

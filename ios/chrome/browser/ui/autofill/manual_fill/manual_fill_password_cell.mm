@@ -67,9 +67,6 @@
 
 namespace {
 
-// Left and right margins of the cell content.
-static const CGFloat SideMargins = 16;
-
 // The multiplier for the base system spacing at the top margin for connected
 // cells.
 static const CGFloat TopSystemSpacingMultiplierForConnectedCell = 1.28;
@@ -211,19 +208,15 @@ static const CGFloat NoMultiplier = 1.0;
 - (void)createViewHierarchy {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  self.grayLine = [[UIView alloc] init];
-  self.grayLine.backgroundColor = UIColor.cr_manualFillGrayLineColor;
-  self.grayLine.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.contentView addSubview:self.grayLine];
-
   UIView* guide = self.contentView;
+  self.grayLine = CreateGraySeparatorForContainer(guide);
 
   self.siteNameLabel = CreateLabel();
   self.siteNameLabel.translatesAutoresizingMaskIntoConstraints = NO;
   self.siteNameLabel.adjustsFontForContentSizeCategory = YES;
   [self.contentView addSubview:self.siteNameLabel];
   HorizontalConstraintsForViewsOnGuideWithShift(@[ self.siteNameLabel ], guide,
-                                                SideMargins);
+                                                ButtonHorizontalMargin);
 
   self.usernameButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapUsernameButton:), self);
@@ -236,21 +229,6 @@ static const CGFloat NoMultiplier = 1.0;
   [self.contentView addSubview:self.passwordButton];
   HorizontalConstraintsForViewsOnGuideWithShift(@[ self.passwordButton ], guide,
                                                 0);
-
-  id<LayoutGuideProvider> safeArea = self.contentView.safeAreaLayoutGuide;
-  [NSLayoutConstraint activateConstraints:@[
-    // Common vertical constraints.
-    [self.grayLine.bottomAnchor
-        constraintEqualToAnchor:self.contentView.bottomAnchor],
-    [self.grayLine.heightAnchor constraintEqualToConstant:1],
-
-    // Horizontal constraints.
-    [self.grayLine.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor
-                                                constant:SideMargins],
-    [safeArea.trailingAnchor
-        constraintEqualToAnchor:self.grayLine.trailingAnchor
-                       constant:SideMargins],
-  ]];
 }
 
 - (void)userDidTapUsernameButton:(UIButton*)button {

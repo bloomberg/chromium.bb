@@ -129,3 +129,24 @@ UILabel* CreateLabel() {
   label.adjustsFontForContentSizeCategory = YES;
   return label;
 }
+
+UIView* CreateGraySeparatorForContainer(UIView* container) {
+  UIView* grayLine = [[UIView alloc] init];
+  grayLine.backgroundColor = UIColor.cr_manualFillGrayLineColor;
+  grayLine.translatesAutoresizingMaskIntoConstraints = NO;
+  [container addSubview:grayLine];
+
+  id<LayoutGuideProvider> safeArea = container.safeAreaLayoutGuide;
+  [NSLayoutConstraint activateConstraints:@[
+    // Vertical constraints.
+    [grayLine.bottomAnchor constraintEqualToAnchor:container.bottomAnchor],
+    [grayLine.heightAnchor constraintEqualToConstant:1],
+    // Horizontal constraints.
+    [grayLine.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor
+                                           constant:ButtonHorizontalMargin],
+    [safeArea.trailingAnchor constraintEqualToAnchor:grayLine.trailingAnchor
+                                            constant:ButtonHorizontalMargin],
+  ]];
+
+  return grayLine;
+}
