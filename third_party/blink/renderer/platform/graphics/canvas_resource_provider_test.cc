@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 
+#include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
@@ -11,12 +12,40 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
+using testing::_;
 using testing::InSequence;
+using testing::Return;
 using testing::Test;
 
 namespace blink {
+
+namespace {
+
+class FakeGLES2InterfaceWithImageSupport : public FakeGLES2Interface {
+ public:
+  GLuint CreateImageCHROMIUM(ClientBuffer, GLsizei, GLsizei, GLenum) final {
+    return image_id_++;
+  }
+  void DestroyImageCHROMIUM(GLuint image_id) final {
+    EXPECT_LE(image_id, image_id_);
+  }
+
+ private:
+  GLuint image_id_ = 3;
+};
+
+class FakePlatformSupportWithGpuMemoryBufferManager
+    : public TestingPlatformSupport {
+  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override {
+    return &test_gpu_memory_buffer_manager_;
+  }
+
+ private:
+  viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
+};
 
 class MockCanvasResourceDispatcherClient
     : public CanvasResourceDispatcherClient {
@@ -25,6 +54,8 @@ class MockCanvasResourceDispatcherClient
 
   MOCK_METHOD0(BeginFrame, void());
 };
+
+}  // anonymous namespace
 
 class CanvasResourceProviderTest : public Test {
  public:
@@ -43,9 +74,26 @@ class CanvasResourceProviderTest : public Test {
 
   void TearDown() override { SharedGpuContext::ResetForTesting(); }
 
+  // Adds |buffer_format| to the context capabilities if it's not supported.
+  void EnsureBufferFormatIsSupported(gfx::BufferFormat buffer_format) {
+    auto* context_provider = context_provider_wrapper_->ContextProvider();
+    if (context_provider->GetCapabilities().gpu_memory_buffer_formats.Has(
+            buffer_format)) {
+      return;
+    }
+
+    auto capabilities = context_provider->GetCapabilities();
+    capabilities.gpu_memory_buffer_formats.Add(buffer_format);
+
+    static_cast<FakeWebGraphicsContext3DProvider*>(context_provider)
+        ->SetCapabilities(capabilities);
+  }
+
  protected:
-  FakeGLES2Interface gl_;
+  FakeGLES2InterfaceWithImageSupport gl_;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  ScopedTestingPlatformSupport<FakePlatformSupportWithGpuMemoryBufferManager>
+      platform_;
 };
 
 TEST_F(CanvasResourceProviderTest,
@@ -53,18 +101,7 @@ TEST_F(CanvasResourceProviderTest,
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
-
-  // Add the deduced gfx::BufferFormat if it's not supported.
-  auto* context_provider = context_provider_wrapper_->ContextProvider();
-  const gfx::BufferFormat buffer_format = kColorParams.GetBufferFormat();
-  if (!context_provider->GetCapabilities().gpu_memory_buffer_formats.Has(
-          buffer_format)) {
-    auto capabilities = context_provider->GetCapabilities();
-    capabilities.gpu_memory_buffer_formats.Add(buffer_format);
-
-    static_cast<FakeWebGraphicsContext3DProvider*>(context_provider)
-        ->SetCapabilities(capabilities);
-  }
+  EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
   auto provider = CanvasResourceProvider::Create(
       kSize, CanvasResourceProvider::kAcceleratedCompositedResourceUsage,
@@ -126,8 +163,8 @@ TEST_F(CanvasResourceProviderTest,
   EXPECT_EQ(provider->Size(), kSize);
   EXPECT_TRUE(provider->IsValid());
   EXPECT_FALSE(provider->IsAccelerated());
-  EXPECT_FALSE(provider->SupportsDirectCompositing());
-  EXPECT_FALSE(provider->SupportsSingleBuffering());
+  EXPECT_TRUE(provider->SupportsDirectCompositing());
+  EXPECT_TRUE(provider->SupportsSingleBuffering());
   EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
   EXPECT_EQ(provider->ColorParams().PixelFormat(), kColorParams.PixelFormat());
   EXPECT_EQ(provider->ColorParams().GetOpacityMode(),
@@ -179,6 +216,34 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedBitmap) {
   EXPECT_EQ(provider->Size(), kSize);
   EXPECT_TRUE(provider->IsValid());
   EXPECT_FALSE(provider->IsAccelerated());
+  EXPECT_TRUE(provider->SupportsDirectCompositing());
+  EXPECT_TRUE(provider->SupportsSingleBuffering());
+  EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
+  EXPECT_EQ(provider->ColorParams().PixelFormat(), kColorParams.PixelFormat());
+  EXPECT_EQ(provider->ColorParams().GetOpacityMode(),
+            kColorParams.GetOpacityMode());
+
+  EXPECT_FALSE(provider->IsSingleBuffered());
+  provider->TryEnableSingleBuffering();
+  EXPECT_TRUE(provider->IsSingleBuffered());
+}
+
+TEST_F(CanvasResourceProviderTest,
+       CanvasResourceProviderDirectGpuMemoryBuffer) {
+  const IntSize kSize(10, 10);
+  const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
+                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+  EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
+
+  auto provider = CanvasResourceProvider::Create(
+      kSize, CanvasResourceProvider::kAcceleratedDirectResourceUsage,
+      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+
+  EXPECT_EQ(provider->Size(), kSize);
+  EXPECT_TRUE(provider->IsValid());
+  EXPECT_TRUE(provider->IsAccelerated());
   EXPECT_TRUE(provider->SupportsDirectCompositing());
   EXPECT_TRUE(provider->SupportsSingleBuffering());
   EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
