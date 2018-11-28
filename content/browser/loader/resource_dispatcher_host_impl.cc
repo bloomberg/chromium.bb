@@ -532,13 +532,13 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
   if (!IsResourceTypeFrame(info->GetResourceType()))
     return false;
 
-  const net::URLRequestJobFactory* job_factory =
-      info->GetContext()->GetRequestContext()->job_factory();
-  if (!url.is_valid() || job_factory->IsHandledProtocol(url.scheme()))
-    return false;
-
   net::URLRequest* url_request = loader->request();
   DCHECK(url_request);
+
+  const net::URLRequestJobFactory* job_factory =
+      url_request->context()->job_factory();
+  if (!url.is_valid() || job_factory->IsHandledProtocol(url.scheme()))
+    return false;
 
   return GetContentClient()->browser()->HandleExternalProtocol(
       url, info->GetWebContentsGetterForRequest(), info->GetChildID(),
@@ -1455,7 +1455,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       ChildProcessSecurityPolicyImpl::GetInstance();
   bool is_external_protocol =
       info.common_params.url.is_valid() &&
-      !resource_context->GetRequestContext()->job_factory()->IsHandledProtocol(
+      !request_context->job_factory()->IsHandledProtocol(
           info.common_params.url.scheme());
   bool non_web_url_in_guest =
       info.is_for_guests_only &&

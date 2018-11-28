@@ -121,7 +121,7 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
 // This is used to create a filter matching a specified child id.
 class TestFilterSpecifyingChild : public ResourceMessageFilter {
  public:
-  TestFilterSpecifyingChild(BrowserContext* browser_context, int process_id)
+  TestFilterSpecifyingChild(TestBrowserContext* browser_context, int process_id)
       : ResourceMessageFilter(
             process_id,
             nullptr,
@@ -133,7 +133,8 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
             base::Bind(&TestFilterSpecifyingChild::GetContexts,
                        base::Unretained(this)),
             base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
-        resource_context_(browser_context->GetResourceContext()) {
+        resource_context_(browser_context->GetResourceContext()),
+        url_request_context_(browser_context->GetRequestContext()) {
     InitializeForTest();
     set_peer_process_for_testing(base::Process::Current());
   }
@@ -154,17 +155,18 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
                    ResourceContext** resource_context,
                    net::URLRequestContext** request_context) {
     *resource_context = resource_context_;
-    *request_context = resource_context_->GetRequestContext();
+    *request_context = url_request_context_->GetURLRequestContext();
   }
 
   ResourceContext* resource_context_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFilterSpecifyingChild);
 };
 
 class TestFilter : public TestFilterSpecifyingChild {
  public:
-  explicit TestFilter(BrowserContext* browser_context)
+  explicit TestFilter(TestBrowserContext* browser_context)
       : TestFilterSpecifyingChild(
             browser_context,
             ChildProcessHostImpl::GenerateChildProcessUniqueId()) {
@@ -675,9 +677,8 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
     content::RunAllTasksUntilIdle();
 
     filter_ = MakeTestFilter();
-    // TODO(cbentzel): Better way to get URLRequestContext?
     net::URLRequestContext* request_context =
-        browser_context_->GetResourceContext()->GetRequestContext();
+        browser_context_->GetRequestContext()->GetURLRequestContext();
     job_factory_.reset(new TestURLRequestJobFactory(this));
     request_context->set_job_factory(job_factory_.get());
     request_context->set_network_delegate(&network_delegate_);

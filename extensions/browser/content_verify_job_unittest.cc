@@ -47,9 +47,7 @@ enum ContentVerifyJobAsyncRunMode {
 
 class ContentVerifyJobUnittest : public ExtensionsTest {
  public:
-  ContentVerifyJobUnittest()
-      // The TestBrowserThreadBundle is needed for ContentVerifyJob::Start().
-      : resource_context_(&test_url_request_context_) {}
+  ContentVerifyJobUnittest() {}
   ~ContentVerifyJobUnittest() override {}
 
   // Helper to get files from our subdirectory in the general extensions test
@@ -65,18 +63,14 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
     ExtensionsTest::SetUp();
 
     extension_info_map_ = new InfoMap();
-    net::URLRequestContext* request_context =
-        resource_context_.GetRequestContext();
-    old_factory_ = request_context->job_factory();
+    old_factory_ = test_url_request_context_.job_factory();
     content_verifier_ = new ContentVerifier(
         &testing_context_, std::make_unique<MockContentVerifierDelegate>());
     extension_info_map_->SetContentVerifier(content_verifier_.get());
   }
 
   void TearDown() override {
-    net::URLRequestContext* request_context =
-        resource_context_.GetRequestContext();
-    request_context->set_job_factory(old_factory_);
+    test_url_request_context_.set_job_factory(old_factory_);
     content_verifier_->Shutdown();
 
     ExtensionsTest::TearDown();
@@ -167,7 +161,6 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
   net::URLRequestJobFactoryImpl job_factory_;
   const net::URLRequestJobFactory* old_factory_;
   net::TestURLRequestContext test_url_request_context_;
-  content::MockResourceContext resource_context_;
   scoped_refptr<ContentVerifier> content_verifier_;
   content::TestBrowserContext testing_context_;
 

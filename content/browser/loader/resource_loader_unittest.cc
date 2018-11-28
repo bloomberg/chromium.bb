@@ -387,7 +387,6 @@ class ResourceLoaderTest : public testing::Test,
   ResourceLoaderTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         test_url_request_context_(true),
-        resource_context_(&test_url_request_context_),
         raw_ptr_resource_handler_(nullptr),
         raw_ptr_to_request_(nullptr) {
     test_url_request_context_.set_job_factory(&job_factory_);
@@ -443,7 +442,7 @@ class ResourceLoaderTest : public testing::Test,
 
     RenderFrameHost* rfh = web_contents_->GetMainFrame();
     ResourceRequestInfo::AllocateForTesting(
-        request.get(), resource_type, &resource_context_,
+        request.get(), resource_type, nullptr /* resource_context */,
         rfh->GetProcess()->GetID(), rfh->GetRenderViewHost()->GetRoutingID(),
         rfh->GetRoutingID(), belongs_to_main_frame, true /* allow_download */,
         false /* is_async */, PREVIEWS_OFF /* previews_state */,
@@ -454,12 +453,12 @@ class ResourceLoaderTest : public testing::Test,
     loader_.reset(new ResourceLoader(
         std::move(request),
         WrapResourceHandler(std::move(resource_handler), raw_ptr_to_request_),
-        this, &resource_context_, nullptr /* throttling_token */));
+        this, nullptr /* resource_context */, nullptr /* throttling_token */));
   }
 
   void SetUpResourceLoaderForUrl(const GURL& test_url) {
     std::unique_ptr<net::URLRequest> request(
-        resource_context_.GetRequestContext()->CreateRequest(
+        test_url_request_context_.CreateRequest(
             test_url, net::DEFAULT_PRIORITY, nullptr /* delegate */,
             TRAFFIC_ANNOTATION_FOR_TESTS));
     SetUpResourceLoader(std::move(request), RESOURCE_TYPE_MAIN_FRAME, true);
@@ -563,7 +562,6 @@ class ResourceLoaderTest : public testing::Test,
   net::URLRequestJobFactoryImpl job_factory_;
   net::TestNetworkQualityEstimator network_quality_estimator_;
   net::TestURLRequestContext test_url_request_context_;
-  MockResourceContext resource_context_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<TestWebContents> web_contents_;
 
@@ -774,7 +772,7 @@ TEST_F(ClientCertResourceLoaderTest, StoreAsyncCancel) {
 // Tests that a RESOURCE_TYPE_PREFETCH request sets the LOAD_PREFETCH flag.
 TEST_F(ResourceLoaderTest, PrefetchFlag) {
   std::unique_ptr<net::URLRequest> request(
-      resource_context_.GetRequestContext()->CreateRequest(
+      test_url_request_context_.CreateRequest(
           test_async_url(), net::DEFAULT_PRIORITY, nullptr /* delegate */,
           TRAFFIC_ANNOTATION_FOR_TESTS));
   SetUpResourceLoader(std::move(request), RESOURCE_TYPE_PREFETCH, true);
@@ -1578,7 +1576,7 @@ class EffectiveConnectionTypeResourceLoaderTest : public ResourceLoaderTest {
 
     // Start the request and wait for it to finish.
     std::unique_ptr<net::URLRequest> request(
-        resource_context_.GetRequestContext()->CreateRequest(
+        test_url_request_context_.CreateRequest(
             test_redirect_url(), net::DEFAULT_PRIORITY, nullptr /* delegate */,
             TRAFFIC_ANNOTATION_FOR_TESTS));
     SetUpResourceLoader(std::move(request), resource_type,

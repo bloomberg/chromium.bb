@@ -619,7 +619,9 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   ResourceRequesterInfo* requester_info = original_info->requester_info();
   DCHECK(requester_info->IsBrowserSideNavigation());
   auto url_loader_factory = std::make_unique<URLLoaderFactoryImpl>(
-      ResourceRequesterInfo::CreateForNavigationPreload(requester_info));
+      ResourceRequesterInfo::CreateForNavigationPreload(
+          requester_info,
+          const_cast<net::URLRequestContext*>(original_request->context())));
 
   network::ResourceRequest request;
   request.method = original_request->method();
