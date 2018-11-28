@@ -33,11 +33,9 @@ base::Optional<bool> BooleanOperationWithRethrow(
   v8::TryCatch block(script_state->GetIsolate());
   v8::Local<v8::Value> args[] = {value.V8Value()};
   v8::Local<v8::Value> local_value;
-  bool result_bool = false;
 
   if (!V8ScriptRunner::CallExtra(script_state, operation, args)
-           .ToLocal(&local_value) ||
-      !local_value->BooleanValue(script_state->GetContext()).To(&result_bool)) {
+           .ToLocal(&local_value)) {
     DCHECK(block.HasCaught() ||
            script_state->GetIsolate()->IsExecutionTerminating());
     exception_state.RethrowV8Exception(block.Exception());
@@ -45,7 +43,7 @@ base::Optional<bool> BooleanOperationWithRethrow(
   }
 
   DCHECK(!block.HasCaught());
-  return result_bool;
+  return local_value->BooleanValue(script_state->GetIsolate());
 }
 
 // Performs |operation| on |value|, catching any exceptions. This is for use in
@@ -58,13 +56,11 @@ bool BooleanOperationForDCheck(ScriptState* script_state,
                                bool fallback_value) {
   v8::Local<v8::Value> args[] = {value.V8Value()};
   v8::Local<v8::Value> result_value;
-  bool result_bool = false;
   v8::TryCatch block(script_state->GetIsolate());
   if (V8ScriptRunner::CallExtra(script_state, operation, args)
-          .ToLocal(&result_value) &&
-      result_value->BooleanValue(script_state->GetContext()).To(&result_bool)) {
+          .ToLocal(&result_value)) {
     DCHECK(!block.HasCaught());
-    return result_bool;
+    return result_value->BooleanValue(script_state->GetIsolate());
   }
   DCHECK(block.HasCaught() ||
          script_state->GetIsolate()->IsExecutionTerminating());

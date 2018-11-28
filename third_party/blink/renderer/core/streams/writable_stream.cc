@@ -84,15 +84,13 @@ bool WritableStream::InitInternal(ScriptState* script_state,
 #if DCHECK_IS_ON()
   v8::Local<v8::Value> args[] = {internal_stream};
   v8::Local<v8::Value> result_value;
-  bool result = false;
 
   if (!V8ScriptRunner::CallExtra(script_state, "IsWritableStream", args)
-           .ToLocal(&result_value) ||
-      !result_value->BooleanValue(script_state->GetContext()).To(&result)) {
+           .ToLocal(&result_value)) {
     DLOG(FATAL) << "Failing to call IsWritableStream for DCHECK.";
     return false;
   }
-  DCHECK(result);
+  DCHECK(result_value->BooleanValue(isolate));
 #endif  // DCHECK_IS_ON()
 
   internal_stream_.Set(isolate, internal_stream);
@@ -200,15 +198,13 @@ base::Optional<bool> WritableStream::IsLocked(
   v8::Local<v8::Value> args[] = {
       internal_stream_.NewLocal(script_state->GetIsolate())};
   v8::Local<v8::Value> result_value;
-  bool result;
 
   if (!V8ScriptRunner::CallExtra(script_state, "IsWritableStreamLocked", args)
-           .ToLocal(&result_value) ||
-      !result_value->BooleanValue(script_state->GetContext()).To(&result)) {
+           .ToLocal(&result_value)) {
     exception_state.RethrowV8Exception(block.Exception());
     return base::nullopt;
   }
-  return result;
+  return result_value->BooleanValue(script_state->GetIsolate());
 }
 
 void WritableStream::Serialize(ScriptState* script_state,
