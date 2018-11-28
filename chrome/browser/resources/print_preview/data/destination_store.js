@@ -1170,6 +1170,7 @@ cr.define('print_preview', function() {
           this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
       if (type === print_preview.PrinterType.EXTENSION_PRINTER)
         this.endExtensionPrinterSearch_();
+      this.sendNoPrinterEventIfNeeded_();
     }
 
     /**
@@ -1270,6 +1271,23 @@ cr.define('print_preview', function() {
       }
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
+      this.sendNoPrinterEventIfNeeded_();
+    }
+
+    /**
+     * Checks if the search is done and no printers are found. If so, fires a
+     * DestinationStore.EventType.NO_DESTINATIONS_FOUND event.
+     * @private
+     */
+    sendNoPrinterEventIfNeeded_() {
+      if (this.isPrintDestinationSearchInProgress ||
+          !this.selectFirstDestination_) {
+        return;
+      }
+
+      this.selectFirstDestination_ = false;
+      cr.dispatchSimpleEvent(
+          this, DestinationStore.EventType.NO_DESTINATIONS_FOUND);
     }
 
     /**
@@ -1397,6 +1415,8 @@ cr.define('print_preview', function() {
         'print_preview.DestinationStore.PROVISIONAL_DESTINATION_RESOLVED',
     CACHED_SELECTED_DESTINATION_INFO_READY:
         'print_preview.DestinationStore.CACHED_SELECTED_DESTINATION_INFO_READY',
+    NO_DESTINATIONS_FOUND:
+        'print_preview.DestinationStore.NO_DESTINATIONS_FOUND',
     SELECTED_DESTINATION_CAPABILITIES_READY: 'print_preview.DestinationStore' +
         '.SELECTED_DESTINATION_CAPABILITIES_READY',
     SELECTED_DESTINATION_INVALID:
