@@ -16,7 +16,7 @@ var NOT_OPTIONAL_ERROR =
 var REQUIRED_ERROR =
     "You cannot remove required permissions.";
 
-var NOT_WHITE_LISTED_ERROR =
+var NOT_ALLOWLISTED_ERROR =
     "The optional permissions API does not support '*'.";
 
 var UNKNOWN_PERMISSIONS_ERROR =
@@ -204,13 +204,14 @@ chrome.test.getConfig(function(config) {
       }));
     },
 
-    // Make sure you can only access the white listed permissions.
-    function whitelist() {
-      var error_msg = NOT_WHITE_LISTED_ERROR.replace('*', 'cloudPrintPrivate');
+    // Make sure you can only access the allowlisted permissions.
+    function allowlist() {
+      const kPermission = 'fontSettings';
+      var error_msg = NOT_ALLOWLISTED_ERROR.replace('*', kPermission);
       chrome.permissions.request(
-          {permissions: ['cloudPrintPrivate']}, fail(error_msg));
+          {permissions: [kPermission]}, fail(error_msg));
       chrome.permissions.remove(
-          {permissions: ['cloudPrintPrivate']}, fail(error_msg));
+          {permissions: [kPermission]}, fail(error_msg));
     },
 
     function unknownPermission() {

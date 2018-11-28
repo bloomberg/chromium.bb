@@ -35,7 +35,145 @@ const char kUnknownPermissionError[] =
 const char kUnsupportedPermissionId[] =
     "Only the usbDevices permission supports arguments.";
 
+// Extracts an API permission that supports arguments. In practice, this is
+// restricted to the UsbDevicePermission.
+std::unique_ptr<APIPermission> UnpackPermissionWithArguments(
+    base::StringPiece permission_name,
+    base::StringPiece permission_arg,
+    const std::string& permission_str,
+    std::string* error) {
+  std::unique_ptr<base::Value> permission_json =
+      base::JSONReader::Read(permission_arg);
+  if (!permission_json.get()) {
+    *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, permission_str);
+    return nullptr;
+  }
+
+  std::unique_ptr<APIPermission> permission;
+
+  // Explicitly check the permissions that accept arguments until
+  // https://crbug.com/162042 is fixed.
+  const APIPermissionInfo* usb_device_permission_info =
+      PermissionsInfo::GetInstance()->GetByID(APIPermission::kUsbDevice);
+  if (permission_name == usb_device_permission_info->name()) {
+    permission =
+        std::make_unique<UsbDevicePermission>(usb_device_permission_info);
+  } else {
+    *error = kUnsupportedPermissionId;
+    return nullptr;
+  }
+
+  CHECK(permission);
+  if (!permission->FromValue(permission_json.get(), nullptr, nullptr)) {
+    *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, permission_str);
+    return nullptr;
+  }
+
+  return permission;
+}
+
+// A helper method to unpack API permissions from the list in
+// |permissions_input|, and populate the appropriate fields of |result|.
+// Returns true on success; on failure, returns false and populates |error|.
+bool UnpackAPIPermissions(const std::vector<std::string>& permissions_input,
+                          const PermissionSet& required_permissions,
+                          const PermissionSet& optional_permissions,
+                          UnpackPermissionSetResult* result,
+                          std::string* error) {
+  PermissionsInfo* info = PermissionsInfo::GetInstance();
+  APIPermissionSet apis;
+  // Iterate over the inputs and find the corresponding API permissions.
+  for (const auto& permission_str : permissions_input) {
+    // This is a compromise: we currently can't switch to a blend of
+    // objects/strings all the way through the API. Until then, put this
+    // processing here.
+    // http://code.google.com/p/chromium/issues/detail?id=162042
+    size_t delimiter = permission_str.find(kDelimiter);
+    if (delimiter != std::string::npos) {
+      base::StringPiece permission_piece(permission_str);
+      std::unique_ptr<APIPermission> permission = UnpackPermissionWithArguments(
+          permission_piece.substr(0, delimiter),
+          permission_piece.substr(delimiter + 1), permission_str, error);
+      if (!permission)
+        return false;
+
+      apis.insert(std::move(permission));
+    } else {
+      const APIPermissionInfo* permission_info =
+          info->GetByName(permission_str);
+      if (!permission_info) {
+        *error = ErrorUtils::FormatErrorMessage(kUnknownPermissionError,
+                                                permission_str);
+        return false;
+      }
+      apis.insert(permission_info->id());
+    }
+  }
+
+  // Validate and partition the parsed APIs.
+  for (const auto* api_permission : apis) {
+    if (required_permissions.apis().count(api_permission->id())) {
+      result->required_apis.insert(api_permission->id());
+      continue;
+    }
+
+    if (!optional_permissions.apis().count(api_permission->id())) {
+      result->unlisted_apis.insert(api_permission->id());
+      continue;
+    }
+
+    if (!api_permission->info()->supports_optional()) {
+      result->unsupported_optional_apis.insert(api_permission->id());
+      continue;
+    }
+
+    result->optional_apis.insert(api_permission->id());
+  }
+
+  return true;
+}
+
+// A helper method to unpack host permissions from the list in
+// |permissions_input|, and populate the appropriate fields of |result|.
+// Returns true on success; on failure, returns false and populates |error|.
+bool UnpackOriginPermissions(const std::vector<std::string>& origins_input,
+                             const PermissionSet& required_permissions,
+                             const PermissionSet& optional_permissions,
+                             bool allow_file_access,
+                             UnpackPermissionSetResult* result,
+                             std::string* error) {
+  int explicit_schemes = Extension::kValidHostPermissionSchemes;
+  if (!allow_file_access)
+    explicit_schemes &= ~URLPattern::SCHEME_FILE;
+
+  for (const auto& origin_str : origins_input) {
+    URLPattern explicit_origin(explicit_schemes);
+    URLPattern::ParseResult parse_result = explicit_origin.Parse(origin_str);
+    if (URLPattern::ParseResult::kSuccess != parse_result) {
+      *error = ErrorUtils::FormatErrorMessage(
+          kInvalidOrigin, origin_str,
+          URLPattern::GetParseResultString(parse_result));
+      return false;
+    }
+
+    if (required_permissions.explicit_hosts().ContainsPattern(
+            explicit_origin)) {
+      result->required_explicit_hosts.AddPattern(explicit_origin);
+    } else if (optional_permissions.explicit_hosts().ContainsPattern(
+                   explicit_origin)) {
+      result->optional_explicit_hosts.AddPattern(explicit_origin);
+    } else {
+      result->unlisted_hosts.AddPattern(explicit_origin);
+    }
+  }
+
+  return true;
+}
+
 }  // namespace
+
+UnpackPermissionSetResult::UnpackPermissionSetResult() = default;
+UnpackPermissionSetResult::~UnpackPermissionSetResult() = default;
 
 std::unique_ptr<Permissions> PackPermissionSet(const PermissionSet& set) {
   std::unique_ptr<Permissions> permissions(new Permissions());
@@ -63,91 +201,34 @@ std::unique_ptr<Permissions> PackPermissionSet(const PermissionSet& set) {
   return permissions;
 }
 
-std::unique_ptr<const PermissionSet> UnpackPermissionSet(
-    const Permissions& permissions,
+std::unique_ptr<UnpackPermissionSetResult> UnpackPermissionSet(
+    const Permissions& permissions_input,
+    const PermissionSet& required_permissions,
+    const PermissionSet& optional_permissions,
     bool allow_file_access,
     std::string* error) {
   DCHECK(error);
-  APIPermissionSet apis;
-  std::vector<std::string>* permissions_list = permissions.permissions.get();
-  if (permissions_list) {
-    PermissionsInfo* info = PermissionsInfo::GetInstance();
-    for (auto it = permissions_list->begin(); it != permissions_list->end();
-         ++it) {
-      // This is a compromise: we currently can't switch to a blend of
-      // objects/strings all the way through the API. Until then, put this
-      // processing here.
-      // http://code.google.com/p/chromium/issues/detail?id=162042
-      if (it->find(kDelimiter) != std::string::npos) {
-        size_t delimiter = it->find(kDelimiter);
-        std::string permission_name = it->substr(0, delimiter);
-        std::string permission_arg = it->substr(delimiter + 1);
-
-        std::unique_ptr<base::Value> permission_json =
-            base::JSONReader::Read(permission_arg);
-        if (!permission_json.get()) {
-          *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, *it);
-          return NULL;
-        }
-
-        std::unique_ptr<APIPermission> permission;
-
-        // Explicitly check the permissions that accept arguments until the bug
-        // referenced above is fixed.
-        const APIPermissionInfo* usb_device_permission_info =
-            info->GetByID(APIPermission::kUsbDevice);
-        if (permission_name == usb_device_permission_info->name()) {
-          permission =
-              std::make_unique<UsbDevicePermission>(usb_device_permission_info);
-        } else {
-          *error = kUnsupportedPermissionId;
-          return NULL;
-        }
-
-        CHECK(permission);
-        if (!permission->FromValue(permission_json.get(), NULL, NULL)) {
-          *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, *it);
-          return NULL;
-        }
-        apis.insert(std::move(permission));
-      } else {
-        const APIPermissionInfo* permission_info = info->GetByName(*it);
-        if (!permission_info) {
-          *error = ErrorUtils::FormatErrorMessage(
-              kUnknownPermissionError, *it);
-          return NULL;
-        }
-        apis.insert(permission_info->id());
-      }
-    }
-  }
 
   // TODO(rpaquay): We currently don't expose manifest permissions
   // to apps/extensions via the permissions API.
-  ManifestPermissionSet manifest_permissions;
 
-  URLPatternSet origins;
-  if (permissions.origins.get()) {
-    for (auto it = permissions.origins->begin();
-         it != permissions.origins->end(); ++it) {
-      int allowed_schemes = Extension::kValidHostPermissionSchemes;
-      if (!allow_file_access)
-        allowed_schemes &= ~URLPattern::SCHEME_FILE;
-      URLPattern origin(allowed_schemes);
-      URLPattern::ParseResult parse_result = origin.Parse(*it);
-      if (URLPattern::ParseResult::kSuccess != parse_result) {
-        *error = ErrorUtils::FormatErrorMessage(
-            kInvalidOrigin,
-            *it,
-            URLPattern::GetParseResultString(parse_result));
-        return NULL;
-      }
-      origins.AddPattern(origin);
-    }
+  auto result = std::make_unique<UnpackPermissionSetResult>();
+
+  if (permissions_input.permissions &&
+      !UnpackAPIPermissions(*permissions_input.permissions,
+                            required_permissions, optional_permissions,
+                            result.get(), error)) {
+    return nullptr;
   }
 
-  return std::make_unique<PermissionSet>(apis, manifest_permissions, origins,
-                                         URLPatternSet());
+  if (permissions_input.origins &&
+      !UnpackOriginPermissions(*permissions_input.origins, required_permissions,
+                               optional_permissions, allow_file_access,
+                               result.get(), error)) {
+    return nullptr;
+  }
+
+  return result;
 }
 
 }  // namespace permissions_api_helpers
