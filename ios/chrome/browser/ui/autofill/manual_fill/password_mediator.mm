@@ -255,12 +255,18 @@ BOOL AreCredentialsAtIndexesConnected(
 
 #pragma mark - ManualFillContentDelegate
 
+- (BOOL)canUserInjectInPasswordField:(BOOL)passwordField
+                       requiresHTTPS:(BOOL)requiresHTTPS {
+  return [self.contentDelegate canUserInjectInPasswordField:passwordField
+                                              requiresHTTPS:requiresHTTPS];
+}
+
 - (void)userDidPickContent:(NSString*)content
-           isPasswordField:(BOOL)isPasswordField
+             passwordField:(BOOL)passwordField
              requiresHTTPS:(BOOL)requiresHTTPS {
   [self.navigationDelegate dismissPresentedViewController];
   [self.contentDelegate userDidPickContent:content
-                           isPasswordField:isPasswordField
+                             passwordField:passwordField
                              requiresHTTPS:requiresHTTPS];
 }
 
