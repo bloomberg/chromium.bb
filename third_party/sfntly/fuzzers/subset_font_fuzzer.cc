@@ -16,10 +16,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   constexpr int kMaxFontSize = 50 * 1024 * 1024;
   base::FuzzedDataProvider fuzzed_data(data, size);
 
-  size_t font_name_size = fuzzed_data.ConsumeUint32InRange(0, kMaxFontNameSize);
+  size_t font_name_size =
+      fuzzed_data.ConsumeIntegralInRange(0, kMaxFontNameSize);
   std::string font_name = fuzzed_data.ConsumeBytesAsString(font_name_size);
 
-  size_t font_str_size = fuzzed_data.ConsumeUint32InRange(0, kMaxFontSize);
+  size_t font_str_size = fuzzed_data.ConsumeIntegralInRange(0, kMaxFontSize);
   std::vector<unsigned char> font_str =
       fuzzed_data.ConsumeBytes<unsigned char>(font_str_size);
 

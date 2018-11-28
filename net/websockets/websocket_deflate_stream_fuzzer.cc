@@ -67,9 +67,10 @@ class WebSocketFuzzedStream final : public WebSocketStream {
  private:
   std::unique_ptr<WebSocketFrame> CreateFrame() {
     WebSocketFrameHeader::OpCode opcode =
-        fuzzed_data_provider_->ConsumeUint32InRange(
-            WebSocketFrameHeader::kOpCodeContinuation,
-            WebSocketFrameHeader::kOpCodeControlUnused);
+        fuzzed_data_provider_
+            ->ConsumeIntegralInRange<WebSocketFrameHeader::OpCode>(
+                WebSocketFrameHeader::kOpCodeContinuation,
+                WebSocketFrameHeader::kOpCodeControlUnused);
     auto frame = std::make_unique<WebSocketFrame>(opcode);
     // Bad news: ConsumeBool actually consumes a whole byte per call, so do
     // something hacky to conserve precious bits.
@@ -80,7 +81,7 @@ class WebSocketFuzzedStream final : public WebSocketStream {
     frame->header.reserved3 = (flags >> 3) & 0x1;
     frame->header.masked = (flags >> 4) & 0x1;
     uint64_t payload_length =
-        fuzzed_data_provider_->ConsumeUint32InRange(0, 64);
+        fuzzed_data_provider_->ConsumeIntegralInRange(0, 64);
     std::vector<char> payload =
         fuzzed_data_provider_->ConsumeBytes<char>(payload_length);
     frame->data = base::MakeRefCounted<IOBufferWithSize>(payload.size());

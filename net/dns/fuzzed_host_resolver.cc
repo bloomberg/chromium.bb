@@ -168,14 +168,14 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
   DnsConfig config;
 
   // Fuzz name servers.
-  uint32_t num_nameservers = data_provider_->ConsumeUint32InRange(0, 4);
+  uint32_t num_nameservers = data_provider_->ConsumeIntegralInRange(0, 4);
   for (uint32_t i = 0; i < num_nameservers; ++i) {
     config.nameservers.push_back(
         IPEndPoint(FuzzIPAddress(data_provider_), FuzzPort(data_provider_)));
   }
 
   // Fuzz suffix search list.
-  switch (data_provider_->ConsumeUint32InRange(0, 3)) {
+  switch (data_provider_->ConsumeIntegralInRange(0, 3)) {
     case 3:
       config.search.push_back("foo.com");
       FALLTHROUGH;
@@ -204,8 +204,8 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
   config.unhandled_options = data_provider_->ConsumeBool();
   config.append_to_multi_label_name = data_provider_->ConsumeBool();
   config.randomize_ports = data_provider_->ConsumeBool();
-  config.ndots = data_provider_->ConsumeInt32InRange(0, 3);
-  config.attempts = data_provider_->ConsumeInt32InRange(1, 3);
+  config.ndots = data_provider_->ConsumeIntegralInRange(0, 3);
+  config.attempts = data_provider_->ConsumeIntegralInRange(1, 3);
 
   // Timeouts don't really work for fuzzing. Even a timeout of 0 milliseconds
   // will be increased after the first timeout, resulting in inconsistent
@@ -218,7 +218,7 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
 
   std::unique_ptr<DnsClient> dns_client = DnsClient::CreateClientForTesting(
       net_log_, &socket_factory_,
-      base::Bind(&base::FuzzedDataProvider::ConsumeInt32InRange,
+      base::Bind(&base::FuzzedDataProvider::ConsumeIntegralInRange<int32_t>,
                  base::Unretained(data_provider_)));
   dns_client->SetConfig(config);
   SetDnsClient(std::move(dns_client));

@@ -151,24 +151,11 @@ class FuzzedDataProvider {
     return ConsumeBytesAsString(remaining_bytes_);
   }
 
-  // TODO(mmoroz): consider deprecating these methods.
-  uint32_t ConsumeUint32InRange(uint32_t min, uint32_t max) {
-    return ConsumeIntegralInRange(min, max);
-  }
-
-  int32_t ConsumeInt32InRange(int32_t min, int32_t max) {
-    return ConsumeIntegralInRange(min, max);
-  }
-
-  int ConsumeIntInRange(int min, int max) {
-    return ConsumeIntegralInRange(min, max);
-  }
-
   // Reads one byte and returns a bool, or false when no data remains.
   bool ConsumeBool() { return 1 & ConsumeUint8(); }
 
   // Returns a uint8_t from the input or 0 if nothing remains. This is
-  // equivalent to ConsumeUint32InRange(0, 0xFF).
+  // equivalent to ConsumeIntegralInRange<uint8_t>(0, 0xFF).
   uint8_t ConsumeUint8() {
     return ConsumeIntegralInRange(std::numeric_limits<uint8_t>::min(),
                                   std::numeric_limits<uint8_t>::max());
@@ -176,16 +163,32 @@ class FuzzedDataProvider {
 
   // Returns a uint16_t from the input. If fewer than 2 bytes of data remain
   // will fill the most significant bytes with 0. This is equivalent to
-  // ConsumeUint32InRange(0, 0xFFFF).
+  // ConsumeIntegralInRange<uint16_t>(0, 0xFFFF).
   uint16_t ConsumeUint16() {
     return ConsumeIntegralInRange(std::numeric_limits<uint16_t>::min(),
                                   std::numeric_limits<uint16_t>::max());
   }
 
+  // Returns a uint32_t from the input. If fewer than 4 bytes of data remain
+  // will fill the most significant bytes with 0. This is equivalent to
+  // ConsumeIntegralInRange<uint32_t>(0, 0xFFFFFFFF).
+  uint16_t ConsumeUint32() {
+    return ConsumeIntegralInRange(std::numeric_limits<uint32_t>::min(),
+                                  std::numeric_limits<uint32_t>::max());
+  }
+
+  // Returns a uint64_t from the input. If fewer than 8 bytes of data remain
+  // will fill the most significant bytes with 0. This is equivalent to
+  // ConsumeIntegralInRange<uint64_t>(0, 0xFFFFFFFFFFFFFFFF).
+  uint16_t ConsumeUint64() {
+    return ConsumeIntegralInRange(std::numeric_limits<uint64_t>::min(),
+                                  std::numeric_limits<uint64_t>::max());
+  }
+
   // Returns a value from |array|, consuming as many bytes as needed to do so.
   // |array| must be a fixed-size array.
-  template <typename Type, size_t size>
-  Type PickValueInArray(Type (&array)[size]) {
+  template <typename T, size_t size>
+  T PickValueInArray(T (&array)[size]) {
     return array[ConsumeIntegralInRange<size_t>(0, size - 1)];
   }
 

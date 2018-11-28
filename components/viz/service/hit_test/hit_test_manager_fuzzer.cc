@@ -25,7 +25,8 @@ constexpr uint32_t kMaxDepthAllowed = 255;
 // TODO(riajiang): Move into common functions that can be used by the fuzzer
 // for HitTestQuery.
 uint32_t GetNextUInt32NonZero(base::FuzzedDataProvider* fuzz) {
-  return fuzz->ConsumeUint32InRange(1, std::numeric_limits<uint32_t>::max());
+  return fuzz->ConsumeIntegralInRange<uint32_t>(
+      1, std::numeric_limits<uint32_t>::max());
 }
 
 gfx::Transform GetNextTransform(base::FuzzedDataProvider* fuzz) {

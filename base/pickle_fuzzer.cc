@@ -102,7 +102,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       }
       case 14: {
         const char* data_result = nullptr;
-        int read_length = data_provider.ConsumeInt32InRange(0, kMaxReadLength);
+        int read_length =
+            data_provider.ConsumeIntegralInRange(0, kMaxReadLength);
         ignore_result(iter.ReadBytes(&data_result, read_length));
         break;
       }
@@ -113,7 +114,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       }
       case 16: {
         ignore_result(iter.SkipBytes(
-            data_provider.ConsumeInt32InRange(0, kMaxSkipBytes)));
+            data_provider.ConsumeIntegralInRange(0, kMaxSkipBytes)));
         break;
       }
     }

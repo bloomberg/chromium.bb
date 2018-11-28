@@ -18,7 +18,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   blink::FuzzedDataProvider provider(data, size);
 
   const auto property_id =
-      blink::convertToCSSPropertyID(provider.ConsumeInt32InRange(
+      blink::convertToCSSPropertyID(provider.ConsumeIntegralInRange<int>(
           blink::firstCSSProperty, blink::lastCSSProperty));
   const auto data_string = provider.ConsumeRemainingBytes();
 
