@@ -117,9 +117,6 @@
         'to monitor the stream\'s state';
 
   const errDestinationStreamClosed = 'Destination stream closed';
-  const errCannotTransferLockedStream = 'Cannot transfer a locked stream';
-  const errCannotTransferUnsupportedContext =
-        'Cannot transfer from this context';
 
   let useCounted = false;
 
@@ -1048,11 +1045,11 @@
     // assert(IsReadableStream(readable),
     //        `! IsReadableStream(_readable_) is true`);
     if (IsReadableStreamLocked(readable)) {
-      throw new TypeError(errCannotTransferLockedStream);
+      throw new TypeError(streamErrors.cannotTransferLockedStream);
     }
 
     if (!binding.MessagePort_postMessage) {
-      throw new TypeError(errCannotTransferUnsupportedContext);
+      throw new TypeError(streamErrors.cannotTransferContext);
     }
 
     const writable = CreateCrossRealmTransformWritable(port);
