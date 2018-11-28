@@ -424,8 +424,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
 
     if (observer_) {
       Document& document = To<Document>(*observer_->LifecycleContext());
-      loader_ = new ThreadableLoader(document, client_adapter_,
-                                     resource_loader_options);
+      loader_ = MakeGarbageCollected<ThreadableLoader>(
+          document, client_adapter_, resource_loader_options);
       loader_->Start(webcore_request);
     }
   }

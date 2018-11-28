@@ -33,7 +33,7 @@
 namespace blink {
 
 TouchEventContext* TouchEventContext::Create() {
-  return new TouchEventContext;
+  return MakeGarbageCollected<TouchEventContext>();
 }
 
 TouchEventContext::TouchEventContext()

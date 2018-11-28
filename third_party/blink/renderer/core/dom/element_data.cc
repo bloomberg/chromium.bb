@@ -87,8 +87,8 @@ void ElementData::FinalizeGarbageCollectedObject() {
 
 UniqueElementData* ElementData::MakeUniqueCopy() const {
   if (IsUnique())
-    return new UniqueElementData(ToUniqueElementData(*this));
-  return new UniqueElementData(ToShareableElementData(*this));
+    return MakeGarbageCollected<UniqueElementData>(ToUniqueElementData(*this));
+  return MakeGarbageCollected<UniqueElementData>(ToShareableElementData(*this));
 }
 
 bool ElementData::IsEquivalent(const ElementData* other) const {
@@ -173,7 +173,7 @@ UniqueElementData::UniqueElementData(const ShareableElementData& other)
 }
 
 UniqueElementData* UniqueElementData::Create() {
-  return new UniqueElementData;
+  return MakeGarbageCollected<UniqueElementData>();
 }
 
 ShareableElementData* UniqueElementData::MakeShareableCopy() const {

@@ -116,7 +116,7 @@ void NotificationImageLoader::Start(ExecutionContext* context,
   resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
 
-  threadable_loader_ = new ThreadableLoader(
+  threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
       *context, this, resource_loader_options);
   threadable_loader_->SetTimeout(
       TimeDelta::FromMilliseconds(kImageFetchTimeoutInMs));

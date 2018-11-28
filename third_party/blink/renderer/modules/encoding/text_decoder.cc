@@ -52,7 +52,8 @@ TextDecoder* TextDecoder::Create(const String& label,
     return nullptr;
   }
 
-  return new TextDecoder(encoding, options->fatal(), options->ignoreBOM());
+  return MakeGarbageCollected<TextDecoder>(encoding, options->fatal(),
+                                           options->ignoreBOM());
 }
 
 TextDecoder::TextDecoder(const WTF::TextEncoding& encoding,

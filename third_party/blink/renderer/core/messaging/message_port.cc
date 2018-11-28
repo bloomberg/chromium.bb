@@ -303,9 +303,9 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
         *GetExecutionContext(), std::move(message.ports));
     UserActivation* user_activation = nullptr;
     if (message.user_activation) {
-      user_activation =
-          new UserActivation(message.user_activation->has_been_active,
-                             message.user_activation->was_active);
+      user_activation = MakeGarbageCollected<UserActivation>(
+          message.user_activation->has_been_active,
+          message.user_activation->was_active);
     }
     evt = MessageEvent::Create(ports, std::move(message.message),
                                user_activation);

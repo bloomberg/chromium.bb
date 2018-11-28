@@ -21,14 +21,16 @@ class CORE_EXPORT TrustedURL final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TrustedURL* Create(const KURL& url) { return new TrustedURL(url); }
+  static TrustedURL* Create(const KURL& url) {
+    return MakeGarbageCollected<TrustedURL>(url);
+  }
+
+  TrustedURL(const KURL&);
 
   // TrustedURL.idl
   String toString() const;
 
  private:
-  TrustedURL(const KURL&);
-
   KURL url_;
 };
 

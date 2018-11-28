@@ -25,9 +25,9 @@ class TaskAttributionTiming final : public PerformanceEntry {
                                        double start_time,
                                        double finish_time,
                                        const String& script_url) {
-    return new TaskAttributionTiming(type, container_type, container_src,
-                                     container_id, container_name, start_time,
-                                     finish_time, script_url);
+    return MakeGarbageCollected<TaskAttributionTiming>(
+        type, container_type, container_src, container_id, container_name,
+        start_time, finish_time, script_url);
   }
 
   // Used when the LongTaskV2 flag is disabled.
@@ -36,9 +36,9 @@ class TaskAttributionTiming final : public PerformanceEntry {
                                        const String& container_src,
                                        const String& container_id,
                                        const String& container_name) {
-    return new TaskAttributionTiming(type, container_type, container_src,
-                                     container_id, container_name, 0.0, 0.0,
-                                     g_empty_string);
+    return MakeGarbageCollected<TaskAttributionTiming>(
+        type, container_type, container_src, container_id, container_name, 0.0,
+        0.0, g_empty_string);
   }
 
   AtomicString entryType() const override;
@@ -52,9 +52,6 @@ class TaskAttributionTiming final : public PerformanceEntry {
 
   void Trace(blink::Visitor*) override;
 
-  ~TaskAttributionTiming() override;
-
- private:
   TaskAttributionTiming(const AtomicString& type,
                         const String& container_type,
                         const String& container_src,
@@ -63,6 +60,9 @@ class TaskAttributionTiming final : public PerformanceEntry {
                         double start_time,
                         double finish_time,
                         const String& script_url);
+  ~TaskAttributionTiming() override;
+
+ private:
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
   String container_type_;

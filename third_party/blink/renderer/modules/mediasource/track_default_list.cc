@@ -11,7 +11,7 @@
 namespace blink {
 
 TrackDefaultList* TrackDefaultList::Create() {
-  return new TrackDefaultList();
+  return MakeGarbageCollected<TrackDefaultList>();
 }
 
 TrackDefaultList* TrackDefaultList::Create(
@@ -47,7 +47,7 @@ TrackDefaultList* TrackDefaultList::Create(
   // 2. Store a shallow copy of |trackDefaults| in this new object so the values
   //    can be returned by the accessor methods.
   // This step is done in constructor initializer.
-  return new TrackDefaultList(track_defaults);
+  return MakeGarbageCollected<TrackDefaultList>(track_defaults);
 }
 
 TrackDefault* TrackDefaultList::item(unsigned index) const {

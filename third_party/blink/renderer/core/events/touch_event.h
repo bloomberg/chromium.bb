@@ -45,7 +45,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
 
   // We only initialize sourceCapabilities when we create TouchEvent from
   // EventHandler, null if it is from JavaScript.
-  static TouchEvent* Create() { return new TouchEvent; }
+  static TouchEvent* Create() { return MakeGarbageCollected<TouchEvent>(); }
   static TouchEvent* Create(const WebCoalescedInputEvent& event,
                             TouchList* touches,
                             TouchList* target_touches,

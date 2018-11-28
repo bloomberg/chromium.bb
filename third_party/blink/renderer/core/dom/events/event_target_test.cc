@@ -24,7 +24,8 @@ TEST_F(EventTargetTest, PreventDefaultNotCalled) {
   HistogramTester histogram_tester;
   GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
       "window.addEventListener('touchstart', function(e) {}, {});"
-      "window.dispatchEvent(new TouchEvent('touchstart', {cancelable: "
+      "window.dispatchEvent(new TouchEvent('touchstart', "
+      "{cancelable: "
       "false}));");
 
   histogram_tester.ExpectTotalCount("Event.PassiveForcedEventDispatchCancelled",
@@ -39,7 +40,8 @@ TEST_F(EventTargetTest, PreventDefaultCalled) {
   GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
       "window.addEventListener('touchstart', function(e) "
       "{e.preventDefault();}, {});"
-      "window.dispatchEvent(new TouchEvent('touchstart', {cancelable: "
+      "window.dispatchEvent(new TouchEvent('touchstart', "
+      "{cancelable: "
       "false}));");
 
   histogram_tester.ExpectTotalCount("Event.PassiveForcedEventDispatchCancelled",

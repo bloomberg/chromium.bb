@@ -39,9 +39,9 @@ class TimeInputType final : public BaseTemporalInputType {
  public:
   static InputType* Create(HTMLInputElement&);
 
- private:
   explicit TimeInputType(HTMLInputElement&);
 
+ private:
   void CountUsage() override;
   const AtomicString& FormControlType() const override;
   Decimal DefaultValueForStepUp() const override;

@@ -49,6 +49,8 @@ class UndoStack final : public GarbageCollected<UndoStack> {
  public:
   static UndoStack* Create();
 
+  UndoStack();
+
   void RegisterUndoStep(UndoStep*);
   void RegisterRedoStep(UndoStep*);
   bool CanUndo() const;
@@ -76,8 +78,6 @@ class UndoStack final : public GarbageCollected<UndoStack> {
   void Trace(blink::Visitor*);
 
  private:
-  UndoStack();
-
   bool in_redo_;
   UndoStepStack undo_stack_;
   UndoStepStack redo_stack_;

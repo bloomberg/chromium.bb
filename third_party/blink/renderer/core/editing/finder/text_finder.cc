@@ -645,7 +645,7 @@ int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
 }
 
 TextFinder* TextFinder::Create(WebLocalFrameImpl& owner_frame) {
-  return new TextFinder(owner_frame);
+  return MakeGarbageCollected<TextFinder>(owner_frame);
 }
 
 TextFinder::TextFinder(WebLocalFrameImpl& owner_frame)

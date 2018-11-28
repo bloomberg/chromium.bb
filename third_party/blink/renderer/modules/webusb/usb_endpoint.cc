@@ -46,7 +46,7 @@ String ConvertTypeToEnum(const UsbTransferType& type) {
 
 USBEndpoint* USBEndpoint::Create(const USBAlternateInterface* alternate,
                                  wtf_size_t endpoint_index) {
-  return new USBEndpoint(alternate, endpoint_index);
+  return MakeGarbageCollected<USBEndpoint>(alternate, endpoint_index);
 }
 
 USBEndpoint* USBEndpoint::Create(const USBAlternateInterface* alternate,

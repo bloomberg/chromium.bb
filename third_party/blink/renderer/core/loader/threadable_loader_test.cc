@@ -177,8 +177,8 @@ class ThreadableLoaderTestHelper final {
 
   void CreateLoader(ThreadableLoaderClient* client) {
     ResourceLoaderOptions resource_loader_options;
-    loader_ = new ThreadableLoader(GetDocument(), client,
-                                   resource_loader_options);
+    loader_ = MakeGarbageCollected<ThreadableLoader>(GetDocument(), client,
+                                                     resource_loader_options);
   }
 
   void StartLoader(const ResourceRequest& request) { loader_->Start(request); }

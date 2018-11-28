@@ -54,6 +54,8 @@ class TextDecoder final : public ScriptWrappable {
   static TextDecoder* Create(const String& label,
                              const TextDecoderOptions*,
                              ExceptionState&);
+
+  TextDecoder(const WTF::TextEncoding&, bool fatal, bool ignore_bom);
   ~TextDecoder() override;
 
   // Implement the IDL
@@ -64,8 +66,6 @@ class TextDecoder final : public ScriptWrappable {
   String decode(ExceptionState&);
 
  private:
-  TextDecoder(const WTF::TextEncoding&, bool fatal, bool ignore_bom);
-
   String decode(const char* start,
                 uint32_t length,
                 const TextDecodeOptions*,

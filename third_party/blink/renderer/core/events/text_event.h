@@ -52,6 +52,15 @@ class TextEvent final : public UIEvent {
                                            bool should_match_style);
   static TextEvent* CreateForDrop(AbstractView*, const String& data);
 
+  TextEvent();
+  TextEvent(AbstractView*,
+            const String& data,
+            TextEventInputType = kTextEventInputKeyboard);
+  TextEvent(AbstractView*,
+            const String& data,
+            DocumentFragment*,
+            bool should_smart_replace,
+            bool should_match_style);
   ~TextEvent() override;
 
   void initTextEvent(const AtomicString& type,
@@ -81,17 +90,6 @@ class TextEvent final : public UIEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  TextEvent();
-
-  TextEvent(AbstractView*,
-            const String& data,
-            TextEventInputType = kTextEventInputKeyboard);
-  TextEvent(AbstractView*,
-            const String& data,
-            DocumentFragment*,
-            bool should_smart_replace,
-            bool should_match_style);
-
   TextEventInputType input_type_;
   String data_;
 

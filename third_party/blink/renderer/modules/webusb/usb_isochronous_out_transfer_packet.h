@@ -16,12 +16,13 @@ class USBIsochronousOutTransferPacket final : public ScriptWrappable {
 
  public:
   static USBIsochronousOutTransferPacket* Create(const String& status) {
-    return new USBIsochronousOutTransferPacket(status, 0);
+    return MakeGarbageCollected<USBIsochronousOutTransferPacket>(status, 0);
   }
 
   static USBIsochronousOutTransferPacket* Create(const String& status,
                                                  unsigned bytes_written) {
-    return new USBIsochronousOutTransferPacket(status, bytes_written);
+    return MakeGarbageCollected<USBIsochronousOutTransferPacket>(status,
+                                                                 bytes_written);
   }
 
   USBIsochronousOutTransferPacket(const String& status, unsigned bytes_written)

@@ -49,6 +49,8 @@ class TextEncoder final : public ScriptWrappable {
 
  public:
   static TextEncoder* Create(ExecutionContext*, ExceptionState&);
+
+  TextEncoder(const WTF::TextEncoding&);
   ~TextEncoder() override;
 
   // Implement the IDL
@@ -56,8 +58,6 @@ class TextEncoder final : public ScriptWrappable {
   NotShared<DOMUint8Array> encode(const String&);
 
  private:
-  TextEncoder(const WTF::TextEncoding&);
-
   WTF::TextEncoding encoding_;
   std::unique_ptr<WTF::TextCodec> codec_;
 };

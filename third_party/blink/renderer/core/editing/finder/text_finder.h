@@ -121,6 +121,7 @@ class CORE_EXPORT TextFinder final
                      int found_match_count,
                      bool finished_whole_request);
 
+  explicit TextFinder(WebLocalFrameImpl& owner_frame);
   ~TextFinder();
 
   class FindMatch {
@@ -144,8 +145,6 @@ class CORE_EXPORT TextFinder final
   void Trace(blink::Visitor*);
 
  private:
-  explicit TextFinder(WebLocalFrameImpl& owner_frame);
-
   // Notifies the delegate about a new selection rect.
   void ReportFindInPageSelection(const WebRect& selection_rect,
                                  int active_match_ordinal,

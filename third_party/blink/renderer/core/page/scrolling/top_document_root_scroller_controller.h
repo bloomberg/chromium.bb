@@ -33,6 +33,8 @@ class CORE_EXPORT TopDocumentRootScrollerController
  public:
   static TopDocumentRootScrollerController* Create(Page&);
 
+  TopDocumentRootScrollerController(Page&);
+
   void Trace(blink::Visitor*);
 
   // This class needs to be informed of changes to compositing so that it can
@@ -84,8 +86,6 @@ class CORE_EXPORT TopDocumentRootScrollerController
   IntSize RootScrollerVisibleArea() const;
 
  private:
-  TopDocumentRootScrollerController(Page&);
-
   // Calculates the Node that should be the globalRootScroller. On a simple
   // page, this will simply the root frame's effectiveRootScroller but if the
   // root scroller is set to an iframe, this will then descend into the iframe

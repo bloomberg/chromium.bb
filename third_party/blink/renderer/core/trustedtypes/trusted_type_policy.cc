@@ -25,7 +25,8 @@ TrustedTypePolicy* TrustedTypePolicy::Create(
     const String& policy_name,
     TrustedTypePolicyOptions* policy_options,
     bool exposed) {
-  return new TrustedTypePolicy(policy_name, policy_options, exposed);
+  return MakeGarbageCollected<TrustedTypePolicy>(policy_name, policy_options,
+                                                 exposed);
 }
 
 TrustedHTML* TrustedTypePolicy::createHTML(ScriptState* script_state,

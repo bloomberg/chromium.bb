@@ -11,11 +11,12 @@ namespace blink {
 
 class TextMatchMarkerListImplTest : public EditingTestBase {
  protected:
-  TextMatchMarkerListImplTest() : marker_list_(new TextMatchMarkerListImpl()) {}
+  TextMatchMarkerListImplTest()
+      : marker_list_(MakeGarbageCollected<TextMatchMarkerListImpl>()) {}
 
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
-    return new TextMatchMarker(start_offset, end_offset,
-                               TextMatchMarker::MatchStatus::kInactive);
+    return MakeGarbageCollected<TextMatchMarker>(
+        start_offset, end_offset, TextMatchMarker::MatchStatus::kInactive);
   }
 
   Persistent<TextMatchMarkerListImpl> marker_list_;

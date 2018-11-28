@@ -39,7 +39,7 @@ ScrollableArea* GetScrollableArea(Node* node) {
 // static
 TopDocumentRootScrollerController* TopDocumentRootScrollerController::Create(
     Page& page) {
-  return new TopDocumentRootScrollerController(page);
+  return MakeGarbageCollected<TopDocumentRootScrollerController>(page);
 }
 
 TopDocumentRootScrollerController::TopDocumentRootScrollerController(Page& page)

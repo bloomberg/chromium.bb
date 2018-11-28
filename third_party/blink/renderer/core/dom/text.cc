@@ -46,11 +46,11 @@
 namespace blink {
 
 Text* Text::Create(Document& document, const String& data) {
-  return new Text(document, data, kCreateText);
+  return MakeGarbageCollected<Text>(document, data, kCreateText);
 }
 
 Text* Text::CreateEditingText(Document& document, const String& data) {
-  return new Text(document, data, kCreateEditingText);
+  return MakeGarbageCollected<Text>(document, data, kCreateEditingText);
 }
 
 Node* Text::MergeNextSiblingNodesIfPossible() {

@@ -36,19 +36,28 @@ class TransitionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TransitionEvent* Create() { return new TransitionEvent; }
+  static TransitionEvent* Create() {
+    return MakeGarbageCollected<TransitionEvent>();
+  }
   static TransitionEvent* Create(const AtomicString& type,
                                  const String& property_name,
                                  double elapsed_time,
                                  const String& pseudo_element) {
-    return new TransitionEvent(type, property_name, elapsed_time,
-                               pseudo_element);
+    return MakeGarbageCollected<TransitionEvent>(type, property_name,
+                                                 elapsed_time, pseudo_element);
   }
   static TransitionEvent* Create(const AtomicString& type,
                                  const TransitionEventInit* initializer) {
-    return new TransitionEvent(type, initializer);
+    return MakeGarbageCollected<TransitionEvent>(type, initializer);
   }
 
+  TransitionEvent();
+  TransitionEvent(const AtomicString& type,
+                  const String& property_name,
+                  double elapsed_time,
+                  const String& pseudo_element);
+  TransitionEvent(const AtomicString& type,
+                  const TransitionEventInit* initializer);
   ~TransitionEvent() override;
 
   const String& propertyName() const;
@@ -60,14 +69,6 @@ class TransitionEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  TransitionEvent();
-  TransitionEvent(const AtomicString& type,
-                  const String& property_name,
-                  double elapsed_time,
-                  const String& pseudo_element);
-  TransitionEvent(const AtomicString& type,
-                  const TransitionEventInit* initializer);
-
   String property_name_;
   double elapsed_time_;
   String pseudo_element_;

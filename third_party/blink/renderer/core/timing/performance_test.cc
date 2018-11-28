@@ -48,7 +48,7 @@ class PerformanceTest : public PageTestBase {
   void Initialize(ScriptState* script_state) {
     v8::Local<v8::Function> callback =
         v8::Function::New(script_state->GetContext(), nullptr).ToLocalChecked();
-    base_ = new TestPerformance(script_state);
+    base_ = MakeGarbageCollected<TestPerformance>(script_state);
     cb_ = V8PerformanceObserverCallback::Create(callback);
     observer_ = new PerformanceObserver(ExecutionContext::From(script_state),
                                         base_, cb_);

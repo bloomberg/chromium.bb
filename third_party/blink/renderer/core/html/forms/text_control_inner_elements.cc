@@ -45,7 +45,8 @@ TextControlInnerContainer::TextControlInnerContainer(Document& document)
 
 TextControlInnerContainer* TextControlInnerContainer::Create(
     Document& document) {
-  TextControlInnerContainer* element = new TextControlInnerContainer(document);
+  TextControlInnerContainer* element =
+      MakeGarbageCollected<TextControlInnerContainer>(document);
   element->setAttribute(kIdAttr, shadow_element_names::TextFieldContainer());
   return element;
 }
@@ -98,7 +99,7 @@ inline TextControlInnerEditorElement::TextControlInnerEditorElement(
 
 TextControlInnerEditorElement* TextControlInnerEditorElement::Create(
     Document& document) {
-  return new TextControlInnerEditorElement(document);
+  return MakeGarbageCollected<TextControlInnerEditorElement>(document);
 }
 
 void TextControlInnerEditorElement::DefaultEventHandler(Event& event) {

@@ -44,8 +44,8 @@ class PaintWorkletTest : public PageTestBase {
  public:
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    test_paint_worklet_ =
-        new TestPaintWorklet(GetDocument().domWindow()->GetFrame());
+    test_paint_worklet_ = MakeGarbageCollected<TestPaintWorklet>(
+        GetDocument().domWindow()->GetFrame());
     proxy_ = test_paint_worklet_->CreateGlobalScope();
   }
 

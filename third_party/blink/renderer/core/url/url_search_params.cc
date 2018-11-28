@@ -58,8 +58,8 @@ URLSearchParams* URLSearchParams::Create(const URLSearchParamsInit& init,
   if (init.IsUSVString()) {
     const String& query_string = init.GetAsUSVString();
     if (query_string.StartsWith('?'))
-      return new URLSearchParams(query_string.Substring(1));
-    return new URLSearchParams(query_string);
+      return MakeGarbageCollected<URLSearchParams>(query_string.Substring(1));
+    return MakeGarbageCollected<URLSearchParams>(query_string);
   }
   if (init.IsUSVStringUSVStringRecord()) {
     return URLSearchParams::Create(init.GetAsUSVStringUSVStringRecord(),
@@ -71,12 +71,12 @@ URLSearchParams* URLSearchParams::Create(const URLSearchParamsInit& init,
   }
 
   DCHECK(init.IsNull());
-  return new URLSearchParams(String());
+  return MakeGarbageCollected<URLSearchParams>(String());
 }
 
 URLSearchParams* URLSearchParams::Create(const Vector<Vector<String>>& init,
                                          ExceptionState& exception_state) {
-  URLSearchParams* instance = new URLSearchParams(String());
+  URLSearchParams* instance = MakeGarbageCollected<URLSearchParams>(String());
   if (!init.size())
     return instance;
   for (unsigned i = 0; i < init.size(); ++i) {
@@ -101,7 +101,7 @@ URLSearchParams::URLSearchParams(const String& query_string, DOMURL* url_object)
 URLSearchParams* URLSearchParams::Create(
     const Vector<std::pair<String, String>>& init,
     ExceptionState& exception_state) {
-  URLSearchParams* instance = new URLSearchParams(String());
+  URLSearchParams* instance = MakeGarbageCollected<URLSearchParams>(String());
   if (init.IsEmpty())
     return instance;
   for (const auto& item : init)

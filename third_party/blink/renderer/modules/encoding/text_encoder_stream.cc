@@ -185,7 +185,7 @@ void TextEncoderStream::Trace(Visitor* visitor) {
 
 TextEncoderStream::TextEncoderStream(ScriptState* script_state,
                                      ExceptionState& exception_state)
-    : transform_(new TransformStream()) {
+    : transform_(MakeGarbageCollected<TransformStream>()) {
   if (!RetainWrapperDuringConstruction(this, script_state)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot queue task to retain wrapper");

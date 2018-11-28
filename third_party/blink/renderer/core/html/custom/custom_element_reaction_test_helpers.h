@@ -107,25 +107,20 @@ class Enqueue : public Command {
 
 class TestReaction : public CustomElementReaction {
  public:
-  TestReaction(std::initializer_list<Command*> commands)
-      : CustomElementReaction(nullptr) {
-    // TODO(dominicc): Simply pass the initializer list when
-    // HeapVector supports initializer lists like Vector.
-    for (auto* const command : commands)
-      commands_.push_back(command);
-  }
+  TestReaction(HeapVector<Member<Command>>* commands)
+      : CustomElementReaction(nullptr), commands_(commands) {}
   ~TestReaction() override = default;
   void Trace(blink::Visitor* visitor) override {
     CustomElementReaction::Trace(visitor);
     visitor->Trace(commands_);
   }
   void Invoke(Element* element) override {
-    for (auto& command : commands_)
+    for (auto& command : *commands_)
       command->Run(element);
   }
 
  private:
-  HeapVector<Member<Command>> commands_;
+  Member<HeapVector<Member<Command>>> commands_;
 
   DISALLOW_COPY_AND_ASSIGN(TestReaction);
 };

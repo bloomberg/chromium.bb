@@ -36,9 +36,10 @@ class CORE_EXPORT URLSearchParams final : public ScriptWrappable,
 
   static URLSearchParams* Create(const String& query_string,
                                  DOMURL* url_object = nullptr) {
-    return new URLSearchParams(query_string, url_object);
+    return MakeGarbageCollected<URLSearchParams>(query_string, url_object);
   }
 
+  explicit URLSearchParams(const String&, DOMURL* = nullptr);
   ~URLSearchParams() override;
 
   // URLSearchParams interface methods
@@ -64,8 +65,6 @@ class CORE_EXPORT URLSearchParams final : public ScriptWrappable,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(URLSearchParamsTest, EncodedFormData);
-
-  explicit URLSearchParams(const String&, DOMURL* = nullptr);
 
   void RunUpdateSteps();
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;

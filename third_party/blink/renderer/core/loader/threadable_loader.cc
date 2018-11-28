@@ -532,7 +532,7 @@ void ThreadableLoader::Detach() {
   if (!resource)
     return;
   detached_ = true;
-  client_ = new DetachedClient(this);
+  client_ = MakeGarbageCollected<DetachedClient>(this);
 }
 
 void ThreadableLoader::SetDefersLoading(bool value) {

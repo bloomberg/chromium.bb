@@ -39,8 +39,9 @@ class URLInputType final : public BaseTextInputType {
  public:
   static InputType* Create(HTMLInputElement&);
 
- private:
   URLInputType(HTMLInputElement& element) : BaseTextInputType(element) {}
+
+ private:
   void CountUsage() override;
   const AtomicString& FormControlType() const override;
   bool TypeMismatchFor(const String&) const override;

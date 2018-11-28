@@ -48,6 +48,8 @@ class CORE_EXPORT TreeScopeEventContext final
     : public GarbageCollected<TreeScopeEventContext> {
  public:
   static TreeScopeEventContext* Create(TreeScope&);
+
+  TreeScopeEventContext(TreeScope&);
   void Trace(blink::Visitor*);
 
   TreeScope& GetTreeScope() const { return *tree_scope_; }
@@ -84,8 +86,6 @@ class CORE_EXPORT TreeScopeEventContext final
   }
 
  private:
-  TreeScopeEventContext(TreeScope&);
-
   void CheckReachableNode(EventTarget&);
 
   bool IsUnclosedTreeOf(const TreeScopeEventContext& other);

@@ -19,7 +19,7 @@ class USBIsochronousOutTransferResult final : public ScriptWrappable {
  public:
   static USBIsochronousOutTransferResult* Create(
       const HeapVector<Member<USBIsochronousOutTransferPacket>>& packets) {
-    return new USBIsochronousOutTransferResult(packets);
+    return MakeGarbageCollected<USBIsochronousOutTransferResult>(packets);
   }
 
   USBIsochronousOutTransferResult(

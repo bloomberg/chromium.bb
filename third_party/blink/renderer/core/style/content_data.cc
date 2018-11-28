@@ -39,7 +39,7 @@ ContentData* ContentData::Create(StyleImage* image) {
 }
 
 ContentData* ContentData::Create(const String& text) {
-  return new TextContentData(text);
+  return MakeGarbageCollected<TextContentData>(text);
 }
 
 ContentData* ContentData::Create(std::unique_ptr<CounterContent> counter) {
