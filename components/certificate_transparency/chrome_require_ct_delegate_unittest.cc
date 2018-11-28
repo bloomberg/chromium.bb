@@ -7,10 +7,10 @@
 #include <iterator>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_message_loop.h"
 #include "base/values.h"
 #include "components/certificate_transparency/pref_names.h"
@@ -29,8 +29,6 @@ namespace {
 
 class ChromeRequireCTDelegateTest : public ::testing::Test {
  public:
-  ChromeRequireCTDelegateTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
-
   void SetUp() override {
     cert_ = net::CreateCertificateChainFromFile(
         net::GetTestCertsDirectory(), "ok_cert.pem",
@@ -41,7 +39,8 @@ class ChromeRequireCTDelegateTest : public ::testing::Test {
   }
 
  protected:
-  base::TestMessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   scoped_refptr<net::X509Certificate> cert_;
   net::HashValueVector hashes_;
 };

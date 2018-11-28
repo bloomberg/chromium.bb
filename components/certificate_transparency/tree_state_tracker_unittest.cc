@@ -8,10 +8,10 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/certificate_transparency/features.h"
 #include "net/base/net_errors.h"
 #include "net/cert/ct_log_verifier.h"
@@ -56,7 +56,8 @@ class TreeStateTrackerTest : public ::testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   scoped_refptr<const net::CTLogVerifier> log_;
   net::MockCachingHostResolver host_resolver_;
   std::unique_ptr<TreeStateTracker> tree_tracker_;

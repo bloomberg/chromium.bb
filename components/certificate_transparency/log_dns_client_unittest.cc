@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/format_macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "components/certificate_transparency/mock_log_dns_traffic.h"
 #include "crypto/sha2.h"
@@ -135,7 +135,8 @@ class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   // Queues and handles asynchronous DNS tasks. Indirectly used by LogDnsClient,
   // the underlying net::DnsClient, and NetworkChangeNotifier.
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   // Allows mock DNS sockets to be setup.
   MockLogDnsTraffic mock_dns_;
   // Tests that histograms are populated as expected.
