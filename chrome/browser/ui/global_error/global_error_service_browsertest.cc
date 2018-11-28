@@ -119,14 +119,8 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorServiceBrowserTest, CloseBubbleView) {
 // This uses the deprecated "unowned" API to the GlobalErrorService to maintain
 // coverage. When those calls are eventually removed (http://crbug.com/673578)
 // these uses should be switched to the non-deprecated API.
-#if defined(OS_WIN) || defined(OS_LINUX)
-// http://crbug.com/396473
-#define MAYBE_BubbleViewDismissedOnRemove DISABLED_BubbleViewDismissedOnRemove
-#else
-#define MAYBE_BubbleViewDismissedOnRemove BubbleViewDismissedOnRemove
-#endif
 IN_PROC_BROWSER_TEST_F(GlobalErrorServiceBrowserTest,
-                       MAYBE_BubbleViewDismissedOnRemove) {
+                       BubbleViewDismissedOnRemove) {
   std::unique_ptr<BubbleViewError> error(new BubbleViewError);
 
   GlobalErrorService* service =
