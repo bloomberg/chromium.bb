@@ -1864,8 +1864,10 @@ bool SyncEncryptionHandlerImpl::DecryptPendingKeysWithKeystoreKey(
     // ensure we re-encrypt using the newest key.
     DVLOG(1) << "Attempting to decrypt pending keys using "
              << "keystore decryptor token.";
-    std::string serialized_nigori =
-        temp_cryptographer.DecryptToString(keystore_decryptor_token);
+    std::string serialized_nigori;
+    // TODO(crbug.com/908391): what if the decryption below fails?
+    temp_cryptographer.DecryptToString(keystore_decryptor_token,
+                                       &serialized_nigori);
 
     // This will decrypt the pending keys and add them if possible. The key
     // within |serialized_nigori| will be the default after.

@@ -684,13 +684,8 @@ bool ModelTypeWorker::DecryptSpecifics(const Cryptographer& cryptographer,
   DCHECK(in.has_encrypted());
   DCHECK(cryptographer.CanDecrypt(in.encrypted()));
 
-  std::string plaintext = cryptographer.DecryptToString(in.encrypted());
-  if (plaintext.empty()) {
-    DLOG(ERROR) << "Failed to decrypt a decryptable entity";
-    return false;
-  }
-  if (!out->ParseFromString(plaintext)) {
-    DLOG(ERROR) << "Failed to parse decrypted entity";
+  if (!cryptographer.Decrypt(in.encrypted(), out)) {
+    DLOG(ERROR) << "Failed to decrypt a decryptable specifics";
     return false;
   }
   return true;
@@ -704,7 +699,7 @@ bool ModelTypeWorker::DecryptPasswordSpecifics(
   DCHECK(in.has_password());
   DCHECK(in.password().has_encrypted());
   DCHECK(cryptographer.CanDecrypt(in.password().encrypted()));
-  // TODO(mamir): unify implementation with DecryptSpecifics() above.
+
   if (!cryptographer.Decrypt(
           in.password().encrypted(),
           out->mutable_password()->mutable_client_only_encrypted_data())) {

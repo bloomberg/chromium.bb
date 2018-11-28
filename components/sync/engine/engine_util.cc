@@ -90,7 +90,9 @@ bool AreSpecificsEqual(const Cryptographer* cryptographer,
       NOTREACHED() << "Attempting to compare undecryptable data.";
       return false;
     }
-    left_plaintext = cryptographer->DecryptToString(left.encrypted());
+    if (!cryptographer->DecryptToString(left.encrypted(), &left_plaintext)) {
+      return false;
+    }
   } else {
     left_plaintext = left.SerializeAsString();
   }
@@ -99,7 +101,9 @@ bool AreSpecificsEqual(const Cryptographer* cryptographer,
       NOTREACHED() << "Attempting to compare undecryptable data.";
       return false;
     }
-    right_plaintext = cryptographer->DecryptToString(right.encrypted());
+    if (!cryptographer->DecryptToString(right.encrypted(), &right_plaintext)) {
+      return false;
+    }
   } else {
     right_plaintext = right.SerializeAsString();
   }
